@@ -74,16 +74,13 @@ int Zbft::Init(
 }
 
 void Zbft::Destroy() {
-    std::cout << "destroy called!" << std::endl;
     if (txs_ptr_ == nullptr) {
         return;
     }
 
     if (consensus_status_ != kBftCommited) {
-        std::cout << "recover called!" << std::endl;
         pools_mgr_->TxRecover(pool_index(), txs_ptr_->txs);
     } else {
-        std::cout << "over called!" << std::endl;
         pools_mgr_->TxOver(pool_index(), txs_ptr_->txs);
     }
 }
@@ -115,9 +112,9 @@ int Zbft::LeaderCreatePrepare(transport::MessagePtr& msg_ptr) {
     hotstuff::protobuf::TxBft& tx_bft = *hotstuff_proto->mutable_tx_bft();
     auto ltxp = tx_bft.mutable_ltx_prepare();
     if (txs_ptr_->bloom_filter == nullptr) {
-        auto& tx_vec = txs_ptr_->txs;
-        for (uint32_t i = 0; i < tx_vec.size(); ++i) {
-            ltxp->add_tx_hash_list(tx_vec[i]->tx_hash);
+        auto& tx_map = txs_ptr_->txs;
+        for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
+            ltxp->add_tx_hash_list(iter->first);
         }
     } else {
         auto bloom_datas = txs_ptr_->bloom_filter->data();
@@ -624,15 +621,15 @@ void Zbft::TxToBlockTx(
 
 void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
     auto tx_list = zjc_block.mutable_tx_list();
-    auto& tx_vec = txs_ptr_->txs;
+    auto& tx_map = txs_ptr_->txs;
     std::unordered_map<std::string, int64_t> acc_balance_map;
-    for (uint32_t i = 0; i < tx_vec.size(); ++i) {
-        auto& tx_info = tx_vec[i]->msg_ptr->header.tx_proto();
+    for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
+        auto& tx_info = iter->second->msg_ptr->header.tx_proto();
         auto& block_tx = *tx_list->Add();
         TxToBlockTx(tx_info, &block_tx);
         block_tx.set_status(kBftSuccess);
         if (AddTransaction(
-                tx_vec[i],
+                iter->second,
                 acc_balance_map,
                 block_tx) != kBftSuccess) {
             continue;
@@ -669,11 +666,13 @@ int Zbft::AddTransaction(
 
             if (from_balance < block_tx.gas_limit()  * block_tx.gas_price()) {
                 block_tx.set_status(kBftUserSetGasLimitError);
+                ZJC_DEBUG("balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), block_tx.gas_price());
                 break;
             }
 
             if (block_tx.gas_limit() < gas_used) {
                 block_tx.set_status(kBftUserSetGasLimitError);
+                ZJC_DEBUG("1 balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), gas_used);
                 break;
             }
         } while (0);
@@ -724,6 +723,11 @@ int Zbft::AddTransaction(
         block_tx.set_gas_used(0);
     }
 
+    ZJC_DEBUG("handle tx success: %s, %lu, %lu, status: %d",
+        common::Encode::HexEncode(block_tx.gid()).c_str(),
+        block_tx.balance(),
+        block_tx.gas_used(),
+        block_tx.status());
     return kBftSuccess;
 }
 

@@ -25,7 +25,6 @@ namespace zjchain {
 
 namespace consensus {
 
-
 BftManager::BftManager() {
     network::Route::Instance()->RegisterMessage(
         common::kBftMessage,
@@ -271,7 +270,6 @@ bool BftManager::VerifyLeaderIdValid(
         const transport::MessagePtr& msg_ptr,
         common::BftMemberPtr& mem_ptr) {
     if (!msg_ptr->header.has_sign()) {
-        std::cout << "leader no sign." << std::endl;
         return false;
     }
 
@@ -280,7 +278,6 @@ bool BftManager::VerifyLeaderIdValid(
             msg_hash,
             mem_ptr->pubkey,
             msg_ptr->header.sign()) != security::kSecuritySuccess) {
-        std::cout << "leader invalid sign." << std::endl;
         return false;
     }
 
@@ -453,7 +450,6 @@ void BftManager::HandleHotstuffMessage(
     }
     case kBftCommit: {
         if (!bft_msg.leader()) {
-            std::cout << "leader commit message coming." << std::endl;
             BackupCommit(bft_ptr, msg_ptr);
         } else {
             assert(false);
@@ -487,7 +483,7 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
 
         common::BloomFilter bf(bloom_data, kHashCount);
         txs_ptr = txs_pools_->FollowerGetTxs(bft_msg.pool_index(), bf, 0);
-        ZJC_DEBUG("get tx count: %u", bloom_data.size());
+        ZJC_DEBUG("get tx count: %u, pool: %d", bloom_data.size(), bft_msg.pool_index());
     } else if (bft_msg.tx_bft().ltx_prepare().tx_hash_list_size() > 0) {
         // get txs direct
     } else {
@@ -1085,7 +1081,6 @@ int BftManager::LeaderCallCommit(
     }
 
     if (bft_ptr->local_prepare_hash() == bft_ptr->leader_tbft_prepare_hash()) {
-        std::cout << "ok: " << common::Encode::HexEncode(bft_ptr->local_prepare_hash()) << ": " << common::Encode::HexEncode(bft_ptr->leader_tbft_prepare_hash()) << std::endl;
         HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
     } else {
         // sync block from neighbor nodes
@@ -1102,7 +1097,6 @@ int BftManager::LeaderCallCommit(
         //         bft_ptr->prepare_latest_height(),
         //         sync::kSyncHighest);
         // }
-        std::cout << "error: " << common::Encode::HexEncode(bft_ptr->local_prepare_hash()) << ": " << common::Encode::HexEncode(bft_ptr->leader_tbft_prepare_hash()) << std::endl;
     }
     
 #ifdef ZJC_UNITTEST
@@ -1112,7 +1106,6 @@ int BftManager::LeaderCallCommit(
 #endif
     ZJC_DEBUG("LeaderCommit success waiting pool_index: %u, bft gid: %s",
         bft_ptr->pool_index(), common::Encode::HexEncode(bft_ptr->gid()).c_str());
-    std::cout << "leader committed!" << std::endl;
     RemoveBft(bft_ptr->thread_index(), bft_ptr->gid(), true);
     return kBftSuccess;
 }
@@ -1171,7 +1164,6 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
     }
 
     // start new bft
-    std::cout << "backup committed!" << std::endl;
     RemoveBft(bft_ptr->thread_index(), bft_ptr->gid(), false);
     ZJC_DEBUG("BackupCommit success waiting pool_index: %u, bft gid: %s",
         bft_ptr->pool_index(), common::Encode::HexEncode(bft_ptr->gid()).c_str());

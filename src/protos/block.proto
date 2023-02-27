@@ -174,4 +174,5 @@ message BlockMessage {
     optional RefreshPoolHeightResponse ref_heights_res = 14;
     optional GetAccountShardRequest acc_shard_req = 15;
     optional GetAccountShardReponse acc_shard_res = 16;
+    repeated pools.protobuf.ToTxHeights to_txs = 17;
 }

@@ -117,38 +117,31 @@ TEST_F(TestWaitingTxs, GetValidTxs) {
             auto ltxs = wtxs[i].LeaderGetValidTxs(false);
             ASSERT_TRUE(ltxs != nullptr);
 
-            auto& tx_vec = ltxs->txs;
-            uint32_t bitcount = ((kBitcountWithItemCount * tx_vec.size()) / 64) * 64;
-            if (((kBitcountWithItemCount * tx_vec.size()) % 64) > 0) {
+            auto& tx_map = ltxs->txs;
+            uint32_t bitcount = ((kBitcountWithItemCount * tx_map.size()) / 64) * 64;
+            if (((kBitcountWithItemCount * tx_map.size()) % 64) > 0) {
                 bitcount += 64;
             }
 
             ltxs->bloom_filter = std::make_shared<common::BloomFilter>(bitcount, kHashCount);
-            std::set<std::string> txs_hash_vec;
-            for (auto iter = tx_vec.begin(); iter != tx_vec.end(); ++iter) {
-                txs_hash_vec.insert((*iter)->tx_hash);
-                ltxs->bloom_filter->Add(common::Hash::Hash64((*iter)->tx_hash));
+            for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
+                ltxs->bloom_filter->Add(common::Hash::Hash64(iter->first));
             }
 
             // pass by bloomfilter
             auto error_bloomfilter_txs = wtxs[i].FollowerGetTxs(*ltxs->bloom_filter);
             for (auto iter = error_bloomfilter_txs->txs.begin();
-                iter != error_bloomfilter_txs->txs.end(); ++iter) {
-                auto fiter = txs_hash_vec.find((*iter)->tx_hash);
-                if (fiter == txs_hash_vec.end()) {
-                    txs_hash_vec.insert((*iter)->tx_hash);
-                    tx_vec.push_back(*iter);
-                }
+                    iter != error_bloomfilter_txs->txs.end(); ++iter) {
+                tx_map[iter->first] = iter->second;
             }
 
             auto& all_txs_hash = ltxs->all_txs_hash;
-            all_txs_hash.reserve(tx_vec.size() * 32);
-            for (auto iter = txs_hash_vec.begin(); iter != txs_hash_vec.end(); ++iter) {
-                all_txs_hash.append(*iter);
+            all_txs_hash.reserve(tx_map.size() * 32);
+            for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
+                all_txs_hash.append(iter->first);
             }
 
             all_txs_hash = common::Hash::keccak256(all_txs_hash);
-
             ASSERT_TRUE(ltxs->bloom_filter != nullptr);
             auto btxs = wtxs_backup[i].FollowerGetTxs(*ltxs->bloom_filter);
             if (ltxs->txs.size() != btxs->txs.size()) {

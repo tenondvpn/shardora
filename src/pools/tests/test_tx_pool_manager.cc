@@ -89,7 +89,7 @@ TEST_F(TestTxPoolManager, All) {
     msg_ptr->thread_idx = thread_idx;
     tx_pool_mgr.HandleMessage(msg_ptr);
     ASSERT_EQ(tx_pool_mgr.msg_queues_[msg_ptr->address_info->pool_index()].size(), 1);
-    std::vector<pools::TxItemPtr> res_vec;
+    std::map<std::string, pools::TxItemPtr> res_vec;
     tx_pool_mgr.GetTx(10, msg_ptr->address_info->pool_index(), res_vec);
     ASSERT_EQ(res_vec.size(), 1);
 }
@@ -168,7 +168,7 @@ static void TestMultiThread(int32_t thread_count, int32_t leader_count, uint32_t
         while (true) {
             uint32_t tmp_count = 0;
             for (uint32_t i = 0; i < pool_idxs.size(); ++i) {
-                std::vector<pools::TxItemPtr> res_vec;
+                std::map<std::string, pools::TxItemPtr> res_vec;
                 tx_pool_mgr.GetTx(10, pool_idxs[i], res_vec);
                 if (!res_vec.empty()) {
                     tx_pool_mgr.TxOver(pool_idxs[i], res_vec);

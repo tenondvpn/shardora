@@ -38,16 +38,14 @@ struct TxItem {
             step = msg->header.tx_proto().step();
         }
 
-        sgid = common::Hash::keccak256(
+        tx_hash = common::Hash::keccak256(
             msg->header.tx_proto().gid() + std::to_string(step) + msg->msg_hash);
-        tx_hash = sgid;
     }
     
     transport::MessagePtr msg_ptr;
     uint64_t timeout;
     uint64_t remove_timeout;
     uint64_t time_valid{ 0 };
-    std::string sgid;
     uint64_t gas_price{ 0 };
     int32_t step = pools::protobuf::kNormalFrom;
     std::string from_addr;
@@ -76,9 +74,9 @@ public:
     TxItemPtr GetTx(const std::string& sgid);
     void GetTx(
         const common::BloomFilter& bloom_filter,
-        std::vector<TxItemPtr>& res_vec);
-    void TxOver(std::vector<TxItemPtr>& txs);
-    void TxRecover(std::vector<TxItemPtr>& txs);
+        std::map<std::string, TxItemPtr>& res_map);
+    void TxOver(std::map<std::string, TxItemPtr>& txs);
+    void TxRecover(std::map<std::string, TxItemPtr>& txs);
     uint64_t latest_height() const {
         return latest_height_;
     }

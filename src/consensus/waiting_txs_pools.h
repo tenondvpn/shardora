@@ -20,17 +20,15 @@ public:
         auto txs_item = wtxs[pool_index].LeaderGetValidTxs(direct);
         if (txs_item != nullptr) {
             txs_item->pool_index = pool_index;
-            auto& tx_vec = txs_item->txs;
-            uint32_t bitcount = ((kBitcountWithItemCount * tx_vec.size()) / 64) * 64;
-            if (((kBitcountWithItemCount * tx_vec.size()) % 64) > 0) {
+            auto& tx_map = txs_item->txs;
+            uint32_t bitcount = ((kBitcountWithItemCount * tx_map.size()) / 64) * 64;
+            if (((kBitcountWithItemCount * tx_map.size()) % 64) > 0) {
                 bitcount += 64;
             }
 
             txs_item->bloom_filter = std::make_shared<common::BloomFilter>(bitcount, kHashCount);
-            std::set<std::string> txs_hash_vec;
-            for (auto iter = tx_vec.begin(); iter != tx_vec.end(); ++iter) {
-                txs_hash_vec.insert((*iter)->tx_hash);
-                txs_item->bloom_filter->Add(common::Hash::Hash64((*iter)->tx_hash));
+            for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
+                txs_item->bloom_filter->Add(common::Hash::Hash64(iter->first));
             }
 
             // pass by bloomfilter
@@ -38,18 +36,19 @@ public:
             if (error_bloomfilter_txs != nullptr) {
                 for (auto iter = error_bloomfilter_txs->txs.begin();
                         iter != error_bloomfilter_txs->txs.end(); ++iter) {
-                    auto fiter = txs_hash_vec.find((*iter)->tx_hash);
-                    if (fiter == txs_hash_vec.end()) {
-                        txs_hash_vec.insert((*iter)->tx_hash);
-                        tx_vec.push_back(*iter);
+                    auto fiter = tx_map.find(iter->first);
+                    if (fiter != tx_map.end()) {
+                        continue;
                     }
+
+                    tx_map[iter->first] = iter->second;
                 }
             }
 
             auto& all_txs_hash = txs_item->all_txs_hash;
-            all_txs_hash.reserve(tx_vec.size() * 32);
-            for (auto iter = txs_hash_vec.begin(); iter != txs_hash_vec.end(); ++iter) {
-                all_txs_hash.append(*iter);
+            all_txs_hash.reserve(tx_map.size() * 32);
+            for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
+                all_txs_hash.append(iter->first);
             }
 
             all_txs_hash = common::Hash::keccak256(all_txs_hash);

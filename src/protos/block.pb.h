@@ -282,7 +282,7 @@ class StorageItem : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::std::string* release_val_hash();
   void set_allocated_val_hash(::std::string* val_hash);
 
-  // optional uint32 val_size = 3;
+  // optional uint32 val_size = 3 [default = 0];
   bool has_val_size() const;
   void clear_val_size();
   static const int kValSizeFieldNumber = 3;
@@ -818,22 +818,10 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
       mutable_precommit_bitmap();
 
-  // repeated uint64 commit_bitmap = 11;
-  int commit_bitmap_size() const;
-  void clear_commit_bitmap();
-  static const int kCommitBitmapFieldNumber = 11;
-  ::google::protobuf::uint64 commit_bitmap(int index) const;
-  void set_commit_bitmap(int index, ::google::protobuf::uint64 value);
-  void add_commit_bitmap(::google::protobuf::uint64 value);
-  const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
-      commit_bitmap() const;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
-      mutable_commit_bitmap();
-
-  // repeated .zjchain.block.protobuf.BlockTx tx_list = 12;
+  // repeated .zjchain.block.protobuf.BlockTx tx_list = 11;
   int tx_list_size() const;
   void clear_tx_list();
-  static const int kTxListFieldNumber = 12;
+  static const int kTxListFieldNumber = 11;
   ::zjchain::block::protobuf::BlockTx* mutable_tx_list(int index);
   ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::BlockTx >*
       mutable_tx_list();
@@ -872,10 +860,10 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::std::string* release_hash();
   void set_allocated_hash(::std::string* hash);
 
-  // optional bytes bls_agg_sign_x = 14;
+  // optional bytes bls_agg_sign_x = 13;
   bool has_bls_agg_sign_x() const;
   void clear_bls_agg_sign_x();
-  static const int kBlsAggSignXFieldNumber = 14;
+  static const int kBlsAggSignXFieldNumber = 13;
   const ::std::string& bls_agg_sign_x() const;
   void set_bls_agg_sign_x(const ::std::string& value);
   #if LANG_CXX11
@@ -887,10 +875,10 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::std::string* release_bls_agg_sign_x();
   void set_allocated_bls_agg_sign_x(::std::string* bls_agg_sign_x);
 
-  // optional bytes bls_agg_sign_y = 15;
+  // optional bytes bls_agg_sign_y = 14;
   bool has_bls_agg_sign_y() const;
   void clear_bls_agg_sign_y();
-  static const int kBlsAggSignYFieldNumber = 15;
+  static const int kBlsAggSignYFieldNumber = 14;
   const ::std::string& bls_agg_sign_y() const;
   void set_bls_agg_sign_y(const ::std::string& value);
   #if LANG_CXX11
@@ -944,17 +932,17 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::uint64 timeblock_height() const;
   void set_timeblock_height(::google::protobuf::uint64 value);
 
-  // optional uint64 timestamp = 13;
+  // optional uint64 timestamp = 12;
   bool has_timestamp() const;
   void clear_timestamp();
-  static const int kTimestampFieldNumber = 13;
+  static const int kTimestampFieldNumber = 12;
   ::google::protobuf::uint64 timestamp() const;
   void set_timestamp(::google::protobuf::uint64 value);
 
-  // optional uint64 leader_index = 16;
+  // optional uint64 leader_index = 15;
   bool has_leader_index() const;
   void clear_leader_index();
-  static const int kLeaderIndexFieldNumber = 16;
+  static const int kLeaderIndexFieldNumber = 15;
   ::google::protobuf::uint64 leader_index() const;
   void set_leader_index(::google::protobuf::uint64 value);
 
@@ -998,7 +986,6 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > precommit_bitmap_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > commit_bitmap_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::BlockTx > tx_list_;
   ::google::protobuf::internal::ArenaStringPtr prehash_;
   ::google::protobuf::internal::ArenaStringPtr hash_;
@@ -3831,6 +3818,18 @@ class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
 
   // accessors -------------------------------------------------------
 
+  // repeated .zjchain.pools.protobuf.ToTxHeights to_txs = 17;
+  int to_txs_size() const;
+  void clear_to_txs();
+  static const int kToTxsFieldNumber = 17;
+  ::zjchain::pools::protobuf::ToTxHeights* mutable_to_txs(int index);
+  ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ToTxHeights >*
+      mutable_to_txs();
+  const ::zjchain::pools::protobuf::ToTxHeights& to_txs(int index) const;
+  ::zjchain::pools::protobuf::ToTxHeights* add_to_txs();
+  const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ToTxHeights >&
+      to_txs() const;
+
   // optional .zjchain.block.protobuf.GetTxBlockRequest block_req = 1;
   bool has_block_req() const;
   void clear_block_req();
@@ -4061,6 +4060,7 @@ class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ToTxHeights > to_txs_;
   ::zjchain::block::protobuf::GetTxBlockRequest* block_req_;
   ::zjchain::block::protobuf::GetTxBlockResponse* block_res_;
   ::zjchain::block::protobuf::AccountHeightRequest* height_req_;
@@ -4222,7 +4222,7 @@ inline void StorageItem::set_allocated_val_hash(::std::string* val_hash) {
   // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.StorageItem.val_hash)
 }
 
-// optional uint32 val_size = 3;
+// optional uint32 val_size = 3 [default = 0];
 inline bool StorageItem::has_val_size() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -5171,37 +5171,7 @@ Block::mutable_precommit_bitmap() {
   return &precommit_bitmap_;
 }
 
-// repeated uint64 commit_bitmap = 11;
-inline int Block::commit_bitmap_size() const {
-  return commit_bitmap_.size();
-}
-inline void Block::clear_commit_bitmap() {
-  commit_bitmap_.Clear();
-}
-inline ::google::protobuf::uint64 Block::commit_bitmap(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.Block.commit_bitmap)
-  return commit_bitmap_.Get(index);
-}
-inline void Block::set_commit_bitmap(int index, ::google::protobuf::uint64 value) {
-  commit_bitmap_.Set(index, value);
-  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.Block.commit_bitmap)
-}
-inline void Block::add_commit_bitmap(::google::protobuf::uint64 value) {
-  commit_bitmap_.Add(value);
-  // @@protoc_insertion_point(field_add:zjchain.block.protobuf.Block.commit_bitmap)
-}
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
-Block::commit_bitmap() const {
-  // @@protoc_insertion_point(field_list:zjchain.block.protobuf.Block.commit_bitmap)
-  return commit_bitmap_;
-}
-inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
-Block::mutable_commit_bitmap() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.block.protobuf.Block.commit_bitmap)
-  return &commit_bitmap_;
-}
-
-// repeated .zjchain.block.protobuf.BlockTx tx_list = 12;
+// repeated .zjchain.block.protobuf.BlockTx tx_list = 11;
 inline int Block::tx_list_size() const {
   return tx_list_.size();
 }
@@ -5231,7 +5201,7 @@ Block::tx_list() const {
   return tx_list_;
 }
 
-// optional uint64 timestamp = 13;
+// optional uint64 timestamp = 12;
 inline bool Block::has_timestamp() const {
   return (_has_bits_[0] & 0x00000400u) != 0;
 }
@@ -5255,7 +5225,7 @@ inline void Block::set_timestamp(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:zjchain.block.protobuf.Block.timestamp)
 }
 
-// optional bytes bls_agg_sign_x = 14;
+// optional bytes bls_agg_sign_x = 13;
 inline bool Block::has_bls_agg_sign_x() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -5321,7 +5291,7 @@ inline void Block::set_allocated_bls_agg_sign_x(::std::string* bls_agg_sign_x) {
   // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.Block.bls_agg_sign_x)
 }
 
-// optional bytes bls_agg_sign_y = 15;
+// optional bytes bls_agg_sign_y = 14;
 inline bool Block::has_bls_agg_sign_y() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -5387,7 +5357,7 @@ inline void Block::set_allocated_bls_agg_sign_y(::std::string* bls_agg_sign_y) {
   // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.Block.bls_agg_sign_y)
 }
 
-// optional uint64 leader_index = 16;
+// optional uint64 leader_index = 15;
 inline bool Block::has_leader_index() const {
   return (_has_bits_[0] & 0x00000800u) != 0;
 }
@@ -8763,6 +8733,33 @@ inline void BlockMessage::set_allocated_acc_shard_res(::zjchain::block::protobuf
   }
   acc_shard_res_ = acc_shard_res;
   // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.BlockMessage.acc_shard_res)
+}
+
+// repeated .zjchain.pools.protobuf.ToTxHeights to_txs = 17;
+inline int BlockMessage::to_txs_size() const {
+  return to_txs_.size();
+}
+inline ::zjchain::pools::protobuf::ToTxHeights* BlockMessage::mutable_to_txs(int index) {
+  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.BlockMessage.to_txs)
+  return to_txs_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ToTxHeights >*
+BlockMessage::mutable_to_txs() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.block.protobuf.BlockMessage.to_txs)
+  return &to_txs_;
+}
+inline const ::zjchain::pools::protobuf::ToTxHeights& BlockMessage::to_txs(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.BlockMessage.to_txs)
+  return to_txs_.Get(index);
+}
+inline ::zjchain::pools::protobuf::ToTxHeights* BlockMessage::add_to_txs() {
+  // @@protoc_insertion_point(field_add:zjchain.block.protobuf.BlockMessage.to_txs)
+  return to_txs_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ToTxHeights >&
+BlockMessage::to_txs() const {
+  // @@protoc_insertion_point(field_list:zjchain.block.protobuf.BlockMessage.to_txs)
+  return to_txs_;
 }
 
 #ifdef __GNUC__

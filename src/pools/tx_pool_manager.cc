@@ -74,7 +74,7 @@ void TxPoolManager::SaveStorageToDb(const transport::protobuf::Header& msg) {
 void TxPoolManager::GetTx(
         uint32_t pool_index,
         uint32_t count,
-        std::vector<TxItemPtr>& res_vec) {
+        std::map<std::string, TxItemPtr>& res_map) {
     if (count > common::kSingleBlockMaxTransactions) {
         count = common::kSingleBlockMaxTransactions;
     }
@@ -92,8 +92,8 @@ void TxPoolManager::GetTx(
             break;
         }
 
-        res_vec.push_back(tx);
-        if (res_vec.size() >= count) {
+        res_map[tx->tx_hash] = tx;
+        if (res_map.size() >= count) {
             break;
         }
     }
@@ -102,7 +102,7 @@ void TxPoolManager::GetTx(
 void TxPoolManager::GetTx(
         const common::BloomFilter& bloom_filter,
         uint32_t pool_index,
-        std::vector<TxItemPtr>& res_vec) {
+        std::map<std::string, TxItemPtr>& res_map) {
     while (msg_queues_[pool_index].size() > 0) {
         transport::MessagePtr msg_ptr = nullptr;
         msg_queues_[pool_index].pop(&msg_ptr);
@@ -110,7 +110,7 @@ void TxPoolManager::GetTx(
         tx_pool_[pool_index].AddTx(item_ptr);
     }
 
-    tx_pool_[pool_index].GetTx(bloom_filter, res_vec);
+    tx_pool_[pool_index].GetTx(bloom_filter, res_map);
 }
 
 TxItemPtr TxPoolManager::GetTx(uint32_t pool_index, const std::string& sgid) {
@@ -125,12 +125,12 @@ TxItemPtr TxPoolManager::GetTx(uint32_t pool_index, const std::string& sgid) {
     return tx_pool_[pool_index].GetTx(sgid);
 }
 
-void TxPoolManager::TxRecover(uint32_t pool_index, std::vector<TxItemPtr>& recover_txs) {
+void TxPoolManager::TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs) {
     assert(pool_index < common::kInvalidPoolIndex);
     return tx_pool_[pool_index].TxRecover(recover_txs);
 }
 
-void TxPoolManager::TxOver(uint32_t pool_index, std::vector<TxItemPtr>& over_txs) {
+void TxPoolManager::TxOver(uint32_t pool_index, std::map<std::string, TxItemPtr>& over_txs) {
     assert(pool_index < common::kInvalidPoolIndex);
     return tx_pool_[pool_index].TxOver(over_txs);
 }

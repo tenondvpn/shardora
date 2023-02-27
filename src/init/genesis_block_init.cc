@@ -46,7 +46,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
     int res = kInitSuccess;
     std::shared_ptr<pools::TxPoolManager> pools_mgr = nullptr;
     account_mgr_->Init(net_id, 1, db_);
-    block_mgr_->Init(account_mgr_, db_, pools_mgr);
+    block_mgr_->Init(account_mgr_, db_, pools_mgr, "");
     if (net_id == network::kRootCongressNetworkId) {
         common::GlobalInfo::Instance()->set_network_id(network::kRootCongressNetworkId);
         res = CreateRootGenesisBlocks(root_genesis_nodes, cons_genesis_nodes);
@@ -117,10 +117,9 @@ void GenesisBlockInit::DumpLocalPrivateKey(
         return;
     }
 
-    std::string key = protos::kBlsPrivateKeyPrefix +
-        std::to_string(height) + "_" +
-        std::to_string(shard_netid) + "_" + id;
     prefix_db_->SaveBlsPrikey(height, shard_netid, id, enc_data);
+    std::string key = std::to_string(height) + "_" +
+        std::to_string(shard_netid) + "_" + common::Encode::HexEncode(id);
     fputs((common::Encode::HexEncode(key) + "," + common::Encode::HexEncode(enc_data) + "\n").c_str(), fd);
 }
 
@@ -128,14 +127,25 @@ void GenesisBlockInit::ReloadBlsPri() {
     FILE* bls_fd = fopen("./bls_pri", "r");
     assert(bls_fd != nullptr);
     char data[20480];
-    while (fgets(data, 20480, bls_fd) != nullptr)
-    {
+    while (fgets(data, 20480, bls_fd) != nullptr) {
         std::string tmp_data(data, strlen(data) - 1);
         common::Split<> spliter(tmp_data.c_str(), ',', tmp_data.size());
         if (spliter.Count() == 2) {
             std::string key = common::Encode::HexDecode(spliter[0]);
             std::string val = common::Encode::HexDecode(spliter[1]);
-            db_->Put(key, val);
+            common::Split<> keys(key.c_str(), '_', key.size());
+            uint64_t height = 0;
+            uint32_t shard_netid = 0;
+            if (!common::StringUtil::ToUint64(keys[0], &height)) {
+                ZJC_FATAL("invalid bls height!");
+            }
+
+            if (!common::StringUtil::ToUint32(keys[1], &shard_netid)) {
+                ZJC_FATAL("invalid bls height!");
+            }
+
+            std::string id = common::Encode::HexDecode(keys[2]);
+            prefix_db_->SaveBlsPrikey(height, shard_netid, id, val);
         }
     }
 

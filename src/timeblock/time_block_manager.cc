@@ -115,11 +115,10 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tx_info.set_key(kAttrTimerBlock);
     tx_info.set_value(std::to_string(new_time_block_tm) + "_" + std::to_string(0));
     auto tx_ptr = std::make_shared<pools::TxItem>(msg_ptr);
-    if (pools_mgr_->AddTx(common::kRootChainPoolIndex, tx_ptr) != pools::kPoolsSuccess) {
-        TMBLOCK_ERROR("dispatch timeblock tx info failed!");
-        return;
-    }
-
+//     if (pools_mgr_->AddTx(common::kRootChainPoolIndex, tx_ptr) != pools::kPoolsSuccess) {
+//         TMBLOCK_ERROR("dispatch timeblock tx info failed!");
+//         return;
+//     }
     TMBLOCK_INFO("dispatch timeblock tx info success: %lu, vss: %s, real: %s!",
         new_time_block_tm, 0, tx_info.value().c_str());
 }

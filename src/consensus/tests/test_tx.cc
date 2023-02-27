@@ -30,11 +30,12 @@ namespace test {
 static const uint32_t kTestTxCount = 256;
 static std::atomic<uint32_t> tx_index = 0;
 static std::atomic<uint32_t> db_index = 0;
-static std::string random_prefix = common::Random::RandomString(33);
+static std::string random_prefix;
 static const uint32_t kTestShardingId = 3;
 static std::unordered_map<std::string, std::string> addrs_map;
 static std::vector<std::string> prikeys;
 static std::vector<std::string> addrs;
+static std::unordered_map<std::string, std::string> pri_pub_map;
 
 class TestTx : public testing::Test {
 public:
@@ -70,6 +71,7 @@ public:
         log4cpp::PropertyConfigurator::configure(log_conf_path);
         common::GlobalInfo::Instance()->set_network_id(kTestShardingId);
         LoadAllAccounts();
+        random_prefix = common::Random::RandomString(33);
     }
 
     static void LoadAllAccounts() {
@@ -90,11 +92,14 @@ public:
                 break;
             }
 
-            std::string prikey = std::string(split[1], split.SubLen(1) - 1);
-            std::string addr = split[0];
+            std::string prikey = common::Encode::HexDecode(std::string(split[1], split.SubLen(1) - 1));
+            std::string addr = common::Encode::HexDecode(split[0]);
             addrs_map[prikey] = addr;
-            addrs.push_back(common::Encode::HexDecode(addr));
-            prikeys.push_back(common::Encode::HexDecode(prikey));
+            addrs.push_back(addr);
+            prikeys.push_back(prikey);
+            std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+            security->SetPrivateKey(prikey);
+            pri_pub_map[prikey] = security->GetPublicKey();
         }
 
         ASSERT_EQ(prikeys.size(), 256);
@@ -116,7 +121,7 @@ public:
         auto block_mgr = std::make_shared<block::BlockManager>();
         auto bls_mgr = std::make_shared<bls::BlsManager>(security, db_ptr);
         auto pools_mgr = std::make_shared<pools::TxPoolManager>(security);
-        block_mgr->Init(account_mgr, db_ptr, pools_mgr);
+        block_mgr->Init(account_mgr, db_ptr, pools_mgr, security->GetAddress());
         auto elect_mgr = std::make_shared<elect::ElectManager>(block_mgr, security, bls_mgr, db_ptr);
         ASSERT_EQ(elect_mgr->Init(), 0);
         ASSERT_EQ(bft_mgr.Init(
@@ -128,6 +133,7 @@ public:
             nullptr,
             1), kConsensusSuccess);
         ASSERT_EQ(bft_mgr.OnNewElectBlock(0, 1), kConsensusSuccess);
+        common::GlobalInfo::Instance()->set_network_id(kTestShardingId);
     }
 
     void AddTxs(
@@ -135,12 +141,13 @@ public:
             const pools::protobuf::TxMessage& tx_info) {
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto from_addr = bft_mgr.security_ptr_->GetAddress(tx_info.pubkey());
-        auto account_info = bft_mgr.account_mgr_->GetAcountInfo(0, from_addr);
+        msg_ptr->address_info = bft_mgr.account_mgr_->GetAcountInfo(0, from_addr);
+        ASSERT_TRUE(msg_ptr->address_info->balance() > 0);
         *msg_ptr->header.mutable_tx_proto() = tx_info;
         auto tx_ptr = std::make_shared<pools::TxItem>(msg_ptr);
         tx_ptr->tx_hash = pools::GetTxMessageHash(tx_info);
-        ASSERT_EQ(bft_mgr.pools_mgr_->AddTx(account_info->pool_index(), tx_ptr), pools::kPoolsSuccess);
-        ASSERT_TRUE(bft_mgr.pools_mgr_->tx_pool_[account_info->pool_index()].added_tx_map_.size() > 0);
+        ASSERT_EQ(bft_mgr.pools_mgr_->AddTx(msg_ptr->address_info->pool_index(), tx_ptr), pools::kPoolsSuccess);
+        ASSERT_TRUE(bft_mgr.pools_mgr_->tx_pool_[msg_ptr->address_info->pool_index()].added_tx_map_.size() > 0);
     }
 
     void CreateTxInfo(
@@ -150,9 +157,7 @@ public:
         tx_info.set_step(pools::protobuf::kNormalFrom);
         uint32_t* test_arr = (uint32_t*)random_prefix.data();
         test_arr[0] = tx_index++;
-        std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
-        security->SetPrivateKey(from_prikey);
-        tx_info.set_pubkey(security->GetPublicKey());
+        tx_info.set_pubkey(pri_pub_map[from_prikey]);
         tx_info.set_to(to);
         auto gid = std::string((char*)test_arr, 32);
         tx_info.set_gid(gid);
@@ -175,13 +180,13 @@ public:
 TEST_F(TestTx, TestTx) {
     BftManager leader_bft_mgr;
     InitConsensus(leader_bft_mgr, common::Encode::HexDecode(
-        "67dfdd4d49509691369225e9059934675dea440d123aa8514441aa6788354016"));
+        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"));
     BftManager backup_bft_mgr0;
     InitConsensus(backup_bft_mgr0, common::Encode::HexDecode(
-        "356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe"));
+        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"));
     BftManager backup_bft_mgr1;
     InitConsensus(backup_bft_mgr1, common::Encode::HexDecode(
-        "a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee"));
+        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
     pools::protobuf::TxMessage tx_info;
     CreateTxInfo(
         common::Encode::HexDecode("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"),
@@ -219,14 +224,14 @@ TEST_F(TestTx, TestTx) {
 TEST_F(TestTx, TestMoreTx) {
     BftManager leader_bft_mgr;
     InitConsensus(leader_bft_mgr, common::Encode::HexDecode(
-        "67dfdd4d49509691369225e9059934675dea440d123aa8514441aa6788354016"));
+        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"));
     BftManager backup_bft_mgr0;
     InitConsensus(backup_bft_mgr0, common::Encode::HexDecode(
-        "356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe"));
+        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"));
     BftManager backup_bft_mgr1;
     InitConsensus(backup_bft_mgr1, common::Encode::HexDecode(
-        "a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee"));
-    for (uint32_t i = 0; i < 100; ++i) {
+        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
+    for (uint32_t i = 0; i < 10000; ++i) {
         pools::protobuf::TxMessage tx_info;
         CreateTxInfo(
             prikeys[i % prikeys.size()],
@@ -237,6 +242,17 @@ TEST_F(TestTx, TestMoreTx) {
         AddTxs(backup_bft_mgr1, tx_info);
     }
 
+    volatile bool over = false;
+    auto leader_block_thread = [&]() {
+        while (!over) {
+            leader_bft_mgr.block_mgr_->HandleAllConsensusBlocks();
+            backup_bft_mgr0.block_mgr_->HandleAllConsensusBlocks();
+            backup_bft_mgr1.block_mgr_->HandleAllConsensusBlocks();
+            usleep(100000);
+        }
+    };
+
+    auto block_thread = std::thread(leader_block_thread);
     while (true) {
         leader_bft_mgr.Start(0);
         if (leader_bft_mgr.leader_prepare_msg_ == nullptr) {
@@ -270,19 +286,22 @@ TEST_F(TestTx, TestMoreTx) {
         backup_bft_mgr0.ResetTest();
         backup_bft_mgr1.ResetTest();
     }
+
+    over = true;
+    block_thread.join();
 };
 
 TEST_F(TestTx, TestTxOnePrepareEvil) {
     pools::protobuf::TxMessage tx_info;
     BftManager leader_bft_mgr;
     InitConsensus(leader_bft_mgr, common::Encode::HexDecode(
-        "67dfdd4d49509691369225e9059934675dea440d123aa8514441aa6788354016"));
+        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"));
     BftManager backup_bft_mgr0;
     InitConsensus(backup_bft_mgr0, common::Encode::HexDecode(
-        "356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe"));
+        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"));
     BftManager backup_bft_mgr1;
     InitConsensus(backup_bft_mgr1, common::Encode::HexDecode(
-        "a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee"));
+        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
     CreateTxInfo(
         common::Encode::HexDecode("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"),
         common::Encode::HexDecode("e70c72fcdb57df6844e4c44cd9f02435b628398c"),
@@ -317,13 +336,13 @@ TEST_F(TestTx, TestTxOnePrecommitEvil) {
     pools::protobuf::TxMessage tx_info;
     BftManager leader_bft_mgr;
     InitConsensus(leader_bft_mgr, common::Encode::HexDecode(
-        "67dfdd4d49509691369225e9059934675dea440d123aa8514441aa6788354016"));
+        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"));
     BftManager backup_bft_mgr0;
     InitConsensus(backup_bft_mgr0, common::Encode::HexDecode(
-        "356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe"));
+        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"));
     BftManager backup_bft_mgr1;
     InitConsensus(backup_bft_mgr1, common::Encode::HexDecode(
-        "a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee"));
+        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
     CreateTxInfo(
         common::Encode::HexDecode("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"),
         common::Encode::HexDecode("e70c72fcdb57df6844e4c44cd9f02435b628398c"),
@@ -360,13 +379,13 @@ TEST_F(TestTx, TestTxTwoPrepareEvil) {
     pools::protobuf::TxMessage tx_info;
     BftManager leader_bft_mgr;
     InitConsensus(leader_bft_mgr, common::Encode::HexDecode(
-        "67dfdd4d49509691369225e9059934675dea440d123aa8514441aa6788354016"));
+        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"));
     BftManager backup_bft_mgr0;
     InitConsensus(backup_bft_mgr0, common::Encode::HexDecode(
-        "356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe"));
+        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"));
     BftManager backup_bft_mgr1;
     InitConsensus(backup_bft_mgr1, common::Encode::HexDecode(
-        "a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee"));
+        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
     CreateTxInfo(
         common::Encode::HexDecode("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"),
         common::Encode::HexDecode("e70c72fcdb57df6844e4c44cd9f02435b628398c"),

@@ -26,10 +26,12 @@ BlockManager::~BlockManager() {
 int BlockManager::Init(
         std::shared_ptr<AccountManager>& account_mgr,
         std::shared_ptr<db::Db>& db,
-        std::shared_ptr<pools::TxPoolManager>& pools_mgr) {
+        std::shared_ptr<pools::TxPoolManager>& pools_mgr,
+        const std::string& local_id) {
     account_mgr_ = account_mgr;
     db_ = db;
     pools_mgr_ = pools_mgr;
+    local_id_ = local_id;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(db_);
     consensus_block_queues_ = new common::ThreadSafeQueue<BlockToDbItemPtr>[
@@ -85,6 +87,9 @@ void BlockManager::AddAllAccount(
     uint32_t consistent_pool_index = common::kInvalidPoolIndex;
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         auto account_info = account_mgr_->GetAcountInfo(block_item, tx_list[i]);
+        ZJC_DEBUG("add new account %s : %lu",
+            common::Encode::HexEncode(account_info->addr()).c_str(),
+            account_info->balance());
         prefix_db_->AddAddressInfo(account_info->addr(), *account_info, db_batch);
     }
 }
@@ -110,6 +115,59 @@ int BlockManager::GetBlockWithHeight(
     }
 
     return kBlockSuccess;
+}
+
+void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
+    for (int32_t i = 0; i <= msg_ptr->header.block_proto().to_txs_size(); ++i) {
+        auto heights = msg_ptr->header.block_proto().to_txs(i);
+        pools::protobuf::TxMessage tx;
+        if (to_txs_pool_->BackupCreateToTx(heights.sharding_id(), heights, &tx) != pools::kPoolsSuccess) {
+            continue;
+        }
+
+        // add tx to tx pool
+    }
+}
+
+void BlockManager::CreateToTx() {
+    // check this node is leader
+    if (local_id_ != leader_->id) {
+        return;
+    }
+
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    if (prev_create_to_tx_ms_ >= now_tm_ms) {
+        return;
+    }
+
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& block_msg = *msg_ptr->header.mutable_block_proto();
+    for (uint32_t i = network::kRootCongressNetworkId;
+            i <= max_consensus_sharding_id_; ++i) {
+        pools::protobuf::TxMessage tx;
+        if (to_txs_pool_->LeaderCreateToTx(i, &tx) != pools::kPoolsSuccess) {
+            continue;
+        }
+
+        if (tx.value().empty()) {
+            continue;
+        }
+
+        pools::protobuf::ToTxHeights& to_heights = *block_msg.add_to_txs();
+        if (!to_heights.ParseFromString(tx.value())) {
+            continue;
+        }
+    }
+    
+    prev_create_to_tx_ms_ = now_tm_ms + kCreateToTxPeriodMs;
+    // send to other nodes
+    auto& broadcast = *msg_ptr->header.mutable_broadcast();
+    broadcast.set_hop_limit(10);
+#ifndef ZJC_UNITTEST
+    network::Route::Instance()->Send(msg_ptr);
+#else
+    // for test
+#endif
 }
 
 }  // namespace block

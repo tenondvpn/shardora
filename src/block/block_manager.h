@@ -4,6 +4,7 @@
 
 #include "block/block_utils.h"
 #include "common/config.h"
+#include "common/node_members.h"
 #include "common/thread_safe_queue.h"
 #include "db/db.h"
 #include "pools/tx_pool_manager.h"
@@ -12,6 +13,7 @@
 #include "protos/hotstuff.pb.h"
 #include "protos/prefix_db.h"
 #include "protos/transport.pb.h"
+#include "security/security.h"
 #include "transport/transport_utils.h"
 
 namespace zjchain {
@@ -26,7 +28,8 @@ public:
     int Init(
         std::shared_ptr<AccountManager>& account_mgr,
         std::shared_ptr<db::Db>& db,
-        std::shared_ptr<pools::TxPoolManager>& pools_mgr);
+        std::shared_ptr<pools::TxPoolManager>& pools_mgr,
+        const std::string& local_id);
     void NetworkNewBlock(const std::shared_ptr<block::protobuf::Block>& block_item);
     void ConsensusAddBlock(
         uint8_t thread_idx,
@@ -36,16 +39,27 @@ public:
         uint32_t pool_index,
         uint64_t height,
         block::protobuf::Block& block_item);
+    void SetToTxLeader(common::BftMemberPtr& leader) {
+        leader_ = leader;
+    }
+
+    void SetMaxConsensusShardingId(uint32_t sharding_id) {
+        max_consensus_sharding_id_ = sharding_id;
+    }
 
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
-    void HandleAllConsensusBlocks();
+    void HandleToTxsMessage(const transport::MessagePtr& msg_ptr);
+        void HandleAllConsensusBlocks();
     void AddNewBlock(
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBach& db_batch);
     void AddAllAccount(
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBach& db_batch);
+    void CreateToTx();
+
+    static const uint64_t kCreateToTxPeriodMs = 10000u;
 
     std::shared_ptr<AccountManager> account_mgr_ = nullptr;
     common::ThreadSafeQueue<BlockToDbItemPtr>* consensus_block_queues_ = nullptr;
@@ -53,6 +67,10 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<pools::ToTxsPools> to_txs_pool_ = nullptr;
+    uint64_t prev_create_to_tx_ms_ = 0;
+    common::BftMemberPtr leader_ = nullptr;
+    uint32_t max_consensus_sharding_id_ = 3;
+    std::string local_id_;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

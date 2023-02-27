@@ -12,7 +12,7 @@ namespace consensus {
 struct WaitingTxsItem {
     WaitingTxsItem() : bloom_filter(nullptr), max_txs_hash_count(0) {}
     std::string all_txs_hash;
-    std::vector<pools::TxItemPtr> txs;
+    std::map<std::string, pools::TxItemPtr> txs;
     std::shared_ptr<common::BloomFilter> bloom_filter;
     std::unordered_map<std::string, uint32_t> all_hash_count;
     std::string max_txs_hash;
@@ -40,20 +40,11 @@ public:
     }
 
     std::shared_ptr<WaitingTxsItem> FollowerGetTxs(const common::BloomFilter& bloom_filter) {
-        if (txs_items_ != nullptr) {
-            pools_mgr_->TxRecover(pool_index_, txs_items_->txs);
-        }
-
         txs_items_ = std::make_shared<WaitingTxsItem>();
         pools_mgr_->GetTx(bloom_filter, pool_index_, txs_items_->txs);
-        std::set<std::string> txs_hash_vec;
-        for (auto iter = txs_items_->txs.begin(); iter != txs_items_->txs.end(); ++iter) {
-            txs_hash_vec.insert((*iter)->tx_hash);
-        }
-
         auto& all_txs_hash = txs_items_->all_txs_hash;
-        for (auto iter = txs_hash_vec.begin(); iter != txs_hash_vec.end(); ++iter) {
-            all_txs_hash.append(*iter);
+        for (auto iter = txs_items_->txs.begin(); iter != txs_items_->txs.end(); ++iter) {
+            all_txs_hash.append(iter->first);
         }
 
         all_txs_hash = common::Hash::keccak256(all_txs_hash);
@@ -66,11 +57,6 @@ public:
 
 private:
     std::shared_ptr<WaitingTxsItem> DirectGetValidTxs() {
-        if (txs_items_ != nullptr) {
-            pools_mgr_->TxRecover(pool_index_, txs_items_->txs);
-            txs_items_ = nullptr;
-        }
-
         auto tx_items_ptr = std::make_shared<WaitingTxsItem>();
         auto& tx_vec = tx_items_ptr->txs;
         pools_mgr_->GetTx(pool_index_, kMaxTxCount, tx_vec);
@@ -82,13 +68,9 @@ private:
     }
 
     std::shared_ptr<WaitingTxsItem> LeaderGetTxs() {
-        if (txs_items_ != nullptr) {
-            pools_mgr_->TxRecover(pool_index_, txs_items_->txs);
-        }
-
         txs_items_ = std::make_shared<WaitingTxsItem>();
         auto& tx_vec = txs_items_->txs;
-        if (pool_index_ == network::kRootCongressNetworkId) {
+        if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
             pools_mgr_->GetTx(pool_index_, 1, tx_vec);
         } else {
             pools_mgr_->GetTx(pool_index_, kMaxTxCount, tx_vec);

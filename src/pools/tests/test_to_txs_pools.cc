@@ -112,7 +112,9 @@ TEST_F(TestToTxsPools, All) {
         pools::protobuf::TxMessage tx;
         ASSERT_EQ(to_txs_pool.LeaderCreateToTx(i, &tx), kPoolsSuccess);
         pools::protobuf::TxMessage btx;
-        ASSERT_EQ(to_txs_pool.BackupCreateToTx(i, tx, &btx), kPoolsSuccess);
+        pools::protobuf::ToTxHeights lhs;
+        ASSERT_TRUE(lhs.ParseFromString(tx.value()));
+        ASSERT_EQ(to_txs_pool.BackupCreateToTx(i, lhs, &btx), kPoolsSuccess);
         ASSERT_TRUE(!tx.value().empty());
         ASSERT_EQ(tx.value(), btx.value());
     }

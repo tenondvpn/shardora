@@ -223,20 +223,11 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::TxMessag
 
 int ToTxsPools::BackupCreateToTx(
         uint32_t sharding_id,
-        const pools::protobuf::TxMessage& leader_tx,
+        const pools::protobuf::ToTxHeights& leader_to_heights,
         pools::protobuf::TxMessage* tx) {
     pools::protobuf::ToTxMessage to_tx;
     auto net_iter = network_txs_pools_.find(sharding_id);
     if (net_iter == network_txs_pools_.end()) {
-        return kPoolsError;
-    }
-
-    pools::protobuf::ToTxHeights leader_to_heights;
-    if (leader_tx.value().empty()) {
-        return kPoolsError;
-    }
-
-    if (!leader_to_heights.ParseFromString(leader_tx.value())) {
         return kPoolsError;
     }
 

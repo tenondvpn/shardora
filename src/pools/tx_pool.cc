@@ -22,12 +22,12 @@ void TxPool::Init(uint32_t pool_idx) {
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
     assert(tx_ptr != nullptr);
-    auto iter = added_tx_map_.find(tx_ptr->sgid);
+    auto iter = added_tx_map_.find(tx_ptr->tx_hash);
     if (iter != added_tx_map_.end()) {
         return kPoolsTxAdded;
     }
 
-    added_tx_map_.insert(std::make_pair(tx_ptr->sgid, tx_ptr));
+    added_tx_map_.insert(std::make_pair(tx_ptr->tx_hash, tx_ptr));
     mem_queue_.push(tx_ptr);
     return kPoolsSuccess;
 }
@@ -40,6 +40,11 @@ TxItemPtr TxPool::GetTx() {
         auto item = mem_queue_.top();
         mem_queue_.pop();
         if (CheckTimeoutTx(item, timestamp_now)) {
+            continue;
+        }
+
+        auto exist_iter = added_tx_map_.find(item->tx_hash);
+        if (exist_iter == added_tx_map_.end()) {
             continue;
         }
 
@@ -65,7 +70,7 @@ bool TxPool::CheckTimeoutTx(TxItemPtr& tx_ptr, uint64_t timestamp_now) {
 
     while (!timeout_txs_.empty()) {
         auto& item = timeout_txs_.front();
-        auto miter = added_tx_map_.find(item->sgid);
+        auto miter = added_tx_map_.find(item->tx_hash);
         if (miter == added_tx_map_.end()) {
             timeout_txs_.pop_front();
             continue;
@@ -87,8 +92,8 @@ bool TxPool::CheckTimeoutTx(TxItemPtr& tx_ptr, uint64_t timestamp_now) {
     return true;
 }
 
-TxItemPtr TxPool::GetTx(const std::string& sgid) {
-    auto iter = added_tx_map_.find(sgid);
+TxItemPtr TxPool::GetTx(const std::string& tx_hash) {
+    auto iter = added_tx_map_.find(tx_hash);
     if (iter != added_tx_map_.end()) {
         return iter->second;
     }
@@ -98,26 +103,26 @@ TxItemPtr TxPool::GetTx(const std::string& sgid) {
 
 void TxPool::GetTx(
         const common::BloomFilter& bloom_filter,
-        std::vector<TxItemPtr>& res_vec) {
+        std::map<std::string, TxItemPtr>& res_map) {
     for (auto iter = added_tx_map_.begin(); iter != added_tx_map_.end(); ++iter) {
         if (bloom_filter.Contain(common::Hash::Hash64(iter->second->tx_hash))) {
-            res_vec.push_back(iter->second);
+            res_map[iter->second->tx_hash] = iter->second;
         }
     }
 }
 
-void TxPool::TxRecover(std::vector<TxItemPtr>& txs) {
+void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
-        auto miter = added_tx_map_.find((*iter)->sgid);
+        auto miter = added_tx_map_.find(iter->first);
         if (miter != added_tx_map_.end()) {
             mem_queue_.push(miter->second);
         }
     }
 }
 
-void TxPool::TxOver(std::vector<TxItemPtr>& txs) {
+void TxPool::TxOver(std::map<std::string, TxItemPtr>& txs) {
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
-        auto miter = added_tx_map_.find((*iter)->sgid);
+        auto miter = added_tx_map_.find(iter->first);
         if (miter != added_tx_map_.end()) {
             added_tx_map_.erase(miter);
         }

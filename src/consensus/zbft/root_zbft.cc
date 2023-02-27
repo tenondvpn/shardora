@@ -46,10 +46,10 @@ void RootZbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) 
 
 void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) {
     auto tx_list = zjc_block.mutable_tx_list();
-    auto& tx_vec = txs_ptr_->txs;
-    for (uint32_t i = 0; i < tx_vec.size(); ++i) {
+    auto& tx_map = txs_ptr_->txs;
+    for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto& tx = *tx_list->Add();
-        TxToBlockTx(tx_vec[i]->msg_ptr->header.tx_proto(), &tx);
+        TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), &tx);
         tx.set_status(kBftSuccess);
         // create address must to and have transfer amount
         if (tx.step() != pools::protobuf::kNormalTo || tx.amount() <= 0) {
@@ -94,19 +94,20 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
 }
 
 void RootZbft::RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_block) {
-    auto& tx_vec = txs_ptr_->txs;
-    if (tx_vec.size() != 1) {
+    auto& tx_map = txs_ptr_->txs;
+    if (tx_map.size() != 1) {
         return;
     }
 
-    if (tx_vec[0]->msg_ptr->header.tx_proto().step() != pools::protobuf::kConsensusRootElectShard) {
+    auto iter = tx_map.begin();
+    if (iter->second->msg_ptr->header.tx_proto().step() != pools::protobuf::kConsensusRootElectShard) {
         assert(false);
         return;
     }
 
     auto tx_list = zjc_block.mutable_tx_list();
     auto& tx = *tx_list->Add();
-    TxToBlockTx(tx_vec[0]->msg_ptr->header.tx_proto(), &tx);
+    TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), &tx);
     // use new node status
 //     if (elect_mgr_->GetElectionTxInfo(tx) != elect::kElectSuccess) {
 //         assert(false);
@@ -121,8 +122,13 @@ void RootZbft::RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_bl
 
 void RootZbft::RootCreateTimerBlock(block::protobuf::Block& zjc_block) {
     // create address must to and have transfer amount
-    auto& tx_vec = txs_ptr_->txs;
-    if (tx_vec[0]->msg_ptr->header.tx_proto().step() != pools::protobuf::kConsensusRootTimeBlock) {
+    auto& tx_map = txs_ptr_->txs;
+    if (tx_map.size() != 1) {
+        return;
+    }
+
+    auto iter = tx_map.begin();
+    if (iter->second->msg_ptr->header.tx_proto().step() != pools::protobuf::kConsensusRootTimeBlock) {
         ZJC_ERROR("tx is not timeblock tx");
         return;
     }
@@ -143,8 +149,13 @@ void RootZbft::RootCreateTimerBlock(block::protobuf::Block& zjc_block) {
 void RootZbft::RootCreateFinalStatistic(block::protobuf::Block& zjc_block) {
     auto tx_list = zjc_block.mutable_tx_list();
     auto& tx = *tx_list->Add();
-    auto& tx_vec = txs_ptr_->txs;
-    auto& src_tx = tx_vec[0]->msg_ptr->header.tx_proto();
+    auto& tx_map = txs_ptr_->txs;
+    if (tx_map.size() != 1) {
+        return;
+    }
+
+    auto iter = tx_map.begin();
+    auto& src_tx = iter->second->msg_ptr->header.tx_proto();
     TxToBlockTx(src_tx, &tx);
     tx.set_amount(0);
     tx.set_gas_limit(0);
@@ -187,8 +198,8 @@ int RootZbft::RootBackupCheckPrepare(
 //         tx_vec.push_back(local_tx_info);
 //     }
 
-    auto& tx_vec = txs_ptr_->txs;
-    if (tx_vec.empty()) {
+    auto& tx_map = txs_ptr_->txs;
+    if (tx_map.empty()) {
         return kBftInvalidPackage;
     }
 

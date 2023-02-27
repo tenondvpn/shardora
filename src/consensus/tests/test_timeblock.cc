@@ -81,7 +81,7 @@ public:
         auto block_mgr = std::make_shared<block::BlockManager>();
         auto bls_mgr = std::make_shared<bls::BlsManager>(security, db_ptr);
         auto pools_mgr = std::make_shared<pools::TxPoolManager>(security);
-        block_mgr->Init(account_mgr, db_ptr, pools_mgr);
+        block_mgr->Init(account_mgr, db_ptr, pools_mgr, security->GetAddress());
         auto elect_mgr = std::make_shared<elect::ElectManager>(block_mgr, security, bls_mgr, db_ptr);
         ASSERT_EQ(elect_mgr->Init(), 0);
         auto msg_ptr = std::make_shared<transport::TransportMessage>();

@@ -21,25 +21,17 @@ class TxPoolManager {
 public:
     TxPoolManager(std::shared_ptr<security::Security>& security);
     ~TxPoolManager();
-    int AddTx(uint32_t pool_index, TxItemPtr& tx_ptr) {
-        if (pool_index >= common::kInvalidPoolIndex) {
-            return kPoolsError;
-        }
-
-        return tx_pool_[pool_index].AddTx(tx_ptr);
-    }
-
     void GetTx(
         uint32_t pool_index,
         uint32_t count,
-        std::vector<TxItemPtr>& res_vec);
+        std::map<std::string, TxItemPtr>& res_map);
     void GetTx(
         const common::BloomFilter& bloom_filter,
         uint32_t pool_index,
-        std::vector<TxItemPtr>& res_vec);
+        std::map<std::string, TxItemPtr>& res_map);
     TxItemPtr GetTx(uint32_t pool_index, const std::string& sgid);
-    void TxOver(uint32_t pool_index, std::vector<TxItemPtr>& over_txs);
-    void TxRecover(uint32_t pool_index, std::vector<TxItemPtr>& recover_txs);
+    void TxOver(uint32_t pool_index, std::map<std::string, TxItemPtr>& over_txs);
+    void TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs);
     void SetTimeout(uint32_t pool_index) {}
     uint64_t latest_height(uint32_t pool_index) const {
         return tx_pool_[pool_index].latest_height();
@@ -50,6 +42,15 @@ public:
     }
 
 private:
+    // just for test
+    int AddTx(uint32_t pool_index, TxItemPtr& tx_ptr) {
+        if (pool_index >= common::kInvalidPoolIndex) {
+            return kPoolsError;
+        }
+
+        return tx_pool_[pool_index].AddTx(tx_ptr);
+    }
+
     void HandleMessage(const transport::MessagePtr& msg);
     void SaveStorageToDb(const transport::protobuf::Header& msg);
 

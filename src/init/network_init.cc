@@ -126,7 +126,7 @@ int NetworkInit::Init(int argc, char** argv) {
         common::GlobalInfo::Instance()->message_handler_thread_count(),
         db_);
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(security_);
-    block_mgr_->Init(account_mgr_, db_, pools_mgr_);
+    block_mgr_->Init(account_mgr_, db_, pools_mgr_, security_->GetAddress());
     tmblock::TimeBlockManager::Instance()->Init(pools_mgr_, db_);
     if (InitHttpServer() != kInitSuccess) {
         INIT_ERROR("InitHttpServer failed!");
@@ -537,6 +537,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
     }
 
     if (parser_arg.Has("S")) {
+        ZJC_DEBUG("save shard db: shard_db");
         db_ = std::make_shared<db::Db>();
         if (!db_->Init("./shard_db")) {
             INIT_ERROR("init db failed!");
