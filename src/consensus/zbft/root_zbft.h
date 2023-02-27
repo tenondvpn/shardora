@@ -1,0 +1,34 @@
+#pragma once
+
+#include "consensus/zbft/zbft.h"
+
+namespace zjchain {
+
+namespace consensus {
+
+class RootZbft : public Zbft {
+public:
+    RootZbft(
+        std::shared_ptr<block::AccountManager>& account_mgr,
+        std::shared_ptr<security::Security>& security_ptr,
+        std::shared_ptr<bls::BlsManager>& bls_mgr, 
+        std::shared_ptr<WaitingTxsItem>& tx_ptr,
+        std::shared_ptr<pools::TxPoolManager>& pools_mgr);
+    virtual ~RootZbft();
+    virtual int Prepare(bool leader, transport::MessagePtr& msg_ptr);
+    virtual void DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block);
+    void RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block);
+    void RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_block);
+    void RootCreateTimerBlock(block::protobuf::Block& zjc_block);
+    void RootCreateFinalStatistic(block::protobuf::Block& zjc_block);
+    int RootBackupCheckPrepare(
+        const transport::MessagePtr& msg_ptr,
+        int32_t* invalid_tx_idx,
+        std::string* prepare);
+
+    DISALLOW_COPY_AND_ASSIGN(RootZbft);
+};
+
+};  // namespace consensus
+
+};  // namespace zjchain

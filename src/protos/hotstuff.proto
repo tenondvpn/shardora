@@ -1,0 +1,82 @@
+syntax = "proto2";
+
+package zjchain.hotstuff.protobuf;
+import "protos/block.proto";
+
+message HotstuffPrepareTransactionInfo {
+    optional bytes gid = 1;
+    optional bytes address = 2;
+    optional uint64 balance = 3;
+}
+
+message HotstuffLeaderPrepare {
+    repeated HotstuffPrepareTransactionInfo prepare_txs = 1;
+    optional bytes prepare_final_hash = 2;
+    optional uint64 height = 3;
+}
+
+message TxPrepareItem {
+    optional bytes acc_addr = 1;
+    optional bytes gid = 2;
+}
+
+message LeaderTxPrepare {
+    optional block.protobuf.Block block = 1;
+    optional HotstuffLeaderPrepare prepare = 2;
+    repeated uint64 bloom_filter = 3;
+    repeated bytes tx_hash_list = 4;
+}
+
+message BackupTxPrepare {
+    optional int32 status = 1;
+}
+
+message LeaderTxPreCommit {
+    optional int32 status = 1;
+}
+
+message BackupTxPreCommit {
+    optional int32 status = 1;
+}
+
+message LeaderTxCommit {
+    optional int32 status = 1;
+    optional uint64 latest_hegight = 2;
+}
+
+message ToAccountTx {
+    optional block.protobuf.Block block = 1;
+}
+
+message TxBft {
+    optional ToAccountTx to_tx = 1;
+    // TBFT protocal 
+    optional LeaderTxPrepare ltx_prepare = 2;
+    optional BackupTxPrepare btx_prepare = 3;
+    optional LeaderTxPreCommit ltx_precommit = 4;
+    optional BackupTxPreCommit btx_precommit = 5;
+    optional LeaderTxCommit ltx_commit = 6;
+}
+
+message HotstuffMessage {
+    optional bytes gid = 1;
+    optional int32 bft_step = 2;
+    optional bool leader = 3;
+    optional uint32 net_id = 4;
+    repeated uint64 bitmap = 5;
+    optional bool agree = 6;
+    optional uint32 pool_index = 7;
+    optional int32 error = 8;
+    optional TxBft tx_bft = 9;
+    optional bytes prepare_hash = 10;
+    optional bytes node_ip = 11;
+    optional uint32 node_port = 12;
+    optional uint32 epoch = 13;
+    optional uint32 member_index = 14;
+    optional bytes pubkey = 15;
+    optional bytes backup_enc_data = 16;
+    optional uint64 elect_height = 17;
+    optional bytes bls_sign_x = 18;
+    optional bytes bls_sign_y = 19;
+    repeated uint64 commit_bitmap = 20;
+}

@@ -1,0 +1,30 @@
+syntax = "proto2";
+
+package zjchain.network.protobuf;
+
+message GetNetworkNodesRequest {
+    optional uint32 net_id = 1;
+    optional uint32 count = 2;
+}
+
+message NodeInfo {
+    optional int32 sharding_id = 1;
+    optional bytes public_ip = 2;
+    optional int32 public_port = 3;
+    optional bytes pubkey = 4;
+}
+
+message GetNetworkNodesResponse {
+    repeated NodeInfo nodes = 1;
+}
+
+message DropNodeRequest {
+    optional bytes ip = 1;
+    optional int32 port = 2;
+}
+
+message NetworkMessage {
+    optional GetNetworkNodesRequest get_net_nodes_req = 1;
+    optional GetNetworkNodesResponse get_net_nodes_res = 2;
+    optional DropNodeRequest drop_node = 3;
+}

@@ -1,0 +1,22 @@
+syntax = "proto2";
+
+package zjchain.address.protobuf;
+
+enum AddressType {
+    kNormal = 0;
+    kContract = 1;
+    kRootElect = 2;
+    kRootTimer = 3;
+    kStatistic = 4;
+}
+
+message AddressInfo {
+    optional bytes pubkey = 1;
+    optional uint64 balance = 2;
+    optional uint32 sharding_id = 3;
+    optional uint32 pool_index = 4;
+    optional bytes addr = 5;
+    optional AddressType type = 6;
+    optional bytes bytes_code = 7;
+    optional uint64 latest_height = 8;
+}

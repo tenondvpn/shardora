@@ -1,0 +1,104 @@
+syntax = "proto2";
+
+package zjchain.elect.protobuf;
+
+message BlsPublicKey {
+    optional bytes x_c0 = 1;
+    optional bytes x_c1 = 2;
+    optional bytes y_c0 = 3;
+    optional bytes y_c1 = 4;
+    optional int32 pool_idx_mod_num = 5;
+}
+
+message member {
+    optional bytes id = 1;
+    optional bytes pubkey = 2;
+    optional bytes sign = 3;
+    optional uint32 country = 4;
+    optional bytes dht_key = 5;
+    optional int32 nat_type = 6;
+    optional uint32 public_ip = 7;
+    optional uint32 public_port = 8;
+    optional bytes local_ip = 9;
+    optional uint32 local_port = 10;
+    optional int32 pool_idx_mod_num = 11;
+}
+
+message PrevMembers {
+    repeated BlsPublicKey bls_pubkey = 1;
+    optional uint64 prev_elect_height = 2;
+    optional BlsPublicKey common_pubkey = 3;
+}
+
+message ElectBlock {
+    repeated member in = 1;
+    optional bytes acc_pubkey = 2;
+    optional bytes acc_sign = 3;
+    optional uint32 shard_network_id = 4;
+    optional PrevMembers prev_members = 5;
+    repeated bytes weedout_ids = 6;
+    optional uint64 elect_height = 7;
+}
+
+message ElectStatisticInfo {
+    optional uint64 elect_height = 1;
+    repeated uint32 succ_tx_count = 2;
+    repeated uint32 lof_leaders = 3;
+}
+
+message StatisticInfo {
+    optional uint64 timeblock_height = 1;
+    optional uint32 all_tx_count = 2;
+    repeated ElectStatisticInfo elect_statistic = 3;
+}
+
+message WaitingNodesMessage {
+    repeated uint64 nodes_filter = 1;
+    optional uint32 waiting_shard_id = 2;
+    optional bytes stoke_hash = 3;
+}
+
+message WaitingNodeHeartbeat {
+    optional bytes public_ip = 1;
+    optional uint32 public_port = 2;
+    optional uint32 network_id = 3;
+    optional uint64 timestamp_sec = 4;
+}
+
+message LeaderRotationMessage {
+    optional bytes leader_id = 1;
+    optional uint32 pool_mod_num = 2;
+}
+
+message SyncNodeStokeItem {
+    optional bytes id = 1;
+    optional uint64 synced_tm_height = 2;
+}
+
+message SyncNodeStokeRequest {
+    repeated SyncNodeStokeItem sync_item = 1;
+    optional uint64 now_tm_height = 2;
+}
+
+message SyncNodeStokeResItem {
+    optional bytes id = 1;
+    optional uint64 balance = 2;
+}
+
+message SyncNodeStokeResponse {
+    repeated SyncNodeStokeResItem items = 1;
+    optional uint64 now_tm_height = 2;
+}
+
+message ElectMessage {
+    optional ElectBlock elect_block = 1;
+    optional ElectBlock prev_elect_block = 2;
+    optional WaitingNodesMessage waiting_nodes = 3;
+    optional bytes pubkey = 4;
+    optional bytes sign_ch = 5;
+    optional bytes sign_res = 6;
+    optional WaitingNodeHeartbeat waiting_heartbeat = 7;
+    optional LeaderRotationMessage leader_rotation = 8;
+    optional SyncNodeStokeRequest sync_stoke_req = 9;
+    optional SyncNodeStokeResponse sync_stoke_res = 10;
+}

@@ -1,0 +1,44 @@
+syntax = "proto2";
+
+package zjchain.pools.protobuf;
+
+enum StepType {
+    kNormalFrom = 0;
+    kNormalTo = 1;
+    kContractUserCall = 2;
+    kContractCallExcute = 3;
+    kContractBroadcast = 4;
+    kConsensusRootElectShard = 5;  // shard consensus network election
+    kConsensusRootTimeBlock = 6;  // create time block
+    kConsensusFinalStatistic = 7;  // create shard time block's final statistic block
+    kConsensusCreateGenesisAcount = 8;
+}
+
+message ToTxHeights {
+    optional uint32 sharding_id = 1;
+    repeated uint64 heights = 2;
+    optional uint64 block_height = 3;
+    optional bytes tos_hash = 4;
+}
+
+message ToTxMessageItem {
+    optional bytes des = 1;
+    optional uint64 amount = 2;
+}
+
+message ToTxMessage {
+    repeated ToTxMessageItem tos = 1;
+}
+
+message TxMessage {
+    optional uint32 version = 1;
+    optional bytes gid = 2;
+    optional bytes pubkey = 3;
+    optional uint64 gas_limit = 4;
+    optional uint64 gas_price = 5;
+    optional bytes key = 6;
+    optional bytes value = 7;
+    optional bytes to = 8;
+    optional uint64 amount = 9;
+    optional StepType step = 10 [default=kNormalFrom];
+}

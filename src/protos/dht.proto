@@ -1,0 +1,63 @@
+syntax = "proto2";
+
+package zjchain.dht.protobuf;
+
+message BootstrapRequest {
+    optional bytes pubkey = 1;
+    optional string public_ip = 2;
+    optional int32 public_port = 3;
+}
+
+message BootstrapResponse {
+    optional bytes pubkey = 1;
+    optional string public_ip = 2;
+    optional int32 public_port = 3;
+}
+
+message NodeInfo {
+    optional bytes public_ip = 1;
+    optional int32 public_port = 2;
+    optional bytes pubkey = 3;
+}
+
+message RefreshNeighborsRequest {
+    optional uint32 count = 1;
+    repeated uint64 bloomfilter = 2;
+    optional bytes pubkey = 3;
+    optional string public_ip = 4;
+    optional int32 public_port = 5;
+}
+
+message RefreshNeighborsResponse {
+    repeated NodeInfo nodes = 1;
+}
+
+message HeartbeatRequest {
+    optional uint64 dht_key_hash = 1;
+}
+
+message HeartbeatResponse {
+    optional uint64 dht_key_hash = 1;
+}
+
+message ConnectReqeust {
+    optional bytes pubkey = 1;
+    optional bool is_response = 2;
+    optional string public_ip = 3;
+    optional int32 public_port = 4;
+}
+
+message TimerRequest {
+    optional uint64 tm_milli = 1;
+}
+
+message DhtMessage {
+    optional BootstrapRequest bootstrap_req = 1;
+    optional BootstrapResponse bootstrap_res = 2;
+    optional RefreshNeighborsRequest refresh_neighbors_req = 3;
+    optional RefreshNeighborsResponse refresh_neighbors_res = 4;
+    optional ConnectReqeust connect_req = 5;
+    optional HeartbeatRequest heartbeat_req = 6;
+    optional HeartbeatResponse heartbeat_res = 7;
+    optional TimerRequest timer = 8;
+}

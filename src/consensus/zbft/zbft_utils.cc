@@ -1,0 +1,86 @@
+#include "consensus/zbft/zbft_utils.h"
+
+#include "elect/elect_manager.h"
+#include "network/network_utils.h"
+
+namespace zjchain {
+
+namespace consensus {
+
+std::string StatusToString(uint32_t status) {
+    switch (status) {
+    case kBftInit:
+        return "bft_init";
+    case kBftPrepare:
+        return "bft_prepare";
+    case kBftPreCommit:
+        return "bft_precommit";
+    case kBftCommit:
+        return "bft_commit";
+    case kBftCommited:
+        return "bft_success";
+    default:
+        return "unknown";
+    }
+}
+
+std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
+    std::string message;
+    message.reserve(tx_info.ByteSizeLong());
+    message.append(tx_info.gid());
+    message.append(tx_info.from_pubkey());
+    message.append(tx_info.to());
+    uint64_t amount = tx_info.amount();
+    message.append(std::string((char*)&amount, sizeof(amount)));
+    uint64_t gas_limit = tx_info.gas_limit();
+    message.append(std::string((char*)&gas_limit, sizeof(gas_limit)));
+    uint64_t gas_price = tx_info.gas_price();
+    message.append(std::string((char*)&gas_price, sizeof(gas_price)));
+    uint64_t step = tx_info.step();
+    message.append(std::string((char*)&step, sizeof(step)));
+    for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
+        message.append(tx_info.storages(i).key());
+        message.append(tx_info.storages(i).val_hash());
+    }
+
+    return common::Hash::keccak256(message);
+}
+
+std::string GetPrepareTxsHash(const block::protobuf::BlockTx& tx_info) {
+    return GetTxMessageHash(tx_info);
+}
+
+std::string GetBlockHash(const block::protobuf::Block& block) {
+    std::string msg;
+    msg.reserve(block.tx_list_size() * 32);
+    for (int32_t i = 0; i < block.tx_list_size(); i++) {
+        msg.append(GetTxMessageHash(block.tx_list(i)));
+    }
+
+    return common::Hash::keccak256(msg);
+}
+
+uint32_t NewAccountGetNetworkId(const std::string& addr) {
+    return 3;
+    // return static_cast<uint32_t>((common::Hash::Hash64(addr) *
+    //     vss::VssManager::Instance()->EpochRandom()) %
+    //     common::GlobalInfo::Instance()->consensus_shard_count()) +
+    //     network::kConsensusShardBeginNetworkId;
+}
+
+bool IsRootSingleBlockTx(uint32_t tx_type) {
+    if (tx_type == common::kConsensusRootElectShard ||
+            tx_type == common::kConsensusRootTimeBlock) {
+        return true;
+    }
+
+    return false;
+}
+
+bool IsShardSingleBlockTx(uint32_t tx_type) {
+    return IsRootSingleBlockTx(tx_type);
+}
+
+}  // namespace consensus
+
+}  //namespace zjchain

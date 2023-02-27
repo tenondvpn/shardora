@@ -1,0 +1,19 @@
+syntax = "proto2";
+
+package zjchain.contract.protobuf;
+
+message GetAttrByKeyReq {
+    optional bytes call_addr = 1;
+    optional bytes attr_key = 2;
+}
+
+message GetAttrByKeyRes {
+    optional bytes call_addr = 1;
+    optional bytes attr_key = 2;
+    optional bytes attr_value = 3;
+}
+
+message ContractMessage {
+    optional GetAttrByKeyReq get_attr_req = 1;
+    optional GetAttrByKeyRes get_attr_res = 2;
+}
