@@ -211,10 +211,11 @@ public:
         }
 
         // get block from db and cache it
-        std::string height_db_key = common::GetHeightDbKey(
-            network::kRootCongressNetworkId,
-            common::kRootChainPoolIndex,
-            height);
+        std::string height_db_key = "";
+//             common::GetHeightDbKey(
+//             network::kRootCongressNetworkId,
+//             common::kRootChainPoolIndex,
+//             height);
         std::string block_str;
         auto st = db_->Get(height_db_key, &block_str);
         if (!st.ok()) {
