@@ -142,14 +142,19 @@ TEST_F(TestTimeBlock, TestTimeBlock) {
         "a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee"),
         common::kRootChainPoolIndex,
         tx_info);
+    std::cout << 0 << std::endl;
     ASSERT_EQ(leader_bft_mgr.Start(0), kConsensusSuccess);
+    std::cout << 10 << std::endl;
     leader_bft_mgr.leader_prepare_msg_->thread_idx = 0;
     backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
+    std::cout << 11 << std::endl;
     ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ != nullptr);
     backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
+    std::cout << 12 << std::endl;
     ASSERT_TRUE(backup_bft_mgr1.backup_prepare_msg_ != nullptr);
     backup_bft_mgr0.backup_prepare_msg_->thread_idx = 0;
     backup_bft_mgr1.backup_prepare_msg_->thread_idx = 0;
+    std::cout << 1 << std::endl;
     leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_prepare_msg_);
     leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_prepare_msg_);
     ASSERT_TRUE(leader_bft_mgr.leader_precommit_msg_ != nullptr);
@@ -160,12 +165,14 @@ TEST_F(TestTimeBlock, TestTimeBlock) {
     ASSERT_TRUE(backup_bft_mgr1.backup_precommit_msg_ != nullptr);
     backup_bft_mgr0.backup_precommit_msg_->thread_idx = 0;
     backup_bft_mgr1.backup_precommit_msg_->thread_idx = 0;
+    std::cout << 2 << std::endl;
     leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_precommit_msg_);
     leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_precommit_msg_);
     ASSERT_TRUE(leader_bft_mgr.leader_commit_msg_ != nullptr);
     leader_bft_mgr.leader_commit_msg_->thread_idx = 0;
     backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_commit_msg_);
     backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_commit_msg_);
+    std::cout << 3 << std::endl;
 };
 
 TEST_F(TestTimeBlock, TestTimeBlockOnePrepareEvil) {

@@ -612,10 +612,22 @@ void Zbft::TxToBlockTx(
     block_tx->set_from_pubkey(tx_info.pubkey());
     block_tx->set_to(tx_info.to());
     block_tx->set_amount(tx_info.amount());
+    // change
     if (!tx_info.key().empty()) {
         auto storage = block_tx->add_storages();
         storage->set_key(tx_info.key());
-        storage->set_val_hash(common::Hash::keccak256(tx_info.value()));
+        if (tx_info.step() == pools::protobuf::kNormalTo) {
+            storage->set_val_hash(tx_info.value());
+            storage->set_val_size(0);
+        } else {
+            if (tx_info.value().size() <= 32) {
+                storage->set_val_hash(tx_info.value());
+            } else {
+                storage->set_val_hash(common::Hash::keccak256(tx_info.value()));
+            }
+
+            storage->set_val_size(tx_info.value().size());
+        }
     }
 }
 
@@ -645,8 +657,8 @@ int Zbft::AddTransaction(
     // gas just consume by from
     uint64_t from_balance = 0;
     uint64_t to_balance = 0;
-    auto& from = tx_info->msg_ptr->address_info->addr();
     if (block_tx.step() == pools::protobuf::kNormalFrom) {
+        auto& from = tx_info->msg_ptr->address_info->addr();
         int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance);
         if (balance_status != kBftSuccess) {
             block_tx.set_status(balance_status);
@@ -655,8 +667,7 @@ int Zbft::AddTransaction(
             return kBftError;
         }
 
-        do 
-        {
+        do  {
             gas_used = kTransferGas;
             for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
                 // TODO(): check key exists and reserve gas
@@ -676,16 +687,7 @@ int Zbft::AddTransaction(
                 break;
             }
         } while (0);
-    } else {
-        int balance_status = GetTempAccountBalance(block_tx.to(), acc_balance_map, &to_balance);
-        if (balance_status != kBftSuccess) {
-            block_tx.set_status(balance_status);
-            assert(false);
-            return kBftError;
-        }
-    }
 
-    if (block_tx.step() == pools::protobuf::kNormalFrom) {
         if (block_tx.status() == kBftSuccess) {
             uint64_t dec_amount = block_tx.amount() + gas_used * block_tx.gas_price();
             if (from_balance >= gas_used * block_tx.gas_price()) {
@@ -710,17 +712,10 @@ int Zbft::AddTransaction(
             }
         }
 
+        auto& from = tx_info->msg_ptr->address_info->addr();
         acc_balance_map[from] = from_balance;
         block_tx.set_balance(from_balance);
         block_tx.set_gas_used(gas_used);
-    } else {
-        if (block_tx.status() == kBftSuccess) {
-            to_balance += block_tx.amount();
-        }
-
-        acc_balance_map[block_tx.to()] = to_balance;
-        block_tx.set_balance(to_balance);
-        block_tx.set_gas_used(0);
     }
 
     ZJC_DEBUG("handle tx success: %s, %lu, %lu, status: %d",

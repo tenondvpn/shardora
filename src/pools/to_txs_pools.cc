@@ -211,7 +211,7 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::TxMessag
     tx->set_key(protos::kNormalTos);
     tx->set_value(to_heights.SerializeAsString());
     tx->set_pubkey("");
-    tx->set_to(common::kTosTxAddress);
+    tx->set_to("");
     tx->set_step(pools::protobuf::kNormalTo);
     auto gid = common::Hash::keccak256(tos_hash + std::to_string(sharding_id));
     tx->set_gas_limit(0);
@@ -273,7 +273,7 @@ int ToTxsPools::BackupCreateToTx(
     tx->set_key(protos::kNormalTos);
     tx->set_value(to_heights.SerializeAsString());
     tx->set_pubkey("");
-    tx->set_to(common::kTosTxAddress);
+    tx->set_to("");
     tx->set_step(pools::protobuf::kNormalTo);
     auto gid = common::Hash::keccak256(tos_hash + std::to_string(sharding_id));
     tx->set_gas_limit(0);

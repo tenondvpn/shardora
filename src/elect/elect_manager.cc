@@ -419,6 +419,10 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
                 node_index_vec.push_back(index++);
             }
 
+            if ((*iter)->pool_index_mod_num == 0) {
+                block_mgr_->SetToTxLeader(*iter);
+            }
+
             now_elected_ids_.insert((*iter)->id);
             ELECT_INFO("DDDDDDDDDD elect height: %lu, network: %d,"
                 "leader: %s, pool_index_mod_num: %d, valid pk: %d",

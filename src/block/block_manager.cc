@@ -44,6 +44,10 @@ int BlockManager::Init(
 }
 
 void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    // verify signature valid and check leader valid
+    if (msg_ptr->header.block_proto().to_txs_size() > 0) {
+        HandleToTxsMessage(msg_ptr);
+    }
 }
 
 void BlockManager::NetworkNewBlock(
@@ -118,14 +122,19 @@ int BlockManager::GetBlockWithHeight(
 }
 
 void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
-    for (int32_t i = 0; i <= msg_ptr->header.block_proto().to_txs_size(); ++i) {
-        auto heights = msg_ptr->header.block_proto().to_txs(i);
-        pools::protobuf::TxMessage tx;
-        if (to_txs_pool_->BackupCreateToTx(heights.sharding_id(), heights, &tx) != pools::kPoolsSuccess) {
+    for (int32_t i = 0; i < msg_ptr->header.block_proto().to_txs_size(); ++i) {
+        auto& heights = msg_ptr->header.block_proto().to_txs(i);
+        auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+        pools::protobuf::TxMessage& tx = *new_msg_ptr->header.mutable_tx_proto();
+        if (to_txs_pool_->BackupCreateToTx(
+                heights.sharding_id(),
+                heights,
+                &tx) != pools::kPoolsSuccess) {
             continue;
         }
 
-        // add tx to tx pool
+        auto tx_ptr = std::make_shared<pools::TxItem>(new_msg_ptr);
+        pools_mgr_->AddTx(0, tx_ptr);
     }
 }
 
@@ -167,6 +176,7 @@ void BlockManager::CreateToTx() {
     network::Route::Instance()->Send(msg_ptr);
 #else
     // for test
+    leader_to_txs_msg_ = msg_ptr;
 #endif
 }
 

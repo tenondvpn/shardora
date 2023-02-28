@@ -76,7 +76,7 @@ int NetworkInit::Init(int argc, char** argv) {
     std::string db_path = "./db";
     conf_.Get("zjchain", "db_path", db_path);
     db_ = std::make_shared<db::Db>();
-    if (db_->Init(db_path)) {
+    if (!db_->Init(db_path)) {
         INIT_ERROR("init db failed!");
         return kInitError;
     }
@@ -110,6 +110,8 @@ int NetworkInit::Init(int argc, char** argv) {
     bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_);
     elect_mgr_ = std::make_shared<elect::ElectManager>(
         block_mgr_, security_, bls_mgr_, db_);
+    pools_mgr_ = std::make_shared<pools::TxPoolManager>(security_);
+    block_mgr_->Init(account_mgr_, db_, pools_mgr_, security_->GetAddress());
     if (elect_mgr_->Init() != elect::kElectSuccess) {
         INIT_ERROR("init elect manager failed!");
         return kInitError;
@@ -125,8 +127,6 @@ int NetworkInit::Init(int argc, char** argv) {
         common::GlobalInfo::Instance()->network_id(),
         common::GlobalInfo::Instance()->message_handler_thread_count(),
         db_);
-    pools_mgr_ = std::make_shared<pools::TxPoolManager>(security_);
-    block_mgr_->Init(account_mgr_, db_, pools_mgr_, security_->GetAddress());
     tmblock::TimeBlockManager::Instance()->Init(pools_mgr_, db_);
     if (InitHttpServer() != kInitSuccess) {
         INIT_ERROR("InitHttpServer failed!");

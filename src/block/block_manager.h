@@ -47,6 +47,8 @@ public:
         max_consensus_sharding_id_ = sharding_id;
     }
 
+    void CreateToTx();
+
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void HandleToTxsMessage(const transport::MessagePtr& msg_ptr);
@@ -57,7 +59,6 @@ private:
     void AddAllAccount(
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBach& db_batch);
-    void CreateToTx();
 
     static const uint64_t kCreateToTxPeriodMs = 10000u;
 
@@ -71,6 +72,11 @@ private:
     common::BftMemberPtr leader_ = nullptr;
     uint32_t max_consensus_sharding_id_ = 3;
     std::string local_id_;
+
+#ifdef ZJC_UNITTEST
+    transport::MessagePtr leader_to_txs_msg_ = nullptr;
+#endif // ZJC_UNITTEST
+
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

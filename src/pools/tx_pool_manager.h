@@ -41,7 +41,6 @@ public:
         return tx_pool_[pool_index].latest_hash();
     }
 
-private:
     // just for test
     int AddTx(uint32_t pool_index, TxItemPtr& tx_ptr) {
         if (pool_index >= common::kInvalidPoolIndex) {
@@ -51,6 +50,7 @@ private:
         return tx_pool_[pool_index].AddTx(tx_ptr);
     }
 
+private:
     void HandleMessage(const transport::MessagePtr& msg);
     void SaveStorageToDb(const transport::protobuf::Header& msg);
 

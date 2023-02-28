@@ -122,6 +122,7 @@ public:
         auto bls_mgr = std::make_shared<bls::BlsManager>(security, db_ptr);
         auto pools_mgr = std::make_shared<pools::TxPoolManager>(security);
         block_mgr->Init(account_mgr, db_ptr, pools_mgr, security->GetAddress());
+        block_mgr->SetMaxConsensusShardingId(3);
         auto elect_mgr = std::make_shared<elect::ElectManager>(block_mgr, security, bls_mgr, db_ptr);
         ASSERT_EQ(elect_mgr->Init(), 0);
         ASSERT_EQ(bft_mgr.Init(
@@ -287,8 +288,46 @@ TEST_F(TestTx, TestMoreTx) {
         backup_bft_mgr1.ResetTest();
     }
 
+    usleep(200000);
     over = true;
     block_thread.join();
+
+    leader_bft_mgr.block_mgr_->CreateToTx();
+    std::cout << "create tx success." << std::endl;
+    ASSERT_TRUE(leader_bft_mgr.block_mgr_->leader_to_txs_msg_ != nullptr);
+    leader_bft_mgr.block_mgr_->leader_to_txs_msg_->thread_idx = 0;
+    leader_bft_mgr.block_mgr_->HandleMessage(leader_bft_mgr.block_mgr_->leader_to_txs_msg_);
+    std::cout << "leader tx success." << std::endl;
+    backup_bft_mgr0.block_mgr_->HandleMessage(leader_bft_mgr.block_mgr_->leader_to_txs_msg_);
+    backup_bft_mgr1.block_mgr_->HandleMessage(leader_bft_mgr.block_mgr_->leader_to_txs_msg_);
+    leader_bft_mgr.Start(0);
+    ASSERT_TRUE(leader_bft_mgr.leader_prepare_msg_ != nullptr);
+    leader_bft_mgr.leader_prepare_msg_->thread_idx = 0;
+    backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
+    ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ != nullptr);
+    backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
+    ASSERT_TRUE(backup_bft_mgr1.backup_prepare_msg_ != nullptr);
+    backup_bft_mgr0.backup_prepare_msg_->thread_idx = 0;
+    backup_bft_mgr1.backup_prepare_msg_->thread_idx = 0;
+    leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_prepare_msg_);
+    leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_prepare_msg_);
+    ASSERT_TRUE(leader_bft_mgr.leader_precommit_msg_ != nullptr);
+    leader_bft_mgr.leader_precommit_msg_->thread_idx = 0;
+    backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
+    ASSERT_TRUE(backup_bft_mgr0.backup_precommit_msg_ != nullptr);
+    backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
+    ASSERT_TRUE(backup_bft_mgr1.backup_precommit_msg_ != nullptr);
+    backup_bft_mgr0.backup_precommit_msg_->thread_idx = 0;
+    backup_bft_mgr1.backup_precommit_msg_->thread_idx = 0;
+    leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_precommit_msg_);
+    leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_precommit_msg_);
+    ASSERT_TRUE(leader_bft_mgr.leader_commit_msg_ != nullptr);
+    leader_bft_mgr.leader_commit_msg_->thread_idx = 0;
+    backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_commit_msg_);
+    backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_commit_msg_);
+    leader_bft_mgr.ResetTest();
+    backup_bft_mgr0.ResetTest();
+    backup_bft_mgr1.ResetTest();
 };
 
 TEST_F(TestTx, TestTxOnePrepareEvil) {
