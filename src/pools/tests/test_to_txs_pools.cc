@@ -89,7 +89,7 @@ public:
                 for (uint32_t k = 0; k < kTestEachPoolTxCount; ++k) {
                     auto& tx = *tx_list.Add();
                     auto addr_info = CreateAddr(db_batch);
-                    tx.set_from_pubkey("from_pk");
+                    tx.set_from("from");
                     tx.set_to(addr_info->addr());
                     tx.set_amount(1232324lu);
                     tx.set_step(pools::protobuf::kNormalFrom);

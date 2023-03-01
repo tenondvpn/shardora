@@ -2,7 +2,7 @@ third_party/libBLS_n
 third_party/libBLS/deps
 cbuild_Debug
 cbuild_Release
-third_party/depends/libs/linux/librocksdb.a
+third_party/depends/libs/linux/lib*.a
 third_party/depends/libs/linux/libp2p.a
 .vs
 third_party/leveldb

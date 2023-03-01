@@ -14,7 +14,6 @@ cmake .. -DCMAKE_BUILD_TYPE=$TARGET -DOPENSSL_ROOT_DIR=./third_party/depends/inc
 if [[ $1 == "" ]];
 then
     make -j3
-    ./tcp_test/tcp_test
     ./http_test/http_test
     ./common_test/common_test
     ./broadcast_test/broadcast_test
@@ -29,13 +28,11 @@ echo $1
 if [[ $1 == "test" ]];
 then
     make -j3 common_test
-    make -j3 tcp_test
     make -j3 http_test
     make -j3 broadcast_test
     make -j3 security_test
     make -j3 websocket_test
     make -j3 transport_test
-    ./tcp_test/tcp_test
     ./http_test/http_test
     ./common_test/common_test
     ./broadcast_test/broadcast_test

@@ -234,8 +234,9 @@ TEST_F(TestBls, AllSuccess) {
         BlsSign bls_sign;
         libff::alt_bn128_G1 sign;
         bls_sign.Sign(t, n, dkg[i].local_sec_key_, hash, &sign);
+        std::string verify_hash;
         ASSERT_EQ(
-            bls_sign.Verify(t, n, sign, hash, dkg[i].local_publick_key_),
+            bls_sign.Verify(t, n, sign, hash, dkg[i].local_publick_key_, &verify_hash),
             kBlsSuccess);
         all_signs.push_back(sign);
         idx_vec[i] = i + 1;
@@ -252,8 +253,9 @@ TEST_F(TestBls, AllSuccess) {
     std::cout << "5: " << (time6 - time5) << std::endl;
     for (uint32_t i = 0; i < n; ++i) {
         BlsSign bls_sign;
+        std::string verify_hash;
         EXPECT_EQ(
-            bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_),
+            bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_, &verify_hash),
             kBlsSuccess);
     }
 
@@ -385,8 +387,9 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
         BlsSign bls_sign;
         libff::alt_bn128_G1 sign;
         bls_sign.Sign(t, n, dkg[i].local_sec_key_, hash, &sign);
+        std::string verify_hash;
         ASSERT_EQ(
-            bls_sign.Verify(t, n, sign, hash, dkg[i].local_publick_key_),
+            bls_sign.Verify(t, n, sign, hash, dkg[i].local_publick_key_, &verify_hash),
             kBlsSuccess);
         all_signs.push_back(sign);
         idx_vec[all_signs.size() - 1] = i + 1;
@@ -407,8 +410,9 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
 
         EXPECT_EQ(dkg[i].common_public_key_, dkg[0].common_public_key_);
         BlsSign bls_sign;
+        std::string verify_hash;
         EXPECT_EQ(
-            bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_),
+            bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_, &verify_hash),
             kBlsSuccess);
     }
 }
@@ -530,8 +534,9 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
         BlsSign bls_sign;
         libff::alt_bn128_G1 sign;
         bls_sign.Sign(t, n, dkg[i].local_sec_key_, hash, &sign);
+        std::string verify_hash;
         ASSERT_EQ(
-            bls_sign.Verify(t, n, sign, hash, dkg[i].local_publick_key_),
+            bls_sign.Verify(t, n, sign, hash, dkg[i].local_publick_key_, &verify_hash),
             kBlsSuccess);
         all_signs.push_back(sign);
         idx_vec[all_signs.size() - 1] = i + 1;
@@ -551,8 +556,9 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
         }
 
         BlsSign bls_sign;
+        std::string verify_hash;
         EXPECT_EQ(
-            bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_),
+            bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_, &verify_hash),
             kBlsSuccess);
     }
 }
@@ -676,8 +682,9 @@ TEST_F(TestBls, ThreeRatioFailFine) {
         BlsSign bls_sign;
         libff::alt_bn128_G1 sign;
         bls_sign.Sign(t, n, dkg[i].local_sec_key_, hash, &sign);
+        std::string verify_hash;
         ASSERT_EQ(
-            bls_sign.Verify(t, n, sign, hash, dkg[i].local_publick_key_),
+            bls_sign.Verify(t, n, sign, hash, dkg[i].local_publick_key_, &verify_hash),
             kBlsSuccess);
         all_signs.push_back(sign);
 
@@ -697,8 +704,9 @@ TEST_F(TestBls, ThreeRatioFailFine) {
 
     for (uint32_t i = 0; i < n; ++i) {
         BlsSign bls_sign;
+        std::string verify_hash;
         EXPECT_EQ(
-            bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_),
+            bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_, &verify_hash),
             kBlsSuccess);
     }
 }
@@ -825,8 +833,9 @@ TEST_F(TestBls, ThreeRatioFail) {
         BlsSign bls_sign;
         libff::alt_bn128_G1 sign;
         bls_sign.Sign(t, n, dkg[i].local_sec_key_, hash, &sign);
+        std::string verify_hash;
         ASSERT_EQ(
-            bls_sign.Verify(t, n, sign, hash, dkg[i].local_publick_key_),
+            bls_sign.Verify(t, n, sign, hash, dkg[i].local_publick_key_, &verify_hash),
             kBlsError);
         all_signs.push_back(sign);
         idx_vec.push_back(i + 1);
@@ -845,8 +854,9 @@ TEST_F(TestBls, ThreeRatioFail) {
 
         for (uint32_t i = 0; i < n; ++i) {
             BlsSign bls_sign;
+            std::string verify_hash;
             ASSERT_EQ(
-                bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_),
+                bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_, &verify_hash),
                 kBlsSuccess);
         }
         ASSERT_TRUE(false);
