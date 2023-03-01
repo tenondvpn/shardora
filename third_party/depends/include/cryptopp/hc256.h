@@ -23,7 +23,7 @@ NAMESPACE_BEGIN(CryptoPP)
 /// \since Crypto++ 8.0
 struct HC256Info : public FixedKeyLength<32, SimpleKeyingInterface::UNIQUE_IV, 32>
 {
-    CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() { return "HC-256"; }
+	CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() { return "HC-256"; }
 };
 
 /// \brief HC-256 stream cipher implementation
@@ -31,22 +31,22 @@ struct HC256Info : public FixedKeyLength<32, SimpleKeyingInterface::UNIQUE_IV, 3
 class HC256Policy : public AdditiveCipherConcretePolicy<word32, 4>, public HC256Info
 {
 protected:
-    void CipherSetKey(const NameValuePairs &params, const byte *key, size_t length);
-    void OperateKeystream(KeystreamOperation operation, byte *output, const byte *input, size_t iterationCount);
-    void CipherResynchronize(byte *keystreamBuffer, const byte *iv, size_t length);
-    bool CanOperateKeystream() const { return true; }
-    bool CipherIsRandomAccess() const { return false; }
+	void CipherSetKey(const NameValuePairs &params, const byte *key, size_t length);
+	void OperateKeystream(KeystreamOperation operation, byte *output, const byte *input, size_t iterationCount);
+	void CipherResynchronize(byte *keystreamBuffer, const byte *iv, size_t length);
+	bool CanOperateKeystream() const { return true; }
+	bool CipherIsRandomAccess() const { return false; }
 
-    word32 H1(word32 u);
-    word32 H2(word32 u);
-    word32 Generate();
+	word32 H1(word32 u);
+	word32 H2(word32 u);
+	word32 Generate();
 
 private:
-    FixedSizeSecBlock<word32, 8> m_key;
-    FixedSizeSecBlock<word32, 8> m_iv;
-    word32 m_P[1024];
-    word32 m_Q[1024];
-    word32 m_ctr;
+	FixedSizeSecBlock<word32, 8> m_key;
+	FixedSizeSecBlock<word32, 8> m_iv;
+	word32 m_P[1024];
+	word32 m_Q[1024];
+	word32 m_ctr;
 };
 
 /// \brief HC-256 stream cipher
@@ -58,8 +58,8 @@ private:
 /// \since Crypto++ 8.0
 struct HC256 : public HC256Info, public SymmetricCipherDocumentation
 {
-    typedef SymmetricCipherFinal<ConcretePolicyHolder<HC256Policy, AdditiveCipherTemplate<> >, HC256Info> Encryption;
-    typedef Encryption Decryption;
+	typedef SymmetricCipherFinal<ConcretePolicyHolder<HC256Policy, AdditiveCipherTemplate<> >, HC256Info> Encryption;
+	typedef Encryption Decryption;
 };
 
 NAMESPACE_END

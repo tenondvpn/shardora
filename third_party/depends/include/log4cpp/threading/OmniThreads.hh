@@ -24,15 +24,15 @@ namespace log4cpp {
          **/
         std::string getThreadId();
         
-        /**
+	    /**
          * Return an identifier for the current thread. What these
          * identifiers look like is completely up to the underlying
          * thread library. OmniThreads returns the POSIX thread Id.
-         *
-         * @param buffer Character buffer of at least 16 in size
-         * @return buffer
-         */
-        char* getThreadId(char* buffer);
+		 *
+		 * @param buffer Character buffer of at least 16 in size
+		 * @return buffer
+		 */
+	    char* getThreadId(char* buffer);
 
         /**
          * A simple, non recursive Mutex.

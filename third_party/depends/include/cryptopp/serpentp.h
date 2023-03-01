@@ -3,25 +3,25 @@
 NAMESPACE_BEGIN(CryptoPP)
 
 // linear transformation
-#define LT(i,a,b,c,d,e)    {\
-    a = rotlConstant<13>(a);    \
-    c = rotlConstant<3>(c);     \
-    d = rotlConstant<7>(d ^ c ^ (a << 3));     \
-    b = rotlConstant<1>(b ^ a ^ c);     \
-    a = rotlConstant<5>(a ^ b ^ d);         \
-    c = rotlConstant<22>(c ^ d ^ (b << 7));}
+#define LT(i,a,b,c,d,e)	{\
+	a = rotlConstant<13>(a);	\
+	c = rotlConstant<3>(c); 	\
+	d = rotlConstant<7>(d ^ c ^ (a << 3)); 	\
+	b = rotlConstant<1>(b ^ a ^ c); 	\
+	a = rotlConstant<5>(a ^ b ^ d); 		\
+	c = rotlConstant<22>(c ^ d ^ (b << 7));}
 
 // inverse linear transformation
-#define ILT(i,a,b,c,d,e)    {\
-    c = rotrConstant<22>(c);    \
-    a = rotrConstant<5>(a);     \
-    c ^= d ^ (b << 7);    \
-    a ^= b ^ d;         \
-    b = rotrConstant<1>(b);     \
-    d = rotrConstant<7>(d) ^ c ^ (a << 3);    \
-    b ^= a ^ c;         \
-    c = rotrConstant<3>(c);     \
-    a = rotrConstant<13>(a);}
+#define ILT(i,a,b,c,d,e)	{\
+	c = rotrConstant<22>(c);	\
+	a = rotrConstant<5>(a); 	\
+	c ^= d ^ (b << 7);	\
+	a ^= b ^ d; 		\
+	b = rotrConstant<1>(b); 	\
+	d = rotrConstant<7>(d) ^ c ^ (a << 3);	\
+	b ^= a ^ c; 		\
+	c = rotrConstant<3>(c); 	\
+	a = rotrConstant<13>(a);}
 
 // order of output from S-box functions
 #define beforeS0(f) f(0,a,b,c,d,e)
@@ -411,23 +411,23 @@ NAMESPACE_BEGIN(CryptoPP)
             }
 
 // key xor
-#define KX(r, a, b, c, d, e)    {\
-    a ^= k[4 * r + 0]; \
-    b ^= k[4 * r + 1]; \
-    c ^= k[4 * r + 2]; \
-    d ^= k[4 * r + 3];}
+#define KX(r, a, b, c, d, e)	{\
+	a ^= k[4 * r + 0]; \
+	b ^= k[4 * r + 1]; \
+	c ^= k[4 * r + 2]; \
+	d ^= k[4 * r + 3];}
 
-#define LK(r, a, b, c, d, e)    {\
-    a = k[(8-r)*4 + 0];        \
-    b = k[(8-r)*4 + 1];        \
-    c = k[(8-r)*4 + 2];        \
-    d = k[(8-r)*4 + 3];}
+#define LK(r, a, b, c, d, e)	{\
+	a = k[(8-r)*4 + 0];		\
+	b = k[(8-r)*4 + 1];		\
+	c = k[(8-r)*4 + 2];		\
+	d = k[(8-r)*4 + 3];}
 
-#define SK(r, a, b, c, d, e)    {\
-    k[(8-r)*4 + 4] = a;        \
-    k[(8-r)*4 + 5] = b;        \
-    k[(8-r)*4 + 6] = c;        \
-    k[(8-r)*4 + 7] = d;}
+#define SK(r, a, b, c, d, e)	{\
+	k[(8-r)*4 + 4] = a;		\
+	k[(8-r)*4 + 5] = b;		\
+	k[(8-r)*4 + 6] = c;		\
+	k[(8-r)*4 + 7] = d;}
 
 void Serpent_KeySchedule(word32 *k, unsigned int rounds, const byte *userKey, size_t keylen);
 

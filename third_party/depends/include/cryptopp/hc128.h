@@ -23,7 +23,7 @@ NAMESPACE_BEGIN(CryptoPP)
 /// \since Crypto++ 8.0
 struct HC128Info : public FixedKeyLength<16, SimpleKeyingInterface::UNIQUE_IV, 16>
 {
-    CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() { return "HC-128"; }
+	CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() { return "HC-128"; }
 };
 
 /// \brief HC-128 stream cipher implementation
@@ -31,22 +31,22 @@ struct HC128Info : public FixedKeyLength<16, SimpleKeyingInterface::UNIQUE_IV, 1
 class HC128Policy : public AdditiveCipherConcretePolicy<word32, 16>, public HC128Info
 {
 protected:
-    void CipherSetKey(const NameValuePairs &params, const byte *key, size_t length);
-    void OperateKeystream(KeystreamOperation operation, byte *output, const byte *input, size_t iterationCount);
-    void CipherResynchronize(byte *keystreamBuffer, const byte *iv, size_t length);
-    bool CanOperateKeystream() const { return true; }
-    bool CipherIsRandomAccess() const { return false; }
+	void CipherSetKey(const NameValuePairs &params, const byte *key, size_t length);
+	void OperateKeystream(KeystreamOperation operation, byte *output, const byte *input, size_t iterationCount);
+	void CipherResynchronize(byte *keystreamBuffer, const byte *iv, size_t length);
+	bool CanOperateKeystream() const { return true; }
+	bool CipherIsRandomAccess() const { return false; }
 
-    void GenerateKeystream(word32* keystream);
-    void SetupUpdate();
+	void GenerateKeystream(word32* keystream);
+	void SetupUpdate();
 
 private:
-    FixedSizeSecBlock<word32, 16> m_X;
-    FixedSizeSecBlock<word32, 16> m_Y;
-    FixedSizeSecBlock<word32, 8> m_key;
-    FixedSizeSecBlock<word32, 8> m_iv;
-    word32 m_T[1024];
-    word32 m_ctr;
+	FixedSizeSecBlock<word32, 16> m_X;
+	FixedSizeSecBlock<word32, 16> m_Y;
+	FixedSizeSecBlock<word32, 8> m_key;
+	FixedSizeSecBlock<word32, 8> m_iv;
+	word32 m_T[1024];
+	word32 m_ctr;
 };
 
 /// \brief HC-128 stream cipher
@@ -58,8 +58,8 @@ private:
 /// \since Crypto++ 8.0
 struct HC128 : public HC128Info, public SymmetricCipherDocumentation
 {
-    typedef SymmetricCipherFinal<ConcretePolicyHolder<HC128Policy, AdditiveCipherTemplate<> >, HC128Info> Encryption;
-    typedef Encryption Decryption;
+	typedef SymmetricCipherFinal<ConcretePolicyHolder<HC128Policy, AdditiveCipherTemplate<> >, HC128Info> Encryption;
+	typedef Encryption Decryption;
 };
 
 NAMESPACE_END

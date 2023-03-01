@@ -68,7 +68,7 @@
  * @code
  *   #include "evdns.h"
  *   void callback(int result, char type, int count, int ttl,
- *         void *addresses, void *arg);
+ *		 void *addresses, void *arg);
  *   evdns_resolv_conf_parse(DNS_OPTIONS_ALL, "/etc/resolv.conf");
  *   evdns_resolve("www.hostname.com", 0, callback, NULL);
  *@endcode
@@ -287,7 +287,7 @@ struct evdns_base * evdns_base_new(struct event_base *event_base, int flags);
 
   @param base the evdns base to free
   @param fail_requests if zero, active requests will be aborted; if non-zero,
-        active requests will return DNS_ERR_SHUTDOWN.
+		active requests will return DNS_ERR_SHUTDOWN.
   @see evdns_base_new()
  */
 EVENT2_EXPORT_SYMBOL
@@ -628,23 +628,23 @@ typedef void (*evdns_request_callback_fn_type)(struct evdns_server_request *, vo
 #define EVDNS_AUTHORITY_SECTION 1
 #define EVDNS_ADDITIONAL_SECTION 2
 
-#define EVDNS_TYPE_A       1
-#define EVDNS_TYPE_NS       2
+#define EVDNS_TYPE_A	   1
+#define EVDNS_TYPE_NS	   2
 #define EVDNS_TYPE_CNAME   5
-#define EVDNS_TYPE_SOA       6
-#define EVDNS_TYPE_PTR      12
-#define EVDNS_TYPE_MX      15
-#define EVDNS_TYPE_TXT      16
-#define EVDNS_TYPE_AAAA      28
+#define EVDNS_TYPE_SOA	   6
+#define EVDNS_TYPE_PTR	  12
+#define EVDNS_TYPE_MX	  15
+#define EVDNS_TYPE_TXT	  16
+#define EVDNS_TYPE_AAAA	  28
 
 #define EVDNS_QTYPE_AXFR 252
-#define EVDNS_QTYPE_ALL     255
+#define EVDNS_QTYPE_ALL	 255
 
 #define EVDNS_CLASS_INET   1
 
 /* flags that can be set in answers; as part of the err parameter */
-#define EVDNS_FLAGS_AA    0x400
-#define EVDNS_FLAGS_RD    0x080
+#define EVDNS_FLAGS_AA	0x400
+#define EVDNS_FLAGS_RD	0x080
 
 /** Create a new UDP DNS server port.
 
@@ -688,18 +688,18 @@ void evdns_close_server_port(struct evdns_server_port *port);
  * @see evdns_server_port_set_option()
  */
 enum evdns_server_option {
-    /**
-     * Maximum number of simultaneous tcp connections (clients)
-     * that server can hold. Can be set only for TCP DNS servers.
-     */
-    EVDNS_SOPT_TCP_MAX_CLIENTS,
-    /**
-     * Idle timeout (in seconds) of incoming TCP connections.
-     * If client doesn't send any requests via the connection
-     * during this period connection is closed by the server.
-     * Can be set only for TCP DNS servers.
-     */
-    EVDNS_SOPT_TCP_IDLE_TIMEOUT,
+	/**
+	 * Maximum number of simultaneous tcp connections (clients)
+	 * that server can hold. Can be set only for TCP DNS servers.
+	 */
+	EVDNS_SOPT_TCP_MAX_CLIENTS,
+	/**
+	 * Idle timeout (in seconds) of incoming TCP connections.
+	 * If client doesn't send any requests via the connection
+	 * during this period connection is closed by the server.
+	 * Can be set only for TCP DNS servers.
+	 */
+	EVDNS_SOPT_TCP_IDLE_TIMEOUT,
 };
 
 /**

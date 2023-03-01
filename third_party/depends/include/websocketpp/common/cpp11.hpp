@@ -106,7 +106,7 @@
                 // clang feature detect says we have noexcept
                 #define _WEBSOCKETPP_NOEXCEPT_TOKEN_ noexcept
             #elif defined(_MSC_VER) && _MSC_VER >= 1900
-                // Visual Studio 2015+ has noexcept
+            	// Visual Studio 2015+ has noexcept
                 #define _WEBSOCKETPP_NOEXCEPT_TOKEN_ noexcept
             #else
                 // assume we don't have noexcept
@@ -125,7 +125,7 @@
                 // clang feature detect says we have constexpr
                 #define _WEBSOCKETPP_CONSTEXPR_TOKEN_ constexpr
             #elif defined(_MSC_VER) && _MSC_VER >= 1900
-                // Visual Studio 2015+ has constexpr
+            	// Visual Studio 2015+ has constexpr
                 #define _WEBSOCKETPP_CONSTEXPR_TOKEN_ constexpr
             #else
                 // assume we don't have constexpr

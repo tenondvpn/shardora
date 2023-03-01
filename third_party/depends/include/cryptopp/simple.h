@@ -25,7 +25,7 @@ template <class DERIVED, class BASE>
 class CRYPTOPP_NO_VTABLE ClonableImpl : public BASE
 {
 public:
-    Clonable * Clone() const {return new DERIVED(*static_cast<const DERIVED *>(this));}
+	Clonable * Clone() const {return new DERIVED(*static_cast<const DERIVED *>(this));}
 };
 
 /// \brief Base class information
@@ -36,58 +36,58 @@ template <class BASE, class ALGORITHM_INFO=BASE>
 class CRYPTOPP_NO_VTABLE AlgorithmImpl : public BASE
 {
 public:
-    /// \brief The algorithm name
-    /// \returns the algorithm name
-    /// \details StaticAlgorithmName returns the algorithm's name as a static member function.
-    ///    The name is taken from information provided by BASE.
-    static std::string CRYPTOPP_API StaticAlgorithmName() {return ALGORITHM_INFO::StaticAlgorithmName();}
-    /// \brief The algorithm name
-    /// \returns the algorithm name
-    /// \details AlgorithmName returns the algorithm's name as a member function.
-    ///    The name is is acquired by calling StaticAlgorithmName.
-    std::string AlgorithmName() const {return ALGORITHM_INFO::StaticAlgorithmName();}
+	/// \brief The algorithm name
+	/// \returns the algorithm name
+	/// \details StaticAlgorithmName returns the algorithm's name as a static member function.
+	///    The name is taken from information provided by BASE.
+	static std::string CRYPTOPP_API StaticAlgorithmName() {return ALGORITHM_INFO::StaticAlgorithmName();}
+	/// \brief The algorithm name
+	/// \returns the algorithm name
+	/// \details AlgorithmName returns the algorithm's name as a member function.
+	///    The name is is acquired by calling StaticAlgorithmName.
+	std::string AlgorithmName() const {return ALGORITHM_INFO::StaticAlgorithmName();}
 };
 
 /// \brief Exception thrown when an invalid key length is encountered
 class CRYPTOPP_DLL InvalidKeyLength : public InvalidArgument
 {
 public:
-    explicit InvalidKeyLength(const std::string &algorithm, size_t length) : InvalidArgument(algorithm + ": " + IntToString(length) + " is not a valid key length") {}
+	explicit InvalidKeyLength(const std::string &algorithm, size_t length) : InvalidArgument(algorithm + ": " + IntToString(length) + " is not a valid key length") {}
 };
 
 /// \brief Exception thrown when an invalid number of rounds is encountered
 class CRYPTOPP_DLL InvalidRounds : public InvalidArgument
 {
 public:
-    explicit InvalidRounds(const std::string &algorithm, unsigned int rounds) : InvalidArgument(algorithm + ": " + IntToString(rounds) + " is not a valid number of rounds") {}
+	explicit InvalidRounds(const std::string &algorithm, unsigned int rounds) : InvalidArgument(algorithm + ": " + IntToString(rounds) + " is not a valid number of rounds") {}
 };
 
 /// \brief Exception thrown when an invalid block size is encountered
 class CRYPTOPP_DLL InvalidBlockSize : public InvalidArgument
 {
 public:
-    explicit InvalidBlockSize(const std::string &algorithm, size_t length) : InvalidArgument(algorithm + ": " + IntToString(length) + " is not a valid block size") {}
+	explicit InvalidBlockSize(const std::string &algorithm, size_t length) : InvalidArgument(algorithm + ": " + IntToString(length) + " is not a valid block size") {}
 };
 
 /// \brief Exception thrown when an invalid derived key length is encountered
 class CRYPTOPP_DLL InvalidDerivedLength : public InvalidArgument
 {
 public:
-    explicit InvalidDerivedLength(const std::string &algorithm, size_t length) : InvalidArgument(algorithm + ": " + IntToString(length) + " is not a valid derived key length") {}
+	explicit InvalidDerivedLength(const std::string &algorithm, size_t length) : InvalidArgument(algorithm + ": " + IntToString(length) + " is not a valid derived key length") {}
 };
 
 /// \brief Exception thrown when an invalid personalization string length is encountered
 class CRYPTOPP_DLL InvalidPersonalizationLength : public InvalidArgument
 {
 public:
-    explicit InvalidPersonalizationLength(const std::string &algorithm, size_t length) : InvalidArgument(algorithm + ": " + IntToString(length) + " is not a valid salt length") {}
+	explicit InvalidPersonalizationLength(const std::string &algorithm, size_t length) : InvalidArgument(algorithm + ": " + IntToString(length) + " is not a valid salt length") {}
 };
 
 /// \brief Exception thrown when an invalid salt length is encountered
 class CRYPTOPP_DLL InvalidSaltLength : public InvalidArgument
 {
 public:
-    explicit InvalidSaltLength(const std::string &algorithm, size_t length) : InvalidArgument(algorithm + ": " + IntToString(length) + " is not a valid salt length") {}
+	explicit InvalidSaltLength(const std::string &algorithm, size_t length) : InvalidArgument(algorithm + ": " + IntToString(length) + " is not a valid salt length") {}
 };
 
 // *****************************
@@ -98,8 +98,8 @@ template <class T>
 class CRYPTOPP_NO_VTABLE Bufferless : public T
 {
 public:
-    bool IsolatedFlush(bool hardFlush, bool blocking)
-        {CRYPTOPP_UNUSED(hardFlush); CRYPTOPP_UNUSED(blocking); return false;}
+	bool IsolatedFlush(bool hardFlush, bool blocking)
+		{CRYPTOPP_UNUSED(hardFlush); CRYPTOPP_UNUSED(blocking); return false;}
 };
 
 /// \brief Base class for unflushable filters
@@ -108,23 +108,23 @@ template <class T>
 class CRYPTOPP_NO_VTABLE Unflushable : public T
 {
 public:
-    bool Flush(bool completeFlush, int propagation=-1, bool blocking=true)
-        {return ChannelFlush(DEFAULT_CHANNEL, completeFlush, propagation, blocking);}
-    bool IsolatedFlush(bool hardFlush, bool blocking)
-        {CRYPTOPP_UNUSED(hardFlush); CRYPTOPP_UNUSED(blocking); CRYPTOPP_ASSERT(false); return false;}
-    bool ChannelFlush(const std::string &channel, bool hardFlush, int propagation=-1, bool blocking=true)
-    {
-        if (hardFlush && !InputBufferIsEmpty())
-            throw CannotFlush("Unflushable<T>: this object has buffered input that cannot be flushed");
-        else
-        {
-            BufferedTransformation *attached = this->AttachedTransformation();
-            return attached && propagation ? attached->ChannelFlush(channel, hardFlush, propagation-1, blocking) : false;
-        }
-    }
+	bool Flush(bool completeFlush, int propagation=-1, bool blocking=true)
+		{return ChannelFlush(DEFAULT_CHANNEL, completeFlush, propagation, blocking);}
+	bool IsolatedFlush(bool hardFlush, bool blocking)
+		{CRYPTOPP_UNUSED(hardFlush); CRYPTOPP_UNUSED(blocking); CRYPTOPP_ASSERT(false); return false;}
+	bool ChannelFlush(const std::string &channel, bool hardFlush, int propagation=-1, bool blocking=true)
+	{
+		if (hardFlush && !InputBufferIsEmpty())
+			throw CannotFlush("Unflushable<T>: this object has buffered input that cannot be flushed");
+		else
+		{
+			BufferedTransformation *attached = this->AttachedTransformation();
+			return attached && propagation ? attached->ChannelFlush(channel, hardFlush, propagation-1, blocking) : false;
+		}
+	}
 
 protected:
-    virtual bool InputBufferIsEmpty() const {return false;}
+	virtual bool InputBufferIsEmpty() const {return false;}
 };
 
 /// \brief Base class for input rejecting filters
@@ -134,35 +134,35 @@ template <class T>
 class CRYPTOPP_NO_VTABLE InputRejecting : public T
 {
 public:
-    struct InputRejected : public NotImplemented
-        {InputRejected() : NotImplemented("BufferedTransformation: this object doesn't allow input") {}};
+	struct InputRejected : public NotImplemented
+		{InputRejected() : NotImplemented("BufferedTransformation: this object doesn't allow input") {}};
 
-    ///    \name INPUT
-    //@{
+	///	\name INPUT
+	//@{
 
-    /// \brief Input a byte array for processing
-    /// \param inString the byte array to process
-    /// \param length the size of the string, in bytes
-    /// \param messageEnd means how many filters to signal MessageEnd() to, including this one
-    /// \param blocking specifies whether the object should block when processing input
-    /// \throws InputRejected
-    /// \returns the number of bytes that remain in the block (i.e., bytes not processed)
-    /// \details Internally, the default implementation throws InputRejected.
-    size_t Put2(const byte *inString, size_t length, int messageEnd, bool blocking)
-        {CRYPTOPP_UNUSED(inString); CRYPTOPP_UNUSED(length); CRYPTOPP_UNUSED(messageEnd); CRYPTOPP_UNUSED(blocking); throw InputRejected();}
-    //@}
+	/// \brief Input a byte array for processing
+	/// \param inString the byte array to process
+	/// \param length the size of the string, in bytes
+	/// \param messageEnd means how many filters to signal MessageEnd() to, including this one
+	/// \param blocking specifies whether the object should block when processing input
+	/// \throws InputRejected
+	/// \returns the number of bytes that remain in the block (i.e., bytes not processed)
+	/// \details Internally, the default implementation throws InputRejected.
+	size_t Put2(const byte *inString, size_t length, int messageEnd, bool blocking)
+		{CRYPTOPP_UNUSED(inString); CRYPTOPP_UNUSED(length); CRYPTOPP_UNUSED(messageEnd); CRYPTOPP_UNUSED(blocking); throw InputRejected();}
+	//@}
 
-    ///    \name SIGNALS
-    //@{
-    bool IsolatedFlush(bool hardFlush, bool blocking)
-        {CRYPTOPP_UNUSED(hardFlush); CRYPTOPP_UNUSED(blocking); return false;}
-    bool IsolatedMessageSeriesEnd(bool blocking)
-        {CRYPTOPP_UNUSED(blocking); throw InputRejected();}
-    size_t ChannelPut2(const std::string &channel, const byte *inString, size_t length, int messageEnd, bool blocking)
-        {CRYPTOPP_UNUSED(channel); CRYPTOPP_UNUSED(inString); CRYPTOPP_UNUSED(length); CRYPTOPP_UNUSED(messageEnd); CRYPTOPP_UNUSED(blocking); throw InputRejected();}
-    bool ChannelMessageSeriesEnd(const std::string& channel, int messageEnd, bool blocking)
-        {CRYPTOPP_UNUSED(channel); CRYPTOPP_UNUSED(messageEnd); CRYPTOPP_UNUSED(blocking); throw InputRejected();}
-    //@}
+	///	\name SIGNALS
+	//@{
+	bool IsolatedFlush(bool hardFlush, bool blocking)
+		{CRYPTOPP_UNUSED(hardFlush); CRYPTOPP_UNUSED(blocking); return false;}
+	bool IsolatedMessageSeriesEnd(bool blocking)
+		{CRYPTOPP_UNUSED(blocking); throw InputRejected();}
+	size_t ChannelPut2(const std::string &channel, const byte *inString, size_t length, int messageEnd, bool blocking)
+		{CRYPTOPP_UNUSED(channel); CRYPTOPP_UNUSED(inString); CRYPTOPP_UNUSED(length); CRYPTOPP_UNUSED(messageEnd); CRYPTOPP_UNUSED(blocking); throw InputRejected();}
+	bool ChannelMessageSeriesEnd(const std::string& channel, int messageEnd, bool blocking)
+		{CRYPTOPP_UNUSED(channel); CRYPTOPP_UNUSED(messageEnd); CRYPTOPP_UNUSED(blocking); throw InputRejected();}
+	//@}
 };
 
 /// \brief Interface for custom flush signals propagation
@@ -171,30 +171,30 @@ template <class T>
 class CRYPTOPP_NO_VTABLE CustomFlushPropagation : public T
 {
 public:
-    ///    \name SIGNALS
-    //@{
+	///	\name SIGNALS
+	//@{
 
-    /// \brief Flush buffered input and/or output, with signal propagation
-    /// \param hardFlush is used to indicate whether all data should be flushed
-    /// \param propagation the number of attached transformations the  Flush() signal should be passed
-    /// \param blocking specifies whether the object should block when processing input
-    /// \details propagation count includes this object. Setting propagation to <tt>1</tt> means this
-    ///   object only. Setting propagation to <tt>-1</tt> means unlimited propagation.
-    /// \note Hard flushes must be used with care. It means try to process and output everything, even if
-    ///   there may not be enough data to complete the action. For example, hard flushing a HexDecoder
-    ///   would cause an error if you do it after inputing an odd number of hex encoded characters.
-    /// \note For some types of filters, like  ZlibDecompressor, hard flushes can only
-    ///   be done at "synchronization points". These synchronization points are positions in the data
-    ///   stream that are created by hard flushes on the corresponding reverse filters, in this
-    ///   example ZlibCompressor. This is useful when zlib compressed data is moved across a
-    ///   network in packets and compression state is preserved across packets, as in the SSH2 protocol.
-    virtual bool Flush(bool hardFlush, int propagation=-1, bool blocking=true) =0;
+	/// \brief Flush buffered input and/or output, with signal propagation
+	/// \param hardFlush is used to indicate whether all data should be flushed
+	/// \param propagation the number of attached transformations the  Flush() signal should be passed
+	/// \param blocking specifies whether the object should block when processing input
+	/// \details propagation count includes this object. Setting propagation to <tt>1</tt> means this
+	///   object only. Setting propagation to <tt>-1</tt> means unlimited propagation.
+	/// \note Hard flushes must be used with care. It means try to process and output everything, even if
+	///   there may not be enough data to complete the action. For example, hard flushing a HexDecoder
+	///   would cause an error if you do it after inputing an odd number of hex encoded characters.
+	/// \note For some types of filters, like  ZlibDecompressor, hard flushes can only
+	///   be done at "synchronization points". These synchronization points are positions in the data
+	///   stream that are created by hard flushes on the corresponding reverse filters, in this
+	///   example ZlibCompressor. This is useful when zlib compressed data is moved across a
+	///   network in packets and compression state is preserved across packets, as in the SSH2 protocol.
+	virtual bool Flush(bool hardFlush, int propagation=-1, bool blocking=true) =0;
 
-    //@}
+	//@}
 
 private:
-    bool IsolatedFlush(bool hardFlush, bool blocking)
-        {CRYPTOPP_UNUSED(hardFlush); CRYPTOPP_UNUSED(blocking); CRYPTOPP_ASSERT(false); return false;}
+	bool IsolatedFlush(bool hardFlush, bool blocking)
+		{CRYPTOPP_UNUSED(hardFlush); CRYPTOPP_UNUSED(blocking); CRYPTOPP_ASSERT(false); return false;}
 };
 
 /// \brief Interface for custom flush signals
@@ -203,19 +203,19 @@ template <class T>
 class CRYPTOPP_NO_VTABLE CustomSignalPropagation : public CustomFlushPropagation<T>
 {
 public:
-    /// \brief Initialize or reinitialize this object, with signal propagation
-    /// \param parameters a set of NameValuePairs to initialize or reinitialize this object
-    /// \param propagation the number of attached transformations the Initialize() signal should be passed
-    /// \details Initialize() is used to initialize or reinitialize an object using a variable number of
-    ///   arbitrarily typed arguments. The function avoids the need for multiple constructors providing
-    ///   all possible combintations of configurable parameters.
-    /// \details propagation count includes this object. Setting propagation to <tt>1</tt> means this
-    ///   object only. Setting propagation to <tt>-1</tt> means unlimited propagation.
-    virtual void Initialize(const NameValuePairs &parameters=g_nullNameValuePairs, int propagation=-1) =0;
+	/// \brief Initialize or reinitialize this object, with signal propagation
+	/// \param parameters a set of NameValuePairs to initialize or reinitialize this object
+	/// \param propagation the number of attached transformations the Initialize() signal should be passed
+	/// \details Initialize() is used to initialize or reinitialize an object using a variable number of
+	///   arbitrarily typed arguments. The function avoids the need for multiple constructors providing
+	///   all possible combintations of configurable parameters.
+	/// \details propagation count includes this object. Setting propagation to <tt>1</tt> means this
+	///   object only. Setting propagation to <tt>-1</tt> means unlimited propagation.
+	virtual void Initialize(const NameValuePairs &parameters=g_nullNameValuePairs, int propagation=-1) =0;
 
 private:
-    void IsolatedInitialize(const NameValuePairs &parameters)
-        {CRYPTOPP_UNUSED(parameters); CRYPTOPP_ASSERT(false);}
+	void IsolatedInitialize(const NameValuePairs &parameters)
+		{CRYPTOPP_UNUSED(parameters); CRYPTOPP_ASSERT(false);}
 };
 
 /// \brief Multiple channels support for custom signal processing
@@ -225,62 +225,62 @@ template <class T>
 class CRYPTOPP_NO_VTABLE Multichannel : public CustomFlushPropagation<T>
 {
 public:
-    bool Flush(bool hardFlush, int propagation=-1, bool blocking=true)
-        {return this->ChannelFlush(DEFAULT_CHANNEL, hardFlush, propagation, blocking);}
+	bool Flush(bool hardFlush, int propagation=-1, bool blocking=true)
+		{return this->ChannelFlush(DEFAULT_CHANNEL, hardFlush, propagation, blocking);}
 
-    /// \brief Marks the end of a series of messages, with signal propagation
-    /// \param propagation the number of attached transformations the  MessageSeriesEnd() signal should be passed
-    /// \param blocking specifies whether the object should block when processing input
-    /// \details Each object that receives the signal will perform its processing, decrement
-    ///    propagation, and then pass the signal on to attached transformations if the value is not 0.
-    /// \details propagation count includes this object. Setting propagation to <tt>1</tt> means this
-    ///   object only. Setting propagation to <tt>-1</tt> means unlimited propagation.
-    /// \note There should be a MessageEnd() immediately before MessageSeriesEnd().
-    bool MessageSeriesEnd(int propagation=-1, bool blocking=true)
-        {return this->ChannelMessageSeriesEnd(DEFAULT_CHANNEL, propagation, blocking);}
+	/// \brief Marks the end of a series of messages, with signal propagation
+	/// \param propagation the number of attached transformations the  MessageSeriesEnd() signal should be passed
+	/// \param blocking specifies whether the object should block when processing input
+	/// \details Each object that receives the signal will perform its processing, decrement
+	///    propagation, and then pass the signal on to attached transformations if the value is not 0.
+	/// \details propagation count includes this object. Setting propagation to <tt>1</tt> means this
+	///   object only. Setting propagation to <tt>-1</tt> means unlimited propagation.
+	/// \note There should be a MessageEnd() immediately before MessageSeriesEnd().
+	bool MessageSeriesEnd(int propagation=-1, bool blocking=true)
+		{return this->ChannelMessageSeriesEnd(DEFAULT_CHANNEL, propagation, blocking);}
 
-    /// \brief Request space which can be written into by the caller
-    /// \param size the requested size of the buffer
-    /// \details The purpose of this method is to help avoid extra memory allocations.
-    /// \details size is an \a IN and \a OUT parameter and used as a hint. When the call is made,
-    ///    size is the requested size of the buffer. When the call returns,  size is the size of
-    ///   the array returned to the caller.
-    /// \details The base class implementation sets  size to 0 and returns  NULL.
-    /// \note Some objects, like ArraySink, cannot create a space because its fixed. In the case of
-    /// an ArraySink, the pointer to the array is returned and the  size is remaining size.
-    byte * CreatePutSpace(size_t &size)
-        {return this->ChannelCreatePutSpace(DEFAULT_CHANNEL, size);}
+	/// \brief Request space which can be written into by the caller
+	/// \param size the requested size of the buffer
+	/// \details The purpose of this method is to help avoid extra memory allocations.
+	/// \details size is an \a IN and \a OUT parameter and used as a hint. When the call is made,
+	///    size is the requested size of the buffer. When the call returns,  size is the size of
+	///   the array returned to the caller.
+	/// \details The base class implementation sets  size to 0 and returns  NULL.
+	/// \note Some objects, like ArraySink, cannot create a space because its fixed. In the case of
+	/// an ArraySink, the pointer to the array is returned and the  size is remaining size.
+	byte * CreatePutSpace(size_t &size)
+		{return this->ChannelCreatePutSpace(DEFAULT_CHANNEL, size);}
 
-    /// \brief Input multiple bytes for processing
-    /// \param inString the byte buffer to process
-    /// \param length the size of the string, in bytes
-    /// \param messageEnd means how many filters to signal MessageEnd() to, including this one
-    /// \param blocking specifies whether the object should block when processing input
-    /// \details Derived classes must implement Put2().
-    size_t Put2(const byte *inString, size_t length, int messageEnd, bool blocking)
-        {return this->ChannelPut2(DEFAULT_CHANNEL, inString, length, messageEnd, blocking);}
+	/// \brief Input multiple bytes for processing
+	/// \param inString the byte buffer to process
+	/// \param length the size of the string, in bytes
+	/// \param messageEnd means how many filters to signal MessageEnd() to, including this one
+	/// \param blocking specifies whether the object should block when processing input
+	/// \details Derived classes must implement Put2().
+	size_t Put2(const byte *inString, size_t length, int messageEnd, bool blocking)
+		{return this->ChannelPut2(DEFAULT_CHANNEL, inString, length, messageEnd, blocking);}
 
-    /// \brief Input multiple bytes that may be modified by callee.
-    /// \param inString the byte buffer to process.
-    /// \param length the size of the string, in bytes.
-    /// \param messageEnd means how many filters to signal MessageEnd() to, including this one.
-    /// \param blocking specifies whether the object should block when processing input.
-    /// \details Internally, PutModifiable2() calls Put2().
-    size_t PutModifiable2(byte *inString, size_t length, int messageEnd, bool blocking)
-        {return this->ChannelPutModifiable2(DEFAULT_CHANNEL, inString, length, messageEnd, blocking);}
+	/// \brief Input multiple bytes that may be modified by callee.
+	/// \param inString the byte buffer to process.
+	/// \param length the size of the string, in bytes.
+	/// \param messageEnd means how many filters to signal MessageEnd() to, including this one.
+	/// \param blocking specifies whether the object should block when processing input.
+	/// \details Internally, PutModifiable2() calls Put2().
+	size_t PutModifiable2(byte *inString, size_t length, int messageEnd, bool blocking)
+		{return this->ChannelPutModifiable2(DEFAULT_CHANNEL, inString, length, messageEnd, blocking);}
 
-//    void ChannelMessageSeriesEnd(const std::string &channel, int propagation=-1)
-//        {PropagateMessageSeriesEnd(propagation, channel);}
-    byte * ChannelCreatePutSpace(const std::string &channel, size_t &size)
-        {CRYPTOPP_UNUSED(channel); size = 0; return NULLPTR;}
-    bool ChannelPutModifiable(const std::string &channel, byte *inString, size_t length)
-        {this->ChannelPut(channel, inString, length); return false;}
+//	void ChannelMessageSeriesEnd(const std::string &channel, int propagation=-1)
+//		{PropagateMessageSeriesEnd(propagation, channel);}
+	byte * ChannelCreatePutSpace(const std::string &channel, size_t &size)
+		{CRYPTOPP_UNUSED(channel); size = 0; return NULLPTR;}
+	bool ChannelPutModifiable(const std::string &channel, byte *inString, size_t length)
+		{this->ChannelPut(channel, inString, length); return false;}
 
-    virtual size_t ChannelPut2(const std::string &channel, const byte *begin, size_t length, int messageEnd, bool blocking) =0;
-    size_t ChannelPutModifiable2(const std::string &channel, byte *begin, size_t length, int messageEnd, bool blocking)
-        {return ChannelPut2(channel, begin, length, messageEnd, blocking);}
+	virtual size_t ChannelPut2(const std::string &channel, const byte *begin, size_t length, int messageEnd, bool blocking) =0;
+	size_t ChannelPutModifiable2(const std::string &channel, byte *begin, size_t length, int messageEnd, bool blocking)
+		{return ChannelPut2(channel, begin, length, messageEnd, blocking);}
 
-    virtual bool ChannelFlush(const std::string &channel, bool hardFlush, int propagation=-1, bool blocking=true) =0;
+	virtual bool ChannelFlush(const std::string &channel, bool hardFlush, int propagation=-1, bool blocking=true) =0;
 };
 
 /// \brief Provides auto signaling support
@@ -289,40 +289,40 @@ template <class T>
 class CRYPTOPP_NO_VTABLE AutoSignaling : public T
 {
 public:
-    /// \brief Construct an AutoSignaling
-    /// \param propagation the propagation count
-    AutoSignaling(int propagation=-1) : m_autoSignalPropagation(propagation) {}
+	/// \brief Construct an AutoSignaling
+	/// \param propagation the propagation count
+	AutoSignaling(int propagation=-1) : m_autoSignalPropagation(propagation) {}
 
-    void SetAutoSignalPropagation(int propagation)
-        {m_autoSignalPropagation = propagation;}
-    int GetAutoSignalPropagation() const
-        {return m_autoSignalPropagation;}
+	void SetAutoSignalPropagation(int propagation)
+		{m_autoSignalPropagation = propagation;}
+	int GetAutoSignalPropagation() const
+		{return m_autoSignalPropagation;}
 
 private:
-    int m_autoSignalPropagation;
+	int m_autoSignalPropagation;
 };
 
 /// \brief Acts as a Source for pre-existing, static data
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE Store : public AutoSignaling<InputRejecting<BufferedTransformation> >
 {
 public:
-    /// \brief Construct a Store
-    Store() : m_messageEnd(false) {}
+	/// \brief Construct a Store
+	Store() : m_messageEnd(false) {}
 
-    void IsolatedInitialize(const NameValuePairs &parameters)
-    {
-        m_messageEnd = false;
-        StoreInitialize(parameters);
-    }
+	void IsolatedInitialize(const NameValuePairs &parameters)
+	{
+		m_messageEnd = false;
+		StoreInitialize(parameters);
+	}
 
-    unsigned int NumberOfMessages() const {return m_messageEnd ? 0 : 1;}
-    bool GetNextMessage();
-    unsigned int CopyMessagesTo(BufferedTransformation &target, unsigned int count=UINT_MAX, const std::string &channel=DEFAULT_CHANNEL) const;
+	unsigned int NumberOfMessages() const {return m_messageEnd ? 0 : 1;}
+	bool GetNextMessage();
+	unsigned int CopyMessagesTo(BufferedTransformation &target, unsigned int count=UINT_MAX, const std::string &channel=DEFAULT_CHANNEL) const;
 
 protected:
-    virtual void StoreInitialize(const NameValuePairs &parameters) =0;
+	virtual void StoreInitialize(const NameValuePairs &parameters) =0;
 
-    bool m_messageEnd;
+	bool m_messageEnd;
 };
 
 /// \brief Implementation of BufferedTransformation's attachment interface
@@ -337,10 +337,10 @@ protected:
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE Sink : public BufferedTransformation
 {
 public:
-    size_t TransferTo2(BufferedTransformation &target, lword &transferBytes, const std::string &channel=DEFAULT_CHANNEL, bool blocking=true)
-        {CRYPTOPP_UNUSED(target); CRYPTOPP_UNUSED(transferBytes); CRYPTOPP_UNUSED(channel); CRYPTOPP_UNUSED(blocking); transferBytes = 0; return 0;}
-    size_t CopyRangeTo2(BufferedTransformation &target, lword &begin, lword end=LWORD_MAX, const std::string &channel=DEFAULT_CHANNEL, bool blocking=true) const
-        {CRYPTOPP_UNUSED(target); CRYPTOPP_UNUSED(begin); CRYPTOPP_UNUSED(end); CRYPTOPP_UNUSED(channel); CRYPTOPP_UNUSED(blocking); return 0;}
+	size_t TransferTo2(BufferedTransformation &target, lword &transferBytes, const std::string &channel=DEFAULT_CHANNEL, bool blocking=true)
+		{CRYPTOPP_UNUSED(target); CRYPTOPP_UNUSED(transferBytes); CRYPTOPP_UNUSED(channel); CRYPTOPP_UNUSED(blocking); transferBytes = 0; return 0;}
+	size_t CopyRangeTo2(BufferedTransformation &target, lword &begin, lword end=LWORD_MAX, const std::string &channel=DEFAULT_CHANNEL, bool blocking=true) const
+		{CRYPTOPP_UNUSED(target); CRYPTOPP_UNUSED(begin); CRYPTOPP_UNUSED(end); CRYPTOPP_UNUSED(channel); CRYPTOPP_UNUSED(blocking); return 0;}
 };
 
 /// \brief Acts as an input discarding Filter or Sink
@@ -349,11 +349,11 @@ public:
 class CRYPTOPP_DLL BitBucket : public Bufferless<Sink>
 {
 public:
-    std::string AlgorithmName() const {return "BitBucket";}
-    void IsolatedInitialize(const NameValuePairs &params)
-        {CRYPTOPP_UNUSED(params);}
-    size_t Put2(const byte *inString, size_t length, int messageEnd, bool blocking)
-        {CRYPTOPP_UNUSED(inString); CRYPTOPP_UNUSED(length); CRYPTOPP_UNUSED(messageEnd); CRYPTOPP_UNUSED(blocking); return 0;}
+	std::string AlgorithmName() const {return "BitBucket";}
+	void IsolatedInitialize(const NameValuePairs &params)
+		{CRYPTOPP_UNUSED(params);}
+	size_t Put2(const byte *inString, size_t length, int messageEnd, bool blocking)
+		{CRYPTOPP_UNUSED(inString); CRYPTOPP_UNUSED(length); CRYPTOPP_UNUSED(messageEnd); CRYPTOPP_UNUSED(blocking); return 0;}
 };
 
 NAMESPACE_END

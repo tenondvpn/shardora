@@ -53,8 +53,8 @@ namespace log4cpp {
         //       The doubles are included so that doxygen will print them correctly.
         /**
          * Formats the LoggingEvent in the style set by
-         * the setConversionPattern call. By default, set
-         * to "%%m%%n"
+		 * the setConversionPattern call. By default, set
+		 * to "%%m%%n"
          **/
         virtual std::string format(const LoggingEvent& event);
 
@@ -71,9 +71,9 @@ namespace log4cpp {
          *  "Wed Jan 02 02:03:55 1980". The date format specifier admits the same syntax 
          *  as the ANSI C function strftime, with 2 additions. The additions are the specifier
          *  %%l for milliseconds (padded with zeros to make 3 digits), and the specifier %%L
-         *  for microseconds (padded with zeros to make 6 digits). NB the precision of
-         *  the microsecond additions is platform dependant, and may be no better than
-         *  milliseconds.</li>
+		 *  for microseconds (padded with zeros to make 6 digits). NB the precision of
+		 *  the microsecond additions is platform dependant, and may be no better than
+		 *  milliseconds.</li>
          * <li><b>%%m</b> - the message</li>
          * <li><b>%%n</b> - the platform specific line separator</li>
          * <li><b>%%p</b> - the priority</li>

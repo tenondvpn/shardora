@@ -27,27 +27,27 @@ NAMESPACE_BEGIN(CryptoPP)
 class SHA3 : public HashTransformation
 {
 public:
-    /// \brief Construct a SHA3
-    /// \param digestSize the digest size, in bytes
-    /// \details SHA3 is the base class for SHA3_224, SHA3_256, SHA3_384 and SHA3_512.
-    ///   Library users should instantiate a derived class, and only use SHA3
-    ///   as a base class reference or pointer.
-    SHA3(unsigned int digestSize) : m_digestSize(digestSize) {Restart();}
-    unsigned int DigestSize() const {return m_digestSize;}
-    std::string AlgorithmName() const {return "SHA3-" + IntToString(m_digestSize*8);}
-    CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() { return "SHA3"; }
-    unsigned int OptimalDataAlignment() const {return GetAlignmentOf<word64>();}
+	/// \brief Construct a SHA3
+	/// \param digestSize the digest size, in bytes
+	/// \details SHA3 is the base class for SHA3_224, SHA3_256, SHA3_384 and SHA3_512.
+	///   Library users should instantiate a derived class, and only use SHA3
+	///   as a base class reference or pointer.
+	SHA3(unsigned int digestSize) : m_digestSize(digestSize) {Restart();}
+	unsigned int DigestSize() const {return m_digestSize;}
+	std::string AlgorithmName() const {return "SHA3-" + IntToString(m_digestSize*8);}
+	CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() { return "SHA3"; }
+	unsigned int OptimalDataAlignment() const {return GetAlignmentOf<word64>();}
 
-    void Update(const byte *input, size_t length);
-    void Restart();
-    void TruncatedFinal(byte *hash, size_t size);
+	void Update(const byte *input, size_t length);
+	void Restart();
+	void TruncatedFinal(byte *hash, size_t size);
 
-    // unsigned int BlockSize() const { return r(); } // that's the idea behind it
+	// unsigned int BlockSize() const { return r(); } // that's the idea behind it
 protected:
-    inline unsigned int r() const {return 200 - 2 * m_digestSize;}
+	inline unsigned int r() const {return 200 - 2 * m_digestSize;}
 
-    FixedSizeSecBlock<word64, 25> m_state;
-    unsigned int m_digestSize, m_counter;
+	FixedSizeSecBlock<word64, 25> m_state;
+	unsigned int m_digestSize, m_counter;
 };
 
 /// \brief SHA3 message digest template
@@ -57,17 +57,17 @@ template<unsigned int T_DigestSize>
 class SHA3_Final : public SHA3
 {
 public:
-    CRYPTOPP_CONSTANT(DIGESTSIZE = T_DigestSize)
-    CRYPTOPP_CONSTANT(BLOCKSIZE = 200 - 2 * DIGESTSIZE)
+	CRYPTOPP_CONSTANT(DIGESTSIZE = T_DigestSize)
+	CRYPTOPP_CONSTANT(BLOCKSIZE = 200 - 2 * DIGESTSIZE)
 
-    /// \brief Construct a SHA3-X message digest
-    SHA3_Final() : SHA3(DIGESTSIZE) {}
-    static std::string StaticAlgorithmName() { return "SHA3-" + IntToString(DIGESTSIZE * 8); }
-    unsigned int BlockSize() const { return BLOCKSIZE; }
+	/// \brief Construct a SHA3-X message digest
+	SHA3_Final() : SHA3(DIGESTSIZE) {}
+	static std::string StaticAlgorithmName() { return "SHA3-" + IntToString(DIGESTSIZE * 8); }
+	unsigned int BlockSize() const { return BLOCKSIZE; }
 private:
 #if !defined(__BORLANDC__)
-    CRYPTOPP_COMPILE_ASSERT(BLOCKSIZE < 200); // ensure there was no underflow in the math
-    CRYPTOPP_COMPILE_ASSERT(BLOCKSIZE > (int)T_DigestSize); // this is a general expectation by HMAC
+	CRYPTOPP_COMPILE_ASSERT(BLOCKSIZE < 200); // ensure there was no underflow in the math
+	CRYPTOPP_COMPILE_ASSERT(BLOCKSIZE > (int)T_DigestSize); // this is a general expectation by HMAC
 #endif
 };
 

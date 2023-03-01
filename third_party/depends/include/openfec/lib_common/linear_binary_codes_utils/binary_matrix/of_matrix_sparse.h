@@ -51,27 +51,27 @@
  */
 typedef struct of_mod2entry
 {
-    /**
-     * Row and column indexes of this entry, starting at 0, and
-     * with -1 for a row or column header
-     */
+	/**
+	 * Row and column indexes of this entry, starting at 0, and
+	 * with -1 for a row or column header
+	 */
 #ifdef SPARSE_MATRIX_OPT_SMALL_INDEXES /* memory optimization, see ldpc_profile.h */
-    currently not used... otherwise remove this line...
-    INT16    row;
-    INT16    col;
+	currently not used... otherwise remove this line...
+	INT16	row;
+	INT16	col;
 #else
-    INT32    row;
-    INT32    col;
+	INT32	row;
+	INT32	col;
 #endif
-    /**
-     * Pointers to entries adjacent in row and column, or to headers.
-     * Free entries are linked by 'left'.
-     */
-    struct of_mod2entry    *left,            
-                *right,
-                *down;
+	/**
+	 * Pointers to entries adjacent in row and column, or to headers.
+	 * Free entries are linked by 'left'.
+	 */
+	struct of_mod2entry	*left,			
+				*right,
+				*down;
 #ifndef SPARSE_MATRIX_OPT_FOR_LDPC_STAIRCASE /* memory optimization */
-    struct of_mod2entry    *up;
+	struct of_mod2entry	*up;
 #endif
 } of_mod2entry;
 
@@ -83,11 +83,11 @@ typedef struct of_mod2entry
  */
 typedef struct of_mod2block
 {
-    /** Next block that has been allocated. */
-    struct of_mod2block *next;
+	/** Next block that has been allocated. */
+	struct of_mod2block *next;
 
-    /** Entries in this block. */
-    of_mod2entry    entry[of_mod2sparse_block];
+	/** Entries in this block. */
+	of_mod2entry	entry[of_mod2sparse_block];
 } of_mod2block;
 
 
@@ -96,17 +96,17 @@ typedef struct of_mod2block
  */
 typedef struct of_mod2sparse
 {
-    INT32 n_rows;          /* Number of rows in the matrix */
-    INT32 n_cols;          /* Number of columns in the matrix */
+	INT32 n_rows;		  /* Number of rows in the matrix */
+	INT32 n_cols;		  /* Number of columns in the matrix */
 
-    of_mod2entry *rows;      /* Pointer to array of row headers */
-    of_mod2entry *cols;      /* Pointer to array of column headers */
+	of_mod2entry *rows;	  /* Pointer to array of row headers */
+	of_mod2entry *cols;	  /* Pointer to array of column headers */
 
-    of_mod2block *blocks;      /* Blocks that have been allocated */
-    of_mod2entry *next_free;  /* Next free entry */
+	of_mod2block *blocks;	  /* Blocks that have been allocated */
+	of_mod2entry *next_free;  /* Next free entry */
 
 #ifdef LDPC_QC
-    INT32 exp_factor;           /* expansion factor of the matrix, it is also the size of the circulant matrix */
+	INT32 exp_factor;           /* expansion factor of the matrix, it is also the size of the circulant matrix */
 #endif
 } of_mod2sparse;
 
@@ -183,9 +183,9 @@ void of_mod2sparse_copycols (of_mod2sparse *, of_mod2sparse *, UINT32 *);
  *                                finding the good position
  */
 void of_mod2sparse_copyrows_opt (of_mod2sparse * m,
-                 of_mod2sparse * r,
-                 UINT32 * rows,
-                 of_mod2entry ** __parsing);
+				 of_mod2sparse * r,
+				 UINT32 * rows,
+				 of_mod2entry ** __parsing);
 
 
 /**
@@ -196,8 +196,8 @@ void of_mod2sparse_copyrows_opt (of_mod2sparse * m,
  * @param cols             (IN)   List of cols to copy
  */
 void of_mod2sparse_copycols_opt (of_mod2sparse * m,
-                 of_mod2sparse * r,
-                 UINT32 * cols);
+				 of_mod2sparse * r,
+				 UINT32 * cols);
 
 #endif // #if defined(ML_DECODING)
 
@@ -221,32 +221,32 @@ of_mod2sparse *mod2sparse_read (FILE *);
 #endif // #if 0
 
 UINT32 of_mod2sparse_write_human_readable (FILE *,
-                       of_mod2sparse *,
-                       UINT32 nb_source,
-                       UINT32 nb_parity);
+					   of_mod2sparse *,
+					   UINT32 nb_source,
+					   UINT32 nb_parity);
 
 of_mod2sparse *of_mod2sparse_read_human_readable (FILE *f,
-                          UINT32 *nb_source,
-                          UINT32 *nb_parity);
+						  UINT32 *nb_source,
+						  UINT32 *nb_parity);
 
 /* PRINT matrix statistics: average number of 1's per row/line etc ...*/
 
 void of_mod2sparse_matrix_stats (FILE *,
-                 of_mod2sparse *,
-                 UINT32 nb_src,
-                 UINT32 nb_par);
+				 of_mod2sparse *,
+				 UINT32 nb_src,
+				 UINT32 nb_par);
 
 
 of_mod2entry *of_mod2sparse_find (of_mod2sparse *,
-                  UINT32,
-                  UINT32);
+				  UINT32,
+				  UINT32);
 
 of_mod2entry *of_mod2sparse_insert (of_mod2sparse *,
-                    UINT32,
-                    UINT32);
+				    UINT32,
+				    UINT32);
 
 void of_mod2sparse_delete (of_mod2sparse *,
-               of_mod2entry *);
+			   of_mod2entry *);
 
 
 #if defined(ML_DECODING)
@@ -273,11 +273,11 @@ void of_mod2sparse_delete (of_mod2sparse *,
  * @return                           The hamming weight of the new row0 line
  */
 UINT32  of_mod2sparse_swap_rows (of_mod2sparse * m,
-                 UINT32 row0,
-                 UINT32 row1,
-                 of_mod2sparse * __swapMatrix,
-                 of_mod2entry ** __links,
-                 of_mod2entry ** __parsing);
+				 UINT32 row0,
+				 UINT32 row1,
+				 of_mod2sparse * __swapMatrix,
+				 of_mod2entry ** __links,
+				 of_mod2entry ** __parsing);
 
 /**
  * XOR two lines of the matrix m: row1 = row0 + row1.
@@ -296,9 +296,9 @@ UINT32  of_mod2sparse_swap_rows (of_mod2sparse * m,
  * @return                           The hamming weight of the new row1 line
  */
 UINT32  of_mod2sparse_xor_rows (of_mod2sparse * m,
-                UINT32 row0, UINT32 row1,
-                of_mod2entry ** __links,
-                of_mod2entry ** __parsing);
+				UINT32 row0, UINT32 row1,
+				of_mod2entry ** __links,
+				of_mod2entry ** __parsing);
 
 /**
  * Determine if a row is empty
@@ -362,17 +362,17 @@ void mod2sparse_add_row (of_mod2sparse *, UINT32, of_mod2sparse *, UINT32);
 void mod2sparse_add_col (of_mod2sparse *, UINT32, of_mod2sparse *, UINT32);
 
 UINT32 mod2sparse_decomp (of_mod2sparse *, UINT32, of_mod2sparse *, of_mod2sparse *,
-               UINT32 *, UINT32 *, mod2sparse_strategy,UINT32, UINT32);
+		       UINT32 *, UINT32 *, mod2sparse_strategy,UINT32, UINT32);
 
 UINT32 mod2sparse_forward_sub (of_mod2sparse *, UINT32 *, UINT8 *, UINT8 *);
 UINT32 mod2sparse_backward_sub (of_mod2sparse *, UINT32 *, UINT8 *, UINT8 *);
 #endif
 
 /* copy only filled rows and cols from m to r */
-void of_mod2sparse_copy_filled_matrix  (of_mod2sparse    *m,
-                    of_mod2sparse    *r,
-                    UINT32        *index_rows,
-                    UINT32        *index_cols);
+void of_mod2sparse_copy_filled_matrix  (of_mod2sparse	*m,
+					of_mod2sparse	*r,
+					UINT32		*index_rows,
+					UINT32		*index_cols);
 
 #endif /* #ifndef OF_LDPC_MATRIX_SPARSE__ */
 

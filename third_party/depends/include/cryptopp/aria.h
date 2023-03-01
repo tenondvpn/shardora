@@ -23,7 +23,7 @@ NAMESPACE_BEGIN(CryptoPP)
 /// \since Crypto++ 6.0
 struct ARIA_Info : public FixedBlockSize<16>, public VariableKeyLength<16, 16, 32, 8>
 {
-    CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() {return "ARIA";}
+	CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() {return "ARIA";}
 };
 
 /// \brief ARIA block cipher
@@ -39,28 +39,28 @@ struct ARIA_Info : public FixedBlockSize<16>, public VariableKeyLength<16, 16, 3
 class ARIA : public ARIA_Info, public BlockCipherDocumentation
 {
 public:
-    class CRYPTOPP_NO_VTABLE Base : public BlockCipherImpl<ARIA_Info>
-    {
-    public:
-        Base() : m_rounds(0) {}
+	class CRYPTOPP_NO_VTABLE Base : public BlockCipherImpl<ARIA_Info>
+	{
+	public:
+		Base() : m_rounds(0) {}
 
-    protected:
-        void UncheckedSetKey(const byte *key, unsigned int keylen, const NameValuePairs &params);
-        void ProcessAndXorBlock(const byte *inBlock, const byte *xorBlock, byte *outBlock) const;
+	protected:
+		void UncheckedSetKey(const byte *key, unsigned int keylen, const NameValuePairs &params);
+		void ProcessAndXorBlock(const byte *inBlock, const byte *xorBlock, byte *outBlock) const;
 
-    private:
-        // Reference implementation allocates a table of 17 round keys.
-        typedef SecBlock<byte, AllocatorWithCleanup<byte, true> >     AlignedByteBlock;
-        typedef SecBlock<word32, AllocatorWithCleanup<word32, true> > AlignedWordBlock;
+	private:
+		// Reference implementation allocates a table of 17 round keys.
+		typedef SecBlock<byte, AllocatorWithCleanup<byte, true> >     AlignedByteBlock;
+		typedef SecBlock<word32, AllocatorWithCleanup<word32, true> > AlignedWordBlock;
 
-        AlignedByteBlock  m_rk;  // round keys
-        AlignedWordBlock  m_w;   // w0, w1, w2, w3, t and u
-        unsigned int m_rounds;
-    };
+		AlignedByteBlock  m_rk;  // round keys
+		AlignedWordBlock  m_w;   // w0, w1, w2, w3, t and u
+		unsigned int m_rounds;
+	};
 
 public:
-    typedef BlockCipherFinal<ENCRYPTION, Base> Encryption;
-    typedef BlockCipherFinal<DECRYPTION, Base> Decryption;
+	typedef BlockCipherFinal<ENCRYPTION, Base> Encryption;
+	typedef BlockCipherFinal<DECRYPTION, Base> Decryption;
 };
 
 typedef ARIA::Encryption ARIAEncryption;

@@ -52,22 +52,22 @@
  * This function solves the system: first triangularize the system, then for each column,
  * do a forward elimination, then do the backward elimination.
  *
- * @fn INT32            of_linear_binary_code_solve_dense_system (of_mod2dense *m,void ** constant_member,void **variables,of_linear_binary_code_cb_t *ofcb)
- * @brief            solves the system
- * @param m             (IN/OUT) address of the dense matrix.
+ * @fn INT32			of_linear_binary_code_solve_dense_system (of_mod2dense *m,void ** constant_member,void **variables,of_linear_binary_code_cb_t *ofcb)
+ * @brief			solves the system
+ * @param m 			(IN/OUT) address of the dense matrix.
  * @param variables
- * @param constant_member    (IN/OUT)pointer to all constant members
- * @param ofcb            (IN/OUT) Linear-Binary-Code control-block.
- * @return            error status
+ * @param constant_member	(IN/OUT)pointer to all constant members
+ * @param ofcb			(IN/OUT) Linear-Binary-Code control-block.
+ * @return			error status
  */
 of_status_t
-of_linear_binary_code_solve_dense_system (of_linear_binary_code_cb_t    *ofcb,
-                      of_mod2dense        *m,
-                      void            **constant_tab,
-                      void            **variable_tab);
+of_linear_binary_code_solve_dense_system (of_linear_binary_code_cb_t	*ofcb,
+					  of_mod2dense		*m,
+					  void			**constant_tab,
+					  void			**variable_tab);
 
 
-#endif //ML_DECODING                   
+#endif //ML_DECODING				   
 #endif //OF_USE_LINEAR_BINARY_CODES_UTILS
 #endif //OF_USE_DECODER
 

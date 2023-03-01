@@ -22,10 +22,10 @@
 # /* MSGPACK_PP_REM */
 #
 # if MSGPACK_PP_VARIADICS
-#      if MSGPACK_PP_VARIADICS_MSVC
-        /* To be used internally when __VA_ARGS__ could be empty ( or is a single element ) */
-#        define MSGPACK_PP_REM_CAT(...) MSGPACK_PP_CAT(__VA_ARGS__,)
-#      endif
+# 	 if MSGPACK_PP_VARIADICS_MSVC
+		/* To be used internally when __VA_ARGS__ could be empty ( or is a single element ) */
+#    	define MSGPACK_PP_REM_CAT(...) MSGPACK_PP_CAT(__VA_ARGS__,)
+# 	 endif
 #    define MSGPACK_PP_REM(...) __VA_ARGS__
 # else
 #    define MSGPACK_PP_REM(x) x
@@ -37,10 +37,10 @@
   VC++8.0 cannot handle the variadic version of MSGPACK_PP_TUPLE_REM(size)
 */
 # if MSGPACK_PP_VARIADICS && !(MSGPACK_PP_VARIADICS_MSVC && _MSC_VER <= 1400)
-#      if MSGPACK_PP_VARIADICS_MSVC
-        /* To be used internally when the size could be 0 ( or 1 ) */
-#        define MSGPACK_PP_TUPLE_REM_CAT(size) MSGPACK_PP_REM_CAT
-#      endif
+# 	 if MSGPACK_PP_VARIADICS_MSVC
+		/* To be used internally when the size could be 0 ( or 1 ) */
+#    	define MSGPACK_PP_TUPLE_REM_CAT(size) MSGPACK_PP_REM_CAT
+# 	 endif
 #    define MSGPACK_PP_TUPLE_REM(size) MSGPACK_PP_REM
 # else
 #    if ~MSGPACK_PP_CONFIG_FLAGS() & MSGPACK_PP_CONFIG_MWCC()
@@ -124,10 +124,10 @@
 #        define MSGPACK_PP_TUPLE_REM_CTOR(...) MSGPACK_PP_TUPLE_REM_CTOR_I(MSGPACK_PP_OVERLOAD(MSGPACK_PP_TUPLE_REM_CTOR_O_, __VA_ARGS__), (__VA_ARGS__))
 #        define MSGPACK_PP_TUPLE_REM_CTOR_I(m, args) MSGPACK_PP_TUPLE_REM_CTOR_II(m, args)
 #        define MSGPACK_PP_TUPLE_REM_CTOR_II(m, args) MSGPACK_PP_CAT(m ## args,)
-#         define MSGPACK_PP_TUPLE_REM_CTOR_O_1(tuple) MSGPACK_PP_EXPAND(MSGPACK_PP_TUPLE_IS_SINGLE_RETURN(MSGPACK_PP_REM_CAT,MSGPACK_PP_REM,tuple) tuple)
+#    	 define MSGPACK_PP_TUPLE_REM_CTOR_O_1(tuple) MSGPACK_PP_EXPAND(MSGPACK_PP_TUPLE_IS_SINGLE_RETURN(MSGPACK_PP_REM_CAT,MSGPACK_PP_REM,tuple) tuple)
 #    else
 #        define MSGPACK_PP_TUPLE_REM_CTOR(...) MSGPACK_PP_OVERLOAD(MSGPACK_PP_TUPLE_REM_CTOR_O_, __VA_ARGS__)(__VA_ARGS__)
-#         define MSGPACK_PP_TUPLE_REM_CTOR_O_1(tuple) MSGPACK_PP_REM tuple
+#    	 define MSGPACK_PP_TUPLE_REM_CTOR_O_1(tuple) MSGPACK_PP_REM tuple
 #    endif
 #    define MSGPACK_PP_TUPLE_REM_CTOR_O_2(size, tuple) MSGPACK_PP_TUPLE_REM_CTOR_O_1(tuple)
 # else

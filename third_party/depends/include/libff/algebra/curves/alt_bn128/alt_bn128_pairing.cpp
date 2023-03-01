@@ -406,7 +406,7 @@ alt_bn128_Fq12 alt_bn128_ate_miller_loop(const alt_bn128_ate_G1_precomp &prec_P,
 
     if (alt_bn128_ate_is_loop_count_neg)
     {
-        f = f.inverse();
+    	f = f.inverse();
     }
 
     c = prec_Q.coeffs[idx++];
@@ -468,7 +468,7 @@ alt_bn128_Fq12 alt_bn128_ate_double_miller_loop(const alt_bn128_ate_G1_precomp &
 
     if (alt_bn128_ate_is_loop_count_neg)
     {
-        f = f.inverse();
+    	f = f.inverse();
     }
 
     alt_bn128_ate_ell_coeffs c1 = prec_Q1.coeffs[idx];

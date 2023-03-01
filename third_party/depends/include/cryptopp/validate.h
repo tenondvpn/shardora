@@ -174,119 +174,119 @@ bool TestAltivecOps();
 class FixedRNG : public RandomNumberGenerator
 {
 public:
-    FixedRNG(BufferedTransformation &source) : m_source(source) {}
+	FixedRNG(BufferedTransformation &source) : m_source(source) {}
 
-    void GenerateBlock(byte *output, size_t size)
-    {
-        m_source.Get(output, size);
-    }
+	void GenerateBlock(byte *output, size_t size)
+	{
+		m_source.Get(output, size);
+	}
 
 private:
-    BufferedTransformation &m_source;
+	BufferedTransformation &m_source;
 };
 
 // Safer functions on Windows for C&A, http://github.com/weidai11/cryptopp/issues/55
 inline std::string TimeToString(const time_t& t)
 {
 #if (CRYPTOPP_MSC_VERSION >= 1400)
-    tm localTime = {};
-    char timeBuf[64];
-    errno_t err;
+	tm localTime = {};
+	char timeBuf[64];
+	errno_t err;
 
-    err = ::localtime_s(&localTime, &t);
-    CRYPTOPP_ASSERT(err == 0);
-    err = ::asctime_s(timeBuf, sizeof(timeBuf), &localTime);
-    CRYPTOPP_ASSERT(err == 0);
+	err = ::localtime_s(&localTime, &t);
+	CRYPTOPP_ASSERT(err == 0);
+	err = ::asctime_s(timeBuf, sizeof(timeBuf), &localTime);
+	CRYPTOPP_ASSERT(err == 0);
 
-    std::string str(timeBuf);
+	std::string str(timeBuf);
 #else
-    std::string str(::asctime(::localtime(&t)));
+	std::string str(::asctime(::localtime(&t)));
 #endif
 
-    // Cleanup whitespace
-    std::string::size_type pos = 0;
-    while (!str.empty() && std::isspace(*(str.end()-1)))
-        {str.erase(str.end()-1);}
-    while (!str.empty() && std::string::npos != (pos = str.find("  ", pos)))
-        { str.erase(pos, 1); }
+	// Cleanup whitespace
+	std::string::size_type pos = 0;
+	while (!str.empty() && std::isspace(*(str.end()-1)))
+		{str.erase(str.end()-1);}
+	while (!str.empty() && std::string::npos != (pos = str.find("  ", pos)))
+		{ str.erase(pos, 1); }
 
-    return str;
+	return str;
 }
 
 // Coverity finding
 template <class T, bool NON_NEGATIVE>
 inline T StringToValue(const std::string& str)
 {
-    std::istringstream iss(str);
+	std::istringstream iss(str);
 
-    // Arbitrary, but we need to clear a Coverity finding TAINTED_SCALAR
-    if (iss.str().length() > 25)
-        throw InvalidArgument(str + "' is too long");
+	// Arbitrary, but we need to clear a Coverity finding TAINTED_SCALAR
+	if (iss.str().length() > 25)
+		throw InvalidArgument(str + "' is too long");
 
-    T value;
-    iss >> std::noskipws >> value;
+	T value;
+	iss >> std::noskipws >> value;
 
-    // Use fail(), not bad()
-    if (iss.fail())
-        throw InvalidArgument(str + "' is not a value");
+	// Use fail(), not bad()
+	if (iss.fail())
+		throw InvalidArgument(str + "' is not a value");
 
-    if (NON_NEGATIVE && value < 0)
-        throw InvalidArgument(str + "' is negative");
+	if (NON_NEGATIVE && value < 0)
+		throw InvalidArgument(str + "' is negative");
 
-    return value;
+	return value;
 }
 
 // Coverity finding
 template<>
 inline int StringToValue<int, true>(const std::string& str)
 {
-    Integer n(str.c_str());
-    long l = n.ConvertToLong();
+	Integer n(str.c_str());
+	long l = n.ConvertToLong();
 
-    int r;
-    if (!SafeConvert(l, r))
-        throw InvalidArgument(str + "' is not an integer value");
+	int r;
+	if (!SafeConvert(l, r))
+		throw InvalidArgument(str + "' is not an integer value");
 
-    return r;
+	return r;
 }
 
 inline std::string AddSeparator(std::string str)
 {
-    const char last = (str.empty() ? '\0' : *str.end()-1);
-    if (last != '/' && last != '\\')
-        return str + "/";
-    return str;
+	const char last = (str.empty() ? '\0' : *str.end()-1);
+	if (last != '/' && last != '\\')
+		return str + "/";
+	return str;
 }
 
 // Ideally we would cache the directory and just add the prefix
 // to subsequent calls, but ... Static Initialization Order Fiasco
 inline std::string DataDir(const std::string& filename)
 {
-    std::string name;
-    std::ifstream file;
+	std::string name;
+	std::ifstream file;
 #ifndef CRYPTOPP_DISABLE_DATA_DIR_SEARCH
-    // Data files in PWD are probably the newest. This is probably a build directory.
-    name = std::string("./") + filename;
-    file.open(name.c_str());
-    if (file.is_open())
-        return name;
+	// Data files in PWD are probably the newest. This is probably a build directory.
+	name = std::string("./") + filename;
+	file.open(name.c_str());
+	if (file.is_open())
+		return name;
 #endif
 #ifdef CRYPTOPP_DATA_DIR
-    // Honor the user's setting next. This is likely an install directory if it is not "./".
-    name = AddSeparator(CRYPTOPP_DATA_DIR) + filename;
-    file.open(name.c_str());
-    if (file.is_open())
-        return name;
+	// Honor the user's setting next. This is likely an install directory if it is not "./".
+	name = AddSeparator(CRYPTOPP_DATA_DIR) + filename;
+	file.open(name.c_str());
+	if (file.is_open())
+		return name;
 #endif
 #ifndef CRYPTOPP_DISABLE_DATA_DIR_SEARCH
-    // Finally look in $ORIGIN/../share/. This is likely a Linux install directory for users.
-    name = std::string("../share/cryptopp/") + filename;
-    file.open(name.c_str());
-    if (file.is_open())
-        return name;
+	// Finally look in $ORIGIN/../share/. This is likely a Linux install directory for users.
+	name = std::string("../share/cryptopp/") + filename;
+	file.open(name.c_str());
+	if (file.is_open())
+		return name;
 #endif
-    // This will cause the expected exception in the caller
-    return filename;
+	// This will cause the expected exception in the caller
+	return filename;
 }
 
 // Definition in test.cpp

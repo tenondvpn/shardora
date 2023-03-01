@@ -55,8 +55,8 @@ extern "C" {
 #include <event2/event_struct.h>
 
 struct event_watermark {
-    size_t low;
-    size_t high;
+	size_t low;
+	size_t high;
 };
 
 /**
@@ -68,45 +68,45 @@ struct event_watermark {
   it is fairly volatile, and WILL change in future versions of the code.
 **/
 struct bufferevent {
-    /** Event base for which this bufferevent was created. */
-    struct event_base *ev_base;
-    /** Pointer to a table of function pointers to set up how this
-        bufferevent behaves. */
-    const struct bufferevent_ops *be_ops;
+	/** Event base for which this bufferevent was created. */
+	struct event_base *ev_base;
+	/** Pointer to a table of function pointers to set up how this
+	    bufferevent behaves. */
+	const struct bufferevent_ops *be_ops;
 
-    /** A read event that triggers when a timeout has happened or a socket
-        is ready to read data.  Only used by some subtypes of
-        bufferevent. */
-    struct event ev_read;
-    /** A write event that triggers when a timeout has happened or a socket
-        is ready to write data.  Only used by some subtypes of
-        bufferevent. */
-    struct event ev_write;
+	/** A read event that triggers when a timeout has happened or a socket
+	    is ready to read data.  Only used by some subtypes of
+	    bufferevent. */
+	struct event ev_read;
+	/** A write event that triggers when a timeout has happened or a socket
+	    is ready to write data.  Only used by some subtypes of
+	    bufferevent. */
+	struct event ev_write;
 
-    /** An input buffer. Only the bufferevent is allowed to add data to
-        this buffer, though the user is allowed to drain it. */
-    struct evbuffer *input;
+	/** An input buffer. Only the bufferevent is allowed to add data to
+	    this buffer, though the user is allowed to drain it. */
+	struct evbuffer *input;
 
-    /** An output buffer. Only the bufferevent is allowed to drain data
-        from this buffer, though the user is allowed to add it. */
-    struct evbuffer *output;
+	/** An output buffer. Only the bufferevent is allowed to drain data
+	    from this buffer, though the user is allowed to add it. */
+	struct evbuffer *output;
 
-    struct event_watermark wm_read;
-    struct event_watermark wm_write;
+	struct event_watermark wm_read;
+	struct event_watermark wm_write;
 
-    bufferevent_data_cb readcb;
-    bufferevent_data_cb writecb;
-    /* This should be called 'eventcb', but renaming it would break
-     * backward compatibility */
-    bufferevent_event_cb errorcb;
-    void *cbarg;
+	bufferevent_data_cb readcb;
+	bufferevent_data_cb writecb;
+	/* This should be called 'eventcb', but renaming it would break
+	 * backward compatibility */
+	bufferevent_event_cb errorcb;
+	void *cbarg;
 
-    struct timeval timeout_read;
-    struct timeval timeout_write;
+	struct timeval timeout_read;
+	struct timeval timeout_write;
 
-    /** Events that are currently enabled: currently EV_READ and EV_WRITE
-        are supported. */
-    short enabled;
+	/** Events that are currently enabled: currently EV_READ and EV_WRITE
+	    are supported. */
+	short enabled;
 };
 
 #ifdef __cplusplus

@@ -36,27 +36,27 @@
 
 
 /**
- * \fn void        of_rfc5170_srand (UINT64 s)
+ * \fn void		of_rfc5170_srand (UINT64 s)
  * \brief Initialize the PRNG with a of_seed between 1 and 0x7FFFFFFE
  * (2^^31-2) inclusive.
- * \param s    (IN) seed
- * \return     void
+ * \param s	(IN) seed
+ * \return 	void
  */
-void        of_rfc5170_srand (UINT64 s);
+void		of_rfc5170_srand (UINT64 s);
 
 
 /**
- * \fn UINT64    of_rfc5170_rand (UINT64    maxv)
+ * \fn UINT64	of_rfc5170_rand (UINT64	maxv)
  * \brief Derived from rand31pmc, Robin Whittle, Sept 20th 2005.
  * http://www.firstpr.com.au/dsp/rand31/
- *    16807        multiplier constant (7^^5)
- *    0x7FFFFFFF    modulo constant (2^^31-1)
+ *	16807		multiplier constant (7^^5)
+ *	0x7FFFFFFF	modulo constant (2^^31-1)
  * The inner PRNG produces a value between 1 and 0x7FFFFFFE
  * (2^^31-2) inclusive.
  * This value is then scaled between 0 and maxv-1 inclusive.
  * This is the PRNG required by the LDPC-staircase RFC 5170.
  * \return Returns a random integer between 0 and maxv-1 inclusive.
  */
-UINT64    of_rfc5170_rand (UINT64    maxv);
+UINT64	of_rfc5170_rand (UINT64	maxv);
 
 #endif //OF_RAND

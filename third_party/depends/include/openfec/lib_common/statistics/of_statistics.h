@@ -43,29 +43,29 @@
  */
 typedef struct of_symbols_stats
 {
-    /** Number of source symbols received by decoder (they havn't been decoded). */
-    UINT32        nb_source_symbols_received;
-    /** Number of repair symbols received by decoder (they havn't been decoded). */
-    UINT32        nb_repair_symbols_received;
-    /** Number of source symbols decoded during IT decoding. */
-    UINT32        nb_source_symbols_built_with_it; 
-    /** Number of source symbols decoded during ML decoding. */
-    UINT32        nb_source_symbols_built_with_ml;
-    /** Number of repair symbols decoded during IT decoding. */
-    UINT32        nb_repair_symbols_built_with_it;
-    /** Number of repair symbols decoded during ML decoding. */
-    UINT32        nb_repair_symbols_built_with_ml;
-    /** Number of source symbols ...... */
-    UINT32        nb_source_symbols_ignored;
-    /** Number of repair symbols ...... */
-    UINT32        nb_repair_symbols_ignored;
+	/** Number of source symbols received by decoder (they havn't been decoded). */
+	UINT32		nb_source_symbols_received;
+	/** Number of repair symbols received by decoder (they havn't been decoded). */
+	UINT32		nb_repair_symbols_received;
+	/** Number of source symbols decoded during IT decoding. */
+	UINT32		nb_source_symbols_built_with_it; 
+	/** Number of source symbols decoded during ML decoding. */
+	UINT32		nb_source_symbols_built_with_ml;
+	/** Number of repair symbols decoded during IT decoding. */
+	UINT32		nb_repair_symbols_built_with_it;
+	/** Number of repair symbols decoded during ML decoding. */
+	UINT32		nb_repair_symbols_built_with_ml;
+	/** Number of source symbols ...... */
+	UINT32		nb_source_symbols_ignored;
+	/** Number of repair symbols ...... */
+	UINT32		nb_repair_symbols_ignored;
 } of_symbols_stats_t;
 
 
 /**
  * Print the statistics to the standard output.
  */
-void    of_print_symbols_stats(of_symbols_stats_t*);
+void	of_print_symbols_stats(of_symbols_stats_t*);
 
 
 #endif // OF_DEBUG

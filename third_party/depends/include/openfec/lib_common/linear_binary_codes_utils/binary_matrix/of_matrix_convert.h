@@ -20,23 +20,23 @@
 #ifdef OF_USE_LINEAR_BINARY_CODES_UTILS
 
 /**
- * @brief        convert a sparse matrix to a dense matrix
- * @param m        (IN) sparse matrix
- * @param r        (IN) dense matrix
- * @return        void
+ * @brief		convert a sparse matrix to a dense matrix
+ * @param m		(IN) sparse matrix
+ * @param r		(IN) dense matrix
+ * @return		void
  */
-void of_mod2sparse_to_dense (of_mod2sparse    *m,
-                 of_mod2dense    *r);
+void of_mod2sparse_to_dense (of_mod2sparse	*m,
+			     of_mod2dense	*r);
 
 
 /**
- * @brief        convert a dense matrix to a sparse matrix
- * @param m        (IN) dense matrix
- * @param r        (IN) sparse matrix
- * @return        void
+ * @brief		convert a dense matrix to a sparse matrix
+ * @param m		(IN) dense matrix
+ * @param r		(IN) sparse matrix
+ * @return		void
  */
-void of_mod2dense_to_sparse (of_mod2dense    *m,
-                 of_mod2sparse    *r);
+void of_mod2dense_to_sparse (of_mod2dense	*m,
+			     of_mod2sparse	*r);
 
 
 #endif //OF_USE_LINEAR_BINARY_CODES_UTILS

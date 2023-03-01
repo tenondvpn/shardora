@@ -6,10 +6,10 @@ using namespace std;
 
 class G2: public G {
 public:
-    
+	
 static G2 pow2(const Pairing &e, const G2 &base1, const Zr &exp1, const G2 &base2, const Zr &exp2);
 static G2 pow3(const Pairing &e, const G2 &base1, const Zr &exp1, const G2 &base2, const Zr &exp2, const G2 &base3, const Zr &exp3);
-    
+	
   G2(){};
 
  //Create and initialize an element
@@ -20,12 +20,12 @@ static G2 pow3(const Pairing &e, const G2 &base1, const Zr &exp1, const G2 &base
 
   //Create an element from import 
   G2(const Pairing &e, const unsigned char *data, 
-     unsigned short len, bool compressed = false, 
-     unsigned short base = 0);
+	 unsigned short len, bool compressed = false, 
+	 unsigned short base = 0);
 
   //Create an element from hash
   G2(const Pairing &e, const void *data, 
-     unsigned short len);
+	 unsigned short len);
 
   //Intialize with another element but with different value
   G2(const G2 &h, bool identity=false):G(h,identity){}
@@ -54,7 +54,7 @@ static G2 pow3(const Pairing &e, const G2 &base1, const Zr &exp1, const G2 &base
   }
 
   bool operator==(const G2 &rhs) const {
-    return G::operator==(rhs);
+	return G::operator==(rhs);
   }
 
   unsigned short getElementSize(bool compressed) const;
@@ -62,14 +62,14 @@ static G2 pow3(const Pairing &e, const G2 &base1, const Zr &exp1, const G2 &base
   string toString(bool compressed) const;
 
   const G2 inverse() const{
-    G2 g2;
-    g2.setElement(G::inverse().getElement());
-    return g2;
+	G2 g2;
+	g2.setElement(G::inverse().getElement());
+	return g2;
   }
   const G2 square() const{
-    G2 g2;
-    g2.setElement(G::square().getElement());
-    return g2;
+	G2 g2;
+	g2.setElement(G::square().getElement());
+	return g2;
   }
 };
 

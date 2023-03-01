@@ -16,7 +16,7 @@ NAMESPACE_BEGIN(CryptoPP)
 /// \since Crypto++ 3.0
 struct MARS_Info : public FixedBlockSize<16>, public VariableKeyLength<16, 16, 56, 8>
 {
-    CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() {return "MARS";}
+	CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() {return "MARS";}
 };
 
 /// \brief MARS block cipher
@@ -24,32 +24,32 @@ struct MARS_Info : public FixedBlockSize<16>, public VariableKeyLength<16, 16, 5
 /// \since Crypto++ 3.0
 class MARS : public MARS_Info, public BlockCipherDocumentation
 {
-    class CRYPTOPP_NO_VTABLE Base : public BlockCipherImpl<MARS_Info>
-    {
-    public:
-        void UncheckedSetKey(const byte *userKey, unsigned int length, const NameValuePairs &params);
+	class CRYPTOPP_NO_VTABLE Base : public BlockCipherImpl<MARS_Info>
+	{
+	public:
+		void UncheckedSetKey(const byte *userKey, unsigned int length, const NameValuePairs &params);
 
-    protected:
-        static const word32 Sbox[512];
+	protected:
+		static const word32 Sbox[512];
 
-        FixedSizeSecBlock<word32, 40> m_k;
-    };
+		FixedSizeSecBlock<word32, 40> m_k;
+	};
 
-    class CRYPTOPP_NO_VTABLE Enc : public Base
-    {
-    public:
-        void ProcessAndXorBlock(const byte *inBlock, const byte *xorBlock, byte *outBlock) const;
-    };
+	class CRYPTOPP_NO_VTABLE Enc : public Base
+	{
+	public:
+		void ProcessAndXorBlock(const byte *inBlock, const byte *xorBlock, byte *outBlock) const;
+	};
 
-    class CRYPTOPP_NO_VTABLE Dec : public Base
-    {
-    public:
-        void ProcessAndXorBlock(const byte *inBlock, const byte *xorBlock, byte *outBlock) const;
-    };
+	class CRYPTOPP_NO_VTABLE Dec : public Base
+	{
+	public:
+		void ProcessAndXorBlock(const byte *inBlock, const byte *xorBlock, byte *outBlock) const;
+	};
 
 public:
-    typedef BlockCipherFinal<ENCRYPTION, Enc> Encryption;
-    typedef BlockCipherFinal<DECRYPTION, Dec> Decryption;
+	typedef BlockCipherFinal<ENCRYPTION, Enc> Encryption;
+	typedef BlockCipherFinal<DECRYPTION, Dec> Decryption;
 };
 
 typedef MARS::Encryption MARSEncryption;

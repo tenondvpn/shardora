@@ -24,15 +24,15 @@ NAMESPACE_BEGIN(CryptoPP)
 class Tiger : public IteratedHashWithStaticTransform<word64, LittleEndian, 64, 24, Tiger>
 {
 public:
-    CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() {return "Tiger";}
-    std::string AlgorithmProvider() const;
+	CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() {return "Tiger";}
+	std::string AlgorithmProvider() const;
 
-    static void InitState(HashWordType *state);
-    static void Transform(word64 *digest, const word64 *data);
-    void TruncatedFinal(byte *hash, size_t size);
+	static void InitState(HashWordType *state);
+	static void Transform(word64 *digest, const word64 *data);
+	void TruncatedFinal(byte *hash, size_t size);
 
 protected:
-    static const word64 table[4*256+3];
+	static const word64 table[4*256+3];
 };
 
 NAMESPACE_END

@@ -2,11 +2,11 @@
 /*
  * OpenFEC.org AL-FEC Library.
  * (c) Copyright 2009 - 2012 INRIA - All rights reserved
- * Main authors:    Mathieu Cunche (INRIA)
- *            Jonathan Detchart (INRIA)
- *            Julien Laboure (INRIA)
- *            Christoph Neumann (INRIA)
- *            Vincent Roca (INRIA)
+ * Main authors:	Mathieu Cunche (INRIA)
+ *			Jonathan Detchart (INRIA)
+ *			Julien Laboure (INRIA)
+ *			Christoph Neumann (INRIA)
+ *			Vincent Roca (INRIA)
  * Contact: vincent.roca@inria.fr
  *
  * This software is governed by the CeCILL-C license under French law and
@@ -42,7 +42,7 @@
 #include <stdio.h>
 //#include <malloc.h>
 #include <math.h>
-#include <sys/time.h>    /* for timersub */
+#include <sys/time.h>	/* for timersub */
 
 #include "../../lib_common/of_types.h"
 #include "../../lib_common/of_mem.h"

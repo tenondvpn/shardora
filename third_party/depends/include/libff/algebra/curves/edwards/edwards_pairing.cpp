@@ -176,9 +176,9 @@ edwards_Fq6 edwards_final_exponentiation_last_chunk(const edwards_Fq6 &elt, cons
     edwards_Fq6 w0_part;
     if (edwards_final_exponent_last_chunk_is_w0_neg)
     {
-        w0_part = elt_inv.cyclotomic_exp(edwards_final_exponent_last_chunk_abs_of_w0);
+    	w0_part = elt_inv.cyclotomic_exp(edwards_final_exponent_last_chunk_abs_of_w0);
     } else {
-        w0_part = elt.cyclotomic_exp(edwards_final_exponent_last_chunk_abs_of_w0);
+    	w0_part = elt.cyclotomic_exp(edwards_final_exponent_last_chunk_abs_of_w0);
     }
     edwards_Fq6 result = w1_part * w0_part;
     leave_block("Call to edwards_final_exponentiation_last_chunk");

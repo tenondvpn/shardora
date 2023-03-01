@@ -19,7 +19,7 @@ class Pairing{
 public:
   //Create a null pairing
   Pairing(){
-    pairingPresent = false;
+	pairingPresent = false;
   }
 
   //Create using a buffer
@@ -36,7 +36,7 @@ public:
 
   //Destructor
   ~Pairing();
-    
+	
   // Initialize using a string
   void init(const string &buf);
 
@@ -49,7 +49,7 @@ public:
 
   //Is Pairing Present
   bool isPairingPresent() const{
-    return pairingPresent;
+	return pairingPresent;
   }
 
   //Apply Pairing
@@ -67,49 +67,49 @@ public:
 
   //Element Size
   size_t getElementSize(PairingElementType type, 
-                        bool compressed = false) const;
+						bool compressed = false) const;
 
   /*
   //Generate parameters for type A pairing
   static void 
   generateTypeAPairingParam(const FILE *stream, 
-                            unsigned short rbits =160,
-                            unsigned short qbits =512);
+							unsigned short rbits =160,
+							unsigned short qbits =512);
 
   //Generate parameters for type A1 pairing
   static void generateTypeA1PairingParam(const FILE *stream, 
-                                         const mpz_t n);
-                             
+										 const mpz_t n);
+							 
   //Generate parameters for type D pairing
   static void 
   generateTypeDPairingParam(const FILE *stream, bool MNTorFreeman,
-                            unsigned int discriminant, 
-                            unsigned int bitlimit);
+							unsigned int discriminant, 
+							unsigned int bitlimit);
 
   //Generate parameters for type E pairing
   static void 
   generateTypeEPairingParam(const FILE *stream, 
-                            unsigned short rbits =160,
-                            unsigned short qbits =1024);
+							unsigned short rbits =160,
+							unsigned short qbits =1024);
 
   //Generate parameters for type F pairing
   static void 
   generateTypeFPairingParam(const FILE *stream, 
-                            unsigned short bits =160);
+							unsigned short bits =160);
 
   //Generate parameters for type G pairing
   static void 
   generateTypeGPairingParam(const FILE *stream, 
-                            unsigned short bits =160);  
+							unsigned short bits =160);  
 
   //Generate parameters for type G pairing
   static void 
   generateTypeGPairingParam(const FILE *stream, bool MNTorFreeman,
-                            unsigned int discriminant, 
-                            unsigned int bitlimit);
+							unsigned int discriminant, 
+							unsigned int bitlimit);
 
   // Dump the pairing to stdout
-  //void dump(FILE *f, char *label = NULL) const;    
+  //void dump(FILE *f, char *label = NULL) const;	
 */
 
 private:

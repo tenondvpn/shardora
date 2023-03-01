@@ -114,7 +114,7 @@ public:
     friend GF2m pow(const GF2m&,int);
     friend GF2m sqrt(const GF2m&);
     friend GF2m halftrace(const GF2m&);
-    friend GF2m quad(const GF2m&);
+	friend GF2m quad(const GF2m&);
 #ifndef MR_NO_RAND
     friend GF2m random2(void);
 #endif

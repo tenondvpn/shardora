@@ -4,13 +4,13 @@
 // scheme.
 //
 // ================================================================
-//     
+// 	
 // Copyright (c) 2007, Matthew Green, Giuseppe Ateniese, Kevin Fu,
 // Susan Hohenberger.  All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or
 // without modification, are permitted provided that the following
-// conditions are met:                                                
+// conditions are met:												
 //
 // Redistributions of source code must retain the above copyright 
 // notice, this list of conditions and the following disclaimer.  
@@ -97,11 +97,11 @@ class ProxyCiphertext_PRE2: public ProxyCiphertext_PRE1 {
   }
 
   void set(CIPHERTEXT_TYPE Type, ECn &C1a, ZZn2 &C1b, ZZn2 &C2) { this->type = Type; this->c1a = C1a;
-                        this->c1b = C1b; this->c2 = C2; }
+						this->c1b = C1b; this->c2 = C2; }
   void set(CIPHERTEXT_TYPE Type, ECn &C1a, ZZn2 &C2) { this->type = Type; this->c1a = C1a;
-                        this->c2 = C2; }
+						this->c2 = C2; }
   void set(CIPHERTEXT_TYPE Type, ZZn2 &C1b, ZZn2 &C2) { this->type = Type; this->c1b = C1b;
-                        this->c2 = C2; }
+						this->c2 = C2; }
 };
 
 typedef ECn DelegationKey_PRE2;
@@ -113,7 +113,7 @@ BOOL PRE2_level1_encrypt(CurveParams &params, Big &plaintext, ProxyPK_PRE2 &publ
 BOOL PRE2_level2_encrypt(CurveParams &params, Big &plaintext, ProxyPK_PRE2 &publicKey, ProxyCiphertext_PRE2 &ciphertext);
 BOOL PRE2_delegate(CurveParams &params, ProxyPK_PRE2 &delegatee, ProxySK_PRE2 &delegator, DelegationKey_PRE2 &reskey);
 BOOL PRE2_reencrypt(CurveParams &params, ProxyCiphertext_PRE2 &origCiphertext, DelegationKey_PRE2 &delegationKey, 
-                    ProxyCiphertext_PRE2 &newCiphertext);
+					ProxyCiphertext_PRE2 &newCiphertext);
 BOOL PRE2_decrypt(CurveParams &params, ProxyCiphertext_PRE2 &ciphertext, ProxySK_PRE2 &secretKey, Big &plaintext);
 
 int SerializeDelegationKey_PRE2(DelegationKey_PRE2 &delKey, SERIALIZE_MODE mode, char *buffer, int maxBuffer);

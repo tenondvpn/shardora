@@ -45,12 +45,12 @@
  */
 typedef struct of_rs_parameters
 {
-    UINT32        nb_source_symbols;    /* must be 1st item */
-    UINT32        nb_repair_symbols;    /* must be 2nd item */
-    UINT32        encoding_symbol_length; /* must be 3rd item */
-    /*
-    * FEC codec id specific attributes follow...
-    */
+	UINT32		nb_source_symbols;	/* must be 1st item */
+	UINT32		nb_repair_symbols;	/* must be 2nd item */
+	UINT32		encoding_symbol_length; /* must be 3rd item */
+	/*
+	* FEC codec id specific attributes follow...
+	*/
 
 } of_rs_parameters_t;
 

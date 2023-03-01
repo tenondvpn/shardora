@@ -40,8 +40,8 @@ struct ChaCha_Info : public VariableKeyLength<32, 16, 32, 16, SimpleKeyingInterf
 class CRYPTOPP_NO_VTABLE ChaCha_Policy : public AdditiveCipherConcretePolicy<word32, 16>
 {
 public:
-    ~ChaCha_Policy() {}
-    ChaCha_Policy() : m_rounds(0) {}
+	~ChaCha_Policy() {}
+	ChaCha_Policy() : m_rounds(0) {}
 
 protected:
     void CipherSetKey(const NameValuePairs &params, const byte *key, size_t length);

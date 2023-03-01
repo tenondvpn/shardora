@@ -3,7 +3,7 @@
 // proxylib_api.h: C language wrapper.
 //
 // ================================================================
-//     
+// 	
 // Copyright (c) 2007, Matthew Green, Giuseppe Ateniese, Kevin Fu,
 // Susan Hohenberger.  All rights reserved.
 //
@@ -85,7 +85,7 @@
 // Director
 // Massachusetts Institute of Technology Technology
 // Licensing Office, Rm NE25-230 Five Cambridge Center, Kendall Square
-// Cambridge, MA 02142-1493                        
+// Cambridge, MA 02142-1493						
 // 
 // 7.  General.  This Agreement shall be governed by the laws of the
 // Commonwealth of Massachusetts.  The parties acknowledge that this
@@ -124,33 +124,33 @@ extern "C" {
   int proxylib_initLibrary(char *seedbuf, int bufsize);
   int proxylib_generateParams(void **params, SCHEME_TYPE schemeID);
   int proxylib_serializeParams(void *params, char *buffer, int *bufferSize, 
-        int bufferAvailSize, SCHEME_TYPE schemeID);
+		int bufferAvailSize, SCHEME_TYPE schemeID);
   int proxylib_deserializeParams(char *buffer, int bufferSize, void **params,
-        SCHEME_TYPE schemeID);
+		SCHEME_TYPE schemeID);
   int proxylib_destroyParams(void *params);
   int proxylib_generateKeys(void *params, void **pk, void **sk, 
-                SCHEME_TYPE schemeID);
+			    SCHEME_TYPE schemeID);
   int proxylib_serializeKeys(void *params, void *pk, void *sk, char *pkBuf, char *skBuf,
-    int *pkBufSize, int *skBufSize, int bufferAvailSize, SCHEME_TYPE schemeID);
+	int *pkBufSize, int *skBufSize, int bufferAvailSize, SCHEME_TYPE schemeID);
   int proxylib_deserializeKeys(void *params, char *pkBuf, char *skBuf,
-    int pkBufSize, int skBufSize, void **pk, void **sk, SCHEME_TYPE schemeID);
+	int pkBufSize, int skBufSize, void **pk, void **sk, SCHEME_TYPE schemeID);
   int proxylib_destroyKeys(void *pk, void *sk, SCHEME_TYPE schemeID);
   int proxylib_encrypt(void *params, void *pk, char *message, int messageLen, 
-               char *ciphertext, int *ciphLen, CIPHERTEXT_TYPE ctype,
-               SCHEME_TYPE schemeID);
+		       char *ciphertext, int *ciphLen, CIPHERTEXT_TYPE ctype,
+		       SCHEME_TYPE schemeID);
   int proxylib_generateDelegationKey(void *params, void *sk1, void *pk2, void** delKey, 
-              SCHEME_TYPE schemeID);
+		      SCHEME_TYPE schemeID);
   int proxylib_serializeDelegationKey(void *params, void *delKey, char *delKeyBuf,
-    int *delKeyBufSize, int bufferAvailSize, SCHEME_TYPE schemeID);
+	int *delKeyBufSize, int bufferAvailSize, SCHEME_TYPE schemeID);
   int proxylib_serializeDelegationKey(void *params, void *delKey, char *delKeyBuf,
-    int *delKeyBufSize, int bufferAvailSize, SCHEME_TYPE schemeID);
+	int *delKeyBufSize, int bufferAvailSize, SCHEME_TYPE schemeID);
   int proxylib_destroyDelegationKey(void *delKey, SCHEME_TYPE schemeID);
   int proxylib_decrypt(void *params, void *sk, char *message, int *messageLen, 
-               char *ciphertext, int ciphLen, 
-               SCHEME_TYPE schemeID);
+		       char *ciphertext, int ciphLen, 
+		       SCHEME_TYPE schemeID);
   int proxylib_reencrypt(void *params, void *rk, 
-           char *ciphertext, int ciphLen, 
-           char *newciphertext, int *newCiphLen, SCHEME_TYPE schemeID);
+		   char *ciphertext, int ciphLen, 
+		   char *newciphertext, int *newCiphLen, SCHEME_TYPE schemeID);
 
 
 } // extern "C"

@@ -33,12 +33,12 @@
   else use MSGPACK_PP_REM. This fixes a VC++ problem with an empty tuple and MSGPACK_PP_TUPLE_ELEM
   functionality. See tuple_elem_bug_test.cxx.
 */
-#         define MSGPACK_PP_TUPLE_ELEM_O_2(n, tuple) \
-            MSGPACK_PP_VARIADIC_ELEM(n, MSGPACK_PP_EXPAND(MSGPACK_PP_TUPLE_IS_SINGLE_RETURN(MSGPACK_PP_REM_CAT,MSGPACK_PP_REM,tuple) tuple)) \
-            /**/
+#    	 define MSGPACK_PP_TUPLE_ELEM_O_2(n, tuple) \
+			MSGPACK_PP_VARIADIC_ELEM(n, MSGPACK_PP_EXPAND(MSGPACK_PP_TUPLE_IS_SINGLE_RETURN(MSGPACK_PP_REM_CAT,MSGPACK_PP_REM,tuple) tuple)) \
+			/**/
 #    else
 #        define MSGPACK_PP_TUPLE_ELEM(...) MSGPACK_PP_OVERLOAD(MSGPACK_PP_TUPLE_ELEM_O_, __VA_ARGS__)(__VA_ARGS__)
-#         define MSGPACK_PP_TUPLE_ELEM_O_2(n, tuple) MSGPACK_PP_VARIADIC_ELEM(n, MSGPACK_PP_REM tuple)
+#    	 define MSGPACK_PP_TUPLE_ELEM_O_2(n, tuple) MSGPACK_PP_VARIADIC_ELEM(n, MSGPACK_PP_REM tuple)
 #    endif
 #    define MSGPACK_PP_TUPLE_ELEM_O_3(size, n, tuple) MSGPACK_PP_TUPLE_ELEM_O_2(n, tuple)
 # else

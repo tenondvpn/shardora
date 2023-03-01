@@ -22,13 +22,13 @@
 # /* MSGPACK_PP_ARRAY_TO_LIST */
 #
 #    define MSGPACK_PP_ARRAY_TO_LIST(array) \
-        MSGPACK_PP_IF \
-            ( \
-            MSGPACK_PP_ARRAY_SIZE(array), \
-            MSGPACK_PP_ARRAY_TO_LIST_DO, \
-            MSGPACK_PP_ARRAY_TO_LIST_EMPTY \
-            ) \
-        (array) \
+		MSGPACK_PP_IF \
+			( \
+			MSGPACK_PP_ARRAY_SIZE(array), \
+			MSGPACK_PP_ARRAY_TO_LIST_DO, \
+			MSGPACK_PP_ARRAY_TO_LIST_EMPTY \
+			) \
+		(array) \
 /**/
 #
 #    define MSGPACK_PP_ARRAY_TO_LIST_EMPTY(array) MSGPACK_PP_NIL

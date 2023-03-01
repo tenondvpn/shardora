@@ -48,28 +48,28 @@ BEGIN_XG_NAMESPACE
 class Guid
 {
 public:
-    Guid(const std::array<unsigned char, 16> &bytes);
-    Guid(const unsigned char *bytes);
-    Guid(const std::string &fromString);
-    Guid();
-    Guid(const Guid &other);
-    Guid &operator=(const Guid &other);
-    bool operator==(const Guid &other) const;
-    bool operator!=(const Guid &other) const;
+	Guid(const std::array<unsigned char, 16> &bytes);
+	Guid(const unsigned char *bytes);
+	Guid(const std::string &fromString);
+	Guid();
+	Guid(const Guid &other);
+	Guid &operator=(const Guid &other);
+	bool operator==(const Guid &other) const;
+	bool operator!=(const Guid &other) const;
 
-    std::string str() const;
-    operator std::string() const;
-    void swap(Guid &other);
-    bool isValid() const;
+	std::string str() const;
+	operator std::string() const;
+	void swap(Guid &other);
+	bool isValid() const;
 
 private:
-    void zeroify();
+	void zeroify();
 
-    // actual data
-    std::array<unsigned char, 16> _bytes;
+	// actual data
+	std::array<unsigned char, 16> _bytes;
 
-    // make the << operator a friend so it can access _bytes
-    friend std::ostream &operator<<(std::ostream &s, const Guid &guid);
+	// make the << operator a friend so it can access _bytes
+	friend std::ostream &operator<<(std::ostream &s, const Guid &guid);
 };
 
 Guid newGuid();
@@ -77,13 +77,13 @@ Guid newGuid();
 #ifdef GUID_ANDROID
 struct AndroidGuidInfo
 {
-    static AndroidGuidInfo fromJniEnv(JNIEnv *env);
+	static AndroidGuidInfo fromJniEnv(JNIEnv *env);
 
-    JNIEnv *env;
-    jclass uuidClass;
-    jmethodID newGuidMethod;
-    jmethodID mostSignificantBitsMethod;
-    jmethodID leastSignificantBitsMethod;
+	JNIEnv *env;
+	jclass uuidClass;
+	jmethodID newGuidMethod;
+	jmethodID mostSignificantBitsMethod;
+	jmethodID leastSignificantBitsMethod;
 };
 
 extern AndroidGuidInfo androidInfo;
@@ -95,24 +95,24 @@ END_XG_NAMESPACE
 
 namespace std
 {
-    // Template specialization for std::swap<Guid>() --
-    // See guid.cpp for the function definition
-    template <>
-    void swap(xg::Guid &guid0, xg::Guid &guid1);
+	// Template specialization for std::swap<Guid>() --
+	// See guid.cpp for the function definition
+	template <>
+	void swap(xg::Guid &guid0, xg::Guid &guid1);
 
-    // Specialization for std::hash<Guid> -- this implementation
-    // uses std::hash<std::string> on the stringification of the guid
-    // to calculate the hash
-    template <>
-    struct hash<xg::Guid>
-    {
-        typedef xg::Guid argument_type;
-        typedef std::size_t result_type;
+	// Specialization for std::hash<Guid> -- this implementation
+	// uses std::hash<std::string> on the stringification of the guid
+	// to calculate the hash
+	template <>
+	struct hash<xg::Guid>
+	{
+		typedef xg::Guid argument_type;
+		typedef std::size_t result_type;
 
-        result_type operator()(argument_type const &guid) const
-        {
-            std::hash<std::string> hasher;
-            return static_cast<result_type>(hasher(guid.str()));
-        }
-    };
+		result_type operator()(argument_type const &guid) const
+		{
+			std::hash<std::string> hasher;
+			return static_cast<result_type>(hasher(guid.str()));
+		}
+	};
 }

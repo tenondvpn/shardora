@@ -54,9 +54,9 @@
 #endif
 #endif
 
-#endif        // #ifdef CRYPTOPP_IMPORTS
+#endif		// #ifdef CRYPTOPP_IMPORTS
 
-#include <new>    // for new_handler
+#include <new>	// for new_handler
 
 NAMESPACE_BEGIN(CryptoPP)
 

@@ -28,7 +28,7 @@ static void pow3(G &gout, const G &base1, const Zr &exp1, const G &base2, const 
   //Assumes that g is already initialized and for element of type GT
   //bool compressed is not set to true
   //void setElement(const unsigned char *data, unsigned short len, 
-  //                  bool compressed = false, unsigned short base = 16);
+  //				  bool compressed = false, unsigned short base = 16);
 
   const element_t& getElement() const;
   unsigned short getElementSize() const;
@@ -38,9 +38,9 @@ static void pow3(G &gout, const G &base1, const Zr &exp1, const G &base2, const 
   
   // Dump the element to stdout (print friendly)
   void dump(FILE *f, const char *label = NULL,
-            unsigned short base = 16) const;    
+			unsigned short base = 16) const;	
 
-protected:    
+protected:	
   element_t g;
   bool elementPresent;
 
@@ -55,7 +55,7 @@ protected:
 
   //Create and initialize an element
   G(const Pairing &e){ 
-    elementPresent = e.isPairingPresent();
+	elementPresent = e.isPairingPresent();
   }
 
   // Assignment operator 
@@ -85,16 +85,16 @@ template <class T>
 class GPP {
 public:
     GPP(const Pairing &pairing, const T &base):pairing(pairing) {
-    element_pp_init(g_pp, *(element_t*)&base.getElement());
+	element_pp_init(g_pp, *(element_t*)&base.getElement());
     }
     ~GPP() { element_pp_clear(g_pp); }
 
     const T operator^(const Zr &exp) const {
-    T res(pairing);
-    element_pp_pow_zn(*(element_t*)&res.getElement(),
-                *(element_t*)&exp.getElement(),
-                *(element_pp_t*)&g_pp);
-    return res;
+	T res(pairing);
+	element_pp_pow_zn(*(element_t*)&res.getElement(),
+			    *(element_t*)&exp.getElement(),
+			    *(element_pp_t*)&g_pp);
+	return res;
     }
 
 private:

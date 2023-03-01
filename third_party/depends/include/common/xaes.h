@@ -45,7 +45,7 @@ typedef unsigned int     u32;
 extern "C" {
 #endif
 int AesEncrypt128Cbc(u8* presult, u8* pkey,
-    u8* piv, u8* pdata, u32 ndata);
+	u8* piv, u8* pdata, u32 ndata);
 
 //
 // presult is the pointer to the output data
@@ -58,7 +58,7 @@ int AesEncrypt128Cbc(u8* presult, u8* pkey,
 // always use CBC
 //
 int AesDecrypt128Cbc(u8* presult, u8* pkey,
-    u8* piv, u8* pdata, u32 ndata);
+	u8* piv, u8* pdata, u32 ndata);
 #ifdef __cplusplus
 }
 #endif

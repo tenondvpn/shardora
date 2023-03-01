@@ -125,7 +125,7 @@ namespace spp
             [](char* line)->int
             {
                 auto i = strlen(line);
-                
+				
                 while(*line < '0' || *line > '9') 
                 {
                     line++;

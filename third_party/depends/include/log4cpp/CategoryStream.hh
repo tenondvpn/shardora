@@ -77,11 +77,11 @@ namespace log4cpp {
          * @param t The value or object to stream in.
          * @returns A reference to itself.
          **/
-          template<typename T> 
+		  template<typename T> 
         CategoryStream& operator<<(const T& t) {
             if (getPriority() != Priority::NOTSET) {
                 if (!_buffer) {
-                    if (!(_buffer = new std::ostringstream)) {
+					if (!(_buffer = new std::ostringstream)) {
                         // XXX help help help
                     }
                 }
@@ -89,11 +89,11 @@ namespace log4cpp {
             }
             return *this;
         }
-       
+	   
         CategoryStream& operator<<(const char* t);
 
-         template<typename T> 
-          CategoryStream& operator<<(const std::string& t) {
+	     template<typename T> 
+ 	     CategoryStream& operator<<(const std::string& t) {
             if (getPriority() != Priority::NOTSET) {
                 if (!_buffer) {
                     if (!(_buffer = new std::ostringstream)) {
@@ -121,23 +121,23 @@ namespace log4cpp {
         /**
          * Set the width output on CategoryStream
          **/
-          std::streamsize width(std::streamsize wide );
+		  std::streamsize width(std::streamsize wide );
 
 
         private:
         Category& _category;
         Priority::Value _priority;
-         union {
-             std::ostringstream* _buffer;
+	     union {
+	         std::ostringstream* _buffer;
 #if LOG4CPP_HAS_WCHAR_T != 0
             std::wostringstream* _wbuffer;
 #endif
         };
 
-         public:
-         typedef CategoryStream& (*cspf) (CategoryStream&);
+	     public:
+	     typedef CategoryStream& (*cspf) (CategoryStream&);
 
-         CategoryStream& operator << (cspf);
+	     CategoryStream& operator << (cspf);
         LOG4CPP_EXPORT friend CategoryStream& eol (CategoryStream& os);
         LOG4CPP_EXPORT friend CategoryStream& left (CategoryStream& os);
    };

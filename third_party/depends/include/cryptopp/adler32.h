@@ -14,18 +14,18 @@ NAMESPACE_BEGIN(CryptoPP)
 class Adler32 : public HashTransformation
 {
 public:
-    CRYPTOPP_CONSTANT(DIGESTSIZE = 4)
-    Adler32() {Reset();}
-    void Update(const byte *input, size_t length);
-    void TruncatedFinal(byte *hash, size_t size);
-    unsigned int DigestSize() const {return DIGESTSIZE;}
+	CRYPTOPP_CONSTANT(DIGESTSIZE = 4)
+	Adler32() {Reset();}
+	void Update(const byte *input, size_t length);
+	void TruncatedFinal(byte *hash, size_t size);
+	unsigned int DigestSize() const {return DIGESTSIZE;}
     CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() {return "Adler32";}
     std::string AlgorithmName() const {return StaticAlgorithmName();}
 
 private:
-    void Reset() {m_s1 = 1; m_s2 = 0;}
+	void Reset() {m_s1 = 1; m_s2 = 0;}
 
-    word16 m_s1, m_s2;
+	word16 m_s1, m_s2;
 };
 
 NAMESPACE_END

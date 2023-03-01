@@ -3,7 +3,7 @@
 #define serialize_write(data, length) + (length)
 
 if (!nem_can_write(ctx, NEM_SERIALIZE)) {
-    return false;
+	return false;
 }
 
 #undef serialize_u32

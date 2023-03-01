@@ -32,7 +32,7 @@ namespace log4cpp {
      *  statements.
      **/
     class LOG4CPP_EXPORT Appender {
-        friend class Category;
+		friend class Category;
         public:
         
         /**
@@ -132,36 +132,36 @@ namespace log4cpp {
          **/
         virtual Filter* getFilter() = 0;
         
-        private:
+		private:
         typedef std::map<std::string, Appender*> AppenderMap;
 
         static AppenderMap& _getAllAppenders();
         static void _deleteAllAppenders();
-        static void _deleteAllAppendersWOLock(std::vector<Appender*> &appenders);
+		static void _deleteAllAppendersWOLock(std::vector<Appender*> &appenders);
         static void _addAppender(Appender* appender);
         static void _removeAppender(Appender* appender);
 
         const std::string _name;
 
-        public:
-        class AppenderMapStorage {
-        public:
-            Appender::AppenderMap* _allAppenders;    // single shared instance, nifty-counter defensed
-            threading::Mutex _appenderMapMutex;    // mutex protecting map from multiple thread access 
+		public:
+		class AppenderMapStorage {
+		public:
+			Appender::AppenderMap* _allAppenders;	// single shared instance, nifty-counter defensed
+	        threading::Mutex _appenderMapMutex;	// mutex protecting map from multiple thread access 
 
-            AppenderMapStorage();
-            ~AppenderMapStorage();
-        };
-        class LOG4CPP_EXPORT AppenderMapStorageInitializer {
-        public:
-            AppenderMapStorageInitializer();
-            ~AppenderMapStorageInitializer();
-        };
-        private:
+			AppenderMapStorage();
+			~AppenderMapStorage();
+		};
+		class LOG4CPP_EXPORT AppenderMapStorageInitializer {
+		public:
+			AppenderMapStorageInitializer();
+			~AppenderMapStorageInitializer();
+		};
+		private:
         static AppenderMapStorage &_appenderMapStorageInstance;
     };
 
-    static Appender::AppenderMapStorageInitializer appenderMapStorageInitializer; // static initializer for every translation unit
+	static Appender::AppenderMapStorageInitializer appenderMapStorageInitializer; // static initializer for every translation unit
     typedef std::set<Appender *> AppenderSet;
 
 }

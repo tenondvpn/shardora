@@ -93,7 +93,7 @@ struct evdns_base *evdns_get_global_base(void);
     function is evdns_base_shutdown().
 
   @param fail_requests if zero, active requests will be aborted; if non-zero,
-        active requests will return DNS_ERR_SHUTDOWN.
+		active requests will return DNS_ERR_SHUTDOWN.
   @see evdns_init()
  */
 EVENT2_EXPORT_SYMBOL
@@ -343,7 +343,7 @@ void evdns_search_ndots_set(const int ndots);
 EVENT2_EXPORT_SYMBOL
 struct evdns_server_port *
 evdns_add_server_port(evutil_socket_t socket, int flags,
-    evdns_request_callback_fn_type callback, void *user_data);
+	evdns_request_callback_fn_type callback, void *user_data);
 
 #ifdef _WIN32
 EVENT2_EXPORT_SYMBOL

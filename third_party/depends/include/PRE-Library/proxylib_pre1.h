@@ -4,7 +4,7 @@
 // scheme.
 //
 // ================================================================
-//     
+// 	
 // Copyright (c) 2007, Matthew Green, Giuseppe Ateniese, Kevin Fu,
 // Susan Hohenberger.  All rights reserved.
 //
@@ -86,7 +86,7 @@
 // Director
 // Massachusetts Institute of Technology Technology
 // Licensing Office, Rm NE25-230 Five Cambridge Center, Kendall Square
-// Cambridge, MA 02142-1493                        
+// Cambridge, MA 02142-1493						
 // 
 // 7.  General.  This Agreement shall be governed by the laws of the
 // Commonwealth of Massachusetts.  The parties acknowledge that this
@@ -116,13 +116,13 @@ public:
 
   virtual int getSerializedSize(SERIALIZE_MODE mode); 
   virtual int serialize(SERIALIZE_MODE mode,
-            char *buffer, int maxBuffer);
+			char *buffer, int maxBuffer);
   virtual BOOL deserialize(SERIALIZE_MODE mode,
-               char *buffer, int maxBuffer);
+			   char *buffer, int maxBuffer);
 
   BOOL operator==(ProxyPK_PRE1 &second) {
     return ((this->Zpub1 == second.Zpub1) && 
-        (this->Ppub2 == second.Ppub2));
+	    (this->Ppub2 == second.Ppub2));
   }
 };
 
@@ -142,13 +142,13 @@ class ProxySK_PRE1: public ProxySK {
 
   virtual int getSerializedSize(SERIALIZE_MODE mode); 
   virtual int serialize(SERIALIZE_MODE mode,
-            char *buffer, int maxBuffer);
+			char *buffer, int maxBuffer);
   virtual BOOL deserialize(SERIALIZE_MODE mode,
-               char *buffer, int maxBuffer);
+			   char *buffer, int maxBuffer);
 
   BOOL operator==(ProxySK_PRE1 &second) {
     return ((this->a1 == second.a1) && 
-        (this->a2 == second.a2));
+	    (this->a2 == second.a2));
   }
 };
 
@@ -177,23 +177,23 @@ class ProxyCiphertext_PRE1: public ProxyCiphertext {
   }
 
   void set(CIPHERTEXT_TYPE Type, ECn &C1a, ZZn2 &C1b, ZZn2 &C2) { this->type = Type; this->c1a = C1a;
-                        this->c1b = C1b; this->c2 = C2; }
+						this->c1b = C1b; this->c2 = C2; }
   void set(CIPHERTEXT_TYPE Type, ECn &C1a, ZZn2 &C2) { this->type = Type; this->c1a = C1a;
-                        this->c2 = C2; }
+						this->c2 = C2; }
   void set(CIPHERTEXT_TYPE Type, ZZn2 &C1b, ZZn2 &C2) { this->type = Type; this->c1b = C1b;
-                        this->c2 = C2; }
+						this->c2 = C2; }
 
   virtual int getSerializedSize(SERIALIZE_MODE mode); 
   virtual int serialize(SERIALIZE_MODE mode,
-            char *buffer, int maxBuffer);
+			char *buffer, int maxBuffer);
   virtual BOOL deserialize(SERIALIZE_MODE mode,
-                 char *buffer, int maxBuffer);
+  			   char *buffer, int maxBuffer);
 
   BOOL operator==(ProxyCiphertext_PRE1 &second) {
     return ((this->type == second.type) &&
-        (this->c1a == second.c1a) &&
-          (this->c1b == second.c1b) &&
-        (this->c2 == second.c2));
+	    (this->c1a == second.c1a) &&
+  	    (this->c1b == second.c1b) &&
+	    (this->c2 == second.c2));
   }
 };
 
@@ -206,7 +206,7 @@ BOOL PRE1_level1_encrypt(CurveParams &params, Big &plaintext, ProxyPK_PRE1 &publ
 BOOL PRE1_level2_encrypt(CurveParams &params, Big &plaintext, ProxyPK_PRE1 &publicKey, ProxyCiphertext_PRE1 &ciphertext);
 BOOL PRE1_delegate(CurveParams &params, ProxyPK_PRE1 &delegatee, ProxySK_PRE1 &delegator, DelegationKey_PRE1 &reskey);
 BOOL PRE1_reencrypt(CurveParams &params, ProxyCiphertext_PRE1 &origCiphertext, DelegationKey_PRE1 &delegationKey, 
-                    ProxyCiphertext_PRE1 &newCiphertext);
+					ProxyCiphertext_PRE1 &newCiphertext);
 BOOL PRE1_decrypt(CurveParams &params, ProxyCiphertext_PRE1 &ciphertext, ProxySK_PRE1 &secretKey, Big &plaintext);
 
 int SerializeDelegationKey_PRE1(DelegationKey_PRE1 &delKey, SERIALIZE_MODE mode, char *buffer, int maxBuffer);
