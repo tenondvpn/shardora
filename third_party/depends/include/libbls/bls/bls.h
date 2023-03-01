@@ -75,6 +75,10 @@ public:
 
     static bool Verification( const std::string& to_be_hashed, const libff::alt_bn128_G1 sign,
         const libff::alt_bn128_G2 public_key );
+    static bool Verification( const std::string& to_be_hashed, const libff::alt_bn128_G1 sign,
+        const libff::alt_bn128_G2 public_key, libff::alt_bn128_GT* sign_hash );
+    static bool GetVerifyHash( const std::string& to_be_hashed,
+        const libff::alt_bn128_G2 public_key, libff::alt_bn128_GT* sign_hash );
 
     static bool Verification( std::shared_ptr< std::array< uint8_t, 32 > >,
         const libff::alt_bn128_G1 sign, const libff::alt_bn128_G2 public_key );
