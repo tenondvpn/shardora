@@ -133,6 +133,21 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    bft_mgr_ = std::make_shared<consensus::BftManager>();
+    auto bft_init_res = bft_mgr_->Init(
+        account_mgr_,
+        block_mgr_,
+        elect_mgr_,
+        pools_mgr_,
+        security_,
+        db_,
+        nullptr,
+        common::GlobalInfo::Instance()->message_handler_thread_count());
+    if (bft_init_res != consensus::kConsensusSuccess) {
+        INIT_ERROR("init bft failed!");
+        return kInitError;
+    }
+
     if (InitCommand() != kInitSuccess) {
         INIT_ERROR("InitCommand failed!");
         return kInitError;

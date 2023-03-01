@@ -7,6 +7,7 @@
 #include "common/config.h"
 #include "common/parse_args.h"
 #include "common/tick.h"
+#include "consensus/zbft/bft_manager.h"
 #include "db/db.h"
 #include "elect/elect_manager.h"
 #include "init/command.h"
@@ -48,6 +49,7 @@ protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
+    std::shared_ptr<consensus::BftManager> bft_mgr_ = nullptr;
     uint8_t main_thread_idx_ = 255;
 
     DISALLOW_COPY_AND_ASSIGN(NetworkInit);

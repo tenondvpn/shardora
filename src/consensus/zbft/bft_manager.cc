@@ -20,20 +20,13 @@
 #include "network/route.h"
 #include "network/universal_manager.h"
 #include "pools/tx_pool_manager.h"
+#include "transport/processor.h"
 
 namespace zjchain {
 
 namespace consensus {
 
-BftManager::BftManager() {
-    network::Route::Instance()->RegisterMessage(
-        common::kConsensusMessage,
-        std::bind(&BftManager::HandleMessage, this, std::placeholders::_1));
-    network::Route::Instance()->RegisterMessage(
-        common::kConsensusTimerMessage,
-        std::bind(&BftManager::ConsensusTimerMessage, this, std::placeholders::_1));
-    //     CheckCommitBackupRecall();
-}
+BftManager::BftManager() {}
 
 BftManager::~BftManager() {
     if (bft_hash_map_ != nullptr) {
@@ -74,6 +67,12 @@ int BftManager::Init(
         bft_gids_index_[i] = 0;
     }
 
+    network::Route::Instance()->RegisterMessage(
+        common::kConsensusMessage,
+        std::bind(&BftManager::HandleMessage, this, std::placeholders::_1));
+    transport::Processor::Instance()->RegisterProcessor(
+        common::kConsensusTimerMessage,
+        std::bind(&BftManager::ConsensusTimerMessage, this, std::placeholders::_1));
     return kConsensusSuccess;
 }
 
@@ -106,7 +105,7 @@ int BftManager::OnNewElectBlock(int32_t local_leader_index, int32_t leader_count
 
 void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 #ifndef ZJC_UNITTEST
-    Start(msg_ptr->thread_index);
+    Start(msg_ptr->thread_idx);
 #endif
 }
 
