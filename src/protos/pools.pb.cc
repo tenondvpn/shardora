@@ -137,20 +137,14 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::ToTxMessageItem, des_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::ToTxMessageItem, amount_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::ToTxMessageItem, sharding_id_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::ToTxMessageItem, pool_index_),
   0,
   1,
-  2,
-  3,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::ToTxMessage, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::ToTxMessage, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::ToTxMessage, heights_hash_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::ToTxMessage, tos_),
-  0,
   ~0u,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::TxMessage, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::TxMessage, _internal_metadata_),
@@ -180,9 +174,9 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 9, sizeof(::zjchain::pools::protobuf::ToTxHeights)},
-  { 13, 22, sizeof(::zjchain::pools::protobuf::ToTxMessageItem)},
-  { 26, 33, sizeof(::zjchain::pools::protobuf::ToTxMessage)},
-  { 35, 50, sizeof(::zjchain::pools::protobuf::TxMessage)},
+  { 13, 20, sizeof(::zjchain::pools::protobuf::ToTxMessageItem)},
+  { 22, 28, sizeof(::zjchain::pools::protobuf::ToTxMessage)},
+  { 29, 44, sizeof(::zjchain::pools::protobuf::TxMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -216,26 +210,24 @@ void AddDescriptorsImpl() {
       "\n\022protos/pools.proto\022\026zjchain.pools.prot"
       "obuf\"[\n\013ToTxHeights\022\023\n\013sharding_id\030\001 \001(\r"
       "\022\017\n\007heights\030\002 \003(\004\022\024\n\014block_height\030\003 \001(\004\022"
-      "\020\n\010tos_hash\030\004 \001(\014\"W\n\017ToTxMessageItem\022\013\n\003"
-      "des\030\001 \001(\014\022\016\n\006amount\030\002 \001(\004\022\023\n\013sharding_id"
-      "\030\003 \001(\r\022\022\n\npool_index\030\004 \001(\r\"Y\n\013ToTxMessag"
-      "e\022\024\n\014heights_hash\030\001 \001(\014\0224\n\003tos\030\002 \003(\0132\'.z"
-      "jchain.pools.protobuf.ToTxMessageItem\"\324\001"
-      "\n\tTxMessage\022\017\n\007version\030\001 \001(\r\022\013\n\003gid\030\002 \001("
-      "\014\022\016\n\006pubkey\030\003 \001(\014\022\021\n\tgas_limit\030\004 \001(\004\022\021\n\t"
-      "gas_price\030\005 \001(\004\022\013\n\003key\030\006 \001(\014\022\r\n\005value\030\007 "
-      "\001(\014\022\n\n\002to\030\010 \001(\014\022\016\n\006amount\030\t \001(\004\022;\n\004step\030"
-      "\n \001(\0162 .zjchain.pools.protobuf.StepType:"
-      "\013kNormalFrom*\206\002\n\010StepType\022\017\n\013kNormalFrom"
-      "\020\000\022\r\n\tkNormalTo\020\001\022\025\n\021kContractUserCall\020\002"
-      "\022\027\n\023kContractCallExcute\020\003\022\026\n\022kContractBr"
-      "oadcast\020\004\022\034\n\030kConsensusRootElectShard\020\005\022"
-      "\033\n\027kConsensusRootTimeBlock\020\006\022\034\n\030kConsens"
-      "usFinalStatistic\020\007\022!\n\035kConsensusCreateGe"
-      "nesisAcount\020\010\022\026\n\022kConsensusLocalTos\020\t"
+      "\020\n\010tos_hash\030\004 \001(\014\".\n\017ToTxMessageItem\022\013\n\003"
+      "des\030\001 \001(\014\022\016\n\006amount\030\002 \001(\004\"C\n\013ToTxMessage"
+      "\0224\n\003tos\030\001 \003(\0132\'.zjchain.pools.protobuf.T"
+      "oTxMessageItem\"\324\001\n\tTxMessage\022\017\n\007version\030"
+      "\001 \001(\r\022\013\n\003gid\030\002 \001(\014\022\016\n\006pubkey\030\003 \001(\014\022\021\n\tga"
+      "s_limit\030\004 \001(\004\022\021\n\tgas_price\030\005 \001(\004\022\013\n\003key\030"
+      "\006 \001(\014\022\r\n\005value\030\007 \001(\014\022\n\n\002to\030\010 \001(\014\022\016\n\006amou"
+      "nt\030\t \001(\004\022;\n\004step\030\n \001(\0162 .zjchain.pools.p"
+      "rotobuf.StepType:\013kNormalFrom*\356\001\n\010StepTy"
+      "pe\022\017\n\013kNormalFrom\020\000\022\r\n\tkNormalTo\020\001\022\025\n\021kC"
+      "ontractUserCall\020\002\022\027\n\023kContractCallExcute"
+      "\020\003\022\026\n\022kContractBroadcast\020\004\022\034\n\030kConsensus"
+      "RootElectShard\020\005\022\033\n\027kConsensusRootTimeBl"
+      "ock\020\006\022\034\n\030kConsensusFinalStatistic\020\007\022!\n\035k"
+      "ConsensusCreateGenesisAcount\020\010"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 797);
+      descriptor, 710);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/pools.proto", &protobuf_RegisterTypes);
 }
@@ -269,7 +261,6 @@ bool StepType_IsValid(int value) {
     case 6:
     case 7:
     case 8:
-    case 9:
       return true;
     default:
       return false;
@@ -654,8 +645,6 @@ void ToTxMessageItem::InitAsDefaultInstance() {
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int ToTxMessageItem::kDesFieldNumber;
 const int ToTxMessageItem::kAmountFieldNumber;
-const int ToTxMessageItem::kShardingIdFieldNumber;
-const int ToTxMessageItem::kPoolIndexFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ToTxMessageItem::ToTxMessageItem()
@@ -674,17 +663,13 @@ ToTxMessageItem::ToTxMessageItem(const ToTxMessageItem& from)
   if (from.has_des()) {
     des_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.des_);
   }
-  ::memcpy(&amount_, &from.amount_,
-    static_cast<size_t>(reinterpret_cast<char*>(&pool_index_) -
-    reinterpret_cast<char*>(&amount_)) + sizeof(pool_index_));
+  amount_ = from.amount_;
   // @@protoc_insertion_point(copy_constructor:zjchain.pools.protobuf.ToTxMessageItem)
 }
 
 void ToTxMessageItem::SharedCtor() {
   des_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(&amount_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&pool_index_) -
-      reinterpret_cast<char*>(&amount_)) + sizeof(pool_index_));
+  amount_ = GOOGLE_ULONGLONG(0);
 }
 
 ToTxMessageItem::~ToTxMessageItem() {
@@ -720,11 +705,7 @@ void ToTxMessageItem::Clear() {
   if (cached_has_bits & 0x00000001u) {
     des_.ClearNonDefaultToEmptyNoArena();
   }
-  if (cached_has_bits & 14u) {
-    ::memset(&amount_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&pool_index_) -
-        reinterpret_cast<char*>(&amount_)) + sizeof(pool_index_));
-  }
+  amount_ = GOOGLE_ULONGLONG(0);
   _has_bits_.Clear();
   _internal_metadata_.Clear();
 }
@@ -759,34 +740,6 @@ bool ToTxMessageItem::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
                  input, &amount_)));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // optional uint32 sharding_id = 3;
-      case 3: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
-          set_has_sharding_id();
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, &sharding_id_)));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // optional uint32 pool_index = 4;
-      case 4: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(32u /* 32 & 0xFF */)) {
-          set_has_pool_index();
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, &pool_index_)));
         } else {
           goto handle_unusual;
         }
@@ -831,16 +784,6 @@ void ToTxMessageItem::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->amount(), output);
   }
 
-  // optional uint32 sharding_id = 3;
-  if (cached_has_bits & 0x00000004u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->sharding_id(), output);
-  }
-
-  // optional uint32 pool_index = 4;
-  if (cached_has_bits & 0x00000008u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->pool_index(), output);
-  }
-
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -868,16 +811,6 @@ void ToTxMessageItem::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->amount(), target);
   }
 
-  // optional uint32 sharding_id = 3;
-  if (cached_has_bits & 0x00000004u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->sharding_id(), target);
-  }
-
-  // optional uint32 pool_index = 4;
-  if (cached_has_bits & 0x00000008u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->pool_index(), target);
-  }
-
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -895,7 +828,7 @@ size_t ToTxMessageItem::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 15u) {
+  if (_has_bits_[0 / 32] & 3u) {
     // optional bytes des = 1;
     if (has_des()) {
       total_size += 1 +
@@ -908,20 +841,6 @@ size_t ToTxMessageItem::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt64Size(
           this->amount());
-    }
-
-    // optional uint32 sharding_id = 3;
-    if (has_sharding_id()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->sharding_id());
-    }
-
-    // optional uint32 pool_index = 4;
-    if (has_pool_index()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->pool_index());
     }
 
   }
@@ -953,19 +872,13 @@ void ToTxMessageItem::MergeFrom(const ToTxMessageItem& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 15u) {
+  if (cached_has_bits & 3u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_des();
       des_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.des_);
     }
     if (cached_has_bits & 0x00000002u) {
       amount_ = from.amount_;
-    }
-    if (cached_has_bits & 0x00000004u) {
-      sharding_id_ = from.sharding_id_;
-    }
-    if (cached_has_bits & 0x00000008u) {
-      pool_index_ = from.pool_index_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -998,8 +911,6 @@ void ToTxMessageItem::InternalSwap(ToTxMessageItem* other) {
   des_.Swap(&other->des_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(amount_, other->amount_);
-  swap(sharding_id_, other->sharding_id_);
-  swap(pool_index_, other->pool_index_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
@@ -1015,7 +926,6 @@ void ToTxMessageItem::InternalSwap(ToTxMessageItem* other) {
 void ToTxMessage::InitAsDefaultInstance() {
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int ToTxMessage::kHeightsHashFieldNumber;
 const int ToTxMessage::kTosFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
@@ -1032,15 +942,10 @@ ToTxMessage::ToTxMessage(const ToTxMessage& from)
       _has_bits_(from._has_bits_),
       tos_(from.tos_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  heights_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.has_heights_hash()) {
-    heights_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.heights_hash_);
-  }
   // @@protoc_insertion_point(copy_constructor:zjchain.pools.protobuf.ToTxMessage)
 }
 
 void ToTxMessage::SharedCtor() {
-  heights_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 ToTxMessage::~ToTxMessage() {
@@ -1049,7 +954,6 @@ ToTxMessage::~ToTxMessage() {
 }
 
 void ToTxMessage::SharedDtor() {
-  heights_hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void ToTxMessage::SetCachedSize(int size) const {
@@ -1073,10 +977,6 @@ void ToTxMessage::Clear() {
   (void) cached_has_bits;
 
   tos_.Clear();
-  cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    heights_hash_.ClearNonDefaultToEmptyNoArena();
-  }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
 }
@@ -1091,22 +991,10 @@ bool ToTxMessage::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional bytes heights_hash = 1;
+      // repeated .zjchain.pools.protobuf.ToTxMessageItem tos = 1;
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->mutable_heights_hash()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // repeated .zjchain.pools.protobuf.ToTxMessageItem tos = 2;
-      case 2: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
                 input, add_tos()));
         } else {
@@ -1141,18 +1029,11 @@ void ToTxMessage::SerializeWithCachedSizes(
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  cached_has_bits = _has_bits_[0];
-  // optional bytes heights_hash = 1;
-  if (cached_has_bits & 0x00000001u) {
-    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
-      1, this->heights_hash(), output);
-  }
-
-  // repeated .zjchain.pools.protobuf.ToTxMessageItem tos = 2;
+  // repeated .zjchain.pools.protobuf.ToTxMessageItem tos = 1;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->tos_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      2,
+      1,
       this->tos(static_cast<int>(i)),
       output);
   }
@@ -1171,20 +1052,12 @@ void ToTxMessage::SerializeWithCachedSizes(
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  cached_has_bits = _has_bits_[0];
-  // optional bytes heights_hash = 1;
-  if (cached_has_bits & 0x00000001u) {
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        1, this->heights_hash(), target);
-  }
-
-  // repeated .zjchain.pools.protobuf.ToTxMessageItem tos = 2;
+  // repeated .zjchain.pools.protobuf.ToTxMessageItem tos = 1;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->tos_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        2, this->tos(static_cast<int>(i)), deterministic, target);
+        1, this->tos(static_cast<int>(i)), deterministic, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1204,7 +1077,7 @@ size_t ToTxMessage::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  // repeated .zjchain.pools.protobuf.ToTxMessageItem tos = 2;
+  // repeated .zjchain.pools.protobuf.ToTxMessageItem tos = 1;
   {
     unsigned int count = static_cast<unsigned int>(this->tos_size());
     total_size += 1UL * count;
@@ -1213,13 +1086,6 @@ size_t ToTxMessage::ByteSizeLong() const {
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           this->tos(static_cast<int>(i)));
     }
-  }
-
-  // optional bytes heights_hash = 1;
-  if (has_heights_hash()) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::BytesSize(
-        this->heights_hash());
   }
 
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
@@ -1250,10 +1116,6 @@ void ToTxMessage::MergeFrom(const ToTxMessage& from) {
   (void) cached_has_bits;
 
   tos_.MergeFrom(from.tos_);
-  if (from.has_heights_hash()) {
-    set_has_heights_hash();
-    heights_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.heights_hash_);
-  }
 }
 
 void ToTxMessage::CopyFrom(const ::google::protobuf::Message& from) {
@@ -1281,8 +1143,6 @@ void ToTxMessage::Swap(ToTxMessage* other) {
 void ToTxMessage::InternalSwap(ToTxMessage* other) {
   using std::swap;
   CastToBase(&tos_)->InternalSwap(CastToBase(&other->tos_));
-  heights_hash_.Swap(&other->heights_hash_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-    GetArenaNoVirtual());
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
