@@ -87,6 +87,10 @@ int Ecdsa::GetEcdhKey(const std::string& peer_pubkey, std::string* ecdh_key) {
     return ecdh_key_.CreateKey(pk, ecdh_key);
 }
 
+int Ecdsa::GetEcdhKey(const PublicKey& pk, std::string* ecdh_key) {
+    return ecdh_key_.CreateKey(pk, ecdh_key);
+}
+
 bool Ecdsa::IsValidPublicKey(const std::string& pubkey) {
     auto ptr = SecurityStringTrans::Instance()->StringToEcPoint(curve_, pubkey);
     return ptr != nullptr;

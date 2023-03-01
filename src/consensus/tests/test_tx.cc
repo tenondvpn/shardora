@@ -275,23 +275,43 @@ TEST_F(TestTx, TestMoreTx) {
     };
 
     auto block_thread = std::thread(leader_block_thread);
+    uint64_t times[64] = { 0 };
+    uint32_t consensus_count = 0;
     while (true) {
         // 1. prepare
+        auto tm0 = common::TimeUtils::TimestampUs();
         leader_bft_mgr.Start(0);
         if (leader_bft_mgr.leader_prepare_msg_ == nullptr) {
             break;
         }
 
+        auto tm = common::TimeUtils::TimestampUs();
+        times[0] += tm - tm0;
+        tm0 = tm;
         leader_bft_mgr.leader_prepare_msg_->thread_idx = 0;
         backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
         ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ != nullptr);
+
+        auto start_bft_ptr = backup_bft_mgr0.GetBft(
+            0, leader_bft_mgr.leader_prepare_msg_->header.hotstuff_proto().gid(), false);
+        ASSERT_TRUE(start_bft_ptr != nullptr);
+        for (int32_t i = 1; i < 20; ++i) {
+            times[6 + i] += start_bft_ptr->times_[i] - start_bft_ptr->times_[i - 1];
+        }
+
         backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
         ASSERT_TRUE(backup_bft_mgr1.backup_prepare_msg_ != nullptr);
+        tm = common::TimeUtils::TimestampUs();
+        times[1] += tm - tm0;
+        tm0 = tm;
+
         backup_bft_mgr0.backup_prepare_msg_->thread_idx = 0;
         backup_bft_mgr1.backup_prepare_msg_->thread_idx = 0;
         leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_prepare_msg_);
         leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_prepare_msg_);
-
+        tm = common::TimeUtils::TimestampUs();
+        times[2] += tm - tm0;
+        tm0 = tm;
         // 2. precommit
         ASSERT_TRUE(leader_bft_mgr.leader_precommit_msg_ != nullptr);
         leader_bft_mgr.leader_precommit_msg_->thread_idx = 0;
@@ -299,19 +319,36 @@ TEST_F(TestTx, TestMoreTx) {
         ASSERT_TRUE(backup_bft_mgr0.backup_precommit_msg_ != nullptr);
         backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
         ASSERT_TRUE(backup_bft_mgr1.backup_precommit_msg_ != nullptr);
+        tm = common::TimeUtils::TimestampUs();
+        times[3] += tm - tm0;
+        tm0 = tm;
         backup_bft_mgr0.backup_precommit_msg_->thread_idx = 0;
         backup_bft_mgr1.backup_precommit_msg_->thread_idx = 0;
         leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_precommit_msg_);
         leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_precommit_msg_);
-
+        tm = common::TimeUtils::TimestampUs();
+        times[4] += tm - tm0;
+        tm0 = tm;
         // 3. commit
         ASSERT_TRUE(leader_bft_mgr.leader_commit_msg_ != nullptr);
         leader_bft_mgr.leader_commit_msg_->thread_idx = 0;
         backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_commit_msg_);
         backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_commit_msg_);
+        tm = common::TimeUtils::TimestampUs();
+        times[5] += tm - tm0;
+        tm0 = tm;
         leader_bft_mgr.ResetTest();
         backup_bft_mgr0.ResetTest();
         backup_bft_mgr1.ResetTest();
+        tm = common::TimeUtils::TimestampUs();
+        times[6] += tm - tm0;
+        tm0 = tm;
+        ++consensus_count;
+    }
+
+    std::cout << ", consensus_count: " << consensus_count << std::endl;
+    for (uint32_t i = 0; i < 7; ++i) {
+        std::cout << (i > 6 ? (i - 6) : i) << " : " << (times[i] / consensus_count) << std::endl;
     }
 
     usleep(200000);

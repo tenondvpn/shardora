@@ -101,13 +101,15 @@ bool BftProto::BackupCreatePrepare(
     bft_msg.set_bls_sign_x(bls_sign_x);
     bft_msg.set_bls_sign_y(bls_sign_y);
     auto bls_sign_hash = common::Hash::keccak256(bls_sign_x + bls_sign_y);
-    std::string ecdh_key;
-    if (security_ptr->GetEcdhKey(
-            bft_ptr->leader_mem_ptr()->pubkey,
-            &ecdh_key) != security::kSecuritySuccess) {
-        ZJC_ERROR("get ecdh key failed peer pk: %s",
-            common::Encode::HexEncode(bft_ptr->leader_mem_ptr()->pubkey).c_str());
-        return false;
+    std::string& ecdh_key = bft_ptr->leader_mem_ptr()->peer_ecdh_key;
+    if (ecdh_key.empty()) {
+        if (security_ptr->GetEcdhKey(
+                bft_ptr->leader_mem_ptr()->pubkey,
+                &ecdh_key) != security::kSecuritySuccess) {
+            ZJC_ERROR("get ecdh key failed peer pk: %s",
+                common::Encode::HexEncode(bft_ptr->leader_mem_ptr()->pubkey).c_str());
+            return false;
+        }
     }
 
     std::string enc_out;
@@ -150,6 +152,7 @@ bool BftProto::LeaderCreatePreCommit(
         auto& bls_precommit_sign = bft_ptr->bls_precommit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
+        bft_msg.set_bls_agg_verify_hash(bft_ptr->precommit_bls_agg_verify_hash());
     }
 
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
@@ -199,13 +202,16 @@ bool BftProto::BackupCreatePreCommit(
     bft_msg.set_bls_sign_x(bls_sign_x);
     bft_msg.set_bls_sign_y(bls_sign_y);
     auto bls_sign_hash = common::Hash::keccak256(bls_sign_x + bls_sign_y);
-    std::string ecdh_key;
-    if (security_ptr->GetEcdhKey(
-        bft_ptr->leader_mem_ptr()->pubkey,
-        &ecdh_key) != security::kSecuritySuccess) {
-        ZJC_ERROR("get ecdh key failed peer pk: %s",
-            common::Encode::HexEncode(bft_ptr->leader_mem_ptr()->pubkey).c_str());
-        return false;
+    std::string& ecdh_key = bft_ptr->leader_mem_ptr()->peer_ecdh_key;
+    if (ecdh_key.empty()) {
+        if (security_ptr->GetEcdhKey(
+            bft_ptr->leader_mem_ptr()->pubkey,
+            &ecdh_key) != security::kSecuritySuccess) {
+            ZJC_ERROR("get ecdh key failed peer pk: %s",
+                common::Encode::HexEncode(bft_ptr->leader_mem_ptr()->pubkey).c_str());
+            return false;
+        }
+
     }
 
     std::string enc_out;
@@ -256,6 +262,8 @@ bool BftProto::LeaderCreateCommit(
             bft_msg.add_commit_bitmap(commit_bitmap_data[i]);
             msg_hash_src += std::to_string(commit_bitmap_data[i]);
         }
+
+        bft_msg.set_bls_agg_verify_hash(bft_ptr->commit_bls_agg_verify_hash());
     }
 
     bft_msg.set_prepare_hash(bft_ptr->leader_tbft_prepare_hash());
