@@ -78,7 +78,7 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBach& 
             height_iter = pool_iter->second.find(block.height());
         }
 
-        height_iter->second[tx_list[i].to()] = tx_list[i].amount();
+        height_iter->second[tx_list[i].to()] += tx_list[i].amount();
     }
 }
 
@@ -179,6 +179,7 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::TxMessag
     auto handled_iter = handled_map_.find(sharding_id);
     pools::protobuf::ToTxHeights to_heights;
     to_heights.set_sharding_id(sharding_id);
+    std::map<std::string, uint64_t> acc_amount_map;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto pool_iter = net_iter->second.find(i);
         if (pool_iter == net_iter->second.end()) {
@@ -197,15 +198,34 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::TxMessag
                 hiter != pool_iter->second.end(); ++hiter) {
             for (auto to_iter = hiter->second.begin();
                     to_iter != hiter->second.end(); ++to_iter) {
-                auto to_item = to_tx.add_tos();
-                to_item->set_des(to_iter->first);
-                to_item->set_amount(to_iter->second);
+                auto amount_iter = acc_amount_map.find(to_iter->first);
+                if (amount_iter == acc_amount_map.end()) {
+                    acc_amount_map[to_iter->first] = to_iter->second;
+                } else {
+                    amount_iter->second += to_iter->second;
+                }
             }
         }
     }
 
+    std::string str_for_hash;
+    str_for_hash.reserve(common::kImmutablePoolSize * 8 + acc_amount_map.size() * 48);
+    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
+        uint64_t height = to_heights.heights(i);
+        str_for_hash.append((char*)&height, sizeof(height));
+    }
+
+    for (auto iter = acc_amount_map.begin(); iter != acc_amount_map.end(); ++iter) {
+        str_for_hash.append(iter->first);
+        str_for_hash.append((char*)&iter->second, sizeof(iter->second));
+        auto to_item = to_tx.add_tos();
+        to_item->set_des(iter->first);
+        to_item->set_amount(iter->second);
+    }
+
+    auto tos_hash = common::Hash::keccak256(str_for_hash);
+    to_tx.set_heights_hash(tos_hash);
     auto val = to_tx.SerializeAsString();
-    auto tos_hash = common::Hash::keccak256(val);
     to_heights.set_tos_hash(tos_hash);
     prefix_db_->SaveTemporaryKv(tos_hash, val);
     tx->set_key(protos::kNormalTos);
@@ -238,6 +258,7 @@ int ToTxsPools::BackupCreateToTx(
     auto handled_iter = handled_map_.find(sharding_id);
     pools::protobuf::ToTxHeights to_heights;
     to_heights.set_sharding_id(sharding_id);
+    std::map<std::string, uint64_t> acc_amount_map;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto pool_iter = net_iter->second.find(i);
         if (pool_iter == net_iter->second.end()) {
@@ -259,15 +280,35 @@ int ToTxsPools::BackupCreateToTx(
 
             for (auto to_iter = hiter->second.begin();
                     to_iter != hiter->second.end(); ++to_iter) {
-                auto to_item = to_tx.add_tos();
-                to_item->set_des(to_iter->first);
-                to_item->set_amount(to_iter->second);
+                auto amount_iter = acc_amount_map.find(to_iter->first);
+                if (amount_iter == acc_amount_map.end()) {
+                    acc_amount_map[to_iter->first] = to_iter->second;
+                } else {
+                    amount_iter->second += to_iter->second;
+                }
             }
         }
     }
 
+    std::string str_for_hash;
+    str_for_hash.reserve(common::kImmutablePoolSize * 8 + acc_amount_map.size() * 48);
+    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
+        uint64_t height = to_heights.heights(i);
+        str_for_hash.append((char*)&height, sizeof(height));
+    }
+
+    for (auto iter = acc_amount_map.begin(); iter != acc_amount_map.end(); ++iter) {
+        str_for_hash.append(iter->first);
+        str_for_hash.append((char*)&iter->second, sizeof(iter->second));
+        auto to_item = to_tx.add_tos();
+        to_item->set_des(iter->first);
+        to_item->set_amount(iter->second);
+    }
+
+    auto tos_hash = common::Hash::keccak256(str_for_hash);
+    to_tx.set_heights_hash(tos_hash);
     auto val = to_tx.SerializeAsString();
-    auto tos_hash = common::Hash::keccak256(val);
+//     auto tos_hash = common::Hash::keccak256(val);
     to_heights.set_tos_hash(tos_hash);
     prefix_db_->SaveTemporaryKv(tos_hash, val);
     tx->set_key(protos::kNormalTos);

@@ -12,6 +12,7 @@
 #include "block/account_manager.h"
 #include "bls/bls_manager.h"
 #include "common/random.h"
+#include "consensus/zbft/from_tx_item.h"
 #include "consensus/waiting_txs_pools.h"
 #include "consensus/zbft/zbft_utils.h"
 #include "consensus/zbft/bft_manager.h"
@@ -48,8 +49,8 @@ public:
             return;
         }
         std::string log_str = ("# log4cpp.properties\n"
-            "log4cpp.rootCategory = WARN\n"
-            "log4cpp.category.sub1 = WARN, programLog\n"
+            "log4cpp.rootCategory = DEBUG\n"
+            "log4cpp.category.sub1 = DEBUG, programLog\n"
             "log4cpp.appender.rootAppender = ConsoleAppender\n"
             "log4cpp.appender.rootAppender.layout = PatternLayout\n"
             "log4cpp.appender.rootAppender.layout.ConversionPattern = %d [%p] %m%n\n"
@@ -92,7 +93,8 @@ public:
                 break;
             }
 
-            std::string prikey = common::Encode::HexDecode(std::string(split[1], split.SubLen(1) - 1));
+            std::string prikey = common::Encode::HexDecode(
+                std::string(split[1], split.SubLen(1) - 1));
             std::string addr = common::Encode::HexDecode(split[0]);
             addrs_map[prikey] = addr;
             addrs.push_back(addr);
@@ -112,18 +114,20 @@ public:
         security->SetPrivateKey(prikey);
         auto account_mgr = std::make_shared<block::AccountManager>();
         auto db_ptr = std::make_shared<db::Db>();
-        auto tmp_prikey = std::string("db_") + common::Encode::HexEncode(prikey) + std::to_string(db_index++);
+        auto tmp_prikey = std::string("db_") + 
+            common::Encode::HexEncode(prikey) + std::to_string(db_index++);
         system((std::string("rm -rf ./") + tmp_prikey).c_str());
         system((std::string("cp -rf ../../src/consensus/tests/test_tx ./") + tmp_prikey).c_str());
         std::string db_path = std::string("./") + tmp_prikey;
         db_ptr->Init(db_path);
-        account_mgr->Init(kTestShardingId, 1, db_ptr);
         auto block_mgr = std::make_shared<block::BlockManager>();
         auto bls_mgr = std::make_shared<bls::BlsManager>(security, db_ptr);
         auto pools_mgr = std::make_shared<pools::TxPoolManager>(security);
+        account_mgr->Init(1, db_ptr, pools_mgr);
         block_mgr->Init(account_mgr, db_ptr, pools_mgr, security->GetAddress());
         block_mgr->SetMaxConsensusShardingId(3);
-        auto elect_mgr = std::make_shared<elect::ElectManager>(block_mgr, security, bls_mgr, db_ptr);
+        auto elect_mgr = std::make_shared<elect::ElectManager>(
+            block_mgr, security, bls_mgr, db_ptr);
         ASSERT_EQ(elect_mgr->Init(), 0);
         ASSERT_EQ(bft_mgr.Init(
             account_mgr,
@@ -131,6 +135,7 @@ public:
             elect_mgr,
             pools_mgr,
             security,
+            db_ptr,
             nullptr,
             1), kConsensusSuccess);
         ASSERT_EQ(bft_mgr.OnNewElectBlock(0, 1), kConsensusSuccess);
@@ -145,10 +150,14 @@ public:
         msg_ptr->address_info = bft_mgr.account_mgr_->GetAcountInfo(0, from_addr);
         ASSERT_TRUE(msg_ptr->address_info->balance() > 0);
         *msg_ptr->header.mutable_tx_proto() = tx_info;
-        auto tx_ptr = std::make_shared<pools::TxItem>(msg_ptr);
+        pools::TxItemPtr tx_ptr = std::make_shared<FromTxItem>(
+            msg_ptr, bft_mgr.account_mgr_, bft_mgr.security_ptr_);
         tx_ptr->tx_hash = pools::GetTxMessageHash(tx_info);
-        ASSERT_EQ(bft_mgr.pools_mgr_->AddTx(msg_ptr->address_info->pool_index(), tx_ptr), pools::kPoolsSuccess);
-        ASSERT_TRUE(bft_mgr.pools_mgr_->tx_pool_[msg_ptr->address_info->pool_index()].added_tx_map_.size() > 0);
+        ASSERT_EQ(
+            bft_mgr.pools_mgr_->AddTx(msg_ptr->address_info->pool_index(), tx_ptr),
+            pools::kPoolsSuccess);
+        ASSERT_TRUE(bft_mgr.pools_mgr_->tx_pool_[
+            msg_ptr->address_info->pool_index()].added_tx_map_.size() > 0);
     }
 
     void CreateTxInfo(
@@ -160,8 +169,7 @@ public:
         test_arr[0] = tx_index++;
         tx_info.set_pubkey(pri_pub_map[from_prikey]);
         tx_info.set_to(to);
-        auto gid = std::string((char*)test_arr, 32);
-        tx_info.set_gid(gid);
+        tx_info.set_gid(std::string((char*)test_arr, 32));
         tx_info.set_gas_limit(10000000lu);
         tx_info.set_amount(100000lu);
         tx_info.set_gas_price(10lu);
@@ -190,7 +198,8 @@ TEST_F(TestTx, TestTx) {
         "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
     pools::protobuf::TxMessage tx_info;
     CreateTxInfo(
-        common::Encode::HexDecode("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"),
+        common::Encode::HexDecode(
+            "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"),
         common::Encode::HexDecode("e70c72fcdb57df6844e4c44cd9f02435b628398c"),
         tx_info);
     AddTxs(leader_bft_mgr, tx_info);
@@ -232,11 +241,23 @@ TEST_F(TestTx, TestMoreTx) {
     BftManager backup_bft_mgr1;
     InitConsensus(backup_bft_mgr1, common::Encode::HexDecode(
         "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
-    for (uint32_t i = 0; i < 10000; ++i) {
+    auto to_addr = common::Encode::HexDecode("e70c72fcdb57df6844e4c44cd9f02435b628398c");
+    auto to_acc = leader_bft_mgr.account_mgr_->GetAcountInfo(0, to_addr);
+    ASSERT_TRUE(to_acc != nullptr);
+    uint64_t src_balance = to_acc->balance();
+    uint32_t invalid_count = 0;
+    const uint32_t kTestCount = 10000u;
+    for (uint32_t i = 0; i < kTestCount; ++i) {
         pools::protobuf::TxMessage tx_info;
+        auto& from_prikey = prikeys[i % prikeys.size()];
+        if (addrs_map[from_prikey] == to_addr) {
+            ++invalid_count;
+            continue;
+        }
+
         CreateTxInfo(
-            prikeys[i % prikeys.size()],
-            common::Encode::HexDecode("e70c72fcdb57df6844e4c44cd9f02435b628398c"),
+            from_prikey,
+            to_addr,
             tx_info);
         AddTxs(leader_bft_mgr, tx_info);
         AddTxs(backup_bft_mgr0, tx_info);
@@ -255,6 +276,7 @@ TEST_F(TestTx, TestMoreTx) {
 
     auto block_thread = std::thread(leader_block_thread);
     while (true) {
+        // 1. prepare
         leader_bft_mgr.Start(0);
         if (leader_bft_mgr.leader_prepare_msg_ == nullptr) {
             break;
@@ -269,6 +291,8 @@ TEST_F(TestTx, TestMoreTx) {
         backup_bft_mgr1.backup_prepare_msg_->thread_idx = 0;
         leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_prepare_msg_);
         leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_prepare_msg_);
+
+        // 2. precommit
         ASSERT_TRUE(leader_bft_mgr.leader_precommit_msg_ != nullptr);
         leader_bft_mgr.leader_precommit_msg_->thread_idx = 0;
         backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
@@ -279,6 +303,8 @@ TEST_F(TestTx, TestMoreTx) {
         backup_bft_mgr1.backup_precommit_msg_->thread_idx = 0;
         leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_precommit_msg_);
         leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_precommit_msg_);
+
+        // 3. commit
         ASSERT_TRUE(leader_bft_mgr.leader_commit_msg_ != nullptr);
         leader_bft_mgr.leader_commit_msg_->thread_idx = 0;
         backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_commit_msg_);
@@ -292,6 +318,7 @@ TEST_F(TestTx, TestMoreTx) {
     over = true;
     block_thread.join();
 
+    // batch transfer to txs
     leader_bft_mgr.block_mgr_->CreateToTx();
     std::cout << "create tx success." << std::endl;
     ASSERT_TRUE(leader_bft_mgr.block_mgr_->leader_to_txs_msg_ != nullptr);
@@ -300,34 +327,94 @@ TEST_F(TestTx, TestMoreTx) {
     std::cout << "leader tx success." << std::endl;
     backup_bft_mgr0.block_mgr_->HandleMessage(leader_bft_mgr.block_mgr_->leader_to_txs_msg_);
     backup_bft_mgr1.block_mgr_->HandleMessage(leader_bft_mgr.block_mgr_->leader_to_txs_msg_);
-    leader_bft_mgr.Start(0);
-    ASSERT_TRUE(leader_bft_mgr.leader_prepare_msg_ != nullptr);
-    leader_bft_mgr.leader_prepare_msg_->thread_idx = 0;
-    backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
-    ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ != nullptr);
-    backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
-    ASSERT_TRUE(backup_bft_mgr1.backup_prepare_msg_ != nullptr);
-    backup_bft_mgr0.backup_prepare_msg_->thread_idx = 0;
-    backup_bft_mgr1.backup_prepare_msg_->thread_idx = 0;
-    leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_prepare_msg_);
-    leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_prepare_msg_);
-    ASSERT_TRUE(leader_bft_mgr.leader_precommit_msg_ != nullptr);
-    leader_bft_mgr.leader_precommit_msg_->thread_idx = 0;
-    backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
-    ASSERT_TRUE(backup_bft_mgr0.backup_precommit_msg_ != nullptr);
-    backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
-    ASSERT_TRUE(backup_bft_mgr1.backup_precommit_msg_ != nullptr);
-    backup_bft_mgr0.backup_precommit_msg_->thread_idx = 0;
-    backup_bft_mgr1.backup_precommit_msg_->thread_idx = 0;
-    leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_precommit_msg_);
-    leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_precommit_msg_);
-    ASSERT_TRUE(leader_bft_mgr.leader_commit_msg_ != nullptr);
-    leader_bft_mgr.leader_commit_msg_->thread_idx = 0;
-    backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_commit_msg_);
-    backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_commit_msg_);
-    leader_bft_mgr.ResetTest();
-    backup_bft_mgr0.ResetTest();
-    backup_bft_mgr1.ResetTest();
+
+    // cross shard
+    while (true) {
+        // 1. prepare
+        leader_bft_mgr.Start(0);
+        if (leader_bft_mgr.leader_prepare_msg_ == nullptr) {
+            break;
+        }
+
+        leader_bft_mgr.leader_prepare_msg_->thread_idx = 0;
+        backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
+        ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ != nullptr);
+        backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
+        ASSERT_TRUE(backup_bft_mgr1.backup_prepare_msg_ != nullptr);
+        backup_bft_mgr0.backup_prepare_msg_->thread_idx = 0;
+        backup_bft_mgr1.backup_prepare_msg_->thread_idx = 0;
+        leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_prepare_msg_);
+        leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_prepare_msg_);
+
+        // 2. precommit
+        ASSERT_TRUE(leader_bft_mgr.leader_precommit_msg_ != nullptr);
+        leader_bft_mgr.leader_precommit_msg_->thread_idx = 0;
+        backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
+        ASSERT_TRUE(backup_bft_mgr0.backup_precommit_msg_ != nullptr);
+        backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
+        ASSERT_TRUE(backup_bft_mgr1.backup_precommit_msg_ != nullptr);
+        backup_bft_mgr0.backup_precommit_msg_->thread_idx = 0;
+        backup_bft_mgr1.backup_precommit_msg_->thread_idx = 0;
+        leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_precommit_msg_);
+        leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_precommit_msg_);
+
+        // 3. commit
+        ASSERT_TRUE(leader_bft_mgr.leader_commit_msg_ != nullptr);
+        leader_bft_mgr.leader_commit_msg_->thread_idx = 0;
+        backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_commit_msg_);
+        backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_commit_msg_);
+        leader_bft_mgr.ResetTest();
+        backup_bft_mgr0.ResetTest();
+        backup_bft_mgr1.ResetTest();
+    }
+
+    leader_bft_mgr.block_mgr_->HandleAllConsensusBlocks();
+    backup_bft_mgr0.block_mgr_->HandleAllConsensusBlocks();
+    backup_bft_mgr1.block_mgr_->HandleAllConsensusBlocks();
+    // local shard to txs
+    while (true) {
+        // 1. prepare
+        leader_bft_mgr.Start(0);
+        if (leader_bft_mgr.leader_prepare_msg_ == nullptr) {
+            break;
+        }
+
+        leader_bft_mgr.leader_prepare_msg_->thread_idx = 0;
+        backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
+        ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ != nullptr);
+        backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
+        ASSERT_TRUE(backup_bft_mgr1.backup_prepare_msg_ != nullptr);
+        backup_bft_mgr0.backup_prepare_msg_->thread_idx = 0;
+        backup_bft_mgr1.backup_prepare_msg_->thread_idx = 0;
+        leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_prepare_msg_);
+        leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_prepare_msg_);
+
+        // 2. precommit
+        ASSERT_TRUE(leader_bft_mgr.leader_precommit_msg_ != nullptr);
+        leader_bft_mgr.leader_precommit_msg_->thread_idx = 0;
+        backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
+        ASSERT_TRUE(backup_bft_mgr0.backup_precommit_msg_ != nullptr);
+        backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
+        ASSERT_TRUE(backup_bft_mgr1.backup_precommit_msg_ != nullptr);
+        backup_bft_mgr0.backup_precommit_msg_->thread_idx = 0;
+        backup_bft_mgr1.backup_precommit_msg_->thread_idx = 0;
+        leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_precommit_msg_);
+        leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_precommit_msg_);
+
+        // 3. commit
+        ASSERT_TRUE(leader_bft_mgr.leader_commit_msg_ != nullptr);
+        leader_bft_mgr.leader_commit_msg_->thread_idx = 0;
+        backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_commit_msg_);
+        backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_commit_msg_);
+        leader_bft_mgr.ResetTest();
+        backup_bft_mgr0.ResetTest();
+        backup_bft_mgr1.ResetTest();
+    }
+
+    to_acc = leader_bft_mgr.account_mgr_->GetAcountInfo(0, to_addr);
+    ASSERT_TRUE(to_acc != nullptr);
+    std::cout << src_balance << ":" << to_acc->balance() << ", " << kTestCount << ", " << invalid_count << std::endl;
+    ASSERT_EQ(src_balance + (kTestCount - invalid_count) * 100000, to_acc->balance());
 };
 
 TEST_F(TestTx, TestTxOnePrepareEvil) {
@@ -342,7 +429,8 @@ TEST_F(TestTx, TestTxOnePrepareEvil) {
     InitConsensus(backup_bft_mgr1, common::Encode::HexDecode(
         "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
     CreateTxInfo(
-        common::Encode::HexDecode("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"),
+        common::Encode::HexDecode(
+            "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"),
         common::Encode::HexDecode("e70c72fcdb57df6844e4c44cd9f02435b628398c"),
         tx_info);
     AddTxs(leader_bft_mgr, tx_info);
@@ -383,7 +471,8 @@ TEST_F(TestTx, TestTxOnePrecommitEvil) {
     InitConsensus(backup_bft_mgr1, common::Encode::HexDecode(
         "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
     CreateTxInfo(
-        common::Encode::HexDecode("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"),
+        common::Encode::HexDecode(
+            "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"),
         common::Encode::HexDecode("e70c72fcdb57df6844e4c44cd9f02435b628398c"),
         tx_info);
     AddTxs(leader_bft_mgr, tx_info);
@@ -426,7 +515,8 @@ TEST_F(TestTx, TestTxTwoPrepareEvil) {
     InitConsensus(backup_bft_mgr1, common::Encode::HexDecode(
         "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
     CreateTxInfo(
-        common::Encode::HexDecode("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"),
+        common::Encode::HexDecode(
+            "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"),
         common::Encode::HexDecode("e70c72fcdb57df6844e4c44cd9f02435b628398c"),
         tx_info);
     AddTxs(leader_bft_mgr, tx_info);

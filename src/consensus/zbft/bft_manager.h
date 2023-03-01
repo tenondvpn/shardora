@@ -10,6 +10,9 @@
 #include "common/limit_hash_map.h"
 #include "consensus/consensus.h"
 #include "consensus/waiting_txs_pools.h"
+#include "consensus/zbft/from_tx_item.h"
+#include "consensus/zbft/to_tx_item.h"
+#include "consensus/zbft/to_tx_local_item.h"
 #include "consensus/zbft/zbft.h"
 #include "db/db.h"
 #include "elect/member_manager.h"
@@ -33,6 +36,7 @@ public:
         std::shared_ptr<elect::ElectManager>& elect_mgr,
         std::shared_ptr<pools::TxPoolManager>& pool_mgr,
         std::shared_ptr<security::Security>& security_ptr,
+        std::shared_ptr<db::Db>& db,
         BlockCallback block_cb,
         uint8_t thread_count);
     virtual int OnNewElectBlock(int32_t local_leader_index, int32_t leader_count);
@@ -95,10 +99,6 @@ private:
     void CacheBftPrecommitMsg(BftItemPtr& bft_item_ptr);
     bool IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info);
     void HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr);
-    void RandomNodesToBroadcastBlock(
-        ZbftPtr& bft_ptr,
-        std::shared_ptr<block::protobuf::Block>& block,
-        const common::Bitmap& bitmap);
     int InitZbftPtr(bool leader, ZbftPtr& bft_ptr);
     bool VerifyBackupIdValid(
         const transport::MessagePtr& msg_ptr,
@@ -106,6 +106,17 @@ private:
     bool VerifyLeaderIdValid(
         const transport::MessagePtr& msg_ptr,
         common::BftMemberPtr& mem_ptr);
+    pools::TxItemPtr CreateFromTx(transport::MessagePtr& msg_ptr) {
+        return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
+    }
+
+    pools::TxItemPtr CreateToTx(transport::MessagePtr& msg_ptr) {
+        return std::make_shared<ToTxItem>(msg_ptr, account_mgr_, security_ptr_);
+    }
+
+    pools::TxItemPtr CreateToTxLocal(transport::MessagePtr& msg_ptr) {
+        return std::make_shared<ToTxLocalItem>(msg_ptr, db_, account_mgr_, security_ptr_);
+    }
 
     static const uint32_t kCheckTimeoutPeriodMilli = 3000lu;
 
@@ -124,6 +135,7 @@ private:
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
+    std::shared_ptr<db::Db> db_ = nullptr;
     uint8_t thread_count_ = 0;
     std::shared_ptr<PoolTxIndexItem> thread_set_[common::kMaxThreadCount];
     std::shared_ptr<WaitingTxsPools> txs_pools_ = nullptr;

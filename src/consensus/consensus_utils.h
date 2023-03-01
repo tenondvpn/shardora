@@ -42,10 +42,40 @@ enum ConsensusErrorCode {
     kConsensusVssRandomNotMatch = 28,
 };
 
+enum BftStatus {
+    kConsensusInit = 0,
+    kConsensusPrepare = 1,
+    kConsensusPreCommit = 2,
+    kConsensusCommit = 3,
+    kConsensusCommited = 4,
+    kConsensusToTxInit = 5,
+    kConsensusRootBlock = 6,
+    kConsensusCallContract = 7,
+    kConsensusStepTimeout = 8,
+    kConsensusSyncBlock = 9,
+};
+
+enum BftRole {
+    kConsensusRootCongress = 0,
+    kConsensusShard = 1,
+};
+
+enum BftLeaderCheckStatus {
+    kConsensusWaitingBackup = 0,
+    kConsensusOppose = 1,
+    kConsensusAgree = 2,
+    kConsensusHandled = 3,
+    kConsensusReChallenge = 4,
+};
+
 static const uint32_t kMaxTxCount = 64u;
 static const uint32_t kBitcountWithItemCount = 20u;  // m/n, k = 8, error ratio = 0.000009
 static const uint32_t kHashCount = 6u;  // k
 static const uint32_t kDirectTxCount = kBitcountWithItemCount * 8 / 32;
+// gas consume
+static const uint64_t kTransferGas = 1000llu;
+static const uint64_t kCallContractDefaultUseGas = 10000llu;
+static const uint64_t kKeyValueStorageEachBytes = 10llu;
 
 typedef std::function<int(const std::shared_ptr<block::protobuf::Block>& block)> BlockCallback;
 

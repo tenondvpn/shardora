@@ -21,6 +21,7 @@ class TxPoolManager {
 public:
     TxPoolManager(std::shared_ptr<security::Security>& security);
     ~TxPoolManager();
+    void HandleMessage(const transport::MessagePtr& msg);
     void GetTx(
         uint32_t pool_index,
         uint32_t count,
@@ -33,6 +34,11 @@ public:
     void TxOver(uint32_t pool_index, std::map<std::string, TxItemPtr>& over_txs);
     void TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs);
     void SetTimeout(uint32_t pool_index) {}
+    void RegisterCreateTxFunction(uint32_t type, CreateConsensusItemFunction func) {
+        assert(type < pools::protobuf::StepType_ARRAYSIZE);
+        item_functions_[type] = func;
+    }
+
     uint64_t latest_height(uint32_t pool_index) const {
         return tx_pool_[pool_index].latest_height();
     }
@@ -51,12 +57,13 @@ public:
     }
 
 private:
-    void HandleMessage(const transport::MessagePtr& msg);
     void SaveStorageToDb(const transport::protobuf::Header& msg);
+    void DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr);
 
     TxPool* tx_pool_{ nullptr };
     std::shared_ptr<security::Security> security_ = nullptr;
     common::ThreadSafeQueue<transport::MessagePtr> msg_queues_[common::kInvalidPoolIndex];
+    CreateConsensusItemFunction item_functions_[pools::protobuf::StepType_ARRAYSIZE] = { nullptr };
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

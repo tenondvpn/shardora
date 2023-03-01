@@ -1,8 +1,11 @@
 #pragma once
 
 #include "common/hash.h"
+#include "common/time_utils.h"
 #include "common/utils.h"
 #include "protos/pools.pb.h"
+#include "security/security.h"
+#include "transport/transport_utils.h"
 
 namespace zjchain {
 
@@ -18,10 +21,45 @@ enum PoolsErrorCode {
     kPoolsTxAdded = 2,
 };
 
-struct ToTxItem {
-    std::string to_or_txhash;
-    uint64_t amount;
+class TxItem {
+public:
+    virtual ~TxItem() {}
+    TxItem(transport::MessagePtr& msg) : msg_ptr(msg) {
+        time_valid = common::TimeUtils::TimestampUs() + kBftStartDeltaTime;
+#ifdef ZJC_UNITTEST
+        time_valid = 0;
+#endif // ZJC_UNITTEST
+        timeout = common::TimeUtils::TimestampUs() + kTxPoolTimeoutUs;
+        remove_timeout = timeout + kTxPoolTimeoutUs;
+        gas_price = msg->header.tx_proto().gas_price();
+        if (msg->header.tx_proto().has_step()) {
+            step = msg->header.tx_proto().step();
+        }
+
+        tx_hash = common::Hash::keccak256(
+            msg->header.tx_proto().gid() + std::to_string(step) + msg->msg_hash);
+    }
+
+    virtual int HandleTx(
+        uint8_t thread_idx,
+        std::unordered_map<std::string, int64_t>& acc_balance_map,
+        block::protobuf::BlockTx& block_tx) = 0;
+    virtual int TxToBlockTx(
+        const pools::protobuf::TxMessage& tx_info,
+        block::protobuf::BlockTx* block_tx) = 0;
+
+    transport::MessagePtr msg_ptr;
+    uint64_t timeout;
+    uint64_t remove_timeout;
+    uint64_t time_valid{ 0 };
+    uint64_t gas_price{ 0 };
+    int32_t step = pools::protobuf::kNormalFrom;
+    std::string from_addr;
+    std::string tx_hash;
 };
+
+typedef std::shared_ptr<TxItem> TxItemPtr;
+typedef std::function<TxItemPtr(transport::MessagePtr& msg_ptr)> CreateConsensusItemFunction;
 
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {
     std::string message;

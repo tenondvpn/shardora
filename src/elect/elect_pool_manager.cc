@@ -950,7 +950,7 @@ void ElectPoolManager::UpdateNodeInfoWithBlock(const block::protobuf::Block& blo
         if (tx_list[i].step() == pools::protobuf::kNormalTo) {
             account_id = tx_list[i].to();
         } else {
-            account_id = security_ptr_->GetAddress(tx_list[i].from_pubkey());
+            account_id = tx_list[i].from();
         }
 
         // update balance for fts

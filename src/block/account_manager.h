@@ -24,8 +24,11 @@ class AccountManager {
 public:
     AccountManager();
     ~AccountManager();
-    int Init(uint32_t network_id, uint8_t thread_count, std::shared_ptr<db::Db>& db);
-    int AddBlockItemToCache(
+    int Init(
+        uint8_t thread_count,
+        std::shared_ptr<db::Db>& db,
+        std::shared_ptr<pools::TxPoolManager>& pools_mgr);
+    void AddBlockItemToCache(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBach& db_batch);
@@ -79,6 +82,21 @@ private:
     void RefreshPoolMaxHeight();
     void SendRefreshHeightsRequest();
     void SendRefreshHeightsResponse(const transport::protobuf::Header& header);
+    void HandleNormalFromTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBach& db_batch);
+    void HandleNormalToTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBach& db_batch);
+    void HandleLocalToTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBach& db_batch);
 
     static const uint64_t kCheckMissingHeightPeriod = 3000000llu;
     static const uint64_t kFushTreeToDbPeriod = 6000000llu;

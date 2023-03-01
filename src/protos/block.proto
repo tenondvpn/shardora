@@ -17,7 +17,7 @@ message TransferItem {
 
 message BlockTx {
     optional bytes gid = 1;
-    optional bytes from_pubkey = 2;
+    optional bytes from = 2;
     optional bytes to = 3;
     optional uint64 amount = 4;
     optional uint64 gas_limit = 5;
@@ -46,6 +46,15 @@ message Block {
     optional bytes bls_agg_sign_x = 13;
     optional bytes bls_agg_sign_y = 14;
     optional uint64 leader_index = 15;
+}
+
+message ConsensusToTxsItem {
+    optional bytes to = 1;
+    optional uint64 balance = 2;
+}
+
+message ConsensusToTxs {
+    repeated ConsensusToTxsItem tos = 1;
 }
 
 message GetTxBlockRequest {

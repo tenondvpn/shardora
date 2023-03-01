@@ -49,8 +49,8 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
     auto& tx_map = txs_ptr_->txs;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto& tx = *tx_list->Add();
-        TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), &tx);
-        tx.set_status(kBftSuccess);
+        iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), &tx);
+        tx.set_status(kConsensusSuccess);
         // create address must to and have transfer amount
         if (tx.step() != pools::protobuf::kNormalTo || tx.amount() <= 0) {
             continue;
@@ -107,7 +107,7 @@ void RootZbft::RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_bl
 
     auto tx_list = zjc_block.mutable_tx_list();
     auto& tx = *tx_list->Add();
-    TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), &tx);
+    iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), &tx);
     // use new node status
 //     if (elect_mgr_->GetElectionTxInfo(tx) != elect::kElectSuccess) {
 //         assert(false);
@@ -139,7 +139,7 @@ void RootZbft::RootCreateTimerBlock(block::protobuf::Block& zjc_block) {
     tx.set_gas_limit(0);
     tx.set_gas_used(0);
     tx.set_balance(0);
-    tx.set_status(kBftSuccess);
+    tx.set_status(kConsensusSuccess);
     
     // (TODO): check elect is valid in the time block period,
     // one time block, one elect block
@@ -156,12 +156,12 @@ void RootZbft::RootCreateFinalStatistic(block::protobuf::Block& zjc_block) {
 
     auto iter = tx_map.begin();
     auto& src_tx = iter->second->msg_ptr->header.tx_proto();
-    TxToBlockTx(src_tx, &tx);
+    iter->second->TxToBlockTx(src_tx, &tx);
     tx.set_amount(0);
     tx.set_gas_limit(0);
     tx.set_gas_used(0);
     tx.set_balance(0);
-    tx.set_status(kBftSuccess);
+    tx.set_status(kConsensusSuccess);
     // if (src_tx.key() == tmblock::kAttrTimerBlockHeight) {
     //     block::protobuf::StatisticInfo statistic_info;
     //     uint64_t timeblock_height = 0;
@@ -200,18 +200,18 @@ int RootZbft::RootBackupCheckPrepare(
 
     auto& tx_map = txs_ptr_->txs;
     if (tx_map.empty()) {
-        return kBftInvalidPackage;
+        return kConsensusInvalidPackage;
     }
 
     hotstuff::protobuf::TxBft res_tx_bft;
     auto& ltx_msg = *res_tx_bft.mutable_ltx_prepare();
-    if (DoTransaction(ltx_msg) != kBftSuccess) {
-        return kBftInvalidPackage;
+    if (DoTransaction(ltx_msg) != kConsensusSuccess) {
+        return kConsensusInvalidPackage;
     }
 
     ltx_msg.clear_block();
     *prepare = res_tx_bft.SerializeAsString();
-    return kBftSuccess;
+    return kConsensusSuccess;
 }
 
 };  // namespace consensus

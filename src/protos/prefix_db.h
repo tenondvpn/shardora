@@ -39,6 +39,8 @@ static const std::string kContractCallerChangeAmount = "__ccontractcallerchangea
 static const std::string kContractCallerGasUsed = "__ccontractcallergasused";
 static const std::string kStatisticAttr = "__statisticattr";
 static const std::string kNormalTos = "__normal_tos";
+static const std::string kLocalNormalTos = "__local_tos";
+static const std::string kConsensusLocalNormalTos = "__consensus_local_tos";
 
 static const std::string kAddressPrefix = "a\x01";
 static const std::string kBlsVerifyPrefex = "b\x01";

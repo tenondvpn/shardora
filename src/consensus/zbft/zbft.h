@@ -37,19 +37,11 @@ public:
         common::MembersPtr& members_ptr,
         libff::alt_bn128_G2& common_pk,
         libff::alt_bn128_Fr& local_sec_key);
-    int AddTransaction(
-        pools::TxItemPtr& tx_info,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
-        block::protobuf::BlockTx& tx);
     int Prepare(bool leader, transport::MessagePtr& msg_ptr);
     int LeaderCreatePrepare(transport::MessagePtr& msg_ptr);
     int BackupCheckPrepare(
         transport::MessagePtr& backup_msg_ptr,
         int32_t* invalid_tx_idx);
-    int GetTempAccountBalance(
-        const std::string& id,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
-        uint64_t* balance);
     std::shared_ptr<hotstuff::protobuf::HotstuffLeaderPrepare> CreatePrepareTxInfo(
         std::shared_ptr<block::protobuf::Block>& block_ptr,
         hotstuff::protobuf::LeaderTxPrepare& ltx_prepare);
@@ -67,9 +59,6 @@ public:
     int CheckTimeout();
     bool BackupCheckLeaderValid(const transport::MessagePtr& msg_ptr);
     int InitZjcTvmContext();
-    void TxToBlockTx(
-        const pools::protobuf::TxMessage& tx_info,
-        block::protobuf::BlockTx* block_tx);
     void Destroy();
 
     uint32_t pool_index() const {
@@ -277,20 +266,20 @@ public:
         precommit_oppose_set_.insert(id);
         if (precommit_oppose_set_.size() >= min_oppose_member_count_) {
             leader_handled_precommit_ = true;
-            return kBftOppose;
+            return kConsensusOppose;
         }
 
-        return kBftWaitingBackup;
+        return kConsensusWaitingBackup;
     }
 
     int AddPrecommitOpposeNode(const std::string& id) {
         commit_oppose_set_.insert(id);
         if (commit_oppose_set_.size() >= min_oppose_member_count_) {
             leader_handled_precommit_ = true;
-            return kBftOppose;
+            return kConsensusOppose;
         }
 
-        return kBftWaitingBackup;
+        return kConsensusWaitingBackup;
     }
 
     int32_t AddVssRandomOppose(uint32_t index, uint64_t random) {
@@ -389,7 +378,7 @@ protected:
     uint32_t min_aggree_member_count_{ 0 };
     uint32_t min_oppose_member_count_{ 0 };
     common::Bitmap precommit_bitmap_{ common::kEachShardMaxNodeCount };
-    uint32_t consensus_status_{ kBftInit };
+    uint32_t consensus_status_{ kConsensusInit };
     std::chrono::steady_clock::time_point timeout_;
     std::string prepare_hash_;
     std::chrono::steady_clock::time_point prepare_timeout_;

@@ -58,7 +58,7 @@ enum MessageType {
     kDhtMessage = 0,
     kNetworkMessage = 1,
     kSyncMessage = 2,
-    kBftMessage = 3,
+    kConsensusMessage = 3,
     kElectMessage = 4,
     kVssMessage = 5,
     kBlsMessage = 6,

@@ -9,15 +9,15 @@ namespace consensus {
 
 std::string StatusToString(uint32_t status) {
     switch (status) {
-    case kBftInit:
+    case kConsensusInit:
         return "bft_init";
-    case kBftPrepare:
+    case kConsensusPrepare:
         return "bft_prepare";
-    case kBftPreCommit:
+    case kConsensusPreCommit:
         return "bft_precommit";
-    case kBftCommit:
+    case kConsensusCommit:
         return "bft_commit";
-    case kBftCommited:
+    case kConsensusCommited:
         return "bft_success";
     default:
         return "unknown";
@@ -28,7 +28,7 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
     std::string message;
     message.reserve(tx_info.ByteSizeLong());
     message.append(tx_info.gid());
-    message.append(tx_info.from_pubkey());
+    message.append(tx_info.from());
     message.append(tx_info.to());
     uint64_t amount = tx_info.amount();
     message.append(std::string((char*)&amount, sizeof(amount)));

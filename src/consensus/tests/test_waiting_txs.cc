@@ -9,6 +9,7 @@
 
 #define private public
 #include "common/random.h"
+#include "consensus/zbft/from_tx_item.h"
 #include "consensus/waiting_txs.h"
 #include "consensus/zbft/zbft_utils.h"
 #include "db/db.h"
@@ -84,7 +85,8 @@ public:
                 tx_info.set_gas_limit(0llu);
                 tx_info.set_amount(0);
                 tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
-                auto tx_ptr = std::make_shared<pools::TxItem>(msg_ptr);
+                std::shared_ptr<block::AccountManager> acc_ptr = nullptr;
+                pools::TxItemPtr tx_ptr = std::make_shared<FromTxItem>(msg_ptr, acc_ptr, security);
                 tx_ptr->tx_hash = pools::GetTxMessageHash(tx_info);
                 ASSERT_EQ(pools_mgr->AddTx(i, tx_ptr), pools::kPoolsSuccess);
                 ASSERT_EQ(pools_mgr->tx_pool_[i].added_tx_map_.size(), j + 1);

@@ -111,6 +111,10 @@ int NetworkInit::Init(int argc, char** argv) {
     elect_mgr_ = std::make_shared<elect::ElectManager>(
         block_mgr_, security_, bls_mgr_, db_);
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(security_);
+    account_mgr_->Init(
+        common::GlobalInfo::Instance()->message_handler_thread_count(),
+        db_,
+        pools_mgr_);
     block_mgr_->Init(account_mgr_, db_, pools_mgr_, security_->GetAddress());
     if (elect_mgr_->Init() != elect::kElectSuccess) {
         INIT_ERROR("init elect manager failed!");
@@ -123,10 +127,6 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
-    account_mgr_->Init(
-        common::GlobalInfo::Instance()->network_id(),
-        common::GlobalInfo::Instance()->message_handler_thread_count(),
-        db_);
     tmblock::TimeBlockManager::Instance()->Init(pools_mgr_, db_);
     if (InitHttpServer() != kInitSuccess) {
         INIT_ERROR("InitHttpServer failed!");

@@ -113,7 +113,7 @@ void MultiThreadHandler::Destroy() {
 
 int32_t MultiThreadHandler::GetPriority(int32_t msg_type) {
     switch (msg_type) {
-    case common::kBftMessage:
+    case common::kConsensusMessage:
         return kTransportPriorityHighest;
     case common::kElectMessage:
     case common::kVssMessage:
@@ -165,7 +165,7 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
     case common::kVssMessage:
     case common::kBlsMessage:
         return 2 % thread_count_;
-    case common::kBftMessage:
+    case common::kConsensusMessage:
         return 3 % thread_count_;  // get with detail
     case common::kPoolsMessage:
         return GetTxThreadIndex(msg_ptr);

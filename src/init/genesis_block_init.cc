@@ -45,7 +45,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
 
     int res = kInitSuccess;
     std::shared_ptr<pools::TxPoolManager> pools_mgr = nullptr;
-    account_mgr_->Init(net_id, 1, db_);
+    account_mgr_->Init(1, db_, pools_mgr);
     block_mgr_->Init(account_mgr_, db_, pools_mgr, "");
     if (net_id == network::kRootCongressNetworkId) {
         common::GlobalInfo::Instance()->set_network_id(network::kRootCongressNetworkId);
@@ -163,7 +163,7 @@ int GenesisBlockInit::CreateElectBlock(
     auto tx_list = tenon_block->mutable_tx_list();
     auto tx_info = tx_list->Add();
     tx_info->set_step(pools::protobuf::kConsensusRootElectShard);
-    tx_info->set_from_pubkey("");
+    tx_info->set_from("");
     tx_info->set_to(common::kRootChainElectionBlockTxAddress);
     tx_info->set_amount(0);
     tx_info->set_gas_limit(0);
@@ -303,7 +303,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto tx_list = tenon_block->mutable_tx_list();
         auto tx_info = tx_list->Add();
         tx_info->set_gid(common::CreateGID(""));
-        tx_info->set_from_pubkey("");
+        tx_info->set_from("");
         tx_info->set_to(common::kRootChainSingleBlockTxAddress);
         tx_info->set_amount(0);
         tx_info->set_balance(0);
@@ -360,7 +360,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto tx_list = tenon_block->mutable_tx_list();
         auto tx_info = tx_list->Add();
         tx_info->set_gid(common::CreateGID(""));
-        tx_info->set_from_pubkey("");
+        tx_info->set_from("");
         tx_info->set_to(common::kRootChainTimeBlockTxAddress);
         tx_info->set_amount(0);
         tx_info->set_balance(0);
@@ -586,7 +586,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
-            tx_info->set_from_pubkey("");
+            tx_info->set_from("");
             tx_info->set_to(GetValidPoolBaseAddr(
                 network::kConsensusShardBeginNetworkId,
                 common::GetBasePoolIndex(address)));
@@ -599,7 +599,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
-            tx_info->set_from_pubkey("");
+            tx_info->set_from("");
             tx_info->set_to(GetValidPoolBaseAddr(
                 network::kRootCongressNetworkId,
                 common::GetBasePoolIndex(address)));
@@ -612,7 +612,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
-            tx_info->set_from_pubkey("");
+            tx_info->set_from("");
             tx_info->set_to(address);
             tx_info->set_amount(genesis_account_balance);
             tx_info->set_balance(genesis_account_balance);
@@ -623,7 +623,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
-            tx_info->set_from_pubkey("");
+            tx_info->set_from("");
             tx_info->set_to(shard_iter->second);
             tx_info->set_amount(genesis_account_balance);
             tx_info->set_balance(genesis_account_balance);
@@ -695,7 +695,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(uint32_t net_id) {
         {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
-            tx_info->set_from_pubkey("");
+            tx_info->set_from("");
             tx_info->set_to(GetValidPoolBaseAddr(
                 network::kConsensusShardBeginNetworkId,
                 common::GetBasePoolIndex(address)));
@@ -707,10 +707,9 @@ int GenesisBlockInit::CreateShardGenesisBlocks(uint32_t net_id) {
         {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
-            tx_info->set_from_pubkey(GetValidPoolBaseAddr(
+            tx_info->set_from(GetValidPoolBaseAddr(
                 network::kRootCongressNetworkId,
                 common::GetBasePoolIndex(address)));
-            tx_info->set_from_pubkey("");
             tx_info->set_to("");
             tx_info->set_amount(0);
             tx_info->set_balance(0);
@@ -720,7 +719,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(uint32_t net_id) {
         {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
-            tx_info->set_from_pubkey("");
+            tx_info->set_from("");
             tx_info->set_to(address);
 
             if (iter->first == common::kImmutablePoolSize - 1) {

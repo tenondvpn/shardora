@@ -77,10 +77,10 @@ public:
         std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
         security->SetPrivateKey(prikey);
         auto account_mgr = std::make_shared<block::AccountManager>();
-        account_mgr->Init(kTestShardingId, 1, db_ptr);
         auto block_mgr = std::make_shared<block::BlockManager>();
         auto bls_mgr = std::make_shared<bls::BlsManager>(security, db_ptr);
         auto pools_mgr = std::make_shared<pools::TxPoolManager>(security);
+        account_mgr->Init(1, db_ptr, pools_mgr);
         block_mgr->Init(account_mgr, db_ptr, pools_mgr, security->GetAddress());
         auto elect_mgr = std::make_shared<elect::ElectManager>(block_mgr, security, bls_mgr, db_ptr);
         ASSERT_EQ(elect_mgr->Init(), 0);

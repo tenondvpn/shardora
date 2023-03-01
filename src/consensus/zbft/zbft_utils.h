@@ -19,63 +19,6 @@ namespace zjchain {
 
 namespace consensus {
 
-enum BftErrorCode {
-    kBftSuccess = 0,
-    kBftError = 1,
-    kBftAdded = 2,
-    kBftNotExists = 4,
-    kBftTxAdded = 5,
-    kBftNoNewTxs = 6,
-    kBftInvalidPackage = 7,
-    kBftTxNotExists = 8,
-    kBftAccountNotExists = 9,
-    kBftAccountBalanceError = 10,
-    kBftAccountExists = 11,
-    kBftBlockHashError = 12,
-    kBftBlockHeightError = 13,
-    kBftPoolIndexError = 14,
-    kBftBlockNotExists = 15,
-    kBftBlockPreHashError = 16,
-    kBftNetwokInvalid = 17,
-    kBftLeaderInfoInvalid = 18,
-    kBftExecuteContractFailed = 19,
-    kBftGasUsedNotEqualToLeaderError = 20,
-    kBftUserSetGasLimitError = 21,
-    kBftCreateContractKeyError = 22,
-    kBftContractAddressLocked = 23,
-    kBftContractBytesCodeError = 24,
-    kBftTimeBlockHeightError = 25,
-    kBftElectBlockHeightError = 26,
-    kBftLeaderTxInfoInvalid = 27,
-    kBftVssRandomNotMatch = 28,
-};
-
-enum BftStatus {
-    kBftInit = 0,
-    kBftPrepare = 1,
-    kBftPreCommit = 2,
-    kBftCommit = 3,
-    kBftCommited = 4,
-    kBftToTxInit = 5,
-    kBftRootBlock = 6,
-    kBftCallContract = 7,
-    kBftStepTimeout = 8,
-    kBftSyncBlock = 9,
-};
-
-enum BftRole {
-    kBftRootCongress = 0,
-    kBftShard = 1,
-};
-
-enum BftLeaderCheckStatus {
-    kBftWaitingBackup = 0,
-    kBftOppose = 1,
-    kBftAgree = 2,
-    kBftHandled = 3,
-    kBftReChallenge = 4,
-};
-
 enum BftCheckTimeoutStatus {
     kTimeoutNormal = 0,
     kTimeout = 1,
@@ -148,11 +91,6 @@ static const uint32_t kBftLeaderPrepareWaitPeriod = 5u * 1000u * 1000u;
 static const uint32_t kPrevTransportVersion = 0;
 static const uint32_t kTransportVersion = 1;
 static const int64_t kChangeLeaderTimePeriodSec = 30l;
-
-// gas consume
-static const uint64_t kTransferGas = 1000llu;
-static const uint64_t kCallContractDefaultUseGas = 10000llu;
-static const uint64_t kKeyValueStorageEachBytes = 10llu;
 
 std::string StatusToString(uint32_t status);
 // hash128(gid + from + to + amount + type + attrs(k:v))

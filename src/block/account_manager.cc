@@ -27,9 +27,13 @@ AccountManager::~AccountManager() {
     }
 }
 
-int AccountManager::Init(uint32_t network_id, uint8_t thread_count, std::shared_ptr<db::Db>& db) {
+int AccountManager::Init(
+        uint8_t thread_count,
+        std::shared_ptr<db::Db>& db,
+        std::shared_ptr<pools::TxPoolManager>& pools_mgr) {
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    pools_mgr_ = pools_mgr;
     address_map_ = new common::UniqueMap<std::string, protos::AddressInfoPtr>[thread_count];
     for (uint32_t i = 0; i < thread_count; ++i) {
         address_map_[i].Init(1024 * 1, 16);
@@ -194,37 +198,199 @@ std::string AccountManager::GetTxValidAddress(const block::protobuf::BlockTx& tx
         tx_info.step() == pools::protobuf::kConsensusCreateGenesisAcount) {
         return tx_info.to();
     } else {
-        return tx_info.from_pubkey();
+        return tx_info.from();
     }
 }
 
-int AccountManager::AddBlockItemToCache(
+void AccountManager::HandleNormalFromTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBach& db_batch) {
+    std::string account_id = GetTxValidAddress(tx);
+    auto account_info = GetAcountInfo(thread_idx, account_id);
+    if (account_info == nullptr) {
+        assert(false);
+        return;
+    }
+
+    account_info->set_latest_height(block.height());
+    account_info->set_balance(tx.balance());
+    prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
+}
+
+void AccountManager::HandleNormalToTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBach& db_batch) {
+    if (tx.storages_size() != 1) {
+        return;
+    }
+
+    pools::protobuf::ToTxHeights to_heights;
+    if (!to_heights.ParseFromString(tx.storages(0).val_hash())) {
+        return;
+    }
+
+    std::string to_txs_str;
+    if (!prefix_db_->GetTemporaryKv(to_heights.tos_hash(), &to_txs_str)) {
+        return;
+    }
+
+    pools::protobuf::ToTxMessage to_txs;
+    if (!to_txs.ParseFromString(to_txs_str)) {
+        return;
+    }
+
+    std::unordered_map<std::string, std::pair<uint64_t, uint32_t>> addr_amount_map;
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+        for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
+            if (to_txs.tos(i).amount() > 0) {
+                auto account_info = GetAcountInfo(thread_idx, to_txs.tos(i).des());
+                if (account_info == nullptr) {
+                    // create address
+                    continue;
+                } else {
+                    // just set to
+                }
+            }
+        }
+    } else {
+        for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
+            if (to_txs.tos(i).amount() > 0) {
+                // dispatch to txs to tx pool
+                uint32_t sharding_id = common::kInvalidUint32;
+                uint32_t pool_index = common::kInvalidUint32;
+                auto account_info = GetAcountInfo(thread_idx, to_txs.tos(i).des());
+                if (account_info == nullptr) {
+                    assert(false);
+                    if (!to_txs.tos(i).has_sharding_id() || !to_txs.tos(i).has_pool_index()) {
+                        continue;
+                    }
+
+                    if (to_txs.tos(i).sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+                        continue;
+                    }
+
+                    if (to_txs.tos(i).pool_index() >= common::kImmutablePoolSize) {
+                        continue;
+                    }
+
+                    sharding_id = to_txs.tos(i).sharding_id();
+                    pool_index = to_txs.tos(i).pool_index();
+                } else {
+                    sharding_id = account_info->sharding_id();
+                    pool_index = account_info->pool_index();
+                }
+
+                if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
+                    continue;
+                }
+
+                auto iter = addr_amount_map.find(to_txs.tos(i).des());
+                if (iter == addr_amount_map.end()) {
+                    addr_amount_map[to_txs.tos(i).des()] = std::make_pair(to_txs.tos(i).amount(), pool_index);
+                } else {
+                    iter->second.first += to_txs.tos(i).amount();
+                }
+            }
+        }
+    }
+
+    std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_tx_map;
+    for (auto iter = addr_amount_map.begin(); iter != addr_amount_map.end(); ++iter) {
+        auto to_iter = to_tx_map.find(iter->second.second);
+        if (to_iter == to_tx_map.end()) {
+            pools::protobuf::ToTxMessage to_tx;
+            to_tx_map[iter->second.second] = to_tx;
+            to_iter = to_tx_map.find(iter->second.second);
+        }
+
+        auto to_item = to_iter->second.add_tos();
+        to_item->set_pool_index(iter->second.second);
+        to_item->set_des(iter->first);
+        to_item->set_amount(iter->second.first);
+    }
+
+    for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
+        auto val = iter->second.SerializeAsString();
+        auto tos_hash = common::Hash::keccak256(val);
+        prefix_db_->SaveTemporaryKv(tos_hash, val);
+        auto msg_ptr = std::make_shared<transport::TransportMessage>();
+        auto tx = msg_ptr->header.mutable_tx_proto();
+        tx->set_key(protos::kLocalNormalTos);
+        tx->set_value(tos_hash);
+        tx->set_pubkey("");
+        tx->set_to("");
+        tx->set_step(pools::protobuf::kConsensusLocalTos);
+        auto gid = common::Hash::keccak256(tos_hash + std::to_string(iter->first));
+        tx->set_gas_limit(0);
+        tx->set_amount(0);
+        tx->set_gas_price(common::kBuildinTransactionGasPrice);
+        tx->set_gid(gid);
+        pools_mgr_->HandleMessage(msg_ptr);
+    }
+}
+
+void AccountManager::HandleLocalToTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBach& db_batch) {
+    std::string to_txs_str;
+    if (!prefix_db_->GetTemporaryKv(tx.storages(1).val_hash(), &to_txs_str)) {
+        return;
+    }
+
+    block::protobuf::ConsensusToTxs to_txs;
+    if (!to_txs.ParseFromString(to_txs_str)) {
+        return;
+    }
+
+    for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
+        auto account_info = GetAcountInfo(thread_idx, to_txs.tos(i).to());
+        if (account_info == nullptr) {
+            account_info = std::make_shared<address::protobuf::AddressInfo>();
+            account_info->set_pool_index(block.pool_index());
+            account_info->set_addr(to_txs.tos(i).to());
+            account_info->set_type(address::protobuf::kNormal);
+            account_info->set_sharding_id(block.network_id());
+            address_map_[thread_idx].add(to_txs.tos(i).to(), account_info);
+        }
+
+        account_info->set_latest_height(block.height());
+        account_info->set_balance(to_txs.tos(i).balance());
+        prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
+    }
+}
+
+void AccountManager::AddBlockItemToCache(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBach& db_batch) {
     const auto& tx_list = block_item->tx_list();
     if (tx_list.empty()) {
-        return kBlockSuccess;
+        return;
     }
     
     // one block must be one consensus pool
-    uint32_t consistent_pool_index = common::kInvalidPoolIndex;
     for (int32_t i = 0; i < tx_list.size(); ++i) {
-        std::string account_id = GetTxValidAddress(tx_list[i]);
-        std::shared_ptr<address::protobuf::AddressInfo> account_info = nullptr;
-        address_map_[thread_idx].get(account_id, &account_info);
-        if (account_info == nullptr) {
-            account_info = GetAcountInfo(block_item, tx_list[i]);
-            address_map_[thread_idx].add(account_id, account_info);
-        } else {
-            account_info->set_latest_height(block_item->height());
-            account_info->set_balance(tx_list[i].balance());
+        switch (tx_list[i].step()) {
+        case pools::protobuf::kNormalFrom:
+            HandleNormalFromTx(thread_idx, *block_item, tx_list[i], db_batch);
+            break;
+        case pools::protobuf::kNormalTo:
+            HandleNormalToTx(thread_idx, *block_item, tx_list[i], db_batch);
+            break;
+        case pools::protobuf::kConsensusLocalTos:
+            HandleLocalToTx(thread_idx, *block_item, tx_list[i], db_batch);
+            break;
+        default:
+            ZJC_ERROR("invalid step: %d", tx_list[i].step());
+            break;
         }
-
-        prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
     }
-
-    return kBlockSuccess;
 }
 
 int AccountManager::AddNewAccount(

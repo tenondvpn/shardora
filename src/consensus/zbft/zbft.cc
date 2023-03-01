@@ -35,7 +35,7 @@ int Zbft::Init(
         libff::alt_bn128_Fr& local_sec_key) {
     if (members_ptr == nullptr) {
         ZJC_ERROR("elected memmbers is null;");
-        return kBftError;
+        return kConsensusError;
     }
 
     elect_height_ = elect_height;
@@ -45,7 +45,7 @@ int Zbft::Init(
             ZJC_ERROR("leader: %s mem ptr pool_index_mod_num: %d, error",
                 common::Encode::HexEncode(leader_mem_ptr_->id).c_str(),
                 leader_mem_ptr_->pool_index_mod_num);
-            return kBftError;
+            return kConsensusError;
         }
 
         leader_index_ = leader_mem_ptr_->index;
@@ -62,7 +62,7 @@ int Zbft::Init(
             members_ptr_->size(),
             (common_pk_ == libff::alt_bn128_G2::zero()),
             (local_sec_key_ == libff::alt_bn128_Fr::zero()));
-        return kBftError;
+        return kConsensusError;
     }
 
     // just leader call init
@@ -70,7 +70,7 @@ int Zbft::Init(
         this_node_is_leader_ = true;
     }
 
-    return kBftSuccess;
+    return kConsensusSuccess;
 }
 
 void Zbft::Destroy() {
@@ -78,7 +78,7 @@ void Zbft::Destroy() {
         return;
     }
 
-    if (consensus_status_ != kBftCommited) {
+    if (consensus_status_ != kConsensusCommited) {
         pools_mgr_->TxRecover(pool_index(), txs_ptr_->txs);
     } else {
         pools_mgr_->TxOver(pool_index(), txs_ptr_->txs);
@@ -92,17 +92,17 @@ int Zbft::Prepare(bool leader, transport::MessagePtr& msg_ptr) {
 
     if (pool_index() >= common::kInvalidPoolIndex) {
         ZJC_ERROR("pool index invalid[%d]!", pool_index());
-        return kBftInvalidPackage;
+        return kConsensusInvalidPackage;
     }
 
     int32_t invalid_tx_idx = -1;
     int res = BackupCheckPrepare(msg_ptr, &invalid_tx_idx);
-    if (res != kBftSuccess) {
+    if (res != kConsensusSuccess) {
         ZJC_ERROR("backup prepare failed: %d", res);
         return res;
     }
 
-    return kBftSuccess;
+    return kConsensusSuccess;
 }
 
 int Zbft::LeaderCreatePrepare(transport::MessagePtr& msg_ptr) {
@@ -123,7 +123,7 @@ int Zbft::LeaderCreatePrepare(transport::MessagePtr& msg_ptr) {
         }
     }
 
-    return kBftSuccess;
+    return kConsensusSuccess;
 }
 
 int Zbft::BackupCheckPrepare(
@@ -132,12 +132,12 @@ int Zbft::BackupCheckPrepare(
     auto& bft_msg = *backup_msg_ptr->header.mutable_hotstuff_proto();
     auto& tx_bft = *bft_msg.mutable_tx_bft();
     auto ltx_msg = tx_bft.mutable_ltx_prepare();
-    if (DoTransaction(*ltx_msg) != kBftSuccess) {
-        return kBftInvalidPackage;
+    if (DoTransaction(*ltx_msg) != kConsensusSuccess) {
+        return kConsensusInvalidPackage;
     }
 
     ltx_msg->clear_block();
-    return kBftSuccess;
+    return kConsensusSuccess;
 }
 
 int Zbft::InitZjcTvmContext() {
@@ -154,7 +154,7 @@ int Zbft::InitZjcTvmContext() {
     zjcvm::Uint64ToEvmcBytes32(
         zjc_host_.tx_context_.chain_id,
         chanin_id);
-    return kBftSuccess;
+    return kConsensusSuccess;
 }
 
 bool Zbft::BackupCheckLeaderValid(const transport::MessagePtr& msg_ptr) {
@@ -213,7 +213,7 @@ int Zbft::LeaderPrecommitOk(
         tx_prepare.prepare());
     if (leader_handled_precommit_) {
         ZJC_DEBUG("leader_handled_precommit_: %d", leader_handled_precommit_);
-        return kBftHandled;
+        return kConsensusHandled;
     }
 
     // TODO: check back hash eqal to it's signed hash
@@ -225,16 +225,16 @@ int Zbft::LeaderPrecommitOk(
         backup_sign);
     if ((uint32_t)valid_count >= min_aggree_member_count_) {
         if (LeaderCreatePreCommitAggChallenge(
-                tx_prepare.prepare().prepare_final_hash()) != kBftSuccess) {
+                tx_prepare.prepare().prepare_final_hash()) != kConsensusSuccess) {
             ZJC_ERROR("create bls precommit agg sign failed!");
-            return kBftOppose;
+            return kConsensusOppose;
         }
 
         leader_handled_precommit_ = true;
-        return kBftAgree;
+        return kConsensusAgree;
     }
 
-    return kBftWaitingBackup;
+    return kConsensusWaitingBackup;
 }
 
 int Zbft::LeaderCommitOk(
@@ -243,11 +243,11 @@ int Zbft::LeaderCommitOk(
         const std::string& id) {
     if (leader_handled_commit_) {
         ZJC_DEBUG("leader_handled_commit_");
-        return kBftHandled;
+        return kConsensusHandled;
     }
 //     if (!prepare_bitmap_.Valid(index)) {
 //         ZJC_DEBUG("index invalid: %d", index);
-//         return kBftWaitingBackup;
+//         return kConsensusWaitingBackup;
 //     }
 
 //     auto mem_ptr = elect::ElectManager::Instance()->GetMember(network_id_, index);
@@ -258,15 +258,15 @@ int Zbft::LeaderCommitOk(
         commit_aggree_set_.size(), min_aggree_member_count_);
     if (commit_aggree_set_.size() >= min_aggree_member_count_) {
         leader_handled_commit_ = true;
-        if (LeaderCreateCommitAggSign() != kBftSuccess) {
+        if (LeaderCreateCommitAggSign() != kConsensusSuccess) {
             ZJC_ERROR("leader create commit agg sign failed!");
-            return kBftOppose;
+            return kConsensusOppose;
         }
 
-        return kBftAgree;
+        return kConsensusAgree;
     }
 
-    return kBftWaitingBackup;
+    return kConsensusWaitingBackup;
 }
 
 int Zbft::CheckTimeout() {
@@ -280,7 +280,7 @@ int Zbft::CheckTimeout() {
     }
 
     if (!this_node_is_leader_) {
-        return kBftSuccess;
+        return kConsensusSuccess;
     }
 
     if (!leader_handled_precommit_) {
@@ -328,7 +328,7 @@ void Zbft::RechallengePrecommitClear() {
 int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
     auto iter = prepare_block_map_.find(prpare_hash);
     if (iter == prepare_block_map_.end()) {
-        return kBftError;
+        return kConsensusError;
     }
 
     std::vector<libff::alt_bn128_G1> all_signs;
@@ -382,7 +382,7 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
                 cpk_strs->at(2).c_str(), cpk_strs->at(3).c_str(),
                 elect_height_, network_id_, common::Encode::HexEncode(prpare_hash).c_str());
             assert(false);
-            return kBftError;
+            return kConsensusError;
         } else {
             common_pk_.to_affine_coordinates();
             auto cpk = std::make_shared<BLSPublicKey>(common_pk_);
@@ -428,10 +428,10 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
 //         }
     } catch (std::exception& e) {
         ZJC_ERROR("catch bls exception: %s", e.what());
-        return kBftError;
+        return kConsensusError;
     }
 
-    return kBftSuccess;
+    return kConsensusSuccess;
 }
 
 int Zbft::LeaderCreateCommitAggSign() {
@@ -471,22 +471,22 @@ int Zbft::LeaderCreateCommitAggSign() {
                 *bls_commit_agg_sign_,
                 precommit_hash_) != bls::kBlsSuccess) {
             ZJC_ERROR("leader verify leader commit agg sign failed!");
-            return kBftError;
+            return kConsensusError;
         }
 
         bls_commit_agg_sign_->to_affine_coordinates();
     } catch (...) {
-        return kBftError;
+        return kConsensusError;
     }
 
-    return kBftSuccess;
+    return kConsensusSuccess;
 }
 
 
 void Zbft::LeaderCallTransaction(transport::MessagePtr& msg_ptr) {
     auto& res_tx_bft = *msg_ptr->header.mutable_hotstuff_proto()->mutable_tx_bft();
     auto ltx_msg = res_tx_bft.mutable_ltx_prepare();
-    if (DoTransaction(*ltx_msg) != kBftSuccess) {
+    if (DoTransaction(*ltx_msg) != kConsensusSuccess) {
         ZJC_ERROR("leader do transaction failed!");
         return;
     }
@@ -513,8 +513,8 @@ void Zbft::LeaderCallTransaction(transport::MessagePtr& msg_ptr) {
 }
 
 int Zbft::DoTransaction(hotstuff::protobuf::LeaderTxPrepare& ltx_prepare) {
-    if (InitZjcTvmContext() != kBftSuccess) {
-        return kBftError;
+    if (InitZjcTvmContext() != kConsensusSuccess) {
+        return kConsensusError;
     }
 
     std::string pool_hash = pools_mgr_->latest_hash(txs_ptr_->pool_index);
@@ -523,7 +523,7 @@ int Zbft::DoTransaction(hotstuff::protobuf::LeaderTxPrepare& ltx_prepare) {
     DoTransactionAndCreateTxBlock(zjc_block);
     if (zjc_block.tx_list_size() <= 0) {
         ZJC_ERROR("all choose tx invalid!");
-        return kBftNoNewTxs;
+        return kConsensusNoNewTxs;
     }
 
     zjc_block.set_pool_index(txs_ptr_->pool_index);
@@ -541,10 +541,10 @@ int Zbft::DoTransaction(hotstuff::protobuf::LeaderTxPrepare& ltx_prepare) {
     SetBlock(block_ptr);
     tbft_prepare_block_ = CreatePrepareTxInfo(block_ptr, ltx_prepare);
     if (tbft_prepare_block_ == nullptr) {
-        return kBftError;
+        return kConsensusError;
     }
 
-    return kBftSuccess;
+    return kConsensusSuccess;
 }
 
 std::shared_ptr<hotstuff::protobuf::HotstuffLeaderPrepare> Zbft::CreatePrepareTxInfo(
@@ -578,59 +578,6 @@ std::shared_ptr<hotstuff::protobuf::HotstuffLeaderPrepare> Zbft::CreatePrepareTx
     return std::make_shared<hotstuff::protobuf::HotstuffLeaderPrepare>(*prepare);
 }
 
-int Zbft::GetTempAccountBalance(
-        const std::string& id,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
-        uint64_t* balance) {
-    auto iter = acc_balance_map.find(id);
-    if (iter == acc_balance_map.end()) {
-        auto acc_info = account_mgr_->GetAcountInfo(
-            txs_ptr_->thread_index,
-            id);
-        if (acc_info == nullptr) {
-            ZJC_ERROR("account addres not exists[%s]", common::Encode::HexEncode(id).c_str());
-            return kBftAccountNotExists;
-        }
-
-        acc_balance_map[id] = acc_info->balance();
-        *balance = acc_info->balance();
-    } else {
-        *balance = iter->second;
-    }
-
-    return kBftSuccess;
-}
-
-void Zbft::TxToBlockTx(
-        const pools::protobuf::TxMessage& tx_info,
-        block::protobuf::BlockTx* block_tx) {
-    block_tx->set_gid(tx_info.gid());
-    block_tx->set_from_pubkey(tx_info.pubkey());
-    block_tx->set_gas_limit(tx_info.gas_limit());
-    block_tx->set_gas_price(tx_info.gas_price());
-    block_tx->set_step(tx_info.step());
-    block_tx->set_from_pubkey(tx_info.pubkey());
-    block_tx->set_to(tx_info.to());
-    block_tx->set_amount(tx_info.amount());
-    // change
-    if (!tx_info.key().empty()) {
-        auto storage = block_tx->add_storages();
-        storage->set_key(tx_info.key());
-        if (tx_info.step() == pools::protobuf::kNormalTo) {
-            storage->set_val_hash(tx_info.value());
-            storage->set_val_size(0);
-        } else {
-            if (tx_info.value().size() <= 32) {
-                storage->set_val_hash(tx_info.value());
-            } else {
-                storage->set_val_hash(common::Hash::keccak256(tx_info.value()));
-            }
-
-            storage->set_val_size(tx_info.value().size());
-        }
-    }
-}
-
 void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
     auto tx_list = zjc_block.mutable_tx_list();
     auto& tx_map = txs_ptr_->txs;
@@ -638,92 +585,18 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto& tx_info = iter->second->msg_ptr->header.tx_proto();
         auto& block_tx = *tx_list->Add();
-        TxToBlockTx(tx_info, &block_tx);
-        block_tx.set_status(kBftSuccess);
-        if (AddTransaction(
-                iter->second,
-                acc_balance_map,
-                block_tx) != kBftSuccess) {
+        int res = iter->second->TxToBlockTx(tx_info, &block_tx);
+        if (res != kConsensusSuccess) {
+            continue;
+        }
+
+        block_tx.set_status(kConsensusSuccess);
+        int do_tx_res = iter->second->HandleTx(
+            txs_ptr_->thread_index, acc_balance_map, block_tx);
+        if (do_tx_res != kConsensusSuccess) {
             continue;
         }
     }
-}
-
-int Zbft::AddTransaction(
-        pools::TxItemPtr& tx_info,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
-        block::protobuf::BlockTx& block_tx) {
-    uint64_t gas_used = 0;
-    // gas just consume by from
-    uint64_t from_balance = 0;
-    uint64_t to_balance = 0;
-    if (block_tx.step() == pools::protobuf::kNormalFrom) {
-        auto& from = tx_info->msg_ptr->address_info->addr();
-        int balance_status = GetTempAccountBalance(from, acc_balance_map, &from_balance);
-        if (balance_status != kBftSuccess) {
-            block_tx.set_status(balance_status);
-            // will never happen
-            assert(false);
-            return kBftError;
-        }
-
-        do  {
-            gas_used = kTransferGas;
-            for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-                // TODO(): check key exists and reserve gas
-                gas_used += (block_tx.storages(i).key().size() + block_tx.storages(i).val_size()) *
-                    kKeyValueStorageEachBytes;
-            }
-
-            if (from_balance < block_tx.gas_limit()  * block_tx.gas_price()) {
-                block_tx.set_status(kBftUserSetGasLimitError);
-                ZJC_DEBUG("balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), block_tx.gas_price());
-                break;
-            }
-
-            if (block_tx.gas_limit() < gas_used) {
-                block_tx.set_status(kBftUserSetGasLimitError);
-                ZJC_DEBUG("1 balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), gas_used);
-                break;
-            }
-        } while (0);
-
-        if (block_tx.status() == kBftSuccess) {
-            uint64_t dec_amount = block_tx.amount() + gas_used * block_tx.gas_price();
-            if (from_balance >= gas_used * block_tx.gas_price()) {
-                if (from_balance >= dec_amount) {
-                    from_balance -= dec_amount;
-                } else {
-                    from_balance -= gas_used * block_tx.gas_price();
-                    block_tx.set_status(kBftAccountBalanceError);
-                    ZJC_ERROR("leader balance error: %llu, %llu", from_balance, dec_amount);
-                }
-            } else {
-                from_balance = 0;
-                block_tx.set_status(kBftAccountBalanceError);
-                ZJC_ERROR("leader balance error: %llu, %llu",
-                    from_balance, gas_used * block_tx.gas_price());
-            }
-        } else {
-            if (from_balance >= gas_used * block_tx.gas_price()) {
-                    from_balance -= gas_used * block_tx.gas_price();
-            } else {
-                from_balance = 0;
-            }
-        }
-
-        auto& from = tx_info->msg_ptr->address_info->addr();
-        acc_balance_map[from] = from_balance;
-        block_tx.set_balance(from_balance);
-        block_tx.set_gas_used(gas_used);
-    }
-
-    ZJC_DEBUG("handle tx success: %s, %lu, %lu, status: %d",
-        common::Encode::HexEncode(block_tx.gid()).c_str(),
-        block_tx.balance(),
-        block_tx.gas_used(),
-        block_tx.status());
-    return kBftSuccess;
 }
 
 };  // namespace consensus
