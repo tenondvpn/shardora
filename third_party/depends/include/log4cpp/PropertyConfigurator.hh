@@ -12,7 +12,7 @@
 #include <log4cpp/Export.hh>
 
 #include <string>
-#include <log4cpp/Configurator.hh>    // configure exceptions
+#include <log4cpp/Configurator.hh>	// configure exceptions
 
 namespace log4cpp {
 

@@ -35,19 +35,19 @@ extern "C" {
 /* XXXX This code is duplicated with event_struct.h */
 #ifndef TAILQ_ENTRY
 #define EVENT_DEFINED_TQENTRY_
-#define TAILQ_ENTRY(type)                        \
-struct {                                \
-    struct type *tqe_next;    /* next element */            \
-    struct type **tqe_prev;    /* address of previous next element */    \
+#define TAILQ_ENTRY(type)						\
+struct {								\
+	struct type *tqe_next;	/* next element */			\
+	struct type **tqe_prev;	/* address of previous next element */	\
 }
 #endif /* !TAILQ_ENTRY */
 
 #ifndef TAILQ_HEAD
 #define EVENT_DEFINED_TQHEAD_
-#define TAILQ_HEAD(name, type)            \
-struct name {                    \
-    struct type *tqh_first;            \
-    struct type **tqh_last;            \
+#define TAILQ_HEAD(name, type)			\
+struct name {					\
+	struct type *tqh_first;			\
+	struct type **tqh_last;			\
 }
 #endif
 
@@ -56,10 +56,10 @@ struct name {                    \
  * query argument parsing.
  */
 struct evkeyval {
-    TAILQ_ENTRY(evkeyval) next;
+	TAILQ_ENTRY(evkeyval) next;
 
-    char *key;
-    char *value;
+	char *key;
+	char *value;
 };
 
 TAILQ_HEAD (evkeyvalq, evkeyval);

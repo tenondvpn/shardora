@@ -49,14 +49,14 @@ extern "C" {
  */
 typedef struct SHA3_CTX
 {
-    /* 1600 bits algorithm hashing state */
-    uint64_t hash[sha3_max_permutation_size];
-    /* 1536-bit buffer for leftovers */
-    uint64_t message[sha3_max_rate_in_qwords];
-    /* count of bytes in the message[] buffer */
-    unsigned rest;
-    /* size of a message block processed at once */
-    unsigned block_size;
+	/* 1600 bits algorithm hashing state */
+	uint64_t hash[sha3_max_permutation_size];
+	/* 1536-bit buffer for leftovers */
+	uint64_t message[sha3_max_rate_in_qwords];
+	/* count of bytes in the message[] buffer */
+	unsigned rest;
+	/* size of a message block processed at once */
+	unsigned block_size;
 } SHA3_CTX;
 
 /* methods for calculating the hash function */

@@ -21,13 +21,13 @@
 # /* MSGPACK_PP_LIST_TO_TUPLE */
 #
 # define MSGPACK_PP_LIST_TO_TUPLE(list) \
-    MSGPACK_PP_IIF \
-        ( \
-        MSGPACK_PP_LIST_IS_NIL(list), \
-        MSGPACK_PP_LIST_TO_TUPLE_EMPTY, \
-        MSGPACK_PP_LIST_TO_TUPLE_DO \
-        ) \
-    (list) \
+	MSGPACK_PP_IIF \
+		( \
+		MSGPACK_PP_LIST_IS_NIL(list), \
+		MSGPACK_PP_LIST_TO_TUPLE_EMPTY, \
+		MSGPACK_PP_LIST_TO_TUPLE_DO \
+		) \
+	(list) \
 /**/
 # define MSGPACK_PP_LIST_TO_TUPLE_EMPTY(list)
 #
@@ -41,13 +41,13 @@
 # /* MSGPACK_PP_LIST_TO_TUPLE_R */
 #
 # define MSGPACK_PP_LIST_TO_TUPLE_R(r, list) \
-    MSGPACK_PP_IIF \
-        ( \
-        MSGPACK_PP_LIST_IS_NIL(list), \
-        MSGPACK_PP_LIST_TO_TUPLE_R_EMPTY, \
-        MSGPACK_PP_LIST_TO_TUPLE_R_DO \
-        ) \
-    (r, list) \
+	MSGPACK_PP_IIF \
+		( \
+		MSGPACK_PP_LIST_IS_NIL(list), \
+		MSGPACK_PP_LIST_TO_TUPLE_R_EMPTY, \
+		MSGPACK_PP_LIST_TO_TUPLE_R_DO \
+		) \
+	(r, list) \
 /**/
 # define MSGPACK_PP_LIST_TO_TUPLE_R_EMPTY(r,list)
 #

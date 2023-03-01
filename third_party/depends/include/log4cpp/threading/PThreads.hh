@@ -24,12 +24,12 @@ namespace log4cpp {
          **/
         std::string getThreadId();
         
-        /**
-         * returns the thread ID
-         * @param buffer Character buffer of at least 16 in size
-         * @return buffer
-         */
-        char* getThreadId(char* buffer);
+	    /**
+		 * returns the thread ID
+		 * @param buffer Character buffer of at least 16 in size
+		 * @return buffer
+		 */
+	    char* getThreadId(char* buffer);
 
         /**
          **/
@@ -60,7 +60,7 @@ namespace log4cpp {
         };
 
         /**
-         *    definition of ScopedLock;
+         *	definition of ScopedLock;
          **/
         class ScopedLock {
             private:

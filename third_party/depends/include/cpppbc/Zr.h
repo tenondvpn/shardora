@@ -22,11 +22,11 @@ public:
   //Create an element from import 
   //Traditional Import, bool is not imported
   Zr(const Pairing &e, const unsigned char *data, 
-     unsigned short len, unsigned short base = 0);
+	 unsigned short len, unsigned short base = 0);
 
   //Create an element from hash
   Zr(const Pairing &e, const void *data, 
-     unsigned short len);
+	 unsigned short len);
 
   //Initializes as another element, but with different value
   Zr(const Zr &s, long int i);
@@ -83,7 +83,7 @@ public:
 
   //Set an element from import
   //void setElement(const Pairing &e, const unsigned char *data, 
-  //                unsigned short len, unsigned short base = 16);
+  //			    unsigned short len, unsigned short base = 16);
 
   //Set an element from long int
   //void setElement(const Pairing &e, long int i);
@@ -94,7 +94,7 @@ public:
   unsigned short getElementSize() const;
 
   bool isElementPresent() const {
-    return elementPresent;
+	return elementPresent;
   }
 
 
@@ -102,7 +102,7 @@ public:
 
   // Dump the element to stdout
   void dump(FILE *f, const char *label = NULL, 
-            unsigned short base = 16) const;    
+			unsigned short base = 16) const;	
 
 private:
   element_t r;

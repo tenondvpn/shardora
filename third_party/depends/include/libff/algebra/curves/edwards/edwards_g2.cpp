@@ -29,15 +29,15 @@ edwards_G2::edwards_G2()
 
 edwards_Fq3 edwards_G2::mul_by_a(const edwards_Fq3 &elt)
 {
-    // should be
-    //  edwards_Fq3(edwards_twist_mul_by_a_c0 * elt.c2, edwards_twist_mul_by_a_c1 * elt.c0, edwards_twist_mul_by_a_c2 * elt.c1)
-    // but optimizing the fact that edwards_twist_mul_by_a_c1 = edwards_twist_mul_by_a_c2 = 1
+	// should be
+	//  edwards_Fq3(edwards_twist_mul_by_a_c0 * elt.c2, edwards_twist_mul_by_a_c1 * elt.c0, edwards_twist_mul_by_a_c2 * elt.c1)
+	// but optimizing the fact that edwards_twist_mul_by_a_c1 = edwards_twist_mul_by_a_c2 = 1
     return edwards_Fq3(edwards_twist_mul_by_a_c0 * elt.c2, elt.c0, elt.c1);
 }
 
 edwards_Fq3 edwards_G2::mul_by_d(const edwards_Fq3 &elt)
 {
-    return edwards_Fq3(edwards_twist_mul_by_d_c0 * elt.c2, edwards_twist_mul_by_d_c1 * elt.c0, edwards_twist_mul_by_d_c2 * elt.c1);
+	return edwards_Fq3(edwards_twist_mul_by_d_c0 * elt.c2, edwards_twist_mul_by_d_c1 * elt.c0, edwards_twist_mul_by_d_c2 * elt.c1);
 }
 
 void edwards_G2::print() const

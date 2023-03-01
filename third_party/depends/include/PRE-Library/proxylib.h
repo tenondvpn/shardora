@@ -4,7 +4,7 @@
 // proxy re-encryption scheme.
 //
 // ================================================================
-//     
+// 	
 // Copyright (c) 2007, Matthew Green, Giuseppe Ateniese, Kevin Fu,
 // Susan Hohenberger.  All rights reserved.
 //
@@ -86,7 +86,7 @@
 // Director
 // Massachusetts Institute of Technology Technology
 // Licensing Office, Rm NE25-230 Five Cambridge Center, Kendall Square
-// Cambridge, MA 02142-1493                        
+// Cambridge, MA 02142-1493						
 // 
 // 7.  General.  This Agreement shall be governed by the laws of the
 // Commonwealth of Massachusetts.  The parties acknowledge that this
@@ -130,26 +130,26 @@ class CurveParams {
 
   virtual int getSerializedSize(SERIALIZE_MODE mode); 
   virtual int serialize(SERIALIZE_MODE mode,
-            char *buffer, int maxBuffer);
+			char *buffer, int maxBuffer);
   virtual BOOL deserialize(SERIALIZE_MODE mode,
-               char *buffer, int maxBuffer);
+			   char *buffer, int maxBuffer);
   virtual int maxPlaintextSize() {
     Big temp;
     this->Z.get(temp);
-                      
+					  
     //return ::bits(temp);
     // Jet: Sep 06, 2016
-    return bits = toint(temp);
+	return bits = toint(temp);
   }
 
   BOOL operator==(CurveParams &second) {
     return ((this->bits == second.bits) && 
-        (this->p == second.p) &&
-        (this->q == second.q) &&
-        (this->qsquared == second.qsquared) &&
-        (this->P == second.P) &&
-        (this->Z == second.Z) &&
-        (this->cube == second.cube));
+	    (this->p == second.p) &&
+	    (this->q == second.q) &&
+	    (this->qsquared == second.qsquared) &&
+	    (this->P == second.P) &&
+	    (this->Z == second.Z) &&
+	    (this->cube == second.cube));
   }
 
 };
@@ -165,11 +165,11 @@ public:
 
   virtual int getSerializedSize(SERIALIZE_MODE mode) { return 0; } 
   virtual int serialize(SERIALIZE_MODE mode,
-                 char *buffer, int maxBuffer) {
+			     char *buffer, int maxBuffer) {
     return 0;
   }
   virtual BOOL deserialize(SERIALIZE_MODE mode,
-             char *buffer, int maxBuffer) {
+			 char *buffer, int maxBuffer) {
     return FALSE;
   }
 };
@@ -185,11 +185,11 @@ class ProxySK {
 
   virtual int getSerializedSize(SERIALIZE_MODE mode) { return 0; } 
   virtual int serialize(SERIALIZE_MODE mode,
-            char *buffer, int maxBuffer) {
+			char *buffer, int maxBuffer) {
     return 0;
   }
   virtual BOOL deserialize(SERIALIZE_MODE mode,
-             char *buffer, int maxBuffer) {
+			 char *buffer, int maxBuffer) {
     return FALSE;
   }
 };
@@ -206,11 +206,11 @@ class ProxyCiphertext {
 
   virtual int getSerializedSize(SERIALIZE_MODE mode) { return 0; } 
   virtual int serialize(SERIALIZE_MODE mode,
-            char *buffer, int maxBuffer) {
+			char *buffer, int maxBuffer) {
     return 0;
   }
   virtual BOOL deserialize(SERIALIZE_MODE mode,
-               char *buffer, int maxBuffer) {
+			   char *buffer, int maxBuffer) {
     return FALSE;
   }
 };
@@ -218,7 +218,7 @@ class ProxyCiphertext {
 // Main C++ interface
 
 BOOL initLibrary(BOOL selfseed = TRUE, char *seedbuf = NULL,
-         int bufSize = 0);
+		 int bufSize = 0);
 
 // Utility Routines
 
@@ -241,10 +241,10 @@ BOOL proxy_decrypt_reencrypted(CurveParams &params, ZZn2 &c1, ZZn2 &c2, ProxySK 
 
 // Utility routines
 BOOL encodePlaintextAsBig(CurveParams &params,
-             char *message, int messageLen, Big &msg);
+		     char *message, int messageLen, Big &msg);
 BOOL decodePlaintextFromBig(CurveParams &params,
-              char *message, int maxMessage, 
-              int *messageLen, Big &msg);
+			  char *message, int maxMessage, 
+			  int *messageLen, Big &msg);
 
 /* Given a char array of bytes and its length, convert to a Big */
 ECn charToECn (char *c, int *totLen);

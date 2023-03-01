@@ -41,18 +41,18 @@ NAMESPACE_BEGIN(CryptoPP)
 class CRYPTOPP_DLL RandomPool : public RandomNumberGenerator, public NotCopyable
 {
 public:
-    /// \brief Construct a RandomPool
-    RandomPool();
+	/// \brief Construct a RandomPool
+	RandomPool();
 
-    bool CanIncorporateEntropy() const {return true;}
-    void IncorporateEntropy(const byte *input, size_t length);
-    void GenerateIntoBufferedTransformation(BufferedTransformation &target, const std::string &channel, lword size);
+	bool CanIncorporateEntropy() const {return true;}
+	void IncorporateEntropy(const byte *input, size_t length);
+	void GenerateIntoBufferedTransformation(BufferedTransformation &target, const std::string &channel, lword size);
 
 private:
-    FixedSizeAlignedSecBlock<byte, 16, true> m_seed;
-    FixedSizeAlignedSecBlock<byte, 32> m_key;
-    member_ptr<BlockCipher> m_pCipher;
-    bool m_keySet;
+	FixedSizeAlignedSecBlock<byte, 16, true> m_seed;
+	FixedSizeAlignedSecBlock<byte, 32> m_key;
+	member_ptr<BlockCipher> m_pCipher;
+	bool m_keySet;
 };
 
 /// \brief Randomness Pool based on PGP 2.6.x with MDC
@@ -72,25 +72,25 @@ private:
 class CRYPTOPP_DLL OldRandomPool : public RandomNumberGenerator
 {
 public:
-    /// \brief Construct an OldRandomPool
-    /// \param poolSize internal pool size of the generator
-    /// \details poolSize must be greater than 16
-    OldRandomPool(unsigned int poolSize=384);
+	/// \brief Construct an OldRandomPool
+	/// \param poolSize internal pool size of the generator
+	/// \details poolSize must be greater than 16
+	OldRandomPool(unsigned int poolSize=384);
 
-    // RandomNumberGenerator interface (Crypto++ 5.5 and above)
-    bool CanIncorporateEntropy() const {return true;}
-    void IncorporateEntropy(const byte *input, size_t length);
-    void GenerateIntoBufferedTransformation(BufferedTransformation &target, const std::string &channel, lword size);
+	// RandomNumberGenerator interface (Crypto++ 5.5 and above)
+	bool CanIncorporateEntropy() const {return true;}
+	void IncorporateEntropy(const byte *input, size_t length);
+	void GenerateIntoBufferedTransformation(BufferedTransformation &target, const std::string &channel, lword size);
 
-    byte GenerateByte();
-    void GenerateBlock(byte *output, size_t size);
+	byte GenerateByte();
+	void GenerateBlock(byte *output, size_t size);
 
 protected:
-    void Stir();
+	void Stir();
 
 private:
-    SecByteBlock pool, key;
-    size_t addPos, getPos;
+	SecByteBlock pool, key;
+	size_t addPos, getPos;
 };
 
 NAMESPACE_END

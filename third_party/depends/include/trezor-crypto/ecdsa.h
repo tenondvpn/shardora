@@ -31,20 +31,20 @@
 
 // curve point x and y
 typedef struct {
-    bignum256 x, y;
+	bignum256 x, y;
 } curve_point;
 
 typedef struct {
 
-    bignum256 prime;       // prime order of the finite field
-    curve_point G;         // initial curve point
-    bignum256 order;       // order of G
-    bignum256 order_half;  // order of G divided by 2
-    int       a;           // coefficient 'a' of the elliptic curve
-    bignum256 b;           // coefficient 'b' of the elliptic curve
+	bignum256 prime;       // prime order of the finite field
+	curve_point G;         // initial curve point
+	bignum256 order;       // order of G
+	bignum256 order_half;  // order of G divided by 2
+	int       a;           // coefficient 'a' of the elliptic curve
+	bignum256 b;           // coefficient 'b' of the elliptic curve
 
 #if USE_PRECOMPUTED_CP
-    const curve_point cp[64][8];
+	const curve_point cp[64][8];
 #endif
 
 } ecdsa_curve;

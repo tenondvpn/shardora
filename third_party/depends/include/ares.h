@@ -387,8 +387,8 @@ struct ares_socket_functions {
 };
 
 CARES_EXTERN void ares_set_socket_functions(ares_channel channel,
-                        const struct ares_socket_functions * funcs,
-                        void *user_data);
+					    const struct ares_socket_functions * funcs,
+					    void *user_data);
 
 CARES_EXTERN void ares_send(ares_channel channel,
                             const unsigned char *qbuf,
@@ -610,8 +610,8 @@ CARES_EXTERN int ares_parse_naptr_reply(const unsigned char* abuf,
                                         struct ares_naptr_reply** naptr_out);
 
 CARES_EXTERN int ares_parse_soa_reply(const unsigned char* abuf,
-                      int alen,
-                      struct ares_soa_reply** soa_out);
+				      int alen,
+				      struct ares_soa_reply** soa_out);
 
 CARES_EXTERN void ares_free_string(void *str);
 

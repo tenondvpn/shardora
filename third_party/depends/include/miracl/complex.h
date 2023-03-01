@@ -31,7 +31,7 @@ public:
     friend Float real(const Complex &);
     friend Float imaginary(const Complex &);
     friend Float norm2(const Complex &);
-    friend Float norm(const Complex &);
+	friend Float norm(const Complex &);
     friend Complex recip(const Complex &);
 
     friend Complex operator-(const Complex&);

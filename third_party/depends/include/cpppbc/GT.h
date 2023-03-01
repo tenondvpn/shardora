@@ -6,10 +6,10 @@ using namespace std;
 
 class GT: public G {
 public:
-    
+	
 static GT pow2(const Pairing &e, const GT &base1, const Zr &exp1, const GT &base2, const Zr &exp2);
 static GT pow3(const Pairing &e, const GT &base1, const Zr &exp1, const GT &base2, const Zr &exp2, const GT &base3, const Zr &exp3);
-    
+	
   GT(){};
 
  //Create and initialize an element
@@ -20,11 +20,11 @@ static GT pow3(const Pairing &e, const GT &base1, const Zr &exp1, const GT &base
 
   //Create an element from import 
   GT(const Pairing &e, const unsigned char *data, 
-     unsigned short len, unsigned short base = 0);
+	 unsigned short len, unsigned short base = 0);
 
   //Create an element from hash
   GT(const Pairing &e, const void *data, 
-     unsigned short len);
+	 unsigned short len);
 
   //Intialize with another element but with different value
   GT(const GT &h, bool identity=false):G(h,identity){}
@@ -53,18 +53,18 @@ static GT pow3(const Pairing &e, const GT &base1, const Zr &exp1, const GT &base
   }
 
   bool operator==(const GT &rhs) const {
-    return G::operator==(rhs);
+	return G::operator==(rhs);
   }
 
   const GT inverse() const{
-    GT gT;
-    gT.setElement(G::inverse().getElement());
-    return gT;
+	GT gT;
+	gT.setElement(G::inverse().getElement());
+	return gT;
   }
   const GT square() const{
-    GT gT;
-    gT.setElement(G::square().getElement());
-    return gT;
+	GT gT;
+	gT.setElement(G::square().getElement());
+	return gT;
   }
 };
 

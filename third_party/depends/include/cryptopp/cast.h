@@ -17,14 +17,14 @@ NAMESPACE_BEGIN(CryptoPP)
 class CAST
 {
 protected:
-    static const word32 S[8][256];
+	static const word32 S[8][256];
 };
 
 /// \brief CAST128 block cipher information
 /// \since Crypto++ 2.2
 struct CAST128_Info : public FixedBlockSize<8>, public VariableKeyLength<16, 5, 16>
 {
-    CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() {return "CAST-128";}
+	CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() {return "CAST-128";}
 };
 
 /// \brief CAST128 block cipher
@@ -32,42 +32,42 @@ struct CAST128_Info : public FixedBlockSize<8>, public VariableKeyLength<16, 5, 
 /// \since Crypto++ 2.2
 class CAST128 : public CAST128_Info, public BlockCipherDocumentation
 {
-    /// \brief CAST128 block cipher default operation
-    class CRYPTOPP_NO_VTABLE Base : public CAST, public BlockCipherImpl<CAST128_Info>
-    {
-    public:
-        void UncheckedSetKey(const byte *userKey, unsigned int length, const NameValuePairs &params);
+	/// \brief CAST128 block cipher default operation
+	class CRYPTOPP_NO_VTABLE Base : public CAST, public BlockCipherImpl<CAST128_Info>
+	{
+	public:
+		void UncheckedSetKey(const byte *userKey, unsigned int length, const NameValuePairs &params);
 
-    protected:
-        bool reduced;
-        FixedSizeSecBlock<word32, 32> K;
-        mutable FixedSizeSecBlock<word32, 3> m_t;
-    };
+	protected:
+		bool reduced;
+		FixedSizeSecBlock<word32, 32> K;
+		mutable FixedSizeSecBlock<word32, 3> m_t;
+	};
 
-    /// \brief CAST128 block cipher encryption operation
-    class CRYPTOPP_NO_VTABLE Enc : public Base
-    {
-    public:
-        void ProcessAndXorBlock(const byte *inBlock, const byte *xorBlock, byte *outBlock) const;
-    };
+	/// \brief CAST128 block cipher encryption operation
+	class CRYPTOPP_NO_VTABLE Enc : public Base
+	{
+	public:
+		void ProcessAndXorBlock(const byte *inBlock, const byte *xorBlock, byte *outBlock) const;
+	};
 
-    /// \brief CAST128 block cipher decryption operation
-    class CRYPTOPP_NO_VTABLE Dec : public Base
-    {
-    public:
-        void ProcessAndXorBlock(const byte *inBlock, const byte *xorBlock, byte *outBlock) const;
-    };
+	/// \brief CAST128 block cipher decryption operation
+	class CRYPTOPP_NO_VTABLE Dec : public Base
+	{
+	public:
+		void ProcessAndXorBlock(const byte *inBlock, const byte *xorBlock, byte *outBlock) const;
+	};
 
 public:
-    typedef BlockCipherFinal<ENCRYPTION, Enc> Encryption;
-    typedef BlockCipherFinal<DECRYPTION, Dec> Decryption;
+	typedef BlockCipherFinal<ENCRYPTION, Enc> Encryption;
+	typedef BlockCipherFinal<DECRYPTION, Dec> Decryption;
 };
 
 /// \brief CAST256 block cipher information
 /// \since Crypto++ 4.0
 struct CAST256_Info : public FixedBlockSize<16>, public VariableKeyLength<16, 16, 32, 4>
 {
-    CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() {return "CAST-256";}
+	CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() {return "CAST-256";}
 };
 
 /// \brief CAST256 block cipher
@@ -75,27 +75,27 @@ struct CAST256_Info : public FixedBlockSize<16>, public VariableKeyLength<16, 16
 /// \since Crypto++ 4.0
 class CAST256 : public CAST256_Info, public BlockCipherDocumentation
 {
-    /// \brief CAST256 block cipher default operation
-    class CRYPTOPP_NO_VTABLE Base : public CAST, public BlockCipherImpl<CAST256_Info>
-    {
-    public:
-        void UncheckedSetKey(const byte *userKey, unsigned int length, const NameValuePairs &params);
-        void ProcessAndXorBlock(const byte *inBlock, const byte *xorBlock, byte *outBlock) const;
+	/// \brief CAST256 block cipher default operation
+	class CRYPTOPP_NO_VTABLE Base : public CAST, public BlockCipherImpl<CAST256_Info>
+	{
+	public:
+		void UncheckedSetKey(const byte *userKey, unsigned int length, const NameValuePairs &params);
+		void ProcessAndXorBlock(const byte *inBlock, const byte *xorBlock, byte *outBlock) const;
 
-    protected:
-        static const word32 t_m[8][24];
-        static const unsigned int t_r[8][24];
+	protected:
+		static const word32 t_m[8][24];
+		static const unsigned int t_r[8][24];
 
-        static void Omega(int i, word32 kappa[8]);
+		static void Omega(int i, word32 kappa[8]);
 
-        FixedSizeSecBlock<word32, 8*12> K;
-        mutable FixedSizeSecBlock<word32, 8> kappa;
-        mutable FixedSizeSecBlock<word32, 3> m_t;
-    };
+		FixedSizeSecBlock<word32, 8*12> K;
+		mutable FixedSizeSecBlock<word32, 8> kappa;
+		mutable FixedSizeSecBlock<word32, 3> m_t;
+	};
 
 public:
-    typedef BlockCipherFinal<ENCRYPTION, Base> Encryption;
-    typedef BlockCipherFinal<DECRYPTION, Base> Decryption;
+	typedef BlockCipherFinal<ENCRYPTION, Base> Encryption;
+	typedef BlockCipherFinal<DECRYPTION, Base> Decryption;
 };
 
 typedef CAST128::Encryption CAST128Encryption;

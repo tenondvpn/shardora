@@ -58,47 +58,47 @@ NAMESPACE_BEGIN(CryptoPP)
 template <class T>
 class CRYPTOPP_NO_VTABLE Poly1305_Base : public FixedKeyLength<32, SimpleKeyingInterface::UNIQUE_IV, 16>, public MessageAuthenticationCode
 {
-    CRYPTOPP_COMPILE_ASSERT(T::DEFAULT_KEYLENGTH == 16);
-    CRYPTOPP_COMPILE_ASSERT(T::BLOCKSIZE == 16);
+	CRYPTOPP_COMPILE_ASSERT(T::DEFAULT_KEYLENGTH == 16);
+	CRYPTOPP_COMPILE_ASSERT(T::BLOCKSIZE == 16);
 
 public:
-    static std::string StaticAlgorithmName() {return std::string("Poly1305(") + T::StaticAlgorithmName() + ")";}
+	static std::string StaticAlgorithmName() {return std::string("Poly1305(") + T::StaticAlgorithmName() + ")";}
 
-    CRYPTOPP_CONSTANT(DIGESTSIZE=T::BLOCKSIZE)
-    CRYPTOPP_CONSTANT(BLOCKSIZE=T::BLOCKSIZE)
+	CRYPTOPP_CONSTANT(DIGESTSIZE=T::BLOCKSIZE)
+	CRYPTOPP_CONSTANT(BLOCKSIZE=T::BLOCKSIZE)
 
-    Poly1305_Base() : m_idx(0), m_used(true) {}
+	Poly1305_Base() : m_idx(0), m_used(true) {}
 
-    void Resynchronize (const byte *iv, int ivLength=-1);
-    void GetNextIV (RandomNumberGenerator &rng, byte *iv);
+	void Resynchronize (const byte *iv, int ivLength=-1);
+	void GetNextIV (RandomNumberGenerator &rng, byte *iv);
 
-    void UncheckedSetKey(const byte *key, unsigned int length, const NameValuePairs &params);
-    void Update(const byte *input, size_t length);
-    void TruncatedFinal(byte *mac, size_t size);
-    void Restart();
+	void UncheckedSetKey(const byte *key, unsigned int length, const NameValuePairs &params);
+	void Update(const byte *input, size_t length);
+	void TruncatedFinal(byte *mac, size_t size);
+	void Restart();
 
-    unsigned int BlockSize() const {return BLOCKSIZE;}
-    unsigned int DigestSize() const {return DIGESTSIZE;}
+	unsigned int BlockSize() const {return BLOCKSIZE;}
+	unsigned int DigestSize() const {return DIGESTSIZE;}
 
-    std::string AlgorithmProvider() const;
+	std::string AlgorithmProvider() const;
 
 protected:
-    void HashBlocks(const byte *input, size_t length, word32 padbit);
-    void HashFinal(byte *mac, size_t length);
+	void HashBlocks(const byte *input, size_t length, word32 padbit);
+	void HashFinal(byte *mac, size_t length);
 
-    typename T::Encryption m_cipher;
+	typename T::Encryption m_cipher;
 
-    // Accumulated hash, clamped r-key, and encrypted nonce
-    FixedSizeAlignedSecBlock<word32, 5> m_h;
-    FixedSizeAlignedSecBlock<word32, 4> m_r;
-    FixedSizeAlignedSecBlock<word32, 4> m_n;
+	// Accumulated hash, clamped r-key, and encrypted nonce
+	FixedSizeAlignedSecBlock<word32, 5> m_h;
+	FixedSizeAlignedSecBlock<word32, 4> m_r;
+	FixedSizeAlignedSecBlock<word32, 4> m_n;
 
-    // Accumulated message bytes and index
-    FixedSizeAlignedSecBlock<byte, BLOCKSIZE> m_acc, m_nk;
-    size_t m_idx;
+	// Accumulated message bytes and index
+	FixedSizeAlignedSecBlock<byte, BLOCKSIZE> m_acc, m_nk;
+	size_t m_idx;
 
-    // Track nonce reuse; assert in debug but continue
-    bool m_used;
+	// Track nonce reuse; assert in debug but continue
+	bool m_used;
 };
 
 /// \brief Poly1305 message authentication code
@@ -146,22 +146,22 @@ template <class T>
 class Poly1305 : public MessageAuthenticationCodeFinal<Poly1305_Base<T> >
 {
 public:
-    CRYPTOPP_CONSTANT(DEFAULT_KEYLENGTH=Poly1305_Base<T>::DEFAULT_KEYLENGTH)
+	CRYPTOPP_CONSTANT(DEFAULT_KEYLENGTH=Poly1305_Base<T>::DEFAULT_KEYLENGTH)
 
-    /// \brief Construct a Poly1305
-    Poly1305() {}
+	/// \brief Construct a Poly1305
+	Poly1305() {}
 
-    /// \brief Construct a Poly1305
-    /// \param key a byte array used to key the cipher
-    /// \param keyLength the size of the byte array, in bytes
-    /// \param nonce a byte array used to key the cipher
-    /// \param nonceLength the size of the byte array, in bytes
-    /// \details key is the 32-byte key composed of the 16-byte AES key and the 16 additional key
-    ///   bytes used for <tt>r</tt>.
-    /// \details Each message requires a unique security context. You can use GetNextIV() and
-    ///   Resynchronize() to set a new nonce under a key for a message.
-    Poly1305(const byte *key, size_t keyLength=DEFAULT_KEYLENGTH, const byte *nonce=NULLPTR, size_t nonceLength=0)
-        {this->SetKey(key, keyLength, MakeParameters(Name::IV(), ConstByteArrayParameter(nonce, nonceLength)));}
+	/// \brief Construct a Poly1305
+	/// \param key a byte array used to key the cipher
+	/// \param keyLength the size of the byte array, in bytes
+	/// \param nonce a byte array used to key the cipher
+	/// \param nonceLength the size of the byte array, in bytes
+	/// \details key is the 32-byte key composed of the 16-byte AES key and the 16 additional key
+	///   bytes used for <tt>r</tt>.
+	/// \details Each message requires a unique security context. You can use GetNextIV() and
+	///   Resynchronize() to set a new nonce under a key for a message.
+	Poly1305(const byte *key, size_t keyLength=DEFAULT_KEYLENGTH, const byte *nonce=NULLPTR, size_t nonceLength=0)
+		{this->SetKey(key, keyLength, MakeParameters(Name::IV(), ConstByteArrayParameter(nonce, nonceLength)));}
 };
 
 NAMESPACE_END

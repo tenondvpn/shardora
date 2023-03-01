@@ -30,7 +30,7 @@
  * The fact that you are presently reading this means that you have had
  * knowledge of the CeCILL-C license and that you accept its terms.
  */
-    
+	
 #ifndef OF_SYMBOL
 #define OF_SYMBOL
 
@@ -40,42 +40,42 @@
 
 typedef struct of_symbol_stats_op
 {
-    UINT32 nb_xor_for_IT;
-    UINT32 nb_xor_for_ML;
+	UINT32 nb_xor_for_IT;
+	UINT32 nb_xor_for_ML;
 } of_symbol_stats_op_t;
 
 
 /**
- * @brief         check if the symbol number "new_symbol_esi" is a source symbol
- * @param ofcb        (IN) Pointer to the control block.
+ * @brief 		check if the symbol number "new_symbol_esi" is a source symbol
+ * @param ofcb		(IN) Pointer to the control block.
  * @param new_symbol_esi (IN) encoding symbol ID
- * @return        Error status.
+ * @return		Error status.
  */
-#define    of_is_source_symbol(ofcb,new_symbol_esi)    (((new_symbol_esi) < (ofcb)->nb_source_symbols) ? true : false)
+#define	of_is_source_symbol(ofcb,new_symbol_esi)	(((new_symbol_esi) < (ofcb)->nb_source_symbols) ? true : false)
 
 /*
- * @brief         check if the symbol number "new_symbol_esi" is a repair symbol
- * @param ofcb        (IN) Pointer to the control block.
+ * @brief 		check if the symbol number "new_symbol_esi" is a repair symbol
+ * @param ofcb		(IN) Pointer to the control block.
  * @param new_symbol_esi (IN) encoding symbol ID
- * @return        Error status.
+ * @return		Error status.
  */
-#define of_is_repair_symbol(ofcb,new_symbol_esi)    (((new_symbol_esi) < (ofcb)->nb_source_symbols) ? false : true)
+#define of_is_repair_symbol(ofcb,new_symbol_esi)	(((new_symbol_esi) < (ofcb)->nb_source_symbols) ? false : true)
 
 /**
- * @brief         get the encoding symbol ID of a matrix column
- * @param ofcb        (IN) Pointer to the control block.
- * @param matrix_col    (IN) number of the matrix column
- * @return        Error status.
+ * @brief 		get the encoding symbol ID of a matrix column
+ * @param ofcb		(IN) Pointer to the control block.
+ * @param matrix_col	(IN) number of the matrix column
+ * @return		Error status.
  */
-#define of_get_symbol_esi(ofcb,matrix_col)    (((matrix_col) < (ofcb)->nb_repair_symbols) ?  (INT32)((matrix_col) + (ofcb)->nb_source_symbols) : (INT32)((matrix_col) - (ofcb)->nb_repair_symbols))
+#define of_get_symbol_esi(ofcb,matrix_col)	(((matrix_col) < (ofcb)->nb_repair_symbols) ?  (INT32)((matrix_col) + (ofcb)->nb_source_symbols) : (INT32)((matrix_col) - (ofcb)->nb_repair_symbols))
 
 /**
- * @brief         get symbol matrix column
- * @param ofcb        (IN) Pointer to the control block.
- * @param esi        (IN) encoding symbol ID
- * @return        Error status.
+ * @brief 		get symbol matrix column
+ * @param ofcb		(IN) Pointer to the control block.
+ * @param esi		(IN) encoding symbol ID
+ * @return		Error status.
  */
-#define of_get_symbol_col(ofcb,esi)        (((esi) < (ofcb)->nb_source_symbols) ? (INT32)((esi) + (ofcb)->nb_repair_symbols) : (INT32)((esi) - (ofcb)->nb_source_symbols))
+#define of_get_symbol_col(ofcb,esi)		(((esi) < (ofcb)->nb_source_symbols) ? (INT32)((esi) + (ofcb)->nb_repair_symbols) : (INT32)((esi) - (ofcb)->nb_source_symbols))
 
 /**
  * Compute the XOR sum of two symbols: to = to + from.
@@ -83,19 +83,19 @@ typedef struct of_symbol_stats_op
  * expensive ones. These optimizations depend on the target platform, from both the
  * hardware and software point of views.
  *
- * @param to        (IN/OUT) source symbol.
- * @param from        (IN) symbol added to the source symbol.
- * @param symbol_size    (IN) size in byte
+ * @param to		(IN/OUT) source symbol.
+ * @param from		(IN) symbol added to the source symbol.
+ * @param symbol_size	(IN) size in byte
  */
 #ifdef OF_DEBUG
-void    of_add_to_symbol    (void        *to,
-                 const void    *from,
-                 UINT32        symbol_size,
-                 UINT32*);
+void	of_add_to_symbol	(void		*to,
+				 const void	*from,
+				 UINT32		symbol_size,
+				 UINT32*);
 #else
-void    of_add_to_symbol    (void        *to,
-                 const void    *from,
-                 UINT32        symbol_size);
+void	of_add_to_symbol	(void		*to,
+				 const void	*from,
+				 UINT32		symbol_size);
 #endif
 
 /**
@@ -104,22 +104,22 @@ void    of_add_to_symbol    (void        *to,
  * expensive ones. These optimizations depend on the target platform, from both the
  * hardware and software point of views.
  *
- * @param to        (IN/OUT) source symbol.
- * @param from        (IN) symbols added to the source symbol.
+ * @param to		(IN/OUT) source symbol.
+ * @param from		(IN) symbols added to the source symbol.
  * @param from_size (IN) number of "from" symbols
- * @param symbol_size    (IN) size in byte
+ * @param symbol_size	(IN) size in byte
  */
 #ifdef OF_DEBUG
-void    of_add_from_multiple_symbols    (void        *to,
-                     const void    **from,
-                     UINT32        from_size,
-                     UINT32        symbol_size,
-                     UINT32*);
+void	of_add_from_multiple_symbols	(void		*to,
+					 const void	**from,
+					 UINT32		from_size,
+					 UINT32		symbol_size,
+					 UINT32*);
 #else
-void    of_add_from_multiple_symbols    (void        *to,
-                     const void    **from,
-                     UINT32        from_size,
-                     UINT32        symbol_size);
+void	of_add_from_multiple_symbols	(void		*to,
+					 const void	**from,
+					 UINT32		from_size,
+					 UINT32		symbol_size);
 #endif
 
 /**
@@ -128,22 +128,22 @@ void    of_add_from_multiple_symbols    (void        *to,
  * expensive ones. These optimizations depend on the target platform, from both the
  * hardware and software point of views.
  *
- * @param to        (IN/OUT) source symbols.
- * @param from        (IN) symbol added to the source symbol.
+ * @param to		(IN/OUT) source symbols.
+ * @param from		(IN) symbol added to the source symbol.
  * @param to_size (IN) number of "to" symbols
- * @param symbol_size    (IN) size in byte
+ * @param symbol_size	(IN) size in byte
  */
 #ifdef OF_DEBUG
-void    of_add_to_multiple_symbols     (void        **to,
-                    const void    *from,
-                    UINT32        to_size,
-                    UINT32        symbol_size,
-                    UINT32*);
+void	of_add_to_multiple_symbols     (void		**to,
+					const void	*from,
+					UINT32		to_size,
+					UINT32		symbol_size,
+					UINT32*);
 #else
-void    of_add_to_multiple_symbols     (void        **to,
-                    const void    *from,
-                    UINT32        to_size,
-                    UINT32        symbol_size);
+void	of_add_to_multiple_symbols     (void		**to,
+					const void	*from,
+					UINT32		to_size,
+					UINT32		symbol_size);
 #endif
 
 #ifdef OF_DEBUG

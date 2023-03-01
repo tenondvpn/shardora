@@ -24,9 +24,9 @@ NAMESPACE_BEGIN(CryptoPP)
 class CRYPTOPP_DLL OS_RNG_Err : public Exception
 {
 public:
-    /// \brief Constructs an OS_RNG_Err
-    /// \param operation the operation or API call when the error occurs
-    OS_RNG_Err(const std::string &operation);
+	/// \brief Constructs an OS_RNG_Err
+	/// \param operation the operation or API call when the error occurs
+	OS_RNG_Err(const std::string &operation);
 };
 
 #ifdef NONBLOCKING_RNG_AVAILABLE
@@ -37,35 +37,35 @@ public:
 class CRYPTOPP_DLL MicrosoftCryptoProvider
 {
 public:
-    /// \brief Construct a MicrosoftCryptoProvider
-    MicrosoftCryptoProvider();
-    ~MicrosoftCryptoProvider();
+	/// \brief Construct a MicrosoftCryptoProvider
+	MicrosoftCryptoProvider();
+	~MicrosoftCryptoProvider();
 
 // type HCRYPTPROV and BCRYPT_ALG_HANDLE, avoid #include <windows.h>
 #if defined(USE_MS_CRYPTOAPI)
 # if defined(__CYGWIN__) && defined(__x86_64__)
-    typedef unsigned long long ProviderHandle;
+	typedef unsigned long long ProviderHandle;
 # elif defined(WIN64) || defined(_WIN64)
-    typedef unsigned __int64 ProviderHandle;
+	typedef unsigned __int64 ProviderHandle;
 # else
-    typedef unsigned long ProviderHandle;
+	typedef unsigned long ProviderHandle;
 # endif
 #elif defined(USE_MS_CNGAPI)
-    typedef void *PVOID;
-    typedef PVOID ProviderHandle;
+	typedef void *PVOID;
+	typedef PVOID ProviderHandle;
 #endif // USE_MS_CRYPTOAPI or USE_MS_CNGAPI
 
-    /// \brief Retrieves the provider handle
-    /// \returns CryptoAPI provider handle
-    /// \details If USE_MS_CRYPTOAPI is in effect, then CryptAcquireContext()
-    ///   acquires then handle and CryptReleaseContext() releases the handle
-    ///   upon destruction. If USE_MS_CNGAPI is in effect, then
-    ///   BCryptOpenAlgorithmProvider() acquires then handle and
-    ///   BCryptCloseAlgorithmProvider() releases the handle upon destruction.
-    ProviderHandle GetProviderHandle() const {return m_hProvider;}
+	/// \brief Retrieves the provider handle
+	/// \returns CryptoAPI provider handle
+	/// \details If USE_MS_CRYPTOAPI is in effect, then CryptAcquireContext()
+	///   acquires then handle and CryptReleaseContext() releases the handle
+	///   upon destruction. If USE_MS_CNGAPI is in effect, then
+	///   BCryptOpenAlgorithmProvider() acquires then handle and
+	///   BCryptCloseAlgorithmProvider() releases the handle upon destruction.
+	ProviderHandle GetProviderHandle() const {return m_hProvider;}
 
 private:
-    ProviderHandle m_hProvider;
+	ProviderHandle m_hProvider;
 };
 
 #if defined(_MSC_VER) && defined(USE_MS_CRYPTOAPI)
@@ -84,24 +84,24 @@ private:
 class CRYPTOPP_DLL NonblockingRng : public RandomNumberGenerator
 {
 public:
-    CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() { return "NonblockingRng"; }
+	CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() { return "NonblockingRng"; }
 
-    ~NonblockingRng();
+	~NonblockingRng();
 
-    /// \brief Construct a NonblockingRng
-    NonblockingRng();
+	/// \brief Construct a NonblockingRng
+	NonblockingRng();
 
-    /// \brief Generate random array of bytes
-    /// \param output the byte buffer
-    /// \param size the length of the buffer, in bytes
-    /// \details GenerateIntoBufferedTransformation() calls are routed to GenerateBlock().
-    void GenerateBlock(byte *output, size_t size);
+	/// \brief Generate random array of bytes
+	/// \param output the byte buffer
+	/// \param size the length of the buffer, in bytes
+	/// \details GenerateIntoBufferedTransformation() calls are routed to GenerateBlock().
+	void GenerateBlock(byte *output, size_t size);
 
 protected:
 #ifdef CRYPTOPP_WIN32_AVAILABLE
-    MicrosoftCryptoProvider m_Provider;
+	MicrosoftCryptoProvider m_Provider;
 #else
-    int m_fd;
+	int m_fd;
 #endif
 };
 
@@ -118,21 +118,21 @@ protected:
 class CRYPTOPP_DLL BlockingRng : public RandomNumberGenerator
 {
 public:
-    CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() { return "BlockingRng"; }
+	CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() { return "BlockingRng"; }
 
-    ~BlockingRng();
+	~BlockingRng();
 
-    /// \brief Construct a BlockingRng
-    BlockingRng();
+	/// \brief Construct a BlockingRng
+	BlockingRng();
 
-    /// \brief Generate random array of bytes
-    /// \param output the byte buffer
-    /// \param size the length of the buffer, in bytes
-    /// \details GenerateIntoBufferedTransformation() calls are routed to GenerateBlock().
-    void GenerateBlock(byte *output, size_t size);
+	/// \brief Generate random array of bytes
+	/// \param output the byte buffer
+	/// \param size the length of the buffer, in bytes
+	/// \details GenerateIntoBufferedTransformation() calls are routed to GenerateBlock().
+	void GenerateBlock(byte *output, size_t size);
 
 protected:
-    int m_fd;
+	int m_fd;
 };
 
 #endif
@@ -155,22 +155,22 @@ CRYPTOPP_DLL void CRYPTOPP_API OS_GenerateRandomBlock(bool blocking, byte *outpu
 class CRYPTOPP_DLL AutoSeededRandomPool : public RandomPool
 {
 public:
-    CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() { return "AutoSeededRandomPool"; }
+	CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() { return "AutoSeededRandomPool"; }
 
-    ~AutoSeededRandomPool() {}
+	~AutoSeededRandomPool() {}
 
-    /// \brief Construct an AutoSeededRandomPool
-    /// \param blocking controls seeding with BlockingRng or NonblockingRng
-    /// \param seedSize the size of the seed, in bytes
-    /// \details Use blocking to choose seeding with BlockingRng or NonblockingRng.
-    ///   The parameter is ignored if only one of these is available.
-    explicit AutoSeededRandomPool(bool blocking = false, unsigned int seedSize = 32)
-        {Reseed(blocking, seedSize);}
+	/// \brief Construct an AutoSeededRandomPool
+	/// \param blocking controls seeding with BlockingRng or NonblockingRng
+	/// \param seedSize the size of the seed, in bytes
+	/// \details Use blocking to choose seeding with BlockingRng or NonblockingRng.
+	///   The parameter is ignored if only one of these is available.
+	explicit AutoSeededRandomPool(bool blocking = false, unsigned int seedSize = 32)
+		{Reseed(blocking, seedSize);}
 
-    /// \brief Reseed an AutoSeededRandomPool
-    /// \param blocking controls seeding with BlockingRng or NonblockingRng
-    /// \param seedSize the size of the seed, in bytes
-    void Reseed(bool blocking = false, unsigned int seedSize = 32);
+	/// \brief Reseed an AutoSeededRandomPool
+	/// \param blocking controls seeding with BlockingRng or NonblockingRng
+	/// \param seedSize the size of the seed, in bytes
+	void Reseed(bool blocking = false, unsigned int seedSize = 32);
 };
 
 /// \tparam BLOCK_CIPHER a block cipher
@@ -185,82 +185,82 @@ template <class BLOCK_CIPHER>
 class AutoSeededX917RNG : public RandomNumberGenerator, public NotCopyable
 {
 public:
-    static std::string StaticAlgorithmName() { return std::string("AutoSeededX917RNG(") + BLOCK_CIPHER::StaticAlgorithmName() + std::string(")"); }
+	static std::string StaticAlgorithmName() { return std::string("AutoSeededX917RNG(") + BLOCK_CIPHER::StaticAlgorithmName() + std::string(")"); }
 
-    ~AutoSeededX917RNG() {}
+	~AutoSeededX917RNG() {}
 
-    /// \brief Construct an AutoSeededX917RNG
-    /// \param blocking controls seeding with BlockingRng or NonblockingRng
-    /// \param autoSeed controls auto seeding of the generator
-    /// \details Use blocking to choose seeding with BlockingRng or NonblockingRng.
-    ///   The parameter is ignored if only one of these is available.
-    /// \sa X917RNG
-    explicit AutoSeededX917RNG(bool blocking = false, bool autoSeed = true)
-        {if (autoSeed) Reseed(blocking);}
+	/// \brief Construct an AutoSeededX917RNG
+	/// \param blocking controls seeding with BlockingRng or NonblockingRng
+	/// \param autoSeed controls auto seeding of the generator
+	/// \details Use blocking to choose seeding with BlockingRng or NonblockingRng.
+	///   The parameter is ignored if only one of these is available.
+	/// \sa X917RNG
+	explicit AutoSeededX917RNG(bool blocking = false, bool autoSeed = true)
+		{if (autoSeed) Reseed(blocking);}
 
-    /// \brief Reseed an AutoSeededX917RNG
-    /// \param blocking controls seeding with BlockingRng or NonblockingRng
-    /// \param additionalEntropy additional entropy to add to the generator
-    /// \param length the size of the additional entropy, in bytes
-    /// \details Internally, the generator uses SHA256 to extract the entropy from
-    ///   from the seed and then stretch the material for the block cipher's key
-    ///   and initialization vector.
-    void Reseed(bool blocking = false, const byte *additionalEntropy = NULLPTR, size_t length = 0);
+	/// \brief Reseed an AutoSeededX917RNG
+	/// \param blocking controls seeding with BlockingRng or NonblockingRng
+	/// \param additionalEntropy additional entropy to add to the generator
+	/// \param length the size of the additional entropy, in bytes
+	/// \details Internally, the generator uses SHA256 to extract the entropy from
+	///   from the seed and then stretch the material for the block cipher's key
+	///   and initialization vector.
+	void Reseed(bool blocking = false, const byte *additionalEntropy = NULLPTR, size_t length = 0);
 
-    /// \brief Deterministically reseed an AutoSeededX917RNG for testing
-    /// \param key the key to use for the deterministic reseeding
-    /// \param keylength the size of the key, in bytes
-    /// \param seed the seed to use for the deterministic reseeding
-    /// \param timeVector a time vector to use for deterministic reseeding
-    /// \details This is a testing interface for testing purposes, and should \a NOT
-    ///   be used in production.
-    void Reseed(const byte *key, size_t keylength, const byte *seed, const byte *timeVector);
+	/// \brief Deterministically reseed an AutoSeededX917RNG for testing
+	/// \param key the key to use for the deterministic reseeding
+	/// \param keylength the size of the key, in bytes
+	/// \param seed the seed to use for the deterministic reseeding
+	/// \param timeVector a time vector to use for deterministic reseeding
+	/// \details This is a testing interface for testing purposes, and should \a NOT
+	///   be used in production.
+	void Reseed(const byte *key, size_t keylength, const byte *seed, const byte *timeVector);
 
-    bool CanIncorporateEntropy() const {return true;}
-    void IncorporateEntropy(const byte *input, size_t length) {Reseed(false, input, length);}
-    void GenerateIntoBufferedTransformation(BufferedTransformation &target, const std::string &channel, lword length)
-        {m_rng->GenerateIntoBufferedTransformation(target, channel, length);}
+	bool CanIncorporateEntropy() const {return true;}
+	void IncorporateEntropy(const byte *input, size_t length) {Reseed(false, input, length);}
+	void GenerateIntoBufferedTransformation(BufferedTransformation &target, const std::string &channel, lword length)
+		{m_rng->GenerateIntoBufferedTransformation(target, channel, length);}
 
-    std::string AlgorithmProvider() const;
+	std::string AlgorithmProvider() const;
 
 private:
-    member_ptr<RandomNumberGenerator> m_rng;
+	member_ptr<RandomNumberGenerator> m_rng;
 };
 
 template <class BLOCK_CIPHER>
 void AutoSeededX917RNG<BLOCK_CIPHER>::Reseed(const byte *key, size_t keylength, const byte *seed, const byte *timeVector)
 {
-    m_rng.reset(new X917RNG(new typename BLOCK_CIPHER::Encryption(key, keylength), seed, timeVector));
+	m_rng.reset(new X917RNG(new typename BLOCK_CIPHER::Encryption(key, keylength), seed, timeVector));
 }
 
 template <class BLOCK_CIPHER>
 void AutoSeededX917RNG<BLOCK_CIPHER>::Reseed(bool blocking, const byte *input, size_t length)
 {
-    SecByteBlock seed(BLOCK_CIPHER::BLOCKSIZE + BLOCK_CIPHER::DEFAULT_KEYLENGTH);
-    const byte *key;
-    do
-    {
-        OS_GenerateRandomBlock(blocking, seed, seed.size());
-        if (length > 0)
-        {
-            SHA256 hash;
-            hash.Update(seed, seed.size());
-            hash.Update(input, length);
-            hash.TruncatedFinal(seed, UnsignedMin(hash.DigestSize(), seed.size()));
-        }
-        key = seed + BLOCK_CIPHER::BLOCKSIZE;
-    }    // check that seed and key don't have same value
-    while (memcmp(key, seed, STDMIN((unsigned int)BLOCK_CIPHER::BLOCKSIZE, (unsigned int)BLOCK_CIPHER::DEFAULT_KEYLENGTH)) == 0);
+	SecByteBlock seed(BLOCK_CIPHER::BLOCKSIZE + BLOCK_CIPHER::DEFAULT_KEYLENGTH);
+	const byte *key;
+	do
+	{
+		OS_GenerateRandomBlock(blocking, seed, seed.size());
+		if (length > 0)
+		{
+			SHA256 hash;
+			hash.Update(seed, seed.size());
+			hash.Update(input, length);
+			hash.TruncatedFinal(seed, UnsignedMin(hash.DigestSize(), seed.size()));
+		}
+		key = seed + BLOCK_CIPHER::BLOCKSIZE;
+	}	// check that seed and key don't have same value
+	while (memcmp(key, seed, STDMIN((unsigned int)BLOCK_CIPHER::BLOCKSIZE, (unsigned int)BLOCK_CIPHER::DEFAULT_KEYLENGTH)) == 0);
 
-    Reseed(key, BLOCK_CIPHER::DEFAULT_KEYLENGTH, seed, NULLPTR);
+	Reseed(key, BLOCK_CIPHER::DEFAULT_KEYLENGTH, seed, NULLPTR);
 }
 
 template <class BLOCK_CIPHER>
 std::string AutoSeededX917RNG<BLOCK_CIPHER>::AlgorithmProvider() const
 {
-    // Hack for now... We need to instantiate one
-    typename BLOCK_CIPHER::Encryption bc;
-    return bc.AlgorithmProvider();
+	// Hack for now... We need to instantiate one
+	typename BLOCK_CIPHER::Encryption bc;
+	return bc.AlgorithmProvider();
 }
 
 CRYPTOPP_DLL_TEMPLATE_CLASS AutoSeededX917RNG<AES>;

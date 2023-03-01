@@ -41,38 +41,38 @@
 
 
 /**
- * @fn            inline void*    of_malloc (size_t size)
- * @brief        do a malloc
- * @param size        (IN) size of wanted allocated area.
- * @return        allocated pointer or NULL if error.
+ * @fn			inline void*	of_malloc (size_t size)
+ * @brief		do a malloc
+ * @param size		(IN) size of wanted allocated area.
+ * @return		allocated pointer or NULL if error.
  */
-void*    of_malloc (size_t size);
+void*	of_malloc (size_t size);
 
 /**
- * @fn            inline void*    of_calloc (size_t nmemb,size_t size)
- * @brief        do a calloc
- * @param nmemb        (IN) number of elements
- * @param size        (IN) size of wanted allocated area.
- * @return        allocated pointer or NULL if error.
+ * @fn			inline void*	of_calloc (size_t nmemb,size_t size)
+ * @brief		do a calloc
+ * @param nmemb		(IN) number of elements
+ * @param size		(IN) size of wanted allocated area.
+ * @return		allocated pointer or NULL if error.
  */
-void*    of_calloc (size_t nmemb, size_t size);
+void*	of_calloc (size_t nmemb, size_t size);
 
 /**
- * @fn            inline void*    of_realloc (void* ptr, size_t size)
- * @brief        realloc memory adress
- * @param ptr        (IN) pointer to realloc
- * @param size        (IN) size of wanted allocated area.
- * @return        allocated pointer or NULL if error.
+ * @fn			inline void*	of_realloc (void* ptr, size_t size)
+ * @brief		realloc memory adress
+ * @param ptr		(IN) pointer to realloc
+ * @param size		(IN) size of wanted allocated area.
+ * @return		allocated pointer or NULL if error.
  */
-void*    of_realloc (void* ptr, size_t size);
+void*	of_realloc (void* ptr, size_t size);
 
 /**
- * @fn            inline void     of_free (void* ptr)
- * @brief        free amemory adress
- * @param ptr        (IN) pointer to free
- * @return        void
+ * @fn			inline void 	of_free (void* ptr)
+ * @brief		free amemory adress
+ * @param ptr		(IN) pointer to free
+ * @return		void
  */
-void    of_free (void* ptr);
+void	of_free (void* ptr);
 
 
 #endif  //OF_MEM_H

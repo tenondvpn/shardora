@@ -48,14 +48,14 @@
  */
 typedef struct of_ldpc_parameters
 {
-    UINT32        nb_source_symbols;    /* must be 1st item */
-    UINT32        nb_repair_symbols;    /* must be 2nd item */
-    UINT32        encoding_symbol_length; /* must be 3rd item */
-    /*
-    * FEC codec id specific attributes follow...
-    */
-    INT32        prng_seed;
-    UINT8        N1;
+	UINT32		nb_source_symbols;	/* must be 1st item */
+	UINT32		nb_repair_symbols;	/* must be 2nd item */
+	UINT32		encoding_symbol_length; /* must be 3rd item */
+	/*
+	* FEC codec id specific attributes follow...
+	*/
+	INT32		prng_seed;
+	UINT8		N1;
 } of_ldpc_parameters_t;
 
 
@@ -63,7 +63,7 @@ typedef struct of_ldpc_parameters
  * Control parameters for of_set_control_parameter()/of_get_control_parameter() functions:
  *   - range {0 .. 1023} inclusive are for generic parameters;
  *   - range {1024 .. above} inclusive are for code/codec specific parameters (and different
- *        codecs can re-use the same value);
+ *		codecs can re-use the same value);
  * The "void * value" type depends on the type.
  */
 
@@ -74,7 +74,7 @@ typedef struct of_ldpc_parameters
  * repair symbol is actually NULL), 0 otherwise.
  * Argument: bool
  */
-#define    OF_CRTL_LDPC_STAIRCASE_IS_LAST_SYMBOL_NULL    1024
+#define	OF_CRTL_LDPC_STAIRCASE_IS_LAST_SYMBOL_NULL	1024
 
 
 #endif  /* OF_CODEC_STABLE_LDPC_SCSTAIRCASE_API */

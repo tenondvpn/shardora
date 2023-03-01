@@ -71,7 +71,7 @@ struct evhttp *evhttp_start(const char *address, ev_uint16_t port);
  */
 EVENT2_EXPORT_SYMBOL
 struct evhttp_connection *evhttp_connection_new(
-    const char *address, ev_uint16_t port);
+	const char *address, ev_uint16_t port);
 
 /**
  * Associates an event base with the connection - can only be called

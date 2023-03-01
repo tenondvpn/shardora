@@ -20,13 +20,13 @@
 # /* MSGPACK_PP_ARRAY_TO_TUPLE */
 #
 #    define MSGPACK_PP_ARRAY_TO_TUPLE(array) \
-        MSGPACK_PP_IF \
-            ( \
-            MSGPACK_PP_ARRAY_SIZE(array), \
-            MSGPACK_PP_ARRAY_DATA, \
-            MSGPACK_PP_ARRAY_TO_TUPLE_EMPTY \
-            ) \
-        (array) \
+		MSGPACK_PP_IF \
+			( \
+			MSGPACK_PP_ARRAY_SIZE(array), \
+			MSGPACK_PP_ARRAY_DATA, \
+			MSGPACK_PP_ARRAY_TO_TUPLE_EMPTY \
+			) \
+		(array) \
 /**/
 #    define MSGPACK_PP_ARRAY_TO_TUPLE_EMPTY(array)
 #

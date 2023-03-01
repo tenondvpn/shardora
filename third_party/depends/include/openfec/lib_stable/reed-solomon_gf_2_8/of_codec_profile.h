@@ -43,6 +43,6 @@
  * To this  limit, codec implementation details might add other limits (e.g. if
  * the ESI values are stored in UINT16 instead of UINT32...).
  */
-#define OF_REED_SOLOMON_MAX_NB_SOURCE_SYMBOLS_DEFAULT        255
-#define OF_REED_SOLOMON_MAX_NB_ENCODING_SYMBOLS_DEFAULT        255
+#define OF_REED_SOLOMON_MAX_NB_SOURCE_SYMBOLS_DEFAULT		255
+#define OF_REED_SOLOMON_MAX_NB_ENCODING_SYMBOLS_DEFAULT		255
 

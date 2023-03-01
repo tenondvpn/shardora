@@ -16,7 +16,7 @@ NAMESPACE_BEGIN(CryptoPP)
 /// \since Crypto++ 5.6.0
 struct SEED_Info : public FixedBlockSize<16>, public FixedKeyLength<16>, public FixedRounds<16>
 {
-    CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() {return "SEED";}
+	CRYPTOPP_STATIC_CONSTEXPR const char* StaticAlgorithmName() {return "SEED";}
 };
 
 /// \brief SEED block cipher
@@ -24,19 +24,19 @@ struct SEED_Info : public FixedBlockSize<16>, public FixedKeyLength<16>, public 
 /// \since Crypto++ 5.6.0
 class SEED : public SEED_Info, public BlockCipherDocumentation
 {
-    class CRYPTOPP_NO_VTABLE Base : public BlockCipherImpl<SEED_Info>
-    {
-    public:
-        void UncheckedSetKey(const byte *key, unsigned int length, const NameValuePairs &params);
-        void ProcessAndXorBlock(const byte *inBlock, const byte *xorBlock, byte *outBlock) const;
+	class CRYPTOPP_NO_VTABLE Base : public BlockCipherImpl<SEED_Info>
+	{
+	public:
+		void UncheckedSetKey(const byte *key, unsigned int length, const NameValuePairs &params);
+		void ProcessAndXorBlock(const byte *inBlock, const byte *xorBlock, byte *outBlock) const;
 
-    protected:
-        FixedSizeSecBlock<word32, 32> m_k;
-    };
+	protected:
+		FixedSizeSecBlock<word32, 32> m_k;
+	};
 
 public:
-    typedef BlockCipherFinal<ENCRYPTION, Base> Encryption;
-    typedef BlockCipherFinal<DECRYPTION, Base> Decryption;
+	typedef BlockCipherFinal<ENCRYPTION, Base> Encryption;
+	typedef BlockCipherFinal<DECRYPTION, Base> Decryption;
 };
 
 NAMESPACE_END

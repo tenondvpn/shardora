@@ -39,7 +39,7 @@ namespace log4cpp {
         virtual void _append(const LoggingEvent& event);
 
         unsigned int _maxBackupIndex;
-        unsigned short int _maxBackupIndexWidth;    // keep constant index width by zeroing leading positions
+        unsigned short int _maxBackupIndexWidth;	// keep constant index width by zeroing leading positions
 
         size_t _maxFileSize;
     };

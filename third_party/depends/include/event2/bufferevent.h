@@ -70,8 +70,8 @@
     <dt>SSL-backed bufferevents</dt>
       <dd>A bufferevent that uses the openssl library to send and
           receive data over an encrypted connection. Created with
-      bufferevent_openssl_socket_new() or
-      bufferevent_openssl_filter_new().</dd>
+	  bufferevent_openssl_socket_new() or
+	  bufferevent_openssl_filter_new().</dd>
   </dl>
  */
 
@@ -98,12 +98,12 @@ extern "C" {
 
     @{
 */
-#define BEV_EVENT_READING    0x01    /**< error encountered while reading */
-#define BEV_EVENT_WRITING    0x02    /**< error encountered while writing */
-#define BEV_EVENT_EOF        0x10    /**< eof file reached */
-#define BEV_EVENT_ERROR        0x20    /**< unrecoverable error encountered */
-#define BEV_EVENT_TIMEOUT    0x40    /**< user-specified timeout reached */
-#define BEV_EVENT_CONNECTED    0x80    /**< connect operation finished. */
+#define BEV_EVENT_READING	0x01	/**< error encountered while reading */
+#define BEV_EVENT_WRITING	0x02	/**< error encountered while writing */
+#define BEV_EVENT_EOF		0x10	/**< eof file reached */
+#define BEV_EVENT_ERROR		0x20	/**< unrecoverable error encountered */
+#define BEV_EVENT_TIMEOUT	0x40	/**< user-specified timeout reached */
+#define BEV_EVENT_CONNECTED	0x80	/**< connect operation finished. */
 /**@}*/
 
 /**
@@ -146,9 +146,9 @@ typedef void (*bufferevent_data_cb)(struct bufferevent *bev, void *ctx);
 
    @param bev the bufferevent for which the error condition was reached
    @param what a conjunction of flags: BEV_EVENT_READING or BEV_EVENT_WRITING
-      to indicate if the error was encountered on the read or write path,
-      and one of the following flags: BEV_EVENT_EOF, BEV_EVENT_ERROR,
-      BEV_EVENT_TIMEOUT, BEV_EVENT_CONNECTED.
+	  to indicate if the error was encountered on the read or write path,
+	  and one of the following flags: BEV_EVENT_EOF, BEV_EVENT_ERROR,
+	  BEV_EVENT_TIMEOUT, BEV_EVENT_CONNECTED.
 
    @param ctx the user-specified context for this bufferevent
 */
@@ -156,22 +156,22 @@ typedef void (*bufferevent_event_cb)(struct bufferevent *bev, short what, void *
 
 /** Options that can be specified when creating a bufferevent */
 enum bufferevent_options {
-    /** If set, we close the underlying file
-     * descriptor/bufferevent/whatever when this bufferevent is freed. */
-    BEV_OPT_CLOSE_ON_FREE = (1<<0),
+	/** If set, we close the underlying file
+	 * descriptor/bufferevent/whatever when this bufferevent is freed. */
+	BEV_OPT_CLOSE_ON_FREE = (1<<0),
 
-    /** If set, and threading is enabled, operations on this bufferevent
-     * are protected by a lock */
-    BEV_OPT_THREADSAFE = (1<<1),
+	/** If set, and threading is enabled, operations on this bufferevent
+	 * are protected by a lock */
+	BEV_OPT_THREADSAFE = (1<<1),
 
-    /** If set, callbacks are run deferred in the event loop. */
-    BEV_OPT_DEFER_CALLBACKS = (1<<2),
+	/** If set, callbacks are run deferred in the event loop. */
+	BEV_OPT_DEFER_CALLBACKS = (1<<2),
 
-    /** If set, callbacks are executed without locks being held on the
-    * bufferevent.  This option currently requires that
-    * BEV_OPT_DEFER_CALLBACKS also be set; a future version of Libevent
-    * might remove the requirement.*/
-    BEV_OPT_UNLOCK_CALLBACKS = (1<<3)
+	/** If set, callbacks are executed without locks being held on the
+	* bufferevent.  This option currently requires that
+	* BEV_OPT_DEFER_CALLBACKS also be set; a future version of Libevent
+	* might remove the requirement.*/
+	BEV_OPT_UNLOCK_CALLBACKS = (1<<3)
 };
 
 /**
@@ -179,12 +179,12 @@ enum bufferevent_options {
 
   @param base the event base to associate with the new bufferevent.
   @param fd the file descriptor from which data is read and written to.
-        This file descriptor is not allowed to be a pipe(2).
-        It is safe to set the fd to -1, so long as you later
-        set it with bufferevent_setfd or bufferevent_socket_connect().
+	    This file descriptor is not allowed to be a pipe(2).
+	    It is safe to set the fd to -1, so long as you later
+	    set it with bufferevent_setfd or bufferevent_socket_connect().
   @param options Zero or more BEV_OPT_* flags
   @return a pointer to a newly allocated bufferevent struct, or NULL if an
-      error occurred
+	  error occurred
   @see bufferevent_free()
   */
 EVENT2_EXPORT_SYMBOL
@@ -250,13 +250,13 @@ int bufferevent_socket_connect_hostname(struct bufferevent *bufev,
 
    Recognized hostname formats are:
 
-       www.example.com    (hostname)
-       1.2.3.4        (ipv4address)
-       ::1        (ipv6address)
-       [::1]        ([ipv6address])
+       www.example.com	(hostname)
+       1.2.3.4		(ipv4address)
+       ::1		(ipv6address)
+       [::1]		([ipv6address])
 
    Performance note: If you do not provide an evdns_base, this function
-   may block while it waits for a DNS response.     This is probably not
+   may block while it waits for a DNS response.	 This is probably not
    what you want.
  */
 EVENT2_EXPORT_SYMBOL
@@ -332,13 +332,13 @@ void bufferevent_free(struct bufferevent *bufev);
 
   @param bufev the bufferevent object for which to change callbacks
   @param readcb callback to invoke when there is data to be read, or NULL if
-     no callback is desired
+	 no callback is desired
   @param writecb callback to invoke when the file descriptor is ready for
-     writing, or NULL if no callback is desired
+	 writing, or NULL if no callback is desired
   @param eventcb callback to invoke when there is an event on the file
-     descriptor
+	 descriptor
   @param cbarg an argument that will be supplied to each of the callbacks
-     (readcb, writecb, and errorcb)
+	 (readcb, writecb, and errorcb)
   @see bufferevent_new()
   */
 EVENT2_EXPORT_SYMBOL
@@ -422,7 +422,7 @@ int bufferevent_write(struct bufferevent *bufev,
 
 
 /**
-  Write data from an evbuffer to a bufferevent buffer.    The evbuffer is
+  Write data from an evbuffer to a bufferevent buffer.	The evbuffer is
   being drained as a result.
 
   @param bufev the bufferevent to be written to
@@ -449,7 +449,7 @@ EVENT2_EXPORT_SYMBOL
 size_t bufferevent_read(struct bufferevent *bufev, void *data, size_t size);
 
 /**
-  Read data from a bufferevent buffer into an evbuffer.     This avoids
+  Read data from a bufferevent buffer into an evbuffer.	 This avoids
   memory copies.
 
   @param bufev the bufferevent to be read from
@@ -551,7 +551,7 @@ int bufferevent_set_timeouts(struct bufferevent *bufev,
   Sets the watermarks for read and write events.
 
   On input, a bufferevent does not invoke the user read callback unless
-  there is at least low watermark data in the buffer.    If the read buffer
+  there is at least low watermark data in the buffer.	If the read buffer
   is beyond the high watermark, the bufferevent stops reading from the network.
   But be aware that bufferevent input/read buffer can overrun high watermark
   limit (typical example is openssl bufferevent), so you should not relay in
@@ -631,14 +631,14 @@ int bufferevent_decref(struct bufferevent *bufev);
    deal with the incoming data.
 */
 enum bufferevent_flush_mode {
-    /** usually set when processing data */
-    BEV_NORMAL = 0,
+	/** usually set when processing data */
+	BEV_NORMAL = 0,
 
-    /** want to checkpoint all data sent. */
-    BEV_FLUSH = 1,
+	/** want to checkpoint all data sent. */
+	BEV_FLUSH = 1,
 
-    /** encountered EOF on read or done sending data */
-    BEV_FINISHED = 2
+	/** encountered EOF on read or done sending data */
+	BEV_FINISHED = 2
 };
 
 /**
@@ -659,14 +659,14 @@ int bufferevent_flush(struct bufferevent *bufev,
    the callback.
 */
 enum bufferevent_trigger_options {
-    /** trigger the callback regardless of the watermarks */
-    BEV_TRIG_IGNORE_WATERMARKS = (1<<16),
+	/** trigger the callback regardless of the watermarks */
+	BEV_TRIG_IGNORE_WATERMARKS = (1<<16),
 
-    /** defer even if the callbacks are not */
-    BEV_TRIG_DEFER_CALLBACKS = BEV_OPT_DEFER_CALLBACKS
+	/** defer even if the callbacks are not */
+	BEV_TRIG_DEFER_CALLBACKS = BEV_OPT_DEFER_CALLBACKS
 
-    /* (Note: for internal reasons, these need to be disjoint from
-     * bufferevent_options, except when they mean the same thing. */
+	/* (Note: for internal reasons, these need to be disjoint from
+	 * bufferevent_options, except when they mean the same thing. */
 };
 
 /**
@@ -706,15 +706,15 @@ void bufferevent_trigger_event(struct bufferevent *bufev, short what,
    Values that filters can return.
  */
 enum bufferevent_filter_result {
-    /** everything is okay */
-    BEV_OK = 0,
+	/** everything is okay */
+	BEV_OK = 0,
 
-    /** the filter needs to read more data before output */
-    BEV_NEED_MORE = 1,
+	/** the filter needs to read more data before output */
+	BEV_NEED_MORE = 1,
 
-    /** the filter encountered a critical error, no further data
-        can be processed. */
-    BEV_ERROR = 2
+	/** the filter encountered a critical error, no further data
+	    can be processed. */
+	BEV_ERROR = 2
 };
 
 /** A callback function to implement a filter for a bufferevent.
@@ -755,11 +755,11 @@ typedef enum bufferevent_filter_result (*bufferevent_filter_cb)(
 EVENT2_EXPORT_SYMBOL
 struct bufferevent *
 bufferevent_filter_new(struct bufferevent *underlying,
-               bufferevent_filter_cb input_filter,
-               bufferevent_filter_cb output_filter,
-               int options,
-               void (*free_context)(void *),
-               void *ctx);
+		       bufferevent_filter_cb input_filter,
+		       bufferevent_filter_cb output_filter,
+		       int options,
+		       void (*free_context)(void *),
+		       void *ctx);
 /**@}*/
 
 /**
@@ -808,7 +808,7 @@ struct bufferevent_rate_limit_group;
    @param write_rate The maximum number of bytes to write per tick on
      average.
    @param write_burst The maximum number of bytes to write in any single tick.
-   @param tick_len The length of a single tick.     Defaults to one second.
+   @param tick_len The length of a single tick.	 Defaults to one second.
      Any fractions of a millisecond are ignored.
 
    Note that all rate-limits hare are currently best-effort: future versions
@@ -816,9 +816,9 @@ struct bufferevent_rate_limit_group;
  */
 EVENT2_EXPORT_SYMBOL
 struct ev_token_bucket_cfg *ev_token_bucket_cfg_new(
-    size_t read_rate, size_t read_burst,
-    size_t write_rate, size_t write_burst,
-    const struct timeval *tick_len);
+	size_t read_rate, size_t read_burst,
+	size_t write_rate, size_t write_burst,
+	const struct timeval *tick_len);
 
 /** Free all storage held in 'cfg'.
 
@@ -862,8 +862,8 @@ int bufferevent_set_rate_limit(struct bufferevent *bev,
  */
 EVENT2_EXPORT_SYMBOL
 struct bufferevent_rate_limit_group *bufferevent_rate_limit_group_new(
-    struct event_base *base,
-    const struct ev_token_bucket_cfg *cfg);
+	struct event_base *base,
+	const struct ev_token_bucket_cfg *cfg);
 /**
    Change the rate-limiting settings for a given rate-limiting group.
 
@@ -871,8 +871,8 @@ struct bufferevent_rate_limit_group *bufferevent_rate_limit_group_new(
 */
 EVENT2_EXPORT_SYMBOL
 int bufferevent_rate_limit_group_set_cfg(
-    struct bufferevent_rate_limit_group *,
-    const struct ev_token_bucket_cfg *);
+	struct bufferevent_rate_limit_group *,
+	const struct ev_token_bucket_cfg *);
 
 /**
    Change the smallest quantum we're willing to allocate to any single
@@ -892,7 +892,7 @@ int bufferevent_rate_limit_group_set_cfg(
  */
 EVENT2_EXPORT_SYMBOL
 int bufferevent_rate_limit_group_set_min_share(
-    struct bufferevent_rate_limit_group *, size_t);
+	struct bufferevent_rate_limit_group *, size_t);
 
 /**
    Free a rate-limiting group.  The group must have no members when
@@ -985,10 +985,10 @@ const struct ev_token_bucket_cfg *bufferevent_get_token_bucket_cfg(const struct 
  */
 EVENT2_EXPORT_SYMBOL
 ev_ssize_t bufferevent_rate_limit_group_get_read_limit(
-    struct bufferevent_rate_limit_group *);
+	struct bufferevent_rate_limit_group *);
 EVENT2_EXPORT_SYMBOL
 ev_ssize_t bufferevent_rate_limit_group_get_write_limit(
-    struct bufferevent_rate_limit_group *);
+	struct bufferevent_rate_limit_group *);
 /*@}*/
 
 /**
@@ -996,7 +996,7 @@ ev_ssize_t bufferevent_rate_limit_group_get_write_limit(
 
    Subtract a number of bytes from a bufferevent's read or write bucket.
    The decrement value can be negative, if you want to manually refill
-   the bucket.    If the change puts the bucket above or below zero, the
+   the bucket.	If the change puts the bucket above or below zero, the
    bufferevent will resume or suspend reading writing as appropriate.
    These functions make no change in the buckets for the bufferevent's
    group, if any.
@@ -1016,7 +1016,7 @@ int bufferevent_decrement_write_limit(struct bufferevent *bev, ev_ssize_t decr);
 
    Subtract a number of bytes from a bufferevent rate-limiting group's
    read or write bucket.  The decrement value can be negative, if you
-   want to manually refill the bucket.    If the change puts the bucket
+   want to manually refill the bucket.	If the change puts the bucket
    above or below zero, the bufferevents in the group will resume or
    suspend reading writing as appropriate.
 
@@ -1026,10 +1026,10 @@ int bufferevent_decrement_write_limit(struct bufferevent *bev, ev_ssize_t decr);
  */
 EVENT2_EXPORT_SYMBOL
 int bufferevent_rate_limit_group_decrement_read(
-    struct bufferevent_rate_limit_group *, ev_ssize_t);
+	struct bufferevent_rate_limit_group *, ev_ssize_t);
 EVENT2_EXPORT_SYMBOL
 int bufferevent_rate_limit_group_decrement_write(
-    struct bufferevent_rate_limit_group *, ev_ssize_t);
+	struct bufferevent_rate_limit_group *, ev_ssize_t);
 /*@}*/
 
 
@@ -1052,7 +1052,7 @@ void bufferevent_rate_limit_group_get_totals(
 EVENT2_EXPORT_SYMBOL
 void
 bufferevent_rate_limit_group_reset_totals(
-    struct bufferevent_rate_limit_group *grp);
+	struct bufferevent_rate_limit_group *grp);
 
 #ifdef __cplusplus
 }

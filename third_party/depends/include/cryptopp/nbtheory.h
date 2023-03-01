@@ -113,8 +113,8 @@ CRYPTOPP_DLL bool CRYPTOPP_API VerifyPrime(RandomNumberGenerator &rng, const Int
 class CRYPTOPP_DLL PrimeSelector
 {
 public:
-    const PrimeSelector *GetSelectorPointer() const {return this;}
-    virtual bool IsAcceptable(const Integer &candidate) const =0;
+	const PrimeSelector *GetSelectorPointer() const {return this;}
+	virtual bool IsAcceptable(const Integer &candidate) const =0;
 };
 
 /// \brief Finds a random prime of special form
@@ -140,21 +140,21 @@ CRYPTOPP_DLL AlgorithmParameters CRYPTOPP_API MakeParametersForTwoPrimesOfEqualS
 /// \param b the second term
 /// \returns the greatest common divisor if one exists, 0 otherwise.
 inline Integer GCD(const Integer &a, const Integer &b)
-    {return Integer::Gcd(a,b);}
+	{return Integer::Gcd(a,b);}
 
 /// \brief Determine relative primality
 /// \param a the first term
 /// \param b the second term
 /// \returns true if <tt>a</tt> and <tt>b</tt> are relatively prime, false otherwise.
 inline bool RelativelyPrime(const Integer &a, const Integer &b)
-    {return Integer::Gcd(a,b) == Integer::One();}
+	{return Integer::Gcd(a,b) == Integer::One();}
 
 /// \brief Calculate the least common multiple
 /// \param a the first term
 /// \param b the second term
 /// \returns the least common multiple of <tt>a</tt> and <tt>b</tt>.
 inline Integer LCM(const Integer &a, const Integer &b)
-    {return a/Integer::Gcd(a,b)*b;}
+	{return a/Integer::Gcd(a,b)*b;}
 
 /// \brief Calculate multiplicative inverse
 /// \param a the number to test
@@ -163,7 +163,7 @@ inline Integer LCM(const Integer &a, const Integer &b)
 /// \details EuclideanMultiplicativeInverse returns the multiplicative inverse of the Integer
 ///   <tt>*a</tt> modulo the Integer <tt>b</tt>. If no Integer exists then Integer 0 is returned.
 inline Integer EuclideanMultiplicativeInverse(const Integer &a, const Integer &b)
-    {return a.InverseMod(b);}
+	{return a.InverseMod(b);}
 
 
 /// \brief Chinese Remainder Theorem
@@ -205,7 +205,7 @@ CRYPTOPP_DLL Integer CRYPTOPP_API InverseLucas(const Integer &e, const Integer &
 /// \param m the modulus
 /// \returns an Integer <tt>(x * y) % m</tt>.
 inline Integer ModularMultiplication(const Integer &x, const Integer &y, const Integer &m)
-    {return a_times_b_mod_c(x, y, m);}
+	{return a_times_b_mod_c(x, y, m);}
 
 /// \brief Modular exponentiation
 /// \param x the base
@@ -213,7 +213,7 @@ inline Integer ModularMultiplication(const Integer &x, const Integer &y, const I
 /// \param m the modulus
 /// \returns an Integer <tt>(a ^ b) % m</tt>.
 inline Integer ModularExponentiation(const Integer &x, const Integer &e, const Integer &m)
-    {return a_exp_b_mod_c(x, e, m);}
+	{return a_exp_b_mod_c(x, e, m);}
 
 /// \brief Extract a modular square root
 /// \param a the number to extract square root
@@ -262,53 +262,53 @@ CRYPTOPP_DLL unsigned int CRYPTOPP_API FactoringWorkFactor(unsigned int bitlengt
 class CRYPTOPP_DLL PrimeAndGenerator
 {
 public:
-    /// \brief Construct a PrimeAndGenerator
-    PrimeAndGenerator() {}
+	/// \brief Construct a PrimeAndGenerator
+	PrimeAndGenerator() {}
 
-    /// \brief Construct a PrimeAndGenerator
-    /// \param delta +1 or -1
-    /// \param rng a RandomNumberGenerator derived class
-    /// \param pbits the number of bits in the prime p
-    /// \details PrimeAndGenerator() generates a random prime p of the form <tt>2*q+delta</tt>, where delta is 1 or -1 and q is
-    ///   also prime. Internally the constructor calls <tt>Generate(delta, rng, pbits, pbits-1)</tt>.
-    /// \pre <tt>pbits > 5</tt>
-    /// \warning This PrimeAndGenerator() is slow because primes of this form are harder to find.
-    PrimeAndGenerator(signed int delta, RandomNumberGenerator &rng, unsigned int pbits)
-        {Generate(delta, rng, pbits, pbits-1);}
+	/// \brief Construct a PrimeAndGenerator
+	/// \param delta +1 or -1
+	/// \param rng a RandomNumberGenerator derived class
+	/// \param pbits the number of bits in the prime p
+	/// \details PrimeAndGenerator() generates a random prime p of the form <tt>2*q+delta</tt>, where delta is 1 or -1 and q is
+	///   also prime. Internally the constructor calls <tt>Generate(delta, rng, pbits, pbits-1)</tt>.
+	/// \pre <tt>pbits > 5</tt>
+	/// \warning This PrimeAndGenerator() is slow because primes of this form are harder to find.
+	PrimeAndGenerator(signed int delta, RandomNumberGenerator &rng, unsigned int pbits)
+		{Generate(delta, rng, pbits, pbits-1);}
 
-    /// \brief Construct a PrimeAndGenerator
-    /// \param delta +1 or -1
-    /// \param rng a RandomNumberGenerator derived class
-    /// \param pbits the number of bits in the prime p
-    /// \param qbits the number of bits in the prime q
-    /// \details PrimeAndGenerator() generates a random prime p of the form <tt>2*r*q+delta</tt>, where q is also prime.
-    ///    Internally the constructor calls <tt>Generate(delta, rng, pbits, qbits)</tt>.
-    /// \pre <tt>qbits > 4 && pbits > qbits</tt>
-    PrimeAndGenerator(signed int delta, RandomNumberGenerator &rng, unsigned int pbits, unsigned qbits)
-        {Generate(delta, rng, pbits, qbits);}
+	/// \brief Construct a PrimeAndGenerator
+	/// \param delta +1 or -1
+	/// \param rng a RandomNumberGenerator derived class
+	/// \param pbits the number of bits in the prime p
+	/// \param qbits the number of bits in the prime q
+	/// \details PrimeAndGenerator() generates a random prime p of the form <tt>2*r*q+delta</tt>, where q is also prime.
+	///    Internally the constructor calls <tt>Generate(delta, rng, pbits, qbits)</tt>.
+	/// \pre <tt>qbits > 4 && pbits > qbits</tt>
+	PrimeAndGenerator(signed int delta, RandomNumberGenerator &rng, unsigned int pbits, unsigned qbits)
+		{Generate(delta, rng, pbits, qbits);}
 
-    /// \brief Generate a Prime and Generator
-    /// \param delta +1 or -1
-    /// \param rng a RandomNumberGenerator derived class
-    /// \param pbits the number of bits in the prime p
-    /// \param qbits the number of bits in the prime q
-    /// \details Generate() generates a random prime p of the form <tt>2*r*q+delta</tt>, where q is also prime.
-    void Generate(signed int delta, RandomNumberGenerator &rng, unsigned int pbits, unsigned qbits);
+	/// \brief Generate a Prime and Generator
+	/// \param delta +1 or -1
+	/// \param rng a RandomNumberGenerator derived class
+	/// \param pbits the number of bits in the prime p
+	/// \param qbits the number of bits in the prime q
+	/// \details Generate() generates a random prime p of the form <tt>2*r*q+delta</tt>, where q is also prime.
+	void Generate(signed int delta, RandomNumberGenerator &rng, unsigned int pbits, unsigned qbits);
 
-    /// \brief Retrieve first prime
-    /// \returns Prime() returns the prime p.
-    const Integer& Prime() const {return p;}
+	/// \brief Retrieve first prime
+	/// \returns Prime() returns the prime p.
+	const Integer& Prime() const {return p;}
 
-    /// \brief Retrieve second prime
-    /// \returns SubPrime() returns the prime q.
-    const Integer& SubPrime() const {return q;}
+	/// \brief Retrieve second prime
+	/// \returns SubPrime() returns the prime q.
+	const Integer& SubPrime() const {return q;}
 
-    /// \brief Retrieve the generator
-    /// \returns Generator() returns the the generator g.
-    const Integer& Generator() const {return g;}
+	/// \brief Retrieve the generator
+	/// \returns Generator() returns the the generator g.
+	const Integer& Generator() const {return g;}
 
 private:
-    Integer p, q, g;
+	Integer p, q, g;
 };
 
 NAMESPACE_END

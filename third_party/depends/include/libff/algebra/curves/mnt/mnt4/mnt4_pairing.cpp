@@ -185,9 +185,9 @@ mnt4_Fq4 mnt4_final_exponentiation_last_chunk(const mnt4_Fq4 &elt, const mnt4_Fq
     mnt4_Fq4 w0_part;
     if (mnt4_final_exponent_last_chunk_is_w0_neg)
     {
-        w0_part = elt_inv.cyclotomic_exp(mnt4_final_exponent_last_chunk_abs_of_w0);
+    	w0_part = elt_inv.cyclotomic_exp(mnt4_final_exponent_last_chunk_abs_of_w0);
     } else {
-        w0_part = elt.cyclotomic_exp(mnt4_final_exponent_last_chunk_abs_of_w0);
+    	w0_part = elt.cyclotomic_exp(mnt4_final_exponent_last_chunk_abs_of_w0);
     }
     mnt4_Fq4 result = w1_part * w0_part;
     leave_block("Call to mnt4_final_exponentiation_last_chunk");
@@ -526,13 +526,13 @@ mnt4_ate_G2_precomp mnt4_ate_precompute_G2(const mnt4_G2& Q)
 
     if (mnt4_ate_is_loop_count_neg)
     {
-        mnt4_Fq2 RZ_inv = R.Z.inverse();
-        mnt4_Fq2 RZ2_inv = RZ_inv.squared();
-        mnt4_Fq2 RZ3_inv = RZ2_inv * RZ_inv;
-        mnt4_Fq2 minus_R_affine_X = R.X * RZ2_inv;
-        mnt4_Fq2 minus_R_affine_Y = - R.Y * RZ3_inv;
-        mnt4_Fq2 minus_R_affine_Y2 = minus_R_affine_Y.squared();
-        mnt4_ate_add_coeffs ac;
+    	mnt4_Fq2 RZ_inv = R.Z.inverse();
+    	mnt4_Fq2 RZ2_inv = RZ_inv.squared();
+    	mnt4_Fq2 RZ3_inv = RZ2_inv * RZ_inv;
+    	mnt4_Fq2 minus_R_affine_X = R.X * RZ2_inv;
+    	mnt4_Fq2 minus_R_affine_Y = - R.Y * RZ3_inv;
+    	mnt4_Fq2 minus_R_affine_Y2 = minus_R_affine_Y.squared();
+    	mnt4_ate_add_coeffs ac;
         mixed_addition_step_for_flipped_miller_loop(minus_R_affine_X, minus_R_affine_Y, minus_R_affine_Y2, R, ac);
         result.add_coeffs.push_back(ac);
     }
@@ -586,10 +586,10 @@ mnt4_Fq4 mnt4_ate_miller_loop(const mnt4_ate_G1_precomp &prec_P,
 
     if (mnt4_ate_is_loop_count_neg)
     {
-        mnt4_ate_add_coeffs ac = prec_Q.add_coeffs[add_idx++];
-        mnt4_Fq4 g_RnegR_at_P = mnt4_Fq4(ac.c_RZ * prec_P.PY_twist,
+    	mnt4_ate_add_coeffs ac = prec_Q.add_coeffs[add_idx++];
+    	mnt4_Fq4 g_RnegR_at_P = mnt4_Fq4(ac.c_RZ * prec_P.PY_twist,
                                          -(prec_Q.QY_over_twist * ac.c_RZ + L1_coeff * ac.c_L1));
-        f = (f * g_RnegR_at_P).inverse();
+    	f = (f * g_RnegR_at_P).inverse();
     }
 
     leave_block("Call to mnt4_ate_miller_loop");
@@ -657,15 +657,15 @@ mnt4_Fq4 mnt4_ate_double_miller_loop(const mnt4_ate_G1_precomp &prec_P1,
 
     if (mnt4_ate_is_loop_count_neg)
     {
-        mnt4_ate_add_coeffs ac1 = prec_Q1.add_coeffs[add_idx];
+    	mnt4_ate_add_coeffs ac1 = prec_Q1.add_coeffs[add_idx];
         mnt4_ate_add_coeffs ac2 = prec_Q2.add_coeffs[add_idx];
-        ++add_idx;
-        mnt4_Fq4 g_RnegR_at_P1 = mnt4_Fq4(ac1.c_RZ * prec_P1.PY_twist,
+    	++add_idx;
+    	mnt4_Fq4 g_RnegR_at_P1 = mnt4_Fq4(ac1.c_RZ * prec_P1.PY_twist,
                                           -(prec_Q1.QY_over_twist * ac1.c_RZ + L1_coeff1 * ac1.c_L1));
-        mnt4_Fq4 g_RnegR_at_P2 = mnt4_Fq4(ac2.c_RZ * prec_P2.PY_twist,
+    	mnt4_Fq4 g_RnegR_at_P2 = mnt4_Fq4(ac2.c_RZ * prec_P2.PY_twist,
                                           -(prec_Q2.QY_over_twist * ac2.c_RZ + L1_coeff2 * ac2.c_L1));
 
-        f = (f * g_RnegR_at_P1 * g_RnegR_at_P2).inverse();
+    	f = (f * g_RnegR_at_P1 * g_RnegR_at_P2).inverse();
     }
 
     leave_block("Call to mnt4_ate_double_miller_loop");

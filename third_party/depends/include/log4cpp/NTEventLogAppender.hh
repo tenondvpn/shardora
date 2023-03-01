@@ -7,7 +7,7 @@
 #ifndef _LOG4CPP_NTEVENTLOGAPPENDER_HH
 #define _LOG4CPP_NTEVENTLOGAPPENDER_HH
 
-#ifdef WIN32    // only available on Win32
+#ifdef WIN32	// only available on Win32
 
 // deal with ERROR #define
 // N.B. This #includes windows.h with NOGDI and WIN32_LEAN_AND_MEAN #defined.
@@ -92,14 +92,14 @@ namespace log4cpp {
          **/
         virtual void _append(const LoggingEvent& event);
 
-        HANDLE _hEventSource;
+    	HANDLE _hEventSource;
         std::string _strSourceName;
     };
 }
 
 #else // WIN32
 #error NTEventLoggAppender is not available on on Win32 platforms
-#endif    // WIN32
+#endif	// WIN32
 
 #endif // _LOG4CPP_NTEVENTLOGAPPENDER_HH
 

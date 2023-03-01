@@ -13,8 +13,8 @@ extern "C" {
 
 union ethash_hash32
 {
-    uint32_t hwords[1];
-    uint8_t bytes[4];
+	uint32_t hwords[1];
+	uint8_t bytes[4];
 };
 
 union ethash_hash256
@@ -41,10 +41,10 @@ union ethash_hash1024
 
 union ethash_hash2048
 {
-    union ethash_hash512 hashes[4];
-    uint64_t words[32];
-    uint32_t hwords[64];
-    uint8_t bytes[256];
+	union ethash_hash512 hashes[4];
+	uint64_t words[32];
+	uint32_t hwords[64];
+	uint8_t bytes[256];
 };
 
 #ifdef __cplusplus

@@ -22,13 +22,13 @@
 # /* MSGPACK_PP_ARRAY_TO_SEQ */
 #
 #    define MSGPACK_PP_ARRAY_TO_SEQ(array) \
-        MSGPACK_PP_IF \
-            ( \
-            MSGPACK_PP_ARRAY_SIZE(array), \
-            MSGPACK_PP_ARRAY_TO_SEQ_DO, \
-            MSGPACK_PP_ARRAY_TO_SEQ_EMPTY \
-            ) \
-        (array) \
+		MSGPACK_PP_IF \
+			( \
+			MSGPACK_PP_ARRAY_SIZE(array), \
+			MSGPACK_PP_ARRAY_TO_SEQ_DO, \
+			MSGPACK_PP_ARRAY_TO_SEQ_EMPTY \
+			) \
+		(array) \
 /**/
 #    define MSGPACK_PP_ARRAY_TO_SEQ_EMPTY(array)
 #

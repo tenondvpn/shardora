@@ -60,21 +60,21 @@ typedef void (*evconnlistener_errorcb)(struct evconnlistener *, void *);
 
 /** Flag: Indicates that we should not make incoming sockets nonblocking
  * before passing them to the callback. */
-#define LEV_OPT_LEAVE_SOCKETS_BLOCKING    (1u<<0)
+#define LEV_OPT_LEAVE_SOCKETS_BLOCKING	(1u<<0)
 /** Flag: Indicates that freeing the listener should close the underlying
  * socket. */
-#define LEV_OPT_CLOSE_ON_FREE        (1u<<1)
+#define LEV_OPT_CLOSE_ON_FREE		(1u<<1)
 /** Flag: Indicates that we should set the close-on-exec flag, if possible */
-#define LEV_OPT_CLOSE_ON_EXEC        (1u<<2)
+#define LEV_OPT_CLOSE_ON_EXEC		(1u<<2)
 /** Flag: Indicates that we should disable the timeout (if any) between when
  * this socket is closed and when we can listen again on the same port. */
-#define LEV_OPT_REUSEABLE        (1u<<3)
+#define LEV_OPT_REUSEABLE		(1u<<3)
 /** Flag: Indicates that the listener should be locked so it's safe to use
  * from multiple threadcs at once. */
-#define LEV_OPT_THREADSAFE        (1u<<4)
+#define LEV_OPT_THREADSAFE		(1u<<4)
 /** Flag: Indicates that the listener should be created in disabled
  * state. Use evconnlistener_enable() to enable it later. */
-#define LEV_OPT_DISABLED        (1u<<5)
+#define LEV_OPT_DISABLED		(1u<<5)
 /** Flag: Indicates that the listener should defer accept() until data is
  * available, if possible.  Ignored on platforms that do not support this.
  *
@@ -88,7 +88,7 @@ typedef void (*evconnlistener_errorcb)(struct evconnlistener *, void *);
  * work with evconnlistener_new_fd(), since the listener needs to be told
  * to use the option before it is actually bound.
  */
-#define LEV_OPT_DEFERRED_ACCEPT        (1u<<6)
+#define LEV_OPT_DEFERRED_ACCEPT		(1u<<6)
 /** Flag: Indicates that we ask to allow multiple servers (processes or
  * threads) to bind to the same port if they each set the option. 
  * 
@@ -97,7 +97,7 @@ typedef void (*evconnlistener_errorcb)(struct evconnlistener *, void *);
  *
  * This is only available on Linux and kernel 3.9+
  */
-#define LEV_OPT_REUSEABLE_PORT        (1u<<7)
+#define LEV_OPT_REUSEABLE_PORT		(1u<<7)
 /** Flag: Indicates that the listener wants to work only in IPv6 socket.
  *
  * According to RFC3493 and most Linux distributions, default value is to
@@ -109,7 +109,7 @@ typedef void (*evconnlistener_errorcb)(struct evconnlistener *, void *);
  *
  * This socket option also supported by Windows.
  */
-#define LEV_OPT_BIND_IPV6ONLY        (1u<<8)
+#define LEV_OPT_BIND_IPV6ONLY		(1u<<8)
 
 /**
    Allocate a new evconnlistener object to listen for incoming TCP connections

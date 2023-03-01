@@ -780,7 +780,7 @@ std::vector<uint64_t> Fp_model<n,modulus>::to_words() const
 
     bigint<n> repr = this->bigint_repr();
     std::vector<uint64_t> words;
-    words.insert(words.begin(), std::begin(repr.data), std::end(repr.data));
+	words.insert(words.begin(), std::begin(repr.data), std::end(repr.data));
     return words;
 }
 

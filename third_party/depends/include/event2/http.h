@@ -53,19 +53,19 @@ struct evhttp_connection;
  */
 
 /* Response codes */
-#define HTTP_OK            200    /**< request completed ok */
-#define HTTP_NOCONTENT        204    /**< request does not have content */
-#define HTTP_MOVEPERM        301    /**< the uri moved permanently */
-#define HTTP_MOVETEMP        302    /**< the uri moved temporarily */
-#define HTTP_NOTMODIFIED    304    /**< page was not modified from last */
-#define HTTP_BADREQUEST        400    /**< invalid http request was made */
-#define HTTP_NOTFOUND        404    /**< could not find content for uri */
-#define HTTP_BADMETHOD        405     /**< method not allowed for this uri */
-#define HTTP_ENTITYTOOLARGE    413    /**<  */
-#define HTTP_EXPECTATIONFAILED    417    /**< we can't handle this expectation */
+#define HTTP_OK			200	/**< request completed ok */
+#define HTTP_NOCONTENT		204	/**< request does not have content */
+#define HTTP_MOVEPERM		301	/**< the uri moved permanently */
+#define HTTP_MOVETEMP		302	/**< the uri moved temporarily */
+#define HTTP_NOTMODIFIED	304	/**< page was not modified from last */
+#define HTTP_BADREQUEST		400	/**< invalid http request was made */
+#define HTTP_NOTFOUND		404	/**< could not find content for uri */
+#define HTTP_BADMETHOD		405 	/**< method not allowed for this uri */
+#define HTTP_ENTITYTOOLARGE	413	/**<  */
+#define HTTP_EXPECTATIONFAILED	417	/**< we can't handle this expectation */
 #define HTTP_INTERNAL           500     /**< internal error */
 #define HTTP_NOTIMPLEMENTED     501     /**< not implemented */
-#define HTTP_SERVUNAVAIL    503    /**< the server is not available */
+#define HTTP_SERVUNAVAIL	503	/**< the server is not available */
 
 struct evhttp;
 struct evhttp_request;
@@ -251,7 +251,7 @@ int evhttp_get_connection_count(struct evhttp* http);
 */
 EVENT2_EXPORT_SYMBOL
 void evhttp_set_default_content_type(struct evhttp *http,
-    const char *content_type);
+	const char *content_type);
 
 /**
   Sets the what HTTP methods are supported in requests accepted by this
@@ -483,7 +483,7 @@ void evhttp_set_write_timeout_tv(struct evhttp *http, const struct timeval* tv);
 
 /* Read all the clients body, and only after this respond with an error if the
  * clients body exceed max_body_size */
-#define EVHTTP_SERVER_LINGERING_CLOSE    0x0001
+#define EVHTTP_SERVER_LINGERING_CLOSE	0x0001
 /**
  * Set connection flags for HTTP server.
  *
@@ -600,22 +600,22 @@ void evhttp_send_reply_end(struct evhttp_request *req);
  * are allowed.
  */
 enum evhttp_cmd_type {
-    EVHTTP_REQ_GET     = 1 << 0,
-    EVHTTP_REQ_POST    = 1 << 1,
-    EVHTTP_REQ_HEAD    = 1 << 2,
-    EVHTTP_REQ_PUT     = 1 << 3,
-    EVHTTP_REQ_DELETE  = 1 << 4,
-    EVHTTP_REQ_OPTIONS = 1 << 5,
-    EVHTTP_REQ_TRACE   = 1 << 6,
-    EVHTTP_REQ_CONNECT = 1 << 7,
-    EVHTTP_REQ_PATCH   = 1 << 8,
-    EVHTTP_REQ_PROPFIND= 1 << 9,
-    EVHTTP_REQ_PROPPATCH=1 << 10,
-    EVHTTP_REQ_MKCOL   = 1 << 11,
-    EVHTTP_REQ_LOCK    = 1 << 12,
-    EVHTTP_REQ_UNLOCK  = 1 << 13,
-    EVHTTP_REQ_COPY    = 1 << 14,
-    EVHTTP_REQ_MOVE    = 1 << 15,
+	EVHTTP_REQ_GET     = 1 << 0,
+	EVHTTP_REQ_POST    = 1 << 1,
+	EVHTTP_REQ_HEAD    = 1 << 2,
+	EVHTTP_REQ_PUT     = 1 << 3,
+	EVHTTP_REQ_DELETE  = 1 << 4,
+	EVHTTP_REQ_OPTIONS = 1 << 5,
+	EVHTTP_REQ_TRACE   = 1 << 6,
+	EVHTTP_REQ_CONNECT = 1 << 7,
+	EVHTTP_REQ_PATCH   = 1 << 8,
+	EVHTTP_REQ_PROPFIND= 1 << 9,
+	EVHTTP_REQ_PROPPATCH=1 << 10,
+	EVHTTP_REQ_MKCOL   = 1 << 11,
+	EVHTTP_REQ_LOCK    = 1 << 12,
+	EVHTTP_REQ_UNLOCK  = 1 << 13,
+	EVHTTP_REQ_COPY    = 1 << 14,
+	EVHTTP_REQ_MOVE    = 1 << 15,
 };
 
 #define EVHTTP_REQ_MAX EVHTTP_REQ_MOVE
@@ -628,9 +628,9 @@ enum evhttp_cmd_type {
  * @see evhttp_connection_set_ext_method_cmp
  */
 struct evhttp_ext_method {
-    const char *method;
-    ev_uint32_t type;    /* @see enum evhttp_cmd_type */
-    ev_uint16_t flags;    /* Available flag : EVHTTP_METHOD_HAS_BODY */
+	const char *method;
+	ev_uint32_t type;	/* @see enum evhttp_cmd_type */
+	ev_uint16_t flags;	/* Available flag : EVHTTP_METHOD_HAS_BODY */
 };
 
 #define EVHTTP_METHOD_HAS_BODY 0x0001
@@ -661,7 +661,7 @@ enum evhttp_request_kind { EVHTTP_REQUEST, EVHTTP_RESPONSE };
  */
 EVENT2_EXPORT_SYMBOL
 struct evhttp_connection *evhttp_connection_base_bufferevent_new(
-    struct event_base *base, struct evdns_base *dnsbase, struct bufferevent* bev, const char *address, ev_uint16_t port);
+	struct event_base *base, struct evdns_base *dnsbase, struct bufferevent* bev, const char *address, ev_uint16_t port);
 
 /**
  * Create and return a connection object that can be used to for making HTTP
@@ -676,7 +676,7 @@ struct evhttp_connection *evhttp_connection_base_bufferevent_new(
  */
 EVENT2_EXPORT_SYMBOL
 struct evhttp_connection *evhttp_connection_base_bufferevent_unix_new(
-    struct event_base *base, struct bufferevent* bev, const char *path);
+	struct event_base *base, struct bufferevent* bev, const char *path);
 
 /**
  * Return the bufferevent that an evhttp_connection is using.
@@ -697,7 +697,7 @@ struct evhttp *evhttp_connection_get_server(struct evhttp_connection *evcon);
  */
 EVENT2_EXPORT_SYMBOL
 struct evhttp_request *evhttp_request_new(
-    void (*cb)(struct evhttp_request *, void *), void *arg);
+	void (*cb)(struct evhttp_request *, void *), void *arg);
 
 /**
  * Enable delivery of chunks to requestor.
@@ -797,26 +797,26 @@ void evhttp_request_free(struct evhttp_request *req);
  */
 EVENT2_EXPORT_SYMBOL
 struct evhttp_connection *evhttp_connection_base_new(
-    struct event_base *base, struct evdns_base *dnsbase,
-    const char *address, ev_uint16_t port);
+	struct event_base *base, struct evdns_base *dnsbase,
+	const char *address, ev_uint16_t port);
 
 /**
  * Set family hint for DNS requests.
  */
 EVENT2_EXPORT_SYMBOL
 void evhttp_connection_set_family(struct evhttp_connection *evcon,
-    int family);
+	int family);
 
 /* reuse connection address on retry */
-#define EVHTTP_CON_REUSE_CONNECTED_ADDR    0x0008
+#define EVHTTP_CON_REUSE_CONNECTED_ADDR	0x0008
 /* Try to read error, since server may already send and close
  * connection, but if at that time we have some data to send then we
  * can send get EPIPE and fail, while we can read that HTTP error. */
-#define EVHTTP_CON_READ_ON_WRITE_ERROR    0x0010
+#define EVHTTP_CON_READ_ON_WRITE_ERROR	0x0010
 /* @see EVHTTP_SERVER_LINGERING_CLOSE */
-#define EVHTTP_CON_LINGERING_CLOSE    0x0020
+#define EVHTTP_CON_LINGERING_CLOSE	0x0020
 /* Padding for public flags, @see EVHTTP_CON_* in http-internal.h */
-#define EVHTTP_CON_PUBLIC_FLAGS_END    0x100000
+#define EVHTTP_CON_PUBLIC_FLAGS_END	0x100000
 /**
  * Set connection flags.
  *
@@ -826,7 +826,7 @@ void evhttp_connection_set_family(struct evhttp_connection *evcon,
  */
 EVENT2_EXPORT_SYMBOL
 int evhttp_connection_set_flags(struct evhttp_connection *evcon,
-    int flags);
+	int flags);
 
 /** Takes ownership of the request object
  *
@@ -847,7 +847,7 @@ int evhttp_request_is_owned(struct evhttp_request *req);
  */
 EVENT2_EXPORT_SYMBOL
 void evhttp_connection_set_ext_method_cmp(struct evhttp_connection *evcon,
-    evhttp_ext_method_cb cmp);
+	evhttp_ext_method_cb cmp);
 
 /**
  * Returns the connection object associated with the request or NULL

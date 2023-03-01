@@ -47,14 +47,14 @@
  */
 typedef struct of_ldpc_ff_parameters
 {
-    UINT32        nb_source_symbols;    /* must be 1st item */
-    UINT32        nb_repair_symbols;    /* must be 2nd item */
-    UINT32        encoding_symbol_length; /* must be 3rd item */
-    /*
-    * FEC codec id specific attributes follow...
-    */
-    /** Input file containing the binary parity check matrix, of size n-k x n */
-    char    *pchk_file;
+	UINT32		nb_source_symbols;	/* must be 1st item */
+	UINT32		nb_repair_symbols;	/* must be 2nd item */
+	UINT32		encoding_symbol_length; /* must be 3rd item */
+	/*
+	* FEC codec id specific attributes follow...
+	*/
+	/** Input file containing the binary parity check matrix, of size n-k x n */
+	char	*pchk_file;
 } of_ldpc_ff_parameters_t;
 
 

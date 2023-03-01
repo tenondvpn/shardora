@@ -33,7 +33,7 @@
 // bignum256 are 256 bits stored as 8*30 bit + 1*16 bit
 // val[0] are lowest 30 bits, val[8] highest 16 bits
 typedef struct {
-    uint32_t val[9];
+	uint32_t val[9];
 } bignum256;
 
 // read 4 big endian bytes into uint32
@@ -62,23 +62,23 @@ void bn_read_uint64(uint64_t in_number, bignum256 *out_number);
 
 static inline uint32_t bn_write_uint32(const bignum256 *in_number)
 {
-    return in_number->val[0] | (in_number->val[1] << 30);
+	return in_number->val[0] | (in_number->val[1] << 30);
 }
 
 static inline uint64_t bn_write_uint64(const bignum256 *in_number)
 {
-    uint64_t tmp;
-    tmp = in_number->val[2];
-    tmp <<= 30;
-    tmp |= in_number->val[1];
-    tmp <<= 30;
-    tmp |= in_number->val[0];
-    return tmp;
+	uint64_t tmp;
+	tmp = in_number->val[2];
+	tmp <<= 30;
+	tmp |= in_number->val[1];
+	tmp <<= 30;
+	tmp |= in_number->val[0];
+	return tmp;
 }
 
 // copies number a to b
 static inline void bn_copy(const bignum256 *a, bignum256 *b) {
-    *b = *a;
+	*b = *a;
 }
 
 int bn_bitcount(const bignum256 *a);
@@ -92,11 +92,11 @@ int bn_is_zero(const bignum256 *a);
 void bn_one(bignum256 *a);
 
 static inline int bn_is_even(const bignum256 *a) {
-    return (a->val[0] & 1) == 0;
+	return (a->val[0] & 1) == 0;
 }
 
 static inline int bn_is_odd(const bignum256 *a) {
-    return (a->val[0] & 1) == 1;
+	return (a->val[0] & 1) == 1;
 }
 
 int bn_is_less(const bignum256 *a, const bignum256 *b);
@@ -153,10 +153,10 @@ size_t bn_format(const bignum256 *amnt, const char *prefix, const char *suffix, 
 
 static inline size_t bn_format_uint64(uint64_t amount, const char *prefix, const char *suffix, unsigned int decimals, int exponent, bool trailing, char *out, size_t outlen)
 {
-    bignum256 amnt;
-    bn_read_uint64(amount, &amnt);
+	bignum256 amnt;
+	bn_read_uint64(amount, &amnt);
 
-    return bn_format(&amnt, prefix, suffix, decimals, exponent, trailing, out, outlen);
+	return bn_format(&amnt, prefix, suffix, decimals, exponent, trailing, out, outlen);
 }
 
 #if USE_BN_PRINT

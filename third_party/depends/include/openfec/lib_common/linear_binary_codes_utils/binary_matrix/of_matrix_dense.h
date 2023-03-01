@@ -38,13 +38,13 @@
 /* PACKING OF BITS INTO WORDS.  Bits are packed into 32-bit words, with
    the low-order bit coming first. */
 
-typedef UINT32 of_mod2word;    /* Data type that holds packed bits */
+typedef UINT32 of_mod2word;	/* Data type that holds packed bits */
 
 
-#define of_mod2_wordsize 32    /* Number of bits that fit in a of_mod2word. Can't
-                   be increased without changing intio module */
+#define of_mod2_wordsize 32	/* Number of bits that fit in a of_mod2word. Can't
+				   be increased without changing intio module */
 
-#define of_mod2_wordsize_shift 5    /* Amount to shift by to divide by wordsize */
+#define of_mod2_wordsize_shift 5	/* Amount to shift by to divide by wordsize */
 #define of_mod2_wordsize_mask 0x1f /* What to and with to produce mod wordsize */
 
 /* Extract the i'th bit of a of_mod2word. */
@@ -67,17 +67,17 @@ typedef UINT32 of_mod2word;    /* Data type that holds packed bits */
 
 typedef struct
 {
-    UINT32 n_rows;        /* Number of rows in the matrix */
-    UINT32 n_cols;        /* Number of columns in the matrix */
+	UINT32 n_rows;		/* Number of rows in the matrix */
+	UINT32 n_cols;		/* Number of columns in the matrix */
 
-    UINT32 n_words;        /* Number of words used to store a column of bits */
+	UINT32 n_words;		/* Number of words used to store a column of bits */
 
 #ifdef COL_ORIENTED
-    of_mod2word **col;    /* Pointer to array of pointers to columns */
+	of_mod2word **col;	/* Pointer to array of pointers to columns */
 #else
-    of_mod2word **row;    /* Pointer to array of pointers to row */
+	of_mod2word **row;	/* Pointer to array of pointers to row */
 #endif
-    of_mod2word *bits;    /* Pointer to storage block for bits in this matrix
+	of_mod2word *bits;	/* Pointer to storage block for bits in this matrix
                            (pieces of this block are pointed to from col) */
 } of_mod2dense;
 
@@ -123,7 +123,7 @@ void of_mod2dense_print_bitmap (of_mod2dense *, char *); //MC added
 void of_mod2dense_print_memory_info (of_mod2dense *); //MC added
 double of_mod2dense_density (of_mod2dense *); // MC added
 
-bool of_mod2dense_row_is_empty (of_mod2dense *m, UINT32    row); // VR added
+bool of_mod2dense_row_is_empty (of_mod2dense *m, UINT32	row); // VR added
 UINT32 of_mod2word_weight (of_mod2word); // MC added
 
 UINT32 of_mod2dense_row_weight (of_mod2dense *, UINT32); // MC added

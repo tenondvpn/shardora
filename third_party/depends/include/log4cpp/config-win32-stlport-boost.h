@@ -42,7 +42,7 @@ typedef unsigned long u_long;
 typedef u_long in_addr_t;
 
 /* u_short is the type of sockaddr_in.sin_port */
-// typedef u_short        in_port_t;
+// typedef u_short		in_port_t;
 
 #endif
 

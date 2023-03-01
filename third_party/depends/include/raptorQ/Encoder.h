@@ -4,14 +4,14 @@
 
 class Encoder {
 public:
-    Encoder();
-    virtual ~Encoder();
+	Encoder();
+	virtual ~Encoder();
 
 private:
-    Generators* gen;
+	Generators* gen;
 
 public:
-    bool init(int K, int T);
-    Symbol** encode(char **source, int overhead);
+	bool init(int K, int T);
+	Symbol** encode(char **source, int overhead);
 
 };

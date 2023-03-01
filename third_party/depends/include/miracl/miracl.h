@@ -1110,8 +1110,8 @@ SSE2 code. Works as for itanium - but in fact it is slower than the regular code
 Would require a call to emmintrin.h or xmmintrin.h, and an __m128i variable tm to be declared in effected 
 functions. But it works!
 
-    #define muldvd(a,b,c,rp)  (tm=_mm_add_epi64(_mm_mul_epu32(_mm_cvtsi32_si128((a)),_mm_cvtsi32_si128((b))),_mm_cvtsi32_si128((c))),*(rp)=_mm_cvtsi128_si32(tm),_mm_cvtsi128_si32(_mm_shuffle_epi32(tm,_MM_SHUFFLE(3,2,0,1))) )
-    #define muldvd2(a,b,c,rp) (tm=_mm_add_epi64(_mm_add_epi64(_mm_mul_epu32(_mm_cvtsi32_si128((a)),_mm_cvtsi32_si128((b))),_mm_cvtsi32_si128(*(c))),_mm_cvtsi32_si128(*(rp))),*(rp)=_mm_cvtsi128_si32(tm),*(c)=_mm_cvtsi128_si32( _mm_shuffle_epi32(tm,_MM_SHUFFLE(3,2,0,1))  )
+	#define muldvd(a,b,c,rp)  (tm=_mm_add_epi64(_mm_mul_epu32(_mm_cvtsi32_si128((a)),_mm_cvtsi32_si128((b))),_mm_cvtsi32_si128((c))),*(rp)=_mm_cvtsi128_si32(tm),_mm_cvtsi128_si32(_mm_shuffle_epi32(tm,_MM_SHUFFLE(3,2,0,1))) )
+	#define muldvd2(a,b,c,rp) (tm=_mm_add_epi64(_mm_add_epi64(_mm_mul_epu32(_mm_cvtsi32_si128((a)),_mm_cvtsi32_si128((b))),_mm_cvtsi32_si128(*(c))),_mm_cvtsi32_si128(*(rp))),*(rp)=_mm_cvtsi128_si32(tm),*(c)=_mm_cvtsi128_si32( _mm_shuffle_epi32(tm,_MM_SHUFFLE(3,2,0,1))  )
 */
 
 /* Borland C/Turbo C */

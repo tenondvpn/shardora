@@ -10,33 +10,33 @@
 NAMESPACE_BEGIN(CryptoPP)
 
 #ifdef HIGHRES_TIMER_AVAILABLE
-    typedef word64 TimerWord;
+	typedef word64 TimerWord;
 #else
-    typedef clock_t TimerWord;
+	typedef clock_t TimerWord;
 #endif
 
 /// \brief Base class for timers
 class CRYPTOPP_DLL CRYPTOPP_NO_VTABLE TimerBase
 {
 public:
-    enum Unit {SECONDS = 0, MILLISECONDS, MICROSECONDS, NANOSECONDS};
-    TimerBase(Unit unit, bool stuckAtZero)
-        : m_timerUnit(unit), m_stuckAtZero(stuckAtZero), m_started(false)
-        , m_start(0), m_last(0) {}
+	enum Unit {SECONDS = 0, MILLISECONDS, MICROSECONDS, NANOSECONDS};
+	TimerBase(Unit unit, bool stuckAtZero)
+		: m_timerUnit(unit), m_stuckAtZero(stuckAtZero), m_started(false)
+		, m_start(0), m_last(0) {}
 
-    virtual TimerWord GetCurrentTimerValue() =0;    // GetCurrentTime is a macro in MSVC 6.0
-    virtual TimerWord TicksPerSecond() =0;    // this is not the resolution, just a conversion factor into seconds
+	virtual TimerWord GetCurrentTimerValue() =0;	// GetCurrentTime is a macro in MSVC 6.0
+	virtual TimerWord TicksPerSecond() =0;	// this is not the resolution, just a conversion factor into seconds
 
-    void StartTimer();
-    double ElapsedTimeAsDouble();
-    unsigned long ElapsedTime();
+	void StartTimer();
+	double ElapsedTimeAsDouble();
+	unsigned long ElapsedTime();
 
 private:
-    double ConvertTo(TimerWord t, Unit unit);
+	double ConvertTo(TimerWord t, Unit unit);
 
-    Unit m_timerUnit;    // HPUX workaround: m_unit is a system macro on HPUX
-    bool m_stuckAtZero, m_started;
-    TimerWord m_start, m_last;
+	Unit m_timerUnit;	// HPUX workaround: m_unit is a system macro on HPUX
+	bool m_stuckAtZero, m_started;
+	TimerWord m_start, m_last;
 };
 
 /// \brief Measure CPU time spent executing instructions of this thread (if supported by OS)
@@ -46,18 +46,18 @@ private:
 class ThreadUserTimer : public TimerBase
 {
 public:
-    ThreadUserTimer(Unit unit = TimerBase::SECONDS, bool stuckAtZero = false) : TimerBase(unit, stuckAtZero) {}
-    TimerWord GetCurrentTimerValue();
-    TimerWord TicksPerSecond();
+	ThreadUserTimer(Unit unit = TimerBase::SECONDS, bool stuckAtZero = false) : TimerBase(unit, stuckAtZero) {}
+	TimerWord GetCurrentTimerValue();
+	TimerWord TicksPerSecond();
 };
 
 /// high resolution timer
 class CRYPTOPP_DLL Timer : public TimerBase
 {
 public:
-    Timer(Unit unit = TimerBase::SECONDS, bool stuckAtZero = false)    : TimerBase(unit, stuckAtZero) {}
-    TimerWord GetCurrentTimerValue();
-    TimerWord TicksPerSecond();
+	Timer(Unit unit = TimerBase::SECONDS, bool stuckAtZero = false)	: TimerBase(unit, stuckAtZero) {}
+	TimerWord GetCurrentTimerValue();
+	TimerWord TicksPerSecond();
 };
 
 NAMESPACE_END

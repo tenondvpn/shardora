@@ -23,7 +23,7 @@ NAMESPACE_BEGIN(CryptoPP)
 template <class H> class EMSA2HashId
 {
 public:
-    static const byte id;
+	static const byte id;
 };
 
 /// \brief EMSA2 padding method
@@ -33,16 +33,16 @@ template <class BASE>
 class EMSA2HashIdLookup : public BASE
 {
 public:
-    struct HashIdentifierLookup
-    {
-        template <class H> struct HashIdentifierLookup2
-        {
-            static HashIdentifier Lookup()
-            {
-                return HashIdentifier(&EMSA2HashId<H>::id, 1);
-            }
-        };
-    };
+	struct HashIdentifierLookup
+	{
+		template <class H> struct HashIdentifierLookup2
+		{
+			static HashIdentifier Lookup()
+			{
+				return HashIdentifier(&EMSA2HashId<H>::id, 1);
+			}
+		};
+	};
 };
 
 // EMSA2HashId can be instantiated with the following classes.
@@ -71,15 +71,15 @@ template<> const byte EMSA2HashId<SHA512>::id;
 class CRYPTOPP_DLL EMSA2Pad : public EMSA2HashIdLookup<PK_DeterministicSignatureMessageEncodingMethod>
 {
 public:
-    CRYPTOPP_STATIC_CONSTEXPR const char* CRYPTOPP_API StaticAlgorithmName() {return "EMSA2";}
+	CRYPTOPP_STATIC_CONSTEXPR const char* CRYPTOPP_API StaticAlgorithmName() {return "EMSA2";}
 
-    size_t MinRepresentativeBitLength(size_t hashIdentifierLength, size_t digestLength) const
-        {CRYPTOPP_UNUSED(hashIdentifierLength); return 8*digestLength + 31;}
+	size_t MinRepresentativeBitLength(size_t hashIdentifierLength, size_t digestLength) const
+		{CRYPTOPP_UNUSED(hashIdentifierLength); return 8*digestLength + 31;}
 
-    void ComputeMessageRepresentative(RandomNumberGenerator &rng,
-        const byte *recoverableMessage, size_t recoverableMessageLength,
-        HashTransformation &hash, HashIdentifier hashIdentifier, bool messageEmpty,
-        byte *representative, size_t representativeBitLength) const;
+	void ComputeMessageRepresentative(RandomNumberGenerator &rng,
+		const byte *recoverableMessage, size_t recoverableMessageLength,
+		HashTransformation &hash, HashIdentifier hashIdentifier, bool messageEmpty,
+		byte *representative, size_t representativeBitLength) const;
 };
 
 // EMSA2, for use with RWSS and RSA_ISO
@@ -93,7 +93,7 @@ public:
 /// \since Crypto++ 5.0
 struct P1363_EMSA2 : public SignatureStandard
 {
-    typedef EMSA2Pad SignatureMessageEncodingMethod;
+	typedef EMSA2Pad SignatureMessageEncodingMethod;
 };
 
 NAMESPACE_END

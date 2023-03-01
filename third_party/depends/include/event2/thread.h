@@ -61,10 +61,10 @@ extern "C" {
 */
 /** A flag passed to a locking callback when the lock was allocated as a
  * read-write lock, and we want to acquire or release the lock for writing. */
-#define EVTHREAD_WRITE    0x04
+#define EVTHREAD_WRITE	0x04
 /** A flag passed to a locking callback when the lock was allocated as a
  * read-write lock, and we want to acquire or release the lock for reading. */
-#define EVTHREAD_READ    0x08
+#define EVTHREAD_READ	0x08
 /** A flag passed to a locking callback when we don't want to block waiting
  * for the lock; if we can't get the lock immediately, we will instead
  * return nonzero from the locking callback. */
@@ -93,29 +93,29 @@ extern "C" {
  * locking on this platform.
  */
 struct evthread_lock_callbacks {
-    /** The current version of the locking API.  Set this to
-     * EVTHREAD_LOCK_API_VERSION */
-    int lock_api_version;
-    /** Which kinds of locks does this version of the locking API
-     * support?  A bitfield of EVTHREAD_LOCKTYPE_RECURSIVE and
-     * EVTHREAD_LOCKTYPE_READWRITE.
-     *
-     * (Note that RECURSIVE locks are currently mandatory, and
-     * READWRITE locks are not currently used.)
-     **/
-    unsigned supported_locktypes;
-    /** Function to allocate and initialize new lock of type 'locktype'.
-     * Returns NULL on failure. */
-    void *(*alloc)(unsigned locktype);
-    /** Funtion to release all storage held in 'lock', which was created
-     * with type 'locktype'. */
-    void (*free)(void *lock, unsigned locktype);
-    /** Acquire an already-allocated lock at 'lock' with mode 'mode'.
-     * Returns 0 on success, and nonzero on failure. */
-    int (*lock)(unsigned mode, void *lock);
-    /** Release a lock at 'lock' using mode 'mode'.  Returns 0 on success,
-     * and nonzero on failure. */
-    int (*unlock)(unsigned mode, void *lock);
+	/** The current version of the locking API.  Set this to
+	 * EVTHREAD_LOCK_API_VERSION */
+	int lock_api_version;
+	/** Which kinds of locks does this version of the locking API
+	 * support?  A bitfield of EVTHREAD_LOCKTYPE_RECURSIVE and
+	 * EVTHREAD_LOCKTYPE_READWRITE.
+	 *
+	 * (Note that RECURSIVE locks are currently mandatory, and
+	 * READWRITE locks are not currently used.)
+	 **/
+	unsigned supported_locktypes;
+	/** Function to allocate and initialize new lock of type 'locktype'.
+	 * Returns NULL on failure. */
+	void *(*alloc)(unsigned locktype);
+	/** Funtion to release all storage held in 'lock', which was created
+	 * with type 'locktype'. */
+	void (*free)(void *lock, unsigned locktype);
+	/** Acquire an already-allocated lock at 'lock' with mode 'mode'.
+	 * Returns 0 on success, and nonzero on failure. */
+	int (*lock)(unsigned mode, void *lock);
+	/** Release a lock at 'lock' using mode 'mode'.  Returns 0 on success,
+	 * and nonzero on failure. */
+	int (*unlock)(unsigned mode, void *lock);
 };
 
 /** Sets a group of functions that Libevent should use for locking.
@@ -138,35 +138,35 @@ struct timeval;
  * how to use locking on this platform.
  */
 struct evthread_condition_callbacks {
-    /** The current version of the conditions API.  Set this to
-     * EVTHREAD_CONDITION_API_VERSION */
-    int condition_api_version;
-    /** Function to allocate and initialize a new condition variable.
-     * Returns the condition variable on success, and NULL on failure.
-     * The 'condtype' argument will be 0 with this API version.
-     */
-    void *(*alloc_condition)(unsigned condtype);
-    /** Function to free a condition variable. */
-    void (*free_condition)(void *cond);
-    /** Function to signal a condition variable.  If 'broadcast' is 1, all
-     * threads waiting on 'cond' should be woken; otherwise, only on one
-     * thread is worken.  Should return 0 on success, -1 on failure.
-     * This function will only be called while holding the associated
-     * lock for the condition.
-     */
-    int (*signal_condition)(void *cond, int broadcast);
-    /** Function to wait for a condition variable.  The lock 'lock'
-     * will be held when this function is called; should be released
-     * while waiting for the condition to be come signalled, and
-     * should be held again when this function returns.
-     * If timeout is provided, it is interval of seconds to wait for
-     * the event to become signalled; if it is NULL, the function
-     * should wait indefinitely.
-     *
-     * The function should return -1 on error; 0 if the condition
-     * was signalled, or 1 on a timeout. */
-    int (*wait_condition)(void *cond, void *lock,
-        const struct timeval *timeout);
+	/** The current version of the conditions API.  Set this to
+	 * EVTHREAD_CONDITION_API_VERSION */
+	int condition_api_version;
+	/** Function to allocate and initialize a new condition variable.
+	 * Returns the condition variable on success, and NULL on failure.
+	 * The 'condtype' argument will be 0 with this API version.
+	 */
+	void *(*alloc_condition)(unsigned condtype);
+	/** Function to free a condition variable. */
+	void (*free_condition)(void *cond);
+	/** Function to signal a condition variable.  If 'broadcast' is 1, all
+	 * threads waiting on 'cond' should be woken; otherwise, only on one
+	 * thread is worken.  Should return 0 on success, -1 on failure.
+	 * This function will only be called while holding the associated
+	 * lock for the condition.
+	 */
+	int (*signal_condition)(void *cond, int broadcast);
+	/** Function to wait for a condition variable.  The lock 'lock'
+	 * will be held when this function is called; should be released
+	 * while waiting for the condition to be come signalled, and
+	 * should be held again when this function returns.
+	 * If timeout is provided, it is interval of seconds to wait for
+	 * the event to become signalled; if it is NULL, the function
+	 * should wait indefinitely.
+	 *
+	 * The function should return -1 on error; 0 if the condition
+	 * was signalled, or 1 on a timeout. */
+	int (*wait_condition)(void *cond, void *lock,
+	    const struct timeval *timeout);
 };
 
 /** Sets a group of functions that Libevent should use for condition variables.
@@ -179,7 +179,7 @@ struct evthread_condition_callbacks {
  */
 EVENT2_EXPORT_SYMBOL
 int evthread_set_condition_callbacks(
-    const struct evthread_condition_callbacks *);
+	const struct evthread_condition_callbacks *);
 
 /**
    Sets the function for determining the thread id.

@@ -31,8 +31,8 @@
 
 /** @file event2/buffer_compat.h
 
-    @brief Obsolete and deprecated versions of the functions in buffer.h: provided
-    only for backward compatibility.
+	@brief Obsolete and deprecated versions of the functions in buffer.h: provided
+	only for backward compatibility.
  */
 
 
@@ -88,7 +88,7 @@ typedef void (*evbuffer_cb)(struct evbuffer *buffer, size_t old_len, size_t new_
 
   @param buffer the evbuffer to be monitored
   @param cb the callback function to invoke when the evbuffer is modified,
-     or NULL to remove all callbacks.
+	 or NULL to remove all callbacks.
   @param cbarg an argument to be provided to the callback function
   @return 0 if successful, or -1 on error
  */
@@ -108,9 +108,9 @@ EVENT2_EXPORT_SYMBOL
 unsigned char *evbuffer_find(struct evbuffer *buffer, const unsigned char *what, size_t len);
 
 /** deprecated in favor of calling the functions directly */
-#define EVBUFFER_LENGTH(x)    evbuffer_get_length(x)
+#define EVBUFFER_LENGTH(x)	evbuffer_get_length(x)
 /** deprecated in favor of calling the functions directly */
-#define EVBUFFER_DATA(x)    evbuffer_pullup((x), -1)
+#define EVBUFFER_DATA(x)	evbuffer_pullup((x), -1)
 
 #endif
 

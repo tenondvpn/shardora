@@ -67,17 +67,17 @@
     Use bufferevent_socket_new() instead.
 
   @param fd the file descriptor from which data is read and written to.
-     This file descriptor is not allowed to be a pipe(2).
+	 This file descriptor is not allowed to be a pipe(2).
   @param readcb callback to invoke when there is data to be read, or NULL if
-     no callback is desired
+	 no callback is desired
   @param writecb callback to invoke when the file descriptor is ready for
-     writing, or NULL if no callback is desired
+	 writing, or NULL if no callback is desired
   @param errorcb callback to invoke when there is an error on the file
-     descriptor
+	 descriptor
   @param cbarg an argument that will be supplied to each of the callbacks
-     (readcb, writecb, and errorcb)
+	 (readcb, writecb, and errorcb)
   @return a pointer to a newly allocated bufferevent struct, or NULL if an
-      error occurred
+	  error occurred
   @see bufferevent_base_set(), bufferevent_free()
   */
 EVENT2_EXPORT_SYMBOL
@@ -98,15 +98,15 @@ EVENT2_EXPORT_SYMBOL
 void bufferevent_settimeout(struct bufferevent *bufev,
     int timeout_read, int timeout_write);
 
-#define EVBUFFER_READ        BEV_EVENT_READING
-#define EVBUFFER_WRITE        BEV_EVENT_WRITING
-#define EVBUFFER_EOF        BEV_EVENT_EOF
-#define EVBUFFER_ERROR        BEV_EVENT_ERROR
-#define EVBUFFER_TIMEOUT    BEV_EVENT_TIMEOUT
+#define EVBUFFER_READ		BEV_EVENT_READING
+#define EVBUFFER_WRITE		BEV_EVENT_WRITING
+#define EVBUFFER_EOF		BEV_EVENT_EOF
+#define EVBUFFER_ERROR		BEV_EVENT_ERROR
+#define EVBUFFER_TIMEOUT	BEV_EVENT_TIMEOUT
 
 /** macro for getting access to the input buffer of a bufferevent */
-#define EVBUFFER_INPUT(x)    bufferevent_get_input(x)
+#define EVBUFFER_INPUT(x)	bufferevent_get_input(x)
 /** macro for getting access to the output buffer of a bufferevent */
-#define EVBUFFER_OUTPUT(x)    bufferevent_get_output(x)
+#define EVBUFFER_OUTPUT(x)	bufferevent_get_output(x)
 
 #endif

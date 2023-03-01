@@ -54,22 +54,22 @@ extern "C" {
  */
 
 struct evdns_server_request {
-    int flags;
-    int nquestions;
-    struct evdns_server_question **questions;
+	int flags;
+	int nquestions;
+	struct evdns_server_question **questions;
 };
 struct evdns_server_question {
-    int type;
+	int type;
 #ifdef __cplusplus
-    int dns_question_class;
+	int dns_question_class;
 #else
-    /* You should refer to this field as "dns_question_class".  The
-     * name "class" works in C for backward compatibility, and will be
-     * removed in a future version. (1.5 or later). */
-    int class;
+	/* You should refer to this field as "dns_question_class".  The
+	 * name "class" works in C for backward compatibility, and will be
+	 * removed in a future version. (1.5 or later). */
+	int class;
 #define dns_question_class class
 #endif
-    char name[1];
+	char name[1];
 };
 
 #ifdef __cplusplus

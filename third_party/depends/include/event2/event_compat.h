@@ -171,7 +171,7 @@ const char *event_get_method(void);
   @see event_base_priority_init()
  */
 EVENT2_EXPORT_SYMBOL
-int    event_priority_init(int);
+int	event_priority_init(int);
 
 /**
   Prepare an event structure to be added.
@@ -183,9 +183,9 @@ int    event_priority_init(int);
 EVENT2_EXPORT_SYMBOL
 void event_set(struct event *, evutil_socket_t, short, void (*)(evutil_socket_t, short, void *), void *);
 
-#define evtimer_set(ev, cb, arg)    event_set((ev), -1, 0, (cb), (arg))
-#define evsignal_set(ev, x, cb, arg)    \
-    event_set((ev), (x), EV_SIGNAL|EV_PERSIST, (cb), (arg))
+#define evtimer_set(ev, cb, arg)	event_set((ev), -1, 0, (cb), (arg))
+#define evsignal_set(ev, x, cb, arg)	\
+	event_set((ev), (x), EV_SIGNAL|EV_PERSIST, (cb), (arg))
 
 
 /**
@@ -195,11 +195,11 @@ void event_set(struct event *, evutil_socket_t, short, void (*)(evutil_socket_t,
      with the rest of Libevent.  Use the evtimer_* macros instead.
    @{
  */
-#define timeout_add(ev, tv)        event_add((ev), (tv))
-#define timeout_set(ev, cb, arg)    event_set((ev), -1, 0, (cb), (arg))
-#define timeout_del(ev)            event_del(ev)
-#define timeout_pending(ev, tv)        event_pending((ev), EV_TIMEOUT, (tv))
-#define timeout_initialized(ev)        event_initialized(ev)
+#define timeout_add(ev, tv)		event_add((ev), (tv))
+#define timeout_set(ev, cb, arg)	event_set((ev), -1, 0, (cb), (arg))
+#define timeout_del(ev)			event_del(ev)
+#define timeout_pending(ev, tv)		event_pending((ev), EV_TIMEOUT, (tv))
+#define timeout_initialized(ev)		event_initialized(ev)
 /**@}*/
 
 /**
@@ -209,18 +209,18 @@ void event_set(struct event *, evutil_socket_t, short, void (*)(evutil_socket_t,
      with the rest of Libevent.  Use the evsignal_* macros instead.
    @{
  */
-#define signal_add(ev, tv)        event_add((ev), (tv))
-#define signal_set(ev, x, cb, arg)                \
-    event_set((ev), (x), EV_SIGNAL|EV_PERSIST, (cb), (arg))
-#define signal_del(ev)            event_del(ev)
-#define signal_pending(ev, tv)        event_pending((ev), EV_SIGNAL, (tv))
-#define signal_initialized(ev)        event_initialized(ev)
+#define signal_add(ev, tv)		event_add((ev), (tv))
+#define signal_set(ev, x, cb, arg)				\
+	event_set((ev), (x), EV_SIGNAL|EV_PERSIST, (cb), (arg))
+#define signal_del(ev)			event_del(ev)
+#define signal_pending(ev, tv)		event_pending((ev), EV_SIGNAL, (tv))
+#define signal_initialized(ev)		event_initialized(ev)
 /**@}*/
 
 #ifndef EVENT_FD
 /* These macros are obsolete; use event_get_fd and event_get_signal instead. */
-#define EVENT_FD(ev)        ((int)event_get_fd(ev))
-#define EVENT_SIGNAL(ev)    event_get_signal(ev)
+#define EVENT_FD(ev)		((int)event_get_fd(ev))
+#define EVENT_SIGNAL(ev)	event_get_signal(ev)
 #endif
 
 #ifdef __cplusplus

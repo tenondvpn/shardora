@@ -48,19 +48,16 @@ public:
 
     libff::alt_bn128_Fr SecretKeyShareCreate(
         const std::vector< libff::alt_bn128_Fr >& secret_key_contribution );
-
-    bool Verification( size_t idx, libff::alt_bn128_Fr share,
-        const std::vector< libff::alt_bn128_G2 >& verification_vector );
-    
     libff::alt_bn128_G2 GetFirstVerification(size_t idx, libff::alt_bn128_Fr& share,
         libff::alt_bn128_G2& verification_first);
+    bool Verification( size_t idx, libff::alt_bn128_Fr share,
+        const std::vector< libff::alt_bn128_G2 >& verification_vector );
+
     libff::alt_bn128_G2 GetPublicKeyFromSecretKey( const libff::alt_bn128_Fr& secret_key );
 
     size_t GetT() const;
 
     size_t GetN() const;
-
-    static bool isG2( const libff::alt_bn128_G2& point );
 
 private:
     const size_t t_ = 0;

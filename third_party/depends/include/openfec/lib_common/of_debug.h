@@ -37,8 +37,8 @@
 /****** general macros ******/
 
 
-#define OF_ENTER_FUNCTION        OF_TRACE_LVL(2, ("-> %s:\n",__FUNCTION__))
-#define OF_EXIT_FUNCTION        OF_TRACE_LVL(2, ("<- %s:\n",__FUNCTION__))
+#define OF_ENTER_FUNCTION		OF_TRACE_LVL(2, ("-> %s:\n",__FUNCTION__))
+#define OF_EXIT_FUNCTION		OF_TRACE_LVL(2, ("<- %s:\n",__FUNCTION__))
 
 /*
  * Message print macros exist into two categories:
@@ -51,34 +51,34 @@
 /**
  * Print to stdout.
  */
-#define OF_PRINT(a)        { printf a; fflush(stdout); }
+#define OF_PRINT(a)		{ printf a; fflush(stdout); }
 
 /**
  * Print to stdout with a verbosity level.
  */
-#define OF_PRINT_LVL(l, a)    if (of_verbosity >= (l)) {        \
-                    printf a;            \
-                    fflush(stdout);            \
-                }
+#define OF_PRINT_LVL(l, a)	if (of_verbosity >= (l)) {		\
+					printf a;			\
+					fflush(stdout);			\
+				}
 
 /**
  * Print to stderr.
  */
-#define OF_PRINT_ERROR(a)    { fprintf(stderr, "ERROR in \"%s\":%d:%s(): ", \
-                        __FILE__, __LINE__, __FUNCTION__); \
-                printf a; fflush(stderr); fflush(stdout); }
-#define OF_PRINT_FAILURE(a)    { fprintf(stderr, "Failure in \"%s\":%d:%s(): ", \
-                        __FILE__, __LINE__, __FUNCTION__); \
-                printf a; fflush(stderr); fflush(stdout); }
+#define OF_PRINT_ERROR(a)	{ fprintf(stderr, "ERROR in \"%s\":%d:%s(): ", \
+						__FILE__, __LINE__, __FUNCTION__); \
+				printf a; fflush(stderr); fflush(stdout); }
+#define OF_PRINT_FAILURE(a)	{ fprintf(stderr, "Failure in \"%s\":%d:%s(): ", \
+						__FILE__, __LINE__, __FUNCTION__); \
+				printf a; fflush(stderr); fflush(stdout); }
 
 /**
  * Trace with a level in OF_DEBUG mode only
  */
 #ifdef OF_DEBUG
-#define OF_TRACE_LVL(l, a)     if (of_verbosity >= (l)) {        \
-                    printf a;            \
-                    fflush(stdout);            \
-                }
+#define OF_TRACE_LVL(l, a) 	if (of_verbosity >= (l)) {		\
+					printf a;			\
+					fflush(stdout);			\
+				}
 #else
 #define OF_TRACE_LVL(l, a)
 #endif
@@ -91,12 +91,12 @@
 #undef ASSERT
 #endif
 #ifdef OF_DEBUG
-#define ASSERT(c)    if (!(c)) { \
-                fprintf(stderr, "ASSERT [%s:%d] failed\n", \
-                    __FILE__, __LINE__);        \
-                fflush(stderr);                \
-                exit(-1);                \
-            }
+#define ASSERT(c)	if (!(c)) { \
+				fprintf(stderr, "ASSERT [%s:%d] failed\n", \
+					__FILE__, __LINE__);		\
+				fflush(stderr);				\
+				exit(-1);				\
+			}
 #else /* OF_DEBUG */
 #define ASSERT(c)
 #endif /* OF_DEBUG */

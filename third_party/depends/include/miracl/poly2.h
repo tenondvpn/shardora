@@ -44,7 +44,7 @@ public:
     GF2m min() const;
 
     Poly2& operator=(const Poly2&);
-    Poly2& operator=(const GF2m&);
+	Poly2& operator=(const GF2m&);
     Poly2& operator=(int);
     Poly2& operator+=(const Poly2&);
     Poly2& operator+=(const GF2m& m) {addterm(m,0); return *this; }
@@ -86,7 +86,7 @@ public:
     friend Poly2 gcd(const Poly2&,const Poly2&);
     friend Poly2 inverse(const Poly2&,const Poly2&);
     friend void  swap(Poly2 &,Poly2 &);
-    friend void makemonic(Poly2&);
+	friend void makemonic(Poly2&);
 
 
     friend Poly2 pow(const Poly2&,const Big&,const Poly2&);

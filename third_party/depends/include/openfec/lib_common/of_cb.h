@@ -44,11 +44,11 @@
  */
 typedef struct of_cb
 {
-    of_codec_id_t    codec_id;
-    of_codec_type_t    codec_type;
-    UINT32         nb_source_symbols;
-    UINT32        nb_repair_symbols;
-    UINT32        encoding_symbol_length;
+	of_codec_id_t	codec_id;
+	of_codec_type_t	codec_type;
+	UINT32 		nb_source_symbols;
+	UINT32		nb_repair_symbols;
+	UINT32		encoding_symbol_length;
 } of_cb_t;
 
 #endif //OF_CB

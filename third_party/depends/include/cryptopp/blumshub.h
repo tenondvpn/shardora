@@ -14,43 +14,43 @@ NAMESPACE_BEGIN(CryptoPP)
 
 /// BlumBlumShub without factorization of the modulus
 class PublicBlumBlumShub : public RandomNumberGenerator,
-                           public StreamTransformation
+						   public StreamTransformation
 {
 public:
-    virtual ~PublicBlumBlumShub() {}
+	virtual ~PublicBlumBlumShub() {}
 
-    PublicBlumBlumShub(const Integer &n, const Integer &seed);
+	PublicBlumBlumShub(const Integer &n, const Integer &seed);
 
-    unsigned int GenerateBit();
-    byte GenerateByte();
-    void GenerateBlock(byte *output, size_t size);
-    void ProcessData(byte *outString, const byte *inString, size_t length);
+	unsigned int GenerateBit();
+	byte GenerateByte();
+	void GenerateBlock(byte *output, size_t size);
+	void ProcessData(byte *outString, const byte *inString, size_t length);
 
-    bool IsSelfInverting() const {return true;}
-    bool IsForwardTransformation() const {return true;}
+	bool IsSelfInverting() const {return true;}
+	bool IsForwardTransformation() const {return true;}
 
 protected:
-    ModularArithmetic modn;
-    Integer current;
-    word maxBits, bitsLeft;
+	ModularArithmetic modn;
+	Integer current;
+	word maxBits, bitsLeft;
 };
 
 /// BlumBlumShub with factorization of the modulus
 class BlumBlumShub : public PublicBlumBlumShub
 {
 public:
-    virtual ~BlumBlumShub() {}
+	virtual ~BlumBlumShub() {}
 
-    // Make sure p and q are both primes congruent to 3 mod 4 and at least 512 bits long,
-    // seed is the secret key and should be about as big as p*q
-    BlumBlumShub(const Integer &p, const Integer &q, const Integer &seed);
+	// Make sure p and q are both primes congruent to 3 mod 4 and at least 512 bits long,
+	// seed is the secret key and should be about as big as p*q
+	BlumBlumShub(const Integer &p, const Integer &q, const Integer &seed);
 
-    bool IsRandomAccess() const {return true;}
-    void Seek(lword index);
+	bool IsRandomAccess() const {return true;}
+	void Seek(lword index);
 
 protected:
-    const Integer p, q;
-    const Integer x0;
+	const Integer p, q;
+	const Integer x0;
 };
 
 NAMESPACE_END

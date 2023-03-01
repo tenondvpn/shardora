@@ -39,7 +39,7 @@
 
 #ifdef OF_DEBUG
 /* additional parameter for memory statistic purposes */
-#define    MEM_STATS_ARG    ,ofcb->stats
+#define	MEM_STATS_ARG	,ofcb->stats
 #define MEM_STATS ,stats
 #else
 #define MEM_STATS_ARG
@@ -57,5 +57,5 @@
  * Maximum m value for the GF(2^m) field.
  * WARNING: for the moment, only m=4 and 8 are supported!
  */
-#define OF_REED_SOLOMON_2_M_MAX_M                    8
+#define OF_REED_SOLOMON_2_M_MAX_M					8
 

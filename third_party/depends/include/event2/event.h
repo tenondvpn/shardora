@@ -527,63 +527,63 @@ enum event_method_feature {
        event_method_feature
  */
 enum event_base_config_flag {
-    /** Do not allocate a lock for the event base, even if we have
-        locking set up.
+	/** Do not allocate a lock for the event base, even if we have
+	    locking set up.
 
-        Setting this option will make it unsafe and nonfunctional to call
-        functions on the base concurrently from multiple threads.
-    */
-    EVENT_BASE_FLAG_NOLOCK = 0x01,
-    /** Do not check the EVENT_* environment variables when configuring
-        an event_base  */
-    EVENT_BASE_FLAG_IGNORE_ENV = 0x02,
-    /** Windows only: enable the IOCP dispatcher at startup
+	    Setting this option will make it unsafe and nonfunctional to call
+	    functions on the base concurrently from multiple threads.
+	*/
+	EVENT_BASE_FLAG_NOLOCK = 0x01,
+	/** Do not check the EVENT_* environment variables when configuring
+	    an event_base  */
+	EVENT_BASE_FLAG_IGNORE_ENV = 0x02,
+	/** Windows only: enable the IOCP dispatcher at startup
 
-        If this flag is set then bufferevent_socket_new() and
-        evconn_listener_new() will use IOCP-backed implementations
-        instead of the usual select-based one on Windows.
-     */
-    EVENT_BASE_FLAG_STARTUP_IOCP = 0x04,
-    /** Instead of checking the current time every time the event loop is
-        ready to run timeout callbacks, check after each timeout callback.
-     */
-    EVENT_BASE_FLAG_NO_CACHE_TIME = 0x08,
+	    If this flag is set then bufferevent_socket_new() and
+	    evconn_listener_new() will use IOCP-backed implementations
+	    instead of the usual select-based one on Windows.
+	 */
+	EVENT_BASE_FLAG_STARTUP_IOCP = 0x04,
+	/** Instead of checking the current time every time the event loop is
+	    ready to run timeout callbacks, check after each timeout callback.
+	 */
+	EVENT_BASE_FLAG_NO_CACHE_TIME = 0x08,
 
-    /** If we are using the epoll backend, this flag says that it is
-        safe to use Libevent's internal change-list code to batch up
-        adds and deletes in order to try to do as few syscalls as
-        possible.  Setting this flag can make your code run faster, but
-        it may trigger a Linux bug: it is not safe to use this flag
-        if you have any fds cloned by dup() or its variants.  Doing so
-        will produce strange and hard-to-diagnose bugs.
+	/** If we are using the epoll backend, this flag says that it is
+	    safe to use Libevent's internal change-list code to batch up
+	    adds and deletes in order to try to do as few syscalls as
+	    possible.  Setting this flag can make your code run faster, but
+	    it may trigger a Linux bug: it is not safe to use this flag
+	    if you have any fds cloned by dup() or its variants.  Doing so
+	    will produce strange and hard-to-diagnose bugs.
 
-        This flag can also be activated by setting the
-        EVENT_EPOLL_USE_CHANGELIST environment variable.
+	    This flag can also be activated by setting the
+	    EVENT_EPOLL_USE_CHANGELIST environment variable.
 
-        This flag has no effect if you wind up using a backend other than
-        epoll.
-     */
-    EVENT_BASE_FLAG_EPOLL_USE_CHANGELIST = 0x10,
+	    This flag has no effect if you wind up using a backend other than
+	    epoll.
+	 */
+	EVENT_BASE_FLAG_EPOLL_USE_CHANGELIST = 0x10,
 
-    /** Ordinarily, Libevent implements its time and timeout code using
-        the fastest monotonic timer that we have.  If this flag is set,
-        however, we use less efficient more precise timer, assuming one is
-        present.
-     */
-    EVENT_BASE_FLAG_PRECISE_TIMER = 0x20,
+	/** Ordinarily, Libevent implements its time and timeout code using
+	    the fastest monotonic timer that we have.  If this flag is set,
+	    however, we use less efficient more precise timer, assuming one is
+	    present.
+	 */
+	EVENT_BASE_FLAG_PRECISE_TIMER = 0x20,
 
-    /** With EVENT_BASE_FLAG_PRECISE_TIMER,
-        epoll backend will use timerfd for more accurate timers, this will
-        allows to disable this.
+	/** With EVENT_BASE_FLAG_PRECISE_TIMER,
+	    epoll backend will use timerfd for more accurate timers, this will
+	    allows to disable this.
 
-        That said that this is something in between lack of
-        (CLOCK_MONOTONIC_COARSE) and enabled EVENT_BASE_FLAG_PRECISE_TIMER
-        (CLOCK_MONOTONIC + timerfd).
+	    That said that this is something in between lack of
+	    (CLOCK_MONOTONIC_COARSE) and enabled EVENT_BASE_FLAG_PRECISE_TIMER
+	    (CLOCK_MONOTONIC + timerfd).
 
-        This flag has no effect if you wind up using a backend other than
-        epoll and if you do not have EVENT_BASE_FLAG_PRECISE_TIMER enabled.
-     */
-    EVENT_BASE_FLAG_EPOLL_DISALLOW_TIMERFD = 0x40,
+	    This flag has no effect if you wind up using a backend other than
+	    epoll and if you do not have EVENT_BASE_FLAG_PRECISE_TIMER enabled.
+	 */
+	EVENT_BASE_FLAG_EPOLL_DISALLOW_TIMERFD = 0x40,
 };
 
 /**
@@ -737,7 +737,7 @@ typedef void (*event_log_cb)(int severity, const char *msg);
 
   @param cb a function taking two arguments: an integer severity between
      EVENT_LOG_DEBUG and EVENT_LOG_ERR, and a string.  If cb is NULL,
-     then the default log is used.
+	 then the default log is used.
 
   NOTE: The function you provide *must not* call any other libevent
   functionality.  Doing so can produce undefined behavior.
@@ -806,10 +806,10 @@ int event_base_set(struct event_base *eb, struct event *ev);
 /**@{*/
 /** Block until we have an active event, then exit once all active events
  * have had their callbacks run. */
-#define EVLOOP_ONCE    0x01
+#define EVLOOP_ONCE	0x01
 /** Do not block: see which events are ready now, run the callbacks
  * of the highest-priority ones, then exit. */
-#define EVLOOP_NONBLOCK    0x02
+#define EVLOOP_NONBLOCK	0x02
 /** Do not exit the loop because we have no pending events.  Instead, keep
  * running until event_base_loopexit() or event_base_loopbreak() makes us
  * stop.
@@ -932,22 +932,22 @@ int event_base_got_break(struct event_base *eb);
 /**@{*/
 /** Indicates that a timeout has occurred.  It's not necessary to pass
  * this flag to event_for new()/event_assign() to get a timeout. */
-#define EV_TIMEOUT    0x01
+#define EV_TIMEOUT	0x01
 /** Wait for a socket or FD to become readable */
-#define EV_READ        0x02
+#define EV_READ		0x02
 /** Wait for a socket or FD to become writeable */
-#define EV_WRITE    0x04
+#define EV_WRITE	0x04
 /** Wait for a POSIX signal to be raised*/
-#define EV_SIGNAL    0x08
+#define EV_SIGNAL	0x08
 /**
  * Persistent event: won't get removed automatically when activated.
  *
  * When a persistent event with a timeout becomes activated, its timeout
  * is reset to 0.
  */
-#define EV_PERSIST    0x10
+#define EV_PERSIST	0x10
 /** Select edge-triggered behavior, if supported by the backend. */
-#define EV_ET        0x20
+#define EV_ET		0x20
 /**
  * If this option is provided, then event_del() will not block in one thread
  * while waiting for the event callback to complete in another thread.
@@ -965,7 +965,7 @@ int event_base_got_break(struct event_base *eb);
  * Not all backends support EV_CLOSED.  To detect or require it, use the
  * feature flag EV_FEATURE_EARLY_CLOSE.
  **/
-#define EV_CLOSED    0x80
+#define EV_CLOSED	0x80
 /**@}*/
 
 /**
@@ -976,12 +976,12 @@ int event_base_got_break(struct event_base *eb);
  */
 /**@{*/
 #define evtimer_assign(ev, b, cb, arg) \
-    event_assign((ev), (b), -1, 0, (cb), (arg))
-#define evtimer_new(b, cb, arg)        event_new((b), -1, 0, (cb), (arg))
-#define evtimer_add(ev, tv)        event_add((ev), (tv))
-#define evtimer_del(ev)            event_del(ev)
-#define evtimer_pending(ev, tv)        event_pending((ev), EV_TIMEOUT, (tv))
-#define evtimer_initialized(ev)        event_initialized(ev)
+	event_assign((ev), (b), -1, 0, (cb), (arg))
+#define evtimer_new(b, cb, arg)		event_new((b), -1, 0, (cb), (arg))
+#define evtimer_add(ev, tv)		event_add((ev), (tv))
+#define evtimer_del(ev)			event_del(ev)
+#define evtimer_pending(ev, tv)		event_pending((ev), EV_TIMEOUT, (tv))
+#define evtimer_initialized(ev)		event_initialized(ev)
 /**@}*/
 
 /**
@@ -990,14 +990,14 @@ int event_base_got_break(struct event_base *eb);
    Aliases for working with signal events
  */
 /**@{*/
-#define evsignal_add(ev, tv)        event_add((ev), (tv))
-#define evsignal_assign(ev, b, x, cb, arg)            \
-    event_assign((ev), (b), (x), EV_SIGNAL|EV_PERSIST, cb, (arg))
-#define evsignal_new(b, x, cb, arg)                \
-    event_new((b), (x), EV_SIGNAL|EV_PERSIST, (cb), (arg))
-#define evsignal_del(ev)        event_del(ev)
-#define evsignal_pending(ev, tv)    event_pending((ev), EV_SIGNAL, (tv))
-#define evsignal_initialized(ev)    event_initialized(ev)
+#define evsignal_add(ev, tv)		event_add((ev), (tv))
+#define evsignal_assign(ev, b, x, cb, arg)			\
+	event_assign((ev), (b), (x), EV_SIGNAL|EV_PERSIST, cb, (arg))
+#define evsignal_new(b, x, cb, arg)				\
+	event_new((b), (x), EV_SIGNAL|EV_PERSIST, (cb), (arg))
+#define evsignal_del(ev)		event_del(ev)
+#define evsignal_pending(ev, tv)	event_pending((ev), EV_SIGNAL, (tv))
+#define evsignal_initialized(ev)	event_initialized(ev)
 /**@}*/
 
 /**
@@ -1007,11 +1007,11 @@ int event_base_got_break(struct event_base *eb);
    If you need EV_PERSIST event use event_*() functions.
  */
 /**@{*/
-#define evuser_new(b, cb, arg)        event_new((b), -1, 0, (cb), (arg))
-#define evuser_del(ev)            event_del(ev)
-#define evuser_pending(ev, tv)        event_pending((ev), 0, (tv))
-#define evuser_initialized(ev)        event_initialized(ev)
-#define evuser_trigger(ev)        event_active((ev), 0, 0)
+#define evuser_new(b, cb, arg)		event_new((b), -1, 0, (cb), (arg))
+#define evuser_del(ev)			event_del(ev)
+#define evuser_pending(ev, tv)		event_pending((ev), 0, (tv))
+#define evuser_initialized(ev)		event_initialized(ev)
+#define evuser_trigger(ev)		event_active((ev), 0, 0)
 /**@}*/
 
 /**
@@ -1312,7 +1312,7 @@ void event_active(struct event *ev, int res, short ncalls);
          EV_WRITE|EV_SIGNAL
   @param tv if this field is not NULL, and the event has a timeout,
          this field is set to hold the time at which the timeout will
-     expire.
+	 expire.
 
   @return true if the event is pending on any of the events in 'what', (that
   is to say, it has been added), or 0 if the event is not added.
@@ -1480,7 +1480,7 @@ ev_uint32_t event_get_version_number(void);
   @see event_priority_set()
  */
 EVENT2_EXPORT_SYMBOL
-int    event_base_priority_init(struct event_base *eb, int npriorities);
+int	event_base_priority_init(struct event_base *eb, int npriorities);
 
 /**
   Get the number of different event priorities.
@@ -1490,7 +1490,7 @@ int    event_base_priority_init(struct event_base *eb, int npriorities);
   @see event_base_priority_init()
 */
 EVENT2_EXPORT_SYMBOL
-int    event_base_get_npriorities(struct event_base *eb);
+int	event_base_get_npriorities(struct event_base *eb);
 
 /**
   Assign a priority to an event.
@@ -1501,7 +1501,7 @@ int    event_base_get_npriorities(struct event_base *eb);
   @see event_priority_init(), event_get_priority()
   */
 EVENT2_EXPORT_SYMBOL
-int    event_priority_set(struct event *ev, int priority);
+int	event_priority_set(struct event *ev, int priority);
 
 /**
    Prepare an event_base to use a large number of timeouts with the same
@@ -1551,9 +1551,9 @@ const struct timeval *event_base_init_common_timeout(struct event_base *base,
  **/
 EVENT2_EXPORT_SYMBOL
 void event_set_mem_functions(
-    void *(*malloc_fn)(size_t sz),
-    void *(*realloc_fn)(void *ptr, size_t sz),
-    void (*free_fn)(void *ptr));
+	void *(*malloc_fn)(size_t sz),
+	void *(*realloc_fn)(void *ptr, size_t sz),
+	void (*free_fn)(void *ptr));
 /** This definition is present if Libevent was built with support for
     event_set_mem_functions() */
 #define EVENT_SET_MEM_FUNCTIONS_IMPLEMENTED

@@ -351,7 +351,7 @@ bls12_381_Fq12 bls12_381_ate_miller_loop(const bls12_381_ate_G1_precomp &prec_P,
 
     if (bls12_381_ate_is_loop_count_neg)
     {
-        f = f.inverse();
+    	f = f.inverse();
     }
 
     leave_block("Call to bls12_381_ate_miller_loop");
@@ -407,7 +407,7 @@ bls12_381_Fq12 bls12_381_ate_double_miller_loop(const bls12_381_ate_G1_precomp &
 
     if (bls12_381_ate_is_loop_count_neg)
     {
-        f = f.inverse();
+    	f = f.inverse();
     }
 
     leave_block("Call to bls12_381_ate_double_miller_loop");

@@ -39,7 +39,7 @@ long long get_nsec_time()
 long long get_nsec_cpu_time()
 {
 #if _MSC_VER
-    return 0;
+	return 0;
 #else
     ::timespec ts;
     if ( ::clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts) )

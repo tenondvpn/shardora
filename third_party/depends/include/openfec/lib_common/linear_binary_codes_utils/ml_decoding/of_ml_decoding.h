@@ -44,10 +44,10 @@
 /**
  * This function tries to finish decoding.
  *
- * @fn of_status_t        of_linear_binary_code_finish_decoding_with_ml (of_linear_binary_code_cb_t *ofcb)
- * @brief            try to finish decoding
- * @param ofcb             (IN/OUT) Linear-Binary-Code control-block.
- * @return            1 if it's OK, or 0 if an error appears.
+ * @fn of_status_t		of_linear_binary_code_finish_decoding_with_ml (of_linear_binary_code_cb_t *ofcb)
+ * @brief			try to finish decoding
+ * @param ofcb 			(IN/OUT) Linear-Binary-Code control-block.
+ * @return			1 if it's OK, or 0 if an error appears.
  */
 of_status_t of_linear_binary_code_finish_decoding_with_ml (of_linear_binary_code_cb_t *ofcb);
 

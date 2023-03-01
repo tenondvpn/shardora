@@ -40,7 +40,7 @@
 
 #ifdef OF_USE_REED_SOLOMON_2_M_CODEC
 
-#define FEC_MAGIC    0xFECC0DEC
+#define FEC_MAGIC	0xFECC0DEC
 
 
 /*
@@ -48,55 +48,55 @@
  * and  Lee & Messerschmitt, p. 453.
  */
 #if 0
-static const char *of_rs_allPp[] =      /* GF_BITS    polynomial        */
+static const char *of_rs_allPp[] =      /* GF_BITS	polynomial		*/
 {
-    NULL,                /*  0    no code            */
-    NULL,                /*  1    no code            */
-    "111",                /*  2    1+x+x^2            */
-    "1101",                /*  3    1+x+x^3            */
-    "11001",            /*  4    1+x+x^4            */
-    "101001",            /*  5    1+x^2+x^5        */
-    "1100001",            /*  6    1+x+x^6            */
-    "10010001",            /*  7    1 + x^3 + x^7        */
-    "101110001",            /*  8    1+x^2+x^3+x^4+x^8    */
-    "1000100001",            /*  9    1+x^4+x^9        */
-    "10010000001",            /* 10    1+x^3+x^10        */
-    "101000000001",            /* 11    1+x^2+x^11        */
-    "1100101000001",        /* 12    1+x+x^4+x^6+x^12    */
-    "11011000000001",        /* 13    1+x+x^3+x^4+x^13    */
-    "110000100010001",        /* 14    1+x+x^6+x^10+x^14    */
-    "1100000000000001",        /* 15    1+x+x^15        */
-    "11010000000010001"        /* 16    1+x+x^3+x^12+x^16    */
+	NULL,				/*  0	no code			*/
+	NULL,				/*  1	no code			*/
+	"111",				/*  2	1+x+x^2			*/
+	"1101",				/*  3	1+x+x^3			*/
+	"11001",			/*  4	1+x+x^4			*/
+	"101001",			/*  5	1+x^2+x^5		*/
+	"1100001",			/*  6	1+x+x^6			*/
+	"10010001",			/*  7	1 + x^3 + x^7		*/
+	"101110001",			/*  8	1+x^2+x^3+x^4+x^8	*/
+	"1000100001",			/*  9	1+x^4+x^9		*/
+	"10010000001",			/* 10	1+x^3+x^10		*/
+	"101000000001",			/* 11	1+x^2+x^11		*/
+	"1100101000001",		/* 12	1+x+x^4+x^6+x^12	*/
+	"11011000000001",		/* 13	1+x+x^3+x^4+x^13	*/
+	"110000100010001",		/* 14	1+x+x^6+x^10+x^14	*/
+	"1100000000000001",		/* 15	1+x+x^15		*/
+	"11010000000010001"		/* 16	1+x+x^3+x^12+x^16	*/
 };
 #endif
 
 /**
  * Galois-Field-Code stable codec specific control block structure.
  */
-typedef    of_rs_2_m_cb_t    of_galois_field_code_cb_t;    /* XXX: the two types are synonymous in fact! */
+typedef	of_rs_2_m_cb_t	of_galois_field_code_cb_t;	/* XXX: the two types are synonymous in fact! */
 
 /**
  * just a helper to init all we need to use GF
  */
-of_status_t    of_rs_2m_init(of_galois_field_code_cb_t* ofcb);
+of_status_t	of_rs_2m_init(of_galois_field_code_cb_t* ofcb);
 
 /**
  * and the helper to release memory
  */
-void        of_rs_2m_release(of_galois_field_code_cb_t* ofcb);
+void		of_rs_2m_release(of_galois_field_code_cb_t* ofcb);
 
 /**
  * even if only decoder is defined, we need an encoding matrix.
  */
-of_status_t    of_rs_2m_build_encoding_matrix(of_galois_field_code_cb_t* ofcb);
+of_status_t	of_rs_2m_build_encoding_matrix(of_galois_field_code_cb_t* ofcb);
 
 #ifdef OF_USE_DECODER
-of_status_t    of_rs_2m_build_decoding_matrix(of_galois_field_code_cb_t* ofcb,int* index);
-of_status_t    of_rs_2m_decode(of_galois_field_code_cb_t* ofcb,gf *pkt[], int index[], int sz);
+of_status_t	of_rs_2m_build_decoding_matrix(of_galois_field_code_cb_t* ofcb,int* index);
+of_status_t	of_rs_2m_decode(of_galois_field_code_cb_t* ofcb,gf *pkt[], int index[], int sz);
 #endif
 
 #ifdef OF_USE_ENCODER
-of_status_t    of_rs_2m_encode(of_galois_field_code_cb_t* ofcb,gf *_src[], gf *_fec, int index, int sz);
+of_status_t	of_rs_2m_encode(of_galois_field_code_cb_t* ofcb,gf *_src[], gf *_fec, int index, int sz);
 #endif
 
 #endif //OF_USE_GALOIS_FIELD_CODES_UTILS

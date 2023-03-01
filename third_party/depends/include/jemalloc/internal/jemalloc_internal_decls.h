@@ -1,5 +1,5 @@
 #ifndef JEMALLOC_INTERNAL_DECLS_H
-#define    JEMALLOC_INTERNAL_DECLS_H
+#define	JEMALLOC_INTERNAL_DECLS_H
 
 #include <math.h>
 #ifdef _WIN32
@@ -24,7 +24,7 @@
 
 #include <limits.h>
 #ifndef SIZE_T_MAX
-#  define SIZE_T_MAX    SIZE_MAX
+#  define SIZE_T_MAX	SIZE_MAX
 #endif
 #include <stdarg.h>
 #include <stdbool.h>
@@ -33,7 +33,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #ifndef offsetof
-#  define offsetof(type, member)    ((size_t)&(((type *)NULL)->member))
+#  define offsetof(type, member)	((size_t)&(((type *)NULL)->member))
 #endif
 #include <string.h>
 #include <strings.h>
@@ -54,7 +54,7 @@ static int
 isblank(int c)
 {
 
-    return (c == '\t' || c == ' ');
+	return (c == '\t' || c == ' ');
 }
 #endif
 #else

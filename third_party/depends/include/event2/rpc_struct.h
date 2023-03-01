@@ -41,10 +41,10 @@ extern "C" {
 /* Fix so that people don't have to run with <sys/queue.h> */
 #ifndef TAILQ_ENTRY
 #define EVENT_DEFINED_TQENTRY_
-#define TAILQ_ENTRY(type)                        \
-struct {                                \
-    struct type *tqe_next;    /* next element */            \
-    struct type **tqe_prev;    /* address of previous next element */    \
+#define TAILQ_ENTRY(type)						\
+struct {								\
+	struct type *tqe_next;	/* next element */			\
+	struct type **tqe_prev;	/* address of previous next element */	\
 }
 #endif /* !TAILQ_ENTRY */
 
@@ -52,55 +52,55 @@ struct {                                \
  * provides information about the completed RPC request.
  */
 struct evrpc_status {
-#define EVRPC_STATUS_ERR_NONE        0
-#define EVRPC_STATUS_ERR_TIMEOUT    1
-#define EVRPC_STATUS_ERR_BADPAYLOAD    2
-#define EVRPC_STATUS_ERR_UNSTARTED    3
-#define EVRPC_STATUS_ERR_HOOKABORTED    4
-    int error;
+#define EVRPC_STATUS_ERR_NONE		0
+#define EVRPC_STATUS_ERR_TIMEOUT	1
+#define EVRPC_STATUS_ERR_BADPAYLOAD	2
+#define EVRPC_STATUS_ERR_UNSTARTED	3
+#define EVRPC_STATUS_ERR_HOOKABORTED	4
+	int error;
 
-    /* for looking at headers or other information */
-    struct evhttp_request *http_req;
+	/* for looking at headers or other information */
+	struct evhttp_request *http_req;
 };
 
 /* the structure below needs to be synchronized with evrpc_req_generic */
 
 /* Encapsulates a request */
 struct evrpc {
-    TAILQ_ENTRY(evrpc) next;
+	TAILQ_ENTRY(evrpc) next;
 
-    /* the URI at which the request handler lives */
-    const char* uri;
+	/* the URI at which the request handler lives */
+	const char* uri;
 
-    /* creates a new request structure */
-    void *(*request_new)(void *);
-    void *request_new_arg;
+	/* creates a new request structure */
+	void *(*request_new)(void *);
+	void *request_new_arg;
 
-    /* frees the request structure */
-    void (*request_free)(void *);
+	/* frees the request structure */
+	void (*request_free)(void *);
 
-    /* unmarshals the buffer into the proper request structure */
-    int (*request_unmarshal)(void *, struct evbuffer *);
+	/* unmarshals the buffer into the proper request structure */
+	int (*request_unmarshal)(void *, struct evbuffer *);
 
-    /* creates a new reply structure */
-    void *(*reply_new)(void *);
-    void *reply_new_arg;
+	/* creates a new reply structure */
+	void *(*reply_new)(void *);
+	void *reply_new_arg;
 
-    /* frees the reply structure */
-    void (*reply_free)(void *);
+	/* frees the reply structure */
+	void (*reply_free)(void *);
 
-    /* verifies that the reply is valid */
-    int (*reply_complete)(void *);
+	/* verifies that the reply is valid */
+	int (*reply_complete)(void *);
 
-    /* marshals the reply into a buffer */
-    void (*reply_marshal)(struct evbuffer*, void *);
+	/* marshals the reply into a buffer */
+	void (*reply_marshal)(struct evbuffer*, void *);
 
-    /* the callback invoked for each received rpc */
-    void (*cb)(struct evrpc_req_generic *, void *);
-    void *cb_arg;
+	/* the callback invoked for each received rpc */
+	void (*cb)(struct evrpc_req_generic *, void *);
+	void *cb_arg;
 
-    /* reference for further configuration */
-    struct evrpc_base *base;
+	/* reference for further configuration */
+	struct evrpc_base *base;
 };
 
 #ifdef EVENT_DEFINED_TQENTRY_

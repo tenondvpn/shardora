@@ -1117,9 +1117,9 @@ protected:
                 m_tec = ec;
 
                 // all other errors are effectively pass through errors of
-                // some sort so print some detail on the info channel for
-                // library users to look up if needed.
-                log_err(log::elevel::info,"asio async_shutdown",ec);
+				// some sort so print some detail on the info channel for
+				// library users to look up if needed.
+				log_err(log::elevel::info,"asio async_shutdown",ec);
             }
         } else {
             if (m_alog->static_test(log::alevel::devel)) {

@@ -37,7 +37,7 @@
 
 #ifdef OF_DEBUG
 /* additional parameter for memory statistic purposes */
-#define    MEM_STATS_ARG    ,ofcb->stats
+#define	MEM_STATS_ARG	,ofcb->stats
 #define MEM_STATS ,stats
 #else
 #define MEM_STATS_ARG
@@ -95,18 +95,18 @@
  * the ESI values are stored in UINT16 instead of UINT32...).
  *
  * Hints:
- *     If ML decoding is enabled and used, then limit yourself to a value
- *     that is not too high, since decoding might finish with a Gaussian
- *     elimination on the simplified system.
- *     In situations where decoding is restricted to IT, the main limit is
- *     the available memory. It usually means you can set very large values.
+ * 	If ML decoding is enabled and used, then limit yourself to a value
+ * 	that is not too high, since decoding might finish with a Gaussian
+ * 	elimination on the simplified system.
+ * 	In situations where decoding is restricted to IT, the main limit is
+ * 	the available memory. It usually means you can set very large values.
  */
 #ifndef OF_2D_PARITY_MATRIX_MAX_NB_SOURCE_SYMBOLS_DEFAULT
 #ifdef ML_DECODING
-#define OF_2D_PARITY_MATRIX_MAX_NB_SOURCE_SYMBOLS_DEFAULT        16
-#define OF_2D_PARITY_MATRIX_MAX_NB_ENCODING_SYMBOLS_DEFAULT        24    
+#define OF_2D_PARITY_MATRIX_MAX_NB_SOURCE_SYMBOLS_DEFAULT		16
+#define OF_2D_PARITY_MATRIX_MAX_NB_ENCODING_SYMBOLS_DEFAULT		24	
 #else
-#define OF_2D_PARITY_MATRIX_MAX_NB_SOURCE_SYMBOLS_DEFAULT        16
-#define OF_2D_PARITY_MATRIX_MAX_NB_ENCODING_SYMBOLS_DEFAULT         24    
+#define OF_2D_PARITY_MATRIX_MAX_NB_SOURCE_SYMBOLS_DEFAULT		16
+#define OF_2D_PARITY_MATRIX_MAX_NB_ENCODING_SYMBOLS_DEFAULT	 	24	
 #endif
 #endif
