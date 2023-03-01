@@ -1,1 +1,1 @@
-protoc --proto_path=/root/work/ZJ-BlockChain/src/ protos/*.proto --cpp_out=./
+protoc --proto_path=/root/zjchain/src/ protos/*.proto --cpp_out=./

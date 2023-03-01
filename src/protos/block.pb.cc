@@ -25,6 +25,7 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protob
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_AccountHeightRequest;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_AccountHeightResponse;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_AdRewardRequest;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_ConsensusToTxsItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_ElectStatisticInfo;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_GetAccountInitInfoRequest;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_GetAccountShardReponse;
@@ -69,6 +70,16 @@ class BlockDefaultTypeInternal {
   ::google::protobuf::internal::ExplicitlyConstructed<Block>
       _instance;
 } _Block_default_instance_;
+class ConsensusToTxsItemDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<ConsensusToTxsItem>
+      _instance;
+} _ConsensusToTxsItem_default_instance_;
+class ConsensusToTxsDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<ConsensusToTxs>
+      _instance;
+} _ConsensusToTxs_default_instance_;
 class GetTxBlockRequestDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<GetTxBlockRequest>
@@ -231,6 +242,35 @@ static void InitDefaultsBlock() {
 ::google::protobuf::internal::SCCInfo<1> scc_info_Block =
     {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsBlock}, {
       &protobuf_protos_2fblock_2eproto::scc_info_BlockTx.base,}};
+
+static void InitDefaultsConsensusToTxsItem() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::zjchain::block::protobuf::_ConsensusToTxsItem_default_instance_;
+    new (ptr) ::zjchain::block::protobuf::ConsensusToTxsItem();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::zjchain::block::protobuf::ConsensusToTxsItem::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_ConsensusToTxsItem =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsConsensusToTxsItem}, {}};
+
+static void InitDefaultsConsensusToTxs() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::zjchain::block::protobuf::_ConsensusToTxs_default_instance_;
+    new (ptr) ::zjchain::block::protobuf::ConsensusToTxs();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::zjchain::block::protobuf::ConsensusToTxs::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<1> scc_info_ConsensusToTxs =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsConsensusToTxs}, {
+      &protobuf_protos_2fblock_2eproto::scc_info_ConsensusToTxsItem.base,}};
 
 static void InitDefaultsGetTxBlockRequest() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -537,6 +577,8 @@ void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_TransferItem.base);
   ::google::protobuf::internal::InitSCC(&scc_info_BlockTx.base);
   ::google::protobuf::internal::InitSCC(&scc_info_Block.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_ConsensusToTxsItem.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_ConsensusToTxs.base);
   ::google::protobuf::internal::InitSCC(&scc_info_GetTxBlockRequest.base);
   ::google::protobuf::internal::InitSCC(&scc_info_GetTxBlockResponse.base);
   ::google::protobuf::internal::InitSCC(&scc_info_AccountHeightRequest.base);
@@ -559,7 +601,7 @@ void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_BlockMessage.base);
 }
 
-::google::protobuf::Metadata file_level_metadata[24];
+::google::protobuf::Metadata file_level_metadata[26];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::StorageItem, _has_bits_),
@@ -590,7 +632,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::BlockTx, gid_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::BlockTx, from_pubkey_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::BlockTx, from_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::BlockTx, to_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::BlockTx, amount_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::BlockTx, gas_limit_),
@@ -648,6 +690,22 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   2,
   3,
   11,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::ConsensusToTxsItem, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::ConsensusToTxsItem, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::ConsensusToTxsItem, to_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::ConsensusToTxsItem, balance_),
+  0,
+  1,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::ConsensusToTxs, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::ConsensusToTxs, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::ConsensusToTxs, tos_),
+  ~0u,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::GetTxBlockRequest, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::GetTxBlockRequest, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -892,26 +950,28 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 11, 19, sizeof(::zjchain::block::protobuf::TransferItem)},
   { 22, 39, sizeof(::zjchain::block::protobuf::BlockTx)},
   { 51, 71, sizeof(::zjchain::block::protobuf::Block)},
-  { 86, 96, sizeof(::zjchain::block::protobuf::GetTxBlockRequest)},
-  { 101, 107, sizeof(::zjchain::block::protobuf::GetTxBlockResponse)},
-  { 108, 116, sizeof(::zjchain::block::protobuf::AccountHeightRequest)},
-  { 119, 127, sizeof(::zjchain::block::protobuf::AccountHeightResponse)},
-  { 130, 138, sizeof(::zjchain::block::protobuf::AccountAttrRequest)},
-  { 141, 150, sizeof(::zjchain::block::protobuf::AccountAttrResponse)},
-  { 154, 164, sizeof(::zjchain::block::protobuf::UpdateVpnCountRequest)},
-  { 169, 176, sizeof(::zjchain::block::protobuf::VpnCountItem)},
-  { 178, 184, sizeof(::zjchain::block::protobuf::UpdateVpnCountResponse)},
-  { 185, 195, sizeof(::zjchain::block::protobuf::GetAccountInitInfoRequest)},
-  { 200, 209, sizeof(::zjchain::block::protobuf::GetAccountInitInfoResponse)},
-  { 213, 220, sizeof(::zjchain::block::protobuf::UpdateVpnActiveRequest)},
-  { 222, 230, sizeof(::zjchain::block::protobuf::AdRewardRequest)},
-  { 233, 241, sizeof(::zjchain::block::protobuf::ElectStatisticInfo)},
-  { 244, 252, sizeof(::zjchain::block::protobuf::StatisticInfo)},
-  { 255, 261, sizeof(::zjchain::block::protobuf::RefreshPoolHeightRequest)},
-  { 262, 268, sizeof(::zjchain::block::protobuf::RefreshPoolHeightResponse)},
-  { 269, 275, sizeof(::zjchain::block::protobuf::GetAccountShardRequest)},
-  { 276, 283, sizeof(::zjchain::block::protobuf::GetAccountShardReponse)},
-  { 285, 307, sizeof(::zjchain::block::protobuf::BlockMessage)},
+  { 86, 93, sizeof(::zjchain::block::protobuf::ConsensusToTxsItem)},
+  { 95, 101, sizeof(::zjchain::block::protobuf::ConsensusToTxs)},
+  { 102, 112, sizeof(::zjchain::block::protobuf::GetTxBlockRequest)},
+  { 117, 123, sizeof(::zjchain::block::protobuf::GetTxBlockResponse)},
+  { 124, 132, sizeof(::zjchain::block::protobuf::AccountHeightRequest)},
+  { 135, 143, sizeof(::zjchain::block::protobuf::AccountHeightResponse)},
+  { 146, 154, sizeof(::zjchain::block::protobuf::AccountAttrRequest)},
+  { 157, 166, sizeof(::zjchain::block::protobuf::AccountAttrResponse)},
+  { 170, 180, sizeof(::zjchain::block::protobuf::UpdateVpnCountRequest)},
+  { 185, 192, sizeof(::zjchain::block::protobuf::VpnCountItem)},
+  { 194, 200, sizeof(::zjchain::block::protobuf::UpdateVpnCountResponse)},
+  { 201, 211, sizeof(::zjchain::block::protobuf::GetAccountInitInfoRequest)},
+  { 216, 225, sizeof(::zjchain::block::protobuf::GetAccountInitInfoResponse)},
+  { 229, 236, sizeof(::zjchain::block::protobuf::UpdateVpnActiveRequest)},
+  { 238, 246, sizeof(::zjchain::block::protobuf::AdRewardRequest)},
+  { 249, 257, sizeof(::zjchain::block::protobuf::ElectStatisticInfo)},
+  { 260, 268, sizeof(::zjchain::block::protobuf::StatisticInfo)},
+  { 271, 277, sizeof(::zjchain::block::protobuf::RefreshPoolHeightRequest)},
+  { 278, 284, sizeof(::zjchain::block::protobuf::RefreshPoolHeightResponse)},
+  { 285, 291, sizeof(::zjchain::block::protobuf::GetAccountShardRequest)},
+  { 292, 299, sizeof(::zjchain::block::protobuf::GetAccountShardReponse)},
+  { 301, 323, sizeof(::zjchain::block::protobuf::BlockMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -919,6 +979,8 @@ static ::google::protobuf::Message const * const file_default_instances[] = {
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::block::protobuf::_TransferItem_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::block::protobuf::_BlockTx_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::block::protobuf::_Block_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::block::protobuf::_ConsensusToTxsItem_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::block::protobuf::_ConsensusToTxs_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::block::protobuf::_GetTxBlockRequest_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::block::protobuf::_GetTxBlockResponse_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::block::protobuf::_AccountHeightRequest_default_instance_),
@@ -956,7 +1018,7 @@ void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 24);
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 26);
 }
 
 void AddDescriptorsImpl() {
@@ -966,93 +1028,96 @@ void AddDescriptorsImpl() {
       "obuf\032\022protos/pools.proto\"A\n\013StorageItem\022"
       "\013\n\003key\030\001 \001(\014\022\020\n\010val_hash\030\002 \001(\014\022\023\n\010val_si"
       "ze\030\003 \001(\r:\0010\"8\n\014TransferItem\022\014\n\004from\030\001 \001("
-      "\014\022\n\n\002to\030\002 \001(\014\022\016\n\006amount\030\003 \001(\004\"\303\002\n\007BlockT"
-      "x\022\013\n\003gid\030\001 \001(\014\022\023\n\013from_pubkey\030\002 \001(\014\022\n\n\002t"
-      "o\030\003 \001(\014\022\016\n\006amount\030\004 \001(\004\022\021\n\tgas_limit\030\005 \001"
-      "(\004\022\020\n\010gas_used\030\006 \001(\004\022\021\n\tgas_price\030\007 \001(\004\022"
-      "\017\n\007balance\030\010 \001(\004\022.\n\004step\030\t \001(\0162 .zjchain"
-      ".pools.protobuf.StepType\022\016\n\006status\030\n \001(\r"
-      "\0225\n\010storages\030\013 \003(\0132#.zjchain.block.proto"
-      "buf.StorageItem\022:\n\014contract_txs\030\014 \003(\0132$."
-      "zjchain.block.protobuf.TransferItem\"\345\002\n\005"
-      "Block\022\022\n\nnetwork_id\030\001 \001(\r\022\022\n\npool_index\030"
-      "\002 \001(\r\022\017\n\007prehash\030\003 \001(\014\022\014\n\004hash\030\004 \001(\014\022\017\n\007"
-      "version\030\005 \001(\r\022\016\n\006height\030\006 \001(\004\022\032\n\022consist"
-      "ency_random\030\007 \001(\004\022\031\n\021electblock_height\030\010"
-      " \001(\004\022\030\n\020timeblock_height\030\t \001(\004\022\030\n\020precom"
-      "mit_bitmap\030\n \003(\004\0220\n\007tx_list\030\013 \003(\0132\037.zjch"
-      "ain.block.protobuf.BlockTx\022\021\n\ttimestamp\030"
-      "\014 \001(\004\022\026\n\016bls_agg_sign_x\030\r \001(\014\022\026\n\016bls_agg"
-      "_sign_y\030\016 \001(\014\022\024\n\014leader_index\030\017 \001(\004\"n\n\021G"
-      "etTxBlockRequest\022\016\n\006tx_gid\030\001 \001(\014\022\022\n\nbloc"
-      "k_hash\030\002 \001(\014\022\014\n\004from\030\003 \001(\010\022\016\n\006height\030\004 \001"
-      "(\004\022\027\n\017account_address\030\005 \001(\014\"#\n\022GetTxBloc"
-      "kResponse\022\r\n\005block\030\001 \001(\014\"J\n\024AccountHeigh"
-      "tRequest\022\024\n\014account_addr\030\001 \001(\014\022\r\n\005index\030"
-      "\002 \001(\003\022\r\n\005count\030\003 \001(\005\"L\n\025AccountHeightRes"
-      "ponse\022\017\n\007heights\030\001 \003(\004\022\024\n\014account_addr\030\002"
-      " \001(\014\022\014\n\004type\030\003 \001(\014\"G\n\022AccountAttrRequest"
-      "\022\017\n\007account\030\001 \001(\014\022\020\n\010attr_key\030\002 \001(\014\022\016\n\006h"
-      "eight\030\003 \001(\004\"W\n\023AccountAttrResponse\022\017\n\007ac"
-      "count\030\001 \001(\014\022\020\n\010attr_key\030\002 \001(\014\022\016\n\006height\030"
-      "\003 \001(\004\022\r\n\005block\030\004 \001(\014\"h\n\025UpdateVpnCountRe"
-      "quest\022\024\n\014account_hash\030\001 \001(\004\022\n\n\002ip\030\002 \001(\014\022"
-      "\016\n\006old_ip\030\003 \001(\014\022\013\n\003uid\030\004 \001(\014\022\020\n\010just_set"
-      "\030\005 \001(\010\")\n\014VpnCountItem\022\n\n\002ip\030\001 \001(\014\022\r\n\005co"
-      "unt\030\002 \001(\r\"Q\n\026UpdateVpnCountResponse\0227\n\tv"
-      "pn_nodes\030\001 \003(\0132$.zjchain.block.protobuf."
-      "VpnCountItem\"e\n\031GetAccountInitInfoReques"
-      "t\022\n\n\002id\030\001 \001(\014\022\r\n\005count\030\002 \001(\r\022\016\n\006height\030\003"
-      " \001(\004\022\016\n\006net_id\030\004 \001(\004\022\r\n\005index\030\005 \001(\004\"\177\n\032G"
-      "etAccountInitInfoResponse\022\017\n\007balance\030\001 \001"
-      "(\004\0221\n\nblock_list\030\002 \003(\0132\035.zjchain.block.p"
-      "rotobuf.Block\022\n\n\002id\030\003 \001(\014\022\021\n\tmax_index\030\004"
-      " \001(\004\"0\n\026UpdateVpnActiveRequest\022\n\n\002id\030\001 \001"
-      "(\014\022\n\n\002ip\030\002 \001(\014\">\n\017AdRewardRequest\022\n\n\002id\030"
-      "\001 \001(\014\022\022\n\nreward_key\030\002 \001(\014\022\013\n\003gid\030\003 \001(\014\"V"
-      "\n\022ElectStatisticInfo\022\024\n\014elect_height\030\001 \001"
-      "(\004\022\025\n\rsucc_tx_count\030\002 \003(\r\022\023\n\013lof_leaders"
-      "\030\003 \003(\r\"\204\001\n\rStatisticInfo\022\030\n\020timeblock_he"
-      "ight\030\001 \001(\004\022\024\n\014all_tx_count\030\002 \001(\r\022C\n\017elec"
-      "t_statistic\030\003 \003(\0132*.zjchain.block.protob"
-      "uf.ElectStatisticInfo\"+\n\030RefreshPoolHeig"
-      "htRequest\022\017\n\007heights\030\001 \003(\004\",\n\031RefreshPoo"
-      "lHeightResponse\022\017\n\007heights\030\001 \003(\004\"$\n\026GetA"
-      "ccountShardRequest\022\n\n\002id\030\001 \001(\014\"6\n\026GetAcc"
-      "ountShardReponse\022\n\n\002id\030\001 \001(\014\022\020\n\010shard_id"
-      "\030\002 \001(\r\"\231\t\n\014BlockMessage\022<\n\tblock_req\030\001 \001"
-      "(\0132).zjchain.block.protobuf.GetTxBlockRe"
-      "quest\022=\n\tblock_res\030\002 \001(\0132*.zjchain.block"
-      ".protobuf.GetTxBlockResponse\022@\n\nheight_r"
-      "eq\030\003 \001(\0132,.zjchain.block.protobuf.Accoun"
-      "tHeightRequest\022A\n\nheight_res\030\004 \001(\0132-.zjc"
-      "hain.block.protobuf.AccountHeightRespons"
-      "e\022@\n\014acc_attr_req\030\005 \001(\0132*.zjchain.block."
-      "protobuf.AccountAttrRequest\022A\n\014acc_attr_"
-      "res\030\006 \001(\0132+.zjchain.block.protobuf.Accou"
-      "ntAttrResponse\022A\n\nup_vpn_req\030\007 \001(\0132-.zjc"
-      "hain.block.protobuf.UpdateVpnCountReques"
-      "t\022B\n\nup_vpn_res\030\010 \001(\0132..zjchain.block.pr"
-      "otobuf.UpdateVpnCountResponse\022K\n\020account"
-      "_init_req\030\t \001(\01321.zjchain.block.protobuf"
-      ".GetAccountInitInfoRequest\022L\n\020account_in"
-      "it_res\030\n \001(\01322.zjchain.block.protobuf.Ge"
-      "tAccountInitInfoResponse\022F\n\016vpn_active_r"
-      "eq\030\013 \001(\0132..zjchain.block.protobuf.Update"
-      "VpnActiveRequest\022>\n\rad_reward_req\030\014 \001(\0132"
-      "\'.zjchain.block.protobuf.AdRewardRequest"
-      "\022I\n\017ref_heights_req\030\r \001(\01320.zjchain.bloc"
-      "k.protobuf.RefreshPoolHeightRequest\022J\n\017r"
-      "ef_heights_res\030\016 \001(\01321.zjchain.block.pro"
-      "tobuf.RefreshPoolHeightResponse\022E\n\racc_s"
-      "hard_req\030\017 \001(\0132..zjchain.block.protobuf."
-      "GetAccountShardRequest\022E\n\racc_shard_res\030"
-      "\020 \001(\0132..zjchain.block.protobuf.GetAccoun"
-      "tShardReponse\0223\n\006to_txs\030\021 \003(\0132#.zjchain."
-      "pools.protobuf.ToTxHeights"
+      "\014\022\n\n\002to\030\002 \001(\014\022\016\n\006amount\030\003 \001(\004\"\274\002\n\007BlockT"
+      "x\022\013\n\003gid\030\001 \001(\014\022\014\n\004from\030\002 \001(\014\022\n\n\002to\030\003 \001(\014"
+      "\022\016\n\006amount\030\004 \001(\004\022\021\n\tgas_limit\030\005 \001(\004\022\020\n\010g"
+      "as_used\030\006 \001(\004\022\021\n\tgas_price\030\007 \001(\004\022\017\n\007bala"
+      "nce\030\010 \001(\004\022.\n\004step\030\t \001(\0162 .zjchain.pools."
+      "protobuf.StepType\022\016\n\006status\030\n \001(\r\0225\n\010sto"
+      "rages\030\013 \003(\0132#.zjchain.block.protobuf.Sto"
+      "rageItem\022:\n\014contract_txs\030\014 \003(\0132$.zjchain"
+      ".block.protobuf.TransferItem\"\345\002\n\005Block\022\022"
+      "\n\nnetwork_id\030\001 \001(\r\022\022\n\npool_index\030\002 \001(\r\022\017"
+      "\n\007prehash\030\003 \001(\014\022\014\n\004hash\030\004 \001(\014\022\017\n\007version"
+      "\030\005 \001(\r\022\016\n\006height\030\006 \001(\004\022\032\n\022consistency_ra"
+      "ndom\030\007 \001(\004\022\031\n\021electblock_height\030\010 \001(\004\022\030\n"
+      "\020timeblock_height\030\t \001(\004\022\030\n\020precommit_bit"
+      "map\030\n \003(\004\0220\n\007tx_list\030\013 \003(\0132\037.zjchain.blo"
+      "ck.protobuf.BlockTx\022\021\n\ttimestamp\030\014 \001(\004\022\026"
+      "\n\016bls_agg_sign_x\030\r \001(\014\022\026\n\016bls_agg_sign_y"
+      "\030\016 \001(\014\022\024\n\014leader_index\030\017 \001(\004\"1\n\022Consensu"
+      "sToTxsItem\022\n\n\002to\030\001 \001(\014\022\017\n\007balance\030\002 \001(\004\""
+      "I\n\016ConsensusToTxs\0227\n\003tos\030\001 \003(\0132*.zjchain"
+      ".block.protobuf.ConsensusToTxsItem\"n\n\021Ge"
+      "tTxBlockRequest\022\016\n\006tx_gid\030\001 \001(\014\022\022\n\nblock"
+      "_hash\030\002 \001(\014\022\014\n\004from\030\003 \001(\010\022\016\n\006height\030\004 \001("
+      "\004\022\027\n\017account_address\030\005 \001(\014\"#\n\022GetTxBlock"
+      "Response\022\r\n\005block\030\001 \001(\014\"J\n\024AccountHeight"
+      "Request\022\024\n\014account_addr\030\001 \001(\014\022\r\n\005index\030\002"
+      " \001(\003\022\r\n\005count\030\003 \001(\005\"L\n\025AccountHeightResp"
+      "onse\022\017\n\007heights\030\001 \003(\004\022\024\n\014account_addr\030\002 "
+      "\001(\014\022\014\n\004type\030\003 \001(\014\"G\n\022AccountAttrRequest\022"
+      "\017\n\007account\030\001 \001(\014\022\020\n\010attr_key\030\002 \001(\014\022\016\n\006he"
+      "ight\030\003 \001(\004\"W\n\023AccountAttrResponse\022\017\n\007acc"
+      "ount\030\001 \001(\014\022\020\n\010attr_key\030\002 \001(\014\022\016\n\006height\030\003"
+      " \001(\004\022\r\n\005block\030\004 \001(\014\"h\n\025UpdateVpnCountReq"
+      "uest\022\024\n\014account_hash\030\001 \001(\004\022\n\n\002ip\030\002 \001(\014\022\016"
+      "\n\006old_ip\030\003 \001(\014\022\013\n\003uid\030\004 \001(\014\022\020\n\010just_set\030"
+      "\005 \001(\010\")\n\014VpnCountItem\022\n\n\002ip\030\001 \001(\014\022\r\n\005cou"
+      "nt\030\002 \001(\r\"Q\n\026UpdateVpnCountResponse\0227\n\tvp"
+      "n_nodes\030\001 \003(\0132$.zjchain.block.protobuf.V"
+      "pnCountItem\"e\n\031GetAccountInitInfoRequest"
+      "\022\n\n\002id\030\001 \001(\014\022\r\n\005count\030\002 \001(\r\022\016\n\006height\030\003 "
+      "\001(\004\022\016\n\006net_id\030\004 \001(\004\022\r\n\005index\030\005 \001(\004\"\177\n\032Ge"
+      "tAccountInitInfoResponse\022\017\n\007balance\030\001 \001("
+      "\004\0221\n\nblock_list\030\002 \003(\0132\035.zjchain.block.pr"
+      "otobuf.Block\022\n\n\002id\030\003 \001(\014\022\021\n\tmax_index\030\004 "
+      "\001(\004\"0\n\026UpdateVpnActiveRequest\022\n\n\002id\030\001 \001("
+      "\014\022\n\n\002ip\030\002 \001(\014\">\n\017AdRewardRequest\022\n\n\002id\030\001"
+      " \001(\014\022\022\n\nreward_key\030\002 \001(\014\022\013\n\003gid\030\003 \001(\014\"V\n"
+      "\022ElectStatisticInfo\022\024\n\014elect_height\030\001 \001("
+      "\004\022\025\n\rsucc_tx_count\030\002 \003(\r\022\023\n\013lof_leaders\030"
+      "\003 \003(\r\"\204\001\n\rStatisticInfo\022\030\n\020timeblock_hei"
+      "ght\030\001 \001(\004\022\024\n\014all_tx_count\030\002 \001(\r\022C\n\017elect"
+      "_statistic\030\003 \003(\0132*.zjchain.block.protobu"
+      "f.ElectStatisticInfo\"+\n\030RefreshPoolHeigh"
+      "tRequest\022\017\n\007heights\030\001 \003(\004\",\n\031RefreshPool"
+      "HeightResponse\022\017\n\007heights\030\001 \003(\004\"$\n\026GetAc"
+      "countShardRequest\022\n\n\002id\030\001 \001(\014\"6\n\026GetAcco"
+      "untShardReponse\022\n\n\002id\030\001 \001(\014\022\020\n\010shard_id\030"
+      "\002 \001(\r\"\231\t\n\014BlockMessage\022<\n\tblock_req\030\001 \001("
+      "\0132).zjchain.block.protobuf.GetTxBlockReq"
+      "uest\022=\n\tblock_res\030\002 \001(\0132*.zjchain.block."
+      "protobuf.GetTxBlockResponse\022@\n\nheight_re"
+      "q\030\003 \001(\0132,.zjchain.block.protobuf.Account"
+      "HeightRequest\022A\n\nheight_res\030\004 \001(\0132-.zjch"
+      "ain.block.protobuf.AccountHeightResponse"
+      "\022@\n\014acc_attr_req\030\005 \001(\0132*.zjchain.block.p"
+      "rotobuf.AccountAttrRequest\022A\n\014acc_attr_r"
+      "es\030\006 \001(\0132+.zjchain.block.protobuf.Accoun"
+      "tAttrResponse\022A\n\nup_vpn_req\030\007 \001(\0132-.zjch"
+      "ain.block.protobuf.UpdateVpnCountRequest"
+      "\022B\n\nup_vpn_res\030\010 \001(\0132..zjchain.block.pro"
+      "tobuf.UpdateVpnCountResponse\022K\n\020account_"
+      "init_req\030\t \001(\01321.zjchain.block.protobuf."
+      "GetAccountInitInfoRequest\022L\n\020account_ini"
+      "t_res\030\n \001(\01322.zjchain.block.protobuf.Get"
+      "AccountInitInfoResponse\022F\n\016vpn_active_re"
+      "q\030\013 \001(\0132..zjchain.block.protobuf.UpdateV"
+      "pnActiveRequest\022>\n\rad_reward_req\030\014 \001(\0132\'"
+      ".zjchain.block.protobuf.AdRewardRequest\022"
+      "I\n\017ref_heights_req\030\r \001(\01320.zjchain.block"
+      ".protobuf.RefreshPoolHeightRequest\022J\n\017re"
+      "f_heights_res\030\016 \001(\01321.zjchain.block.prot"
+      "obuf.RefreshPoolHeightResponse\022E\n\racc_sh"
+      "ard_req\030\017 \001(\0132..zjchain.block.protobuf.G"
+      "etAccountShardRequest\022E\n\racc_shard_res\030\020"
+      " \001(\0132..zjchain.block.protobuf.GetAccount"
+      "ShardReponse\0223\n\006to_txs\030\021 \003(\0132#.zjchain.p"
+      "ools.protobuf.ToTxHeights"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 3506);
+      descriptor, 3625);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/block.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fpools_2eproto::AddDescriptors();
@@ -1745,7 +1810,7 @@ void BlockTx::InitAsDefaultInstance() {
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int BlockTx::kGidFieldNumber;
-const int BlockTx::kFromPubkeyFieldNumber;
+const int BlockTx::kFromFieldNumber;
 const int BlockTx::kToFieldNumber;
 const int BlockTx::kAmountFieldNumber;
 const int BlockTx::kGasLimitFieldNumber;
@@ -1776,9 +1841,9 @@ BlockTx::BlockTx(const BlockTx& from)
   if (from.has_gid()) {
     gid_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.gid_);
   }
-  from_pubkey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.has_from_pubkey()) {
-    from_pubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.from_pubkey_);
+  from_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_from()) {
+    from_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.from_);
   }
   to_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.has_to()) {
@@ -1792,7 +1857,7 @@ BlockTx::BlockTx(const BlockTx& from)
 
 void BlockTx::SharedCtor() {
   gid_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  from_pubkey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  from_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   to_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&amount_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&status_) -
@@ -1806,7 +1871,7 @@ BlockTx::~BlockTx() {
 
 void BlockTx::SharedDtor() {
   gid_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  from_pubkey_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  from_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   to_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
@@ -1838,7 +1903,7 @@ void BlockTx::Clear() {
       gid_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000002u) {
-      from_pubkey_.ClearNonDefaultToEmptyNoArena();
+      from_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000004u) {
       to_.ClearNonDefaultToEmptyNoArena();
@@ -1880,12 +1945,12 @@ bool BlockTx::MergePartialFromCodedStream(
         break;
       }
 
-      // optional bytes from_pubkey = 2;
+      // optional bytes from = 2;
       case 2: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->mutable_from_pubkey()));
+                input, this->mutable_from()));
         } else {
           goto handle_unusual;
         }
@@ -2065,10 +2130,10 @@ void BlockTx::SerializeWithCachedSizes(
       1, this->gid(), output);
   }
 
-  // optional bytes from_pubkey = 2;
+  // optional bytes from = 2;
   if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
-      2, this->from_pubkey(), output);
+      2, this->from(), output);
   }
 
   // optional bytes to = 3;
@@ -2153,11 +2218,11 @@ void BlockTx::SerializeWithCachedSizes(
         1, this->gid(), target);
   }
 
-  // optional bytes from_pubkey = 2;
+  // optional bytes from = 2;
   if (cached_has_bits & 0x00000002u) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        2, this->from_pubkey(), target);
+        2, this->from(), target);
   }
 
   // optional bytes to = 3;
@@ -2266,11 +2331,11 @@ size_t BlockTx::ByteSizeLong() const {
           this->gid());
     }
 
-    // optional bytes from_pubkey = 2;
-    if (has_from_pubkey()) {
+    // optional bytes from = 2;
+    if (has_from()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->from_pubkey());
+          this->from());
     }
 
     // optional bytes to = 3;
@@ -2367,8 +2432,8 @@ void BlockTx::MergeFrom(const BlockTx& from) {
       gid_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.gid_);
     }
     if (cached_has_bits & 0x00000002u) {
-      set_has_from_pubkey();
-      from_pubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.from_pubkey_);
+      set_has_from();
+      from_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.from_);
     }
     if (cached_has_bits & 0x00000004u) {
       set_has_to();
@@ -2430,7 +2495,7 @@ void BlockTx::InternalSwap(BlockTx* other) {
   CastToBase(&contract_txs_)->InternalSwap(CastToBase(&other->contract_txs_));
   gid_.Swap(&other->gid_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
-  from_pubkey_.Swap(&other->from_pubkey_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  from_.Swap(&other->from_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   to_.Swap(&other->to_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
@@ -3269,6 +3334,521 @@ void Block::InternalSwap(Block* other) {
 }
 
 ::google::protobuf::Metadata Block::GetMetadata() const {
+  protobuf_protos_2fblock_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fblock_2eproto::file_level_metadata[kIndexInFileMessages];
+}
+
+
+// ===================================================================
+
+void ConsensusToTxsItem::InitAsDefaultInstance() {
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int ConsensusToTxsItem::kToFieldNumber;
+const int ConsensusToTxsItem::kBalanceFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+ConsensusToTxsItem::ConsensusToTxsItem()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2fblock_2eproto::scc_info_ConsensusToTxsItem.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:zjchain.block.protobuf.ConsensusToTxsItem)
+}
+ConsensusToTxsItem::ConsensusToTxsItem(const ConsensusToTxsItem& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  to_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_to()) {
+    to_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.to_);
+  }
+  balance_ = from.balance_;
+  // @@protoc_insertion_point(copy_constructor:zjchain.block.protobuf.ConsensusToTxsItem)
+}
+
+void ConsensusToTxsItem::SharedCtor() {
+  to_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  balance_ = GOOGLE_ULONGLONG(0);
+}
+
+ConsensusToTxsItem::~ConsensusToTxsItem() {
+  // @@protoc_insertion_point(destructor:zjchain.block.protobuf.ConsensusToTxsItem)
+  SharedDtor();
+}
+
+void ConsensusToTxsItem::SharedDtor() {
+  to_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+
+void ConsensusToTxsItem::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* ConsensusToTxsItem::descriptor() {
+  ::protobuf_protos_2fblock_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fblock_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const ConsensusToTxsItem& ConsensusToTxsItem::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fblock_2eproto::scc_info_ConsensusToTxsItem.base);
+  return *internal_default_instance();
+}
+
+
+void ConsensusToTxsItem::Clear() {
+// @@protoc_insertion_point(message_clear_start:zjchain.block.protobuf.ConsensusToTxsItem)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    to_.ClearNonDefaultToEmptyNoArena();
+  }
+  balance_ = GOOGLE_ULONGLONG(0);
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool ConsensusToTxsItem::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:zjchain.block.protobuf.ConsensusToTxsItem)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional bytes to = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_to()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint64 balance = 2;
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
+          set_has_balance();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &balance_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:zjchain.block.protobuf.ConsensusToTxsItem)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:zjchain.block.protobuf.ConsensusToTxsItem)
+  return false;
+#undef DO_
+}
+
+void ConsensusToTxsItem::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:zjchain.block.protobuf.ConsensusToTxsItem)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional bytes to = 1;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      1, this->to(), output);
+  }
+
+  // optional uint64 balance = 2;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->balance(), output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:zjchain.block.protobuf.ConsensusToTxsItem)
+}
+
+::google::protobuf::uint8* ConsensusToTxsItem::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.block.protobuf.ConsensusToTxsItem)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional bytes to = 1;
+  if (cached_has_bits & 0x00000001u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        1, this->to(), target);
+  }
+
+  // optional uint64 balance = 2;
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->balance(), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:zjchain.block.protobuf.ConsensusToTxsItem)
+  return target;
+}
+
+size_t ConsensusToTxsItem::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:zjchain.block.protobuf.ConsensusToTxsItem)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  if (_has_bits_[0 / 32] & 3u) {
+    // optional bytes to = 1;
+    if (has_to()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->to());
+    }
+
+    // optional uint64 balance = 2;
+    if (has_balance()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->balance());
+    }
+
+  }
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void ConsensusToTxsItem::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.block.protobuf.ConsensusToTxsItem)
+  GOOGLE_DCHECK_NE(&from, this);
+  const ConsensusToTxsItem* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const ConsensusToTxsItem>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.block.protobuf.ConsensusToTxsItem)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.block.protobuf.ConsensusToTxsItem)
+    MergeFrom(*source);
+  }
+}
+
+void ConsensusToTxsItem::MergeFrom(const ConsensusToTxsItem& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.block.protobuf.ConsensusToTxsItem)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
+      set_has_to();
+      to_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.to_);
+    }
+    if (cached_has_bits & 0x00000002u) {
+      balance_ = from.balance_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
+}
+
+void ConsensusToTxsItem::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.block.protobuf.ConsensusToTxsItem)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void ConsensusToTxsItem::CopyFrom(const ConsensusToTxsItem& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.block.protobuf.ConsensusToTxsItem)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ConsensusToTxsItem::IsInitialized() const {
+  return true;
+}
+
+void ConsensusToTxsItem::Swap(ConsensusToTxsItem* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void ConsensusToTxsItem::InternalSwap(ConsensusToTxsItem* other) {
+  using std::swap;
+  to_.Swap(&other->to_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  swap(balance_, other->balance_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+::google::protobuf::Metadata ConsensusToTxsItem::GetMetadata() const {
+  protobuf_protos_2fblock_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fblock_2eproto::file_level_metadata[kIndexInFileMessages];
+}
+
+
+// ===================================================================
+
+void ConsensusToTxs::InitAsDefaultInstance() {
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int ConsensusToTxs::kTosFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+ConsensusToTxs::ConsensusToTxs()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2fblock_2eproto::scc_info_ConsensusToTxs.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:zjchain.block.protobuf.ConsensusToTxs)
+}
+ConsensusToTxs::ConsensusToTxs(const ConsensusToTxs& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_),
+      tos_(from.tos_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:zjchain.block.protobuf.ConsensusToTxs)
+}
+
+void ConsensusToTxs::SharedCtor() {
+}
+
+ConsensusToTxs::~ConsensusToTxs() {
+  // @@protoc_insertion_point(destructor:zjchain.block.protobuf.ConsensusToTxs)
+  SharedDtor();
+}
+
+void ConsensusToTxs::SharedDtor() {
+}
+
+void ConsensusToTxs::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* ConsensusToTxs::descriptor() {
+  ::protobuf_protos_2fblock_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fblock_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const ConsensusToTxs& ConsensusToTxs::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fblock_2eproto::scc_info_ConsensusToTxs.base);
+  return *internal_default_instance();
+}
+
+
+void ConsensusToTxs::Clear() {
+// @@protoc_insertion_point(message_clear_start:zjchain.block.protobuf.ConsensusToTxs)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  tos_.Clear();
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool ConsensusToTxs::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:zjchain.block.protobuf.ConsensusToTxs)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // repeated .zjchain.block.protobuf.ConsensusToTxsItem tos = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+                input, add_tos()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:zjchain.block.protobuf.ConsensusToTxs)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:zjchain.block.protobuf.ConsensusToTxs)
+  return false;
+#undef DO_
+}
+
+void ConsensusToTxs::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:zjchain.block.protobuf.ConsensusToTxs)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // repeated .zjchain.block.protobuf.ConsensusToTxsItem tos = 1;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->tos_size()); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      1,
+      this->tos(static_cast<int>(i)),
+      output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:zjchain.block.protobuf.ConsensusToTxs)
+}
+
+::google::protobuf::uint8* ConsensusToTxs::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.block.protobuf.ConsensusToTxs)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // repeated .zjchain.block.protobuf.ConsensusToTxsItem tos = 1;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->tos_size()); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        1, this->tos(static_cast<int>(i)), deterministic, target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:zjchain.block.protobuf.ConsensusToTxs)
+  return target;
+}
+
+size_t ConsensusToTxs::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:zjchain.block.protobuf.ConsensusToTxs)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  // repeated .zjchain.block.protobuf.ConsensusToTxsItem tos = 1;
+  {
+    unsigned int count = static_cast<unsigned int>(this->tos_size());
+    total_size += 1UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          this->tos(static_cast<int>(i)));
+    }
+  }
+
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void ConsensusToTxs::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.block.protobuf.ConsensusToTxs)
+  GOOGLE_DCHECK_NE(&from, this);
+  const ConsensusToTxs* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const ConsensusToTxs>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.block.protobuf.ConsensusToTxs)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.block.protobuf.ConsensusToTxs)
+    MergeFrom(*source);
+  }
+}
+
+void ConsensusToTxs::MergeFrom(const ConsensusToTxs& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.block.protobuf.ConsensusToTxs)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  tos_.MergeFrom(from.tos_);
+}
+
+void ConsensusToTxs::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.block.protobuf.ConsensusToTxs)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void ConsensusToTxs::CopyFrom(const ConsensusToTxs& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.block.protobuf.ConsensusToTxs)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ConsensusToTxs::IsInitialized() const {
+  return true;
+}
+
+void ConsensusToTxs::Swap(ConsensusToTxs* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void ConsensusToTxs::InternalSwap(ConsensusToTxs* other) {
+  using std::swap;
+  CastToBase(&tos_)->InternalSwap(CastToBase(&other->tos_));
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+::google::protobuf::Metadata ConsensusToTxs::GetMetadata() const {
   protobuf_protos_2fblock_2eproto::protobuf_AssignDescriptorsOnce();
   return ::protobuf_protos_2fblock_2eproto::file_level_metadata[kIndexInFileMessages];
 }
@@ -10329,6 +10909,12 @@ template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::block::protobuf::BlockT
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::block::protobuf::Block* Arena::CreateMaybeMessage< ::zjchain::block::protobuf::Block >(Arena* arena) {
   return Arena::CreateInternal< ::zjchain::block::protobuf::Block >(arena);
+}
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::block::protobuf::ConsensusToTxsItem* Arena::CreateMaybeMessage< ::zjchain::block::protobuf::ConsensusToTxsItem >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::block::protobuf::ConsensusToTxsItem >(arena);
+}
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::block::protobuf::ConsensusToTxs* Arena::CreateMaybeMessage< ::zjchain::block::protobuf::ConsensusToTxs >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::block::protobuf::ConsensusToTxs >(arena);
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::block::protobuf::GetTxBlockRequest* Arena::CreateMaybeMessage< ::zjchain::block::protobuf::GetTxBlockRequest >(Arena* arena) {
   return Arena::CreateInternal< ::zjchain::block::protobuf::GetTxBlockRequest >(arena);

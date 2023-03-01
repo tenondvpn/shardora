@@ -400,26 +400,28 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, bls_sign_x_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, bls_sign_y_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, commit_bitmap_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, bls_agg_verify_hash_),
   0,
-  8,
-  10,
   9,
-  ~0u,
   11,
+  10,
+  ~0u,
   12,
   13,
-  7,
+  14,
+  8,
   1,
   2,
-  14,
   15,
   16,
+  17,
   3,
   4,
-  17,
+  18,
   5,
   6,
   ~0u,
+  7,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 8, sizeof(::zjchain::hotstuff::protobuf::HotstuffPrepareTransactionInfo)},
@@ -432,7 +434,7 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 65, 72, sizeof(::zjchain::hotstuff::protobuf::LeaderTxCommit)},
   { 74, 80, sizeof(::zjchain::hotstuff::protobuf::ToAccountTx)},
   { 81, 92, sizeof(::zjchain::hotstuff::protobuf::TxBft)},
-  { 98, 123, sizeof(::zjchain::hotstuff::protobuf::HotstuffMessage)},
+  { 98, 124, sizeof(::zjchain::hotstuff::protobuf::HotstuffMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -498,7 +500,7 @@ void AddDescriptorsImpl() {
       ".LeaderTxPreCommit\022C\n\rbtx_precommit\030\005 \001("
       "\0132,.zjchain.hotstuff.protobuf.BackupTxPr"
       "eCommit\022=\n\nltx_commit\030\006 \001(\0132).zjchain.ho"
-      "tstuff.protobuf.LeaderTxCommit\"\241\003\n\017Hotst"
+      "tstuff.protobuf.LeaderTxCommit\"\276\003\n\017Hotst"
       "uffMessage\022\013\n\003gid\030\001 \001(\014\022\020\n\010bft_step\030\002 \001("
       "\005\022\016\n\006leader\030\003 \001(\010\022\016\n\006net_id\030\004 \001(\r\022\016\n\006bit"
       "map\030\005 \003(\004\022\r\n\005agree\030\006 \001(\010\022\022\n\npool_index\030\007"
@@ -509,10 +511,10 @@ void AddDescriptorsImpl() {
       " \001(\r\022\016\n\006pubkey\030\017 \001(\014\022\027\n\017backup_enc_data\030"
       "\020 \001(\014\022\024\n\014elect_height\030\021 \001(\004\022\022\n\nbls_sign_"
       "x\030\022 \001(\014\022\022\n\nbls_sign_y\030\023 \001(\014\022\025\n\rcommit_bi"
-      "tmap\030\024 \003(\004"
+      "tmap\030\024 \003(\004\022\033\n\023bls_agg_verify_hash\030\025 \001(\014"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1570);
+      descriptor, 1599);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/hotstuff.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fblock_2eproto::AddDescriptors();
@@ -3597,6 +3599,7 @@ const int HotstuffMessage::kElectHeightFieldNumber;
 const int HotstuffMessage::kBlsSignXFieldNumber;
 const int HotstuffMessage::kBlsSignYFieldNumber;
 const int HotstuffMessage::kCommitBitmapFieldNumber;
+const int HotstuffMessage::kBlsAggVerifyHashFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 HotstuffMessage::HotstuffMessage()
@@ -3641,6 +3644,10 @@ HotstuffMessage::HotstuffMessage(const HotstuffMessage& from)
   if (from.has_bls_sign_y()) {
     bls_sign_y_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.bls_sign_y_);
   }
+  bls_agg_verify_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_bls_agg_verify_hash()) {
+    bls_agg_verify_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.bls_agg_verify_hash_);
+  }
   if (from.has_tx_bft()) {
     tx_bft_ = new ::zjchain::hotstuff::protobuf::TxBft(*from.tx_bft_);
   } else {
@@ -3660,6 +3667,7 @@ void HotstuffMessage::SharedCtor() {
   backup_enc_data_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   bls_sign_x_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   bls_sign_y_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  bls_agg_verify_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&tx_bft_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&elect_height_) -
       reinterpret_cast<char*>(&tx_bft_)) + sizeof(elect_height_));
@@ -3678,6 +3686,7 @@ void HotstuffMessage::SharedDtor() {
   backup_enc_data_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   bls_sign_x_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   bls_sign_y_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  bls_agg_verify_hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != internal_default_instance()) delete tx_bft_;
 }
 
@@ -3727,19 +3736,22 @@ void HotstuffMessage::Clear() {
       bls_sign_y_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000080u) {
-      GOOGLE_DCHECK(tx_bft_ != NULL);
-      tx_bft_->Clear();
+      bls_agg_verify_hash_.ClearNonDefaultToEmptyNoArena();
     }
   }
-  if (cached_has_bits & 65280u) {
-    ::memset(&bft_step_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&epoch_) -
-        reinterpret_cast<char*>(&bft_step_)) + sizeof(epoch_));
+  if (cached_has_bits & 0x00000100u) {
+    GOOGLE_DCHECK(tx_bft_ != NULL);
+    tx_bft_->Clear();
   }
-  if (cached_has_bits & 196608u) {
-    ::memset(&member_index_, 0, static_cast<size_t>(
+  if (cached_has_bits & 65024u) {
+    ::memset(&bft_step_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&node_port_) -
+        reinterpret_cast<char*>(&bft_step_)) + sizeof(node_port_));
+  }
+  if (cached_has_bits & 458752u) {
+    ::memset(&epoch_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&elect_height_) -
-        reinterpret_cast<char*>(&member_index_)) + sizeof(elect_height_));
+        reinterpret_cast<char*>(&epoch_)) + sizeof(elect_height_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -4029,6 +4041,18 @@ bool HotstuffMessage::MergePartialFromCodedStream(
         break;
       }
 
+      // optional bytes bls_agg_verify_hash = 21;
+      case 21: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(170u /* 170 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_bls_agg_verify_hash()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -4063,17 +4087,17 @@ void HotstuffMessage::SerializeWithCachedSizes(
   }
 
   // optional int32 bft_step = 2;
-  if (cached_has_bits & 0x00000100u) {
+  if (cached_has_bits & 0x00000200u) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->bft_step(), output);
   }
 
   // optional bool leader = 3;
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000800u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(3, this->leader(), output);
   }
 
   // optional uint32 net_id = 4;
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000400u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->net_id(), output);
   }
 
@@ -4084,22 +4108,22 @@ void HotstuffMessage::SerializeWithCachedSizes(
   }
 
   // optional bool agree = 6;
-  if (cached_has_bits & 0x00000800u) {
+  if (cached_has_bits & 0x00001000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(6, this->agree(), output);
   }
 
   // optional uint32 pool_index = 7;
-  if (cached_has_bits & 0x00001000u) {
+  if (cached_has_bits & 0x00002000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(7, this->pool_index(), output);
   }
 
   // optional int32 error = 8;
-  if (cached_has_bits & 0x00002000u) {
+  if (cached_has_bits & 0x00004000u) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(8, this->error(), output);
   }
 
   // optional .zjchain.hotstuff.protobuf.TxBft tx_bft = 9;
-  if (cached_has_bits & 0x00000080u) {
+  if (cached_has_bits & 0x00000100u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       9, this->_internal_tx_bft(), output);
   }
@@ -4117,17 +4141,17 @@ void HotstuffMessage::SerializeWithCachedSizes(
   }
 
   // optional uint32 node_port = 12;
-  if (cached_has_bits & 0x00004000u) {
+  if (cached_has_bits & 0x00008000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(12, this->node_port(), output);
   }
 
   // optional uint32 epoch = 13;
-  if (cached_has_bits & 0x00008000u) {
+  if (cached_has_bits & 0x00010000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(13, this->epoch(), output);
   }
 
   // optional uint32 member_index = 14;
-  if (cached_has_bits & 0x00010000u) {
+  if (cached_has_bits & 0x00020000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(14, this->member_index(), output);
   }
 
@@ -4144,7 +4168,7 @@ void HotstuffMessage::SerializeWithCachedSizes(
   }
 
   // optional uint64 elect_height = 17;
-  if (cached_has_bits & 0x00020000u) {
+  if (cached_has_bits & 0x00040000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(17, this->elect_height(), output);
   }
 
@@ -4164,6 +4188,12 @@ void HotstuffMessage::SerializeWithCachedSizes(
   for (int i = 0, n = this->commit_bitmap_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(
       20, this->commit_bitmap(i), output);
+  }
+
+  // optional bytes bls_agg_verify_hash = 21;
+  if (cached_has_bits & 0x00000080u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      21, this->bls_agg_verify_hash(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -4189,17 +4219,17 @@ void HotstuffMessage::SerializeWithCachedSizes(
   }
 
   // optional int32 bft_step = 2;
-  if (cached_has_bits & 0x00000100u) {
+  if (cached_has_bits & 0x00000200u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->bft_step(), target);
   }
 
   // optional bool leader = 3;
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000800u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(3, this->leader(), target);
   }
 
   // optional uint32 net_id = 4;
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000400u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->net_id(), target);
   }
 
@@ -4208,22 +4238,22 @@ void HotstuffMessage::SerializeWithCachedSizes(
     WriteUInt64ToArray(5, this->bitmap_, target);
 
   // optional bool agree = 6;
-  if (cached_has_bits & 0x00000800u) {
+  if (cached_has_bits & 0x00001000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(6, this->agree(), target);
   }
 
   // optional uint32 pool_index = 7;
-  if (cached_has_bits & 0x00001000u) {
+  if (cached_has_bits & 0x00002000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(7, this->pool_index(), target);
   }
 
   // optional int32 error = 8;
-  if (cached_has_bits & 0x00002000u) {
+  if (cached_has_bits & 0x00004000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(8, this->error(), target);
   }
 
   // optional .zjchain.hotstuff.protobuf.TxBft tx_bft = 9;
-  if (cached_has_bits & 0x00000080u) {
+  if (cached_has_bits & 0x00000100u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         9, this->_internal_tx_bft(), deterministic, target);
@@ -4244,17 +4274,17 @@ void HotstuffMessage::SerializeWithCachedSizes(
   }
 
   // optional uint32 node_port = 12;
-  if (cached_has_bits & 0x00004000u) {
+  if (cached_has_bits & 0x00008000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(12, this->node_port(), target);
   }
 
   // optional uint32 epoch = 13;
-  if (cached_has_bits & 0x00008000u) {
+  if (cached_has_bits & 0x00010000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(13, this->epoch(), target);
   }
 
   // optional uint32 member_index = 14;
-  if (cached_has_bits & 0x00010000u) {
+  if (cached_has_bits & 0x00020000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(14, this->member_index(), target);
   }
 
@@ -4273,7 +4303,7 @@ void HotstuffMessage::SerializeWithCachedSizes(
   }
 
   // optional uint64 elect_height = 17;
-  if (cached_has_bits & 0x00020000u) {
+  if (cached_has_bits & 0x00040000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(17, this->elect_height(), target);
   }
 
@@ -4294,6 +4324,13 @@ void HotstuffMessage::SerializeWithCachedSizes(
   // repeated uint64 commit_bitmap = 20;
   target = ::google::protobuf::internal::WireFormatLite::
     WriteUInt64ToArray(20, this->commit_bitmap_, target);
+
+  // optional bytes bls_agg_verify_hash = 21;
+  if (cached_has_bits & 0x00000080u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        21, this->bls_agg_verify_hash(), target);
+  }
 
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
@@ -4380,6 +4417,15 @@ size_t HotstuffMessage::ByteSizeLong() const {
           this->bls_sign_y());
     }
 
+    // optional bytes bls_agg_verify_hash = 21;
+    if (has_bls_agg_verify_hash()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->bls_agg_verify_hash());
+    }
+
+  }
+  if (_has_bits_[8 / 32] & 65280u) {
     // optional .zjchain.hotstuff.protobuf.TxBft tx_bft = 9;
     if (has_tx_bft()) {
       total_size += 1 +
@@ -4387,8 +4433,6 @@ size_t HotstuffMessage::ByteSizeLong() const {
           *tx_bft_);
     }
 
-  }
-  if (_has_bits_[8 / 32] & 65280u) {
     // optional int32 bft_step = 2;
     if (has_bft_step()) {
       total_size += 1 +
@@ -4434,6 +4478,8 @@ size_t HotstuffMessage::ByteSizeLong() const {
           this->node_port());
     }
 
+  }
+  if (_has_bits_[16 / 32] & 458752u) {
     // optional uint32 epoch = 13;
     if (has_epoch()) {
       total_size += 1 +
@@ -4441,8 +4487,6 @@ size_t HotstuffMessage::ByteSizeLong() const {
           this->epoch());
     }
 
-  }
-  if (_has_bits_[16 / 32] & 196608u) {
     // optional uint32 member_index = 14;
     if (has_member_index()) {
       total_size += 1 +
@@ -4518,41 +4562,45 @@ void HotstuffMessage::MergeFrom(const HotstuffMessage& from) {
       bls_sign_y_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.bls_sign_y_);
     }
     if (cached_has_bits & 0x00000080u) {
-      mutable_tx_bft()->::zjchain::hotstuff::protobuf::TxBft::MergeFrom(from.tx_bft());
+      set_has_bls_agg_verify_hash();
+      bls_agg_verify_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.bls_agg_verify_hash_);
     }
   }
   if (cached_has_bits & 65280u) {
     if (cached_has_bits & 0x00000100u) {
-      bft_step_ = from.bft_step_;
+      mutable_tx_bft()->::zjchain::hotstuff::protobuf::TxBft::MergeFrom(from.tx_bft());
     }
     if (cached_has_bits & 0x00000200u) {
-      net_id_ = from.net_id_;
+      bft_step_ = from.bft_step_;
     }
     if (cached_has_bits & 0x00000400u) {
-      leader_ = from.leader_;
+      net_id_ = from.net_id_;
     }
     if (cached_has_bits & 0x00000800u) {
-      agree_ = from.agree_;
+      leader_ = from.leader_;
     }
     if (cached_has_bits & 0x00001000u) {
-      pool_index_ = from.pool_index_;
+      agree_ = from.agree_;
     }
     if (cached_has_bits & 0x00002000u) {
-      error_ = from.error_;
+      pool_index_ = from.pool_index_;
     }
     if (cached_has_bits & 0x00004000u) {
-      node_port_ = from.node_port_;
+      error_ = from.error_;
     }
     if (cached_has_bits & 0x00008000u) {
-      epoch_ = from.epoch_;
+      node_port_ = from.node_port_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
-  if (cached_has_bits & 196608u) {
+  if (cached_has_bits & 458752u) {
     if (cached_has_bits & 0x00010000u) {
-      member_index_ = from.member_index_;
+      epoch_ = from.epoch_;
     }
     if (cached_has_bits & 0x00020000u) {
+      member_index_ = from.member_index_;
+    }
+    if (cached_has_bits & 0x00040000u) {
       elect_height_ = from.elect_height_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -4598,6 +4646,8 @@ void HotstuffMessage::InternalSwap(HotstuffMessage* other) {
   bls_sign_x_.Swap(&other->bls_sign_x_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   bls_sign_y_.Swap(&other->bls_sign_y_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  bls_agg_verify_hash_.Swap(&other->bls_agg_verify_hash_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(tx_bft_, other->tx_bft_);
   swap(bft_step_, other->bft_step_);

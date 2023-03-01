@@ -39,7 +39,7 @@ namespace protobuf_protos_2fblock_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[24];
+  static const ::google::protobuf::internal::ParseTable schema[26];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -73,6 +73,12 @@ extern BlockMessageDefaultTypeInternal _BlockMessage_default_instance_;
 class BlockTx;
 class BlockTxDefaultTypeInternal;
 extern BlockTxDefaultTypeInternal _BlockTx_default_instance_;
+class ConsensusToTxs;
+class ConsensusToTxsDefaultTypeInternal;
+extern ConsensusToTxsDefaultTypeInternal _ConsensusToTxs_default_instance_;
+class ConsensusToTxsItem;
+class ConsensusToTxsItemDefaultTypeInternal;
+extern ConsensusToTxsItemDefaultTypeInternal _ConsensusToTxsItem_default_instance_;
 class ElectStatisticInfo;
 class ElectStatisticInfoDefaultTypeInternal;
 extern ElectStatisticInfoDefaultTypeInternal _ElectStatisticInfo_default_instance_;
@@ -134,6 +140,8 @@ template<> ::zjchain::block::protobuf::AdRewardRequest* Arena::CreateMaybeMessag
 template<> ::zjchain::block::protobuf::Block* Arena::CreateMaybeMessage<::zjchain::block::protobuf::Block>(Arena*);
 template<> ::zjchain::block::protobuf::BlockMessage* Arena::CreateMaybeMessage<::zjchain::block::protobuf::BlockMessage>(Arena*);
 template<> ::zjchain::block::protobuf::BlockTx* Arena::CreateMaybeMessage<::zjchain::block::protobuf::BlockTx>(Arena*);
+template<> ::zjchain::block::protobuf::ConsensusToTxs* Arena::CreateMaybeMessage<::zjchain::block::protobuf::ConsensusToTxs>(Arena*);
+template<> ::zjchain::block::protobuf::ConsensusToTxsItem* Arena::CreateMaybeMessage<::zjchain::block::protobuf::ConsensusToTxsItem>(Arena*);
 template<> ::zjchain::block::protobuf::ElectStatisticInfo* Arena::CreateMaybeMessage<::zjchain::block::protobuf::ElectStatisticInfo>(Arena*);
 template<> ::zjchain::block::protobuf::GetAccountInitInfoRequest* Arena::CreateMaybeMessage<::zjchain::block::protobuf::GetAccountInitInfoRequest>(Arena*);
 template<> ::zjchain::block::protobuf::GetAccountInitInfoResponse* Arena::CreateMaybeMessage<::zjchain::block::protobuf::GetAccountInitInfoResponse>(Arena*);
@@ -591,20 +599,20 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::std::string* release_gid();
   void set_allocated_gid(::std::string* gid);
 
-  // optional bytes from_pubkey = 2;
-  bool has_from_pubkey() const;
-  void clear_from_pubkey();
-  static const int kFromPubkeyFieldNumber = 2;
-  const ::std::string& from_pubkey() const;
-  void set_from_pubkey(const ::std::string& value);
+  // optional bytes from = 2;
+  bool has_from() const;
+  void clear_from();
+  static const int kFromFieldNumber = 2;
+  const ::std::string& from() const;
+  void set_from(const ::std::string& value);
   #if LANG_CXX11
-  void set_from_pubkey(::std::string&& value);
+  void set_from(::std::string&& value);
   #endif
-  void set_from_pubkey(const char* value);
-  void set_from_pubkey(const void* value, size_t size);
-  ::std::string* mutable_from_pubkey();
-  ::std::string* release_from_pubkey();
-  void set_allocated_from_pubkey(::std::string* from_pubkey);
+  void set_from(const char* value);
+  void set_from(const void* value, size_t size);
+  ::std::string* mutable_from();
+  ::std::string* release_from();
+  void set_allocated_from(::std::string* from);
 
   // optional bytes to = 3;
   bool has_to() const;
@@ -674,8 +682,8 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
  private:
   void set_has_gid();
   void clear_has_gid();
-  void set_has_from_pubkey();
-  void clear_has_from_pubkey();
+  void set_has_from();
+  void clear_has_from();
   void set_has_to();
   void clear_has_to();
   void set_has_amount();
@@ -699,7 +707,7 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::StorageItem > storages_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::TransferItem > contract_txs_;
   ::google::protobuf::internal::ArenaStringPtr gid_;
-  ::google::protobuf::internal::ArenaStringPtr from_pubkey_;
+  ::google::protobuf::internal::ArenaStringPtr from_;
   ::google::protobuf::internal::ArenaStringPtr to_;
   ::google::protobuf::uint64 amount_;
   ::google::protobuf::uint64 gas_limit_;
@@ -1004,6 +1012,255 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
 };
 // -------------------------------------------------------------------
 
+class ConsensusToTxsItem : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.block.protobuf.ConsensusToTxsItem) */ {
+ public:
+  ConsensusToTxsItem();
+  virtual ~ConsensusToTxsItem();
+
+  ConsensusToTxsItem(const ConsensusToTxsItem& from);
+
+  inline ConsensusToTxsItem& operator=(const ConsensusToTxsItem& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  ConsensusToTxsItem(ConsensusToTxsItem&& from) noexcept
+    : ConsensusToTxsItem() {
+    *this = ::std::move(from);
+  }
+
+  inline ConsensusToTxsItem& operator=(ConsensusToTxsItem&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ConsensusToTxsItem& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ConsensusToTxsItem* internal_default_instance() {
+    return reinterpret_cast<const ConsensusToTxsItem*>(
+               &_ConsensusToTxsItem_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    4;
+
+  void Swap(ConsensusToTxsItem* other);
+  friend void swap(ConsensusToTxsItem& a, ConsensusToTxsItem& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ConsensusToTxsItem* New() const final {
+    return CreateMaybeMessage<ConsensusToTxsItem>(NULL);
+  }
+
+  ConsensusToTxsItem* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<ConsensusToTxsItem>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const ConsensusToTxsItem& from);
+  void MergeFrom(const ConsensusToTxsItem& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ConsensusToTxsItem* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional bytes to = 1;
+  bool has_to() const;
+  void clear_to();
+  static const int kToFieldNumber = 1;
+  const ::std::string& to() const;
+  void set_to(const ::std::string& value);
+  #if LANG_CXX11
+  void set_to(::std::string&& value);
+  #endif
+  void set_to(const char* value);
+  void set_to(const void* value, size_t size);
+  ::std::string* mutable_to();
+  ::std::string* release_to();
+  void set_allocated_to(::std::string* to);
+
+  // optional uint64 balance = 2;
+  bool has_balance() const;
+  void clear_balance();
+  static const int kBalanceFieldNumber = 2;
+  ::google::protobuf::uint64 balance() const;
+  void set_balance(::google::protobuf::uint64 value);
+
+  // @@protoc_insertion_point(class_scope:zjchain.block.protobuf.ConsensusToTxsItem)
+ private:
+  void set_has_to();
+  void clear_has_to();
+  void set_has_balance();
+  void clear_has_balance();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::internal::ArenaStringPtr to_;
+  ::google::protobuf::uint64 balance_;
+  friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class ConsensusToTxs : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.block.protobuf.ConsensusToTxs) */ {
+ public:
+  ConsensusToTxs();
+  virtual ~ConsensusToTxs();
+
+  ConsensusToTxs(const ConsensusToTxs& from);
+
+  inline ConsensusToTxs& operator=(const ConsensusToTxs& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  ConsensusToTxs(ConsensusToTxs&& from) noexcept
+    : ConsensusToTxs() {
+    *this = ::std::move(from);
+  }
+
+  inline ConsensusToTxs& operator=(ConsensusToTxs&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ConsensusToTxs& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ConsensusToTxs* internal_default_instance() {
+    return reinterpret_cast<const ConsensusToTxs*>(
+               &_ConsensusToTxs_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    5;
+
+  void Swap(ConsensusToTxs* other);
+  friend void swap(ConsensusToTxs& a, ConsensusToTxs& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ConsensusToTxs* New() const final {
+    return CreateMaybeMessage<ConsensusToTxs>(NULL);
+  }
+
+  ConsensusToTxs* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<ConsensusToTxs>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const ConsensusToTxs& from);
+  void MergeFrom(const ConsensusToTxs& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ConsensusToTxs* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated .zjchain.block.protobuf.ConsensusToTxsItem tos = 1;
+  int tos_size() const;
+  void clear_tos();
+  static const int kTosFieldNumber = 1;
+  ::zjchain::block::protobuf::ConsensusToTxsItem* mutable_tos(int index);
+  ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::ConsensusToTxsItem >*
+      mutable_tos();
+  const ::zjchain::block::protobuf::ConsensusToTxsItem& tos(int index) const;
+  ::zjchain::block::protobuf::ConsensusToTxsItem* add_tos();
+  const ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::ConsensusToTxsItem >&
+      tos() const;
+
+  // @@protoc_insertion_point(class_scope:zjchain.block.protobuf.ConsensusToTxs)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::ConsensusToTxsItem > tos_;
+  friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class GetTxBlockRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.block.protobuf.GetTxBlockRequest) */ {
  public:
   GetTxBlockRequest();
@@ -1046,7 +1303,7 @@ class GetTxBlockRequest : public ::google::protobuf::Message /* @@protoc_inserti
                &_GetTxBlockRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    6;
 
   void Swap(GetTxBlockRequest* other);
   friend void swap(GetTxBlockRequest& a, GetTxBlockRequest& b) {
@@ -1224,7 +1481,7 @@ class GetTxBlockResponse : public ::google::protobuf::Message /* @@protoc_insert
                &_GetTxBlockResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    7;
 
   void Swap(GetTxBlockResponse* other);
   friend void swap(GetTxBlockResponse& a, GetTxBlockResponse& b) {
@@ -1346,7 +1603,7 @@ class AccountHeightRequest : public ::google::protobuf::Message /* @@protoc_inse
                &_AccountHeightRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    8;
 
   void Swap(AccountHeightRequest* other);
   friend void swap(AccountHeightRequest& a, AccountHeightRequest& b) {
@@ -1488,7 +1745,7 @@ class AccountHeightResponse : public ::google::protobuf::Message /* @@protoc_ins
                &_AccountHeightResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    9;
 
   void Swap(AccountHeightResponse* other);
   friend void swap(AccountHeightResponse& a, AccountHeightResponse& b) {
@@ -1641,7 +1898,7 @@ class AccountAttrRequest : public ::google::protobuf::Message /* @@protoc_insert
                &_AccountAttrRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    10;
 
   void Swap(AccountAttrRequest* other);
   friend void swap(AccountAttrRequest& a, AccountAttrRequest& b) {
@@ -1791,7 +2048,7 @@ class AccountAttrResponse : public ::google::protobuf::Message /* @@protoc_inser
                &_AccountAttrResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    11;
 
   void Swap(AccountAttrResponse* other);
   friend void swap(AccountAttrResponse& a, AccountAttrResponse& b) {
@@ -1959,7 +2216,7 @@ class UpdateVpnCountRequest : public ::google::protobuf::Message /* @@protoc_ins
                &_UpdateVpnCountRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    12;
 
   void Swap(UpdateVpnCountRequest* other);
   friend void swap(UpdateVpnCountRequest& a, UpdateVpnCountRequest& b) {
@@ -2137,7 +2394,7 @@ class VpnCountItem : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_VpnCountItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    13;
 
   void Swap(VpnCountItem* other);
   friend void swap(VpnCountItem& a, VpnCountItem& b) {
@@ -2269,7 +2526,7 @@ class UpdateVpnCountResponse : public ::google::protobuf::Message /* @@protoc_in
                &_UpdateVpnCountResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    14;
 
   void Swap(UpdateVpnCountResponse* other);
   friend void swap(UpdateVpnCountResponse& a, UpdateVpnCountResponse& b) {
@@ -2386,7 +2643,7 @@ class GetAccountInitInfoRequest : public ::google::protobuf::Message /* @@protoc
                &_GetAccountInitInfoRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    15;
 
   void Swap(GetAccountInitInfoRequest* other);
   friend void swap(GetAccountInitInfoRequest& a, GetAccountInitInfoRequest& b) {
@@ -2548,7 +2805,7 @@ class GetAccountInitInfoResponse : public ::google::protobuf::Message /* @@proto
                &_GetAccountInitInfoResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    16;
 
   void Swap(GetAccountInitInfoResponse* other);
   friend void swap(GetAccountInitInfoResponse& a, GetAccountInitInfoResponse& b) {
@@ -2703,7 +2960,7 @@ class UpdateVpnActiveRequest : public ::google::protobuf::Message /* @@protoc_in
                &_UpdateVpnActiveRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    17;
 
   void Swap(UpdateVpnActiveRequest* other);
   friend void swap(UpdateVpnActiveRequest& a, UpdateVpnActiveRequest& b) {
@@ -2843,7 +3100,7 @@ class AdRewardRequest : public ::google::protobuf::Message /* @@protoc_insertion
                &_AdRewardRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    16;
+    18;
 
   void Swap(AdRewardRequest* other);
   friend void swap(AdRewardRequest& a, AdRewardRequest& b) {
@@ -3001,7 +3258,7 @@ class ElectStatisticInfo : public ::google::protobuf::Message /* @@protoc_insert
                &_ElectStatisticInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    17;
+    19;
 
   void Swap(ElectStatisticInfo* other);
   friend void swap(ElectStatisticInfo& a, ElectStatisticInfo& b) {
@@ -3141,7 +3398,7 @@ class StatisticInfo : public ::google::protobuf::Message /* @@protoc_insertion_p
                &_StatisticInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    18;
+    20;
 
   void Swap(StatisticInfo* other);
   friend void swap(StatisticInfo& a, StatisticInfo& b) {
@@ -3278,7 +3535,7 @@ class RefreshPoolHeightRequest : public ::google::protobuf::Message /* @@protoc_
                &_RefreshPoolHeightRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    19;
+    21;
 
   void Swap(RefreshPoolHeightRequest* other);
   friend void swap(RefreshPoolHeightRequest& a, RefreshPoolHeightRequest& b) {
@@ -3395,7 +3652,7 @@ class RefreshPoolHeightResponse : public ::google::protobuf::Message /* @@protoc
                &_RefreshPoolHeightResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    20;
+    22;
 
   void Swap(RefreshPoolHeightResponse* other);
   friend void swap(RefreshPoolHeightResponse& a, RefreshPoolHeightResponse& b) {
@@ -3512,7 +3769,7 @@ class GetAccountShardRequest : public ::google::protobuf::Message /* @@protoc_in
                &_GetAccountShardRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    21;
+    23;
 
   void Swap(GetAccountShardRequest* other);
   friend void swap(GetAccountShardRequest& a, GetAccountShardRequest& b) {
@@ -3634,7 +3891,7 @@ class GetAccountShardReponse : public ::google::protobuf::Message /* @@protoc_in
                &_GetAccountShardReponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    22;
+    24;
 
   void Swap(GetAccountShardReponse* other);
   friend void swap(GetAccountShardReponse& a, GetAccountShardReponse& b) {
@@ -3766,7 +4023,7 @@ class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_BlockMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    23;
+    25;
 
   void Swap(BlockMessage* other);
   friend void swap(BlockMessage& a, BlockMessage& b) {
@@ -4476,70 +4733,70 @@ inline void BlockTx::set_allocated_gid(::std::string* gid) {
   // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.BlockTx.gid)
 }
 
-// optional bytes from_pubkey = 2;
-inline bool BlockTx::has_from_pubkey() const {
+// optional bytes from = 2;
+inline bool BlockTx::has_from() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void BlockTx::set_has_from_pubkey() {
+inline void BlockTx::set_has_from() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void BlockTx::clear_has_from_pubkey() {
+inline void BlockTx::clear_has_from() {
   _has_bits_[0] &= ~0x00000002u;
 }
-inline void BlockTx::clear_from_pubkey() {
-  from_pubkey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_from_pubkey();
+inline void BlockTx::clear_from() {
+  from_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_from();
 }
-inline const ::std::string& BlockTx::from_pubkey() const {
-  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.BlockTx.from_pubkey)
-  return from_pubkey_.GetNoArena();
+inline const ::std::string& BlockTx::from() const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.BlockTx.from)
+  return from_.GetNoArena();
 }
-inline void BlockTx::set_from_pubkey(const ::std::string& value) {
-  set_has_from_pubkey();
-  from_pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.BlockTx.from_pubkey)
+inline void BlockTx::set_from(const ::std::string& value) {
+  set_has_from();
+  from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.BlockTx.from)
 }
 #if LANG_CXX11
-inline void BlockTx::set_from_pubkey(::std::string&& value) {
-  set_has_from_pubkey();
-  from_pubkey_.SetNoArena(
+inline void BlockTx::set_from(::std::string&& value) {
+  set_has_from();
+  from_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.block.protobuf.BlockTx.from_pubkey)
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.block.protobuf.BlockTx.from)
 }
 #endif
-inline void BlockTx::set_from_pubkey(const char* value) {
+inline void BlockTx::set_from(const char* value) {
   GOOGLE_DCHECK(value != NULL);
-  set_has_from_pubkey();
-  from_pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.block.protobuf.BlockTx.from_pubkey)
+  set_has_from();
+  from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.block.protobuf.BlockTx.from)
 }
-inline void BlockTx::set_from_pubkey(const void* value, size_t size) {
-  set_has_from_pubkey();
-  from_pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+inline void BlockTx::set_from(const void* value, size_t size) {
+  set_has_from();
+  from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.block.protobuf.BlockTx.from_pubkey)
+  // @@protoc_insertion_point(field_set_pointer:zjchain.block.protobuf.BlockTx.from)
 }
-inline ::std::string* BlockTx::mutable_from_pubkey() {
-  set_has_from_pubkey();
-  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.BlockTx.from_pubkey)
-  return from_pubkey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+inline ::std::string* BlockTx::mutable_from() {
+  set_has_from();
+  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.BlockTx.from)
+  return from_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* BlockTx::release_from_pubkey() {
-  // @@protoc_insertion_point(field_release:zjchain.block.protobuf.BlockTx.from_pubkey)
-  if (!has_from_pubkey()) {
+inline ::std::string* BlockTx::release_from() {
+  // @@protoc_insertion_point(field_release:zjchain.block.protobuf.BlockTx.from)
+  if (!has_from()) {
     return NULL;
   }
-  clear_has_from_pubkey();
-  return from_pubkey_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_from();
+  return from_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void BlockTx::set_allocated_from_pubkey(::std::string* from_pubkey) {
-  if (from_pubkey != NULL) {
-    set_has_from_pubkey();
+inline void BlockTx::set_allocated_from(::std::string* from) {
+  if (from != NULL) {
+    set_has_from();
   } else {
-    clear_has_from_pubkey();
+    clear_has_from();
   }
-  from_pubkey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from_pubkey);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.BlockTx.from_pubkey)
+  from_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.BlockTx.from)
 }
 
 // optional bytes to = 3;
@@ -5379,6 +5636,134 @@ inline void Block::set_leader_index(::google::protobuf::uint64 value) {
   set_has_leader_index();
   leader_index_ = value;
   // @@protoc_insertion_point(field_set:zjchain.block.protobuf.Block.leader_index)
+}
+
+// -------------------------------------------------------------------
+
+// ConsensusToTxsItem
+
+// optional bytes to = 1;
+inline bool ConsensusToTxsItem::has_to() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ConsensusToTxsItem::set_has_to() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ConsensusToTxsItem::clear_has_to() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ConsensusToTxsItem::clear_to() {
+  to_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_to();
+}
+inline const ::std::string& ConsensusToTxsItem::to() const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.ConsensusToTxsItem.to)
+  return to_.GetNoArena();
+}
+inline void ConsensusToTxsItem::set_to(const ::std::string& value) {
+  set_has_to();
+  to_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.ConsensusToTxsItem.to)
+}
+#if LANG_CXX11
+inline void ConsensusToTxsItem::set_to(::std::string&& value) {
+  set_has_to();
+  to_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.block.protobuf.ConsensusToTxsItem.to)
+}
+#endif
+inline void ConsensusToTxsItem::set_to(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_to();
+  to_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.block.protobuf.ConsensusToTxsItem.to)
+}
+inline void ConsensusToTxsItem::set_to(const void* value, size_t size) {
+  set_has_to();
+  to_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.block.protobuf.ConsensusToTxsItem.to)
+}
+inline ::std::string* ConsensusToTxsItem::mutable_to() {
+  set_has_to();
+  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.ConsensusToTxsItem.to)
+  return to_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ConsensusToTxsItem::release_to() {
+  // @@protoc_insertion_point(field_release:zjchain.block.protobuf.ConsensusToTxsItem.to)
+  if (!has_to()) {
+    return NULL;
+  }
+  clear_has_to();
+  return to_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ConsensusToTxsItem::set_allocated_to(::std::string* to) {
+  if (to != NULL) {
+    set_has_to();
+  } else {
+    clear_has_to();
+  }
+  to_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), to);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.ConsensusToTxsItem.to)
+}
+
+// optional uint64 balance = 2;
+inline bool ConsensusToTxsItem::has_balance() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ConsensusToTxsItem::set_has_balance() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ConsensusToTxsItem::clear_has_balance() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ConsensusToTxsItem::clear_balance() {
+  balance_ = GOOGLE_ULONGLONG(0);
+  clear_has_balance();
+}
+inline ::google::protobuf::uint64 ConsensusToTxsItem::balance() const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.ConsensusToTxsItem.balance)
+  return balance_;
+}
+inline void ConsensusToTxsItem::set_balance(::google::protobuf::uint64 value) {
+  set_has_balance();
+  balance_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.ConsensusToTxsItem.balance)
+}
+
+// -------------------------------------------------------------------
+
+// ConsensusToTxs
+
+// repeated .zjchain.block.protobuf.ConsensusToTxsItem tos = 1;
+inline int ConsensusToTxs::tos_size() const {
+  return tos_.size();
+}
+inline void ConsensusToTxs::clear_tos() {
+  tos_.Clear();
+}
+inline ::zjchain::block::protobuf::ConsensusToTxsItem* ConsensusToTxs::mutable_tos(int index) {
+  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.ConsensusToTxs.tos)
+  return tos_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::ConsensusToTxsItem >*
+ConsensusToTxs::mutable_tos() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.block.protobuf.ConsensusToTxs.tos)
+  return &tos_;
+}
+inline const ::zjchain::block::protobuf::ConsensusToTxsItem& ConsensusToTxs::tos(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.ConsensusToTxs.tos)
+  return tos_.Get(index);
+}
+inline ::zjchain::block::protobuf::ConsensusToTxsItem* ConsensusToTxs::add_tos() {
+  // @@protoc_insertion_point(field_add:zjchain.block.protobuf.ConsensusToTxs.tos)
+  return tos_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::ConsensusToTxsItem >&
+ConsensusToTxs::tos() const {
+  // @@protoc_insertion_point(field_list:zjchain.block.protobuf.ConsensusToTxs.tos)
+  return tos_;
 }
 
 // -------------------------------------------------------------------
@@ -8765,6 +9150,10 @@ BlockMessage::to_txs() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
