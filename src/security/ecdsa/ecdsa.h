@@ -35,6 +35,15 @@ public:
     virtual int GetEcdhKey(const std::string& peer_pubkey, std::string* ecdh_key);
     virtual bool IsValidPublicKey(const std::string& pubkey);
     virtual std::string UnicastAddress(const std::string& src_address);
+    int GetEcdhKey(const PublicKey& peer_pubkey, std::string* ecdh_key);
+    std::shared_ptr<PublicKey> GetPublicKey(const std::string& pk) {
+        auto pk_ptr = std::make_shared<PublicKey>(curve_);
+        if (pk_ptr->Deserialize(pk) != kSecuritySuccess) {
+            return nullptr;
+        }
+
+        return pk_ptr;
+    }
 
 private:
     std::shared_ptr<PrivateKey> prikey_ = nullptr;

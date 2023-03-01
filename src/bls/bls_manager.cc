@@ -106,13 +106,13 @@ int BlsManager::Sign(
     bn_sign.to_affine_coordinates();
     *sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
     *sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
-    std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
-    BLSPublicKeyShare pkey(local_sec_key, t, n);
-    std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
-    BLS_DEBUG("sign t: %u, , n: %u, , pk: %s,%s,%s,%s, sign x: %s, sign y: %s, sign msg: %s",
-        t, n, strs->at(0).c_str(), strs->at(1).c_str(),
-        strs->at(2).c_str(), strs->at(3).c_str(), (*sign_x).c_str(), (*sign_y).c_str(),
-        common::Encode::HexEncode(sign_msg).c_str());
+//     std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
+//     BLSPublicKeyShare pkey(local_sec_key, t, n);
+//     std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
+//     BLS_DEBUG("sign t: %u, , n: %u, , pk: %s,%s,%s,%s, sign x: %s, sign y: %s, sign msg: %s",
+//         t, n, strs->at(0).c_str(), strs->at(1).c_str(),
+//         strs->at(2).c_str(), strs->at(3).c_str(), (*sign_x).c_str(), (*sign_y).c_str(),
+//         common::Encode::HexEncode(sign_msg).c_str());
     return kBlsSuccess;
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
@@ -124,7 +124,8 @@ int BlsManager::Verify(
         uint32_t n,
         const libff::alt_bn128_G2& pubkey,
         const libff::alt_bn128_G1& sign,
-        const std::string& sign_msg) try {
+        const std::string& sign_msg,
+        std::string* verify_hash) try {
     if (pubkey == libff::alt_bn128_G2::zero()) {
         auto sign_ptr = const_cast<libff::alt_bn128_G1*>(&sign);
         sign_ptr->to_affine_coordinates();
@@ -143,33 +144,33 @@ int BlsManager::Verify(
         return kBlsError;
     }
 
-//     auto sign_ptr = const_cast<libff::alt_bn128_G1*>(&sign);
-//     sign_ptr->to_affine_coordinates();
-//     auto sign_x = libBLS::ThresholdUtils::fieldElementToString(sign_ptr->X);
-//     auto sign_y = libBLS::ThresholdUtils::fieldElementToString(sign_ptr->Y);
-//     auto pk = const_cast<libff::alt_bn128_G2*>(&pubkey);
-//     pk->to_affine_coordinates();
-//     auto pk_ptr = std::make_shared<BLSPublicKey>(*pk);
-//     auto strs = pk_ptr->toString();
-//     BLS_DEBUG("verify t: %u, , n: %u, , public key: %s,%s,%s,%s, msg hash: %s, sign x: %s, sign y: %s",
-//         t, n, strs->at(0).c_str(), strs->at(1).c_str(),
-//         strs->at(2).c_str(), strs->at(3).c_str(),
-//         common::Encode::HexEncode(sign_msg).c_str(),
-//         sign_x.c_str(),
-//         sign_y.c_str());
-
-//     std::cout << "verify t: " << t << ", n: " << n
-//         << ", pk: " << strs->at(0) << ", " << strs->at(1) << ", " << strs->at(2) << ", " << strs->at(3)
-//         << ", sign x: " << sign_x
-//         << ", sign y: " << sign_y
-//         << ", sign msg: " << common::Encode::HexEncode(sign_msg)
-//         << std::endl;
-    return BlsSign::Verify(t, n, sign, sign_msg, pubkey);
+    return BlsSign::Verify(t, n, sign, sign_msg, pubkey, verify_hash);
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
     return kBlsError;
 }
 
+int BlsManager::GetVerifyHash(
+            uint32_t t,
+            uint32_t n,
+            const std::string& sign_msg,
+            const libff::alt_bn128_G2& pkey,
+            std::string* verify_hash) try {
+    if (pkey == libff::alt_bn128_G2::zero()) {
+        return kBlsError;
+    }
+
+    //     std::lock_guard<std::mutex> guard(sign_mutex_);
+    if (sign_msg.size() != 32) {
+        BLS_ERROR("sign message error: %s", common::Encode::HexEncode(sign_msg));
+        return kBlsError;
+    }
+
+    return BlsSign::GetVerifyHash(t, n, sign_msg, pkey, verify_hash);
+} catch (std::exception& e) {
+    BLS_ERROR("catch error: %s", e.what());
+    return kBlsError;
+}
 void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
@@ -253,12 +254,14 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     sign.X = libff::alt_bn128_Fq(bls_msg.finish_req().bls_sign_x().c_str());
     sign.Y = libff::alt_bn128_Fq(bls_msg.finish_req().bls_sign_y().c_str());
     sign.Z = libff::alt_bn128_Fq::one();
+    std::string verify_hash;
     if (Verify(
             t,
             members->size(),
             *pkey.getPublicKey(),
             sign,
-            msg_hash) != bls::kBlsSuccess) {
+            msg_hash,
+            &verify_hash) != bls::kBlsSuccess) {
         ZJC_ERROR("verify bls finish bls sign error!");
         return;
     }
@@ -553,12 +556,14 @@ bool BlsManager::VerifyAggSignValid(
         auto bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(bls_instance.SignatureRecover(
             all_signs,
             lagrange_coeffs));
+        std::string verify_hash;
         if (Verify(
                 t,
                 n,
                 common_pk,
                 *bls_agg_sign,
-                finish_item->max_finish_hash) != bls::kBlsSuccess) {
+                finish_item->max_finish_hash,
+                &verify_hash) != bls::kBlsSuccess) {
             ZJC_ERROR("verify agg sign failed!");
             return false;
         }

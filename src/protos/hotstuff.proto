@@ -79,4 +79,5 @@ message HotstuffMessage {
     optional bytes bls_sign_x = 18;
     optional bytes bls_sign_y = 19;
     repeated uint64 commit_bitmap = 20;
+    optional bytes bls_agg_verify_hash = 21;
 }

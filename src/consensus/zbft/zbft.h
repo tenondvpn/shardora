@@ -14,6 +14,7 @@
 #include "protos/hotstuff.pb.h"
 #include "protos/block.pb.h"
 #include "protos/pools.pb.h"
+#include "security/ecdsa/public_key.h"
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
 
@@ -363,6 +364,17 @@ public:
         return txs_ptr_->thread_index;
     }
 
+    const std::string& precommit_bls_agg_verify_hash() const {
+        return precommit_bls_agg_verify_hash_;
+    }
+
+    const std::string& commit_bls_agg_verify_hash() const{
+        return commit_bls_agg_verify_hash_;
+    }
+
+    void CreatePrecommitVerifyHash();
+    void CreateCommitVerifyHash();
+
 protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
@@ -414,6 +426,18 @@ protected:
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<WaitingTxsItem> txs_ptr_ = nullptr;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
+    std::string precommit_bls_agg_verify_hash_;
+    std::string commit_bls_agg_verify_hash_;
+
+public:
+    inline void set_test_times(uint32_t index) {
+#ifdef ZJC_UNITTEST
+        times_[index] = common::TimeUtils::TimestampUs();
+#endif
+    }
+#ifdef ZJC_UNITTEST
+    uint64_t times_[64] = { 0 };
+#endif
 
     DISALLOW_COPY_AND_ASSIGN(Zbft);
 };

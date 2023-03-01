@@ -217,8 +217,8 @@ int BftManager::StartBft(std::shared_ptr<WaitingTxsItem>& txs_ptr) {
         return leader_pre;
     }
 
-    ZJC_DEBUG("this node is leader and start bft: %s, pool index: %d",
-        common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
+    //     ZJC_DEBUG("this node is leader and start bft: %s, pool index: %d",
+//         common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
     return kConsensusSuccess;
 }
 
@@ -246,20 +246,20 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     auto bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.gid(), true);
     if (bft_ptr == nullptr) {
-        ZJC_DEBUG("leader get bft gid failed[%s]",
-            common::Encode::HexEncode(bft_msg.gid()).c_str());
+//         ZJC_DEBUG("leader get bft gid failed[%s]",
+//             common::Encode::HexEncode(bft_msg.gid()).c_str());
         return;
     }
 
     if (!bft_ptr->this_node_is_leader()) {
-        ZJC_DEBUG("not valid leader get bft gid failed[%s]",
-            common::Encode::HexEncode(bft_msg.gid()).c_str());
+//         ZJC_DEBUG("not valid leader get bft gid failed[%s]",
+//             common::Encode::HexEncode(bft_msg.gid()).c_str());
         return;
     }
 
     if (!bft_msg.agree()) {
-        ZJC_DEBUG("not agree leader get bft gid failed[%s]",
-            common::Encode::HexEncode(bft_msg.gid()).c_str());
+//         ZJC_DEBUG("not agree leader get bft gid failed[%s]",
+//             common::Encode::HexEncode(bft_msg.gid()).c_str());
         LeaderHandleBftOppose(bft_ptr, msg_ptr);
         return;
     }
@@ -305,13 +305,13 @@ void BftManager::BackupHandleHotstuffMessage(uint8_t thread_index, BftItemPtr& b
             SetBftGidPrepareInvalid(bft_item_ptr);
             // oppose
             BackupSendOppose(bft_item_ptr->msg_ptr, bft_ptr);
-            ZJC_DEBUG("create bft ptr failed!");
+//             ZJC_DEBUG("create bft ptr failed!");
             return;
         }
     } else {
         bft_ptr = GetBft(thread_index, bft_msg.gid(), false);
         if (bft_ptr == nullptr) {
-            ZJC_DEBUG("get bft failed!");
+//             ZJC_DEBUG("get bft failed!");
             return;
         }
     }
@@ -339,13 +339,15 @@ bool BftManager::VerifyBackupIdValid(
     std::string msg_for_hash = msg_ptr->header.hotstuff_proto().bls_sign_x() +
         msg_ptr->header.hotstuff_proto().bls_sign_y();
     auto msg_hash = common::Hash::keccak256(msg_for_hash);
-    std::string ecdh_key;
-    if (security_ptr_->GetEcdhKey(
-            mem_ptr->pubkey,
-            &ecdh_key) != security::kSecuritySuccess) {
-        ZJC_ERROR("get ecdh key failed peer pk: %s",
-            common::Encode::HexEncode(mem_ptr->pubkey).c_str());
-        return false;
+    std::string& ecdh_key = mem_ptr->peer_ecdh_key;
+    if (ecdh_key.empty()) {
+        if (security_ptr_->GetEcdhKey(
+                mem_ptr->pubkey,
+                &ecdh_key) != security::kSecuritySuccess) {
+            ZJC_ERROR("get ecdh key failed peer pk: %s",
+                common::Encode::HexEncode(mem_ptr->pubkey).c_str());
+            return false;
+        }
     }
 
     std::string enc_out;
@@ -494,7 +496,7 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
 
         common::BloomFilter bf(bloom_data, kHashCount);
         txs_ptr = txs_pools_->FollowerGetTxs(bft_msg.pool_index(), bf, 0);
-        ZJC_DEBUG("get tx count: %u, pool: %d", bloom_data.size(), bft_msg.pool_index());
+//         ZJC_DEBUG("get tx count: %u, pool: %d", bloom_data.size(), bft_msg.pool_index());
     } else if (bft_msg.tx_bft().ltx_prepare().tx_hash_list_size() > 0) {
         // get txs direct
     } else {
@@ -540,7 +542,7 @@ bool BftManager::VerifyAggSignWithMembers(
         const common::MembersPtr& members,
         const block::protobuf::Block& block) {
     auto hash = GetBlockHash(block);
-//     for (int32_t i = 0; i < block.bitmap_size(); ++i) {
+    //     for (int32_t i = 0; i < block.bitmap_size(); ++i) {
 //         block_hash += std::to_string(block.bitmap(i));
 //     }
 // 
@@ -557,6 +559,7 @@ bool BftManager::VerifyAggSignWithMembers(
 
     uint32_t t = common::GetSignerCount(members->size());
     uint32_t n = members->size();
+    std::string verify_hash;
     if (bls_mgr_->Verify(
             t,
             n,
@@ -564,9 +567,10 @@ bool BftManager::VerifyAggSignWithMembers(
             block.electblock_height(),
             block.network_id()),
             sign,
-            hash) != bls::kBlsSuccess) {
+            hash,
+            &verify_hash) != bls::kBlsSuccess) {
         auto tmp_block_hash = GetBlockHash(block);
-        ZJC_ERROR("VerifyBlsAggSignature agg sign failed!prepare hash: %s, agg sign hash: %s,"
+        ZJC_ERROR("VerifyAggSignWithMembers agg sign failed!prepare hash: %s, agg sign hash: %s,"
             "t: %u, n: %u, elect height: %lu, network id: %u, agg x: %s, agg y: %s",
             common::Encode::HexEncode(tmp_block_hash).c_str(),
             common::Encode::HexEncode(hash).c_str(),
@@ -683,7 +687,7 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
         if (iter != bft_hash_map_[thread_idx].end()) {
             bft_ptr = iter->second;
             bft_hash_map_[thread_idx].erase(iter);
-            ZJC_DEBUG("remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
+//             ZJC_DEBUG("remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
         }
     }
 }
@@ -747,9 +751,9 @@ int BftManager::BackupPrepare(
         bft_ptr,
         true,
         backup_msg_ptr->header);
-    ZJC_DEBUG("bft backup prepare success! agree bft gid: %s, from: %s:%d",
-        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-        bft_msg.node_ip().c_str(), bft_msg.node_port());
+//     ZJC_DEBUG("bft backup prepare success! agree bft gid: %s, from: %s:%d",
+//         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+//         bft_msg.node_ip().c_str(), bft_msg.node_port());
     if (!res) {
         ZJC_ERROR("message set data failed!");
         return kConsensusError;
@@ -766,6 +770,7 @@ int BftManager::BackupPrepare(
         msg_ptr->conn->PeerPort(),
         backup_msg_ptr->header);
 #endif
+    bft_ptr->CreatePrecommitVerifyHash();
     return kConsensusSuccess;
 }
 
@@ -862,7 +867,7 @@ int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr) {
         return kConsensusError;
     }
 
-    ZJC_ERROR("LeaderCallPrecommit gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
+//     ZJC_DEBUG("LeaderCallPrecommit gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
 #ifdef ZJC_UNITTEST
     leader_precommit_msg_ = msg_ptr;
 #else
@@ -879,11 +884,16 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
         return kConsensusSuccess;
     }
 
-    if (VerifyBlsAggSignature(bft_ptr, bft_msg, bft_ptr->local_prepare_hash()) != kConsensusSuccess) {
+    if (bft_ptr->precommit_bls_agg_verify_hash() != bft_msg.bls_agg_verify_hash()) {
         ZJC_INFO("VerifyBlsAggSignature error gid: %s",
             common::Encode::HexEncode(bft_ptr->gid()).c_str());
         return kConsensusError;
     }
+//     if (VerifyBlsAggSignature(bft_ptr, bft_msg, bft_ptr->local_prepare_hash()) != kConsensusSuccess) {
+//         ZJC_INFO("VerifyBlsAggSignature error gid: %s",
+//             common::Encode::HexEncode(bft_ptr->gid()).c_str());
+//         return kConsensusError;
+//     }
 
 #ifdef ZJC_UNITTEST
     if (test_for_precommit_evil_) {
@@ -931,7 +941,6 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
         return kConsensusError;
     }
 
-    bft_ptr->set_consensus_status(kConsensusCommit);
     // send pre-commit to leader
 #ifdef ZJC_UNITTEST
     backup_precommit_msg_ = res_msg_ptr;
@@ -942,7 +951,10 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
         msg_ptr->conn->PeerPort(),
         msg);
 #endif
-    ZJC_DEBUG("BackupPrecommit success.");
+
+    bft_ptr->set_consensus_status(kConsensusCommit);
+    bft_ptr->CreateCommitVerifyHash();
+    //     ZJC_DEBUG("BackupPrecommit success.");
     return kConsensusSuccess;
 }
 
@@ -1042,7 +1054,7 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         queue_item_ptr->db_batch);
     block_mgr_->ConsensusAddBlock(thread_idx, queue_item_ptr);
     bft_ptr->set_consensus_status(kConsensusCommited);
-    ZJC_DEBUG("add new block network: %d, height: %lu", zjc_block->network_id(), zjc_block->height());
+//     ZJC_DEBUG("add new block network: %d, height: %lu", zjc_block->network_id(), zjc_block->height());
     assert(bft_ptr->prpare_block()->precommit_bitmap_size() == zjc_block->precommit_bitmap_size());
 }
 
@@ -1083,8 +1095,8 @@ int BftManager::LeaderCallCommit(
 #else
     network::Route::Instance()->Send(leader_msg_ptr);
 #endif
-    ZJC_DEBUG("LeaderCommit success waiting pool_index: %u, bft gid: %s",
-        bft_ptr->pool_index(), common::Encode::HexEncode(bft_ptr->gid()).c_str());
+//     ZJC_DEBUG("LeaderCommit success waiting pool_index: %u, bft gid: %s",
+//         bft_ptr->pool_index(), common::Encode::HexEncode(bft_ptr->gid()).c_str());
     RemoveBft(bft_ptr->thread_index(), bft_ptr->gid(), true);
     return kConsensusSuccess;
 }
@@ -1101,10 +1113,15 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
         return kConsensusError;
     }
 
-    if (VerifyBlsAggSignature(bft_ptr, bft_msg, bft_ptr->precommit_hash()) != kConsensusSuccess) {
+    if (bft_ptr->commit_bls_agg_verify_hash() != bft_msg.bls_agg_verify_hash()) {
+        ZJC_INFO("VerifyBlsAggSignature error gid: %s",
+            common::Encode::HexEncode(bft_ptr->gid()).c_str());
         return kConsensusError;
     }
 
+//     if (VerifyBlsAggSignature(bft_ptr, bft_msg, bft_ptr->precommit_hash()) != kConsensusSuccess) {
+//         return kConsensusError;
+//     }
     std::vector<uint64_t> bitmap_data;
     for (int32_t i = 0; i < bft_msg.commit_bitmap_size(); ++i) {
         bitmap_data.push_back(bft_msg.commit_bitmap(i));
@@ -1144,8 +1161,8 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
 
     // start new bft
     RemoveBft(bft_ptr->thread_index(), bft_ptr->gid(), false);
-    ZJC_DEBUG("BackupCommit success waiting pool_index: %u, bft gid: %s",
-        bft_ptr->pool_index(), common::Encode::HexEncode(bft_ptr->gid()).c_str());
+//     ZJC_DEBUG("BackupCommit success waiting pool_index: %u, bft gid: %s",
+//         bft_ptr->pool_index(), common::Encode::HexEncode(bft_ptr->gid()).c_str());
     return kConsensusSuccess;
 }
 
@@ -1311,7 +1328,7 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
     while (iter != bft_hash_map.end()) {
         int timeout_res = iter->second->CheckTimeout();
         if (timeout_res == kTimeout) {
-            ZJC_DEBUG("timeout remove bft gid: %s", common::Encode::HexEncode(iter->first).c_str());
+//             ZJC_DEBUG("timeout remove bft gid: %s", common::Encode::HexEncode(iter->first).c_str());
             bft_hash_map.erase(iter++);
             continue;
         }
@@ -1341,6 +1358,7 @@ int BftManager::VerifyBlsAggSignature(
 
     uint32_t t = common::GetSignerCount(bft_ptr->members_ptr()->size());
     uint32_t n = bft_ptr->members_ptr()->size();
+    std::string verify_hash;
     if (bls_mgr_->Verify(
             t,
             n,
@@ -1348,7 +1366,8 @@ int BftManager::VerifyBlsAggSignature(
             bft_ptr->elect_height(),
             bft_ptr->network_id()),
             sign,
-            sign_hash) != bls::kBlsSuccess) {
+            sign_hash,
+            &verify_hash) != bls::kBlsSuccess) {
         ZJC_ERROR("VerifyBlsAggSignature agg sign failed!");
         return kConsensusError;
     }

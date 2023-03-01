@@ -23,9 +23,18 @@ public:
         uint32_t n,
         const libff::alt_bn128_G1& sign,
         const std::string& to_be_hashed,
-        const libff::alt_bn128_G2& pkey);
+        const libff::alt_bn128_G2& pkey,
+        std::string* verify_hash);
+    static int GetVerifyHash(
+        uint32_t t,
+        uint32_t n,
+        const std::string& message,
+        const libff::alt_bn128_G2& pkey,
+        std::string* verify_hash);
 
 private:
+    static std::string GetVerifyHash(const libff::alt_bn128_GT& res);
+
     BlsSign();
     ~BlsSign();
 };
