@@ -298,7 +298,7 @@ int Zbft::CheckTimeout() {
     if (!leader_handled_commit_) {
         if (now_timestamp >= precommit_timeout_) {
             if (precommit_bitmap_.valid_count() < min_aggree_member_count_) {
-                ZJC_ERROR("precommit_bitmap_.valid_count() failed!");
+//                 ZJC_ERROR("precommit_bitmap_.valid_count() failed!");
                 return kTimeoutWaitingBackup;
             }
 

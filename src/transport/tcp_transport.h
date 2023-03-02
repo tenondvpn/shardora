@@ -38,6 +38,10 @@ public:
         const std::string& ip,
         uint16_t port,
         const transport::protobuf::Header& message);
+    int Send(
+        uint8_t thread_idx,
+        tnet::TcpInterface* conn,
+        const transport::protobuf::Header& message);
     int GetSocket();
     void FreeConnection(uint8_t thread_idx, const std::string& ip, uint16_t port);
     tnet::TcpConnection* GetConnection(

@@ -102,7 +102,7 @@ function PostCode(data) {
     var post_options = {
         host: '127.0.0.1',
         port: '8781',
-        path: '/do_transaction',
+        path: '/transaction',
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -115,7 +115,9 @@ function PostCode(data) {
         res.on('data', function (chunk) {
             if (chunk != "ok") {
                 console.log('Response: ' + chunk + ", " + data);
-            } 
+            } else {
+                console.log('Response: ' + chunk + ", " + data);
+            }
         })
     });
 
@@ -215,21 +217,48 @@ function call_create_contract(contract_bytes, name, desc) {
 
 function create_tx(to, amount, gas_limit, gas_price) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
-    var tx_type = 5;
+    var tx_type = 0;
+    var frompk = '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16);
     var msg = gid + "-" +
-        self_account_id.toString(16) + "-" +
+        frompk + "-" +
         to + "-" +
         amount + "-" +
         gas_limit + "-" +
-        gas_price + "-" +
-        tx_type.toString() + "-";
-    var kechash = keccak256(msg)
+        gas_price;
+    const MAX_UINT32 = 0xFFFFFFFF;
+
+    var amount_buf = new Buffer(8);
+    var big = ~~(amount / MAX_UINT32)
+    var low = (amount % MAX_UINT32) - big
+    amount_buf.writeUInt32LE(big, 4)
+    amount_buf.writeUInt32LE(low, 0)
+
+    var gas_limit_buf = new Buffer(8);
+    var big = ~~(gas_limit / MAX_UINT32)
+    var low = (gas_limit % MAX_UINT32) - big
+    gas_limit_buf.writeUInt32LE(big, 4)
+    gas_limit_buf.writeUInt32LE(low, 0)
+
+    var gas_price_buf = new Buffer(8);
+    var big = ~~(gas_price / MAX_UINT32)
+    var low = (gas_price % MAX_UINT32) - big
+    gas_price_buf.writeUInt32LE(big, 4)
+    gas_price_buf.writeUInt32LE(low, 0)
+    var step_buf = new Buffer(8);
+    step_buf.writeUInt32LE(0, 0)
+    step_buf.writeUInt32LE(0, 0)
+
+    const message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
+        amount_buf, gas_limit_buf, gas_price_buf, step_buf]);
+    var arrByte = Uint8Array.from(message_buf)
+    var kechash = keccak256(message_buf)
     var digest = Secp256k1.uint256(kechash, 16)
     const sig = Secp256k1.ecsign(self_private_key, digest)
     const sigR = Secp256k1.uint256(sig.r, 16)
     const sigS = Secp256k1.uint256(sig.s, 16)
     const pubX = Secp256k1.uint256(self_public_key.x, 16)
     const pubY = Secp256k1.uint256(self_public_key.y, 16)
+    const Q = Secp256k1.ecrecover(sig.v, Secp256k1.uint256(sig.r, 16), Secp256k1.uint256(sig.s, 16), digest)
     const isValidSig = Secp256k1.ecverify(pubX, pubY, sigR, sigS, digest)
     if (!isValidSig) {
         Toast.fire({
@@ -239,19 +268,22 @@ function create_tx(to, amount, gas_limit, gas_price) {
 
         return;
     }
-    console.log("frompk: " + '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16) + ", msg: " + msg + ", kechash: " + kechash.toString('hex') + ", sigR:" + sigR.toString(16) + ", sigS:" + sigS.toString(16));
+    console.log("frompk: " + '04' + self_public_key.x.toString(16) +
+        self_public_key.y.toString(16) + ", msg: " + message_buf.toString('hex') +
+        ", kechash: " + kechash.toString('hex') + ", sigR:" + sigR.toString(16) +
+        ", sigS:" + sigS.toString(16) + "recover pk: 04" + Q.x.toString(16) + Q.y.toString(16));
     return {
         'gid': gid,
-        'frompk': '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16),
+        'pubkey': '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16),
         'to': to,
         'amount': amount,
         'gas_limit': gas_limit,
         'gas_price': gas_price,
         'type': tx_type,
         'shard_id': local_count_shard_id,
-        'hash': kechash,
-        'sigr': sigR.toString(16),
-        'sigs': sigS.toString(16)
+        'sign_r': sigR.toString(16),
+        'sign_s': sigS.toString(16),
+        'sign_v': sig.v,
     }
 }
 

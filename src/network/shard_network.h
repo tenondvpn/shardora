@@ -148,8 +148,8 @@ bool ShardNetwork<DhtType>::IsThisNetworkNode(uint32_t network_id, const std::st
         }
     }
 
-    NETWORK_ERROR("IsThisNetworkNode check failed! network: %d, id: %s",
-        network_id, common::Encode::HexEncode(id).c_str());
+//     NETWORK_ERROR("IsThisNetworkNode check failed! network: %d, id: %s",
+//         network_id, common::Encode::HexEncode(id).c_str());
     return false;
 }
 
@@ -163,7 +163,7 @@ int ShardNetwork<DhtType>::JoinNewNodeValid(dht::NodePtr& node) {
 
     auto network_id = dht::DhtKeyManager::DhtKeyGetNetId(node->dht_key);
     if (!IsThisNetworkNode(network_id, node->id)) {
-        NETWORK_ERROR("node is not in this shard.");
+//         NETWORK_ERROR("node is not in this shard.");
         return dht::kDhtError;
     }
 

@@ -9,6 +9,7 @@
 #include "pools/tx_pool.h"
 #include "protos/address.pb.h"
 #include "protos/pools.pb.h"
+#include "protos/prefix_db.h"
 #include "protos/transport.pb.h"
 #include "security/security.h"
 #include "transport/transport_utils.h"
@@ -19,7 +20,7 @@ namespace pools {
 
 class TxPoolManager {
 public:
-    TxPoolManager(std::shared_ptr<security::Security>& security);
+    TxPoolManager(std::shared_ptr<security::Security>& security, std::shared_ptr<db::Db>& db);
     ~TxPoolManager();
     void HandleMessage(const transport::MessagePtr& msg);
     void GetTx(
@@ -59,11 +60,15 @@ public:
 private:
     void SaveStorageToDb(const transport::protobuf::Header& msg);
     void DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr);
+    std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& addr);
 
     TxPool* tx_pool_{ nullptr };
     std::shared_ptr<security::Security> security_ = nullptr;
+    std::shared_ptr<db::Db> db_ = nullptr;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     common::ThreadSafeQueue<transport::MessagePtr> msg_queues_[common::kInvalidPoolIndex];
     CreateConsensusItemFunction item_functions_[pools::protobuf::StepType_ARRAYSIZE] = { nullptr };
+    common::UniqueMap<std::string, protos::AddressInfoPtr> address_map_;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

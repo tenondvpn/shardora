@@ -73,10 +73,46 @@ static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_
     message.append(std::string((char*)&gas_limit, sizeof(gas_limit)));
     uint64_t gas_price = tx_info.gas_price();
     message.append(std::string((char*)&gas_price, sizeof(gas_price)));
-    uint64_t step = tx_info.step();
-    message.append(std::string((char*)&step, sizeof(step)));
-    message.append(tx_info.key());
-    message.append(tx_info.value());
+    if (tx_info.has_step()) {
+        uint64_t step = tx_info.step();
+        message.append(std::string((char*)&step, sizeof(step)));
+    }
+
+    if (tx_info.has_key()) {
+        message.append(tx_info.key());
+        if (tx_info.has_value()) {
+            message.append(tx_info.value());
+        }
+    }
+
+    ZJC_DEBUG("message: %s", common::Encode::HexEncode(message).c_str());
+    return common::Hash::keccak256(message);
+}
+
+static std::string GetTxMessageHashByJoin(const pools::protobuf::TxMessage& tx_info) {
+    std::string message;
+    message.reserve(tx_info.GetCachedSize() * 2);
+    message.append(common::Encode::HexEncode(tx_info.gid()));
+    message.append(1, '-');
+    message.append(common::Encode::HexEncode(tx_info.pubkey()));
+    message.append(1, '-');
+    message.append(common::Encode::HexEncode(tx_info.to()));
+    message.append(1, '-');
+    if (tx_info.has_key()) {
+        message.append(common::Encode::HexEncode(tx_info.key()));
+        message.append(1, '-');
+        if (tx_info.has_value()) {
+            message.append(common::Encode::HexEncode(tx_info.value()));
+            message.append(1, '-');
+        }
+    }
+
+    message.append(std::to_string(tx_info.amount()));
+    message.append(1, '-');
+    message.append(std::to_string(tx_info.gas_limit()));
+    message.append(1, '-');
+    message.append(std::to_string(tx_info.gas_price()));
+    ZJC_DEBUG("src message: %s", message.c_str());
     return common::Hash::keccak256(message);
 }
 

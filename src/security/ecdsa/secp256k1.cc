@@ -74,7 +74,6 @@ std::string Secp256k1::GetSign(const std::string& r, const std::string& s, uint8
         std::array<byte, 32>& tmp_arr = *reinterpret_cast<std::array<byte, 32>*>(ss.s);
         auto tmp_val = c_secp256k1n - u256(tmp_arr);
         U256ToByteArray(tmp_val, ss.s);
-        assert(false);
     }
 
     std::string sign((char*)data, sizeof(data));
@@ -144,7 +143,8 @@ bool Secp256k1::Secp256k1Verify(
         const std::string& msg,
         const std::string& pubkey,
         const std::string& sign) {
-    return pubkey == Recover(sign, msg);
+    auto recover_pk = Recover(sign, msg);
+    return memcmp(pubkey.c_str() + 1, recover_pk.c_str(), 32) == 0;
 }
 
 std::string Secp256k1::Recover(const std::string& sign, const std::string& hash) {
@@ -177,7 +177,7 @@ std::string Secp256k1::Recover(const std::string& sign, const std::string& hash)
         &raw_pubkey,
         SECP256K1_EC_COMPRESSED);
     assert(serialized_pubkey_size == serialized_pubkey.size());
-    return std::string((char*)&serialized_pubkey[0], 33);
+    return std::string((char*)&serialized_pubkey[1], 32);
 }
 
 std::string Secp256k1::RecoverForContract(const std::string& sign, const std::string& hash) {

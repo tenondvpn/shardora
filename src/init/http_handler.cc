@@ -45,18 +45,6 @@ static const char* GetStatus(int status) {
     return "unknown";
 }
 
-static std::string GetTxHash(const pools::protobuf::TxMessage& tx_info) {
-    std::string message = common::Encode::HexEncode(tx_info.gid()) + "-" +
-        common::Encode::HexEncode(tx_info.pubkey()) + "-" +
-        common::Encode::HexEncode(tx_info.to()) + "-" +
-        common::Encode::HexEncode(tx_info.key()) + "-" +
-        common::Encode::HexEncode(tx_info.value()) + "-" +
-        std::to_string(tx_info.amount()) + "-" +
-        std::to_string(tx_info.gas_limit()) + "-" +
-        std::to_string(tx_info.gas_price());
-    return common::Hash::keccak256(message);
-}
-
 static int CreateTransactionWithAttr(
         const std::string& gid,
         const std::string& from_pk,
@@ -79,10 +67,17 @@ static int CreateTransactionWithAttr(
         return kFromEqualToInvalid;
     }
 
-    dht::DhtKeyManager dht_key(des_net_id, 0);
+    if (from.size() != 20 || to.size() != 20) {
+        return kAccountNotExists;
+    }
+
+    ZJC_DEBUG("from: %s, to: %s",
+        common::Encode::HexEncode(from).c_str(),
+        common::Encode::HexEncode(to).c_str());
+    dht::DhtKeyManager dht_key(des_net_id);
     msg.set_src_sharding_id(des_net_id);
     msg.set_des_dht_key(dht_key.StrKey());
-    msg.set_type(common::kConsensusMessage);
+    msg.set_type(common::kPoolsMessage);
     msg.set_hop_count(0);
     auto broadcast = msg.mutable_broadcast();
     broadcast->set_hop_limit(10);
@@ -103,8 +98,9 @@ static int CreateTransactionWithAttr(
         }
     }
 
-    auto tx_hash = GetTxHash(*new_tx);
-    std::string sign = http_handler->security_ptr()->GetSign(sign_r, sign_s, sign_v);
+    auto tx_hash = pools::GetTxMessageHash(*new_tx);
+    std::string sign = sign_r + sign_s + "0";// http_handler->security_ptr()->GetSign(sign_r, sign_s, sign_v);
+    sign[64] = char(sign_v);
     if (http_handler->security_ptr()->Verify(
             tx_hash, from_pk, sign) != security::kSecuritySuccess) {
         ZJC_DEBUG("verify signature failed tx_hash: %s, "
@@ -117,10 +113,12 @@ static int CreateTransactionWithAttr(
         return kSignatureInvalid;
     }
 
+    msg.set_sign(sign);
     return kHttpSuccess;
 }
 
 static void HttpTransaction(evhtp_request_t* req, void* data) {
+    ZJC_DEBUG("http transaction coming.");
     auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
     auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
     auto header3 = evhtp_header_new(
@@ -153,9 +151,12 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
             (sign_s != nullptr), (shard_id != nullptr));
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_OK);
+        ZJC_INFO("http transaction param error: %s.", res.c_str());
         return;
     }
 
+    ZJC_DEBUG("gid: %s, frompk: %s, to: %s, amount: %s, gas_limit: %s, gas_price: %s, sign_r: %s, sign_s: %s, sign_v: %s, shard_id: %s",
+        gid, frompk, to, amount, gas_limit, gas_price, sign_r, sign_s, sign_v, shard_id);
     uint64_t amount_val = 0;
     if (!common::StringUtil::ToUint64(std::string(amount), &amount_val)) {
         std::string res = std::string("amount not integer: ") + amount;
@@ -228,10 +229,11 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
         return;
     }
 
-    network::Route::Instance()->Send(msg_ptr);
+    http_handler->net_handler()->NewHttpServer(msg_ptr);
     std::string res = std::string("ok");
     evbuffer_add(req->buffer_out, res.c_str(), res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
+    ZJC_INFO("http transaction success.");
 }
 
 HttpHandler::HttpHandler() {
@@ -241,8 +243,10 @@ HttpHandler::HttpHandler() {
 HttpHandler::~HttpHandler() {}
 
 void HttpHandler::Init(
+        transport::MultiThreadHandler* net_handler,
         std::shared_ptr<security::Security>& security_ptr,
         http::HttpServer& http_server) {
+    net_handler_ = net_handler;
     security_ptr_ = security_ptr;
     http_server.AddCallback("/transaction", HttpTransaction);
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include "common/log.h"
 #include "common/limit_heap.h"
 #include "common/node_members.h"
@@ -30,6 +32,8 @@ struct HeapItem {
     uint32_t index;
     uint32_t succ_count;
 };
+
+typedef std::function<void(uint32_t sharding_id)> NewElectBlockCallback;
 
 inline bool operator<(const HeapItem& lhs, const HeapItem& rhs) {
     return lhs.succ_count < rhs.succ_count;

@@ -5,6 +5,7 @@
 #include "common/hash.h"
 #include "common/string_utils.h"
 #include "network/network_utils.h"
+#include "network/route.h"
 #include "protos/prefix_db.h"
 #include "transport/tcp_transport.h"
 
@@ -12,18 +13,44 @@ namespace zjchain {
 
 namespace pools {
 
-TxPoolManager::TxPoolManager(std::shared_ptr<security::Security>& security) {
+TxPoolManager::TxPoolManager(
+        std::shared_ptr<security::Security>& security,
+        std::shared_ptr<db::Db>& db) {
     security_ = security;
     tx_pool_ = new TxPool[common::kInvalidPoolIndex];
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         tx_pool_[i].Init(i);
     }
+
+    db_ = db;
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    address_map_.Init(10240, 32);
+    network::Route::Instance()->RegisterMessage(
+        common::kPoolsMessage,
+        std::bind(&TxPoolManager::HandleMessage, this, std::placeholders::_1));
 }
 
 TxPoolManager::~TxPoolManager() {
     if (tx_pool_ != nullptr) {
         delete []tx_pool_;
     }
+}
+
+std::shared_ptr<address::protobuf::AddressInfo> TxPoolManager::GetAddressInfo(
+    const std::string& addr) {
+    // first get from cache
+    std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
+    if (address_map_.get(addr, &address_info)) {
+        return address_info;
+    }
+
+    // get from db and add to memory cache
+    address_info = prefix_db_->GetAddressInfo(addr);
+    if (address_info != nullptr) {
+        address_map_.add(addr, address_info);
+    }
+
+    return address_info;
 }
 
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
@@ -33,8 +60,10 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    ZJC_DEBUG("pool message coming.");
     auto& tx_msg = header.tx_proto();
     if (tx_msg.step() == pools::protobuf::kNormalFrom) {
+        msg_ptr->address_info = GetAddressInfo(security_->GetAddress(tx_msg.pubkey()));
         if (msg_ptr->address_info == nullptr) {
             ZJC_DEBUG("no address info.");
             return;
@@ -53,7 +82,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             return;
         }
 
-        msg_ptr->msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(header);
+        msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
         if (security_->Verify(
                 msg_ptr->msg_hash,
                 tx_msg.pubkey(),
@@ -63,9 +92,11 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
+        ZJC_DEBUG("success add tx to queue: %d", msg_ptr->address_info->pool_index());
     } else {
         // check valid
         msg_queues_[0].push(msg_ptr);
+//         ZJC_DEBUG("success add tx to queue: %d", msg_ptr->address_info->pool_index());
     }
     
     // storage item not package in block, just package storage hash 
@@ -78,15 +109,22 @@ void TxPoolManager::SaveStorageToDb(const transport::protobuf::Header& msg) {
 
 void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.tx_proto().step() >= pools::protobuf::StepType_ARRAYSIZE) {
+        assert(false);
         return;
     }
 
-    assert(item_functions_[msg_ptr->header.tx_proto().step()] != nullptr);
+    if (item_functions_[msg_ptr->header.tx_proto().step()] == nullptr) {
+        ZJC_DEBUG("not registered step : %d", msg_ptr->header.tx_proto().step());
+        return;
+    }
+
     pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](msg_ptr);
     if (tx_ptr == nullptr) {
+        assert(false);
         return;
     }
 
+    ZJC_DEBUG("success add tx: %d", pool_index);
     tx_pool_[pool_index].AddTx(tx_ptr);
 }
 
@@ -110,6 +148,7 @@ void TxPoolManager::GetTx(
             break;
         }
 
+        ZJC_DEBUG("succcess get tx: %d", pool_index);
         res_map[tx->tx_hash] = tx;
         if (res_map.size() >= count) {
             break;

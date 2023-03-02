@@ -63,7 +63,7 @@ void UniversalManager::UnRegisterUniversal(uint32_t network_id) {
 
 dht::BaseDhtPtr UniversalManager::GetUniversal(uint32_t network_id) {
     if (network_id >= kUniversalNetworkCount) {
-        ZJC_ERROR("invalid network id: %u", network_id);
+//         ZJC_ERROR("invalid network id: %u", network_id);
         return nullptr;
     }
 

@@ -2,6 +2,8 @@
 
 #include "http/http_server.h"
 #include "security/security.h"
+#include "transport/multi_thread.h"
+#include "transport/transport_utils.h"
 
 namespace zjchain {
 
@@ -12,6 +14,7 @@ public:
     HttpHandler();
     ~HttpHandler();
     void Init(
+        transport::MultiThreadHandler* net_handler,
         std::shared_ptr<security::Security>& security_ptr,
         http::HttpServer& http_server);
 
@@ -19,8 +22,13 @@ public:
         return security_ptr_;
     }
 
+    transport::MultiThreadHandler* net_handler() {
+        return net_handler_;
+    }
+
 private:
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
+    transport::MultiThreadHandler* net_handler_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(HttpHandler);
 };

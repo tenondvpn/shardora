@@ -62,9 +62,13 @@ public:
     int Init(
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<db::Db>& db);
+    void Start();
     void HandleMessage(MessagePtr& msg_ptr);
     MessagePtr GetMessageFromQueue(uint32_t thread_idx);
     void Destroy();
+    void NewHttpServer(MessagePtr& msg_ptr) {
+        http_server_message_queue_.push(msg_ptr);
+    }
 
 private:
     void Join();
@@ -82,6 +86,7 @@ private:
     bool inited_{ false };
     common::UniqueSet<uint64_t> unique_message_sets_;
     common::ThreadSafeQueue<MessagePtr>** threads_message_queues_;
+    common::ThreadSafeQueue<MessagePtr> http_server_message_queue_;
     std::condition_variable* wait_con_ = nullptr;
     std::mutex* wait_mutex_ = nullptr;
     uint32_t consensus_thread_count_ = 4;

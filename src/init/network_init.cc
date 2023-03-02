@@ -96,7 +96,6 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
-    transport::TcpTransport::Instance()->Start(false);
     network::DhtManager::Instance();
     network::Route::Instance();
     network::UniversalManager::Instance()->Init(security_);
@@ -109,27 +108,17 @@ int NetworkInit::Init(int argc, char** argv) {
     block_mgr_ = std::make_shared<block::BlockManager>();
     bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_);
     elect_mgr_ = std::make_shared<elect::ElectManager>(
-        block_mgr_, security_, bls_mgr_, db_);
-    pools_mgr_ = std::make_shared<pools::TxPoolManager>(security_);
+        block_mgr_, security_, bls_mgr_, db_,
+        std::bind(&NetworkInit::ElectBlockCallback, this, std::placeholders::_1));
+    pools_mgr_ = std::make_shared<pools::TxPoolManager>(security_, db_);
     account_mgr_->Init(
         common::GlobalInfo::Instance()->message_handler_thread_count(),
         db_,
         pools_mgr_);
     block_mgr_->Init(account_mgr_, db_, pools_mgr_, security_->GetAddress());
-    if (elect_mgr_->Init() != elect::kElectSuccess) {
-        INIT_ERROR("init elect manager failed!");
-        return kInitError;
-    }
-
     // check if is any consensus shard or root node or join in waiting pool
     if (CheckJoinWaitingPool() != kInitSuccess) {
         INIT_ERROR("CheckJoinWaitingPool failed!");
-        return kInitError;
-    }
-
-    tmblock::TimeBlockManager::Instance()->Init(pools_mgr_, db_);
-    if (InitHttpServer() != kInitSuccess) {
-        INIT_ERROR("InitHttpServer failed!");
         return kInitError;
     }
 
@@ -148,6 +137,19 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    if (elect_mgr_->Init() != elect::kElectSuccess) {
+        INIT_ERROR("init elect manager failed!");
+        return kInitError;
+    }
+
+    tmblock::TimeBlockManager::Instance()->Init(pools_mgr_, db_);
+    transport::TcpTransport::Instance()->Start(false);
+    if (InitHttpServer() != kInitSuccess) {
+        INIT_ERROR("InitHttpServer failed!");
+        return kInitError;
+    }
+
+    net_handler_.Start();
     if (InitCommand() != kInitSuccess) {
         INIT_ERROR("InitCommand failed!");
         return kInitError;
@@ -156,6 +158,10 @@ int NetworkInit::Init(int argc, char** argv) {
     inited_ = true;
     cmd_.Run();
     return kInitSuccess;
+}
+
+void NetworkInit::ElectBlockCallback(uint32_t sharding_id) {
+    bft_mgr_->OnNewElectBlock(sharding_id);
 }
 
 int NetworkInit::CheckJoinWaitingPool() {
@@ -212,12 +218,12 @@ int NetworkInit::InitHttpServer() {
     uint16_t http_port = 0;
     conf_.Get("zjchain", "http_ip", http_ip);
     if (conf_.Get("zjchain", "http_port", http_port) && http_port != 0) {
-        if (http_server_.Init(http_ip.c_str(), http_port, 2) != 0) {
+        if (http_server_.Init(http_ip.c_str(), http_port, 1) != 0) {
             INIT_ERROR("init http server failed! %s:%d", http_ip.c_str(), http_port);
             return kInitError;
         }
 
-        http_handler_.Init(security_, http_server_);
+        http_handler_.Init(&net_handler_, security_, http_server_);
         http_server_.Start();
     }
 

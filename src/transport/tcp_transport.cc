@@ -161,6 +161,8 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
         return false;
     }
 
+    conn->SetPeerIp(from_ip);
+    conn->SetPeerPort(from_port);
     msg_ptr->conn = conn;
 //     std::cout << "handle client message: " << from_ip << ":" << from_port << ", " << conn->thread_idx() << std::endl;
     msg_handler_->HandleMessage(msg_ptr);
@@ -194,6 +196,24 @@ void TcpTransport::SetMessageHash(
         std::to_string(thread_idx) +
         std::to_string(++thread_msg_count_[thread_idx]));
     tmpHeader->set_hash64(hash);
+}
+
+int TcpTransport::Send(
+        uint8_t thread_idx,
+        tnet::TcpInterface* tcp_conn,
+        const transport::protobuf::Header& message) {
+    std::string msg;
+    if (!message.has_hash64() || message.hash64() == 0) {
+        SetMessageHash(message, thread_idx);
+    }
+
+    message.SerializeToString(&msg);
+    if (tcp_conn->Send(msg) != 0) {
+        FreeConnection(thread_idx, tcp_conn->PeerIp(), tcp_conn->PeerPort());
+        return kTransportError;
+    }
+
+    return kTransportSuccess;
 }
 
 int TcpTransport::Send(
@@ -245,6 +265,8 @@ tnet::TcpConnection* TcpTransport::CreateConnection(const std::string& ip, uint1
     }
 
     std::string peer_spec = ip + ":" + std::to_string(port);
+//     std::string local_spec = common::GlobalInfo::Instance()->config_local_ip() + ":" +
+//         std::to_string(common::GlobalInfo::Instance()->config_local_port());
     return transport_->CreateConnection(
             peer_spec,
             "",
@@ -271,6 +293,8 @@ tnet::TcpConnection* TcpTransport::GetConnection(
         }
     }
 
+//     std::string local_spec = common::GlobalInfo::Instance()->config_local_ip() + ":" +
+//         std::to_string(common::GlobalInfo::Instance()->config_local_port());
     auto tcp_conn = transport_->CreateConnection(
         peer_spec,
         "",

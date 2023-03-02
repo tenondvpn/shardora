@@ -65,8 +65,8 @@ void BaseDht::UniversalJoin(const NodePtr& node) {
 int BaseDht::Join(NodePtr& node) {
     if (node_join_cb_ != nullptr) {
         if (node_join_cb_(node) != kDhtSuccess) {
-            DHT_ERROR("check callback join node failed! %s, %d, sharding id: %d",
-                common::Encode::HexEncode(node->id).c_str(), node->join_way, local_node_->sharding_id);
+//             DHT_ERROR("check callback join node failed! %s, %d, sharding id: %d",
+//                 common::Encode::HexEncode(node->id).c_str(), node->join_way, local_node_->sharding_id);
             return kDhtError;
         }
     }
@@ -98,7 +98,7 @@ int BaseDht::Join(NodePtr& node) {
     }
 
     auto iter = node_map_.insert(std::make_pair(node->dht_key_hash, node));
-//     DHT_DEBUG("MMMMMMMM node_map_ size: %u", node_map_.size());
+    DHT_DEBUG("MMMMMMMM node_map_ size: %u", node_map_.size());
     if (!iter.second) {
         DHT_ERROR("kDhtNodeJoined join node failed! %s",
             common::Encode::HexEncode(node->id).c_str());
@@ -361,37 +361,37 @@ void BaseDht::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
 void BaseDht::DhtDispatchMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.dht_proto().has_bootstrap_req()) {
-        ZJC_DEBUG("has_bootstrap_req");
+//         ZJC_DEBUG("has_bootstrap_req");
         ProcessBootstrapRequest(msg_ptr);
         return;
     }
 
     if (msg_ptr->header.dht_proto().has_bootstrap_res()) {
-        ZJC_DEBUG("has_bootstrap_res");
+//         ZJC_DEBUG("has_bootstrap_res");
         ProcessBootstrapResponse(msg_ptr);
         return;
     }
 
     if (msg_ptr->header.dht_proto().has_refresh_neighbors_req()) {
-        ZJC_DEBUG("has_refresh_neighbors_req");
+//         ZJC_DEBUG("has_refresh_neighbors_req");
         ProcessRefreshNeighborsRequest(msg_ptr);
         return;
     }
 
     if (msg_ptr->header.dht_proto().has_refresh_neighbors_res()) {
-        ZJC_DEBUG("has_refresh_neighbors_res");
+//         ZJC_DEBUG("has_refresh_neighbors_res");
         ProcessRefreshNeighborsResponse(msg_ptr);
         return;
     }
 
     if (msg_ptr->header.dht_proto().has_connect_req()) {
-        ZJC_DEBUG("has_connect_req");
+//         ZJC_DEBUG("has_connect_req");
         ProcessConnectRequest(msg_ptr);
         return;
     }
 
     if (msg_ptr->header.dht_proto().has_timer()) {
-        ZJC_DEBUG("has_timer");
+//         ZJC_DEBUG("has_timer");
         ProcessTimerRequest(msg_ptr);
         return;
     }
@@ -452,6 +452,7 @@ void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
 void BaseDht::ProcessBootstrapResponse(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& dht_msg = header.dht_proto();
+    ZJC_DEBUG("boot response coming.");
     if (!CheckDestination(header.des_dht_key(), false)) {
         DHT_WARN("bootstrap request destination error[%s][%s]!",
             common::Encode::HexEncode(header.des_dht_key()).c_str(),
@@ -563,10 +564,10 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         dhtkey.StrKey(),
         kRefreshNeighborsDefaultCount + 1);
     if (close_nodes.empty()) {
-        ZJC_DEBUG("no close nodes all: %u, from: %s:%d!",
-            dht_.size(),
-            msg_ptr->conn->PeerIp().c_str(),
-            msg_ptr->conn->PeerPort());
+//         ZJC_DEBUG("no close nodes all: %u, from: %s:%d!",
+//             dht_.size(),
+//             msg_ptr->conn->PeerIp().c_str(),
+//             msg_ptr->conn->PeerPort());
         return;
     }
 
@@ -839,7 +840,7 @@ void BaseDht::RefreshNeighbors(uint8_t thread_idx) {
             node->public_ip,
             node->public_port,
             msg);
-        ZJC_DEBUG("refresh neighbors now %s:%d!", node->public_ip.c_str(), node->public_port);
+//         ZJC_DEBUG("refresh neighbors now %s:%d!", node->public_ip.c_str(), node->public_port);
     }
 
     refresh_neighbors_tick_.CutOff(
@@ -889,10 +890,10 @@ void BaseDht::ProcessTimerRequest(const transport::MessagePtr& header) {
         close_nodes[rand_idx]->public_ip,
         close_nodes[rand_idx]->public_port,
         msg);
-    DHT_DEBUG("RefreshNeighbors: %s:%d, net: %d",
-        close_nodes[rand_idx]->public_ip.c_str(),
-        close_nodes[rand_idx]->public_port,
-        local_node_->sharding_id);
+//     DHT_DEBUG("RefreshNeighbors: %s:%d, net: %d",
+//         close_nodes[rand_idx]->public_ip.c_str(),
+//         close_nodes[rand_idx]->public_port,
+//         local_node_->sharding_id);
 }
 
 

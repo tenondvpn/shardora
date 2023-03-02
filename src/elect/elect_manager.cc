@@ -41,10 +41,12 @@ ElectManager::ElectManager(
         std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
-        std::shared_ptr<db::Db>& db) {
+        std::shared_ptr<db::Db>& db,
+        NewElectBlockCallback new_elect_cb) {
     block_mgr_ = block_mgr;
     security_ = security;
     db_ = db;
+    new_elect_cb_ = new_elect_cb;
     elect_block_mgr_.Init(db_);
     pool_manager_ = std::make_shared<ElectPoolManager>(this, security, stoke_mgr_, db_);
     height_with_block_ = std::make_shared<HeightWithElectBlock>(security, db_);
@@ -271,6 +273,7 @@ void ElectManager::OnNewElectBlock(
     ElectedToConsensusShard(thread_idx, elect_block, elected);
     pool_manager_->OnNewElectBlock(height, elect_block);
     elect_block_mgr_.OnNewElectBlock(height, elect_block);
+    new_elect_cb_(elect_block.shard_network_id());
 }
 
 void ElectManager::ElectedToConsensusShard(
@@ -589,9 +592,11 @@ void ElectManager::UpdatePrevElectMembers(
 
     auto t = common::GetSignerCount(members->size());
     int32_t i = 0;
+    int32_t local_member_index = kInvalidMemberIndex;
     for (auto iter = members->begin(); iter != members->end(); ++iter, ++i) {
         if ((*iter)->id == security_->GetAddress()) {
-            local_node_member_index_ = i;
+            local_member_index = i;
+            *elected = true;
         }
 
         if (elect_block.prev_members().bls_pubkey(i).x_c0().empty()) {
@@ -607,10 +612,6 @@ void ElectManager::UpdatePrevElectMembers(
             elect_block.prev_members().bls_pubkey(i).y_c0(),
             elect_block.prev_members().bls_pubkey(i).y_c1()
         };
-
-        if ((*iter)->id == security_->GetAddress()) {
-            *elected = true;
-        }
 
         BLS_DEBUG("id: %s, elected: %d, pk: %s,%s,%s,%s",
             common::Encode::HexEncode((*iter)->id).c_str(),
@@ -653,6 +654,10 @@ void ElectManager::UpdatePrevElectMembers(
 //             elect_block.prev_members().common_pubkey().x_c1().c_str(),
 //             elect_block.prev_members().common_pubkey().y_c0().c_str(),
 //             elect_block.prev_members().common_pubkey().y_c1().c_str());
+    }
+
+    if (*elected) {
+        local_node_member_index_ = local_member_index;
     }
 }
 

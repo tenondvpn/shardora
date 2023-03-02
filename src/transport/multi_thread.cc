@@ -88,15 +88,17 @@ int MultiThreadHandler::Init(
 
     wait_con_ = new std::condition_variable[all_thread_count_];
     wait_mutex_ = new std::mutex[all_thread_count_];
-    for (uint32_t i = 0; i < all_thread_count_; ++i) {
-        thread_vec_.push_back(std::make_shared<ThreadHandler>(
-            i, this, wait_con_[i], wait_mutex_[i]));
-    }
-
     unique_message_sets_.Init(1024 * 1, 32);
     inited_ = true;
     TRANSPORT_INFO("MultiThreadHandler::Init() success");
     return kTransportSuccess;
+}
+
+void MultiThreadHandler::Start() {
+    for (uint32_t i = 0; i < all_thread_count_; ++i) {
+        thread_vec_.push_back(std::make_shared<ThreadHandler>(
+            i, this, wait_con_[i], wait_mutex_[i]));
+    }
 }
 
 int MultiThreadHandler::StartTcpServer() {
@@ -177,6 +179,15 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx) {
                     return msg_obj;
                 }
             }
+        }
+    }
+
+    // handle http/ws request
+    if (thread_idx == consensus_thread_count_) {
+        if (http_server_message_queue_.size() > 0) {
+            MessagePtr msg_obj;
+            http_server_message_queue_.pop(&msg_obj);
+            return msg_obj;
         }
     }
     

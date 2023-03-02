@@ -115,8 +115,8 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tx_info.set_key(kAttrTimerBlock);
     tx_info.set_value(std::to_string(new_time_block_tm) + "_" + std::to_string(0));
     pools_mgr_->HandleMessage(msg_ptr);
-    TMBLOCK_INFO("dispatch timeblock tx info success: %lu, vss: %s, real: %s!",
-        new_time_block_tm, 0, tx_info.value().c_str());
+    TMBLOCK_INFO("dispatch timeblock tx info success: %lu, vss: %s, real: %s, network: %d!",
+        new_time_block_tm, 0, tx_info.value().c_str(), common::GlobalInfo::Instance()->network_id());
 }
 
 void TimeBlockManager::UpdateTimeBlock(

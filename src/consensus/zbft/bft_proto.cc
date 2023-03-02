@@ -178,7 +178,6 @@ bool BftProto::BackupCreatePreCommit(
     dht::DhtKeyManager dht_key(bft_ptr->network_id());
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kConsensusMessage);
-    auto broad_param = msg.mutable_broadcast();
     auto& bft_msg = *msg.mutable_hotstuff_proto();
     bft_msg.set_leader(true);
     bft_msg.set_gid(from_bft_msg.gid());

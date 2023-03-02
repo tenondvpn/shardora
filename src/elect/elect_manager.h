@@ -38,7 +38,8 @@ public:
         std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
-        std::shared_ptr<db::Db>& db);
+        std::shared_ptr<db::Db>& db,
+        NewElectBlockCallback new_elect_cb);
     ~ElectManager();
     int Init();
     int Join(uint8_t thread_idx, uint32_t network_id);
@@ -200,6 +201,7 @@ private:
     std::shared_ptr<NodesStokeManager> stoke_mgr_ = nullptr;
     ElectBlockManager elect_block_mgr_;
     std::shared_ptr<db::Db> db_ = nullptr;
+    NewElectBlockCallback new_elect_cb_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ElectManager);
 };
