@@ -49,10 +49,13 @@ void ThreadHandler::HandleMessage() {
             Processor::Instance()->HandleMessage(msg_ptr);
         }
 
-        auto msg_ptr = std::make_shared<transport::TransportMessage>();
-        msg_ptr->thread_idx = thread_idx_;
-        msg_ptr->header.set_type(common::kConsensusTimerMessage);
-        Processor::Instance()->HandleMessage(msg_ptr);
+        if (thread_idx_ + 1 < common::GlobalInfo::Instance()->message_handler_thread_count()) {
+            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            msg_ptr->thread_idx = thread_idx_;
+            msg_ptr->header.set_type(common::kConsensusTimerMessage);
+            Processor::Instance()->HandleMessage(msg_ptr);
+        }
+
         std::unique_lock<std::mutex> lock(wait_mutex_);
         wait_con_.wait_for(lock, std::chrono::milliseconds(10));
     }
@@ -70,6 +73,8 @@ int MultiThreadHandler::Init(
     security_ptr_ = security_ptr;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    all_thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count();
+    consensus_thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
     TRANSPORT_INFO("MultiThreadHandler::Init() ...");
     if (inited_) {
         TRANSPORT_WARN("MultiThreadHandler::Init() before");
@@ -81,10 +86,9 @@ int MultiThreadHandler::Init(
         return kTransportError;
     }
 
-    thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count();
-    wait_con_ = new std::condition_variable[thread_count_];
-    wait_mutex_ = new std::mutex[thread_count_];
-    for (uint32_t i = 0; i < thread_count_; ++i) {
+    wait_con_ = new std::condition_variable[all_thread_count_];
+    wait_mutex_ = new std::mutex[all_thread_count_];
+    for (uint32_t i = 0; i < all_thread_count_; ++i) {
         thread_vec_.push_back(std::make_shared<ThreadHandler>(
             i, this, wait_con_[i], wait_mutex_[i]));
     }
@@ -139,56 +143,24 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
 
     auto queue_idx = GetThreadIndex(msg_ptr);
     threads_message_queues_[queue_idx][priority].push(msg_ptr);
-    wait_con_[queue_idx % thread_count_].notify_one();
-}
-
-uint8_t MultiThreadHandler::GetTxThreadIndex(MessagePtr& msg_ptr) {
-    auto address_info = GetAddressInfo(
-        security_ptr_->GetAddress(msg_ptr->header.tx_proto().pubkey()));
-    if (address_info == nullptr ||
-            address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-        return 255;
-    }
-
-    msg_ptr->address_info = address_info;
-    return address_info->pool_index() % thread_count_;
+    wait_con_[queue_idx % all_thread_count_].notify_one();
 }
 
 uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
     switch (msg_ptr->header.type()) {
     case common::kDhtMessage:
     case common::kNetworkMessage:
-        return 0 % thread_count_;
     case common::kSyncMessage:
-        return 1 % thread_count_;
     case common::kElectMessage:
     case common::kVssMessage:
     case common::kBlsMessage:
-        return 2 % thread_count_;
-    case common::kConsensusMessage:
-        return 3 % thread_count_;  // get with detail
     case common::kPoolsMessage:
-        return GetTxThreadIndex(msg_ptr);
+        return consensus_thread_count_;
+    case common::kConsensusMessage:
+        return msg_ptr->header.hotstuff_proto().pool_index() % consensus_thread_count_;
     default:
-        return 3 % thread_count_;
+        return consensus_thread_count_;
     }
-}
-
-std::shared_ptr<address::protobuf::AddressInfo> MultiThreadHandler::GetAddressInfo(
-        const std::string& addr) {
-    // first get from cache
-    std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
-    if (address_map_.get(addr, &address_info)) {
-        return address_info;
-    }
-
-    // get from db and add to memory cache
-    address_info = prefix_db_->GetAddressInfo(addr);
-    if (address_info != nullptr) {
-        address_map_.add(addr, address_info);
-    }
-
-    return address_info;
 }
 
 bool MultiThreadHandler::IsMessageUnique(uint64_t msg_hash) {
@@ -196,8 +168,8 @@ bool MultiThreadHandler::IsMessageUnique(uint64_t msg_hash) {
 }
  
 MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx) {
-    for (uint32_t i = 0; i < thread_count_; ++i) {
-        if (i % thread_count_ == thread_idx) {
+    for (uint32_t i = 0; i < all_thread_count_; ++i) {
+        if (i % all_thread_count_ == thread_idx) {
             for (uint32_t j = kTransportPrioritySystem; j < kTransportPriorityMaxCount; ++j) {
                 if (threads_message_queues_[i][j].size() > 0) {
                     MessagePtr msg_obj;
@@ -221,7 +193,7 @@ void MultiThreadHandler::Join() {
     }
     thread_vec_.clear();
     inited_ = false;
-    for (uint32_t i = 0; i < thread_count_; ++i) {
+    for (uint32_t i = 0; i < all_thread_count_; ++i) {
         delete[] threads_message_queues_[i];
     }
 
@@ -231,8 +203,8 @@ void MultiThreadHandler::Join() {
 }
 
 void MultiThreadHandler::InitThreadPriorityMessageQueues() {
-    threads_message_queues_ = new common::ThreadSafeQueue<MessagePtr>*[thread_count_];
-    for (uint32_t i = 0; i < thread_count_; ++i) {
+    threads_message_queues_ = new common::ThreadSafeQueue<MessagePtr>*[all_thread_count_];
+    for (uint32_t i = 0; i < all_thread_count_; ++i) {
         threads_message_queues_[i] =
             new common::ThreadSafeQueue<MessagePtr>[kTransportPriorityMaxCount];
     }

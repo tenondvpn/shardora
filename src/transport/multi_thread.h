@@ -74,7 +74,6 @@ private:
     void InitThreadPriorityMessageQueues();
     uint8_t GetThreadIndex(MessagePtr& msg_ptr);
     uint8_t GetTxThreadIndex(MessagePtr& msg_ptr);
-    std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& addrss);
 
     static const int kQueueObjectCount = 1024 * 1024;
 
@@ -85,9 +84,9 @@ private:
     common::ThreadSafeQueue<MessagePtr>** threads_message_queues_;
     std::condition_variable* wait_con_ = nullptr;
     std::mutex* wait_mutex_ = nullptr;
-    uint32_t thread_count_ = 4;
+    uint32_t consensus_thread_count_ = 4;
+    uint32_t all_thread_count_ = 4;
     uint8_t robin_index_ = 0;
-    common::UniqueMap<std::string, protos::AddressInfoPtr> address_map_;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;

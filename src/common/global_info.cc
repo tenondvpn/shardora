@@ -24,6 +24,9 @@ GlobalInfo::~GlobalInfo() {}
 
 int GlobalInfo::Init(const common::Config& config) {
     message_handler_thread_count_ = 4;
+    config.Get("zjchain", "consensus_thread_count", message_handler_thread_count_);
+    ++message_handler_thread_count_;
+
     if (!config.Get("zjchain", "local_ip", config_local_ip_)) {
         ZJC_ERROR("get zjchain local_ip from config failed.");
         return kCommonError;

@@ -10,18 +10,10 @@ namespace zjchain {
 
 namespace http {
 
-static HttpServer* http_server = nullptr;
-
 HttpServer::HttpServer() {
-    http_server = this;
 }
 
 HttpServer::~HttpServer() {}
-
-HttpServer* HttpServer::Instance() {
-    static HttpServer ins;
-    return &ins;
-}
 
 int32_t HttpServer::Init(
         const char* ip,

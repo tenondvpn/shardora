@@ -38,13 +38,14 @@ static void HttpTestCallback(evhtp_request_t* req, void* data) {
 int main(int argc, char* argv[]) {
     std::string http_ip = "0.0.0.0";
     uint16_t http_port = 8080;
-    if (http::HttpServer::Instance()->Init("0.0.0.0", 8080, 2) != 0) {
+    http::HttpServer http_server;
+    if (http_server.Init("0.0.0.0", 8080, 2) != 0) {
         printf("init http server failed! %s:%d\n", http_ip.c_str(), 8080);
         return 1;
     }
 
-    http::HttpServer::Instance()->AddCallback("/test", HttpTestCallback);
-    http::HttpServer::Instance()->Start();
+    http_server.AddCallback("/test", HttpTestCallback);
+    http_server.Start();
     b_time = common::TimeUtils::TimestampMs();
     char stop;
     std::cin >> stop;

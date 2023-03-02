@@ -35,6 +35,7 @@ public:
     virtual int GetEcdhKey(const std::string& peer_pubkey, std::string* ecdh_key);
     virtual bool IsValidPublicKey(const std::string& pubkey);
     virtual std::string UnicastAddress(const std::string& src_address);
+    virtual std::string GetSign(const std::string& r, const std::string& s, uint8_t v);
     int GetEcdhKey(const PublicKey& peer_pubkey, std::string* ecdh_key);
     std::shared_ptr<PublicKey> GetPublicKey(const std::string& pk) {
         auto pk_ptr = std::make_shared<PublicKey>(curve_);

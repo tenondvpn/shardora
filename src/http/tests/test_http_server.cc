@@ -26,14 +26,15 @@ public:
 };
 
 TEST_F(TestHttpServer, InitAndPop) {
-    ASSERT_EQ(HttpServer::Instance()->Init("0.0.0.0", 19871, 4), kHttpSuccess);
-    ASSERT_EQ(HttpServer::Instance()->Start(), kHttpSuccess);
+    HttpServer http_server;
+    ASSERT_EQ(http_server.Init("0.0.0.0", 19871, 4), kHttpSuccess);
+    ASSERT_EQ(http_server.Start(), kHttpSuccess);
     std::cout << "start now." << std::endl;
     for (int i = 0; i < 100; ++i) {
         system("curl \"http://127.0.0.1:19871/dags?tid=172\"");
     }
     std::cout << "stop now." << std::endl;
-    ASSERT_EQ(HttpServer::Instance()->Stop(), kHttpSuccess);
+    ASSERT_EQ(http_server.Stop(), kHttpSuccess);
 }
 
 }  // namespace test

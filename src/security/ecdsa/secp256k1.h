@@ -37,6 +37,7 @@ public:
         const std::string& msg,
         const std::string& pubkey,
         const std::string& sign);
+    std::string GetSign(const std::string& r, const std::string& s, uint8_t v);
     std::string Recover(const std::string& sign, const std::string& hash);
     std::string RecoverForContract(const std::string& sign, const std::string& hash);
     std::string sha3(const std::string & input);

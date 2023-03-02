@@ -26,6 +26,7 @@ public:
     virtual int GetEcdhKey(const std::string& peer_pubkey, std::string* ecdh_key) = 0;
     virtual bool IsValidPublicKey(const std::string& pubkey) = 0;
     virtual std::string UnicastAddress(const std::string& src_address) = 0;
+    virtual std::string GetSign(const std::string& r, const std::string& s, uint8_t v) = 0;
 
 protected:
     Security() {}

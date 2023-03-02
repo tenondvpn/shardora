@@ -11,15 +11,14 @@ namespace http {
 
 class HttpServer {
 public:
-    static HttpServer* Instance();
+    HttpServer();
+    ~HttpServer();
     int32_t Init(const char* ip, uint16_t port, int32_t thread_count);
     int32_t Start();
     int32_t Stop();
     void AddCallback(const char* uri, evhtp_callback_cb cb);
 
 private:
-    HttpServer();
-    ~HttpServer();
     void RunHttpServer();
 
     evbase_t* evbase_{ nullptr };

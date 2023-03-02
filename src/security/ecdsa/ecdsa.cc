@@ -46,6 +46,10 @@ int Ecdsa::Verify(const std::string& hash, const std::string& str_pk, const std:
     return kSecuritySuccess;
 }
 
+std::string Ecdsa::GetSign(const std::string& r, const std::string& s, uint8_t v) {
+    return Secp256k1::Instance()->GetSign(r, s, v);
+}
+
 std::string Ecdsa::Recover(
         const std::string& sign,
         const std::string& hash) {
