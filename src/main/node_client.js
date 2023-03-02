@@ -100,8 +100,8 @@ function GetValidHexString(uint256_bytes) {
 function PostCode(data) {
     var post_data = querystring.stringify(data);
     var post_options = {
-        host: '82.156.224.174',
-        port: '19098',
+        host: '127.0.0.1',
+        port: '8781',
         path: '/do_transaction',
         method: 'POST',
         headers: {
