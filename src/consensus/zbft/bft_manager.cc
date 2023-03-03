@@ -76,13 +76,13 @@ int BftManager::Init(
     return kConsensusSuccess;
 }
 
-int BftManager::OnNewElectBlock(uint32_t sharding_id) {
+void BftManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members) {
     int32_t local_leader_index = elect_mgr_->local_node_pool_mod_num();
     int32_t leader_count = elect_mgr_->GetNetworkLeaderCount(sharding_id);
     ZJC_DEBUG("new elect block local leader index: %d, leader_count: %d",
         local_leader_index, leader_count);
     if (local_leader_index < 0 || local_leader_index >= leader_count) {
-        return kConsensusSuccess;
+        return;
     }
 
     std::set<uint32_t> leader_pool_set;
@@ -103,8 +103,6 @@ int BftManager::OnNewElectBlock(uint32_t sharding_id) {
         thread_item->prev_index = 0;
         thread_set_[j] = thread_item;  // ptr change, multi-thread safe
     }
-
-    return kConsensusSuccess;
 }
 
 void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {

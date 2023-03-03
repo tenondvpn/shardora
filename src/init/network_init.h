@@ -38,7 +38,7 @@ protected:
     int InitSecurity();
     int CheckJoinWaitingPool();
     int GenesisCmd(common::ParserArgs& parser_arg);
-    void ElectBlockCallback(uint32_t sharding_id);
+    void ElectBlockCallback(uint32_t sharding_id, common::MembersPtr& members);
 
     common::Config conf_;
     bool inited_{ false };

@@ -81,7 +81,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
-    if (net_handler_.Init(security_, db_) != transport::kTransportSuccess) {
+    if (net_handler_.Init(db_) != transport::kTransportSuccess) {
         return kInitError;
     }
 
@@ -160,8 +160,9 @@ int NetworkInit::Init(int argc, char** argv) {
     return kInitSuccess;
 }
 
-void NetworkInit::ElectBlockCallback(uint32_t sharding_id) {
-    bft_mgr_->OnNewElectBlock(sharding_id);
+void NetworkInit::ElectBlockCallback(uint32_t sharding_id, common::MembersPtr& members) {
+    bft_mgr_->OnNewElectBlock(sharding_id, members);
+    block_mgr_->OnNewElectBlock(sharding_id, members);
 }
 
 int NetworkInit::CheckJoinWaitingPool() {

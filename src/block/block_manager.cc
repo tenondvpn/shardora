@@ -43,6 +43,10 @@ int BlockManager::Init(
     return kBlockSuccess;
 }
 
+void BlockManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members) {
+    to_txs_pool_->OnNewElectBlock(sharding_id, members);
+}
+
 void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // verify signature valid and check leader valid
     if (msg_ptr->header.block_proto().to_txs_size() > 0) {

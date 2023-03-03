@@ -48,6 +48,7 @@ public:
     }
 
     void CreateToTx();
+    void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
 
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);

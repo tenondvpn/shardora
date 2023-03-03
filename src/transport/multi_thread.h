@@ -20,7 +20,6 @@
 #include "db/db.h"
 #include "protos/prefix_db.h"
 #include "protos/transport.pb.h"
-#include "security/security.h"
 #include "transport/transport_utils.h"
 
 namespace zjchain {
@@ -59,9 +58,7 @@ class MultiThreadHandler {
 public:
     MultiThreadHandler();
     ~MultiThreadHandler();
-    int Init(
-        std::shared_ptr<security::Security>& security_ptr,
-        std::shared_ptr<db::Db>& db);
+    int Init(std::shared_ptr<db::Db>& db);
     void Start();
     void HandleMessage(MessagePtr& msg_ptr);
     MessagePtr GetMessageFromQueue(uint32_t thread_idx);
@@ -92,7 +89,6 @@ private:
     uint32_t consensus_thread_count_ = 4;
     uint32_t all_thread_count_ = 4;
     uint8_t robin_index_ = 0;
-    std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 

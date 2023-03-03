@@ -20,6 +20,8 @@ message ToTxHeights {
     repeated uint64 heights = 2;
     optional uint64 block_height = 3;
     optional bytes tos_hash = 4;
+    optional bytes leader_id = 5;
+    optional uint64 elelct_height = 6;
 }
 
 message ToTxMessageItem {

@@ -46,4 +46,5 @@ message Header {
     optional hotstuff.protobuf.HotstuffMessage hotstuff_proto = 16;
     optional hotstuff.protobuf.HotstuffMessage leader_commit = 17;
     optional block.protobuf.BlockMessage block_proto = 18;
+    optional pools.protobuf.ToTxHeights to_tx_heights = 19;
 }

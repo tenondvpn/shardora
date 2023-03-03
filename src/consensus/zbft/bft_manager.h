@@ -39,7 +39,7 @@ public:
         std::shared_ptr<db::Db>& db,
         BlockCallback block_cb,
         uint8_t thread_count);
-    virtual int OnNewElectBlock(uint32_t sharding_id);
+    void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
     int Start(uint8_t thread_index, transport::MessagePtr& prepare_msg_ptr);
     BftManager();
     virtual ~BftManager();

@@ -274,7 +274,9 @@ void ElectManager::OnNewElectBlock(
     pool_manager_->OnNewElectBlock(height, elect_block);
     elect_block_mgr_.OnNewElectBlock(height, elect_block);
     if (new_elect_cb_ != nullptr) {
-        new_elect_cb_(elect_block.shard_network_id());
+        new_elect_cb_(
+            elect_block.shard_network_id(),
+            members_ptr_[elect_block.shard_network_id()]);
     }
 }
 

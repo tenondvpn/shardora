@@ -10,7 +10,7 @@ namespace consensus {
 
 class Consensus {
 public:
-    virtual int OnNewElectBlock(uint32_t sharding_id) = 0;
+//     virtual int OnNewElectBlock(uint32_t sharding_id) = 0;
 
 protected:
     Consensus() {}

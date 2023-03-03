@@ -56,6 +56,13 @@ void ThreadHandler::HandleMessage() {
             Processor::Instance()->HandleMessage(msg_ptr);
         }
 
+        if (thread_idx_ + 1 == common::GlobalInfo::Instance()->message_handler_thread_count()) {
+            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            msg_ptr->thread_idx = thread_idx_;
+            msg_ptr->header.set_type(common::kPoolTimerMessage);
+            Processor::Instance()->HandleMessage(msg_ptr);
+        }
+
         std::unique_lock<std::mutex> lock(wait_mutex_);
         wait_con_.wait_for(lock, std::chrono::milliseconds(10));
     }
@@ -67,10 +74,7 @@ MultiThreadHandler::~MultiThreadHandler() {
     Destroy();
 }
 
-int MultiThreadHandler::Init(
-        std::shared_ptr<security::Security>& security_ptr,
-        std::shared_ptr<db::Db>& db) {
-    security_ptr_ = security_ptr;
+int MultiThreadHandler::Init(std::shared_ptr<db::Db>& db) {
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     all_thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count();

@@ -18,7 +18,7 @@ private:
     Processor();
     ~Processor();
 
-    MessageProcessor message_processor_[common::kLegoMaxMessageTypeCount];
+    std::vector<MessageProcessor> message_processor_[common::kLegoMaxMessageTypeCount];
 
     DISALLOW_COPY_AND_ASSIGN(Processor);
 };

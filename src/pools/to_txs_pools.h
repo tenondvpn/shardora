@@ -16,13 +16,14 @@ public:
     ToTxsPools(std::shared_ptr<db::Db>& db);
     ~ToTxsPools();
     void NewBlock(const block::protobuf::Block& block, db::DbWriteBach& db_batch);
-    int LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::TxMessage* tx);
+    int OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
+
+private:
+    int LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeights& to_heights);
     int BackupCreateToTx(
         uint32_t sharding_id,
         const pools::protobuf::ToTxHeights& leader_to_heights,
         pools::protobuf::TxMessage* tx);
-
-private:
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(
         const std::string& addr);
     void HandleNormalToTx(
@@ -30,6 +31,8 @@ private:
         const block::protobuf::BlockTx& tx_info,
         db::DbWriteBach& db_batch);
     void LoadLatestHeights();
+    void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
+    bool CheckLeaderValid(const std::string& id);
 
     // destination shard -> pool -> height -> items
     typedef std::unordered_map<std::string, uint64_t> TxMap;
@@ -41,6 +44,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::unordered_map<uint32_t, std::shared_ptr<pools::protobuf::ToTxHeights>> handled_map_;
+    std::string local_id_;
 
     DISALLOW_COPY_AND_ASSIGN(ToTxsPools);
 };

@@ -1,19 +1,54 @@
 #include "pools/to_txs_pools.h"
 
+#include "common/global_info.h"
 #include "common/user_property_key_define.h"
-#include "network/network_utils.h"
+#include "network/network_utils.h
+#include "network/route.h"
+#include "transport/processor.h"
 
 namespace zjchain {
 
 namespace pools {
 
-ToTxsPools::ToTxsPools(std::shared_ptr<db::Db>& db) : db_(db) {
+ToTxsPools::ToTxsPools(
+        std::shared_ptr<db::Db>& db,
+        const std::string& local_id) : db_(db), local_id_(local_id) {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     LoadLatestHeights();
     address_map_.Init(10240, 16);
+    transport::Processor::Instance()->RegisterProcessor(
+        common::kPoolTimerMessage,
+        std::bind(&ToTxsPools::ConsensusTimerMessage, this, std::placeholders::_1));
 }
 
 ToTxsPools::~ToTxsPools() {}
+
+void ToTxsPools::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+    if (!CheckLeaderValid(local_id_)) {
+        return;
+    }
+
+    for (uint32_t i = 2; i < common::GlobalInfo::Instance()->consensus_shard_count(); ++i) {
+        auto to_tx_msg_ptr = std::make_shared<transport::TransportMessage>();
+        to_tx_msg_ptr->thread_idx = msg_ptr->thread_idx;
+        auto& msg = to_tx_msg_ptr->header;
+        auto& to_heights = *msg.mutable_to_tx_heights();
+        if (LeaderCreateToTx(i, &to_heights) != kPoolsSuccess) {
+            continue;
+        }
+
+        // broadcast to followers
+        network::Route::Instance()->Send(to_tx_msg_ptr);
+    }
+}
+
+void ToTxsPools::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members) {
+
+}
+
+bool ToTxsPools::CheckLeaderValid(const std::string& id) {
+    return false;
+}
 
 void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBach& db_batch) {
     if (block.network_id() != common::GlobalInfo::Instance()->network_id()) {
@@ -169,7 +204,7 @@ std::shared_ptr<address::protobuf::AddressInfo> ToTxsPools::GetAddressInfo(
     return address_info;
 }
 
-int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::TxMessage* tx) {
+int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeights& to_heights) {
     pools::protobuf::ToTxMessage to_tx;
     auto net_iter = network_txs_pools_.find(sharding_id);
     if (net_iter == network_txs_pools_.end()) {
@@ -177,7 +212,6 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::TxMessag
     }
 
     auto handled_iter = handled_map_.find(sharding_id);
-    pools::protobuf::ToTxHeights to_heights;
     to_heights.set_sharding_id(sharding_id);
     std::map<std::string, uint64_t> acc_amount_map;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
