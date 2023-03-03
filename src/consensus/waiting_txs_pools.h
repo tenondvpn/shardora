@@ -82,6 +82,19 @@ public:
         return nullptr;
     }
 
+    std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
+            uint32_t pool_index,
+            const protobuf::RepeatedPtrField<std::string>& tx_hash_list,
+            uint8_t thread_idx) {
+        auto txs_item = wtxs[pool_index].FollowerGetTxs(tx_hash_list);
+        if (txs_item != nullptr) {
+            txs_item->pool_index = pool_index;
+            return txs_item;
+        }
+
+        return nullptr;
+    }
+
 private:
     WaitingTxs wtxs[common::kInvalidPoolIndex];
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;

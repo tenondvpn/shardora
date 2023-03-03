@@ -55,6 +55,30 @@ public:
         return txs_items_;
     }
 
+    std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
+            const protobuf::RepeatedPtrField<std::string>& tx_hash_list) {
+        txs_items_ = std::make_shared<WaitingTxsItem>();
+        auto& tx_map = txs_items_->txs;
+        for (int32_t i = 0; i < tx_hash_list.size(); ++i) {
+            auto tx_item = pools_mgr_->GetTx(pool_index_, tx_hash_list[i]);
+            if (tx_item != nullptr) {
+                tx_map[tx_hash_list[i]] = tx_item;
+            }
+        }
+
+        auto& all_txs_hash = txs_items_->all_txs_hash;
+        for (auto iter = txs_items_->txs.begin(); iter != txs_items_->txs.end(); ++iter) {
+            all_txs_hash.append(iter->first);
+        }
+
+        all_txs_hash = common::Hash::keccak256(all_txs_hash);
+        if (txs_items_->txs.empty()) {
+            txs_items_ = nullptr;
+        }
+
+        return txs_items_;
+    }
+
 private:
     std::shared_ptr<WaitingTxsItem> DirectGetValidTxs() {
         auto tx_items_ptr = std::make_shared<WaitingTxsItem>();

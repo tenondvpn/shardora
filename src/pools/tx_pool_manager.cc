@@ -170,7 +170,7 @@ void TxPoolManager::GetTx(
     tx_pool_[pool_index].GetTx(bloom_filter, res_map);
 }
 
-TxItemPtr TxPoolManager::GetTx(uint32_t pool_index, const std::string& sgid) {
+TxItemPtr TxPoolManager::GetTx(uint32_t pool_index, const std::string& tx_hash) {
     assert(pool_index < common::kInvalidPoolIndex);
     while (msg_queues_[pool_index].size() > 0) {
         transport::MessagePtr msg_ptr = nullptr;
