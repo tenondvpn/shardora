@@ -231,17 +231,6 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeig
     auto val = to_tx.SerializeAsString();
     to_heights.set_tos_hash(tos_hash);
     prefix_db_->SaveTemporaryKv(tos_hash, val);
-    auto tx = std::make_shared<pools::protobuf::TxMessage>();
-    tx->set_key(protos::kNormalTos);
-    tx->set_value(to_heights.SerializeAsString());
-    tx->set_pubkey("");
-    tx->set_to("");
-    tx->set_step(pools::protobuf::kNormalTo);
-    auto gid = common::Hash::keccak256(tos_hash + std::to_string(sharding_id));
-    tx->set_gas_limit(0);
-    tx->set_amount(0);
-    tx->set_gas_price(common::kBuildinTransactionGasPrice);
-    tx->set_gid(gid);
     return kPoolsSuccess;
 }
 

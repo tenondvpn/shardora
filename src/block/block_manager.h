@@ -70,6 +70,7 @@ private:
     common::BftMemberPtr to_tx_leader_ = nullptr;
     uint32_t max_consensus_sharding_id_ = 3;
     std::string local_id_;
+    std::shared_ptr<pools::protobuf::TxMessage> to_txs_[network::kConsensusShardEndNetworkId] = { nullptr };
 
 #ifdef ZJC_UNITTEST
     transport::MessagePtr leader_to_txs_msg_ = nullptr;

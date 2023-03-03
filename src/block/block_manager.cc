@@ -155,9 +155,8 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
     for (int32_t i = 0; i < msg_ptr->header.block_proto().to_txs_size(); ++i) {
         auto& heights = msg_ptr->header.block_proto().to_txs(i);
         auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-        auto to_tx_msg_ptr = std::make_shared<transport::TransportMessage>();
-        to_tx_msg_ptr->thread_idx = msg_ptr->thread_idx;
-        auto& tx = *to_tx_msg_ptr->header.mutable_tx_proto();
+        auto tx_ptr = std::make_shared<pools::protobuf::TxMessage>();
+        auto& tx = *tx_ptr;
         if (to_txs_pool_->BackupCreateToTx(
                 heights.sharding_id(),
                 heights,
@@ -165,7 +164,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
             continue;
         }
 
-        pools_mgr_->HandleMessage(to_tx_msg_ptr);
+        to_txs_[heights.sharding_id()] = tx_ptr;
     }
 }
 
@@ -193,6 +192,19 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
             block_msg.mutable_to_txs()->RemoveLast();
             continue;
         }
+
+        auto tx = std::make_shared<pools::protobuf::TxMessage>();
+        tx->set_key(protos::kNormalTos);
+        tx->set_value(to_heights.SerializeAsString());
+        tx->set_pubkey("");
+        tx->set_to("");
+        tx->set_step(pools::protobuf::kNormalTo);
+        auto gid = common::Hash::keccak256(tos_hash + std::to_string(i));
+        tx->set_gas_limit(0);
+        tx->set_amount(0);
+        tx->set_gas_price(common::kBuildinTransactionGasPrice);
+        tx->set_gid(gid);
+        to_txs_[i] = tx;
     }
     
     prev_create_to_tx_ms_ = now_tm_ms + kCreateToTxPeriodMs;
