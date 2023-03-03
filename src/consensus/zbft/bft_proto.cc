@@ -234,7 +234,7 @@ bool BftProto::LeaderCreateCommit(
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kConsensusMessage);
     auto broad_param = msg.mutable_broadcast();
-    auto& bft_msg = *msg.mutable_hotstuff_proto();
+    auto& bft_msg = *msg.mutable_leader_commit();
     hotstuff::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
     auto ltx_commit_msg = tx_bft.mutable_ltx_commit();
     ltx_commit_msg->set_latest_hegight(bft_ptr->prepare_latest_height());
