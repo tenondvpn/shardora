@@ -26,7 +26,8 @@ namespace test {
 static std::shared_ptr<security::Security> security = nullptr;
 static std::shared_ptr<pools::TxPoolManager> pools_mgr = nullptr;
 static std::shared_ptr<pools::TxPoolManager> pools_mgr_backup = nullptr;
-const uint32_t kTestTxCount = 256;
+static const uint32_t kTestTxCount = 256;
+static std::shared_ptr<db::Db> db_ptr = nullptr;
 
 class TestWaitingTxsPools : public testing::Test {
 public:
@@ -55,7 +56,8 @@ public:
     }
 
     static void SetUpTestCase() {
-        system("rm -rf ./core.* ./test_db");
+        system("rm -rf ./core.* ./wtxp_db");
+        db_ptr->Init("./wtxp_db");
         std::string config_path_ = "./";
         std::string conf_path = config_path_ + "/zjc.conf";
         std::string log_conf_path = config_path_ + "/log4cpp.properties";
@@ -67,8 +69,8 @@ public:
     }
 
     static void AddTxs() {
-        pools_mgr = std::make_shared<pools::TxPoolManager>(security);
-        pools_mgr_backup = std::make_shared<pools::TxPoolManager>(security);
+        pools_mgr = std::make_shared<pools::TxPoolManager>(security, db_ptr);
+        pools_mgr_backup = std::make_shared<pools::TxPoolManager>(security, db_ptr);
         std::string random_prefix = common::Random::RandomString(33);
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             for (uint32_t j = 0; j < kTestTxCount; ++j) {

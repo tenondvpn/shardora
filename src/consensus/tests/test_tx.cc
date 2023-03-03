@@ -122,12 +122,12 @@ public:
         db_ptr->Init(db_path);
         auto block_mgr = std::make_shared<block::BlockManager>();
         auto bls_mgr = std::make_shared<bls::BlsManager>(security, db_ptr);
-        auto pools_mgr = std::make_shared<pools::TxPoolManager>(security);
+        auto pools_mgr = std::make_shared<pools::TxPoolManager>(security, db_ptr);
         account_mgr->Init(1, db_ptr, pools_mgr);
         block_mgr->Init(account_mgr, db_ptr, pools_mgr, security->GetAddress());
         block_mgr->SetMaxConsensusShardingId(3);
         auto elect_mgr = std::make_shared<elect::ElectManager>(
-            block_mgr, security, bls_mgr, db_ptr);
+            block_mgr, security, bls_mgr, db_ptr, nullptr);
         ASSERT_EQ(elect_mgr->Init(), 0);
         ASSERT_EQ(bft_mgr.Init(
             account_mgr,
@@ -138,7 +138,7 @@ public:
             db_ptr,
             nullptr,
             1), kConsensusSuccess);
-        ASSERT_EQ(bft_mgr.OnNewElectBlock(0, 1), kConsensusSuccess);
+        ASSERT_EQ(bft_mgr.OnNewElectBlock(kTestShardingId), kConsensusSuccess);
         common::GlobalInfo::Instance()->set_network_id(kTestShardingId);
     }
 
@@ -205,7 +205,8 @@ TEST_F(TestTx, TestTx) {
     AddTxs(leader_bft_mgr, tx_info);
     AddTxs(backup_bft_mgr0, tx_info);
     AddTxs(backup_bft_mgr1, tx_info);
-    ASSERT_EQ(leader_bft_mgr.Start(0), kConsensusSuccess);
+    transport::MessagePtr prepare_msg_ptr = nullptr;
+    ASSERT_EQ(leader_bft_mgr.Start(0, prepare_msg_ptr), kConsensusSuccess);
     leader_bft_mgr.leader_prepare_msg_->thread_idx = 0;
     backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
     ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ != nullptr);
@@ -280,7 +281,8 @@ TEST_F(TestTx, TestMoreTx) {
     while (true) {
         // 1. prepare
         auto tm0 = common::TimeUtils::TimestampUs();
-        leader_bft_mgr.Start(0);
+        transport::MessagePtr prepare_msg_ptr = nullptr;
+        leader_bft_mgr.Start(0, prepare_msg_ptr);
         if (leader_bft_mgr.leader_prepare_msg_ == nullptr) {
             break;
         }
@@ -368,7 +370,8 @@ TEST_F(TestTx, TestMoreTx) {
     // cross shard
     while (true) {
         // 1. prepare
-        leader_bft_mgr.Start(0);
+        transport::MessagePtr prepare_msg_ptr = nullptr;
+        leader_bft_mgr.Start(0, prepare_msg_ptr);
         if (leader_bft_mgr.leader_prepare_msg_ == nullptr) {
             break;
         }
@@ -411,7 +414,8 @@ TEST_F(TestTx, TestMoreTx) {
     // local shard to txs
     while (true) {
         // 1. prepare
-        leader_bft_mgr.Start(0);
+        transport::MessagePtr prepare_msg_ptr = nullptr;
+        leader_bft_mgr.Start(0, prepare_msg_ptr);
         if (leader_bft_mgr.leader_prepare_msg_ == nullptr) {
             break;
         }
@@ -474,7 +478,8 @@ TEST_F(TestTx, TestTxOnePrepareEvil) {
     AddTxs(backup_bft_mgr0, tx_info);
     AddTxs(backup_bft_mgr1, tx_info);
     backup_bft_mgr0.test_for_prepare_evil_ = true;
-    ASSERT_EQ(leader_bft_mgr.Start(0), kConsensusSuccess);
+    transport::MessagePtr prepare_msg_ptr = nullptr;
+    ASSERT_EQ(leader_bft_mgr.Start(0, prepare_msg_ptr), kConsensusSuccess);
     leader_bft_mgr.leader_prepare_msg_->thread_idx = 0;
     backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
     ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ == nullptr);
@@ -516,7 +521,8 @@ TEST_F(TestTx, TestTxOnePrecommitEvil) {
     AddTxs(backup_bft_mgr0, tx_info);
     AddTxs(backup_bft_mgr1, tx_info);
     backup_bft_mgr0.test_for_precommit_evil_ = true;
-    ASSERT_EQ(leader_bft_mgr.Start(0), kConsensusSuccess);
+    transport::MessagePtr prepare_msg_ptr = nullptr;
+    ASSERT_EQ(leader_bft_mgr.Start(0, prepare_msg_ptr), kConsensusSuccess);
     leader_bft_mgr.leader_prepare_msg_->thread_idx = 0;
     backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
     ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ != nullptr);
@@ -561,7 +567,8 @@ TEST_F(TestTx, TestTxTwoPrepareEvil) {
     AddTxs(backup_bft_mgr1, tx_info);
     backup_bft_mgr0.test_for_prepare_evil_ = true;
     backup_bft_mgr1.test_for_prepare_evil_ = true;
-    ASSERT_EQ(leader_bft_mgr.Start(0), kConsensusSuccess);
+    transport::MessagePtr prepare_msg_ptr = nullptr;
+    ASSERT_EQ(leader_bft_mgr.Start(0, prepare_msg_ptr), kConsensusSuccess);
     leader_bft_mgr.leader_prepare_msg_->thread_idx = 0;
     backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
     ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ == nullptr);
