@@ -199,7 +199,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         tx->set_pubkey("");
         tx->set_to("");
         tx->set_step(pools::protobuf::kNormalTo);
-        auto gid = common::Hash::keccak256(tos_hash + std::to_string(i));
+        auto gid = common::Hash::keccak256(to_heights.tos_hash() + std::to_string(i));
         tx->set_gas_limit(0);
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);

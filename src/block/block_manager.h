@@ -7,6 +7,7 @@
 #include "common/node_members.h"
 #include "common/thread_safe_queue.h"
 #include "db/db.h"
+#include "network/network_utils.h"
 #include "pools/tx_pool_manager.h"
 #include "pools/to_txs_pools.h"
 #include "protos/block.pb.h"
