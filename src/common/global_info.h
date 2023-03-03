@@ -62,13 +62,6 @@ public:
         return network_id_;
     }
 
-    void set_consensus_shard_count(uint32_t count) {
-        consensus_shard_count_ = count;
-    }
-
-    uint32_t consensus_shard_count() {
-        return consensus_shard_count_;
-    }
     void set_genesis_start() {
         genesis_start_ = true;
     }
