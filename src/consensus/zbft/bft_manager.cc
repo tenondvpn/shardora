@@ -892,6 +892,7 @@ int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr) {
 
     bft_ptr->set_consensus_status(kConsensusCommit);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->thread_idx = bft_ptr->thread_index();
     auto& precommit_msg = msg_ptr->header;  // msg;
     auto res = BftProto::LeaderCreatePreCommit(
         security_ptr_, bft_ptr, true, precommit_msg);
