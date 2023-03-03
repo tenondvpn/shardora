@@ -40,7 +40,7 @@ public:
         BlockCallback block_cb,
         uint8_t thread_count);
     virtual int OnNewElectBlock(uint32_t sharding_id);
-    virtual int Start(uint8_t thread_index);
+    int Start(uint8_t thread_index, transport::MessagePtr& prepare_msg_ptr);
     BftManager();
     virtual ~BftManager();
 
@@ -57,9 +57,9 @@ public:
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
-    int StartBft(std::shared_ptr<WaitingTxsItem>& txs_ptr);
+    int StartBft(std::shared_ptr<WaitingTxsItem>& txs_ptr, transport::MessagePtr& prepare_msg_ptr);
     void RemoveBft(uint8_t thread_idx, const std::string& gid, bool is_leader);
-    int LeaderPrepare(ZbftPtr& bft_ptr);
+    int LeaderPrepare(ZbftPtr& bft_ptr, transport::MessagePtr& prepare_msg_ptr);
     int BackupPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int LeaderPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
@@ -70,7 +70,6 @@ private:
         ZbftPtr& bft_ptr,
         const hotstuff::protobuf::HotstuffMessage& bft_msg,
         const std::string& sign_hash);
-    void LeaderBroadcastToAcc(ZbftPtr& bft_ptr, bool is_bft_leader);
     int CreateGenisisBlock(const transport::MessagePtr& msg_ptr);
     bool AggSignValid(uint32_t thread_idx, uint32_t type, const block::protobuf::Block& block);
     int LeaderCallPrecommit(ZbftPtr& bft_ptr);

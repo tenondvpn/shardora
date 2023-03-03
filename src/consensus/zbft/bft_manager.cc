@@ -109,11 +109,12 @@ int BftManager::OnNewElectBlock(uint32_t sharding_id) {
 
 void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 #ifndef ZJC_UNITTEST
-    Start(msg_ptr->thread_idx);
+    transport::MessagePtr prepare_msg_ptr = nullptr;
+    Start(msg_ptr->thread_idx, prepare_msg_ptr);
 #endif
 }
 
-int BftManager::Start(uint8_t thread_index) {
+int BftManager::Start(uint8_t thread_index, transport::MessagePtr& prepare_msg_ptr) {
     CheckTimeout(thread_index);
     auto thread_item = thread_set_[thread_index];
     if (thread_item == nullptr) {
@@ -150,7 +151,7 @@ int BftManager::Start(uint8_t thread_index) {
     }
 
     txs_ptr->thread_index = thread_index;
-    return StartBft(txs_ptr);
+    return StartBft(txs_ptr, prepare_msg_ptr);
 }
 
 int BftManager::InitZbftPtr(bool leader, ZbftPtr& bft_ptr) {
@@ -184,7 +185,9 @@ int BftManager::InitZbftPtr(bool leader, ZbftPtr& bft_ptr) {
     return kConsensusSuccess;
 }
 
-int BftManager::StartBft(std::shared_ptr<WaitingTxsItem>& txs_ptr) {
+int BftManager::StartBft(
+        std::shared_ptr<WaitingTxsItem>& txs_ptr,
+        transport::MessagePtr& prepare_msg_ptr) {
     ZbftPtr bft_ptr = nullptr;
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         bft_ptr = std::make_shared<RootZbft>(
@@ -214,7 +217,7 @@ int BftManager::StartBft(std::shared_ptr<WaitingTxsItem>& txs_ptr) {
     // bft_ptr->set_randm_num(vss::VssManager::Instance()->EpochRandom());
     bft_ptr->set_member_count(elect_mgr_->GetMemberCount(
         common::GlobalInfo::Instance()->network_id()));
-    int leader_pre = LeaderPrepare(bft_ptr);
+    int leader_pre = LeaderPrepare(bft_ptr, prepare_msg_ptr);
     if (leader_pre != kConsensusSuccess) {
         ZJC_ERROR("leader prepare failed!");
         return leader_pre;
@@ -696,9 +699,13 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
     }
 }
 
-int BftManager::LeaderPrepare(ZbftPtr& bft_ptr) {
+int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, transport::MessagePtr& prepare_msg_ptr) {
     hotstuff::protobuf::HotstuffMessage bft_msg;
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto msg_ptr = prepare_msg_ptr;
+    if (msg_ptr == nullptr) {
+        msg_ptr = std::make_shared<transport::TransportMessage>();
+    }
+    
     msg_ptr->thread_idx = bft_ptr->thread_index();
     int res = bft_ptr->Prepare(true, msg_ptr);
     if (res != kConsensusSuccess) {
@@ -724,7 +731,9 @@ int BftManager::LeaderPrepare(ZbftPtr& bft_ptr) {
 #ifdef ZJC_UNITTEST
     leader_prepare_msg_ = msg_ptr;
 #else
-    network::Route::Instance()->Send(msg_ptr);
+    if (prepare_msg_ptr == nullptr) {
+        network::Route::Instance()->Send(msg_ptr);
+    }
 #endif
     return kConsensusSuccess;
 }
@@ -1031,7 +1040,6 @@ int BftManager::LeaderCallCommitOppose(
     }
 
     bft_ptr->set_consensus_status(kConsensusCommited);
-    LeaderBroadcastToAcc(bft_ptr, true);
     ZJC_ERROR("LeaderCallCommitOppose gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
 #ifdef ZJC_UNITTEST
     leader_commit_msg_ = res_msg_ptr;
@@ -1099,14 +1107,15 @@ int BftManager::LeaderCallCommit(
         // }
     }
     
+    RemoveBft(bft_ptr->thread_index(), bft_ptr->gid(), true);
 #ifdef ZJC_UNITTEST
     leader_commit_msg_ = leader_msg_ptr;
 #else
+    Start(msg_ptr->thread_idx, leader_msg_ptr);
     network::Route::Instance()->Send(leader_msg_ptr);
 #endif
 //     ZJC_DEBUG("LeaderCommit success waiting pool_index: %u, bft gid: %s",
 //         bft_ptr->pool_index(), common::Encode::HexEncode(bft_ptr->gid()).c_str());
-    RemoveBft(bft_ptr->thread_index(), bft_ptr->gid(), true);
     return kConsensusSuccess;
 }
 
@@ -1174,139 +1183,6 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
 //     ZJC_DEBUG("BackupCommit success waiting pool_index: %u, bft gid: %s",
 //         bft_ptr->pool_index(), common::Encode::HexEncode(bft_ptr->gid()).c_str());
     return kConsensusSuccess;
-}
-
-void BftManager::LeaderBroadcastToAcc(ZbftPtr& bft_ptr, bool is_bft_leader) {
-    // broadcast to this consensus shard and waiting pool shard
-    const std::shared_ptr<block::protobuf::Block>& block_ptr = bft_ptr->prpare_block();
-    // consensus pool sync by pull in bft step commit
-    //
-    // waiting pool sync by push
-    {
-        auto res_msg_ptr = std::make_shared<transport::TransportMessage>();
-        auto& msg = res_msg_ptr->header;
-        res_msg_ptr->thread_idx = -1;
-        auto res = BftProto::CreateLeaderBroadcastToAccount(
-            common::GlobalInfo::Instance()->network_id() + network::kConsensusWaitingShardOffset,
-            common::kConsensusMessage,
-            kConsensusSyncBlock,
-            false,
-            block_ptr,
-            bft_ptr->local_member_index(),
-            msg);
-        if (res) {
-            network::Route::Instance()->Send(res_msg_ptr);
-        }
-    }
-
-    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-        if (block_ptr->tx_list_size() == 1 &&
-                block_ptr->tx_list(0).step() == common::kConsensusFinalStatistic) {
-            return;
-        }
-
-        auto res_msg_ptr = std::make_shared<transport::TransportMessage>();
-        auto& msg = res_msg_ptr->header;
-        res_msg_ptr->thread_idx = -1;
-        auto res = BftProto::CreateLeaderBroadcastToAccount(
-            network::kNodeNetworkId,
-            common::kConsensusMessage,
-            kConsensusRootBlock,
-            true,
-            block_ptr,
-            bft_ptr->local_member_index(),
-            msg);
-        if (res) {
-            network::Route::Instance()->Send(res_msg_ptr);
-        }
-
-        return;
-    }
-
-    std::set<uint32_t> broadcast_nets;
-    auto tx_list = block_ptr->tx_list();
-    for (int32_t i = 0; i < tx_list.size(); ++i) {
-        if (tx_list[i].status() == kConsensusSuccess &&
-                tx_list[i].step() == common::kConsensusFinalStatistic) {
-            broadcast_nets.insert(network::kRootCongressNetworkId);
-            continue;
-        }
-
-        // contract must unlock caller
-        if (tx_list[i].status() != kConsensusSuccess &&
-                (tx_list[i].step() != common::kConsensusCreateContract &&
-                tx_list[i].step() != common::kConsensusCallContract)) {
-            continue;
-        }
-
-        // if (tx_list[i].has_to() && !tx_list[i].to_add() &&
-        //         tx_list[i].step() != common::kConsensusCallContract &&
-        //         tx_list[i].step() != common::kConsensusCreateContract) {
-            // auto account_ptr = block::AccountManager::Instance()->GetAcountInfo(
-            //     tx_list[i].to());
-            // uint32_t network_id = network::kRootCongressNetworkId;
-            // if (account_ptr != nullptr) {
-            //     account_ptr->GetConsensuseNetId(&network_id);
-            // }
-
-        //     broadcast_nets.insert(network_id);
-        // }
-
-        // if (tx_list[i].step() == common::kConsensusCallContract ||
-        //         tx_list[i].step() == common::kConsensusCreateContract) {
-        //     std::string id = "";
-        //     if (tx_list[i].step() == contract::kCallStepCallerInited) {
-        //         id = tx_list[i].to();
-        //     } else if (tx_list[i].step() == contract::kCallStepContractCalled) {
-        //         id = tx_list[i].from();
-        //     } else if (tx_list[i].step() == contract::kCallStepContractFinal) {
-        //         if (IsCreateContractLibraray(tx_list[i])) {
-        //             for (uint32_t i = 0;
-        //                     i < common::GlobalInfo::Instance()->consensus_shard_count(); ++i) {
-        //                 if ((network::kConsensusShardBeginNetworkId + i) !=
-        //                         common::GlobalInfo::Instance()->network_id()) {
-        //                     broadcast_nets.insert(network::kConsensusShardBeginNetworkId + i);
-        //                 }
-        //             }
-        //         }
-
-        //         continue;
-        //     } else {
-        //         continue;
-        //     }
-             
-        //     if (id.empty()) {
-        //         continue;
-        //     }
-
-        //     auto account_ptr = block::AccountManager::Instance()->GetAcountInfo(id);
-        //     uint32_t network_id = network::kRootCongressNetworkId;
-        //     if (account_ptr != nullptr) {
-        //         account_ptr->GetConsensuseNetId(&network_id);
-        //     }
-
-        //     broadcast_nets.insert(network_id);
-        //     ZJC_DEBUG("block message broadcast to network: %d, gid: %s",
-        //         network_id, common::Encode::HexEncode(tx_list[i].gid()).c_str());
-        // }
-    }
-
-    for (auto iter = broadcast_nets.begin(); iter != broadcast_nets.end(); ++iter) {
-        auto res_msg_ptr = std::make_shared<transport::TransportMessage>();
-        auto& msg = res_msg_ptr->header;
-        res_msg_ptr->thread_idx = -1;
-        auto res = BftProto::CreateLeaderBroadcastToAccount(
-            *iter,
-            common::kConsensusMessage,
-            kConsensusToTxInit,
-            false,
-            block_ptr,
-            bft_ptr->local_member_index(),
-            msg);
-        if (res) {
-            network::Route::Instance()->Send(res_msg_ptr);
-        }
-    }
 }
 
 bool BftManager::IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info) {

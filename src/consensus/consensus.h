@@ -11,7 +11,6 @@ namespace consensus {
 class Consensus {
 public:
     virtual int OnNewElectBlock(uint32_t sharding_id) = 0;
-    virtual int Start(uint8_t thread_index) = 0;
 
 protected:
     Consensus() {}
