@@ -59,7 +59,6 @@ bool Db::Init(const std::string& db_path) {
     options.block_size = 32 * 1024;
     options.write_buffer_size = 64 * 1024 * 1024;
     options.compression = leveldb::kSnappyCompression;
-    options.keep_log_file_num = 0;
     DbStatus status = leveldb::DB::Open(options, db_path, &db_);
     if (!status.ok()) {
         ZJC_ERROR("open db[%s] failed, error[%s]", db_path.c_str(), status.ToString().c_str());
