@@ -17,7 +17,6 @@ public:
     ToTxsPools(std::shared_ptr<db::Db>& db, const std::string& local_id);
     ~ToTxsPools();
     void NewBlock(const block::protobuf::Block& block, db::DbWriteBach& db_batch);
-    void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
     int BackupCreateToTx(
         uint32_t sharding_id,
         const pools::protobuf::ToTxHeights& leader_to_heights,
