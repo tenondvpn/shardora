@@ -46,7 +46,7 @@ struct ZbftItem {
 
 typedef std::shared_ptr<BftItem> BftItemPtr;
 struct LeaderPrepareItem {
-    std::shared_ptr<hotstuff::protobuf::HotstuffLeaderPrepare> prpare_block{ nullptr };
+    uint64_t height;
     std::vector<libff::alt_bn128_G1> backup_sign;
     std::unordered_set<std::string> precommit_aggree_set_;
     common::Bitmap prepare_bitmap_{ common::kEachShardMaxNodeCount };

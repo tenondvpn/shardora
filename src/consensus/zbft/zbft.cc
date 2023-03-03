@@ -123,6 +123,8 @@ int Zbft::LeaderCreatePrepare(transport::MessagePtr& msg_ptr) {
         }
     }
 
+    msg_ptr->header.mutable_hotstuff_proto()->mutable_tx_bft()->mutable_ltx_prepare()->release_block();
+    //msg_ptr->header.mutable_hotstuff_proto()->mutable_tx_bft()->mutable_ltx_prepare()->release_prepare();
     return kConsensusSuccess;
 }
 
@@ -136,7 +138,8 @@ int Zbft::BackupCheckPrepare(
         return kConsensusInvalidPackage;
     }
 
-    ltx_msg->clear_block();
+    ltx_msg->release_block();
+    assert(!ltx_msg->has_block());
     return kConsensusSuccess;
 }
 
@@ -206,11 +209,6 @@ int Zbft::LeaderPrecommitOk(
         uint32_t index,
         const libff::alt_bn128_G1& backup_sign,
         const std::string& id) {
-//     ZJC_DEBUG("node index: %d, final prepare hash: %s",
-//         index,
-//         common::Encode::HexEncode(tx_prepare.prepare().prepare_final_hash()).c_str());
-    auto tbft_prepare_block = std::make_shared<hotstuff::protobuf::HotstuffLeaderPrepare>(
-        tx_prepare.prepare());
     if (leader_handled_precommit_) {
 //         ZJC_DEBUG("leader_handled_precommit_: %d", leader_handled_precommit_);
         return kConsensusHandled;
@@ -220,12 +218,12 @@ int Zbft::LeaderPrecommitOk(
     auto valid_count = SetPrepareBlock(
         id,
         index,
-        tx_prepare.prepare().prepare_final_hash(),
-        tbft_prepare_block,
+        tx_prepare.prepare_final_hash(),
+        tx_prepare.height(),
         backup_sign);
     if ((uint32_t)valid_count >= min_aggree_member_count_) {
         if (LeaderCreatePreCommitAggChallenge(
-                tx_prepare.prepare().prepare_final_hash()) != kConsensusSuccess) {
+                tx_prepare.prepare_final_hash()) != kConsensusSuccess) {
             ZJC_ERROR("create bls precommit agg sign failed!");
             return kConsensusOppose;
         }
@@ -524,7 +522,7 @@ void Zbft::LeaderCallTransaction(transport::MessagePtr& msg_ptr) {
             min_aggree_member_count(),
             member_count(),
             local_sec_key(),
-            prepare_block()->prepare_final_hash(),
+            local_prepare_hash(),
             &bn_sign) != bls::kBlsSuccess) {
         ZJC_ERROR("leader do transaction sign data failed!");
         return;
@@ -567,44 +565,27 @@ int Zbft::DoTransaction(hotstuff::protobuf::LeaderTxPrepare& ltx_prepare) {
     zjc_block.set_hash(GetBlockHash(zjc_block));
     auto block_ptr = std::make_shared<block::protobuf::Block>(zjc_block);
     SetBlock(block_ptr);
-    tbft_prepare_block_ = CreatePrepareTxInfo(block_ptr, ltx_prepare);
-    if (tbft_prepare_block_ == nullptr) {
-        return kConsensusError;
-    }
-
+    ltx_prepare.set_prepare_final_hash(zjc_block.hash());
+    ltx_prepare.set_height(zjc_block.height());
+    ltx_prepare.set_tx_type(txs_ptr_->tx_type);
+    set_prepare_hash(zjc_block.hash());
     return kConsensusSuccess;
 }
 
-std::shared_ptr<hotstuff::protobuf::HotstuffLeaderPrepare> Zbft::CreatePrepareTxInfo(
-        std::shared_ptr<block::protobuf::Block>& block_ptr,
-        hotstuff::protobuf::LeaderTxPrepare& ltx_prepare) {
-    std::string tbft_prepare_txs_str_for_hash;
-    auto prepare = ltx_prepare.mutable_prepare();
-    for (int32_t i = 0; i < block_ptr->tx_list_size(); ++i) {
-        auto tx_hash = GetPrepareTxsHash(block_ptr->tx_list(i));
-        if (tx_hash.empty()) {
-            continue;
-        }
-
-        auto prepare_txs_item = prepare->add_prepare_txs();
-        prepare_txs_item->set_gid("uni_gid");
-        prepare_txs_item->set_balance(block_ptr->tx_list(i).balance());
-        if (block_ptr->tx_list(i).step() == pools::protobuf::kNormalTo) {
-            prepare_txs_item->set_address(block_ptr->tx_list(i).to());
-        } else {
-            prepare_txs_item->set_address("block_ptr->tx_list(i).from()");
-        }
-    }
-
-    if (prepare->prepare_txs_size() <= 0) {
-        return nullptr;
-    }
-
-    prepare->set_prepare_final_hash(GetBlockHash(*block_ptr));
-    prepare->set_height(block_ptr->height());
-    set_prepare_hash(prepare->prepare_final_hash());
-    return std::make_shared<hotstuff::protobuf::HotstuffLeaderPrepare>(*prepare);
-}
+// std::shared_ptr<hotstuff::protobuf::HotstuffLeaderPrepare> Zbft::CreatePrepareTxInfo(
+//         std::shared_ptr<block::protobuf::Block>& block_ptr,
+//         hotstuff::protobuf::LeaderTxPrepare& ltx_prepare) {
+//     std::string tbft_prepare_txs_str_for_hash;
+//     auto prepare = ltx_prepare.mutable_prepare();
+//     if (block_ptr->tx_list_size() <= 0) {
+//         return nullptr;
+//     }
+// 
+//     prepare->set_prepare_final_hash(block_ptr->hash());
+//     prepare->set_height(block_ptr->height());
+//     set_prepare_hash(prepare->prepare_final_hash());
+//     return std::make_shared<hotstuff::protobuf::HotstuffLeaderPrepare>(*prepare);
+// }
 
 void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
     auto tx_list = zjc_block.mutable_tx_list();

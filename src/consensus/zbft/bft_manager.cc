@@ -521,10 +521,17 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
 //         ZJC_DEBUG("get tx count: %u, pool: %d", bloom_data.size(), bft_msg.pool_index());
     } else if (bft_msg.tx_bft().ltx_prepare().tx_hash_list_size() > 0) {
         // get txs direct
-        txs_ptr = txs_pools_->FollowerGetTxs(
-            bft_msg.pool_index(),
-            bft_msg.tx_bft().ltx_prepare().tx_hash_list(),
-            msg_ptr->thread_idx);
+        if (bft_msg.tx_bft().ltx_prepare().tx_type() == pools::protobuf::kNormalTo) {
+            txs_ptr = txs_pools_->FollowerGetToTxs(
+                bft_msg.pool_index(),
+                bft_msg.tx_bft().ltx_prepare().tx_hash_list(0),
+                msg_ptr->thread_idx);
+        } else {
+            txs_ptr = txs_pools_->FollowerGetTxs(
+                bft_msg.pool_index(),
+                bft_msg.tx_bft().ltx_prepare().tx_hash_list(),
+                msg_ptr->thread_idx);
+        }
     } else {
         ZJC_ERROR("invalid consensus, tx empty.");
         return nullptr;

@@ -63,6 +63,23 @@ public:
             auto txs_item = std::make_shared<WaitingTxsItem>();
             txs_item->pool_index = pool_index;
             txs_item->txs[tx_ptr->tx_hash] = tx_ptr;
+            txs_item->tx_type = pools::protobuf::kNormalTo;
+            return txs_item;
+        }
+
+        return nullptr;
+    }
+
+    std::shared_ptr<WaitingTxsItem> FollowerGetToTxs(
+            uint32_t pool_index,
+            const std::string& tx_hash,
+            uint8_t thread_idx) {
+        auto tx_ptr = block_mgr_->GetToTx(pool_index);
+        if (tx_ptr != nullptr) {
+            auto txs_item = std::make_shared<WaitingTxsItem>();
+            txs_item->pool_index = pool_index;
+            txs_item->txs[tx_ptr->tx_hash] = tx_ptr;
+            txs_item->tx_type = pools::protobuf::kNormalTo;
             return txs_item;
         }
 

@@ -43,9 +43,9 @@ public:
     int BackupCheckPrepare(
         transport::MessagePtr& backup_msg_ptr,
         int32_t* invalid_tx_idx);
-    std::shared_ptr<hotstuff::protobuf::HotstuffLeaderPrepare> CreatePrepareTxInfo(
-        std::shared_ptr<block::protobuf::Block>& block_ptr,
-        hotstuff::protobuf::LeaderTxPrepare& ltx_prepare);
+//     std::shared_ptr<hotstuff::protobuf::HotstuffLeaderPrepare> CreatePrepareTxInfo(
+//         std::shared_ptr<block::protobuf::Block>& block_ptr,
+//         hotstuff::protobuf::LeaderTxPrepare& ltx_prepare);
     int DoTransaction(hotstuff::protobuf::LeaderTxPrepare& ltx_msg);
     void LeaderCallTransaction(transport::MessagePtr& msg_ptr);
     int LeaderPrecommitOk(
@@ -308,10 +308,6 @@ public:
         handle_last_error_msg_ = error_msg;
     }
 
-    std::shared_ptr<hotstuff::protobuf::HotstuffLeaderPrepare> prepare_block() {
-        return tbft_prepare_block_;
-    }
-
     std::string leader_tbft_prepare_hash() {
         return leader_tbft_prepare_hash_;
     }
@@ -328,17 +324,17 @@ public:
             const std::string& id,
             uint32_t index,
             const std::string& prepare_hash,
-            std::shared_ptr<hotstuff::protobuf::HotstuffLeaderPrepare>& prpare_block,
+            uint64_t height,
             const libff::alt_bn128_G1& sign) {
         auto iter = prepare_block_map_.find(prepare_hash);
         if (iter == prepare_block_map_.end()) {
             auto item = std::make_shared<LeaderPrepareItem>();
             item->backup_sign.push_back(sign);
-            item->prpare_block = prpare_block;
+            item->height = height;
             item->precommit_aggree_set_.insert(id);
             item->prepare_bitmap_.Set(index);
             item->backup_precommit_signs_[index] = sign;
-            item->height_count_map[prpare_block->height()] = 1;
+            item->height_count_map[height] = 1;
             prepare_block_map_[prepare_hash] = item;
             return 1;
         } else {
@@ -346,9 +342,9 @@ public:
             iter->second->precommit_aggree_set_.insert(id);
             iter->second->prepare_bitmap_.Set(index);
             iter->second->backup_precommit_signs_[index] = sign;
-            auto hiter = iter->second->height_count_map.find(prpare_block->height());
+            auto hiter = iter->second->height_count_map.find(height);
             if (hiter == iter->second->height_count_map.end()) {
-                iter->second->height_count_map[prpare_block->height()] = 1;
+                iter->second->height_count_map[height] = 1;
             } else {
                 ++hiter->second;
             }
@@ -419,7 +415,6 @@ protected:
     int32_t handle_last_error_code_{ 0 };
     std::string handle_last_error_msg_;
     std::unordered_map<std::string, std::shared_ptr<LeaderPrepareItem>> prepare_block_map_;
-    std::shared_ptr<hotstuff::protobuf::HotstuffLeaderPrepare> tbft_prepare_block_{ nullptr };
     common::Bitmap prepare_bitmap_;
     std::string leader_tbft_prepare_hash_;
     uint64_t prepare_latest_height_{ 0 };

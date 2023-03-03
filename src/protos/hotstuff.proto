@@ -2,29 +2,15 @@ syntax = "proto2";
 
 package zjchain.hotstuff.protobuf;
 import "protos/block.proto";
-
-message HotstuffPrepareTransactionInfo {
-    optional bytes gid = 1;
-    optional bytes address = 2;
-    optional uint64 balance = 3;
-}
-
-message HotstuffLeaderPrepare {
-    repeated HotstuffPrepareTransactionInfo prepare_txs = 1;
-    optional bytes prepare_final_hash = 2;
-    optional uint64 height = 3;
-}
-
-message TxPrepareItem {
-    optional bytes acc_addr = 1;
-    optional bytes gid = 2;
-}
+import "protos/pools.proto";
 
 message LeaderTxPrepare {
     optional block.protobuf.Block block = 1;
-    optional HotstuffLeaderPrepare prepare = 2;
-    repeated uint64 bloom_filter = 3;
-    repeated bytes tx_hash_list = 4;
+    optional bytes prepare_final_hash = 2;
+    optional uint64 height = 3;
+    repeated uint64 bloom_filter = 4;
+    repeated bytes tx_hash_list = 5;
+    optional pools.protobuf.StepType tx_type = 6 [default=kNormalFrom];
 }
 
 message BackupTxPrepare {
