@@ -32,8 +32,6 @@ private:
         const block::protobuf::BlockTx& tx_info,
         db::DbWriteBach& db_batch);
     void LoadLatestHeights();
-    void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
-    bool CheckLeaderValid(const std::string& id);
 
     // destination shard -> pool -> height -> items
     typedef std::unordered_map<std::string, uint64_t> TxMap;

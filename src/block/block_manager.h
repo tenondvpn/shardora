@@ -39,19 +39,16 @@ public:
         uint32_t pool_index,
         uint64_t height,
         block::protobuf::Block& block_item);
-    void SetToTxLeader(common::BftMemberPtr& leader) {
-        leader_ = leader;
-    }
-
     void SetMaxConsensusShardingId(uint32_t sharding_id) {
         max_consensus_sharding_id_ = sharding_id;
     }
 
-    void CreateToTx();
+    void CreateToTx(uint8_t thread_idx);
     void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
 
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
+    void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
     void HandleToTxsMessage(const transport::MessagePtr& msg_ptr);
         void HandleAllConsensusBlocks();
     void AddNewBlock(
@@ -70,7 +67,7 @@ private:
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<pools::ToTxsPools> to_txs_pool_ = nullptr;
     uint64_t prev_create_to_tx_ms_ = 0;
-    common::BftMemberPtr leader_ = nullptr;
+    common::BftMemberPtr to_tx_leader_ = nullptr;
     uint32_t max_consensus_sharding_id_ = 3;
     std::string local_id_;
 

@@ -113,14 +113,6 @@ public:
         return missing_node_;
     }
 
-    uint32_t consensus_shard_net_id() const {
-        return consensus_shard_net_id_;
-    }
-
-    void set_consensus_shard_net_id(uint32_t net_id) {
-        consensus_shard_net_id_ = net_id;
-    }
-
     int32_t tcp_server_thread_count() const {
         return tcp_server_thread_count_;
     }
@@ -153,7 +145,6 @@ private:
     std::string node_tag_;
     volatile uint32_t network_id_{ common::kInvalidUint32 };
     volatile uint64_t now_gas_price_{ 100llu };
-    volatile uint32_t consensus_shard_count_{ 1 };
     volatile uint64_t gas_price_{ 1 };
     bool missing_node_{ false };
     uint32_t consensus_shard_net_id_{ common::kInvalidUint32 };

@@ -39,12 +39,38 @@ int BlockManager::Init(
     network::Route::Instance()->RegisterMessage(
         common::kBlockMessage,
         std::bind(&BlockManager::HandleMessage, this, std::placeholders::_1));
+    transport::Processor::Instance()->RegisterProcessor(
+        common::kPoolTimerMessage,
+        std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
     bool genesis = false;
     return kBlockSuccess;
 }
 
+void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+    if (to_tx_leader_ == nullptr) {
+        return;
+    }
+
+    if (local_id_ != to_tx_leader_->id) {
+        return;
+    }
+
+    CreateToTx(msg_ptr->thread_idx);
+}
+
 void BlockManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members) {
     to_txs_pool_->OnNewElectBlock(sharding_id, members);
+    if (sharding_id > max_consensus_sharding_id_) {
+        max_consensus_sharding_id_ = sharding_id;
+    }
+
+    if (sharding_id == common::GlobalInfo::Instance()->network_id()) {
+        for (auto iter = members->begin(); iter != members->end(); ++iter) {
+            if ((*iter)->pool_index_mod_num == 0) {
+                to_tx_leader_ = *iter;
+            }
+        }
+    }
 }
 
 void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
@@ -143,9 +169,13 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
     }
 }
 
-void BlockManager::CreateToTx() {
+void BlockManager::CreateToTx(uint8_t thread_idx) {
     // check this node is leader
-    if (local_id_ != leader_->id) {
+    if (to_tx_leader_ == nullptr) {
+        return;
+    }
+
+    if (local_id_ != to_tx_leader_->id) {
         return;
     }
 
@@ -169,6 +199,7 @@ void BlockManager::CreateToTx() {
     // send to other nodes
     auto& broadcast = *msg_ptr->header.mutable_broadcast();
     broadcast.set_hop_limit(10);
+    msg_ptr->thread_idx = thread_idx;
 #ifndef ZJC_UNITTEST
     network::Route::Instance()->Send(msg_ptr);
 #else

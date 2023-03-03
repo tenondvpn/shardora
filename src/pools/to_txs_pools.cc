@@ -16,39 +16,9 @@ ToTxsPools::ToTxsPools(
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     LoadLatestHeights();
     address_map_.Init(10240, 16);
-    transport::Processor::Instance()->RegisterProcessor(
-        common::kPoolTimerMessage,
-        std::bind(&ToTxsPools::ConsensusTimerMessage, this, std::placeholders::_1));
 }
 
 ToTxsPools::~ToTxsPools() {}
-
-void ToTxsPools::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
-    if (!CheckLeaderValid(local_id_)) {
-        return;
-    }
-
-    for (uint32_t i = 2; i < common::GlobalInfo::Instance()->consensus_shard_count(); ++i) {
-        auto to_tx_msg_ptr = std::make_shared<transport::TransportMessage>();
-        to_tx_msg_ptr->thread_idx = msg_ptr->thread_idx;
-        auto& msg = to_tx_msg_ptr->header;
-        auto& to_heights = *msg.mutable_to_tx_heights();
-        if (LeaderCreateToTx(i, to_heights) != kPoolsSuccess) {
-            continue;
-        }
-
-        // broadcast to followers
-        network::Route::Instance()->Send(to_tx_msg_ptr);
-    }
-}
-
-void ToTxsPools::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members) {
-
-}
-
-bool ToTxsPools::CheckLeaderValid(const std::string& id) {
-    return false;
-}
 
 void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBach& db_batch) {
     if (block.network_id() != common::GlobalInfo::Instance()->network_id()) {
