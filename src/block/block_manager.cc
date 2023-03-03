@@ -157,6 +157,10 @@ int BlockManager::GetBlockWithHeight(
 }
 
 void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
+    if (create_to_tx_cb_ == nullptr) {
+        return;
+    }
+
     for (int32_t i = 0; i < msg_ptr->header.block_proto().to_txs_size(); ++i) {
         auto& heights = msg_ptr->header.block_proto().to_txs(i);
         auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -168,7 +172,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
             continue;
         }
 
-        to_txs_[heights.sharding_id()] = std::make_shared<pools::TxItem>(new_msg_ptr);
+        to_txs_[heights.sharding_id()] = create_to_tx_cb_(new_msg_ptr);
         ZJC_DEBUG("follower success add txs");
     }
 }
@@ -188,6 +192,10 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index) {
 }
 
 void BlockManager::CreateToTx(uint8_t thread_idx) {
+    if (create_to_tx_cb_ == nullptr) {
+        return;
+    }
+
     // check this node is leader
     if (to_tx_leader_ == nullptr) {
         ZJC_DEBUG("leader null");
@@ -232,7 +240,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
-        to_txs_[i] = std::make_shared<pools::TxItem>(new_msg_ptr);
+        to_txs_[i] = create_to_tx_cb_(new_msg_ptr);
     }
 
     if (block_msg.to_txs_size() <= 0) {

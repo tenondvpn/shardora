@@ -57,6 +57,8 @@ int BftManager::Init(
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kConsensusLocalTos,
         std::bind(&BftManager::CreateToTxLocal, this, std::placeholders::_1));
+    block_mgr_->SetCreateToTxFunction(
+        std::bind(&BftManager::CreateToTx, this, std::placeholders::_1));
     security_ptr_ = security_ptr;
     txs_pools_ = std::make_shared<WaitingTxsPools>(pools_mgr_, block_mgr);
     thread_count_ = thread_count;

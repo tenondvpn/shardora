@@ -44,6 +44,11 @@ public:
         max_consensus_sharding_id_ = sharding_id;
     }
 
+    void SetCreateToTxFunction(CreateConsensusItemFunction func) {
+        create_to_tx_cb_ = func;
+    }
+
+
     void CreateToTx(uint8_t thread_idx);
     void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
     pools::TxItemPtr GetToTx(uint32_t pool_index);
@@ -74,6 +79,7 @@ private:
     std::string local_id_;
     pools::TxItemPtr to_txs_[network::kConsensusShardEndNetworkId] = { nullptr };
     uint32_t to_tx_pools_index_[common::kImmutablePoolSize] = { 0 };
+    CreateConsensusItemFunction create_to_tx_cb_ = nullptr;
 
 #ifdef ZJC_UNITTEST
     transport::MessagePtr leader_to_txs_msg_ = nullptr;
