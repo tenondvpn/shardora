@@ -60,7 +60,6 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void BlockManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members) {
-    to_txs_pool_->OnNewElectBlock(sharding_id, members);
     if (sharding_id > max_consensus_sharding_id_) {
         max_consensus_sharding_id_ = sharding_id;
     }
