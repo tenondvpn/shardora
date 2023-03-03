@@ -9,6 +9,7 @@
 #include "network/route.h"
 #include "protos/block.pb.h"
 #include "protos/elect.pb.h"
+#include "transport/processor.h"
 
 namespace zjchain {
 

@@ -4,7 +4,6 @@
 #include "common/user_property_key_define.h"
 #include "network/network_utils.h"
 #include "network/route.h"
-#include "transport/processor.h"
 
 namespace zjchain {
 
