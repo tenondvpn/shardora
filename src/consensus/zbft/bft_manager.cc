@@ -243,6 +243,10 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         assert(!header.has_leader_commit());
     }
 
+    if (!header.has_hotstuff_proto()) {
+        return;
+    }
+
     auto& bft_msg = header.hotstuff_proto();
     assert(bft_msg.has_bft_step());
     ZJC_DEBUG("consensus message coming: %d, leader: %d, id: %lu", bft_msg.bft_step(), bft_msg.leader(), msg_ptr->header.hash64());
@@ -774,9 +778,9 @@ int BftManager::BackupPrepare(
         bft_ptr,
         true,
         backup_msg_ptr->header);
-    ZJC_DEBUG("bft backup prepare success! agree bft gid: %s, from: %s:%d",
-        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-        msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort());
+//     ZJC_DEBUG("bft backup prepare success! agree bft gid: %s, from: %s:%d",
+//         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+//         msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort());
     if (!res) {
         ZJC_ERROR("message set data failed!");
         return kConsensusError;

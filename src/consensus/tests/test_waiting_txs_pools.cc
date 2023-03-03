@@ -57,6 +57,7 @@ public:
 
     static void SetUpTestCase() {
         system("rm -rf ./core.* ./wtxp_db");
+        db_ptr = std::make_shared<db::Db>();
         db_ptr->Init("./wtxp_db");
         std::string config_path_ = "./";
         std::string conf_path = config_path_ + "/zjc.conf";

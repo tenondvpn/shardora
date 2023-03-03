@@ -273,7 +273,9 @@ void ElectManager::OnNewElectBlock(
     ElectedToConsensusShard(thread_idx, elect_block, elected);
     pool_manager_->OnNewElectBlock(height, elect_block);
     elect_block_mgr_.OnNewElectBlock(height, elect_block);
-    new_elect_cb_(elect_block.shard_network_id());
+    if (new_elect_cb_ != nullptr) {
+        new_elect_cb_(elect_block.shard_network_id());
+    }
 }
 
 void ElectManager::ElectedToConsensusShard(

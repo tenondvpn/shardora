@@ -108,6 +108,7 @@ void TxPoolManager::SaveStorageToDb(const transport::protobuf::Header& msg) {
 }
 
 void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr) {
+    ZJC_DEBUG("call add tx: %d", pool_index);
     if (msg_ptr->header.tx_proto().step() >= pools::protobuf::StepType_ARRAYSIZE) {
         assert(false);
         return;
