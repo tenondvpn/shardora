@@ -219,14 +219,7 @@ function create_tx(to, amount, gas_limit, gas_price) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var tx_type = 0;
     var frompk = '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16);
-    var msg = gid + "-" +
-        frompk + "-" +
-        to + "-" +
-        amount + "-" +
-        gas_limit + "-" +
-        gas_price;
     const MAX_UINT32 = 0xFFFFFFFF;
-
     var amount_buf = new Buffer(8);
     var big = ~~(amount / MAX_UINT32)
     var low = (amount % MAX_UINT32) - big
