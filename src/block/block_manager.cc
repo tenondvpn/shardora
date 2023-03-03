@@ -160,8 +160,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
     for (int32_t i = 0; i < msg_ptr->header.block_proto().to_txs_size(); ++i) {
         auto& heights = msg_ptr->header.block_proto().to_txs(i);
         auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-        auto tx_ptr = std::make_shared<pools::protobuf::TxMessage>();
-        auto& tx = *tx_ptr;
+        auto& tx = *new_msg_ptr->header.mutable_tx_proto();
         if (to_txs_pool_->BackupCreateToTx(
                 heights.sharding_id(),
                 heights,
@@ -169,16 +168,16 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
             continue;
         }
 
-        to_txs_[heights.sharding_id()] = tx_ptr;
+        to_txs_[heights.sharding_id()] = std::make_shared<pools::TxItem>(new_msg_ptr);
         ZJC_DEBUG("follower success add txs");
     }
 }
 
-std::shared_ptr<pools::protobuf::TxMessage> BlockManager::GetToTx(uint32_t pool_index) {
+pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index) {
     for (uint32_t i = network::kRootCongressNetworkId; i <= max_consensus_sharding_id_; ++i) {
         uint32_t mod_idx = i % common::kImmutablePoolSize;
         if (mod_idx == pool_index) {
-            if (to_tx_pools_index_[pool_index] != i) {
+            if (to_tx_pools_index_[pool_index] != i && to_txs_[i] != nullptr) {
                 to_tx_pools_index_[pool_index] = i;
                 return to_txs_[i];
             }
@@ -221,7 +220,8 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
             continue;
         }
 
-        auto tx = std::make_shared<pools::protobuf::TxMessage>();
+        auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+        auto* tx = new_msg_ptr->header.mutable_tx_proto();
         tx->set_key(protos::kNormalTos);
         tx->set_value(to_heights.SerializeAsString());
         tx->set_pubkey("");
@@ -232,7 +232,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
-        to_txs_[i] = tx;
+        to_txs_[i] = std::make_shared<pools::TxItem>(new_msg_ptr);
     }
 
     if (block_msg.to_txs_size() <= 0) {

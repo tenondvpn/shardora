@@ -60,8 +60,12 @@ public:
 
         auto tx_ptr = block_mgr_->GetToTx(pool_index);
         if (tx_ptr != nullptr) {
-
+            auto txs_item = std::make_shared<WaitingTxsItem>();
+            txs_item->pool_index = pool_index;
+            txs_item->txs[tx_ptr->tx_hash] = tx_ptr;
+            return txs_item;
         }
+
         return nullptr;
     }
 

@@ -46,7 +46,7 @@ public:
 
     void CreateToTx(uint8_t thread_idx);
     void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
-    std::shared_ptr<pools::protobuf::TxMessage> GetToTx(uint32_t pool_index);
+    pools::TxItemPtr GetToTx(uint32_t pool_index);
 
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
@@ -72,7 +72,7 @@ private:
     common::BftMemberPtr to_tx_leader_ = nullptr;
     uint32_t max_consensus_sharding_id_ = 3;
     std::string local_id_;
-    std::shared_ptr<pools::protobuf::TxMessage> to_txs_[network::kConsensusShardEndNetworkId] = { nullptr };
+    pools::TxItemPtr to_txs_[network::kConsensusShardEndNetworkId] = { nullptr };
     uint32_t to_tx_pools_index_[common::kImmutablePoolSize] = { 0 };
 
 #ifdef ZJC_UNITTEST
