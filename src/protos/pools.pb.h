@@ -226,12 +226,34 @@ class ToTxHeights : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::std::string* release_tos_hash();
   void set_allocated_tos_hash(::std::string* tos_hash);
 
+  // optional bytes leader_id = 5;
+  bool has_leader_id() const;
+  void clear_leader_id();
+  static const int kLeaderIdFieldNumber = 5;
+  const ::std::string& leader_id() const;
+  void set_leader_id(const ::std::string& value);
+  #if LANG_CXX11
+  void set_leader_id(::std::string&& value);
+  #endif
+  void set_leader_id(const char* value);
+  void set_leader_id(const void* value, size_t size);
+  ::std::string* mutable_leader_id();
+  ::std::string* release_leader_id();
+  void set_allocated_leader_id(::std::string* leader_id);
+
   // optional uint64 block_height = 3;
   bool has_block_height() const;
   void clear_block_height();
   static const int kBlockHeightFieldNumber = 3;
   ::google::protobuf::uint64 block_height() const;
   void set_block_height(::google::protobuf::uint64 value);
+
+  // optional uint64 elelct_height = 6;
+  bool has_elelct_height() const;
+  void clear_elelct_height();
+  static const int kElelctHeightFieldNumber = 6;
+  ::google::protobuf::uint64 elelct_height() const;
+  void set_elelct_height(::google::protobuf::uint64 value);
 
   // optional uint32 sharding_id = 1;
   bool has_sharding_id() const;
@@ -248,13 +270,19 @@ class ToTxHeights : public ::google::protobuf::Message /* @@protoc_insertion_poi
   void clear_has_block_height();
   void set_has_tos_hash();
   void clear_has_tos_hash();
+  void set_has_leader_id();
+  void clear_has_leader_id();
+  void set_has_elelct_height();
+  void clear_has_elelct_height();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > heights_;
   ::google::protobuf::internal::ArenaStringPtr tos_hash_;
+  ::google::protobuf::internal::ArenaStringPtr leader_id_;
   ::google::protobuf::uint64 block_height_;
+  ::google::protobuf::uint64 elelct_height_;
   ::google::protobuf::uint32 sharding_id_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
@@ -802,13 +830,13 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
 
 // optional uint32 sharding_id = 1;
 inline bool ToTxHeights::has_sharding_id() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void ToTxHeights::set_has_sharding_id() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void ToTxHeights::clear_has_sharding_id() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void ToTxHeights::clear_sharding_id() {
   sharding_id_ = 0u;
@@ -856,13 +884,13 @@ ToTxHeights::mutable_heights() {
 
 // optional uint64 block_height = 3;
 inline bool ToTxHeights::has_block_height() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void ToTxHeights::set_has_block_height() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void ToTxHeights::clear_has_block_height() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void ToTxHeights::clear_block_height() {
   block_height_ = GOOGLE_ULONGLONG(0);
@@ -942,6 +970,96 @@ inline void ToTxHeights::set_allocated_tos_hash(::std::string* tos_hash) {
   }
   tos_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), tos_hash);
   // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.ToTxHeights.tos_hash)
+}
+
+// optional bytes leader_id = 5;
+inline bool ToTxHeights::has_leader_id() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ToTxHeights::set_has_leader_id() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ToTxHeights::clear_has_leader_id() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ToTxHeights::clear_leader_id() {
+  leader_id_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_leader_id();
+}
+inline const ::std::string& ToTxHeights::leader_id() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ToTxHeights.leader_id)
+  return leader_id_.GetNoArena();
+}
+inline void ToTxHeights::set_leader_id(const ::std::string& value) {
+  set_has_leader_id();
+  leader_id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ToTxHeights.leader_id)
+}
+#if LANG_CXX11
+inline void ToTxHeights::set_leader_id(::std::string&& value) {
+  set_has_leader_id();
+  leader_id_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.pools.protobuf.ToTxHeights.leader_id)
+}
+#endif
+inline void ToTxHeights::set_leader_id(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_leader_id();
+  leader_id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.pools.protobuf.ToTxHeights.leader_id)
+}
+inline void ToTxHeights::set_leader_id(const void* value, size_t size) {
+  set_has_leader_id();
+  leader_id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.pools.protobuf.ToTxHeights.leader_id)
+}
+inline ::std::string* ToTxHeights::mutable_leader_id() {
+  set_has_leader_id();
+  // @@protoc_insertion_point(field_mutable:zjchain.pools.protobuf.ToTxHeights.leader_id)
+  return leader_id_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ToTxHeights::release_leader_id() {
+  // @@protoc_insertion_point(field_release:zjchain.pools.protobuf.ToTxHeights.leader_id)
+  if (!has_leader_id()) {
+    return NULL;
+  }
+  clear_has_leader_id();
+  return leader_id_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ToTxHeights::set_allocated_leader_id(::std::string* leader_id) {
+  if (leader_id != NULL) {
+    set_has_leader_id();
+  } else {
+    clear_has_leader_id();
+  }
+  leader_id_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), leader_id);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.ToTxHeights.leader_id)
+}
+
+// optional uint64 elelct_height = 6;
+inline bool ToTxHeights::has_elelct_height() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ToTxHeights::set_has_elelct_height() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ToTxHeights::clear_has_elelct_height() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void ToTxHeights::clear_elelct_height() {
+  elelct_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_elelct_height();
+}
+inline ::google::protobuf::uint64 ToTxHeights::elelct_height() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ToTxHeights.elelct_height)
+  return elelct_height_;
+}
+inline void ToTxHeights::set_elelct_height(::google::protobuf::uint64 value) {
+  set_has_elelct_height();
+  elelct_height_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ToTxHeights.elelct_height)
 }
 
 // -------------------------------------------------------------------

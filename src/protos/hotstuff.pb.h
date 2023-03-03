@@ -31,6 +31,7 @@
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/unknown_field_set.h>
 #include "protos/block.pb.h"
+#include "protos/pools.pb.h"
 // @@protoc_insertion_point(includes)
 #define PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fhotstuff_2eproto 
 
@@ -39,7 +40,7 @@ namespace protobuf_protos_2fhotstuff_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[11];
+  static const ::google::protobuf::internal::ParseTable schema[8];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -55,15 +56,9 @@ extern BackupTxPreCommitDefaultTypeInternal _BackupTxPreCommit_default_instance_
 class BackupTxPrepare;
 class BackupTxPrepareDefaultTypeInternal;
 extern BackupTxPrepareDefaultTypeInternal _BackupTxPrepare_default_instance_;
-class HotstuffLeaderPrepare;
-class HotstuffLeaderPrepareDefaultTypeInternal;
-extern HotstuffLeaderPrepareDefaultTypeInternal _HotstuffLeaderPrepare_default_instance_;
 class HotstuffMessage;
 class HotstuffMessageDefaultTypeInternal;
 extern HotstuffMessageDefaultTypeInternal _HotstuffMessage_default_instance_;
-class HotstuffPrepareTransactionInfo;
-class HotstuffPrepareTransactionInfoDefaultTypeInternal;
-extern HotstuffPrepareTransactionInfoDefaultTypeInternal _HotstuffPrepareTransactionInfo_default_instance_;
 class LeaderTxCommit;
 class LeaderTxCommitDefaultTypeInternal;
 extern LeaderTxCommitDefaultTypeInternal _LeaderTxCommit_default_instance_;
@@ -79,9 +74,6 @@ extern ToAccountTxDefaultTypeInternal _ToAccountTx_default_instance_;
 class TxBft;
 class TxBftDefaultTypeInternal;
 extern TxBftDefaultTypeInternal _TxBft_default_instance_;
-class TxPrepareItem;
-class TxPrepareItemDefaultTypeInternal;
-extern TxPrepareItemDefaultTypeInternal _TxPrepareItem_default_instance_;
 }  // namespace protobuf
 }  // namespace hotstuff
 }  // namespace zjchain
@@ -89,15 +81,12 @@ namespace google {
 namespace protobuf {
 template<> ::zjchain::hotstuff::protobuf::BackupTxPreCommit* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::BackupTxPreCommit>(Arena*);
 template<> ::zjchain::hotstuff::protobuf::BackupTxPrepare* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::BackupTxPrepare>(Arena*);
-template<> ::zjchain::hotstuff::protobuf::HotstuffLeaderPrepare* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::HotstuffLeaderPrepare>(Arena*);
 template<> ::zjchain::hotstuff::protobuf::HotstuffMessage* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::HotstuffMessage>(Arena*);
-template<> ::zjchain::hotstuff::protobuf::HotstuffPrepareTransactionInfo* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::HotstuffPrepareTransactionInfo>(Arena*);
 template<> ::zjchain::hotstuff::protobuf::LeaderTxCommit* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::LeaderTxCommit>(Arena*);
 template<> ::zjchain::hotstuff::protobuf::LeaderTxPreCommit* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::LeaderTxPreCommit>(Arena*);
 template<> ::zjchain::hotstuff::protobuf::LeaderTxPrepare* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::LeaderTxPrepare>(Arena*);
 template<> ::zjchain::hotstuff::protobuf::ToAccountTx* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::ToAccountTx>(Arena*);
 template<> ::zjchain::hotstuff::protobuf::TxBft* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::TxBft>(Arena*);
-template<> ::zjchain::hotstuff::protobuf::TxPrepareItem* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::TxPrepareItem>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 namespace zjchain {
@@ -105,441 +94,6 @@ namespace hotstuff {
 namespace protobuf {
 
 // ===================================================================
-
-class HotstuffPrepareTransactionInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo) */ {
- public:
-  HotstuffPrepareTransactionInfo();
-  virtual ~HotstuffPrepareTransactionInfo();
-
-  HotstuffPrepareTransactionInfo(const HotstuffPrepareTransactionInfo& from);
-
-  inline HotstuffPrepareTransactionInfo& operator=(const HotstuffPrepareTransactionInfo& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  #if LANG_CXX11
-  HotstuffPrepareTransactionInfo(HotstuffPrepareTransactionInfo&& from) noexcept
-    : HotstuffPrepareTransactionInfo() {
-    *this = ::std::move(from);
-  }
-
-  inline HotstuffPrepareTransactionInfo& operator=(HotstuffPrepareTransactionInfo&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-  #endif
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const HotstuffPrepareTransactionInfo& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const HotstuffPrepareTransactionInfo* internal_default_instance() {
-    return reinterpret_cast<const HotstuffPrepareTransactionInfo*>(
-               &_HotstuffPrepareTransactionInfo_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    0;
-
-  void Swap(HotstuffPrepareTransactionInfo* other);
-  friend void swap(HotstuffPrepareTransactionInfo& a, HotstuffPrepareTransactionInfo& b) {
-    a.Swap(&b);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline HotstuffPrepareTransactionInfo* New() const final {
-    return CreateMaybeMessage<HotstuffPrepareTransactionInfo>(NULL);
-  }
-
-  HotstuffPrepareTransactionInfo* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<HotstuffPrepareTransactionInfo>(arena);
-  }
-  void CopyFrom(const ::google::protobuf::Message& from) final;
-  void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const HotstuffPrepareTransactionInfo& from);
-  void MergeFrom(const HotstuffPrepareTransactionInfo& from);
-  void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input) final;
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const final;
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(HotstuffPrepareTransactionInfo* other);
-  private:
-  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
-  }
-  inline void* MaybeArenaPtr() const {
-    return NULL;
-  }
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional bytes gid = 1;
-  bool has_gid() const;
-  void clear_gid();
-  static const int kGidFieldNumber = 1;
-  const ::std::string& gid() const;
-  void set_gid(const ::std::string& value);
-  #if LANG_CXX11
-  void set_gid(::std::string&& value);
-  #endif
-  void set_gid(const char* value);
-  void set_gid(const void* value, size_t size);
-  ::std::string* mutable_gid();
-  ::std::string* release_gid();
-  void set_allocated_gid(::std::string* gid);
-
-  // optional bytes address = 2;
-  bool has_address() const;
-  void clear_address();
-  static const int kAddressFieldNumber = 2;
-  const ::std::string& address() const;
-  void set_address(const ::std::string& value);
-  #if LANG_CXX11
-  void set_address(::std::string&& value);
-  #endif
-  void set_address(const char* value);
-  void set_address(const void* value, size_t size);
-  ::std::string* mutable_address();
-  ::std::string* release_address();
-  void set_allocated_address(::std::string* address);
-
-  // optional uint64 balance = 3;
-  bool has_balance() const;
-  void clear_balance();
-  static const int kBalanceFieldNumber = 3;
-  ::google::protobuf::uint64 balance() const;
-  void set_balance(::google::protobuf::uint64 value);
-
-  // @@protoc_insertion_point(class_scope:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo)
- private:
-  void set_has_gid();
-  void clear_has_gid();
-  void set_has_address();
-  void clear_has_address();
-  void set_has_balance();
-  void clear_has_balance();
-
-  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::HasBits<1> _has_bits_;
-  mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::internal::ArenaStringPtr gid_;
-  ::google::protobuf::internal::ArenaStringPtr address_;
-  ::google::protobuf::uint64 balance_;
-  friend struct ::protobuf_protos_2fhotstuff_2eproto::TableStruct;
-};
-// -------------------------------------------------------------------
-
-class HotstuffLeaderPrepare : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.hotstuff.protobuf.HotstuffLeaderPrepare) */ {
- public:
-  HotstuffLeaderPrepare();
-  virtual ~HotstuffLeaderPrepare();
-
-  HotstuffLeaderPrepare(const HotstuffLeaderPrepare& from);
-
-  inline HotstuffLeaderPrepare& operator=(const HotstuffLeaderPrepare& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  #if LANG_CXX11
-  HotstuffLeaderPrepare(HotstuffLeaderPrepare&& from) noexcept
-    : HotstuffLeaderPrepare() {
-    *this = ::std::move(from);
-  }
-
-  inline HotstuffLeaderPrepare& operator=(HotstuffLeaderPrepare&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-  #endif
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const HotstuffLeaderPrepare& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const HotstuffLeaderPrepare* internal_default_instance() {
-    return reinterpret_cast<const HotstuffLeaderPrepare*>(
-               &_HotstuffLeaderPrepare_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    1;
-
-  void Swap(HotstuffLeaderPrepare* other);
-  friend void swap(HotstuffLeaderPrepare& a, HotstuffLeaderPrepare& b) {
-    a.Swap(&b);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline HotstuffLeaderPrepare* New() const final {
-    return CreateMaybeMessage<HotstuffLeaderPrepare>(NULL);
-  }
-
-  HotstuffLeaderPrepare* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<HotstuffLeaderPrepare>(arena);
-  }
-  void CopyFrom(const ::google::protobuf::Message& from) final;
-  void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const HotstuffLeaderPrepare& from);
-  void MergeFrom(const HotstuffLeaderPrepare& from);
-  void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input) final;
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const final;
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(HotstuffLeaderPrepare* other);
-  private:
-  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
-  }
-  inline void* MaybeArenaPtr() const {
-    return NULL;
-  }
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // repeated .zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo prepare_txs = 1;
-  int prepare_txs_size() const;
-  void clear_prepare_txs();
-  static const int kPrepareTxsFieldNumber = 1;
-  ::zjchain::hotstuff::protobuf::HotstuffPrepareTransactionInfo* mutable_prepare_txs(int index);
-  ::google::protobuf::RepeatedPtrField< ::zjchain::hotstuff::protobuf::HotstuffPrepareTransactionInfo >*
-      mutable_prepare_txs();
-  const ::zjchain::hotstuff::protobuf::HotstuffPrepareTransactionInfo& prepare_txs(int index) const;
-  ::zjchain::hotstuff::protobuf::HotstuffPrepareTransactionInfo* add_prepare_txs();
-  const ::google::protobuf::RepeatedPtrField< ::zjchain::hotstuff::protobuf::HotstuffPrepareTransactionInfo >&
-      prepare_txs() const;
-
-  // optional bytes prepare_final_hash = 2;
-  bool has_prepare_final_hash() const;
-  void clear_prepare_final_hash();
-  static const int kPrepareFinalHashFieldNumber = 2;
-  const ::std::string& prepare_final_hash() const;
-  void set_prepare_final_hash(const ::std::string& value);
-  #if LANG_CXX11
-  void set_prepare_final_hash(::std::string&& value);
-  #endif
-  void set_prepare_final_hash(const char* value);
-  void set_prepare_final_hash(const void* value, size_t size);
-  ::std::string* mutable_prepare_final_hash();
-  ::std::string* release_prepare_final_hash();
-  void set_allocated_prepare_final_hash(::std::string* prepare_final_hash);
-
-  // optional uint64 height = 3;
-  bool has_height() const;
-  void clear_height();
-  static const int kHeightFieldNumber = 3;
-  ::google::protobuf::uint64 height() const;
-  void set_height(::google::protobuf::uint64 value);
-
-  // @@protoc_insertion_point(class_scope:zjchain.hotstuff.protobuf.HotstuffLeaderPrepare)
- private:
-  void set_has_prepare_final_hash();
-  void clear_has_prepare_final_hash();
-  void set_has_height();
-  void clear_has_height();
-
-  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::HasBits<1> _has_bits_;
-  mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::RepeatedPtrField< ::zjchain::hotstuff::protobuf::HotstuffPrepareTransactionInfo > prepare_txs_;
-  ::google::protobuf::internal::ArenaStringPtr prepare_final_hash_;
-  ::google::protobuf::uint64 height_;
-  friend struct ::protobuf_protos_2fhotstuff_2eproto::TableStruct;
-};
-// -------------------------------------------------------------------
-
-class TxPrepareItem : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.hotstuff.protobuf.TxPrepareItem) */ {
- public:
-  TxPrepareItem();
-  virtual ~TxPrepareItem();
-
-  TxPrepareItem(const TxPrepareItem& from);
-
-  inline TxPrepareItem& operator=(const TxPrepareItem& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  #if LANG_CXX11
-  TxPrepareItem(TxPrepareItem&& from) noexcept
-    : TxPrepareItem() {
-    *this = ::std::move(from);
-  }
-
-  inline TxPrepareItem& operator=(TxPrepareItem&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-  #endif
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const TxPrepareItem& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const TxPrepareItem* internal_default_instance() {
-    return reinterpret_cast<const TxPrepareItem*>(
-               &_TxPrepareItem_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    2;
-
-  void Swap(TxPrepareItem* other);
-  friend void swap(TxPrepareItem& a, TxPrepareItem& b) {
-    a.Swap(&b);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline TxPrepareItem* New() const final {
-    return CreateMaybeMessage<TxPrepareItem>(NULL);
-  }
-
-  TxPrepareItem* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<TxPrepareItem>(arena);
-  }
-  void CopyFrom(const ::google::protobuf::Message& from) final;
-  void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const TxPrepareItem& from);
-  void MergeFrom(const TxPrepareItem& from);
-  void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input) final;
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const final;
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(TxPrepareItem* other);
-  private:
-  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
-  }
-  inline void* MaybeArenaPtr() const {
-    return NULL;
-  }
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional bytes acc_addr = 1;
-  bool has_acc_addr() const;
-  void clear_acc_addr();
-  static const int kAccAddrFieldNumber = 1;
-  const ::std::string& acc_addr() const;
-  void set_acc_addr(const ::std::string& value);
-  #if LANG_CXX11
-  void set_acc_addr(::std::string&& value);
-  #endif
-  void set_acc_addr(const char* value);
-  void set_acc_addr(const void* value, size_t size);
-  ::std::string* mutable_acc_addr();
-  ::std::string* release_acc_addr();
-  void set_allocated_acc_addr(::std::string* acc_addr);
-
-  // optional bytes gid = 2;
-  bool has_gid() const;
-  void clear_gid();
-  static const int kGidFieldNumber = 2;
-  const ::std::string& gid() const;
-  void set_gid(const ::std::string& value);
-  #if LANG_CXX11
-  void set_gid(::std::string&& value);
-  #endif
-  void set_gid(const char* value);
-  void set_gid(const void* value, size_t size);
-  ::std::string* mutable_gid();
-  ::std::string* release_gid();
-  void set_allocated_gid(::std::string* gid);
-
-  // @@protoc_insertion_point(class_scope:zjchain.hotstuff.protobuf.TxPrepareItem)
- private:
-  void set_has_acc_addr();
-  void clear_has_acc_addr();
-  void set_has_gid();
-  void clear_has_gid();
-
-  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::HasBits<1> _has_bits_;
-  mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::internal::ArenaStringPtr acc_addr_;
-  ::google::protobuf::internal::ArenaStringPtr gid_;
-  friend struct ::protobuf_protos_2fhotstuff_2eproto::TableStruct;
-};
-// -------------------------------------------------------------------
 
 class LeaderTxPrepare : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.hotstuff.protobuf.LeaderTxPrepare) */ {
  public:
@@ -583,7 +137,7 @@ class LeaderTxPrepare : public ::google::protobuf::Message /* @@protoc_insertion
                &_LeaderTxPrepare_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    3;
+    0;
 
   void Swap(LeaderTxPrepare* other);
   friend void swap(LeaderTxPrepare& a, LeaderTxPrepare& b) {
@@ -635,10 +189,10 @@ class LeaderTxPrepare : public ::google::protobuf::Message /* @@protoc_insertion
 
   // accessors -------------------------------------------------------
 
-  // repeated uint64 bloom_filter = 3;
+  // repeated uint64 bloom_filter = 4;
   int bloom_filter_size() const;
   void clear_bloom_filter();
-  static const int kBloomFilterFieldNumber = 3;
+  static const int kBloomFilterFieldNumber = 4;
   ::google::protobuf::uint64 bloom_filter(int index) const;
   void set_bloom_filter(int index, ::google::protobuf::uint64 value);
   void add_bloom_filter(::google::protobuf::uint64 value);
@@ -647,10 +201,10 @@ class LeaderTxPrepare : public ::google::protobuf::Message /* @@protoc_insertion
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
       mutable_bloom_filter();
 
-  // repeated bytes tx_hash_list = 4;
+  // repeated bytes tx_hash_list = 5;
   int tx_hash_list_size() const;
   void clear_tx_hash_list();
-  static const int kTxHashListFieldNumber = 4;
+  static const int kTxHashListFieldNumber = 5;
   const ::std::string& tx_hash_list(int index) const;
   ::std::string* mutable_tx_hash_list(int index);
   void set_tx_hash_list(int index, const ::std::string& value);
@@ -669,6 +223,21 @@ class LeaderTxPrepare : public ::google::protobuf::Message /* @@protoc_insertion
   const ::google::protobuf::RepeatedPtrField< ::std::string>& tx_hash_list() const;
   ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_tx_hash_list();
 
+  // optional bytes prepare_final_hash = 2;
+  bool has_prepare_final_hash() const;
+  void clear_prepare_final_hash();
+  static const int kPrepareFinalHashFieldNumber = 2;
+  const ::std::string& prepare_final_hash() const;
+  void set_prepare_final_hash(const ::std::string& value);
+  #if LANG_CXX11
+  void set_prepare_final_hash(::std::string&& value);
+  #endif
+  void set_prepare_final_hash(const char* value);
+  void set_prepare_final_hash(const void* value, size_t size);
+  ::std::string* mutable_prepare_final_hash();
+  ::std::string* release_prepare_final_hash();
+  void set_allocated_prepare_final_hash(::std::string* prepare_final_hash);
+
   // optional .zjchain.block.protobuf.Block block = 1;
   bool has_block() const;
   void clear_block();
@@ -681,32 +250,40 @@ class LeaderTxPrepare : public ::google::protobuf::Message /* @@protoc_insertion
   ::zjchain::block::protobuf::Block* mutable_block();
   void set_allocated_block(::zjchain::block::protobuf::Block* block);
 
-  // optional .zjchain.hotstuff.protobuf.HotstuffLeaderPrepare prepare = 2;
-  bool has_prepare() const;
-  void clear_prepare();
-  static const int kPrepareFieldNumber = 2;
-  private:
-  const ::zjchain::hotstuff::protobuf::HotstuffLeaderPrepare& _internal_prepare() const;
-  public:
-  const ::zjchain::hotstuff::protobuf::HotstuffLeaderPrepare& prepare() const;
-  ::zjchain::hotstuff::protobuf::HotstuffLeaderPrepare* release_prepare();
-  ::zjchain::hotstuff::protobuf::HotstuffLeaderPrepare* mutable_prepare();
-  void set_allocated_prepare(::zjchain::hotstuff::protobuf::HotstuffLeaderPrepare* prepare);
+  // optional uint64 height = 3;
+  bool has_height() const;
+  void clear_height();
+  static const int kHeightFieldNumber = 3;
+  ::google::protobuf::uint64 height() const;
+  void set_height(::google::protobuf::uint64 value);
+
+  // optional .zjchain.pools.protobuf.StepType tx_type = 6 [default = kNormalFrom];
+  bool has_tx_type() const;
+  void clear_tx_type();
+  static const int kTxTypeFieldNumber = 6;
+  ::zjchain::pools::protobuf::StepType tx_type() const;
+  void set_tx_type(::zjchain::pools::protobuf::StepType value);
 
   // @@protoc_insertion_point(class_scope:zjchain.hotstuff.protobuf.LeaderTxPrepare)
  private:
   void set_has_block();
   void clear_has_block();
-  void set_has_prepare();
-  void clear_has_prepare();
+  void set_has_prepare_final_hash();
+  void clear_has_prepare_final_hash();
+  void set_has_height();
+  void clear_has_height();
+  void set_has_tx_type();
+  void clear_has_tx_type();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > bloom_filter_;
   ::google::protobuf::RepeatedPtrField< ::std::string> tx_hash_list_;
+  ::google::protobuf::internal::ArenaStringPtr prepare_final_hash_;
   ::zjchain::block::protobuf::Block* block_;
-  ::zjchain::hotstuff::protobuf::HotstuffLeaderPrepare* prepare_;
+  ::google::protobuf::uint64 height_;
+  int tx_type_;
   friend struct ::protobuf_protos_2fhotstuff_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -753,7 +330,7 @@ class BackupTxPrepare : public ::google::protobuf::Message /* @@protoc_insertion
                &_BackupTxPrepare_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    1;
 
   void Swap(BackupTxPrepare* other);
   friend void swap(BackupTxPrepare& a, BackupTxPrepare& b) {
@@ -867,7 +444,7 @@ class LeaderTxPreCommit : public ::google::protobuf::Message /* @@protoc_inserti
                &_LeaderTxPreCommit_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    2;
 
   void Swap(LeaderTxPreCommit* other);
   friend void swap(LeaderTxPreCommit& a, LeaderTxPreCommit& b) {
@@ -981,7 +558,7 @@ class BackupTxPreCommit : public ::google::protobuf::Message /* @@protoc_inserti
                &_BackupTxPreCommit_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    3;
 
   void Swap(BackupTxPreCommit* other);
   friend void swap(BackupTxPreCommit& a, BackupTxPreCommit& b) {
@@ -1095,7 +672,7 @@ class LeaderTxCommit : public ::google::protobuf::Message /* @@protoc_insertion_
                &_LeaderTxCommit_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    4;
 
   void Swap(LeaderTxCommit* other);
   friend void swap(LeaderTxCommit& a, LeaderTxCommit& b) {
@@ -1219,7 +796,7 @@ class ToAccountTx : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_ToAccountTx_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    5;
 
   void Swap(ToAccountTx* other);
   friend void swap(ToAccountTx& a, ToAccountTx& b) {
@@ -1338,7 +915,7 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
                &_TxBft_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    6;
 
   void Swap(TxBft* other);
   friend void swap(TxBft& a, TxBft& b) {
@@ -1532,7 +1109,7 @@ class HotstuffMessage : public ::google::protobuf::Message /* @@protoc_insertion
                &_HotstuffMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    7;
 
   void Swap(HotstuffMessage* other);
   friend void swap(HotstuffMessage& a, HotstuffMessage& b) {
@@ -1886,437 +1463,17 @@ class HotstuffMessage : public ::google::protobuf::Message /* @@protoc_insertion
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
-// HotstuffPrepareTransactionInfo
-
-// optional bytes gid = 1;
-inline bool HotstuffPrepareTransactionInfo::has_gid() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void HotstuffPrepareTransactionInfo::set_has_gid() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void HotstuffPrepareTransactionInfo::clear_has_gid() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void HotstuffPrepareTransactionInfo::clear_gid() {
-  gid_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_gid();
-}
-inline const ::std::string& HotstuffPrepareTransactionInfo::gid() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.gid)
-  return gid_.GetNoArena();
-}
-inline void HotstuffPrepareTransactionInfo::set_gid(const ::std::string& value) {
-  set_has_gid();
-  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.gid)
-}
-#if LANG_CXX11
-inline void HotstuffPrepareTransactionInfo::set_gid(::std::string&& value) {
-  set_has_gid();
-  gid_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.gid)
-}
-#endif
-inline void HotstuffPrepareTransactionInfo::set_gid(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_gid();
-  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.gid)
-}
-inline void HotstuffPrepareTransactionInfo::set_gid(const void* value, size_t size) {
-  set_has_gid();
-  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.gid)
-}
-inline ::std::string* HotstuffPrepareTransactionInfo::mutable_gid() {
-  set_has_gid();
-  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.gid)
-  return gid_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* HotstuffPrepareTransactionInfo::release_gid() {
-  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.gid)
-  if (!has_gid()) {
-    return NULL;
-  }
-  clear_has_gid();
-  return gid_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void HotstuffPrepareTransactionInfo::set_allocated_gid(::std::string* gid) {
-  if (gid != NULL) {
-    set_has_gid();
-  } else {
-    clear_has_gid();
-  }
-  gid_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), gid);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.gid)
-}
-
-// optional bytes address = 2;
-inline bool HotstuffPrepareTransactionInfo::has_address() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void HotstuffPrepareTransactionInfo::set_has_address() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void HotstuffPrepareTransactionInfo::clear_has_address() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void HotstuffPrepareTransactionInfo::clear_address() {
-  address_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_address();
-}
-inline const ::std::string& HotstuffPrepareTransactionInfo::address() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.address)
-  return address_.GetNoArena();
-}
-inline void HotstuffPrepareTransactionInfo::set_address(const ::std::string& value) {
-  set_has_address();
-  address_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.address)
-}
-#if LANG_CXX11
-inline void HotstuffPrepareTransactionInfo::set_address(::std::string&& value) {
-  set_has_address();
-  address_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.address)
-}
-#endif
-inline void HotstuffPrepareTransactionInfo::set_address(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_address();
-  address_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.address)
-}
-inline void HotstuffPrepareTransactionInfo::set_address(const void* value, size_t size) {
-  set_has_address();
-  address_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.address)
-}
-inline ::std::string* HotstuffPrepareTransactionInfo::mutable_address() {
-  set_has_address();
-  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.address)
-  return address_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* HotstuffPrepareTransactionInfo::release_address() {
-  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.address)
-  if (!has_address()) {
-    return NULL;
-  }
-  clear_has_address();
-  return address_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void HotstuffPrepareTransactionInfo::set_allocated_address(::std::string* address) {
-  if (address != NULL) {
-    set_has_address();
-  } else {
-    clear_has_address();
-  }
-  address_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), address);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.address)
-}
-
-// optional uint64 balance = 3;
-inline bool HotstuffPrepareTransactionInfo::has_balance() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void HotstuffPrepareTransactionInfo::set_has_balance() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void HotstuffPrepareTransactionInfo::clear_has_balance() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void HotstuffPrepareTransactionInfo::clear_balance() {
-  balance_ = GOOGLE_ULONGLONG(0);
-  clear_has_balance();
-}
-inline ::google::protobuf::uint64 HotstuffPrepareTransactionInfo::balance() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.balance)
-  return balance_;
-}
-inline void HotstuffPrepareTransactionInfo::set_balance(::google::protobuf::uint64 value) {
-  set_has_balance();
-  balance_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo.balance)
-}
-
-// -------------------------------------------------------------------
-
-// HotstuffLeaderPrepare
-
-// repeated .zjchain.hotstuff.protobuf.HotstuffPrepareTransactionInfo prepare_txs = 1;
-inline int HotstuffLeaderPrepare::prepare_txs_size() const {
-  return prepare_txs_.size();
-}
-inline void HotstuffLeaderPrepare::clear_prepare_txs() {
-  prepare_txs_.Clear();
-}
-inline ::zjchain::hotstuff::protobuf::HotstuffPrepareTransactionInfo* HotstuffLeaderPrepare::mutable_prepare_txs(int index) {
-  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.HotstuffLeaderPrepare.prepare_txs)
-  return prepare_txs_.Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField< ::zjchain::hotstuff::protobuf::HotstuffPrepareTransactionInfo >*
-HotstuffLeaderPrepare::mutable_prepare_txs() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.hotstuff.protobuf.HotstuffLeaderPrepare.prepare_txs)
-  return &prepare_txs_;
-}
-inline const ::zjchain::hotstuff::protobuf::HotstuffPrepareTransactionInfo& HotstuffLeaderPrepare::prepare_txs(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffLeaderPrepare.prepare_txs)
-  return prepare_txs_.Get(index);
-}
-inline ::zjchain::hotstuff::protobuf::HotstuffPrepareTransactionInfo* HotstuffLeaderPrepare::add_prepare_txs() {
-  // @@protoc_insertion_point(field_add:zjchain.hotstuff.protobuf.HotstuffLeaderPrepare.prepare_txs)
-  return prepare_txs_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::zjchain::hotstuff::protobuf::HotstuffPrepareTransactionInfo >&
-HotstuffLeaderPrepare::prepare_txs() const {
-  // @@protoc_insertion_point(field_list:zjchain.hotstuff.protobuf.HotstuffLeaderPrepare.prepare_txs)
-  return prepare_txs_;
-}
-
-// optional bytes prepare_final_hash = 2;
-inline bool HotstuffLeaderPrepare::has_prepare_final_hash() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void HotstuffLeaderPrepare::set_has_prepare_final_hash() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void HotstuffLeaderPrepare::clear_has_prepare_final_hash() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void HotstuffLeaderPrepare::clear_prepare_final_hash() {
-  prepare_final_hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_prepare_final_hash();
-}
-inline const ::std::string& HotstuffLeaderPrepare::prepare_final_hash() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffLeaderPrepare.prepare_final_hash)
-  return prepare_final_hash_.GetNoArena();
-}
-inline void HotstuffLeaderPrepare::set_prepare_final_hash(const ::std::string& value) {
-  set_has_prepare_final_hash();
-  prepare_final_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffLeaderPrepare.prepare_final_hash)
-}
-#if LANG_CXX11
-inline void HotstuffLeaderPrepare::set_prepare_final_hash(::std::string&& value) {
-  set_has_prepare_final_hash();
-  prepare_final_hash_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.HotstuffLeaderPrepare.prepare_final_hash)
-}
-#endif
-inline void HotstuffLeaderPrepare::set_prepare_final_hash(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_prepare_final_hash();
-  prepare_final_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.HotstuffLeaderPrepare.prepare_final_hash)
-}
-inline void HotstuffLeaderPrepare::set_prepare_final_hash(const void* value, size_t size) {
-  set_has_prepare_final_hash();
-  prepare_final_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.HotstuffLeaderPrepare.prepare_final_hash)
-}
-inline ::std::string* HotstuffLeaderPrepare::mutable_prepare_final_hash() {
-  set_has_prepare_final_hash();
-  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.HotstuffLeaderPrepare.prepare_final_hash)
-  return prepare_final_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* HotstuffLeaderPrepare::release_prepare_final_hash() {
-  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.HotstuffLeaderPrepare.prepare_final_hash)
-  if (!has_prepare_final_hash()) {
-    return NULL;
-  }
-  clear_has_prepare_final_hash();
-  return prepare_final_hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void HotstuffLeaderPrepare::set_allocated_prepare_final_hash(::std::string* prepare_final_hash) {
-  if (prepare_final_hash != NULL) {
-    set_has_prepare_final_hash();
-  } else {
-    clear_has_prepare_final_hash();
-  }
-  prepare_final_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), prepare_final_hash);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.HotstuffLeaderPrepare.prepare_final_hash)
-}
-
-// optional uint64 height = 3;
-inline bool HotstuffLeaderPrepare::has_height() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void HotstuffLeaderPrepare::set_has_height() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void HotstuffLeaderPrepare::clear_has_height() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void HotstuffLeaderPrepare::clear_height() {
-  height_ = GOOGLE_ULONGLONG(0);
-  clear_has_height();
-}
-inline ::google::protobuf::uint64 HotstuffLeaderPrepare::height() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffLeaderPrepare.height)
-  return height_;
-}
-inline void HotstuffLeaderPrepare::set_height(::google::protobuf::uint64 value) {
-  set_has_height();
-  height_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffLeaderPrepare.height)
-}
-
-// -------------------------------------------------------------------
-
-// TxPrepareItem
-
-// optional bytes acc_addr = 1;
-inline bool TxPrepareItem::has_acc_addr() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void TxPrepareItem::set_has_acc_addr() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void TxPrepareItem::clear_has_acc_addr() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void TxPrepareItem::clear_acc_addr() {
-  acc_addr_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_acc_addr();
-}
-inline const ::std::string& TxPrepareItem::acc_addr() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.TxPrepareItem.acc_addr)
-  return acc_addr_.GetNoArena();
-}
-inline void TxPrepareItem::set_acc_addr(const ::std::string& value) {
-  set_has_acc_addr();
-  acc_addr_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.TxPrepareItem.acc_addr)
-}
-#if LANG_CXX11
-inline void TxPrepareItem::set_acc_addr(::std::string&& value) {
-  set_has_acc_addr();
-  acc_addr_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.TxPrepareItem.acc_addr)
-}
-#endif
-inline void TxPrepareItem::set_acc_addr(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_acc_addr();
-  acc_addr_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.TxPrepareItem.acc_addr)
-}
-inline void TxPrepareItem::set_acc_addr(const void* value, size_t size) {
-  set_has_acc_addr();
-  acc_addr_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.TxPrepareItem.acc_addr)
-}
-inline ::std::string* TxPrepareItem::mutable_acc_addr() {
-  set_has_acc_addr();
-  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.TxPrepareItem.acc_addr)
-  return acc_addr_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* TxPrepareItem::release_acc_addr() {
-  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.TxPrepareItem.acc_addr)
-  if (!has_acc_addr()) {
-    return NULL;
-  }
-  clear_has_acc_addr();
-  return acc_addr_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void TxPrepareItem::set_allocated_acc_addr(::std::string* acc_addr) {
-  if (acc_addr != NULL) {
-    set_has_acc_addr();
-  } else {
-    clear_has_acc_addr();
-  }
-  acc_addr_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), acc_addr);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.TxPrepareItem.acc_addr)
-}
-
-// optional bytes gid = 2;
-inline bool TxPrepareItem::has_gid() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void TxPrepareItem::set_has_gid() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void TxPrepareItem::clear_has_gid() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void TxPrepareItem::clear_gid() {
-  gid_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_gid();
-}
-inline const ::std::string& TxPrepareItem::gid() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.TxPrepareItem.gid)
-  return gid_.GetNoArena();
-}
-inline void TxPrepareItem::set_gid(const ::std::string& value) {
-  set_has_gid();
-  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.TxPrepareItem.gid)
-}
-#if LANG_CXX11
-inline void TxPrepareItem::set_gid(::std::string&& value) {
-  set_has_gid();
-  gid_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.TxPrepareItem.gid)
-}
-#endif
-inline void TxPrepareItem::set_gid(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_gid();
-  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.TxPrepareItem.gid)
-}
-inline void TxPrepareItem::set_gid(const void* value, size_t size) {
-  set_has_gid();
-  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.TxPrepareItem.gid)
-}
-inline ::std::string* TxPrepareItem::mutable_gid() {
-  set_has_gid();
-  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.TxPrepareItem.gid)
-  return gid_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* TxPrepareItem::release_gid() {
-  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.TxPrepareItem.gid)
-  if (!has_gid()) {
-    return NULL;
-  }
-  clear_has_gid();
-  return gid_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void TxPrepareItem::set_allocated_gid(::std::string* gid) {
-  if (gid != NULL) {
-    set_has_gid();
-  } else {
-    clear_has_gid();
-  }
-  gid_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), gid);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.TxPrepareItem.gid)
-}
-
-// -------------------------------------------------------------------
-
 // LeaderTxPrepare
 
 // optional .zjchain.block.protobuf.Block block = 1;
 inline bool LeaderTxPrepare::has_block() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void LeaderTxPrepare::set_has_block() {
-  _has_bits_[0] |= 0x00000001u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void LeaderTxPrepare::clear_has_block() {
-  _has_bits_[0] &= ~0x00000001u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline const ::zjchain::block::protobuf::Block& LeaderTxPrepare::_internal_block() const {
   return *block_;
@@ -2362,65 +1519,97 @@ inline void LeaderTxPrepare::set_allocated_block(::zjchain::block::protobuf::Blo
   // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.LeaderTxPrepare.block)
 }
 
-// optional .zjchain.hotstuff.protobuf.HotstuffLeaderPrepare prepare = 2;
-inline bool LeaderTxPrepare::has_prepare() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+// optional bytes prepare_final_hash = 2;
+inline bool LeaderTxPrepare::has_prepare_final_hash() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void LeaderTxPrepare::set_has_prepare() {
-  _has_bits_[0] |= 0x00000002u;
+inline void LeaderTxPrepare::set_has_prepare_final_hash() {
+  _has_bits_[0] |= 0x00000001u;
 }
-inline void LeaderTxPrepare::clear_has_prepare() {
-  _has_bits_[0] &= ~0x00000002u;
+inline void LeaderTxPrepare::clear_has_prepare_final_hash() {
+  _has_bits_[0] &= ~0x00000001u;
 }
-inline void LeaderTxPrepare::clear_prepare() {
-  if (prepare_ != NULL) prepare_->Clear();
-  clear_has_prepare();
+inline void LeaderTxPrepare::clear_prepare_final_hash() {
+  prepare_final_hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_prepare_final_hash();
 }
-inline const ::zjchain::hotstuff::protobuf::HotstuffLeaderPrepare& LeaderTxPrepare::_internal_prepare() const {
-  return *prepare_;
+inline const ::std::string& LeaderTxPrepare::prepare_final_hash() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.LeaderTxPrepare.prepare_final_hash)
+  return prepare_final_hash_.GetNoArena();
 }
-inline const ::zjchain::hotstuff::protobuf::HotstuffLeaderPrepare& LeaderTxPrepare::prepare() const {
-  const ::zjchain::hotstuff::protobuf::HotstuffLeaderPrepare* p = prepare_;
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.LeaderTxPrepare.prepare)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::hotstuff::protobuf::HotstuffLeaderPrepare*>(
-      &::zjchain::hotstuff::protobuf::_HotstuffLeaderPrepare_default_instance_);
+inline void LeaderTxPrepare::set_prepare_final_hash(const ::std::string& value) {
+  set_has_prepare_final_hash();
+  prepare_final_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.LeaderTxPrepare.prepare_final_hash)
 }
-inline ::zjchain::hotstuff::protobuf::HotstuffLeaderPrepare* LeaderTxPrepare::release_prepare() {
-  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.LeaderTxPrepare.prepare)
-  clear_has_prepare();
-  ::zjchain::hotstuff::protobuf::HotstuffLeaderPrepare* temp = prepare_;
-  prepare_ = NULL;
-  return temp;
+#if LANG_CXX11
+inline void LeaderTxPrepare::set_prepare_final_hash(::std::string&& value) {
+  set_has_prepare_final_hash();
+  prepare_final_hash_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.LeaderTxPrepare.prepare_final_hash)
 }
-inline ::zjchain::hotstuff::protobuf::HotstuffLeaderPrepare* LeaderTxPrepare::mutable_prepare() {
-  set_has_prepare();
-  if (prepare_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::hotstuff::protobuf::HotstuffLeaderPrepare>(GetArenaNoVirtual());
-    prepare_ = p;
+#endif
+inline void LeaderTxPrepare::set_prepare_final_hash(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_prepare_final_hash();
+  prepare_final_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.LeaderTxPrepare.prepare_final_hash)
+}
+inline void LeaderTxPrepare::set_prepare_final_hash(const void* value, size_t size) {
+  set_has_prepare_final_hash();
+  prepare_final_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.LeaderTxPrepare.prepare_final_hash)
+}
+inline ::std::string* LeaderTxPrepare::mutable_prepare_final_hash() {
+  set_has_prepare_final_hash();
+  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.LeaderTxPrepare.prepare_final_hash)
+  return prepare_final_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* LeaderTxPrepare::release_prepare_final_hash() {
+  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.LeaderTxPrepare.prepare_final_hash)
+  if (!has_prepare_final_hash()) {
+    return NULL;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.LeaderTxPrepare.prepare)
-  return prepare_;
+  clear_has_prepare_final_hash();
+  return prepare_final_hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void LeaderTxPrepare::set_allocated_prepare(::zjchain::hotstuff::protobuf::HotstuffLeaderPrepare* prepare) {
-  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
-    delete prepare_;
-  }
-  if (prepare) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
-    if (message_arena != submessage_arena) {
-      prepare = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, prepare, submessage_arena);
-    }
-    set_has_prepare();
+inline void LeaderTxPrepare::set_allocated_prepare_final_hash(::std::string* prepare_final_hash) {
+  if (prepare_final_hash != NULL) {
+    set_has_prepare_final_hash();
   } else {
-    clear_has_prepare();
+    clear_has_prepare_final_hash();
   }
-  prepare_ = prepare;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.LeaderTxPrepare.prepare)
+  prepare_final_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), prepare_final_hash);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.LeaderTxPrepare.prepare_final_hash)
 }
 
-// repeated uint64 bloom_filter = 3;
+// optional uint64 height = 3;
+inline bool LeaderTxPrepare::has_height() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void LeaderTxPrepare::set_has_height() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void LeaderTxPrepare::clear_has_height() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void LeaderTxPrepare::clear_height() {
+  height_ = GOOGLE_ULONGLONG(0);
+  clear_has_height();
+}
+inline ::google::protobuf::uint64 LeaderTxPrepare::height() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.LeaderTxPrepare.height)
+  return height_;
+}
+inline void LeaderTxPrepare::set_height(::google::protobuf::uint64 value) {
+  set_has_height();
+  height_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.LeaderTxPrepare.height)
+}
+
+// repeated uint64 bloom_filter = 4;
 inline int LeaderTxPrepare::bloom_filter_size() const {
   return bloom_filter_.size();
 }
@@ -2450,7 +1639,7 @@ LeaderTxPrepare::mutable_bloom_filter() {
   return &bloom_filter_;
 }
 
-// repeated bytes tx_hash_list = 4;
+// repeated bytes tx_hash_list = 5;
 inline int LeaderTxPrepare::tx_hash_list_size() const {
   return tx_hash_list_.size();
 }
@@ -2517,6 +1706,31 @@ inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 LeaderTxPrepare::mutable_tx_hash_list() {
   // @@protoc_insertion_point(field_mutable_list:zjchain.hotstuff.protobuf.LeaderTxPrepare.tx_hash_list)
   return &tx_hash_list_;
+}
+
+// optional .zjchain.pools.protobuf.StepType tx_type = 6 [default = kNormalFrom];
+inline bool LeaderTxPrepare::has_tx_type() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void LeaderTxPrepare::set_has_tx_type() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void LeaderTxPrepare::clear_has_tx_type() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void LeaderTxPrepare::clear_tx_type() {
+  tx_type_ = 0;
+  clear_has_tx_type();
+}
+inline ::zjchain::pools::protobuf::StepType LeaderTxPrepare::tx_type() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.LeaderTxPrepare.tx_type)
+  return static_cast< ::zjchain::pools::protobuf::StepType >(tx_type_);
+}
+inline void LeaderTxPrepare::set_tx_type(::zjchain::pools::protobuf::StepType value) {
+  assert(::zjchain::pools::protobuf::StepType_IsValid(value));
+  set_has_tx_type();
+  tx_type_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.LeaderTxPrepare.tx_type)
 }
 
 // -------------------------------------------------------------------
@@ -3958,12 +3172,6 @@ inline void HotstuffMessage::set_allocated_bls_agg_verify_hash(::std::string* bl
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
-// -------------------------------------------------------------------
-
-// -------------------------------------------------------------------
-
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
