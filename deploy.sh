@@ -2,7 +2,7 @@
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/
 ps -ef | grep zjchain | awk -F' ' '{print $2}' | xargs kill -9
 sh build.sh a
-rm -rf /root/zjnodes && cp -r ./zjnodes /root
+cp -r ./zjnodes /root
 
 rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db
 mkdir -p /root/zjnodes/zjchain/log
