@@ -44,6 +44,6 @@ message Header {
     optional contract.protobuf.ContractMessage contract_proto = 14;
     optional elect.protobuf.ElectMessage elect_proto = 15;
     optional hotstuff.protobuf.HotstuffMessage hotstuff_proto = 16;
-    optional hotstuff.protobuf.HotstuffMessage leader_prepare = 17;
+    optional hotstuff.protobuf.HotstuffMessage leader_commit = 17;
     optional block.protobuf.BlockMessage block_proto = 18;
 }
