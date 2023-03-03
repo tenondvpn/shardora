@@ -58,7 +58,7 @@ int BftManager::Init(
         pools::protobuf::kConsensusLocalTos,
         std::bind(&BftManager::CreateToTxLocal, this, std::placeholders::_1));
     security_ptr_ = security_ptr;
-    txs_pools_ = std::make_shared<WaitingTxsPools>(pools_mgr_);
+    txs_pools_ = std::make_shared<WaitingTxsPools>(pools_mgr_, block_mgr);
     thread_count_ = thread_count;
     bft_hash_map_ = new std::unordered_map<std::string, ZbftPtr>[thread_count];
     for (uint8_t i = 0; i < thread_count_; ++i) {

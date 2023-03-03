@@ -48,6 +48,7 @@ int BlockManager::Init(
 }
 
 void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+    NetworkNewBlock(nullptr);
     if (to_tx_leader_ == nullptr) {
         return;
     }
@@ -68,6 +69,10 @@ void BlockManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& mem
         for (auto iter = members->begin(); iter != members->end(); ++iter) {
             if ((*iter)->pool_index_mod_num == 0) {
                 to_tx_leader_ = *iter;
+                ZJC_DEBUG("success get leader: %u, %s",
+                    sharding_id,
+                    common::Encode::HexEncode(to_tx_leader_->id).c_str());
+                break;
             }
         }
     }
@@ -165,16 +170,33 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         to_txs_[heights.sharding_id()] = tx_ptr;
+        ZJC_DEBUG("follower success add txs");
     }
+}
+
+std::shared_ptr<pools::protobuf::TxMessage> BlockManager::GetToTx(uint32_t pool_index) {
+    for (uint32_t i = network::kRootCongressNetworkId; i <= max_consensus_sharding_id_; ++i) {
+        uint32_t mod_idx = i % common::kImmutablePoolSize;
+        if (mod_idx == pool_index) {
+            if (to_tx_pools_index_[pool_index] != i) {
+                to_tx_pools_index_[pool_index] = i;
+                return to_txs_[i];
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 void BlockManager::CreateToTx(uint8_t thread_idx) {
     // check this node is leader
     if (to_tx_leader_ == nullptr) {
+        ZJC_DEBUG("leader null");
         return;
     }
 
     if (local_id_ != to_tx_leader_->id) {
+        ZJC_DEBUG("not leader");
         return;
     }
 
@@ -183,8 +205,14 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         return;
     }
 
+    prev_create_to_tx_ms_ = now_tm_ms + kCreateToTxPeriodMs;
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    auto& block_msg = *msg_ptr->header.mutable_block_proto();
+    auto& msg = msg_ptr->header;
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
+    msg.set_des_dht_key(dht_key.StrKey());
+    msg.set_type(common::kBlockMessage);
+    auto& block_msg = *msg.mutable_block_proto();
     for (uint32_t i = network::kRootCongressNetworkId;
             i <= max_consensus_sharding_id_; ++i) {
         pools::protobuf::ToTxHeights& to_heights = *block_msg.add_to_txs();
@@ -206,14 +234,19 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         tx->set_gid(gid);
         to_txs_[i] = tx;
     }
+
+    if (block_msg.to_txs_size() <= 0) {
+        ZJC_DEBUG("no to txs");
+        return;
+    }
     
-    prev_create_to_tx_ms_ = now_tm_ms + kCreateToTxPeriodMs;
     // send to other nodes
-    auto& broadcast = *msg_ptr->header.mutable_broadcast();
+    auto& broadcast = *msg.mutable_broadcast();
     broadcast.set_hop_limit(10);
     msg_ptr->thread_idx = thread_idx;
 #ifndef ZJC_UNITTEST
     network::Route::Instance()->Send(msg_ptr);
+    ZJC_DEBUG("success add txs");
 #else
     // for test
     leader_to_txs_msg_ = msg_ptr;

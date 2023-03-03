@@ -8,7 +8,9 @@ namespace consensus {
 
 class WaitingTxsPools {
 public:
-    WaitingTxsPools(std::shared_ptr<pools::TxPoolManager>& pool_mgr) {
+    WaitingTxsPools(
+            std::shared_ptr<pools::TxPoolManager>& pool_mgr,
+            std::shared_ptr<block::BlockManager>& block_mgr) : block_mgr_(block_mgr) {
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             wtxs[i].Init(i, pool_mgr);
         }
@@ -56,6 +58,10 @@ public:
             return txs_item;
         }
 
+        auto tx_ptr = block_mgr_->GetToTx(pool_index);
+        if (tx_ptr != nullptr) {
+
+        }
         return nullptr;
     }
 
@@ -74,6 +80,7 @@ public:
 
 private:
     WaitingTxs wtxs[common::kInvalidPoolIndex];
+    std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(WaitingTxsPools);
 };
