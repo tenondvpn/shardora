@@ -2,8 +2,6 @@ third_party/libBLS_n
 third_party/libBLS/deps
 cbuild_Debug
 cbuild_Release
-third_party/depends/libs/linux/lib*.a
-third_party/depends/libs/linux/libp2p.a
 .vs
 third_party/leveldb
 third_party/libBLS
@@ -11,5 +9,4 @@ third_party/aleth*
 third_party/bin/
 third_party/evmone*
 third_party/include
-third_party/lib
 src/contract/tests/contracts/*.bin
