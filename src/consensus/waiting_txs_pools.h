@@ -84,7 +84,7 @@ public:
 
     std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
             uint32_t pool_index,
-            const protobuf::RepeatedPtrField<std::string>& tx_hash_list,
+            const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
             uint8_t thread_idx) {
         auto txs_item = wtxs[pool_index].FollowerGetTxs(tx_hash_list);
         if (txs_item != nullptr) {

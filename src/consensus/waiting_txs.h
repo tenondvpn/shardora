@@ -56,7 +56,7 @@ public:
     }
 
     std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
-            const protobuf::RepeatedPtrField<std::string>& tx_hash_list) {
+            const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list) {
         txs_items_ = std::make_shared<WaitingTxsItem>();
         auto& tx_map = txs_items_->txs;
         for (int32_t i = 0; i < tx_hash_list.size(); ++i) {
