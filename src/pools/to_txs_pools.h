@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 
+#include "common/node_members.h"
 #include "common/unique_map.h"
 #include "protos/address.pb.h"
 #include "protos/prefix_db.h"
@@ -13,17 +14,17 @@ namespace pools {
 
 class ToTxsPools {
 public:
-    ToTxsPools(std::shared_ptr<db::Db>& db);
+    ToTxsPools(std::shared_ptr<db::Db>& db, const std::string& local_id);
     ~ToTxsPools();
     void NewBlock(const block::protobuf::Block& block, db::DbWriteBach& db_batch);
-    int OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
-
-private:
-    int LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeights& to_heights);
+    void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
     int BackupCreateToTx(
         uint32_t sharding_id,
         const pools::protobuf::ToTxHeights& leader_to_heights,
         pools::protobuf::TxMessage* tx);
+    int LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeights& to_heights);
+
+private:
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(
         const std::string& addr);
     void HandleNormalToTx(

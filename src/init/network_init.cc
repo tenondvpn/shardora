@@ -109,7 +109,11 @@ int NetworkInit::Init(int argc, char** argv) {
     bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_);
     elect_mgr_ = std::make_shared<elect::ElectManager>(
         block_mgr_, security_, bls_mgr_, db_,
-        std::bind(&NetworkInit::ElectBlockCallback, this, std::placeholders::_1));
+        std::bind(
+            &NetworkInit::ElectBlockCallback,
+            this,
+            std::placeholders::_1,
+            std::placeholders::_2));
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(security_, db_);
     account_mgr_->Init(
         common::GlobalInfo::Instance()->message_handler_thread_count(),

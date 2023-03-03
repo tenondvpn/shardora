@@ -2,7 +2,7 @@
 
 #include "common/global_info.h"
 #include "common/user_property_key_define.h"
-#include "network/network_utils.h
+#include "network/network_utils.h"
 #include "network/route.h"
 #include "transport/processor.h"
 
@@ -33,7 +33,7 @@ void ToTxsPools::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
         to_tx_msg_ptr->thread_idx = msg_ptr->thread_idx;
         auto& msg = to_tx_msg_ptr->header;
         auto& to_heights = *msg.mutable_to_tx_heights();
-        if (LeaderCreateToTx(i, &to_heights) != kPoolsSuccess) {
+        if (LeaderCreateToTx(i, to_heights) != kPoolsSuccess) {
             continue;
         }
 
@@ -262,6 +262,7 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeig
     auto val = to_tx.SerializeAsString();
     to_heights.set_tos_hash(tos_hash);
     prefix_db_->SaveTemporaryKv(tos_hash, val);
+    auto tx = std::make_shared<pools::protobuf::TxMessage>();
     tx->set_key(protos::kNormalTos);
     tx->set_value(to_heights.SerializeAsString());
     tx->set_pubkey("");

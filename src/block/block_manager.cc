@@ -33,7 +33,7 @@ int BlockManager::Init(
     pools_mgr_ = pools_mgr;
     local_id_ = local_id;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-    to_txs_pool_ = std::make_shared<pools::ToTxsPools>(db_);
+    to_txs_pool_ = std::make_shared<pools::ToTxsPools>(db_, local_id);
     consensus_block_queues_ = new common::ThreadSafeQueue<BlockToDbItemPtr>[
         common::GlobalInfo::Instance()->message_handler_thread_count()];
     network::Route::Instance()->RegisterMessage(
@@ -158,17 +158,9 @@ void BlockManager::CreateToTx() {
     auto& block_msg = *msg_ptr->header.mutable_block_proto();
     for (uint32_t i = network::kRootCongressNetworkId;
             i <= max_consensus_sharding_id_; ++i) {
-        pools::protobuf::TxMessage tx;
-        if (to_txs_pool_->LeaderCreateToTx(i, &tx) != pools::kPoolsSuccess) {
-            continue;
-        }
-
-        if (tx.value().empty()) {
-            continue;
-        }
-
         pools::protobuf::ToTxHeights& to_heights = *block_msg.add_to_txs();
-        if (!to_heights.ParseFromString(tx.value())) {
+        if (to_txs_pool_->LeaderCreateToTx(i, to_heights) != pools::kPoolsSuccess) {
+            block_msg.mutable_to_txs()->RemoveLast();
             continue;
         }
     }
