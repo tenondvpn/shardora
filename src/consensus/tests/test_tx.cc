@@ -359,11 +359,10 @@ TEST_F(TestTx, TestMoreTx) {
 
     // batch transfer to txs
     leader_bft_mgr.block_mgr_->CreateToTx();
-    std::cout << "create tx success." << std::endl;
+    ZJC_DEBUG("create tx success.");
     ASSERT_TRUE(leader_bft_mgr.block_mgr_->leader_to_txs_msg_ != nullptr);
     leader_bft_mgr.block_mgr_->leader_to_txs_msg_->thread_idx = 0;
     leader_bft_mgr.block_mgr_->HandleMessage(leader_bft_mgr.block_mgr_->leader_to_txs_msg_);
-    std::cout << "leader tx success." << std::endl;
     backup_bft_mgr0.block_mgr_->HandleMessage(leader_bft_mgr.block_mgr_->leader_to_txs_msg_);
     backup_bft_mgr1.block_mgr_->HandleMessage(leader_bft_mgr.block_mgr_->leader_to_txs_msg_);
 

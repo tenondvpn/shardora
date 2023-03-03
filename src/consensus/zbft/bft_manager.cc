@@ -223,8 +223,8 @@ int BftManager::StartBft(
         return leader_pre;
     }
 
-    //     ZJC_DEBUG("this node is leader and start bft: %s, pool index: %d",
-//         common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
+    ZJC_DEBUG("this node is leader and start bft: %s, pool index: %d",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
     return kConsensusSuccess;
 }
 
@@ -238,9 +238,12 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     BftItemPtr bft_item_ptr = std::make_shared<BftItem>();
     bft_item_ptr->msg_ptr = msg_ptr;
     if (header.has_leader_commit()) {
+        msg_ptr->leader_commit = false;
+        ZJC_DEBUG("has_leader_commit consensus message coming");
         BackupHandleHotstuffMessage(msg_ptr->thread_idx, bft_item_ptr);
-        header.release_leader_commit();
-        assert(!header.has_leader_commit());
+//         header.release_leader_commit();
+//         assert(!header.has_leader_commit());
+        msg_ptr->leader_commit = true;
     }
 
     if (!header.has_hotstuff_proto()) {
@@ -315,7 +318,7 @@ bool BftManager::VerifyLeaderIdValid(
 void BftManager::BackupHandleHotstuffMessage(uint8_t thread_index, BftItemPtr& bft_item_ptr) {
     // verify leader signature
     ZbftPtr bft_ptr = nullptr;
-    auto& bft_msg = bft_item_ptr->msg_ptr->header.has_leader_commit() ?
+    auto& bft_msg = !bft_item_ptr->msg_ptr->leader_commit ?
         bft_item_ptr->msg_ptr->header.leader_commit() :
         bft_item_ptr->msg_ptr->header.hotstuff_proto();
     if (bft_msg.bft_step() == kConsensusPrepare) {
@@ -461,7 +464,7 @@ void BftManager::HandleHotstuffMessage(
         ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
-    auto& bft_msg = header.has_leader_commit() ? header.leader_commit() : header.hotstuff_proto();
+    auto& bft_msg = !msg_ptr->leader_commit ? header.leader_commit() : header.hotstuff_proto();
     int res = kConsensusSuccess;
     switch (bft_msg.bft_step()) {
     case kConsensusPrepare: {
@@ -1133,7 +1136,7 @@ int BftManager::LeaderCallCommit(
 
 int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("BackupCommit");
-    auto& bft_msg = msg_ptr->header.has_leader_commit() ?
+    auto& bft_msg = !msg_ptr->leader_commit ?
         msg_ptr->header.leader_commit() : msg_ptr->header.hotstuff_proto();
     if (!bft_msg.agree()) {
         ZJC_ERROR("BackupCommit LeaderCallCommitOppose gid: %s",
