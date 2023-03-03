@@ -178,7 +178,7 @@ TxItemPtr TxPoolManager::GetTx(uint32_t pool_index, const std::string& tx_hash) 
         DispatchTx(pool_index, msg_ptr);
     }
 
-    return tx_pool_[pool_index].GetTx(sgid);
+    return tx_pool_[pool_index].GetTx(tx_hash);
 }
 
 void TxPoolManager::TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs) {
