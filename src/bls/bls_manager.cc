@@ -175,7 +175,7 @@ int BlsManager::GetVerifyHash(
 int BlsManager::GetVerifyHash(
         uint32_t t,
         uint32_t n,
-        const std::string& message,
+        const std::string& sign_msg,
         const libff::alt_bn128_G1& sign,
         std::string* verify_hash) try {
     if (sign == libff::alt_bn128_G1::zero()) {
