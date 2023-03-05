@@ -765,11 +765,13 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
         libBLS::ThresholdUtils::fieldElementToString(common_public_key_.Y.c1));
     std::string sign_x;
     std::string sign_y;
+    libff::alt_bn128_G1 g1_hash;
+    bls_mgr_->GetLibffHash(message_hash, &g1_hash);
     if (bls_mgr_->Sign(
             min_aggree_member_count_,
             member_count_,
             local_sec_key_,
-            message_hash,
+            g1_hash,
             &sign_x,
             &sign_y) != kBlsSuccess) {
         return;

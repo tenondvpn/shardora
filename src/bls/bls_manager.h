@@ -59,6 +59,7 @@ public:
         uint32_t n,
         const libff::alt_bn128_G1& sign,
         std::string* verify_hash);
+    static int GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g1_hash);
 
 //     int AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block, common::Bitmap* bitmap);
 

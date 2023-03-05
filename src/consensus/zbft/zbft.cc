@@ -363,17 +363,18 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
             msg_hash_src.append((char*)&data, sizeof(data));
         }
 
-        precommit_hash_ = common::Hash::keccak256(msg_hash_src);
-//         ZJC_DEBUG("leader create precommit_hash_: %s, prpare_hash: %s",
-//             common::Encode::HexEncode(precommit_hash_).c_str(),
-//             common::Encode::HexEncode(prpare_hash).c_str());
+        set_precoimmit_hash(common::Hash::keccak256(msg_hash_src));
         ZJC_INFO("bls_mgr_->Verify start.");
         std::string sign_precommit_hash;
         std::cout << "0 get sign: " << std::endl;
+        if (prepare_hash_ != prpare_hash) {
+            set_prepare_hash(prpare_hash);
+        }
+
         bls_mgr_->GetVerifyHash(
             t,
             n,
-            prpare_hash,
+            g1_prepare_hash_,
             *bls_precommit_agg_sign_,
             &sign_precommit_hash);
         if (sign_precommit_hash != precommit_bls_agg_verify_hash_) {
@@ -447,7 +448,7 @@ void Zbft::CreatePrecommitVerifyHash() {
     if (bls_mgr_->GetVerifyHash(
             t,
             n,
-            prepare_hash_,
+            g1_prepare_hash_,
             common_pk_,
             &precommit_bls_agg_verify_hash_) != bls::kBlsSuccess) {
         ZJC_ERROR("get precommit hash failed!");
@@ -462,7 +463,7 @@ void Zbft::CreateCommitVerifyHash() {
     if (bls_mgr_->GetVerifyHash(
             t,
             n,
-            precommit_hash_,
+            g1_precommit_hash_,
             common_pk_,
             &commit_bls_agg_verify_hash_) != bls::kBlsSuccess) {
         ZJC_ERROR("get commit hash failed!");
@@ -509,7 +510,7 @@ int Zbft::LeaderCreateCommitAggSign() {
         bls_mgr_->GetVerifyHash(
             t,
             n,
-            precommit_hash_,
+            g1_precommit_hash_,
             *bls_commit_agg_sign_,
             &sign_commit_hash);
         if (sign_commit_hash != commit_bls_agg_verify_hash_) {

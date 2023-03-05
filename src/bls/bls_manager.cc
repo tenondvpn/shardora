@@ -86,9 +86,9 @@ int BlsManager::Sign(
         uint32_t t,
         uint32_t n,
         const libff::alt_bn128_Fr& local_sec_key,
-        const std::string& sign_msg,
+        const libff::alt_bn128_G1& g1_hash,
         libff::alt_bn128_G1* bn_sign) {
-    BlsSign::Sign(t, n, local_sec_key, sign_msg, bn_sign);
+    BlsSign::Sign(t, n, local_sec_key, g1_hash, bn_sign);
     std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
     return kBlsSuccess;
 }
@@ -97,12 +97,12 @@ int BlsManager::Sign(
         uint32_t t,
         uint32_t n,
         const libff::alt_bn128_Fr& local_sec_key,
-        const std::string& sign_msg,
+        const libff::alt_bn128_G1& g1_hash,
         std::string* sign_x,
         std::string* sign_y) try {
 //     std::lock_guard<std::mutex> guard(sign_mutex_);
     libff::alt_bn128_G1 bn_sign;
-    BlsSign::Sign(t, n, local_sec_key, sign_msg, &bn_sign);
+    BlsSign::Sign(t, n, local_sec_key, g1_hash, &bn_sign);
     bn_sign.to_affine_coordinates();
     *sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
     *sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
@@ -201,12 +201,17 @@ bool BlsManager::IsSignValid(
 
     *content_to_hash += std::string("_") + std::to_string(bls_msg.finish_req().network_id());
     *content_to_hash = common::Hash::keccak256(*content_to_hash);
+    GetLibffHash(content_to_hash, g1_hash);
     auto& pubkey = (*members)[bls_msg.index()]->pubkey;
     if (!security_->Verify(*content_to_hash, bls_msg.sign(), pubkey)) {
         return false;
     }
 
     return true;
+}
+
+int BlsManager::GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g1_hash) {
+    return BlsSign::GetLibffHash(str_hash, g1_hash);
 }
 
 void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
@@ -233,6 +238,8 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    libff::alt_bn128_G1 g1_hash;
+    GetLibffHash(msg_hash, g1_hash);
     std::vector<std::string> pkey_str = {
             bls_msg.finish_req().pubkey().x_c0(),
             bls_msg.finish_req().pubkey().x_c1(),
@@ -264,7 +271,7 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
             members->size(),
             *pkey.getPublicKey(),
             sign,
-            msg_hash,
+            g1_hash,
             &verify_hash) != bls::kBlsSuccess) {
         ZJC_ERROR("verify bls finish bls sign error!");
         return;
@@ -561,12 +568,14 @@ bool BlsManager::VerifyAggSignValid(
             all_signs,
             lagrange_coeffs));
         std::string verify_hash;
+        libff::alt_bn128_G1 g1_hash;
+        GetLibffHash(finish_item->max_finish_hash, &g1_hash);
         if (Verify(
                 t,
                 n,
                 common_pk,
                 *bls_agg_sign,
-                finish_item->max_finish_hash,
+                g1_hash,
                 &verify_hash) != bls::kBlsSuccess) {
             ZJC_ERROR("verify agg sign failed!");
             return false;

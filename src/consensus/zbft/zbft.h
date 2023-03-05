@@ -153,10 +153,12 @@ public:
 
     void set_prepare_hash(const std::string& prepare_hash) {
         prepare_hash_ = prepare_hash;
+        bls_mgr_->GetLibffHash(prepare_hash_, &g1_prepare_hash_);
     }
 
     void set_precoimmit_hash(const std::string& precommit_hash) {
         precommit_hash_ = precommit_hash;
+        bls_mgr_->GetLibffHash(precommit_hash_, &g1_precommit_hash_);
     }
 
     uint32_t leader_index() const {
@@ -423,8 +425,8 @@ protected:
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::string precommit_bls_agg_verify_hash_;
     std::string commit_bls_agg_verify_hash_;
-    libff::alt_bn128_G1 prepare_hash_;
-    libff::alt_bn128_G1 precommit_hash_;
+    libff::alt_bn128_G1 g1_prepare_hash_;
+    libff::alt_bn128_G1 g1_precommit_hash_;
 
 public:
     inline void set_test_times(uint32_t index) {
