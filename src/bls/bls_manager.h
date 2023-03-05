@@ -54,6 +54,13 @@ public:
         const std::string& message,
         const libff::alt_bn128_G2& pkey,
         std::string* verify_hash);
+    static int GetVerifyHash(
+        uint32_t t,
+        uint32_t n,
+        const std::string& message,
+        const libff::alt_bn128_G1& sign,
+        std::string* verify_hash);
+
 //     int AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block, common::Bitmap* bitmap);
 
 private:
