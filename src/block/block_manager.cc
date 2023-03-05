@@ -393,7 +393,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     auto& block_msg = *msg.mutable_block_proto();
     for (uint32_t i = network::kRootCongressNetworkId;
             i <= max_consensus_sharding_id_; ++i) {
-        auto old_to_txs = to_txs_[heights.sharding_id()];
+        auto old_to_txs = to_txs_[i];
         if (old_to_txs != nullptr && old_to_txs->in_consensus) {
             continue;
         }
