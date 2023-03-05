@@ -45,7 +45,6 @@ private:
     TickThreadPool();
     ~TickThreadPool();
 
-    static const uint32_t kTickThreadPoolCount = 1U;
     static const uint64_t kTickSleepUs = 50000ull;
 
     void Ticking(uint8_t thread_idx);

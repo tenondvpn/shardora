@@ -1,5 +1,8 @@
 #pragma once
 
+#include <condition_variable>
+#include <mutex>
+
 #include "common/utils.h"
 #include "common/thread_safe_queue.h"
 #include "common/tick.h"
@@ -46,6 +49,12 @@ private:
     typedef common::ThreadSafeQueue<transport::MessagePtr> BroadcastQueue;
     BroadcastQueue* broadcast_queue_ = nullptr;
     common::Tick broadcast_tick_;
+
+    // broadcast con and mutex
+    uint8_t broadcast_thread_index_ = 0;
+    std::condition_variable broadcast_con_;
+    std::mutex broadcast_mu_;
+    std::shared_ptr<std::thread> broadcast_thread_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(Route);
 };

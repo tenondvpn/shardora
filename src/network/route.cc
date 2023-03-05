@@ -28,9 +28,9 @@ void Route::Init() {
             common::kNetworkMessage,
             std::bind(&Route::HandleDhtMessage, this, std::placeholders::_1));
     broadcast_ = std::make_shared<broadcast::FilterBroadcast>();
-    broadcast_tick_.CutOff(
-        kBroadcastPeriod,
-        std::bind(&Route::Broadcasting, this, std::placeholders::_1));
+    broadcast_thread_index_ = common::GlobalInfo::Instance()->message_handler_thread_count() + 3 +
+        common::GlobalInfo::Instance()->tick_thread_pool_count();
+    broadcast_thread_ = std::make_shared<std::thread>(std::bind(&Route::Broadcasting, this));
 }
 
 void Route::Destroy() {
@@ -100,18 +100,19 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
     message_processor_[header.type()](header_ptr);
     if (header.has_broadcast()) {
         broadcast_queue_[header_ptr->thread_idx].push(header_ptr);
+        broadcast_con_.notify_one();
     }
 }
 
-void Route::Broadcasting(uint8_t thread_idx) {
-    bool has_data = false;
+void Route::Broadcasting() {
     while (true) {
+        bool has_data = false;
         for (uint32_t i = 0;
                 i < common::GlobalInfo::Instance()->message_handler_thread_count(); ++i) {
             while (broadcast_queue_[i].size() > 0) {
                 transport::MessagePtr msg_ptr;
                 if (broadcast_queue_[i].pop(&msg_ptr)) {
-                    msg_ptr->thread_idx = thread_idx;
+                    msg_ptr->thread_idx = broadcast_thread_index_;
                     Broadcast(msg_ptr);
                     if (!has_data) {
                         has_data = true;
@@ -124,12 +125,9 @@ void Route::Broadcasting(uint8_t thread_idx) {
             break;
         }
 
-        has_data = false;
+        std::unique_lock<std::mutex> lock(broadcast_mu_);
+        broadcast_con_.wait_for(lock, std::chrono::milliseconds(10));
     }
-
-    broadcast_tick_.CutOff(
-        kBroadcastPeriod,
-        std::bind(&Route::Broadcasting, this, std::placeholders::_1));
 }
 
 void Route::HandleDhtMessage(const transport::MessagePtr& header_ptr) {

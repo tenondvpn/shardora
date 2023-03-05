@@ -118,11 +118,16 @@ public:
         return message_handler_thread_count_;
     }
 
+    uint32_t tick_thread_pool_count() {
+        return kTickThreadPoolCount;
+    }
+
 private:
     GlobalInfo();
     ~GlobalInfo();
 
     static const uint32_t kDefaultTestNetworkShardId = 4u;
+    static const uint32_t kTickThreadPoolCount = 1U;
 
     std::string config_local_ip_;
     std::string tcp_spec_;
