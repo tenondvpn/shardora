@@ -50,9 +50,11 @@ struct HeightItem {
 static const uint32_t kStatisticMaxCount = 3u;
 
 struct ToTxsItem {
+    ToTxsItem() : tx_ptr(nullptr), tx_count(0), in_consensus(false) {}
     pools::TxItemPtr tx_ptr;
     std::string to_txs_hash;
     uint32_t tx_count;
+    bool in_consensus;
 };
 
 struct StatisticElectItem {

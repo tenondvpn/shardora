@@ -211,6 +211,10 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeig
         }
     }
 
+    if (acc_amount_map.empty()) {
+        return kPoolsError;
+    }
+
     std::string str_for_hash;
     str_for_hash.reserve(common::kImmutablePoolSize * 8 + acc_amount_map.size() * 48);
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
@@ -286,6 +290,10 @@ int ToTxsPools::BackupCreateToTx(
         }
     }
 
+    if (acc_amount_map.empty()) {
+        return kPoolsError;
+    }
+
     std::string str_for_hash;
     str_for_hash.reserve(common::kImmutablePoolSize * 8 + acc_amount_map.size() * 48);
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
@@ -301,9 +309,7 @@ int ToTxsPools::BackupCreateToTx(
         to_item->set_amount(iter->second);
     }
 
-    auto tx_count = to_tx.tos_size();
-    str_for_hash.append((char*)&tx_count, sizeof(tx_count));
-    to_heights.set_tx_count(tx_count);
+    to_heights.set_tx_count(to_tx.tos_size());
     auto tos_hash = common::Hash::keccak256(str_for_hash);
     to_tx.set_heights_hash(tos_hash);
     auto val = to_tx.SerializeAsString();
