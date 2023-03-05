@@ -31,7 +31,9 @@ public:
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<pools::TxPoolManager>& pools_mgr,
         const std::string& local_id);
-    void NetworkNewBlock(const std::shared_ptr<block::protobuf::Block>& block_item);
+    void NetworkNewBlock(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block_item);
     void ConsensusAddBlock(
         uint8_t thread_idx,
         const BlockToDbItemPtr& block_item);
@@ -57,8 +59,9 @@ private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
     void HandleToTxsMessage(const transport::MessagePtr& msg_ptr);
-        void HandleAllConsensusBlocks();
+    void HandleAllConsensusBlocks(uint8_t thread_idx);
     void AddNewBlock(
+        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBach& db_batch);
     void AddAllAccount(

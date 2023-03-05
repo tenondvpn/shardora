@@ -48,7 +48,7 @@ int BlockManager::Init(
 }
 
 void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
-    NetworkNewBlock(nullptr);
+    NetworkNewBlock(msg_ptr->thread_idx, nullptr);
     if (to_tx_leader_ == nullptr) {
         return;
     }
@@ -86,14 +86,15 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void BlockManager::NetworkNewBlock(
+        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item) {
     if (block_item != nullptr) {
         db::DbWriteBach db_batch;
         AddAllAccount(block_item, db_batch);
-        AddNewBlock(block_item, db_batch);
+        AddNewBlock(thread_idx, block_item, db_batch);
     }
 
-    HandleAllConsensusBlocks();
+    HandleAllConsensusBlocks(thread_idx);
 }
 
 void BlockManager::ConsensusAddBlock(
@@ -102,13 +103,13 @@ void BlockManager::ConsensusAddBlock(
     consensus_block_queues_[thread_idx].push(block_item);
 }
 
-void BlockManager::HandleAllConsensusBlocks() {
+void BlockManager::HandleAllConsensusBlocks(uint8_t thread_idx) {
     auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count();
     for (int32_t i = 0; i < thread_count; ++i) {
         while (consensus_block_queues_[i].size() > 0) {
             BlockToDbItemPtr db_item_ptr = nullptr;
             if (consensus_block_queues_[i].pop(&db_item_ptr)) {
-                AddNewBlock(db_item_ptr->block_ptr, db_item_ptr->db_batch);
+                AddNewBlock(thread_idx, db_item_ptr->block_ptr, db_item_ptr->db_batch);
             }
         }
     }
@@ -159,19 +160,7 @@ void BlockManager::HandleNormalToTx(
     }
 
     std::unordered_map<std::string, std::pair<uint64_t, uint32_t>> addr_amount_map;
-    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-        for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
-            if (to_txs.tos(i).amount() > 0) {
-                auto account_info = GetAcountInfo(thread_idx, to_txs.tos(i).des());
-                if (account_info == nullptr) {
-                    // create address
-                    continue;
-                } else {
-                    // just set to
-                }
-            }
-        }
-    } else {
+    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
             if (to_txs.tos(i).amount() > 0) {
                 // dispatch to txs to tx pool
@@ -249,6 +238,7 @@ void BlockManager::HandleNormalToTx(
 }
 
 void BlockManager::AddNewBlock(
+        uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBach& db_batch) {
     if (block_item->network_id() == common::GlobalInfo::Instance()->network_id()) {
