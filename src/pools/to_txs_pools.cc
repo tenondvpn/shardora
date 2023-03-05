@@ -185,7 +185,7 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeig
     std::map<std::string, uint64_t> acc_amount_map;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto pool_iter = net_iter->second.find(i);
-        if (pool_iter == net_iter->second.end()) {
+        if (pool_iter == net_iter->second.end() || acc_amount_map.size() >= kMaxToTxsCount) {
             if (handled_iter == handled_map_.end()) {
                 to_heights.add_heights(0);
             } else {
@@ -226,6 +226,9 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeig
         to_item->set_amount(iter->second);
     }
 
+    auto tx_count = to_tx.tos_size();
+    str_for_hash.append((char*)&tx_count, sizeof(tx_count));
+    to_heights.set_tx_count(tx_count);
     auto tos_hash = common::Hash::keccak256(str_for_hash);
     to_tx.set_heights_hash(tos_hash);
     auto val = to_tx.SerializeAsString();
@@ -237,7 +240,7 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeig
 int ToTxsPools::BackupCreateToTx(
         uint32_t sharding_id,
         const pools::protobuf::ToTxHeights& leader_to_heights,
-        pools::protobuf::TxMessage* tx) {
+        pools::protobuf::ToTxHeights* heights) {
     pools::protobuf::ToTxMessage to_tx;
     auto net_iter = network_txs_pools_.find(sharding_id);
     if (net_iter == network_txs_pools_.end()) {
@@ -249,7 +252,7 @@ int ToTxsPools::BackupCreateToTx(
     }
 
     auto handled_iter = handled_map_.find(sharding_id);
-    pools::protobuf::ToTxHeights to_heights;
+    pools::protobuf::ToTxHeights& to_heights = *heights;
     to_heights.set_sharding_id(sharding_id);
     std::map<std::string, uint64_t> acc_amount_map;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
@@ -298,22 +301,14 @@ int ToTxsPools::BackupCreateToTx(
         to_item->set_amount(iter->second);
     }
 
+    auto tx_count = to_tx.tos_size();
+    str_for_hash.append((char*)&tx_count, sizeof(tx_count));
+    to_heights.set_tx_count(tx_count);
     auto tos_hash = common::Hash::keccak256(str_for_hash);
     to_tx.set_heights_hash(tos_hash);
     auto val = to_tx.SerializeAsString();
-//     auto tos_hash = common::Hash::keccak256(val);
     to_heights.set_tos_hash(tos_hash);
     prefix_db_->SaveTemporaryKv(tos_hash, val);
-    tx->set_key(protos::kNormalTos);
-    tx->set_value(to_heights.SerializeAsString());
-    tx->set_pubkey("");
-    tx->set_to("");
-    tx->set_step(pools::protobuf::kNormalTo);
-    auto gid = common::Hash::keccak256(tos_hash + std::to_string(sharding_id));
-    tx->set_gas_limit(0);
-    tx->set_amount(0);
-    tx->set_gas_price(common::kBuildinTransactionGasPrice);
-    tx->set_gid(gid);
     return kPoolsSuccess;
 }
 

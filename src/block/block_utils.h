@@ -48,6 +48,12 @@ struct HeightItem {
 
 static const uint32_t kStatisticMaxCount = 3u;
 
+struct ToTxsItem {
+    pools::TxItemPtr tx_ptr;
+    std::string to_txs_hash;
+    uint32_t tx_count;
+};
+
 struct StatisticElectItem {
     StatisticElectItem() : elect_height(0) {
         memset(succ_tx_count, 0, sizeof(succ_tx_count));

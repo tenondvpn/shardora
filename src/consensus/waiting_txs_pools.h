@@ -64,6 +64,7 @@ public:
             txs_item->pool_index = pool_index;
             txs_item->txs[tx_ptr->tx_hash] = tx_ptr;
             txs_item->tx_type = pools::protobuf::kNormalTo;
+            ZJC_DEBUG("success get to tx.");
             return txs_item;
         }
 

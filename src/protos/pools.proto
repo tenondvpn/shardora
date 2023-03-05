@@ -22,6 +22,7 @@ message ToTxHeights {
     optional bytes tos_hash = 4;
     optional bytes leader_id = 5;
     optional uint64 elelct_height = 6;
+    optional uint32 tx_count = 7;
 }
 
 message ToTxMessageItem {

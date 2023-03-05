@@ -85,8 +85,9 @@ private:
     common::BftMemberPtr to_tx_leader_ = nullptr;
     uint32_t max_consensus_sharding_id_ = 3;
     std::string local_id_;
-    pools::TxItemPtr to_txs_[network::kConsensusShardEndNetworkId] = { nullptr };
+    std::shared_ptr<ToTxsItem> to_txs_[network::kConsensusShardEndNetworkId] = { nullptr };
     uint32_t to_tx_pools_index_[common::kImmutablePoolSize] = { 0 };
+    std::string prev_to_tx_hashs[common::kImmutablePoolSize];
     pools::CreateConsensusItemFunction create_to_tx_cb_ = nullptr;
 
 #ifdef ZJC_UNITTEST

@@ -217,6 +217,10 @@ void BlockManager::HandleNormalToTx(
         to_item->set_amount(iter->second.first);
     }
 
+    if (!to_tx_map.empty()) {
+        to_txs_[common::GlobalInfo::Instance()->network_id()] = nullptr;
+    }
+
     for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
         auto val = iter->second.SerializeAsString();
         auto tos_hash = common::Hash::keccak256(val);
@@ -286,16 +290,41 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
 
     for (int32_t i = 0; i < msg_ptr->header.block_proto().to_txs_size(); ++i) {
         auto& heights = msg_ptr->header.block_proto().to_txs(i);
-        auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-        auto& tx = *new_msg_ptr->header.mutable_tx_proto();
+        pools::protobuf::ToTxHeights to_heights;
         if (to_txs_pool_->BackupCreateToTx(
                 heights.sharding_id(),
                 heights,
-                &tx) != pools::kPoolsSuccess) {
+                &to_heights) != pools::kPoolsSuccess) {
             continue;
         }
 
-        to_txs_[heights.sharding_id()] = create_to_tx_cb_(new_msg_ptr);
+        if (to_heights.tos_hash().empty()) {
+            continue;
+        }
+
+        if (to_txs_[heights.sharding_id()] != nullptr &&
+                to_txs_[heights.sharding_id()]->to_txs_hash == to_heights.tos_hash()) {
+            continue;
+        }
+
+        prev_to_tx_hashs[heights.sharding_id()] = to_heights.tos_hash();
+        auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+        auto& tx = *new_msg_ptr->header.mutable_tx_proto();
+        tx->set_key(protos::kNormalTos);
+        tx->set_value(to_heights.SerializeAsString());
+        tx->set_pubkey("");
+        tx->set_to("");
+        tx->set_step(pools::protobuf::kNormalTo);
+        auto gid = common::Hash::keccak256(tos_hash + std::to_string(sharding_id));
+        tx->set_gas_limit(0);
+        tx->set_amount(0);
+        tx->set_gas_price(common::kBuildinTransactionGasPrice);
+        tx->set_gid(gid);
+        to_txs_[heights.sharding_id()] = std::make_shared<ToTxsItem>();
+        to_txs_[heights.sharding_id()]->tx_ptr = create_to_tx_cb_(new_msg_ptr);
+        to_txs_[heights.sharding_id()]->to_txs_hash = to_heights.tos_hash();
+        to_txs_[heights.sharding_id()]->tx_count = to_heights.tx_count();
+
         ZJC_DEBUG("follower success add txs");
     }
 }
@@ -306,7 +335,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index) {
         if (mod_idx == pool_index) {
             if (to_tx_pools_index_[pool_index] != i && to_txs_[i] != nullptr) {
                 to_tx_pools_index_[pool_index] = i;
-                return to_txs_[i];
+                return to_txs_[i].tx_ptr;
             }
         }
     }
@@ -351,6 +380,16 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
             continue;
         }
 
+        if (to_heights.tos_hash().empty()) {
+            block_msg.mutable_to_txs()->RemoveLast();
+            continue;
+        }
+
+        if (to_txs_[i] != nullptr && to_txs_[i]->to_txs_hash == to_heights.tos_hash()) {
+            block_msg.mutable_to_txs()->RemoveLast();
+            continue;
+        }
+
         auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
         auto* tx = new_msg_ptr->header.mutable_tx_proto();
         tx->set_key(protos::kNormalTos);
@@ -363,7 +402,10 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
-        to_txs_[i] = create_to_tx_cb_(new_msg_ptr);
+        to_txs_[i] = std::make_shared<ToTxsItem>();
+        to_txs_[i]->tx_ptr = create_to_tx_cb_(new_msg_ptr);
+        to_txs_[i]->to_txs_hash = to_heights.tos_hash();
+        to_txs_[i]->tx_count = to_heights.tx_count();
     }
 
     if (block_msg.to_txs_size() <= 0) {
