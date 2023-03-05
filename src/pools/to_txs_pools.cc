@@ -230,8 +230,6 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeig
         to_item->set_amount(iter->second);
     }
 
-    auto tx_count = to_tx.tos_size();
-    str_for_hash.append((char*)&tx_count, sizeof(tx_count));
     to_heights.set_tx_count(tx_count);
     auto tos_hash = common::Hash::keccak256(str_for_hash);
     to_tx.set_heights_hash(tos_hash);
