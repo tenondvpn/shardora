@@ -17,6 +17,7 @@
 #include "common/user_property_key_define.h"
 #include "common/utils.h"
 #include "db/db.h"
+#include "pools/tx_utils.h"
 #include "protos/block.pb.h"
 
 #define BLOCK_DEBUG(fmt, ...) ZJC_DEBUG("[block]" fmt, ## __VA_ARGS__)

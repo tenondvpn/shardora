@@ -309,13 +309,14 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
 
         prev_to_tx_hashs[heights.sharding_id()] = to_heights.tos_hash();
         auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-        auto& tx = *new_msg_ptr->header.mutable_tx_proto();
+        auto* tx = new_msg_ptr->header.mutable_tx_proto();
         tx->set_key(protos::kNormalTos);
         tx->set_value(to_heights.SerializeAsString());
         tx->set_pubkey("");
         tx->set_to("");
         tx->set_step(pools::protobuf::kNormalTo);
-        auto gid = common::Hash::keccak256(tos_hash + std::to_string(sharding_id));
+        auto gid = common::Hash::keccak256(
+            to_heights.tos_hash() + std::to_string(heights.sharding_id()));
         tx->set_gas_limit(0);
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
@@ -335,7 +336,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index) {
         if (mod_idx == pool_index) {
             if (to_tx_pools_index_[pool_index] != i && to_txs_[i] != nullptr) {
                 to_tx_pools_index_[pool_index] = i;
-                return to_txs_[i].tx_ptr;
+                return to_txs_[i]->tx_ptr;
             }
         }
     }

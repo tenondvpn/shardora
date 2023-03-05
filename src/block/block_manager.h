@@ -50,7 +50,6 @@ public:
         create_to_tx_cb_ = func;
     }
 
-
     void CreateToTx(uint8_t thread_idx);
     void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
     pools::TxItemPtr GetToTx(uint32_t pool_index);
