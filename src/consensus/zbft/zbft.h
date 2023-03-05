@@ -423,6 +423,8 @@ protected:
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::string precommit_bls_agg_verify_hash_;
     std::string commit_bls_agg_verify_hash_;
+    libff::alt_bn128_G1 prepare_hash_;
+    libff::alt_bn128_G1 precommit_hash_;
 
 public:
     inline void set_test_times(uint32_t index) {

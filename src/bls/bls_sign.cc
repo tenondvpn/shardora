@@ -15,12 +15,11 @@ void BlsSign::Sign(
         uint32_t t,
         uint32_t n,
         const libff::alt_bn128_Fr& secret_key,
-        const std::string& message,
+        const libff::alt_bn128_G1& g1_hash,
         libff::alt_bn128_G1* sign) {
     try {
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
-        libff::alt_bn128_G1 hash = bls_instance.Hashing(message);
-        *sign = bls_instance.Signing(hash, secret_key);
+        *sign = bls_instance.Signing(g1_hash, secret_key);
     } catch (std::exception& e) {
         BLS_ERROR("sign message failed: %s", e.what());
         *sign = libff::alt_bn128_G1::zero();
@@ -49,12 +48,12 @@ int BlsSign::Verify(
         uint32_t t,
         uint32_t n,
         const libff::alt_bn128_G1& sign,
-        const std::string& message,
+        const libff::alt_bn128_G1& g1_hash,
         const libff::alt_bn128_G2& pkey,
         std::string* verify_hash) try {
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
     libff::alt_bn128_GT res;
-    if (!bls_instance.Verification(message, sign, pkey, &res)) {
+    if (!bls_instance.Verification(g1_hash, sign, pkey, &res)) {
         BLS_ERROR("bls_instance.Verification error.");
         return kBlsError;
     }
@@ -69,12 +68,12 @@ int BlsSign::Verify(
 int BlsSign::GetVerifyHash(
         uint32_t t,
         uint32_t n,
-        const std::string& message,
+        const libff::alt_bn128_G1& g1_hash,
         const libff::alt_bn128_G2& pkey,
         std::string* verify_hash) try {
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
     libff::alt_bn128_GT res;
-    if (!bls_instance.GetVerifyHash(message, pkey, &res)) {
+    if (!bls_instance.GetVerifyHash(g1_hash, pkey, &res)) {
         BLS_ERROR("bls_instance.Verification error.");
         return kBlsError;
     }
@@ -89,12 +88,11 @@ int BlsSign::GetVerifyHash(
 int BlsSign::GetVerifyHash(
         uint32_t t,
         uint32_t n,
-        const std::string& message,
         const libff::alt_bn128_G1& sign,
         std::string* verify_hash) try {
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
     libff::alt_bn128_GT res;
-    if (!bls_instance.GetVerifyHash(message, sign, &res)) {
+    if (!bls_instance.GetVerifyHash(sign, &res)) {
         BLS_ERROR("bls_instance.Verification error.");
         return kBlsError;
     }
@@ -103,6 +101,14 @@ int BlsSign::GetVerifyHash(
     return kBlsSuccess;
 } catch (std::exception& e) {
     BLS_ERROR("sign message failed: %s", e.what());
+    return kBlsError;
+}
+
+int BlsSign::GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g1_hash)  try {
+    *g1_hash = libBLS::Bls::Hashing(str_hash);
+    return kBlsSuccess;
+} catch (std::exception& e) {
+    BLS_ERROR("hash message failed: %s", e.what());
     return kBlsError;
 }
 

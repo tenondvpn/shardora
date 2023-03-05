@@ -124,27 +124,21 @@ int BlsManager::Verify(
         uint32_t n,
         const libff::alt_bn128_G2& pubkey,
         const libff::alt_bn128_G1& sign,
-        const std::string& sign_msg,
+        const libff::alt_bn128_G1& g1_hash,
         std::string* verify_hash) try {
     if (pubkey == libff::alt_bn128_G2::zero()) {
         auto sign_ptr = const_cast<libff::alt_bn128_G1*>(&sign);
         sign_ptr->to_affine_coordinates();
         auto sign_x = libBLS::ThresholdUtils::fieldElementToString(sign_ptr->X);
         auto sign_y = libBLS::ThresholdUtils::fieldElementToString(sign_ptr->Y);
-        BLS_ERROR("public key error: zero,msg hash: %s, sign x: %s, sign y: %s",
-            common::Encode::HexEncode(sign_msg).c_str(),
+        BLS_ERROR("public key error: zero,msg sign x: %s, sign y: %s",
             sign_x.c_str(),
             sign_y.c_str());
         return kBlsError;
     }
 
-    //     std::lock_guard<std::mutex> guard(sign_mutex_);
-    if (sign_msg.size() != 32) {
-        BLS_ERROR("sign message error: %s", common::Encode::HexEncode(sign_msg));
-        return kBlsError;
-    }
-
-    return BlsSign::Verify(t, n, sign, sign_msg, pubkey, verify_hash);
+   
+    return BlsSign::Verify(t, n, sign, g1_hash, pubkey, verify_hash);
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
     return kBlsError;
@@ -153,20 +147,13 @@ int BlsManager::Verify(
 int BlsManager::GetVerifyHash(
             uint32_t t,
             uint32_t n,
-            const std::string& sign_msg,
-            const libff::alt_bn128_G2& pkey,
+        const libff::alt_bn128_G1& g1_hash,
+        const libff::alt_bn128_G2& pkey,
             std::string* verify_hash) try {
     if (pkey == libff::alt_bn128_G2::zero()) {
         return kBlsError;
     }
-
-    //     std::lock_guard<std::mutex> guard(sign_mutex_);
-    if (sign_msg.size() != 32) {
-        BLS_ERROR("sign message error: %s", common::Encode::HexEncode(sign_msg));
-        return kBlsError;
-    }
-
-    return BlsSign::GetVerifyHash(t, n, sign_msg, pkey, verify_hash);
+    return BlsSign::GetVerifyHash(t, n, g1_hash, pkey, verify_hash);
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
     return kBlsError;
@@ -175,20 +162,13 @@ int BlsManager::GetVerifyHash(
 int BlsManager::GetVerifyHash(
         uint32_t t,
         uint32_t n,
-        const std::string& sign_msg,
         const libff::alt_bn128_G1& sign,
         std::string* verify_hash) try {
     if (sign == libff::alt_bn128_G1::zero()) {
         return kBlsError;
     }
 
-    //     std::lock_guard<std::mutex> guard(sign_mutex_);
-    if (sign_msg.size() != 32) {
-        BLS_ERROR("sign message error: %s", common::Encode::HexEncode(sign_msg));
-        return kBlsError;
-    }
-
-    return BlsSign::GetVerifyHash(t, n, sign_msg, sign, verify_hash);
+    return BlsSign::GetVerifyHash(t, n, sign, verify_hash);
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
     return kBlsError;

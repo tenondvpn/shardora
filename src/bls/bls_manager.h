@@ -32,32 +32,31 @@ public:
         uint32_t t,
         uint32_t n,
         const libff::alt_bn128_Fr& local_sec_key,
-        const std::string& sign_msg,
+        const libff::alt_bn128_G1& g1_hash,
         std::string* sign_x,
         std::string* sign_y);
     int Sign(
         uint32_t t,
         uint32_t n,
         const libff::alt_bn128_Fr& sec_key,
-        const std::string& sign_msg,
+        const libff::alt_bn128_G1& g1_hash,
         libff::alt_bn128_G1* bn_sign);
     int Verify(
         uint32_t t,
         uint32_t n,
         const libff::alt_bn128_G2& pubkey,
         const libff::alt_bn128_G1& sign,
-        const std::string& sign_msg,
+        const libff::alt_bn128_G1& g1_hash,
         std::string* verify_hash);
     int GetVerifyHash(
         uint32_t t,
         uint32_t n,
-        const std::string& message,
+        const libff::alt_bn128_G1& g1_hash,
         const libff::alt_bn128_G2& pkey,
         std::string* verify_hash);
     static int GetVerifyHash(
         uint32_t t,
         uint32_t n,
-        const std::string& message,
         const libff::alt_bn128_G1& sign,
         std::string* verify_hash);
 
