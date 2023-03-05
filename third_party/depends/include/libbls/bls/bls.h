@@ -60,7 +60,7 @@ public:
         const libff::alt_bn128_G2& elem );
 
     static libff::alt_bn128_G1 Signing(
-        const libff::alt_bn128_G1 hash, const libff::alt_bn128_Fr secret_key );
+        const libff::alt_bn128_G1& hash, const libff::alt_bn128_Fr& secret_key );
 
     static libff::alt_bn128_G1 CoreSignAggregated(
         const std::string& message, const libff::alt_bn128_Fr secret_key );
@@ -73,12 +73,15 @@ public:
     static bool FastAggregateVerify( const std::vector< libff::alt_bn128_G2 >& public_keys,
         const std::string& message, const libff::alt_bn128_G1& signature );
 
-    static bool Verification( const std::string& to_be_hashed, const libff::alt_bn128_G1 sign,
-        const libff::alt_bn128_G2 public_key );
-    static bool Verification( const std::string& to_be_hashed, const libff::alt_bn128_G1 sign,
-        const libff::alt_bn128_G2 public_key, libff::alt_bn128_GT* sign_hash );
-    static bool GetVerifyHash( const std::string& to_be_hashed,
-        const libff::alt_bn128_G2 public_key, libff::alt_bn128_GT* sign_hash );
+    static bool Verification( const libff::alt_bn128_G1& hash, const libff::alt_bn128_G1& sign,
+        const libff::alt_bn128_G2& public_key );
+    static bool Verification( const libff::alt_bn128_G1& hash, const libff::alt_bn128_G1& sign,
+        const libff::alt_bn128_G2& public_key, libff::alt_bn128_GT* sign_hash );
+    static bool GetVerifyHash( const libff::alt_bn128_G1& hash,
+        const libff::alt_bn128_G2& public_key, libff::alt_bn128_GT* sign_hash );
+    static bool GetVerifyHash(const libff::alt_bn128_G1& sign,
+        libff::alt_bn128_GT* sign_hash );
+
 
     static bool Verification( std::shared_ptr< std::array< uint8_t, 32 > >,
         const libff::alt_bn128_G1 sign, const libff::alt_bn128_G2 public_key );
