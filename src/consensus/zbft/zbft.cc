@@ -367,15 +367,11 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
         ZJC_INFO("bls_mgr_->Verify start.");
         std::string sign_precommit_hash;
         std::cout << "0 get sign: " << std::endl;
-        if (prepare_hash_ != prpare_hash) {
-            set_prepare_hash(prpare_hash);
-        }
-
         bls_mgr_->GetVerifyHash(
             t,
             n,
             *bls_precommit_agg_sign_,
-            &g1_prepare_hash_);
+            &sign_precommit_hash);
         if (sign_precommit_hash != precommit_bls_agg_verify_hash_) {
             common_pk_.to_affine_coordinates();
             auto cpk = std::make_shared<BLSPublicKey>(common_pk_);
