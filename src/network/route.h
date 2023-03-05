@@ -40,7 +40,7 @@ private:
     void HandleMessage(const transport::MessagePtr& header);
     void HandleDhtMessage(const transport::MessagePtr& header);
     void Broadcast(const transport::MessagePtr& header);
-    void Broadcasting(uint8_t thread_idx);
+    void Broadcasting();
 
     static const uint64_t kBroadcastPeriod = 10000lu;
 
