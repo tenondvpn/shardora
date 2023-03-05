@@ -366,7 +366,6 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
         set_precoimmit_hash(common::Hash::keccak256(msg_hash_src));
         ZJC_INFO("bls_mgr_->Verify start.");
         std::string sign_precommit_hash;
-        std::cout << "0 get sign: " << std::endl;
         bls_mgr_->GetVerifyHash(
             t,
             n,
@@ -384,16 +383,6 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
                 elect_height_, network_id_, common::Encode::HexEncode(prpare_hash).c_str());
             assert(false);
             return kConsensusError;
-//         } else {
-//             common_pk_.to_affine_coordinates();
-//             auto cpk = std::make_shared<BLSPublicKey>(common_pk_);
-//             auto cpk_strs = cpk->toString();
-//             ZJC_DEBUG("success leader verify leader precommit agg sign! t: %u, n: %u,"
-//                 "common public key: %s, %s, %s, %s, elect height: %lu,"
-//                 "network id: %u, prepare hash: %s",
-//                 t, n, cpk_strs->at(0).c_str(), cpk_strs->at(1).c_str(),
-//                 cpk_strs->at(2).c_str(), cpk_strs->at(3).c_str(),
-//                 elect_height_, network_id_, common::Encode::HexEncode(prpare_hash).c_str());
         }
 
         ZJC_INFO("bls_mgr_->Verify over.");
@@ -410,24 +399,6 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
         }
 
         prepare_latest_height_ = max_height;
-//         for (int32_t i = 0; i < iter->second->prpare_block->prepare_txs_size(); ++i) {
-//             auto tx_info = pools_mgr_->GetTx(
-//                 txs_ptr_->pool_index,
-//                 iter->second->prpare_block->prepare_txs(i).gid());
-//             if (!tx_info) {
-//                 ZJC_ERROR("get tx failed pool: %d, gid: %s",
-//                     txs_ptr_->pool_index,
-//                     common::Encode::HexEncode(
-//                         iter->second->prpare_block->prepare_txs(i).gid()).c_str());
-//                 assert(false);
-//                 continue;
-//             } else {
-//                 ZJC_DEBUG("get tx success pool: %d, gid: %s",
-//                     txs_ptr_->pool_index,
-//                     common::Encode::HexEncode(
-//                         iter->second->prpare_block->prepare_txs(i).gid()).c_str());
-//             }
-//         }
     } catch (std::exception& e) {
         ZJC_ERROR("catch bls exception: %s", e.what());
         return kConsensusError;
@@ -501,7 +472,6 @@ int Zbft::LeaderCreateCommitAggSign() {
         commit_hash_ = common::Hash::Hash256(msg_hash_src);
         ZJC_INFO("commit verify start,");
         std::string sign_commit_hash;
-        std::cout << "1 get sign: " << std::endl;
         bls_mgr_->GetVerifyHash(
             t,
             n,
@@ -584,21 +554,6 @@ int Zbft::DoTransaction(hotstuff::protobuf::LeaderTxPrepare& ltx_prepare) {
     set_prepare_hash(zjc_block.hash());
     return kConsensusSuccess;
 }
-
-// std::shared_ptr<hotstuff::protobuf::HotstuffLeaderPrepare> Zbft::CreatePrepareTxInfo(
-//         std::shared_ptr<block::protobuf::Block>& block_ptr,
-//         hotstuff::protobuf::LeaderTxPrepare& ltx_prepare) {
-//     std::string tbft_prepare_txs_str_for_hash;
-//     auto prepare = ltx_prepare.mutable_prepare();
-//     if (block_ptr->tx_list_size() <= 0) {
-//         return nullptr;
-//     }
-// 
-//     prepare->set_prepare_final_hash(block_ptr->hash());
-//     prepare->set_height(block_ptr->height());
-//     set_prepare_hash(prepare->prepare_final_hash());
-//     return std::make_shared<hotstuff::protobuf::HotstuffLeaderPrepare>(*prepare);
-// }
 
 void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
     auto tx_list = zjc_block.mutable_tx_list();

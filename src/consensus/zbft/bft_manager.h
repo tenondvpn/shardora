@@ -43,16 +43,9 @@ public:
     int Start(uint8_t thread_index, transport::MessagePtr& prepare_msg_ptr);
     BftManager();
     virtual ~BftManager();
-
-    // load bft code by bft addr
     int AddBft(ZbftPtr& bft_ptr);
     ZbftPtr GetBft(uint8_t thread_index, const std::string& gid, bool leader);
     uint32_t GetMemberIndex(uint32_t network_id, const std::string& node_id);
-    common::MembersPtr GetNetworkMembers(uint32_t network_id);
-    int AddKeyValueSyncBlock(
-        const transport::protobuf::Header& header,
-        std::shared_ptr<block::protobuf::Block>& block_ptr);
-    void RootCommitAddNewAccount(const block::protobuf::Block& block, db::DbWriteBach& db_batch);
 
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
@@ -66,27 +59,14 @@ private:
     int LeaderCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     void CheckTimeout(uint8_t thread_index);
-    int VerifyBlsAggSignature(
-        ZbftPtr& bft_ptr,
-        const hotstuff::protobuf::HotstuffMessage& bft_msg,
-        const std::string& sign_hash);
-    int CreateGenisisBlock(const transport::MessagePtr& msg_ptr);
-    bool AggSignValid(uint32_t thread_idx, uint32_t type, const block::protobuf::Block& block);
     int LeaderCallPrecommit(ZbftPtr& bft_ptr);
     int LeaderCallCommit(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
     ZbftPtr CreateBftPtr(const transport::MessagePtr& msg_ptr);
     void HandleHotstuffMessage(
         ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr);
-    void BackupPrepareOppose(
-        ZbftPtr& bft_ptr,
-        const transport::MessagePtr& msg_ptr,
-        const std::string& res_data);
     int LeaderCallPrecommitOppose(const ZbftPtr& bft_ptr);
     int LeaderCallCommitOppose(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
-    bool VerifyAggSignWithMembers(
-        const common::MembersPtr& members,
-        const block::protobuf::Block& block);
     void BackupSendOppose(
         const transport::MessagePtr& msg_ptr,
         ZbftPtr& bft_ptr);
@@ -130,7 +110,6 @@ private:
     common::Tick block_to_db_tick_;
     common::Tick verify_block_tick_;
     common::Tick leader_resend_tick_;
-//     common::LimitHashMap<std::string, BftItemPtr> bft_gid_map_{ 102400 };
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;

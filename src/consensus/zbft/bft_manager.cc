@@ -571,113 +571,6 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
     return bft_ptr;
 }
 
-// bool BftManager::VerifyAggSignWithMembers(
-//         const common::MembersPtr& members,
-//         const block::protobuf::Block& block) {
-//     auto hash = GetBlockHash(block);
-//     //     for (int32_t i = 0; i < block.bitmap_size(); ++i) {
-// //         block_hash += std::to_string(block.bitmap(i));
-// //     }
-// // 
-// //     auto hash = common::Hash::Hash256(block_hash);
-//     libff::alt_bn128_G1 sign;
-//     try {
-//         sign.X = libff::alt_bn128_Fq(block.bls_agg_sign_x().c_str());
-//         sign.Y = libff::alt_bn128_Fq(block.bls_agg_sign_y().c_str());
-//         sign.Z = libff::alt_bn128_Fq::one();
-//     } catch (std::exception& e) {
-//         ZJC_ERROR("get invalid bls sign.");
-//         return kConsensusError;
-//     }
-// 
-//     uint32_t t = common::GetSignerCount(members->size());
-//     uint32_t n = members->size();
-//     std::string verify_hash;
-//     if (bls_mgr_->Verify(
-//             t,
-//             n,
-//             elect_mgr_->GetCommonPublicKey(
-//             block.electblock_height(),
-//             block.network_id()),
-//             sign,
-//             hash,
-//             &verify_hash) != bls::kBlsSuccess) {
-//         auto tmp_block_hash = GetBlockHash(block);
-//         ZJC_ERROR("VerifyAggSignWithMembers agg sign failed!prepare hash: %s, agg sign hash: %s,"
-//             "t: %u, n: %u, elect height: %lu, network id: %u, agg x: %s, agg y: %s",
-//             common::Encode::HexEncode(tmp_block_hash).c_str(),
-//             common::Encode::HexEncode(hash).c_str(),
-//             t, n, block.electblock_height(), block.network_id(),
-//             block.bls_agg_sign_x().c_str(),
-//             block.bls_agg_sign_y().c_str());
-//         return false;
-//     }
-// 
-//     return true;
-// }
-// 
-// bool BftManager::AggSignValid(
-//         uint32_t thread_idx,
-//         uint32_t type,
-//         const block::protobuf::Block& block) {
-//     assert(thread_idx < common::kMaxThreadCount);
-//     if (!block.has_bls_agg_sign_x() ||
-//             !block.has_bls_agg_sign_y() ||
-//             block.precommit_bitmap_size() <= 0) {
-//         ZJC_ERROR("commit must have agg sign. block.has_bls_agg_sign_y(): %d,"
-//             "block.has_bls_agg_sign_y(): %d, block.bitmap_size(): %u",
-//             block.has_bls_agg_sign_x(), block.has_bls_agg_sign_y(), block.precommit_bitmap_size());
-//         return false;
-//     }
-// 
-//     auto members = elect_mgr_->GetNetworkMembersWithHeight(
-//         block.electblock_height(),
-//         block.network_id(),
-//         nullptr,
-//         nullptr);
-//     if (members == nullptr) {
-//         // The election block arrives later than the consensus block,
-//         // causing the aggregate signature verification to fail
-//         // add to waiting verify pool.
-//         auto block_ptr = std::make_shared<block::protobuf::Block>(block);
-// //         waiting_verify_block_queue_[thread_idx].push(
-// //             std::make_shared<WaitingBlockItem>(block_ptr, type));
-//         return false;
-//     }
-// 
-//     return VerifyAggSignWithMembers(members, block);
-// }
-
-common::MembersPtr BftManager::GetNetworkMembers(uint32_t network_id) {
-    return elect_mgr_->GetNetworkMembers(network_id);
-}
-
-void BftManager::RootCommitAddNewAccount(
-        const block::protobuf::Block& block,
-        db::DbWriteBach& db_batch) {
-    auto& tx_list = block.tx_list();
-    if (tx_list.empty()) {
-        ZJC_ERROR("to has no transaction info!");
-        return;
-    }
-
-    for (int32_t i = 0; i < tx_list.size(); ++i) {
-        if (tx_list[i].status() != 0) {
-            continue;
-        }
-
-        // db::DbWriteBach db_batch;
-        // if (block::AccountManager::Instance()->AddNewAccount(
-        //         tx_list[i],
-        //         block.height(),
-        //         block.hash(),
-        //         db_batch) != block::kBlockSuccess) {
-        //     ZJC_ERROR("add new account failed");
-        //     continue;
-        // }
-    }
-}
-
 int BftManager::AddBft(ZbftPtr& bft_ptr) {
     auto gid = bft_ptr->gid();
     if (bft_ptr->this_node_is_leader()) {
@@ -793,9 +686,6 @@ int BftManager::BackupPrepare(
         bft_ptr,
         true,
         backup_msg_ptr->header);
-//     ZJC_DEBUG("bft backup prepare success! agree bft gid: %s, from: %s:%d",
-//         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-//         msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort());
     if (!res) {
         ZJC_ERROR("message set data failed!");
         return kConsensusError;
@@ -942,11 +832,6 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
             common::Encode::HexEncode(bft_ptr->gid()).c_str());
         return kConsensusError;
     }
-//     if (VerifyBlsAggSignature(bft_ptr, bft_msg, bft_ptr->local_prepare_hash()) != kConsensusSuccess) {
-//         ZJC_INFO("VerifyBlsAggSignature error gid: %s",
-//             common::Encode::HexEncode(bft_ptr->gid()).c_str());
-//         return kConsensusError;
-//     }
 
 #ifdef ZJC_UNITTEST
     if (test_for_precommit_evil_) {
@@ -963,7 +848,7 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
     for (int32_t i = 0; i < bft_msg.bitmap_size(); ++i) {
         auto data = bft_msg.bitmap(i);
         bitmap_data.push_back(data);
-        msg_hash_src.append((char*)&data, sizeof(data));// std::to_string(bft_msg.bitmap(i));
+        msg_hash_src.append((char*)&data, sizeof(data));
     }
 
     bft_ptr->set_precoimmit_hash(common::Hash::keccak256(msg_hash_src));
@@ -1176,9 +1061,6 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
         return kConsensusError;
     }
 
-//     if (VerifyBlsAggSignature(bft_ptr, bft_msg, bft_ptr->precommit_hash()) != kConsensusSuccess) {
-//         return kConsensusError;
-//     }
     std::vector<uint64_t> bitmap_data;
     for (int32_t i = 0; i < bft_msg.commit_bitmap_size(); ++i) {
         bitmap_data.push_back(bft_msg.commit_bitmap(i));
@@ -1218,8 +1100,6 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
 
     // start new bft
     RemoveBft(bft_ptr->thread_index(), bft_ptr->gid(), false);
-//     ZJC_DEBUG("BackupCommit success waiting pool_index: %u, bft gid: %s",
-//         bft_ptr->pool_index(), common::Encode::HexEncode(bft_ptr->gid()).c_str());
     return kConsensusSuccess;
 }
 
@@ -1252,7 +1132,6 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
     while (iter != bft_hash_map.end()) {
         int timeout_res = iter->second->CheckTimeout();
         if (timeout_res == kTimeout) {
-//             ZJC_DEBUG("timeout remove bft gid: %s", common::Encode::HexEncode(iter->first).c_str());
             bft_hash_map.erase(iter++);
             continue;
         }
@@ -1260,45 +1139,11 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
         if (timeout_res == kTimeoutCallPrecommit) {
             iter->second->AddBftEpoch();
             LeaderCallPrecommit(iter->second);
-            ZJC_DEBUG("timeout LeaderCallPrecommit: %s", common::Encode::HexEncode(iter->second->gid()).c_str());
         }
 
         ++iter;
     }
 }
-// 
-// int BftManager::VerifyBlsAggSignature(
-//         ZbftPtr& bft_ptr,
-//         const hotstuff::protobuf::HotstuffMessage& bft_msg,
-//         const std::string& sign_hash) {
-//     libff::alt_bn128_G1 sign;
-//     try {
-//         sign.X = libff::alt_bn128_Fq(bft_msg.bls_sign_x().c_str());
-//         sign.Y = libff::alt_bn128_Fq(bft_msg.bls_sign_y().c_str());
-//         sign.Z = libff::alt_bn128_Fq::one();
-//     } catch (std::exception& e) {
-//         ZJC_ERROR("get invalid bls sign.");
-//         return kConsensusError;
-//     }
-// 
-//     uint32_t t = common::GetSignerCount(bft_ptr->members_ptr()->size());
-//     uint32_t n = bft_ptr->members_ptr()->size();
-//     std::string verify_hash;
-//     if (bls_mgr_->Verify(
-//             t,
-//             n,
-//             elect_mgr_->GetCommonPublicKey(
-//             bft_ptr->elect_height(),
-//             bft_ptr->network_id()),
-//             sign,
-//             sign_hash,
-//             &verify_hash) != bls::kBlsSuccess) {
-//         ZJC_ERROR("VerifyBlsAggSignature agg sign failed!");
-//         return kConsensusError;
-//     }
-// 
-//     return kConsensusSuccess;
-// }
 
 }  // namespace consensus
 
