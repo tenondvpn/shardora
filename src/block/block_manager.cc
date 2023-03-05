@@ -133,9 +133,144 @@ void BlockManager::AddAllAccount(
     }
 }
 
+
+void BlockManager::HandleNormalToTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBach& db_batch) {
+    if (tx.storages_size() != 1) {
+        return;
+    }
+
+    pools::protobuf::ToTxHeights to_heights;
+    if (!to_heights.ParseFromString(tx.storages(0).val_hash())) {
+        return;
+    }
+
+    std::string to_txs_str;
+    if (!prefix_db_->GetTemporaryKv(to_heights.tos_hash(), &to_txs_str)) {
+        return;
+    }
+
+    pools::protobuf::ToTxMessage to_txs;
+    if (!to_txs.ParseFromString(to_txs_str)) {
+        return;
+    }
+
+    std::unordered_map<std::string, std::pair<uint64_t, uint32_t>> addr_amount_map;
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+        for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
+            if (to_txs.tos(i).amount() > 0) {
+                auto account_info = GetAcountInfo(thread_idx, to_txs.tos(i).des());
+                if (account_info == nullptr) {
+                    // create address
+                    continue;
+                } else {
+                    // just set to
+                }
+            }
+        }
+    } else {
+        for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
+            if (to_txs.tos(i).amount() > 0) {
+                // dispatch to txs to tx pool
+                uint32_t sharding_id = common::kInvalidUint32;
+                uint32_t pool_index = common::kInvalidUint32;
+                auto account_info = GetAcountInfo(thread_idx, to_txs.tos(i).des());
+                if (account_info == nullptr) {
+                    assert(false);
+                    if (!to_txs.tos(i).has_sharding_id() || !to_txs.tos(i).has_pool_index()) {
+                        continue;
+                    }
+
+                    if (to_txs.tos(i).sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+                        continue;
+                    }
+
+                    if (to_txs.tos(i).pool_index() >= common::kImmutablePoolSize) {
+                        continue;
+                    }
+
+                    sharding_id = to_txs.tos(i).sharding_id();
+                    pool_index = to_txs.tos(i).pool_index();
+                } else {
+                    sharding_id = account_info->sharding_id();
+                    pool_index = account_info->pool_index();
+                }
+
+                if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
+                    continue;
+                }
+
+                auto iter = addr_amount_map.find(to_txs.tos(i).des());
+                if (iter == addr_amount_map.end()) {
+                    addr_amount_map[to_txs.tos(i).des()] = std::make_pair(to_txs.tos(i).amount(), pool_index);
+                } else {
+                    iter->second.first += to_txs.tos(i).amount();
+                }
+            }
+        }
+    }
+
+    std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_tx_map;
+    for (auto iter = addr_amount_map.begin(); iter != addr_amount_map.end(); ++iter) {
+        auto to_iter = to_tx_map.find(iter->second.second);
+        if (to_iter == to_tx_map.end()) {
+            pools::protobuf::ToTxMessage to_tx;
+            to_tx_map[iter->second.second] = to_tx;
+            to_iter = to_tx_map.find(iter->second.second);
+        }
+
+        auto to_item = to_iter->second.add_tos();
+        to_item->set_pool_index(iter->second.second);
+        to_item->set_des(iter->first);
+        to_item->set_amount(iter->second.first);
+    }
+
+    for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
+        auto val = iter->second.SerializeAsString();
+        auto tos_hash = common::Hash::keccak256(val);
+        prefix_db_->SaveTemporaryKv(tos_hash, val);
+        auto msg_ptr = std::make_shared<transport::TransportMessage>();
+        auto tx = msg_ptr->header.mutable_tx_proto();
+        tx->set_key(protos::kLocalNormalTos);
+        tx->set_value(tos_hash);
+        tx->set_pubkey("");
+        tx->set_to("");
+        tx->set_step(pools::protobuf::kConsensusLocalTos);
+        auto gid = common::Hash::keccak256(tos_hash + std::to_string(iter->first));
+        tx->set_gas_limit(0);
+        tx->set_amount(0);
+        tx->set_gas_price(common::kBuildinTransactionGasPrice);
+        tx->set_gid(gid);
+        pools_mgr_->HandleMessage(msg_ptr);
+    }
+}
+
 void BlockManager::AddNewBlock(
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBach& db_batch) {
+    if (block_item->network_id() == common::GlobalInfo::Instance()->network_id()) {
+        const auto& tx_list = block_item->tx_list();
+        if (tx_list.empty()) {
+            return;
+        }
+
+        // one block must be one consensus pool
+        for (int32_t i = 0; i < tx_list.size(); ++i) {
+            switch (tx_list[i].step()) {
+            case pools::protobuf::kNormalTo:
+                HandleNormalToTx(thread_idx, *block_item, tx_list[i], db_batch);
+                break;
+
+            default:
+                ZJC_ERROR("invalid step: %d", tx_list[i].step());
+                break;
+            }
+        }
+    }
+
     prefix_db_->SaveBlock(*block_item, db_batch);
     to_txs_pool_->NewBlock(*block_item, db_batch);
     auto st = db_->Put(db_batch);

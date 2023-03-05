@@ -64,6 +64,11 @@ private:
     void AddAllAccount(
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBach& db_batch);
+    void HandleNormalToTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBach& db_batch);
 
     static const uint64_t kCreateToTxPeriodMs = 10000u;
 

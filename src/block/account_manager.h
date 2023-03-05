@@ -87,11 +87,6 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBach& db_batch);
-    void HandleNormalToTx(
-        uint8_t thread_idx,
-        const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBach& db_batch);
     void HandleLocalToTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
