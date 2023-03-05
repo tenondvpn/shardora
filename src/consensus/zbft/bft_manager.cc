@@ -990,7 +990,6 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
         bft_msg,
         bft_ptr,
         true,
-        bft_ptr->precommit_hash(),
         msg);
     if (!res) {
         ZJC_ERROR("BackupCreatePreCommit not has data.");

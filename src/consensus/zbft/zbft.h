@@ -370,6 +370,14 @@ public:
         return commit_bls_agg_verify_hash_;
     }
 
+    const libff::alt_bn128_G1& g1_prepare_hash() const {
+        return g1_prepare_hash_;
+    }
+
+    const libff::alt_bn128_G1& g1_precommit_hash() const {
+        return g1_precommit_hash_;
+    }
+
     void CreatePrecommitVerifyHash();
     void CreateCommitVerifyHash();
 

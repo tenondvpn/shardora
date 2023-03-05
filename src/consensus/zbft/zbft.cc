@@ -376,7 +376,7 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
             n,
             g1_prepare_hash_,
             *bls_precommit_agg_sign_,
-            &sign_precommit_hash);
+            &g1_prepare_hash_);
         if (sign_precommit_hash != precommit_bls_agg_verify_hash_) {
             common_pk_.to_affine_coordinates();
             auto cpk = std::make_shared<BLSPublicKey>(common_pk_);
@@ -541,7 +541,7 @@ void Zbft::LeaderCallTransaction(transport::MessagePtr& msg_ptr) {
             min_aggree_member_count(),
             member_count(),
             local_sec_key(),
-            local_prepare_hash(),
+            g1_prepare_hash_,
             &bn_sign) != bls::kBlsSuccess) {
         ZJC_ERROR("leader do transaction sign data failed!");
         return;

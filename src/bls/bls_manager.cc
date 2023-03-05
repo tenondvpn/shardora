@@ -201,7 +201,6 @@ bool BlsManager::IsSignValid(
 
     *content_to_hash += std::string("_") + std::to_string(bls_msg.finish_req().network_id());
     *content_to_hash = common::Hash::keccak256(*content_to_hash);
-    GetLibffHash(content_to_hash, g1_hash);
     auto& pubkey = (*members)[bls_msg.index()]->pubkey;
     if (!security_->Verify(*content_to_hash, bls_msg.sign(), pubkey)) {
         return false;
@@ -238,8 +237,6 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    libff::alt_bn128_G1 g1_hash;
-    GetLibffHash(msg_hash, g1_hash);
     std::vector<std::string> pkey_str = {
             bls_msg.finish_req().pubkey().x_c0(),
             bls_msg.finish_req().pubkey().x_c1(),
@@ -266,6 +263,8 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     sign.Y = libff::alt_bn128_Fq(bls_msg.finish_req().bls_sign_y().c_str());
     sign.Z = libff::alt_bn128_Fq::one();
     std::string verify_hash;
+    libff::alt_bn128_G1 g1_hash;
+    GetLibffHash(msg_hash, &g1_hash);
     if (Verify(
             t,
             members->size(),

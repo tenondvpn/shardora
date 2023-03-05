@@ -92,7 +92,7 @@ bool BftProto::BackupCreatePrepare(
             bft_ptr->min_aggree_member_count(),
             bft_ptr->member_count(),
             bft_ptr->local_sec_key(),
-            bft_ptr->local_prepare_hash(),
+            bft_ptr->g1_prepare_hash(),
             &bls_sign_x,
             &bls_sign_y) != bls::kBlsSuccess) {
         return false;
@@ -172,7 +172,6 @@ bool BftProto::BackupCreatePreCommit(
         const hotstuff::protobuf::HotstuffMessage& from_bft_msg,
         const ZbftPtr& bft_ptr,
         bool agree,
-        const std::string& sign_hash,
         transport::protobuf::Header& msg) {
     msg.set_src_sharding_id(bft_ptr->network_id());
     dht::DhtKeyManager dht_key(bft_ptr->network_id());
@@ -192,7 +191,7 @@ bool BftProto::BackupCreatePreCommit(
             bft_ptr->min_aggree_member_count(),
             bft_ptr->member_count(),
             bft_ptr->local_sec_key(),
-            sign_hash,
+            bft_ptr->g1_precommit_hash(),
             &bls_sign_x,
             &bls_sign_y) != bls::kBlsSuccess) {
         return false;

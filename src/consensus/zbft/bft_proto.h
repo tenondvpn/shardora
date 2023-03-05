@@ -39,7 +39,6 @@ public:
         const hotstuff::protobuf::HotstuffMessage& from_bft_msg,
         const ZbftPtr& bft_ptr,
         bool agree,
-        const std::string& sign_hash,
         transport::protobuf::Header& msg);
     static bool LeaderCreateCommit(
         std::shared_ptr<security::Security>& security_ptr,
