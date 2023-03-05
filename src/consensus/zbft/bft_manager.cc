@@ -761,6 +761,7 @@ int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, transport::MessagePtr& prepare_m
         network::Route::Instance()->Send(msg_ptr);
     }
 #endif
+    bft_ptr->CreatePrecommitVerifyHash();
     return kConsensusSuccess;
 }
 
@@ -830,6 +831,7 @@ int BftManager::LeaderPrecommit(
         member_ptr->public_port = bft_msg.node_port();
     }
 
+    ZJC_DEBUG("0 LeaderPrecommit");
     if (!VerifyBackupIdValid(msg_ptr, member_ptr)) {
         ZJC_ERROR("verify backup valid error!");
         return kConsensusError;
@@ -846,13 +848,16 @@ int BftManager::LeaderPrecommit(
     }
 
     auto& tx_bft = bft_msg.tx_bft();
+    ZJC_DEBUG("1 LeaderPrecommit");
     int res = bft_ptr->LeaderPrecommitOk(
         tx_bft.ltx_prepare(),
         bft_msg.member_index(),
         sign,
         member_ptr->id);
+    ZJC_DEBUG("2 LeaderPrecommit");
     if (res == kConsensusAgree) {
         LeaderCallPrecommit(bft_ptr);
+        bft_ptr->CreateCommitVerifyHash();
     }
 
     ZJC_DEBUG("LeaderPrecommit res: %d, mem: %d", res, bft_msg.member_index());
@@ -892,6 +897,7 @@ int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr) {
         return kConsensusError;
     }
 
+    ZJC_DEBUG("0 LeaderCallPrecommit gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
     if (bft_ptr->LeaderCommitOk(
             elect_mgr_->local_node_member_index(),
             sign,
@@ -901,6 +907,7 @@ int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr) {
         return kConsensusError;
     }
 
+    ZJC_DEBUG("1 LeaderCallPrecommit gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
     bft_ptr->set_consensus_status(kConsensusCommit);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = bft_ptr->thread_index();
@@ -911,12 +918,13 @@ int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr) {
         return kConsensusError;
     }
 
-    ZJC_DEBUG("LeaderCallPrecommit gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
+    ZJC_DEBUG("2 LeaderCallPrecommit gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
 #ifdef ZJC_UNITTEST
     leader_precommit_msg_ = msg_ptr;
 #else
     network::Route::Instance()->Send(msg_ptr);
 #endif
+    ZJC_DEBUG("3 LeaderCallPrecommit gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
     return kConsensusSuccess;
 }
 

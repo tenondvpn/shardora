@@ -55,6 +55,7 @@ private:
     std::condition_variable broadcast_con_;
     std::mutex broadcast_mu_;
     std::shared_ptr<std::thread> broadcast_thread_ = nullptr;
+    bool destroy_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(Route);
 };

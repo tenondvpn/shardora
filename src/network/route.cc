@@ -34,6 +34,12 @@ void Route::Init() {
 }
 
 void Route::Destroy() {
+    destroy_ = true;
+    if (broadcast_thread_ != nullptr) {
+        broadcast_thread_->join();
+        broadcast_thread_ = nullptr;
+    }
+
     UnRegisterMessage(common::kDhtMessage);
     UnRegisterMessage(common::kNetworkMessage);
     broadcast_.reset();
@@ -105,7 +111,7 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
 }
 
 void Route::Broadcasting() {
-    while (true) {
+    while (!destroy_) {
         bool has_data = false;
         for (uint32_t i = 0;
                 i < common::GlobalInfo::Instance()->message_handler_thread_count(); ++i) {

@@ -364,13 +364,15 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
 //         ZJC_DEBUG("leader create precommit_hash_: %s, prpare_hash: %s",
 //             common::Encode::HexEncode(precommit_hash_).c_str(),
 //             common::Encode::HexEncode(prpare_hash).c_str());
-        if (bls_mgr_->Verify(
-                t,
-                n,
-                common_pk_,
-                *bls_precommit_agg_sign_,
-                prpare_hash,
-                &precommit_bls_agg_verify_hash_) != bls::kBlsSuccess) {
+        ZJC_DEBUG("bls_mgr_->Verify start.");
+        std::string sign_precommit_hash;
+        bls_mgr_->GetVerifyHash(
+            t,
+            n,
+            prpare_hash,
+            *bls_precommit_agg_sign_,
+            &sign_precommit_hash);
+        if (sign_precommit_hash != precommit_bls_agg_verify_hash_) {
             common_pk_.to_affine_coordinates();
             auto cpk = std::make_shared<BLSPublicKey>(common_pk_);
             auto cpk_strs = cpk->toString();
@@ -394,6 +396,7 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
 //                 elect_height_, network_id_, common::Encode::HexEncode(prpare_hash).c_str());
         }
 
+        ZJC_DEBUG("bls_mgr_->Verify over.");
         bls_precommit_agg_sign_->to_affine_coordinates();
         prepare_bitmap_ = iter->second->prepare_bitmap_;
         uint64_t max_height = 0;
@@ -489,17 +492,20 @@ int Zbft::LeaderCreateCommitAggSign() {
         }
 
         commit_hash_ = common::Hash::Hash256(msg_hash_src);
-        if (bls_mgr_->Verify(
-                t,
-                n,
-                common_pk_,
-                *bls_commit_agg_sign_,
-                precommit_hash_,
-                &commit_bls_agg_verify_hash_) != bls::kBlsSuccess) {
+        ZJC_DEBUG("commit verify start,");
+        std::string sign_commit_hash;
+        bls_mgr_->GetVerifyHash(
+            t,
+            n,
+            precommit_hash_,
+            *bls_commit_agg_sign_,
+            &sign_commit_hash)
+        if (sign_commit_hash != commit_bls_agg_verify_hash_) {
             ZJC_ERROR("leader verify leader commit agg sign failed!");
             return kConsensusError;
         }
 
+        ZJC_DEBUG("commit verify end,");
         bls_commit_agg_sign_->to_affine_coordinates();
     } catch (...) {
         return kConsensusError;

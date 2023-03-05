@@ -86,6 +86,26 @@ int BlsSign::GetVerifyHash(
     return kBlsError;
 }
 
+int BlsSign::GetVerifyHash(
+        uint32_t t,
+        uint32_t n,
+        const std::string& message,
+        const libff::alt_bn128_G1& sign,
+        std::string* verify_hash) try {
+    libBLS::Bls bls_instance = libBLS::Bls(t, n);
+    libff::alt_bn128_GT res;
+    if (!bls_instance.GetVerifyHash(message, sign, &res)) {
+        BLS_ERROR("bls_instance.Verification error.");
+        return kBlsError;
+    }
+
+    *verify_hash = GetVerifyHash(res);
+    return kBlsSuccess;
+} catch (std::exception& e) {
+    BLS_ERROR("sign message failed: %s", e.what());
+    return kBlsError;
+}
+
 };  // namespace bls
 
 };  // namespace zjchain
