@@ -241,7 +241,7 @@ int GenesisBlockInit::CreateElectBlock(
     prefix_db_->SaveLatestElectBlock(ec_block);
     fputs((common::Encode::HexEncode(tenon_block->SerializeAsString()) + "\n").c_str(),
         root_gens_init_block_file);
-    block_mgr_->NetworkNewBlock(tenon_block);
+    block_mgr_->NetworkNewBlock(0, tenon_block);
 //     std::string pool_hash;
 //     uint64_t pool_height = 0;
 //     uint64_t tm_height;
@@ -322,7 +322,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
         fputs((common::Encode::HexEncode(tenon_block->SerializeAsString()) + "\n").c_str(),
             root_gens_init_block_file);
-        block_mgr_->NetworkNewBlock(tenon_block);
+        block_mgr_->NetworkNewBlock(0, tenon_block);
         std::string pool_hash;
         uint64_t pool_height = 0;
         uint64_t tm_height;
@@ -399,7 +399,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
             0);
         fputs((common::Encode::HexEncode(tmp_str) + "\n").c_str(), root_gens_init_block_file);
 //         tmblock::TimeBlockManager::Instance()->UpdateTimeBlock(1, now_tm, now_tm);
-        block_mgr_->NetworkNewBlock(tenon_block);
+        block_mgr_->NetworkNewBlock(0, tenon_block);
         std::string pool_hash;
         uint64_t pool_height = 0;
         uint64_t tm_height;
@@ -497,7 +497,7 @@ int GenesisBlockInit::GenerateShardSingleBlock() {
             return kInitError;
         }
 
-        block_mgr_->NetworkNewBlock(tenon_block);
+        block_mgr_->NetworkNewBlock(0, tenon_block);
         for (int32_t i = 0; i < tenon_block->tx_list_size(); ++i) {
             for (int32_t j = 0; j < tenon_block->tx_list(i).storages_size(); ++j) {
                 if (tenon_block->tx_list(i).storages(j).key() == elect::kElectNodeAttrElectBlock) {
@@ -644,7 +644,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         tenon_block->set_electblock_height(2);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-        block_mgr_->NetworkNewBlock(tenon_block);
+        block_mgr_->NetworkNewBlock(0, tenon_block);
         //         std::string pool_hash;
 //         uint64_t pool_height = 0;
 //         uint64_t tm_height;
@@ -746,7 +746,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(uint32_t net_id) {
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
 //         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
-        block_mgr_->NetworkNewBlock(tenon_block);
+        block_mgr_->NetworkNewBlock(0, tenon_block);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
             INIT_ERROR("get address failed! [%s]", common::Encode::HexEncode(address).c_str());
