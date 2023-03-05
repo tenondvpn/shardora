@@ -20,7 +20,7 @@ public:
     int BackupCreateToTx(
         uint32_t sharding_id,
         const pools::protobuf::ToTxHeights& leader_to_heights,
-        pools::protobuf::TxMessage* tx);
+        pools::protobuf::ToTxHeights* tx);
     int LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeights& to_heights);
 
 private:
