@@ -122,11 +122,9 @@ void Route::Broadcasting() {
         }
 
         if (!has_data) {
-            break;
+            std::unique_lock<std::mutex> lock(broadcast_mu_);
+            broadcast_con_.wait_for(lock, std::chrono::milliseconds(10));
         }
-
-        std::unique_lock<std::mutex> lock(broadcast_mu_);
-        broadcast_con_.wait_for(lock, std::chrono::milliseconds(10));
     }
 }
 
