@@ -166,7 +166,7 @@ void BlockManager::HandleNormalToTx(
                 // dispatch to txs to tx pool
                 uint32_t sharding_id = common::kInvalidUint32;
                 uint32_t pool_index = common::kInvalidUint32;
-                auto account_info = GetAcountInfo(thread_idx, to_txs.tos(i).des());
+                auto account_info = account_mgr_->GetAcountInfo(thread_idx, to_txs.tos(i).des());
                 if (account_info == nullptr) {
                     assert(false);
                     if (!to_txs.tos(i).has_sharding_id() || !to_txs.tos(i).has_pool_index()) {
