@@ -374,7 +374,6 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
         bls_mgr_->GetVerifyHash(
             t,
             n,
-            g1_prepare_hash_,
             *bls_precommit_agg_sign_,
             &g1_prepare_hash_);
         if (sign_precommit_hash != precommit_bls_agg_verify_hash_) {
@@ -510,7 +509,6 @@ int Zbft::LeaderCreateCommitAggSign() {
         bls_mgr_->GetVerifyHash(
             t,
             n,
-            g1_precommit_hash_,
             *bls_commit_agg_sign_,
             &sign_commit_hash);
         if (sign_commit_hash != commit_bls_agg_verify_hash_) {
