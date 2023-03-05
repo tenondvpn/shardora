@@ -956,11 +956,14 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
     }
 #endif
 
-    std::string msg_hash_src = bft_ptr->local_prepare_hash();
+    std::string msg_hash_src;
+    msg_hash_src.reserve(32 + 128);
+    msg_hash_src.append(bft_ptr->local_prepare_hash());
     std::vector<uint64_t> bitmap_data;
     for (int32_t i = 0; i < bft_msg.bitmap_size(); ++i) {
-        bitmap_data.push_back(bft_msg.bitmap(i));
-        msg_hash_src += std::to_string(bft_msg.bitmap(i));
+        auto data = bft_msg.bitmap(i);
+        bitmap_data.push_back(data);
+        msg_hash_src.append((char*)&data, sizeof(data));// std::to_string(bft_msg.bitmap(i));
     }
 
     bft_ptr->set_precoimmit_hash(common::Hash::keccak256(msg_hash_src));
