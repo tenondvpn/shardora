@@ -248,19 +248,26 @@ class ToTxHeights : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::uint64 block_height() const;
   void set_block_height(::google::protobuf::uint64 value);
 
-  // optional uint64 elelct_height = 6;
-  bool has_elelct_height() const;
-  void clear_elelct_height();
-  static const int kElelctHeightFieldNumber = 6;
-  ::google::protobuf::uint64 elelct_height() const;
-  void set_elelct_height(::google::protobuf::uint64 value);
-
   // optional uint32 sharding_id = 1;
   bool has_sharding_id() const;
   void clear_sharding_id();
   static const int kShardingIdFieldNumber = 1;
   ::google::protobuf::uint32 sharding_id() const;
   void set_sharding_id(::google::protobuf::uint32 value);
+
+  // optional uint32 tx_count = 7;
+  bool has_tx_count() const;
+  void clear_tx_count();
+  static const int kTxCountFieldNumber = 7;
+  ::google::protobuf::uint32 tx_count() const;
+  void set_tx_count(::google::protobuf::uint32 value);
+
+  // optional uint64 elelct_height = 6;
+  bool has_elelct_height() const;
+  void clear_elelct_height();
+  static const int kElelctHeightFieldNumber = 6;
+  ::google::protobuf::uint64 elelct_height() const;
+  void set_elelct_height(::google::protobuf::uint64 value);
 
   // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.ToTxHeights)
  private:
@@ -274,6 +281,8 @@ class ToTxHeights : public ::google::protobuf::Message /* @@protoc_insertion_poi
   void clear_has_leader_id();
   void set_has_elelct_height();
   void clear_has_elelct_height();
+  void set_has_tx_count();
+  void clear_has_tx_count();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -282,8 +291,9 @@ class ToTxHeights : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::internal::ArenaStringPtr tos_hash_;
   ::google::protobuf::internal::ArenaStringPtr leader_id_;
   ::google::protobuf::uint64 block_height_;
-  ::google::protobuf::uint64 elelct_height_;
   ::google::protobuf::uint32 sharding_id_;
+  ::google::protobuf::uint32 tx_count_;
+  ::google::protobuf::uint64 elelct_height_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -830,13 +840,13 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
 
 // optional uint32 sharding_id = 1;
 inline bool ToTxHeights::has_sharding_id() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void ToTxHeights::set_has_sharding_id() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void ToTxHeights::clear_has_sharding_id() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void ToTxHeights::clear_sharding_id() {
   sharding_id_ = 0u;
@@ -1040,13 +1050,13 @@ inline void ToTxHeights::set_allocated_leader_id(::std::string* leader_id) {
 
 // optional uint64 elelct_height = 6;
 inline bool ToTxHeights::has_elelct_height() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void ToTxHeights::set_has_elelct_height() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void ToTxHeights::clear_has_elelct_height() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void ToTxHeights::clear_elelct_height() {
   elelct_height_ = GOOGLE_ULONGLONG(0);
@@ -1060,6 +1070,30 @@ inline void ToTxHeights::set_elelct_height(::google::protobuf::uint64 value) {
   set_has_elelct_height();
   elelct_height_ = value;
   // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ToTxHeights.elelct_height)
+}
+
+// optional uint32 tx_count = 7;
+inline bool ToTxHeights::has_tx_count() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void ToTxHeights::set_has_tx_count() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void ToTxHeights::clear_has_tx_count() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void ToTxHeights::clear_tx_count() {
+  tx_count_ = 0u;
+  clear_has_tx_count();
+}
+inline ::google::protobuf::uint32 ToTxHeights::tx_count() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ToTxHeights.tx_count)
+  return tx_count_;
+}
+inline void ToTxHeights::set_tx_count(::google::protobuf::uint32 value) {
+  set_has_tx_count();
+  tx_count_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ToTxHeights.tx_count)
 }
 
 // -------------------------------------------------------------------
