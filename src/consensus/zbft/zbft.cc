@@ -499,7 +499,7 @@ int Zbft::LeaderCreateCommitAggSign() {
             n,
             precommit_hash_,
             *bls_commit_agg_sign_,
-            &sign_commit_hash)
+            &sign_commit_hash);
         if (sign_commit_hash != commit_bls_agg_verify_hash_) {
             ZJC_ERROR("leader verify leader commit agg sign failed!");
             return kConsensusError;
