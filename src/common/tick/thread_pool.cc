@@ -48,7 +48,7 @@ void TickThreadPool::Destroy() {
 
 TickThreadPool::TickThreadPool() {
     uint8_t start_thread_idx = common::GlobalInfo::Instance()->message_handler_thread_count() + 3;
-    for (uint32_t i = 0; i < kTickThreadPoolCount; ++i) {
+    for (uint32_t i = 0; i < common::GlobalInfo::Instance()->tick_thread_pool_count(); ++i) {
         thread_pool_.push_back(std::make_shared<std::thread>(
                 std::thread(&TickThreadPool::Ticking, this, start_thread_idx + i)));
     }
