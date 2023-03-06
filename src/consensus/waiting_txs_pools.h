@@ -48,7 +48,7 @@ public:
 
     std::shared_ptr<WaitingTxsItem> LeaderGetValidTxs(bool direct, uint32_t pool_index) {
         if (locked_pool_[pool_index]) {
-            return nullptr
+            return nullptr;
         }
 
         auto txs_item = wtxs[pool_index].LeaderGetValidTxs(direct);
@@ -108,7 +108,7 @@ public:
             const std::string& tx_hash,
             uint8_t thread_idx) {
         if (locked_pool_[pool_index]) {
-            return nullptr
+            return nullptr;
         }
 
         auto tx_ptr = block_mgr_->GetToTx(pool_index);
@@ -128,7 +128,7 @@ public:
             const common::BloomFilter& bloom_filter,
             uint8_t thread_idx) {
         if (locked_pool_[pool_index]) {
-            return nullptr
+            return nullptr;
         }
 
         auto txs_item = wtxs[pool_index].FollowerGetTxs(bloom_filter);
@@ -145,7 +145,7 @@ public:
             const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
             uint8_t thread_idx) {
         if (locked_pool_[pool_index]) {
-            return nullptr
+            return nullptr;
         }
 
         auto txs_item = wtxs[pool_index].FollowerGetTxs(tx_hash_list);

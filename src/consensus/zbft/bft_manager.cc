@@ -637,7 +637,7 @@ int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, transport::MessagePtr& prepare_m
         return res;
     }
 
-    pools_mgr_->LockPool(txs_ptr_->pool_index);
+    txs_pools_->LockPool(txs_ptr_->pool_index);
     auto msg_res = BftProto::LeaderCreatePrepare(
         security_ptr_,
         bft_ptr,
@@ -692,7 +692,7 @@ int BftManager::BackupPrepare(
         return kConsensusError;
     }
 
-    pools_mgr_->LockPool(txs_ptr_->pool_index);
+    txs_pools_->LockPool(txs_ptr_->pool_index);
     AddBft(bft_ptr);
     bft_ptr->set_consensus_status(kConsensusPreCommit);
 #ifdef ZJC_UNITTEST
