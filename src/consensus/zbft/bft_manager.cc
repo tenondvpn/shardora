@@ -584,7 +584,7 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
 
     bft_hash_map_[bft_ptr->thread_index()][gid] = bft_ptr;
 //     ZJC_DEBUG("add bft and now size: %d", bft_hash_map_.size());
-    txs_pools_->LockPool(bft_ptr->txs_ptr());
+    txs_pools_->LockPool(bft_ptr);
     return kConsensusSuccess;
 }
 
@@ -613,6 +613,7 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
         auto iter = bft_hash_map_[thread_idx].find(gid);
         if (iter != bft_hash_map_[thread_idx].end()) {
             bft_ptr = iter->second;
+            bft_ptr->Destroy();
             bft_hash_map_[thread_idx].erase(iter);
             ZJC_DEBUG("remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
         }

@@ -23,7 +23,7 @@ namespace zjchain {
 
 namespace consensus {
 
-class Zbft {
+class Zbft : public std::enable_shared_from_this<Zbft> {
 public:
     Zbft(
         std::shared_ptr<block::AccountManager>& account_mgr,

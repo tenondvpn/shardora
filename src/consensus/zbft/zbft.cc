@@ -9,9 +9,7 @@ namespace zjchain {
 
 namespace consensus {
 
-Zbft::~Zbft() {
-    Destroy();
-}
+Zbft::~Zbft() {}
 
 Zbft::Zbft(
         std::shared_ptr<block::AccountManager>& account_mgr,
@@ -79,9 +77,11 @@ void Zbft::Destroy() {
     }
 
     if (consensus_status_ != kConsensusCommited) {
-        pools_mgr_->TxRecover(txs_ptr_);
+        auto ptr = shared_from_this();
+        pools_mgr_->TxRecover(ptr);
     } else {
-        pools_mgr_->TxOver(txs_ptr_);
+        auto ptr = shared_from_this();
+        pools_mgr_->TxOver(ptr);
         pools_mgr_->UpdateLatestInfo(
             pool_index(), prpare_block_->height(), prpare_block_->hash());
     }
