@@ -22,16 +22,9 @@ public:
         pool_mgr_->UpdateLatestInfo(pool_index, height, hash);
     }
 
-    uint64_t latest_height(uint32_t pool_index) const {
-        return pool_mgr_->latest_height(pool_index);
-    }
-
-    std::string latest_hash(uint32_t pool_index) const {
-        return pool_mgr_->latest_hash(pool_index);
-    }
-    
+    uint64_t latest_height(uint32_t pool_index) const;
+    std::string latest_hash(uint32_t pool_index) const;
     void LockPool(std::shared_ptr<Zbft>& zbft_ptr);
-
     std::shared_ptr<WaitingTxsItem> LeaderGetValidTxs(bool direct, uint32_t pool_index);
     std::shared_ptr<WaitingTxsItem> FollowerGetToTxs(
         uint32_t pool_index,

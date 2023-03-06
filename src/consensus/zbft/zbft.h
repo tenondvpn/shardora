@@ -311,18 +311,6 @@ public:
         handle_last_error_msg_ = error_msg;
     }
 
-    std::string leader_tbft_prepare_hash() {
-        return leader_tbft_prepare_hash_;
-    }
-
-    uint64_t prepare_latest_height() {
-        return prepare_latest_height_;
-    }
-
-    void SetBlock(std::shared_ptr<block::protobuf::Block>& prpare_block) {
-        prpare_block_ = prpare_block;
-    }
-
     int32_t SetPrepareBlock(
             const std::string& id,
             uint32_t index,
@@ -431,7 +419,6 @@ protected:
     std::unordered_map<std::string, std::shared_ptr<LeaderPrepareItem>> prepare_block_map_;
     common::Bitmap prepare_bitmap_;
     std::string leader_tbft_prepare_hash_;
-    uint64_t prepare_latest_height_{ 0 };
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<WaitingTxsItem> txs_ptr_ = nullptr;
     std::shared_ptr<consensus::WaitingTxsPools> pools_mgr_ = nullptr;

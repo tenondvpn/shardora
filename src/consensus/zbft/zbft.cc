@@ -399,8 +399,6 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
                 max_count = hiter->second;
             }
         }
-
-        prepare_latest_height_ = max_height;
     } catch (std::exception& e) {
         ZJC_ERROR("catch bls exception: %s", e.what());
         return kConsensusError;
@@ -548,8 +546,7 @@ int Zbft::DoTransaction(hotstuff::protobuf::LeaderTxPrepare& ltx_prepare) {
     zjc_block.set_electblock_height(elect_height_);
     zjc_block.set_leader_index(leader_index_);
     zjc_block.set_hash(GetBlockHash(zjc_block));
-    auto block_ptr = std::make_shared<block::protobuf::Block>(zjc_block);
-    SetBlock(block_ptr);
+    prpare_block_ = std::make_shared<block::protobuf::Block>(zjc_block);
     ltx_prepare.set_prepare_final_hash(zjc_block.hash());
     ltx_prepare.set_height(zjc_block.height());
     ltx_prepare.set_tx_type(txs_ptr_->tx_type);

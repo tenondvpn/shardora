@@ -236,7 +236,7 @@ bool BftProto::LeaderCreateCommit(
     auto& bft_msg = *msg.mutable_leader_commit();
     hotstuff::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
     auto ltx_commit_msg = tx_bft.mutable_ltx_commit();
-    ltx_commit_msg->set_latest_hegight(bft_ptr->prepare_latest_height());
+    ltx_commit_msg->set_latest_hegight(bft_ptr->prpare_block()->height());
     bft_msg.set_leader(false);
     bft_msg.set_gid(bft_ptr->gid());
     bft_msg.set_net_id(bft_ptr->network_id());
@@ -249,7 +249,7 @@ bool BftProto::LeaderCreateCommit(
         bft_msg.add_bitmap(bitmap_data[i]);
     }
 
-    std::string hash_to_sign = bft_ptr->leader_tbft_prepare_hash();
+    std::string hash_to_sign = bft_ptr->prpare_block()->hash();
     if (agree) {
         auto& bls_commit_sign = bft_ptr->bls_commit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->X));
@@ -264,7 +264,7 @@ bool BftProto::LeaderCreateCommit(
         bft_msg.set_bls_agg_verify_hash(bft_ptr->commit_bls_agg_verify_hash());
     }
 
-    bft_msg.set_prepare_hash(bft_ptr->leader_tbft_prepare_hash());
+    bft_msg.set_prepare_hash(bft_ptr->prpare_block()->hash());
     bft_msg.set_epoch(bft_ptr->GetEpoch());
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
     std::string sign;

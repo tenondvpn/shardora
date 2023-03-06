@@ -45,6 +45,22 @@ void WaitingTxsPools::LockPool(std::shared_ptr<Zbft>& zbft_ptr) {
     pipeline_pools_[zbft_ptr->txs_ptr()->pool_index].push_back(zbft_ptr);
 }
 
+uint64_t WaitingTxsPools::latest_height(uint32_t pool_index) const {
+    if (pipeline_pools_[pool_index].empty()) {
+        return pool_mgr_->latest_height(pool_index);
+    }
+
+    return pipeline_pools_[pool_index].back()->prpare_block()->height();
+}
+
+std::string WaitingTxsPools::latest_hash(uint32_t pool_index) const {
+    if (pipeline_pools_[pool_index].empty()) {
+        return pool_mgr_->latest_hash(pool_index);
+    }
+
+    return pipeline_pools_[pool_index].back()->prpare_block()->hash();
+}
+
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
         bool direct,
         uint32_t pool_index) {

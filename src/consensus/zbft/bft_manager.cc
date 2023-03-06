@@ -1012,7 +1012,7 @@ int BftManager::LeaderCallCommit(
         return kConsensusError;
     }
 
-    if (bft_ptr->local_prepare_hash() == bft_ptr->leader_tbft_prepare_hash()) {
+    if (bft_ptr->local_prepare_hash() == bft_ptr->prpare_block()->hash()) {
         HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
     } else {
         // sync block from neighbor nodes
