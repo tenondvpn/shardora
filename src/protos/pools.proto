@@ -35,6 +35,7 @@ message ToTxMessageItem {
 message ToTxMessage {
     optional bytes heights_hash = 1;
     repeated ToTxMessageItem tos = 2;
+    optional ToTxHeights to_heights = 3;
 }
 
 message TxMessage {

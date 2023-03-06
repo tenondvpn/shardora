@@ -246,6 +246,8 @@ void BlockManager::AddNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBach& db_batch) {
+    prefix_db_->SaveBlock(*block_item, db_batch);
+    to_txs_pool_->NewBlock(*block_item, db_batch);
     if (block_item->network_id() == common::GlobalInfo::Instance()->network_id()) {
         const auto& tx_list = block_item->tx_list();
         if (tx_list.empty()) {
@@ -264,8 +266,6 @@ void BlockManager::AddNewBlock(
         }
     }
 
-    prefix_db_->SaveBlock(*block_item, db_batch);
-    to_txs_pool_->NewBlock(*block_item, db_batch);
     auto st = db_->Put(db_batch);
     if (!st.ok()) {
         ZJC_FATAL("write block to db failed!");
@@ -315,7 +315,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
         auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
         auto* tx = new_msg_ptr->header.mutable_tx_proto();
         tx->set_key(protos::kNormalTos);
-        tx->set_value(to_heights.SerializeAsString());
+        tx->set_value(to_heights.tos_hash());
         tx->set_pubkey("");
         tx->set_to("");
         tx->set_step(pools::protobuf::kNormalTo);
@@ -417,7 +417,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
         auto* tx = new_msg_ptr->header.mutable_tx_proto();
         tx->set_key(protos::kNormalTos);
-        tx->set_value(to_heights.SerializeAsString());
+        tx->set_value(to_heights.tos_hash());
         tx->set_pubkey("");
         tx->set_to("");
         tx->set_step(pools::protobuf::kNormalTo);

@@ -571,16 +571,31 @@ class ToTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::std::string* release_heights_hash();
   void set_allocated_heights_hash(::std::string* heights_hash);
 
+  // optional .zjchain.pools.protobuf.ToTxHeights to_heights = 3;
+  bool has_to_heights() const;
+  void clear_to_heights();
+  static const int kToHeightsFieldNumber = 3;
+  private:
+  const ::zjchain::pools::protobuf::ToTxHeights& _internal_to_heights() const;
+  public:
+  const ::zjchain::pools::protobuf::ToTxHeights& to_heights() const;
+  ::zjchain::pools::protobuf::ToTxHeights* release_to_heights();
+  ::zjchain::pools::protobuf::ToTxHeights* mutable_to_heights();
+  void set_allocated_to_heights(::zjchain::pools::protobuf::ToTxHeights* to_heights);
+
   // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.ToTxMessage)
  private:
   void set_has_heights_hash();
   void clear_has_heights_hash();
+  void set_has_to_heights();
+  void clear_has_to_heights();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ToTxMessageItem > tos_;
   ::google::protobuf::internal::ArenaStringPtr heights_hash_;
+  ::zjchain::pools::protobuf::ToTxHeights* to_heights_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -1336,6 +1351,64 @@ inline const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::T
 ToTxMessage::tos() const {
   // @@protoc_insertion_point(field_list:zjchain.pools.protobuf.ToTxMessage.tos)
   return tos_;
+}
+
+// optional .zjchain.pools.protobuf.ToTxHeights to_heights = 3;
+inline bool ToTxMessage::has_to_heights() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ToTxMessage::set_has_to_heights() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ToTxMessage::clear_has_to_heights() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ToTxMessage::clear_to_heights() {
+  if (to_heights_ != NULL) to_heights_->Clear();
+  clear_has_to_heights();
+}
+inline const ::zjchain::pools::protobuf::ToTxHeights& ToTxMessage::_internal_to_heights() const {
+  return *to_heights_;
+}
+inline const ::zjchain::pools::protobuf::ToTxHeights& ToTxMessage::to_heights() const {
+  const ::zjchain::pools::protobuf::ToTxHeights* p = to_heights_;
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ToTxMessage.to_heights)
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::pools::protobuf::ToTxHeights*>(
+      &::zjchain::pools::protobuf::_ToTxHeights_default_instance_);
+}
+inline ::zjchain::pools::protobuf::ToTxHeights* ToTxMessage::release_to_heights() {
+  // @@protoc_insertion_point(field_release:zjchain.pools.protobuf.ToTxMessage.to_heights)
+  clear_has_to_heights();
+  ::zjchain::pools::protobuf::ToTxHeights* temp = to_heights_;
+  to_heights_ = NULL;
+  return temp;
+}
+inline ::zjchain::pools::protobuf::ToTxHeights* ToTxMessage::mutable_to_heights() {
+  set_has_to_heights();
+  if (to_heights_ == NULL) {
+    auto* p = CreateMaybeMessage<::zjchain::pools::protobuf::ToTxHeights>(GetArenaNoVirtual());
+    to_heights_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:zjchain.pools.protobuf.ToTxMessage.to_heights)
+  return to_heights_;
+}
+inline void ToTxMessage::set_allocated_to_heights(::zjchain::pools::protobuf::ToTxHeights* to_heights) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete to_heights_;
+  }
+  if (to_heights) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      to_heights = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, to_heights, submessage_arena);
+    }
+    set_has_to_heights();
+  } else {
+    clear_has_to_heights();
+  }
+  to_heights_ = to_heights;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.ToTxMessage.to_heights)
 }
 
 // -------------------------------------------------------------------
