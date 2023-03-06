@@ -38,14 +38,15 @@ void BftProto::SetLocalPublicIpPort(
 bool BftProto::LeaderCreatePrepare(
         std::shared_ptr<security::Security>& security_ptr,
         const ZbftPtr& bft_ptr,
-        transport::protobuf::Header& msg) {
+        transport::protobuf::Header& msg,
+        hotstuff::protobuf::HotstuffMessage* pipeline_msg) {
     msg.set_src_sharding_id(bft_ptr->network_id());
     dht::DhtKeyManager dht_key(bft_ptr->network_id());
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kConsensusMessage);
     msg.set_hop_count(0);
     auto broad_param = msg.mutable_broadcast();
-    auto& bft_msg = *msg.mutable_hotstuff_proto();
+    auto& bft_msg = *pipeline_msg;
     bft_msg.set_leader(false);
     bft_msg.set_gid(bft_ptr->gid());
     bft_msg.set_net_id(bft_ptr->network_id());
@@ -72,12 +73,13 @@ bool BftProto::BackupCreatePrepare(
         const hotstuff::protobuf::HotstuffMessage& from_bft_msg,
         const ZbftPtr& bft_ptr,
         bool agree,
-        transport::protobuf::Header& msg) {
+        transport::protobuf::Header& msg,
+        hotstuff::protobuf::HotstuffMessage* pipeline_msg) {
     msg.set_src_sharding_id(bft_ptr->network_id());
     dht::DhtKeyManager dht_key(bft_ptr->network_id());
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kConsensusMessage);
-    auto& bft_msg = *msg.mutable_hotstuff_proto();
+    auto& bft_msg = *pipeline_msg;
     bft_msg.set_leader(true);
     bft_msg.set_gid(from_bft_msg.gid());
     bft_msg.set_net_id(from_bft_msg.net_id());
@@ -133,7 +135,7 @@ bool BftProto::LeaderCreatePreCommit(
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kConsensusMessage);
     auto broad_param = msg.mutable_broadcast();
-    auto& bft_msg = *msg.mutable_hotstuff_proto();
+    auto& bft_msg = *msg.add_pipeline();
     bft_msg.set_leader(false);
     bft_msg.set_gid(bft_ptr->gid());
     bft_msg.set_net_id(bft_ptr->network_id());
@@ -177,7 +179,7 @@ bool BftProto::BackupCreatePreCommit(
     dht::DhtKeyManager dht_key(bft_ptr->network_id());
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kConsensusMessage);
-    auto& bft_msg = *msg.mutable_hotstuff_proto();
+    auto& bft_msg = *msg.add_pipeline();
     bft_msg.set_leader(true);
     bft_msg.set_gid(from_bft_msg.gid());
     bft_msg.set_net_id(from_bft_msg.net_id());
@@ -233,7 +235,7 @@ bool BftProto::LeaderCreateCommit(
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kConsensusMessage);
     auto broad_param = msg.mutable_broadcast();
-    auto& bft_msg = *msg.mutable_leader_commit();
+    auto& bft_msg = *msg.add_pipeline();
     hotstuff::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
     auto ltx_commit_msg = tx_bft.mutable_ltx_commit();
     ltx_commit_msg->set_latest_hegight(bft_ptr->prpare_block()->height());
@@ -289,7 +291,7 @@ bool BftProto::CreateLeaderBroadcastToAccount(
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kConsensusMessage);
     auto broad_param = msg.mutable_broadcast();
-    auto& bft_msg = *msg.mutable_hotstuff_proto();
+    auto& bft_msg = *msg.add_pipeline();
     hotstuff::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
     auto to_tx = tx_bft.mutable_to_tx();
     auto block = to_tx->mutable_block();

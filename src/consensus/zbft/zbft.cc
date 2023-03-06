@@ -87,9 +87,9 @@ void Zbft::Destroy() {
     }
 }
 
-int Zbft::Prepare(bool leader, transport::MessagePtr& msg_ptr) {
+int Zbft::Prepare(bool leader, hotstuff::protobuf::HotstuffMessage* bft_msg) {
     if (leader) {
-        return LeaderCreatePrepare(msg_ptr);
+        return LeaderCreatePrepare(bft_msg);
     }
 
     if (pool_index() >= common::kInvalidPoolIndex) {
@@ -98,7 +98,7 @@ int Zbft::Prepare(bool leader, transport::MessagePtr& msg_ptr) {
     }
 
     int32_t invalid_tx_idx = -1;
-    int res = BackupCheckPrepare(msg_ptr, &invalid_tx_idx);
+    int res = BackupCheckPrepare(bft_msg, &invalid_tx_idx);
     if (res != kConsensusSuccess) {
         ZJC_ERROR("backup prepare failed: %d", res);
         return res;
@@ -107,11 +107,10 @@ int Zbft::Prepare(bool leader, transport::MessagePtr& msg_ptr) {
     return kConsensusSuccess;
 }
 
-int Zbft::LeaderCreatePrepare(transport::MessagePtr& msg_ptr) {
+int Zbft::LeaderCreatePrepare(hotstuff::protobuf::HotstuffMessage* bft_msg) {
     local_member_index_ = leader_index_;
-    LeaderCallTransaction(msg_ptr);
-    auto hotstuff_proto = msg_ptr->header.mutable_hotstuff_proto();
-    hotstuff::protobuf::TxBft& tx_bft = *hotstuff_proto->mutable_tx_bft();
+    LeaderCallTransaction(bft_msg);
+    hotstuff::protobuf::TxBft& tx_bft = *bft_msg->mutable_tx_bft();
     auto ltxp = tx_bft.mutable_ltx_prepare();
     if (txs_ptr_->bloom_filter == nullptr) {
         auto& tx_map = txs_ptr_->txs;
@@ -125,16 +124,14 @@ int Zbft::LeaderCreatePrepare(transport::MessagePtr& msg_ptr) {
         }
     }
 
-    msg_ptr->header.mutable_hotstuff_proto()->mutable_tx_bft()->mutable_ltx_prepare()->release_block();
-    //msg_ptr->header.mutable_hotstuff_proto()->mutable_tx_bft()->mutable_ltx_prepare()->release_prepare();
+    bft_msg->mutable_tx_bft()->mutable_ltx_prepare()->release_block();
     return kConsensusSuccess;
 }
 
 int Zbft::BackupCheckPrepare(
-        transport::MessagePtr& backup_msg_ptr,
+        hotstuff::protobuf::HotstuffMessage* bft_msg,
         int32_t* invalid_tx_idx) {
-    auto& bft_msg = *backup_msg_ptr->header.mutable_hotstuff_proto();
-    auto& tx_bft = *bft_msg.mutable_tx_bft();
+    auto& tx_bft = *bft_msg->mutable_tx_bft();
     auto ltx_msg = tx_bft.mutable_ltx_prepare();
     if (DoTransaction(*ltx_msg) != kConsensusSuccess) {
         return kConsensusInvalidPackage;
@@ -162,8 +159,7 @@ int Zbft::InitZjcTvmContext() {
     return kConsensusSuccess;
 }
 
-bool Zbft::BackupCheckLeaderValid(const transport::MessagePtr& msg_ptr) {
-    auto& bft_msg = msg_ptr->header.hotstuff_proto();
+bool Zbft::BackupCheckLeaderValid(const hotstuff::protobuf::HotstuffMessage* bft_msg) {
     auto local_elect_height = elect_height_;
     auto members = members_ptr_;
     if (members == nullptr ||
@@ -172,7 +168,7 @@ bool Zbft::BackupCheckLeaderValid(const transport::MessagePtr& msg_ptr) {
         if (members != nullptr) {
             ZJC_ERROR("get members failed!. bft_msg.member_index(): %d, members->size(): %d, "
                 "common_pk_ == libff::alt_bn128_G2::zero(), local_sec_key_ == libff::alt_bn128_Fr::zero()",
-                bft_msg.member_index(), members->size(),
+                bft_msg->member_index(), members->size(),
                 (common_pk_ == libff::alt_bn128_G2::zero()),
                 (local_sec_key_ == libff::alt_bn128_Fr::zero()));
         } else {
@@ -193,7 +189,7 @@ bool Zbft::BackupCheckLeaderValid(const transport::MessagePtr& msg_ptr) {
         return false;
     }
 
-    leader_mem_ptr_ = (*members)[bft_msg.member_index()];
+    leader_mem_ptr_ = (*members)[bft_msg->member_index()];
     if (!leader_mem_ptr_) {
         ZJC_ERROR("get leader failed!.");
         return false;
@@ -492,8 +488,8 @@ int Zbft::LeaderCreateCommitAggSign() {
 }
 
 
-void Zbft::LeaderCallTransaction(transport::MessagePtr& msg_ptr) {
-    auto& res_tx_bft = *msg_ptr->header.mutable_hotstuff_proto()->mutable_tx_bft();
+void Zbft::LeaderCallTransaction(hotstuff::protobuf::HotstuffMessage* bft_msg) {
+    auto& res_tx_bft = *bft_msg->mutable_tx_bft();
     auto ltx_msg = res_tx_bft.mutable_ltx_prepare();
     if (DoTransaction(*ltx_msg) != kConsensusSuccess) {
         ZJC_ERROR("leader do transaction failed!");

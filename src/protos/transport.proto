@@ -43,9 +43,7 @@ message Header {
     optional pools.protobuf.TxMessage tx_proto = 13;
     optional contract.protobuf.ContractMessage contract_proto = 14;
     optional elect.protobuf.ElectMessage elect_proto = 15;
-    optional hotstuff.protobuf.HotstuffMessage hotstuff_proto = 16;
-    optional hotstuff.protobuf.HotstuffMessage leader_commit = 17;
-    repeated hotstuff.protobuf.HotstuffMessage pipeline = 18;
-    optional block.protobuf.BlockMessage block_proto = 19;
-    optional pools.protobuf.ToTxHeights to_tx_heights = 20;
+    repeated hotstuff.protobuf.HotstuffMessage pipeline = 16;
+    optional block.protobuf.BlockMessage block_proto = 17;
+    optional pools.protobuf.ToTxHeights to_tx_heights = 18;
 }

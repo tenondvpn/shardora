@@ -18,7 +18,8 @@ public:
     static bool LeaderCreatePrepare(
         std::shared_ptr<security::Security>& security_ptr,
         const ZbftPtr& bft_ptr,
-        transport::protobuf::Header& msg);
+        transport::protobuf::Header& msg,
+        hotstuff::protobuf::HotstuffMessage* pipeline_msg);
     static bool BackupCreatePrepare(
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
@@ -26,7 +27,8 @@ public:
         const hotstuff::protobuf::HotstuffMessage& from_bft_msg,
         const ZbftPtr& bft_ptr,
         bool agree,
-        transport::protobuf::Header& msg);
+        transport::protobuf::Header& msg,
+        hotstuff::protobuf::HotstuffMessage* pipeline_msg);
     static bool LeaderCreatePreCommit(
         std::shared_ptr<security::Security>& security_ptr,
         const ZbftPtr& bft_ptr,

@@ -163,7 +163,7 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
     case common::kPoolsMessage:
         return consensus_thread_count_;
     case common::kConsensusMessage:
-        return msg_ptr->header.hotstuff_proto().pool_index() % consensus_thread_count_;
+        return msg_ptr->header.pipeline(0).pool_index() % consensus_thread_count_;
     default:
         return consensus_thread_count_;
     }

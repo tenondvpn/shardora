@@ -235,9 +235,24 @@ uint32_t BftManager::GetMemberIndex(uint32_t network_id, const std::string& node
 void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kConsensusMessage);
+    typedef std::pair<int32_t, int32_t> StepPriItem;
+    std::vector<StepPriItem> step_index_vec;
     for (int32_t i = 0; i < header.pipeline_size(); ++i) {
         auto& bft_msg = header.pipeline(i);
-        msg_ptr->pipeline = i;
+        step_index_vec.push_back(StepPriItem(i, int32_t(bft_msg.bft_step())));
+    }
+
+    std::sort(
+            step_index_vec.begin(),
+            step_index_vec.end(),
+            [](const StepPriItem& left, const StepPriItem& right) -> bool {
+        return left.second > right.second;
+    });
+
+    for (uint32_t i = 0; i < step_index_vec.size(); ++i) {
+        ZJC_DEBUG("step: %d, index: %d", step_index_vec[i].second, step_index_vec[i].first);
+        auto& bft_msg = header.pipeline(step_index_vec[i].first);
+        msg_ptr->pipeline = step_index_vec[i].first;
         assert(bft_msg.has_bft_step());
         ZJC_DEBUG("consensus message coming: %d, leader: %d, id: %lu",
             bft_msg.bft_step(), bft_msg.leader(), msg_ptr->header.hash64());
@@ -302,7 +317,7 @@ void BftManager::BackupHandleHotstuffMessage(
     auto& bft_msg = msg_ptr->header.pipeline(msg_ptr->pipeline);
     if (bft_msg.bft_step() == kConsensusPrepare) {
         bft_ptr = CreateBftPtr(msg_ptr);
-        if (bft_ptr == nullptr || !bft_ptr->BackupCheckLeaderValid(msg_ptr)) {
+        if (bft_ptr == nullptr || !bft_ptr->BackupCheckLeaderValid(&bft_msg)) {
             // oppose
             BackupSendOppose(msg_ptr, bft_ptr);
 //             ZJC_DEBUG("create bft ptr failed!");
@@ -605,7 +620,8 @@ int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, transport::MessagePtr& prepare_m
     }
     
     msg_ptr->thread_idx = bft_ptr->thread_index();
-    int res = bft_ptr->Prepare(true, msg_ptr);
+    auto* new_bft_msg = msg_ptr->header.add_pipeline();
+    int res = bft_ptr->Prepare(true, new_bft_msg);
     if (res != kConsensusSuccess) {
         return kConsensusError;
     }
@@ -619,7 +635,8 @@ int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, transport::MessagePtr& prepare_m
     auto msg_res = BftProto::LeaderCreatePrepare(
         security_ptr_,
         bft_ptr,
-        msg_ptr->header);
+        msg_ptr->header,
+        new_bft_msg);
     if (!msg_res) {
         return kConsensusError;
     }
@@ -642,7 +659,8 @@ int BftManager::BackupPrepare(
         const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("BackupPrepare");
     auto backup_msg_ptr = std::make_shared<transport::TransportMessage>();
-    int prepare_res = bft_ptr->Prepare(false, backup_msg_ptr);
+    auto* new_bft_msg = backup_msg_ptr->header.add_pipeline();
+    int prepare_res = bft_ptr->Prepare(false, new_bft_msg);
 #ifdef ZJC_UNITTEST
     if (test_for_prepare_evil_) {
         ZJC_ERROR("1 bft backup prepare failed! not agree bft gid: %s",
@@ -664,7 +682,8 @@ int BftManager::BackupPrepare(
         bft_msg,
         bft_ptr,
         true,
-        backup_msg_ptr->header);
+        backup_msg_ptr->header,
+        new_bft_msg);
     if (!res) {
         ZJC_ERROR("message set data failed!");
         return kConsensusError;

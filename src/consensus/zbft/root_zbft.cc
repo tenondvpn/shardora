@@ -19,10 +19,6 @@ RootZbft::~RootZbft() {
 
 }
 
-int RootZbft::Prepare(bool leader, transport::MessagePtr& msg_ptr) {
-    return Zbft::Prepare(leader, msg_ptr);
-}
-
 void RootZbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
     if (txs_ptr_->txs.size() == 1) {
         switch (txs_ptr_->txs[0]->msg_ptr->header.tx_proto().step()) {
@@ -185,7 +181,7 @@ int RootZbft::RootBackupCheckPrepare(
         const transport::MessagePtr& msg_ptr,
         int32_t* invalid_tx_idx,
         std::string* prepare) {
-    auto& tx_bft = msg_ptr->header.hotstuff_proto().tx_bft();
+    auto& tx_bft = msg_ptr->header.pipeline(0).tx_bft();
 //     std::vector<pools::TxItemPtr> tx_vec;
 //     for (int32_t i = 0; i < tx_bft.ltx_prepare().gid_size(); ++i) {
 //         pools::TxItemPtr local_tx_info = pools_mgr_->GetTx(

@@ -16,7 +16,6 @@ public:
         std::shared_ptr<WaitingTxsItem>& tx_ptr,
         std::shared_ptr<consensus::WaitingTxsPools>& pools_mgr);
     virtual ~RootZbft();
-    virtual int Prepare(bool leader, transport::MessagePtr& msg_ptr);
     virtual void DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block);
     void RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block);
     void RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_block);
