@@ -805,7 +805,9 @@ int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr) {
 #ifdef ZJC_UNITTEST
     leader_precommit_msg_ = msg_ptr;
 #else
+    ZJC_DEBUG("LeaderCallPrecommit and start new prepare consensus.");
     Start(msg_ptr->thread_idx, msg_ptr);
+    assert(msg_ptr->header.pipeline_size() == 1);
     network::Route::Instance()->Send(msg_ptr);
 #endif
     ZJC_DEBUG("LeaderCallPrecommit success gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
@@ -1027,7 +1029,9 @@ int BftManager::LeaderCallCommit(
 #ifdef ZJC_UNITTEST
     leader_commit_msg_ = leader_msg_ptr;
 #else
+    ZJC_DEBUG("LeaderCallCommit and start new prepare consensus.");
     Start(msg_ptr->thread_idx, leader_msg_ptr);
+    assert(msg_ptr->header.pipeline_size() == 1);
     network::Route::Instance()->Send(leader_msg_ptr);
 #endif
 //     ZJC_DEBUG("LeaderCommit success waiting pool_index: %u, bft gid: %s",

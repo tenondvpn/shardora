@@ -66,6 +66,14 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
         uint32_t pool_index) {
     auto txs_item = wtxs[pool_index].LeaderGetValidTxs(direct);
     if (txs_item != nullptr) {
+        LeaderFilterInvalidTx(pool_index, txs_item->txs);
+    }
+
+    if (txs_item->txs.empty()) {
+        txs_item = nullptr;
+    }
+
+    if (txs_item != nullptr) {
         txs_item->pool_index = pool_index;
         auto& tx_map = txs_item->txs;
         assert(!tx_map.empty());
@@ -109,16 +117,21 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
             txs_item->pool_index = pool_index;
             txs_item->txs[tx_ptr->tx_hash] = tx_ptr;
             txs_item->tx_type = pools::protobuf::kNormalTo;
+            LeaderFilterInvalidTx(pool_index, txs_item->txs);
         }
     }
         
     if (txs_item != nullptr) {
-        LeaderFilterInvalidTx(pool_index, txs_item->txs);
         if (txs_item->txs.empty()) {
             txs_item = nullptr;
         }
     }
 
+    if (txs_item == nullptr) {
+        ZJC_DEBUG("leader get tx failed!");
+    } else {
+        ZJC_DEBUG("leader get tx success: %u!", txs_item->txs.size());
+    }
     return txs_item;
 }
 
