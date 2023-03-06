@@ -138,7 +138,9 @@ public:
             db_ptr,
             nullptr,
             1), kConsensusSuccess);
-        ASSERT_EQ(bft_mgr.OnNewElectBlock(kTestShardingId), kConsensusSuccess);
+        auto members = elect_mgr->GetNetworkMembers(kTestShardingId);
+        bft_mgr.OnNewElectBlock(kTestShardingId, members);
+        block_mgr->OnNewElectBlock(kTestShardingId, members);
         common::GlobalInfo::Instance()->set_network_id(kTestShardingId);
     }
 
@@ -268,9 +270,9 @@ TEST_F(TestTx, TestMoreTx) {
     volatile bool over = false;
     auto leader_block_thread = [&]() {
         while (!over) {
-            leader_bft_mgr.block_mgr_->HandleAllConsensusBlocks();
-            backup_bft_mgr0.block_mgr_->HandleAllConsensusBlocks();
-            backup_bft_mgr1.block_mgr_->HandleAllConsensusBlocks();
+            leader_bft_mgr.block_mgr_->HandleAllConsensusBlocks(0);
+            backup_bft_mgr0.block_mgr_->HandleAllConsensusBlocks(0);
+            backup_bft_mgr1.block_mgr_->HandleAllConsensusBlocks(0);
             usleep(100000);
         }
     };
@@ -295,7 +297,7 @@ TEST_F(TestTx, TestMoreTx) {
         ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ != nullptr);
 
         auto start_bft_ptr = backup_bft_mgr0.GetBft(
-            0, leader_bft_mgr.leader_prepare_msg_->header.hotstuff_proto().gid(), false);
+            0, leader_bft_mgr.leader_prepare_msg_->header.pipeline(0).gid(), false);
         ASSERT_TRUE(start_bft_ptr != nullptr);
         for (int32_t i = 1; i < 20; ++i) {
             times[6 + i] += start_bft_ptr->times_[i] - start_bft_ptr->times_[i - 1];
@@ -358,8 +360,7 @@ TEST_F(TestTx, TestMoreTx) {
     block_thread.join();
 
     // batch transfer to txs
-    leader_bft_mgr.block_mgr_->CreateToTx();
-    ZJC_DEBUG("create tx success.");
+    leader_bft_mgr.block_mgr_->CreateToTx(0);
     ASSERT_TRUE(leader_bft_mgr.block_mgr_->leader_to_txs_msg_ != nullptr);
     leader_bft_mgr.block_mgr_->leader_to_txs_msg_->thread_idx = 0;
     leader_bft_mgr.block_mgr_->HandleMessage(leader_bft_mgr.block_mgr_->leader_to_txs_msg_);
@@ -407,9 +408,9 @@ TEST_F(TestTx, TestMoreTx) {
         backup_bft_mgr1.ResetTest();
     }
 
-    leader_bft_mgr.block_mgr_->HandleAllConsensusBlocks();
-    backup_bft_mgr0.block_mgr_->HandleAllConsensusBlocks();
-    backup_bft_mgr1.block_mgr_->HandleAllConsensusBlocks();
+    leader_bft_mgr.block_mgr_->HandleAllConsensusBlocks(0);
+    backup_bft_mgr0.block_mgr_->HandleAllConsensusBlocks(0);
+    backup_bft_mgr1.block_mgr_->HandleAllConsensusBlocks(0);
     // local shard to txs
     while (true) {
         // 1. prepare

@@ -28,6 +28,7 @@ static std::shared_ptr<pools::TxPoolManager> pools_mgr = nullptr;
 static std::shared_ptr<pools::TxPoolManager> pools_mgr_backup = nullptr;
 static const uint32_t kTestTxCount = 256;
 static std::shared_ptr<db::Db> db_ptr = nullptr;
+static std::shared_ptr<block::BlockManager> block_mgr = nullptr;
 
 class TestWaitingTxsPools : public testing::Test {
 public:
@@ -116,8 +117,8 @@ TEST_F(TestWaitingTxsPools, GetValidTxs) {
     uint32_t all_count = 0;
     for (int32_t i = 0; i < kTestCount; ++i) {
         AddTxs();
-        WaitingTxsPools leader_txs_pools(pools_mgr);
-        WaitingTxsPools follower_txs_pools(pools_mgr_backup);
+        WaitingTxsPools leader_txs_pools(pools_mgr, block_mgr);
+        WaitingTxsPools follower_txs_pools(pools_mgr_backup, block_mgr);
         for (int32_t j = 0; j < common::kInvalidPoolIndex; ++j) {
             auto ltxs = leader_txs_pools.LeaderGetValidTxs(false, j);
             if (ltxs == nullptr) {
