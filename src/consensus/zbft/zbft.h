@@ -381,6 +381,9 @@ public:
 
     void CreatePrecommitVerifyHash();
     void CreateCommitVerifyHash();
+    std::shared_ptr<WaitingTxsItem>& txs_ptr() {
+        return txs_ptr_;
+    }
 
 protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;

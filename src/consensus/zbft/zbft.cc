@@ -79,9 +79,9 @@ void Zbft::Destroy() {
     }
 
     if (consensus_status_ != kConsensusCommited) {
-        pools_mgr_->TxRecover(pool_index(), txs_ptr_->txs);
+        pools_mgr_->TxRecover(txs_ptr_);
     } else {
-        pools_mgr_->TxOver(pool_index(), txs_ptr_->txs);
+        pools_mgr_->TxOver(txs_ptr_);
         pools_mgr_->UpdateLatestInfo(
             pool_index(), prpare_block_->height(), prpare_block_->hash());
     }
