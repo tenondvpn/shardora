@@ -21,11 +21,13 @@ ToTxsPools::~ToTxsPools() {}
 
 void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBach& db_batch) {
     if (block.network_id() != common::GlobalInfo::Instance()->network_id()) {
+        ZJC_DEBUG("network invalid!");
         return;
     }
 
     const auto& tx_list = block.tx_list();
     if (tx_list.empty()) {
+        ZJC_DEBUG("tx list empty!");
         return;
     }
     
@@ -40,11 +42,12 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBach& 
         }
 
         if (tx_list[i].step() != pools::protobuf::kNormalFrom) {
-            ZJC_DEBUG("new from coming.");
+            ZJC_DEBUG("invalid from coming: %d", tx_list[i].step());
             continue;
         }
 
         if (tx_list[i].amount() <= 0) {
+            ZJC_DEBUG("from transfer amount invalid!");
             continue;
         }
 
@@ -59,6 +62,11 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBach& 
         auto handled_iter = handled_map_.find(sharding_id);
         if (handled_iter != handled_map_.end()) {
             if (handled_iter->second->heights(block.pool_index()) >= block.height()) {
+                ZJC_DEBUG("height invalid, %lu: %lu, sharding: %u, pool: %u!",
+                    handled_iter->second->heights(block.pool_index()),
+                    block.height(),
+                    block.network_id(),
+                    block.pool_index());
                 continue;
             }
         }
@@ -85,10 +93,12 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBach& 
         }
 
         height_iter->second[tx_list[i].to()] += tx_list[i].amount();
-        ZJC_DEBUG("add new to sharding: %u, id: %s, amount: %lu",
+        ZJC_DEBUG("new from add new to sharding: %u, id: %s, amount: %lu, pool: %u, height: %lu",
             sharding_id,
             common::Encode::HexEncode(tx_list[i].to()).c_str(),
-            height_iter->second[tx_list[i].to()]);
+            height_iter->second[tx_list[i].to()],
+            block.pool_index(),
+            block.height());
     }
 }
 
@@ -207,7 +217,8 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeig
     std::string add_heights;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto pool_iter = net_iter->second.find(i);
-        if (pool_iter == net_iter->second.end() || acc_amount_map.size() >= kMaxToTxsCount) {
+        if (pool_iter == net_iter->second.end() ||
+                pool_iter->second.empty() || acc_amount_map.size() >= kMaxToTxsCount) {
             if (handled_iter == handled_map_.end()) {
                 to_heights.add_heights(0);
             } else {

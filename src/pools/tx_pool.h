@@ -56,6 +56,13 @@ public:
         return latest_hash_;
     }
 
+    void UpdateLatestInfo(uint64_t height, const std::string& hash) {
+        if (latest_hash_ < height) {
+            latest_height_ = height;
+            latest_hash_ = hash;
+        }
+    }
+
 private:
     bool CheckTimeoutTx(TxItemPtr& tx_ptr, uint64_t timestamp_now);
 

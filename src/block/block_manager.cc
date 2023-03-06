@@ -144,23 +144,18 @@ void BlockManager::HandleNormalToTx(
         return;
     }
 
-    pools::protobuf::ToTxHeights to_heights;
-    if (!to_heights.ParseFromString(tx.storages(0).val_hash())) {
-        return;
-    }
-
-    to_txs_[to_heights.sharding_id()] = nullptr;
-    if (to_heights.sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-        return;
-    }
-
     std::string to_txs_str;
-    if (!prefix_db_->GetTemporaryKv(to_heights.tos_hash(), &to_txs_str)) {
+    if (!prefix_db_->GetTemporaryKv(tx.storages(0).val_hash(), &to_txs_str)) {
         return;
     }
 
     pools::protobuf::ToTxMessage to_txs;
     if (!to_txs.ParseFromString(to_txs_str)) {
+        return;
+    }
+
+    to_txs_[to_txs.to_heights().sharding_id()] = nullptr;
+    if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
         return;
     }
 
@@ -246,6 +241,7 @@ void BlockManager::AddNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBach& db_batch) {
+    ZJC_DEBUG("new block coming.");
     prefix_db_->SaveBlock(*block_item, db_batch);
     to_txs_pool_->NewBlock(*block_item, db_batch);
     if (block_item->network_id() == common::GlobalInfo::Instance()->network_id()) {
