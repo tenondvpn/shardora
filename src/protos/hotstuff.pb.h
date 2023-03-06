@@ -56,7 +56,7 @@ extern BackupTxPreCommitDefaultTypeInternal _BackupTxPreCommit_default_instance_
 class BackupTxPrepare;
 class BackupTxPrepareDefaultTypeInternal;
 extern BackupTxPrepareDefaultTypeInternal _BackupTxPrepare_default_instance_;
-class HotstuffMessage;
+class ZbftMessage;
 class HotstuffMessageDefaultTypeInternal;
 extern HotstuffMessageDefaultTypeInternal _HotstuffMessage_default_instance_;
 class LeaderTxCommit;
@@ -81,7 +81,7 @@ namespace google {
 namespace protobuf {
 template<> ::zjchain::hotstuff::protobuf::BackupTxPreCommit* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::BackupTxPreCommit>(Arena*);
 template<> ::zjchain::hotstuff::protobuf::BackupTxPrepare* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::BackupTxPrepare>(Arena*);
-template<> ::zjchain::hotstuff::protobuf::HotstuffMessage* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::HotstuffMessage>(Arena*);
+template<> ::zjchain::hotstuff::protobuf::ZbftMessage* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::ZbftMessage>(Arena*);
 template<> ::zjchain::hotstuff::protobuf::LeaderTxCommit* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::LeaderTxCommit>(Arena*);
 template<> ::zjchain::hotstuff::protobuf::LeaderTxPreCommit* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::LeaderTxPreCommit>(Arena*);
 template<> ::zjchain::hotstuff::protobuf::LeaderTxPrepare* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::LeaderTxPrepare>(Arena*);
@@ -1067,24 +1067,24 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
 };
 // -------------------------------------------------------------------
 
-class HotstuffMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.hotstuff.protobuf.HotstuffMessage) */ {
+class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.hotstuff.protobuf.ZbftMessage) */ {
  public:
-  HotstuffMessage();
-  virtual ~HotstuffMessage();
+  ZbftMessage();
+  virtual ~ZbftMessage();
 
-  HotstuffMessage(const HotstuffMessage& from);
+  ZbftMessage(const ZbftMessage& from);
 
-  inline HotstuffMessage& operator=(const HotstuffMessage& from) {
+  inline ZbftMessage& operator=(const ZbftMessage& from) {
     CopyFrom(from);
     return *this;
   }
   #if LANG_CXX11
-  HotstuffMessage(HotstuffMessage&& from) noexcept
-    : HotstuffMessage() {
+  ZbftMessage(ZbftMessage&& from) noexcept
+    : ZbftMessage() {
     *this = ::std::move(from);
   }
 
-  inline HotstuffMessage& operator=(HotstuffMessage&& from) noexcept {
+  inline ZbftMessage& operator=(ZbftMessage&& from) noexcept {
     if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -1101,34 +1101,34 @@ class HotstuffMessage : public ::google::protobuf::Message /* @@protoc_insertion
   }
 
   static const ::google::protobuf::Descriptor* descriptor();
-  static const HotstuffMessage& default_instance();
+  static const ZbftMessage& default_instance();
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const HotstuffMessage* internal_default_instance() {
-    return reinterpret_cast<const HotstuffMessage*>(
+  static inline const ZbftMessage* internal_default_instance() {
+    return reinterpret_cast<const ZbftMessage*>(
                &_HotstuffMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     7;
 
-  void Swap(HotstuffMessage* other);
-  friend void swap(HotstuffMessage& a, HotstuffMessage& b) {
+  void Swap(ZbftMessage* other);
+  friend void swap(ZbftMessage& a, ZbftMessage& b) {
     a.Swap(&b);
   }
 
   // implements Message ----------------------------------------------
 
-  inline HotstuffMessage* New() const final {
-    return CreateMaybeMessage<HotstuffMessage>(NULL);
+  inline ZbftMessage* New() const final {
+    return CreateMaybeMessage<ZbftMessage>(NULL);
   }
 
-  HotstuffMessage* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<HotstuffMessage>(arena);
+  ZbftMessage* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<ZbftMessage>(arena);
   }
   void CopyFrom(const ::google::protobuf::Message& from) final;
   void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const HotstuffMessage& from);
-  void MergeFrom(const HotstuffMessage& from);
+  void CopyFrom(const ZbftMessage& from);
+  void MergeFrom(const ZbftMessage& from);
   void Clear() final;
   bool IsInitialized() const final;
 
@@ -1145,7 +1145,7 @@ class HotstuffMessage : public ::google::protobuf::Message /* @@protoc_insertion
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(HotstuffMessage* other);
+  void InternalSwap(ZbftMessage* other);
   private:
   inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
     return NULL;
@@ -1387,7 +1387,7 @@ class HotstuffMessage : public ::google::protobuf::Message /* @@protoc_insertion
   ::google::protobuf::uint64 elect_height() const;
   void set_elect_height(::google::protobuf::uint64 value);
 
-  // @@protoc_insertion_point(class_scope:zjchain.hotstuff.protobuf.HotstuffMessage)
+  // @@protoc_insertion_point(class_scope:zjchain.hotstuff.protobuf.ZbftMessage)
  private:
   void set_has_gid();
   void clear_has_gid();
@@ -2281,288 +2281,288 @@ inline void TxBft::set_allocated_ltx_commit(::zjchain::hotstuff::protobuf::Leade
 
 // -------------------------------------------------------------------
 
-// HotstuffMessage
+// ZbftMessage
 
 // optional bytes gid = 1;
-inline bool HotstuffMessage::has_gid() const {
+inline bool ZbftMessage::has_gid() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void HotstuffMessage::set_has_gid() {
+inline void ZbftMessage::set_has_gid() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void HotstuffMessage::clear_has_gid() {
+inline void ZbftMessage::clear_has_gid() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void HotstuffMessage::clear_gid() {
+inline void ZbftMessage::clear_gid() {
   gid_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   clear_has_gid();
 }
-inline const ::std::string& HotstuffMessage::gid() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.gid)
+inline const ::std::string& ZbftMessage::gid() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.gid)
   return gid_.GetNoArena();
 }
-inline void HotstuffMessage::set_gid(const ::std::string& value) {
+inline void ZbftMessage::set_gid(const ::std::string& value) {
   set_has_gid();
   gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.gid)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.gid)
 }
 #if LANG_CXX11
-inline void HotstuffMessage::set_gid(::std::string&& value) {
+inline void ZbftMessage::set_gid(::std::string&& value) {
   set_has_gid();
   gid_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.HotstuffMessage.gid)
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.ZbftMessage.gid)
 }
 #endif
-inline void HotstuffMessage::set_gid(const char* value) {
+inline void ZbftMessage::set_gid(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_gid();
   gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.HotstuffMessage.gid)
+  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.ZbftMessage.gid)
 }
-inline void HotstuffMessage::set_gid(const void* value, size_t size) {
+inline void ZbftMessage::set_gid(const void* value, size_t size) {
   set_has_gid();
   gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.HotstuffMessage.gid)
+  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.ZbftMessage.gid)
 }
-inline ::std::string* HotstuffMessage::mutable_gid() {
+inline ::std::string* ZbftMessage::mutable_gid() {
   set_has_gid();
-  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.HotstuffMessage.gid)
+  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.ZbftMessage.gid)
   return gid_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* HotstuffMessage::release_gid() {
-  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.HotstuffMessage.gid)
+inline ::std::string* ZbftMessage::release_gid() {
+  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.ZbftMessage.gid)
   if (!has_gid()) {
     return NULL;
   }
   clear_has_gid();
   return gid_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void HotstuffMessage::set_allocated_gid(::std::string* gid) {
+inline void ZbftMessage::set_allocated_gid(::std::string* gid) {
   if (gid != NULL) {
     set_has_gid();
   } else {
     clear_has_gid();
   }
   gid_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), gid);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.HotstuffMessage.gid)
+  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.ZbftMessage.gid)
 }
 
 // optional int32 bft_step = 2;
-inline bool HotstuffMessage::has_bft_step() const {
+inline bool ZbftMessage::has_bft_step() const {
   return (_has_bits_[0] & 0x00000200u) != 0;
 }
-inline void HotstuffMessage::set_has_bft_step() {
+inline void ZbftMessage::set_has_bft_step() {
   _has_bits_[0] |= 0x00000200u;
 }
-inline void HotstuffMessage::clear_has_bft_step() {
+inline void ZbftMessage::clear_has_bft_step() {
   _has_bits_[0] &= ~0x00000200u;
 }
-inline void HotstuffMessage::clear_bft_step() {
+inline void ZbftMessage::clear_bft_step() {
   bft_step_ = 0;
   clear_has_bft_step();
 }
-inline ::google::protobuf::int32 HotstuffMessage::bft_step() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.bft_step)
+inline ::google::protobuf::int32 ZbftMessage::bft_step() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.bft_step)
   return bft_step_;
 }
-inline void HotstuffMessage::set_bft_step(::google::protobuf::int32 value) {
+inline void ZbftMessage::set_bft_step(::google::protobuf::int32 value) {
   set_has_bft_step();
   bft_step_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.bft_step)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.bft_step)
 }
 
 // optional bool leader = 3;
-inline bool HotstuffMessage::has_leader() const {
+inline bool ZbftMessage::has_leader() const {
   return (_has_bits_[0] & 0x00000800u) != 0;
 }
-inline void HotstuffMessage::set_has_leader() {
+inline void ZbftMessage::set_has_leader() {
   _has_bits_[0] |= 0x00000800u;
 }
-inline void HotstuffMessage::clear_has_leader() {
+inline void ZbftMessage::clear_has_leader() {
   _has_bits_[0] &= ~0x00000800u;
 }
-inline void HotstuffMessage::clear_leader() {
+inline void ZbftMessage::clear_leader() {
   leader_ = false;
   clear_has_leader();
 }
-inline bool HotstuffMessage::leader() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.leader)
+inline bool ZbftMessage::leader() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.leader)
   return leader_;
 }
-inline void HotstuffMessage::set_leader(bool value) {
+inline void ZbftMessage::set_leader(bool value) {
   set_has_leader();
   leader_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.leader)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.leader)
 }
 
 // optional uint32 net_id = 4;
-inline bool HotstuffMessage::has_net_id() const {
+inline bool ZbftMessage::has_net_id() const {
   return (_has_bits_[0] & 0x00000400u) != 0;
 }
-inline void HotstuffMessage::set_has_net_id() {
+inline void ZbftMessage::set_has_net_id() {
   _has_bits_[0] |= 0x00000400u;
 }
-inline void HotstuffMessage::clear_has_net_id() {
+inline void ZbftMessage::clear_has_net_id() {
   _has_bits_[0] &= ~0x00000400u;
 }
-inline void HotstuffMessage::clear_net_id() {
+inline void ZbftMessage::clear_net_id() {
   net_id_ = 0u;
   clear_has_net_id();
 }
-inline ::google::protobuf::uint32 HotstuffMessage::net_id() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.net_id)
+inline ::google::protobuf::uint32 ZbftMessage::net_id() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.net_id)
   return net_id_;
 }
-inline void HotstuffMessage::set_net_id(::google::protobuf::uint32 value) {
+inline void ZbftMessage::set_net_id(::google::protobuf::uint32 value) {
   set_has_net_id();
   net_id_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.net_id)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.net_id)
 }
 
 // repeated uint64 bitmap = 5;
-inline int HotstuffMessage::bitmap_size() const {
+inline int ZbftMessage::bitmap_size() const {
   return bitmap_.size();
 }
-inline void HotstuffMessage::clear_bitmap() {
+inline void ZbftMessage::clear_bitmap() {
   bitmap_.Clear();
 }
-inline ::google::protobuf::uint64 HotstuffMessage::bitmap(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.bitmap)
+inline ::google::protobuf::uint64 ZbftMessage::bitmap(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.bitmap)
   return bitmap_.Get(index);
 }
-inline void HotstuffMessage::set_bitmap(int index, ::google::protobuf::uint64 value) {
+inline void ZbftMessage::set_bitmap(int index, ::google::protobuf::uint64 value) {
   bitmap_.Set(index, value);
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.bitmap)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.bitmap)
 }
-inline void HotstuffMessage::add_bitmap(::google::protobuf::uint64 value) {
+inline void ZbftMessage::add_bitmap(::google::protobuf::uint64 value) {
   bitmap_.Add(value);
-  // @@protoc_insertion_point(field_add:zjchain.hotstuff.protobuf.HotstuffMessage.bitmap)
+  // @@protoc_insertion_point(field_add:zjchain.hotstuff.protobuf.ZbftMessage.bitmap)
 }
 inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
-HotstuffMessage::bitmap() const {
-  // @@protoc_insertion_point(field_list:zjchain.hotstuff.protobuf.HotstuffMessage.bitmap)
+ZbftMessage::bitmap() const {
+  // @@protoc_insertion_point(field_list:zjchain.hotstuff.protobuf.ZbftMessage.bitmap)
   return bitmap_;
 }
 inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
-HotstuffMessage::mutable_bitmap() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.hotstuff.protobuf.HotstuffMessage.bitmap)
+ZbftMessage::mutable_bitmap() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.hotstuff.protobuf.ZbftMessage.bitmap)
   return &bitmap_;
 }
 
 // optional bool agree = 6;
-inline bool HotstuffMessage::has_agree() const {
+inline bool ZbftMessage::has_agree() const {
   return (_has_bits_[0] & 0x00001000u) != 0;
 }
-inline void HotstuffMessage::set_has_agree() {
+inline void ZbftMessage::set_has_agree() {
   _has_bits_[0] |= 0x00001000u;
 }
-inline void HotstuffMessage::clear_has_agree() {
+inline void ZbftMessage::clear_has_agree() {
   _has_bits_[0] &= ~0x00001000u;
 }
-inline void HotstuffMessage::clear_agree() {
+inline void ZbftMessage::clear_agree() {
   agree_ = false;
   clear_has_agree();
 }
-inline bool HotstuffMessage::agree() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.agree)
+inline bool ZbftMessage::agree() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.agree)
   return agree_;
 }
-inline void HotstuffMessage::set_agree(bool value) {
+inline void ZbftMessage::set_agree(bool value) {
   set_has_agree();
   agree_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.agree)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.agree)
 }
 
 // optional uint32 pool_index = 7;
-inline bool HotstuffMessage::has_pool_index() const {
+inline bool ZbftMessage::has_pool_index() const {
   return (_has_bits_[0] & 0x00002000u) != 0;
 }
-inline void HotstuffMessage::set_has_pool_index() {
+inline void ZbftMessage::set_has_pool_index() {
   _has_bits_[0] |= 0x00002000u;
 }
-inline void HotstuffMessage::clear_has_pool_index() {
+inline void ZbftMessage::clear_has_pool_index() {
   _has_bits_[0] &= ~0x00002000u;
 }
-inline void HotstuffMessage::clear_pool_index() {
+inline void ZbftMessage::clear_pool_index() {
   pool_index_ = 0u;
   clear_has_pool_index();
 }
-inline ::google::protobuf::uint32 HotstuffMessage::pool_index() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.pool_index)
+inline ::google::protobuf::uint32 ZbftMessage::pool_index() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.pool_index)
   return pool_index_;
 }
-inline void HotstuffMessage::set_pool_index(::google::protobuf::uint32 value) {
+inline void ZbftMessage::set_pool_index(::google::protobuf::uint32 value) {
   set_has_pool_index();
   pool_index_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.pool_index)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.pool_index)
 }
 
 // optional int32 error = 8;
-inline bool HotstuffMessage::has_error() const {
+inline bool ZbftMessage::has_error() const {
   return (_has_bits_[0] & 0x00004000u) != 0;
 }
-inline void HotstuffMessage::set_has_error() {
+inline void ZbftMessage::set_has_error() {
   _has_bits_[0] |= 0x00004000u;
 }
-inline void HotstuffMessage::clear_has_error() {
+inline void ZbftMessage::clear_has_error() {
   _has_bits_[0] &= ~0x00004000u;
 }
-inline void HotstuffMessage::clear_error() {
+inline void ZbftMessage::clear_error() {
   error_ = 0;
   clear_has_error();
 }
-inline ::google::protobuf::int32 HotstuffMessage::error() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.error)
+inline ::google::protobuf::int32 ZbftMessage::error() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.error)
   return error_;
 }
-inline void HotstuffMessage::set_error(::google::protobuf::int32 value) {
+inline void ZbftMessage::set_error(::google::protobuf::int32 value) {
   set_has_error();
   error_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.error)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.error)
 }
 
 // optional .zjchain.hotstuff.protobuf.TxBft tx_bft = 9;
-inline bool HotstuffMessage::has_tx_bft() const {
+inline bool ZbftMessage::has_tx_bft() const {
   return (_has_bits_[0] & 0x00000100u) != 0;
 }
-inline void HotstuffMessage::set_has_tx_bft() {
+inline void ZbftMessage::set_has_tx_bft() {
   _has_bits_[0] |= 0x00000100u;
 }
-inline void HotstuffMessage::clear_has_tx_bft() {
+inline void ZbftMessage::clear_has_tx_bft() {
   _has_bits_[0] &= ~0x00000100u;
 }
-inline void HotstuffMessage::clear_tx_bft() {
+inline void ZbftMessage::clear_tx_bft() {
   if (tx_bft_ != NULL) tx_bft_->Clear();
   clear_has_tx_bft();
 }
-inline const ::zjchain::hotstuff::protobuf::TxBft& HotstuffMessage::_internal_tx_bft() const {
+inline const ::zjchain::hotstuff::protobuf::TxBft& ZbftMessage::_internal_tx_bft() const {
   return *tx_bft_;
 }
-inline const ::zjchain::hotstuff::protobuf::TxBft& HotstuffMessage::tx_bft() const {
+inline const ::zjchain::hotstuff::protobuf::TxBft& ZbftMessage::tx_bft() const {
   const ::zjchain::hotstuff::protobuf::TxBft* p = tx_bft_;
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.tx_bft)
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.tx_bft)
   return p != NULL ? *p : *reinterpret_cast<const ::zjchain::hotstuff::protobuf::TxBft*>(
       &::zjchain::hotstuff::protobuf::_TxBft_default_instance_);
 }
-inline ::zjchain::hotstuff::protobuf::TxBft* HotstuffMessage::release_tx_bft() {
-  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.HotstuffMessage.tx_bft)
+inline ::zjchain::hotstuff::protobuf::TxBft* ZbftMessage::release_tx_bft() {
+  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.ZbftMessage.tx_bft)
   clear_has_tx_bft();
   ::zjchain::hotstuff::protobuf::TxBft* temp = tx_bft_;
   tx_bft_ = NULL;
   return temp;
 }
-inline ::zjchain::hotstuff::protobuf::TxBft* HotstuffMessage::mutable_tx_bft() {
+inline ::zjchain::hotstuff::protobuf::TxBft* ZbftMessage::mutable_tx_bft() {
   set_has_tx_bft();
   if (tx_bft_ == NULL) {
     auto* p = CreateMaybeMessage<::zjchain::hotstuff::protobuf::TxBft>(GetArenaNoVirtual());
     tx_bft_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.HotstuffMessage.tx_bft)
+  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.ZbftMessage.tx_bft)
   return tx_bft_;
 }
-inline void HotstuffMessage::set_allocated_tx_bft(::zjchain::hotstuff::protobuf::TxBft* tx_bft) {
+inline void ZbftMessage::set_allocated_tx_bft(::zjchain::hotstuff::protobuf::TxBft* tx_bft) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete tx_bft_;
@@ -2578,595 +2578,595 @@ inline void HotstuffMessage::set_allocated_tx_bft(::zjchain::hotstuff::protobuf:
     clear_has_tx_bft();
   }
   tx_bft_ = tx_bft;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.HotstuffMessage.tx_bft)
+  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.ZbftMessage.tx_bft)
 }
 
 // optional bytes prepare_hash = 10;
-inline bool HotstuffMessage::has_prepare_hash() const {
+inline bool ZbftMessage::has_prepare_hash() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void HotstuffMessage::set_has_prepare_hash() {
+inline void ZbftMessage::set_has_prepare_hash() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void HotstuffMessage::clear_has_prepare_hash() {
+inline void ZbftMessage::clear_has_prepare_hash() {
   _has_bits_[0] &= ~0x00000002u;
 }
-inline void HotstuffMessage::clear_prepare_hash() {
+inline void ZbftMessage::clear_prepare_hash() {
   prepare_hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   clear_has_prepare_hash();
 }
-inline const ::std::string& HotstuffMessage::prepare_hash() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.prepare_hash)
+inline const ::std::string& ZbftMessage::prepare_hash() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.prepare_hash)
   return prepare_hash_.GetNoArena();
 }
-inline void HotstuffMessage::set_prepare_hash(const ::std::string& value) {
+inline void ZbftMessage::set_prepare_hash(const ::std::string& value) {
   set_has_prepare_hash();
   prepare_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.prepare_hash)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.prepare_hash)
 }
 #if LANG_CXX11
-inline void HotstuffMessage::set_prepare_hash(::std::string&& value) {
+inline void ZbftMessage::set_prepare_hash(::std::string&& value) {
   set_has_prepare_hash();
   prepare_hash_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.HotstuffMessage.prepare_hash)
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.ZbftMessage.prepare_hash)
 }
 #endif
-inline void HotstuffMessage::set_prepare_hash(const char* value) {
+inline void ZbftMessage::set_prepare_hash(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_prepare_hash();
   prepare_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.HotstuffMessage.prepare_hash)
+  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.ZbftMessage.prepare_hash)
 }
-inline void HotstuffMessage::set_prepare_hash(const void* value, size_t size) {
+inline void ZbftMessage::set_prepare_hash(const void* value, size_t size) {
   set_has_prepare_hash();
   prepare_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.HotstuffMessage.prepare_hash)
+  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.ZbftMessage.prepare_hash)
 }
-inline ::std::string* HotstuffMessage::mutable_prepare_hash() {
+inline ::std::string* ZbftMessage::mutable_prepare_hash() {
   set_has_prepare_hash();
-  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.HotstuffMessage.prepare_hash)
+  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.ZbftMessage.prepare_hash)
   return prepare_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* HotstuffMessage::release_prepare_hash() {
-  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.HotstuffMessage.prepare_hash)
+inline ::std::string* ZbftMessage::release_prepare_hash() {
+  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.ZbftMessage.prepare_hash)
   if (!has_prepare_hash()) {
     return NULL;
   }
   clear_has_prepare_hash();
   return prepare_hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void HotstuffMessage::set_allocated_prepare_hash(::std::string* prepare_hash) {
+inline void ZbftMessage::set_allocated_prepare_hash(::std::string* prepare_hash) {
   if (prepare_hash != NULL) {
     set_has_prepare_hash();
   } else {
     clear_has_prepare_hash();
   }
   prepare_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), prepare_hash);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.HotstuffMessage.prepare_hash)
+  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.ZbftMessage.prepare_hash)
 }
 
 // optional bytes node_ip = 11;
-inline bool HotstuffMessage::has_node_ip() const {
+inline bool ZbftMessage::has_node_ip() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void HotstuffMessage::set_has_node_ip() {
+inline void ZbftMessage::set_has_node_ip() {
   _has_bits_[0] |= 0x00000004u;
 }
-inline void HotstuffMessage::clear_has_node_ip() {
+inline void ZbftMessage::clear_has_node_ip() {
   _has_bits_[0] &= ~0x00000004u;
 }
-inline void HotstuffMessage::clear_node_ip() {
+inline void ZbftMessage::clear_node_ip() {
   node_ip_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   clear_has_node_ip();
 }
-inline const ::std::string& HotstuffMessage::node_ip() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.node_ip)
+inline const ::std::string& ZbftMessage::node_ip() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.node_ip)
   return node_ip_.GetNoArena();
 }
-inline void HotstuffMessage::set_node_ip(const ::std::string& value) {
+inline void ZbftMessage::set_node_ip(const ::std::string& value) {
   set_has_node_ip();
   node_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.node_ip)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.node_ip)
 }
 #if LANG_CXX11
-inline void HotstuffMessage::set_node_ip(::std::string&& value) {
+inline void ZbftMessage::set_node_ip(::std::string&& value) {
   set_has_node_ip();
   node_ip_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.HotstuffMessage.node_ip)
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.ZbftMessage.node_ip)
 }
 #endif
-inline void HotstuffMessage::set_node_ip(const char* value) {
+inline void ZbftMessage::set_node_ip(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_node_ip();
   node_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.HotstuffMessage.node_ip)
+  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.ZbftMessage.node_ip)
 }
-inline void HotstuffMessage::set_node_ip(const void* value, size_t size) {
+inline void ZbftMessage::set_node_ip(const void* value, size_t size) {
   set_has_node_ip();
   node_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.HotstuffMessage.node_ip)
+  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.ZbftMessage.node_ip)
 }
-inline ::std::string* HotstuffMessage::mutable_node_ip() {
+inline ::std::string* ZbftMessage::mutable_node_ip() {
   set_has_node_ip();
-  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.HotstuffMessage.node_ip)
+  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.ZbftMessage.node_ip)
   return node_ip_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* HotstuffMessage::release_node_ip() {
-  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.HotstuffMessage.node_ip)
+inline ::std::string* ZbftMessage::release_node_ip() {
+  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.ZbftMessage.node_ip)
   if (!has_node_ip()) {
     return NULL;
   }
   clear_has_node_ip();
   return node_ip_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void HotstuffMessage::set_allocated_node_ip(::std::string* node_ip) {
+inline void ZbftMessage::set_allocated_node_ip(::std::string* node_ip) {
   if (node_ip != NULL) {
     set_has_node_ip();
   } else {
     clear_has_node_ip();
   }
   node_ip_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), node_ip);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.HotstuffMessage.node_ip)
+  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.ZbftMessage.node_ip)
 }
 
 // optional uint32 node_port = 12;
-inline bool HotstuffMessage::has_node_port() const {
+inline bool ZbftMessage::has_node_port() const {
   return (_has_bits_[0] & 0x00008000u) != 0;
 }
-inline void HotstuffMessage::set_has_node_port() {
+inline void ZbftMessage::set_has_node_port() {
   _has_bits_[0] |= 0x00008000u;
 }
-inline void HotstuffMessage::clear_has_node_port() {
+inline void ZbftMessage::clear_has_node_port() {
   _has_bits_[0] &= ~0x00008000u;
 }
-inline void HotstuffMessage::clear_node_port() {
+inline void ZbftMessage::clear_node_port() {
   node_port_ = 0u;
   clear_has_node_port();
 }
-inline ::google::protobuf::uint32 HotstuffMessage::node_port() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.node_port)
+inline ::google::protobuf::uint32 ZbftMessage::node_port() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.node_port)
   return node_port_;
 }
-inline void HotstuffMessage::set_node_port(::google::protobuf::uint32 value) {
+inline void ZbftMessage::set_node_port(::google::protobuf::uint32 value) {
   set_has_node_port();
   node_port_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.node_port)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.node_port)
 }
 
 // optional uint32 epoch = 13;
-inline bool HotstuffMessage::has_epoch() const {
+inline bool ZbftMessage::has_epoch() const {
   return (_has_bits_[0] & 0x00010000u) != 0;
 }
-inline void HotstuffMessage::set_has_epoch() {
+inline void ZbftMessage::set_has_epoch() {
   _has_bits_[0] |= 0x00010000u;
 }
-inline void HotstuffMessage::clear_has_epoch() {
+inline void ZbftMessage::clear_has_epoch() {
   _has_bits_[0] &= ~0x00010000u;
 }
-inline void HotstuffMessage::clear_epoch() {
+inline void ZbftMessage::clear_epoch() {
   epoch_ = 0u;
   clear_has_epoch();
 }
-inline ::google::protobuf::uint32 HotstuffMessage::epoch() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.epoch)
+inline ::google::protobuf::uint32 ZbftMessage::epoch() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.epoch)
   return epoch_;
 }
-inline void HotstuffMessage::set_epoch(::google::protobuf::uint32 value) {
+inline void ZbftMessage::set_epoch(::google::protobuf::uint32 value) {
   set_has_epoch();
   epoch_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.epoch)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.epoch)
 }
 
 // optional uint32 member_index = 14;
-inline bool HotstuffMessage::has_member_index() const {
+inline bool ZbftMessage::has_member_index() const {
   return (_has_bits_[0] & 0x00020000u) != 0;
 }
-inline void HotstuffMessage::set_has_member_index() {
+inline void ZbftMessage::set_has_member_index() {
   _has_bits_[0] |= 0x00020000u;
 }
-inline void HotstuffMessage::clear_has_member_index() {
+inline void ZbftMessage::clear_has_member_index() {
   _has_bits_[0] &= ~0x00020000u;
 }
-inline void HotstuffMessage::clear_member_index() {
+inline void ZbftMessage::clear_member_index() {
   member_index_ = 0u;
   clear_has_member_index();
 }
-inline ::google::protobuf::uint32 HotstuffMessage::member_index() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.member_index)
+inline ::google::protobuf::uint32 ZbftMessage::member_index() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.member_index)
   return member_index_;
 }
-inline void HotstuffMessage::set_member_index(::google::protobuf::uint32 value) {
+inline void ZbftMessage::set_member_index(::google::protobuf::uint32 value) {
   set_has_member_index();
   member_index_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.member_index)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.member_index)
 }
 
 // optional bytes pubkey = 15;
-inline bool HotstuffMessage::has_pubkey() const {
+inline bool ZbftMessage::has_pubkey() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
-inline void HotstuffMessage::set_has_pubkey() {
+inline void ZbftMessage::set_has_pubkey() {
   _has_bits_[0] |= 0x00000008u;
 }
-inline void HotstuffMessage::clear_has_pubkey() {
+inline void ZbftMessage::clear_has_pubkey() {
   _has_bits_[0] &= ~0x00000008u;
 }
-inline void HotstuffMessage::clear_pubkey() {
+inline void ZbftMessage::clear_pubkey() {
   pubkey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   clear_has_pubkey();
 }
-inline const ::std::string& HotstuffMessage::pubkey() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.pubkey)
+inline const ::std::string& ZbftMessage::pubkey() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.pubkey)
   return pubkey_.GetNoArena();
 }
-inline void HotstuffMessage::set_pubkey(const ::std::string& value) {
+inline void ZbftMessage::set_pubkey(const ::std::string& value) {
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.pubkey)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.pubkey)
 }
 #if LANG_CXX11
-inline void HotstuffMessage::set_pubkey(::std::string&& value) {
+inline void ZbftMessage::set_pubkey(::std::string&& value) {
   set_has_pubkey();
   pubkey_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.HotstuffMessage.pubkey)
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.ZbftMessage.pubkey)
 }
 #endif
-inline void HotstuffMessage::set_pubkey(const char* value) {
+inline void ZbftMessage::set_pubkey(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.HotstuffMessage.pubkey)
+  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.ZbftMessage.pubkey)
 }
-inline void HotstuffMessage::set_pubkey(const void* value, size_t size) {
+inline void ZbftMessage::set_pubkey(const void* value, size_t size) {
   set_has_pubkey();
   pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.HotstuffMessage.pubkey)
+  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.ZbftMessage.pubkey)
 }
-inline ::std::string* HotstuffMessage::mutable_pubkey() {
+inline ::std::string* ZbftMessage::mutable_pubkey() {
   set_has_pubkey();
-  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.HotstuffMessage.pubkey)
+  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.ZbftMessage.pubkey)
   return pubkey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* HotstuffMessage::release_pubkey() {
-  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.HotstuffMessage.pubkey)
+inline ::std::string* ZbftMessage::release_pubkey() {
+  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.ZbftMessage.pubkey)
   if (!has_pubkey()) {
     return NULL;
   }
   clear_has_pubkey();
   return pubkey_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void HotstuffMessage::set_allocated_pubkey(::std::string* pubkey) {
+inline void ZbftMessage::set_allocated_pubkey(::std::string* pubkey) {
   if (pubkey != NULL) {
     set_has_pubkey();
   } else {
     clear_has_pubkey();
   }
   pubkey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), pubkey);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.HotstuffMessage.pubkey)
+  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.ZbftMessage.pubkey)
 }
 
 // optional bytes backup_enc_data = 16;
-inline bool HotstuffMessage::has_backup_enc_data() const {
+inline bool ZbftMessage::has_backup_enc_data() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
-inline void HotstuffMessage::set_has_backup_enc_data() {
+inline void ZbftMessage::set_has_backup_enc_data() {
   _has_bits_[0] |= 0x00000010u;
 }
-inline void HotstuffMessage::clear_has_backup_enc_data() {
+inline void ZbftMessage::clear_has_backup_enc_data() {
   _has_bits_[0] &= ~0x00000010u;
 }
-inline void HotstuffMessage::clear_backup_enc_data() {
+inline void ZbftMessage::clear_backup_enc_data() {
   backup_enc_data_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   clear_has_backup_enc_data();
 }
-inline const ::std::string& HotstuffMessage::backup_enc_data() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.backup_enc_data)
+inline const ::std::string& ZbftMessage::backup_enc_data() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.backup_enc_data)
   return backup_enc_data_.GetNoArena();
 }
-inline void HotstuffMessage::set_backup_enc_data(const ::std::string& value) {
+inline void ZbftMessage::set_backup_enc_data(const ::std::string& value) {
   set_has_backup_enc_data();
   backup_enc_data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.backup_enc_data)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.backup_enc_data)
 }
 #if LANG_CXX11
-inline void HotstuffMessage::set_backup_enc_data(::std::string&& value) {
+inline void ZbftMessage::set_backup_enc_data(::std::string&& value) {
   set_has_backup_enc_data();
   backup_enc_data_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.HotstuffMessage.backup_enc_data)
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.ZbftMessage.backup_enc_data)
 }
 #endif
-inline void HotstuffMessage::set_backup_enc_data(const char* value) {
+inline void ZbftMessage::set_backup_enc_data(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_backup_enc_data();
   backup_enc_data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.HotstuffMessage.backup_enc_data)
+  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.ZbftMessage.backup_enc_data)
 }
-inline void HotstuffMessage::set_backup_enc_data(const void* value, size_t size) {
+inline void ZbftMessage::set_backup_enc_data(const void* value, size_t size) {
   set_has_backup_enc_data();
   backup_enc_data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.HotstuffMessage.backup_enc_data)
+  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.ZbftMessage.backup_enc_data)
 }
-inline ::std::string* HotstuffMessage::mutable_backup_enc_data() {
+inline ::std::string* ZbftMessage::mutable_backup_enc_data() {
   set_has_backup_enc_data();
-  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.HotstuffMessage.backup_enc_data)
+  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.ZbftMessage.backup_enc_data)
   return backup_enc_data_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* HotstuffMessage::release_backup_enc_data() {
-  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.HotstuffMessage.backup_enc_data)
+inline ::std::string* ZbftMessage::release_backup_enc_data() {
+  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.ZbftMessage.backup_enc_data)
   if (!has_backup_enc_data()) {
     return NULL;
   }
   clear_has_backup_enc_data();
   return backup_enc_data_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void HotstuffMessage::set_allocated_backup_enc_data(::std::string* backup_enc_data) {
+inline void ZbftMessage::set_allocated_backup_enc_data(::std::string* backup_enc_data) {
   if (backup_enc_data != NULL) {
     set_has_backup_enc_data();
   } else {
     clear_has_backup_enc_data();
   }
   backup_enc_data_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), backup_enc_data);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.HotstuffMessage.backup_enc_data)
+  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.ZbftMessage.backup_enc_data)
 }
 
 // optional uint64 elect_height = 17;
-inline bool HotstuffMessage::has_elect_height() const {
+inline bool ZbftMessage::has_elect_height() const {
   return (_has_bits_[0] & 0x00040000u) != 0;
 }
-inline void HotstuffMessage::set_has_elect_height() {
+inline void ZbftMessage::set_has_elect_height() {
   _has_bits_[0] |= 0x00040000u;
 }
-inline void HotstuffMessage::clear_has_elect_height() {
+inline void ZbftMessage::clear_has_elect_height() {
   _has_bits_[0] &= ~0x00040000u;
 }
-inline void HotstuffMessage::clear_elect_height() {
+inline void ZbftMessage::clear_elect_height() {
   elect_height_ = GOOGLE_ULONGLONG(0);
   clear_has_elect_height();
 }
-inline ::google::protobuf::uint64 HotstuffMessage::elect_height() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.elect_height)
+inline ::google::protobuf::uint64 ZbftMessage::elect_height() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.elect_height)
   return elect_height_;
 }
-inline void HotstuffMessage::set_elect_height(::google::protobuf::uint64 value) {
+inline void ZbftMessage::set_elect_height(::google::protobuf::uint64 value) {
   set_has_elect_height();
   elect_height_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.elect_height)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.elect_height)
 }
 
 // optional bytes bls_sign_x = 18;
-inline bool HotstuffMessage::has_bls_sign_x() const {
+inline bool ZbftMessage::has_bls_sign_x() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
-inline void HotstuffMessage::set_has_bls_sign_x() {
+inline void ZbftMessage::set_has_bls_sign_x() {
   _has_bits_[0] |= 0x00000020u;
 }
-inline void HotstuffMessage::clear_has_bls_sign_x() {
+inline void ZbftMessage::clear_has_bls_sign_x() {
   _has_bits_[0] &= ~0x00000020u;
 }
-inline void HotstuffMessage::clear_bls_sign_x() {
+inline void ZbftMessage::clear_bls_sign_x() {
   bls_sign_x_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   clear_has_bls_sign_x();
 }
-inline const ::std::string& HotstuffMessage::bls_sign_x() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.bls_sign_x)
+inline const ::std::string& ZbftMessage::bls_sign_x() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.bls_sign_x)
   return bls_sign_x_.GetNoArena();
 }
-inline void HotstuffMessage::set_bls_sign_x(const ::std::string& value) {
+inline void ZbftMessage::set_bls_sign_x(const ::std::string& value) {
   set_has_bls_sign_x();
   bls_sign_x_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.bls_sign_x)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.bls_sign_x)
 }
 #if LANG_CXX11
-inline void HotstuffMessage::set_bls_sign_x(::std::string&& value) {
+inline void ZbftMessage::set_bls_sign_x(::std::string&& value) {
   set_has_bls_sign_x();
   bls_sign_x_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.HotstuffMessage.bls_sign_x)
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.ZbftMessage.bls_sign_x)
 }
 #endif
-inline void HotstuffMessage::set_bls_sign_x(const char* value) {
+inline void ZbftMessage::set_bls_sign_x(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_bls_sign_x();
   bls_sign_x_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.HotstuffMessage.bls_sign_x)
+  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.ZbftMessage.bls_sign_x)
 }
-inline void HotstuffMessage::set_bls_sign_x(const void* value, size_t size) {
+inline void ZbftMessage::set_bls_sign_x(const void* value, size_t size) {
   set_has_bls_sign_x();
   bls_sign_x_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.HotstuffMessage.bls_sign_x)
+  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.ZbftMessage.bls_sign_x)
 }
-inline ::std::string* HotstuffMessage::mutable_bls_sign_x() {
+inline ::std::string* ZbftMessage::mutable_bls_sign_x() {
   set_has_bls_sign_x();
-  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.HotstuffMessage.bls_sign_x)
+  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.ZbftMessage.bls_sign_x)
   return bls_sign_x_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* HotstuffMessage::release_bls_sign_x() {
-  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.HotstuffMessage.bls_sign_x)
+inline ::std::string* ZbftMessage::release_bls_sign_x() {
+  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.ZbftMessage.bls_sign_x)
   if (!has_bls_sign_x()) {
     return NULL;
   }
   clear_has_bls_sign_x();
   return bls_sign_x_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void HotstuffMessage::set_allocated_bls_sign_x(::std::string* bls_sign_x) {
+inline void ZbftMessage::set_allocated_bls_sign_x(::std::string* bls_sign_x) {
   if (bls_sign_x != NULL) {
     set_has_bls_sign_x();
   } else {
     clear_has_bls_sign_x();
   }
   bls_sign_x_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), bls_sign_x);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.HotstuffMessage.bls_sign_x)
+  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.ZbftMessage.bls_sign_x)
 }
 
 // optional bytes bls_sign_y = 19;
-inline bool HotstuffMessage::has_bls_sign_y() const {
+inline bool ZbftMessage::has_bls_sign_y() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
-inline void HotstuffMessage::set_has_bls_sign_y() {
+inline void ZbftMessage::set_has_bls_sign_y() {
   _has_bits_[0] |= 0x00000040u;
 }
-inline void HotstuffMessage::clear_has_bls_sign_y() {
+inline void ZbftMessage::clear_has_bls_sign_y() {
   _has_bits_[0] &= ~0x00000040u;
 }
-inline void HotstuffMessage::clear_bls_sign_y() {
+inline void ZbftMessage::clear_bls_sign_y() {
   bls_sign_y_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   clear_has_bls_sign_y();
 }
-inline const ::std::string& HotstuffMessage::bls_sign_y() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.bls_sign_y)
+inline const ::std::string& ZbftMessage::bls_sign_y() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.bls_sign_y)
   return bls_sign_y_.GetNoArena();
 }
-inline void HotstuffMessage::set_bls_sign_y(const ::std::string& value) {
+inline void ZbftMessage::set_bls_sign_y(const ::std::string& value) {
   set_has_bls_sign_y();
   bls_sign_y_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.bls_sign_y)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.bls_sign_y)
 }
 #if LANG_CXX11
-inline void HotstuffMessage::set_bls_sign_y(::std::string&& value) {
+inline void ZbftMessage::set_bls_sign_y(::std::string&& value) {
   set_has_bls_sign_y();
   bls_sign_y_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.HotstuffMessage.bls_sign_y)
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.ZbftMessage.bls_sign_y)
 }
 #endif
-inline void HotstuffMessage::set_bls_sign_y(const char* value) {
+inline void ZbftMessage::set_bls_sign_y(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_bls_sign_y();
   bls_sign_y_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.HotstuffMessage.bls_sign_y)
+  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.ZbftMessage.bls_sign_y)
 }
-inline void HotstuffMessage::set_bls_sign_y(const void* value, size_t size) {
+inline void ZbftMessage::set_bls_sign_y(const void* value, size_t size) {
   set_has_bls_sign_y();
   bls_sign_y_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.HotstuffMessage.bls_sign_y)
+  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.ZbftMessage.bls_sign_y)
 }
-inline ::std::string* HotstuffMessage::mutable_bls_sign_y() {
+inline ::std::string* ZbftMessage::mutable_bls_sign_y() {
   set_has_bls_sign_y();
-  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.HotstuffMessage.bls_sign_y)
+  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.ZbftMessage.bls_sign_y)
   return bls_sign_y_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* HotstuffMessage::release_bls_sign_y() {
-  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.HotstuffMessage.bls_sign_y)
+inline ::std::string* ZbftMessage::release_bls_sign_y() {
+  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.ZbftMessage.bls_sign_y)
   if (!has_bls_sign_y()) {
     return NULL;
   }
   clear_has_bls_sign_y();
   return bls_sign_y_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void HotstuffMessage::set_allocated_bls_sign_y(::std::string* bls_sign_y) {
+inline void ZbftMessage::set_allocated_bls_sign_y(::std::string* bls_sign_y) {
   if (bls_sign_y != NULL) {
     set_has_bls_sign_y();
   } else {
     clear_has_bls_sign_y();
   }
   bls_sign_y_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), bls_sign_y);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.HotstuffMessage.bls_sign_y)
+  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.ZbftMessage.bls_sign_y)
 }
 
 // repeated uint64 commit_bitmap = 20;
-inline int HotstuffMessage::commit_bitmap_size() const {
+inline int ZbftMessage::commit_bitmap_size() const {
   return commit_bitmap_.size();
 }
-inline void HotstuffMessage::clear_commit_bitmap() {
+inline void ZbftMessage::clear_commit_bitmap() {
   commit_bitmap_.Clear();
 }
-inline ::google::protobuf::uint64 HotstuffMessage::commit_bitmap(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.commit_bitmap)
+inline ::google::protobuf::uint64 ZbftMessage::commit_bitmap(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.commit_bitmap)
   return commit_bitmap_.Get(index);
 }
-inline void HotstuffMessage::set_commit_bitmap(int index, ::google::protobuf::uint64 value) {
+inline void ZbftMessage::set_commit_bitmap(int index, ::google::protobuf::uint64 value) {
   commit_bitmap_.Set(index, value);
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.commit_bitmap)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.commit_bitmap)
 }
-inline void HotstuffMessage::add_commit_bitmap(::google::protobuf::uint64 value) {
+inline void ZbftMessage::add_commit_bitmap(::google::protobuf::uint64 value) {
   commit_bitmap_.Add(value);
-  // @@protoc_insertion_point(field_add:zjchain.hotstuff.protobuf.HotstuffMessage.commit_bitmap)
+  // @@protoc_insertion_point(field_add:zjchain.hotstuff.protobuf.ZbftMessage.commit_bitmap)
 }
 inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
-HotstuffMessage::commit_bitmap() const {
-  // @@protoc_insertion_point(field_list:zjchain.hotstuff.protobuf.HotstuffMessage.commit_bitmap)
+ZbftMessage::commit_bitmap() const {
+  // @@protoc_insertion_point(field_list:zjchain.hotstuff.protobuf.ZbftMessage.commit_bitmap)
   return commit_bitmap_;
 }
 inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
-HotstuffMessage::mutable_commit_bitmap() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.hotstuff.protobuf.HotstuffMessage.commit_bitmap)
+ZbftMessage::mutable_commit_bitmap() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.hotstuff.protobuf.ZbftMessage.commit_bitmap)
   return &commit_bitmap_;
 }
 
 // optional bytes bls_agg_verify_hash = 21;
-inline bool HotstuffMessage::has_bls_agg_verify_hash() const {
+inline bool ZbftMessage::has_bls_agg_verify_hash() const {
   return (_has_bits_[0] & 0x00000080u) != 0;
 }
-inline void HotstuffMessage::set_has_bls_agg_verify_hash() {
+inline void ZbftMessage::set_has_bls_agg_verify_hash() {
   _has_bits_[0] |= 0x00000080u;
 }
-inline void HotstuffMessage::clear_has_bls_agg_verify_hash() {
+inline void ZbftMessage::clear_has_bls_agg_verify_hash() {
   _has_bits_[0] &= ~0x00000080u;
 }
-inline void HotstuffMessage::clear_bls_agg_verify_hash() {
+inline void ZbftMessage::clear_bls_agg_verify_hash() {
   bls_agg_verify_hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   clear_has_bls_agg_verify_hash();
 }
-inline const ::std::string& HotstuffMessage::bls_agg_verify_hash() const {
-  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.HotstuffMessage.bls_agg_verify_hash)
+inline const ::std::string& ZbftMessage::bls_agg_verify_hash() const {
+  // @@protoc_insertion_point(field_get:zjchain.hotstuff.protobuf.ZbftMessage.bls_agg_verify_hash)
   return bls_agg_verify_hash_.GetNoArena();
 }
-inline void HotstuffMessage::set_bls_agg_verify_hash(const ::std::string& value) {
+inline void ZbftMessage::set_bls_agg_verify_hash(const ::std::string& value) {
   set_has_bls_agg_verify_hash();
   bls_agg_verify_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.HotstuffMessage.bls_agg_verify_hash)
+  // @@protoc_insertion_point(field_set:zjchain.hotstuff.protobuf.ZbftMessage.bls_agg_verify_hash)
 }
 #if LANG_CXX11
-inline void HotstuffMessage::set_bls_agg_verify_hash(::std::string&& value) {
+inline void ZbftMessage::set_bls_agg_verify_hash(::std::string&& value) {
   set_has_bls_agg_verify_hash();
   bls_agg_verify_hash_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.HotstuffMessage.bls_agg_verify_hash)
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.hotstuff.protobuf.ZbftMessage.bls_agg_verify_hash)
 }
 #endif
-inline void HotstuffMessage::set_bls_agg_verify_hash(const char* value) {
+inline void ZbftMessage::set_bls_agg_verify_hash(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_bls_agg_verify_hash();
   bls_agg_verify_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.HotstuffMessage.bls_agg_verify_hash)
+  // @@protoc_insertion_point(field_set_char:zjchain.hotstuff.protobuf.ZbftMessage.bls_agg_verify_hash)
 }
-inline void HotstuffMessage::set_bls_agg_verify_hash(const void* value, size_t size) {
+inline void ZbftMessage::set_bls_agg_verify_hash(const void* value, size_t size) {
   set_has_bls_agg_verify_hash();
   bls_agg_verify_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.HotstuffMessage.bls_agg_verify_hash)
+  // @@protoc_insertion_point(field_set_pointer:zjchain.hotstuff.protobuf.ZbftMessage.bls_agg_verify_hash)
 }
-inline ::std::string* HotstuffMessage::mutable_bls_agg_verify_hash() {
+inline ::std::string* ZbftMessage::mutable_bls_agg_verify_hash() {
   set_has_bls_agg_verify_hash();
-  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.HotstuffMessage.bls_agg_verify_hash)
+  // @@protoc_insertion_point(field_mutable:zjchain.hotstuff.protobuf.ZbftMessage.bls_agg_verify_hash)
   return bls_agg_verify_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* HotstuffMessage::release_bls_agg_verify_hash() {
-  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.HotstuffMessage.bls_agg_verify_hash)
+inline ::std::string* ZbftMessage::release_bls_agg_verify_hash() {
+  // @@protoc_insertion_point(field_release:zjchain.hotstuff.protobuf.ZbftMessage.bls_agg_verify_hash)
   if (!has_bls_agg_verify_hash()) {
     return NULL;
   }
   clear_has_bls_agg_verify_hash();
   return bls_agg_verify_hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void HotstuffMessage::set_allocated_bls_agg_verify_hash(::std::string* bls_agg_verify_hash) {
+inline void ZbftMessage::set_allocated_bls_agg_verify_hash(::std::string* bls_agg_verify_hash) {
   if (bls_agg_verify_hash != NULL) {
     set_has_bls_agg_verify_hash();
   } else {
     clear_has_bls_agg_verify_hash();
   }
   bls_agg_verify_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), bls_agg_verify_hash);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.HotstuffMessage.bls_agg_verify_hash)
+  // @@protoc_insertion_point(field_set_allocated:zjchain.hotstuff.protobuf.ZbftMessage.bls_agg_verify_hash)
 }
 
 #ifdef __GNUC__

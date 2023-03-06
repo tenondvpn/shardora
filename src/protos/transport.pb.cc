@@ -1497,7 +1497,7 @@ bool Header::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated .zjchain.hotstuff.protobuf.HotstuffMessage pipeline = 16;
+      // repeated .zjchain.hotstuff.protobuf.ZbftMessage pipeline = 16;
       case 16: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(130u /* 130 & 0xFF */)) {
@@ -1645,7 +1645,7 @@ void Header::SerializeWithCachedSizes(
       15, this->_internal_elect_proto(), output);
   }
 
-  // repeated .zjchain.hotstuff.protobuf.HotstuffMessage pipeline = 16;
+  // repeated .zjchain.hotstuff.protobuf.ZbftMessage pipeline = 16;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->pipeline_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
@@ -1776,7 +1776,7 @@ void Header::SerializeWithCachedSizes(
         15, this->_internal_elect_proto(), deterministic, target);
   }
 
-  // repeated .zjchain.hotstuff.protobuf.HotstuffMessage pipeline = 16;
+  // repeated .zjchain.hotstuff.protobuf.ZbftMessage pipeline = 16;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->pipeline_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
@@ -1815,7 +1815,7 @@ size_t Header::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  // repeated .zjchain.hotstuff.protobuf.HotstuffMessage pipeline = 16;
+  // repeated .zjchain.hotstuff.protobuf.ZbftMessage pipeline = 16;
   {
     unsigned int count = static_cast<unsigned int>(this->pipeline_size());
     total_size += 2UL * count;

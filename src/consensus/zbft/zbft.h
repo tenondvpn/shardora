@@ -39,16 +39,16 @@ public:
         common::MembersPtr& members_ptr,
         libff::alt_bn128_G2& common_pk,
         libff::alt_bn128_Fr& local_sec_key);
-    int Prepare(bool leader, hotstuff::protobuf::HotstuffMessage* bft_msg);
-    int LeaderCreatePrepare(hotstuff::protobuf::HotstuffMessage* bft_msg);
+    int Prepare(bool leader, hotstuff::protobuf::ZbftMessage* bft_msg);
+    int LeaderCreatePrepare(hotstuff::protobuf::ZbftMessage* bft_msg);
     int BackupCheckPrepare(
-        hotstuff::protobuf::HotstuffMessage* bft_msg,
+        hotstuff::protobuf::ZbftMessage* bft_msg,
         int32_t* invalid_tx_idx);
 //     std::shared_ptr<hotstuff::protobuf::HotstuffLeaderPrepare> CreatePrepareTxInfo(
 //         std::shared_ptr<block::protobuf::Block>& block_ptr,
 //         hotstuff::protobuf::LeaderTxPrepare& ltx_prepare);
     int DoTransaction(hotstuff::protobuf::LeaderTxPrepare& ltx_msg);
-    void LeaderCallTransaction(hotstuff::protobuf::HotstuffMessage* bft_msg);
+    void LeaderCallTransaction(hotstuff::protobuf::ZbftMessage* bft_msg);
     int LeaderPrecommitOk(
         const hotstuff::protobuf::LeaderTxPrepare& tx_prepare,
         uint32_t index,
@@ -59,7 +59,7 @@ public:
         const libff::alt_bn128_G1& backup_sign,
         const std::string& id);
     int CheckTimeout();
-    bool BackupCheckLeaderValid(const hotstuff::protobuf::HotstuffMessage* bft_msg);
+    bool BackupCheckLeaderValid(const hotstuff::protobuf::ZbftMessage* bft_msg);
     int InitZjcTvmContext();
     void Destroy();
 

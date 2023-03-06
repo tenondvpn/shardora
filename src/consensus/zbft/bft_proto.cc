@@ -17,7 +17,7 @@ namespace consensus {
 
 void BftProto::SetLocalPublicIpPort(
         const dht::NodePtr& local_node,
-        hotstuff::protobuf::HotstuffMessage& bft_msg) {
+        hotstuff::protobuf::ZbftMessage& bft_msg) {
     if (common::GlobalInfo::Instance()->config_first_node()) {
         common::Split<> spliter(
             common::GlobalInfo::Instance()->tcp_spec().c_str(),
@@ -39,7 +39,7 @@ bool BftProto::LeaderCreatePrepare(
         std::shared_ptr<security::Security>& security_ptr,
         const ZbftPtr& bft_ptr,
         transport::protobuf::Header& msg,
-        hotstuff::protobuf::HotstuffMessage* pipeline_msg) {
+        hotstuff::protobuf::ZbftMessage* pipeline_msg) {
     msg.set_src_sharding_id(bft_ptr->network_id());
     dht::DhtKeyManager dht_key(bft_ptr->network_id());
     msg.set_des_dht_key(dht_key.StrKey());
@@ -70,11 +70,11 @@ bool BftProto::BackupCreatePrepare(
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         const transport::protobuf::Header& from_header,
-        const hotstuff::protobuf::HotstuffMessage& from_bft_msg,
+        const hotstuff::protobuf::ZbftMessage& from_bft_msg,
         const ZbftPtr& bft_ptr,
         bool agree,
         transport::protobuf::Header& msg,
-        hotstuff::protobuf::HotstuffMessage* pipeline_msg) {
+        hotstuff::protobuf::ZbftMessage* pipeline_msg) {
     msg.set_src_sharding_id(bft_ptr->network_id());
     dht::DhtKeyManager dht_key(bft_ptr->network_id());
     msg.set_des_dht_key(dht_key.StrKey());
@@ -171,7 +171,7 @@ bool BftProto::BackupCreatePreCommit(
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         const transport::protobuf::Header& from_header,
-        const hotstuff::protobuf::HotstuffMessage& from_bft_msg,
+        const hotstuff::protobuf::ZbftMessage& from_bft_msg,
         const ZbftPtr& bft_ptr,
         bool agree,
         transport::protobuf::Header& msg) {

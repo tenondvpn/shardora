@@ -613,7 +613,7 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
 }
 
 int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, transport::MessagePtr& prepare_msg_ptr) {
-    hotstuff::protobuf::HotstuffMessage bft_msg;
+    hotstuff::protobuf::ZbftMessage bft_msg;
     auto msg_ptr = prepare_msg_ptr;
     if (msg_ptr == nullptr) {
         msg_ptr = std::make_shared<transport::TransportMessage>();

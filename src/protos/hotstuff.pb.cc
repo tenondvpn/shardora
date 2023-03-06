@@ -71,7 +71,7 @@ class TxBftDefaultTypeInternal {
 } _TxBft_default_instance_;
 class HotstuffMessageDefaultTypeInternal {
  public:
-  ::google::protobuf::internal::ExplicitlyConstructed<HotstuffMessage>
+  ::google::protobuf::internal::ExplicitlyConstructed<ZbftMessage>
       _instance;
 } _HotstuffMessage_default_instance_;
 }  // namespace protobuf
@@ -189,10 +189,10 @@ static void InitDefaultsHotstuffMessage() {
 
   {
     void* ptr = &::zjchain::hotstuff::protobuf::_HotstuffMessage_default_instance_;
-    new (ptr) ::zjchain::hotstuff::protobuf::HotstuffMessage();
+    new (ptr) ::zjchain::hotstuff::protobuf::ZbftMessage();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::hotstuff::protobuf::HotstuffMessage::InitAsDefaultInstance();
+  ::zjchain::hotstuff::protobuf::ZbftMessage::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<1> scc_info_HotstuffMessage =
@@ -284,32 +284,32 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   3,
   4,
   5,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, gid_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, bft_step_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, leader_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, net_id_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, bitmap_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, agree_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, pool_index_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, error_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, tx_bft_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, prepare_hash_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, node_ip_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, node_port_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, epoch_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, member_index_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, pubkey_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, backup_enc_data_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, elect_height_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, bls_sign_x_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, bls_sign_y_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, commit_bitmap_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::HotstuffMessage, bls_agg_verify_hash_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, gid_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, bft_step_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, leader_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, net_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, bitmap_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, agree_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, pool_index_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, error_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, tx_bft_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, prepare_hash_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, node_ip_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, node_port_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, epoch_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, member_index_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, pubkey_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, backup_enc_data_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, elect_height_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, bls_sign_x_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, bls_sign_y_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, commit_bitmap_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::hotstuff::protobuf::ZbftMessage, bls_agg_verify_hash_),
   0,
   9,
   11,
@@ -340,7 +340,7 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 38, 45, sizeof(::zjchain::hotstuff::protobuf::LeaderTxCommit)},
   { 47, 53, sizeof(::zjchain::hotstuff::protobuf::ToAccountTx)},
   { 54, 65, sizeof(::zjchain::hotstuff::protobuf::TxBft)},
-  { 71, 97, sizeof(::zjchain::hotstuff::protobuf::HotstuffMessage)},
+  { 71, 97, sizeof(::zjchain::hotstuff::protobuf::ZbftMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -2606,42 +2606,42 @@ void TxBft::InternalSwap(TxBft* other) {
 
 // ===================================================================
 
-void HotstuffMessage::InitAsDefaultInstance() {
+void ZbftMessage::InitAsDefaultInstance() {
   ::zjchain::hotstuff::protobuf::_HotstuffMessage_default_instance_._instance.get_mutable()->tx_bft_ = const_cast< ::zjchain::hotstuff::protobuf::TxBft*>(
       ::zjchain::hotstuff::protobuf::TxBft::internal_default_instance());
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int HotstuffMessage::kGidFieldNumber;
-const int HotstuffMessage::kBftStepFieldNumber;
-const int HotstuffMessage::kLeaderFieldNumber;
-const int HotstuffMessage::kNetIdFieldNumber;
-const int HotstuffMessage::kBitmapFieldNumber;
-const int HotstuffMessage::kAgreeFieldNumber;
-const int HotstuffMessage::kPoolIndexFieldNumber;
-const int HotstuffMessage::kErrorFieldNumber;
-const int HotstuffMessage::kTxBftFieldNumber;
-const int HotstuffMessage::kPrepareHashFieldNumber;
-const int HotstuffMessage::kNodeIpFieldNumber;
-const int HotstuffMessage::kNodePortFieldNumber;
-const int HotstuffMessage::kEpochFieldNumber;
-const int HotstuffMessage::kMemberIndexFieldNumber;
-const int HotstuffMessage::kPubkeyFieldNumber;
-const int HotstuffMessage::kBackupEncDataFieldNumber;
-const int HotstuffMessage::kElectHeightFieldNumber;
-const int HotstuffMessage::kBlsSignXFieldNumber;
-const int HotstuffMessage::kBlsSignYFieldNumber;
-const int HotstuffMessage::kCommitBitmapFieldNumber;
-const int HotstuffMessage::kBlsAggVerifyHashFieldNumber;
+const int ZbftMessage::kGidFieldNumber;
+const int ZbftMessage::kBftStepFieldNumber;
+const int ZbftMessage::kLeaderFieldNumber;
+const int ZbftMessage::kNetIdFieldNumber;
+const int ZbftMessage::kBitmapFieldNumber;
+const int ZbftMessage::kAgreeFieldNumber;
+const int ZbftMessage::kPoolIndexFieldNumber;
+const int ZbftMessage::kErrorFieldNumber;
+const int ZbftMessage::kTxBftFieldNumber;
+const int ZbftMessage::kPrepareHashFieldNumber;
+const int ZbftMessage::kNodeIpFieldNumber;
+const int ZbftMessage::kNodePortFieldNumber;
+const int ZbftMessage::kEpochFieldNumber;
+const int ZbftMessage::kMemberIndexFieldNumber;
+const int ZbftMessage::kPubkeyFieldNumber;
+const int ZbftMessage::kBackupEncDataFieldNumber;
+const int ZbftMessage::kElectHeightFieldNumber;
+const int ZbftMessage::kBlsSignXFieldNumber;
+const int ZbftMessage::kBlsSignYFieldNumber;
+const int ZbftMessage::kCommitBitmapFieldNumber;
+const int ZbftMessage::kBlsAggVerifyHashFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
-HotstuffMessage::HotstuffMessage()
+ZbftMessage::ZbftMessage()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   ::google::protobuf::internal::InitSCC(
       &protobuf_protos_2fhotstuff_2eproto::scc_info_HotstuffMessage.base);
   SharedCtor();
-  // @@protoc_insertion_point(constructor:zjchain.hotstuff.protobuf.HotstuffMessage)
+  // @@protoc_insertion_point(constructor:zjchain.hotstuff.protobuf.ZbftMessage)
 }
-HotstuffMessage::HotstuffMessage(const HotstuffMessage& from)
+ZbftMessage::ZbftMessage(const ZbftMessage& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_),
@@ -2688,10 +2688,10 @@ HotstuffMessage::HotstuffMessage(const HotstuffMessage& from)
   ::memcpy(&bft_step_, &from.bft_step_,
     static_cast<size_t>(reinterpret_cast<char*>(&elect_height_) -
     reinterpret_cast<char*>(&bft_step_)) + sizeof(elect_height_));
-  // @@protoc_insertion_point(copy_constructor:zjchain.hotstuff.protobuf.HotstuffMessage)
+  // @@protoc_insertion_point(copy_constructor:zjchain.hotstuff.protobuf.ZbftMessage)
 }
 
-void HotstuffMessage::SharedCtor() {
+void ZbftMessage::SharedCtor() {
   gid_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   prepare_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   node_ip_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -2705,12 +2705,12 @@ void HotstuffMessage::SharedCtor() {
       reinterpret_cast<char*>(&tx_bft_)) + sizeof(elect_height_));
 }
 
-HotstuffMessage::~HotstuffMessage() {
-  // @@protoc_insertion_point(destructor:zjchain.hotstuff.protobuf.HotstuffMessage)
+ZbftMessage::~ZbftMessage() {
+  // @@protoc_insertion_point(destructor:zjchain.hotstuff.protobuf.ZbftMessage)
   SharedDtor();
 }
 
-void HotstuffMessage::SharedDtor() {
+void ZbftMessage::SharedDtor() {
   gid_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   prepare_hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   node_ip_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -2722,22 +2722,22 @@ void HotstuffMessage::SharedDtor() {
   if (this != internal_default_instance()) delete tx_bft_;
 }
 
-void HotstuffMessage::SetCachedSize(int size) const {
+void ZbftMessage::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const ::google::protobuf::Descriptor* HotstuffMessage::descriptor() {
+const ::google::protobuf::Descriptor* ZbftMessage::descriptor() {
   ::protobuf_protos_2fhotstuff_2eproto::protobuf_AssignDescriptorsOnce();
   return ::protobuf_protos_2fhotstuff_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
 }
 
-const HotstuffMessage& HotstuffMessage::default_instance() {
+const ZbftMessage& ZbftMessage::default_instance() {
   ::google::protobuf::internal::InitSCC(&protobuf_protos_2fhotstuff_2eproto::scc_info_HotstuffMessage.base);
   return *internal_default_instance();
 }
 
 
-void HotstuffMessage::Clear() {
-// @@protoc_insertion_point(message_clear_start:zjchain.hotstuff.protobuf.HotstuffMessage)
+void ZbftMessage::Clear() {
+// @@protoc_insertion_point(message_clear_start:zjchain.hotstuff.protobuf.ZbftMessage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -2789,11 +2789,11 @@ void HotstuffMessage::Clear() {
   _internal_metadata_.Clear();
 }
 
-bool HotstuffMessage::MergePartialFromCodedStream(
+bool ZbftMessage::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:zjchain.hotstuff.protobuf.HotstuffMessage)
+  // @@protoc_insertion_point(parse_start:zjchain.hotstuff.protobuf.ZbftMessage)
   for (;;) {
     ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(16383u);
     tag = p.first;
@@ -3097,17 +3097,17 @@ bool HotstuffMessage::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:zjchain.hotstuff.protobuf.HotstuffMessage)
+  // @@protoc_insertion_point(parse_success:zjchain.hotstuff.protobuf.ZbftMessage)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:zjchain.hotstuff.protobuf.HotstuffMessage)
+  // @@protoc_insertion_point(parse_failure:zjchain.hotstuff.protobuf.ZbftMessage)
   return false;
 #undef DO_
 }
 
-void HotstuffMessage::SerializeWithCachedSizes(
+void ZbftMessage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:zjchain.hotstuff.protobuf.HotstuffMessage)
+  // @@protoc_insertion_point(serialize_start:zjchain.hotstuff.protobuf.ZbftMessage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -3232,13 +3232,13 @@ void HotstuffMessage::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:zjchain.hotstuff.protobuf.HotstuffMessage)
+  // @@protoc_insertion_point(serialize_end:zjchain.hotstuff.protobuf.ZbftMessage)
 }
 
-::google::protobuf::uint8* HotstuffMessage::InternalSerializeWithCachedSizesToArray(
+::google::protobuf::uint8* ZbftMessage::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.hotstuff.protobuf.HotstuffMessage)
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.hotstuff.protobuf.ZbftMessage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -3368,12 +3368,12 @@ void HotstuffMessage::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:zjchain.hotstuff.protobuf.HotstuffMessage)
+  // @@protoc_insertion_point(serialize_to_array_end:zjchain.hotstuff.protobuf.ZbftMessage)
   return target;
 }
 
-size_t HotstuffMessage::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:zjchain.hotstuff.protobuf.HotstuffMessage)
+size_t ZbftMessage::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:zjchain.hotstuff.protobuf.ZbftMessage)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3539,23 +3539,23 @@ size_t HotstuffMessage::ByteSizeLong() const {
   return total_size;
 }
 
-void HotstuffMessage::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:zjchain.hotstuff.protobuf.HotstuffMessage)
+void ZbftMessage::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.hotstuff.protobuf.ZbftMessage)
   GOOGLE_DCHECK_NE(&from, this);
-  const HotstuffMessage* source =
-      ::google::protobuf::internal::DynamicCastToGenerated<const HotstuffMessage>(
+  const ZbftMessage* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const ZbftMessage>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.hotstuff.protobuf.HotstuffMessage)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.hotstuff.protobuf.ZbftMessage)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.hotstuff.protobuf.HotstuffMessage)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.hotstuff.protobuf.ZbftMessage)
     MergeFrom(*source);
   }
 }
 
-void HotstuffMessage::MergeFrom(const HotstuffMessage& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.hotstuff.protobuf.HotstuffMessage)
+void ZbftMessage::MergeFrom(const ZbftMessage& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.hotstuff.protobuf.ZbftMessage)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -3639,29 +3639,29 @@ void HotstuffMessage::MergeFrom(const HotstuffMessage& from) {
   }
 }
 
-void HotstuffMessage::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:zjchain.hotstuff.protobuf.HotstuffMessage)
+void ZbftMessage::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.hotstuff.protobuf.ZbftMessage)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-void HotstuffMessage::CopyFrom(const HotstuffMessage& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.hotstuff.protobuf.HotstuffMessage)
+void ZbftMessage::CopyFrom(const ZbftMessage& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.hotstuff.protobuf.ZbftMessage)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-bool HotstuffMessage::IsInitialized() const {
+bool ZbftMessage::IsInitialized() const {
   return true;
 }
 
-void HotstuffMessage::Swap(HotstuffMessage* other) {
+void ZbftMessage::Swap(ZbftMessage* other) {
   if (other == this) return;
   InternalSwap(other);
 }
-void HotstuffMessage::InternalSwap(HotstuffMessage* other) {
+void ZbftMessage::InternalSwap(ZbftMessage* other) {
   using std::swap;
   bitmap_.InternalSwap(&other->bitmap_);
   commit_bitmap_.InternalSwap(&other->commit_bitmap_);
@@ -3696,7 +3696,7 @@ void HotstuffMessage::InternalSwap(HotstuffMessage* other) {
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
 
-::google::protobuf::Metadata HotstuffMessage::GetMetadata() const {
+::google::protobuf::Metadata ZbftMessage::GetMetadata() const {
   protobuf_protos_2fhotstuff_2eproto::protobuf_AssignDescriptorsOnce();
   return ::protobuf_protos_2fhotstuff_2eproto::file_level_metadata[kIndexInFileMessages];
 }
@@ -3729,8 +3729,8 @@ template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::hotstuff::protobuf::ToA
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::hotstuff::protobuf::TxBft* Arena::CreateMaybeMessage< ::zjchain::hotstuff::protobuf::TxBft >(Arena* arena) {
   return Arena::CreateInternal< ::zjchain::hotstuff::protobuf::TxBft >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::hotstuff::protobuf::HotstuffMessage* Arena::CreateMaybeMessage< ::zjchain::hotstuff::protobuf::HotstuffMessage >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::hotstuff::protobuf::HotstuffMessage >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::hotstuff::protobuf::ZbftMessage* Arena::CreateMaybeMessage< ::zjchain::hotstuff::protobuf::ZbftMessage >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::hotstuff::protobuf::ZbftMessage >(arena);
 }
 }  // namespace protobuf
 }  // namespace google

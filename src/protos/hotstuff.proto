@@ -44,7 +44,7 @@ message TxBft {
     optional LeaderTxCommit ltx_commit = 6;
 }
 
-message HotstuffMessage {
+message ZbftMessage {
     optional bytes gid = 1;
     optional int32 bft_step = 2;
     optional bool leader = 3;
