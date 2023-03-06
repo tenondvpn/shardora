@@ -294,7 +294,9 @@ bool BftManager::VerifyLeaderIdValid(
     return true;
 }
 
-void BftManager::BackupHandleHotstuffMessage(uint8_t thread_index, transport::MessagePtr& msg_ptr) {
+void BftManager::BackupHandleHotstuffMessage(
+        uint8_t thread_index,
+        const transport::MessagePtr& msg_ptr) {
     // verify leader signature
     ZbftPtr bft_ptr = nullptr;
     auto& bft_msg = msg_ptr->header.pipeline(msg_ptr->pipeline);
