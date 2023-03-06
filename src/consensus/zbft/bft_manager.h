@@ -73,9 +73,7 @@ private:
     void LeaderHandleBftOppose(
         const ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr);
-    void BackupHandleHotstuffMessage(uint8_t thread_index, BftItemPtr& bft_item_ptr);
-    void SetBftGidPrepareInvalid(BftItemPtr& bft_item_ptr);
-    void CacheBftPrecommitMsg(BftItemPtr& bft_item_ptr);
+    void BackupHandleHotstuffMessage(uint8_t thread_index, transport::MessagePtr& msg_ptr);
     bool IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info);
     void HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr);
     int InitZbftPtr(bool leader, ZbftPtr& bft_ptr);

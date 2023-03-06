@@ -33,18 +33,12 @@ enum WaitingBlockType {
     kToBlock,
 };
 
-struct BftItem {
-    transport::MessagePtr msg_ptr;
-    bool prepare_valid{ true };
-};
-
 struct ZbftItem {
     std::shared_ptr<WaitingTxsItem> txs_ptr;
     transport::MessagePtr msg_ptr;
     bool prepare_valid{ true };
 };
 
-typedef std::shared_ptr<BftItem> BftItemPtr;
 struct LeaderPrepareItem {
     uint64_t height;
     std::vector<libff::alt_bn128_G1> backup_sign;

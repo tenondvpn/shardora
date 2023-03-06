@@ -434,6 +434,18 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
 
   // accessors -------------------------------------------------------
 
+  // repeated .zjchain.hotstuff.protobuf.HotstuffMessage pipeline = 18;
+  int pipeline_size() const;
+  void clear_pipeline();
+  static const int kPipelineFieldNumber = 18;
+  ::zjchain::hotstuff::protobuf::HotstuffMessage* mutable_pipeline(int index);
+  ::google::protobuf::RepeatedPtrField< ::zjchain::hotstuff::protobuf::HotstuffMessage >*
+      mutable_pipeline();
+  const ::zjchain::hotstuff::protobuf::HotstuffMessage& pipeline(int index) const;
+  ::zjchain::hotstuff::protobuf::HotstuffMessage* add_pipeline();
+  const ::google::protobuf::RepeatedPtrField< ::zjchain::hotstuff::protobuf::HotstuffMessage >&
+      pipeline() const;
+
   // optional bytes des_dht_key = 2;
   bool has_des_dht_key() const;
   void clear_des_dht_key();
@@ -587,10 +599,10 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::zjchain::hotstuff::protobuf::HotstuffMessage* mutable_leader_commit();
   void set_allocated_leader_commit(::zjchain::hotstuff::protobuf::HotstuffMessage* leader_commit);
 
-  // optional .zjchain.block.protobuf.BlockMessage block_proto = 18;
+  // optional .zjchain.block.protobuf.BlockMessage block_proto = 19;
   bool has_block_proto() const;
   void clear_block_proto();
-  static const int kBlockProtoFieldNumber = 18;
+  static const int kBlockProtoFieldNumber = 19;
   private:
   const ::zjchain::block::protobuf::BlockMessage& _internal_block_proto() const;
   public:
@@ -599,10 +611,10 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::zjchain::block::protobuf::BlockMessage* mutable_block_proto();
   void set_allocated_block_proto(::zjchain::block::protobuf::BlockMessage* block_proto);
 
-  // optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 19;
+  // optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 20;
   bool has_to_tx_heights() const;
   void clear_to_tx_heights();
-  static const int kToTxHeightsFieldNumber = 19;
+  static const int kToTxHeightsFieldNumber = 20;
   private:
   const ::zjchain::pools::protobuf::ToTxHeights& _internal_to_tx_heights() const;
   public:
@@ -690,6 +702,7 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::zjchain::hotstuff::protobuf::HotstuffMessage > pipeline_;
   ::google::protobuf::internal::ArenaStringPtr des_dht_key_;
   ::google::protobuf::internal::ArenaStringPtr debug_;
   ::google::protobuf::internal::ArenaStringPtr sign_;
@@ -1960,7 +1973,34 @@ inline void Header::set_allocated_leader_commit(::zjchain::hotstuff::protobuf::H
   // @@protoc_insertion_point(field_set_allocated:zjchain.transport.protobuf.Header.leader_commit)
 }
 
-// optional .zjchain.block.protobuf.BlockMessage block_proto = 18;
+// repeated .zjchain.hotstuff.protobuf.HotstuffMessage pipeline = 18;
+inline int Header::pipeline_size() const {
+  return pipeline_.size();
+}
+inline ::zjchain::hotstuff::protobuf::HotstuffMessage* Header::mutable_pipeline(int index) {
+  // @@protoc_insertion_point(field_mutable:zjchain.transport.protobuf.Header.pipeline)
+  return pipeline_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::zjchain::hotstuff::protobuf::HotstuffMessage >*
+Header::mutable_pipeline() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.transport.protobuf.Header.pipeline)
+  return &pipeline_;
+}
+inline const ::zjchain::hotstuff::protobuf::HotstuffMessage& Header::pipeline(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.transport.protobuf.Header.pipeline)
+  return pipeline_.Get(index);
+}
+inline ::zjchain::hotstuff::protobuf::HotstuffMessage* Header::add_pipeline() {
+  // @@protoc_insertion_point(field_add:zjchain.transport.protobuf.Header.pipeline)
+  return pipeline_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::zjchain::hotstuff::protobuf::HotstuffMessage >&
+Header::pipeline() const {
+  // @@protoc_insertion_point(field_list:zjchain.transport.protobuf.Header.pipeline)
+  return pipeline_;
+}
+
+// optional .zjchain.block.protobuf.BlockMessage block_proto = 19;
 inline bool Header::has_block_proto() const {
   return (_has_bits_[0] & 0x00001000u) != 0;
 }
@@ -2014,7 +2054,7 @@ inline void Header::set_allocated_block_proto(::zjchain::block::protobuf::BlockM
   // @@protoc_insertion_point(field_set_allocated:zjchain.transport.protobuf.Header.block_proto)
 }
 
-// optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 19;
+// optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 20;
 inline bool Header::has_to_tx_heights() const {
   return (_has_bits_[0] & 0x00002000u) != 0;
 }

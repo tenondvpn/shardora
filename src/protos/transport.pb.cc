@@ -165,6 +165,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, elect_proto_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, hotstuff_proto_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, leader_commit_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, pipeline_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, block_proto_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, to_tx_heights_),
   14,
@@ -184,12 +185,13 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   9,
   10,
   11,
+  ~0u,
   12,
   13,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 19, sizeof(::zjchain::transport::protobuf::BroadcastParam)},
-  { 33, 57, sizeof(::zjchain::transport::protobuf::Header)},
+  { 33, 58, sizeof(::zjchain::transport::protobuf::Header)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -231,7 +233,7 @@ void AddDescriptorsImpl() {
       "\0011\022\016\n\006header\030\t \001(\014\022\014\n\004body\030\n \001(\014\022\023\n\013net_"
       "crossed\030\013 \001(\010\022\023\n\013bloomfilter\030\014 \003(\004\022\024\n\tev"
       "il_rate\030\r \001(\002:\0010\022\036\n\023ign_bloomfilter_hop\030"
-      "\016 \001(\r:\0011\"\267\006\n\006Header\022\027\n\017src_sharding_id\030\001"
+      "\016 \001(\r:\0011\"\365\006\n\006Header\022\027\n\017src_sharding_id\030\001"
       " \001(\005\022\023\n\013des_dht_key\030\002 \001(\014\022\024\n\thop_count\030\003"
       " \001(\r:\0010\022\r\n\005debug\030\004 \001(\014\022\016\n\006hash64\030\005 \001(\004\022\014"
       "\n\004type\030\006 \001(\r\022=\n\tbroadcast\030\007 \001(\0132*.zjchai"
@@ -248,13 +250,15 @@ void AddDescriptorsImpl() {
       "rotobuf.ElectMessage\022B\n\016hotstuff_proto\030\020"
       " \001(\0132*.zjchain.hotstuff.protobuf.Hotstuf"
       "fMessage\022A\n\rleader_commit\030\021 \001(\0132*.zjchai"
-      "n.hotstuff.protobuf.HotstuffMessage\0229\n\013b"
-      "lock_proto\030\022 \001(\0132$.zjchain.block.protobu"
-      "f.BlockMessage\022:\n\rto_tx_heights\030\023 \001(\0132#."
-      "zjchain.pools.protobuf.ToTxHeights"
+      "n.hotstuff.protobuf.HotstuffMessage\022<\n\010p"
+      "ipeline\030\022 \003(\0132*.zjchain.hotstuff.protobu"
+      "f.HotstuffMessage\0229\n\013block_proto\030\023 \001(\0132$"
+      ".zjchain.block.protobuf.BlockMessage\022:\n\r"
+      "to_tx_heights\030\024 \001(\0132#.zjchain.pools.prot"
+      "obuf.ToTxHeights"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1354);
+      descriptor, 1416);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/transport.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fnetwork_2eproto::AddDescriptors();
@@ -1094,6 +1098,9 @@ void Header::clear_leader_commit() {
   if (leader_commit_ != NULL) leader_commit_->Clear();
   clear_has_leader_commit();
 }
+void Header::clear_pipeline() {
+  pipeline_.Clear();
+}
 void Header::clear_block_proto() {
   if (block_proto_ != NULL) block_proto_->Clear();
   clear_has_block_proto();
@@ -1120,6 +1127,7 @@ const int Header::kContractProtoFieldNumber;
 const int Header::kElectProtoFieldNumber;
 const int Header::kHotstuffProtoFieldNumber;
 const int Header::kLeaderCommitFieldNumber;
+const int Header::kPipelineFieldNumber;
 const int Header::kBlockProtoFieldNumber;
 const int Header::kToTxHeightsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
@@ -1134,7 +1142,8 @@ Header::Header()
 Header::Header(const Header& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
-      _has_bits_(from._has_bits_) {
+      _has_bits_(from._has_bits_),
+      pipeline_(from.pipeline_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   des_dht_key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.has_des_dht_key()) {
@@ -1260,6 +1269,7 @@ void Header::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  pipeline_.Clear();
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
@@ -1556,10 +1566,22 @@ bool Header::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .zjchain.block.protobuf.BlockMessage block_proto = 18;
+      // repeated .zjchain.hotstuff.protobuf.HotstuffMessage pipeline = 18;
       case 18: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(146u /* 146 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+                input, add_pipeline()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.block.protobuf.BlockMessage block_proto = 19;
+      case 19: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(154u /* 154 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
                input, mutable_block_proto()));
         } else {
@@ -1568,10 +1590,10 @@ bool Header::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 19;
-      case 19: {
+      // optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 20;
+      case 20: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(154u /* 154 & 0xFF */)) {
+            static_cast< ::google::protobuf::uint8>(162u /* 162 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
                input, mutable_to_tx_heights()));
         } else {
@@ -1704,16 +1726,25 @@ void Header::SerializeWithCachedSizes(
       17, this->_internal_leader_commit(), output);
   }
 
-  // optional .zjchain.block.protobuf.BlockMessage block_proto = 18;
-  if (cached_has_bits & 0x00001000u) {
+  // repeated .zjchain.hotstuff.protobuf.HotstuffMessage pipeline = 18;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->pipeline_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      18, this->_internal_block_proto(), output);
+      18,
+      this->pipeline(static_cast<int>(i)),
+      output);
   }
 
-  // optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 19;
+  // optional .zjchain.block.protobuf.BlockMessage block_proto = 19;
+  if (cached_has_bits & 0x00001000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      19, this->_internal_block_proto(), output);
+  }
+
+  // optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 20;
   if (cached_has_bits & 0x00002000u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      19, this->_internal_to_tx_heights(), output);
+      20, this->_internal_to_tx_heights(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1840,18 +1871,26 @@ void Header::SerializeWithCachedSizes(
         17, this->_internal_leader_commit(), deterministic, target);
   }
 
-  // optional .zjchain.block.protobuf.BlockMessage block_proto = 18;
+  // repeated .zjchain.hotstuff.protobuf.HotstuffMessage pipeline = 18;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->pipeline_size()); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        18, this->pipeline(static_cast<int>(i)), deterministic, target);
+  }
+
+  // optional .zjchain.block.protobuf.BlockMessage block_proto = 19;
   if (cached_has_bits & 0x00001000u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        18, this->_internal_block_proto(), deterministic, target);
+        19, this->_internal_block_proto(), deterministic, target);
   }
 
-  // optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 19;
+  // optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 20;
   if (cached_has_bits & 0x00002000u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        19, this->_internal_to_tx_heights(), deterministic, target);
+        20, this->_internal_to_tx_heights(), deterministic, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1871,6 +1910,17 @@ size_t Header::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
+  // repeated .zjchain.hotstuff.protobuf.HotstuffMessage pipeline = 18;
+  {
+    unsigned int count = static_cast<unsigned int>(this->pipeline_size());
+    total_size += 2UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          this->pipeline(static_cast<int>(i)));
+    }
+  }
+
   if (_has_bits_[0 / 32] & 255u) {
     // optional bytes des_dht_key = 2;
     if (has_des_dht_key()) {
@@ -1958,14 +2008,14 @@ size_t Header::ByteSizeLong() const {
           *leader_commit_);
     }
 
-    // optional .zjchain.block.protobuf.BlockMessage block_proto = 18;
+    // optional .zjchain.block.protobuf.BlockMessage block_proto = 19;
     if (has_block_proto()) {
       total_size += 2 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *block_proto_);
     }
 
-    // optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 19;
+    // optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 20;
     if (has_to_tx_heights()) {
       total_size += 2 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
@@ -2037,6 +2087,7 @@ void Header::MergeFrom(const Header& from) {
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
+  pipeline_.MergeFrom(from.pipeline_);
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
@@ -2132,6 +2183,7 @@ void Header::Swap(Header* other) {
 }
 void Header::InternalSwap(Header* other) {
   using std::swap;
+  CastToBase(&pipeline_)->InternalSwap(CastToBase(&other->pipeline_));
   des_dht_key_.Swap(&other->des_dht_key_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   debug_.Swap(&other->debug_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
