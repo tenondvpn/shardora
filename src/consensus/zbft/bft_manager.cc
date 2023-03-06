@@ -248,7 +248,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
         // leader 
         if (!bft_msg.leader()) {
-            BackupHandleHotstuffMessage(msg_ptr->thread_idx, bft_item_ptr);
+            BackupHandleHotstuffMessage(msg_ptr->thread_idx, msg_ptr);
             return;
         }
 
