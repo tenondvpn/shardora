@@ -434,10 +434,10 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
 
   // accessors -------------------------------------------------------
 
-  // repeated .zjchain.hotstuff.protobuf.HotstuffMessage pipeline = 18;
+  // repeated .zjchain.hotstuff.protobuf.HotstuffMessage pipeline = 16;
   int pipeline_size() const;
   void clear_pipeline();
-  static const int kPipelineFieldNumber = 18;
+  static const int kPipelineFieldNumber = 16;
   ::zjchain::hotstuff::protobuf::HotstuffMessage* mutable_pipeline(int index);
   ::google::protobuf::RepeatedPtrField< ::zjchain::hotstuff::protobuf::HotstuffMessage >*
       mutable_pipeline();
@@ -575,34 +575,10 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::zjchain::elect::protobuf::ElectMessage* mutable_elect_proto();
   void set_allocated_elect_proto(::zjchain::elect::protobuf::ElectMessage* elect_proto);
 
-  // optional .zjchain.hotstuff.protobuf.HotstuffMessage hotstuff_proto = 16;
-  bool has_hotstuff_proto() const;
-  void clear_hotstuff_proto();
-  static const int kHotstuffProtoFieldNumber = 16;
-  private:
-  const ::zjchain::hotstuff::protobuf::HotstuffMessage& _internal_hotstuff_proto() const;
-  public:
-  const ::zjchain::hotstuff::protobuf::HotstuffMessage& hotstuff_proto() const;
-  ::zjchain::hotstuff::protobuf::HotstuffMessage* release_hotstuff_proto();
-  ::zjchain::hotstuff::protobuf::HotstuffMessage* mutable_hotstuff_proto();
-  void set_allocated_hotstuff_proto(::zjchain::hotstuff::protobuf::HotstuffMessage* hotstuff_proto);
-
-  // optional .zjchain.hotstuff.protobuf.HotstuffMessage leader_commit = 17;
-  bool has_leader_commit() const;
-  void clear_leader_commit();
-  static const int kLeaderCommitFieldNumber = 17;
-  private:
-  const ::zjchain::hotstuff::protobuf::HotstuffMessage& _internal_leader_commit() const;
-  public:
-  const ::zjchain::hotstuff::protobuf::HotstuffMessage& leader_commit() const;
-  ::zjchain::hotstuff::protobuf::HotstuffMessage* release_leader_commit();
-  ::zjchain::hotstuff::protobuf::HotstuffMessage* mutable_leader_commit();
-  void set_allocated_leader_commit(::zjchain::hotstuff::protobuf::HotstuffMessage* leader_commit);
-
-  // optional .zjchain.block.protobuf.BlockMessage block_proto = 19;
+  // optional .zjchain.block.protobuf.BlockMessage block_proto = 17;
   bool has_block_proto() const;
   void clear_block_proto();
-  static const int kBlockProtoFieldNumber = 19;
+  static const int kBlockProtoFieldNumber = 17;
   private:
   const ::zjchain::block::protobuf::BlockMessage& _internal_block_proto() const;
   public:
@@ -611,10 +587,10 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::zjchain::block::protobuf::BlockMessage* mutable_block_proto();
   void set_allocated_block_proto(::zjchain::block::protobuf::BlockMessage* block_proto);
 
-  // optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 20;
+  // optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 18;
   bool has_to_tx_heights() const;
   void clear_to_tx_heights();
-  static const int kToTxHeightsFieldNumber = 20;
+  static const int kToTxHeightsFieldNumber = 18;
   private:
   const ::zjchain::pools::protobuf::ToTxHeights& _internal_to_tx_heights() const;
   public:
@@ -690,10 +666,6 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   void clear_has_contract_proto();
   void set_has_elect_proto();
   void clear_has_elect_proto();
-  void set_has_hotstuff_proto();
-  void clear_has_hotstuff_proto();
-  void set_has_leader_commit();
-  void clear_has_leader_commit();
   void set_has_block_proto();
   void clear_has_block_proto();
   void set_has_to_tx_heights();
@@ -713,8 +685,6 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::zjchain::pools::protobuf::TxMessage* tx_proto_;
   ::zjchain::contract::protobuf::ContractMessage* contract_proto_;
   ::zjchain::elect::protobuf::ElectMessage* elect_proto_;
-  ::zjchain::hotstuff::protobuf::HotstuffMessage* hotstuff_proto_;
-  ::zjchain::hotstuff::protobuf::HotstuffMessage* leader_commit_;
   ::zjchain::block::protobuf::BlockMessage* block_proto_;
   ::zjchain::pools::protobuf::ToTxHeights* to_tx_heights_;
   ::google::protobuf::int32 src_sharding_id_;
@@ -1167,13 +1137,13 @@ inline void BroadcastParam::set_ign_bloomfilter_hop(::google::protobuf::uint32 v
 
 // optional int32 src_sharding_id = 1;
 inline bool Header::has_src_sharding_id() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void Header::set_has_src_sharding_id() {
-  _has_bits_[0] |= 0x00004000u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void Header::clear_has_src_sharding_id() {
-  _has_bits_[0] &= ~0x00004000u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void Header::clear_src_sharding_id() {
   src_sharding_id_ = 0;
@@ -1257,13 +1227,13 @@ inline void Header::set_allocated_des_dht_key(::std::string* des_dht_key) {
 
 // optional uint32 hop_count = 3 [default = 0];
 inline bool Header::has_hop_count() const {
-  return (_has_bits_[0] & 0x00008000u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 inline void Header::set_has_hop_count() {
-  _has_bits_[0] |= 0x00008000u;
+  _has_bits_[0] |= 0x00002000u;
 }
 inline void Header::clear_has_hop_count() {
-  _has_bits_[0] &= ~0x00008000u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 inline void Header::clear_hop_count() {
   hop_count_ = 0u;
@@ -1347,13 +1317,13 @@ inline void Header::set_allocated_debug(::std::string* debug) {
 
 // optional uint64 hash64 = 5;
 inline bool Header::has_hash64() const {
-  return (_has_bits_[0] & 0x00010000u) != 0;
+  return (_has_bits_[0] & 0x00004000u) != 0;
 }
 inline void Header::set_has_hash64() {
-  _has_bits_[0] |= 0x00010000u;
+  _has_bits_[0] |= 0x00004000u;
 }
 inline void Header::clear_has_hash64() {
-  _has_bits_[0] &= ~0x00010000u;
+  _has_bits_[0] &= ~0x00004000u;
 }
 inline void Header::clear_hash64() {
   hash64_ = GOOGLE_ULONGLONG(0);
@@ -1371,13 +1341,13 @@ inline void Header::set_hash64(::google::protobuf::uint64 value) {
 
 // optional uint32 type = 6;
 inline bool Header::has_type() const {
-  return (_has_bits_[0] & 0x00020000u) != 0;
+  return (_has_bits_[0] & 0x00008000u) != 0;
 }
 inline void Header::set_has_type() {
-  _has_bits_[0] |= 0x00020000u;
+  _has_bits_[0] |= 0x00008000u;
 }
 inline void Header::clear_has_type() {
-  _has_bits_[0] &= ~0x00020000u;
+  _has_bits_[0] &= ~0x00008000u;
 }
 inline void Header::clear_type() {
   type_ = 0u;
@@ -1519,13 +1489,13 @@ inline void Header::set_allocated_sign(::std::string* sign) {
 
 // optional int32 version = 9 [default = 0];
 inline bool Header::has_version() const {
-  return (_has_bits_[0] & 0x00040000u) != 0;
+  return (_has_bits_[0] & 0x00010000u) != 0;
 }
 inline void Header::set_has_version() {
-  _has_bits_[0] |= 0x00040000u;
+  _has_bits_[0] |= 0x00010000u;
 }
 inline void Header::clear_has_version() {
-  _has_bits_[0] &= ~0x00040000u;
+  _has_bits_[0] &= ~0x00010000u;
 }
 inline void Header::clear_version() {
   version_ = 0;
@@ -1865,115 +1835,7 @@ inline void Header::set_allocated_elect_proto(::zjchain::elect::protobuf::ElectM
   // @@protoc_insertion_point(field_set_allocated:zjchain.transport.protobuf.Header.elect_proto)
 }
 
-// optional .zjchain.hotstuff.protobuf.HotstuffMessage hotstuff_proto = 16;
-inline bool Header::has_hotstuff_proto() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
-}
-inline void Header::set_has_hotstuff_proto() {
-  _has_bits_[0] |= 0x00000400u;
-}
-inline void Header::clear_has_hotstuff_proto() {
-  _has_bits_[0] &= ~0x00000400u;
-}
-inline const ::zjchain::hotstuff::protobuf::HotstuffMessage& Header::_internal_hotstuff_proto() const {
-  return *hotstuff_proto_;
-}
-inline const ::zjchain::hotstuff::protobuf::HotstuffMessage& Header::hotstuff_proto() const {
-  const ::zjchain::hotstuff::protobuf::HotstuffMessage* p = hotstuff_proto_;
-  // @@protoc_insertion_point(field_get:zjchain.transport.protobuf.Header.hotstuff_proto)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::hotstuff::protobuf::HotstuffMessage*>(
-      &::zjchain::hotstuff::protobuf::_HotstuffMessage_default_instance_);
-}
-inline ::zjchain::hotstuff::protobuf::HotstuffMessage* Header::release_hotstuff_proto() {
-  // @@protoc_insertion_point(field_release:zjchain.transport.protobuf.Header.hotstuff_proto)
-  clear_has_hotstuff_proto();
-  ::zjchain::hotstuff::protobuf::HotstuffMessage* temp = hotstuff_proto_;
-  hotstuff_proto_ = NULL;
-  return temp;
-}
-inline ::zjchain::hotstuff::protobuf::HotstuffMessage* Header::mutable_hotstuff_proto() {
-  set_has_hotstuff_proto();
-  if (hotstuff_proto_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::hotstuff::protobuf::HotstuffMessage>(GetArenaNoVirtual());
-    hotstuff_proto_ = p;
-  }
-  // @@protoc_insertion_point(field_mutable:zjchain.transport.protobuf.Header.hotstuff_proto)
-  return hotstuff_proto_;
-}
-inline void Header::set_allocated_hotstuff_proto(::zjchain::hotstuff::protobuf::HotstuffMessage* hotstuff_proto) {
-  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
-    delete reinterpret_cast< ::google::protobuf::MessageLite*>(hotstuff_proto_);
-  }
-  if (hotstuff_proto) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
-    if (message_arena != submessage_arena) {
-      hotstuff_proto = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, hotstuff_proto, submessage_arena);
-    }
-    set_has_hotstuff_proto();
-  } else {
-    clear_has_hotstuff_proto();
-  }
-  hotstuff_proto_ = hotstuff_proto;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.transport.protobuf.Header.hotstuff_proto)
-}
-
-// optional .zjchain.hotstuff.protobuf.HotstuffMessage leader_commit = 17;
-inline bool Header::has_leader_commit() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
-}
-inline void Header::set_has_leader_commit() {
-  _has_bits_[0] |= 0x00000800u;
-}
-inline void Header::clear_has_leader_commit() {
-  _has_bits_[0] &= ~0x00000800u;
-}
-inline const ::zjchain::hotstuff::protobuf::HotstuffMessage& Header::_internal_leader_commit() const {
-  return *leader_commit_;
-}
-inline const ::zjchain::hotstuff::protobuf::HotstuffMessage& Header::leader_commit() const {
-  const ::zjchain::hotstuff::protobuf::HotstuffMessage* p = leader_commit_;
-  // @@protoc_insertion_point(field_get:zjchain.transport.protobuf.Header.leader_commit)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::hotstuff::protobuf::HotstuffMessage*>(
-      &::zjchain::hotstuff::protobuf::_HotstuffMessage_default_instance_);
-}
-inline ::zjchain::hotstuff::protobuf::HotstuffMessage* Header::release_leader_commit() {
-  // @@protoc_insertion_point(field_release:zjchain.transport.protobuf.Header.leader_commit)
-  clear_has_leader_commit();
-  ::zjchain::hotstuff::protobuf::HotstuffMessage* temp = leader_commit_;
-  leader_commit_ = NULL;
-  return temp;
-}
-inline ::zjchain::hotstuff::protobuf::HotstuffMessage* Header::mutable_leader_commit() {
-  set_has_leader_commit();
-  if (leader_commit_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::hotstuff::protobuf::HotstuffMessage>(GetArenaNoVirtual());
-    leader_commit_ = p;
-  }
-  // @@protoc_insertion_point(field_mutable:zjchain.transport.protobuf.Header.leader_commit)
-  return leader_commit_;
-}
-inline void Header::set_allocated_leader_commit(::zjchain::hotstuff::protobuf::HotstuffMessage* leader_commit) {
-  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
-    delete reinterpret_cast< ::google::protobuf::MessageLite*>(leader_commit_);
-  }
-  if (leader_commit) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
-    if (message_arena != submessage_arena) {
-      leader_commit = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, leader_commit, submessage_arena);
-    }
-    set_has_leader_commit();
-  } else {
-    clear_has_leader_commit();
-  }
-  leader_commit_ = leader_commit;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.transport.protobuf.Header.leader_commit)
-}
-
-// repeated .zjchain.hotstuff.protobuf.HotstuffMessage pipeline = 18;
+// repeated .zjchain.hotstuff.protobuf.HotstuffMessage pipeline = 16;
 inline int Header::pipeline_size() const {
   return pipeline_.size();
 }
@@ -2000,15 +1862,15 @@ Header::pipeline() const {
   return pipeline_;
 }
 
-// optional .zjchain.block.protobuf.BlockMessage block_proto = 19;
+// optional .zjchain.block.protobuf.BlockMessage block_proto = 17;
 inline bool Header::has_block_proto() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void Header::set_has_block_proto() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void Header::clear_has_block_proto() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline const ::zjchain::block::protobuf::BlockMessage& Header::_internal_block_proto() const {
   return *block_proto_;
@@ -2054,15 +1916,15 @@ inline void Header::set_allocated_block_proto(::zjchain::block::protobuf::BlockM
   // @@protoc_insertion_point(field_set_allocated:zjchain.transport.protobuf.Header.block_proto)
 }
 
-// optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 20;
+// optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 18;
 inline bool Header::has_to_tx_heights() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 inline void Header::set_has_to_tx_heights() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00000800u;
 }
 inline void Header::clear_has_to_tx_heights() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 inline const ::zjchain::pools::protobuf::ToTxHeights& Header::_internal_to_tx_heights() const {
   return *to_tx_heights_;
