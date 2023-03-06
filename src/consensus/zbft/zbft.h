@@ -29,7 +29,7 @@ public:
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         std::shared_ptr<WaitingTxsItem>& tx_ptr,
-        std::shared_ptr<pools::TxPoolManager>& pools_mgr);
+        std::shared_ptr<consensus::WaitingTxsPools>& pools_mgr);
     virtual ~Zbft();
     virtual void DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block);
     int Init(
@@ -430,7 +430,7 @@ protected:
     uint64_t prepare_latest_height_{ 0 };
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<WaitingTxsItem> txs_ptr_ = nullptr;
-    std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
+    std::shared_ptr<consensus::WaitingTxsPools> pools_mgr_ = nullptr;
     std::string precommit_bls_agg_verify_hash_;
     std::string commit_bls_agg_verify_hash_;
     libff::alt_bn128_G1 g1_prepare_hash_;

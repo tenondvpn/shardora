@@ -18,7 +18,7 @@ Zbft::Zbft(
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         std::shared_ptr<WaitingTxsItem>& txs_ptr,
-        std::shared_ptr<pools::TxPoolManager>& pools_mgr)
+        std::shared_ptr<consensus::WaitingTxsPools>& pools_mgr)
         : account_mgr_(account_mgr),
         security_ptr_(security_ptr),
         bls_mgr_(bls_mgr),

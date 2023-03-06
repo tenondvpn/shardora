@@ -10,13 +10,34 @@ class WaitingTxsPools {
 public:
     WaitingTxsPools(
             std::shared_ptr<pools::TxPoolManager>& pool_mgr,
-            std::shared_ptr<block::BlockManager>& block_mgr) : block_mgr_(block_mgr) {
+            std::shared_ptr<block::BlockManager>& block_mgr)
+            : pool_mgr_(pool_mgr), block_mgr_(block_mgr) {
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             wtxs[i].Init(i, pool_mgr);
         }
     }
 
     ~WaitingTxsPools() {}
+
+    void TxOver(uint32_t pool_index, std::map<std::string, TxItemPtr>& over_txs) {
+        pool_mgr_->TxOver(pool_index, over_txs);
+    }
+
+    void TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs) {
+        pool_mgr_->TxRecover(pool_index, recover_txs);
+    }
+
+    void UpdateLatestInfo(uint32_t pool_index, uint64_t height, const std::string& hash) {
+        pool_mgr_->UpdateLatestInfo(pool_index, height, hash);
+    }
+
+    uint64_t latest_height(uint32_t pool_index) const {
+        return pool_mgr_->latest_height(pool_index);
+    }
+
+    std::string latest_hash(uint32_t pool_index) const {
+        return pool_mgr_->latest_hash(pool_index);
+    }
 
     std::shared_ptr<WaitingTxsItem> LeaderGetValidTxs(bool direct, uint32_t pool_index) {
         auto txs_item = wtxs[pool_index].LeaderGetValidTxs(direct);
@@ -115,6 +136,7 @@ public:
 
 private:
     WaitingTxs wtxs[common::kInvalidPoolIndex];
+    std::shared_ptr<pools::TxPoolManager> pool_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(WaitingTxsPools);
