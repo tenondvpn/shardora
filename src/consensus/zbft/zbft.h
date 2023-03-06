@@ -8,6 +8,7 @@
 #include "common/bitmap.h"
 #include "common/node_members.h"
 #include "consensus/consensus_utils.h"
+#include "consensus/waiting_txs_pools.h"
 #include "consensus/zbft/zbft_utils.h"
 #include "elect/member_manager.h"
 #include "pools/tx_pool_manager.h"

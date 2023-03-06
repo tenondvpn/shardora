@@ -11,7 +11,7 @@ ContractZbft::ContractZbft(
         std::shared_ptr<security::Security>& sec_ptr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         std::shared_ptr<WaitingTxsItem>& tx_ptr,
-        std::shared_ptr<pools::TxPoolManager>& pools_mgr)
+        std::shared_ptr<consensus::WaitingTxsPools>& pools_mgr)
         : Zbft(account_mgr, sec_ptr, bls_mgr, tx_ptr, pools_mgr) {}
 
 ContractZbft::~ContractZbft() {}

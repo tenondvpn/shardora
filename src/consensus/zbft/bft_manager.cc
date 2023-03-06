@@ -195,14 +195,14 @@ int BftManager::StartBft(
             security_ptr_,
             bls_mgr_,
             txs_ptr,
-            pools_mgr_);
+            txs_pools_);
     } else {
         bft_ptr = std::make_shared<Zbft>(
             account_mgr_,
             security_ptr_,
             bls_mgr_,
             txs_ptr,
-            pools_mgr_);
+            txs_pools_);
     }
 
     if (InitZbftPtr(true, bft_ptr) != kConsensusSuccess) {
@@ -550,14 +550,14 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
             security_ptr_,
             bls_mgr_,
             txs_ptr,
-            pools_mgr_);
+            txs_pools_);
     } else {
         bft_ptr = std::make_shared<Zbft>(
             account_mgr_,
             security_ptr_,
             bls_mgr_,
             txs_ptr,
-            pools_mgr_);
+            txs_pools_);
     }
 
     if (InitZbftPtr(false, bft_ptr) != kConsensusSuccess) {
@@ -637,6 +637,7 @@ int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, transport::MessagePtr& prepare_m
         return res;
     }
 
+    pools_mgr_->LockPool(txs_ptr_->pool_index);
     auto msg_res = BftProto::LeaderCreatePrepare(
         security_ptr_,
         bft_ptr,
@@ -691,6 +692,7 @@ int BftManager::BackupPrepare(
         return kConsensusError;
     }
 
+    pools_mgr_->LockPool(txs_ptr_->pool_index);
     AddBft(bft_ptr);
     bft_ptr->set_consensus_status(kConsensusPreCommit);
 #ifdef ZJC_UNITTEST

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "block/block_manager.h"
 #include "consensus/waiting_txs.h"
 
 namespace zjchain {
@@ -19,12 +20,14 @@ public:
 
     ~WaitingTxsPools() {}
 
-    void TxOver(uint32_t pool_index, std::map<std::string, TxItemPtr>& over_txs) {
+    void TxOver(uint32_t pool_index, std::map<std::string, pools::TxItemPtr>& over_txs) {
         pool_mgr_->TxOver(pool_index, over_txs);
+        locked_pool_[pool_index] = false;
     }
 
-    void TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs) {
+    void TxRecover(uint32_t pool_index, std::map<std::string, pools::TxItemPtr>& recover_txs) {
         pool_mgr_->TxRecover(pool_index, recover_txs);
+        locked_pool_[pool_index] = false;
     }
 
     void UpdateLatestInfo(uint32_t pool_index, uint64_t height, const std::string& hash) {
@@ -38,8 +41,16 @@ public:
     std::string latest_hash(uint32_t pool_index) const {
         return pool_mgr_->latest_hash(pool_index);
     }
+    
+    void LockPool(uint32_t pool_index) {
+        locked_pool_[pool_index] = true;
+    }
 
     std::shared_ptr<WaitingTxsItem> LeaderGetValidTxs(bool direct, uint32_t pool_index) {
+        if (locked_pool_[pool_index]) {
+            return nullptr
+        }
+
         auto txs_item = wtxs[pool_index].LeaderGetValidTxs(direct);
         if (txs_item != nullptr) {
             txs_item->pool_index = pool_index;
@@ -96,6 +107,10 @@ public:
             uint32_t pool_index,
             const std::string& tx_hash,
             uint8_t thread_idx) {
+        if (locked_pool_[pool_index]) {
+            return nullptr
+        }
+
         auto tx_ptr = block_mgr_->GetToTx(pool_index);
         if (tx_ptr != nullptr) {
             auto txs_item = std::make_shared<WaitingTxsItem>();
@@ -112,6 +127,10 @@ public:
             uint32_t pool_index,
             const common::BloomFilter& bloom_filter,
             uint8_t thread_idx) {
+        if (locked_pool_[pool_index]) {
+            return nullptr
+        }
+
         auto txs_item = wtxs[pool_index].FollowerGetTxs(bloom_filter);
         if (txs_item != nullptr) {
             txs_item->pool_index = pool_index;
@@ -125,6 +144,10 @@ public:
             uint32_t pool_index,
             const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
             uint8_t thread_idx) {
+        if (locked_pool_[pool_index]) {
+            return nullptr
+        }
+
         auto txs_item = wtxs[pool_index].FollowerGetTxs(tx_hash_list);
         if (txs_item != nullptr) {
             txs_item->pool_index = pool_index;
@@ -138,6 +161,7 @@ private:
     WaitingTxs wtxs[common::kInvalidPoolIndex];
     std::shared_ptr<pools::TxPoolManager> pool_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
+    bool locked_pool_[common::kInvalidPoolIndex] = { false };
 
     DISALLOW_COPY_AND_ASSIGN(WaitingTxsPools);
 };
