@@ -57,7 +57,7 @@ public:
     }
 
     void UpdateLatestInfo(uint64_t height, const std::string& hash) {
-        if (latest_hash_ < height) {
+        if (latest_height_ < height) {
             latest_height_ = height;
             latest_hash_ = hash;
         }
