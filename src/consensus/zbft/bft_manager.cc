@@ -258,33 +258,34 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             bft_msg.bft_step(), bft_msg.leader(), msg_ptr->header.hash64());
         if (!bft_msg.has_bft_step()) {
             ZJC_ERROR("bft message not has bft step failed!");
-            return;
+            continue;
         }
 
-        // leader 
+        // leader's message
         if (!bft_msg.leader()) {
             BackupHandleHotstuffMessage(msg_ptr->thread_idx, msg_ptr);
-            return;
+            continue;
         }
 
+        // follower's message
         auto bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.gid(), true);
         if (bft_ptr == nullptr) {
             ZJC_DEBUG("leader get bft gid failed[%s], hash64: %lu",
                 common::Encode::HexEncode(bft_msg.gid()).c_str(), msg_ptr->header.hash64());
-            return;
+            continue;
         }
 
         if (!bft_ptr->this_node_is_leader()) {
             ZJC_DEBUG("not valid leader get bft gid failed[%s]",
                 common::Encode::HexEncode(bft_msg.gid()).c_str());
-            return;
+            continue;
         }
 
         if (!bft_msg.agree()) {
             ZJC_DEBUG("not agree leader get bft gid failed[%s]",
                 common::Encode::HexEncode(bft_msg.gid()).c_str());
             LeaderHandleBftOppose(bft_ptr, msg_ptr);
-            return;
+            continue;
         }
 
         HandleHotstuffMessage(bft_ptr, msg_ptr);
@@ -736,13 +737,11 @@ int BftManager::LeaderPrecommit(
     }
 
     auto& tx_bft = bft_msg.tx_bft();
-    ZJC_DEBUG("1 LeaderPrecommit");
     int res = bft_ptr->LeaderPrecommitOk(
         tx_bft.ltx_prepare(),
         bft_msg.member_index(),
         sign,
         member_ptr->id);
-    ZJC_DEBUG("2 LeaderPrecommit");
     if (res == kConsensusAgree) {
         LeaderCallPrecommit(bft_ptr);
         bft_ptr->CreateCommitVerifyHash();
@@ -806,6 +805,7 @@ int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr) {
 #ifdef ZJC_UNITTEST
     leader_precommit_msg_ = msg_ptr;
 #else
+    Start(msg_ptr->thread_idx, msg_ptr);
     network::Route::Instance()->Send(msg_ptr);
 #endif
     ZJC_DEBUG("LeaderCallPrecommit success gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());

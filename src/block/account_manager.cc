@@ -274,7 +274,7 @@ void AccountManager::AddBlockItemToCache(
             HandleLocalToTx(thread_idx, *block_item, tx_list[i], db_batch);
             break;
         default:
-            ZJC_ERROR("invalid step: %d", tx_list[i].step());
+            ZJC_DEBUG("not handled step: %d", tx_list[i].step());
             break;
         }
     }
