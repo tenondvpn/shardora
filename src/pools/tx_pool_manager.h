@@ -59,7 +59,7 @@ public:
 
     void UpdateLatestInfo(uint32_t pool_index, uint64_t height, const std::string& hash) {
         if (pool_index >= common::kInvalidPoolIndex) {
-            return kPoolsError;
+            return;
         }
 
         return tx_pool_[pool_index].UpdateLatestInfo(height, hash);
