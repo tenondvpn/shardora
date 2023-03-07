@@ -35,7 +35,7 @@ namespace protobuf_protos_2felect_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<6> scc_info_ElectMessage;
 }  // namespace protobuf_protos_2felect_2eproto
 namespace protobuf_protos_2fhotstuff_2eproto {
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fhotstuff_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_HotstuffMessage;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fhotstuff_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_ZbftMessage;
 }  // namespace protobuf_protos_2fhotstuff_2eproto
 namespace protobuf_protos_2fnetwork_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fnetwork_2eproto ::google::protobuf::internal::SCCInfo<3> scc_info_NetworkMessage;
@@ -98,7 +98,7 @@ static void InitDefaultsHeader() {
       &protobuf_protos_2fpools_2eproto::scc_info_TxMessage.base,
       &protobuf_protos_2fcontract_2eproto::scc_info_ContractMessage.base,
       &protobuf_protos_2felect_2eproto::scc_info_ElectMessage.base,
-      &protobuf_protos_2fhotstuff_2eproto::scc_info_HotstuffMessage.base,
+      &protobuf_protos_2fhotstuff_2eproto::scc_info_ZbftMessage.base,
       &protobuf_protos_2fblock_2eproto::scc_info_BlockMessage.base,
       &protobuf_protos_2fpools_2eproto::scc_info_ToTxHeights.base,}};
 
@@ -229,7 +229,7 @@ void AddDescriptorsImpl() {
       "\0011\022\016\n\006header\030\t \001(\014\022\014\n\004body\030\n \001(\014\022\023\n\013net_"
       "crossed\030\013 \001(\010\022\023\n\013bloomfilter\030\014 \003(\004\022\024\n\tev"
       "il_rate\030\r \001(\002:\0010\022\036\n\023ign_bloomfilter_hop\030"
-      "\016 \001(\r:\0011\"\356\005\n\006Header\022\027\n\017src_sharding_id\030\001"
+      "\016 \001(\r:\0011\"\352\005\n\006Header\022\027\n\017src_sharding_id\030\001"
       " \001(\005\022\023\n\013des_dht_key\030\002 \001(\014\022\024\n\thop_count\030\003"
       " \001(\r:\0010\022\r\n\005debug\030\004 \001(\014\022\016\n\006hash64\030\005 \001(\004\022\014"
       "\n\004type\030\006 \001(\r\022=\n\tbroadcast\030\007 \001(\0132*.zjchai"
@@ -243,15 +243,14 @@ void AddDescriptorsImpl() {
       "buf.TxMessage\022B\n\016contract_proto\030\016 \001(\0132*."
       "zjchain.contract.protobuf.ContractMessag"
       "e\0229\n\013elect_proto\030\017 \001(\0132$.zjchain.elect.p"
-      "rotobuf.ElectMessage\022<\n\010pipeline\030\020 \003(\0132*"
-      ".zjchain.hotstuff.protobuf.HotstuffMessa"
-      "ge\0229\n\013block_proto\030\021 \001(\0132$.zjchain.block."
-      "protobuf.BlockMessage\022:\n\rto_tx_heights\030\022"
-      " \001(\0132#.zjchain.pools.protobuf.ToTxHeight"
-      "s"
+      "rotobuf.ElectMessage\0228\n\010pipeline\030\020 \003(\0132&"
+      ".zjchain.hotstuff.protobuf.ZbftMessage\0229"
+      "\n\013block_proto\030\021 \001(\0132$.zjchain.block.prot"
+      "obuf.BlockMessage\022:\n\rto_tx_heights\030\022 \001(\013"
+      "2#.zjchain.pools.protobuf.ToTxHeights"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1281);
+      descriptor, 1277);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/transport.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fnetwork_2eproto::AddDescriptors();

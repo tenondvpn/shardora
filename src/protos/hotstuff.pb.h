@@ -56,9 +56,6 @@ extern BackupTxPreCommitDefaultTypeInternal _BackupTxPreCommit_default_instance_
 class BackupTxPrepare;
 class BackupTxPrepareDefaultTypeInternal;
 extern BackupTxPrepareDefaultTypeInternal _BackupTxPrepare_default_instance_;
-class ZbftMessage;
-class HotstuffMessageDefaultTypeInternal;
-extern HotstuffMessageDefaultTypeInternal _HotstuffMessage_default_instance_;
 class LeaderTxCommit;
 class LeaderTxCommitDefaultTypeInternal;
 extern LeaderTxCommitDefaultTypeInternal _LeaderTxCommit_default_instance_;
@@ -74,6 +71,9 @@ extern ToAccountTxDefaultTypeInternal _ToAccountTx_default_instance_;
 class TxBft;
 class TxBftDefaultTypeInternal;
 extern TxBftDefaultTypeInternal _TxBft_default_instance_;
+class ZbftMessage;
+class ZbftMessageDefaultTypeInternal;
+extern ZbftMessageDefaultTypeInternal _ZbftMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace hotstuff
 }  // namespace zjchain
@@ -81,12 +81,12 @@ namespace google {
 namespace protobuf {
 template<> ::zjchain::hotstuff::protobuf::BackupTxPreCommit* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::BackupTxPreCommit>(Arena*);
 template<> ::zjchain::hotstuff::protobuf::BackupTxPrepare* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::BackupTxPrepare>(Arena*);
-template<> ::zjchain::hotstuff::protobuf::ZbftMessage* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::ZbftMessage>(Arena*);
 template<> ::zjchain::hotstuff::protobuf::LeaderTxCommit* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::LeaderTxCommit>(Arena*);
 template<> ::zjchain::hotstuff::protobuf::LeaderTxPreCommit* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::LeaderTxPreCommit>(Arena*);
 template<> ::zjchain::hotstuff::protobuf::LeaderTxPrepare* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::LeaderTxPrepare>(Arena*);
 template<> ::zjchain::hotstuff::protobuf::ToAccountTx* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::ToAccountTx>(Arena*);
 template<> ::zjchain::hotstuff::protobuf::TxBft* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::TxBft>(Arena*);
+template<> ::zjchain::hotstuff::protobuf::ZbftMessage* Arena::CreateMaybeMessage<::zjchain::hotstuff::protobuf::ZbftMessage>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 namespace zjchain {
@@ -1106,7 +1106,7 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const ZbftMessage* internal_default_instance() {
     return reinterpret_cast<const ZbftMessage*>(
-               &_HotstuffMessage_default_instance_);
+               &_ZbftMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     7;

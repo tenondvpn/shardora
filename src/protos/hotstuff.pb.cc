@@ -69,11 +69,11 @@ class TxBftDefaultTypeInternal {
   ::google::protobuf::internal::ExplicitlyConstructed<TxBft>
       _instance;
 } _TxBft_default_instance_;
-class HotstuffMessageDefaultTypeInternal {
+class ZbftMessageDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<ZbftMessage>
       _instance;
-} _HotstuffMessage_default_instance_;
+} _ZbftMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace hotstuff
 }  // namespace zjchain
@@ -184,19 +184,19 @@ static void InitDefaultsTxBft() {
       &protobuf_protos_2fhotstuff_2eproto::scc_info_BackupTxPreCommit.base,
       &protobuf_protos_2fhotstuff_2eproto::scc_info_LeaderTxCommit.base,}};
 
-static void InitDefaultsHotstuffMessage() {
+static void InitDefaultsZbftMessage() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   {
-    void* ptr = &::zjchain::hotstuff::protobuf::_HotstuffMessage_default_instance_;
+    void* ptr = &::zjchain::hotstuff::protobuf::_ZbftMessage_default_instance_;
     new (ptr) ::zjchain::hotstuff::protobuf::ZbftMessage();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
   ::zjchain::hotstuff::protobuf::ZbftMessage::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<1> scc_info_HotstuffMessage =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsHotstuffMessage}, {
+::google::protobuf::internal::SCCInfo<1> scc_info_ZbftMessage =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsZbftMessage}, {
       &protobuf_protos_2fhotstuff_2eproto::scc_info_TxBft.base,}};
 
 void InitDefaults() {
@@ -207,7 +207,7 @@ void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_LeaderTxCommit.base);
   ::google::protobuf::internal::InitSCC(&scc_info_ToAccountTx.base);
   ::google::protobuf::internal::InitSCC(&scc_info_TxBft.base);
-  ::google::protobuf::internal::InitSCC(&scc_info_HotstuffMessage.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_ZbftMessage.base);
 }
 
 ::google::protobuf::Metadata file_level_metadata[8];
@@ -351,7 +351,7 @@ static ::google::protobuf::Message const * const file_default_instances[] = {
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::hotstuff::protobuf::_LeaderTxCommit_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::hotstuff::protobuf::_ToAccountTx_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::hotstuff::protobuf::_TxBft_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::hotstuff::protobuf::_HotstuffMessage_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::hotstuff::protobuf::_ZbftMessage_default_instance_),
 };
 
 void protobuf_AssignDescriptors() {
@@ -398,21 +398,21 @@ void AddDescriptorsImpl() {
       "\022C\n\rbtx_precommit\030\005 \001(\0132,.zjchain.hotstu"
       "ff.protobuf.BackupTxPreCommit\022=\n\nltx_com"
       "mit\030\006 \001(\0132).zjchain.hotstuff.protobuf.Le"
-      "aderTxCommit\"\276\003\n\017HotstuffMessage\022\013\n\003gid\030"
-      "\001 \001(\014\022\020\n\010bft_step\030\002 \001(\005\022\016\n\006leader\030\003 \001(\010\022"
-      "\016\n\006net_id\030\004 \001(\r\022\016\n\006bitmap\030\005 \003(\004\022\r\n\005agree"
-      "\030\006 \001(\010\022\022\n\npool_index\030\007 \001(\r\022\r\n\005error\030\010 \001("
-      "\005\0220\n\006tx_bft\030\t \001(\0132 .zjchain.hotstuff.pro"
-      "tobuf.TxBft\022\024\n\014prepare_hash\030\n \001(\014\022\017\n\007nod"
-      "e_ip\030\013 \001(\014\022\021\n\tnode_port\030\014 \001(\r\022\r\n\005epoch\030\r"
-      " \001(\r\022\024\n\014member_index\030\016 \001(\r\022\016\n\006pubkey\030\017 \001"
-      "(\014\022\027\n\017backup_enc_data\030\020 \001(\014\022\024\n\014elect_hei"
-      "ght\030\021 \001(\004\022\022\n\nbls_sign_x\030\022 \001(\014\022\022\n\nbls_sig"
-      "n_y\030\023 \001(\014\022\025\n\rcommit_bitmap\030\024 \003(\004\022\033\n\023bls_"
-      "agg_verify_hash\030\025 \001(\014"
+      "aderTxCommit\"\272\003\n\013ZbftMessage\022\013\n\003gid\030\001 \001("
+      "\014\022\020\n\010bft_step\030\002 \001(\005\022\016\n\006leader\030\003 \001(\010\022\016\n\006n"
+      "et_id\030\004 \001(\r\022\016\n\006bitmap\030\005 \003(\004\022\r\n\005agree\030\006 \001"
+      "(\010\022\022\n\npool_index\030\007 \001(\r\022\r\n\005error\030\010 \001(\005\0220\n"
+      "\006tx_bft\030\t \001(\0132 .zjchain.hotstuff.protobu"
+      "f.TxBft\022\024\n\014prepare_hash\030\n \001(\014\022\017\n\007node_ip"
+      "\030\013 \001(\014\022\021\n\tnode_port\030\014 \001(\r\022\r\n\005epoch\030\r \001(\r"
+      "\022\024\n\014member_index\030\016 \001(\r\022\016\n\006pubkey\030\017 \001(\014\022\027"
+      "\n\017backup_enc_data\030\020 \001(\014\022\024\n\014elect_height\030"
+      "\021 \001(\004\022\022\n\nbls_sign_x\030\022 \001(\014\022\022\n\nbls_sign_y\030"
+      "\023 \001(\014\022\025\n\rcommit_bitmap\030\024 \003(\004\022\033\n\023bls_agg_"
+      "verify_hash\030\025 \001(\014"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1381);
+      descriptor, 1377);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/hotstuff.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fblock_2eproto::AddDescriptors();
@@ -2607,7 +2607,7 @@ void TxBft::InternalSwap(TxBft* other) {
 // ===================================================================
 
 void ZbftMessage::InitAsDefaultInstance() {
-  ::zjchain::hotstuff::protobuf::_HotstuffMessage_default_instance_._instance.get_mutable()->tx_bft_ = const_cast< ::zjchain::hotstuff::protobuf::TxBft*>(
+  ::zjchain::hotstuff::protobuf::_ZbftMessage_default_instance_._instance.get_mutable()->tx_bft_ = const_cast< ::zjchain::hotstuff::protobuf::TxBft*>(
       ::zjchain::hotstuff::protobuf::TxBft::internal_default_instance());
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
@@ -2637,7 +2637,7 @@ const int ZbftMessage::kBlsAggVerifyHashFieldNumber;
 ZbftMessage::ZbftMessage()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   ::google::protobuf::internal::InitSCC(
-      &protobuf_protos_2fhotstuff_2eproto::scc_info_HotstuffMessage.base);
+      &protobuf_protos_2fhotstuff_2eproto::scc_info_ZbftMessage.base);
   SharedCtor();
   // @@protoc_insertion_point(constructor:zjchain.hotstuff.protobuf.ZbftMessage)
 }
@@ -2731,7 +2731,7 @@ const ::google::protobuf::Descriptor* ZbftMessage::descriptor() {
 }
 
 const ZbftMessage& ZbftMessage::default_instance() {
-  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fhotstuff_2eproto::scc_info_HotstuffMessage.base);
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fhotstuff_2eproto::scc_info_ZbftMessage.base);
   return *internal_default_instance();
 }
 
