@@ -208,30 +208,31 @@ TEST_F(TestTx, TestTx) {
     AddTxs(backup_bft_mgr0, tx_info);
     AddTxs(backup_bft_mgr1, tx_info);
     transport::MessagePtr prepare_msg_ptr = nullptr;
-    ASSERT_EQ(leader_bft_mgr.Start(0, prepare_msg_ptr), kConsensusSuccess);
-    leader_bft_mgr.leader_prepare_msg_->thread_idx = 0;
-    backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
-    ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ != nullptr);
-    backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
-    ASSERT_TRUE(backup_bft_mgr1.backup_prepare_msg_ != nullptr);
-    backup_bft_mgr0.backup_prepare_msg_->thread_idx = 0;
-    backup_bft_mgr1.backup_prepare_msg_->thread_idx = 0;
-    leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_prepare_msg_);
-    leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_prepare_msg_);
-    ASSERT_TRUE(leader_bft_mgr.leader_precommit_msg_ != nullptr);
-    leader_bft_mgr.leader_precommit_msg_->thread_idx = 0;
-    backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
-    ASSERT_TRUE(backup_bft_mgr0.backup_precommit_msg_ != nullptr);
-    backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
-    ASSERT_TRUE(backup_bft_mgr1.backup_precommit_msg_ != nullptr);
-    backup_bft_mgr0.backup_precommit_msg_->thread_idx = 0;
-    backup_bft_mgr1.backup_precommit_msg_->thread_idx = 0;
-    leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_precommit_msg_);
-    leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_precommit_msg_);
-    ASSERT_TRUE(leader_bft_mgr.leader_commit_msg_ != nullptr);
-    leader_bft_mgr.leader_commit_msg_->thread_idx = 0;
-    backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_commit_msg_);
-    backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_commit_msg_);
+    auto bft_ptr = leader_bft_mgr.Start(0, prepare_msg_ptr);
+    ASSERT_TRUE(bft_ptr != nullptr);
+    leader_bft_mgr.now_msg_->thread_idx = 0;
+    backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+    ASSERT_TRUE(backup_bft_mgr0.now_msg_ != nullptr);
+    backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
+    ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
+    backup_bft_mgr0.now_msg_->thread_idx = 0;
+    backup_bft_mgr1.now_msg_->thread_idx = 0;
+    leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
+    leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
+    ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
+    leader_bft_mgr.now_msg_->thread_idx = 0;
+    backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+    ASSERT_TRUE(backup_bft_mgr0.now_msg_ != nullptr);
+    backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
+    ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
+    backup_bft_mgr0.now_msg_->thread_idx = 0;
+    backup_bft_mgr1.now_msg_->thread_idx = 0;
+    leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
+    leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
+    ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
+    leader_bft_mgr.now_msg_->thread_idx = 0;
+    backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+    backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
 };
 
 TEST_F(TestTx, TestMoreTx) {
@@ -284,66 +285,80 @@ TEST_F(TestTx, TestMoreTx) {
         // 1. prepare
         auto tm0 = common::TimeUtils::TimestampUs();
         transport::MessagePtr prepare_msg_ptr = nullptr;
-        leader_bft_mgr.Start(0, prepare_msg_ptr);
-        if (leader_bft_mgr.leader_prepare_msg_ == nullptr) {
-            break;
+        if (backup_bft_mgr0.now_msg_ == nullptr) {
+            leader_bft_mgr.now_msg_ = nullptr;
+            leader_bft_mgr.Start(0, prepare_msg_ptr);
+            if (leader_bft_mgr.now_msg_ == nullptr) {
+                break;
+            }
+        } else {
+            backup_bft_mgr0.now_msg_->thread_idx = 0;
+            backup_bft_mgr1.now_msg_->thread_idx = 0;
+            leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
+            leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
         }
 
+        ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
         auto tm = common::TimeUtils::TimestampUs();
         times[0] += tm - tm0;
         tm0 = tm;
-        leader_bft_mgr.leader_prepare_msg_->thread_idx = 0;
-        backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
-        ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ != nullptr);
-
-        auto start_bft_ptr = backup_bft_mgr0.GetBft(
-            0, leader_bft_mgr.leader_prepare_msg_->header.pipeline(0).gid(), false);
-        ASSERT_TRUE(start_bft_ptr != nullptr);
-        for (int32_t i = 1; i < 20; ++i) {
-            times[6 + i] += start_bft_ptr->times_[i] - start_bft_ptr->times_[i - 1];
+        leader_bft_mgr.now_msg_->thread_idx = 0;
+        backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+        backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
+        if (backup_bft_mgr0.now_msg_ == nullptr) {
+            break;
         }
 
-        backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
-        ASSERT_TRUE(backup_bft_mgr1.backup_prepare_msg_ != nullptr);
+//         auto start_bft_ptr = backup_bft_mgr0.GetBft(
+//             0, leader_bft_mgr.now_msg_->header.pipeline(0).gid(), false);
+//         ASSERT_TRUE(start_bft_ptr != nullptr);
+//         for (int32_t i = 1; i < 20; ++i) {
+//             times[6 + i] += start_bft_ptr->times_[i] - start_bft_ptr->times_[i - 1];
+//         }
+
+        ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
         tm = common::TimeUtils::TimestampUs();
         times[1] += tm - tm0;
         tm0 = tm;
 
-        backup_bft_mgr0.backup_prepare_msg_->thread_idx = 0;
-        backup_bft_mgr1.backup_prepare_msg_->thread_idx = 0;
-        leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_prepare_msg_);
-        leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_prepare_msg_);
+        backup_bft_mgr0.now_msg_->thread_idx = 0;
+        backup_bft_mgr1.now_msg_->thread_idx = 0;
+        leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
+        leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
         tm = common::TimeUtils::TimestampUs();
         times[2] += tm - tm0;
         tm0 = tm;
         // 2. precommit
-        ASSERT_TRUE(leader_bft_mgr.leader_precommit_msg_ != nullptr);
-        leader_bft_mgr.leader_precommit_msg_->thread_idx = 0;
-        backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
-        ASSERT_TRUE(backup_bft_mgr0.backup_precommit_msg_ != nullptr);
-        backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
-        ASSERT_TRUE(backup_bft_mgr1.backup_precommit_msg_ != nullptr);
+        ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
+        leader_bft_mgr.now_msg_->thread_idx = 0;
+        backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+        backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
+        if (backup_bft_mgr0.now_msg_ == nullptr) {
+            break;
+        }
+
+        ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
         tm = common::TimeUtils::TimestampUs();
         times[3] += tm - tm0;
         tm0 = tm;
-        backup_bft_mgr0.backup_precommit_msg_->thread_idx = 0;
-        backup_bft_mgr1.backup_precommit_msg_->thread_idx = 0;
-        leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_precommit_msg_);
-        leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_precommit_msg_);
+        backup_bft_mgr0.now_msg_->thread_idx = 0;
+        backup_bft_mgr1.now_msg_->thread_idx = 0;
+        leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
+        leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
         tm = common::TimeUtils::TimestampUs();
         times[4] += tm - tm0;
         tm0 = tm;
         // 3. commit
-        ASSERT_TRUE(leader_bft_mgr.leader_commit_msg_ != nullptr);
-        leader_bft_mgr.leader_commit_msg_->thread_idx = 0;
-        backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_commit_msg_);
-        backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_commit_msg_);
+        ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
+        leader_bft_mgr.now_msg_->thread_idx = 0;
+        backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+        backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
         tm = common::TimeUtils::TimestampUs();
         times[5] += tm - tm0;
         tm0 = tm;
-        leader_bft_mgr.ResetTest();
-        backup_bft_mgr0.ResetTest();
-        backup_bft_mgr1.ResetTest();
+//         leader_bft_mgr.ResetTest();
+//         backup_bft_mgr0.ResetTest();
+//         backup_bft_mgr1.ResetTest();
         tm = common::TimeUtils::TimestampUs();
         times[6] += tm - tm0;
         tm0 = tm;
@@ -372,37 +387,37 @@ TEST_F(TestTx, TestMoreTx) {
         // 1. prepare
         transport::MessagePtr prepare_msg_ptr = nullptr;
         leader_bft_mgr.Start(0, prepare_msg_ptr);
-        if (leader_bft_mgr.leader_prepare_msg_ == nullptr) {
+        if (leader_bft_mgr.now_msg_ == nullptr) {
             break;
         }
 
-        leader_bft_mgr.leader_prepare_msg_->thread_idx = 0;
-        backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
-        ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ != nullptr);
-        backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
-        ASSERT_TRUE(backup_bft_mgr1.backup_prepare_msg_ != nullptr);
-        backup_bft_mgr0.backup_prepare_msg_->thread_idx = 0;
-        backup_bft_mgr1.backup_prepare_msg_->thread_idx = 0;
-        leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_prepare_msg_);
-        leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_prepare_msg_);
+        leader_bft_mgr.now_msg_->thread_idx = 0;
+        backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+        ASSERT_TRUE(backup_bft_mgr0.now_msg_ != nullptr);
+        backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
+        ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
+        backup_bft_mgr0.now_msg_->thread_idx = 0;
+        backup_bft_mgr1.now_msg_->thread_idx = 0;
+        leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
+        leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
 
         // 2. precommit
-        ASSERT_TRUE(leader_bft_mgr.leader_precommit_msg_ != nullptr);
-        leader_bft_mgr.leader_precommit_msg_->thread_idx = 0;
-        backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
-        ASSERT_TRUE(backup_bft_mgr0.backup_precommit_msg_ != nullptr);
-        backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
-        ASSERT_TRUE(backup_bft_mgr1.backup_precommit_msg_ != nullptr);
-        backup_bft_mgr0.backup_precommit_msg_->thread_idx = 0;
-        backup_bft_mgr1.backup_precommit_msg_->thread_idx = 0;
-        leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_precommit_msg_);
-        leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_precommit_msg_);
+        ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
+        leader_bft_mgr.now_msg_->thread_idx = 0;
+        backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+        ASSERT_TRUE(backup_bft_mgr0.now_msg_ != nullptr);
+        backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
+        ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
+        backup_bft_mgr0.now_msg_->thread_idx = 0;
+        backup_bft_mgr1.now_msg_->thread_idx = 0;
+        leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
+        leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
 
         // 3. commit
-        ASSERT_TRUE(leader_bft_mgr.leader_commit_msg_ != nullptr);
-        leader_bft_mgr.leader_commit_msg_->thread_idx = 0;
-        backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_commit_msg_);
-        backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_commit_msg_);
+        ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
+        leader_bft_mgr.now_msg_->thread_idx = 0;
+        backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+        backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
         leader_bft_mgr.ResetTest();
         backup_bft_mgr0.ResetTest();
         backup_bft_mgr1.ResetTest();
@@ -416,37 +431,37 @@ TEST_F(TestTx, TestMoreTx) {
         // 1. prepare
         transport::MessagePtr prepare_msg_ptr = nullptr;
         leader_bft_mgr.Start(0, prepare_msg_ptr);
-        if (leader_bft_mgr.leader_prepare_msg_ == nullptr) {
+        if (leader_bft_mgr.now_msg_ == nullptr) {
             break;
         }
 
-        leader_bft_mgr.leader_prepare_msg_->thread_idx = 0;
-        backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
-        ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ != nullptr);
-        backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
-        ASSERT_TRUE(backup_bft_mgr1.backup_prepare_msg_ != nullptr);
-        backup_bft_mgr0.backup_prepare_msg_->thread_idx = 0;
-        backup_bft_mgr1.backup_prepare_msg_->thread_idx = 0;
-        leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_prepare_msg_);
-        leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_prepare_msg_);
+        leader_bft_mgr.now_msg_->thread_idx = 0;
+        backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+        ASSERT_TRUE(backup_bft_mgr0.now_msg_ != nullptr);
+        backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
+        ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
+        backup_bft_mgr0.now_msg_->thread_idx = 0;
+        backup_bft_mgr1.now_msg_->thread_idx = 0;
+        leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
+        leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
 
         // 2. precommit
-        ASSERT_TRUE(leader_bft_mgr.leader_precommit_msg_ != nullptr);
-        leader_bft_mgr.leader_precommit_msg_->thread_idx = 0;
-        backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
-        ASSERT_TRUE(backup_bft_mgr0.backup_precommit_msg_ != nullptr);
-        backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
-        ASSERT_TRUE(backup_bft_mgr1.backup_precommit_msg_ != nullptr);
-        backup_bft_mgr0.backup_precommit_msg_->thread_idx = 0;
-        backup_bft_mgr1.backup_precommit_msg_->thread_idx = 0;
-        leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_precommit_msg_);
-        leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_precommit_msg_);
+        ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
+        leader_bft_mgr.now_msg_->thread_idx = 0;
+        backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+        ASSERT_TRUE(backup_bft_mgr0.now_msg_ != nullptr);
+        backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
+        ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
+        backup_bft_mgr0.now_msg_->thread_idx = 0;
+        backup_bft_mgr1.now_msg_->thread_idx = 0;
+        leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
+        leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
 
         // 3. commit
-        ASSERT_TRUE(leader_bft_mgr.leader_commit_msg_ != nullptr);
-        leader_bft_mgr.leader_commit_msg_->thread_idx = 0;
-        backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_commit_msg_);
-        backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_commit_msg_);
+        ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
+        leader_bft_mgr.now_msg_->thread_idx = 0;
+        backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+        backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
         leader_bft_mgr.ResetTest();
         backup_bft_mgr0.ResetTest();
         backup_bft_mgr1.ResetTest();
@@ -479,26 +494,27 @@ TEST_F(TestTx, TestTxOnePrepareEvil) {
     AddTxs(backup_bft_mgr1, tx_info);
     backup_bft_mgr0.test_for_prepare_evil_ = true;
     transport::MessagePtr prepare_msg_ptr = nullptr;
-    ASSERT_EQ(leader_bft_mgr.Start(0, prepare_msg_ptr), kConsensusSuccess);
-    leader_bft_mgr.leader_prepare_msg_->thread_idx = 0;
-    backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
-    ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ == nullptr);
-    backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
-    ASSERT_TRUE(backup_bft_mgr1.backup_prepare_msg_ != nullptr);
-    backup_bft_mgr1.backup_prepare_msg_->thread_idx = 0;
-    leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_prepare_msg_);
-    ASSERT_TRUE(leader_bft_mgr.leader_precommit_msg_ != nullptr);
-    leader_bft_mgr.leader_precommit_msg_->thread_idx = 0;
-    backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
-    ASSERT_TRUE(backup_bft_mgr0.backup_precommit_msg_ == nullptr);
-    backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
-    ASSERT_TRUE(backup_bft_mgr1.backup_precommit_msg_ != nullptr);
-    backup_bft_mgr1.backup_precommit_msg_->thread_idx = 0;
-    leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_precommit_msg_);
-    ASSERT_TRUE(leader_bft_mgr.leader_commit_msg_ != nullptr);
-    leader_bft_mgr.leader_commit_msg_->thread_idx = 0;
-    backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_commit_msg_);
-    backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_commit_msg_);
+    auto bft_ptr = leader_bft_mgr.Start(0, prepare_msg_ptr);
+    ASSERT_TRUE(bft_ptr != nullptr);
+    leader_bft_mgr.now_msg_->thread_idx = 0;
+    backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+    ASSERT_TRUE(backup_bft_mgr0.now_msg_ == nullptr);
+    backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
+    ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
+    backup_bft_mgr1.now_msg_->thread_idx = 0;
+    leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
+    ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
+    leader_bft_mgr.now_msg_->thread_idx = 0;
+    backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+    ASSERT_TRUE(backup_bft_mgr0.now_msg_ == nullptr);
+    backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
+    ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
+    backup_bft_mgr1.now_msg_->thread_idx = 0;
+    leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
+    ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
+    leader_bft_mgr.now_msg_->thread_idx = 0;
+    backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+    backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
 };
 
 TEST_F(TestTx, TestTxOnePrecommitEvil) {
@@ -522,28 +538,29 @@ TEST_F(TestTx, TestTxOnePrecommitEvil) {
     AddTxs(backup_bft_mgr1, tx_info);
     backup_bft_mgr0.test_for_precommit_evil_ = true;
     transport::MessagePtr prepare_msg_ptr = nullptr;
-    ASSERT_EQ(leader_bft_mgr.Start(0, prepare_msg_ptr), kConsensusSuccess);
-    leader_bft_mgr.leader_prepare_msg_->thread_idx = 0;
-    backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
-    ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ != nullptr);
-    backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
-    ASSERT_TRUE(backup_bft_mgr1.backup_prepare_msg_ != nullptr);
-    backup_bft_mgr0.backup_prepare_msg_->thread_idx = 0;
-    backup_bft_mgr1.backup_prepare_msg_->thread_idx = 0;
-    leader_bft_mgr.HandleMessage(backup_bft_mgr0.backup_prepare_msg_);
-    leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_prepare_msg_);
-    ASSERT_TRUE(leader_bft_mgr.leader_precommit_msg_ != nullptr);
-    leader_bft_mgr.leader_precommit_msg_->thread_idx = 0;
-    backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
-    ASSERT_TRUE(backup_bft_mgr0.backup_precommit_msg_ == nullptr);
-    backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_precommit_msg_);
-    ASSERT_TRUE(backup_bft_mgr1.backup_precommit_msg_ != nullptr);
-    backup_bft_mgr1.backup_precommit_msg_->thread_idx = 0;
-    leader_bft_mgr.HandleMessage(backup_bft_mgr1.backup_precommit_msg_);
-    ASSERT_TRUE(leader_bft_mgr.leader_commit_msg_ != nullptr);
-    leader_bft_mgr.leader_commit_msg_->thread_idx = 0;
-    backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_commit_msg_);
-    backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_commit_msg_);
+    auto bft_ptr = leader_bft_mgr.Start(0, prepare_msg_ptr);
+    ASSERT_TRUE(bft_ptr != nullptr);
+    leader_bft_mgr.now_msg_->thread_idx = 0;
+    backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+    ASSERT_TRUE(backup_bft_mgr0.now_msg_ != nullptr);
+    backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
+    ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
+    backup_bft_mgr0.now_msg_->thread_idx = 0;
+    backup_bft_mgr1.now_msg_->thread_idx = 0;
+    leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
+    leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
+    ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
+    leader_bft_mgr.now_msg_->thread_idx = 0;
+    backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+    ASSERT_TRUE(backup_bft_mgr0.now_msg_ == nullptr);
+    backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
+    ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
+    backup_bft_mgr1.now_msg_->thread_idx = 0;
+    leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
+    ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
+    leader_bft_mgr.now_msg_->thread_idx = 0;
+    backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+    backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
 };
 
 TEST_F(TestTx, TestTxTwoPrepareEvil) {
@@ -568,18 +585,19 @@ TEST_F(TestTx, TestTxTwoPrepareEvil) {
     backup_bft_mgr0.test_for_prepare_evil_ = true;
     backup_bft_mgr1.test_for_prepare_evil_ = true;
     transport::MessagePtr prepare_msg_ptr = nullptr;
-    ASSERT_EQ(leader_bft_mgr.Start(0, prepare_msg_ptr), kConsensusSuccess);
-    leader_bft_mgr.leader_prepare_msg_->thread_idx = 0;
-    backup_bft_mgr0.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
-    ASSERT_TRUE(backup_bft_mgr0.backup_prepare_msg_ == nullptr);
-    ASSERT_TRUE(backup_bft_mgr0.bk_prepare_op_msg_ != nullptr);
-    backup_bft_mgr1.HandleMessage(leader_bft_mgr.leader_prepare_msg_);
-    ASSERT_TRUE(backup_bft_mgr1.backup_prepare_msg_ == nullptr);
-    ASSERT_TRUE(backup_bft_mgr1.bk_prepare_op_msg_ != nullptr);
-    backup_bft_mgr0.bk_prepare_op_msg_->thread_idx = 0;
-    backup_bft_mgr1.bk_prepare_op_msg_->thread_idx = 0;
-    leader_bft_mgr.HandleMessage(backup_bft_mgr0.bk_prepare_op_msg_);
-    leader_bft_mgr.HandleMessage(backup_bft_mgr1.bk_prepare_op_msg_);
+    auto bft_ptr = leader_bft_mgr.Start(0, prepare_msg_ptr);
+    ASSERT_TRUE(bft_ptr != nullptr);
+    leader_bft_mgr.now_msg_->thread_idx = 0;
+    backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+    ASSERT_TRUE(backup_bft_mgr0.now_msg_ == nullptr);
+    ASSERT_TRUE(backup_bft_mgr0.now_msg_ != nullptr);
+    backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
+    ASSERT_TRUE(backup_bft_mgr1.now_msg_ == nullptr);
+    ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
+    backup_bft_mgr0.now_msg_->thread_idx = 0;
+    backup_bft_mgr1.now_msg_->thread_idx = 0;
+    leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
+    leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
 };
 
 }  // namespace test

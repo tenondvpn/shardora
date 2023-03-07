@@ -66,14 +66,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
         uint32_t pool_index) {
     auto txs_item = wtxs[pool_index].LeaderGetValidTxs(direct);
     if (txs_item != nullptr) {
-        LeaderFilterInvalidTx(pool_index, txs_item->txs);
-    }
-
-    if (txs_item->txs.empty()) {
-        txs_item = nullptr;
-    }
-
-    if (txs_item != nullptr) {
         txs_item->pool_index = pool_index;
         auto& tx_map = txs_item->txs;
         assert(!tx_map.empty());
@@ -101,6 +93,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
             }
         }
 
+        FilterInvalidTx(pool_index, txs_item->txs);
         auto& all_txs_hash = txs_item->all_txs_hash;
         all_txs_hash.reserve(tx_map.size() * 32);
         for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
@@ -108,6 +101,9 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
         }
 
         all_txs_hash = common::Hash::keccak256(all_txs_hash);
+        if (txs_item->txs.empty()) {
+            txs_item = nullptr;
+        }
     }
 
     if (txs_item == nullptr) {
@@ -117,7 +113,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
             txs_item->pool_index = pool_index;
             txs_item->txs[tx_ptr->tx_hash] = tx_ptr;
             txs_item->tx_type = pools::protobuf::kNormalTo;
-            LeaderFilterInvalidTx(pool_index, txs_item->txs);
+            FilterInvalidTx(pool_index, txs_item->txs);
         }
     }
         
@@ -127,11 +123,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
         }
     }
 
-    if (txs_item == nullptr) {
-        ZJC_DEBUG("leader get tx failed!");
-    } else {
-        ZJC_DEBUG("leader get tx success: %u!", txs_item->txs.size());
-    }
     return txs_item;
 }
 
@@ -145,7 +136,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::FollowerGetToTxs(
         txs_item->pool_index = pool_index;
         txs_item->txs[tx_ptr->tx_hash] = tx_ptr;
         txs_item->tx_type = pools::protobuf::kNormalTo;
-        if (!TxInPrevConsensus(pool_index, txs_item->txs)) {
+        FilterInvalidTx(pool_index, txs_item->txs);
+        if (txs_item->txs.empty()) {
             return nullptr;
         }
 
@@ -162,7 +154,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::FollowerGetTxs(
     auto txs_item = wtxs[pool_index].FollowerGetTxs(bloom_filter);
     if (txs_item != nullptr) {
         txs_item->pool_index = pool_index;
-        if (!TxInPrevConsensus(pool_index, txs_item->txs)) {
+        FilterInvalidTx(pool_index, txs_item->txs);
+        if (txs_item->txs.empty()) {
             return nullptr;
         }
 
@@ -179,7 +172,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::FollowerGetTxs(
     auto txs_item = wtxs[pool_index].FollowerGetTxs(tx_hash_list);
     if (txs_item != nullptr) {
         txs_item->pool_index = pool_index;
-        if (!TxInPrevConsensus(pool_index, txs_item->txs)) {
+        FilterInvalidTx(pool_index, txs_item->txs);
+        if (txs_item->txs.empty()) {
             return nullptr;
         }
 
@@ -189,23 +183,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::FollowerGetTxs(
     return nullptr;
 }
 
-bool WaitingTxsPools::TxInPrevConsensus(
-        uint32_t pool_index,
-        const std::map<std::string, pools::TxItemPtr>& txs) {
-    for (auto set_iter = pipeline_pools_[pool_index].begin();
-            set_iter != pipeline_pools_[pool_index].end(); ++set_iter) {
-        for (auto tx_iter = txs.begin(); tx_iter != txs.end(); ++tx_iter) {
-            auto exist_tx_iter = (*set_iter)->txs_ptr()->txs.find(tx_iter->first);
-            if (exist_tx_iter != (*set_iter)->txs_ptr()->txs.end()) {
-                return false;
-            }
-        }
-    }
-
-    return true;
-}
-
-void WaitingTxsPools::LeaderFilterInvalidTx(uint32_t pool_index,
+void WaitingTxsPools::FilterInvalidTx(uint32_t pool_index,
         std::map<std::string, pools::TxItemPtr>& txs) {
     for (auto set_iter = pipeline_pools_[pool_index].begin();
         set_iter != pipeline_pools_[pool_index].end(); ++set_iter) {

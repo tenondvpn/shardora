@@ -295,6 +295,7 @@ int ToTxsPools::BackupCreateToTx(
     pools::protobuf::ToTxHeights& to_heights = *heights;
     to_heights.set_sharding_id(sharding_id);
     std::map<std::string, uint64_t> acc_amount_map;
+    std::string add_heights;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto pool_iter = net_iter->second.find(i);
         if (pool_iter == net_iter->second.end()) {
@@ -304,10 +305,12 @@ int ToTxsPools::BackupCreateToTx(
                 to_heights.add_heights(handled_iter->second->heights(i));
             }
 
+            add_heights += std::to_string(to_heights.heights(to_heights.heights_size() - 1)) + " ";
             continue;
         }
 
         to_heights.add_heights(leader_to_heights.heights(i));
+        add_heights += std::to_string(leader_to_heights.heights(i)) + " ";
         for (auto hiter = pool_iter->second.begin();
                 hiter != pool_iter->second.end(); ++hiter) {
             if (hiter->first > leader_to_heights.heights(i)) {
@@ -347,6 +350,10 @@ int ToTxsPools::BackupCreateToTx(
 
     to_heights.set_tx_count(to_tx.tos_size());
     auto tos_hash = common::Hash::keccak256(str_for_hash);
+    ZJC_DEBUG("backup sharding: %u add to txs heights: %s, hash: %s, str_for_hash: %s",
+        sharding_id, add_heights.c_str(), common::Encode::HexEncode(tos_hash).c_str(),
+        common::Encode::HexEncode(str_for_hash).c_str());
+
     to_tx.set_heights_hash(tos_hash);
     *to_tx.mutable_to_heights() = to_heights;
     auto val = to_tx.SerializeAsString();

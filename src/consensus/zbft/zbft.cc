@@ -406,7 +406,7 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
 void Zbft::CreatePrecommitVerifyHash() {
     uint32_t t = min_aggree_member_count_;
     uint32_t n = members_ptr_->size();
-    ZJC_INFO("precommit get pk verify hash begin.");
+    ZJC_DEBUG("precommit get pk verify hash begin.");
     if (bls_mgr_->GetVerifyHash(
             t,
             n,
@@ -415,7 +415,9 @@ void Zbft::CreatePrecommitVerifyHash() {
             &precommit_bls_agg_verify_hash_) != bls::kBlsSuccess) {
         ZJC_ERROR("get precommit hash failed!");
     }
-    ZJC_INFO("precommit get pk verify hash end.");
+    ZJC_DEBUG("precommit get pk verify hash end: %s, hash: %s",
+        common::Encode::HexEncode(precommit_bls_agg_verify_hash_).c_str(),
+        common::Encode::HexEncode(prepare_hash_).c_str());
 }
 
 void Zbft::CreateCommitVerifyHash() {
@@ -430,7 +432,24 @@ void Zbft::CreateCommitVerifyHash() {
             &commit_bls_agg_verify_hash_) != bls::kBlsSuccess) {
         ZJC_ERROR("get commit hash failed!");
     }
-    ZJC_DEBUG("commit get pk verify hash end.");
+    ZJC_DEBUG("commit get pk verify hash end: %s, hash: %s",
+        common::Encode::HexEncode(commit_bls_agg_verify_hash_).c_str(),
+        common::Encode::HexEncode(precommit_hash_).c_str());
+}
+
+void Zbft::AfterNetwork() {
+    if (consensus_status_ == kConsensusPreCommit) {
+        CreatePrecommitVerifyHash();
+    }
+
+    if (consensus_status_ == kConsensusCommit) {
+        CreateCommitVerifyHash();
+    }
+
+    if (pipeline_next_zbft_ptr_ != nullptr) {
+        pipeline_next_zbft_ptr_->AfterNetwork();
+        pipeline_next_zbft_ptr_ = nullptr;
+    }
 }
 
 int Zbft::LeaderCreateCommitAggSign() {

@@ -40,10 +40,7 @@ public:
         uint8_t thread_idx);
 
 private:
-    bool TxInPrevConsensus(
-        uint32_t pool_index,
-        const std::map<std::string, pools::TxItemPtr>& txs);
-    void LeaderFilterInvalidTx(
+    void FilterInvalidTx(
         uint32_t pool_index,
         std::map<std::string, pools::TxItemPtr>& txs);
 

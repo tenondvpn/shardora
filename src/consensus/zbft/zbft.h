@@ -62,6 +62,7 @@ public:
     bool BackupCheckLeaderValid(const hotstuff::protobuf::ZbftMessage* bft_msg);
     int InitZjcTvmContext();
     void Destroy();
+    void AfterNetwork();
 
     uint32_t pool_index() const {
         return txs_ptr_->pool_index;
@@ -373,6 +374,10 @@ public:
         return txs_ptr_;
     }
 
+    void set_next_bft_ptr(std::shared_ptr<Zbft>& pipeline_next_zbft_ptr) {
+        pipeline_next_zbft_ptr_ = pipeline_next_zbft_ptr;
+    }
+
 protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
@@ -426,6 +431,7 @@ protected:
     std::string commit_bls_agg_verify_hash_;
     libff::alt_bn128_G1 g1_prepare_hash_;
     libff::alt_bn128_G1 g1_precommit_hash_;
+    std::shared_ptr<Zbft> pipeline_next_zbft_ptr_ = nullptr;
 
 public:
     inline void set_test_times(uint32_t index) {

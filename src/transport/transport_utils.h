@@ -68,13 +68,15 @@ enum TcpConnnectionType {
 };
 
 struct TransportMessage {
-    TransportMessage() : conn(nullptr), pipeline(0) {}
+    TransportMessage() : conn(nullptr), pipeline(0), response(nullptr), tmp_ptr(nullptr) {}
     protobuf::Header header;
     tnet::TcpInterface* conn = nullptr;
     uint8_t thread_idx = -1;
     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
     std::string msg_hash;
     uint32_t pipeline = 0;
+    std::shared_ptr<TransportMessage> response;
+    void* tmp_ptr;
 };
 
 typedef std::shared_ptr<TransportMessage> MessagePtr;

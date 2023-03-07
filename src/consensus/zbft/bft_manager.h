@@ -40,7 +40,6 @@ public:
         BlockCallback block_cb,
         uint8_t thread_count);
     void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
-    int Start(uint8_t thread_index, transport::MessagePtr& prepare_msg_ptr);
     BftManager();
     virtual ~BftManager();
     int AddBft(ZbftPtr& bft_ptr);
@@ -50,22 +49,25 @@ public:
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
-    int StartBft(std::shared_ptr<WaitingTxsItem>& txs_ptr, transport::MessagePtr& prepare_msg_ptr);
+    ZbftPtr Start(uint8_t thread_index, const transport::MessagePtr& prepare_msg_ptr);
+    ZbftPtr StartBft(
+        std::shared_ptr<WaitingTxsItem>& txs_ptr,
+        const transport::MessagePtr& prepare_msg_ptr);
     void RemoveBft(uint8_t thread_idx, const std::string& gid, bool is_leader);
-    int LeaderPrepare(ZbftPtr& bft_ptr, transport::MessagePtr& prepare_msg_ptr);
+    int LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& prepare_msg_ptr);
     int BackupPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int LeaderPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int LeaderCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     void CheckTimeout(uint8_t thread_index);
-    int LeaderCallPrecommit(ZbftPtr& bft_ptr);
+    int LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int LeaderCallCommit(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
     ZbftPtr CreateBftPtr(const transport::MessagePtr& msg_ptr);
     void HandleHotstuffMessage(
         ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr);
-    int LeaderCallPrecommitOppose(const ZbftPtr& bft_ptr);
+    int LeaderCallPrecommitOppose(const ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int LeaderCallCommitOppose(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
     void BackupSendOppose(
         const transport::MessagePtr& msg_ptr,
@@ -73,7 +75,7 @@ private:
     void LeaderHandleBftOppose(
         const ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr);
-    void BackupHandleHotstuffMessage(
+    ZbftPtr BackupHandleHotstuffMessage(
         uint8_t thread_index,
         const transport::MessagePtr& msg_ptr);
     bool IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info);
@@ -124,21 +126,11 @@ private:
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {
-        leader_prepare_msg_ = nullptr;
-        bk_prepare_op_msg_ = nullptr;
-        backup_prepare_msg_ = nullptr;
-        leader_precommit_msg_ = nullptr;
-        backup_precommit_msg_ = nullptr;
-        leader_commit_msg_ = nullptr;
+        now_msg_ = nullptr;
     }
 
     // just for test
-    transport::MessagePtr leader_prepare_msg_ = nullptr;
-    transport::MessagePtr bk_prepare_op_msg_ = nullptr;
-    transport::MessagePtr backup_prepare_msg_ = nullptr;
-    transport::MessagePtr leader_precommit_msg_ = nullptr;
-    transport::MessagePtr backup_precommit_msg_ = nullptr;
-    transport::MessagePtr leader_commit_msg_ = nullptr;
+    transport::MessagePtr now_msg_ = nullptr;
     bool test_for_prepare_evil_ = false;
     bool test_for_precommit_evil_ = false;
 #endif
