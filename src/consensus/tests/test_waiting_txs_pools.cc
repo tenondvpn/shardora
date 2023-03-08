@@ -29,6 +29,7 @@ static std::shared_ptr<pools::TxPoolManager> pools_mgr_backup = nullptr;
 static const uint32_t kTestTxCount = 256;
 static std::shared_ptr<db::Db> db_ptr = nullptr;
 static std::shared_ptr<block::BlockManager> block_mgr = nullptr;
+static std::shared_ptr<timeblock::TimeBlockManager> tmblock_mgr = nullptr;
 
 class TestWaitingTxsPools : public testing::Test {
 public:
@@ -68,6 +69,7 @@ public:
         log4cpp::PropertyConfigurator::configure(log_conf_path);
         security = std::make_shared<security::Ecdsa>();
         block_mgr = std::make_shared<block::BlockManager>();
+        tmblock_mgr = std::make_shared<timeblock::TimeBlockManager>();
         AddTxs();
     }
 
@@ -118,8 +120,8 @@ TEST_F(TestWaitingTxsPools, GetValidTxs) {
     uint32_t all_count = 0;
     for (int32_t i = 0; i < kTestCount; ++i) {
         AddTxs();
-        WaitingTxsPools leader_txs_pools(pools_mgr, block_mgr);
-        WaitingTxsPools follower_txs_pools(pools_mgr_backup, block_mgr);
+        WaitingTxsPools leader_txs_pools(pools_mgr, block_mgr, tmblock_mgr);
+        WaitingTxsPools follower_txs_pools(pools_mgr_backup, block_mgr, tmblock_mgr);
         for (int32_t j = 0; j < common::kInvalidPoolIndex; ++j) {
             auto ltxs = leader_txs_pools.LeaderGetValidTxs(false, j);
             if (ltxs == nullptr) {
