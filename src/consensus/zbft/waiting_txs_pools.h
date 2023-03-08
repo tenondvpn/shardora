@@ -12,29 +12,44 @@ namespace consensus {
 class Zbft;
 class WaitingTxsPools {
 public:
-    virtual void TxOver(std::shared_ptr<Zbft>& zbft_ptr) = 0;
-    virtual void TxRecover(std::shared_ptr<Zbft>& zbft_ptr) = 0;
-    virtual void UpdateLatestInfo(uint32_t pool_index, uint64_t height, const std::string& hash) = 0;
-    virtual uint64_t latest_height(uint32_t pool_index) const = 0;
-    virtual std::string latest_hash(uint32_t pool_index) const = 0;
-    virtual void LockPool(std::shared_ptr<Zbft>& zbft_ptr) = 0;
-    virtual std::shared_ptr<WaitingTxsItem> LeaderGetValidTxs(bool direct, uint32_t pool_index) = 0;
+    WaitingTxsPools(
+        std::shared_ptr<pools::TxPoolManager>& pool_mgr,
+        std::shared_ptr<block::BlockManager>& block_mgr);
+    virtual ~WaitingTxsPools();
+    virtual void TxOver(std::shared_ptr<Zbft>& zbft_ptr);
+    virtual void TxRecover(std::shared_ptr<Zbft>& zbft_ptr);
+    virtual void UpdateLatestInfo(uint32_t pool_index, uint64_t height, const std::string& hash) {
+        pool_mgr_->UpdateLatestInfo(pool_index, height, hash);
+    }
+
+    virtual uint64_t latest_height(uint32_t pool_index) const;
+    virtual std::string latest_hash(uint32_t pool_index) const;
+    virtual void LockPool(std::shared_ptr<Zbft>& zbft_ptr);
+    virtual std::shared_ptr<WaitingTxsItem> LeaderGetValidTxs(bool direct, uint32_t pool_index);
     virtual std::shared_ptr<WaitingTxsItem> FollowerGetToTxs(
         uint32_t pool_index,
         const std::string& tx_hash,
-        uint8_t thread_idx) = 0;
+        uint8_t thread_idx);
     virtual std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
         uint32_t pool_index,
         const common::BloomFilter& bloom_filter,
-        uint8_t thread_idx) = 0;
+        uint8_t thread_idx);
     virtual std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
-        uint8_t thread_idx) = 0;
+        uint8_t thread_idx);
 
-protected:
-    WaitingTxsPools() {}
-    virtual ~WaitingTxsPools() {}
+private:
+    void FilterInvalidTx(
+        uint32_t pool_index,
+        std::map<std::string, pools::TxItemPtr>& txs);
+
+    WaitingTxs wtxs[common::kInvalidPoolIndex];
+    std::shared_ptr<pools::TxPoolManager> pool_mgr_ = nullptr;
+    std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
+    std::deque<std::shared_ptr<Zbft>> pipeline_pools_[common::kInvalidPoolIndex];
+
+    DISALLOW_COPY_AND_ASSIGN(WaitingTxsPools);
 };
 
 

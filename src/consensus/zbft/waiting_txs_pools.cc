@@ -1,4 +1,4 @@
-#include "consensus/zbft/zbft_waiting_txs_pools.h"
+#include "consensus/zbft/waiting_txs_pools.h"
 
 #include "consensus/zbft/zbft.h"
 
@@ -6,7 +6,7 @@ namespace zjchain {
 
 namespace consensus {
 
-ZbftWaitingTxsPools::ZbftWaitingTxsPools(
+WaitingTxsPools::WaitingTxsPools(
         std::shared_ptr<pools::TxPoolManager>& pool_mgr,
         std::shared_ptr<block::BlockManager>& block_mgr)
         : pool_mgr_(pool_mgr), block_mgr_(block_mgr) {
@@ -15,9 +15,9 @@ ZbftWaitingTxsPools::ZbftWaitingTxsPools(
     }
 }
 
-ZbftWaitingTxsPools::~ZbftWaitingTxsPools() {}
+WaitingTxsPools::~WaitingTxsPools() {}
 
-void ZbftWaitingTxsPools::TxOver(std::shared_ptr<Zbft>& zbft_ptr) {
+void WaitingTxsPools::TxOver(std::shared_ptr<Zbft>& zbft_ptr) {
     auto& tx_ptr = zbft_ptr->txs_ptr();
     pool_mgr_->TxOver(tx_ptr->pool_index, tx_ptr->txs);
     auto& item_set = pipeline_pools_[tx_ptr->pool_index];
@@ -29,7 +29,7 @@ void ZbftWaitingTxsPools::TxOver(std::shared_ptr<Zbft>& zbft_ptr) {
     }
 }
 
-void ZbftWaitingTxsPools::TxRecover(std::shared_ptr<Zbft>& zbft_ptr) {
+void WaitingTxsPools::TxRecover(std::shared_ptr<Zbft>& zbft_ptr) {
     auto& tx_ptr = zbft_ptr->txs_ptr();
     pool_mgr_->TxRecover(tx_ptr->pool_index, tx_ptr->txs);
     auto& item_set = pipeline_pools_[tx_ptr->pool_index];
@@ -41,11 +41,11 @@ void ZbftWaitingTxsPools::TxRecover(std::shared_ptr<Zbft>& zbft_ptr) {
     }
 }
 
-void ZbftWaitingTxsPools::LockPool(std::shared_ptr<Zbft>& zbft_ptr) {
+void WaitingTxsPools::LockPool(std::shared_ptr<Zbft>& zbft_ptr) {
     pipeline_pools_[zbft_ptr->txs_ptr()->pool_index].push_back(zbft_ptr);
 }
 
-uint64_t ZbftWaitingTxsPools::latest_height(uint32_t pool_index) const {
+uint64_t WaitingTxsPools::latest_height(uint32_t pool_index) const {
     if (pipeline_pools_[pool_index].empty()) {
         return pool_mgr_->latest_height(pool_index);
     }
@@ -53,7 +53,7 @@ uint64_t ZbftWaitingTxsPools::latest_height(uint32_t pool_index) const {
     return pipeline_pools_[pool_index].back()->prpare_block()->height();
 }
 
-std::string ZbftWaitingTxsPools::latest_hash(uint32_t pool_index) const {
+std::string WaitingTxsPools::latest_hash(uint32_t pool_index) const {
     if (pipeline_pools_[pool_index].empty()) {
         return pool_mgr_->latest_hash(pool_index);
     }
@@ -61,7 +61,7 @@ std::string ZbftWaitingTxsPools::latest_hash(uint32_t pool_index) const {
     return pipeline_pools_[pool_index].back()->prpare_block()->hash();
 }
 
-std::shared_ptr<WaitingTxsItem> ZbftWaitingTxsPools::LeaderGetValidTxs(
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
         bool direct,
         uint32_t pool_index) {
     auto txs_item = wtxs[pool_index].LeaderGetValidTxs(direct);
@@ -126,7 +126,7 @@ std::shared_ptr<WaitingTxsItem> ZbftWaitingTxsPools::LeaderGetValidTxs(
     return txs_item;
 }
 
-std::shared_ptr<WaitingTxsItem> ZbftWaitingTxsPools::FollowerGetToTxs(
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::FollowerGetToTxs(
         uint32_t pool_index,
         const std::string& tx_hash,
         uint8_t thread_idx) {
@@ -147,7 +147,7 @@ std::shared_ptr<WaitingTxsItem> ZbftWaitingTxsPools::FollowerGetToTxs(
     return nullptr;
 }
 
-std::shared_ptr<WaitingTxsItem> ZbftWaitingTxsPools::FollowerGetTxs(
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::FollowerGetTxs(
         uint32_t pool_index,
         const common::BloomFilter& bloom_filter,
         uint8_t thread_idx) {
@@ -165,7 +165,7 @@ std::shared_ptr<WaitingTxsItem> ZbftWaitingTxsPools::FollowerGetTxs(
     return nullptr;
 }
 
-std::shared_ptr<WaitingTxsItem> ZbftWaitingTxsPools::FollowerGetTxs(
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::FollowerGetTxs(
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
         uint8_t thread_idx) {
@@ -183,7 +183,7 @@ std::shared_ptr<WaitingTxsItem> ZbftWaitingTxsPools::FollowerGetTxs(
     return nullptr;
 }
 
-void ZbftWaitingTxsPools::FilterInvalidTx(uint32_t pool_index,
+void WaitingTxsPools::FilterInvalidTx(uint32_t pool_index,
         std::map<std::string, pools::TxItemPtr>& txs) {
     for (auto set_iter = pipeline_pools_[pool_index].begin();
         set_iter != pipeline_pools_[pool_index].end(); ++set_iter) {

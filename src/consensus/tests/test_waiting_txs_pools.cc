@@ -10,7 +10,7 @@
 #define private public
 #include "common/random.h"
 #include "consensus/zbft/from_tx_item.h"
-#include "consensus/zbft/zbft_waiting_txs_pools.h"
+#include "consensus/zbft/waiting_txs_pools.h"
 #include "consensus/zbft/zbft_utils.h"
 #include "db/db.h"
 #include "pools/tx_pool_manager.h"
@@ -117,8 +117,8 @@ TEST_F(TestWaitingTxsPools, GetValidTxs) {
     uint32_t all_count = 0;
     for (int32_t i = 0; i < kTestCount; ++i) {
         AddTxs();
-        ZbftWaitingTxsPools leader_txs_pools(pools_mgr, block_mgr);
-        ZbftWaitingTxsPools follower_txs_pools(pools_mgr_backup, block_mgr);
+        WaitingTxsPools leader_txs_pools(pools_mgr, block_mgr);
+        WaitingTxsPools follower_txs_pools(pools_mgr_backup, block_mgr);
         for (int32_t j = 0; j < common::kInvalidPoolIndex; ++j) {
             auto ltxs = leader_txs_pools.LeaderGetValidTxs(false, j);
             if (ltxs == nullptr) {

@@ -12,7 +12,7 @@
 #include "block/block_manager.h"
 #include "bls/bls_manager.h"
 #include "common/random.h"
-#include "consensus/zbft/zbft_waiting_txs_pools.h"
+#include "consensus/zbft/waiting_txs_pools.h"
 #include "consensus/zbft/zbft_utils.h"
 #include "consensus/zbft/bft_manager.h"
 #include "db/db.h"

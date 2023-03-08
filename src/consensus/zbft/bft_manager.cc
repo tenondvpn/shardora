@@ -6,7 +6,7 @@
 #include "consensus/zbft/root_zbft.h"
 #include "consensus/zbft/zbft.h"
 #include "consensus/zbft/zbft_utils.h"
-#include "consensus/zbft/zbft_waiting_txs_pools.h"
+#include "consensus/zbft/waiting_txs_pools.h"
 #include "bls/bls_utils.h"
 #include "bls/bls_manager.h"
 #include "bls/bls_sign.h"
@@ -61,7 +61,7 @@ int BftManager::Init(
     block_mgr_->SetCreateToTxFunction(
         std::bind(&BftManager::CreateToTx, this, std::placeholders::_1));
     security_ptr_ = security_ptr;
-    txs_pools_ = std::make_shared<ZbftWaitingTxsPools>(pools_mgr_, block_mgr);
+    txs_pools_ = std::make_shared<WaitingTxsPools>(pools_mgr_, block_mgr);
     thread_count_ = thread_count;
     bft_hash_map_ = new std::unordered_map<std::string, ZbftPtr>[thread_count];
     for (uint8_t i = 0; i < thread_count_; ++i) {
