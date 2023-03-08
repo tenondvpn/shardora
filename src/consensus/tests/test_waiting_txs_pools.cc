@@ -67,6 +67,7 @@ public:
         WriteDefaultLogConf(log_conf_path, log_path);
         log4cpp::PropertyConfigurator::configure(log_conf_path);
         security = std::make_shared<security::Ecdsa>();
+        block_mgr = std::make_shared<block::BlockManager>();
         AddTxs();
     }
 
