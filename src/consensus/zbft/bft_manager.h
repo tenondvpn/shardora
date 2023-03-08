@@ -21,6 +21,7 @@
 #include "protos/hotstuff.pb.h"
 #include "protos/transport.pb.h"
 #include "security/security.h"
+#include "timeblock/time_block_manager.h"
 #include "transport/transport_utils.h"
 
 namespace zjchain {
@@ -36,6 +37,7 @@ public:
         std::shared_ptr<elect::ElectManager>& elect_mgr,
         std::shared_ptr<pools::TxPoolManager>& pool_mgr,
         std::shared_ptr<security::Security>& security_ptr,
+        std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<db::Db>& db,
         BlockCallback block_cb,
         uint8_t thread_count);
@@ -125,6 +127,7 @@ private:
     uint8_t thread_count_ = 0;
     std::shared_ptr<PoolTxIndexItem> thread_set_[common::kMaxThreadCount];
     std::shared_ptr<WaitingTxsPools> txs_pools_ = nullptr;
+    std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     std::string bft_gids_[common::kMaxThreadCount];
     uint64_t bft_gids_index_[common::kMaxThreadCount];
     uint32_t prev_checktime_out_milli_ = 0;

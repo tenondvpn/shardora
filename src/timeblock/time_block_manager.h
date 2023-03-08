@@ -21,8 +21,8 @@ namespace tmblock {
 
 class TimeBlockManager {
 public:
-    static TimeBlockManager* Instance();
-
+    TimeBlockManager();
+    ~TimeBlockManager();
     void Init(
             std::shared_ptr<pools::TxPoolManager>& pools_mgr,
             std::shared_ptr<db::Db>& db) {
@@ -45,9 +45,6 @@ public:
     bool LeaderCanCallTimeBlockTx(uint64_t tm_sec);
 
 private:
-    TimeBlockManager();
-    ~TimeBlockManager();
-
     void CreateTimeBlockTx();
     void CheckBft();
     void LoadLatestTimeBlock();

@@ -41,6 +41,7 @@ int BftManager::Init(
         std::shared_ptr<elect::ElectManager>& elect_mgr,
         std::shared_ptr<pools::TxPoolManager>& pool_mgr,
         std::shared_ptr<security::Security>& security_ptr,
+        std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<db::Db>& db,
         BlockCallback block_cb,
         uint8_t thread_count) {
@@ -48,6 +49,7 @@ int BftManager::Init(
     block_mgr_ = block_mgr;
     elect_mgr_ = elect_mgr;
     pools_mgr_ = pool_mgr;
+    tm_block_mgr_ = tm_block_mgr;
     db_ = db;
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kNormalFrom,
@@ -196,14 +198,16 @@ ZbftPtr BftManager::StartBft(
             security_ptr_,
             bls_mgr_,
             txs_ptr,
-            txs_pools_);
+            txs_pools_,
+            tm_block_mgr_);
     } else {
         bft_ptr = std::make_shared<Zbft>(
             account_mgr_,
             security_ptr_,
             bls_mgr_,
             txs_ptr,
-            txs_pools_);
+            txs_pools_,
+            tm_block_mgr_);
     }
 
     if (InitZbftPtr(true, bft_ptr) != kConsensusSuccess) {
@@ -642,10 +646,7 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
     } else if (bft_msg.tx_bft().ltx_prepare().tx_hash_list_size() > 0) {
         // get txs direct
         if (bft_msg.tx_bft().ltx_prepare().tx_type() == pools::protobuf::kNormalTo) {
-            txs_ptr = txs_pools_->FollowerGetToTxs(
-                bft_msg.pool_index(),
-                bft_msg.tx_bft().ltx_prepare().tx_hash_list(0),
-                msg_ptr->thread_idx);
+            txs_ptr = txs_pools_->GetToTxs(bft_msg.pool_index());
         } else {
             txs_ptr = txs_pools_->FollowerGetTxs(
                 bft_msg.pool_index(),
@@ -670,14 +671,16 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
             security_ptr_,
             bls_mgr_,
             txs_ptr,
-            txs_pools_);
+            txs_pools_,
+            tm_block_mgr_);
     } else {
         bft_ptr = std::make_shared<Zbft>(
             account_mgr_,
             security_ptr_,
             bls_mgr_,
             txs_ptr,
-            txs_pools_);
+            txs_pools_,
+            tm_block_mgr_);
     }
 
     if (InitZbftPtr(false, bft_ptr) != kConsensusSuccess) {

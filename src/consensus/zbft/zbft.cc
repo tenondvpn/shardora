@@ -17,12 +17,14 @@ Zbft::Zbft(
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         std::shared_ptr<WaitingTxsItem>& txs_ptr,
-        std::shared_ptr<consensus::WaitingTxsPools>& pools_mgr)
+        std::shared_ptr<consensus::WaitingTxsPools>& pools_mgr,
+        std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr)
         : account_mgr_(account_mgr),
         security_ptr_(security_ptr),
         bls_mgr_(bls_mgr),
         txs_ptr_(txs_ptr),
-        pools_mgr_(pools_mgr) {
+        pools_mgr_(pools_mgr),
+        tm_block_mgr_(tm_block_mgr) {
     reset_timeout();
 }
 
@@ -84,7 +86,9 @@ void Zbft::Destroy() {
         auto ptr = shared_from_this();
         pools_mgr_->TxOver(ptr);
         pools_mgr_->UpdateLatestInfo(
-            pool_index(), prpare_block_->height(), prpare_block_->hash());
+            pool_index(),
+            prpare_block_->height(),
+            prpare_block_->hash());
     }
 }
 
@@ -595,7 +599,7 @@ int Zbft::DoTransaction(hotstuff::protobuf::LeaderTxPrepare& ltx_prepare) {
     zjc_block.set_consistency_random(0);
     zjc_block.set_height(pool_height + 1);
     zjc_block.set_timestamp(common::TimeUtils::TimestampMs());
-    zjc_block.set_timeblock_height(tmblock::TimeBlockManager::Instance()->LatestTimestampHeight());
+    zjc_block.set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
     zjc_block.set_electblock_height(elect_height_);
     zjc_block.set_leader_index(leader_index_);
     zjc_block.set_hash(GetBlockHash(zjc_block));

@@ -16,6 +16,7 @@
 #include "protos/block.pb.h"
 #include "protos/pools.pb.h"
 #include "security/ecdsa/public_key.h"
+#include "timeblock/time_block_manager.h"
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
 
@@ -31,7 +32,8 @@ public:
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         std::shared_ptr<WaitingTxsItem>& tx_ptr,
-        std::shared_ptr<consensus::WaitingTxsPools>& pools_mgr);
+        std::shared_ptr<consensus::WaitingTxsPools>& pools_mgr,
+        std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr);
     virtual ~Zbft();
     virtual void DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block);
     int Init(
@@ -430,6 +432,7 @@ protected:
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<WaitingTxsItem> txs_ptr_ = nullptr;
     std::shared_ptr<consensus::WaitingTxsPools> pools_mgr_ = nullptr;
+    std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     std::string precommit_bls_agg_verify_hash_;
     std::string commit_bls_agg_verify_hash_;
     libff::alt_bn128_G1 g1_prepare_hash_;

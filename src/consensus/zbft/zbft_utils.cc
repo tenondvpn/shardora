@@ -52,11 +52,26 @@ std::string GetPrepareTxsHash(const block::protobuf::BlockTx& tx_info) {
 
 std::string GetBlockHash(const block::protobuf::Block& block) {
     std::string msg;
-    msg.reserve(block.tx_list_size() * 32);
+    msg.reserve(block.tx_list_size() * 32 + 256);
     for (int32_t i = 0; i < block.tx_list_size(); i++) {
         msg.append(GetTxMessageHash(block.tx_list(i)));
     }
 
+    msg.append(block.prehash());
+    uint32_t pool_idx = block.pool_index();
+    msg.append((char*)&pool_idx, sizeof(pool_idx));
+    uint32_t sharding_id = block.network_id();
+    msg.append((char*)&sharding_id, sizeof(sharding_id));
+    uint64_t vss_random = block.consistency_random();
+    msg.append((char*)&vss_random, sizeof(vss_random));
+    uint64_t height = block.height();
+    msg.append((char*)&height, sizeof(height));
+    uint64_t timeblock_height = block.timeblock_height();
+    msg.append((char*)&timeblock_height, sizeof(timeblock_height));
+    uint64_t elect_height = block.electblock_height();
+    msg.append((char*)&elect_height, sizeof(elect_height));
+    uint64_t leader_idx = block.leader_index();
+    msg.append((char*)&leader_idx, sizeof(leader_idx));
     return common::Hash::keccak256(msg);
 }
 

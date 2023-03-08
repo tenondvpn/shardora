@@ -126,6 +126,8 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
+    tm_block_mgr_->Init(pools_mgr_, db_);
     bft_mgr_ = std::make_shared<consensus::BftManager>();
     auto bft_init_res = bft_mgr_->Init(
         account_mgr_,
@@ -133,6 +135,7 @@ int NetworkInit::Init(int argc, char** argv) {
         elect_mgr_,
         pools_mgr_,
         security_,
+        tm_block_mgr_,
         db_,
         nullptr,
         common::GlobalInfo::Instance()->message_handler_thread_count());
@@ -146,7 +149,6 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
-    tmblock::TimeBlockManager::Instance()->Init(pools_mgr_, db_);
     transport::TcpTransport::Instance()->Start(false);
     if (InitHttpServer() != kInitSuccess) {
         INIT_ERROR("InitHttpServer failed!");

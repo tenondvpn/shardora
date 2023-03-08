@@ -14,8 +14,9 @@
 #include "init/command.h"
 #include "init/http_handler.h"
 #include "pools/tx_pool_manager.h"
-#include "transport/multi_thread.h"
 #include "security/security.h"
+#include "timeblock/time_block_manager.h"
+#include "transport/multi_thread.h"
 
 namespace zjchain {
 
@@ -53,6 +54,7 @@ protected:
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<consensus::BftManager> bft_mgr_ = nullptr;
+    std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     http::HttpServer http_server_;
     HttpHandler http_handler_;
     uint8_t main_thread_idx_ = 255;

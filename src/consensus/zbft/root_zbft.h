@@ -13,7 +13,8 @@ public:
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<bls::BlsManager>& bls_mgr, 
         std::shared_ptr<WaitingTxsItem>& tx_ptr,
-        std::shared_ptr<consensus::WaitingTxsPools>& pools_mgr);
+        std::shared_ptr<consensus::WaitingTxsPools>& pools_mgr,
+        std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr);
     virtual ~RootZbft();
     virtual void DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block);
     void RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block);

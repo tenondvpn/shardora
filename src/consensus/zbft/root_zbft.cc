@@ -11,8 +11,9 @@ RootZbft::RootZbft(
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<bls::BlsManager>& bls_mgr, 
         std::shared_ptr<WaitingTxsItem>& tx_ptr,
-        std::shared_ptr<consensus::WaitingTxsPools>& pools_mgr)
-        : Zbft(account_mgr, security_ptr, bls_mgr, tx_ptr, pools_mgr) {
+        std::shared_ptr<consensus::WaitingTxsPools>& pools_mgr,
+        std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr)
+        : Zbft(account_mgr, security_ptr, bls_mgr, tx_ptr, pools_mgr, tm_block_mgr) {
 }
 
 RootZbft::~RootZbft() {

@@ -64,72 +64,60 @@ std::string WaitingTxsPools::latest_hash(uint32_t pool_index) const {
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
         bool direct,
         uint32_t pool_index) {
-    auto txs_item = wtxs[pool_index].LeaderGetValidTxs(direct);
-    if (txs_item != nullptr) {
-        txs_item->pool_index = pool_index;
-        auto& tx_map = txs_item->txs;
-        assert(!tx_map.empty());
-        uint32_t bitcount = ((kBitcountWithItemCount * tx_map.size()) / 64) * 64;
-        if (((kBitcountWithItemCount * tx_map.size()) % 64) > 0) {
-            bitcount += 64;
-        }
+    std::shared_ptr<WaitingTxsItem> txs_item = GetToTxs(pool_index);
+    if (txs_item == nullptr) {
+        txs_item = wtxs[pool_index].LeaderGetValidTxs(direct);
+        if (txs_item != nullptr) {
+            txs_item->pool_index = pool_index;
+            auto& tx_map = txs_item->txs;
+            assert(!tx_map.empty());
+            uint32_t bitcount = ((kBitcountWithItemCount * tx_map.size()) / 64) * 64;
+            if (((kBitcountWithItemCount * tx_map.size()) % 64) > 0) {
+                bitcount += 64;
+            }
 
-        txs_item->bloom_filter = std::make_shared<common::BloomFilter>(bitcount, kHashCount);
-        for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
-            txs_item->bloom_filter->Add(common::Hash::Hash64(iter->first));
-        }
+            txs_item->bloom_filter = std::make_shared<common::BloomFilter>(bitcount, kHashCount);
+            for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
+                txs_item->bloom_filter->Add(common::Hash::Hash64(iter->first));
+            }
 
-        // pass by bloomfilter
-        auto error_bloomfilter_txs = wtxs[pool_index].FollowerGetTxs(*txs_item->bloom_filter);
-        if (error_bloomfilter_txs != nullptr) {
-            for (auto iter = error_bloomfilter_txs->txs.begin();
-                    iter != error_bloomfilter_txs->txs.end(); ++iter) {
-                auto fiter = tx_map.find(iter->first);
-                if (fiter != tx_map.end()) {
-                    continue;
+            // pass by bloomfilter
+            auto error_bloomfilter_txs = wtxs[pool_index].FollowerGetTxs(*txs_item->bloom_filter);
+            if (error_bloomfilter_txs != nullptr) {
+                for (auto iter = error_bloomfilter_txs->txs.begin();
+                        iter != error_bloomfilter_txs->txs.end(); ++iter) {
+                    auto fiter = tx_map.find(iter->first);
+                    if (fiter != tx_map.end()) {
+                        continue;
+                    }
+
+                    tx_map[iter->first] = iter->second;
+                }
+            }
+
+            FilterInvalidTx(pool_index, txs_item->txs);
+            if (txs_item->txs.empty()) {
+                txs_item = nullptr;
+            } else {
+                auto& all_txs_hash = txs_item->all_txs_hash;
+                all_txs_hash.reserve(tx_map.size() * 32);
+                for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
+                    all_txs_hash.append(iter->first);
                 }
 
-                tx_map[iter->first] = iter->second;
+                all_txs_hash = common::Hash::keccak256(all_txs_hash);
             }
-        }
-
-        FilterInvalidTx(pool_index, txs_item->txs);
-        auto& all_txs_hash = txs_item->all_txs_hash;
-        all_txs_hash.reserve(tx_map.size() * 32);
-        for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
-            all_txs_hash.append(iter->first);
-        }
-
-        all_txs_hash = common::Hash::keccak256(all_txs_hash);
-        if (txs_item->txs.empty()) {
-            txs_item = nullptr;
-        }
-    }
-
-    if (txs_item == nullptr) {
-        auto tx_ptr = block_mgr_->GetToTx(pool_index);
-        if (tx_ptr != nullptr) {
-            txs_item = std::make_shared<WaitingTxsItem>();
-            txs_item->pool_index = pool_index;
-            txs_item->txs[tx_ptr->tx_hash] = tx_ptr;
-            txs_item->tx_type = pools::protobuf::kNormalTo;
-            FilterInvalidTx(pool_index, txs_item->txs);
-        }
-    }
-        
-    if (txs_item != nullptr) {
-        if (txs_item->txs.empty()) {
-            txs_item = nullptr;
         }
     }
 
     return txs_item;
 }
 
-std::shared_ptr<WaitingTxsItem> WaitingTxsPools::FollowerGetToTxs(
-        uint32_t pool_index,
-        const std::string& tx_hash,
-        uint8_t thread_idx) {
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx() {
+    return nullptr;
+}
+
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(uint32_t pool_index) {
     auto tx_ptr = block_mgr_->GetToTx(pool_index);
     if (tx_ptr != nullptr) {
         auto txs_item = std::make_shared<WaitingTxsItem>();
