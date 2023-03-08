@@ -17,7 +17,7 @@
 
 namespace zjchain {
 
-namespace tmblock {
+namespace timeblock {
 
 class TimeBlockManager {
 public:
@@ -63,6 +63,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(TimeBlockManager);
 };
 
-}  // namespace tmblock
+}  // namespace timeblock
 
 }  // namespace zjchain

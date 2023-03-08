@@ -129,12 +129,15 @@ public:
         auto elect_mgr = std::make_shared<elect::ElectManager>(
             block_mgr, security, bls_mgr, db_ptr, nullptr);
         ASSERT_EQ(elect_mgr->Init(), 0);
+        auto tm_block_mgr = std::make_shared<timeblock::TimeBlockManager>();
+        tm_block_mgr->Init(pools_mgr, db_ptr);
         ASSERT_EQ(bft_mgr.Init(
             account_mgr,
             block_mgr,
             elect_mgr,
             pools_mgr,
             security,
+            tm_block_mgr,
             db_ptr,
             nullptr,
             1), kConsensusSuccess);

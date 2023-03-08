@@ -41,7 +41,6 @@ private:
     void FilterInvalidTx(
         uint32_t pool_index,
         std::map<std::string, pools::TxItemPtr>& txs);
-    std::shared_ptr<WaitingTxsItem> GetTimeblockTx();
 
     WaitingTxs wtxs[common::kInvalidPoolIndex];
     std::shared_ptr<pools::TxPoolManager> pool_mgr_ = nullptr;

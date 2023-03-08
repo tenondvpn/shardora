@@ -375,7 +375,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tm_block.set_timestamp(common::TimeUtils::TimestampSeconds() - common::kTimeBlockCreatePeriodSeconds);
         tm_block.set_height(tenon_block->height());
         tm_block.set_vss_random(0);
-        timeblock_storage->set_key(tmblock::kAttrTimerBlock);
+        timeblock_storage->set_key(timeblock::kAttrTimerBlock);
         timeblock_storage->set_val_hash(tm_block.SerializeAsString());
 //         auto vss_random_attr = tx_info->add_attr();
 //         vss_random_attr->set_key(tmblock::kVssRandomAttr);
@@ -513,7 +513,7 @@ int GenesisBlockInit::GenerateShardSingleBlock() {
                     prefix_db_->SaveLatestElectBlock(ec_block);
                 }
 
-                if (tenon_block->tx_list(i).storages(j).key() == tmblock::kAttrTimerBlock) {
+                if (tenon_block->tx_list(i).storages(j).key() == timeblock::kAttrTimerBlock) {
                     timeblock::protobuf::TimeBlock tm_block;
                     if (!tm_block.ParseFromString(tenon_block->tx_list(i).storages(j).val_hash())) {
                         assert(false);

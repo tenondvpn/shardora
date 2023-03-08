@@ -14,7 +14,7 @@
 
 namespace zjchain {
 
-namespace tmblock {
+namespace timeblock {
 
 static const std::string kTimeBlockGidPrefix = common::Encode::HexDecode(
     "c575ff0d3eea61205e3433495431e312056d0d51a64c6badfd4ad8cc092b7daa");
@@ -177,7 +177,7 @@ void TimeBlockManager::LoadLatestTimeBlock() {
     }
 }
 
-}  // namespace tmblock
+}  // namespace timeblock
 
 }  // namespace zjchain
  

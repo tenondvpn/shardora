@@ -11,7 +11,7 @@
 
 namespace zjchain {
 
-namespace tmblock {
+namespace timeblock {
 
 enum RootErrorCode {
     kTimeBlockSuccess = 0,
@@ -29,6 +29,6 @@ static const std::string kAttrTimerBlockHeight = "__tmblock_tmblock_height";
 static const std::string kAttrTimerBlockTm = "__tmblock_tmblock_tm";
 static const std::string kVssRandomAttr = "__vssrandomattr";
 
-}  // namespace tmblock
+}  // namespace timeblock
 
 }  // namespace zjchain
