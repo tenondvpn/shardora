@@ -21,7 +21,8 @@ RootZbft::~RootZbft() {
 
 void RootZbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
     if (txs_ptr_->txs.size() == 1) {
-        switch (txs_ptr_->txs[0]->msg_ptr->header.tx_proto().step()) {
+        auto& tx = *txs_ptr_->txs.begin()->second;
+        switch (tx.msg_ptr->header.tx_proto().step()) {
         case pools::protobuf::kConsensusRootElectShard:
             RootCreateElectConsensusShardBlock(zjc_block);
             break;
@@ -131,12 +132,15 @@ void RootZbft::RootCreateTimerBlock(block::protobuf::Block& zjc_block) {
 
     auto tx_list = zjc_block.mutable_tx_list();
     auto& tx = *tx_list->Add();
+    tx.set_from("");
+    tx.set_to(common::kRootChainTimeBlockTxAddress);
+    tx.set_step(pools::protobuf::kConsensusRootTimeBlock);
     tx.set_amount(0);
     tx.set_gas_limit(0);
     tx.set_gas_used(0);
     tx.set_balance(0);
     tx.set_status(kConsensusSuccess);
-    
+
     // (TODO): check elect is valid in the time block period,
     // one time block, one elect block
     // check after this shard statistic block coming

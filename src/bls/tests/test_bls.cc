@@ -227,6 +227,7 @@ TEST_F(TestBls, AllSuccess) {
         libff::alt_bn128_G1 sign;
         bls_sign.Sign(t, n, dkg[i].local_sec_key_, hash, &sign);
         std::string verify_hash;
+        // slow
         ASSERT_EQ(
             bls_sign.Verify(t, n, sign, hash, dkg[i].local_publick_key_, &verify_hash),
             kBlsSuccess);
@@ -246,6 +247,7 @@ TEST_F(TestBls, AllSuccess) {
     for (uint32_t i = 0; i < n; ++i) {
         BlsSign bls_sign;
         std::string verify_hash;
+        // slow
         EXPECT_EQ(
             bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_, &verify_hash),
             kBlsSuccess);

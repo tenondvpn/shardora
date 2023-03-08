@@ -56,6 +56,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
     }
 
     db_->ClearPrefix("db_for_gid_");
+    assert(res == kInitSuccess);
     return res;
 }
 
@@ -420,12 +421,14 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         if (account_ptr == nullptr) {
             INIT_ERROR("get address balance failed! [%s]",
                 common::Encode::HexEncode(common::kRootChainTimeBlockTxAddress).c_str());
+            assert(false);
             return kInitError;
         }
 
         if (account_ptr->balance() != 0) {
             INIT_ERROR("get address balance failed! [%s]",
                 common::Encode::HexEncode(common::kRootChainTimeBlockTxAddress).c_str());
+            assert(false);
             return kInitError;
         }
 
@@ -489,11 +492,12 @@ int GenesisBlockInit::GenerateShardSingleBlock() {
     }
 
     char data[20480];
-    while (fgets(data, 20480, root_gens_init_block_file) != nullptr)
-    {
+    uint32_t block_count = 0;
+    while (fgets(data, 20480, root_gens_init_block_file) != nullptr) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         std::string tmp_data(data, strlen(data) - 1);
         if (!tenon_block->ParseFromString(common::Encode::HexDecode(tmp_data))) {
+            assert(false);
             return kInitError;
         }
 
@@ -520,23 +524,42 @@ int GenesisBlockInit::GenerateShardSingleBlock() {
                 }
             }
         }
+    }
 
-//         std::string pool_hash;
-//         uint64_t pool_height = 0;
-//         uint64_t tm_height;
-//         uint64_t tm_with_block_height;
-//         int res = account_mgr_->GetBlockInfo(
-//             common::kRootChainPoolIndex,
-//             &pool_height,
-//             &pool_hash,
-//             &tm_height,
-//             &tm_with_block_height);
-//         if (res != block::kBlockSuccess) {
-//             INIT_ERROR("get pool block info failed! [%u]", common::kRootChainPoolIndex);
-//             return kInitError;
-//         }
-
+    {
         auto address = common::kRootChainSingleBlockTxAddress;
+        auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
+        if (account_ptr == nullptr) {
+            INIT_ERROR("get address info failed! [%s]",
+                common::Encode::HexEncode(address).c_str());
+            return kInitError;
+        }
+
+        if (account_ptr->balance() != 0) {
+            INIT_ERROR("get address balance failed! [%s]",
+                common::Encode::HexEncode(address).c_str());
+            return kInitError;
+        }
+    }
+        
+    {
+        auto address = common::kRootChainTimeBlockTxAddress;
+        auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
+        if (account_ptr == nullptr) {
+            INIT_ERROR("get address info failed! [%s]",
+                common::Encode::HexEncode(address).c_str());
+            return kInitError;
+        }
+
+        if (account_ptr->balance() != 0) {
+            INIT_ERROR("get address balance failed! [%s]",
+                common::Encode::HexEncode(address).c_str());
+            return kInitError;
+        }
+    }
+        
+    {
+        auto address = common::kRootChainElectionBlockTxAddress;
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
             INIT_ERROR("get address info failed! [%s]",

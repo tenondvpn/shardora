@@ -8,7 +8,7 @@
 #include "common/bitmap.h"
 #include "common/node_members.h"
 #include "consensus/consensus_utils.h"
-#include "consensus/waiting_txs_pools.h"
+#include "consensus/zbft/waiting_txs.h"
 #include "consensus/zbft/zbft_utils.h"
 #include "elect/member_manager.h"
 #include "pools/tx_pool_manager.h"
@@ -23,6 +23,7 @@ namespace zjchain {
 
 namespace consensus {
 
+class WaitingTxsPools;
 class Zbft : public std::enable_shared_from_this<Zbft> {
 public:
     Zbft(

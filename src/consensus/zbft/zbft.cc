@@ -1,6 +1,7 @@
 #include "consensus/zbft/zbft.h"
 
 #include "block/account_manager.h"
+#include "consensus/zbft/zbft_waiting_txs_pools.h"
 #include "contract/contract_utils.h"
 #include "elect/elect_manager.h"
 #include "timeblock/time_block_manager.h"

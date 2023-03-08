@@ -1,6 +1,5 @@
 #pragma once
 
-#include "consensus/waiting_txs_pools.h"
 #include "consensus/zbft/zbft.h"
 
 namespace zjchain {

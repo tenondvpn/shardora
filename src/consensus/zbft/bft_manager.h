@@ -9,7 +9,6 @@
 #include "common/tick.h"
 #include "common/limit_hash_map.h"
 #include "consensus/consensus.h"
-#include "consensus/waiting_txs_pools.h"
 #include "consensus/zbft/from_tx_item.h"
 #include "consensus/zbft/to_tx_item.h"
 #include "consensus/zbft/to_tx_local_item.h"
@@ -28,6 +27,7 @@ namespace zjchain {
 
 namespace consensus {
 
+class WaitingTxsPools;
 class BftManager : public Consensus {
 public:
     int Init(

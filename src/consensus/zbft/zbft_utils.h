@@ -10,7 +10,6 @@
 #include "common/global_info.h"
 #include "common/thread_safe_queue.h"
 #include "common/bitmap.h"
-#include "consensus/waiting_txs.h"
 #include "db/db.h"
 #include "protos/block.pb.h"
 #include "transport/transport_utils.h"
@@ -33,6 +32,7 @@ enum WaitingBlockType {
     kToBlock,
 };
 
+class WaitingTxsItem;
 struct ZbftItem {
     std::shared_ptr<WaitingTxsItem> txs_ptr;
     transport::MessagePtr msg_ptr;

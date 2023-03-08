@@ -10,7 +10,7 @@
 #define private public
 #include "common/random.h"
 #include "consensus/zbft/from_tx_item.h"
-#include "consensus/waiting_txs.h"
+#include "consensus//zbft/waiting_txs.h"
 #include "consensus/zbft/zbft_utils.h"
 #include "db/db.h"
 #include "pools/tx_pool_manager.h"
