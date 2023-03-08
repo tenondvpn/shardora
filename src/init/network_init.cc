@@ -127,7 +127,6 @@ int NetworkInit::Init(int argc, char** argv) {
     }
 
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
-    tm_block_mgr_->Init(pools_mgr_, db_);
     bft_mgr_ = std::make_shared<consensus::BftManager>();
     auto bft_init_res = bft_mgr_->Init(
         account_mgr_,
@@ -144,6 +143,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    tm_block_mgr_->Init(pools_mgr_, db_);
     if (elect_mgr_->Init() != elect::kElectSuccess) {
         INIT_ERROR("init elect manager failed!");
         return kInitError;

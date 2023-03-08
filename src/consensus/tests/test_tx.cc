@@ -312,13 +312,6 @@ TEST_F(TestTx, TestMoreTx) {
             break;
         }
 
-//         auto start_bft_ptr = backup_bft_mgr0.GetBft(
-//             0, leader_bft_mgr.now_msg_->header.pipeline(0).gid(), false);
-//         ASSERT_TRUE(start_bft_ptr != nullptr);
-//         for (int32_t i = 1; i < 20; ++i) {
-//             times[6 + i] += start_bft_ptr->times_[i] - start_bft_ptr->times_[i - 1];
-//         }
-
         ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
         tm = common::TimeUtils::TimestampUs();
         times[1] += tm - tm0;
@@ -358,13 +351,6 @@ TEST_F(TestTx, TestMoreTx) {
         backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
         tm = common::TimeUtils::TimestampUs();
         times[5] += tm - tm0;
-        tm0 = tm;
-//         leader_bft_mgr.ResetTest();
-//         backup_bft_mgr0.ResetTest();
-//         backup_bft_mgr1.ResetTest();
-        tm = common::TimeUtils::TimestampUs();
-        times[6] += tm - tm0;
-        tm0 = tm;
         ++consensus_count;
     }
 

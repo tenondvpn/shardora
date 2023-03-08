@@ -84,6 +84,10 @@ int BftManager::Init(
 }
 
 void BftManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members) {
+    if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
+        return;
+    }
+
     int32_t local_leader_index = elect_mgr_->local_node_pool_mod_num();
     int32_t leader_count = elect_mgr_->GetNetworkLeaderCount(sharding_id);
     ZJC_DEBUG("new elect block local leader index: %d, leader_count: %d",
@@ -110,6 +114,11 @@ void BftManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& membe
         thread_item->prev_index = 0;
         thread_set_[j] = thread_item;  // ptr change, multi-thread safe
     }
+
+    minimal_node_count_to_consensus_ = members->size() * 2 / 3;
+    if (minimal_node_count_to_consensus_ + 1 < members->size()) {
+        ++minimal_node_count_to_consensus_;
+    }
 }
 
 void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
@@ -120,6 +129,11 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 ZbftPtr BftManager::Start(uint8_t thread_index, const transport::MessagePtr& prepare_msg_ptr) {
+    if (network::DhtManager::Instance()->valid_count(
+            common::GlobalInfo::Instance()->network_id()) < minimal_node_count_to_consensus_) {
+        return nullptr;
+    }
+
     CheckTimeout(thread_index);
     auto thread_item = thread_set_[thread_index];
     if (thread_item == nullptr) {
@@ -649,6 +663,8 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
         // get txs direct
         if (bft_msg.tx_bft().ltx_prepare().tx_type() == pools::protobuf::kNormalTo) {
             txs_ptr = txs_pools_->GetToTxs(bft_msg.pool_index());
+        } else if (bft_msg.tx_bft().ltx_prepare().tx_type() == pools::protobuf::kConsensusRootTimeBlock) {
+            txs_ptr = txs_pools_->GetTimeblockTx(bft_msg.pool_index());
         } else {
             txs_ptr = txs_pools_->FollowerGetTxs(
                 bft_msg.pool_index(),

@@ -47,7 +47,6 @@ public:
     virtual void HandleMessage(const transport::MessagePtr& msg);
     virtual bool CheckDestination(const std::string& des_dht_key, bool closest);
     virtual bool IsUniversal() { return false; }
-
     void SendToClosestNode(const transport::MessagePtr& msg);
     void RandomSend(const transport::MessagePtr& msg);
     void SendToDesNetworkNodes(const transport::MessagePtr& msg);
@@ -79,6 +78,10 @@ public:
 
     std::shared_ptr<security::Security> security() {
         return security_;
+    }
+
+    uint32_t valid_count() const {
+        return valid_count_;
     }
 
 protected:
@@ -121,6 +124,7 @@ protected:
     uint32_t prev_refresh_neighbor_tm_ = 0;
     std::unordered_map<uint64_t, uint64_t> connect_timeout_map_;
     bool is_universal_ = false;
+    uint32_t valid_count_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(BaseDht);
 };

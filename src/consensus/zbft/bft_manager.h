@@ -136,7 +136,7 @@ private:
     std::string bft_gids_[common::kMaxThreadCount];
     uint64_t bft_gids_index_[common::kMaxThreadCount];
     uint32_t prev_checktime_out_milli_ = 0;
-
+    uint32_t minimal_node_count_to_consensus_ = common::kInvalidUint32;
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {

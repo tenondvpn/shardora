@@ -115,6 +115,7 @@ int BaseDht::Join(NodePtr& node) {
         
     readonly_hash_sort_dht_ = std::make_shared<Dht>(dht_);
     DHT_DEBUG("join new node: %s:%d", node->public_ip.c_str(), node->public_port);
+    valid_count_ = dht_.size();
     return kDhtSuccess;
 }
 
@@ -137,6 +138,7 @@ int BaseDht::Drop(const std::string& id) {
         node_map_.erase(miter);
     }
 
+    valid_count_ = dht_.size();
     return kDhtSuccess;
 }
 

@@ -57,6 +57,7 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tx_info.set_key(kAttrTimerBlock);
     tx_info.set_value(std::to_string(new_time_block_tm) + "_" + std::to_string(0));
     tmblock_tx_ptr_ = create_tm_tx_cb_(msg_ptr);
+    ZJC_DEBUG("success create timeblock tx.");
 }
 
 void TimeBlockManager::UpdateTimeBlock(

@@ -22,6 +22,15 @@ public:
     void DropNode(const std::string& ip, uint16_t port);
     void Join(const dht::NodePtr& node);
 
+    uint32_t valid_count(uint32_t net_id) {
+        auto dht_ptr = GetDht(net_id);
+        if (dht_ptr == nullptr) {
+            return 0;
+        }
+
+        return dht_ptr->valid_count();
+    }
+
 private:
     DhtManager();
     ~DhtManager();

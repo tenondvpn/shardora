@@ -430,7 +430,6 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     }
 
     if (block_msg.to_txs_size() <= 0) {
-        ZJC_DEBUG("no to txs");
         return;
     }
     
@@ -440,7 +439,6 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     msg_ptr->thread_idx = thread_idx;
 #ifndef ZJC_UNITTEST
     network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("success add txs");
 #else
     // for test
     leader_to_txs_msg_ = msg_ptr;
