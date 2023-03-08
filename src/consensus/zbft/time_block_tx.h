@@ -8,17 +8,17 @@ namespace zjchain {
 
 namespace consensus {
 
-class ToTxItem : public TxItemBase {
+class TimeBlockTx : public TxItemBase {
 public:
-    ToTxItem(
+    TimeBlockTx(
         transport::MessagePtr& msg,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<security::Security>& sec_ptr)
         : TxItemBase(msg, account_mgr, sec_ptr) {}
-    virtual ~ToTxItem() {}
+    virtual ~TimeBlockTx() {}
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(ToTxItem);
+    DISALLOW_COPY_AND_ASSIGN(TimeBlockTx);
 };
 
 };  // namespace consensus

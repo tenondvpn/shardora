@@ -9,7 +9,7 @@ namespace zjchain {
 namespace consensus {
 
 class TxItemBase : public pools::TxItem {
-public:
+protected:
     TxItemBase(
         transport::MessagePtr& msg,
         std::shared_ptr<block::AccountManager>& account_mgr,
@@ -17,7 +17,29 @@ public:
         : pools::TxItem(msg), account_mgr_(account_mgr), sec_ptr_(sec_ptr) {}
     virtual ~TxItemBase() {}
 
-protected:
+    virtual int HandleTx(
+            uint8_t thread_idx,
+            std::unordered_map<std::string, int64_t>& acc_balance_map,
+            block::protobuf::BlockTx& block_tx) {
+        return consensus::kConsensusSuccess;
+    }
+
+    virtual int TxToBlockTx(
+            const pools::protobuf::TxMessage& tx_info,
+            block::protobuf::BlockTx* block_tx) {
+        DefaultTxItem(tx_info, block_tx);
+        // change
+        if (tx_info.key().empty()) {
+            return consensus::kConsensusError;
+        }
+
+        auto storage = block_tx->add_storages();
+        storage->set_key(tx_info.key());
+        storage->set_val_hash(tx_info.value());
+        storage->set_val_size(0);
+        return consensus::kConsensusSuccess;
+    }
+
     void DefaultTxItem(
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {

@@ -10,6 +10,7 @@
 #include "common/limit_hash_map.h"
 #include "consensus/consensus.h"
 #include "consensus/zbft/from_tx_item.h"
+#include "consensus/zbft/time_block_tx.h"
 #include "consensus/zbft/to_tx_item.h"
 #include "consensus/zbft/to_tx_local_item.h"
 #include "consensus/zbft/zbft.h"
@@ -108,7 +109,7 @@ private:
     }
 
     pools::TxItemPtr CreateTimeblockTx(transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ToTxLocalItem>(msg_ptr, db_, account_mgr_, security_ptr_);
+        return std::make_shared<TimeBlockTx>(msg_ptr, account_mgr_, security_ptr_);
     }
 
     static const uint32_t kCheckTimeoutPeriodMilli = 3000lu;
