@@ -57,7 +57,6 @@ public:
             "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"));
         std::string pubkey_str;
         std::string id = security_ptr->GetAddress();
-        common::GlobalInfo::Instance()->set_consensus_shard_count(1);
         common::GlobalInfo::Instance()->set_network_id(network_id);
         JoinNetwork(network::kRootCongressNetworkId);
         JoinNetwork(network::kUniversalNetworkId);
@@ -212,7 +211,10 @@ TEST_F(TestBls, AllSuccess) {
     std::cout << "3: " << (time4 - time3) << std::endl;
     std::cout << "success handle bls test message." << std::endl;
     // sign and verify
-    auto hash = common::Hash::Sha256("hello world");
+    auto hash_str = common::Hash::Sha256("hello world");
+    libff::alt_bn128_G1 hash;
+    BlsSign bls_sign;
+    ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     std::vector<libff::alt_bn128_G1> all_signs;
     for (uint32_t i = 0; i < n; ++i) {
         dkg[i].FinishNoLock(0);
@@ -359,7 +361,10 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
     }
 
     // sign and verify
-    auto hash = common::Hash::Sha256("hello world");
+    auto hash_str = common::Hash::Sha256("hello world");
+    libff::alt_bn128_G1 hash;
+    BlsSign bls_sign;
+    ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     for (uint32_t i = 0; i < n; ++i) {
         dkg[i].FinishNoLock(0);
         if (i != kInvalidNodeIndex) {
@@ -506,7 +511,10 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
     }
 
     // sign and verify
-    auto hash = common::Hash::Sha256("hello world");
+    auto hash_str = common::Hash::Sha256("hello world");
+    libff::alt_bn128_G1 hash;
+    BlsSign bls_sign;
+    ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     for (uint32_t i = 0; i < n; ++i) {
         dkg[i].FinishNoLock(0);
         if (i != kInvalidNodeIndex) {
@@ -656,7 +664,10 @@ TEST_F(TestBls, ThreeRatioFailFine) {
     }
 
     // sign and verify
-    auto hash = common::Hash::Sha256("hello world");
+    auto hash_str = common::Hash::Sha256("hello world");
+    libff::alt_bn128_G1 hash;
+    BlsSign bls_sign;
+    ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     std::vector<libff::alt_bn128_G1> all_signs;
     for (uint32_t i = 0; i < n; ++i) {
         dkg[i].FinishNoLock(0);
@@ -806,7 +817,10 @@ TEST_F(TestBls, ThreeRatioFail) {
     }
 
     // sign and verify
-    auto hash = common::Hash::Sha256("hello world");
+    auto hash_str = common::Hash::Sha256("hello world");
+    libff::alt_bn128_G1 hash;
+    BlsSign bls_sign;
+    ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     std::vector<libff::alt_bn128_G1> all_signs;
     for (uint32_t i = 0; i < n; ++i) {
         dkg[i].FinishNoLock(0);
