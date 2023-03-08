@@ -4,6 +4,7 @@
 
 #include "block/block_manager.h"
 #include "consensus/zbft/waiting_txs.h"
+#include "timeblock/time_block_manager.h"
 
 namespace zjchain {
 
