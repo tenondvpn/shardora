@@ -38,16 +38,31 @@ public:
         uint64_t latest_time_block_height,
         uint64_t lastest_time_block_tm,
         uint64_t vss_random);
-//     bool LeaderNewTimeBlockValid(uint64_t* new_time_block_tm);
-    bool BackupheckNewTimeBlockValid(uint64_t new_time_block_tm);
-    int LeaderCreateTimeBlockTx(transport::protobuf::Header* msg);
-    int BackupCheckTimeBlockTx(const pools::protobuf::TxMessage& tx_info);
-    bool LeaderCanCallTimeBlockTx(uint64_t tm_sec);
+    pools::TxItemPtr tmblock_tx_ptr() const {
+        if (tmblock_tx_ptr_ != nullptr) {
+            if (!CanCallTimeBlockTx()) {
+                return nullptr;
+            }
+        }
+
+        return tmblock_tx_ptr_;
+    }
 
 private:
     void CreateTimeBlockTx();
-    void CheckBft();
     void LoadLatestTimeBlock();
+    bool CanCallTimeBlockTx() {
+        uint64_t now_sec = common::TimeUtils::TimestampSeconds();
+        if (now_sec >= latest_time_block_tm_ + common::kTimeBlockCreatePeriodSeconds) {
+            return true;
+        }
+
+        if (now_sec >= latest_tm_block_local_sec_ + common::kTimeBlockCreatePeriodSeconds) {
+            return true;
+        }
+
+        return false;
+    }
 
     uint64_t latest_time_block_height_ = common::kInvalidUint64;
     uint64_t latest_time_block_tm_{ 0 };
@@ -59,6 +74,7 @@ private:
     std::shared_ptr<timeblock::protobuf::TimeBlock> timeblock_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    pools::TxItemPtr tmblock_tx_ptr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(TimeBlockManager);
 };

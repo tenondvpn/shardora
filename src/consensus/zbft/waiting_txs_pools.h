@@ -14,7 +14,8 @@ class WaitingTxsPools {
 public:
     WaitingTxsPools(
         std::shared_ptr<pools::TxPoolManager>& pool_mgr,
-        std::shared_ptr<block::BlockManager>& block_mgr);
+        std::shared_ptr<block::BlockManager>& block_mgr,
+        std::shared_ptr<timeblock::TimeBlockManager>& timeblock_mgr);
     ~WaitingTxsPools();
     void TxOver(std::shared_ptr<Zbft>& zbft_ptr);
     void TxRecover(std::shared_ptr<Zbft>& zbft_ptr);
@@ -27,7 +28,7 @@ public:
     void LockPool(std::shared_ptr<Zbft>& zbft_ptr);
     std::shared_ptr<WaitingTxsItem> LeaderGetValidTxs(bool direct, uint32_t pool_index);
     std::shared_ptr<WaitingTxsItem> GetToTxs(uint32_t pool_index);
-    std::shared_ptr<WaitingTxsItem> GetTimeblockTx();
+    std::shared_ptr<WaitingTxsItem> GetTimeblockTx(uint32_t pool_index);
     std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
         uint32_t pool_index,
         const common::BloomFilter& bloom_filter,
@@ -41,10 +42,12 @@ private:
     void FilterInvalidTx(
         uint32_t pool_index,
         std::map<std::string, pools::TxItemPtr>& txs);
+    std::shared_ptr<WaitingTxsItem> GetSingleTx(uint32_t pool_index);
 
     WaitingTxs wtxs[common::kInvalidPoolIndex];
     std::shared_ptr<pools::TxPoolManager> pool_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
+    std::shared_ptr<timeblock::TimeBlockManager> timeblock_mgr_ = nullptr;
     std::deque<std::shared_ptr<Zbft>> pipeline_pools_[common::kInvalidPoolIndex];
 
     DISALLOW_COPY_AND_ASSIGN(WaitingTxsPools);

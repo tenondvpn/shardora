@@ -35,60 +35,6 @@ TimeBlockManager::TimeBlockManager() {
 
 TimeBlockManager::~TimeBlockManager() {}
 
-int TimeBlockManager::BackupCheckTimeBlockTx(const pools::protobuf::TxMessage& tx_info) {
-//     if (tx_info.attr_size() != 2) {
-//         TMBLOCK_ERROR("tx_info.attr_size() error: %d", tx_info.attr_size());
-//         return kTimeBlockError;
-//     }
-// 
-//     if (tx_info.attr(1).key() != kVssRandomAttr) {
-//         TMBLOCK_ERROR("tx_info.attr(1).key() error: %s", tx_info.attr(1).key().c_str());
-//         return kTimeBlockError;
-//     }
-// 
-//     uint64_t leader_final_cons_random = 0;
-//     if (!common::StringUtil::ToUint64(tx_info.attr(1).value(), &leader_final_cons_random)) {
-//         return kTimeBlockError;
-//     }
-
-//     if (leader_final_cons_random != vss::VssManager::Instance()->GetConsensusFinalRandom()) {
-//         TMBLOCK_ERROR("leader_final_cons_random: %lu, GetConsensusFinalRandom(): %lu",
-//             leader_final_cons_random,
-//             vss::VssManager::Instance()->GetConsensusFinalRandom());
-//         return kTimeBlockVssError;
-//     }
-// 
-    if (tx_info.key() != kAttrTimerBlock) {
-        TMBLOCK_ERROR("tx_info.attr(0).key() error: %s", tx_info.key().c_str());
-        return kTimeBlockError;
-    }
-
-    uint64_t leader_tm = 0;
-    if (!common::StringUtil::ToUint64(tx_info.value(), &leader_tm)) {
-        return kTimeBlockError;
-    }
-
-    if (!BackupheckNewTimeBlockValid(leader_tm)) {
-        TMBLOCK_ERROR("BackupheckNewTimeBlockValid error: %llu", leader_tm);
-        return kTimeBlockError;
-    }
-
-    return kTimeBlockSuccess;
-}
-
-bool TimeBlockManager::LeaderCanCallTimeBlockTx(uint64_t tm_sec) {
-    uint64_t now_sec = common::TimeUtils::TimestampSeconds();
-    if (now_sec >= latest_time_block_tm_ + common::kTimeBlockCreatePeriodSeconds) {
-        return true;
-    }
-
-    if (now_sec  >= latest_tm_block_local_sec_ + common::kTimeBlockCreatePeriodSeconds) {
-        return true;
-    }
-
-    return false;
-}
-
 void TimeBlockManager::CreateTimeBlockTx() {
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
             common::GlobalInfo::Instance()->network_id() !=
@@ -110,9 +56,7 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
     tx_info.set_key(kAttrTimerBlock);
     tx_info.set_value(std::to_string(new_time_block_tm) + "_" + std::to_string(0));
-    pools_mgr_->HandleMessage(msg_ptr);
-    TMBLOCK_INFO("dispatch timeblock tx info success: %lu, vss: %s, real: %s, network: %d!",
-        new_time_block_tm, 0, tx_info.value().c_str(), common::GlobalInfo::Instance()->network_id());
+    tmblock_tx_ptr_ = std::make_shared<pools::TxItem>(msg_ptr);
 }
 
 void TimeBlockManager::UpdateTimeBlock(
@@ -141,30 +85,6 @@ void TimeBlockManager::UpdateTimeBlock(
 //             common::GlobalInfo::Instance()->network_id()),
 //         vss_random);
 //     elect::ElectManager::Instance()->OnTimeBlock(latest_time_block_tm);
-}
-
-bool TimeBlockManager::BackupheckNewTimeBlockValid(uint64_t new_time_block_tm) {
-    uint64_t backup_latest_time_block_tm = latest_time_block_tm_;
-    backup_latest_time_block_tm += common::kTimeBlockCreatePeriodSeconds;
-    if (new_time_block_tm < (backup_latest_time_block_tm + kTimeBlockTolerateSeconds) &&
-            new_time_block_tm >(backup_latest_time_block_tm - kTimeBlockTolerateSeconds)) {
-        return true;
-    }
-
-    ZJC_ERROR("BackupheckNewTimeBlockValid error[%llu][%llu] latest_time_block_tm_[%lu]",
-        new_time_block_tm, (uint64_t)backup_latest_time_block_tm, (uint64_t)latest_time_block_tm_);
-    return false;
-}
-
-void TimeBlockManager::CheckBft() {
-//     int32_t pool_mod_num = elect::ElectManager::Instance()->local_node_pool_mod_num();
-//     if (pool_mod_num >= 0) {
-//         consensus::BftManager::Instance()->StartBft("", pool_mod_num);
-//     }
-// 
-//     check_bft_tick_.CutOff(
-//         kCheckBftPeriodUs,
-//         std::bind(&TimeBlockManager::CheckBft, this));
 }
 
 void TimeBlockManager::LoadLatestTimeBlock() {

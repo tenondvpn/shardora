@@ -8,8 +8,9 @@ namespace consensus {
 
 WaitingTxsPools::WaitingTxsPools(
         std::shared_ptr<pools::TxPoolManager>& pool_mgr,
-        std::shared_ptr<block::BlockManager>& block_mgr)
-        : pool_mgr_(pool_mgr), block_mgr_(block_mgr) {
+        std::shared_ptr<block::BlockManager>& block_mgr,
+        std::shared_ptr<timeblock::TimeBlockManager>& timeblock_mgr)
+        : pool_mgr_(pool_mgr), block_mgr_(block_mgr), timeblock_mgr_(timeblock_mgr) {
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         wtxs[i].Init(i, pool_mgr);
     }
@@ -64,7 +65,7 @@ std::string WaitingTxsPools::latest_hash(uint32_t pool_index) const {
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
         bool direct,
         uint32_t pool_index) {
-    std::shared_ptr<WaitingTxsItem> txs_item = GetToTxs(pool_index);
+    std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(pool_index);
     if (txs_item == nullptr) {
         txs_item = wtxs[pool_index].LeaderGetValidTxs(direct);
         if (txs_item != nullptr) {
@@ -113,7 +114,35 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
     return txs_item;
 }
 
-std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx() {
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index) {
+    std::shared_ptr<WaitingTxsItem> txs_item = GetTimeblockTx(pool_index);
+    if (txs_item == nullptr) {
+        txs_item = GetToTxs(pool_index);
+    }
+
+    return txs_item;
+}
+
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_index) {
+    if (pool_index != common::kRootChainPoolIndex ||
+            common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
+        return nullptr;
+    }
+
+    auto tx_ptr = timeblock_mgr_->tmblock_tx_ptr();
+    if (tx_ptr != nullptr) {
+        auto txs_item = std::make_shared<WaitingTxsItem>();
+        txs_item->pool_index = pool_index;
+        txs_item->txs[tx_ptr->tx_hash] = tx_ptr;
+        txs_item->tx_type = pools::protobuf::kNormalTo;
+        FilterInvalidTx(pool_index, txs_item->txs);
+        if (txs_item->txs.empty()) {
+            return nullptr;
+        }
+
+        return txs_item;
+    }
+
     return nullptr;
 }
 
