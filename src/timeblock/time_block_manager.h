@@ -32,6 +32,10 @@ public:
         LoadLatestTimeBlock();
     }
 
+    void SetCreateTmTxFunction(pools::CreateConsensusItemFunction func) {
+        create_tm_tx_cb_ = func;
+    }
+
     uint64_t LatestTimestamp();
     uint64_t LatestTimestampHeight();
     void UpdateTimeBlock(
@@ -51,7 +55,7 @@ public:
 private:
     void CreateTimeBlockTx();
     void LoadLatestTimeBlock();
-    bool CanCallTimeBlockTx() {
+    bool CanCallTimeBlockTx() const {
         uint64_t now_sec = common::TimeUtils::TimestampSeconds();
         if (now_sec >= latest_time_block_tm_ + common::kTimeBlockCreatePeriodSeconds) {
             return true;
@@ -75,6 +79,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     pools::TxItemPtr tmblock_tx_ptr_ = nullptr;
+    pools::CreateConsensusItemFunction create_tm_tx_cb_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(TimeBlockManager);
 };

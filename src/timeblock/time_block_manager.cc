@@ -27,15 +27,15 @@ uint64_t TimeBlockManager::LatestTimestampHeight() {
     return latest_time_block_height_;
 }
 
-TimeBlockManager::TimeBlockManager() {
-    check_bft_tick_.CutOff(
-        35 * kCheckTimeBlockPeriodUs,
-        std::bind(&TimeBlockManager::CheckBft, this));
-}
+TimeBlockManager::TimeBlockManager() {}
 
 TimeBlockManager::~TimeBlockManager() {}
 
 void TimeBlockManager::CreateTimeBlockTx() {
+    if (create_tm_tx_cb_ == nullptr) {
+        return;
+    }
+
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
             common::GlobalInfo::Instance()->network_id() !=
             (network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
@@ -56,7 +56,7 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
     tx_info.set_key(kAttrTimerBlock);
     tx_info.set_value(std::to_string(new_time_block_tm) + "_" + std::to_string(0));
-    tmblock_tx_ptr_ = std::make_shared<pools::TxItem>(msg_ptr);
+    tmblock_tx_ptr_ = create_tm_tx_cb_(msg_ptr);
 }
 
 void TimeBlockManager::UpdateTimeBlock(

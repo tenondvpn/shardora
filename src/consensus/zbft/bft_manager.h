@@ -107,6 +107,10 @@ private:
         return std::make_shared<ToTxLocalItem>(msg_ptr, db_, account_mgr_, security_ptr_);
     }
 
+    pools::TxItemPtr CreateTimeblockTx(transport::MessagePtr& msg_ptr) {
+        return std::make_shared<ToTxLocalItem>(msg_ptr, db_, account_mgr_, security_ptr_);
+    }
+
     static const uint32_t kCheckTimeoutPeriodMilli = 3000lu;
 
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
