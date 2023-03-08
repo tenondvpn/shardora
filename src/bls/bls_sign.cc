@@ -100,7 +100,7 @@ int BlsSign::GetVerifyHash(
     *verify_hash = GetVerifyHash(res);
     return kBlsSuccess;
 } catch (std::exception& e) {
-    BLS_ERROR("sign message failed: %s", e.what());
+    BLS_ERROR("verify message failed: %s", e.what());
     return kBlsError;
 }
 

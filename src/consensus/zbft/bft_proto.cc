@@ -38,17 +38,16 @@ void BftProto::SetLocalPublicIpPort(
 bool BftProto::LeaderCreatePrepare(
         std::shared_ptr<security::Security>& security_ptr,
         const ZbftPtr& bft_ptr,
+        const std::string& precommit_gid,
+        const std::string& commit_gid,
         transport::protobuf::Header& msg,
         hotstuff::protobuf::ZbftMessage* pipeline_msg) {
-    msg.set_src_sharding_id(bft_ptr->network_id());
-    dht::DhtKeyManager dht_key(bft_ptr->network_id());
-    msg.set_des_dht_key(dht_key.StrKey());
-    msg.set_type(common::kConsensusMessage);
-    msg.set_hop_count(0);
     auto broad_param = msg.mutable_broadcast();
     auto& bft_msg = *pipeline_msg;
     bft_msg.set_leader(false);
-    bft_msg.set_gid(bft_ptr->gid());
+    bft_msg.set_prepare_gid(bft_ptr->gid());
+    bft_msg.set_precommit_gid(precommit_gid);
+    bft_msg.set_commit_gid(commit_gid);
     bft_msg.set_net_id(bft_ptr->network_id());
     bft_msg.set_bft_step(kConsensusPrepare);
     bft_msg.set_agree(true);
@@ -56,6 +55,18 @@ bool BftProto::LeaderCreatePrepare(
     bft_msg.set_epoch(bft_ptr->GetEpoch());
     bft_msg.set_member_index(bft_ptr->local_member_index());
     bft_msg.set_elect_height(bft_ptr->elect_height());
+    auto prev_btr = bft_ptr->pipeline_prev_zbft_ptr();
+    if (prev_btr != nullptr) {
+        const auto& bitmap_data = prev_btr->prepare_bitmap().data();
+        for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
+            bft_msg.add_bitmap(bitmap_data[i]);
+        }
+
+        auto& bls_precommit_sign = prev_btr->bls_precommit_agg_sign();
+        bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
+        bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
+    }
+
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
     std::string sign;
     if (security_ptr->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
@@ -69,23 +80,18 @@ bool BftProto::LeaderCreatePrepare(
 bool BftProto::BackupCreatePrepare(
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
-        const transport::protobuf::Header& from_header,
-        const hotstuff::protobuf::ZbftMessage& from_bft_msg,
         const ZbftPtr& bft_ptr,
         bool agree,
-        transport::protobuf::Header& msg,
+        const std::string& precommit_gid,
         hotstuff::protobuf::ZbftMessage* pipeline_msg) {
-    msg.set_src_sharding_id(bft_ptr->network_id());
-    dht::DhtKeyManager dht_key(bft_ptr->network_id());
-    msg.set_des_dht_key(dht_key.StrKey());
-    msg.set_type(common::kConsensusMessage);
     auto& bft_msg = *pipeline_msg;
     bft_msg.set_leader(true);
-    bft_msg.set_gid(from_bft_msg.gid());
-    bft_msg.set_net_id(from_bft_msg.net_id());
+    bft_msg.set_prepare_gid(bft_ptr->gid());
+    bft_msg.set_precommit_gid(precommit_gid);
+    bft_msg.set_net_id(bft_ptr->network_id());
     bft_msg.set_agree(agree);
     bft_msg.set_bft_step(kConsensusPrepare);
-    bft_msg.set_epoch(from_bft_msg.epoch());
+    bft_msg.set_epoch(bft_ptr->GetEpoch());
     bft_msg.set_member_index(bft_ptr->local_member_index());
     bft_msg.set_prepare_hash(bft_ptr->local_prepare_hash());
     std::string bls_sign_x;
@@ -129,6 +135,7 @@ bool BftProto::LeaderCreatePreCommit(
         std::shared_ptr<security::Security>& security_ptr,
         const ZbftPtr& bft_ptr,
         bool agree,
+        const std::string& commit_gid,
         transport::protobuf::Header& msg) {
     msg.set_src_sharding_id(bft_ptr->network_id());
     dht::DhtKeyManager dht_key(bft_ptr->network_id());
@@ -137,7 +144,8 @@ bool BftProto::LeaderCreatePreCommit(
     auto broad_param = msg.mutable_broadcast();
     auto& bft_msg = *msg.add_pipeline();
     bft_msg.set_leader(false);
-    bft_msg.set_gid(bft_ptr->gid());
+    bft_msg.set_precommit_gid(bft_ptr->gid());
+    bft_msg.set_commit_gid(commit_gid);
     bft_msg.set_net_id(bft_ptr->network_id());
     bft_msg.set_bft_step(kConsensusPreCommit);
     bft_msg.set_pool_index(bft_ptr->pool_index());
@@ -154,7 +162,6 @@ bool BftProto::LeaderCreatePreCommit(
         auto& bls_precommit_sign = bft_ptr->bls_precommit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
-        bft_msg.set_bls_agg_verify_hash(bft_ptr->precommit_bls_agg_verify_hash());
     }
 
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
@@ -170,22 +177,16 @@ bool BftProto::LeaderCreatePreCommit(
 bool BftProto::BackupCreatePreCommit(
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
-        const transport::protobuf::Header& from_header,
-        const hotstuff::protobuf::ZbftMessage& from_bft_msg,
         const ZbftPtr& bft_ptr,
         bool agree,
         transport::protobuf::Header& msg) {
-    msg.set_src_sharding_id(bft_ptr->network_id());
-    dht::DhtKeyManager dht_key(bft_ptr->network_id());
-    msg.set_des_dht_key(dht_key.StrKey());
-    msg.set_type(common::kConsensusMessage);
     auto& bft_msg = *msg.add_pipeline();
     bft_msg.set_leader(true);
-    bft_msg.set_gid(from_bft_msg.gid());
-    bft_msg.set_net_id(from_bft_msg.net_id());
+    bft_msg.set_precommit_gid(bft_ptr->gid());
+    bft_msg.set_net_id(bft_ptr->network_id());
     bft_msg.set_agree(agree);
     bft_msg.set_bft_step(kConsensusPreCommit);
-    bft_msg.set_epoch(from_bft_msg.epoch());
+    bft_msg.set_epoch(bft_ptr->GetEpoch());
     bft_msg.set_member_index(bft_ptr->local_member_index());
     std::string bls_sign_x;
     std::string bls_sign_y;
@@ -240,7 +241,7 @@ bool BftProto::LeaderCreateCommit(
     auto ltx_commit_msg = tx_bft.mutable_ltx_commit();
     ltx_commit_msg->set_latest_hegight(bft_ptr->prpare_block()->height());
     bft_msg.set_leader(false);
-    bft_msg.set_gid(bft_ptr->gid());
+    bft_msg.set_commit_gid(bft_ptr->gid());
     bft_msg.set_net_id(bft_ptr->network_id());
     bft_msg.set_bft_step(kConsensusCommit);
     bft_msg.set_pool_index(bft_ptr->pool_index());
@@ -262,8 +263,6 @@ bool BftProto::LeaderCreateCommit(
             bft_msg.add_commit_bitmap(commit_bitmap_data[i]);
             msg_hash_src += std::to_string(commit_bitmap_data[i]);
         }
-
-        bft_msg.set_bls_agg_verify_hash(bft_ptr->commit_bls_agg_verify_hash());
     }
 
     bft_msg.set_prepare_hash(bft_ptr->prpare_block()->hash());

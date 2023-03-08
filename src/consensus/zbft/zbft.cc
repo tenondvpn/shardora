@@ -364,11 +364,24 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
         set_precoimmit_hash(common::Hash::keccak256(msg_hash_src));
         ZJC_INFO("bls_mgr_->Verify start.");
         std::string sign_precommit_hash;
-        bls_mgr_->GetVerifyHash(
-            t,
-            n,
-            *bls_precommit_agg_sign_,
-            &sign_precommit_hash);
+        if (bls_mgr_->GetVerifyHash(
+                t,
+                n,
+                *bls_precommit_agg_sign_,
+                &sign_precommit_hash) != bls::kBlsSuccess) {
+            common_pk_.to_affine_coordinates();
+            auto cpk = std::make_shared<BLSPublicKey>(common_pk_);
+            auto cpk_strs = cpk->toString();
+            ZJC_ERROR("failed leader verify leader precommit agg sign! t: %u, n: %u,"
+                "common public key: %s, %s, %s, %s, elect height: %lu, "
+                "network id: %u, prepare hash: %s",
+                t, n, cpk_strs->at(0).c_str(), cpk_strs->at(1).c_str(),
+                cpk_strs->at(2).c_str(), cpk_strs->at(3).c_str(),
+                elect_height_, network_id_, common::Encode::HexEncode(prpare_hash).c_str());
+            assert(false);
+            return kConsensusError;
+        }
+
         if (sign_precommit_hash != precommit_bls_agg_verify_hash_) {
             common_pk_.to_affine_coordinates();
             auto cpk = std::make_shared<BLSPublicKey>(common_pk_);
@@ -445,11 +458,6 @@ void Zbft::AfterNetwork() {
     if (consensus_status_ == kConsensusCommit) {
         CreateCommitVerifyHash();
     }
-
-    if (pipeline_next_zbft_ptr_ != nullptr) {
-        pipeline_next_zbft_ptr_->AfterNetwork();
-        pipeline_next_zbft_ptr_ = nullptr;
-    }
 }
 
 int Zbft::LeaderCreateCommitAggSign() {
@@ -487,11 +495,15 @@ int Zbft::LeaderCreateCommitAggSign() {
         commit_hash_ = common::Hash::Hash256(msg_hash_src);
         ZJC_INFO("commit verify start,");
         std::string sign_commit_hash;
-        bls_mgr_->GetVerifyHash(
-            t,
-            n,
-            *bls_commit_agg_sign_,
-            &sign_commit_hash);
+        if (bls_mgr_->GetVerifyHash(
+                t,
+                n,
+                *bls_commit_agg_sign_,
+                &sign_commit_hash) != bls::kBlsSuccess) {
+            ZJC_ERROR("verify leader precommit agg sign failed!");
+            return kConsensusError;
+        }
+
         if (sign_commit_hash != commit_bls_agg_verify_hash_) {
             ZJC_ERROR("leader verify leader commit agg sign failed!");
             return kConsensusError;
@@ -506,6 +518,31 @@ int Zbft::LeaderCreateCommitAggSign() {
     return kConsensusSuccess;
 }
 
+bool Zbft::set_bls_precommit_agg_sign(
+        const libff::alt_bn128_G1& agg_sign,
+        const std::string& sign_hash) {
+    uint32_t t = min_aggree_member_count_;
+    uint32_t n = members_ptr_->size();
+    std::string sign_commit_hash;
+    if (bls_mgr_->GetVerifyHash(
+            t,
+            n,
+            agg_sign,
+            &sign_commit_hash) != bls::kBlsSuccess) {
+        ZJC_ERROR("verify leader precommit agg sign failed!");
+        return false;
+    }
+
+    if (sign_commit_hash != sign_hash) {
+        ZJC_ERROR("backup verify leader precommit agg sign failed! %s: %s",
+            common::Encode::HexEncode(sign_commit_hash).c_str(),
+            common::Encode::HexEncode(sign_hash).c_str());
+        return false;
+    }
+
+    bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(agg_sign);
+    return true;
+}
 
 void Zbft::LeaderCallTransaction(hotstuff::protobuf::ZbftMessage* bft_msg) {
     auto& res_tx_bft = *bft_msg->mutable_tx_bft();

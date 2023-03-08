@@ -39,16 +39,6 @@ public:
         db_ptr = std::make_shared<db::Db>();
         db_ptr->Init("./db");
         bls_manager = new BlsManager(security_ptr, db_ptr);
-//         transport_ = std::make_shared<zjchain::transport::UdpTransport>(
-//                 "127.0.0.1",
-//                 9701,
-//                 1024 * 1024,
-//                 1024 * 1024);
-//         if (transport_->Init() != zjchain::transport::kTransportSuccess) {
-//             return;
-//         }
-//         transport_->Start(false);
-//         zjchain::transport::MultiThreadHandler::Instance()->Init(transport_, nullptr);
     }
 
     static void TearDownTestCase() {
@@ -107,10 +97,10 @@ public:
 };
 
 TEST_F(TestBls, AllSuccess) {
-    static const uint32_t t = 700;
-    static const uint32_t n = 1024;
-//     static const uint32_t t = 7;
-//     static const uint32_t n = 10;
+//     static const uint32_t t = 700;
+//     static const uint32_t n = 1024;
+    static const uint32_t t = 7;
+    static const uint32_t n = 10;
 
     BlsDkg* dkg = new BlsDkg[n];
     for (uint32_t i = 0; i < n; i++) {

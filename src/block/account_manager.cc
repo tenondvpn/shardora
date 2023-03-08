@@ -217,8 +217,8 @@ void AccountManager::HandleNormalFromTx(
     account_info->set_latest_height(block.height());
     account_info->set_balance(tx.balance());
     prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
-    ZJC_DEBUG("transfer from address new balance %s: %lu",
-        common::Encode::HexEncode(account_id).c_str(), tx.balance());
+//     ZJC_DEBUG("transfer from address new balance %s: %lu",
+//         common::Encode::HexEncode(account_id).c_str(), tx.balance());
 }
 
 void AccountManager::HandleLocalToTx(
@@ -250,8 +250,8 @@ void AccountManager::HandleLocalToTx(
         account_info->set_latest_height(block.height());
         account_info->set_balance(to_txs.tos(i).balance());
         prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
-        ZJC_DEBUG("transfer to address new balance %s: %lu",
-            common::Encode::HexEncode(to_txs.tos(i).to()).c_str(), to_txs.tos(i).balance());
+//         ZJC_DEBUG("transfer to address new balance %s: %lu",
+//             common::Encode::HexEncode(to_txs.tos(i).to()).c_str(), to_txs.tos(i).balance());
     }
 }
 
@@ -274,7 +274,7 @@ void AccountManager::AddBlockItemToCache(
             HandleLocalToTx(thread_idx, *block_item, tx_list[i], db_batch);
             break;
         default:
-            ZJC_DEBUG("not handled step: %d", tx_list[i].step());
+//             ZJC_DEBUG("not handled step: %d", tx_list[i].step());
             break;
         }
     }
@@ -331,7 +331,7 @@ int AccountManager::AddNewAccount(
     account_info->set_latest_height(block.height());
     account_info->set_balance(tx_info.balance());
     address_map_[thread_idx].add(account_id, account_info);
-    ZJC_DEBUG("add account success: %s", common::Encode::HexEncode(account_id).c_str());
+//     ZJC_DEBUG("add account success: %s", common::Encode::HexEncode(account_id).c_str());
     return kBlockSuccess;
 }
 

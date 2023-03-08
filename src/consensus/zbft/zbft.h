@@ -179,9 +179,7 @@ public:
         return precommit_hash_;
     }
 
-    void set_bls_precommit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
-        bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(agg_sign);
-    }
+    bool set_bls_precommit_agg_sign(const libff::alt_bn128_G1& agg_sign, const std::string& sign_hash);
 
     const std::shared_ptr<libff::alt_bn128_G1>& bls_precommit_agg_sign() const {
         assert(bls_precommit_agg_sign_ != nullptr);
@@ -374,8 +372,12 @@ public:
         return txs_ptr_;
     }
 
-    void set_next_bft_ptr(std::shared_ptr<Zbft>& pipeline_next_zbft_ptr) {
-        pipeline_next_zbft_ptr_ = pipeline_next_zbft_ptr;
+    void set_prev_bft_ptr(std::shared_ptr<Zbft> zbft_ptr) {
+        pipeline_prev_zbft_ptr_ = zbft_ptr;
+    }
+
+    const std::shared_ptr<Zbft>& pipeline_prev_zbft_ptr() const {
+        return pipeline_prev_zbft_ptr_;
     }
 
 protected:
@@ -431,7 +433,7 @@ protected:
     std::string commit_bls_agg_verify_hash_;
     libff::alt_bn128_G1 g1_prepare_hash_;
     libff::alt_bn128_G1 g1_precommit_hash_;
-    std::shared_ptr<Zbft> pipeline_next_zbft_ptr_ = nullptr;
+    std::shared_ptr<Zbft> pipeline_prev_zbft_ptr_ = nullptr;
 
 public:
     inline void set_test_times(uint32_t index) {

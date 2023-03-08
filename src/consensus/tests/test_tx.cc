@@ -373,7 +373,6 @@ TEST_F(TestTx, TestMoreTx) {
     usleep(200000);
     over = true;
     block_thread.join();
-
     // batch transfer to txs
     leader_bft_mgr.block_mgr_->CreateToTx(0);
     ASSERT_TRUE(leader_bft_mgr.block_mgr_->leader_to_txs_msg_ != nullptr);

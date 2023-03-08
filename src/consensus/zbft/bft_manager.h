@@ -87,6 +87,12 @@ private:
     bool VerifyLeaderIdValid(
         const transport::MessagePtr& msg_ptr,
         common::BftMemberPtr& mem_ptr);
+    void CreateResponseMessage(
+        bool response_to_leader,
+        const std::vector<ZbftPtr>& zbft_vec,
+        const transport::MessagePtr& msg_ptr);
+    int CheckPrecommit(const transport::MessagePtr& msg_ptr);
+    int CheckCommit(const transport::MessagePtr& msg_ptr);
     pools::TxItemPtr CreateFromTx(transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
     }

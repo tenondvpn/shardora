@@ -241,7 +241,7 @@ void BlockManager::AddNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBach& db_batch) {
-    ZJC_DEBUG("new block coming.");
+//     ZJC_DEBUG("new block coming.");
     prefix_db_->SaveBlock(*block_item, db_batch);
     to_txs_pool_->NewBlock(*block_item, db_batch);
     if (block_item->network_id() == common::GlobalInfo::Instance()->network_id()) {

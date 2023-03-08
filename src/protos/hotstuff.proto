@@ -45,25 +45,27 @@ message TxBft {
 }
 
 message ZbftMessage {
-    optional bytes gid = 1;
-    optional int32 bft_step = 2;
-    optional bool leader = 3;
-    optional uint32 net_id = 4;
-    repeated uint64 bitmap = 5;
-    optional bool agree = 6;
-    optional uint32 pool_index = 7;
-    optional int32 error = 8;
-    optional TxBft tx_bft = 9;
-    optional bytes prepare_hash = 10;
-    optional bytes node_ip = 11;
-    optional uint32 node_port = 12;
-    optional uint32 epoch = 13;
-    optional uint32 member_index = 14;
-    optional bytes pubkey = 15;
-    optional bytes backup_enc_data = 16;
-    optional uint64 elect_height = 17;
-    optional bytes bls_sign_x = 18;
-    optional bytes bls_sign_y = 19;
-    repeated uint64 commit_bitmap = 20;
-    optional bytes bls_agg_verify_hash = 21;
+    optional bytes prepare_gid = 1;
+    optional bytes precommit_gid = 2;
+    optional bytes commit_gid = 3;
+    optional int32 bft_step = 4;
+    optional bool leader = 5;
+    optional uint32 net_id = 6;
+    repeated uint64 bitmap = 7;
+    optional bool agree = 8;
+    optional uint32 pool_index = 9;
+    optional int32 error = 10;
+    optional TxBft tx_bft = 11;
+    optional bytes prepare_hash = 12;
+    optional bytes node_ip = 13;
+    optional uint32 node_port = 14;
+    optional uint32 epoch = 15;
+    optional uint32 member_index = 16;
+    optional bytes pubkey = 17;
+    optional bytes backup_enc_data = 18;
+    optional uint64 elect_height = 19;
+    optional bytes bls_sign_x = 20;
+    optional bytes bls_sign_y = 21;
+    repeated uint64 commit_bitmap = 22;
+    optional bytes bls_agg_verify_hash = 23;
 }

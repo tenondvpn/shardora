@@ -76,6 +76,7 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBach& 
             PoolMap pool_map;
             network_txs_pools_[sharding_id] = pool_map;
             net_iter = network_txs_pools_.find(sharding_id);
+//             ZJC_DEBUG("reset pools network: %u", sharding_id);
         }
 
         auto pool_iter = net_iter->second.find(block.pool_index());
@@ -92,13 +93,19 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBach& 
             height_iter = pool_iter->second.find(block.height());
         }
 
+        auto to_iter = height_iter->second.find(tx_list[i].to());
+        if (to_iter == height_iter->second.end()) {
+            height_iter->second[tx_list[i].to()] = 0;
+        }
+
         height_iter->second[tx_list[i].to()] += tx_list[i].amount();
-        ZJC_DEBUG("new from add new to sharding: %u, id: %s, amount: %lu, pool: %u, height: %lu",
-            sharding_id,
-            common::Encode::HexEncode(tx_list[i].to()).c_str(),
-            height_iter->second[tx_list[i].to()],
-            block.pool_index(),
-            block.height());
+//         ZJC_DEBUG("new from add new to sharding: %u, id: %s, amount: %lu, pool: %u, height: %lu, pool size: %u",
+//             sharding_id,
+//             common::Encode::HexEncode(tx_list[i].to()).c_str(),
+//             height_iter->second[tx_list[i].to()],
+//             block.pool_index(),
+//             block.height(),
+//             net_iter->second.size());
     }
 }
 
@@ -168,7 +175,7 @@ void ToTxsPools::HandleNormalToTx(
                 break;
             }
 
-            ZJC_DEBUG("erase sharding: %u, height: %lu", heights.sharding_id(), height_iter->first);
+//             ZJC_DEBUG("erase sharding: %u, height: %lu", heights.sharding_id(), height_iter->first);
             pool_iter->second.erase(height_iter++);
         }
     }
@@ -211,27 +218,29 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeig
         return kPoolsError;
     }
 
+//     ZJC_DEBUG("pool size: %lu, sharding: %u", net_iter->second.size(), sharding_id);
     auto handled_iter = handled_map_.find(sharding_id);
     to_heights.set_sharding_id(sharding_id);
     std::map<std::string, uint64_t> acc_amount_map;
-    std::string add_heights;
+//     std::string add_heights;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto pool_iter = net_iter->second.find(i);
         if (pool_iter == net_iter->second.end() ||
-                pool_iter->second.empty() || acc_amount_map.size() >= kMaxToTxsCount) {
+                pool_iter->second.empty() ||
+                acc_amount_map.size() >= kMaxToTxsCount) {
             if (handled_iter == handled_map_.end()) {
                 to_heights.add_heights(0);
             } else {
                 to_heights.add_heights(handled_iter->second->heights(i));
             }
 
-            add_heights += std::to_string(to_heights.heights(to_heights.heights_size() - 1)) + " ";
+//             add_heights += std::to_string(to_heights.heights(to_heights.heights_size() - 1)) + " ";
             continue;
         }
 
         auto r_height_iter = pool_iter->second.rbegin();
         to_heights.add_heights(r_height_iter->first);
-        add_heights += std::to_string(r_height_iter->first) + " ";
+//         add_heights += std::to_string(r_height_iter->first) + " ";
         for (auto hiter = pool_iter->second.begin();
                 hiter != pool_iter->second.end(); ++hiter) {
             for (auto to_iter = hiter->second.begin();
@@ -269,7 +278,7 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeig
     auto tos_hash = common::Hash::keccak256(str_for_hash);
     to_tx.set_heights_hash(tos_hash);
     ZJC_DEBUG("sharding: %u add to txs heights: %s, hash: %s",
-        sharding_id, add_heights.c_str(), common::Encode::HexEncode(tos_hash).c_str());
+        sharding_id, "", common::Encode::HexEncode(tos_hash).c_str());
     *to_tx.mutable_to_heights() = to_heights;
     auto val = to_tx.SerializeAsString();
     to_heights.set_tos_hash(tos_hash);
