@@ -482,7 +482,7 @@ ZbftPtr BftManager::BackupHandleZbftMessage(
         const transport::MessagePtr& msg_ptr) {
     if (!VerifyLeaderIdValid(msg_ptr)) {
         ZJC_ERROR("leader invalid!");
-        return bft_ptr;
+        return nullptr;
     }
 
     // verify leader signature
