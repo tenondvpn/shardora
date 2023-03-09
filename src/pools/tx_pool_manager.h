@@ -81,7 +81,7 @@ private:
                 continue;
             }
 
-            tx_pool_[pool_index].UpdateLatestInfo(pool_info.height(), pool_info.hash());
+            tx_pool_[i].UpdateLatestInfo(pool_info.height(), pool_info.hash());
         }
     }
     void SaveStorageToDb(const transport::protobuf::Header& msg);
