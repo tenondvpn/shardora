@@ -88,7 +88,7 @@ void Zbft::Destroy() {
     }
 }
 
-int Zbft::Prepare(bool leader, hotstuff::protobuf::ZbftMessage* bft_msg) {
+int Zbft::Prepare(bool leader, zbft::protobuf::ZbftMessage* bft_msg) {
     if (leader) {
         return LeaderCreatePrepare(bft_msg);
     }
@@ -108,10 +108,10 @@ int Zbft::Prepare(bool leader, hotstuff::protobuf::ZbftMessage* bft_msg) {
     return kConsensusSuccess;
 }
 
-int Zbft::LeaderCreatePrepare(hotstuff::protobuf::ZbftMessage* bft_msg) {
+int Zbft::LeaderCreatePrepare(zbft::protobuf::ZbftMessage* bft_msg) {
     local_member_index_ = leader_index_;
     LeaderCallTransaction(bft_msg);
-    hotstuff::protobuf::TxBft& tx_bft = *bft_msg->mutable_tx_bft();
+    zbft::protobuf::TxBft& tx_bft = *bft_msg->mutable_tx_bft();
     auto ltxp = tx_bft.mutable_ltx_prepare();
     if (txs_ptr_->bloom_filter == nullptr) {
         auto& tx_map = txs_ptr_->txs;
@@ -130,7 +130,7 @@ int Zbft::LeaderCreatePrepare(hotstuff::protobuf::ZbftMessage* bft_msg) {
 }
 
 int Zbft::BackupCheckPrepare(
-        hotstuff::protobuf::ZbftMessage* bft_msg,
+        zbft::protobuf::ZbftMessage* bft_msg,
         int32_t* invalid_tx_idx) {
     auto& tx_bft = *bft_msg->mutable_tx_bft();
     auto ltx_msg = tx_bft.mutable_ltx_prepare();
@@ -160,7 +160,7 @@ int Zbft::InitZjcTvmContext() {
     return kConsensusSuccess;
 }
 
-bool Zbft::BackupCheckLeaderValid(const hotstuff::protobuf::ZbftMessage* bft_msg) {
+bool Zbft::BackupCheckLeaderValid(const zbft::protobuf::ZbftMessage* bft_msg) {
     auto local_elect_height = elect_height_;
     auto members = members_ptr_;
     if (members == nullptr ||
@@ -204,7 +204,7 @@ bool Zbft::BackupCheckLeaderValid(const hotstuff::protobuf::ZbftMessage* bft_msg
 }
 
 int Zbft::LeaderPrecommitOk(
-        const hotstuff::protobuf::LeaderTxPrepare& tx_prepare,
+        const zbft::protobuf::LeaderTxPrepare& tx_prepare,
         uint32_t index,
         const libff::alt_bn128_G1& backup_sign,
         const std::string& id) {
@@ -545,7 +545,7 @@ bool Zbft::set_bls_precommit_agg_sign(
     return true;
 }
 
-void Zbft::LeaderCallTransaction(hotstuff::protobuf::ZbftMessage* bft_msg) {
+void Zbft::LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg) {
     auto& res_tx_bft = *bft_msg->mutable_tx_bft();
     auto ltx_msg = res_tx_bft.mutable_ltx_prepare();
     if (DoTransaction(*ltx_msg) != kConsensusSuccess) {
@@ -574,7 +574,7 @@ void Zbft::LeaderCallTransaction(hotstuff::protobuf::ZbftMessage* bft_msg) {
     }
 }
 
-int Zbft::DoTransaction(hotstuff::protobuf::LeaderTxPrepare& ltx_prepare) {
+int Zbft::DoTransaction(zbft::protobuf::LeaderTxPrepare& ltx_prepare) {
     if (InitZjcTvmContext() != kConsensusSuccess) {
         return kConsensusError;
     }

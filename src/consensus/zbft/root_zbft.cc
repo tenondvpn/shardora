@@ -197,7 +197,7 @@ int RootZbft::RootBackupCheckPrepare(
         return kConsensusInvalidPackage;
     }
 
-    hotstuff::protobuf::TxBft res_tx_bft;
+    zbft::protobuf::TxBft res_tx_bft;
     auto& ltx_msg = *res_tx_bft.mutable_ltx_prepare();
     if (DoTransaction(ltx_msg) != kConsensusSuccess) {
         return kConsensusInvalidPackage;

@@ -13,7 +13,7 @@
 #include "network/network_utils.h"
 #include "init/init_utils.h"
 #include "pools/tx_pool_manager.h"
-#include "protos/hotstuff.pb.h"
+#include "protos/zbft.pb.h"
 #include "security/ecdsa/ecdsa.h"
 #include "timeblock/time_block_utils.h"
 

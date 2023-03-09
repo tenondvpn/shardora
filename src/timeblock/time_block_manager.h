@@ -10,7 +10,7 @@
 #include "db/db.h"
 #include "dht/dht_utils.h"
 #include "pools/tx_pool_manager.h"
-#include "protos/hotstuff.pb.h"
+#include "protos/zbft.pb.h"
 #include "protos/prefix_db.h"
 #include "protos/timeblock.pb.h"
 #include "protos/transport.pb.h"

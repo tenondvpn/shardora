@@ -17,7 +17,7 @@ namespace consensus {
 
 void BftProto::SetLocalPublicIpPort(
         const dht::NodePtr& local_node,
-        hotstuff::protobuf::ZbftMessage& bft_msg) {
+        zbft::protobuf::ZbftMessage& bft_msg) {
     if (common::GlobalInfo::Instance()->config_first_node()) {
         common::Split<> spliter(
             common::GlobalInfo::Instance()->tcp_spec().c_str(),
@@ -41,7 +41,7 @@ bool BftProto::LeaderCreatePrepare(
         const std::string& precommit_gid,
         const std::string& commit_gid,
         transport::protobuf::Header& msg,
-        hotstuff::protobuf::ZbftMessage* pipeline_msg) {
+        zbft::protobuf::ZbftMessage* pipeline_msg) {
     auto broad_param = msg.mutable_broadcast();
     auto& bft_msg = *pipeline_msg;
     bft_msg.set_leader(false);
@@ -83,7 +83,7 @@ bool BftProto::BackupCreatePrepare(
         const ZbftPtr& bft_ptr,
         bool agree,
         const std::string& precommit_gid,
-        hotstuff::protobuf::ZbftMessage* pipeline_msg) {
+        zbft::protobuf::ZbftMessage* pipeline_msg) {
     auto& bft_msg = *pipeline_msg;
     bft_msg.set_leader(true);
     bft_msg.set_prepare_gid(bft_ptr->gid());
@@ -237,7 +237,7 @@ bool BftProto::LeaderCreateCommit(
     msg.set_type(common::kConsensusMessage);
     auto broad_param = msg.mutable_broadcast();
     auto& bft_msg = *msg.add_pipeline();
-    hotstuff::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
+    zbft::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
     auto ltx_commit_msg = tx_bft.mutable_ltx_commit();
     ltx_commit_msg->set_latest_hegight(bft_ptr->prpare_block()->height());
     bft_msg.set_leader(false);
@@ -291,7 +291,7 @@ bool BftProto::CreateLeaderBroadcastToAccount(
     msg.set_type(common::kConsensusMessage);
     auto broad_param = msg.mutable_broadcast();
     auto& bft_msg = *msg.add_pipeline();
-    hotstuff::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
+    zbft::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
     auto to_tx = tx_bft.mutable_to_tx();
     auto block = to_tx->mutable_block();
     *block = *(block_ptr.get());

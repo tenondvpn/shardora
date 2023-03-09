@@ -4,7 +4,7 @@
 #include "common/utils.h"
 #include "consensus/zbft/zbft.h"
 #include "dht/dht_utils.h"
-#include "protos/hotstuff.pb.h"
+#include "protos/zbft.pb.h"
 #include "protos/transport.pb.h"
 #include "pools/tx_pool.h"
 #include "security/security.h"
@@ -21,14 +21,14 @@ public:
         const std::string& precommit_gid,
         const std::string& commit_gid,
         transport::protobuf::Header& msg,
-        hotstuff::protobuf::ZbftMessage* pipeline_msg);
+        zbft::protobuf::ZbftMessage* pipeline_msg);
     static bool BackupCreatePrepare(
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         const ZbftPtr& bft_ptr,
         bool agree,
         const std::string& pre_commit_gid,
-        hotstuff::protobuf::ZbftMessage* pipeline_msg);
+        zbft::protobuf::ZbftMessage* pipeline_msg);
     static bool LeaderCreatePreCommit(
         std::shared_ptr<security::Security>& security_ptr,
         const ZbftPtr& bft_ptr,
@@ -56,7 +56,7 @@ public:
         transport::protobuf::Header& msg);
     static void SetLocalPublicIpPort(
         const dht::NodePtr& local_node,
-        hotstuff::protobuf::ZbftMessage& bft_msg);
+        zbft::protobuf::ZbftMessage& bft_msg);
 
     DISALLOW_COPY_AND_ASSIGN(BftProto);
 };

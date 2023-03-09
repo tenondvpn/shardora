@@ -301,7 +301,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
         // leader's message
         if (!bft_msg.leader()) {
-            BackupHandleHotstuffMessage(msg_ptr->thread_idx, msg_ptr);
+            BackupHandleZbftMessage(msg_ptr->thread_idx, msg_ptr);
             continue;
         }
 
@@ -335,7 +335,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             continue;
         }
 
-        HandleHotstuffMessage(bft_ptr, msg_ptr);
+        HandleZbftMessage(bft_ptr, msg_ptr);
     }
 
     bool is_from_leader = !header.pipeline(0).leader();
@@ -471,7 +471,7 @@ bool BftManager::VerifyLeaderIdValid(
     return true;
 }
 
-ZbftPtr BftManager::BackupHandleHotstuffMessage(
+ZbftPtr BftManager::BackupHandleZbftMessage(
         uint8_t thread_index,
         const transport::MessagePtr& msg_ptr) {
     // verify leader signature
@@ -481,7 +481,6 @@ ZbftPtr BftManager::BackupHandleHotstuffMessage(
         bft_ptr = CreateBftPtr(msg_ptr);
         if (bft_ptr == nullptr || !bft_ptr->BackupCheckLeaderValid(&bft_msg)) {
             // oppose
-            BackupSendOppose(msg_ptr, bft_ptr);
             ZJC_DEBUG("create bft ptr failed!");
             return bft_ptr;
         }
@@ -510,7 +509,7 @@ ZbftPtr BftManager::BackupHandleHotstuffMessage(
     if (!bft_msg.agree()) {
         bft_ptr->not_aggree();
     } else {
-        HandleHotstuffMessage(bft_ptr, msg_ptr);
+        HandleZbftMessage(bft_ptr, msg_ptr);
     }
     
     if (!bft_ptr->aggree()) {
@@ -608,7 +607,7 @@ void BftManager::BackupSendOppose(
     bft_msg.set_member_index(elect_mgr_->local_node_member_index());
 }
 
-void BftManager::HandleHotstuffMessage(
+void BftManager::HandleZbftMessage(
         ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
@@ -765,7 +764,7 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
 }
 
 int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& prepare_msg_ptr) {
-    hotstuff::protobuf::ZbftMessage bft_msg;
+    zbft::protobuf::ZbftMessage bft_msg;
     auto msg_ptr = prepare_msg_ptr;
     if (msg_ptr == nullptr) {
         msg_ptr = std::make_shared<transport::TransportMessage>();

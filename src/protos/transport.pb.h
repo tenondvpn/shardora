@@ -37,7 +37,7 @@
 #include "protos/pools.pb.h"
 #include "protos/contract.pb.h"
 #include "protos/elect.pb.h"
-#include "protos/hotstuff.pb.h"
+#include "protos/zbft.pb.h"
 // @@protoc_insertion_point(includes)
 #define PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2ftransport_2eproto 
 
@@ -434,16 +434,16 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
 
   // accessors -------------------------------------------------------
 
-  // repeated .zjchain.hotstuff.protobuf.ZbftMessage pipeline = 16;
+  // repeated .zjchain.zbft.protobuf.ZbftMessage pipeline = 16;
   int pipeline_size() const;
   void clear_pipeline();
   static const int kPipelineFieldNumber = 16;
-  ::zjchain::hotstuff::protobuf::ZbftMessage* mutable_pipeline(int index);
-  ::google::protobuf::RepeatedPtrField< ::zjchain::hotstuff::protobuf::ZbftMessage >*
+  ::zjchain::zbft::protobuf::ZbftMessage* mutable_pipeline(int index);
+  ::google::protobuf::RepeatedPtrField< ::zjchain::zbft::protobuf::ZbftMessage >*
       mutable_pipeline();
-  const ::zjchain::hotstuff::protobuf::ZbftMessage& pipeline(int index) const;
-  ::zjchain::hotstuff::protobuf::ZbftMessage* add_pipeline();
-  const ::google::protobuf::RepeatedPtrField< ::zjchain::hotstuff::protobuf::ZbftMessage >&
+  const ::zjchain::zbft::protobuf::ZbftMessage& pipeline(int index) const;
+  ::zjchain::zbft::protobuf::ZbftMessage* add_pipeline();
+  const ::google::protobuf::RepeatedPtrField< ::zjchain::zbft::protobuf::ZbftMessage >&
       pipeline() const;
 
   // optional bytes des_dht_key = 2;
@@ -674,7 +674,7 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::RepeatedPtrField< ::zjchain::hotstuff::protobuf::ZbftMessage > pipeline_;
+  ::google::protobuf::RepeatedPtrField< ::zjchain::zbft::protobuf::ZbftMessage > pipeline_;
   ::google::protobuf::internal::ArenaStringPtr des_dht_key_;
   ::google::protobuf::internal::ArenaStringPtr debug_;
   ::google::protobuf::internal::ArenaStringPtr sign_;
@@ -1835,28 +1835,28 @@ inline void Header::set_allocated_elect_proto(::zjchain::elect::protobuf::ElectM
   // @@protoc_insertion_point(field_set_allocated:zjchain.transport.protobuf.Header.elect_proto)
 }
 
-// repeated .zjchain.hotstuff.protobuf.ZbftMessage pipeline = 16;
+// repeated .zjchain.zbft.protobuf.ZbftMessage pipeline = 16;
 inline int Header::pipeline_size() const {
   return pipeline_.size();
 }
-inline ::zjchain::hotstuff::protobuf::ZbftMessage* Header::mutable_pipeline(int index) {
+inline ::zjchain::zbft::protobuf::ZbftMessage* Header::mutable_pipeline(int index) {
   // @@protoc_insertion_point(field_mutable:zjchain.transport.protobuf.Header.pipeline)
   return pipeline_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::zjchain::hotstuff::protobuf::ZbftMessage >*
+inline ::google::protobuf::RepeatedPtrField< ::zjchain::zbft::protobuf::ZbftMessage >*
 Header::mutable_pipeline() {
   // @@protoc_insertion_point(field_mutable_list:zjchain.transport.protobuf.Header.pipeline)
   return &pipeline_;
 }
-inline const ::zjchain::hotstuff::protobuf::ZbftMessage& Header::pipeline(int index) const {
+inline const ::zjchain::zbft::protobuf::ZbftMessage& Header::pipeline(int index) const {
   // @@protoc_insertion_point(field_get:zjchain.transport.protobuf.Header.pipeline)
   return pipeline_.Get(index);
 }
-inline ::zjchain::hotstuff::protobuf::ZbftMessage* Header::add_pipeline() {
+inline ::zjchain::zbft::protobuf::ZbftMessage* Header::add_pipeline() {
   // @@protoc_insertion_point(field_add:zjchain.transport.protobuf.Header.pipeline)
   return pipeline_.Add();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::zjchain::hotstuff::protobuf::ZbftMessage >&
+inline const ::google::protobuf::RepeatedPtrField< ::zjchain::zbft::protobuf::ZbftMessage >&
 Header::pipeline() const {
   // @@protoc_insertion_point(field_list:zjchain.transport.protobuf.Header.pipeline)
   return pipeline_;

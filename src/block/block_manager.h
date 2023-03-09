@@ -11,7 +11,7 @@
 #include "pools/tx_pool_manager.h"
 #include "pools/to_txs_pools.h"
 #include "protos/block.pb.h"
-#include "protos/hotstuff.pb.h"
+#include "protos/zbft.pb.h"
 #include "protos/prefix_db.h"
 #include "protos/transport.pb.h"
 #include "security/security.h"

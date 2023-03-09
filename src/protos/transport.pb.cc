@@ -34,9 +34,9 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fdht_2eproto ::google::protobuf
 namespace protobuf_protos_2felect_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<6> scc_info_ElectMessage;
 }  // namespace protobuf_protos_2felect_2eproto
-namespace protobuf_protos_2fhotstuff_2eproto {
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fhotstuff_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_ZbftMessage;
-}  // namespace protobuf_protos_2fhotstuff_2eproto
+namespace protobuf_protos_2fzbft_2eproto {
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fzbft_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_ZbftMessage;
+}  // namespace protobuf_protos_2fzbft_2eproto
 namespace protobuf_protos_2fnetwork_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fnetwork_2eproto ::google::protobuf::internal::SCCInfo<3> scc_info_NetworkMessage;
 }  // namespace protobuf_protos_2fnetwork_2eproto
@@ -98,7 +98,7 @@ static void InitDefaultsHeader() {
       &protobuf_protos_2fpools_2eproto::scc_info_TxMessage.base,
       &protobuf_protos_2fcontract_2eproto::scc_info_ContractMessage.base,
       &protobuf_protos_2felect_2eproto::scc_info_ElectMessage.base,
-      &protobuf_protos_2fhotstuff_2eproto::scc_info_ZbftMessage.base,
+      &protobuf_protos_2fzbft_2eproto::scc_info_ZbftMessage.base,
       &protobuf_protos_2fblock_2eproto::scc_info_BlockMessage.base,
       &protobuf_protos_2fpools_2eproto::scc_info_ToTxHeights.base,}};
 
@@ -221,7 +221,7 @@ void AddDescriptorsImpl() {
       "os/dht.proto\032\022protos/block.proto\032\020protos"
       "/bls.proto\032\022protos/pools.proto\032\025protos/c"
       "ontract.proto\032\022protos/elect.proto\032\025proto"
-      "s/hotstuff.proto\"\265\002\n\016BroadcastParam\022\014\n\004t"
+      "s/zbft.proto\"\265\002\n\016BroadcastParam\022\014\n\004t"
       "ype\030\001 \001(\r\022\031\n\016neighbor_count\030\002 \001(\r:\0017\022\022\n\n"
       "stop_times\030\003 \001(\r\022\025\n\thop_limit\030\004 \001(\r:\00210\022"
       "\022\n\nlayer_left\030\005 \001(\004\022\023\n\013layer_right\030\006 \001(\004"
@@ -244,7 +244,7 @@ void AddDescriptorsImpl() {
       "zjchain.contract.protobuf.ContractMessag"
       "e\0229\n\013elect_proto\030\017 \001(\0132$.zjchain.elect.p"
       "rotobuf.ElectMessage\0228\n\010pipeline\030\020 \003(\0132&"
-      ".zjchain.hotstuff.protobuf.ZbftMessage\0229"
+      ".zjchain.zbft.protobuf.ZbftMessage\0229"
       "\n\013block_proto\030\021 \001(\0132$.zjchain.block.prot"
       "obuf.BlockMessage\022:\n\rto_tx_heights\030\022 \001(\013"
       "2#.zjchain.pools.protobuf.ToTxHeights"
@@ -260,7 +260,7 @@ void AddDescriptorsImpl() {
   ::protobuf_protos_2fpools_2eproto::AddDescriptors();
   ::protobuf_protos_2fcontract_2eproto::AddDescriptors();
   ::protobuf_protos_2felect_2eproto::AddDescriptors();
-  ::protobuf_protos_2fhotstuff_2eproto::AddDescriptors();
+  ::protobuf_protos_2fzbft_2eproto::AddDescriptors();
 }
 
 void AddDescriptors() {
@@ -1496,7 +1496,7 @@ bool Header::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated .zjchain.hotstuff.protobuf.ZbftMessage pipeline = 16;
+      // repeated .zjchain.zbft.protobuf.ZbftMessage pipeline = 16;
       case 16: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(130u /* 130 & 0xFF */)) {
@@ -1644,7 +1644,7 @@ void Header::SerializeWithCachedSizes(
       15, this->_internal_elect_proto(), output);
   }
 
-  // repeated .zjchain.hotstuff.protobuf.ZbftMessage pipeline = 16;
+  // repeated .zjchain.zbft.protobuf.ZbftMessage pipeline = 16;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->pipeline_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
@@ -1775,7 +1775,7 @@ void Header::SerializeWithCachedSizes(
         15, this->_internal_elect_proto(), deterministic, target);
   }
 
-  // repeated .zjchain.hotstuff.protobuf.ZbftMessage pipeline = 16;
+  // repeated .zjchain.zbft.protobuf.ZbftMessage pipeline = 16;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->pipeline_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
@@ -1814,7 +1814,7 @@ size_t Header::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  // repeated .zjchain.hotstuff.protobuf.ZbftMessage pipeline = 16;
+  // repeated .zjchain.zbft.protobuf.ZbftMessage pipeline = 16;
   {
     unsigned int count = static_cast<unsigned int>(this->pipeline_size());
     total_size += 2UL * count;

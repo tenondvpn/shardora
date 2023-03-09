@@ -7,7 +7,7 @@ import "protos/bls.proto";
 import "protos/pools.proto";
 import "protos/contract.proto";
 import "protos/elect.proto";
-import "protos/hotstuff.proto";
+import "protos/zbft.proto";
 package zjchain.transport.protobuf;
 
 message BroadcastParam {
@@ -43,7 +43,7 @@ message Header {
     optional pools.protobuf.TxMessage tx_proto = 13;
     optional contract.protobuf.ContractMessage contract_proto = 14;
     optional elect.protobuf.ElectMessage elect_proto = 15;
-    repeated hotstuff.protobuf.ZbftMessage pipeline = 16;
+    repeated zbft.protobuf.ZbftMessage pipeline = 16;
     optional block.protobuf.BlockMessage block_proto = 17;
     optional pools.protobuf.ToTxHeights to_tx_heights = 18;
 }

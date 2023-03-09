@@ -19,7 +19,7 @@
 #include "elect/elect_manager.h"
 #include "pools/tx_pool_manager.h"
 #include "protos/elect.pb.h"
-#include "protos/hotstuff.pb.h"
+#include "protos/zbft.pb.h"
 #include "protos/transport.pb.h"
 #include "security/security.h"
 #include "timeblock/time_block_manager.h"
@@ -68,7 +68,7 @@ private:
     int LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int LeaderCallCommit(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
     ZbftPtr CreateBftPtr(const transport::MessagePtr& msg_ptr);
-    void HandleHotstuffMessage(
+    void HandleZbftMessage(
         ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr);
     int LeaderCallPrecommitOppose(const ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
@@ -79,7 +79,7 @@ private:
     void LeaderHandleBftOppose(
         const ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr);
-    ZbftPtr BackupHandleHotstuffMessage(
+    ZbftPtr BackupHandleZbftMessage(
         uint8_t thread_index,
         const transport::MessagePtr& msg_ptr);
     bool IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info);
