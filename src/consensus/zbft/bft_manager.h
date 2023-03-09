@@ -73,9 +73,7 @@ private:
         const transport::MessagePtr& msg_ptr);
     int LeaderCallPrecommitOppose(const ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int LeaderCallCommitOppose(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
-    void BackupSendOppose(
-        const transport::MessagePtr& msg_ptr,
-        ZbftPtr& bft_ptr);
+    void BackupSendOppose(const transport::MessagePtr& msg_ptr, int32_t error);
     void LeaderHandleBftOppose(
         const ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr);
@@ -88,9 +86,7 @@ private:
     bool VerifyBackupIdValid(
         const transport::MessagePtr& msg_ptr,
         common::BftMemberPtr& mem_ptr);
-    bool VerifyLeaderIdValid(
-        const transport::MessagePtr& msg_ptr,
-        common::BftMemberPtr& mem_ptr);
+    bool VerifyLeaderIdValid(const transport::MessagePtr& msg_ptr);
     void CreateResponseMessage(
         bool response_to_leader,
         const std::vector<ZbftPtr>& zbft_vec,

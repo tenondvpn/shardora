@@ -453,10 +453,16 @@ void BftManager::CreateResponseMessage(
     }
 }
 
-bool BftManager::VerifyLeaderIdValid(
-        const transport::MessagePtr& msg_ptr,
-        common::BftMemberPtr& mem_ptr) {
+bool BftManager::VerifyLeaderIdValid(const transport::MessagePtr& msg_ptr) {
     if (!msg_ptr->header.has_sign()) {
+        return false;
+    }
+
+    auto& bft_msg = msg_ptr->header.pipeline(msg_ptr->pipeline);
+    auto mem_ptr = elect_mgr_->GetMember(
+        common::GlobalInfo::Instance()->network_id(),
+        bft_msg.member_index());
+    if (mem_ptr == nullptr) {
         return false;
     }
 
@@ -474,6 +480,11 @@ bool BftManager::VerifyLeaderIdValid(
 ZbftPtr BftManager::BackupHandleZbftMessage(
         uint8_t thread_index,
         const transport::MessagePtr& msg_ptr) {
+    if (!VerifyLeaderIdValid(msg_ptr)) {
+        ZJC_ERROR("leader invalid!");
+        return bft_ptr;
+    }
+
     // verify leader signature
     ZbftPtr bft_ptr = nullptr;
     auto& bft_msg = msg_ptr->header.pipeline(msg_ptr->pipeline);
@@ -481,6 +492,7 @@ ZbftPtr BftManager::BackupHandleZbftMessage(
         bft_ptr = CreateBftPtr(msg_ptr);
         if (bft_ptr == nullptr || !bft_ptr->BackupCheckLeaderValid(&bft_msg)) {
             // oppose
+            BackupSendOppose(msg_ptr, -1);
             ZJC_DEBUG("create bft ptr failed!");
             return bft_ptr;
         }
@@ -499,11 +511,6 @@ ZbftPtr BftManager::BackupHandleZbftMessage(
             ZJC_DEBUG("get bft failed!");
             return bft_ptr;
         }
-    }
-
-    if (!VerifyLeaderIdValid(msg_ptr, bft_ptr->leader_mem_ptr())) {
-        ZJC_ERROR("leader invalid!");
-        return bft_ptr;
     }
 
     if (!bft_msg.agree()) {
@@ -581,26 +588,15 @@ void BftManager::LeaderHandleBftOppose(
     }
 }
 
-void BftManager::BackupSendOppose(
-        const transport::MessagePtr& msg_ptr,
-        ZbftPtr& bft_ptr) {
+void BftManager::BackupSendOppose(const transport::MessagePtr& msg_ptr, int32_t error) {
     auto& bft_msg = *msg_ptr->response->header.add_pipeline();
     bft_msg.set_error(kConsensusInvalidPackage);
-    if (bft_ptr != nullptr && bft_ptr->handle_last_error_code() > 0) {
-        bft_msg.set_error(bft_ptr->handle_last_error_code());
-    }
-
+    bft_msg.set_error(error);
     auto& from_bft_msg = msg_ptr->header.pipeline(msg_ptr->pipeline);
     bft_msg.set_leader(true);
-    if (from_bft_msg.bft_step() == kConsensusPrepare) {
-        bft_msg.set_prepare_gid(bft_ptr->gid());
-    } else if (from_bft_msg.bft_step() == kConsensusPreCommit) {
-        bft_msg.set_precommit_gid(bft_ptr->gid());
-    } else {
-        return;
-    }
-
-    bft_msg.set_net_id(bft_ptr->network_id());
+    bft_msg.set_prepare_gid(from_bft_msg.prepare_gid());
+    bft_msg.set_precommit_gid(from_bft_msg.precommit_gid());
+    bft_msg.set_net_id(common::GlobalInfo::Instance()->network_id());
     bft_msg.set_agree(false);
     bft_msg.set_bft_step(from_bft_msg.bft_step());
     bft_msg.set_epoch(from_bft_msg.epoch());
@@ -644,7 +640,7 @@ void BftManager::HandleZbftMessage(
     }
 
     if (res != kConsensusSuccess) {
-        BackupSendOppose(msg_ptr, bft_ptr);
+        BackupSendOppose(msg_ptr, bft_ptr->handle_last_error_code());
         bft_ptr->not_aggree();
     }
 }

@@ -66,7 +66,6 @@ int Zbft::Init(
         return kConsensusError;
     }
 
-    // just leader call init
     if (leader_mem_ptr != nullptr && leader_mem_ptr->id == security_ptr_->GetAddress()) {
         this_node_is_leader_ = true;
     }
