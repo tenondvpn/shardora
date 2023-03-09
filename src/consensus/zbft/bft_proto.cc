@@ -50,7 +50,7 @@ bool BftProto::LeaderCreatePrepare(
     bft_msg.set_commit_gid(commit_gid);
     bft_msg.set_net_id(bft_ptr->network_id());
     bft_msg.set_bft_step(kConsensusPrepare);
-    bft_msg.set_agree(true);
+    bft_msg.set_agree_prepare(true);
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_epoch(bft_ptr->GetEpoch());
     bft_msg.set_member_index(bft_ptr->local_member_index());
@@ -89,7 +89,7 @@ bool BftProto::BackupCreatePrepare(
     bft_msg.set_prepare_gid(bft_ptr->gid());
     bft_msg.set_precommit_gid(precommit_gid);
     bft_msg.set_net_id(bft_ptr->network_id());
-    bft_msg.set_agree(agree);
+    bft_msg.set_agree_prepare(agree);
     bft_msg.set_bft_step(kConsensusPrepare);
     bft_msg.set_epoch(bft_ptr->GetEpoch());
     bft_msg.set_member_index(bft_ptr->local_member_index());
@@ -149,7 +149,7 @@ bool BftProto::LeaderCreatePreCommit(
     bft_msg.set_net_id(bft_ptr->network_id());
     bft_msg.set_bft_step(kConsensusPreCommit);
     bft_msg.set_pool_index(bft_ptr->pool_index());
-    bft_msg.set_agree(agree);
+    bft_msg.set_agree_precommit(agree);
     bft_msg.set_elect_height(bft_ptr->elect_height());
     bft_msg.set_member_index(bft_ptr->local_member_index());
     bft_msg.set_epoch(bft_ptr->GetEpoch());
@@ -184,7 +184,7 @@ bool BftProto::BackupCreatePreCommit(
     bft_msg.set_leader(true);
     bft_msg.set_precommit_gid(bft_ptr->gid());
     bft_msg.set_net_id(bft_ptr->network_id());
-    bft_msg.set_agree(agree);
+    bft_msg.set_agree_precommit(agree);
     bft_msg.set_bft_step(kConsensusPreCommit);
     bft_msg.set_epoch(bft_ptr->GetEpoch());
     bft_msg.set_member_index(bft_ptr->local_member_index());
@@ -246,7 +246,7 @@ bool BftProto::LeaderCreateCommit(
     bft_msg.set_bft_step(kConsensusCommit);
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_member_index(bft_ptr->local_member_index());
-    bft_msg.set_agree(agree);
+    bft_msg.set_agree_commit(agree);
     const auto& bitmap_data = bft_ptr->prepare_bitmap().data();
     for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
         bft_msg.add_bitmap(bitmap_data[i]);
