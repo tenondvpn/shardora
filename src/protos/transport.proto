@@ -43,7 +43,7 @@ message Header {
     optional pools.protobuf.TxMessage tx_proto = 13;
     optional contract.protobuf.ContractMessage contract_proto = 14;
     optional elect.protobuf.ElectMessage elect_proto = 15;
-    repeated zbft.protobuf.ZbftMessage pipeline = 16;
+    optional zbft.protobuf.ZbftMessage zbft = 16;
     optional block.protobuf.BlockMessage block_proto = 17;
     optional pools.protobuf.ToTxHeights to_tx_heights = 18;
 }

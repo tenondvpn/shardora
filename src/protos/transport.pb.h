@@ -434,18 +434,6 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
 
   // accessors -------------------------------------------------------
 
-  // repeated .zjchain.zbft.protobuf.ZbftMessage pipeline = 16;
-  int pipeline_size() const;
-  void clear_pipeline();
-  static const int kPipelineFieldNumber = 16;
-  ::zjchain::zbft::protobuf::ZbftMessage* mutable_pipeline(int index);
-  ::google::protobuf::RepeatedPtrField< ::zjchain::zbft::protobuf::ZbftMessage >*
-      mutable_pipeline();
-  const ::zjchain::zbft::protobuf::ZbftMessage& pipeline(int index) const;
-  ::zjchain::zbft::protobuf::ZbftMessage* add_pipeline();
-  const ::google::protobuf::RepeatedPtrField< ::zjchain::zbft::protobuf::ZbftMessage >&
-      pipeline() const;
-
   // optional bytes des_dht_key = 2;
   bool has_des_dht_key() const;
   void clear_des_dht_key();
@@ -575,6 +563,18 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::zjchain::elect::protobuf::ElectMessage* mutable_elect_proto();
   void set_allocated_elect_proto(::zjchain::elect::protobuf::ElectMessage* elect_proto);
 
+  // optional .zjchain.zbft.protobuf.ZbftMessage zbft = 16;
+  bool has_zbft() const;
+  void clear_zbft();
+  static const int kZbftFieldNumber = 16;
+  private:
+  const ::zjchain::zbft::protobuf::ZbftMessage& _internal_zbft() const;
+  public:
+  const ::zjchain::zbft::protobuf::ZbftMessage& zbft() const;
+  ::zjchain::zbft::protobuf::ZbftMessage* release_zbft();
+  ::zjchain::zbft::protobuf::ZbftMessage* mutable_zbft();
+  void set_allocated_zbft(::zjchain::zbft::protobuf::ZbftMessage* zbft);
+
   // optional .zjchain.block.protobuf.BlockMessage block_proto = 17;
   bool has_block_proto() const;
   void clear_block_proto();
@@ -666,6 +666,8 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   void clear_has_contract_proto();
   void set_has_elect_proto();
   void clear_has_elect_proto();
+  void set_has_zbft();
+  void clear_has_zbft();
   void set_has_block_proto();
   void clear_has_block_proto();
   void set_has_to_tx_heights();
@@ -674,7 +676,6 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::RepeatedPtrField< ::zjchain::zbft::protobuf::ZbftMessage > pipeline_;
   ::google::protobuf::internal::ArenaStringPtr des_dht_key_;
   ::google::protobuf::internal::ArenaStringPtr debug_;
   ::google::protobuf::internal::ArenaStringPtr sign_;
@@ -685,6 +686,7 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::zjchain::pools::protobuf::TxMessage* tx_proto_;
   ::zjchain::contract::protobuf::ContractMessage* contract_proto_;
   ::zjchain::elect::protobuf::ElectMessage* elect_proto_;
+  ::zjchain::zbft::protobuf::ZbftMessage* zbft_;
   ::zjchain::block::protobuf::BlockMessage* block_proto_;
   ::zjchain::pools::protobuf::ToTxHeights* to_tx_heights_;
   ::google::protobuf::int32 src_sharding_id_;
@@ -1137,13 +1139,13 @@ inline void BroadcastParam::set_ign_bloomfilter_hop(::google::protobuf::uint32 v
 
 // optional int32 src_sharding_id = 1;
 inline bool Header::has_src_sharding_id() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 inline void Header::set_has_src_sharding_id() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00002000u;
 }
 inline void Header::clear_has_src_sharding_id() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 inline void Header::clear_src_sharding_id() {
   src_sharding_id_ = 0;
@@ -1227,13 +1229,13 @@ inline void Header::set_allocated_des_dht_key(::std::string* des_dht_key) {
 
 // optional uint32 hop_count = 3 [default = 0];
 inline bool Header::has_hop_count() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00004000u) != 0;
 }
 inline void Header::set_has_hop_count() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00004000u;
 }
 inline void Header::clear_has_hop_count() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00004000u;
 }
 inline void Header::clear_hop_count() {
   hop_count_ = 0u;
@@ -1317,13 +1319,13 @@ inline void Header::set_allocated_debug(::std::string* debug) {
 
 // optional uint64 hash64 = 5;
 inline bool Header::has_hash64() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
+  return (_has_bits_[0] & 0x00008000u) != 0;
 }
 inline void Header::set_has_hash64() {
-  _has_bits_[0] |= 0x00004000u;
+  _has_bits_[0] |= 0x00008000u;
 }
 inline void Header::clear_has_hash64() {
-  _has_bits_[0] &= ~0x00004000u;
+  _has_bits_[0] &= ~0x00008000u;
 }
 inline void Header::clear_hash64() {
   hash64_ = GOOGLE_ULONGLONG(0);
@@ -1341,13 +1343,13 @@ inline void Header::set_hash64(::google::protobuf::uint64 value) {
 
 // optional uint32 type = 6;
 inline bool Header::has_type() const {
-  return (_has_bits_[0] & 0x00008000u) != 0;
+  return (_has_bits_[0] & 0x00010000u) != 0;
 }
 inline void Header::set_has_type() {
-  _has_bits_[0] |= 0x00008000u;
+  _has_bits_[0] |= 0x00010000u;
 }
 inline void Header::clear_has_type() {
-  _has_bits_[0] &= ~0x00008000u;
+  _has_bits_[0] &= ~0x00010000u;
 }
 inline void Header::clear_type() {
   type_ = 0u;
@@ -1489,13 +1491,13 @@ inline void Header::set_allocated_sign(::std::string* sign) {
 
 // optional int32 version = 9 [default = 0];
 inline bool Header::has_version() const {
-  return (_has_bits_[0] & 0x00010000u) != 0;
+  return (_has_bits_[0] & 0x00020000u) != 0;
 }
 inline void Header::set_has_version() {
-  _has_bits_[0] |= 0x00010000u;
+  _has_bits_[0] |= 0x00020000u;
 }
 inline void Header::clear_has_version() {
-  _has_bits_[0] &= ~0x00010000u;
+  _has_bits_[0] &= ~0x00020000u;
 }
 inline void Header::clear_version() {
   version_ = 0;
@@ -1835,42 +1837,69 @@ inline void Header::set_allocated_elect_proto(::zjchain::elect::protobuf::ElectM
   // @@protoc_insertion_point(field_set_allocated:zjchain.transport.protobuf.Header.elect_proto)
 }
 
-// repeated .zjchain.zbft.protobuf.ZbftMessage pipeline = 16;
-inline int Header::pipeline_size() const {
-  return pipeline_.size();
+// optional .zjchain.zbft.protobuf.ZbftMessage zbft = 16;
+inline bool Header::has_zbft() const {
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
-inline ::zjchain::zbft::protobuf::ZbftMessage* Header::mutable_pipeline(int index) {
-  // @@protoc_insertion_point(field_mutable:zjchain.transport.protobuf.Header.pipeline)
-  return pipeline_.Mutable(index);
+inline void Header::set_has_zbft() {
+  _has_bits_[0] |= 0x00000400u;
 }
-inline ::google::protobuf::RepeatedPtrField< ::zjchain::zbft::protobuf::ZbftMessage >*
-Header::mutable_pipeline() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.transport.protobuf.Header.pipeline)
-  return &pipeline_;
+inline void Header::clear_has_zbft() {
+  _has_bits_[0] &= ~0x00000400u;
 }
-inline const ::zjchain::zbft::protobuf::ZbftMessage& Header::pipeline(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.transport.protobuf.Header.pipeline)
-  return pipeline_.Get(index);
+inline const ::zjchain::zbft::protobuf::ZbftMessage& Header::_internal_zbft() const {
+  return *zbft_;
 }
-inline ::zjchain::zbft::protobuf::ZbftMessage* Header::add_pipeline() {
-  // @@protoc_insertion_point(field_add:zjchain.transport.protobuf.Header.pipeline)
-  return pipeline_.Add();
+inline const ::zjchain::zbft::protobuf::ZbftMessage& Header::zbft() const {
+  const ::zjchain::zbft::protobuf::ZbftMessage* p = zbft_;
+  // @@protoc_insertion_point(field_get:zjchain.transport.protobuf.Header.zbft)
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::zbft::protobuf::ZbftMessage*>(
+      &::zjchain::zbft::protobuf::_ZbftMessage_default_instance_);
 }
-inline const ::google::protobuf::RepeatedPtrField< ::zjchain::zbft::protobuf::ZbftMessage >&
-Header::pipeline() const {
-  // @@protoc_insertion_point(field_list:zjchain.transport.protobuf.Header.pipeline)
-  return pipeline_;
+inline ::zjchain::zbft::protobuf::ZbftMessage* Header::release_zbft() {
+  // @@protoc_insertion_point(field_release:zjchain.transport.protobuf.Header.zbft)
+  clear_has_zbft();
+  ::zjchain::zbft::protobuf::ZbftMessage* temp = zbft_;
+  zbft_ = NULL;
+  return temp;
+}
+inline ::zjchain::zbft::protobuf::ZbftMessage* Header::mutable_zbft() {
+  set_has_zbft();
+  if (zbft_ == NULL) {
+    auto* p = CreateMaybeMessage<::zjchain::zbft::protobuf::ZbftMessage>(GetArenaNoVirtual());
+    zbft_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:zjchain.transport.protobuf.Header.zbft)
+  return zbft_;
+}
+inline void Header::set_allocated_zbft(::zjchain::zbft::protobuf::ZbftMessage* zbft) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete reinterpret_cast< ::google::protobuf::MessageLite*>(zbft_);
+  }
+  if (zbft) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      zbft = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, zbft, submessage_arena);
+    }
+    set_has_zbft();
+  } else {
+    clear_has_zbft();
+  }
+  zbft_ = zbft;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.transport.protobuf.Header.zbft)
 }
 
 // optional .zjchain.block.protobuf.BlockMessage block_proto = 17;
 inline bool Header::has_block_proto() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 inline void Header::set_has_block_proto() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00000800u;
 }
 inline void Header::clear_has_block_proto() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 inline const ::zjchain::block::protobuf::BlockMessage& Header::_internal_block_proto() const {
   return *block_proto_;
@@ -1918,13 +1947,13 @@ inline void Header::set_allocated_block_proto(::zjchain::block::protobuf::BlockM
 
 // optional .zjchain.pools.protobuf.ToTxHeights to_tx_heights = 18;
 inline bool Header::has_to_tx_heights() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void Header::set_has_to_tx_heights() {
-  _has_bits_[0] |= 0x00000800u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void Header::clear_has_to_tx_heights() {
-  _has_bits_[0] &= ~0x00000800u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline const ::zjchain::pools::protobuf::ToTxHeights& Header::_internal_to_tx_heights() const {
   return *to_tx_heights_;
