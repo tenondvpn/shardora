@@ -142,7 +142,7 @@ bool BftProto::LeaderCreatePreCommit(
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kConsensusMessage);
     auto broad_param = msg.mutable_broadcast();
-    auto& bft_msg = *msg.add_pipeline();
+    auto& bft_msg = *msg.mutable_zbft();
     bft_msg.set_leader(false);
     bft_msg.set_precommit_gid(bft_ptr->gid());
     bft_msg.set_commit_gid(commit_gid);
@@ -180,7 +180,7 @@ bool BftProto::BackupCreatePreCommit(
         const ZbftPtr& bft_ptr,
         bool agree,
         transport::protobuf::Header& msg) {
-    auto& bft_msg = *msg.add_pipeline();
+    auto& bft_msg = *msg.mutable_zbft();
     bft_msg.set_leader(true);
     bft_msg.set_precommit_gid(bft_ptr->gid());
     bft_msg.set_net_id(bft_ptr->network_id());
@@ -236,7 +236,7 @@ bool BftProto::LeaderCreateCommit(
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kConsensusMessage);
     auto broad_param = msg.mutable_broadcast();
-    auto& bft_msg = *msg.add_pipeline();
+    auto& bft_msg = *msg.mutable_zbft();
     zbft::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
     auto ltx_commit_msg = tx_bft.mutable_ltx_commit();
     ltx_commit_msg->set_latest_hegight(bft_ptr->prpare_block()->height());
@@ -290,7 +290,7 @@ bool BftProto::CreateLeaderBroadcastToAccount(
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kConsensusMessage);
     auto broad_param = msg.mutable_broadcast();
-    auto& bft_msg = *msg.add_pipeline();
+    auto& bft_msg = *msg.mutable_zbft();
     zbft::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
     auto to_tx = tx_bft.mutable_to_tx();
     auto block = to_tx->mutable_block();
