@@ -68,7 +68,7 @@ enum TcpConnnectionType {
 };
 
 struct TransportMessage {
-    TransportMessage() : conn(nullptr), pipeline(0), response(nullptr), tmp_ptr(nullptr) {}
+    TransportMessage() : conn(nullptr), response(nullptr), tmp_ptr(nullptr) {}
     protobuf::Header header;
     tnet::TcpInterface* conn = nullptr;
     uint8_t thread_idx = -1;
