@@ -846,7 +846,7 @@ int BftManager::CheckPrecommit(const transport::MessagePtr& msg_ptr) {
         bft_ptr->set_prepare_bitmap(bitmap_data);
         backup_agree_commit = true;
     } while (0);
-    msg_ptr->response.mutable_zbft()->set_agree_commit(backup_agree_commit);
+    msg_ptr->response->header.mutable_zbft()->set_agree_commit(backup_agree_commit);
     if (!backup_agree_commit) {
         RemoveBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
         RemoveBft(msg_ptr->thread_idx, bft_msg.commit_gid(), false);
@@ -914,7 +914,7 @@ int BftManager::BackupPrepare(
         RemoveBft(bft_ptr->thread_index(), bft_msg.prepare_gid(), false);
         RemoveBft(bft_ptr->thread_index(), bft_msg.precommit_gid(), false);
         RemoveBft(bft_ptr->thread_index(), bft_msg.commit_gid(), false);
-        return;
+        return kConsensusError;
     }
 
     if (bft_msg.has_agree_precommit() && !bft_msg.agree_precommit()) {
@@ -924,7 +924,7 @@ int BftManager::BackupPrepare(
 
         RemoveBft(bft_ptr->thread_index(), bft_msg.prepare_gid(), false);
         RemoveBft(bft_ptr->thread_index(), bft_msg.precommit_gid(), false);
-        return;
+        return kConsensusError;
     }
 
     ZJC_DEBUG("BackupPrepare");
