@@ -178,8 +178,8 @@ void RootZbft::RootCreateFinalStatistic(block::protobuf::Block& zjc_block) {
 int RootZbft::RootBackupCheckPrepare(
         const transport::MessagePtr& msg_ptr,
         int32_t* invalid_tx_idx,
-        std::string* prepare) {
-    auto& tx_bft = msg_ptr->header.pipeline(0).tx_bft();
+    std::string* prepare) {
+    auto& tx_bft = msg_ptr->header.zbft().tx_bft();
 //     std::vector<pools::TxItemPtr> tx_vec;
 //     for (int32_t i = 0; i < tx_bft.ltx_prepare().gid_size(); ++i) {
 //         pools::TxItemPtr local_tx_info = pools_mgr_->GetTx(

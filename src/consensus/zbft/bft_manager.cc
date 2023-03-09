@@ -275,7 +275,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         bft_msg.bft_step(), bft_msg.leader(), msg_ptr->header.hash64());
     if (!bft_msg.has_bft_step()) {
         ZJC_ERROR("bft message not has bft step failed!");
-        break;
+        return;
     }
 
     do {
@@ -743,7 +743,8 @@ int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& pre
         msg_ptr = std::make_shared<transport::TransportMessage>();
     }
 
-    auto& header = (msg_ptr->response != nullptr && msg_ptr->response->header.pipeline_size() > 0) ? msg_ptr->response->header : msg_ptr->header;
+    auto& header = (msg_ptr->response != nullptr && msg_ptr->response->header.has_zbft()) ? 
+        msg_ptr->response->header : msg_ptr->header;
     msg_ptr->thread_idx = bft_ptr->thread_index();
     auto* new_bft_msg = header.mutable_zbft();
     int res = bft_ptr->Prepare(true, new_bft_msg);
