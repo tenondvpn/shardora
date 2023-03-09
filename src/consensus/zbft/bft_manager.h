@@ -92,7 +92,8 @@ private:
         const std::vector<ZbftPtr>& zbft_vec,
         const transport::MessagePtr& msg_ptr);
     int CheckPrecommit(const transport::MessagePtr& msg_ptr);
-    int CheckCommit(const transport::MessagePtr& msg_ptr);
+    int CheckCommit(const transport::MessagePtr& msg_ptr, bool backup_agree_commit);
+    bool CheckAggSignValid(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
     pools::TxItemPtr CreateFromTx(transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
     }

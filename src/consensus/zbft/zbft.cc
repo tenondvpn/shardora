@@ -399,15 +399,6 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
         ZJC_INFO("bls_mgr_->Verify over.");
         bls_precommit_agg_sign_->to_affine_coordinates();
         prepare_bitmap_ = iter->second->prepare_bitmap_;
-        uint64_t max_height = 0;
-        uint64_t max_count = 0;
-        for (auto hiter = iter->second->height_count_map.begin();
-                hiter != iter->second->height_count_map.end(); ++hiter) {
-            if (hiter->second > max_count) {
-                max_height = hiter->first;
-                max_count = hiter->second;
-            }
-        }
     } catch (std::exception& e) {
         ZJC_ERROR("catch bls exception: %s", e.what());
         return kConsensusError;
