@@ -39,7 +39,7 @@ namespace protobuf_protos_2fpools_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[4];
+  static const ::google::protobuf::internal::ParseTable schema[5];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -49,6 +49,9 @@ void AddDescriptors();
 namespace zjchain {
 namespace pools {
 namespace protobuf {
+class PoolLatestInfo;
+class PoolLatestInfoDefaultTypeInternal;
+extern PoolLatestInfoDefaultTypeInternal _PoolLatestInfo_default_instance_;
 class ToTxHeights;
 class ToTxHeightsDefaultTypeInternal;
 extern ToTxHeightsDefaultTypeInternal _ToTxHeights_default_instance_;
@@ -66,6 +69,7 @@ extern TxMessageDefaultTypeInternal _TxMessage_default_instance_;
 }  // namespace zjchain
 namespace google {
 namespace protobuf {
+template<> ::zjchain::pools::protobuf::PoolLatestInfo* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::PoolLatestInfo>(Arena*);
 template<> ::zjchain::pools::protobuf::ToTxHeights* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::ToTxHeights>(Arena*);
 template<> ::zjchain::pools::protobuf::ToTxMessage* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::ToTxMessage>(Arena*);
 template<> ::zjchain::pools::protobuf::ToTxMessageItem* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::ToTxMessageItem>(Arena*);
@@ -600,6 +604,138 @@ class ToTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
 };
 // -------------------------------------------------------------------
 
+class PoolLatestInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.pools.protobuf.PoolLatestInfo) */ {
+ public:
+  PoolLatestInfo();
+  virtual ~PoolLatestInfo();
+
+  PoolLatestInfo(const PoolLatestInfo& from);
+
+  inline PoolLatestInfo& operator=(const PoolLatestInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  PoolLatestInfo(PoolLatestInfo&& from) noexcept
+    : PoolLatestInfo() {
+    *this = ::std::move(from);
+  }
+
+  inline PoolLatestInfo& operator=(PoolLatestInfo&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const PoolLatestInfo& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const PoolLatestInfo* internal_default_instance() {
+    return reinterpret_cast<const PoolLatestInfo*>(
+               &_PoolLatestInfo_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    3;
+
+  void Swap(PoolLatestInfo* other);
+  friend void swap(PoolLatestInfo& a, PoolLatestInfo& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline PoolLatestInfo* New() const final {
+    return CreateMaybeMessage<PoolLatestInfo>(NULL);
+  }
+
+  PoolLatestInfo* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<PoolLatestInfo>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const PoolLatestInfo& from);
+  void MergeFrom(const PoolLatestInfo& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(PoolLatestInfo* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional bytes hash = 2;
+  bool has_hash() const;
+  void clear_hash();
+  static const int kHashFieldNumber = 2;
+  const ::std::string& hash() const;
+  void set_hash(const ::std::string& value);
+  #if LANG_CXX11
+  void set_hash(::std::string&& value);
+  #endif
+  void set_hash(const char* value);
+  void set_hash(const void* value, size_t size);
+  ::std::string* mutable_hash();
+  ::std::string* release_hash();
+  void set_allocated_hash(::std::string* hash);
+
+  // optional uint64 height = 1;
+  bool has_height() const;
+  void clear_height();
+  static const int kHeightFieldNumber = 1;
+  ::google::protobuf::uint64 height() const;
+  void set_height(::google::protobuf::uint64 value);
+
+  // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.PoolLatestInfo)
+ private:
+  void set_has_height();
+  void clear_has_height();
+  void set_has_hash();
+  void clear_has_hash();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::internal::ArenaStringPtr hash_;
+  ::google::protobuf::uint64 height_;
+  friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.pools.protobuf.TxMessage) */ {
  public:
   TxMessage();
@@ -642,7 +778,7 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
                &_TxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    3;
+    4;
 
   void Swap(TxMessage* other);
   friend void swap(TxMessage& a, TxMessage& b) {
@@ -1413,6 +1549,100 @@ inline void ToTxMessage::set_allocated_to_heights(::zjchain::pools::protobuf::To
 
 // -------------------------------------------------------------------
 
+// PoolLatestInfo
+
+// optional uint64 height = 1;
+inline bool PoolLatestInfo::has_height() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void PoolLatestInfo::set_has_height() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void PoolLatestInfo::clear_has_height() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void PoolLatestInfo::clear_height() {
+  height_ = GOOGLE_ULONGLONG(0);
+  clear_has_height();
+}
+inline ::google::protobuf::uint64 PoolLatestInfo::height() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.PoolLatestInfo.height)
+  return height_;
+}
+inline void PoolLatestInfo::set_height(::google::protobuf::uint64 value) {
+  set_has_height();
+  height_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.PoolLatestInfo.height)
+}
+
+// optional bytes hash = 2;
+inline bool PoolLatestInfo::has_hash() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void PoolLatestInfo::set_has_hash() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void PoolLatestInfo::clear_has_hash() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void PoolLatestInfo::clear_hash() {
+  hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_hash();
+}
+inline const ::std::string& PoolLatestInfo::hash() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.PoolLatestInfo.hash)
+  return hash_.GetNoArena();
+}
+inline void PoolLatestInfo::set_hash(const ::std::string& value) {
+  set_has_hash();
+  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.PoolLatestInfo.hash)
+}
+#if LANG_CXX11
+inline void PoolLatestInfo::set_hash(::std::string&& value) {
+  set_has_hash();
+  hash_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.pools.protobuf.PoolLatestInfo.hash)
+}
+#endif
+inline void PoolLatestInfo::set_hash(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_hash();
+  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.pools.protobuf.PoolLatestInfo.hash)
+}
+inline void PoolLatestInfo::set_hash(const void* value, size_t size) {
+  set_has_hash();
+  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.pools.protobuf.PoolLatestInfo.hash)
+}
+inline ::std::string* PoolLatestInfo::mutable_hash() {
+  set_has_hash();
+  // @@protoc_insertion_point(field_mutable:zjchain.pools.protobuf.PoolLatestInfo.hash)
+  return hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* PoolLatestInfo::release_hash() {
+  // @@protoc_insertion_point(field_release:zjchain.pools.protobuf.PoolLatestInfo.hash)
+  if (!has_hash()) {
+    return NULL;
+  }
+  clear_has_hash();
+  return hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void PoolLatestInfo::set_allocated_hash(::std::string* hash) {
+  if (hash != NULL) {
+    set_has_hash();
+  } else {
+    clear_has_hash();
+  }
+  hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), hash);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.PoolLatestInfo.hash)
+}
+
+// -------------------------------------------------------------------
+
 // TxMessage
 
 // optional uint32 version = 1;
@@ -1869,6 +2099,8 @@ inline void TxMessage::set_step(::zjchain::pools::protobuf::StepType value) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

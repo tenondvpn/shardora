@@ -55,6 +55,7 @@ static const std::string kBlockHeightPrefix = "j\x01";
 static const std::string kBlockPrefix = "k\x01";
 static const std::string kToTxsHeightsPrefix = "l\x01";
 static const std::string kLatestToTxsHeightsPrefix = "m\x01";
+static const std::string kLatestPoolPrefix = "n\x01";
 
 static const std::string kTemporaryKeyPrefix = "t\x01";
 
@@ -540,6 +541,7 @@ public:
 
         return true;
     }
+
     void SaveLatestToTxsHeights(
             const pools::protobuf::ToTxHeights& heights,
             db::DbWriteBach& batch) {
@@ -587,6 +589,34 @@ public:
         return st.ok();
     }
 
+    void SaveLatestPoolInfo(
+            uint32_t pool_index,
+            const pools::protobuf::PoolLatestInfo& pool_info,
+            db::DbWriteBach& batch) {
+        std::string key;
+        key.reserve(48);
+        key.append(kLatestPoolPrefix);
+        key.append((char*)&pool_index, sizeof(pool_index));
+        batch.Put(key, pool_info.SerializeAsString());
+    }
+
+    bool GetLatestPoolInfo(uint32_t pool_index, pools::protobuf::PoolLatestInfo* pool_info) {
+        std::string key;
+        key.reserve(48);
+        key.append(kLatestPoolPrefix);
+        key.append((char*)&pool_index, sizeof(pool_index));
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            return false;
+        }
+
+        if (!pool_info->ParseFromString(val)) {
+            return false;
+        }
+
+        return true;
+    }
 private:
     std::shared_ptr<db::Db> db_ = nullptr;
 

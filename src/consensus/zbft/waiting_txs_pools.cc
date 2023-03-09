@@ -204,7 +204,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::FollowerGetTxs(
 void WaitingTxsPools::FilterInvalidTx(uint32_t pool_index,
         std::map<std::string, pools::TxItemPtr>& txs) {
     for (auto set_iter = pipeline_pools_[pool_index].begin();
-        set_iter != pipeline_pools_[pool_index].end(); ++set_iter) {
+            set_iter != pipeline_pools_[pool_index].end(); ++set_iter) {
         for (auto tx_iter = txs.begin(); tx_iter != txs.end();) {
             auto exist_tx_iter = (*set_iter)->txs_ptr()->txs.find(tx_iter->first);
             if (exist_tx_iter != (*set_iter)->txs_ptr()->txs.end()) {

@@ -2,9 +2,10 @@
 
 #include <cstdlib>
 
-#include "common/user_property_key_define.h"
-#include "common/string_utils.h"
 #include "common/global_info.h"
+#include "common/split.h"
+#include "common/string_utils.h"
+#include "common/user_property_key_define.h"
 #include "network/network_utils.h"
 #include "protos/prefix_db.h"
 #include "protos/pools.pb.h"
@@ -60,15 +61,54 @@ void TimeBlockManager::CreateTimeBlockTx() {
     ZJC_DEBUG("success create timeblock tx.");
 }
 
+void TimeBlockManager::NewBlockWithTx(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block_item,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBach& db_batch) {
+    ZJC_DEBUG("timeblock new tx coming: %lu, storage size: %d", block_item->height(), tx.storages_size());
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        if (tx.storages(i).key() == kAttrTimerBlock) {
+            common::Split<> items(tx.storages(i).val_hash().c_str(), '_');
+            if (items.Count() != 2) {
+                assert(false);
+                return;
+            }
+
+            uint64_t tm = 0;
+            uint64_t vss = 0;
+            if (!common::StringUtil::ToUint64(items[0], &tm)) {
+                assert(false);
+                return;
+            }
+
+            if (!common::StringUtil::ToUint64(items[1], &vss)) {
+                assert(false);
+                return;
+            }
+
+            UpdateTimeBlock(block_item->height(), tm, vss);
+            break;
+        }
+    }
+}
+
 void TimeBlockManager::UpdateTimeBlock(
         uint64_t latest_time_block_height,
         uint64_t latest_time_block_tm,
         uint64_t vss_random) {
     if (latest_time_block_height_ != common::kInvalidUint64 &&
             latest_time_block_height_ >= latest_time_block_height) {
+        assert(false);
         return;
     }
 
+    ZJC_DEBUG("LeaderNewTimeBlockValid height[%lu:%lu], tm[%lu:%lu], vss[%lu]",
+        latest_time_block_height,
+        latest_time_block_height_,
+        latest_time_block_tm,
+        latest_time_block_tm_,
+        vss_random);
     latest_time_block_height_ = latest_time_block_height;
     latest_time_block_tm_ = latest_time_block_tm;
     latest_tm_block_local_sec_ = common::TimeUtils::TimestampSeconds();
@@ -77,8 +117,6 @@ void TimeBlockManager::UpdateTimeBlock(
         latest_time_block_height,
         latest_time_block_tm,
         vss_random);
-    ZJC_ERROR("LeaderNewTimeBlockValid offset_tm final[%lu], prev[%lu]",
-        (uint64_t)latest_time_block_height_, (uint64_t)latest_time_block_tm_);
 //     vss::VssManager::Instance()->OnTimeBlock(
 //         latest_time_block_tm,
 //         latest_time_block_height,
@@ -93,8 +131,9 @@ void TimeBlockManager::LoadLatestTimeBlock() {
     ZJC_DEBUG("init time block now.");
     if (prefix_db_->GetLatestTimeBlock(&tm_block)) {
         timeblock_ = std::make_shared<timeblock::protobuf::TimeBlock>(tm_block);
-        UpdateTimeBlock(tm_block.timestamp(), tm_block.height(), tm_block.vss_random());
-        ZJC_DEBUG("init time block success.");
+        UpdateTimeBlock(tm_block.height(), tm_block.timestamp(), tm_block.vss_random());
+        ZJC_DEBUG("init time block success: %lu, %lu, %lu",
+            tm_block.timestamp(), tm_block.height(), tm_block.vss_random());
     }
 }
 

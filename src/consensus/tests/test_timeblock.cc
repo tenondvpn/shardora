@@ -131,6 +131,21 @@ public:
         ASSERT_EQ(elect_mgr->Init(), 0);
         auto tm_block_mgr = std::make_shared<timeblock::TimeBlockManager>();
         tm_block_mgr->Init(pools_mgr, db_ptr);
+        auto new_block_callback = [&](
+            uint8_t thread_idx,
+            std::shared_ptr<block::protobuf::Block>& block,
+            db::DbWriteBach& db_batch) {
+            const auto& tx_list = block->tx_list();
+            if (tx_list.empty()) {
+                return;
+            }
+
+            // one block must be one consensus pool
+            for (int32_t i = 0; i < tx_list.size(); ++i) {
+                account_mgr->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
+            }
+        };
+
         ASSERT_EQ(bft_mgr.Init(
             account_mgr,
             block_mgr,
@@ -140,7 +155,8 @@ public:
             tm_block_mgr,
             db_ptr,
             nullptr,
-            1), kConsensusSuccess);
+            1,
+            new_block_callback), kConsensusSuccess);
         auto members = elect_mgr->GetNetworkMembers(kTestShardingId);
         bft_mgr.OnNewElectBlock(kTestShardingId, members);
         block_mgr->OnNewElectBlock(kTestShardingId, members);

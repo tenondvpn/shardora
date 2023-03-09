@@ -41,7 +41,8 @@ public:
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<db::Db>& db,
         BlockCallback block_cb,
-        uint8_t thread_count);
+        uint8_t thread_count,
+        BlockCacheCallback new_block_cache_callback);
     void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
     BftManager();
     virtual ~BftManager();
@@ -137,6 +138,7 @@ private:
     uint64_t bft_gids_index_[common::kMaxThreadCount];
     uint32_t prev_checktime_out_milli_ = 0;
     uint32_t minimal_node_count_to_consensus_ = common::kInvalidUint32;
+    BlockCacheCallback new_block_cache_callback_ = nullptr;
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {

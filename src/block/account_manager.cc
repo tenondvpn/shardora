@@ -255,28 +255,20 @@ void AccountManager::HandleLocalToTx(
     }
 }
 
-void AccountManager::AddBlockItemToCache(
+void AccountManager::NewBlockWithTx(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
+        const block::protobuf::BlockTx& tx,
         db::DbWriteBach& db_batch) {
-    const auto& tx_list = block_item->tx_list();
-    if (tx_list.empty()) {
-        return;
-    }
-    
-    // one block must be one consensus pool
-    for (int32_t i = 0; i < tx_list.size(); ++i) {
-        switch (tx_list[i].step()) {
-        case pools::protobuf::kNormalFrom:
-            HandleNormalFromTx(thread_idx, *block_item, tx_list[i], db_batch);
-            break;
-        case pools::protobuf::kConsensusLocalTos:
-            HandleLocalToTx(thread_idx, *block_item, tx_list[i], db_batch);
-            break;
-        default:
-//             ZJC_DEBUG("not handled step: %d", tx_list[i].step());
-            break;
-        }
+    switch (tx.step()) {
+    case pools::protobuf::kNormalFrom:
+        HandleNormalFromTx(thread_idx, *block_item, tx, db_batch);
+        break;
+    case pools::protobuf::kConsensusLocalTos:
+        HandleLocalToTx(thread_idx, *block_item, tx, db_batch);
+        break;
+    default:
+        break;
     }
 }
 

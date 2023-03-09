@@ -137,7 +137,9 @@ int NetworkInit::Init(int argc, char** argv) {
         tm_block_mgr_,
         db_,
         nullptr,
-        common::GlobalInfo::Instance()->message_handler_thread_count());
+        common::GlobalInfo::Instance()->message_handler_thread_count(),
+        std::bind(&NetworkInit::AddBlockItemToCache, this,
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     if (bft_init_res != consensus::kConsensusSuccess) {
         INIT_ERROR("init bft failed!");
         return kInitError;
@@ -589,6 +591,36 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
     }
 
     return -1;
+}
+
+void NetworkInit::AddBlockItemToCache(
+        uint8_t thread_idx,
+        std::shared_ptr<block::protobuf::Block>& block,
+        db::DbWriteBach& db_batch) {
+    const auto& tx_list = block->tx_list();
+    if (tx_list.empty()) {
+        return;
+    }
+
+    pools_mgr_->UpdateLatestInfo(
+        block->pool_index(),
+        block->height(),
+        block->hash(),
+        db_batch);
+    // one block must be one consensus pool
+    for (int32_t i = 0; i < tx_list.size(); ++i) {
+        switch (tx_list[i].step()) {
+        case pools::protobuf::kNormalFrom:
+        case pools::protobuf::kConsensusLocalTos:
+            account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
+            break;
+        case pools::protobuf::kConsensusRootTimeBlock:
+            tm_block_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 }  // namespace init

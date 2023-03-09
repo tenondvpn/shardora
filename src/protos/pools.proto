@@ -38,6 +38,11 @@ message ToTxMessage {
     optional ToTxHeights to_heights = 3;
 }
 
+message PoolLatestInfo {
+    optional uint64 height = 1;
+    optional bytes hash = 2;
+}
+
 message TxMessage {
     optional uint32 version = 1;
     optional bytes gid = 2;

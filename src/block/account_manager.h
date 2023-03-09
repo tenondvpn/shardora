@@ -28,9 +28,10 @@ public:
         uint8_t thread_count,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<pools::TxPoolManager>& pools_mgr);
-    void AddBlockItemToCache(
+    void NewBlockWithTx(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
+        const block::protobuf::BlockTx& tx,
         db::DbWriteBach& db_batch);
     protos::AddressInfoPtr GetAcountInfo(uint8_t thread_idx, const std::string& acc_id);
     protos::AddressInfoPtr GetAcountInfo(

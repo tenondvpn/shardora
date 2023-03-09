@@ -57,15 +57,33 @@ public:
         return tx_pool_[pool_index].AddTx(tx_ptr);
     }
 
-    void UpdateLatestInfo(uint32_t pool_index, uint64_t height, const std::string& hash) {
+    void UpdateLatestInfo(
+            uint32_t pool_index,
+            uint64_t height,
+            const std::string& hash,
+            db::DbWriteBach& db_batch) {
         if (pool_index >= common::kInvalidPoolIndex) {
             return;
         }
 
+        pools::protobuf::PoolLatestInfo pool_info;
+        pool_info.set_height(height);
+        pool_info.set_hash(hash);
+        prefix_db_->SaveLatestPoolInfo(pool_index, pool_info, db_batch);
         return tx_pool_[pool_index].UpdateLatestInfo(height, hash);
     }
 
 private:
+    void InitAllPoolInfo() {
+        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            pools::protobuf::PoolLatestInfo pool_info;
+            if (!prefix_db_->GetLatestPoolInfo(i, &pool_info)) {
+                continue;
+            }
+
+            tx_pool_[pool_index].UpdateLatestInfo(pool_info.height(), pool_info.hash());
+        }
+    }
     void SaveStorageToDb(const transport::protobuf::Header& msg);
     void DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& addr);

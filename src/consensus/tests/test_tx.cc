@@ -38,6 +38,48 @@ static std::vector<std::string> prikeys;
 static std::vector<std::string> addrs;
 static std::unordered_map<std::string, std::string> pri_pub_map;
 
+class TestInit {
+public:
+    TestInit(BftManager* bft_mgr) {
+        bft_mgr_ = bft_mgr;
+        new_block_cache_callback_ = std::bind(
+            &TestInit::AddBlockItemToCache,
+            this,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3);
+    }
+
+private:
+    void AddBlockItemToCache(
+            uint8_t thread_idx,
+            std::shared_ptr<block::protobuf::Block>& block,
+            db::DbWriteBach& db_batch) {
+        const auto& tx_list = block->tx_list();
+        if (tx_list.empty()) {
+            return;
+        }
+
+        // one block must be one consensus pool
+        for (int32_t i = 0; i < tx_list.size(); ++i) {
+            switch (tx_list[i].step()) {
+            case pools::protobuf::kNormalFrom:
+            case pools::protobuf::kConsensusLocalTos:
+                bft_mgr_->account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
+                break;
+            case pools::protobuf::kConsensusRootTimeBlock:
+                bft_mgr_->tm_block_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    BftManager* bft_mgr_ = nullptr; 
+    BlockCacheCallback new_block_cache_callback_ = nullptr;
+};
+
 class TestTx : public testing::Test {
 public:
     static void WriteDefaultLogConf(
@@ -109,7 +151,7 @@ public:
         delete[]read_buf;
     }
 
-    void InitConsensus(BftManager& bft_mgr, const std::string& prikey) {
+    void InitConsensus(BftManager& bft_mgr, const std::string& prikey, BlockCacheCallback new_block_cache_callback) {
         std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
         security->SetPrivateKey(prikey);
         auto account_mgr = std::make_shared<block::AccountManager>();
@@ -140,7 +182,8 @@ public:
             tm_block_mgr,
             db_ptr,
             nullptr,
-            1), kConsensusSuccess);
+            1,
+            new_block_cache_callback), kConsensusSuccess);
         auto members = elect_mgr->GetNetworkMembers(kTestShardingId);
         bft_mgr.OnNewElectBlock(kTestShardingId, members);
         block_mgr->OnNewElectBlock(kTestShardingId, members);
@@ -193,14 +236,20 @@ public:
 
 TEST_F(TestTx, TestTx) {
     BftManager leader_bft_mgr;
+    TestInit t1(&leader_bft_mgr);
     InitConsensus(leader_bft_mgr, common::Encode::HexDecode(
-        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"));
+        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"),
+        t1.new_block_cache_callback_);
     BftManager backup_bft_mgr0;
+    TestInit t2(&backup_bft_mgr0);
     InitConsensus(backup_bft_mgr0, common::Encode::HexDecode(
-        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"));
+        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"),
+        t2.new_block_cache_callback_);
     BftManager backup_bft_mgr1;
+    TestInit t3(&backup_bft_mgr1);
     InitConsensus(backup_bft_mgr1, common::Encode::HexDecode(
-        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
+        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"),
+        t3.new_block_cache_callback_);
     pools::protobuf::TxMessage tx_info;
     CreateTxInfo(
         common::Encode::HexDecode(
@@ -240,14 +289,20 @@ TEST_F(TestTx, TestTx) {
 
 TEST_F(TestTx, TestMoreTx) {
     BftManager leader_bft_mgr;
+    TestInit t1(&leader_bft_mgr);
     InitConsensus(leader_bft_mgr, common::Encode::HexDecode(
-        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"));
+        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"),
+        t1.new_block_cache_callback_);
     BftManager backup_bft_mgr0;
+    TestInit t2(&backup_bft_mgr0);
     InitConsensus(backup_bft_mgr0, common::Encode::HexDecode(
-        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"));
+        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"),
+        t2.new_block_cache_callback_);
     BftManager backup_bft_mgr1;
+    TestInit t3(&backup_bft_mgr1);
     InitConsensus(backup_bft_mgr1, common::Encode::HexDecode(
-        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
+        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"),
+        t3.new_block_cache_callback_);
     auto to_addr = common::Encode::HexDecode("e70c72fcdb57df6844e4c44cd9f02435b628398c");
     auto to_acc = leader_bft_mgr.account_mgr_->GetAcountInfo(0, to_addr);
     ASSERT_TRUE(to_acc != nullptr);
@@ -464,14 +519,20 @@ TEST_F(TestTx, TestMoreTx) {
 TEST_F(TestTx, TestTxOnePrepareEvil) {
     pools::protobuf::TxMessage tx_info;
     BftManager leader_bft_mgr;
+    TestInit t1(&leader_bft_mgr);
     InitConsensus(leader_bft_mgr, common::Encode::HexDecode(
-        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"));
+        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"),
+        t1.new_block_cache_callback_);
     BftManager backup_bft_mgr0;
+    TestInit t2(&backup_bft_mgr0);
     InitConsensus(backup_bft_mgr0, common::Encode::HexDecode(
-        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"));
+        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"),
+        t2.new_block_cache_callback_);
     BftManager backup_bft_mgr1;
+    TestInit t3(&backup_bft_mgr1);
     InitConsensus(backup_bft_mgr1, common::Encode::HexDecode(
-        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
+        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"),
+        t3.new_block_cache_callback_);
     CreateTxInfo(
         common::Encode::HexDecode(
             "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"),
@@ -508,14 +569,20 @@ TEST_F(TestTx, TestTxOnePrepareEvil) {
 TEST_F(TestTx, TestTxOnePrecommitEvil) {
     pools::protobuf::TxMessage tx_info;
     BftManager leader_bft_mgr;
+    TestInit t1(&leader_bft_mgr);
     InitConsensus(leader_bft_mgr, common::Encode::HexDecode(
-        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"));
+        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"),
+        t1.new_block_cache_callback_);
     BftManager backup_bft_mgr0;
+    TestInit t2(&backup_bft_mgr0);
     InitConsensus(backup_bft_mgr0, common::Encode::HexDecode(
-        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"));
+        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"),
+        t2.new_block_cache_callback_);
     BftManager backup_bft_mgr1;
+    TestInit t3(&backup_bft_mgr1);
     InitConsensus(backup_bft_mgr1, common::Encode::HexDecode(
-        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
+        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"),
+        t3.new_block_cache_callback_);
     CreateTxInfo(
         common::Encode::HexDecode(
             "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"),
@@ -554,14 +621,20 @@ TEST_F(TestTx, TestTxOnePrecommitEvil) {
 TEST_F(TestTx, TestTxTwoPrepareEvil) {
     pools::protobuf::TxMessage tx_info;
     BftManager leader_bft_mgr;
+    TestInit t1(&leader_bft_mgr);
     InitConsensus(leader_bft_mgr, common::Encode::HexDecode(
-        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"));
+        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"),
+        t1.new_block_cache_callback_);
     BftManager backup_bft_mgr0;
+    TestInit t2(&backup_bft_mgr0);
     InitConsensus(backup_bft_mgr0, common::Encode::HexDecode(
-        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"));
+        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"),
+        t2.new_block_cache_callback_);
     BftManager backup_bft_mgr1;
+    TestInit t3(&backup_bft_mgr1);
     InitConsensus(backup_bft_mgr1, common::Encode::HexDecode(
-        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
+        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"),
+        t3.new_block_cache_callback_);
     CreateTxInfo(
         common::Encode::HexDecode(
             "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"),

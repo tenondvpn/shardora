@@ -85,10 +85,6 @@ void Zbft::Destroy() {
     } else {
         auto ptr = shared_from_this();
         pools_mgr_->TxOver(ptr);
-        pools_mgr_->UpdateLatestInfo(
-            pool_index(),
-            prpare_block_->height(),
-            prpare_block_->hash());
     }
 }
 

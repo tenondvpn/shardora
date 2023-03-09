@@ -396,7 +396,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         assert(tenon_block2.tx_list_size() > 0);
         prefix_db_->SaveLatestTimeBlock(
             tenon_block->height(),
-            tenon_block->timestamp(),
+            tm_block.timestamp(),
             0);
         fputs((common::Encode::HexEncode(tmp_str) + "\n").c_str(), root_gens_init_block_file);
 //         tmblock::TimeBlockManager::Instance()->UpdateTimeBlock(1, now_tm, now_tm);

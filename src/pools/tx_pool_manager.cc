@@ -25,6 +25,7 @@ TxPoolManager::TxPoolManager(
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     address_map_.Init(10240, 32);
+    InitAllPoolInfo();
     network::Route::Instance()->RegisterMessage(
         common::kPoolsMessage,
         std::bind(&TxPoolManager::HandleMessage, this, std::placeholders::_1));

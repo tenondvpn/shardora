@@ -29,7 +29,7 @@ public:
     int Init(int argc, char** argv);
     void Destroy();
 
-protected:
+private:
     int InitConfigWithArgs(int argc, char** argv);
     int ParseParams(int argc, char** argv, common::ParserArgs& parser_arg);
     int ResetConfig(common::ParserArgs& parser_arg);
@@ -40,6 +40,10 @@ protected:
     int CheckJoinWaitingPool();
     int GenesisCmd(common::ParserArgs& parser_arg);
     void ElectBlockCallback(uint32_t sharding_id, common::MembersPtr& members);
+    void AddBlockItemToCache(
+        uint8_t thread_idx,
+        std::shared_ptr<block::protobuf::Block>& block,
+        db::DbWriteBach& db_batch);
 
     common::Config conf_;
     bool inited_{ false };

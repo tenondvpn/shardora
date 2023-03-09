@@ -44,13 +44,15 @@ int BftManager::Init(
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<db::Db>& db,
         BlockCallback block_cb,
-        uint8_t thread_count) {
+        uint8_t thread_count,
+        BlockCacheCallback new_block_cache_callback) {
     account_mgr_ = account_mgr;
     block_mgr_ = block_mgr;
     elect_mgr_ = elect_mgr;
     pools_mgr_ = pool_mgr;
     tm_block_mgr_ = tm_block_mgr;
     db_ = db;
+    new_block_cache_callback_ = new_block_cache_callback;
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kNormalFrom,
         std::bind(&BftManager::CreateFromTx, this, std::placeholders::_1));
@@ -129,10 +131,12 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 ZbftPtr BftManager::Start(uint8_t thread_index, const transport::MessagePtr& prepare_msg_ptr) {
+#ifndef ZJC_UNITTEST
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) < minimal_node_count_to_consensus_) {
         return nullptr;
     }
+#endif
 
     CheckTimeout(thread_index);
     auto thread_item = thread_set_[thread_index];
@@ -1216,7 +1220,7 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
     zjc_block->set_bls_agg_sign_y(
         libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->Y));
     auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(zjc_block);
-    account_mgr_->AddBlockItemToCache(
+    new_block_cache_callback_(
         thread_idx,
         queue_item_ptr->block_ptr,
         queue_item_ptr->db_batch);
