@@ -242,6 +242,9 @@ int GenesisBlockInit::CreateElectBlock(
     prefix_db_->SaveLatestElectBlock(ec_block);
     fputs((common::Encode::HexEncode(tenon_block->SerializeAsString()) + "\n").c_str(),
         root_gens_init_block_file);
+    db::DbWriteBach db_batch;
+    AddBlockItemToCache(tenon_block, db_batch);
+    db_->Put(db_batch);
     block_mgr_->NetworkNewBlock(0, tenon_block);
 //     std::string pool_hash;
 //     uint64_t pool_height = 0;
@@ -323,6 +326,9 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
         fputs((common::Encode::HexEncode(tenon_block->SerializeAsString()) + "\n").c_str(),
             root_gens_init_block_file);
+        db::DbWriteBach db_batch;
+        AddBlockItemToCache(tenon_block, db_batch);
+        db_->Put(db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
         std::string pool_hash;
         uint64_t pool_height = 0;
@@ -400,6 +406,9 @@ int GenesisBlockInit::GenerateRootSingleBlock(
             0);
         fputs((common::Encode::HexEncode(tmp_str) + "\n").c_str(), root_gens_init_block_file);
 //         tmblock::TimeBlockManager::Instance()->UpdateTimeBlock(1, now_tm, now_tm);
+        db::DbWriteBach db_batch;
+        AddBlockItemToCache(tenon_block, db_batch);
+        db_->Put(db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
         std::string pool_hash;
         uint64_t pool_height = 0;
@@ -493,6 +502,7 @@ int GenesisBlockInit::GenerateShardSingleBlock() {
 
     char data[20480];
     uint32_t block_count = 0;
+    db::DbWriteBach db_batch;
     while (fgets(data, 20480, root_gens_init_block_file) != nullptr) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         std::string tmp_data(data, strlen(data) - 1);
@@ -501,6 +511,7 @@ int GenesisBlockInit::GenerateShardSingleBlock() {
             return kInitError;
         }
 
+        AddBlockItemToCache(tenon_block, db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
         for (int32_t i = 0; i < tenon_block->tx_list_size(); ++i) {
             for (int32_t j = 0; j < tenon_block->tx_list(i).storages_size(); ++j) {
@@ -526,6 +537,7 @@ int GenesisBlockInit::GenerateShardSingleBlock() {
         }
     }
 
+    db_->Put(db_batch);
     {
         auto address = common::kRootChainSingleBlockTxAddress;
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
@@ -667,6 +679,9 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         tenon_block->set_electblock_height(2);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+        db::DbWriteBach db_batch;
+        AddBlockItemToCache(tenon_block, db_batch);
+        db_->Put(db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
         //         std::string pool_hash;
 //         uint64_t pool_height = 0;
@@ -705,6 +720,16 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     }
 
     return GenerateRootSingleBlock(root_genesis_nodes, cons_genesis_nodes);
+}
+
+void GenesisBlockInit::AddBlockItemToCache(
+        std::shared_ptr<block::protobuf::Block>& block,
+        db::DbWriteBach& db_batch) {
+    pools::protobuf::PoolLatestInfo pool_info;
+    pool_info.set_height(block->height());
+    pool_info.set_hash(block->hash());
+    prefix_db_->SaveLatestPoolInfo(block->pool_index(), pool_info, db_batch);
+
 }
 
 int GenesisBlockInit::CreateShardGenesisBlocks(uint32_t net_id) {
@@ -769,6 +794,9 @@ int GenesisBlockInit::CreateShardGenesisBlocks(uint32_t net_id) {
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
 //         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
+        db::DbWriteBach db_batch;
+        AddBlockItemToCache(tenon_block, db_batch);
+        db_->Put(db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
