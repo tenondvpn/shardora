@@ -34,9 +34,6 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fdht_2eproto ::google::protobuf
 namespace protobuf_protos_2felect_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<6> scc_info_ElectMessage;
 }  // namespace protobuf_protos_2felect_2eproto
-namespace protobuf_protos_2fzbft_2eproto {
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fzbft_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_ZbftMessage;
-}  // namespace protobuf_protos_2fzbft_2eproto
 namespace protobuf_protos_2fnetwork_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fnetwork_2eproto ::google::protobuf::internal::SCCInfo<3> scc_info_NetworkMessage;
 }  // namespace protobuf_protos_2fnetwork_2eproto
@@ -47,6 +44,9 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protob
 namespace protobuf_protos_2ftransport_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2ftransport_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_BroadcastParam;
 }  // namespace protobuf_protos_2ftransport_2eproto
+namespace protobuf_protos_2fzbft_2eproto {
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fzbft_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_ZbftMessage;
+}  // namespace protobuf_protos_2fzbft_2eproto
 namespace zjchain {
 namespace transport {
 namespace protobuf {
@@ -220,37 +220,37 @@ void AddDescriptorsImpl() {
       "ort.protobuf\032\024protos/network.proto\032\020prot"
       "os/dht.proto\032\022protos/block.proto\032\020protos"
       "/bls.proto\032\022protos/pools.proto\032\025protos/c"
-      "ontract.proto\032\022protos/elect.proto\032\025proto"
-      "s/zbft.proto\"\265\002\n\016BroadcastParam\022\014\n\004t"
-      "ype\030\001 \001(\r\022\031\n\016neighbor_count\030\002 \001(\r:\0017\022\022\n\n"
-      "stop_times\030\003 \001(\r\022\025\n\thop_limit\030\004 \001(\r:\00210\022"
-      "\022\n\nlayer_left\030\005 \001(\004\022\023\n\013layer_right\030\006 \001(\004"
-      "\022\017\n\007overlap\030\007 \001(\002\022\027\n\014hop_to_layer\030\010 \001(\r:"
-      "\0011\022\016\n\006header\030\t \001(\014\022\014\n\004body\030\n \001(\014\022\023\n\013net_"
-      "crossed\030\013 \001(\010\022\023\n\013bloomfilter\030\014 \003(\004\022\024\n\tev"
-      "il_rate\030\r \001(\002:\0010\022\036\n\023ign_bloomfilter_hop\030"
-      "\016 \001(\r:\0011\"\352\005\n\006Header\022\027\n\017src_sharding_id\030\001"
-      " \001(\005\022\023\n\013des_dht_key\030\002 \001(\014\022\024\n\thop_count\030\003"
-      " \001(\r:\0010\022\r\n\005debug\030\004 \001(\014\022\016\n\006hash64\030\005 \001(\004\022\014"
-      "\n\004type\030\006 \001(\r\022=\n\tbroadcast\030\007 \001(\0132*.zjchai"
-      "n.transport.protobuf.BroadcastParam\022\014\n\004s"
-      "ign\030\010 \001(\014\022\022\n\007version\030\t \001(\005:\0010\022\?\n\rnetwork"
-      "_proto\030\n \001(\0132(.zjchain.network.protobuf."
-      "NetworkMessage\0223\n\tdht_proto\030\013 \001(\0132 .zjch"
-      "ain.dht.protobuf.DhtMessage\0223\n\tbls_proto"
-      "\030\014 \001(\0132 .zjchain.bls.protobuf.BlsMessage"
-      "\0223\n\010tx_proto\030\r \001(\0132!.zjchain.pools.proto"
-      "buf.TxMessage\022B\n\016contract_proto\030\016 \001(\0132*."
-      "zjchain.contract.protobuf.ContractMessag"
-      "e\0229\n\013elect_proto\030\017 \001(\0132$.zjchain.elect.p"
-      "rotobuf.ElectMessage\0228\n\010pipeline\030\020 \003(\0132&"
-      ".zjchain.zbft.protobuf.ZbftMessage\0229"
-      "\n\013block_proto\030\021 \001(\0132$.zjchain.block.prot"
-      "obuf.BlockMessage\022:\n\rto_tx_heights\030\022 \001(\013"
-      "2#.zjchain.pools.protobuf.ToTxHeights"
+      "ontract.proto\032\022protos/elect.proto\032\021proto"
+      "s/zbft.proto\"\265\002\n\016BroadcastParam\022\014\n\004type\030"
+      "\001 \001(\r\022\031\n\016neighbor_count\030\002 \001(\r:\0017\022\022\n\nstop"
+      "_times\030\003 \001(\r\022\025\n\thop_limit\030\004 \001(\r:\00210\022\022\n\nl"
+      "ayer_left\030\005 \001(\004\022\023\n\013layer_right\030\006 \001(\004\022\017\n\007"
+      "overlap\030\007 \001(\002\022\027\n\014hop_to_layer\030\010 \001(\r:\0011\022\016"
+      "\n\006header\030\t \001(\014\022\014\n\004body\030\n \001(\014\022\023\n\013net_cros"
+      "sed\030\013 \001(\010\022\023\n\013bloomfilter\030\014 \003(\004\022\024\n\tevil_r"
+      "ate\030\r \001(\002:\0010\022\036\n\023ign_bloomfilter_hop\030\016 \001("
+      "\r:\0011\"\346\005\n\006Header\022\027\n\017src_sharding_id\030\001 \001(\005"
+      "\022\023\n\013des_dht_key\030\002 \001(\014\022\024\n\thop_count\030\003 \001(\r"
+      ":\0010\022\r\n\005debug\030\004 \001(\014\022\016\n\006hash64\030\005 \001(\004\022\014\n\004ty"
+      "pe\030\006 \001(\r\022=\n\tbroadcast\030\007 \001(\0132*.zjchain.tr"
+      "ansport.protobuf.BroadcastParam\022\014\n\004sign\030"
+      "\010 \001(\014\022\022\n\007version\030\t \001(\005:\0010\022\?\n\rnetwork_pro"
+      "to\030\n \001(\0132(.zjchain.network.protobuf.Netw"
+      "orkMessage\0223\n\tdht_proto\030\013 \001(\0132 .zjchain."
+      "dht.protobuf.DhtMessage\0223\n\tbls_proto\030\014 \001"
+      "(\0132 .zjchain.bls.protobuf.BlsMessage\0223\n\010"
+      "tx_proto\030\r \001(\0132!.zjchain.pools.protobuf."
+      "TxMessage\022B\n\016contract_proto\030\016 \001(\0132*.zjch"
+      "ain.contract.protobuf.ContractMessage\0229\n"
+      "\013elect_proto\030\017 \001(\0132$.zjchain.elect.proto"
+      "buf.ElectMessage\0224\n\010pipeline\030\020 \003(\0132\".zjc"
+      "hain.zbft.protobuf.ZbftMessage\0229\n\013block_"
+      "proto\030\021 \001(\0132$.zjchain.block.protobuf.Blo"
+      "ckMessage\022:\n\rto_tx_heights\030\022 \001(\0132#.zjcha"
+      "in.pools.protobuf.ToTxHeights"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1277);
+      descriptor, 1269);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/transport.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fnetwork_2eproto::AddDescriptors();
