@@ -403,23 +403,24 @@ void AddDescriptorsImpl() {
       "eaderTxPreCommit\022\?\n\rbtx_precommit\030\005 \001(\0132"
       "(.zjchain.zbft.protobuf.BackupTxPreCommi"
       "t\0229\n\nltx_commit\030\006 \001(\0132%.zjchain.zbft.pro"
-      "tobuf.LeaderTxCommit\"\216\004\n\013ZbftMessage\022\023\n\013"
+      "tobuf.LeaderTxCommit\"\243\004\n\013ZbftMessage\022\023\n\013"
       "prepare_gid\030\001 \001(\014\022\025\n\rprecommit_gid\030\002 \001(\014"
       "\022\022\n\ncommit_gid\030\003 \001(\014\022\016\n\006leader\030\004 \001(\010\022\016\n\006"
-      "net_id\030\005 \001(\r\022\016\n\006bitmap\030\006 \003(\004\022\025\n\ragree_pr"
-      "epare\030\007 \001(\010\022\027\n\017agree_precommit\030\010 \001(\010\022\024\n\014"
-      "agree_commit\030\t \001(\010\022\022\n\npool_index\030\n \001(\r\022\r"
-      "\n\005error\030\013 \001(\005\022,\n\006tx_bft\030\014 \001(\0132\034.zjchain."
-      "zbft.protobuf.TxBft\022\024\n\014prepare_hash\030\r \001("
-      "\014\022\017\n\007node_ip\030\016 \001(\014\022\021\n\tnode_port\030\017 \001(\r\022\r\n"
-      "\005epoch\030\020 \001(\r\022\024\n\014member_index\030\021 \001(\r\022\016\n\006pu"
-      "bkey\030\022 \001(\014\022\027\n\017backup_enc_data\030\023 \001(\014\022\024\n\014e"
-      "lect_height\030\024 \001(\004\022\022\n\nbls_sign_x\030\025 \001(\014\022\022\n"
-      "\nbls_sign_y\030\026 \001(\014\022\025\n\rcommit_bitmap\030\027 \003(\004"
-      "\022\033\n\023bls_agg_verify_hash\030\030 \001(\014"
+      "net_id\030\005 \001(\r\022\016\n\006bitmap\030\006 \003(\004\022\034\n\ragree_pr"
+      "epare\030\007 \001(\010:\005false\022\036\n\017agree_precommit\030\010 "
+      "\001(\010:\005false\022\033\n\014agree_commit\030\t \001(\010:\005false\022"
+      "\022\n\npool_index\030\n \001(\r\022\r\n\005error\030\013 \001(\005\022,\n\006tx"
+      "_bft\030\014 \001(\0132\034.zjchain.zbft.protobuf.TxBft"
+      "\022\024\n\014prepare_hash\030\r \001(\014\022\017\n\007node_ip\030\016 \001(\014\022"
+      "\021\n\tnode_port\030\017 \001(\r\022\r\n\005epoch\030\020 \001(\r\022\024\n\014mem"
+      "ber_index\030\021 \001(\r\022\016\n\006pubkey\030\022 \001(\014\022\027\n\017backu"
+      "p_enc_data\030\023 \001(\014\022\024\n\014elect_height\030\024 \001(\004\022\022"
+      "\n\nbls_sign_x\030\025 \001(\014\022\022\n\nbls_sign_y\030\026 \001(\014\022\025"
+      "\n\rcommit_bitmap\030\027 \003(\004\022\033\n\023bls_agg_verify_"
+      "hash\030\030 \001(\014"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1429);
+      descriptor, 1450);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/zbft.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fblock_2eproto::AddDescriptors();
@@ -2912,7 +2913,7 @@ bool ZbftMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional bool agree_prepare = 7;
+      // optional bool agree_prepare = 7 [default = false];
       case 7: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(56u /* 56 & 0xFF */)) {
@@ -2926,7 +2927,7 @@ bool ZbftMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional bool agree_precommit = 8;
+      // optional bool agree_precommit = 8 [default = false];
       case 8: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(64u /* 64 & 0xFF */)) {
@@ -2940,7 +2941,7 @@ bool ZbftMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional bool agree_commit = 9;
+      // optional bool agree_commit = 9 [default = false];
       case 9: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(72u /* 72 & 0xFF */)) {
@@ -3214,17 +3215,17 @@ void ZbftMessage::SerializeWithCachedSizes(
       6, this->bitmap(i), output);
   }
 
-  // optional bool agree_prepare = 7;
+  // optional bool agree_prepare = 7 [default = false];
   if (cached_has_bits & 0x00002000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(7, this->agree_prepare(), output);
   }
 
-  // optional bool agree_precommit = 8;
+  // optional bool agree_precommit = 8 [default = false];
   if (cached_has_bits & 0x00004000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(8, this->agree_precommit(), output);
   }
 
-  // optional bool agree_commit = 9;
+  // optional bool agree_commit = 9 [default = false];
   if (cached_has_bits & 0x00008000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(9, this->agree_commit(), output);
   }
@@ -3363,17 +3364,17 @@ void ZbftMessage::SerializeWithCachedSizes(
   target = ::google::protobuf::internal::WireFormatLite::
     WriteUInt64ToArray(6, this->bitmap_, target);
 
-  // optional bool agree_prepare = 7;
+  // optional bool agree_prepare = 7 [default = false];
   if (cached_has_bits & 0x00002000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(7, this->agree_prepare(), target);
   }
 
-  // optional bool agree_precommit = 8;
+  // optional bool agree_precommit = 8 [default = false];
   if (cached_has_bits & 0x00004000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(8, this->agree_precommit(), target);
   }
 
-  // optional bool agree_commit = 9;
+  // optional bool agree_commit = 9 [default = false];
   if (cached_has_bits & 0x00008000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(9, this->agree_commit(), target);
   }
@@ -3595,17 +3596,17 @@ size_t ZbftMessage::ByteSizeLong() const {
       total_size += 1 + 1;
     }
 
-    // optional bool agree_prepare = 7;
+    // optional bool agree_prepare = 7 [default = false];
     if (has_agree_prepare()) {
       total_size += 1 + 1;
     }
 
-    // optional bool agree_precommit = 8;
+    // optional bool agree_precommit = 8 [default = false];
     if (has_agree_precommit()) {
       total_size += 1 + 1;
     }
 
-    // optional bool agree_commit = 9;
+    // optional bool agree_commit = 9 [default = false];
     if (has_agree_commit()) {
       total_size += 1 + 1;
     }

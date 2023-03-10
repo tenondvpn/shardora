@@ -1361,21 +1361,21 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   bool leader() const;
   void set_leader(bool value);
 
-  // optional bool agree_prepare = 7;
+  // optional bool agree_prepare = 7 [default = false];
   bool has_agree_prepare() const;
   void clear_agree_prepare();
   static const int kAgreePrepareFieldNumber = 7;
   bool agree_prepare() const;
   void set_agree_prepare(bool value);
 
-  // optional bool agree_precommit = 8;
+  // optional bool agree_precommit = 8 [default = false];
   bool has_agree_precommit() const;
   void clear_agree_precommit();
   static const int kAgreePrecommitFieldNumber = 8;
   bool agree_precommit() const;
   void set_agree_precommit(bool value);
 
-  // optional bool agree_commit = 9;
+  // optional bool agree_commit = 9 [default = false];
   bool has_agree_commit() const;
   void clear_agree_commit();
   static const int kAgreeCommitFieldNumber = 9;
@@ -2605,7 +2605,7 @@ ZbftMessage::mutable_bitmap() {
   return &bitmap_;
 }
 
-// optional bool agree_prepare = 7;
+// optional bool agree_prepare = 7 [default = false];
 inline bool ZbftMessage::has_agree_prepare() const {
   return (_has_bits_[0] & 0x00002000u) != 0;
 }
@@ -2629,7 +2629,7 @@ inline void ZbftMessage::set_agree_prepare(bool value) {
   // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.agree_prepare)
 }
 
-// optional bool agree_precommit = 8;
+// optional bool agree_precommit = 8 [default = false];
 inline bool ZbftMessage::has_agree_precommit() const {
   return (_has_bits_[0] & 0x00004000u) != 0;
 }
@@ -2653,7 +2653,7 @@ inline void ZbftMessage::set_agree_precommit(bool value) {
   // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.agree_precommit)
 }
 
-// optional bool agree_commit = 9;
+// optional bool agree_commit = 9 [default = false];
 inline bool ZbftMessage::has_agree_commit() const {
   return (_has_bits_[0] & 0x00008000u) != 0;
 }
