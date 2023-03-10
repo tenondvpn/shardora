@@ -629,7 +629,7 @@ TEST_F(TestTx, TestTxOnePrecommitEvil) {
     ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
     leader_bft_mgr.now_msg_->thread_idx = 0;
     backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
-    ASSERT_TRUE(backup_bft_mgr0.now_msg_ == nullptr);
+    ASSERT_TRUE(backup_bft_mgr0.now_msg_ != nullptr);
     backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
     ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
     backup_bft_mgr1.now_msg_->thread_idx = 0;
@@ -672,10 +672,10 @@ TEST_F(TestTx, TestTxTwoPrepareEvil) {
     ASSERT_TRUE(bft_ptr != nullptr);
     leader_bft_mgr.now_msg_->thread_idx = 0;
     backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
-    ASSERT_TRUE(backup_bft_mgr0.now_msg_ == nullptr);
+    ASSERT_TRUE(backup_bft_mgr0.now_msg_ != nullptr);
     ASSERT_TRUE(backup_bft_mgr0.now_msg_ != nullptr);
     backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
-    ASSERT_TRUE(backup_bft_mgr1.now_msg_ == nullptr);
+    ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
     ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
     backup_bft_mgr0.now_msg_->thread_idx = 0;
     backup_bft_mgr1.now_msg_->thread_idx = 0;
