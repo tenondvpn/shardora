@@ -212,6 +212,9 @@ int Zbft::LeaderPrecommitOk(
         return kConsensusHandled;
     }
 
+    ZJC_DEBUG("leader precommit hash: %s, index: %d",
+        common::Encode::HexEncode(tx_prepare.prepare_final_hash()).c_str(),
+        index);
     // TODO: check back hash eqal to it's signed hash
     auto valid_count = SetPrepareBlock(
         id,
@@ -531,6 +534,9 @@ bool Zbft::set_bls_precommit_agg_sign(
         return false;
     }
 
+    ZJC_DEBUG("success verify leader precommit agg sign! %s: %s",
+        common::Encode::HexEncode(sign_commit_hash).c_str(),
+        common::Encode::HexEncode(sign_hash).c_str());
     bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(agg_sign);
     return true;
 }

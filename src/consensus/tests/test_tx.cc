@@ -344,18 +344,21 @@ TEST_F(TestTx, TestMoreTx) {
         auto tm0 = common::TimeUtils::TimestampUs();
         transport::MessagePtr prepare_msg_ptr = nullptr;
         if (backup_bft_mgr0.now_msg_ == nullptr) {
+            ZJC_DEBUG("now leader start.");
             leader_bft_mgr.now_msg_ = nullptr;
             leader_bft_mgr.Start(0, prepare_msg_ptr);
             if (leader_bft_mgr.now_msg_ == nullptr) {
                 break;
             }
         } else {
+            ZJC_DEBUG("now leader pipeline start.");
             backup_bft_mgr0.now_msg_->thread_idx = 0;
             backup_bft_mgr1.now_msg_->thread_idx = 0;
             leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
             leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
         }
 
+        ZJC_DEBUG("now backup prepare start.");
         ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
         auto tm = common::TimeUtils::TimestampUs();
         times[0] += tm - tm0;
@@ -363,6 +366,7 @@ TEST_F(TestTx, TestMoreTx) {
         leader_bft_mgr.now_msg_->thread_idx = 0;
         backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
         backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
+        ZJC_DEBUG("now backup prepare end.");
         if (backup_bft_mgr0.now_msg_ == nullptr) {
             break;
         }
@@ -374,16 +378,20 @@ TEST_F(TestTx, TestMoreTx) {
 
         backup_bft_mgr0.now_msg_->thread_idx = 0;
         backup_bft_mgr1.now_msg_->thread_idx = 0;
+        ZJC_DEBUG("now leader precommit.");
         leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
         leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
         tm = common::TimeUtils::TimestampUs();
         times[2] += tm - tm0;
         tm0 = tm;
+        ZJC_DEBUG("leader precommit end.");
+        ZJC_DEBUG("now backup precommit.");
         // 2. precommit
         ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
         leader_bft_mgr.now_msg_->thread_idx = 0;
         backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
         backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
+        ZJC_DEBUG("backup precommit end.");
         if (backup_bft_mgr0.now_msg_ == nullptr) {
             break;
         }
