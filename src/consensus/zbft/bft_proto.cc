@@ -49,7 +49,6 @@ bool BftProto::LeaderCreatePrepare(
     bft_msg.set_precommit_gid(precommit_gid);
     bft_msg.set_commit_gid(commit_gid);
     bft_msg.set_net_id(bft_ptr->network_id());
-    bft_msg.set_bft_step(kConsensusPrepare);
     bft_msg.set_agree_prepare(true);
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_epoch(bft_ptr->GetEpoch());
@@ -90,7 +89,6 @@ bool BftProto::BackupCreatePrepare(
     bft_msg.set_precommit_gid(precommit_gid);
     bft_msg.set_net_id(bft_ptr->network_id());
     bft_msg.set_agree_prepare(agree);
-    bft_msg.set_bft_step(kConsensusPrepare);
     bft_msg.set_epoch(bft_ptr->GetEpoch());
     bft_msg.set_member_index(bft_ptr->local_member_index());
     bft_msg.set_prepare_hash(bft_ptr->local_prepare_hash());
@@ -147,7 +145,6 @@ bool BftProto::LeaderCreatePreCommit(
     bft_msg.set_precommit_gid(bft_ptr->gid());
     bft_msg.set_commit_gid(commit_gid);
     bft_msg.set_net_id(bft_ptr->network_id());
-    bft_msg.set_bft_step(kConsensusPreCommit);
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_agree_precommit(agree);
     bft_msg.set_elect_height(bft_ptr->elect_height());
@@ -159,6 +156,7 @@ bool BftProto::LeaderCreatePreCommit(
             bft_msg.add_bitmap(bitmap_data[i]);
         }
 
+        assert(bft_ptr->pipeline_prev_zbft_ptr() != nullptr);
         auto& bls_precommit_sign = bft_ptr->bls_precommit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
@@ -185,7 +183,6 @@ bool BftProto::BackupCreatePreCommit(
     bft_msg.set_precommit_gid(bft_ptr->gid());
     bft_msg.set_net_id(bft_ptr->network_id());
     bft_msg.set_agree_precommit(agree);
-    bft_msg.set_bft_step(kConsensusPreCommit);
     bft_msg.set_epoch(bft_ptr->GetEpoch());
     bft_msg.set_member_index(bft_ptr->local_member_index());
     std::string bls_sign_x;
@@ -243,7 +240,6 @@ bool BftProto::LeaderCreateCommit(
     bft_msg.set_leader(false);
     bft_msg.set_commit_gid(bft_ptr->gid());
     bft_msg.set_net_id(bft_ptr->network_id());
-    bft_msg.set_bft_step(kConsensusCommit);
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_member_index(bft_ptr->local_member_index());
     bft_msg.set_agree_commit(agree);
@@ -295,7 +291,6 @@ bool BftProto::CreateLeaderBroadcastToAccount(
     auto to_tx = tx_bft.mutable_to_tx();
     auto block = to_tx->mutable_block();
     *block = *(block_ptr.get());
-    bft_msg.set_bft_step(bft_step);
     bft_msg.set_net_id(common::GlobalInfo::Instance()->network_id());
     bft_msg.set_member_index(local_member_index);
     auto block_hash = GetBlockHash(*block);

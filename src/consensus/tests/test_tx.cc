@@ -510,10 +510,20 @@ TEST_F(TestTx, TestMoreTx) {
         backup_bft_mgr1.ResetTest();
     }
 
-    to_acc = leader_bft_mgr.account_mgr_->GetAcountInfo(0, to_addr);
-    ASSERT_TRUE(to_acc != nullptr);
-    std::cout << src_balance << ":" << to_acc->balance() << ", " << kTestCount << ", " << invalid_count << std::endl;
-    ASSERT_EQ(src_balance + (kTestCount - invalid_count) * 100000, to_acc->balance());
+    auto to_acc_b1 = backup_bft_mgr0.account_mgr_->GetAcountInfo(0, to_addr);
+    ASSERT_TRUE(to_acc_b1 != nullptr);
+    std::cout << src_balance << ":" << to_acc_b1->balance() << ", " << kTestCount << ", " << invalid_count << std::endl;
+    ASSERT_EQ(src_balance + (kTestCount - invalid_count) * 100000, to_acc_b1->balance());
+
+    auto to_acc_b2 = backup_bft_mgr1.account_mgr_->GetAcountInfo(0, to_addr);
+    ASSERT_TRUE(to_acc_b2 != nullptr);
+    std::cout << src_balance << ":" << to_acc_b2->balance() << ", " << kTestCount << ", " << invalid_count << std::endl;
+    ASSERT_EQ(src_balance + (kTestCount - invalid_count) * 100000, to_acc_b2->balance());
+
+    auto to_acc_leader = leader_bft_mgr.account_mgr_->GetAcountInfo(0, to_addr);
+    ASSERT_TRUE(to_acc_leader != nullptr);
+    std::cout << src_balance << ":" << to_acc_leader->balance() << ", " << kTestCount << ", " << invalid_count << std::endl;
+    ASSERT_EQ(src_balance + (kTestCount - invalid_count) * 100000, to_acc_leader->balance());
 };
 
 TEST_F(TestTx, TestTxOnePrepareEvil) {

@@ -60,7 +60,7 @@ private:
     void RemoveBft(uint8_t thread_idx, const std::string& gid, bool is_leader);
     int LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& prepare_msg_ptr);
     int BackupPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
-    int LeaderPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
+    int LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr);
     int BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int LeaderCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
@@ -68,9 +68,6 @@ private:
     int LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int LeaderCallCommit(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
     ZbftPtr CreateBftPtr(const transport::MessagePtr& msg_ptr);
-    void HandleZbftMessage(
-        ZbftPtr& bft_ptr,
-        const transport::MessagePtr& msg_ptr);
     int LeaderCallPrecommitOppose(const ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int LeaderCallCommitOppose(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
     void BackupSendOppose(const transport::MessagePtr& msg_ptr, int32_t error);
@@ -94,6 +91,7 @@ private:
     int CheckPrecommit(const transport::MessagePtr& msg_ptr);
     int CheckCommit(const transport::MessagePtr& msg_ptr, bool backup_agree_commit);
     bool CheckAggSignValid(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
+    void SetDefaultResponse(const transport::MessagePtr& msg_ptr);
     pools::TxItemPtr CreateFromTx(transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
     }
