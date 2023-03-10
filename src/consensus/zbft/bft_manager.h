@@ -59,7 +59,7 @@ private:
         const transport::MessagePtr& prepare_msg_ptr);
     void RemoveBft(uint8_t thread_idx, const std::string& gid, bool is_leader);
     int LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& prepare_msg_ptr);
-    int BackupPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
+    int BackupPrepare(const transport::MessagePtr& msg_ptr);
     int LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr);
     int BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int LeaderCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
@@ -74,7 +74,7 @@ private:
     void LeaderHandleBftOppose(
         const ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr);
-    ZbftPtr BackupHandleZbftMessage(
+    void BackupHandleZbftMessage(
         uint8_t thread_index,
         const transport::MessagePtr& msg_ptr);
     bool IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info);

@@ -51,9 +51,9 @@ message ZbftMessage {
     optional bool leader = 4;
     optional uint32 net_id = 5;
     repeated uint64 bitmap = 6;
-    optional bool agree_prepare = 7;
-    optional bool agree_precommit = 8;
-    optional bool agree_commit = 9;
+    optional bool agree_prepare = 7 [default=false];
+    optional bool agree_precommit = 8 [default=false];
+    optional bool agree_commit = 9 [default=false];
     optional uint32 pool_index = 10;
     optional int32 error = 11;
     optional TxBft tx_bft = 12;

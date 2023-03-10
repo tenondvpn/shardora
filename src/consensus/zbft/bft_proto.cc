@@ -93,6 +93,8 @@ bool BftProto::BackupCreatePrepare(
     bft_msg.set_precommit_gid(precommit_gid);
     bft_msg.set_net_id(bft_ptr->network_id());
     bft_msg.set_agree_prepare(agree);
+    bft_msg.set_agree_precommit(agree);
+    bft_msg.set_agree_commit(agree);
     bft_msg.set_epoch(bft_ptr->GetEpoch());
     bft_msg.set_member_index(bft_ptr->local_member_index());
     bft_msg.set_prepare_hash(bft_ptr->local_prepare_hash());
@@ -155,8 +157,14 @@ bool BftProto::LeaderCreatePreCommit(
     bft_msg.set_net_id(bft_ptr->network_id());
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_agree_precommit(agree);
+    bft_msg.set_agree_commit(agree);
     bft_msg.set_elect_height(bft_ptr->elect_height());
     bft_msg.set_member_index(bft_ptr->local_member_index());
+    auto pre_ptr = bft_ptr->pipeline_prev_zbft_ptr();
+    if (agree && pre_ptr != nullptr) {
+        bft_msg.set_prepare_hash(pre_ptr->local_prepare_hash());
+    }
+
     bft_msg.set_epoch(bft_ptr->GetEpoch());
     if (agree) {
         const auto& bitmap_data = bft_ptr->prepare_bitmap().data();
@@ -268,7 +276,7 @@ bool BftProto::LeaderCreateCommit(
         }
     }
 
-    bft_msg.set_prepare_hash(bft_ptr->prpare_block()->hash());
+    bft_msg.set_prepare_hash(bft_ptr->local_prepare_hash());
     bft_msg.set_epoch(bft_ptr->GetEpoch());
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
     std::string sign;

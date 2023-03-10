@@ -307,8 +307,8 @@ TEST_F(TestTx, TestMoreTx) {
     auto to_acc = leader_bft_mgr.account_mgr_->GetAcountInfo(0, to_addr);
     ASSERT_TRUE(to_acc != nullptr);
     uint64_t src_balance = to_acc->balance();
-    uint32_t invalid_count = 0;
-    const uint32_t kTestCount = 10000u;
+    uint64_t invalid_count = 0lu;
+    const uint64_t kTestCount = 100000lu;
     for (uint32_t i = 0; i < kTestCount; ++i) {
         pools::protobuf::TxMessage tx_info;
         auto& from_prikey = prikeys[i % prikeys.size()];
@@ -336,6 +336,7 @@ TEST_F(TestTx, TestMoreTx) {
         }
     };
 
+    uint64_t all_b_time = common::TimeUtils::TimestampUs();
     auto block_thread = std::thread(leader_block_thread);
     uint64_t times[64] = { 0 };
     uint32_t consensus_count = 0;
@@ -417,7 +418,10 @@ TEST_F(TestTx, TestMoreTx) {
         ++consensus_count;
     }
 
-    std::cout << ", consensus_count: " << consensus_count << std::endl;
+    uint64_t all_e_time = common::TimeUtils::TimestampUs();
+    std::cout << ", consensus_count: " << consensus_count << ", tps: " <<
+        (float(kTestCount - invalid_count) / (float(all_e_time - all_b_time) / 1000000.0)) <<
+        std::endl;
     for (uint32_t i = 0; i < 7; ++i) {
         std::cout << (i > 6 ? (i - 6) : i) << " : " << (times[i] / consensus_count) << std::endl;
     }
@@ -521,17 +525,17 @@ TEST_F(TestTx, TestMoreTx) {
     auto to_acc_b1 = backup_bft_mgr0.account_mgr_->GetAcountInfo(0, to_addr);
     ASSERT_TRUE(to_acc_b1 != nullptr);
     std::cout << src_balance << ":" << to_acc_b1->balance() << ", " << kTestCount << ", " << invalid_count << std::endl;
-    ASSERT_EQ(src_balance + (kTestCount - invalid_count) * 100000, to_acc_b1->balance());
+    ASSERT_EQ(src_balance + (kTestCount - invalid_count) * 100000lu, to_acc_b1->balance());
 
     auto to_acc_b2 = backup_bft_mgr1.account_mgr_->GetAcountInfo(0, to_addr);
     ASSERT_TRUE(to_acc_b2 != nullptr);
     std::cout << src_balance << ":" << to_acc_b2->balance() << ", " << kTestCount << ", " << invalid_count << std::endl;
-    ASSERT_EQ(src_balance + (kTestCount - invalid_count) * 100000, to_acc_b2->balance());
+    ASSERT_EQ(src_balance + (kTestCount - invalid_count) * 100000lu, to_acc_b2->balance());
 
     auto to_acc_leader = leader_bft_mgr.account_mgr_->GetAcountInfo(0, to_addr);
     ASSERT_TRUE(to_acc_leader != nullptr);
     std::cout << src_balance << ":" << to_acc_leader->balance() << ", " << kTestCount << ", " << invalid_count << std::endl;
-    ASSERT_EQ(src_balance + (kTestCount - invalid_count) * 100000, to_acc_leader->balance());
+    ASSERT_EQ(src_balance + (kTestCount - invalid_count) * 100000lu, to_acc_leader->balance());
 };
 
 TEST_F(TestTx, TestTxOnePrepareEvil) {
@@ -565,7 +569,7 @@ TEST_F(TestTx, TestTxOnePrepareEvil) {
     ASSERT_TRUE(bft_ptr != nullptr);
     leader_bft_mgr.now_msg_->thread_idx = 0;
     backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
-    ASSERT_TRUE(backup_bft_mgr0.now_msg_ == nullptr);
+    ASSERT_TRUE(backup_bft_mgr0.now_msg_ != nullptr);
     backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
     ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
     backup_bft_mgr1.now_msg_->thread_idx = 0;
@@ -573,7 +577,7 @@ TEST_F(TestTx, TestTxOnePrepareEvil) {
     ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
     leader_bft_mgr.now_msg_->thread_idx = 0;
     backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
-    ASSERT_TRUE(backup_bft_mgr0.now_msg_ == nullptr);
+    ASSERT_TRUE(backup_bft_mgr0.now_msg_ != nullptr);
     backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
     ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
     backup_bft_mgr1.now_msg_->thread_idx = 0;
