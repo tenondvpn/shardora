@@ -59,7 +59,6 @@ private:
         const transport::MessagePtr& prepare_msg_ptr);
     void RemoveBft(uint8_t thread_idx, const std::string& gid, bool is_leader);
     int LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& prepare_msg_ptr);
-    int BackupPrepare(const transport::MessagePtr& msg_ptr);
     int LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr);
     int BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int LeaderCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
@@ -70,13 +69,13 @@ private:
     ZbftPtr CreateBftPtr(const transport::MessagePtr& msg_ptr);
     int LeaderCallPrecommitOppose(const ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int LeaderCallCommitOppose(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
-    void BackupSendOppose(const transport::MessagePtr& msg_ptr, int32_t error);
     void LeaderHandleBftOppose(
         const ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr);
     void BackupHandleZbftMessage(
         uint8_t thread_index,
         const transport::MessagePtr& msg_ptr);
+    void BackupPrepare(const transport::MessagePtr& msg_ptr);
     bool IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info);
     void HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr);
     int InitZbftPtr(bool leader, ZbftPtr& bft_ptr);
@@ -87,11 +86,13 @@ private:
     void CreateResponseMessage(
         bool response_to_leader,
         const std::vector<ZbftPtr>& zbft_vec,
-        const transport::MessagePtr& msg_ptr);
+        const transport::MessagePtr& msg_ptr,
+        common::BftMemberPtr& mem_ptr);
     int CheckPrecommit(const transport::MessagePtr& msg_ptr);
     int CheckCommit(const transport::MessagePtr& msg_ptr, bool backup_agree_commit);
     bool CheckAggSignValid(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
     void SetDefaultResponse(const transport::MessagePtr& msg_ptr);
+    bool SetBackupEcdhData(transport::MessagePtr& msg_ptr, common::BftMemberPtr& mem_ptr);
     pools::TxItemPtr CreateFromTx(transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
     }
@@ -134,6 +135,7 @@ private:
     uint32_t prev_checktime_out_milli_ = 0;
     uint32_t minimal_node_count_to_consensus_ = common::kInvalidUint32;
     BlockCacheCallback new_block_cache_callback_ = nullptr;
+    common::MembersPtr members_ = nullptr;
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {

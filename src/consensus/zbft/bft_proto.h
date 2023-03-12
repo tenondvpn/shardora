@@ -46,17 +46,6 @@ public:
         const ZbftPtr& bft_ptr,
         bool agree,
         transport::protobuf::Header& msg);
-    static bool CreateLeaderBroadcastToAccount(
-        uint32_t net_id,
-        uint32_t message_type,
-        uint32_t bft_step,
-        bool universal,
-        const std::shared_ptr<block::protobuf::Block>& block_ptr,
-        uint32_t local_member_index,
-        transport::protobuf::Header& msg);
-    static void SetLocalPublicIpPort(
-        const dht::NodePtr& local_node,
-        zbft::protobuf::ZbftMessage& bft_msg);
 
     DISALLOW_COPY_AND_ASSIGN(BftProto);
 };

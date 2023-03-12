@@ -198,12 +198,11 @@ int RootZbft::RootBackupCheckPrepare(
     }
 
     zbft::protobuf::TxBft res_tx_bft;
-    auto& ltx_msg = *res_tx_bft.mutable_ltx_prepare();
-    if (DoTransaction(ltx_msg) != kConsensusSuccess) {
+    if (DoTransaction(res_tx_bft) != kConsensusSuccess) {
         return kConsensusInvalidPackage;
     }
 
-    ltx_msg.clear_block();
+    res_tx_bft.clear_block();
     *prepare = res_tx_bft.SerializeAsString();
     return kConsensusSuccess;
 }

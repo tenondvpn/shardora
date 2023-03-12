@@ -15,26 +15,6 @@ namespace zjchain {
 
 namespace consensus {
 
-void BftProto::SetLocalPublicIpPort(
-        const dht::NodePtr& local_node,
-        zbft::protobuf::ZbftMessage& bft_msg) {
-    if (common::GlobalInfo::Instance()->config_first_node()) {
-        common::Split<> spliter(
-            common::GlobalInfo::Instance()->tcp_spec().c_str(),
-            ':',
-            common::GlobalInfo::Instance()->tcp_spec().size());
-        if (spliter.Count() == 2) {
-            bft_msg.set_node_ip(spliter[0]);
-            uint16_t port = 0;
-            common::StringUtil::ToUint16(spliter[1], &port);
-            bft_msg.set_node_port(port);
-        }
-    } else {
-        bft_msg.set_node_ip(local_node->public_ip);
-        bft_msg.set_node_port(local_node->public_port + 1);
-    }
-}
-
 bool BftProto::LeaderCreatePrepare(
         std::shared_ptr<security::Security>& security_ptr,
         const ZbftPtr& bft_ptr,
@@ -55,7 +35,6 @@ bool BftProto::LeaderCreatePrepare(
     bft_msg.set_net_id(bft_ptr->network_id());
     bft_msg.set_agree_prepare(true);
     bft_msg.set_pool_index(bft_ptr->pool_index());
-    bft_msg.set_epoch(bft_ptr->GetEpoch());
     bft_msg.set_member_index(bft_ptr->local_member_index());
     bft_msg.set_elect_height(bft_ptr->elect_height());
     auto prev_btr = bft_ptr->pipeline_prev_zbft_ptr();
@@ -95,7 +74,6 @@ bool BftProto::BackupCreatePrepare(
     bft_msg.set_agree_prepare(agree);
     bft_msg.set_agree_precommit(agree);
     bft_msg.set_agree_commit(agree);
-    bft_msg.set_epoch(bft_ptr->GetEpoch());
     bft_msg.set_member_index(bft_ptr->local_member_index());
     bft_msg.set_prepare_hash(bft_ptr->local_prepare_hash());
     std::string bls_sign_x;
@@ -165,7 +143,6 @@ bool BftProto::LeaderCreatePreCommit(
         bft_msg.set_prepare_hash(pre_ptr->local_prepare_hash());
     }
 
-    bft_msg.set_epoch(bft_ptr->GetEpoch());
     if (agree) {
         const auto& bitmap_data = bft_ptr->prepare_bitmap().data();
         for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
@@ -198,7 +175,6 @@ bool BftProto::BackupCreatePreCommit(
     bft_msg.set_precommit_gid(bft_ptr->gid());
     bft_msg.set_net_id(bft_ptr->network_id());
     bft_msg.set_agree_precommit(agree);
-    bft_msg.set_epoch(bft_ptr->GetEpoch());
     bft_msg.set_member_index(bft_ptr->local_member_index());
     std::string bls_sign_x;
     std::string bls_sign_y;
@@ -218,8 +194,8 @@ bool BftProto::BackupCreatePreCommit(
     std::string& ecdh_key = bft_ptr->leader_mem_ptr()->peer_ecdh_key;
     if (ecdh_key.empty()) {
         if (security_ptr->GetEcdhKey(
-            bft_ptr->leader_mem_ptr()->pubkey,
-            &ecdh_key) != security::kSecuritySuccess) {
+                bft_ptr->leader_mem_ptr()->pubkey,
+                &ecdh_key) != security::kSecuritySuccess) {
             ZJC_ERROR("get ecdh key failed peer pk: %s",
                 common::Encode::HexEncode(bft_ptr->leader_mem_ptr()->pubkey).c_str());
             return false;
@@ -250,8 +226,6 @@ bool BftProto::LeaderCreateCommit(
     auto broad_param = msg.mutable_broadcast();
     auto& bft_msg = *msg.mutable_zbft();
     zbft::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
-    auto ltx_commit_msg = tx_bft.mutable_ltx_commit();
-    ltx_commit_msg->set_latest_hegight(bft_ptr->prpare_block()->height());
     bft_msg.set_leader(false);
     bft_msg.set_commit_gid(bft_ptr->gid());
     bft_msg.set_net_id(bft_ptr->network_id());
@@ -277,7 +251,6 @@ bool BftProto::LeaderCreateCommit(
     }
 
     bft_msg.set_prepare_hash(bft_ptr->local_prepare_hash());
-    bft_msg.set_epoch(bft_ptr->GetEpoch());
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
     std::string sign;
     if (security_ptr->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
@@ -285,47 +258,6 @@ bool BftProto::LeaderCreateCommit(
     }
 
     msg.set_sign(sign);
-    return true;
-}
-
-bool BftProto::CreateLeaderBroadcastToAccount(
-        uint32_t net_id,
-        uint32_t message_type,
-        uint32_t bft_step,
-        bool universal,
-        const std::shared_ptr<block::protobuf::Block>& block_ptr,
-        uint32_t local_member_index,
-        transport::protobuf::Header& msg) {
-    msg.set_src_sharding_id(net_id);
-    dht::DhtKeyManager dht_key(net_id);
-    msg.set_des_dht_key(dht_key.StrKey());
-    msg.set_type(common::kConsensusMessage);
-    auto broad_param = msg.mutable_broadcast();
-    auto& bft_msg = *msg.mutable_zbft();
-    zbft::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
-    auto to_tx = tx_bft.mutable_to_tx();
-    auto block = to_tx->mutable_block();
-    *block = *(block_ptr.get());
-    bft_msg.set_net_id(common::GlobalInfo::Instance()->network_id());
-    bft_msg.set_member_index(local_member_index);
-    auto block_hash = GetBlockHash(*block);
-    block->set_hash(block_hash);
-//     security::Signature sign;
-//     bool sign_res = security::Security::Instance()->Sign(
-//         block_hash,
-//         *(security::Security::Instance()->prikey()),
-//         *(security::Security::Instance()->pubkey()),
-//         sign);
-//     if (!sign_res) {
-//         ZJC_ERROR("signature error.");
-//         return;
-//     }
-// 
-//     std::string sign_challenge_str;
-//     std::string sign_response_str;
-//     sign.Serialize(sign_challenge_str, sign_response_str);
-//     bft_msg.set_sign_challenge(sign_challenge_str);
-//     bft_msg.set_sign_response(sign_response_str);
     return true;
 }
 

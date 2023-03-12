@@ -111,20 +111,19 @@ int Zbft::LeaderCreatePrepare(zbft::protobuf::ZbftMessage* bft_msg) {
     local_member_index_ = leader_index_;
     LeaderCallTransaction(bft_msg);
     zbft::protobuf::TxBft& tx_bft = *bft_msg->mutable_tx_bft();
-    auto ltxp = tx_bft.mutable_ltx_prepare();
     if (txs_ptr_->bloom_filter == nullptr) {
         auto& tx_map = txs_ptr_->txs;
         for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
-            ltxp->add_tx_hash_list(iter->first);
+            tx_bft.add_tx_hash_list(iter->first);
         }
     } else {
         auto bloom_datas = txs_ptr_->bloom_filter->data();
         for (auto iter = bloom_datas.begin(); iter != bloom_datas.end(); ++iter) {
-            ltxp->add_bloom_filter(*iter);
+            tx_bft.add_bloom_filter(*iter);
         }
     }
 
-    bft_msg->mutable_tx_bft()->mutable_ltx_prepare()->release_block();
+    bft_msg->mutable_tx_bft()->release_block();
     return kConsensusSuccess;
 }
 
@@ -132,13 +131,12 @@ int Zbft::BackupCheckPrepare(
         zbft::protobuf::ZbftMessage* bft_msg,
         int32_t* invalid_tx_idx) {
     auto& tx_bft = *bft_msg->mutable_tx_bft();
-    auto ltx_msg = tx_bft.mutable_ltx_prepare();
-    if (DoTransaction(*ltx_msg) != kConsensusSuccess) {
+    if (DoTransaction(tx_bft) != kConsensusSuccess) {
         return kConsensusInvalidPackage;
     }
 
-    ltx_msg->release_block();
-    assert(!ltx_msg->has_block());
+    tx_bft.release_block();
+    assert(!tx_bft.has_block());
     return kConsensusSuccess;
 }
 
@@ -203,7 +201,7 @@ bool Zbft::BackupCheckLeaderValid(const zbft::protobuf::ZbftMessage* bft_msg) {
 }
 
 int Zbft::LeaderPrecommitOk(
-        const zbft::protobuf::LeaderTxPrepare& tx_prepare,
+        const zbft::protobuf::TxBft& tx_prepare,
         uint32_t index,
         const libff::alt_bn128_G1& backup_sign,
         const std::string& id) {
@@ -543,8 +541,7 @@ bool Zbft::set_bls_precommit_agg_sign(
 
 void Zbft::LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg) {
     auto& res_tx_bft = *bft_msg->mutable_tx_bft();
-    auto ltx_msg = res_tx_bft.mutable_ltx_prepare();
-    if (DoTransaction(*ltx_msg) != kConsensusSuccess) {
+    if (DoTransaction(res_tx_bft) != kConsensusSuccess) {
         ZJC_ERROR("leader do transaction failed!");
         return;
     }
@@ -561,7 +558,7 @@ void Zbft::LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg) {
     }
 
     if (LeaderPrecommitOk(
-            *ltx_msg,
+            res_tx_bft,
             leader_index_,
             bn_sign,
             leader_mem_ptr_->id) != bls::kBlsSuccess) {
@@ -570,14 +567,14 @@ void Zbft::LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg) {
     }
 }
 
-int Zbft::DoTransaction(zbft::protobuf::LeaderTxPrepare& ltx_prepare) {
+int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     if (InitZjcTvmContext() != kConsensusSuccess) {
         return kConsensusError;
     }
 
     std::string pool_hash = pools_mgr_->latest_hash(txs_ptr_->pool_index);
     uint64_t pool_height = pools_mgr_->latest_height(txs_ptr_->pool_index);
-    block::protobuf::Block& zjc_block = *(ltx_prepare.mutable_block());
+    block::protobuf::Block& zjc_block = *(tx_bft.mutable_block());
     DoTransactionAndCreateTxBlock(zjc_block);
     if (zjc_block.tx_list_size() <= 0) {
         ZJC_ERROR("all choose tx invalid!");
@@ -596,9 +593,9 @@ int Zbft::DoTransaction(zbft::protobuf::LeaderTxPrepare& ltx_prepare) {
     zjc_block.set_leader_index(leader_index_);
     zjc_block.set_hash(GetBlockHash(zjc_block));
     prpare_block_ = std::make_shared<block::protobuf::Block>(zjc_block);
-    ltx_prepare.set_prepare_final_hash(zjc_block.hash());
-    ltx_prepare.set_height(zjc_block.height());
-    ltx_prepare.set_tx_type(txs_ptr_->tx_type);
+    tx_bft.set_prepare_final_hash(zjc_block.hash());
+    tx_bft.set_height(zjc_block.height());
+    tx_bft.set_tx_type(txs_ptr_->tx_type);
     set_prepare_hash(zjc_block.hash());
     return kConsensusSuccess;
 }

@@ -47,13 +47,10 @@ public:
     int BackupCheckPrepare(
         zbft::protobuf::ZbftMessage* bft_msg,
         int32_t* invalid_tx_idx);
-//     std::shared_ptr<zbft::protobuf::ZbftLeaderPrepare> CreatePrepareTxInfo(
-//         std::shared_ptr<block::protobuf::Block>& block_ptr,
-//         zbft::protobuf::LeaderTxPrepare& ltx_prepare);
-    int DoTransaction(zbft::protobuf::LeaderTxPrepare& ltx_msg);
+    int DoTransaction(zbft::protobuf::TxBft& ltx_msg);
     void LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg);
     int LeaderPrecommitOk(
-        const zbft::protobuf::LeaderTxPrepare& tx_prepare,
+        const zbft::protobuf::TxBft& tx_prepare,
         uint32_t index,
         const libff::alt_bn128_G1& backup_sign,
         const std::string& id);
