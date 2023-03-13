@@ -33,7 +33,6 @@ bool BftProto::LeaderCreatePrepare(
         common::Encode::HexEncode(precommit_gid).c_str(),
         common::Encode::HexEncode(commit_gid).c_str());
     bft_msg.set_net_id(bft_ptr->network_id());
-    bft_msg.set_agree_prepare(true);
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_member_index(bft_ptr->local_member_index());
     bft_msg.set_elect_height(bft_ptr->elect_height());

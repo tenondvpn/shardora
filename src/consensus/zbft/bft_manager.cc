@@ -295,6 +295,9 @@ void BftManager::SetDefaultResponse(const transport::MessagePtr& msg_ptr) {
     dht::DhtKeyManager dht_key(net_id);
     msg_ptr->response->header.set_des_dht_key(dht_key.StrKey());
     msg_ptr->response->header.set_type(common::kConsensusMessage);
+    transport::TcpTransport::Instance()->SetMessageHash(
+        msg_ptr->response->header,
+        msg_ptr->thread_idx);
 }
 
 void BftManager::CreateResponseMessage(
