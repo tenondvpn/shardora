@@ -59,11 +59,6 @@ static void GetZbftHash(
         }
     }
 
-    if (zbft_msg.has_agree_prepare()) {
-        bool agree_prepare = zbft_msg.agree_prepare();
-        msg_for_hash.append((char*)&agree_prepare, sizeof(agree_prepare));
-    }
-
     if (zbft_msg.has_agree_precommit()) {
         bool agree_precommit = zbft_msg.agree_precommit();
         msg_for_hash.append((char*)&agree_precommit, sizeof(agree_precommit));
