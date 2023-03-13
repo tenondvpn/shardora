@@ -416,7 +416,6 @@ bool BftManager::SetBackupEcdhData(transport::MessagePtr& msg_ptr, common::BftMe
                 common::Encode::HexEncode(mem_ptr->pubkey).c_str());
             return false;
         }
-
     }
 
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
@@ -821,7 +820,6 @@ void BftManager::BackupPrepare(const transport::MessagePtr& msg_ptr) {
     }
 
     if (bft_msg.has_prepare_gid() && !bft_msg.prepare_gid().empty()) {
-        ZJC_DEBUG("BackupPrepare");
         if (CheckPrecommit(msg_ptr) != kConsensusSuccess) {
             return;
         }
@@ -920,34 +918,47 @@ int BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
         return kConsensusError;
     }
 
-    libff::alt_bn128_G1 sign;
-    try {
-        sign.X = libff::alt_bn128_Fq(bft_msg.bls_sign_x().c_str());
-        sign.Y = libff::alt_bn128_Fq(bft_msg.bls_sign_y().c_str());
-        sign.Z = libff::alt_bn128_Fq::one();
-    } catch (std::exception& e) {
-        ZJC_ERROR("get invalid bls sign.");
-        return kConsensusError;
-    }
-
     int res = kConsensusSuccess;
     if (bft_msg.has_prepare_gid() && !bft_msg.prepare_gid().empty()) {
-        auto& tx_bft = bft_msg.tx_bft();
-        res = bft_ptr->LeaderPrecommitOk(
-            tx_bft,
-            bft_msg.member_index(),
-            sign,
-            member_ptr->id);
-        if (res == kConsensusAgree) {
-            msg_ptr->response->header.mutable_zbft()->set_agree_prepare(true);
-            msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
-            msg_ptr->response->header.mutable_zbft()->set_agree_commit(true);
-            LeaderCallPrecommit(bft_ptr, msg_ptr);
+        if (bft_msg.agree_precommit()) {
+            libff::alt_bn128_G1 sign;
+            try {
+                sign.X = libff::alt_bn128_Fq(bft_msg.bls_sign_x().c_str());
+                sign.Y = libff::alt_bn128_Fq(bft_msg.bls_sign_y().c_str());
+                sign.Z = libff::alt_bn128_Fq::one();
+            } catch (std::exception& e) {
+                ZJC_ERROR("get invalid bls sign.");
+                return kConsensusError;
+            }
+
+            auto& tx_bft = bft_msg.tx_bft();
+            res = bft_ptr->LeaderPrecommitOk(
+                tx_bft,
+                bft_msg.member_index(),
+                sign,
+                member_ptr->id);
+            if (res == kConsensusAgree) {
+                msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
+                msg_ptr->response->header.mutable_zbft()->set_agree_commit(true);
+                LeaderCallPrecommit(bft_ptr, msg_ptr);
+            }
+        } else {
+            if (bft_ptr->AddPrepareOpposeNode(member_ptr->id) == kConsensusOppose) {
+                assert(false);
+                // just all consensus rollback
+            }
         }
     }
 
     if (bft_msg.has_precommit_gid() && !bft_msg.precommit_gid().empty()) {
-        res = LeaderCommit(bft_ptr, msg_ptr);
+        if (bft_msg.agree_commit()) {
+            LeaderCommit(bft_ptr, msg_ptr);
+        } else {
+            if (bft_ptr->AddPrecommitOpposeNode(member_ptr->id) == kConsensusOppose) {
+                assert(false);
+                // just all consensus rollback
+            }
+        }
     }
 
     ZJC_DEBUG("LeaderHandleZbftMessage res: %d, mem: %d", res, bft_msg.member_index());

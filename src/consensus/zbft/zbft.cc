@@ -170,7 +170,9 @@ bool Zbft::BackupCheckLeaderValid(const zbft::protobuf::ZbftMessage* bft_msg) {
                 (common_pk_ == libff::alt_bn128_G2::zero()),
                 (local_sec_key_ == libff::alt_bn128_Fr::zero()));
         } else {
-            ZJC_ERROR("get members failed!: %lu, net id: %d", local_elect_height, common::GlobalInfo::Instance()->network_id());
+            ZJC_ERROR("get members failed!: %lu, net id: %d",
+                local_elect_height,
+                common::GlobalInfo::Instance()->network_id());
         }
         return false;
     }

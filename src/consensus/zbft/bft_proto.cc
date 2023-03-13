@@ -71,7 +71,6 @@ bool BftProto::BackupCreatePrepare(
     bft_msg.set_prepare_gid(bft_ptr->gid());
     bft_msg.set_precommit_gid(precommit_gid);
     bft_msg.set_net_id(bft_ptr->network_id());
-    bft_msg.set_agree_prepare(agree);
     bft_msg.set_agree_precommit(agree);
     bft_msg.set_agree_commit(agree);
     bft_msg.set_member_index(bft_ptr->local_member_index());
@@ -90,26 +89,6 @@ bool BftProto::BackupCreatePrepare(
 
     bft_msg.set_bls_sign_x(bls_sign_x);
     bft_msg.set_bls_sign_y(bls_sign_y);
-    auto bls_sign_hash = common::Hash::keccak256(bls_sign_x + bls_sign_y);
-    std::string& ecdh_key = bft_ptr->leader_mem_ptr()->peer_ecdh_key;
-    if (ecdh_key.empty()) {
-        if (security_ptr->GetEcdhKey(
-                bft_ptr->leader_mem_ptr()->pubkey,
-                &ecdh_key) != security::kSecuritySuccess) {
-            ZJC_ERROR("get ecdh key failed peer pk: %s",
-                common::Encode::HexEncode(bft_ptr->leader_mem_ptr()->pubkey).c_str());
-            return false;
-        }
-    }
-
-    std::string enc_out;
-    if (security_ptr->Encrypt(bls_sign_hash, ecdh_key, &enc_out) != security::kSecuritySuccess) {
-        ZJC_ERROR("encrypt key failed peer pk: %s",
-            common::Encode::HexEncode(bft_ptr->leader_mem_ptr()->pubkey).c_str());
-        return false;
-    }
-    
-    bft_msg.set_backup_enc_data(enc_out);
     return true;
 }
 
@@ -190,27 +169,6 @@ bool BftProto::BackupCreatePreCommit(
 
     bft_msg.set_bls_sign_x(bls_sign_x);
     bft_msg.set_bls_sign_y(bls_sign_y);
-    auto bls_sign_hash = common::Hash::keccak256(bls_sign_x + bls_sign_y);
-    std::string& ecdh_key = bft_ptr->leader_mem_ptr()->peer_ecdh_key;
-    if (ecdh_key.empty()) {
-        if (security_ptr->GetEcdhKey(
-                bft_ptr->leader_mem_ptr()->pubkey,
-                &ecdh_key) != security::kSecuritySuccess) {
-            ZJC_ERROR("get ecdh key failed peer pk: %s",
-                common::Encode::HexEncode(bft_ptr->leader_mem_ptr()->pubkey).c_str());
-            return false;
-        }
-
-    }
-
-    std::string enc_out;
-    if (security_ptr->Encrypt(bls_sign_hash, ecdh_key, &enc_out) != security::kSecuritySuccess) {
-        ZJC_ERROR("encrypt key failed peer pk: %s",
-            common::Encode::HexEncode(bft_ptr->leader_mem_ptr()->pubkey).c_str());
-        return false;
-    }
-
-    bft_msg.set_backup_enc_data(enc_out);
     return true;
 }
 
