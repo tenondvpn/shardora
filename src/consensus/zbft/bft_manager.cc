@@ -650,6 +650,10 @@ int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& pre
 
     auto& header = (msg_ptr->response != nullptr && msg_ptr->response->header.has_zbft()) ? 
         msg_ptr->response->header : msg_ptr->header;
+    if (!header.has_hash64()) {
+        transport::TcpTransport::Instance()->SetMessageHash(header, msg_ptr->thread_idx);
+    }
+
     msg_ptr->thread_idx = bft_ptr->thread_index();
     auto* new_bft_msg = header.mutable_zbft();
     int res = bft_ptr->Prepare(true, new_bft_msg);
@@ -958,7 +962,7 @@ int BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
             LeaderCommit(bft_ptr, msg_ptr);
         } else {
             if (bft_ptr->AddPrecommitOpposeNode(member_ptr->id) == kConsensusOppose) {
-                assert(false);
+                //assert(false);
                 // just all consensus rollback
             }
         }
