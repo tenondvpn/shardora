@@ -927,7 +927,7 @@ int BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
 
     int res = kConsensusSuccess;
     if (bft_msg.has_prepare_gid() && !bft_msg.prepare_gid().empty()) {
-        if (bft_msg.agree_precommit()) {
+//         if (bft_msg.agree_precommit()) {
             libff::alt_bn128_G1 sign;
             try {
                 sign.X = libff::alt_bn128_Fq(bft_msg.bls_sign_x().c_str());
@@ -949,23 +949,23 @@ int BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
                 msg_ptr->response->header.mutable_zbft()->set_agree_commit(true);
                 LeaderCallPrecommit(bft_ptr, msg_ptr);
             }
-        } else {
-            if (bft_ptr->AddPrepareOpposeNode(member_ptr->id) == kConsensusOppose) {
-                assert(false);
-                // just all consensus rollback
-            }
-        }
+//         } else {
+//             if (bft_ptr->AddPrepareOpposeNode(member_ptr->id) == kConsensusOppose) {
+//                 assert(false);
+//                 // just all consensus rollback
+//             }
+//         }
     }
 
     if (bft_msg.has_precommit_gid() && !bft_msg.precommit_gid().empty()) {
-        if (bft_msg.agree_commit()) {
+//         if (bft_msg.agree_commit()) {
             LeaderCommit(bft_ptr, msg_ptr);
-        } else {
-            if (bft_ptr->AddPrecommitOpposeNode(member_ptr->id) == kConsensusOppose) {
-                //assert(false);
-                // just all consensus rollback
-            }
-        }
+//         } else {
+//             if (bft_ptr->AddPrecommitOpposeNode(member_ptr->id) == kConsensusOppose) {
+//                 //assert(false);
+//                 // just all consensus rollback
+//             }
+//         }
     }
 
     ZJC_DEBUG("LeaderHandleZbftMessage res: %d, mem: %d", res, bft_msg.member_index());
