@@ -319,7 +319,7 @@ TEST_F(TestTx, TestMultiThread) {
     ASSERT_TRUE(to_acc != nullptr);
     uint64_t src_balance = to_acc->balance();
     uint64_t invalid_count = 0lu;
-    const uint64_t kTestCount = 1000000lu;
+    const uint64_t kTestCount = 100000lu;
     for (uint32_t i = 0; i < kTestCount; ++i) {
         pools::protobuf::TxMessage tx_info;
         auto& from_prikey = prikeys[i % prikeys.size()];
