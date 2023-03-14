@@ -48,7 +48,6 @@ public:
     virtual ~BftManager();
     int AddBft(ZbftPtr& bft_ptr);
     ZbftPtr GetBft(uint8_t thread_index, const std::string& gid, bool leader);
-    uint32_t GetMemberIndex(uint32_t network_id, const std::string& node_id);
 
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
@@ -90,7 +89,7 @@ private:
     bool CheckAggSignValid(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
     void SetDefaultResponse(const transport::MessagePtr& msg_ptr);
     bool SetBackupEcdhData(transport::MessagePtr& msg_ptr, common::BftMemberPtr& mem_ptr);
-    bool LeaderSignMessage(transport::MessagePtr& msg_ptr, common::BftMemberPtr& mem_ptr);
+    bool LeaderSignMessage(transport::MessagePtr& msg_ptr);
     void ClearBft(const transport::MessagePtr& msg_ptr);
     ZbftPtr LeaderGetZbft(const transport::MessagePtr& msg_ptr, const std::string& gid);
     pools::TxItemPtr CreateFromTx(transport::MessagePtr& msg_ptr) {
@@ -127,7 +126,6 @@ private:
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     uint8_t thread_count_ = 0;
-    std::shared_ptr<PoolTxIndexItem> thread_set_[common::kMaxThreadCount];
     std::shared_ptr<WaitingTxsPools> txs_pools_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     std::string bft_gids_[common::kMaxThreadCount];
@@ -135,7 +133,8 @@ private:
     uint32_t prev_checktime_out_milli_ = 0;
     uint32_t minimal_node_count_to_consensus_ = common::kInvalidUint32;
     BlockCacheCallback new_block_cache_callback_ = nullptr;
-    common::MembersPtr members_ = nullptr;
+    ElectItem elect_items_[2];
+    uint32_t elect_item_idx_ = 0;
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {
@@ -143,9 +142,11 @@ private:
     }
 
     // just for test
-    transport::MessagePtr now_msg_ = nullptr;
+    transport::MessagePtr* now_msg_ = nullptr;
     bool test_for_prepare_evil_ = false;
     bool test_for_precommit_evil_ = false;
+    uint64_t prev_tps_tm_us_ = 0;
+    std::atomic<uint32_t> prev_count_ = 0;
 #endif
 
     DISALLOW_COPY_AND_ASSIGN(BftManager);

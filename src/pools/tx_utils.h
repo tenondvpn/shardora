@@ -86,7 +86,7 @@ static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_
         }
     }
 
-    ZJC_DEBUG("message: %s", common::Encode::HexEncode(message).c_str());
+//     ZJC_DEBUG("message: %s", common::Encode::HexEncode(message).c_str());
     return common::Hash::keccak256(message);
 }
 

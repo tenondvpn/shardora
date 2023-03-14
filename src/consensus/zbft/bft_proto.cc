@@ -27,10 +27,10 @@ bool BftProto::LeaderCreatePrepare(
     bft_msg.set_prepare_gid(bft_ptr->gid());
     bft_msg.set_precommit_gid(precommit_gid);
     bft_msg.set_commit_gid(commit_gid);
-    ZJC_DEBUG("leader prepare: %s, precommit: %s, commit: %s",
-        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-        common::Encode::HexEncode(precommit_gid).c_str(),
-        common::Encode::HexEncode(commit_gid).c_str());
+//     ZJC_DEBUG("leader prepare: %s, precommit: %s, commit: %s",
+//         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+//         common::Encode::HexEncode(precommit_gid).c_str(),
+//         common::Encode::HexEncode(commit_gid).c_str());
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_elect_height(bft_ptr->elect_height());
     auto prev_btr = bft_ptr->pipeline_prev_zbft_ptr();
@@ -90,10 +90,10 @@ bool BftProto::LeaderCreatePreCommit(
     bft_msg.set_leader(false);
     bft_msg.set_precommit_gid(bft_ptr->gid());
     bft_msg.set_commit_gid(commit_gid);
-    ZJC_DEBUG("leader precommit: %s, precommit: %s, commit: %s",
-        common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-        common::Encode::HexEncode(commit_gid).c_str());
+//     ZJC_DEBUG("leader precommit: %s, precommit: %s, commit: %s",
+//         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+//         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+//         common::Encode::HexEncode(commit_gid).c_str());
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_agree_precommit(agree);
     bft_msg.set_agree_commit(agree);

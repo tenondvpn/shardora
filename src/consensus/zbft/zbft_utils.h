@@ -8,6 +8,7 @@
 #include "common/log.h"
 #include "common/hash.h"
 #include "common/global_info.h"
+#include "common/node_members.h"
 #include "common/thread_safe_queue.h"
 #include "common/bitmap.h"
 #include "db/db.h"
@@ -64,6 +65,20 @@ struct PoolTxCountItem {
 struct PoolTxIndexItem {
     std::vector<uint32_t> pools;
     uint32_t prev_index;
+};
+
+struct ElectItem {
+    common::MembersPtr members;
+    common::BftMemberPtr leader_member;
+    common::BftMemberPtr local_member;
+    int32_t local_node_pool_mod_num;
+    int32_t leader_count;
+    int32_t member_size;
+    uint64_t elect_height;
+    uint64_t local_node_member_index;
+    std::shared_ptr<PoolTxIndexItem> thread_set[common::kMaxThreadCount];
+    libff::alt_bn128_G2 common_pk;
+    libff::alt_bn128_Fr sec_key;
 };
 
 typedef std::function<void(

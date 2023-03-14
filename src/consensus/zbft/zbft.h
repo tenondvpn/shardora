@@ -116,8 +116,8 @@ public:
             min_oppose_member_count_ += 1;
         }
 
-        ZJC_DEBUG("consensus member count: %d/%d, oppose count: %d",
-            min_aggree_member_count_, member_count_, min_oppose_member_count_);
+//         ZJC_DEBUG("consensus member count: %d/%d, oppose count: %d",
+//             min_aggree_member_count_, member_count_, min_oppose_member_count_);
     }
 
     void set_precommit_bitmap(const std::vector<uint64_t>& bitmap_data) {
