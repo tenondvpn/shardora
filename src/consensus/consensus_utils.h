@@ -40,6 +40,7 @@ enum ConsensusErrorCode {
     kConsensusElectBlockHeightError = 26,
     kConsensusLeaderTxInfoInvalid = 27,
     kConsensusVssRandomNotMatch = 28,
+    kConsensusWaiting = 29,
 };
 
 enum BftStatus {

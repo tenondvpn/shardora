@@ -23,6 +23,7 @@ TcpTransport::TcpTransport() {
         thread_msg_count_[i] = common::TimeUtils::TimestampUs();
     }
 
+    msg_random_ = common::Random::RandomString(32);
     erase_conn_tick_.CutOff(
         kEraseConnPeriod,
         std::bind(&TcpTransport::EraseConn, this, std::placeholders::_1));
@@ -36,7 +37,6 @@ int TcpTransport::Init(
         bool create_server,
         MultiThreadHandler* msg_handler) {
     // server just one thread
-    msg_random_ = common::Random::RandomString(32);
     server_thread_idx_ = common::GlobalInfo::Instance()->message_handler_thread_count();
     msg_handler_ = msg_handler;
     auto packet_handler = std::bind(

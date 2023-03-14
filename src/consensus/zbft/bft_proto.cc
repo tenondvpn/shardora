@@ -16,7 +16,6 @@ namespace zjchain {
 namespace consensus {
 
 bool BftProto::LeaderCreatePrepare(
-        std::shared_ptr<security::Security>& security_ptr,
         const ZbftPtr& bft_ptr,
         const std::string& precommit_gid,
         const std::string& commit_gid,
@@ -32,9 +31,7 @@ bool BftProto::LeaderCreatePrepare(
         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
         common::Encode::HexEncode(precommit_gid).c_str(),
         common::Encode::HexEncode(commit_gid).c_str());
-    bft_msg.set_net_id(bft_ptr->network_id());
     bft_msg.set_pool_index(bft_ptr->pool_index());
-    bft_msg.set_member_index(bft_ptr->local_member_index());
     bft_msg.set_elect_height(bft_ptr->elect_height());
     auto prev_btr = bft_ptr->pipeline_prev_zbft_ptr();
     if (prev_btr != nullptr) {
@@ -48,18 +45,10 @@ bool BftProto::LeaderCreatePrepare(
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
     }
 
-    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
-    std::string sign;
-    if (security_ptr->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
-        return false;
-    }
-
-    msg.set_sign(sign);
     return true;
 }
 
 bool BftProto::BackupCreatePrepare(
-        std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         const ZbftPtr& bft_ptr,
         bool agree,
@@ -69,10 +58,6 @@ bool BftProto::BackupCreatePrepare(
     bft_msg.set_leader(true);
     bft_msg.set_prepare_gid(bft_ptr->gid());
     bft_msg.set_precommit_gid(precommit_gid);
-    bft_msg.set_net_id(bft_ptr->network_id());
-    bft_msg.set_agree_precommit(agree);
-    bft_msg.set_agree_commit(agree);
-    bft_msg.set_member_index(bft_ptr->local_member_index());
     bft_msg.set_prepare_hash(bft_ptr->local_prepare_hash());
     std::string bls_sign_x;
     std::string bls_sign_y;
@@ -92,7 +77,6 @@ bool BftProto::BackupCreatePrepare(
 }
 
 bool BftProto::LeaderCreatePreCommit(
-        std::shared_ptr<security::Security>& security_ptr,
         const ZbftPtr& bft_ptr,
         bool agree,
         const std::string& commit_gid,
@@ -110,12 +94,10 @@ bool BftProto::LeaderCreatePreCommit(
         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
         common::Encode::HexEncode(commit_gid).c_str());
-    bft_msg.set_net_id(bft_ptr->network_id());
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_agree_precommit(agree);
     bft_msg.set_agree_commit(agree);
     bft_msg.set_elect_height(bft_ptr->elect_height());
-    bft_msg.set_member_index(bft_ptr->local_member_index());
     auto pre_ptr = bft_ptr->pipeline_prev_zbft_ptr();
     if (agree && pre_ptr != nullptr) {
         bft_msg.set_prepare_hash(pre_ptr->local_prepare_hash());
@@ -132,18 +114,10 @@ bool BftProto::LeaderCreatePreCommit(
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
     }
 
-    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
-    std::string sign;
-    if (security_ptr->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
-        return false;
-    }
-
-    msg.set_sign(sign);
     return true;
 }
 
 bool BftProto::BackupCreatePreCommit(
-        std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         const ZbftPtr& bft_ptr,
         bool agree,
@@ -151,9 +125,6 @@ bool BftProto::BackupCreatePreCommit(
     auto& bft_msg = *msg.mutable_zbft();
     bft_msg.set_leader(true);
     bft_msg.set_precommit_gid(bft_ptr->gid());
-    bft_msg.set_net_id(bft_ptr->network_id());
-    bft_msg.set_agree_precommit(agree);
-    bft_msg.set_member_index(bft_ptr->local_member_index());
     std::string bls_sign_x;
     std::string bls_sign_y;
     if (bls_mgr->Sign(
@@ -172,7 +143,6 @@ bool BftProto::BackupCreatePreCommit(
 }
 
 bool BftProto::LeaderCreateCommit(
-        std::shared_ptr<security::Security>& security_ptr,
         const ZbftPtr& bft_ptr,
         bool agree,
         transport::protobuf::Header& msg) {
@@ -185,9 +155,7 @@ bool BftProto::LeaderCreateCommit(
     zbft::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
     bft_msg.set_leader(false);
     bft_msg.set_commit_gid(bft_ptr->gid());
-    bft_msg.set_net_id(bft_ptr->network_id());
     bft_msg.set_pool_index(bft_ptr->pool_index());
-    bft_msg.set_member_index(bft_ptr->local_member_index());
     bft_msg.set_agree_commit(agree);
     const auto& bitmap_data = bft_ptr->prepare_bitmap().data();
     for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
@@ -208,13 +176,6 @@ bool BftProto::LeaderCreateCommit(
     }
 
     bft_msg.set_prepare_hash(bft_ptr->local_prepare_hash());
-    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
-    std::string sign;
-    if (security_ptr->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
-        return false;
-    }
-
-    msg.set_sign(sign);
     return true;
 }
 

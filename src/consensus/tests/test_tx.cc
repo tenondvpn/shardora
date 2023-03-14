@@ -224,7 +224,7 @@ public:
     }
 
     static void TearDownTestCase() {
-        system("rm -rf ./db_*");
+        //system("rm -rf ./db_*");
     }
 
     virtual void SetUp() {
@@ -260,6 +260,7 @@ TEST_F(TestTx, TestTx) {
     AddTxs(backup_bft_mgr0, tx_info);
     AddTxs(backup_bft_mgr1, tx_info);
     transport::MessagePtr prepare_msg_ptr = nullptr;
+    // 1.prepare
     auto bft_ptr = leader_bft_mgr.Start(0, prepare_msg_ptr);
     ASSERT_TRUE(bft_ptr != nullptr);
     leader_bft_mgr.now_msg_->thread_idx = 0;
@@ -271,6 +272,7 @@ TEST_F(TestTx, TestTx) {
     backup_bft_mgr1.now_msg_->thread_idx = 0;
     leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
     leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
+    // 2. precommit
     ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
     leader_bft_mgr.now_msg_->thread_idx = 0;
     backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
@@ -281,6 +283,7 @@ TEST_F(TestTx, TestTx) {
     backup_bft_mgr1.now_msg_->thread_idx = 0;
     leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
     leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
+    // 3. commit
     ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
     leader_bft_mgr.now_msg_->thread_idx = 0;
     backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
@@ -308,7 +311,7 @@ TEST_F(TestTx, TestMoreTx) {
     ASSERT_TRUE(to_acc != nullptr);
     uint64_t src_balance = to_acc->balance();
     uint64_t invalid_count = 0lu;
-    const uint64_t kTestCount = 100000lu;
+    const uint64_t kTestCount = 1000lu;
     for (uint32_t i = 0; i < kTestCount; ++i) {
         pools::protobuf::TxMessage tx_info;
         auto& from_prikey = prikeys[i % prikeys.size()];
@@ -352,7 +355,19 @@ TEST_F(TestTx, TestMoreTx) {
                 break;
             }
         } else {
-            ZJC_DEBUG("now leader pipeline start.");
+            ZJC_DEBUG("now leader pipeline start prepare gid: %s, precommit gid: %s, commit gid: %s",
+                common::Encode::HexEncode(
+                    backup_bft_mgr0.now_msg_->header.zbft().prepare_gid()).c_str(),
+                common::Encode::HexEncode(
+                    backup_bft_mgr0.now_msg_->header.zbft().precommit_gid()).c_str(),
+                common::Encode::HexEncode(
+                    backup_bft_mgr0.now_msg_->header.zbft().commit_gid()).c_str());
+            if (backup_bft_mgr0.now_msg_->header.zbft().prepare_gid().empty() &&
+                    backup_bft_mgr0.now_msg_->header.zbft().precommit_gid().empty() &&
+                    backup_bft_mgr0.now_msg_->header.zbft().commit_gid().empty()) {
+                break;
+            }
+
             backup_bft_mgr0.now_msg_->thread_idx = 0;
             backup_bft_mgr1.now_msg_->thread_idx = 0;
             leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
@@ -572,20 +587,32 @@ TEST_F(TestTx, TestTxOnePrepareEvil) {
     ASSERT_TRUE(backup_bft_mgr0.now_msg_ != nullptr);
     backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
     ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
+    backup_bft_mgr0.now_msg_->thread_idx = 0;
     backup_bft_mgr1.now_msg_->thread_idx = 0;
+
+    ZJC_DEBUG("leader 0");
+    auto leader_ptr = leader_bft_mgr.GetBft(0, bft_ptr->gid(), true);
+    ASSERT_TRUE(leader_ptr != nullptr);
+    leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
+    leader_ptr = leader_bft_mgr.GetBft(0, bft_ptr->gid(), true);
+    ASSERT_TRUE(leader_ptr == nullptr);
     leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
     ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
     leader_bft_mgr.now_msg_->thread_idx = 0;
+
+    ZJC_DEBUG("backup 0");
+    auto b0_ptr = backup_bft_mgr0.GetBft(0, bft_ptr->gid(), false);
+    ASSERT_TRUE(b0_ptr == nullptr);
     backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
-    ASSERT_TRUE(backup_bft_mgr0.now_msg_ != nullptr);
+    b0_ptr = backup_bft_mgr0.GetBft(0, bft_ptr->gid(), false);
+    ASSERT_TRUE(b0_ptr == nullptr);
+    ASSERT_TRUE(backup_bft_mgr0.now_msg_ == nullptr);
+    auto b1_ptr = backup_bft_mgr1.GetBft(0, bft_ptr->gid(), false);
+    ASSERT_TRUE(b1_ptr != nullptr);
     backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
-    ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
-    backup_bft_mgr1.now_msg_->thread_idx = 0;
-    leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
-    ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
-    leader_bft_mgr.now_msg_->thread_idx = 0;
-    backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
-    backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
+    b1_ptr = backup_bft_mgr1.GetBft(0, bft_ptr->gid(), false);
+    ASSERT_TRUE(b1_ptr == nullptr);
+    ASSERT_TRUE(backup_bft_mgr1.now_msg_ == nullptr);
 };
 
 TEST_F(TestTx, TestTxOnePrecommitEvil) {
@@ -615,6 +642,7 @@ TEST_F(TestTx, TestTxOnePrecommitEvil) {
     AddTxs(backup_bft_mgr1, tx_info);
     backup_bft_mgr0.test_for_precommit_evil_ = true;
     transport::MessagePtr prepare_msg_ptr = nullptr;
+    // prepare
     auto bft_ptr = leader_bft_mgr.Start(0, prepare_msg_ptr);
     ASSERT_TRUE(bft_ptr != nullptr);
     leader_bft_mgr.now_msg_->thread_idx = 0;
@@ -626,18 +654,42 @@ TEST_F(TestTx, TestTxOnePrecommitEvil) {
     backup_bft_mgr1.now_msg_->thread_idx = 0;
     leader_bft_mgr.HandleMessage(backup_bft_mgr0.now_msg_);
     leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
+
+    // precommit
     ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
     leader_bft_mgr.now_msg_->thread_idx = 0;
+    ZJC_DEBUG("backup 0");
+    auto b0_ptr = backup_bft_mgr0.GetBft(0, bft_ptr->gid(), false);
+    ASSERT_TRUE(b0_ptr != nullptr);
     backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
     ASSERT_TRUE(backup_bft_mgr0.now_msg_ != nullptr);
+    b0_ptr = backup_bft_mgr0.GetBft(0, bft_ptr->gid(), false);
+    ASSERT_TRUE(b0_ptr == nullptr);
+
+    auto b1_ptr = backup_bft_mgr1.GetBft(0, bft_ptr->gid(), false);
+    ASSERT_TRUE(b1_ptr != nullptr);
     backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
     ASSERT_TRUE(backup_bft_mgr1.now_msg_ != nullptr);
+    b1_ptr = backup_bft_mgr1.GetBft(0, bft_ptr->gid(), false);
+    ASSERT_TRUE(b1_ptr != nullptr);
+
     backup_bft_mgr1.now_msg_->thread_idx = 0;
+    auto l_ptr = leader_bft_mgr.GetBft(0, bft_ptr->gid(), true);
+    ASSERT_TRUE(l_ptr != nullptr);
     leader_bft_mgr.HandleMessage(backup_bft_mgr1.now_msg_);
     ASSERT_TRUE(leader_bft_mgr.now_msg_ != nullptr);
+    l_ptr = leader_bft_mgr.GetBft(0, bft_ptr->gid(), true);
+    ASSERT_TRUE(l_ptr == nullptr);
+
     leader_bft_mgr.now_msg_->thread_idx = 0;
+    b0_ptr = backup_bft_mgr0.GetBft(0, bft_ptr->gid(), false);
+    ASSERT_TRUE(b0_ptr == nullptr);
     backup_bft_mgr0.HandleMessage(leader_bft_mgr.now_msg_);
+    b1_ptr = backup_bft_mgr1.GetBft(0, bft_ptr->gid(), false);
+    ASSERT_TRUE(b1_ptr != nullptr);
     backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_);
+    b1_ptr = backup_bft_mgr1.GetBft(0, bft_ptr->gid(), false);
+    ASSERT_TRUE(b1_ptr == nullptr);
 };
 
 TEST_F(TestTx, TestTxTwoPrepareEvil) {

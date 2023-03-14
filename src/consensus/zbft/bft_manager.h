@@ -69,9 +69,6 @@ private:
     ZbftPtr CreateBftPtr(const transport::MessagePtr& msg_ptr);
     int LeaderCallPrecommitOppose(const ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int LeaderCallCommitOppose(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
-    void LeaderHandleBftOppose(
-        const ZbftPtr& bft_ptr,
-        const transport::MessagePtr& msg_ptr);
     void BackupHandleZbftMessage(
         uint8_t thread_index,
         const transport::MessagePtr& msg_ptr);
@@ -93,6 +90,9 @@ private:
     bool CheckAggSignValid(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
     void SetDefaultResponse(const transport::MessagePtr& msg_ptr);
     bool SetBackupEcdhData(transport::MessagePtr& msg_ptr, common::BftMemberPtr& mem_ptr);
+    bool LeaderSignMessage(transport::MessagePtr& msg_ptr, common::BftMemberPtr& mem_ptr);
+    void ClearBft(const transport::MessagePtr& msg_ptr);
+    ZbftPtr LeaderGetZbft(const transport::MessagePtr& msg_ptr, const std::string& gid);
     pools::TxItemPtr CreateFromTx(transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
     }
