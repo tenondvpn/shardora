@@ -142,16 +142,16 @@ void BftManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& membe
     }
 
     for (uint8_t j = 0; j < thread_count_; ++j) {
-        std::cout << "thread: " << (uint32_t)j << " : ";
+//         std::cout << "thread: " << (uint32_t)j << " : ";
         auto thread_item = std::make_shared<PoolTxIndexItem>();
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             if (i % thread_count_ == j && leader_pool_set.find(i) != leader_pool_set.end()) {
                 thread_item->pools.push_back(i);
-                std::cout << (uint32_t)i << " : ";
+//                 std::cout << (uint32_t)i << " : ";
             }
         }
 
-        std::cout << std::endl;
+//         std::cout << std::endl;
         thread_item->prev_index = 0;
         thread_set[j] = thread_item;  // ptr change, multi-thread safe
     }
@@ -284,8 +284,8 @@ ZbftPtr BftManager::StartBft(
         return nullptr;
     }
 
-    ZJC_INFO("this node is leader and start bft: %s, pool index: %d, thread index: %d",
-        common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index(), bft_ptr->thread_index());
+//     ZJC_INFO("this node is leader and start bft: %s, pool index: %d, thread index: %d",
+//         common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index(), bft_ptr->thread_index());
     return bft_ptr;
 }
 
