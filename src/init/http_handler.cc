@@ -233,7 +233,7 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     std::string res = std::string("ok");
     evbuffer_add(req->buffer_out, res.c_str(), res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
-    ZJC_INFO("http transaction success.");
+    //ZJC_INFO("http transaction success.");
 }
 
 HttpHandler::HttpHandler() {

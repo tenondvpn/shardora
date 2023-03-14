@@ -121,7 +121,7 @@ function PostCode(data) {
         })
     });
 
-    console.log("req data: " + post_data);
+    //console.log("req data: " + post_data);
     post_req.write(post_data);
     post_req.end();
 }
@@ -243,7 +243,7 @@ function create_tx(to, amount, gas_limit, gas_price) {
 
     const message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
         amount_buf, gas_limit_buf, gas_price_buf, step_buf]);
-    var arrByte = Uint8Array.from(message_buf)
+    //var arrByte = Uint8Array.from(message_buf)
     var kechash = keccak256(message_buf)
     var digest = Secp256k1.uint256(kechash, 16)
     const sig = Secp256k1.ecsign(self_private_key, digest)
@@ -251,6 +251,7 @@ function create_tx(to, amount, gas_limit, gas_price) {
     const sigS = Secp256k1.uint256(sig.s, 16)
     const pubX = Secp256k1.uint256(self_public_key.x, 16)
     const pubY = Secp256k1.uint256(self_public_key.y, 16)
+    /*
     const Q = Secp256k1.ecrecover(sig.v, Secp256k1.uint256(sig.r, 16), Secp256k1.uint256(sig.s, 16), digest)
     const isValidSig = Secp256k1.ecverify(pubX, pubY, sigR, sigS, digest)
     if (!isValidSig) {
@@ -265,6 +266,7 @@ function create_tx(to, amount, gas_limit, gas_price) {
         self_public_key.y.toString(16) + ", msg: " + message_buf.toString('hex') +
         ", kechash: " + kechash.toString('hex') + ", sigR:" + sigR.toString(16) +
         ", sigS:" + sigS.toString(16) + "recover pk: 04" + Q.x.toString(16) + Q.y.toString(16));
+        */
     return {
         'gid': gid,
         'pubkey': '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16),
@@ -350,5 +352,7 @@ if (args[0] == 4) {
 }
 
 if (args[0] == 5) {
-    do_transaction(args[1], 100000, 100000, 1);
+    for (var i = 0; i < 10000; i++) {
+        do_transaction(args[1], 100000, 100000, 1);
+    }
 }

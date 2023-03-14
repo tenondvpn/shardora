@@ -135,6 +135,8 @@ private:
     BlockCacheCallback new_block_cache_callback_ = nullptr;
     ElectItem elect_items_[2];
     uint32_t elect_item_idx_ = 0;
+    uint64_t prev_tps_tm_us_ = 0;
+    std::atomic<uint32_t> prev_count_ = 0;
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {
@@ -145,8 +147,6 @@ private:
     transport::MessagePtr* now_msg_ = nullptr;
     bool test_for_prepare_evil_ = false;
     bool test_for_precommit_evil_ = false;
-    uint64_t prev_tps_tm_us_ = 0;
-    std::atomic<uint32_t> prev_count_ = 0;
 #endif
 
     DISALLOW_COPY_AND_ASSIGN(BftManager);

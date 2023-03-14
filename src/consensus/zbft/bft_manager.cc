@@ -70,7 +70,9 @@ int BftManager::Init(
     txs_pools_ = std::make_shared<WaitingTxsPools>(pools_mgr_, block_mgr, tm_block_mgr);
     thread_count_ = thread_count;
     bft_hash_map_ = new std::unordered_map<std::string, ZbftPtr>[thread_count];
+#ifdef ZJC_UNITTEST
     now_msg_ = new transport::MessagePtr[thread_count_];
+#endif
     for (uint8_t i = 0; i < thread_count_; ++i) {
         elect_items_[0].thread_set[i] = nullptr;
         elect_items_[1].thread_set[i] = nullptr;
@@ -122,13 +124,14 @@ void BftManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& membe
         elect_item.thread_set[i] = nullptr;
     }
 
-//     ZJC_DEBUG("new elect block local leader index: %d, leader_count: %d",
-//         elect_item.local_node_pool_mod_num, elect_item.leader_count);
+    ZJC_INFO("new elect block local leader index: %d, leader_count: %d, thread_count_: %d",
+        elect_item.local_node_pool_mod_num, elect_item.leader_count, thread_count_);
     if (elect_item.local_node_pool_mod_num < 0 ||
             elect_item.local_node_pool_mod_num >= elect_item.leader_count) {
         elect_item_idx_ = (elect_item_idx_ + 1) % 2;
         return;
     }
+
 
     auto& thread_set = elect_item.thread_set;
     std::set<uint32_t> leader_pool_set;
@@ -139,13 +142,16 @@ void BftManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& membe
     }
 
     for (uint8_t j = 0; j < thread_count_; ++j) {
+        std::cout << "thread: " << (uint32_t)j << " : ";
         auto thread_item = std::make_shared<PoolTxIndexItem>();
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             if (i % thread_count_ == j && leader_pool_set.find(i) != leader_pool_set.end()) {
                 thread_item->pools.push_back(i);
+                std::cout << (uint32_t)i << " : ";
             }
         }
 
+        std::cout << std::endl;
         thread_item->prev_index = 0;
         thread_set[j] = thread_item;  // ptr change, multi-thread safe
     }
@@ -210,6 +216,7 @@ ZbftPtr BftManager::Start(uint8_t thread_index, const transport::MessagePtr& pre
     }
 
     txs_ptr->thread_index = thread_index;
+    ZJC_INFO("start consensus now.");
     return StartBft(txs_ptr, prepare_msg_ptr);
 }
 
@@ -259,6 +266,7 @@ ZbftPtr BftManager::StartBft(
     }
 
     if (InitZbftPtr(true, bft_ptr) != kConsensusSuccess) {
+        ZJC_ERROR("InitZbftPtr failed!");
         return nullptr;
     }
 
@@ -276,8 +284,8 @@ ZbftPtr BftManager::StartBft(
         return nullptr;
     }
 
-//     ZJC_DEBUG("this node is leader and start bft: %s, pool index: %d",
-//         common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
+    ZJC_INFO("this node is leader and start bft: %s, pool index: %d, thread index: %d",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index(), bft_ptr->thread_index());
     return bft_ptr;
 }
 
@@ -302,7 +310,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     ClearBft(msg_ptr);
-//     ZJC_DEBUG("create response.");
+//     ZJC_INFO("consensus message coming prepare gid: %s thread idx: %d", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(), msg_ptr->thread_idx);
     CreateResponseMessage(!header.zbft().leader(), zbft_vec, msg_ptr, mem_ptr);
 //     ZJC_DEBUG("create response over.");
     if (zbft_vec[0] != nullptr) {
@@ -429,6 +437,7 @@ void BftManager::CreateResponseMessage(
         
     if (msg_ptr->response->header.has_zbft()) {
         auto& elect_item = elect_items_[elect_item_idx_];
+        msg_ptr->response->header.mutable_zbft()->set_pool_index(msg_ptr->header.zbft().pool_index());
         msg_ptr->response->header.mutable_zbft()->set_member_index(
             elect_item.local_node_member_index);
         if (response_to_leader) {
@@ -454,8 +463,6 @@ void BftManager::CreateResponseMessage(
                 msg_ptr->thread_idx,
                 msg_ptr->conn,
                 msg_ptr->response->header);
-//             ZJC_DEBUG("backup send to %s:%d",
-//                 msg_ptr->conn->PeerIp().c_str(), msg_ptr->conn->PeerPort());
         }
 #endif
     } else {
@@ -956,6 +963,7 @@ int BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
 //         ZJC_DEBUG("has prepare  now leader handle gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
         auto bft_ptr = LeaderGetZbft(msg_ptr, bft_msg.prepare_gid());
         if (bft_ptr == nullptr) {
+            ZJC_ERROR("prepare get bft failed: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             return kConsensusError;
         }
 
@@ -996,6 +1004,7 @@ int BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
 //         ZJC_DEBUG("has precommit now leader handle gid: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
         auto bft_ptr = LeaderGetZbft(msg_ptr, bft_msg.precommit_gid());
         if (bft_ptr == nullptr) {
+            ZJC_ERROR("precommit get bft failed: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
             return kConsensusError;
         }
 
@@ -1267,7 +1276,7 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
     block_mgr_->ConsensusAddBlock(thread_idx, queue_item_ptr);
     bft_ptr->set_consensus_status(kConsensusCommited);
     assert(bft_ptr->prpare_block()->precommit_bitmap_size() == zjc_block->precommit_bitmap_size());
-#ifdef ZJC_UNITTEST
+    // for test
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tps_tm_us_ == 0) {
         prev_tps_tm_us_ = now_tm_us;
@@ -1279,8 +1288,6 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         prev_tps_tm_us_ = now_tm_us;
         prev_count_ = 0;
     }
-#endif
-    //     ZJC_DEBUG("add new block success");
 }
 
 int BftManager::LeaderCallCommit(

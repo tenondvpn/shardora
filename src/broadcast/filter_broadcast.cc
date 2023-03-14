@@ -181,7 +181,7 @@ void FilterBroadcast::Send(
         const std::vector<dht::NodePtr>& nodes) {
     dht::DhtPtr readobly_dht = dht_ptr->readonly_hash_sort_dht();
     for (uint32_t i = 0; i < nodes.size(); ++i) {
-        BROAD_DEBUG("random send to: %s:%d", nodes[i]->public_ip.c_str(), nodes[i]->public_port);
+        BROAD_INFO("random send to: %s:%d", nodes[i]->public_ip.c_str(), nodes[i]->public_port);
         transport::TcpTransport::Instance()->Send(
             msg_ptr->thread_idx,
             nodes[i]->public_ip,
@@ -219,7 +219,7 @@ void FilterBroadcast::LayerSend(
             broad_param->set_layer_right(GetLayerRight(src_right, message));
         }
 
-        BROAD_DEBUG("layer send to %s:%d", nodes[i]->public_ip.c_str(), nodes[i]->public_port);
+        BROAD_INFO("layer send to %s:%d", nodes[i]->public_ip.c_str(), nodes[i]->public_port);
         transport::TcpTransport::Instance()->Send(
             msg_ptr->thread_idx,
             nodes[i]->public_ip,

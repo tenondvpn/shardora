@@ -92,7 +92,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-//         ZJC_DEBUG("success add tx to queue: %d", msg_ptr->address_info->pool_index());
+//         ZJC_INFO("success add tx to queue: %d", msg_ptr->address_info->pool_index());
     } else {
         // check valid
         msg_queues_[0].push(msg_ptr);
@@ -108,7 +108,6 @@ void TxPoolManager::SaveStorageToDb(const transport::protobuf::Header& msg) {
 }
 
 void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr) {
-    ZJC_DEBUG("call add tx: %d", pool_index);
     if (msg_ptr->header.tx_proto().step() >= pools::protobuf::StepType_ARRAYSIZE) {
         assert(false);
         return;
@@ -125,7 +124,6 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
         return;
     }
 
-    ZJC_DEBUG("success add tx: %d", pool_index);
     tx_pool_[pool_index].AddTx(tx_ptr);
 }
 
@@ -149,7 +147,6 @@ void TxPoolManager::GetTx(
             break;
         }
 
-//         ZJC_DEBUG("succcess get tx: %d", pool_index);
         res_map[tx->tx_hash] = tx;
         if (res_map.size() >= count) {
             break;

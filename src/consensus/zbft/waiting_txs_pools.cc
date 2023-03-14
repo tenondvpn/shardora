@@ -140,7 +140,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
             return nullptr;
         }
 
-        ZJC_DEBUG("success get timeblock tx.");
         return txs_item;
     }
 

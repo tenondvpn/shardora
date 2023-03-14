@@ -137,7 +137,7 @@ int NetworkInit::Init(int argc, char** argv) {
         tm_block_mgr_,
         db_,
         nullptr,
-        common::GlobalInfo::Instance()->message_handler_thread_count(),
+        common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
         std::bind(&NetworkInit::AddBlockItemToCache, this,
             std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     if (bft_init_res != consensus::kConsensusSuccess) {
