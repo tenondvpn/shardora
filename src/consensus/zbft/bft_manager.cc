@@ -216,7 +216,6 @@ ZbftPtr BftManager::Start(uint8_t thread_index, const transport::MessagePtr& pre
     }
 
     txs_ptr->thread_index = thread_index;
-    ZJC_INFO("start consensus now.");
     return StartBft(txs_ptr, prepare_msg_ptr);
 }
 
