@@ -205,12 +205,12 @@ public:
                 std::chrono::microseconds(kBftLeaderPrepareWaitPeriod));
     }
 
-    std::shared_ptr<block::protobuf::Block>& prpare_block() {
+    std::shared_ptr<block::protobuf::Block>& prepare_block() {
         return prpare_block_;
     }
 
-    void set_prepare_block(std::shared_ptr<block::protobuf::Block> prpare_block) {
-        prpare_block_ = prpare_block;
+    void set_prepare_block(std::shared_ptr<block::protobuf::Block> prepare_block) {
+        prpare_block_ = prepare_block;
     }
 
     bool aggree() {

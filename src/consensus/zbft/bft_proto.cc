@@ -43,6 +43,7 @@ bool BftProto::LeaderCreatePrepare(
         auto& bls_precommit_sign = prev_btr->bls_precommit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
+        bft_msg.set_prepare_hash(prev_btr->local_prepare_hash());
     }
 
     return true;
@@ -112,6 +113,7 @@ bool BftProto::LeaderCreatePreCommit(
         auto& bls_precommit_sign = bft_ptr->bls_precommit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
+        bft_msg.set_prepare_hash(bft_ptr->local_prepare_hash());
     }
 
     return true;
@@ -162,7 +164,7 @@ bool BftProto::LeaderCreateCommit(
         bft_msg.add_bitmap(bitmap_data[i]);
     }
 
-    std::string hash_to_sign = bft_ptr->prpare_block()->hash();
+    std::string hash_to_sign = bft_ptr->prepare_block()->hash();
     if (agree) {
         auto& bls_commit_sign = bft_ptr->bls_commit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->X));

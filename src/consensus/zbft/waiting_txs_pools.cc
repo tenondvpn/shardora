@@ -23,7 +23,7 @@ void WaitingTxsPools::TxOver(std::shared_ptr<Zbft>& zbft_ptr) {
     if (zbft_ptr->is_synced_block()) {
         assert(false);
         // just over txs in block and recover other
-        auto& zjc_block = zbft_ptr->prpare_block();
+        auto& zjc_block = zbft_ptr->prepare_block();
         std::map<std::string, pools::TxItemPtr> recover_txs;
         std::map<std::string, pools::TxItemPtr> over_txs;
         std::unordered_set<std::string> block_gid_set;
@@ -77,7 +77,7 @@ uint64_t WaitingTxsPools::latest_height(uint32_t pool_index) const {
         return pool_mgr_->latest_height(pool_index);
     }
 
-    return pipeline_pools_[pool_index].back()->prpare_block()->height();
+    return pipeline_pools_[pool_index].back()->prepare_block()->height();
 }
 
 std::string WaitingTxsPools::latest_hash(uint32_t pool_index) const {
@@ -85,7 +85,7 @@ std::string WaitingTxsPools::latest_hash(uint32_t pool_index) const {
         return pool_mgr_->latest_hash(pool_index);
     }
 
-    return pipeline_pools_[pool_index].back()->prpare_block()->hash();
+    return pipeline_pools_[pool_index].back()->prepare_block()->hash();
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(

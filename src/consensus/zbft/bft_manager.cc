@@ -332,7 +332,7 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
         if (bft_ptr == nullptr) {
             // verify and add new block
         } else {
-            if (bft_ptr->prpare_block() == nullptr) {
+            if (bft_ptr->prepare_block() == nullptr) {
                 auto block_hash = GetBlockHash(bft_msg.block());
                 if (block_hash == bft_ptr->local_prepare_hash()) {
                     bft_ptr->set_prepare_block(std::make_shared<block::protobuf::Block>(bft_msg.block()));
@@ -340,7 +340,7 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
             }
         }
     } else {
-        if (bft_ptr->prpare_block() == nullptr) {
+        if (bft_ptr->prepare_block() == nullptr) {
             return;
         }
 
@@ -353,7 +353,7 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
         bft_msg.set_sync_block(true);
         bft_msg.set_precommit_gid(bft_msg.precommit_gid());
         bft_msg.set_pool_index(bft_ptr->pool_index());
-        *bft_msg.mutable_block() = *bft_ptr->prpare_block();
+        *bft_msg.mutable_block() = *bft_ptr->prepare_block();
         transport::TcpTransport::Instance()->Send(
             msg_ptr->thread_idx,
             msg_ptr->conn,
@@ -1200,7 +1200,7 @@ int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePt
     bft_vec[1] = bft_ptr;
     auto prev_ptr = bft_ptr->pipeline_prev_zbft_ptr();
     if (prev_ptr != nullptr) {
-        if (prev_ptr->local_prepare_hash() == prev_ptr->prpare_block()->hash()) {
+        if (prev_ptr->local_prepare_hash() == prev_ptr->prepare_block()->hash()) {
             HandleLocalCommitBlock(msg_ptr->thread_idx, prev_ptr);
         } else {
             assert(false);
@@ -1337,7 +1337,7 @@ int BftManager::LeaderCallCommitOppose(
 }
 
 void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
-    auto& zjc_block = bft_ptr->prpare_block();
+    auto& zjc_block = bft_ptr->prepare_block();
     zjc_block->set_pool_index(bft_ptr->pool_index());
     const auto& prepare_bitmap_data = bft_ptr->prepare_bitmap().data();
     std::vector<uint64_t> bitmap_data;
@@ -1358,7 +1358,7 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         queue_item_ptr->db_batch);
     block_mgr_->ConsensusAddBlock(thread_idx, queue_item_ptr);
     bft_ptr->set_consensus_status(kConsensusCommited);
-    assert(bft_ptr->prpare_block()->precommit_bitmap_size() == zjc_block->precommit_bitmap_size());
+    assert(bft_ptr->prepare_block()->precommit_bitmap_size() == zjc_block->precommit_bitmap_size());
     // for test
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tps_tm_us_ == 0) {
@@ -1386,7 +1386,7 @@ int BftManager::LeaderCallCommit(
         return kConsensusError;
     }
 
-    if (bft_ptr->local_prepare_hash() == bft_ptr->prpare_block()->hash()) {
+    if (bft_ptr->local_prepare_hash() == bft_ptr->prepare_block()->hash()) {
         HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
     } else {
         // sync block from neighbor nodes
@@ -1440,12 +1440,11 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
     }
 
     bft_ptr->set_bls_commit_agg_sign(sign);
-    if (bft_ptr->local_prepare_hash() == bft_msg.prepare_hash()) {
+    if (bft_ptr->prepare_block() != nullptr) {
         HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
     } else {
-//         ZJC_DEBUG("hash not equal: %s, %s",
-//             common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-//             common::Encode::HexEncode(bft_msg.prepare_hash()).c_str());
+        ZJC_DEBUG("should sync block now: %s.",
+            common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
         assert(false);
     }
 
