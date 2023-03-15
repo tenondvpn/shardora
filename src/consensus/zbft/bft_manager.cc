@@ -321,7 +321,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 }
 
-void BftManager::HandleSyncConsensusBlock(transport::MessagePtr& msg_ptr) {
+void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) {
     auto& bft_msg = msg_ptr->header.zbft();
     auto bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
     if (bft_ptr == nullptr) {
@@ -353,9 +353,9 @@ void BftManager::HandleSyncConsensusBlock(transport::MessagePtr& msg_ptr) {
         bft_msg.set_sync_block(true);
         bft_msg.set_precommit_gid(bft_msg.precommit_gid());
         bft_msg.set_pool_index(bft_ptr->pool_index());
-        *bft_msg->mutable_block() = *bft_ptr->prpare_block();
+        *bft_msg.mutable_block() = *bft_ptr->prpare_block();
         transport::TcpTransport::Instance()->Send(
-            thread_idx,
+            msg_ptr->thread_idx,
             msg_ptr->conn,
             msg);
     }
@@ -365,7 +365,7 @@ void BftManager::SyncConsensusBlock(
         uint8_t thread_idx,
         uint32_t pool_index,
         const std::string& bft_gid) {
-    dht::BaseDhtPtr dht = DhtManager::Instance()->GetDht(
+    dht::BaseDhtPtr dht = network::DhtManager::Instance()->GetDht(
         common::GlobalInfo::Instance()->network_id());
     dht::DhtPtr readobly_dht = dht->readonly_hash_sort_dht();
     std::vector<uint32_t> pos_vec;

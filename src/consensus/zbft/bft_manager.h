@@ -93,7 +93,7 @@ private:
     void ClearBft(const transport::MessagePtr& msg_ptr);
     ZbftPtr LeaderGetZbft(const transport::MessagePtr& msg_ptr, const std::string& gid);
     void SyncConsensusBlock(uint8_t thread_idx, uint32_t pool_index, const std::string& bft_gid);
-    void HandleSyncConsensusBlock(transport::MessagePtr& msg_ptr);
+    void HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr);
     pools::TxItemPtr CreateFromTx(transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
     }

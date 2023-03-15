@@ -341,10 +341,6 @@ public:
                 ++hiter->second;
             }
 
-            if (iter->second.valid_index.size() < kSyncFromOtherCount) {
-                iter->second.valid_index.push_back(index);
-            }
-
             return iter->second->precommit_aggree_set_.size();
         }
     }
