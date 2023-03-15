@@ -45,7 +45,7 @@ namespace protobuf_protos_2ftransport_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2ftransport_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_BroadcastParam;
 }  // namespace protobuf_protos_2ftransport_2eproto
 namespace protobuf_protos_2fzbft_2eproto {
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fzbft_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_ZbftMessage;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fzbft_2eproto ::google::protobuf::internal::SCCInfo<2> scc_info_ZbftMessage;
 }  // namespace protobuf_protos_2fzbft_2eproto
 namespace zjchain {
 namespace transport {
