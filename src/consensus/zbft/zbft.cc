@@ -368,7 +368,7 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
             is_synced_block_ = true;
             set_prepare_hash(prpare_hash);
             CreatePrecommitVerifyHash();
-            prpare_block_ = nullptr;
+            prepare_block_ = nullptr;
         }
 
         set_precoimmit_hash(common::Hash::keccak256(msg_hash_src));
@@ -602,7 +602,7 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     zjc_block.set_electblock_height(elect_height_);
     zjc_block.set_leader_index(leader_index_);
     zjc_block.set_hash(GetBlockHash(zjc_block));
-    prpare_block_ = std::make_shared<block::protobuf::Block>(zjc_block);
+    prepare_block_ = std::make_shared<block::protobuf::Block>(zjc_block);
     tx_bft.set_prepare_final_hash(zjc_block.hash());
     tx_bft.set_height(zjc_block.height());
     tx_bft.set_tx_type(txs_ptr_->tx_type);

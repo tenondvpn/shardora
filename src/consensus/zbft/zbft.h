@@ -206,11 +206,11 @@ public:
     }
 
     std::shared_ptr<block::protobuf::Block>& prepare_block() {
-        return prpare_block_;
+        return prepare_block_;
     }
 
     void set_prepare_block(std::shared_ptr<block::protobuf::Block> prepare_block) {
-        prpare_block_ = prepare_block;
+        prepare_block_ = prepare_block;
     }
 
     bool aggree() {
@@ -410,7 +410,7 @@ protected:
     std::string prepare_hash_;
     std::chrono::steady_clock::time_point prepare_timeout_;
     std::chrono::steady_clock::time_point precommit_timeout_;
-    std::shared_ptr<block::protobuf::Block> prpare_block_{ nullptr };
+    std::shared_ptr<block::protobuf::Block> prepare_block_{ nullptr };
     std::unordered_set<std::string> precommit_oppose_set_;
     std::unordered_set<std::string> commit_aggree_set_;
     std::unordered_set<std::string> commit_oppose_set_;

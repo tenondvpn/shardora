@@ -336,6 +336,8 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
                 auto block_hash = GetBlockHash(bft_msg.block());
                 if (block_hash == bft_ptr->local_prepare_hash()) {
                     bft_ptr->set_prepare_block(std::make_shared<block::protobuf::Block>(bft_msg.block()));
+                    ZJC_DEBUG("receive block hash: %s",
+                        common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
                 }
             }
         }
@@ -358,6 +360,8 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
             msg_ptr->thread_idx,
             msg_ptr->conn,
             msg);
+        ZJC_DEBUG("send res to block hash: %s",
+            common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
     }
 }
 
@@ -393,6 +397,9 @@ void BftManager::SyncConsensusBlock(
             (*readobly_dht)[pos_vec[i]]->public_ip,
             (*readobly_dht)[pos_vec[i]]->public_port,
             msg);
+        ZJC_DEBUG("send sync block %s:%d",
+            (*readobly_dht)[pos_vec[i]]->public_ip.c_str(),
+            (*readobly_dht)[pos_vec[i]]->public_port);
     }
 }
 
@@ -873,8 +880,13 @@ int BftManager::CheckPrecommit(const transport::MessagePtr& msg_ptr) {
             // sync from other nodes
             bft_ptr->set_prepare_hash(bft_msg.prepare_hash());
             bft_ptr->CreatePrecommitVerifyHash();
-            ZJC_INFO("use leader prepare hash: %s", common::Encode::HexEncode(bft_msg.prepare_hash()).c_str());
+            ZJC_INFO("use leader prepare hash: %s",
+                common::Encode::HexEncode(bft_msg.prepare_hash()).c_str());
             bft_ptr->set_prepare_block(nullptr);
+            SyncConsensusBlock(
+                msg_ptr->thread_idx,
+                bft_ptr->pool_index(),
+                bft_msg.precommit_gid());
         }
 
 //         ZJC_DEBUG("Backup CheckPrecommit: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
@@ -931,15 +943,14 @@ int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg
             }
         }
 
-        if (/*bft_ptr->local_prepare_hash() == bft_msg.prepare_hash()*/true) {
+        if (bft_ptr->prepare_block() != nullptr) {
 //             ZJC_DEBUG("backup CheckCommit success");
             HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
         } else {
             // sync block from neighbor nodes
+            ZJC_ERROR("backup commit block failed should sync: %s",
+                common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
             assert(false);
-            ZJC_ERROR("backup commit block failed, %s:%s",
-                common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-                common::Encode::HexEncode(bft_msg.prepare_hash()).c_str());
         }
     } while (0);
     
@@ -1070,6 +1081,13 @@ int BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
                 member_ptr->id);
 //             ZJC_DEBUG("LeaderHandleZbftMessage res: %d, mem: %d", res, bft_msg.member_index());
             if (res == kConsensusAgree) {
+                if (bft_ptr->prepare_block() == nullptr) {
+                    SyncConsensusBlock(
+                        msg_ptr->thread_idx,
+                        bft_ptr->pool_index(),
+                        bft_msg.prepare_gid());
+                }
+
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
                 msg_ptr->response->header.mutable_zbft()->set_agree_commit(true);
                 LeaderCallPrecommit(bft_ptr, msg_ptr);
@@ -1200,9 +1218,11 @@ int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePt
     bft_vec[1] = bft_ptr;
     auto prev_ptr = bft_ptr->pipeline_prev_zbft_ptr();
     if (prev_ptr != nullptr) {
-        if (prev_ptr->local_prepare_hash() == prev_ptr->prepare_block()->hash()) {
+        if (prev_ptr->prepare_block() != nullptr) {
             HandleLocalCommitBlock(msg_ptr->thread_idx, prev_ptr);
         } else {
+            ZJC_ERROR("leader must sync block: %s",
+                common::Encode::HexEncode(prev_ptr->local_prepare_hash()).c_str());
             assert(false);
         }
 
