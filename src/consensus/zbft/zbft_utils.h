@@ -105,6 +105,7 @@ static const uint32_t kBftLeaderPrepareWaitPeriod = 5u * 1000u * 1000u;
 static const uint32_t kPrevTransportVersion = 0;
 static const uint32_t kTransportVersion = 1;
 static const int64_t kChangeLeaderTimePeriodSec = 30l;
+static const uint32_t kSyncFromOtherCount = 3u;
 
 std::string StatusToString(uint32_t status);
 // hash128(gid + from + to + amount + type + attrs(k:v))

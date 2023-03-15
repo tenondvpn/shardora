@@ -209,6 +209,10 @@ public:
         return prpare_block_;
     }
 
+    void set_prepare_block(std::shared_ptr<block::protobuf::Block> prpare_block) {
+        prpare_block_ = prpare_block;
+    }
+
     bool aggree() {
         return aggree_;
     }
@@ -337,7 +341,7 @@ public:
                 ++hiter->second;
             }
 
-            if (iter->second.valid_index.size() < 3) {
+            if (iter->second.valid_index.size() < kSyncFromOtherCount) {
                 iter->second.valid_index.push_back(index);
             }
 

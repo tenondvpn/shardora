@@ -32,5 +32,6 @@ message ZbftMessage {
     optional bytes bls_sign_y = 16;
     repeated uint64 commit_bitmap = 17;
     optional bytes prepare_hash = 18;
-    repeated uint32 sync_block_members = 19;
+    optional block.protobuf.Block block = 19;
+    optional bool sync_block = 20;
 }

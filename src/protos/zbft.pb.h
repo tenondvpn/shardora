@@ -382,6 +382,18 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
       mutable_commit_bitmap();
 
+  // repeated uint32 sync_block_members = 19;
+  int sync_block_members_size() const;
+  void clear_sync_block_members();
+  static const int kSyncBlockMembersFieldNumber = 19;
+  ::google::protobuf::uint32 sync_block_members(int index) const;
+  void set_sync_block_members(int index, ::google::protobuf::uint32 value);
+  void add_sync_block_members(::google::protobuf::uint32 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+      sync_block_members() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+      mutable_sync_block_members();
+
   // optional bytes prepare_gid = 1;
   bool has_prepare_gid() const;
   void clear_prepare_gid();
@@ -595,6 +607,7 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > bitmap_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > commit_bitmap_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > sync_block_members_;
   ::google::protobuf::internal::ArenaStringPtr prepare_gid_;
   ::google::protobuf::internal::ArenaStringPtr precommit_gid_;
   ::google::protobuf::internal::ArenaStringPtr commit_gid_;
@@ -1666,6 +1679,36 @@ inline void ZbftMessage::set_allocated_prepare_hash(::std::string* prepare_hash)
   }
   prepare_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), prepare_hash);
   // @@protoc_insertion_point(field_set_allocated:zjchain.zbft.protobuf.ZbftMessage.prepare_hash)
+}
+
+// repeated uint32 sync_block_members = 19;
+inline int ZbftMessage::sync_block_members_size() const {
+  return sync_block_members_.size();
+}
+inline void ZbftMessage::clear_sync_block_members() {
+  sync_block_members_.Clear();
+}
+inline ::google::protobuf::uint32 ZbftMessage::sync_block_members(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.sync_block_members)
+  return sync_block_members_.Get(index);
+}
+inline void ZbftMessage::set_sync_block_members(int index, ::google::protobuf::uint32 value) {
+  sync_block_members_.Set(index, value);
+  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.sync_block_members)
+}
+inline void ZbftMessage::add_sync_block_members(::google::protobuf::uint32 value) {
+  sync_block_members_.Add(value);
+  // @@protoc_insertion_point(field_add:zjchain.zbft.protobuf.ZbftMessage.sync_block_members)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+ZbftMessage::sync_block_members() const {
+  // @@protoc_insertion_point(field_list:zjchain.zbft.protobuf.ZbftMessage.sync_block_members)
+  return sync_block_members_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+ZbftMessage::mutable_sync_block_members() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.zbft.protobuf.ZbftMessage.sync_block_members)
+  return &sync_block_members_;
 }
 
 #ifdef __GNUC__

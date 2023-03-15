@@ -368,6 +368,7 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
             is_synced_block_ = true;
             set_prepare_hash(prpare_hash);
             CreatePrecommitVerifyHash();
+            prpare_block_ = nullptr;
         }
 
         set_precoimmit_hash(common::Hash::keccak256(msg_hash_src));
