@@ -17,6 +17,7 @@ FilterBroadcast::FilterBroadcast() {}
 FilterBroadcast::~FilterBroadcast() {}
 
 void FilterBroadcast::Broadcasting(
+        uint8_t thread_idx,
         dht::BaseDhtPtr& dht_ptr,
         const transport::MessagePtr& msg_ptr) {
     assert(dht_ptr);
@@ -36,14 +37,14 @@ void FilterBroadcast::Broadcasting(
             bloomfilter->Add((*iter)->id_hash);
         }
 
-        LayerSend(dht_ptr, msg_ptr, nodes);
+        LayerSend(thread_idx, dht_ptr, msg_ptr, nodes);
     } else {
         auto nodes = GetRandomFilterNodes(dht_ptr, bloomfilter, message);
         for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
             bloomfilter->Add((*iter)->id_hash);
         }
 
-        Send(dht_ptr, msg_ptr, nodes);
+        Send(thread_idx, dht_ptr, msg_ptr, nodes);
     }
 }
 
@@ -176,6 +177,7 @@ uint32_t FilterBroadcast::BinarySearch(dht::Dht& dht, uint64_t val) {
 }
 
 void FilterBroadcast::Send(
+        uint8_t thread_idx,
         dht::BaseDhtPtr& dht_ptr,
         const transport::MessagePtr& msg_ptr,
         const std::vector<dht::NodePtr>& nodes) {
@@ -183,7 +185,7 @@ void FilterBroadcast::Send(
     for (uint32_t i = 0; i < nodes.size(); ++i) {
 //         BROAD_INFO("random send to: %s:%d", nodes[i]->public_ip.c_str(), nodes[i]->public_port);
         transport::TcpTransport::Instance()->Send(
-            msg_ptr->thread_idx,
+            thread_idx,
             nodes[i]->public_ip,
             nodes[i]->public_port,
             msg_ptr->header);
@@ -191,6 +193,7 @@ void FilterBroadcast::Send(
 }
 
 void FilterBroadcast::LayerSend(
+        uint8_t thread_idx,
         dht::BaseDhtPtr& dht_ptr,
         const transport::MessagePtr& msg_ptr,
         std::vector<dht::NodePtr>& nodes) {
@@ -221,7 +224,7 @@ void FilterBroadcast::LayerSend(
 
 //         BROAD_INFO("layer send to %s:%d", nodes[i]->public_ip.c_str(), nodes[i]->public_port);
         transport::TcpTransport::Instance()->Send(
-            msg_ptr->thread_idx,
+            thread_idx,
             nodes[i]->public_ip,
             nodes[i]->public_port,
             message);

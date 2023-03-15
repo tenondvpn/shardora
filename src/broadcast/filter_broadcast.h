@@ -13,29 +13,32 @@ public:
     FilterBroadcast();
     virtual ~FilterBroadcast();
     virtual void Broadcasting(
-            dht::BaseDhtPtr& dht_ptr,
-            const transport::MessagePtr& message);
+        uint8_t thread_idx,
+        dht::BaseDhtPtr& dht_ptr,
+        const transport::MessagePtr& message);
 
 private:
     std::shared_ptr<common::BloomFilter> GetBloomfilter(
-            const transport::protobuf::Header& message);
+        const transport::protobuf::Header& message);
     std::vector<dht::NodePtr> GetlayerNodes(
-            dht::BaseDhtPtr& dht_ptr,
-            std::shared_ptr<common::BloomFilter>& bloomfilter,
-            const transport::protobuf::Header& message);
+        dht::BaseDhtPtr& dht_ptr,
+        std::shared_ptr<common::BloomFilter>& bloomfilter,
+        const transport::protobuf::Header& message);
     std::vector<dht::NodePtr> GetRandomFilterNodes(
-            dht::BaseDhtPtr& dht_ptr,
-            std::shared_ptr<common::BloomFilter>& bloomfilter,
-            const transport::protobuf::Header& message);
+        dht::BaseDhtPtr& dht_ptr,
+        std::shared_ptr<common::BloomFilter>& bloomfilter,
+        const transport::protobuf::Header& message);
     uint32_t BinarySearch(dht::Dht& dht, uint64_t val);
     void LayerSend(
-            dht::BaseDhtPtr& dht_ptr,
-            const transport::MessagePtr& message,
-            std::vector<dht::NodePtr>& nodes);
+        uint8_t thread_idx,
+        dht::BaseDhtPtr& dht_ptr,
+        const transport::MessagePtr& message,
+        std::vector<dht::NodePtr>& nodes);
     void Send(
-            dht::BaseDhtPtr& dht_ptr,
-            const transport::MessagePtr& message,
-            const std::vector<dht::NodePtr>& nodes);
+        uint8_t thread_idx,
+        dht::BaseDhtPtr& dht_ptr,
+        const transport::MessagePtr& message,
+        const std::vector<dht::NodePtr>& nodes);
     uint64_t GetLayerLeft(uint64_t layer_left, const transport::protobuf::Header& message);
     uint64_t GetLayerRight(uint64_t layer_right, const transport::protobuf::Header& message);
 

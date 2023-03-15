@@ -2,16 +2,121 @@
 #include <queue>
 #include <vector>
 
-#include "init/network_init.h"
+#include "common/random.h"
+#include "db/db.h"
+#include "dht/dht_key.h"
+#include "pools/tx_utils.h"
+#include "security/ecdsa/ecdsa.h"
+#include "transport/multi_thread.h"
+#include "transport/tcp_transport.h"
+
+using namespace zjchain;
+static void WriteDefaultLogConf() {
+    FILE* file = NULL;
+    file = fopen("./log4cpp.properties", "w");
+    if (file == NULL) {
+        return;
+    }
+    std::string log_str = ("# log4cpp.properties\n"
+        "log4cpp.rootCategory = DEBUG\n"
+        "log4cpp.category.sub1 = DEBUG, programLog\n"
+        "log4cpp.appender.rootAppender = ConsoleAppender\n"
+        "log4cpp.appender.rootAppender.layout = PatternLayout\n"
+        "log4cpp.appender.rootAppender.layout.ConversionPattern = %d [%p] %m%n\n"
+        "log4cpp.appender.programLog = RollingFileAppender\n"
+        "log4cpp.appender.programLog.fileName = ./txcli.log\n") +
+        std::string("log4cpp.appender.programLog.maxFileSize = 1073741824\n"
+            "log4cpp.appender.programLog.maxBackupIndex = 1\n"
+            "log4cpp.appender.programLog.layout = PatternLayout\n"
+            "log4cpp.appender.programLog.layout.ConversionPattern = %d [%p] %m%n\n");
+    fwrite(log_str.c_str(), log_str.size(), 1, file);
+    fclose(file);
+}
+
+static transport::MessagePtr CreateTransactionWithAttr(
+        std::shared_ptr<security::Security>& security,
+        const std::string& gid,
+        const std::string& from_prikey,
+        const std::string& to,
+        const std::string& key,
+        const std::string& val,
+        uint64_t amount,
+        uint64_t gas_limit,
+        uint64_t gas_price,
+        int32_t des_net_id) {
+    security->SetPrivateKey(from_prikey);
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    transport::protobuf::Header& msg = msg_ptr->header;
+    dht::DhtKeyManager dht_key(des_net_id);
+    msg.set_src_sharding_id(des_net_id);
+    msg.set_des_dht_key(dht_key.StrKey());
+    msg.set_type(common::kPoolsMessage);
+    msg.set_hop_count(0);
+    auto broadcast = msg.mutable_broadcast();
+    broadcast->set_hop_limit(10);
+    auto new_tx = msg.mutable_tx_proto();
+    new_tx->set_gid(gid);
+    new_tx->set_pubkey(security->GetPublicKey());
+    new_tx->set_step(pools::protobuf::kNormalFrom);
+    new_tx->set_to(to);
+    new_tx->set_amount(amount);
+    new_tx->set_gas_limit(gas_limit);
+    new_tx->set_gas_price(gas_price);
+    if (!key.empty()) {
+        new_tx->set_key(key);
+        if (!val.empty()) {
+            new_tx->set_value(val);
+        }
+    }
+
+    auto tx_hash = pools::GetTxMessageHash(*new_tx);
+    std::string sign;
+    if (security->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
+        assert(false);
+        return nullptr;
+    }
+
+    msg.set_sign(sign);
+    return msg_ptr;
+}
 
 int main(int argc, char** argv) {
-    log4cpp::PropertyConfigurator::configure("./conf/log4cpp.properties");
-    zjchain::init::NetworkInit init;
-    if (init.Init(argc, argv) != 0) {
-        ZJC_ERROR("init network error!");
+    WriteDefaultLogConf();
+    log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
+    transport::MultiThreadHandler net_handler;
+    std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+    auto db_ptr = std::make_shared<db::Db>();
+    if (net_handler.Init(db_ptr) != 0) {
+        std::cout << "init net handler failed!" << std::endl;
         return 1;
     }
 
-    init.Destroy();
+    if (transport::TcpTransport::Instance()->Init(
+            "127.0.0.1:13791",
+            128,
+            false,
+            &net_handler) != 0) {
+        std::cout << "init tcp client failed!" << std::endl;
+        return 1;
+    }
+    
+    if (transport::TcpTransport::Instance()->Start(false) != 0) {
+        std::cout << "start tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    std::string gid = common::Random::RandomString(32);
+    std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
+    std::string to = common::Encode::HexDecode("d9ec5aff3001dece14e1f4a35a39ed506bd6274a");
+    for (uint32_t i = 0; i < 1000; ++i) {
+        uint32_t* gid_int = (uint32_t*)gid.data();
+        gid_int[0] = i;
+        auto tx_msg_ptr = CreateTransactionWithAttr(security, gid, prikey, to, "", "", 100000, 10000000, (1000 - i), 3);
+        if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 21001, tx_msg_ptr->header) != 0) {
+            std::cout << "send tcp client failed!" << std::endl;
+            return 1;
+        }
+    }
+
     return 0;
 }

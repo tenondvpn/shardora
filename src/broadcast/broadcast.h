@@ -22,8 +22,9 @@ namespace broadcast {
 class Broadcast {
 public:
     virtual void Broadcasting(
-            dht::BaseDhtPtr& dht_ptr,
-            const transport::MessagePtr& message) = 0;
+        uint8_t thread_idx,
+        dht::BaseDhtPtr& dht_ptr,
+        const transport::MessagePtr& message) = 0;
 
 protected:
     Broadcast();

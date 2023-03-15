@@ -15,12 +15,13 @@ Broadcast::Broadcast() {}
 Broadcast::~Broadcast() {}
 
 void Broadcast::Send(
+        uint8_t thread_idx,
         dht::BaseDhtPtr& dht_ptr,
         const transport::MessagePtr& msg_ptr,
         const std::vector<dht::NodePtr>& nodes) {
     for (uint32_t i = 0; i < nodes.size(); ++i) {
         transport::TcpTransport::Instance()->Send(
-            msg_ptr->thread_idx,
+            thread_idx,
             nodes[i]->public_ip,
             nodes[i]->public_port,
             msg_ptr->header);

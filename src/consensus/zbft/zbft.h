@@ -326,6 +326,7 @@ public:
             item->backup_precommit_signs_[index] = sign;
             item->height_count_map[height] = 1;
             prepare_block_map_[prepare_hash] = item;
+            assert(prepare_block_map_.size() == 1);
             return 1;
         } else {
             iter->second->backup_sign.push_back(sign);

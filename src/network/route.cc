@@ -62,7 +62,7 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
 
     if (dht_ptr != nullptr) {
         if (message.has_broadcast()) {
-            broadcast_->Broadcasting(dht_ptr, msg_ptr);
+            broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
         } else {
             dht_ptr->SendToClosestNode(msg_ptr);
             if (message.type() == common::kElectMessage) {
@@ -103,11 +103,12 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
         return;
     }
 
-    message_processor_[header.type()](header_ptr);
     if (header.has_broadcast()) {
         broadcast_queue_[header_ptr->thread_idx].push(header_ptr);
         broadcast_con_.notify_one();
     }
+
+    message_processor_[header.type()](header_ptr);
 }
 
 void Route::Broadcasting() {
@@ -118,8 +119,7 @@ void Route::Broadcasting() {
             while (broadcast_queue_[i].size() > 0) {
                 transport::MessagePtr msg_ptr;
                 if (broadcast_queue_[i].pop(&msg_ptr)) {
-                    msg_ptr->thread_idx = broadcast_thread_index_;
-                    Broadcast(msg_ptr);
+                    Broadcast(broadcast_thread_index_, msg_ptr);
                     if (!has_data) {
                         has_data = true;
                     }
@@ -176,7 +176,7 @@ Route::~Route() {
     Destroy();
 }
 
-void Route::Broadcast(const transport::MessagePtr& msg_ptr) {
+void Route::Broadcast(uint8_t thread_idx, const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     if (!header.has_broadcast() || !header.has_des_dht_key()) {
         return;
@@ -203,7 +203,7 @@ void Route::Broadcast(const transport::MessagePtr& msg_ptr) {
         }
     }
 
-    broadcast_->Broadcasting(des_dht, msg_ptr);
+    broadcast_->Broadcasting(thread_idx, des_dht, msg_ptr);
 }
 
 dht::BaseDhtPtr Route::GetDht(const std::string& dht_key) {
