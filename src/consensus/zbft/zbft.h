@@ -314,6 +314,14 @@ public:
         handle_last_error_msg_ = error_msg;
     }
 
+    bool PrepareHashNotConsensus() {
+        if (consensus_prepare_all_count_ - consensus_prepare_max_count_ >= min_oppose_member_count_) {
+            return true;
+        }
+
+        return false;
+    }
+
     int32_t SetPrepareBlock(
             const std::string& id,
             uint32_t index,
@@ -329,6 +337,11 @@ public:
             item->backup_precommit_signs_[index] = sign;
             item->height_count_map[height] = 1;
             prepare_block_map_[prepare_hash] = item;
+            if (consensus_prepare_max_count_ == 0) {
+                consensus_prepare_max_count_ = 1;
+            }
+
+            ++consensus_prepare_all_count_;
             return 1;
         } else {
             iter->second->precommit_aggree_set_.insert(id);
@@ -341,6 +354,11 @@ public:
                 ++hiter->second;
             }
 
+            if (iter->second->precommit_aggree_set_.size() > consensus_prepare_max_count_) {
+                consensus_prepare_max_count_ = iter->second->precommit_aggree_set_.size();
+            }
+
+            ++consensus_prepare_all_count_;
             return iter->second->precommit_aggree_set_.size();
         }
     }
@@ -452,6 +470,8 @@ protected:
     bool is_synced_block_ = false;
     std::vector<uint32_t> valid_index_;
     uint64_t height_ = { common::kInvalidUint64 };
+    uint32_t consensus_prepare_max_count_ = 0;
+    uint32_t consensus_prepare_all_count_ = 0;
 
 public:
     inline void set_test_times(uint32_t index) {

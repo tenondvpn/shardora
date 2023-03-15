@@ -233,6 +233,11 @@ int Zbft::LeaderPrecommitOk(
         return kConsensusAgree;
     }
 
+    if (PrepareHashNotConsensus()) {
+        ZJC_ERROR("prepare hash not consensus failed!");
+        return kConsensusOppose;
+    }
+
     return kConsensusWaitingBackup;
 }
 
