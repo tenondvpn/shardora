@@ -390,6 +390,10 @@ public:
         return valid_index_;
     }
 
+    uint64_t height() const {
+        return height_;
+    }
+
 protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
@@ -447,6 +451,7 @@ protected:
     std::shared_ptr<Zbft> pipeline_prev_zbft_ptr_ = nullptr;
     bool is_synced_block_ = false;
     std::vector<uint32_t> valid_index_;
+    uint64_t height_ = { common::kInvalidUint64 };
 
 public:
     inline void set_test_times(uint32_t index) {

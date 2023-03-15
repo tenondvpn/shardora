@@ -606,6 +606,7 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     tx_bft.set_prepare_final_hash(zjc_block.hash());
     tx_bft.set_height(zjc_block.height());
     tx_bft.set_tx_type(txs_ptr_->tx_type);
+    height_ = zjc_block.height();
     set_prepare_hash(zjc_block.hash());
     return kConsensusSuccess;
 }
