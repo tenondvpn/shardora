@@ -319,17 +319,14 @@ public:
         auto iter = prepare_block_map_.find(prepare_hash);
         if (iter == prepare_block_map_.end()) {
             auto item = std::make_shared<LeaderPrepareItem>();
-            item->backup_sign.push_back(sign);
             item->height = height;
             item->precommit_aggree_set_.insert(id);
             item->prepare_bitmap_.Set(index);
             item->backup_precommit_signs_[index] = sign;
             item->height_count_map[height] = 1;
             prepare_block_map_[prepare_hash] = item;
-            assert(prepare_block_map_.size() == 1);
             return 1;
         } else {
-            iter->second->backup_sign.push_back(sign);
             iter->second->precommit_aggree_set_.insert(id);
             iter->second->prepare_bitmap_.Set(index);
             iter->second->backup_precommit_signs_[index] = sign;
@@ -340,7 +337,11 @@ public:
                 ++hiter->second;
             }
 
-            return iter->second->backup_sign.size();
+            if (iter->second.valid_index.size() < 3) {
+                iter->second.valid_index.push_back(index);
+            }
+
+            return iter->second->precommit_aggree_set_.size();
         }
     }
 
@@ -379,6 +380,14 @@ public:
 
     const std::shared_ptr<Zbft>& pipeline_prev_zbft_ptr() const {
         return pipeline_prev_zbft_ptr_;
+    }
+
+    bool is_synced_block() const {
+        return is_synced_block_;
+    }
+
+    const std::vector<uint32_t>& valid_index() const {
+        return valid_index_;
     }
 
 protected:
@@ -436,6 +445,8 @@ protected:
     libff::alt_bn128_G1 g1_prepare_hash_;
     libff::alt_bn128_G1 g1_precommit_hash_;
     std::shared_ptr<Zbft> pipeline_prev_zbft_ptr_ = nullptr;
+    bool is_synced_block_ = false;
+    std::vector<uint32_t> valid_index_;
 
 public:
     inline void set_test_times(uint32_t index) {

@@ -20,7 +20,33 @@ WaitingTxsPools::~WaitingTxsPools() {}
 
 void WaitingTxsPools::TxOver(std::shared_ptr<Zbft>& zbft_ptr) {
     auto& tx_ptr = zbft_ptr->txs_ptr();
-    pool_mgr_->TxOver(tx_ptr->pool_index, tx_ptr->txs);
+    if (zbft_ptr->is_synced_block()) {
+        assert(false);
+        // just over txs in block and recover other
+        auto& zjc_block = zbft_ptr->prpare_block();
+        std::map<std::string, pools::TxItemPtr> recover_txs;
+        std::map<std::string, pools::TxItemPtr> over_txs;
+        std::unordered_set<std::string> block_gid_set;
+        block_gid_set.reserve(zjc_block->tx_list_size());
+        for (int32_t i = 0; i < zjc_block->tx_list_size(); ++i) {
+            block_gid_set.insert(zjc_block->tx_list(i).gid());
+        }
+
+        for (auto iter = tx_ptr->txs.begin(); iter != tx_ptr->txs.end(); ++iter) {
+            auto set_iter = block_gid_set.find(iter->second->msg_ptr->header.tx_proto().gid());
+            if (set_iter == block_gid_set.end()) {
+                recover_txs[iter->first] = iter->second;
+            } else {
+                over_txs[iter->first] = iter->second;
+            }
+        }
+
+        pool_mgr_->TxOver(tx_ptr->pool_index, over_txs);
+        pool_mgr_->TxRecover(tx_ptr->pool_index, recover_txs);
+    } else {
+        pool_mgr_->TxOver(tx_ptr->pool_index, tx_ptr->txs);
+    }
+
     auto& item_set = pipeline_pools_[tx_ptr->pool_index];
     for (auto set_iter = item_set.begin(); set_iter != item_set.end(); ++set_iter) {
         if (*set_iter == zbft_ptr) {

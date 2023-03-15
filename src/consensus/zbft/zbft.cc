@@ -207,14 +207,14 @@ int Zbft::LeaderPrecommitOk(
         uint32_t index,
         const libff::alt_bn128_G1& backup_sign,
         const std::string& id) {
+    ZJC_DEBUG("leader precommit hash: %s, index: %d",
+        common::Encode::HexEncode(tx_prepare.prepare_final_hash()).c_str(),
+        index);
     if (leader_handled_precommit_) {
 //         ZJC_DEBUG("leader_handled_precommit_: %d", leader_handled_precommit_);
         return kConsensusHandled;
     }
 
-    ZJC_DEBUG("leader precommit hash: %s, index: %d",
-        common::Encode::HexEncode(tx_prepare.prepare_final_hash()).c_str(),
-        index);
     // TODO: check back hash eqal to it's signed hash
     auto valid_count = SetPrepareBlock(
         id,
@@ -364,6 +364,12 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
             msg_hash_src.append((char*)&data, sizeof(data));
         }
 
+        if (prpare_hash != prepare_hash_) {
+            is_synced_block_ = true;
+            set_prepare_hash(prpare_hash);
+            CreatePrecommitVerifyHash();
+        }
+
         set_precoimmit_hash(common::Hash::keccak256(msg_hash_src));
         std::string sign_precommit_hash;
         if (bls_mgr_->GetVerifyHash(
@@ -402,6 +408,7 @@ int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
 
         bls_precommit_agg_sign_->to_affine_coordinates();
         prepare_bitmap_ = iter->second->prepare_bitmap_;
+        valid_index_ = iter->second->valid_index;
     } catch (std::exception& e) {
         ZJC_ERROR("catch bls exception: %s", e.what());
         return kConsensusError;

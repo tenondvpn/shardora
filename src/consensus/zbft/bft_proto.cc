@@ -112,6 +112,13 @@ bool BftProto::LeaderCreatePreCommit(
         auto& bls_precommit_sign = bft_ptr->bls_precommit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
+
+        if (bft_ptr->is_synced_block()) {
+            auto& valid_idx = bft_ptr->valid_index();
+            for (uint32_t i = 0; i < valid_idx.size(); ++i) {
+                bft_msg.add_sync_block_members(valid_idx[i]);
+            }
+        }
     }
 
     return true;
