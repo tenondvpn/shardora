@@ -125,6 +125,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
     }
 
     tx_pool_[pool_index].AddTx(tx_ptr);
+    ZJC_DEBUG("success add tx: %s", common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
 }
 
 void TxPoolManager::GetTx(

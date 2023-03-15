@@ -280,8 +280,12 @@ ZbftPtr BftManager::StartBft(
         return nullptr;
     }
 
-//     ZJC_INFO("this node is leader and start bft: %s, pool index: %d, thread index: %d",
-//         common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index(), bft_ptr->thread_index());
+    ZJC_INFO("use pipeline: %d, this node is leader and start bft: %s,"
+        "pool index: %d, thread index: %d",
+        (prepare_msg_ptr != nullptr),
+        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+        bft_ptr->pool_index(),
+        bft_ptr->thread_index());
     return bft_ptr;
 }
 
@@ -1096,6 +1100,9 @@ int BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
                 msg_ptr->response->header.mutable_zbft()->set_agree_commit(true);
                 LeaderCallPrecommit(bft_ptr, msg_ptr);
+            } else if (res == kConsensusOppose) {
+                msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
+                ZJC_DEBUG("precommit call oppose now.");
             }
         } else {
             if (bft_ptr->AddPrepareOpposeNode(member_ptr->id) == kConsensusOppose) {
@@ -1396,6 +1403,8 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         prev_tps_tm_us_ = now_tm_us;
         prev_count_ = 0;
     }
+
+    ZJC_DEBUG("new block: %s", common::Encode::HexEncode(zjc_block->hash()).c_str());
 }
 
 int BftManager::LeaderCallCommit(
