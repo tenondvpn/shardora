@@ -280,12 +280,12 @@ ZbftPtr BftManager::StartBft(
         return nullptr;
     }
 
-//     ZJC_INFO("use pipeline: %d, this node is leader and start bft: %s,"
-//         "pool index: %d, thread index: %d",
-//         (prepare_msg_ptr != nullptr),
-//         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-//         bft_ptr->pool_index(),
-//         bft_ptr->thread_index());
+    ZJC_INFO("use pipeline: %d, this node is leader and start bft: %s,"
+        "pool index: %d, thread index: %d",
+        (prepare_msg_ptr != nullptr),
+        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+        bft_ptr->pool_index(),
+        bft_ptr->thread_index());
     return bft_ptr;
 }
 
@@ -688,7 +688,7 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
 
         common::BloomFilter bf(bloom_data, kHashCount);
         txs_ptr = txs_pools_->FollowerGetTxs(bft_msg.pool_index(), bf, msg_ptr->thread_idx);
-//         ZJC_DEBUG("get tx count: %u, pool: %d", bloom_data.size(), bft_msg.pool_index());
+        ZJC_DEBUG("get tx count: %u, pool: %d", bloom_data.size(), bft_msg.pool_index());
     } else if (bft_msg.tx_bft().tx_hash_list_size() > 0) {
         // get txs direct
         if (bft_msg.tx_bft().tx_type() == pools::protobuf::kNormalTo) {
@@ -1408,7 +1408,7 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         prev_count_ = 0;
     }
 
-//     ZJC_DEBUG("new block: %s", common::Encode::HexEncode(zjc_block->hash()).c_str());
+    ZJC_DEBUG("new block: %s", common::Encode::HexEncode(zjc_block->hash()).c_str());
 }
 
 int BftManager::LeaderCallCommit(

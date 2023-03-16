@@ -207,9 +207,9 @@ int Zbft::LeaderPrecommitOk(
         uint32_t index,
         const libff::alt_bn128_G1& backup_sign,
         const std::string& id) {
-//     ZJC_DEBUG("leader precommit hash: %s, index: %d",
-//         common::Encode::HexEncode(tx_prepare.prepare_final_hash()).c_str(),
-//         index);
+    ZJC_DEBUG("leader precommit hash: %s, index: %d",
+        common::Encode::HexEncode(tx_prepare.prepare_final_hash()).c_str(),
+        index);
     if (leader_handled_precommit_) {
 //         ZJC_DEBUG("leader_handled_precommit_: %d", leader_handled_precommit_);
         return kConsensusHandled;
@@ -435,9 +435,9 @@ void Zbft::CreatePrecommitVerifyHash() {
             &precommit_bls_agg_verify_hash_) != bls::kBlsSuccess) {
         ZJC_ERROR("get precommit hash failed!");
     }
-//     ZJC_DEBUG("precommit get pk verify hash end: %s, hash: %s",
-//         common::Encode::HexEncode(precommit_bls_agg_verify_hash_).c_str(),
-//         common::Encode::HexEncode(prepare_hash_).c_str());
+    ZJC_DEBUG("precommit get pk verify hash end: %s, hash: %s",
+        common::Encode::HexEncode(precommit_bls_agg_verify_hash_).c_str(),
+        common::Encode::HexEncode(prepare_hash_).c_str());
 }
 
 void Zbft::CreateCommitVerifyHash() {
@@ -452,9 +452,9 @@ void Zbft::CreateCommitVerifyHash() {
             &commit_bls_agg_verify_hash_) != bls::kBlsSuccess) {
         ZJC_ERROR("get commit hash failed!");
     }
-//     ZJC_DEBUG("commit get pk verify hash end: %s, hash: %s",
-//         common::Encode::HexEncode(commit_bls_agg_verify_hash_).c_str(),
-//         common::Encode::HexEncode(precommit_hash_).c_str());
+    ZJC_DEBUG("commit get pk verify hash end: %s, hash: %s",
+        common::Encode::HexEncode(commit_bls_agg_verify_hash_).c_str(),
+        common::Encode::HexEncode(precommit_hash_).c_str());
 }
 
 void Zbft::AfterNetwork() {
@@ -547,9 +547,9 @@ bool Zbft::set_bls_precommit_agg_sign(
         return false;
     }
 
-//     ZJC_DEBUG("success verify leader precommit agg sign! %s: %s",
-//         common::Encode::HexEncode(sign_commit_hash).c_str(),
-//         common::Encode::HexEncode(sign_hash).c_str());
+    ZJC_DEBUG("success verify leader precommit agg sign! %s: %s",
+        common::Encode::HexEncode(sign_commit_hash).c_str(),
+        common::Encode::HexEncode(sign_hash).c_str());
     bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(agg_sign);
     return true;
 }
