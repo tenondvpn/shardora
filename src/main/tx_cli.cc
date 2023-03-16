@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "common/random.h"
+#include "common/split.h"
 #include "db/db.h"
 #include "dht/dht_key.h"
 #include "pools/tx_utils.h"
@@ -99,7 +100,54 @@ static transport::MessagePtr CreateTransactionWithAttr(
     return msg_ptr;
 }
 
+static std::unordered_map<std::string, std::string> addrs_map;
+static std::vector<std::string> prikeys;
+static std::vector<std::string> addrs;
+static std::unordered_map<std::string, std::string> pri_pub_map;
+static void LoadAllAccounts() {
+    FILE* fd = fopen("../src/consensus/tests/init_acc", "r");
+    if (fd == nullptr) {
+        std::cout << "invalid init acc file." << std::endl;
+        exit(1);
+    }
+
+    bool res = true;
+    std::string filed;
+    const uint32_t kMaxLen = 1024;
+    char* read_buf = new char[kMaxLen];
+    while (true) {
+        char* read_res = fgets(read_buf, kMaxLen, fd);
+        if (read_res == NULL) {
+            break;
+        }
+
+        common::Split<> split(read_buf, '\t');
+        if (split.Count() != 2) {
+            break;
+        }
+
+        std::string prikey = common::Encode::HexDecode(
+            std::string(split[1], split.SubLen(1) - 1));
+        std::string addr = common::Encode::HexDecode(split[0]);
+        addrs_map[prikey] = addr;
+        addrs.push_back(addr);
+        prikeys.push_back(prikey);
+        std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+        security->SetPrivateKey(prikey);
+        pri_pub_map[prikey] = security->GetPublicKey();
+    }
+
+    if (prikeys.size() != 256) {
+        std::cout << "invalid init acc file." << std::endl;
+        exit(1);
+    }
+
+    fclose(fd);
+    delete[]read_buf;
+}
+
 int main(int argc, char** argv) {
+    LoadAllAccounts();
     SignalRegister();
     WriteDefaultLogConf();
     log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
@@ -112,9 +160,9 @@ int main(int argc, char** argv) {
     }
 
     std::string val;
-    uint32_t pos = 0;
+    uint64_t pos = 0;
     if (db_ptr->Get("txcli_pos", &val).ok()) {
-        if (!common::StringUtil::ToUint32(val, &pos)) {
+        if (!common::StringUtil::ToUint64(val, &pos)) {
             std::cout << "get pos failed!" << std::endl;
             return 1;
         }
@@ -142,18 +190,24 @@ int main(int argc, char** argv) {
     std::string gid = common::Random::RandomString(32);
     std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
     std::string to = common::Encode::HexDecode("d9ec5aff3001dece14e1f4a35a39ed506bd6274a");
-    for (; pos < common::kInvalidUint32 && !global_stop; ++pos) {
-        uint32_t* gid_int = (uint32_t*)gid.data();
+    for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
+        uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos;
-        auto tx_msg_ptr = CreateTransactionWithAttr(security, gid, prikey, to, "", "", 100000, 10000000, ((uint32_t)(1000 - pos)) % 1000, 3);
+        auto& from_prikey = prikeys[pos % prikeys.size()];
+        if (addrs_map[from_prikey] == to) {
+            continue;
+        }
+
+        auto tx_msg_ptr = CreateTransactionWithAttr(security, gid, from_prikey, to, "", "", 100000, 10000000, ((uint32_t)(1000 - pos)) % 1000, 3);
         if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 21001, tx_msg_ptr->header) != 0) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
         }
 
-        if (pos % 1000 == 0) {
+        std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << std::endl;
+//         if (pos % 10000 == 0) {
             usleep(1000000);
-        }
+//         }
     }
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
