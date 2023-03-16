@@ -1494,9 +1494,9 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         }
     }
 
-    ZJC_DEBUG("new block: %s, gid: %s",
-        common::Encode::HexEncode(zjc_block->hash()).c_str(),
-        common::Encode::HexEncode(bft_ptr->gid()).c_str());
+//     ZJC_DEBUG("new block: %s, gid: %s",
+//         common::Encode::HexEncode(zjc_block->hash()).c_str(),
+//         common::Encode::HexEncode(bft_ptr->gid()).c_str());
 }
 
 int BftManager::LeaderCallCommit(
