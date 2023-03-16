@@ -93,7 +93,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
         msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
         auto ptr = msg_ptr;
-        pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](msg_ptr);
+        pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](ptr);
         ZJC_INFO("success add tx to queue: %d, %s",
             msg_ptr->address_info->pool_index(),
             common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
