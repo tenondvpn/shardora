@@ -280,12 +280,12 @@ ZbftPtr BftManager::StartBft(
         return nullptr;
     }
 
-    ZJC_INFO("use pipeline: %d, this node is leader and start bft: %s,"
-        "pool index: %d, thread index: %d",
-        (prepare_msg_ptr != nullptr),
-        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-        bft_ptr->pool_index(),
-        bft_ptr->thread_index());
+//     ZJC_INFO("use pipeline: %d, this node is leader and start bft: %s,"
+//         "pool index: %d, thread index: %d",
+//         (prepare_msg_ptr != nullptr),
+//         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+//         bft_ptr->pool_index(),
+//         bft_ptr->thread_index());
     return bft_ptr;
 }
 
