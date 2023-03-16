@@ -44,6 +44,7 @@ public:
     }
 
     std::shared_ptr<WaitingTxsItem> FollowerGetTxs(const common::BloomFilter& bloom_filter) {
+        assert(false);
         txs_items_ = std::make_shared<WaitingTxsItem>();
         pools_mgr_->GetTx(bloom_filter, pool_index_, txs_items_->txs);
         auto& all_txs_hash = txs_items_->all_txs_hash;
@@ -65,8 +66,11 @@ public:
         auto& tx_map = txs_items_->txs;
         for (int32_t i = 0; i < tx_hash_list.size(); ++i) {
             auto tx_item = pools_mgr_->GetTx(pool_index_, tx_hash_list[i]);
+//             ZJC_DEBUG("get tx item txhash: %s", common::Encode::HexEncode(tx_hash_list[i]).c_str());
             if (tx_item != nullptr) {
                 tx_map[tx_hash_list[i]] = tx_item;
+            } else {
+                assert(false);
             }
         }
 
@@ -75,6 +79,7 @@ public:
             all_txs_hash.append(iter->first);
         }
 
+//         ZJC_DEBUG("backup get txs: %s", common::Encode::HexEncode(all_txs_hash).c_str());
         all_txs_hash = common::Hash::keccak256(all_txs_hash);
         if (txs_items_->txs.empty()) {
             txs_items_ = nullptr;

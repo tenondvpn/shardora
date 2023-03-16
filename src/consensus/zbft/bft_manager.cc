@@ -572,7 +572,6 @@ void BftManager::CreateResponseMessage(
         
     if (msg_ptr->response->header.has_zbft()) {
         auto& elect_item = elect_items_[elect_item_idx_];
-        msg_ptr->response->header.mutable_zbft()->set_pool_index(msg_ptr->header.zbft().pool_index());
         msg_ptr->response->header.mutable_zbft()->set_member_index(
             elect_item.local_node_member_index);
         if (response_to_leader) {
@@ -1151,7 +1150,7 @@ int BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
 //         ZJC_DEBUG("has prepare  now leader handle gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
         auto bft_ptr = LeaderGetZbft(msg_ptr, bft_msg.prepare_gid());
         if (bft_ptr == nullptr) {
-            ZJC_ERROR("prepare get bft failed: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+//             ZJC_ERROR("prepare get bft failed: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             return kConsensusError;
         }
 
@@ -1495,9 +1494,9 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         }
     }
 
-//     ZJC_DEBUG("new block: %s, gid: %s",
-//         common::Encode::HexEncode(zjc_block->hash()).c_str(),
-//         common::Encode::HexEncode(bft_ptr->gid()).c_str());
+    ZJC_DEBUG("new block: %s, gid: %s",
+        common::Encode::HexEncode(zjc_block->hash()).c_str(),
+        common::Encode::HexEncode(bft_ptr->gid()).c_str());
 }
 
 int BftManager::LeaderCallCommit(

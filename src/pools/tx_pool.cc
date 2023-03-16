@@ -29,6 +29,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 
     added_tx_map_.insert(std::make_pair(tx_ptr->tx_hash, tx_ptr));
     mem_queue_.push(tx_ptr);
+//     ZJC_DEBUG("success add tx %u, %s", pool_index_, common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
     return kPoolsSuccess;
 }
 
@@ -96,9 +97,11 @@ bool TxPool::CheckTimeoutTx(TxItemPtr& tx_ptr, uint64_t timestamp_now) {
 TxItemPtr TxPool::GetTx(const std::string& tx_hash) {
     auto iter = added_tx_map_.find(tx_hash);
     if (iter != added_tx_map_.end()) {
+//         ZJC_DEBUG("success get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
         return iter->second;
     }
 
+//     ZJC_DEBUG("failed get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
     return nullptr;
 }
 
