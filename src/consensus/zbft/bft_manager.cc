@@ -292,6 +292,11 @@ ZbftPtr BftManager::StartBft(
 void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kConsensusMessage);
+    auto& elect_item = elect_items_[elect_item_idx_];
+    if (elect_item.local_node_member_index == header.zbft().member_index()) {
+        return;
+    }
+
     if (header.zbft().has_sync_block() && header.zbft().sync_block()) {
         return HandleSyncConsensusBlock(msg_ptr);
     }
@@ -304,7 +309,8 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    auto mem_ptr = (*members)[header.zbft().member_index()];
+    auto mem_ptr = (*members)[header.zbft().member_index()]
+
     // leader's message
     int res = kConsensusSuccess;
     if (!header.zbft().leader()) {
