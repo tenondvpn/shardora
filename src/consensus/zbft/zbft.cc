@@ -197,8 +197,8 @@ bool Zbft::BackupCheckLeaderValid(const zbft::protobuf::ZbftMessage* bft_msg) {
 
     elect_height_ = local_elect_height;
     members_ptr_ = members;
-//     ZJC_DEBUG("backup check leader success elect height: %lu, local_member_index_: %lu, gid: %s",
-//         elect_height_, local_member_index_, common::Encode::HexEncode(gid_).c_str());
+    ZJC_DEBUG("backup check leader success elect height: %lu, local_member_index_: %lu, gid: %s",
+        elect_height_, local_member_index_, common::Encode::HexEncode(gid_).c_str());
     return true;
 }
 
@@ -207,9 +207,10 @@ int Zbft::LeaderPrecommitOk(
         uint32_t index,
         const libff::alt_bn128_G1& backup_sign,
         const std::string& id) {
-    ZJC_DEBUG("leader precommit hash: %s, index: %d",
+    ZJC_DEBUG("leader precommit hash: %s, index: %d, gid: %s",
         common::Encode::HexEncode(tx_prepare.prepare_final_hash()).c_str(),
-        index);
+        index,
+        common::Encode::HexEncode(gid_).c_str());
     if (leader_handled_precommit_) {
 //         ZJC_DEBUG("leader_handled_precommit_: %d", leader_handled_precommit_);
         return kConsensusHandled;

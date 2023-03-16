@@ -207,6 +207,10 @@ int TcpTransport::Send(
         SetMessageHash(message, thread_idx);
     }
 
+    if (message.type() == common::kConsensusMessage) {
+        ZJC_DEBUG("send to %s:%d, tx hash: %lu", tcp_conn->PeerIp().c_str(), tcp_conn->PeerPort(), message.hash64());
+    }
+
     message.SerializeToString(&msg);
     if (tcp_conn->Send(msg) != 0) {
         FreeConnection(thread_idx, tcp_conn->PeerIp(), tcp_conn->PeerPort());
@@ -226,6 +230,9 @@ int TcpTransport::Send(
         SetMessageHash(message, thread_idx);
     }
 
+    if (message.type() == common::kConsensusMessage) {
+        ZJC_DEBUG("send to %s:%d, tx hash: %lu", des_ip.c_str(), des_port, message.hash64());
+    }
     message.SerializeToString(&msg);
     auto tcp_conn = GetConnection(thread_idx, des_ip, des_port);
     if (tcp_conn == nullptr) {
