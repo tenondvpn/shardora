@@ -309,8 +309,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    auto mem_ptr = (*members)[header.zbft().member_index()]
-
+    auto mem_ptr = (*members)[header.zbft().member_index()];
     // leader's message
     int res = kConsensusSuccess;
     if (!header.zbft().leader()) {
