@@ -125,6 +125,7 @@ void TxPool::TxOver(std::map<std::string, TxItemPtr>& txs) {
         auto miter = added_tx_map_.find(iter->first);
         if (miter != added_tx_map_.end()) {
             added_tx_map_.erase(miter);
+//             ZJC_DEBUG("remove tx %s", common::Encode::HexEncode(iter->second->tx_hash).c_str());
         }
     }
 }

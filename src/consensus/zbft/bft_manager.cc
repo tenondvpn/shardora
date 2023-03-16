@@ -280,12 +280,12 @@ ZbftPtr BftManager::StartBft(
         return nullptr;
     }
 
-    ZJC_INFO("use pipeline: %d, this node is leader and start bft: %s,"
-        "pool index: %d, thread index: %d",
-        (prepare_msg_ptr != nullptr),
-        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-        bft_ptr->pool_index(),
-        bft_ptr->thread_index());
+//     ZJC_INFO("use pipeline: %d, this node is leader and start bft: %s,"
+//         "pool index: %d, thread index: %d",
+//         (prepare_msg_ptr != nullptr),
+//         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+//         bft_ptr->pool_index(),
+//         bft_ptr->thread_index());
     return bft_ptr;
 }
 
@@ -346,6 +346,10 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
             }
         }
     } else {
+        if (bft_ptr == nullptr) {
+            return;
+        }
+
         if (bft_ptr->prepare_block() == nullptr) {
             return;
         }
@@ -1404,7 +1408,7 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         prev_count_ = 0;
     }
 
-    ZJC_DEBUG("new block: %s", common::Encode::HexEncode(zjc_block->hash()).c_str());
+//     ZJC_DEBUG("new block: %s", common::Encode::HexEncode(zjc_block->hash()).c_str());
 }
 
 int BftManager::LeaderCallCommit(

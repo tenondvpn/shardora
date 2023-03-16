@@ -11,6 +11,25 @@
 #include "transport/tcp_transport.h"
 
 using namespace zjchain;
+static bool global_stop = false;
+static void SignalCallback(int sig_int) {
+    global_stop = true;
+}
+
+void SignalRegister() {
+#ifndef _WIN32
+    signal(SIGPIPE, SIG_IGN);
+    signal(SIGABRT, SIG_IGN);
+    signal(SIGINT, SignalCallback);
+    signal(SIGTERM, SignalCallback);
+
+    sigset_t signal_mask;
+    sigemptyset(&signal_mask);
+    sigaddset(&signal_mask, SIGPIPE);
+    pthread_sigmask(SIG_BLOCK, &signal_mask, NULL);
+#endif
+}
+
 static void WriteDefaultLogConf() {
     FILE* file = NULL;
     file = fopen("./log4cpp.properties", "w");
@@ -81,11 +100,26 @@ static transport::MessagePtr CreateTransactionWithAttr(
 }
 
 int main(int argc, char** argv) {
+    SignalRegister();
     WriteDefaultLogConf();
     log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
     transport::MultiThreadHandler net_handler;
     std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
     auto db_ptr = std::make_shared<db::Db>();
+    if (!db_ptr->Init("./txclidb")) {
+        std::cout << "init db failed!" << std::endl;
+        return 1;
+    }
+
+    std::string val;
+    uint32_t pos = 0;
+    if (db_ptr->Get("txcli_pos", &val).ok()) {
+        if (!common::StringUtil::ToUint32(val, &pos)) {
+            std::cout << "get pos failed!" << std::endl;
+            return 1;
+        }
+    }
+
     if (net_handler.Init(db_ptr) != 0) {
         std::cout << "init net handler failed!" << std::endl;
         return 1;
@@ -108,14 +142,23 @@ int main(int argc, char** argv) {
     std::string gid = common::Random::RandomString(32);
     std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
     std::string to = common::Encode::HexDecode("d9ec5aff3001dece14e1f4a35a39ed506bd6274a");
-    for (uint32_t i = 0; i < 1000; ++i) {
+    for (; pos < common::kInvalidUint32 && !global_stop; ++pos) {
         uint32_t* gid_int = (uint32_t*)gid.data();
-        gid_int[0] = i;
-        auto tx_msg_ptr = CreateTransactionWithAttr(security, gid, prikey, to, "", "", 100000, 10000000, (1000 - i), 3);
+        gid_int[0] = pos;
+        auto tx_msg_ptr = CreateTransactionWithAttr(security, gid, prikey, to, "", "", 100000, 10000000, ((uint32_t)(1000 - pos)) % 1000, 3);
         if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 21001, tx_msg_ptr->header) != 0) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
         }
+
+        if (pos % 1000 == 0) {
+            usleep(1000000);
+        }
+    }
+
+    if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
+        std::cout << "save pos failed!" << std::endl;
+        return 1;
     }
 
     return 0;

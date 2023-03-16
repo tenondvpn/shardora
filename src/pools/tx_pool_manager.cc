@@ -92,7 +92,11 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-//         ZJC_INFO("success add tx to queue: %d", msg_ptr->address_info->pool_index());
+        auto ptr = msg_ptr;
+        pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](ptr);
+//         ZJC_INFO("success add tx to queue: %d, %s",
+//             msg_ptr->address_info->pool_index(),
+//             common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
     } else {
         // check valid
         msg_queues_[0].push(msg_ptr);
@@ -125,7 +129,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
     }
 
     tx_pool_[pool_index].AddTx(tx_ptr);
-    ZJC_DEBUG("success add tx: %s", common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
+//     ZJC_DEBUG("success add tx %u, %s", pool_index, common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
 }
 
 void TxPoolManager::GetTx(
