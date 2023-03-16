@@ -149,13 +149,6 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
 
     auto queue_idx = GetThreadIndex(msg_ptr);
     threads_message_queues_[queue_idx][priority].push(msg_ptr);
-    if (msg_ptr->header.type() == common::kConsensusMessage) {
-        ZJC_DEBUG("push message from %s:%d tx hash: %lu",
-            msg_ptr->conn->PeerIp().c_str(),
-            msg_ptr->conn->PeerPort(),
-            msg_ptr->header.hash64());
-    }
-
     wait_con_[queue_idx % all_thread_count_].notify_one();
 }
 

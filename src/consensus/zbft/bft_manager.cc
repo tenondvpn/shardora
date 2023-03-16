@@ -293,17 +293,17 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kConsensusMessage);
     auto& elect_item = elect_items_[elect_item_idx_];
-    ZJC_INFO("consensus message coming prepare gid: %s, precommit gid: %s, "
-        "commit gid: %s thread idx: %d, has sync: %d, txhash: %lu, "
-        "member index: %d, other member index: %d",
-        common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
-        common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
-        common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
-        msg_ptr->thread_idx,
-        header.zbft().has_sync_block(),
-        header.hash64(),
-        elect_item.local_node_member_index,
-        header.zbft().member_index());
+//     ZJC_INFO("consensus message coming prepare gid: %s, precommit gid: %s, "
+//         "commit gid: %s thread idx: %d, has sync: %d, txhash: %lu, "
+//         "member index: %d, other member index: %d",
+//         common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+//         common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
+//         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+//         msg_ptr->thread_idx,
+//         header.zbft().has_sync_block(),
+//         header.hash64(),
+//         elect_item.local_node_member_index,
+//         header.zbft().member_index());
     if (elect_item.local_node_member_index == header.zbft().member_index()) {
         assert(false);
     }
