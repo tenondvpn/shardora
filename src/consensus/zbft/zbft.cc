@@ -547,9 +547,9 @@ bool Zbft::set_bls_precommit_agg_sign(
         return false;
     }
 
-    ZJC_DEBUG("success verify leader precommit agg sign! %s: %s",
-        common::Encode::HexEncode(sign_commit_hash).c_str(),
-        common::Encode::HexEncode(sign_hash).c_str());
+//     ZJC_DEBUG("success verify leader precommit agg sign! %s: %s",
+//         common::Encode::HexEncode(sign_commit_hash).c_str(),
+//         common::Encode::HexEncode(sign_hash).c_str());
     bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(agg_sign);
     return true;
 }
