@@ -290,6 +290,7 @@ ZbftPtr BftManager::StartBft(
 }
 
 void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto& header = msg_ptr->header;
     assert(header.type() == common::kConsensusMessage);
     auto& elect_item = elect_items_[elect_item_idx_];
@@ -312,6 +313,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return HandleSyncConsensusBlock(msg_ptr);
     }
 
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     assert(header.zbft().has_member_index());
     SetDefaultResponse(msg_ptr);
     std::vector<ZbftPtr> zbft_vec = { nullptr, nullptr, nullptr };
@@ -323,6 +325,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     auto mem_ptr = (*members)[header.zbft().member_index()];
     // leader's message
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     int res = kConsensusSuccess;
     if (!header.zbft().leader()) {
         BackupHandleZbftMessage(msg_ptr->thread_idx, msg_ptr);
@@ -330,15 +333,19 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         LeaderHandleZbftMessage(msg_ptr);
     }
 
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     ClearBft(msg_ptr);
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     CreateResponseMessage(!header.zbft().leader(), zbft_vec, msg_ptr, mem_ptr);
 //     ZJC_DEBUG("create response over.");
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (zbft_vec[0] != nullptr) {
 //         ZJC_DEBUG("delay create bls verify hash leader: %d", header.zbft().leader());
         zbft_vec[0]->AfterNetwork();
     } else if (zbft_vec[1] != nullptr) {
         zbft_vec[1]->AfterNetwork();
     }
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
 }
 
 void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) {
