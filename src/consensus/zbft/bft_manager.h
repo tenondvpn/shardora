@@ -138,7 +138,8 @@ private:
     ElectItem elect_items_[2];
     uint32_t elect_item_idx_ = 0;
     uint64_t prev_tps_tm_us_ = 0;
-    std::atomic<uint32_t> prev_count_ = 0;
+    uint32_t prev_count_ = 0;
+    common::SpinMutex prev_count_mutex_;
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {
