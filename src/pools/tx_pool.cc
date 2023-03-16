@@ -78,7 +78,7 @@ bool TxPool::CheckTimeoutTx(TxItemPtr& tx_ptr, uint64_t timestamp_now) {
 
         if (item->remove_timeout < timestamp_now) {
             if (miter != added_tx_map_.end()) {
-                ZJC_DEBUG("timeout remove tx %s", common::Encode::HexEncode(miter->second->tx_hash).c_str());
+//                 ZJC_DEBUG("timeout remove tx %s", common::Encode::HexEncode(miter->second->tx_hash).c_str());
                 added_tx_map_.erase(miter);
             }
 
@@ -108,8 +108,8 @@ void TxPool::GetTx(
     for (auto iter = added_tx_map_.begin(); iter != added_tx_map_.end(); ++iter) {
         if (bloom_filter.Contain(common::Hash::Hash64(iter->second->tx_hash))) {
             res_map[iter->second->tx_hash] = iter->second;
-            ZJC_DEBUG("bloom filter success get tx %u, %s",
-                pool_index_, common::Encode::HexEncode(iter->second->tx_hash).c_str());
+//             ZJC_DEBUG("bloom filter success get tx %u, %s",
+//                 pool_index_, common::Encode::HexEncode(iter->second->tx_hash).c_str());
         }
     }
 }
@@ -128,7 +128,7 @@ void TxPool::TxOver(std::map<std::string, TxItemPtr>& txs) {
         auto miter = added_tx_map_.find(iter->first);
         if (miter != added_tx_map_.end()) {
             added_tx_map_.erase(miter);
-            ZJC_DEBUG("remove tx %s", common::Encode::HexEncode(iter->second->tx_hash).c_str());
+//             ZJC_DEBUG("remove tx %s", common::Encode::HexEncode(iter->second->tx_hash).c_str());
         }
     }
 }
