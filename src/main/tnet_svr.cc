@@ -5,7 +5,6 @@
 
 #include "common/global_info.h"
 #include "common/time_utils.h"
-#include "security/ecdsa/ecdsa.h"
 #include "transport/tcp_transport.h"
 #include "transport/multi_thread.h"
 #include "transport/processor.h"
@@ -14,11 +13,8 @@ using namespace zjchain;
 
 int main(int argc, char* argv[]) {
     transport::MultiThreadHandler net_handler;
-    std::shared_ptr<security::Security> security_ptr = std::make_shared<security::Ecdsa>();
-    security_ptr->SetPrivateKey(common::Encode::HexDecode(
-        "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"));
     auto db_ptr = std::make_shared<db::Db>();
-    if (net_handler.Init(security_ptr, db_ptr) != 0) {
+    if (net_handler.Init(db_ptr) != 0) {
         return 1;
     }
 

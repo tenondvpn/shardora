@@ -104,8 +104,9 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
     }
 
     if (header.has_broadcast()) {
-        broadcast_queue_[header_ptr->thread_idx].push(header_ptr);
-        broadcast_con_.notify_one();
+        Broadcast(header_ptr->thread_idx, header_ptr);
+//         broadcast_queue_[header_ptr->thread_idx].push(header_ptr);
+//         broadcast_con_.notify_one();
     }
 
     message_processor_[header.type()](header_ptr);
@@ -113,6 +114,7 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
 
 void Route::Broadcasting() {
     while (!destroy_) {
+        break;
         bool has_data = false;
         for (uint32_t i = 0;
                 i < common::GlobalInfo::Instance()->message_handler_thread_count(); ++i) {

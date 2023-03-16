@@ -7,7 +7,6 @@
 
 #include "common/time_utils.h"
 #include "common/global_info.h"
-#include "security/ecdsa/ecdsa.h"
 #define private public
 #include "transport/tcp_transport.h"
 #include "transport/multi_thread.h"
@@ -35,12 +34,9 @@ public:
 };
 
 TEST_F(TestTcpTransport, TestServer) {
-    std::shared_ptr<security::Security> security_ptr = std::make_shared<security::Ecdsa>();
-    security_ptr->SetPrivateKey(common::Encode::HexDecode(
-        "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"));
     transport::MultiThreadHandler net_handler;
     auto db_ptr = std::make_shared<db::Db>();
-    ASSERT_EQ(net_handler.Init(security_ptr, db_ptr), 0);
+    ASSERT_EQ(net_handler.Init(db_ptr), 0);
     transport::TcpTransport::Instance()->Init(
         "127.0.0.1:8990",
         128,

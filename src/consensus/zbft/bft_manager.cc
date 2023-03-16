@@ -428,7 +428,7 @@ void BftManager::SyncConsensusBlock(
             (*readobly_dht)[pos_vec[i]]->public_ip,
             (*readobly_dht)[pos_vec[i]]->public_port,
             msg);
-        ZJC_DEBUG("send sync block %s:%d block hash: %s",
+        ZJC_INFO("send sync block %s:%d block hash: %s",
             (*readobly_dht)[pos_vec[i]]->public_ip.c_str(),
             (*readobly_dht)[pos_vec[i]]->public_port,
             common::Encode::HexEncode(bft_gid).c_str());
@@ -1005,7 +1005,7 @@ int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg
             // sync block from neighbor nodes
             ZJC_ERROR("backup commit block failed should sync: %s",
                 common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
-            assert(false);
+            return kConsensusError;
         }
     } while (0);
     
@@ -1574,7 +1574,7 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
     } else {
         ZJC_DEBUG("should sync block now: %s.",
             common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
-        assert(false);
+        return kConsensusError;
     }
 
     // start new bft

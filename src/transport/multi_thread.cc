@@ -47,6 +47,7 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
             msg_ptr->thread_idx = thread_idx_;
             Processor::Instance()->HandleMessage(msg_ptr);
+//             ZJC_DEBUG("handle message txhash: %lu", msg_ptr->header.hash64());
         }
 
         if (thread_idx_ + 1 < common::GlobalInfo::Instance()->message_handler_thread_count()) {
@@ -55,13 +56,13 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->header.set_type(common::kConsensusTimerMessage);
             Processor::Instance()->HandleMessage(msg_ptr);
         }
-
-        if (thread_idx_ + 1 == common::GlobalInfo::Instance()->message_handler_thread_count()) {
-            auto msg_ptr = std::make_shared<transport::TransportMessage>();
-            msg_ptr->thread_idx = thread_idx_;
-            msg_ptr->header.set_type(common::kPoolTimerMessage);
-            Processor::Instance()->HandleMessage(msg_ptr);
-        }
+// 
+//         if (thread_idx_ + 1 == common::GlobalInfo::Instance()->message_handler_thread_count()) {
+//             auto msg_ptr = std::make_shared<transport::TransportMessage>();
+//             msg_ptr->thread_idx = thread_idx_;
+//             msg_ptr->header.set_type(common::kPoolTimerMessage);
+//             Processor::Instance()->HandleMessage(msg_ptr);
+//         }
 
         std::unique_lock<std::mutex> lock(wait_mutex_);
         wait_con_.wait_for(lock, std::chrono::milliseconds(10));

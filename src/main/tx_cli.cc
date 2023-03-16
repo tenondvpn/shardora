@@ -64,7 +64,6 @@ static transport::MessagePtr CreateTransactionWithAttr(
         uint64_t gas_limit,
         uint64_t gas_price,
         int32_t des_net_id) {
-    security->SetPrivateKey(from_prikey);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     transport::protobuf::Header& msg = msg_ptr->header;
     dht::DhtKeyManager dht_key(des_net_id);
@@ -190,10 +189,12 @@ int main(int argc, char** argv) {
     std::string gid = common::Random::RandomString(32);
     std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
     std::string to = common::Encode::HexDecode("d9ec5aff3001dece14e1f4a35a39ed506bd6274a");
+    uint32_t prikey_pos = 0;
+    auto from_prikey = prikeys[prikey_pos % prikeys.size()];
+    security->SetPrivateKey(from_prikey);
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
         uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos;
-        auto& from_prikey = prikeys[pos % prikeys.size()];
         if (addrs_map[from_prikey] == to) {
             continue;
         }
@@ -204,10 +205,13 @@ int main(int argc, char** argv) {
             return 1;
         }
 
-        std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << std::endl;
-//         if (pos % 10000 == 0) {
-            usleep(1000000);
-//         }
+//         std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << std::endl;
+        if (pos % 10000 == 0) {
+            ++prikey_pos;
+            from_prikey = prikeys[prikey_pos % prikeys.size()];
+            security->SetPrivateKey(from_prikey);
+            //usleep(1000000);
+        }
     }
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
