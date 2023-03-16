@@ -47,12 +47,6 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
             msg_ptr->thread_idx = thread_idx_;
             Processor::Instance()->HandleMessage(msg_ptr);
-            if (msg_ptr->header.type() == common::kConsensusMessage) {
-                ZJC_DEBUG("handled message from %s:%d tx hash: %lu",
-                    msg_ptr->conn->PeerIp().c_str(),
-                    msg_ptr->conn->PeerPort(),
-                    msg_ptr->header.hash64());
-            }
         }
 
         if (thread_idx_ + 1 < common::GlobalInfo::Instance()->message_handler_thread_count()) {
@@ -140,13 +134,6 @@ int32_t MultiThreadHandler::GetPriority(int32_t msg_type) {
 }
 
 void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
-    if (msg_ptr->header.type() == common::kConsensusMessage) {
-        ZJC_DEBUG("receive message from %s:%d tx hash: %lu",
-            msg_ptr->conn->PeerIp().c_str(),
-            msg_ptr->conn->PeerPort(),
-            msg_ptr->header.hash64());
-    }
-
     uint32_t priority = GetPriority(msg_ptr->header.type());
     if (thread_vec_.empty()) {
         return;
