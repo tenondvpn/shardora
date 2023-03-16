@@ -131,8 +131,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
                     all_txs_hash.append(iter->first);
                 }
 
-                all_txs_hash = common::Hash::keccak256(all_txs_hash);
                 ZJC_DEBUG("leader get txs: %s", common::Encode::HexEncode(all_txs_hash).c_str());
+                all_txs_hash = common::Hash::keccak256(all_txs_hash);
             }
         }
     }
