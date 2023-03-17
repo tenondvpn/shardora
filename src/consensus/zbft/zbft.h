@@ -473,17 +473,21 @@ protected:
     uint32_t consensus_prepare_max_count_ = 0;
     uint32_t consensus_prepare_all_count_ = 0;
 
-public:
-    inline void set_test_times(uint32_t index) {
-#ifdef ZJC_UNITTEST
-        times_[index] = common::TimeUtils::TimestampUs();
-#endif
-    }
-#ifdef ZJC_UNITTEST
-    uint64_t times_[64] = { 0 };
-#endif
-
     DISALLOW_COPY_AND_ASSIGN(Zbft);
+public:
+    // for test
+    uint64_t times_[128] = { 0 };
+    uint32_t times_index_ = 0;
+    void ClearTime() {
+        times_index_ = 0;
+    }
+
+    void PrintTime() {
+        for (uint32_t i = 1; i < times_index_; ++i) {
+            std::cout << i << " : " << (times_[i] - times_[i - 1]) << std::endl;
+        }
+    }
+
 };
 
 typedef std::shared_ptr<Zbft> ZbftPtr;

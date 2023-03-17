@@ -46,10 +46,6 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
     return common::Hash::keccak256(message);
 }
 
-std::string GetPrepareTxsHash(const block::protobuf::BlockTx& tx_info) {
-    return GetTxMessageHash(tx_info);
-}
-
 std::string GetBlockHash(const block::protobuf::Block& block) {
     std::string msg;
     msg.reserve(block.tx_list_size() * 32 + 256);

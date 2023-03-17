@@ -5,6 +5,7 @@
 
 #include "common/utils.h"
 #include "common/log.h"
+#include "pools/tx_utils.h"
 #include "protos/block.pb.h"
 
 namespace zjchain {
@@ -79,6 +80,22 @@ static const uint64_t kCallContractDefaultUseGas = 10000llu;
 static const uint64_t kKeyValueStorageEachBytes = 10llu;
 
 typedef std::function<int(const std::shared_ptr<block::protobuf::Block>& block)> BlockCallback;
+
+struct WaitingTxsItem {
+    WaitingTxsItem()
+        : bloom_filter(nullptr),
+        max_txs_hash_count(0),
+        tx_type(pools::protobuf::kNormalFrom) {}
+    std::string all_txs_hash;
+    std::map<std::string, pools::TxItemPtr> txs;
+    std::shared_ptr<common::BloomFilter> bloom_filter;
+    std::unordered_map<std::string, uint32_t> all_hash_count;
+    std::string max_txs_hash;
+    uint32_t max_txs_hash_count;
+    uint32_t pool_index;
+    uint8_t thread_index;
+    pools::protobuf::StepType tx_type;
+};
 
 };  // namespace consensus
 

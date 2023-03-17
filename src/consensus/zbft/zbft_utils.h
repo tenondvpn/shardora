@@ -111,7 +111,6 @@ std::string StatusToString(uint32_t status);
 // hash128(gid + from + to + amount + type + attrs(k:v))
 std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info);
 // prehash + network_id + height + random + elect version + txes's hash
-std::string GetPrepareTxsHash(const block::protobuf::BlockTx& tx_info);
 std::string GetBlockHash(const block::protobuf::Block& block);
 uint32_t NewAccountGetNetworkId(const std::string& addr);
 bool IsRootSingleBlockTx(uint32_t tx_type);

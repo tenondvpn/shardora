@@ -168,17 +168,6 @@ void TxPoolManager::GetTx(
     tx_pool_[pool_index].GetTx(bloom_filter, res_map);
 }
 
-TxItemPtr TxPoolManager::GetTx(uint32_t pool_index, const std::string& tx_hash) {
-    assert(pool_index < common::kInvalidPoolIndex);
-//     while (msg_queues_[pool_index].size() > 0) {
-//         transport::MessagePtr msg_ptr = nullptr;
-//         msg_queues_[pool_index].pop(&msg_ptr);
-//         DispatchTx(pool_index, msg_ptr);
-//     }
-
-    return tx_pool_[pool_index].GetTx(tx_hash);
-}
-
 void TxPoolManager::TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs) {
     assert(pool_index < common::kInvalidPoolIndex);
     return tx_pool_[pool_index].TxRecover(recover_txs);

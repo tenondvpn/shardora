@@ -365,7 +365,7 @@ std::string TcpTransport::GetHeaderHashForSign(const transport::protobuf::Header
     msg_for_hash.append(std::string((char*)&type, sizeof(type)));
     int32_t version = message.version();
     msg_for_hash.append(std::string((char*)&version, sizeof(version)));
-    protos::GetProtoHash(message, &msg_for_hash);
+//     protos::GetProtoHash(message, &msg_for_hash);
     return common::Hash::keccak256(msg_for_hash);
 }
 

@@ -39,7 +39,36 @@ public:
     void Init(uint32_t pool_idx);
     int AddTx(TxItemPtr& tx_ptr);
     void GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count);
-    TxItemPtr GetTx(const std::string& sgid);
+
+    inline TxItemPtr GetTx(const std::string& tx_hash) {
+        common::AutoSpinLock lock(mutex_);
+        auto iter = added_tx_map_.find(tx_hash);
+        if (iter != added_tx_map_.end()) {
+            //         ZJC_DEBUG("success get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
+            return iter->second;
+        }
+
+        //     ZJC_DEBUG("failed get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
+        return nullptr;
+    }
+
+    std::shared_ptr<consensus::WaitingTxsItem> GetTx(const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list) {
+        auto txs_items = std::make_shared<consensus::WaitingTxsItem>();
+        auto& tx_map = txs_items->txs;
+        common::AutoSpinLock lock(mutex_);
+        for (int32_t i = 0; i < tx_hash_list.size(); ++i) {
+            auto& txhash = tx_hash_list[i];
+            auto iter = added_tx_map_.find(txhash);
+            if (iter != added_tx_map_.end()) {
+                //         ZJC_DEBUG("success get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
+                tx_map[txhash] = iter->second;
+            }
+        }
+
+        //     ZJC_DEBUG("failed get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
+        return txs_items;
+    }
+
     void GetTx(
         const common::BloomFilter& bloom_filter,
         std::map<std::string, TxItemPtr>& res_map);

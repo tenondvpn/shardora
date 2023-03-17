@@ -9,22 +9,6 @@ namespace zjchain {
 
 namespace consensus {
 
-struct WaitingTxsItem {
-    WaitingTxsItem()
-        : bloom_filter(nullptr),
-        max_txs_hash_count(0),
-        tx_type(pools::protobuf::kNormalFrom) {}
-    std::string all_txs_hash;
-    std::map<std::string, pools::TxItemPtr> txs;
-    std::shared_ptr<common::BloomFilter> bloom_filter;
-    std::unordered_map<std::string, uint32_t> all_hash_count;
-    std::string max_txs_hash;
-    uint32_t max_txs_hash_count;
-    uint32_t pool_index;
-    uint8_t thread_index;
-    pools::protobuf::StepType tx_type;
-};
-
 class WaitingTxs {
 public:
     WaitingTxs() {}
@@ -62,18 +46,7 @@ public:
 
     std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
             const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list) {
-        txs_items_ = std::make_shared<WaitingTxsItem>();
-        auto& tx_map = txs_items_->txs;
-        for (int32_t i = 0; i < tx_hash_list.size(); ++i) {
-            auto tx_item = pools_mgr_->GetTx(pool_index_, tx_hash_list[i]);
-            if (tx_item != nullptr) {
-                tx_map[tx_hash_list[i]] = tx_item;
-            } else {
-                ZJC_DEBUG("failed get tx item txhash pool index: %u %s", pool_index_, common::Encode::HexEncode(tx_hash_list[i]).c_str());
-                assert(false);
-            }
-        }
-
+        txs_items_ = pools_mgr_->GetTx(pool_index_, tx_hash_list);
         if (txs_items_->txs.empty()) {
             txs_items_ = nullptr;
         }

@@ -100,18 +100,6 @@ bool TxPool::CheckTimeoutTx(TxItemPtr& tx_ptr, uint64_t timestamp_now) {
     return true;
 }
 
-TxItemPtr TxPool::GetTx(const std::string& tx_hash) {
-    common::AutoSpinLock lock(mutex_);
-    auto iter = added_tx_map_.find(tx_hash);
-    if (iter != added_tx_map_.end()) {
-//         ZJC_DEBUG("success get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
-        return iter->second;
-    }
-
-//     ZJC_DEBUG("failed get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
-    return nullptr;
-}
-
 void TxPool::GetTx(
         const common::BloomFilter& bloom_filter,
         std::map<std::string, TxItemPtr>& res_map) {
