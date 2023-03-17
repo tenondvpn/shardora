@@ -50,7 +50,11 @@ void ThreadHandler::HandleMessage() {
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
             if ((etime - btime) > 100000) {
-                ZJC_DEBUG("handle message: %d use: %lu us", msg_ptr->header.type(), (etime - btime));
+                std::string t;
+                for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
+                    t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
+                }
+                ZJC_DEBUG("handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
             }
         }
 

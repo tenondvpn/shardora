@@ -14,6 +14,7 @@
 #include "common/bloom_filter.h"
 #include "common/global_info.h"
 #include "common/hash.h"
+#include "common/spin_mutex.h"
 #include "common/time_utils.h"
 #include "common/user_property_key_define.h"
 #include "common/utils.h"
@@ -37,11 +38,7 @@ public:
     ~TxPool();
     void Init(uint32_t pool_idx);
     int AddTx(TxItemPtr& tx_ptr);
-//     bool IsPrevTxsOver() {
-//         return waiting_txs_.empty();
-//     }
-
-    TxItemPtr GetTx();
+    void GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count);
     TxItemPtr GetTx(const std::string& sgid);
     void GetTx(
         const common::BloomFilter& bloom_filter,
@@ -65,8 +62,9 @@ public:
 
 private:
     bool CheckTimeoutTx(TxItemPtr& tx_ptr, uint64_t timestamp_now);
-
-    std::priority_queue<TxItemPtr, std::vector<TxItemPtr>, TxItemPriOper> mem_queue_;
+    common::SpinMutex mutex_;
+//     std::priority_queue<TxItemPtr, std::vector<TxItemPtr>, TxItemPriOper> mem_queue_;
+    std::deque<TxItemPtr> mem_queue_;
 //     std::set<std::string> waiting_txs_;
     std::deque<TxItemPtr> timeout_txs_;
     std::unordered_map<std::string, TxItemPtr> added_tx_map_;

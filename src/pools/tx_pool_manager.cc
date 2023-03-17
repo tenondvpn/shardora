@@ -91,15 +91,20 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             return;
         }
 
-        msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-//         auto ptr = msg_ptr;
-//         pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](ptr);
+//         msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
+        auto ptr = msg_ptr;
+        pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](ptr);
+        tx_pool_[msg_ptr->address_info->pool_index()].AddTx(tx_ptr);
 //         ZJC_INFO("success add tx to queue: %d, %s",
 //             msg_ptr->address_info->pool_index(),
 //             common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
     } else {
         // check valid
-        msg_queues_[0].push(msg_ptr);
+//         msg_queues_[0].push(msg_ptr);
+        auto ptr = msg_ptr;
+        pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](ptr);
+        tx_pool_[msg_ptr->address_info->pool_index()].AddTx(tx_ptr);
+
 //         ZJC_DEBUG("success add tx to queue: %d", msg_ptr->address_info->pool_index());
     }
     
@@ -140,45 +145,36 @@ void TxPoolManager::GetTx(
         count = common::kSingleBlockMaxTransactions;
     }
 
-    while (msg_queues_[pool_index].size() > 0) {
-        transport::MessagePtr msg_ptr = nullptr;
-        msg_queues_[pool_index].pop(&msg_ptr);
-        DispatchTx(pool_index, msg_ptr);
-    }
+//     while (msg_queues_[pool_index].size() > 0) {
+//         transport::MessagePtr msg_ptr = nullptr;
+//         msg_queues_[pool_index].pop(&msg_ptr);
+//         DispatchTx(pool_index, msg_ptr);
+//     }
 
-    while (true) {
-        auto tx = tx_pool_[pool_index].GetTx();
-        if (tx == nullptr) {
-            break;
-        }
-
-        res_map[tx->tx_hash] = tx;
-        if (res_map.size() >= count) {
-            break;
-        }
-    }
+       tx_pool_[pool_index].GetTx(res_map, count);
+        
 }
 
 void TxPoolManager::GetTx(
         const common::BloomFilter& bloom_filter,
         uint32_t pool_index,
         std::map<std::string, TxItemPtr>& res_map) {
-    while (msg_queues_[pool_index].size() > 0) {
-        transport::MessagePtr msg_ptr = nullptr;
-        msg_queues_[pool_index].pop(&msg_ptr);
-        DispatchTx(pool_index, msg_ptr);
-    }
-
+//     while (msg_queues_[pool_index].size() > 0) {
+//         transport::MessagePtr msg_ptr = nullptr;
+//         msg_queues_[pool_index].pop(&msg_ptr);
+//         DispatchTx(pool_index, msg_ptr);
+//     }
+// 
     tx_pool_[pool_index].GetTx(bloom_filter, res_map);
 }
 
 TxItemPtr TxPoolManager::GetTx(uint32_t pool_index, const std::string& tx_hash) {
     assert(pool_index < common::kInvalidPoolIndex);
-    while (msg_queues_[pool_index].size() > 0) {
-        transport::MessagePtr msg_ptr = nullptr;
-        msg_queues_[pool_index].pop(&msg_ptr);
-        DispatchTx(pool_index, msg_ptr);
-    }
+//     while (msg_queues_[pool_index].size() > 0) {
+//         transport::MessagePtr msg_ptr = nullptr;
+//         msg_queues_[pool_index].pop(&msg_ptr);
+//         DispatchTx(pool_index, msg_ptr);
+//     }
 
     return tx_pool_[pool_index].GetTx(tx_hash);
 }

@@ -44,7 +44,6 @@ protected:
             const pools::protobuf::TxMessage& tx_info,
             block::protobuf::BlockTx* block_tx) {
         block_tx->set_gid(tx_info.gid());
-        block_tx->set_from(sec_ptr_->GetAddress(tx_info.pubkey()));
         block_tx->set_gas_limit(tx_info.gas_limit());
         block_tx->set_gas_price(tx_info.gas_price());
         block_tx->set_step(tx_info.step());

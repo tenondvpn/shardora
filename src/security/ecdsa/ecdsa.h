@@ -27,9 +27,9 @@ public:
         return str_prikey_;
     }
 
-    virtual std::string GetAddress();
+    virtual const std::string& GetAddress() const;
     virtual std::string GetAddress(const std::string& pubkey);
-    virtual std::string GetPublicKey();
+    virtual const std::string& GetPublicKey() const;
     virtual int Encrypt(const std::string& msg, const std::string& key, std::string* out);
     virtual int Decrypt(const std::string& msg, const std::string& key, std::string* out);
     virtual int GetEcdhKey(const std::string& peer_pubkey, std::string* ecdh_key);
@@ -52,6 +52,8 @@ private:
     PublicKey pubkey_;
     EcdhCreateKey ecdh_key_;
     std::string str_prikey_;
+    std::string str_addr_;
+    std::string str_pk_;
 
     DISALLOW_COPY_AND_ASSIGN(Ecdsa);
 };

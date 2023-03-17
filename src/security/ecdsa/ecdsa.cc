@@ -20,6 +20,7 @@ int Ecdsa::SetPrivateKey(const std::string& prikey) {
         return kSecurityError;
     }
 
+    str_addr_ = Secp256k1::Instance()->ToAddressWithPublicKey(curve_, pubkey_.str_pubkey());
     return kSecuritySuccess;
 }
 
@@ -56,15 +57,15 @@ std::string Ecdsa::Recover(
     return Secp256k1::Instance()->Recover(sign, hash);
 }
 
-std::string Ecdsa::GetAddress() {
-    return Secp256k1::Instance()->ToAddressWithPublicKey(curve_, pubkey_.str_pubkey());
+const std::string& Ecdsa::GetAddress() const {
+    return str_addr_;
 }
 
 std::string Ecdsa::GetAddress(const std::string& pubkey) {
     return Secp256k1::Instance()->ToAddressWithPublicKey(curve_, pubkey);
 }
 
-std::string Ecdsa::GetPublicKey() {
+const std::string& Ecdsa::GetPublicKey() const {
     return pubkey_.str_pubkey();
 }
 

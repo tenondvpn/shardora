@@ -158,45 +158,41 @@ int Zbft::InitZjcTvmContext() {
 }
 
 bool Zbft::BackupCheckLeaderValid(const zbft::protobuf::ZbftMessage* bft_msg) {
-    auto local_elect_height = elect_height_;
-    auto members = members_ptr_;
-    if (members == nullptr ||
-            common_pk_ == libff::alt_bn128_G2::zero() ||
-            local_sec_key_ == libff::alt_bn128_Fr::zero()) {
-        if (members != nullptr) {
-            ZJC_ERROR("get members failed!. bft_msg.member_index(): %d, members->size(): %d, "
-                "common_pk_ == libff::alt_bn128_G2::zero(), local_sec_key_ == libff::alt_bn128_Fr::zero()",
-                bft_msg->member_index(), members->size(),
-                (common_pk_ == libff::alt_bn128_G2::zero()),
-                (local_sec_key_ == libff::alt_bn128_Fr::zero()));
-        } else {
-            ZJC_ERROR("get members failed!: %lu, net id: %d",
-                local_elect_height,
-                common::GlobalInfo::Instance()->network_id());
-        }
-        return false;
-    }
+//     if (members_ptr_ == nullptr ||
+//             common_pk_ == libff::alt_bn128_G2::zero() ||
+//             local_sec_key_ == libff::alt_bn128_Fr::zero()) {
+//         if (members != nullptr) {
+//             ZJC_ERROR("get members failed!. bft_msg.member_index(): %d, members->size(): %d, "
+//                 "common_pk_ == libff::alt_bn128_G2::zero(), local_sec_key_ == libff::alt_bn128_Fr::zero()",
+//                 bft_msg->member_index(), members->size(),
+//                 (common_pk_ == libff::alt_bn128_G2::zero()),
+//                 (local_sec_key_ == libff::alt_bn128_Fr::zero()));
+//         } else {
+//             ZJC_ERROR("get members failed!: %lu, net id: %d",
+//                 local_elect_height,
+//                 common::GlobalInfo::Instance()->network_id());
+//         }
+//         return false;
+//     }
+// 
+//     for (uint32_t i = 0; i < members->size(); ++i) {
+//         if ((*members)[i]->id == security_ptr_->GetAddress()) {
+//             local_member_index_ = i;
+//             break;
+//         }
+//     }
+// 
+//     if (local_member_index_ == elect::kInvalidMemberIndex) {
+//         ZJC_ERROR("get local member failed!.");
+//         return false;
+//     }
+// 
+//     leader_mem_ptr_ = (*members)[bft_msg->member_index()];
+//     if (!leader_mem_ptr_) {
+//         ZJC_ERROR("get leader failed!.");
+//         return false;
+//     }
 
-    for (uint32_t i = 0; i < members->size(); ++i) {
-        if ((*members)[i]->id == security_ptr_->GetAddress()) {
-            local_member_index_ = i;
-            break;
-        }
-    }
-
-    if (local_member_index_ == elect::kInvalidMemberIndex) {
-        ZJC_ERROR("get local member failed!.");
-        return false;
-    }
-
-    leader_mem_ptr_ = (*members)[bft_msg->member_index()];
-    if (!leader_mem_ptr_) {
-        ZJC_ERROR("get leader failed!.");
-        return false;
-    }
-
-    elect_height_ = local_elect_height;
-    members_ptr_ = members;
 //     ZJC_DEBUG("backup check leader success elect height: %lu, local_member_index_: %lu, gid: %s",
 //         elect_height_, local_member_index_, common::Encode::HexEncode(gid_).c_str());
     return true;
@@ -217,19 +213,23 @@ int Zbft::LeaderPrecommitOk(
     }
 
     // TODO: check back hash eqal to it's signed hash
+    auto btime = common::TimeUtils::TimestampUs();
     auto valid_count = SetPrepareBlock(
         id,
         index,
         tx_prepare.prepare_final_hash(),
         tx_prepare.height(),
         backup_sign);
+    auto time0 = common::TimeUtils::TimestampUs();
+    assert((time0 - btime) < 10000);
     if ((uint32_t)valid_count >= min_aggree_member_count_) {
-        if (LeaderCreatePreCommitAggChallenge(
-                tx_prepare.prepare_final_hash()) != kConsensusSuccess) {
+        if (LeaderPrecommitAggSign(tx_prepare.prepare_final_hash()) != kConsensusSuccess) {
             ZJC_ERROR("create bls precommit agg sign failed!");
             return kConsensusOppose;
         }
 
+        auto time1 = common::TimeUtils::TimestampUs();
+        assert((time1 - time0) < 10000);
         leader_handled_precommit_ = true;
         return kConsensusAgree;
     }
@@ -292,7 +292,7 @@ int Zbft::CheckTimeout() {
 //         if (precommit_aggree_set_.size() >= min_prepare_member_count_ ||
 //                 (precommit_aggree_set_.size() >= min_aggree_member_count_ &&
 //                 now_timestamp >= prepare_timeout_)) {
-//             LeaderCreatePreCommitAggChallenge("");
+//             LeaderPrecommitAggSign("");
 //             leader_handled_precommit_ = true;
 //             ZJC_ERROR("kTimeoutCallPrecommit %s,", common::Encode::HexEncode(gid()).c_str());
 //             return kTimeoutCallPrecommit;
@@ -308,7 +308,7 @@ int Zbft::CheckTimeout() {
             }
 
             prepare_bitmap_ = precommit_bitmap_;
-            LeaderCreatePreCommitAggChallenge("");
+            LeaderPrecommitAggSign("");
             RechallengePrecommitClear();
             ZJC_ERROR("kTimeoutCallReChallenge %s,", common::Encode::HexEncode(gid()).c_str());
             return kTimeoutCallReChallenge;
@@ -330,7 +330,7 @@ void Zbft::RechallengePrecommitClear() {
     commit_oppose_set_.clear();
 }
 
-int Zbft::LeaderCreatePreCommitAggChallenge(const std::string& prpare_hash) {
+int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
     auto iter = prepare_block_map_.find(prpare_hash);
     if (iter == prepare_block_map_.end()) {
         return kConsensusError;
@@ -584,9 +584,9 @@ void Zbft::LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg) {
 }
 
 int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
-    if (InitZjcTvmContext() != kConsensusSuccess) {
-        return kConsensusError;
-    }
+//     if (InitZjcTvmContext() != kConsensusSuccess) {
+//         return kConsensusError;
+//     }
 
     std::string pool_hash = pools_mgr_->latest_hash(txs_ptr_->pool_index);
     uint64_t pool_height = pools_mgr_->latest_height(txs_ptr_->pool_index);
@@ -621,9 +621,11 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
     auto tx_list = zjc_block.mutable_tx_list();
     auto& tx_map = txs_ptr_->txs;
     std::unordered_map<std::string, int64_t> acc_balance_map;
+    auto btime = common::TimeUtils::TimestampUs();
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto& tx_info = iter->second->msg_ptr->header.tx_proto();
         auto& block_tx = *tx_list->Add();
+        block_tx.set_from(iter->second->msg_ptr->address_info->addr());
         int res = iter->second->TxToBlockTx(tx_info, &block_tx);
         if (res != kConsensusSuccess) {
             continue;
@@ -635,6 +637,11 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
         if (do_tx_res != kConsensusSuccess) {
             continue;
         }
+    }
+    auto etime = common::TimeUtils::TimestampUs();
+    if (etime - btime >= 50000) {
+        std::cout << "use time: " << (etime - btime) << " us" << ", tx size: " << tx_map.size() << std::endl;
+        assert(false);
     }
 }
 

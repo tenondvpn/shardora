@@ -71,8 +71,8 @@ static transport::MessagePtr CreateTransactionWithAttr(
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kPoolsMessage);
     msg.set_hop_count(0);
-    auto broadcast = msg.mutable_broadcast();
-    broadcast->set_hop_limit(10);
+//     auto broadcast = msg.mutable_broadcast();
+//     broadcast->set_hop_limit(10);
     auto new_tx = msg.mutable_tx_proto();
     new_tx->set_gid(gid);
     new_tx->set_pubkey(security->GetPublicKey());
@@ -205,12 +205,22 @@ int main(int argc, char** argv) {
             return 1;
         }
 
+        if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 22001, tx_msg_ptr->header) != 0) {
+            std::cout << "send tcp client failed!" << std::endl;
+            return 1;
+        }
+
+        if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
+            std::cout << "send tcp client failed!" << std::endl;
+            return 1;
+        }
+
 //         std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << std::endl;
         if (pos % 10000 == 0) {
             ++prikey_pos;
             from_prikey = prikeys[prikey_pos % prikeys.size()];
             security->SetPrivateKey(from_prikey);
-            //usleep(1000000);
+            usleep(1000000);
         }
     }
 

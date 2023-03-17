@@ -80,7 +80,7 @@ struct TransportMessage {
     std::string msg_hash;
     std::shared_ptr<TransportMessage> response;
     void* tmp_ptr;
-    uint64_t times[32];
+    uint64_t times[128];
     uint32_t times_idx;
 };
 

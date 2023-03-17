@@ -363,7 +363,7 @@ public:
         }
     }
 
-    int LeaderCreatePreCommitAggChallenge(const std::string& hash);
+    int LeaderPrecommitAggSign(const std::string& hash);
     int LeaderCreateCommitAggSign();
     void RechallengePrecommitClear();
     uint8_t thread_index() const {
