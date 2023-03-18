@@ -38,6 +38,10 @@ void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
     auto timestamp_now = common::TimeUtils::TimestampUs();
     std::vector<TxItemPtr> recover_txs;
     common::AutoSpinLock lock(mutex_);
+    if (mem_queue_.size() < 2 * count) {
+        return;
+    }
+
     while (!mem_queue_.empty()) {
         auto item = mem_queue_.front();
 //         mem_queue_.pop();
@@ -51,12 +55,14 @@ void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
 //         }
 // 
         if (item->time_valid > timestamp_now) {
+            ZJC_INFO("0 get tx mem size: %d, get: %d", mem_queue_.size(), res_map.size());
             return;
         }
 
         res_map[item->tx_hash] = item;
         mem_queue_.pop_front();
         if (res_map.size() >= count) {
+            ZJC_INFO("1 get tx mem size: %d, get: %d", mem_queue_.size(), res_map.size());
             return;
         }
         //else {

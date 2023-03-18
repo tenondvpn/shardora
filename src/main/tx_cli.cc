@@ -217,9 +217,9 @@ int main(int argc, char** argv) {
 
 //         std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << std::endl;
         if (pos % 10000 == 0) {
-//             ++prikey_pos;
-//             from_prikey = prikeys[prikey_pos % prikeys.size()];
-//             security->SetPrivateKey(from_prikey);
+            ++prikey_pos;
+            from_prikey = prikeys[prikey_pos % prikeys.size()];
+            security->SetPrivateKey(from_prikey);
             usleep(1000000);
         }
     }
