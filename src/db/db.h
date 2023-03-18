@@ -27,7 +27,7 @@ namespace zjchain {
 namespace db {
 
 #ifdef LEVELDB
-    typedef leveldb::WriteBatch DbWriteBach;
+    typedef leveldb::WriteBatch DbWriteBatch;
     typedef leveldb::Status DbStatus;
     typedef leveldb::DB DickDb;
     typedef leveldb::WriteOptions DbWriteOptions;
@@ -35,7 +35,7 @@ namespace db {
     typedef leveldb::Slice DbSlice;
     typedef leveldb::Iterator DbIterator;
 #else
-    typedef rocksdb::WriteBatch DbWriteBach;
+    typedef rocksdb::WriteBatch DbWriteBatch;
     typedef rocksdb::Status DbStatus;
     typedef rocksdb::DB DickDb;
     typedef rocksdb::WriteOptions DbWriteOptions;
@@ -63,7 +63,7 @@ public:
         return res;
     }
 
-    DbStatus Put(DbWriteBach& db_batch) {
+    DbStatus Put(DbWriteBatch& db_batch) {
         DbWriteOptions write_opt;
         return db_->Write(write_opt, &db_batch);
     }

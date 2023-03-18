@@ -66,7 +66,7 @@ private:
     void CreateDefaultAccount();
     void AddBlockItemToCache(
         std::shared_ptr<block::protobuf::Block>& block,
-        db::DbWriteBach& db_batch);
+        db::DbWriteBatch& db_batch);
 
     std::map<uint32_t, std::string> pool_index_map_;
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;

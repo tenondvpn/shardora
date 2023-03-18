@@ -72,7 +72,7 @@ public:
     void AddAddressInfo(
             const std::string& addr,
             const address::protobuf::AddressInfo& addr_info,
-            db::DbWriteBach& db_batch) {
+            db::DbWriteBatch& db_batch) {
         db_batch.Put(kAddressPrefix + addr, addr_info.SerializeAsString());
     }
 
@@ -86,7 +86,7 @@ public:
     void AddAddressInfo(
             const std::string& addr,
             const std::string& val,
-            db::DbWriteBach& write_batch) {
+            db::DbWriteBatch& write_batch) {
         write_batch.Put(kAddressPrefix + addr, val);
     }
 
@@ -425,7 +425,7 @@ public:
             uint32_t pool_index,
             uint64_t height,
             const std::string& block_hash,
-            db::DbWriteBach& batch) {
+            db::DbWriteBatch& batch) {
         std::string key;
         key.reserve(32);
         key.append(kBlockHeightPrefix);
@@ -454,7 +454,7 @@ public:
         return true;
     }
 
-    void SaveBlock(const block::protobuf::Block& block, db::DbWriteBach& batch) {
+    void SaveBlock(const block::protobuf::Block& block, db::DbWriteBatch& batch) {
         if (BlockExists(block.hash())) {
             return;
         }
@@ -544,7 +544,7 @@ public:
 
     void SaveLatestToTxsHeights(
             const pools::protobuf::ToTxHeights& heights,
-            db::DbWriteBach& batch) {
+            db::DbWriteBatch& batch) {
         std::string key;
         key.reserve(48);
         key.append(kLatestToTxsHeightsPrefix);
@@ -592,7 +592,7 @@ public:
     void SaveLatestPoolInfo(
             uint32_t pool_index,
             const pools::protobuf::PoolLatestInfo& pool_info,
-            db::DbWriteBach& batch) {
+            db::DbWriteBatch& batch) {
         std::string key;
         key.reserve(48);
         key.append(kLatestPoolPrefix);

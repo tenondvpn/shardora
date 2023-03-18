@@ -43,7 +43,7 @@ private:
     void AddBlockItemToCache(
         uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,
-        db::DbWriteBach& db_batch);
+        db::DbWriteBatch& db_batch);
 
     common::Config conf_;
     bool inited_{ false };

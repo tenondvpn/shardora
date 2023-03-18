@@ -32,7 +32,7 @@ public:
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         const block::protobuf::BlockTx& tx,
-        db::DbWriteBach& db_batch);
+        db::DbWriteBatch& db_batch);
     protos::AddressInfoPtr GetAcountInfo(uint8_t thread_idx, const std::string& acc_id);
     protos::AddressInfoPtr GetAcountInfo(
         const std::shared_ptr<block::protobuf::Block>& block_item,
@@ -66,15 +66,15 @@ private:
     void SetPool(
         uint32_t pool_index,
         const std::shared_ptr<block::protobuf::Block>& block_item,
-        db::DbWriteBach& db_batch);
+        db::DbWriteBatch& db_batch);
 //     int HandleRootSingleBlockTx(
 //         uint64_t height,
 //         const block::protobuf::BlockTx& tx_info,
-//         db::DbWriteBach& db_batch);
+//         db::DbWriteBatch& db_batch);
 //     int HandleElectBlock(
 //         uint64_t height,
 //         const block::protobuf::BlockTx& tx_info,
-//         db::DbWriteBach& db_batch);
+//         db::DbWriteBatch& db_batch);
 //     int HandleTimeBlock(
 //         uint64_t height,
 //         const block::protobuf::BlockTx& tx_info);
@@ -87,12 +87,12 @@ private:
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
-        db::DbWriteBach& db_batch);
+        db::DbWriteBatch& db_batch);
     void HandleLocalToTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
-        db::DbWriteBach& db_batch);
+        db::DbWriteBatch& db_batch);
 
     static const uint64_t kCheckMissingHeightPeriod = 3000000llu;
     static const uint64_t kFushTreeToDbPeriod = 6000000llu;

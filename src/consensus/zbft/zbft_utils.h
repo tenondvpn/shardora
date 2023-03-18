@@ -84,7 +84,7 @@ struct ElectItem {
 typedef std::function<void(
     uint8_t thread_idx,
     std::shared_ptr<block::protobuf::Block>& block,
-    db::DbWriteBach& db_batch)> BlockCacheCallback;
+    db::DbWriteBatch& db_batch)> BlockCacheCallback;
 
 static const uint32_t kBftOneConsensusMaxCount = 32u;  // every consensus
 static const uint32_t kBftOneConsensusMinCount = 1u;

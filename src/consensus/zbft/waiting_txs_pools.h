@@ -24,7 +24,7 @@ public:
             uint32_t pool_index,
             uint64_t height,
             const std::string& hash,
-            db::DbWriteBach& db_batch) {
+            db::DbWriteBatch& db_batch) {
         pool_mgr_->UpdateLatestInfo(pool_index, height, hash, db_batch);
     }
 

@@ -104,7 +104,7 @@ typedef std::shared_ptr<block::protobuf::Block> BlockPtr;
 struct BlockToDbItem {
     BlockToDbItem(BlockPtr& bptr) : block_ptr(bptr) {}
     BlockPtr block_ptr;
-    db::DbWriteBach db_batch;
+    db::DbWriteBatch db_batch;
     bool is_kv_synced{ false };
 };
 

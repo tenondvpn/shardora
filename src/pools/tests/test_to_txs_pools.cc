@@ -63,7 +63,7 @@ public:
     virtual void TearDown() {
     }
 
-    static std::shared_ptr<address::protobuf::AddressInfo> CreateAddr(db::DbWriteBach& db_batch) {
+    static std::shared_ptr<address::protobuf::AddressInfo> CreateAddr(db::DbWriteBatch& db_batch) {
         auto addr = kRandomString;
         uint32_t* index_arr = (uint32_t*)addr.data();
         index_arr[0] = addr_index++;
@@ -80,7 +80,7 @@ public:
     static void CreateBlock(ToTxsPools& to_txs_pool) {
         for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
             for (uint32_t j = 0; j < kTestEachPoolBlockCount; ++j) {
-                db::DbWriteBach db_batch;
+                db::DbWriteBatch db_batch;
                 auto block_ptr = std::make_shared<block::protobuf::Block>();
                 block_ptr->set_network_id(kTestNetworkId);
                 block_ptr->set_pool_index(i);

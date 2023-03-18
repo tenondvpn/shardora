@@ -89,7 +89,7 @@ void BlockManager::NetworkNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item) {
     if (block_item != nullptr) {
-        db::DbWriteBach db_batch;
+        db::DbWriteBatch db_batch;
         AddAllAccount(block_item, db_batch);
         AddNewBlock(thread_idx, block_item, db_batch);
     }
@@ -117,7 +117,7 @@ void BlockManager::HandleAllConsensusBlocks(uint8_t thread_idx) {
 
 void BlockManager::AddAllAccount(
         const std::shared_ptr<block::protobuf::Block>& block_item,
-        db::DbWriteBach& db_batch) {
+        db::DbWriteBatch& db_batch) {
     const auto& tx_list = block_item->tx_list();
     if (tx_list.empty()) {
         return;
@@ -139,7 +139,7 @@ void BlockManager::HandleNormalToTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
-        db::DbWriteBach& db_batch) {
+        db::DbWriteBatch& db_batch) {
     if (tx.storages_size() != 1) {
         return;
     }
@@ -240,7 +240,7 @@ void BlockManager::HandleNormalToTx(
 void BlockManager::AddNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
-        db::DbWriteBach& db_batch) {
+        db::DbWriteBatch& db_batch) {
 //     ZJC_DEBUG("new block coming.");
     prefix_db_->SaveBlock(*block_item, db_batch);
     to_txs_pool_->NewBlock(*block_item, db_batch);

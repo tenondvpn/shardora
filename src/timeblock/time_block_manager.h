@@ -40,7 +40,7 @@ public:
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         const block::protobuf::BlockTx& tx,
-        db::DbWriteBach& db_batch);
+        db::DbWriteBatch& db_batch);
     uint64_t LatestTimestamp();
     uint64_t LatestTimestampHeight();
     void UpdateTimeBlock(

@@ -19,7 +19,7 @@ ToTxsPools::ToTxsPools(
 
 ToTxsPools::~ToTxsPools() {}
 
-void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBach& db_batch) {
+void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch& db_batch) {
     if (block.network_id() != common::GlobalInfo::Instance()->network_id()) {
         ZJC_DEBUG("network invalid!");
         return;
@@ -112,7 +112,7 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBach& 
 void ToTxsPools::HandleNormalToTx(
         uint64_t block_height,
         const block::protobuf::BlockTx& tx_info,
-        db::DbWriteBach& db_batch) {
+        db::DbWriteBatch& db_batch) {
     if (tx_info.storages_size() <= 0) {
         return;
     }

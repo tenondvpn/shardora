@@ -16,7 +16,7 @@ class ToTxsPools {
 public:
     ToTxsPools(std::shared_ptr<db::Db>& db, const std::string& local_id);
     ~ToTxsPools();
-    void NewBlock(const block::protobuf::Block& block, db::DbWriteBach& db_batch);
+    void NewBlock(const block::protobuf::Block& block, db::DbWriteBatch& db_batch);
     int BackupCreateToTx(
         uint32_t sharding_id,
         const pools::protobuf::ToTxHeights& leader_to_heights,
@@ -29,7 +29,7 @@ private:
     void HandleNormalToTx(
         uint64_t block_height,
         const block::protobuf::BlockTx& tx_info,
-        db::DbWriteBach& db_batch);
+        db::DbWriteBatch& db_batch);
     void LoadLatestHeights();
 
     // destination shard -> pool -> height -> items

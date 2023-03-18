@@ -226,6 +226,7 @@ ZbftPtr BftManager::Start(uint8_t thread_index, const transport::MessagePtr& pre
         return nullptr;
     }
 
+    ZJC_INFO("tx size: %u", txs_ptr->txs.size());
     txs_ptr->thread_index = thread_index;
     return StartBft(txs_ptr, prepare_msg_ptr);
 }

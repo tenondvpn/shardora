@@ -23,7 +23,7 @@ void NodeHistoryCredit::OnNewElectBlock(
         return;
     }
 
-    db::DbWriteBach write_batch;
+    db::DbWriteBatch write_batch;
     write_batch.Put(height_key, "1");
     for (int32_t i = 0; i < elect_block.in_size(); ++i) {
         auto id = security->GetAddress(elect_block.in(i).pubkey());
@@ -40,7 +40,7 @@ void NodeHistoryCredit::OnNewElectBlock(
 void NodeHistoryCredit::ChangeCredit(
         const std::string& id,
         bool weedout,
-        db::DbWriteBach& write_batch) {
+        db::DbWriteBatch& write_batch) {
     auto iter = credit_map_.find(id);
     std::string id_key = "db::kElectionHistoryCredit" + id;
     int32_t credit = kInitNodeCredit;

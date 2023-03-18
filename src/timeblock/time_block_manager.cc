@@ -65,7 +65,7 @@ void TimeBlockManager::NewBlockWithTx(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         const block::protobuf::BlockTx& tx,
-        db::DbWriteBach& db_batch) {
+        db::DbWriteBatch& db_batch) {
     ZJC_DEBUG("timeblock new tx coming: %lu, storage size: %d", block_item->height(), tx.storages_size());
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == kAttrTimerBlock) {

@@ -24,7 +24,7 @@ private:
     static const int32_t kMaxNodeCredit = 100;
     static const int32_t kMinNodeCredit = 0;
 
-    void ChangeCredit(const std::string& id, bool weedout, db::DbWriteBach& write_batch);
+    void ChangeCredit(const std::string& id, bool weedout, db::DbWriteBatch& write_batch);
 
     std::mutex mutex_;
     std::unordered_map<std::string, int32_t> credit_map_;

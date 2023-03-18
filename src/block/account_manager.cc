@@ -112,7 +112,7 @@ int AccountManager::GetAddressConsensusNetworkId(
 // int AccountManager::HandleElectBlock(
 //         uint64_t height,
 //         const block::protobuf::BlockTx& tx_info,
-//         db::DbWriteBach& db_batch) {
+//         db::DbWriteBatch& db_batch) {
 //     elect::protobuf::ElectBlock elect_block;
 //     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
 //         if (tx_info.storages(i).key() == elect::kElectNodeAttrElectBlock) {
@@ -139,7 +139,7 @@ int AccountManager::GetAddressConsensusNetworkId(
 // int AccountManager::HandleRootSingleBlockTx(
 //         uint64_t height,
 //         const block::protobuf::BlockTx& tx_info,
-//         db::DbWriteBach& db_batch) {
+//         db::DbWriteBatch& db_batch) {
 //     switch (tx_info.type()) {
 //     case common::kConsensusRootElectShard:
 //         return HandleElectBlock(height, tx_info, db_batch);
@@ -206,7 +206,7 @@ void AccountManager::HandleNormalFromTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
-        db::DbWriteBach& db_batch) {
+        db::DbWriteBatch& db_batch) {
     std::string account_id = GetTxValidAddress(tx);
     auto account_info = GetAcountInfo(thread_idx, account_id);
     if (account_info == nullptr) {
@@ -225,7 +225,7 @@ void AccountManager::HandleLocalToTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
-        db::DbWriteBach& db_batch) {
+        db::DbWriteBatch& db_batch) {
     std::string to_txs_str;
     if (!prefix_db_->GetTemporaryKv(tx.storages(1).val_hash(), &to_txs_str)) {
         return;
@@ -259,7 +259,7 @@ void AccountManager::NewBlockWithTx(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         const block::protobuf::BlockTx& tx,
-        db::DbWriteBach& db_batch) {
+        db::DbWriteBatch& db_batch) {
     switch (tx.step()) {
     case pools::protobuf::kNormalFrom:
         HandleNormalFromTx(thread_idx, *block_item, tx, db_batch);
