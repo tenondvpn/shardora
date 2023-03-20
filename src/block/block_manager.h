@@ -3,6 +3,7 @@
 #include <deque>
 
 #include "block/block_utils.h"
+#include "ck/ck_client.h"
 #include "common/config.h"
 #include "common/node_members.h"
 #include "common/thread_safe_queue.h"
@@ -88,6 +89,7 @@ private:
     std::shared_ptr<ToTxsItem> to_txs_[network::kConsensusShardEndNetworkId] = { nullptr };
     pools::CreateConsensusItemFunction create_to_tx_cb_ = nullptr;
     uint32_t prev_pool_index_ = network::kRootCongressNetworkId;
+    std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
 
 #ifdef ZJC_UNITTEST
     transport::MessagePtr leader_to_txs_msg_ = nullptr;

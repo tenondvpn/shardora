@@ -30,10 +30,6 @@ public:
         return config_local_port_;
     }
 
-    int32_t config_default_stream_limit() {
-        return stream_default_limit_;
-    }
-
     void set_config_local_ip(const std::string& ip) {
         config_local_ip_ = ip;
     }
@@ -122,6 +118,10 @@ public:
         return kTickThreadPoolCount;
     }
 
+    bool for_ck_server() const {
+        return for_ck_server_;
+    }
+
 private:
     GlobalInfo();
     ~GlobalInfo();
@@ -136,7 +136,6 @@ private:
     std::string version_info_;
     std::atomic<uint64_t> gid_idx_{ 0 };
     uint16_t http_port_{ 0 };
-    int32_t stream_default_limit_{ 262144 };
     bool genesis_start_{ false };
     std::vector<uint32_t> networks_;
     uint16_t config_public_port_{ 0 };
@@ -151,6 +150,7 @@ private:
     std::unordered_map<uint64_t, uint16_t> thread_with_index_;
     uint8_t now_thread_idx_ = 0;
     uint8_t message_handler_thread_count_ = 4;
+    bool for_ck_server_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };

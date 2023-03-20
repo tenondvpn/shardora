@@ -35,6 +35,10 @@ int BlockManager::Init(
     local_id_ = local_id;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(db_, local_id);
+    if (common::GlobalInfo::Instance()->for_ck_server()) {
+        ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "");
+    }
+
     consensus_block_queues_ = new common::ThreadSafeQueue<BlockToDbItemPtr>[
         common::GlobalInfo::Instance()->message_handler_thread_count()];
     network::Route::Instance()->RegisterMessage(
@@ -244,6 +248,10 @@ void BlockManager::AddNewBlock(
 //     ZJC_DEBUG("new block coming.");
     prefix_db_->SaveBlock(*block_item, db_batch);
     to_txs_pool_->NewBlock(*block_item, db_batch);
+    if (ck_client_ != nullptr) {
+        ck_client_->AddNewBlock(block_item);
+    }
+
     if (block_item->network_id() == common::GlobalInfo::Instance()->network_id()) {
         const auto& tx_list = block_item->tx_list();
         if (tx_list.empty()) {

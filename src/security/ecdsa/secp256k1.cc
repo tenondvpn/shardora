@@ -59,6 +59,44 @@ inline bool ByteArrayLess(byte* l, byte* r) {
     return false;
 }
 
+bool Secp256k1::Sign(const std::string& hash, const PrivateKey& privkey, std::string* sign) {
+    secp256k1_ecdsa_signature sig;
+    secp256k1_ecdsa_sign(
+        getCtx(),
+        &sig,
+        (const uint8_t*)hash.c_str(),
+        (const uint8_t*)privkey.private_key().c_str(),
+        NULL,
+        NULL);
+    uint8_t data[kSignatureSize];
+    secp256k1_ecdsa_signature_serialize_compact(getCtx(), data, &sig);
+    *sign = std::string((char*)data, sizeof(data));
+    return true;
+}
+
+bool Secp256k1::Verify(
+        const std::string& hash,
+        const PublicKey& pubkey,
+        const std::string& sign) {
+    secp256k1_ecdsa_signature sig;
+    if (secp256k1_ecdsa_signature_parse_compact(
+            getCtx(),
+            &sig,
+            (uint8_t*)sign.c_str()) != 1) {
+        return false;
+    }
+
+    if (secp256k1_ecdsa_verify(
+            getCtx(),
+            &sig,
+            (uint8_t*)hash.c_str(),
+            pubkey.pubkey()) != 1) {
+        return false;
+    }
+
+    return true;
+}
+
 std::string Secp256k1::GetSign(const std::string& r, const std::string& s, uint8_t v) {
     secp256k1_ecdsa_recoverable_signature sig;
     memcpy(sig.data, r.c_str(), 32);

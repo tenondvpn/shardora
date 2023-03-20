@@ -7,8 +7,8 @@
 #include <secp256k1/secp256k1_recovery.h>
 
 #include "common/utils.h"
-#include "security/ecdsa/public_key.h"
 #include "security/ecdsa/crypto_utils.h"
+#include "security/ecdsa/public_key.h"
 
 namespace zjchain {
 
@@ -26,6 +26,8 @@ public:
         return ctx_;
     }
 
+    bool Sign(const std::string& hash, const PrivateKey& privkey, std::string* sign);
+    bool Verify(const std::string& hash, const PublicKey& pubkey, const std::string& sign);
     bool Secp256k1Sign(
         const std::string& msg,
         const PrivateKey& privkey,

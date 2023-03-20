@@ -11,7 +11,7 @@ ClickHouseClient::ClickHouseClient(
         const std::string& host,
         const std::string& user,
         const std::string& passwd)
-        : client_(clickhouse::ClientOptions().SetHost(host).SetPort(31544)) {
+        : client_(clickhouse::ClientOptions().SetHost(host).SetPort(9000)) {
 }
 
 ClickHouseClient::~ClickHouseClient() {}
@@ -87,15 +87,11 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     auto attr_value = std::make_shared<clickhouse::ColumnString>();
 
     std::string bitmap_str;
-    for (int32_t i = 0; i < block_item->bitmap_size(); ++i) {
-        bitmap_str += std::to_string(block_item->bitmap(i)) + ",";
+    for (int32_t i = 0; i < block_item->precommit_bitmap_size(); ++i) {
+        bitmap_str += std::to_string(block_item->precommit_bitmap(i)) + ",";
     }
 
     std::string commit_bitmap_str;
-    for (int32_t i = 0; i < block_item->commit_bitmap_size(); ++i) {
-        commit_bitmap_str += std::to_string(block_item->commit_bitmap(i)) + ",";
-    }
-
     block_shard_id->Append(block_item->network_id());
     block_pool_index->Append(block_item->pool_index());
     block_height->Append(block_item->height());
@@ -131,11 +127,11 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
         date->Append(common::MicTimestampToDate(block_item->timestamp()));
         gid->Append(common::Encode::HexEncode(tx_list[i].gid()));
         from->Append(common::Encode::HexEncode(tx_list[i].from()));
-        from_pubkey->Append(common::Encode::HexEncode(tx_list[i].from_pubkey()));
-        from_sign->Append(common::Encode::HexEncode(tx_list[i].from_sign()));
+        from_pubkey->Append("");
+        from_sign->Append("");
         to->Append(common::Encode::HexEncode(tx_list[i].to()));
         amount->Append(tx_list[i].amount());
-        if (block_item->network_id() == 2 && tx_list[i].type() == 5) {
+        if (block_item->network_id() == 2 && tx_list[i].step() == 5) {
             gas_limit->Append(0);
             gas_used->Append(0);
             gas_price->Append(0);
@@ -144,17 +140,17 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
             gas_limit->Append(tx_list[i].gas_limit());
             gas_used->Append(tx_list[i].gas_used());
             gas_price->Append(tx_list[i].gas_price());
-            type->Append(tx_list[i].type());
+            type->Append(tx_list[i].step());
         }
         balance->Append(tx_list[i].balance());
-        to_add->Append(tx_list[i].to_add());
+        to_add->Append(false);
         attrs->Append("");
         status->Append(tx_list[i].status());
-        tx_hash->Append(common::Encode::HexEncode(tx_list[i].tx_hash()));
-        call_contract_step->Append(tx_list[i].call_contract_step());
+        tx_hash->Append(common::Encode::HexEncode(tx_list[i].gid()));
+        call_contract_step->Append(tx_list[i].step());
         storages->Append("");
         transfers->Append("");
-        if (tx_list[i].to_add()) {
+        if (tx_list[i].step() == pools::protobuf::kNormalTo) {
             acc_account->Append(common::Encode::HexEncode(tx_list[i].to()));
             acc_shard_id->Append(block_item->network_id());
             acc_pool_index->Append(block_item->pool_index());
@@ -167,22 +163,13 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
             acc_balance->Append(tx_list[i].balance());
         }
 
-        for (int32_t j = 0; j < tx_list[i].attr_size(); ++j) {
-            attr_account->Append(common::Encode::HexEncode(tx_list[i].from()));
-            attr_to->Append(common::Encode::HexEncode(tx_list[i].to()));
-            attr_tx_type->Append(tx_list[i].type());
-            attr_shard_id->Append(block_item->network_id());
-            attr_key->Append(common::Encode::HexEncode(tx_list[i].attr(j).key()));
-            attr_value->Append(common::Encode::HexEncode(tx_list[i].attr(j).value()));
-        }
-
         for (int32_t j = 0; j < tx_list[i].storages_size(); ++j) {
             attr_account->Append(common::Encode::HexEncode(tx_list[i].from()));
-            attr_tx_type->Append(tx_list[i].type());
+            attr_tx_type->Append(tx_list[i].step());
             attr_to->Append(common::Encode::HexEncode(tx_list[i].to()));
             attr_shard_id->Append(block_item->network_id());
             attr_key->Append(common::Encode::HexEncode(tx_list[i].storages(j).key()));
-            attr_value->Append(common::Encode::HexEncode(tx_list[i].storages(j).value()));
+            attr_value->Append(common::Encode::HexEncode(tx_list[i].storages(j).val_hash()));
         }
     }
 
