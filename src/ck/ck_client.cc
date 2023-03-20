@@ -12,6 +12,7 @@ ClickHouseClient::ClickHouseClient(
         const std::string& user,
         const std::string& passwd)
         : client_(clickhouse::ClientOptions().SetHost(host).SetPort(9000)) {
+    CreateTable(true);
 }
 
 ClickHouseClient::~ClickHouseClient() {}
@@ -173,7 +174,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
         }
     }
 
-    ZJC_DEBUG("add new ck block block_shard_id: %d, block_height: %lu", block_shard_id, block_height);
+    ZJC_DEBUG("add new ck block block_shard_id: %d, block_height: %lu", block_item->network_id(), block_item->height());
 
     blocks.AppendColumn("shard_id", block_shard_id);
     blocks.AppendColumn("pool_index", block_pool_index);
@@ -354,7 +355,7 @@ bool ClickHouseClient::CreateAccountKeyValueTable() {
 bool ClickHouseClient::CreateStatisticTable() {
     std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhouseStatisticTableName + " ( "
         "`time` UInt64 COMMENT 'time' CODEC(LZ4), "
-        "`all_tenon` UInt64 COMMENT 'tenon' CODEC(LZ4), "
+        "`all_zjc` UInt64 COMMENT 'zjc' CODEC(LZ4), "
         "`all_address` UInt32 COMMENT 'address' CODEC(T64, LZ4), "
         "`all_contracts` UInt32 COMMENT 'contracts' CODEC(T64, LZ4), "
         "`all_transactions` UInt32 COMMENT 'transactions' CODEC(LZ4), "
@@ -407,7 +408,7 @@ void ClickHouseClient::TickStatistic() {
 }
 
 void ClickHouseClient::Statistic() try {
-    std::string cmd = "select count(*) as cnt from tenon_ck_transaction_table;";
+    std::string cmd = "select count(*) as cnt from zjc_ck_transaction_table;";
     uint32_t all_transactions = 0;
     client_.Select(cmd, [&all_transactions](const clickhouse::Block& ck_block) {
         if (ck_block.GetRowCount() > 0) {
@@ -415,7 +416,7 @@ void ClickHouseClient::Statistic() try {
         }
     });
 
-    cmd = "select count(*) from tenon_ck_account_table;";
+    cmd = "select count(*) from zjc_ck_account_table;";
     uint32_t all_address = 0;
     client_.Select(cmd, [&all_address](const clickhouse::Block& ck_block) {
         if (ck_block.GetRowCount() > 0) {
@@ -423,7 +424,7 @@ void ClickHouseClient::Statistic() try {
         }
     });
 
-    cmd = "select sum(balance) from tenon_ck_account_table;";
+    cmd = "select sum(balance) from zjc_ck_account_table;";
     uint64_t sum_balance = 0;
     client_.Select(cmd, [&sum_balance](const clickhouse::Block& ck_block) {
         if (ck_block.GetRowCount() > 0) {
@@ -431,7 +432,7 @@ void ClickHouseClient::Statistic() try {
         }
     });
 
-    cmd = "select count(*) from tenon_ck_account_key_value_table where type = 4 and key = '5f5f636279746573636f6465'";
+    cmd = "select count(*) from zjc_ck_account_key_value_table where type = 4 and key = '5f5f636279746573636f6465'";
     uint32_t all_contracts = 0;
     client_.Select(cmd, [&all_contracts](const clickhouse::Block& ck_block) {
         if (ck_block.GetRowCount() > 0) {
@@ -440,7 +441,7 @@ void ClickHouseClient::Statistic() try {
     });
 
     auto st_time = std::make_shared<clickhouse::ColumnUInt64>();
-    auto st_tenon = std::make_shared<clickhouse::ColumnUInt64>();
+    auto st_zjc = std::make_shared<clickhouse::ColumnUInt64>();
     auto st_address = std::make_shared<clickhouse::ColumnUInt32>();
     auto st_contracts = std::make_shared<clickhouse::ColumnUInt32>();
     auto st_transactions = std::make_shared<clickhouse::ColumnUInt32>();
@@ -449,7 +450,7 @@ void ClickHouseClient::Statistic() try {
     auto st_date = std::make_shared<clickhouse::ColumnUInt32>();
     st_time->Append(common::TimeUtils::TimestampSeconds());
     st_date->Append(common::TimeUtils::TimestampDays());
-    st_tenon->Append(sum_balance);
+    st_zjc->Append(sum_balance);
     st_address->Append(all_address);
     st_contracts->Append(all_contracts);
     st_transactions->Append(all_transactions);
@@ -457,7 +458,7 @@ void ClickHouseClient::Statistic() try {
     st_wnodes->Append(0);
     clickhouse::Block statistics;
     statistics.AppendColumn("time", st_time);
-    statistics.AppendColumn("all_tenon", st_tenon);
+    statistics.AppendColumn("all_zjc", st_zjc);
     statistics.AppendColumn("all_address", st_address);
     statistics.AppendColumn("all_contracts", st_contracts);
     statistics.AppendColumn("all_transactions", st_transactions);

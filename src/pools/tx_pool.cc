@@ -39,12 +39,16 @@ void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
     auto timestamp_now = common::TimeUtils::TimestampUs();
     std::vector<TxItemPtr> recover_txs;
     common::AutoSpinLock lock(mutex_);
-    if (prio_map_.size() < 2 * count) {
-        return;
-    }
+//     if (prio_map_.size() < 2 * count) {
+//         return;
+//     }
 
     auto iter = prio_map_.begin();
     while (iter != prio_map_.end()) {
+        if (iter->second->time_valid >= timestamp_now) {
+            break;
+        }
+
         res_map[iter->second->tx_hash] = iter->second;
         prio_map_.erase(iter++);
         if (res_map.size() >= count) {

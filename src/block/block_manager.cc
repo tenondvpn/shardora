@@ -37,6 +37,7 @@ int BlockManager::Init(
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(db_, local_id);
     if (common::GlobalInfo::Instance()->for_ck_server()) {
         ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "");
+        ZJC_DEBUG("support ck");
     }
 
     consensus_block_queues_ = new common::ThreadSafeQueue<BlockToDbItemPtr>[
@@ -250,6 +251,7 @@ void BlockManager::AddNewBlock(
     to_txs_pool_->NewBlock(*block_item, db_batch);
     if (ck_client_ != nullptr) {
         ck_client_->AddNewBlock(block_item);
+        ZJC_DEBUG("add to ck.");
     }
 
     if (block_item->network_id() == common::GlobalInfo::Instance()->network_id()) {
