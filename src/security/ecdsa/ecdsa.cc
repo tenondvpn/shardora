@@ -54,7 +54,7 @@ std::string Ecdsa::GetSign(const std::string& r, const std::string& s, uint8_t v
 std::string Ecdsa::Recover(
         const std::string& sign,
         const std::string& hash) {
-    return Secp256k1::Instance()->Recover(sign, hash);
+    return Secp256k1::Instance()->Recover(sign, hash, true);
 }
 
 const std::string& Ecdsa::GetAddress() const {
@@ -62,11 +62,22 @@ const std::string& Ecdsa::GetAddress() const {
 }
 
 std::string Ecdsa::GetAddress(const std::string& pubkey) {
-    return Secp256k1::Instance()->ToAddressWithPublicKey(curve_, pubkey);
+    std::string addr;
+    if (pk_addr_map_.get(pubkey, &addr)) {
+        return addr;
+    }
+
+    addr = Secp256k1::Instance()->ToAddressWithPublicKey(curve_, pubkey);
+    pk_addr_map_.add(pubkey, addr);
+    return addr;
 }
 
 const std::string& Ecdsa::GetPublicKey() const {
     return pubkey_.str_pubkey();
+}
+
+const std::string& Ecdsa::GetPublicKeyUnCompressed() const {
+    return pubkey_.str_pubkey_uncompressed();
 }
 
 int Ecdsa::Encrypt(const std::string& msg, const std::string& key, std::string* out) {

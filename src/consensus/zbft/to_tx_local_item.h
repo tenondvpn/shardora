@@ -11,7 +11,7 @@ namespace consensus {
 class ToTxLocalItem : public TxItemBase {
 public:
     ToTxLocalItem(
-            transport::MessagePtr& msg,
+            const transport::MessagePtr& msg,
             std::shared_ptr<db::Db>& db,
             std::shared_ptr<block::AccountManager>& account_mgr,
             std::shared_ptr<security::Security>& sec_ptr)

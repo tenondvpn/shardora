@@ -18,6 +18,7 @@ TxPool::~TxPool() {}
 
 void TxPool::Init(uint32_t pool_idx) {
     pool_index_ = pool_idx;
+    added_tx_map_.reserve(10240);
 }
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
@@ -28,9 +29,9 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         return kPoolsTxAdded;
     }
 
-    added_tx_map_.insert(std::make_pair(tx_ptr->tx_hash, tx_ptr));
-    mem_queue_.push_back(tx_ptr);
-//     ZJC_DEBUG("success add tx %u, %s", pool_index_, common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
+    added_tx_map_[tx_ptr->tx_hash] = tx_ptr;
+    prio_map_[tx_ptr->prio_key] = tx_ptr;
+//     ZJC_DEBUG("success add tx %u, %u, %u", pool_index_, added_tx_map_.size(), prio_map_.size());
     return kPoolsSuccess;
 }
 
@@ -38,42 +39,19 @@ void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
     auto timestamp_now = common::TimeUtils::TimestampUs();
     std::vector<TxItemPtr> recover_txs;
     common::AutoSpinLock lock(mutex_);
-    if (mem_queue_.size() < 2 * count) {
+    if (prio_map_.size() < 2 * count) {
         return;
     }
 
-    while (!mem_queue_.empty()) {
-        auto item = mem_queue_.front();
-//         mem_queue_.pop();
-//         if (CheckTimeoutTx(item, timestamp_now)) {
-//             continue;
-//         }
-// 
-//         auto exist_iter = added_tx_map_.find(item->tx_hash);
-//         if (exist_iter == added_tx_map_.end()) {
-//             continue;
-//         }
-// 
-        if (item->time_valid > timestamp_now) {
-            ZJC_INFO("0 get tx mem size: %d, get: %d", mem_queue_.size(), res_map.size());
-            return;
-        }
-
-        res_map[item->tx_hash] = item;
-        mem_queue_.pop_front();
+    auto iter = prio_map_.begin();
+    while (iter != prio_map_.end()) {
+        res_map[iter->second->tx_hash] = iter->second;
+        prio_map_.erase(iter++);
         if (res_map.size() >= count) {
-            ZJC_INFO("1 get tx mem size: %d, get: %d", mem_queue_.size(), res_map.size());
+//             ZJC_INFO("1 get tx mem size: %d, get: %d", prio_map_.size(), res_map.size());
             return;
         }
-        //else {
-//             recover_txs.push_back(item);
-//         }
     }
-
-//     for (auto iter = recover_txs.begin(); iter != recover_txs.end(); ++iter) {
-//         mem_queue_.push(*iter);
-//     }
-
 }
 
 bool TxPool::CheckTimeoutTx(TxItemPtr& tx_ptr, uint64_t timestamp_now) {
@@ -124,7 +102,7 @@ void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
         auto miter = added_tx_map_.find(iter->first);
         if (miter != added_tx_map_.end()) {
-            mem_queue_.push_front(miter->second);
+            prio_map_[miter->second->prio_key] = miter->second;
         }
     }
 }
@@ -137,7 +115,14 @@ void TxPool::TxOver(std::map<std::string, TxItemPtr>& txs) {
             added_tx_map_.erase(miter);
 //             ZJC_DEBUG("remove tx %s", common::Encode::HexEncode(iter->second->tx_hash).c_str());
         }
+
+        auto prio_iter = prio_map_.find(iter->second->prio_key);
+        if (prio_iter != prio_map_.end()) {
+            prio_map_.erase(prio_iter);
+        }
     }
+
+//     ZJC_DEBUG("tx over %u, map: %u, q: %u", txs.size(), added_tx_map_.size(), prio_map_.size());
 }
 
 }  // namespace pools

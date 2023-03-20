@@ -7,6 +7,7 @@
 #include "network/network_utils.h"
 #include "network/route.h"
 #include "protos/prefix_db.h"
+#include "security/ecdsa/secp256k1.h"
 #include "transport/tcp_transport.h"
 
 namespace zjchain {
@@ -65,12 +66,12 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (tx_msg.step() == pools::protobuf::kNormalFrom) {
         msg_ptr->address_info = GetAddressInfo(security_->GetAddress(tx_msg.pubkey()));
         if (msg_ptr->address_info == nullptr) {
-            ZJC_DEBUG("no address info.");
+            ZJC_WARN("no address info.");
             return;
         }
 
         if (msg_ptr->address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-            ZJC_DEBUG("sharding error: %d, %d",
+            ZJC_WARN("sharding error: %d, %d",
                 msg_ptr->address_info->sharding_id(),
                 common::GlobalInfo::Instance()->network_id());
             return;
@@ -83,28 +84,45 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-        if (security_->Verify(
-                msg_ptr->msg_hash,
-                tx_msg.pubkey(),
-                header.sign()) != security::kSecuritySuccess) {
-            ZJC_ERROR("verify signature failed!");
-            return;
-        }
-
+//         if (security_->Verify(
+//                 msg_ptr->msg_hash,
+//                 tx_msg.pubkey(),
+//                 header.sign()) != security::kSecuritySuccess) {
+//             ZJC_ERROR("verify signature failed!");
+//             return;
+//         }
+// 
 //         msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-        auto ptr = msg_ptr;
-        pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](ptr);
+        ++prev_count_[msg_ptr->address_info->pool_index()];
+        auto now_tm = common::TimeUtils::TimestampUs();
+        if (prev_timestamp_us_ + 3000000lu < now_tm) {
+            for (uint32_t i = 0; i < 257; ++i) {
+                if (prev_count_[i] > 0) {
+                    ZJC_INFO("pool: %d tx tps: %.2f", i,
+                        (double(prev_count_[i]) / (double((now_tm - prev_timestamp_us_) / 1000000.0))));
+                    prev_count_[i] = 0;
+                }
+            }
+
+            prev_timestamp_us_ = now_tm;
+        }
+        pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](msg_ptr);
         tx_pool_[msg_ptr->address_info->pool_index()].AddTx(tx_ptr);
-//         ZJC_INFO("success add tx to queue: %d, %s",
+//         std::map<std::string, TxItemPtr> res_map;
+//         tx_pool_[msg_ptr->address_info->pool_index()].GetTx(res_map, 256);
+//         if (!res_map.empty()) {
+//             tx_pool_[msg_ptr->address_info->pool_index()].TxOver(res_map);
+//         }
+        //         ZJC_INFO("success add tx to queue: %d, %s",
 //             msg_ptr->address_info->pool_index(),
 //             common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
     } else {
         // check valid
 //         msg_queues_[0].push(msg_ptr);
+        return;
         auto ptr = msg_ptr;
         pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](ptr);
         tx_pool_[msg_ptr->address_info->pool_index()].AddTx(tx_ptr);
-
 //         ZJC_DEBUG("success add tx to queue: %d", msg_ptr->address_info->pool_index());
     }
     

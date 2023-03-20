@@ -14,15 +14,16 @@ namespace zjchain {
 
 namespace security {
 
+// static std::unique_ptr<secp256k1_context, decltype(&secp256k1_context_destroy)> s_ctx{
+//     secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY),
+//     &secp256k1_context_destroy
+//     };
+
 class Secp256k1 {
 public:
     static Secp256k1* Instance();
     secp256k1_context const* getCtx() {
-        static std::unique_ptr<secp256k1_context, decltype(&secp256k1_context_destroy)> s_ctx{
-            secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY),
-            &secp256k1_context_destroy
-        };
-        return s_ctx.get();
+        return ctx_;
     }
 
     bool Secp256k1Sign(
@@ -38,7 +39,7 @@ public:
         const std::string& pubkey,
         const std::string& sign);
     std::string GetSign(const std::string& r, const std::string& s, uint8_t v);
-    std::string Recover(const std::string& sign, const std::string& hash);
+    std::string Recover(const std::string& sign, const std::string& hash, bool compressed);
     std::string RecoverForContract(const std::string& sign, const std::string& hash);
     std::string sha3(const std::string & input);
     std::string ToPublicFromCompressed(const std::string& in_pubkey);
@@ -53,7 +54,7 @@ public:
 private:
     Secp256k1();
     ~Secp256k1();
-    
+    secp256k1_context* ctx_ = nullptr;
     DISALLOW_COPY_AND_ASSIGN(Secp256k1);
 
 };

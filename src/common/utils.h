@@ -228,6 +228,18 @@ inline static std::string MicTimestampToDatetime(int64_t timestamp) {
 #endif
 }
 
+inline static uint32_t ShiftUint32(uint32_t value) {
+    return (value & 0x000000FFU) << 24 | (value & 0x0000FF00U) << 8 |
+        (value & 0x00FF0000U) >> 8 | (value & 0xFF000000U) >> 24;
+}
+
+
+inline static uint64_t ShiftUint64(uint64_t value) {
+    uint64_t high_uint64 = uint64_t(ShiftUint32(uint32_t(value)));
+    uint64_t low_uint64 = (uint64_t)ShiftUint32(uint32_t(value >> 32));
+    return (high_uint64 << 32) + low_uint64;
+}
+
 uint32_t MicTimestampToDate(int64_t timestamp);
 
 uint8_t RandomCountry();

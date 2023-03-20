@@ -28,6 +28,7 @@ PublicKey::PublicKey(const Curve& curve, const std::string& src) : curve_(curve)
     ec_point_ = SecurityStringTrans::Instance()->StringToEcPoint(curve, src);
     assert(ec_point_ != nullptr);
     Serialize(str_pubkey_);
+    Serialize(str_pubkey_uncompressed_, false);
     DeserializeToSecp256k1(str_pubkey_);
 }
 
@@ -42,6 +43,7 @@ PublicKey::PublicKey(const PublicKey& src)
     }
 
     str_pubkey_ = src.str_pubkey_;
+    str_pubkey_uncompressed_ = src.str_pubkey_uncompressed_;
     pubkey_ = src.pubkey_;
 }
 
@@ -58,6 +60,7 @@ PublicKey& PublicKey::operator=(const PublicKey& src) {
     }
 
     str_pubkey_ = src.str_pubkey_;
+    str_pubkey_uncompressed_ = src.str_pubkey_uncompressed_;
     pubkey_ = src.pubkey_;
     return *this;
 }
@@ -109,13 +112,12 @@ int PublicKey::FromPrivateKey(const Curve& curve, PrivateKey& privkey) {
     }
 
     Serialize(str_pubkey_);
+    Serialize(str_pubkey_uncompressed_, false);
     DeserializeToSecp256k1(str_pubkey_);
     return kSecuritySuccess;
 }
 
 int PublicKey::DeserializeToSecp256k1(const std::string& src) {
-    uint8_t pubkey_data[kPublicCompresssedSizeBytes];
-    size_t len = kPublicCompresssedSizeBytes;
     if (secp256k1_ec_pubkey_parse(
             Secp256k1::Instance()->getCtx(),
             &pubkey_,

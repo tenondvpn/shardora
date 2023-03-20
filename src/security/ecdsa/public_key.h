@@ -38,6 +38,10 @@ public:
         return str_pubkey_;
     }
 
+    const std::string& str_pubkey_uncompressed() const {
+        return str_pubkey_uncompressed_;
+    }
+
 private:
     int DeserializeToSecp256k1(const std::string& src);
 
@@ -45,6 +49,7 @@ private:
     std::shared_ptr<EC_POINT> ec_point_{ nullptr };
     secp256k1_pubkey pubkey_;
     std::string str_pubkey_;
+    std::string str_pubkey_uncompressed_;
 };
 
 }  // namespace security

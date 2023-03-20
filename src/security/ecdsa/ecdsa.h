@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common/unique_map.h"
+
 #include "security/ecdsa/private_key.h"
 #include "security/ecdsa/public_key.h"
 #include "security/ecdsa/ecdh_create_key.h"
@@ -12,7 +14,9 @@ namespace security {
 
 class Ecdsa : public Security {
 public:
-    Ecdsa() : pubkey_(curve_) {}
+    Ecdsa() : pubkey_(curve_) {
+        pk_addr_map_.Init(10240, 16);
+    }
 
     virtual ~Ecdsa() {}
 
@@ -30,6 +34,7 @@ public:
     virtual const std::string& GetAddress() const;
     virtual std::string GetAddress(const std::string& pubkey);
     virtual const std::string& GetPublicKey() const;
+    virtual const std::string& GetPublicKeyUnCompressed() const;
     virtual int Encrypt(const std::string& msg, const std::string& key, std::string* out);
     virtual int Decrypt(const std::string& msg, const std::string& key, std::string* out);
     virtual int GetEcdhKey(const std::string& peer_pubkey, std::string* ecdh_key);
@@ -54,6 +59,7 @@ private:
     std::string str_prikey_;
     std::string str_addr_;
     std::string str_pk_;
+    common::UniqueMap<std::string, std::string> pk_addr_map_;
 
     DISALLOW_COPY_AND_ASSIGN(Ecdsa);
 };

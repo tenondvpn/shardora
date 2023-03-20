@@ -94,19 +94,19 @@ private:
     ZbftPtr LeaderGetZbft(const transport::MessagePtr& msg_ptr, const std::string& gid);
     void SyncConsensusBlock(uint8_t thread_idx, uint32_t pool_index, const std::string& bft_gid);
     void HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr);
-    pools::TxItemPtr CreateFromTx(transport::MessagePtr& msg_ptr) {
+    pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
     }
 
-    pools::TxItemPtr CreateToTx(transport::MessagePtr& msg_ptr) {
+    pools::TxItemPtr CreateToTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ToTxItem>(msg_ptr, account_mgr_, security_ptr_);
     }
 
-    pools::TxItemPtr CreateToTxLocal(transport::MessagePtr& msg_ptr) {
+    pools::TxItemPtr CreateToTxLocal(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ToTxLocalItem>(msg_ptr, db_, account_mgr_, security_ptr_);
     }
 
-    pools::TxItemPtr CreateTimeblockTx(transport::MessagePtr& msg_ptr) {
+    pools::TxItemPtr CreateTimeblockTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<TimeBlockTx>(msg_ptr, account_mgr_, security_ptr_);
     }
 

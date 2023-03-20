@@ -98,6 +98,10 @@ bool TcpConnection::SendPacketWithoutLock(Packet& packet) {
     }
 
     if (tcp_state_ != kTcpConnected || !out_buffer_list_.empty()) {
+        if (out_buffer_list_.size() >= 1024) {
+            return false;
+        }
+
         out_buffer_list_.push_back(buf_ptr);
         if (max_count_ < out_buffer_list_.size()) {
             max_count_ = out_buffer_list_.size();

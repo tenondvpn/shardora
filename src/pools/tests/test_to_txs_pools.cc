@@ -106,17 +106,13 @@ public:
 };
 
 TEST_F(TestToTxsPools, All) {
-    ToTxsPools to_txs_pool(db_ptr);
+    ToTxsPools to_txs_pool(db_ptr, "local_id");
     CreateBlock(to_txs_pool);
     for (uint32_t i = 0; i < kMaxShardingId; ++i) {
-        pools::protobuf::TxMessage tx;
-        ASSERT_EQ(to_txs_pool.LeaderCreateToTx(i, &tx), kPoolsSuccess);
-        pools::protobuf::TxMessage btx;
         pools::protobuf::ToTxHeights lhs;
-        ASSERT_TRUE(lhs.ParseFromString(tx.value()));
-        ASSERT_EQ(to_txs_pool.BackupCreateToTx(i, lhs, &btx), kPoolsSuccess);
-        ASSERT_TRUE(!tx.value().empty());
-        ASSERT_EQ(tx.value(), btx.value());
+        ASSERT_EQ(to_txs_pool.LeaderCreateToTx(i, lhs), kPoolsSuccess);
+        pools::protobuf::ToTxHeights bhs;
+        ASSERT_EQ(to_txs_pool.BackupCreateToTx(i, lhs, &bhs), kPoolsSuccess);
     }
 }
 

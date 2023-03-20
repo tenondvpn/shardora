@@ -25,12 +25,13 @@ enum PoolsErrorCode {
 class TxItem {
 public:
     virtual ~TxItem() {}
-    TxItem(transport::MessagePtr& msg) : msg_ptr(msg) {
-        time_valid = common::TimeUtils::TimestampUs() + kBftStartDeltaTime;
+    TxItem(const transport::MessagePtr& msg) : msg_ptr(msg) {
+        uint64_t now_tm = common::TimeUtils::TimestampUs();
+        time_valid = now_tm + kBftStartDeltaTime;
 #ifdef ZJC_UNITTEST
         time_valid = 0;
 #endif // ZJC_UNITTEST
-        timeout = common::TimeUtils::TimestampUs() + kTxPoolTimeoutUs;
+        timeout = now_tm + kTxPoolTimeoutUs;
         remove_timeout = timeout + kTxPoolTimeoutUs;
         gas_price = msg->header.tx_proto().gas_price();
         if (msg->header.tx_proto().has_step()) {
@@ -39,6 +40,8 @@ public:
 
         tx_hash = common::Hash::keccak256(
             msg->header.tx_proto().gid() + std::to_string(step) + msg->msg_hash);
+        auto prio = common::ShiftUint64(now_tm);
+        prio_key = std::string((char*)&prio, sizeof(prio)) + tx_hash;
     }
 
     virtual int HandleTx(
@@ -57,10 +60,11 @@ public:
     int32_t step = pools::protobuf::kNormalFrom;
     std::string from_addr;
     std::string tx_hash;
+    std::string prio_key;
 };
 
 typedef std::shared_ptr<TxItem> TxItemPtr;
-typedef std::function<TxItemPtr(transport::MessagePtr& msg_ptr)> CreateConsensusItemFunction;
+typedef std::function<TxItemPtr(const transport::MessagePtr& msg_ptr)> CreateConsensusItemFunction;
 
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {
     std::string message;

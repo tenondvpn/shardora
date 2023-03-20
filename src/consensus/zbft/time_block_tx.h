@@ -11,7 +11,7 @@ namespace consensus {
 class TimeBlockTx : public TxItemBase {
 public:
     TimeBlockTx(
-        transport::MessagePtr& msg,
+        const transport::MessagePtr& msg,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<security::Security>& sec_ptr)
         : TxItemBase(msg, account_mgr, sec_ptr) {}

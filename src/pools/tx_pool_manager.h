@@ -111,6 +111,8 @@ private:
 //     common::ThreadSafeQueue<transport::MessagePtr> msg_queues_[common::kInvalidPoolIndex];
     CreateConsensusItemFunction item_functions_[pools::protobuf::StepType_ARRAYSIZE] = { nullptr };
     common::UniqueMap<std::string, protos::AddressInfoPtr> address_map_;
+    uint32_t prev_count_[257] = { 0 };
+    uint64_t prev_timestamp_us_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

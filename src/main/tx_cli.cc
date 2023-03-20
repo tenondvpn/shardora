@@ -75,7 +75,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
 //     broadcast->set_hop_limit(10);
     auto new_tx = msg.mutable_tx_proto();
     new_tx->set_gid(gid);
-    new_tx->set_pubkey(security->GetPublicKey());
+    new_tx->set_pubkey(security->GetPublicKeyUnCompressed());
     new_tx->set_step(pools::protobuf::kNormalFrom);
     new_tx->set_to(to);
     new_tx->set_amount(amount);
@@ -196,11 +196,14 @@ int main(int argc, char** argv) {
         uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos;
         if (addrs_map[from_prikey] == to) {
+            ++prikey_pos;
+            from_prikey = prikeys[prikey_pos % prikeys.size()];
+            security->SetPrivateKey(from_prikey);
             continue;
         }
 
         auto tx_msg_ptr = CreateTransactionWithAttr(security, gid, from_prikey, to, "", "", 100000, 10000000, ((uint32_t)(1000 - pos)) % 1000, 3);
-        if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 21001, tx_msg_ptr->header) != 0) {
+        if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
         }
@@ -210,17 +213,17 @@ int main(int argc, char** argv) {
             return 1;
         }
 
-        if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
+        if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 21001, tx_msg_ptr->header) != 0) {
             std::cout << "send tcp client failed!" << std::endl;
             return 1;
         }
 
 //         std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << std::endl;
-        if (pos % 10000 == 0) {
+        if (pos % 1000 == 0) {
             ++prikey_pos;
-            from_prikey = prikeys[prikey_pos % prikeys.size()];
+            from_prikey = prikeys[prikey_pos % 4];
             security->SetPrivateKey(from_prikey);
-            usleep(1000000);
+            usleep(100000);
         }
     }
 

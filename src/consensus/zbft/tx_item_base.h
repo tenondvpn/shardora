@@ -11,7 +11,7 @@ namespace consensus {
 class TxItemBase : public pools::TxItem {
 protected:
     TxItemBase(
-        transport::MessagePtr& msg,
+        const transport::MessagePtr& msg,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<security::Security>& sec_ptr)
         : pools::TxItem(msg), account_mgr_(account_mgr), sec_ptr_(sec_ptr) {}

@@ -20,7 +20,8 @@ public:
     virtual const std::string& GetPrikey() const = 0;
     virtual const std::string& GetAddress() const = 0;
     virtual std::string GetAddress(const std::string& pubkey) = 0;
-    virtual const std::string& GetPublicKey() const  = 0;
+    virtual const std::string& GetPublicKey() const = 0;
+    virtual const std::string& GetPublicKeyUnCompressed() const = 0;
     virtual int Encrypt(const std::string& msg, const std::string& key, std::string* out) = 0;
     virtual int Decrypt(const std::string& msg, const std::string& key, std::string* out) = 0;
     virtual int GetEcdhKey(const std::string& peer_pubkey, std::string* ecdh_key) = 0;

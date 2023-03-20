@@ -42,6 +42,9 @@ public:
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
         uint8_t thread_idx);
+    uint32_t ZbftSize(uint32_t pool_idx) {
+        return pipeline_pools_[pool_idx].size();
+    }
 
 private:
     void FilterInvalidTx(

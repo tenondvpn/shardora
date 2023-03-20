@@ -17,7 +17,9 @@ namespace zjchain {
 
 namespace security {
 
-Secp256k1::Secp256k1() {}
+Secp256k1::Secp256k1() {
+    ctx_ = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
+}
 
 Secp256k1::~Secp256k1() {}
 
@@ -143,11 +145,11 @@ bool Secp256k1::Secp256k1Verify(
         const std::string& msg,
         const std::string& pubkey,
         const std::string& sign) {
-    auto recover_pk = Recover(sign, msg);
-    return memcmp(pubkey.c_str() + 1, recover_pk.c_str(), 32) == 0;
+    auto recover_pk = Recover(sign, msg, pubkey.size() == kPublicCompressKeySize);
+    return memcmp(pubkey.c_str() + 1, recover_pk.c_str(), pubkey.size() - 1) == 0;
 }
 
-std::string Secp256k1::Recover(const std::string& sign, const std::string& hash) {
+std::string Secp256k1::Recover(const std::string& sign, const std::string& hash, bool compressed) {
     int v = sign[64];
     if (v > 3) {
         CRYPTO_ERROR("sign invalid: %u", v);
@@ -168,16 +170,25 @@ std::string Secp256k1::Recover(const std::string& sign, const std::string& hash)
         return "";
     }
 
-    std::array<uint8_t, 33> serialized_pubkey;
-    size_t serialized_pubkey_size = serialized_pubkey.size();
-    secp256k1_ec_pubkey_serialize(
-        getCtx(),
-        serialized_pubkey.data(),
-        &serialized_pubkey_size,
-        &raw_pubkey,
-        SECP256K1_EC_COMPRESSED);
-    assert(serialized_pubkey_size == serialized_pubkey.size());
-    return std::string((char*)&serialized_pubkey[1], 32);
+    if (compressed) {
+        std::array<uint8_t, 33> serialized_pubkey;
+        size_t serialized_pubkey_size = serialized_pubkey.size();
+        secp256k1_ec_pubkey_serialize(
+            getCtx(),
+            serialized_pubkey.data(),
+            &serialized_pubkey_size,
+            &raw_pubkey,
+            SECP256K1_EC_COMPRESSED);
+        return std::string((char*)&serialized_pubkey[1], 32);
+    } else {
+        std::array<uint8_t, 65> serialized_pubkey;
+        size_t serialized_pubkey_size = serialized_pubkey.size();
+        secp256k1_ec_pubkey_serialize(
+            getCtx(), serialized_pubkey.data(), &serialized_pubkey_size,
+            &raw_pubkey, SECP256K1_EC_UNCOMPRESSED);
+        return std::string((char*)&serialized_pubkey[1], 64);
+    }
+    
 }
 
 std::string Secp256k1::RecoverForContract(const std::string& sign, const std::string& hash) {
@@ -243,10 +254,10 @@ std::string Secp256k1::ToPublicFromCompressed(const std::string& in_pubkey) {
 std::string Secp256k1::ToAddressWithPublicKey(
         const Curve& curve,
         const std::string& pub_key) {
-    auto ptr = SecurityStringTrans::Instance()->StringToEcPoint(curve, pub_key);
-    if (ptr == nullptr) {
-        return "";
-    }
+//     auto ptr = SecurityStringTrans::Instance()->StringToEcPoint(curve, pub_key);
+//     if (ptr == nullptr) {
+//         return "";
+//     }
 
     if (pub_key.size() == kPublicCompressKeySize) {
         return UnicastAddress(common::Hash::keccak256(

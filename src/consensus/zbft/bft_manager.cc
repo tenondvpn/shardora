@@ -176,7 +176,7 @@ ZbftPtr BftManager::Start(uint8_t thread_index, const transport::MessagePtr& pre
     }
 #endif
 
-    CheckTimeout(thread_index);
+//     CheckTimeout(thread_index);
     auto msg_ptr = prepare_msg_ptr;
     if (msg_ptr != nullptr) {
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -191,9 +191,12 @@ ZbftPtr BftManager::Start(uint8_t thread_index, const transport::MessagePtr& pre
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
     auto begin_index = thread_item->prev_index;
     for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
-        txs_ptr = txs_pools_->LeaderGetValidTxs(
-            false,
-            thread_item->pools[thread_item->prev_index]);
+        auto pool_idx = thread_item->pools[thread_item->prev_index];
+        if (txs_pools_->ZbftSize(pool_idx) > 0 && prepare_msg_ptr == nullptr) {
+            continue;
+        }
+
+        txs_ptr = txs_pools_->LeaderGetValidTxs(false, pool_idx);
         if (txs_ptr != nullptr) {
             // now leader create zbft ptr and start consensus
             break;
@@ -208,9 +211,12 @@ ZbftPtr BftManager::Start(uint8_t thread_index, const transport::MessagePtr& pre
     if (txs_ptr == nullptr) {
         for (thread_item->prev_index = 0;
                 thread_item->prev_index < begin_index; ++thread_item->prev_index) {
-            txs_ptr = txs_pools_->LeaderGetValidTxs(
-                false,
-                thread_item->pools[thread_item->prev_index]);
+            auto pool_idx = thread_item->pools[thread_item->prev_index];
+            if (txs_pools_->ZbftSize(pool_idx) > 0 && prepare_msg_ptr == nullptr) {
+                continue;
+            }
+
+            txs_ptr = txs_pools_->LeaderGetValidTxs(false, pool_idx);
             if (txs_ptr != nullptr) {
                 // now leader create zbft ptr and start consensus
                 break;
@@ -226,7 +232,8 @@ ZbftPtr BftManager::Start(uint8_t thread_index, const transport::MessagePtr& pre
         return nullptr;
     }
 
-    ZJC_INFO("tx size: %u", txs_ptr->txs.size());
+//     ZJC_INFO("thread_index: %d, pool index: %d, tx size: %u, pool zbft size: %d",
+//         thread_index, txs_ptr->pool_index, txs_ptr->txs.size(), txs_pools_->ZbftSize(txs_ptr->pool_index));
     txs_ptr->thread_index = thread_index;
     return StartBft(txs_ptr, prepare_msg_ptr);
 }
@@ -626,6 +633,8 @@ void BftManager::CreateResponseMessage(
         auto& elect_item = elect_items_[elect_item_idx_];
         msg_ptr->response->header.mutable_zbft()->set_member_index(
             elect_item.local_node_member_index);
+        msg_ptr->response->header.mutable_zbft()->set_pool_index(
+            msg_ptr->header.zbft().pool_index());
         if (response_to_leader) {
             assert(msg_ptr->response->header.mutable_zbft()->member_index() != 0);
             msg_ptr->response->header.mutable_zbft()->set_leader(true);

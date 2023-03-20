@@ -55,16 +55,17 @@ public:
     std::shared_ptr<consensus::WaitingTxsItem> GetTx(const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list) {
         auto txs_items = std::make_shared<consensus::WaitingTxsItem>();
         auto& tx_map = txs_items->txs;
-        common::AutoSpinLock lock(mutex_);
-        for (int32_t i = 0; i < tx_hash_list.size(); ++i) {
-            auto& txhash = tx_hash_list[i];
-            auto iter = added_tx_map_.find(txhash);
-            if (iter != added_tx_map_.end()) {
-                //         ZJC_DEBUG("success get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
-                tx_map[txhash] = iter->second;
+        {
+            common::AutoSpinLock lock(mutex_);
+            for (int32_t i = 0; i < tx_hash_list.size(); ++i) {
+                auto& txhash = tx_hash_list[i];
+                auto iter = added_tx_map_.find(txhash);
+                if (iter != added_tx_map_.end()) {
+                    //         ZJC_DEBUG("success get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
+                    tx_map[txhash] = iter->second;
+                }
             }
         }
-
         //     ZJC_DEBUG("failed get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
         return txs_items;
     }
@@ -92,11 +93,9 @@ public:
 private:
     bool CheckTimeoutTx(TxItemPtr& tx_ptr, uint64_t timestamp_now);
     common::SpinMutex mutex_;
-//     std::priority_queue<TxItemPtr, std::vector<TxItemPtr>, TxItemPriOper> mem_queue_;
-    std::deque<TxItemPtr> mem_queue_;
-//     std::set<std::string> waiting_txs_;
     std::deque<TxItemPtr> timeout_txs_;
     std::unordered_map<std::string, TxItemPtr> added_tx_map_;
+    std::map<std::string, TxItemPtr> prio_map_;
     uint32_t pool_index_ = 0;
     uint64_t latest_height_ = 0;
     std::string latest_hash_;
