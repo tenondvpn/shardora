@@ -128,11 +128,13 @@ add_executable(wss ${MAIN_DIR}/ws_svr.cc)
 add_executable(wsc ${MAIN_DIR}/ws_cli.cc)
 add_executable(tnets ${MAIN_DIR}/tnet_svr.cc)
 add_executable(tnetc ${MAIN_DIR}/tnet_cli.cc)
+add_executable(txcli ${MAIN_DIR}/tx_cli.cc)
 
 set(LINK_ARGS
     init
     consensus
     block
+    ck
     elect
     timeblock
     pools
@@ -166,6 +168,7 @@ target_link_libraries(wsc websocket common tcmalloc pthread gmp)
 target_link_libraries(wss websocket common tcmalloc pthread gmp)
 target_link_libraries(tnetc transport common tcmalloc pthread gmp)
 target_link_libraries(tnets transport common tcmalloc pthread gmp)
+target_link_libraries(txcli security transport common tcmalloc pthread gmp)
 
 include_directories(SYSTEM ${SRC_DIR})
 
@@ -190,6 +193,7 @@ add_subdirectory(${SRC_DIR}/elect elect)
 add_subdirectory(${SRC_DIR}/consensus consensus)
 add_subdirectory(${SRC_DIR}/block block)
 add_subdirectory(${SRC_DIR}/timeblock timeblock)
+add_subdirectory(${SRC_DIR}/ck ck)
 
 add_subdirectory(${SRC_DIR}/common/tests common_test)
 add_subdirectory(${SRC_DIR}/http/tests http_test)
@@ -205,3 +209,4 @@ add_subdirectory(${SRC_DIR}/big_num/tests bignum_test)
 add_subdirectory(${SRC_DIR}/contract/tests contract_test)
 add_subdirectory(${SRC_DIR}/elect/tests elect_test)
 add_subdirectory(${SRC_DIR}/consensus/tests consensus_test)
+add_subdirectory(${SRC_DIR}/ck/tests ck_test)
