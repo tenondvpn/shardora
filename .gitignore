@@ -3,6 +3,12 @@ third_party/libBLS/deps
 cbuild_Debug
 cbuild_Release
 .vs
+t1
+t2
+third_party/bls_sign
+third_party/depends/libs/linux/librocksdb.a
+third_party/secp256k1
+third_party/secp256k1.tar.gz
 third_party/leveldb
 third_party/libBLS
 third_party/aleth*
