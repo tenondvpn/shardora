@@ -8,6 +8,7 @@ import "protos/pools.proto";
 import "protos/contract.proto";
 import "protos/elect.proto";
 import "protos/zbft.proto";
+import "protos/sync.proto";
 package zjchain.transport.protobuf;
 
 message BroadcastParam {
@@ -46,4 +47,5 @@ message Header {
     optional zbft.protobuf.ZbftMessage zbft = 16;
     optional block.protobuf.BlockMessage block_proto = 17;
     optional pools.protobuf.ToTxHeights to_tx_heights = 18;
+    optional sync.protobuf.SyncInfo sync = 19;
 }

@@ -1,0 +1,12 @@
+syntax = "proto2";
+
+package zjchain.sync.protobuf;
+
+message SyncItem {
+    optional bytes key = 1;
+    optional bytes value = 2;
+}
+
+message SyncInfo {
+    repeated SyncItem items = 1;
+}
