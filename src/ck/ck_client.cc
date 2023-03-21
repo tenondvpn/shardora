@@ -246,6 +246,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     return true;
 } catch (std::exception& e) {
     ZJC_ERROR("add new block failed[%s]", e.what());
+    client_.ResetConnection();
     return false;
 }
 
