@@ -38,6 +38,7 @@
 #include "protos/contract.pb.h"
 #include "protos/elect.pb.h"
 #include "protos/zbft.pb.h"
+#include "protos/sync.pb.h"
 // @@protoc_insertion_point(includes)
 #define PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2ftransport_2eproto 
 
@@ -599,6 +600,18 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::zjchain::pools::protobuf::ToTxHeights* mutable_to_tx_heights();
   void set_allocated_to_tx_heights(::zjchain::pools::protobuf::ToTxHeights* to_tx_heights);
 
+  // optional .zjchain.sync.protobuf.SyncInfo sync = 19;
+  bool has_sync() const;
+  void clear_sync();
+  static const int kSyncFieldNumber = 19;
+  private:
+  const ::zjchain::sync::protobuf::SyncInfo& _internal_sync() const;
+  public:
+  const ::zjchain::sync::protobuf::SyncInfo& sync() const;
+  ::zjchain::sync::protobuf::SyncInfo* release_sync();
+  ::zjchain::sync::protobuf::SyncInfo* mutable_sync();
+  void set_allocated_sync(::zjchain::sync::protobuf::SyncInfo* sync);
+
   // optional int32 src_sharding_id = 1;
   bool has_src_sharding_id() const;
   void clear_src_sharding_id();
@@ -672,6 +685,8 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   void clear_has_block_proto();
   void set_has_to_tx_heights();
   void clear_has_to_tx_heights();
+  void set_has_sync();
+  void clear_has_sync();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -689,6 +704,7 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::zjchain::zbft::protobuf::ZbftMessage* zbft_;
   ::zjchain::block::protobuf::BlockMessage* block_proto_;
   ::zjchain::pools::protobuf::ToTxHeights* to_tx_heights_;
+  ::zjchain::sync::protobuf::SyncInfo* sync_;
   ::google::protobuf::int32 src_sharding_id_;
   ::google::protobuf::uint32 hop_count_;
   ::google::protobuf::uint64 hash64_;
@@ -1139,13 +1155,13 @@ inline void BroadcastParam::set_ign_bloomfilter_hop(::google::protobuf::uint32 v
 
 // optional int32 src_sharding_id = 1;
 inline bool Header::has_src_sharding_id() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00004000u) != 0;
 }
 inline void Header::set_has_src_sharding_id() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00004000u;
 }
 inline void Header::clear_has_src_sharding_id() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00004000u;
 }
 inline void Header::clear_src_sharding_id() {
   src_sharding_id_ = 0;
@@ -1229,13 +1245,13 @@ inline void Header::set_allocated_des_dht_key(::std::string* des_dht_key) {
 
 // optional uint32 hop_count = 3 [default = 0];
 inline bool Header::has_hop_count() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
+  return (_has_bits_[0] & 0x00008000u) != 0;
 }
 inline void Header::set_has_hop_count() {
-  _has_bits_[0] |= 0x00004000u;
+  _has_bits_[0] |= 0x00008000u;
 }
 inline void Header::clear_has_hop_count() {
-  _has_bits_[0] &= ~0x00004000u;
+  _has_bits_[0] &= ~0x00008000u;
 }
 inline void Header::clear_hop_count() {
   hop_count_ = 0u;
@@ -1319,13 +1335,13 @@ inline void Header::set_allocated_debug(::std::string* debug) {
 
 // optional uint64 hash64 = 5;
 inline bool Header::has_hash64() const {
-  return (_has_bits_[0] & 0x00008000u) != 0;
+  return (_has_bits_[0] & 0x00010000u) != 0;
 }
 inline void Header::set_has_hash64() {
-  _has_bits_[0] |= 0x00008000u;
+  _has_bits_[0] |= 0x00010000u;
 }
 inline void Header::clear_has_hash64() {
-  _has_bits_[0] &= ~0x00008000u;
+  _has_bits_[0] &= ~0x00010000u;
 }
 inline void Header::clear_hash64() {
   hash64_ = GOOGLE_ULONGLONG(0);
@@ -1343,13 +1359,13 @@ inline void Header::set_hash64(::google::protobuf::uint64 value) {
 
 // optional uint32 type = 6;
 inline bool Header::has_type() const {
-  return (_has_bits_[0] & 0x00010000u) != 0;
+  return (_has_bits_[0] & 0x00020000u) != 0;
 }
 inline void Header::set_has_type() {
-  _has_bits_[0] |= 0x00010000u;
+  _has_bits_[0] |= 0x00020000u;
 }
 inline void Header::clear_has_type() {
-  _has_bits_[0] &= ~0x00010000u;
+  _has_bits_[0] &= ~0x00020000u;
 }
 inline void Header::clear_type() {
   type_ = 0u;
@@ -1491,13 +1507,13 @@ inline void Header::set_allocated_sign(::std::string* sign) {
 
 // optional int32 version = 9 [default = 0];
 inline bool Header::has_version() const {
-  return (_has_bits_[0] & 0x00020000u) != 0;
+  return (_has_bits_[0] & 0x00040000u) != 0;
 }
 inline void Header::set_has_version() {
-  _has_bits_[0] |= 0x00020000u;
+  _has_bits_[0] |= 0x00040000u;
 }
 inline void Header::clear_has_version() {
-  _has_bits_[0] &= ~0x00020000u;
+  _has_bits_[0] &= ~0x00040000u;
 }
 inline void Header::clear_version() {
   version_ = 0;
@@ -1997,6 +2013,60 @@ inline void Header::set_allocated_to_tx_heights(::zjchain::pools::protobuf::ToTx
   }
   to_tx_heights_ = to_tx_heights;
   // @@protoc_insertion_point(field_set_allocated:zjchain.transport.protobuf.Header.to_tx_heights)
+}
+
+// optional .zjchain.sync.protobuf.SyncInfo sync = 19;
+inline bool Header::has_sync() const {
+  return (_has_bits_[0] & 0x00002000u) != 0;
+}
+inline void Header::set_has_sync() {
+  _has_bits_[0] |= 0x00002000u;
+}
+inline void Header::clear_has_sync() {
+  _has_bits_[0] &= ~0x00002000u;
+}
+inline const ::zjchain::sync::protobuf::SyncInfo& Header::_internal_sync() const {
+  return *sync_;
+}
+inline const ::zjchain::sync::protobuf::SyncInfo& Header::sync() const {
+  const ::zjchain::sync::protobuf::SyncInfo* p = sync_;
+  // @@protoc_insertion_point(field_get:zjchain.transport.protobuf.Header.sync)
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::sync::protobuf::SyncInfo*>(
+      &::zjchain::sync::protobuf::_SyncInfo_default_instance_);
+}
+inline ::zjchain::sync::protobuf::SyncInfo* Header::release_sync() {
+  // @@protoc_insertion_point(field_release:zjchain.transport.protobuf.Header.sync)
+  clear_has_sync();
+  ::zjchain::sync::protobuf::SyncInfo* temp = sync_;
+  sync_ = NULL;
+  return temp;
+}
+inline ::zjchain::sync::protobuf::SyncInfo* Header::mutable_sync() {
+  set_has_sync();
+  if (sync_ == NULL) {
+    auto* p = CreateMaybeMessage<::zjchain::sync::protobuf::SyncInfo>(GetArenaNoVirtual());
+    sync_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:zjchain.transport.protobuf.Header.sync)
+  return sync_;
+}
+inline void Header::set_allocated_sync(::zjchain::sync::protobuf::SyncInfo* sync) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete reinterpret_cast< ::google::protobuf::MessageLite*>(sync_);
+  }
+  if (sync) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      sync = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, sync, submessage_arena);
+    }
+    set_has_sync();
+  } else {
+    clear_has_sync();
+  }
+  sync_ = sync;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.transport.protobuf.Header.sync)
 }
 
 #ifdef __GNUC__
