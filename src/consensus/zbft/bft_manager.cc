@@ -426,6 +426,8 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
                     bft_ptr->set_prepare_block(std::make_shared<block::protobuf::Block>(req_bft_msg.block()));
                     if (bft_ptr->consensus_status() == kConsensusCommited) {
                         HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
+                        ZJC_DEBUG("commited  receive block hash: %s",
+                            common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
                     }
                     ZJC_DEBUG("receive block hash: %s",
                         common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());

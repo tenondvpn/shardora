@@ -63,6 +63,11 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     CreateToTx(msg_ptr->thread_idx);
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    if (leader_to_txs_msg_ != nullptr && create_leader_to_tx_tm_ > now_tm_ms) {
+        leader_to_txs_msg_->thread_idx = msg_ptr->thread_idx;
+        network::Route::Instance()->Send(leader_to_txs_msg_);
+    }
 }
 
 void BlockManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members) {
@@ -461,6 +466,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         to_txs_ptr->tx_ptr = create_to_tx_cb_(new_msg_ptr);
         to_txs_ptr->to_txs_hash = to_heights.tos_hash();
         to_txs_ptr->tx_count = to_heights.tx_count();
+        to_txs_ptr->tx_ptr->time_valid += pools::kBftStartDeltaTime;
         to_txs_[i] = to_txs_ptr;
     }
 
@@ -471,13 +477,8 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     // send to other nodes
     auto& broadcast = *msg.mutable_broadcast();
     broadcast.set_hop_limit(10);
-    msg_ptr->thread_idx = thread_idx;
-#ifndef ZJC_UNITTEST
-    network::Route::Instance()->Send(msg_ptr);
-#else
-    // for test
     leader_to_txs_msg_ = msg_ptr;
-#endif
+    create_leader_to_tx_tm_ = now_tm_ms + pools::kBftStartDeltaTime / 1000;
 }
 
 }  // namespace block

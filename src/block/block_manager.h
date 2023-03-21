@@ -95,11 +95,8 @@ private:
     pools::CreateConsensusItemFunction create_to_tx_cb_ = nullptr;
     uint32_t prev_pool_index_ = network::kRootCongressNetworkId;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
-
-#ifdef ZJC_UNITTEST
     transport::MessagePtr leader_to_txs_msg_ = nullptr;
-#endif // ZJC_UNITTEST
-
+    uint64_t create_leader_to_tx_tm_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };
