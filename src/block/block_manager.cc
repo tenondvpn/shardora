@@ -249,13 +249,14 @@ void BlockManager::HandleNormalToTx(
         tx->set_key(protos::kLocalNormalTos);
         tx->set_value(tos_hash);
         tx->set_pubkey("");
-        tx->set_to("");
+        tx->set_to(common::kNormalLocalToAddress);
         tx->set_step(pools::protobuf::kConsensusLocalTos);
         auto gid = common::Hash::keccak256(tos_hash + std::to_string(iter->first));
         tx->set_gas_limit(0);
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
+        msg_ptr->address_info = account_mgr_->single_local_to_address_info();
         pools_mgr_->HandleMessage(msg_ptr);
         ZJC_DEBUG("success add local to txs.");
     }

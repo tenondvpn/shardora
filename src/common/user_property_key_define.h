@@ -80,6 +80,8 @@ static const std::string kRootChainElectionBlockTxAddress = common::Encode::HexD
         "1000000000000000000000000000000000000003");
 static const std::string kNormalToAddress = common::Encode::HexDecode(
     "1000000000000000000000000000000000000004");
+static const std::string kNormalLocalToAddress = common::Encode::HexDecode(
+    "1000000000000000000000000000000000000005");
 
 static const uint32_t kVpnShareStakingPrice = 1u;
 

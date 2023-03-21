@@ -119,11 +119,10 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     } else {
         // check valid
 //         msg_queues_[0].push(msg_ptr);
-        return;
         auto ptr = msg_ptr;
         pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](ptr);
         tx_pool_[msg_ptr->address_info->pool_index()].AddTx(tx_ptr);
-//         ZJC_DEBUG("success add tx to queue: %d", msg_ptr->address_info->pool_index());
+        ZJC_DEBUG("success add tx to queue: %d", msg_ptr->address_info->pool_index());
     }
     
     // storage item not package in block, just package storage hash 

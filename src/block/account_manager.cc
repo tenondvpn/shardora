@@ -40,6 +40,7 @@ int AccountManager::Init(
     }
 
     CreateNormalToAddressInfo();
+    CreateNormalLocalToAddressInfo();
     srand(time(NULL));
     prev_refresh_heights_tm_ = common::TimeUtils::TimestampSeconds() + rand() % 30;
 //     check_missing_height_tick_.CutOff(
@@ -64,6 +65,17 @@ void AccountManager::CreateNormalToAddressInfo() {
     single_to_address_info_->set_addr(common::kNormalToAddress);
     single_to_address_info_->set_type(address::protobuf::kToTxAddress);
     single_to_address_info_->set_latest_height(0);
+}
+
+void AccountManager::CreateNormalLocalToAddressInfo() {
+    single_local_to_address_info_ = std::make_shared<address::protobuf::AddressInfo>();
+    single_local_to_address_info_->set_pubkey("");
+    single_local_to_address_info_->set_balance(0);
+    single_local_to_address_info_->set_sharding_id(-1);
+    single_local_to_address_info_->set_pool_index(0);
+    single_local_to_address_info_->set_addr(common::kNormalLocalToAddress);
+    single_local_to_address_info_->set_type(address::protobuf::kLocalToTxAddress);
+    single_local_to_address_info_->set_latest_height(0);
 }
 
 bool AccountManager::AccountExists(uint8_t thread_idx, const std::string& addr) {
@@ -240,6 +252,8 @@ void AccountManager::HandleLocalToTx(
         db::DbWriteBatch& db_batch) {
     std::string to_txs_str;
     if (!prefix_db_->GetTemporaryKv(tx.storages(1).val_hash(), &to_txs_str)) {
+        ZJC_DEBUG("handle local to tx failed get val hash error: %s",
+            common::Encode::HexEncode(tx.storages(1).val_hash()).c_str());
         return;
     }
 
@@ -262,8 +276,8 @@ void AccountManager::HandleLocalToTx(
         account_info->set_latest_height(block.height());
         account_info->set_balance(to_txs.tos(i).balance());
         prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
-//         ZJC_DEBUG("transfer to address new balance %s: %lu",
-//             common::Encode::HexEncode(to_txs.tos(i).to()).c_str(), to_txs.tos(i).balance());
+        ZJC_DEBUG("transfer to address new balance %s: %lu",
+            common::Encode::HexEncode(to_txs.tos(i).to()).c_str(), to_txs.tos(i).balance());
     }
 }
 

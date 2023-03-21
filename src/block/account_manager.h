@@ -59,6 +59,10 @@ public:
         return single_to_address_info_;
     }
 
+    std::shared_ptr<address::protobuf::AddressInfo>& single_local_to_address_info() {
+        return single_local_to_address_info_;
+    }
+
 private:
     int UpdateAccountInfo(
         uint8_t thread_idx,
@@ -97,6 +101,7 @@ private:
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void CreateNormalToAddressInfo();
+    void CreateNormalLocalToAddressInfo();
 
     static const uint64_t kCheckMissingHeightPeriod = 3000000llu;
     static const uint64_t kFushTreeToDbPeriod = 6000000llu;
@@ -113,6 +118,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<address::protobuf::AddressInfo> single_to_address_info_ = nullptr;
+    std::shared_ptr<address::protobuf::AddressInfo> single_local_to_address_info_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };
