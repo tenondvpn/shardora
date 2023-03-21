@@ -356,10 +356,15 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index) {
+    auto now_tm = common::TimeUtils::TimestampUs();
     for (uint32_t i = prev_pool_index_; i <= max_consensus_sharding_id_; ++i) {
         uint32_t mod_idx = i % common::kImmutablePoolSize;
         if (mod_idx == pool_index) {
             auto old_to_txs = to_txs_[i];
+            if (old_to_txs->tx_ptr->time_valid > now_tm) {
+                continue;
+            }
+
             if (old_to_txs != nullptr && !old_to_txs->in_consensus) {
                 old_to_txs->in_consensus = true;
                 prev_pool_index_ = i + 1;
@@ -372,6 +377,10 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index) {
         uint32_t mod_idx = i % common::kImmutablePoolSize;
         if (mod_idx == pool_index) {
             auto old_to_txs = to_txs_[i];
+            if (old_to_txs->tx_ptr->time_valid > now_tm) {
+                continue;
+            }
+
             if (old_to_txs != nullptr && !old_to_txs->in_consensus) {
                 old_to_txs->in_consensus = true;
                 prev_pool_index_ = i + 1;
