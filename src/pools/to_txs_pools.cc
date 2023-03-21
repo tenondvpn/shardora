@@ -34,6 +34,13 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
     // one block must be one consensus pool
     uint32_t consistent_pool_index = common::kInvalidPoolIndex;
     for (int32_t i = 0; i < tx_list.size(); ++i) {
+        if (tx_list[i].step() == pools::protobuf::kNormalTo) {
+            // remove each less height
+            ZJC_DEBUG("new to coming.");
+            HandleNormalToTx(block.height(), tx_list[i], db_batch);
+            continue;
+        }
+
         if (tx_list[i].step() != pools::protobuf::kNormalFrom) {
             ZJC_DEBUG("invalid from coming: %d", tx_list[i].step());
             continue;

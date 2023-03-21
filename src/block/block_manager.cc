@@ -113,12 +113,6 @@ void BlockManager::NewBlockWithTx(
         const std::shared_ptr<block::protobuf::Block>& block_item,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    switch (tx.step()) {
-        to_txs_pool_->HandleNormalToTx(block_item->height(), tx, db_batch);
-        break;
-    default:
-        break;
-    }
 }
 
 void BlockManager::HandleAllConsensusBlocks(uint8_t thread_idx) {
