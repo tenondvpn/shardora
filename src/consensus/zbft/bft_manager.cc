@@ -331,6 +331,8 @@ ZbftPtr BftManager::StartBft(
 //         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
 //         bft_ptr->pool_index(),
 //         bft_ptr->thread_index());
+    ZJC_DEBUG("leader create consensus bft prepare hash: %s",
+        common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
     return bft_ptr;
 }
 
@@ -338,17 +340,17 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kConsensusMessage);
     auto& elect_item = elect_items_[elect_item_idx_];
-//     ZJC_INFO("consensus message coming prepare gid: %s, precommit gid: %s, "
-//         "commit gid: %s thread idx: %d, has sync: %d, txhash: %lu, "
-//         "member index: %d, other member index: %d",
-//         common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
-//         common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
-//         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
-//         msg_ptr->thread_idx,
-//         header.zbft().has_sync_block(),
-//         header.hash64(),
-//         elect_item.local_node_member_index,
-//         header.zbft().member_index());
+    ZJC_INFO("consensus message coming prepare gid: %s, precommit gid: %s, "
+        "commit gid: %s thread idx: %d, has sync: %d, txhash: %lu, "
+        "member index: %d, other member index: %d",
+        common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+        common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
+        common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+        msg_ptr->thread_idx,
+        header.zbft().has_sync_block(),
+        header.hash64(),
+        elect_item.local_node_member_index,
+        header.zbft().member_index());
     if (elect_item.local_node_member_index == header.zbft().member_index()) {
         assert(false);
     }
@@ -410,13 +412,21 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
     if (req_bft_msg.has_block()) {
         if (bft_ptr == nullptr) {
             // verify and add new block
+            auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
+            block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_ptr);
             ZJC_DEBUG("removed bft gid coming: %s",
                 common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str());
         } else {
             if (bft_ptr->prepare_block() == nullptr) {
                 auto block_hash = GetBlockHash(req_bft_msg.block());
+                ZJC_DEBUG("receive block hash: %s, local: %s",
+                    common::Encode::HexEncode(block_hash).c_str(),
+                    common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
                 if (block_hash == bft_ptr->local_prepare_hash()) {
                     bft_ptr->set_prepare_block(std::make_shared<block::protobuf::Block>(req_bft_msg.block()));
+                    if (bft_ptr->consensus_status() == kConsensusCommited) {
+                        HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
+                    }
                     ZJC_DEBUG("receive block hash: %s",
                         common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
                 }
@@ -487,7 +497,7 @@ void BftManager::SyncConsensusBlock(
             (*readobly_dht)[pos_vec[i]]->public_ip,
             (*readobly_dht)[pos_vec[i]]->public_port,
             msg);
-        ZJC_INFO("send sync block %s:%d block hash: %s",
+        ZJC_INFO("send sync block %s:%d bft gid: %s",
             (*readobly_dht)[pos_vec[i]]->public_ip.c_str(),
             (*readobly_dht)[pos_vec[i]]->public_port,
             common::Encode::HexEncode(bft_gid).c_str());
@@ -1226,6 +1236,8 @@ void BftManager::BackupPrepare(const transport::MessagePtr& msg_ptr) {
             return;
         }
 #endif
+        ZJC_DEBUG("backup create consensus bft prepare hash: %s",
+            common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
         msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
         AddBft(bft_ptr);
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -1253,6 +1265,10 @@ void BftManager::BackupPrepare(const transport::MessagePtr& msg_ptr) {
 
         if (BackupPrecommit(precommit_bft_ptr, msg_ptr) != kConsensusSuccess) {
             // sync block from others
+            precommit_bft_ptr->set_prepare_hash(bft_msg.prepare_hash());
+            precommit_bft_ptr->CreatePrecommitVerifyHash();
+            ZJC_INFO("1 use leader prepare hash: %s",
+                common::Encode::HexEncode(bft_msg.prepare_hash()).c_str());
             precommit_bft_ptr->set_prepare_block(nullptr);
             SyncConsensusBlock(
                 msg_ptr->thread_idx,
@@ -1502,6 +1518,7 @@ int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePt
     bft_vec[1] = bft_ptr;
     auto prev_ptr = bft_ptr->pipeline_prev_zbft_ptr();
     if (prev_ptr != nullptr) {
+        prev_ptr->set_consensus_status(kConsensusCommited);
         if (prev_ptr->prepare_block() != nullptr) {
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
@@ -1673,7 +1690,6 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         queue_item_ptr->block_ptr,
         queue_item_ptr->db_batch);
     block_mgr_->ConsensusAddBlock(thread_idx, queue_item_ptr);
-    bft_ptr->set_consensus_status(kConsensusCommited);
     assert(bft_ptr->prepare_block()->precommit_bitmap_size() == zjc_block->precommit_bitmap_size());
     // for test
     auto now_tm_us = common::TimeUtils::TimestampUs();
@@ -1709,6 +1725,7 @@ int BftManager::LeaderCallCommit(
         return kConsensusError;
     }
 
+    bft_ptr->set_consensus_status(kConsensusCommited);
     if (bft_ptr->prepare_block() != nullptr) {
         HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
     } else {
@@ -1766,6 +1783,7 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
     }
 
     bft_ptr->set_bls_commit_agg_sign(sign);
+    bft_ptr->set_consensus_status(kConsensusCommited);
     if (bft_ptr->prepare_block() != nullptr) {
         HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
     } else {

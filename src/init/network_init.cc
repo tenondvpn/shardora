@@ -614,6 +614,9 @@ void NetworkInit::AddBlockItemToCache(
         case pools::protobuf::kConsensusLocalTos:
             account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             break;
+        case pools::protobuf::kNormalTo:
+            block_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
+            break;
         case pools::protobuf::kConsensusRootTimeBlock:
             tm_block_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             break;

@@ -108,6 +108,19 @@ void BlockManager::ConsensusAddBlock(
     consensus_block_queues_[thread_idx].push(block_item);
 }
 
+void BlockManager::NewBlockWithTx(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block_item,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
+    switch (tx.step()) {
+        to_txs_pool_->HandleNormalToTx(block_item->height(), tx, db_batch);
+        break;
+    default:
+        break;
+    }
+}
+
 void BlockManager::HandleAllConsensusBlocks(uint8_t thread_idx) {
     auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count();
     for (int32_t i = 0; i < thread_count; ++i) {
@@ -146,21 +159,27 @@ void BlockManager::HandleNormalToTx(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     if (tx.storages_size() != 1) {
+        ZJC_WARN("normal to txs storages invalid.");
         return;
     }
 
     std::string to_txs_str;
     if (!prefix_db_->GetTemporaryKv(tx.storages(0).val_hash(), &to_txs_str)) {
+        ZJC_WARN("normal to get val hash failed.");
         return;
     }
 
     pools::protobuf::ToTxMessage to_txs;
     if (!to_txs.ParseFromString(to_txs_str)) {
+        ZJC_WARN("parse to txs failed.");
         return;
     }
 
     to_txs_[to_txs.to_heights().sharding_id()] = nullptr;
     if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+        ZJC_WARN("sharding invalid: %lu, %lu.",
+            to_txs.to_heights().sharding_id(),
+            common::GlobalInfo::Instance()->network_id());
         return;
     }
 
@@ -239,6 +258,7 @@ void BlockManager::HandleNormalToTx(
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
         pools_mgr_->HandleMessage(msg_ptr);
+        ZJC_DEBUG("success add local to txs.");
     }
 }
 

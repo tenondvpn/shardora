@@ -211,10 +211,10 @@ int Zbft::LeaderPrecommitOk(
         uint32_t index,
         const libff::alt_bn128_G1& backup_sign,
         const std::string& id) {
-//     ZJC_DEBUG("leader precommit hash: %s, index: %d, gid: %s",
-//         common::Encode::HexEncode(tx_prepare.prepare_final_hash()).c_str(),
-//         index,
-//         common::Encode::HexEncode(gid_).c_str());
+    ZJC_DEBUG("leader precommit hash: %s, index: %d, gid: %s",
+        common::Encode::HexEncode(tx_prepare.prepare_final_hash()).c_str(),
+        index,
+        common::Encode::HexEncode(gid_).c_str());
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     if (leader_handled_precommit_) {
 //         ZJC_DEBUG("leader_handled_precommit_: %d", leader_handled_precommit_);
@@ -591,7 +591,7 @@ bool Zbft::set_bls_precommit_agg_sign(
 //     }
     // times_[times_index_ - 2] = times_[times_index_ - 1];
     //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-
+    bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(agg_sign);
     if (sign_commit_hash != sign_hash) {
         ZJC_ERROR("backup verify leader precommit agg sign failed! %s: %s",
             common::Encode::HexEncode(sign_commit_hash).c_str(),
@@ -602,7 +602,6 @@ bool Zbft::set_bls_precommit_agg_sign(
 //     ZJC_DEBUG("success verify leader precommit agg sign! %s: %s",
 //         common::Encode::HexEncode(sign_commit_hash).c_str(),
 //         common::Encode::HexEncode(sign_hash).c_str());
-    bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(agg_sign);
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
 

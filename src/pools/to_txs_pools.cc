@@ -34,13 +34,6 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
     // one block must be one consensus pool
     uint32_t consistent_pool_index = common::kInvalidPoolIndex;
     for (int32_t i = 0; i < tx_list.size(); ++i) {
-        if (tx_list[i].step() == pools::protobuf::kNormalTo) {
-            // remove each less height
-            ZJC_DEBUG("new to coming.");
-            HandleNormalToTx(block.height(), tx_list[i], db_batch);
-            continue;
-        }
-
         if (tx_list[i].step() != pools::protobuf::kNormalFrom) {
             ZJC_DEBUG("invalid from coming: %d", tx_list[i].step());
             continue;
@@ -175,7 +168,7 @@ void ToTxsPools::HandleNormalToTx(
                 break;
             }
 
-//             ZJC_DEBUG("erase sharding: %u, height: %lu", heights.sharding_id(), height_iter->first);
+            ZJC_DEBUG("erase sharding: %u, height: %lu", heights.sharding_id(), height_iter->first);
             pool_iter->second.erase(height_iter++);
         }
     }
@@ -222,7 +215,7 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeig
     auto handled_iter = handled_map_.find(sharding_id);
     to_heights.set_sharding_id(sharding_id);
     std::map<std::string, uint64_t> acc_amount_map;
-//     std::string add_heights;
+    std::string add_heights;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto pool_iter = net_iter->second.find(i);
         if (pool_iter == net_iter->second.end() ||
@@ -234,13 +227,13 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeig
                 to_heights.add_heights(handled_iter->second->heights(i));
             }
 
-//             add_heights += std::to_string(to_heights.heights(to_heights.heights_size() - 1)) + " ";
+            add_heights += std::to_string(to_heights.heights(to_heights.heights_size() - 1)) + " ";
             continue;
         }
 
         auto r_height_iter = pool_iter->second.rbegin();
         to_heights.add_heights(r_height_iter->first);
-//         add_heights += std::to_string(r_height_iter->first) + " ";
+        add_heights += std::to_string(r_height_iter->first) + " ";
         for (auto hiter = pool_iter->second.begin();
                 hiter != pool_iter->second.end(); ++hiter) {
             for (auto to_iter = hiter->second.begin();
@@ -272,13 +265,16 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeig
         auto to_item = to_tx.add_tos();
         to_item->set_des(iter->first);
         to_item->set_amount(iter->second);
+        ZJC_DEBUG(I"set to %s amount %lu"., common::Encode::HexEncode(iter->first).c_str(), iter->second);
     }
 
     to_heights.set_tx_count(to_tx.tos_size());
     auto tos_hash = common::Hash::keccak256(str_for_hash);
     to_tx.set_heights_hash(tos_hash);
-    ZJC_DEBUG("sharding: %u add to txs heights: %s, hash: %s",
-        sharding_id, "", common::Encode::HexEncode(tos_hash).c_str());
+    ZJC_DEBUG("sharding: %u add to txs heights: %s, hash: %s, str for hash: %s",
+        sharding_id, add_heights.c_str(),
+        common::Encode::HexEncode(tos_hash).c_str(),
+        common::Encode::HexEncode(str_for_hash).c_str());
     *to_tx.mutable_to_heights() = to_heights;
     auto val = to_tx.SerializeAsString();
     to_heights.set_tos_hash(tos_hash);
@@ -355,12 +351,14 @@ int ToTxsPools::BackupCreateToTx(
         auto to_item = to_tx.add_tos();
         to_item->set_des(iter->first);
         to_item->set_amount(iter->second);
+        ZJC_DEBUG(I"set to %s amount %lu"., common::Encode::HexEncode(iter->first).c_str(), iter->second);
     }
 
     to_heights.set_tx_count(to_tx.tos_size());
     auto tos_hash = common::Hash::keccak256(str_for_hash);
-    ZJC_DEBUG("backup sharding: %u add to txs heights: %s, hash: %s, str_for_hash: %s",
-        sharding_id, add_heights.c_str(), common::Encode::HexEncode(tos_hash).c_str(),
+    ZJC_DEBUG("backup sharding: %u add to txs heights: %s, hash: %s, str for hash: %s",
+        sharding_id, add_heights.c_str(),
+        common::Encode::HexEncode(tos_hash).c_str(),
         common::Encode::HexEncode(str_for_hash).c_str());
 
     to_tx.set_heights_hash(tos_hash);

@@ -43,6 +43,11 @@ public:
         uint32_t pool_index,
         uint64_t height,
         block::protobuf::Block& block_item);
+    void NewBlockWithTx(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block_item,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
     void SetMaxConsensusShardingId(uint32_t sharding_id) {
         max_consensus_sharding_id_ = sharding_id;
     }
