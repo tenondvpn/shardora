@@ -110,12 +110,12 @@ void AddDescriptorsImpl() {
       "\n\npool_index\030\004 \001(\r\022\014\n\004addr\030\005 \001(\014\0223\n\004type"
       "\030\006 \001(\0162%.zjchain.address.protobuf.Addres"
       "sType\022\022\n\nbytes_code\030\007 \001(\014\022\025\n\rlatest_heig"
-      "ht\030\010 \001(\004*Y\n\013AddressType\022\013\n\007kNormal\020\000\022\r\n\t"
+      "ht\030\010 \001(\004*k\n\013AddressType\022\013\n\007kNormal\020\000\022\r\n\t"
       "kContract\020\001\022\016\n\nkRootElect\020\002\022\016\n\nkRootTime"
-      "r\020\003\022\016\n\nkStatistic\020\004"
+      "r\020\003\022\016\n\nkStatistic\020\004\022\020\n\014kToTxAddress\020\005"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 339);
+      descriptor, 357);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/address.proto", &protobuf_RegisterTypes);
 }
@@ -145,6 +145,7 @@ bool AddressType_IsValid(int value) {
     case 2:
     case 3:
     case 4:
+    case 5:
       return true;
     default:
       return false;
