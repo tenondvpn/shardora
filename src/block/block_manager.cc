@@ -323,7 +323,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
         tx->set_key(protos::kNormalTos);
         tx->set_value(to_heights.tos_hash());
         tx->set_pubkey("");
-        tx->set_to("");
+        tx->set_to(common::kNormalToAddress);
         tx->set_step(pools::protobuf::kNormalTo);
         auto gid = common::Hash::keccak256(
             to_heights.tos_hash() + std::to_string(heights.sharding_id()));
@@ -332,6 +332,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
         auto to_txs_ptr = std::make_shared<ToTxsItem>();
+        new_msg_ptr->address_info = account_mgr_->single_to_address_info();
         to_txs_ptr->tx_ptr = create_to_tx_cb_(new_msg_ptr);
         to_txs_ptr->to_txs_hash = to_heights.tos_hash();
         to_txs_ptr->tx_count = to_heights.tx_count();
@@ -425,7 +426,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         tx->set_key(protos::kNormalTos);
         tx->set_value(to_heights.tos_hash());
         tx->set_pubkey("");
-        tx->set_to("");
+        tx->set_to(common::kNormalToAddress);
         tx->set_step(pools::protobuf::kNormalTo);
         auto gid = common::Hash::keccak256(to_heights.tos_hash() + std::to_string(i));
         tx->set_gas_limit(0);
@@ -433,6 +434,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
         auto to_txs_ptr = std::make_shared<ToTxsItem>();
+        new_msg_ptr->address_info = account_mgr_->single_to_address_info();
         to_txs_ptr->tx_ptr = create_to_tx_cb_(new_msg_ptr);
         to_txs_ptr->to_txs_hash = to_heights.tos_hash();
         to_txs_ptr->tx_count = to_heights.tx_count();

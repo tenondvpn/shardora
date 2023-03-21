@@ -90,7 +90,7 @@ std::string WaitingTxsPools::latest_hash(uint32_t pool_index) const {
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
         bool direct,
         uint32_t pool_index) {
-    std::shared_ptr<WaitingTxsItem> txs_item = nullptr;// GetSingleTx(pool_index);
+    std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(pool_index);
     if (txs_item == nullptr) {
         txs_item = wtxs[pool_index].LeaderGetValidTxs(direct);
         if (txs_item != nullptr) {
@@ -121,10 +121,10 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
 //                 }
 //             }
 // 
-//             FilterInvalidTx(pool_index, txs_item->txs);
-//             if (txs_item->txs.empty()) {
-//                 txs_item = nullptr;
-//             } else {
+            FilterInvalidTx(pool_index, txs_item->txs);
+            if (txs_item->txs.empty()) {
+                txs_item = nullptr;
+            } else {
                 auto& all_txs_hash = txs_item->all_txs_hash;
                 all_txs_hash.reserve(tx_map.size() * 32);
                 for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
@@ -133,7 +133,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
 
 //                 ZJC_DEBUG("leader get txs pools: %d, %s", pool_index, common::Encode::HexEncode(all_txs_hash).c_str());
                 all_txs_hash = common::Hash::keccak256(all_txs_hash);
-//             }
+            }
         }
     }
 

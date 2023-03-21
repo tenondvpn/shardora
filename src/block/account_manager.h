@@ -55,6 +55,9 @@ public:
     int HandleRefreshHeightsReq(const transport::MessagePtr& msg_ptr);
     int HandleRefreshHeightsRes(const transport::MessagePtr& msg_ptr);
     std::string GetTxValidAddress(const block::protobuf::BlockTx& tx_info);
+    std::shared_ptr<address::protobuf::AddressInfo>& single_to_address_info() {
+        return single_to_address_info_;
+    }
 
 private:
     int UpdateAccountInfo(
@@ -93,6 +96,7 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
+    void CreateNormalToAddressInfo();
 
     static const uint64_t kCheckMissingHeightPeriod = 3000000llu;
     static const uint64_t kFushTreeToDbPeriod = 6000000llu;
@@ -108,6 +112,7 @@ private:
     bool inited_{ false };
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    std::shared_ptr<address::protobuf::AddressInfo> single_to_address_info_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };

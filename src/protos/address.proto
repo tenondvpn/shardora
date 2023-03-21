@@ -8,6 +8,7 @@ enum AddressType {
     kRootElect = 2;
     kRootTimer = 3;
     kStatistic = 4;
+    kToTxAddress = 5;
 }
 
 message AddressInfo {

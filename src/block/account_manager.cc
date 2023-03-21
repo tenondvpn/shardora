@@ -39,6 +39,7 @@ int AccountManager::Init(
         address_map_[i].Init(1024 * 1, 16);
     }
 
+    CreateNormalToAddressInfo();
     srand(time(NULL));
     prev_refresh_heights_tm_ = common::TimeUtils::TimestampSeconds() + rand() % 30;
 //     check_missing_height_tick_.CutOff(
@@ -52,6 +53,17 @@ int AccountManager::Init(
         std::bind(&AccountManager::RefreshPoolMaxHeight, this));
     inited_ = true;
     return kBlockSuccess;
+}
+
+void AccountManager::CreateNormalToAddressInfo() {
+    single_to_address_info_ = std::make_shared<address::protobuf::AddressInfo>();
+    single_to_address_info_->set_pubkey("");
+    single_to_address_info_->set_balance(0);
+    single_to_address_info_->set_sharding_id(-1);
+    single_to_address_info_->set_pool_index(0);
+    single_to_address_info_->set_addr(common::kNormalToAddress);
+    single_to_address_info_->set_type(address::protobuf::kToTxAddress);
+    single_to_address_info_->set_latest_height(0);
 }
 
 bool AccountManager::AccountExists(uint8_t thread_idx, const std::string& addr) {
