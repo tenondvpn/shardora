@@ -272,7 +272,7 @@ int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeig
         auto to_item = to_tx.add_tos();
         to_item->set_des(iter->first);
         to_item->set_amount(iter->second);
-        ZJC_DEBUG(I"set to %s amount %lu"., common::Encode::HexEncode(iter->first).c_str(), iter->second);
+        ZJC_DEBUG("set to %s amount %lu", common::Encode::HexEncode(iter->first).c_str(), iter->second);
     }
 
     to_heights.set_tx_count(to_tx.tos_size());
@@ -358,7 +358,7 @@ int ToTxsPools::BackupCreateToTx(
         auto to_item = to_tx.add_tos();
         to_item->set_des(iter->first);
         to_item->set_amount(iter->second);
-        ZJC_DEBUG(I"set to %s amount %lu"., common::Encode::HexEncode(iter->first).c_str(), iter->second);
+        ZJC_DEBUG("set to %s amount %lu", common::Encode::HexEncode(iter->first).c_str(), iter->second);
     }
 
     to_heights.set_tx_count(to_tx.tos_size());
