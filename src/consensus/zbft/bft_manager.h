@@ -19,8 +19,9 @@
 #include "elect/elect_manager.h"
 #include "pools/tx_pool_manager.h"
 #include "protos/elect.pb.h"
-#include "protos/zbft.pb.h"
+#include "protos/prefix_db.h"
 #include "protos/transport.pb.h"
+#include "protos/zbft.pb.h"
 #include "security/security.h"
 #include "timeblock/time_block_manager.h"
 #include "transport/transport_utils.h"
@@ -94,6 +95,8 @@ private:
     ZbftPtr LeaderGetZbft(const transport::MessagePtr& msg_ptr, const std::string& gid);
     void SyncConsensusBlock(uint8_t thread_idx, uint32_t pool_index, const std::string& bft_gid);
     void HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr);
+    bool AddSyncKeyValue(transport::protobuf::Header* msg, const block::protobuf::Block& block);
+    void SaveKeyValue(const transport::protobuf::Header& msg);
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
     }
@@ -127,6 +130,7 @@ private:
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint8_t thread_count_ = 0;
     std::shared_ptr<WaitingTxsPools> txs_pools_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
