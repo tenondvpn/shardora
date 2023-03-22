@@ -599,6 +599,7 @@ void NetworkInit::AddBlockItemToCache(
         db::DbWriteBatch& db_batch) {
     const auto& tx_list = block->tx_list();
     if (tx_list.empty()) {
+        assert(false);
         return;
     }
 

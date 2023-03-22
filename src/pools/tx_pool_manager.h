@@ -81,6 +81,8 @@ public:
             uint64_t height,
             const std::string& hash,
             db::DbWriteBatch& db_batch) {
+        assert(height > 0);
+        ZJC_DEBUG("pool index: %u, update height: %lu", pool_index, height);
         if (pool_index >= common::kInvalidPoolIndex) {
             return;
         }

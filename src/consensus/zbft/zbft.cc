@@ -666,6 +666,8 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     zjc_block.set_network_id(common::GlobalInfo::Instance()->network_id());
     zjc_block.set_consistency_random(0);
     zjc_block.set_height(pool_height + 1);
+    assert(zjc_block.height() > 0);
+    ZJC_DEBUG("add new block: %lu", zjc_block.height());
     zjc_block.set_timestamp(common::TimeUtils::TimestampMs());
     zjc_block.set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
     zjc_block.set_electblock_height(elect_height_);

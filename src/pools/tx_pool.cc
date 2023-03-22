@@ -106,6 +106,10 @@ void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
     common::AutoSpinLock lock(mutex_);
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
         iter->second->in_consensus = false;
+        if (iter->second->step == pools::protobuf::kNormalTo) {
+            ZJC_DEBUG("pools::protobuf::kNormalTo recover and can get.");
+        }
+
         auto miter = added_tx_map_.find(iter->first);
         if (miter != added_tx_map_.end()) {
             prio_map_[miter->second->prio_key] = miter->second;

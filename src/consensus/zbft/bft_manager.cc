@@ -1292,7 +1292,10 @@ void BftManager::BackupPrepare(const transport::MessagePtr& msg_ptr) {
 #endif
         ZJC_DEBUG("backup create consensus bft prepare hash: %s",
             common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
-        msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
+        if (!bft_ptr->local_prepare_hash().empty()) {
+            msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
+        }
+
         AddBft(bft_ptr);
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
