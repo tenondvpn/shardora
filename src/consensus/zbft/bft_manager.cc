@@ -554,49 +554,50 @@ void BftManager::ClearBft(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    bool is_leader = msg_ptr->header.zbft().leader();
     auto& zbft = *msg_ptr->response->header.mutable_zbft();
     auto& from_zbft = msg_ptr->header.zbft();
     if (zbft.has_agree_commit() && !zbft.agree_commit()) {
         ZJC_DEBUG("not agree commit.");
         zbft.set_prepare_gid(from_zbft.prepare_gid());
         zbft.release_tx_bft();
-        auto prepare_bft = GetBft(msg_ptr->thread_idx, from_zbft.prepare_gid(), false);
+        auto prepare_bft = GetBft(msg_ptr->thread_idx, from_zbft.prepare_gid(), is_leader);
         if (prepare_bft == nullptr) {
             ZJC_DEBUG("not agree commit prepare gid failed: %s", common::Encode::HexEncode(from_zbft.prepare_gid()).c_str());
             return;
         }
 
-        RemoveBft(msg_ptr->thread_idx, prepare_bft->gid(), false);
+        RemoveBft(msg_ptr->thread_idx, prepare_bft->gid(), is_leader);
         auto precommit_bft = prepare_bft->pipeline_prev_zbft_ptr();
         if (precommit_bft == nullptr) {
             return;
         }
 
-        RemoveBft(msg_ptr->thread_idx, precommit_bft->gid(), false);
+        RemoveBft(msg_ptr->thread_idx, precommit_bft->gid(), is_leader);
         auto commit_bft = precommit_bft->pipeline_prev_zbft_ptr();
         if (commit_bft == nullptr) {
             return;
         }
 
-        RemoveBft(msg_ptr->thread_idx, commit_bft->gid(), false);
+        RemoveBft(msg_ptr->thread_idx, commit_bft->gid(), is_leader);
     }
     
     if (zbft.has_agree_precommit() && !zbft.agree_precommit()) {
         zbft.release_tx_bft();
         ZJC_DEBUG("not agree precommit.");
-        auto prepare_bft = GetBft(msg_ptr->thread_idx, from_zbft.prepare_gid(), false);
+        auto prepare_bft = GetBft(msg_ptr->thread_idx, from_zbft.prepare_gid(), is_leader);
         if (prepare_bft == nullptr) {
             ZJC_DEBUG("not agree precommit prepare gid failed: %s", common::Encode::HexEncode(from_zbft.prepare_gid()).c_str());
             return;
         }
 
-        RemoveBft(msg_ptr->thread_idx, prepare_bft->gid(), false);
+        RemoveBft(msg_ptr->thread_idx, prepare_bft->gid(), is_leader);
         auto precommit_bft = prepare_bft->pipeline_prev_zbft_ptr();
         if (precommit_bft == nullptr) {
             return;
         }
 
-        RemoveBft(msg_ptr->thread_idx, precommit_bft->gid(), false);
+        RemoveBft(msg_ptr->thread_idx, precommit_bft->gid(), is_leader);
     }
 }
 

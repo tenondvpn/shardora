@@ -74,6 +74,7 @@ public:
         const common::BloomFilter& bloom_filter,
         std::map<std::string, TxItemPtr>& res_map);
     void TxOver(std::map<std::string, TxItemPtr>& txs);
+    void TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
     void TxRecover(std::map<std::string, TxItemPtr>& txs);
     uint64_t latest_height() const {
         return latest_height_;
@@ -95,6 +96,7 @@ private:
     common::SpinMutex mutex_;
     std::deque<TxItemPtr> timeout_txs_;
     std::unordered_map<std::string, TxItemPtr> added_tx_map_;
+    std::unordered_map<std::string, TxItemPtr> gid_map_;
     std::map<std::string, TxItemPtr> prio_map_;
     uint32_t pool_index_ = 0;
     uint64_t latest_height_ = 0;

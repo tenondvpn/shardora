@@ -25,7 +25,11 @@ enum PoolsErrorCode {
 class TxItem {
 public:
     virtual ~TxItem() {}
-    TxItem(const transport::MessagePtr& msg) : msg_ptr(msg) {
+    TxItem(const transport::MessagePtr& msg)
+            : msg_ptr(msg),
+            tx_hash(msg->msg_hash),
+            gid(msg->header.tx_proto().gid()),
+            gas_price(msg->header.tx_proto().gas_price()) {
         uint64_t now_tm = common::TimeUtils::TimestampUs();
         time_valid = now_tm + kBftStartDeltaTime;
 #ifdef ZJC_UNITTEST
@@ -33,13 +37,10 @@ public:
 #endif // ZJC_UNITTEST
         timeout = now_tm + kTxPoolTimeoutUs;
         remove_timeout = timeout + kTxPoolTimeoutUs;
-        gas_price = msg->header.tx_proto().gas_price();
         if (msg->header.tx_proto().has_step()) {
             step = msg->header.tx_proto().step();
         }
 
-        tx_hash = common::Hash::keccak256(
-            msg->header.tx_proto().gid() + std::to_string(step) + msg->msg_hash);
         auto prio = common::ShiftUint64(now_tm);
         prio_key = std::string((char*)&prio, sizeof(prio)) + tx_hash;
     }
@@ -56,10 +57,10 @@ public:
     uint64_t timeout;
     uint64_t remove_timeout;
     uint64_t time_valid{ 0 };
-    uint64_t gas_price{ 0 };
+    const uint64_t& gas_price;
     int32_t step = pools::protobuf::kNormalFrom;
-    std::string from_addr;
-    std::string tx_hash;
+    const std::string& tx_hash;
+    const std::string& gid;
     std::string prio_key;
 };
 

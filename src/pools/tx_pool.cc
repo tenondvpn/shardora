@@ -31,6 +31,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 
     added_tx_map_[tx_ptr->tx_hash] = tx_ptr;
     prio_map_[tx_ptr->prio_key] = tx_ptr;
+    gid_map_[tx_ptr->gid] = tx_ptr;
 //     ZJC_DEBUG("success add tx %u, %u, %u", pool_index_, added_tx_map_.size(), prio_map_.size());
     return kPoolsSuccess;
 }
@@ -111,6 +112,29 @@ void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
     }
 }
 
+void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
+    common::AutoSpinLock lock(mutex_);
+    for (int32_t i = 0; i < tx_list.size(); ++i) {
+        auto giter = gid_map_.find(tx_list[i].gid());
+        if (giter == gid_map_.end()) {
+            continue;
+        }
+
+        auto miter = added_tx_map_.find(giter->second->tx_hash);
+        if (miter != added_tx_map_.end()) {
+            added_tx_map_.erase(miter);
+        }
+
+        auto prio_iter = prio_map_.find(giter->second->prio_key);
+        if (prio_iter != prio_map_.end()) {
+            prio_map_.erase(prio_iter);
+        }
+    }
+
+    ZJC_DEBUG("0 tx over %u, map: %u, prio_map: %u, gid map: %u",
+        tx_list.size(), added_tx_map_.size(), prio_map_.size(), gid_map_.size());
+}
+
 void TxPool::TxOver(std::map<std::string, TxItemPtr>& txs) {
     common::AutoSpinLock lock(mutex_);
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
@@ -124,9 +148,15 @@ void TxPool::TxOver(std::map<std::string, TxItemPtr>& txs) {
         if (prio_iter != prio_map_.end()) {
             prio_map_.erase(prio_iter);
         }
+
+        auto giter = gid_map_.find(iter->second->gid);
+        if (giter != gid_map_.end()) {
+            gid_map_.erase(giter);
+        }
     }
 
-//     ZJC_DEBUG("tx over %u, map: %u, q: %u", txs.size(), added_tx_map_.size(), prio_map_.size());
+    ZJC_DEBUG("tx over %u, map: %u, prio_map: %u, gid map: %u",
+        txs.size(), added_tx_map_.size(), prio_map_.size(), gid_map_.size());
 }
 
 }  // namespace pools

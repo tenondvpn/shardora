@@ -49,6 +49,9 @@ public:
     }
 
     void TxOver(uint32_t pool_index, std::map<std::string, TxItemPtr>& over_txs);
+    void TxOver(
+        uint32_t pool_index,
+        const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
     void TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs);
     void SetTimeout(uint32_t pool_index) {}
     void RegisterCreateTxFunction(uint32_t type, CreateConsensusItemFunction func) {

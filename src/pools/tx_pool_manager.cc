@@ -195,6 +195,13 @@ void TxPoolManager::TxOver(uint32_t pool_index, std::map<std::string, TxItemPtr>
     return tx_pool_[pool_index].TxOver(over_txs);
 }
 
+void TxPoolManager::TxOver(
+        uint32_t pool_index,
+        const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
+    assert(pool_index < common::kInvalidPoolIndex);
+    return tx_pool_[pool_index].TxOver(tx_list);
+}
+
 }  // namespace pools
 
 }  // namespace zjchain

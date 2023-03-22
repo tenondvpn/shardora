@@ -40,7 +40,7 @@ void WaitingTxsPools::TxOver(std::shared_ptr<Zbft>& zbft_ptr) {
             }
         }
 
-        pool_mgr_->TxOver(tx_ptr->pool_index, over_txs);
+        pool_mgr_->TxOver(tx_ptr->pool_index, zjc_block.tx_list());
         pool_mgr_->TxRecover(tx_ptr->pool_index, recover_txs);
     } else {
         pool_mgr_->TxOver(tx_ptr->pool_index, tx_ptr->txs);
