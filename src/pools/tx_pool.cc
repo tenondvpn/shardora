@@ -108,6 +108,7 @@ void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
         auto miter = added_tx_map_.find(iter->first);
         if (miter != added_tx_map_.end()) {
             prio_map_[miter->second->prio_key] = miter->second;
+            miter->second->in_consensus = false;
         }
     }
 }
@@ -120,6 +121,7 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
             continue;
         }
 
+        giter->second->in_consensus = false;
         auto miter = added_tx_map_.find(giter->second->tx_hash);
         if (miter != added_tx_map_.end()) {
             added_tx_map_.erase(miter);

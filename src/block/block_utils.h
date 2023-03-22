@@ -54,7 +54,6 @@ struct ToTxsItem {
     pools::TxItemPtr tx_ptr;
     std::string to_txs_hash;
     uint32_t tx_count;
-    bool in_consensus;
 };
 
 struct StatisticElectItem {

@@ -29,7 +29,8 @@ public:
             : msg_ptr(msg),
             tx_hash(msg->msg_hash),
             gid(msg->header.tx_proto().gid()),
-            gas_price(msg->header.tx_proto().gas_price()) {
+            gas_price(msg->header.tx_proto().gas_price()),
+            in_consensus(false) {
         uint64_t now_tm = common::TimeUtils::TimestampUs();
         time_valid = now_tm + kBftStartDeltaTime;
 #ifdef ZJC_UNITTEST
@@ -62,6 +63,7 @@ public:
     const std::string& tx_hash;
     const std::string& gid;
     std::string prio_key;
+    bool in_consensus;
 };
 
 typedef std::shared_ptr<TxItem> TxItemPtr;

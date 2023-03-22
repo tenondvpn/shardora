@@ -332,8 +332,8 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
             continue;
         }
 
-        auto old_to_txs = to_txs_[heights.sharding_id()];
-        if (old_to_txs != nullptr && old_to_txs->to_txs_hash == to_heights.tos_hash()) {
+        auto tmp_to_txs = to_txs_[heights.sharding_id()];
+        if (tmp_to_txs != nullptr && tmp_to_txs->to_txs_hash == to_heights.tos_hash()) {
             continue;
         }
 
@@ -365,15 +365,15 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index) {
     for (uint32_t i = prev_pool_index_; i <= max_consensus_sharding_id_; ++i) {
         uint32_t mod_idx = i % common::kImmutablePoolSize;
         if (mod_idx == pool_index) {
-            auto old_to_txs = to_txs_[i];
-            if (old_to_txs != nullptr && !old_to_txs->in_consensus) {
-                if (old_to_txs->tx_ptr->time_valid > now_tm) {
+            auto tmp_to_txs = to_txs_[i];
+            if (tmp_to_txs != nullptr && !tmp_to_txs->tx_ptr->in_consensus) {
+                if (tmp_to_txs->tx_ptr->time_valid > now_tm) {
                     continue;
                 }
 
-                old_to_txs->in_consensus = true;
+                tmp_to_txs->tx_ptr->in_consensus = true;
                 prev_pool_index_ = i + 1;
-                return old_to_txs->tx_ptr;
+                return tmp_to_txs->tx_ptr;
             }
         }
     }
@@ -381,15 +381,15 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index) {
     for (uint32_t i = network::kRootCongressNetworkId; i < prev_pool_index_; ++i) {
         uint32_t mod_idx = i % common::kImmutablePoolSize;
         if (mod_idx == pool_index) {
-            auto old_to_txs = to_txs_[i];
-            if (old_to_txs != nullptr && !old_to_txs->in_consensus) {
-                if (old_to_txs->tx_ptr->time_valid > now_tm) {
+            auto tmp_to_txs = to_txs_[i];
+            if (tmp_to_txs != nullptr && !tmp_to_txs->tx_ptr->in_consensus) {
+                if (tmp_to_txs->tx_ptr->time_valid > now_tm) {
                     continue;
                 }
 
-                old_to_txs->in_consensus = true;
+                tmp_to_txs->tx_ptr->in_consensus = true;
                 prev_pool_index_ = i + 1;
-                return old_to_txs->tx_ptr;
+                return tmp_to_txs->tx_ptr;
             }
         }
     }
@@ -428,8 +428,8 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     auto& block_msg = *msg.mutable_block_proto();
     for (uint32_t i = network::kRootCongressNetworkId;
             i <= max_consensus_sharding_id_; ++i) {
-        auto old_to_txs = to_txs_[i];
-        if (old_to_txs != nullptr && old_to_txs->in_consensus) {
+        auto tmp_to_txs = to_txs_[i];
+        if (tmp_to_txs != nullptr && tmp_to_txs->tx_ptr->in_consensus) {
             continue;
         }
 
@@ -444,7 +444,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
             continue;
         }
 
-        if (old_to_txs != nullptr && old_to_txs->to_txs_hash == to_heights.tos_hash()) {
+        if (tmp_to_txs != nullptr && tmp_to_txs->to_txs_hash == to_heights.tos_hash()) {
             block_msg.mutable_to_txs()->RemoveLast();
             continue;
         }
