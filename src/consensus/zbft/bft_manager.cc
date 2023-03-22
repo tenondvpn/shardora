@@ -1177,6 +1177,7 @@ int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg
             }
         }
 
+        bft_ptr->set_consensus_status(kConsensusCommited);
         if (bft_ptr->prepare_block() != nullptr) {
 //             ZJC_DEBUG("backup CheckCommit success");
             HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
