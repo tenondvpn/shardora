@@ -20,9 +20,9 @@ WaitingTxsPools::~WaitingTxsPools() {}
 
 void WaitingTxsPools::TxOver(std::shared_ptr<Zbft>& zbft_ptr) {
     auto& tx_ptr = zbft_ptr->txs_ptr();
+    auto& zjc_block = zbft_ptr->prepare_block();
     if (zbft_ptr->is_synced_block()) {
         // just over txs in block and recover other
-        auto& zjc_block = zbft_ptr->prepare_block();
         std::map<std::string, pools::TxItemPtr> recover_txs;
         std::map<std::string, pools::TxItemPtr> over_txs;
         std::unordered_set<std::string> block_gid_set;
@@ -43,7 +43,7 @@ void WaitingTxsPools::TxOver(std::shared_ptr<Zbft>& zbft_ptr) {
         pool_mgr_->TxOver(tx_ptr->pool_index, zjc_block->tx_list());
         pool_mgr_->TxRecover(tx_ptr->pool_index, recover_txs);
     } else {
-        pool_mgr_->TxOver(tx_ptr->pool_index, tx_ptr->txs);
+        pool_mgr_->TxOver(tx_ptr->pool_index, zjc_block->tx_list());
     }
 
     auto& item_set = pipeline_pools_[tx_ptr->pool_index];

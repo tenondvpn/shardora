@@ -129,6 +129,8 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
         if (prio_iter != prio_map_.end()) {
             prio_map_.erase(prio_iter);
         }
+
+        gid_map_.erase(giter);
     }
 
     ZJC_DEBUG("0 tx over %u, map: %u, prio_map: %u, gid map: %u",
