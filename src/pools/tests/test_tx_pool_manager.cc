@@ -60,6 +60,18 @@ static uint8_t GetTxThreadIndex(
     return address_info->pool_index() % thread_count;
 }
 
+std::shared_ptr<address::protobuf::AddressInfo> CreateAddressInfo() {
+    auto single_to_address_info_ = std::make_shared<address::protobuf::AddressInfo>();
+    single_to_address_info_->set_pubkey("");
+    single_to_address_info_->set_balance(0);
+    single_to_address_info_->set_sharding_id(-1);
+    single_to_address_info_->set_pool_index(0);
+    single_to_address_info_->set_addr(common::kNormalToAddress);
+    single_to_address_info_->set_type(address::protobuf::kNormal);
+    single_to_address_info_->set_latest_height(0);
+    return single_to_address_info_;
+}
+
 TEST_F(TestTxPoolManager, All) {
     std::shared_ptr<security::Security> security_ptr = std::make_shared<security::Ecdsa>();
     security_ptr->SetPrivateKey(common::Encode::HexDecode(
@@ -93,8 +105,9 @@ TEST_F(TestTxPoolManager, All) {
     uint8_t thread_idx = GetTxThreadIndex(msg_ptr, 4, 4);
     ASSERT_TRUE(thread_idx != 255);
     msg_ptr->thread_idx = thread_idx;
+    msg_ptr->address_info = CreateAddressInfo();
     tx_pool_mgr.HandleMessage(msg_ptr);
-//     ASSERT_EQ(tx_pool_mgr.msg_queues_[msg_ptr->address_info->pool_index()].size(), 1);
+    ASSERT_EQ(tx_pool_mgr.msg_queues_[msg_ptr->address_info->pool_index()].size(), 1);
     std::map<std::string, pools::TxItemPtr> res_vec;
     tx_pool_mgr.GetTx(10, msg_ptr->address_info->pool_index(), res_vec);
     ASSERT_EQ(res_vec.size(), 1);
