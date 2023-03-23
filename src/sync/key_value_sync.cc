@@ -270,11 +270,11 @@ uint64_t KeyValueSync::SendSyncRequest(
 void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kSyncMessage);
-    if (sync_msg.has_sync_value_req()) {
+    if (header.sync_proto().has_sync_value_req()) {
         ProcessSyncValueRequest(msg_ptr);
     }
 
-    if (sync_msg.has_sync_value_res()) {
+    if (header.sync_proto().has_sync_value_res()) {
         ProcessSyncValueResponse(msg_ptr);
     }
 }
