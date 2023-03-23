@@ -37,7 +37,7 @@ class TxPool {
 public:
     TxPool();
     ~TxPool();
-    void Init(uint32_t pool_idx);
+    void Init(uint32_t pool_idx, const std::shared_ptr<db::Db>& db);
     int AddTx(TxItemPtr& tx_ptr);
     void GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count);
 
@@ -89,6 +89,7 @@ public:
         if (latest_height_ < height) {
             latest_height_ = height;
             latest_hash_ = hash;
+            height_tree_ptr_->Set(height);
         }
     }
 

@@ -18,15 +18,15 @@ TxPoolManager::TxPoolManager(
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<db::Db>& db) {
     security_ = security;
-    tx_pool_ = new TxPool[common::kInvalidPoolIndex];
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        tx_pool_[i].Init(i);
-    }
-
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     address_map_.Init(10240, 32);
+    tx_pool_ = new TxPool[common::kInvalidPoolIndex];
     InitAllPoolInfo();
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        tx_pool_[i].Init(i, db);
+    }
+
     network::Route::Instance()->RegisterMessage(
         common::kPoolsMessage,
         std::bind(&TxPoolManager::HandleMessage, this, std::placeholders::_1));
