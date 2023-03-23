@@ -53,6 +53,7 @@ public:
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
     void TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs);
+    void PopTxs(uint32_t pool_index);
     void SetTimeout(uint32_t pool_index) {}
     void RegisterCreateTxFunction(uint32_t type, CreateConsensusItemFunction func) {
         assert(type < pools::protobuf::StepType_ARRAYSIZE);
@@ -109,11 +110,13 @@ private:
     void DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& addr);
 
+    static const uint32_t kPopMessageCountEachTime = 64u;
+
     TxPool* tx_pool_{ nullptr };
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-//     common::ThreadSafeQueue<transport::MessagePtr> msg_queues_[common::kInvalidPoolIndex];
+    common::ThreadSafeQueue<transport::MessagePtr> msg_queues_[common::kInvalidPoolIndex];
     CreateConsensusItemFunction item_functions_[pools::protobuf::StepType_ARRAYSIZE] = { nullptr };
     common::UniqueMap<std::string, protos::AddressInfoPtr> address_map_;
     uint32_t prev_count_[257] = { 0 };

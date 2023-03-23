@@ -97,6 +97,7 @@ private:
     void HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr);
     bool AddSyncKeyValue(transport::protobuf::Header* msg, const block::protobuf::Block& block);
     void SaveKeyValue(const transport::protobuf::Header& msg);
+    void PopAllPoolTxs();
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
     }

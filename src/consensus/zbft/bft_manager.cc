@@ -165,8 +165,26 @@ void BftManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& membe
 void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 #ifndef ZJC_UNITTEST
     transport::MessagePtr prepare_msg_ptr = nullptr;
-    Start(msg_ptr->thread_idx, prepare_msg_ptr);
+    auto bft_ptr = Start(msg_ptr->thread_idx, prepare_msg_ptr);
+    if (bft_ptr == nullptr) {
+        auto btime = common::TimeUtils::TimestampUs();
+        PopAllPoolTxs();
+        auto etime = common::TimeUtils::TimestampUs();
+        ZJC_DEBUG("pop all txs use time: %lu us", (etime - btime));
+    }
 #endif
+}
+
+void BftManager::PopAllPoolTxs() {
+    auto& thread_set = elect_items_[elect_item_idx_].thread_set;
+    auto thread_item = thread_set[thread_index];
+    if (thread_item == nullptr) {
+        return nullptr;
+    }
+
+    for (auto begin_index = 0; begin_index < thread_item->pools.size(); ++begin_index) {
+        pools_mgr_->PopTxs(thread_item->pools[begin_index]);
+    }
 }
 
 ZbftPtr BftManager::Start(uint8_t thread_index, const transport::MessagePtr& prepare_msg_ptr) {
@@ -1005,7 +1023,6 @@ int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& pre
     //msg_ptr->times[msg_ptr->times_idx - 2] = msg_ptr->times[msg_ptr->times_idx - 1];
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
-
     res = AddBft(bft_ptr);
     if (res != kConsensusSuccess) {
         ZJC_ERROR("AddBft failed[%u].", res);
@@ -1022,7 +1039,6 @@ int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& pre
         header.set_hop_count(0);
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
         auto msg_res = BftProto::LeaderCreatePrepare(
             bft_ptr,
             "",
@@ -1031,7 +1047,6 @@ int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& pre
             new_bft_msg);
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
         if (!msg_res) {
             return kConsensusError;
         }
@@ -1043,8 +1058,6 @@ int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& pre
     bft_ptr->set_consensus_status(kConsensusPreCommit);
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
-
     if (prepare_msg_ptr == nullptr) {
         if (!LeaderSignMessage(msg_ptr)) {
             return kConsensusError;
@@ -1058,8 +1071,6 @@ int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& pre
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //msg_ptr->times[msg_ptr->times_idx - 2] = msg_ptr->times[msg_ptr->times_idx - 1];
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
-
     }
 
     return kConsensusSuccess;
@@ -1076,9 +1087,9 @@ bool BftManager::CheckAggSignValid(const transport::MessagePtr& msg_ptr, ZbftPtr
         ZJC_ERROR("get invalid bls sign.");
         return false;
     }
+
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
     if (!bft_ptr->set_bls_precommit_agg_sign(
             sign,
             bft_ptr->precommit_bls_agg_verify_hash())) {
@@ -1089,7 +1100,6 @@ bool BftManager::CheckAggSignValid(const transport::MessagePtr& msg_ptr, ZbftPtr
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //msg_ptr->times[msg_ptr->times_idx - 2] = msg_ptr->times[msg_ptr->times_idx - 1];
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
     return true;
 }
 

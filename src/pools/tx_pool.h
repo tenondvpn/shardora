@@ -93,7 +93,7 @@ public:
 
 private:
     bool CheckTimeoutTx(TxItemPtr& tx_ptr, uint64_t timestamp_now);
-    common::SpinMutex mutex_;
+//     common::SpinMutex mutex_;
     std::deque<TxItemPtr> timeout_txs_;
     std::unordered_map<std::string, TxItemPtr> added_tx_map_;
     std::unordered_map<std::string, TxItemPtr> gid_map_;
