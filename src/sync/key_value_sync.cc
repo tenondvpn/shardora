@@ -2,6 +2,7 @@
 #include "sync/key_value_sync.h"
 
 #include "block/block_manager.h"
+#include "common/global_info.h"
 #include "db/db.h"
 #include "dht/base_dht.h"
 #include "dht/dht_function.h"
@@ -25,7 +26,6 @@ KeyValueSync::KeyValueSync() {
     network::Route::Instance()->RegisterMessage(
             common::kSyncMessage,
             std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
-    Init();
 }
 
 KeyValueSync::~KeyValueSync() {}
@@ -42,7 +42,7 @@ int KeyValueSync::AddSync(uint32_t network_id, const std::string& key, uint32_t 
         added_key_set_.insert(key);
     }
 
-    if (db::Db::Instance()->Exist(key)) {
+    if (db_->Exist(key)) {
 //         SYNC_DEBUG("::Db::Instance()->Exist [%d] [%s]", network_id, common::Encode::HexEncode(key).c_str());
 //         if (HandleExistsBlock(key) == kSyncSuccess) {
 //             return kSyncBlockReloaded;
@@ -92,7 +92,8 @@ int KeyValueSync::AddSyncHeight(uint32_t network_id, uint32_t pool_idx, uint64_t
     return kSyncSuccess;
 }
 
-void KeyValueSync::Init() {
+void KeyValueSync::Init(const std::shared_ptr<db::Db>& db) {
+    db_ = db;
 #ifndef ZJC_UNITTEST
     tick_.CutOff(kSyncTickPeriod, std::bind(&KeyValueSync::CheckSyncItem, this));
     sync_timeout_tick_.CutOff(
@@ -199,7 +200,7 @@ uint64_t KeyValueSync::SendSyncRequest(
     dht::DhtKeyManager dht_key(network_id, 0);
     auto dht = network::DhtManager::Instance()->GetDht(network_id);
     if (dht) {
-        nodes = *dht->readonly_dht();
+        nodes = *dht->readonly_hash_sort_dht();
     }
 
     if (nodes.empty()) {
@@ -207,14 +208,14 @@ uint64_t KeyValueSync::SendSyncRequest(
             network_id -= network::kConsensusWaitingShardOffset;
             dht = network::DhtManager::Instance()->GetDht(network_id);
             if (dht) {
-                nodes = *dht->readonly_dht();
+                nodes = *dht->readonly_hash_sort_dht();
             }
         }
 
         if (nodes.empty()) {
             dht = network::UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
             if (dht) {
-                auto readonly_dht = dht->readonly_dht();
+                auto readonly_dht = dht->readonly_hash_sort_dht();
                 nodes = dht::DhtFunction::GetClosestNodes(*readonly_dht, dht_key.StrKey(), 4);
             }
         }
@@ -267,8 +268,8 @@ uint64_t KeyValueSync::SendSyncRequest(
     return node->id_hash;
 }
 
-void KeyValueSync::HandleMessage(const transport::TransportMessagePtr& header_ptr) {
-    auto header = *header_ptr;
+void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
     assert(header.type() == common::kSyncMessage);
     protobuf::SyncMessage sync_msg;
     if (!sync_msg.ParseFromString(header.data())) {
@@ -303,7 +304,7 @@ void KeyValueSync::ProcessSyncValueRequest(
     for (int32_t i = 0; i < sync_msg.sync_value_req().keys_size(); ++i) {
         const std::string& key = sync_msg.sync_value_req().keys(i);
         std::string value;
-        if (db::Db::Instance()->Get(key, &value).ok()) {
+        if (db_->Get(key, &value).ok()) {
             auto res = sync_res->add_res();
             res->set_key(key);
             res->set_value(value);
@@ -363,7 +364,7 @@ void KeyValueSync::ProcessSyncValueRequest(
 
 int KeyValueSync::HandleExistsBlock(const std::string& key) {
     std::string val;
-    auto res = db::Db::Instance()->Get(key, &val);
+    auto res = db_->Get(key, &val);
     if (!res.ok()) {
         return kSyncError;
     }
@@ -396,7 +397,7 @@ void KeyValueSync::ProcessSyncValueResponse(
                 iter->height());
 //             bft::BftManager::Instance()->AddKeyValueSyncBlock(header, block_item);
         } else {
-            db::Db::Instance()->Put(iter->key(), iter->value());
+            db_->Put(iter->key(), iter->value());
         }
 
         std::string key = iter->key();

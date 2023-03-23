@@ -49,9 +49,9 @@ public:
     static KeyValueSync* Instance();
     int AddSync(uint32_t network_id, const std::string& key, uint32_t priority);
     int AddSyncHeight(uint32_t network_id, uint32_t pool_idx, uint64_t height, uint32_t priority);
-    void Init();
+    void Init(const std::shared_ptr<db::Db>& db);
     void Destroy();
-    void HandleMessage(const transport::TransportMessagePtr& msg);
+    void HandleMessage(const transport::MessagePtr& msg);
 
 private:
     struct PrioSyncQueue {
@@ -82,6 +82,7 @@ private:
     common::Tick sync_timeout_tick_;
     std::unordered_set<std::string> added_key_set_;
     std::mutex added_key_set_mutex_;
+    std::shared_ptr<db::Db> db_ = nullptr;
 
 #ifdef ZJC_UNITTEST
     transport::protobuf::Header test_sync_req_msg_;
