@@ -197,7 +197,7 @@ uint64_t KeyValueSync::SendSyncRequest(
         const sync::protobuf::SyncMessage& sync_msg,
         const std::set<uint64_t>& sended_neigbors) {
     std::vector<dht::NodePtr> nodes;
-    dht::DhtKeyManager dht_key(network_id, 0);
+    dht::DhtKeyManager dht_key(network_id);
     auto dht = network::DhtManager::Instance()->GetDht(network_id);
     if (dht) {
         nodes = *dht->readonly_hash_sort_dht();
@@ -254,7 +254,6 @@ uint64_t KeyValueSync::SendSyncRequest(
 
     transport::protobuf::Header msg;
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kSyncMessage);
     *msg.mutable_sync_proto() = sync_msg;
@@ -271,12 +270,7 @@ uint64_t KeyValueSync::SendSyncRequest(
 void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kSyncMessage);
-    protobuf::SyncMessage sync_msg;
-    if (!sync_msg.ParseFromString(header.data())) {
-        ZJC_ERROR("protobuf::DhtMessage ParseFromString failed!");
-        return;
-    }
-
+    protobuf::SyncMessage& sync_msg = header.sync_proto();
     if (sync_msg.has_sync_value_req()) {
         ProcessSyncValueRequest(header, sync_msg);
     }
@@ -287,7 +281,7 @@ void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void KeyValueSync::ProcessSyncValueRequest(
-        const transport::protobuf::Header& header,
+        const transport::MessagePtr& msg_ptr,
         protobuf::SyncMessage& sync_msg) {
     assert(sync_msg.has_sync_value_req());
 //     auto dht = network::DhtManager::Instance()->GetDht(
@@ -325,13 +319,13 @@ void KeyValueSync::ProcessSyncValueRequest(
             network_id -= network::kConsensusWaitingShardOffset;
         }
 
-        if (block::BlockManager::Instance()->GetBlockStringWithHeight(
-                network_id,
-                sync_msg.sync_value_req().heights(i).pool_idx(),
-                sync_msg.sync_value_req().heights(i).height(),
-                &value) != block::kBlockSuccess) {
-            continue;
-        }
+//         if (block::BlockManager::Instance()->GetBlockStringWithHeight(
+//                 network_id,
+//                 sync_msg.sync_value_req().heights(i).pool_idx(),
+//                 sync_msg.sync_value_req().heights(i).height(),
+//                 &value) != block::kBlockSuccess) {
+//             continue;
+//         }
 
         auto res = sync_res->add_res();
         res->set_network_id(network_id);
@@ -357,8 +351,7 @@ void KeyValueSync::ProcessSyncValueRequest(
 #ifdef ZJC_UNITTEST
     test_sync_req_msg_ = msg;
 #else
-    transport::TcpTransport::Instance()->Send(
-        0, node->public_ip, node->public_port, msg);
+    transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
 #endif
 }
 
@@ -371,8 +364,8 @@ int KeyValueSync::HandleExistsBlock(const std::string& key) {
 
     auto zjc_block = std::make_shared<block::protobuf::Block>();
     if (zjc_block->ParseFromString(val) && zjc_block->hash() == key) {
-        db::DbWriteBach db_batch;
-        block::BlockManager::Instance()->AddNewBlock(zjc_block, db_batch, true, false);
+        db::DbWriteBatch db_batch;
+//         block::BlockManager::Instance()->AddNewBlock(zjc_block, db_batch, true, false);
         return kSyncSuccess;
     }
 
