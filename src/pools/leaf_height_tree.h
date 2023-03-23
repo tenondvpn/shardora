@@ -6,6 +6,7 @@
 #include "common/utils.h"
 #include "common/bitmap.h"
 #include "db/db.h"
+#include "pools/tx_utils.h"
 #include "protos/prefix_db.h"
 
 namespace zjchain {

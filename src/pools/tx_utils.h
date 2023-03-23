@@ -15,6 +15,11 @@ static const uint32_t kBftStartDeltaTime = 300000u;
 static const uint32_t kTxPoolTimeoutUs = 30u * 1000u * 1000u * 60u;
 static const uint32_t kTxStorageKeyMaxSize = 12u;
 static const uint32_t kMaxToTxsCount = 10000u;
+static const uint32_t kLeafMaxHeightCount = 1024u * 1024u;// 1024u * 1024u;  // each merkle block 1M
+static const uint32_t kEachHeightTreeMaxByteSize = kLeafMaxHeightCount * 2u;  // each merkle block 1M
+static const uint32_t kBranchMaxCount = kLeafMaxHeightCount / 64u;
+static const uint32_t kHeightLevelItemMaxCount = 2 * kBranchMaxCount - 1;
+static const uint64_t kLevelNodeValidHeights = 0xFFFFFFFFFFFFFFFFlu;
 
 enum PoolsErrorCode {
     kPoolsSuccess = 0,
