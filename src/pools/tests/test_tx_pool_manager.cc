@@ -67,7 +67,7 @@ std::shared_ptr<address::protobuf::AddressInfo> CreateAddressInfo(
     auto single_to_address_info_ = std::make_shared<address::protobuf::AddressInfo>();
     single_to_address_info_->set_pubkey(security_ptr->GetPublicKeyUnCompressed());
     single_to_address_info_->set_balance(100000);
-    single_to_address_info_->set_sharding_id(-1);
+    single_to_address_info_->set_sharding_id(2);
     single_to_address_info_->set_pool_index(0);
     single_to_address_info_->set_addr(common::kNormalToAddress);
     single_to_address_info_->set_type(address::protobuf::kNormal);
