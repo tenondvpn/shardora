@@ -71,7 +71,7 @@ std::shared_ptr<address::protobuf::AddressInfo> CreateAddressInfo(const std::str
     single_to_address_info_->set_addr(common::kNormalToAddress);
     single_to_address_info_->set_type(address::protobuf::kNormal);
     single_to_address_info_->set_latest_height(0);
-    prefix_db->AddAddressInfo(addr, single_to_address_info_);
+    prefix_db->AddAddressInfo(addr, *single_to_address_info_);
     return single_to_address_info_;
 }
 
