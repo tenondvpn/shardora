@@ -108,7 +108,7 @@ TEST_F(TestTxPoolManager, All) {
     uint8_t thread_idx = GetTxThreadIndex(msg_ptr, 4, 4);
     ASSERT_TRUE(thread_idx != 255);
     msg_ptr->thread_idx = thread_idx;
-    msg_ptr->address_info = CreateAddressInfo();
+    msg_ptr->address_info = CreateAddressInfo(security_ptr->GetAddress());
     tx_pool_mgr.HandleMessage(msg_ptr);
     ASSERT_EQ(tx_pool_mgr.msg_queues_[msg_ptr->address_info->pool_index()].size(), 1);
     std::map<std::string, pools::TxItemPtr> res_vec;
