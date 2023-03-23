@@ -96,10 +96,10 @@ TEST_F(TestTxPoolManager, All) {
     tx_msg.set_value("value");
     tx_msg.set_to(common::Encode::HexDecode("a533262d5163e6feb6e1b70ade6d512fadadf0b5"));
     tx_msg.set_amount(100000000lu);
-    auto sign_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(header);
+    auto sign_hash = pools::GetTxMessageHash(header);
     std::string sign;
     if (security_ptr->Sign(
-            transport::TcpTransport::Instance()->GetHeaderHashForSign(header),
+        sign_hash,
             &sign) != security::kSecuritySuccess) {
         ASSERT_TRUE(false);
     }
@@ -108,7 +108,6 @@ TEST_F(TestTxPoolManager, All) {
     uint8_t thread_idx = GetTxThreadIndex(msg_ptr, 4, 4);
     ASSERT_TRUE(thread_idx != 255);
     msg_ptr->thread_idx = thread_idx;
-    msg_ptr->address_info = CreateAddressInfo(security_ptr->GetAddress());
     tx_pool_mgr.HandleMessage(msg_ptr);
     ASSERT_EQ(tx_pool_mgr.msg_queues_[msg_ptr->address_info->pool_index()].size(), 1);
     std::map<std::string, pools::TxItemPtr> res_vec;
@@ -150,10 +149,10 @@ static void TestMultiThread(int32_t thread_count, int32_t leader_count, uint32_t
             tx_msg.set_amount(100000000lu);
             auto time2 = common::TimeUtils::TimestampUs();
             times[1] += time2 - time1;
-            auto sign_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(header);
+            auto sign_hash = pools::GetTxMessageHash(header);
             std::string sign;
             if (security_ptr->Sign(
-                transport::TcpTransport::Instance()->GetHeaderHashForSign(header),
+                sign_hash,
                 &sign) != security::kSecuritySuccess) {
                 ASSERT_TRUE(false);
             }
