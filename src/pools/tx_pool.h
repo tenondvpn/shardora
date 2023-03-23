@@ -41,7 +41,7 @@ public:
     void GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count);
 
     inline TxItemPtr GetTx(const std::string& tx_hash) {
-        common::AutoSpinLock lock(mutex_);
+//         common::AutoSpinLock lock(mutex_);
         auto iter = added_tx_map_.find(tx_hash);
         if (iter != added_tx_map_.end()) {
             //         ZJC_DEBUG("success get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
@@ -56,7 +56,7 @@ public:
         auto txs_items = std::make_shared<consensus::WaitingTxsItem>();
         auto& tx_map = txs_items->txs;
         {
-            common::AutoSpinLock lock(mutex_);
+//             common::AutoSpinLock lock(mutex_);
             for (int32_t i = 0; i < tx_hash_list.size(); ++i) {
                 auto& txhash = tx_hash_list[i];
                 auto iter = added_tx_map_.find(txhash);
