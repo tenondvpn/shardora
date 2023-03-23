@@ -35,6 +35,10 @@ public:
 
     void SetTreeWithInvalidHeight(uint64_t max_height, uint64_t invalid_height) {
         static int32_t i = 0;
+        std::string db_path = std::string("./test_height_tree_level_db_") + std::to_string(i++);
+        system((std::string("rm -rf ") + db_path).c_str());
+        auto db_ptr = std::make_shared<db::Db>();
+        db_ptr->Init(db_path);
         HeightTreeLevel height_tree_level(0, db_ptr);
         for (uint64_t i = 0; i < max_height; ++i) {
             if (i == invalid_height) {

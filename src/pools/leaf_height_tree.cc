@@ -25,10 +25,7 @@ LeafHeightTree::LeafHeightTree(
     level_ = level;
     node_index_ = node_index;
     uint32_t data_cnt = kBranchMaxCount * 2;
-    for (uint32_t i = 0; i < data_cnt; ++i) {
-        data_.push_back(0ull);
-    }
-
+    data_.resize(data_cnt, 0ull);
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     LoadFromDb();
