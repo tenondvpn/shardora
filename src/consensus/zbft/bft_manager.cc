@@ -463,6 +463,7 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
         auto& elect_item = elect_items_[elect_item_idx_];
         bft_msg.set_member_index(elect_item.local_node_member_index);
         *bft_msg.mutable_block() = *bft_ptr->prepare_block();
+        assert(bft_msg.block().height() > 0);
         transport::TcpTransport::Instance()->Send(
             msg_ptr->thread_idx,
             msg_ptr->conn,
@@ -714,6 +715,11 @@ void BftManager::CreateResponseMessage(
         now_msg_[msg_ptr->thread_idx] = msg_ptr->response;
 #else
         if (!response_to_leader) {
+            if (!msg_ptr->response->header.has_broadcast()) {
+                auto broadcast = msg_ptr->response->header.mutable_broadcast();
+            }
+
+            assert(msg_ptr->response->header.has_broadcast());
             network::Route::Instance()->Send(msg_ptr->response);
         } else {
             transport::TcpTransport::Instance()->Send(
@@ -1419,11 +1425,13 @@ int BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
 
             } else if (res == kConsensusOppose) {
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
+                msg_ptr->response->header.mutable_zbft()->set_prepare_gid(bft_msg.prepare_gid());
                 ZJC_DEBUG("precommit call oppose now.");
             }
         } else {
             if (bft_ptr->AddPrepareOpposeNode(member_ptr->id) == kConsensusOppose) {
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
+                msg_ptr->response->header.mutable_zbft()->set_prepare_gid(bft_msg.prepare_gid());
                 ZJC_DEBUG("precommit call oppose now.");
                 // just all consensus rollback
             }

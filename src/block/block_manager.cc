@@ -53,6 +53,11 @@ int BlockManager::Init(
 }
 
 void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+    if (leader_to_txs_msg_ != nullptr) {
+        auto msg_ptr = leader_to_txs_msg_;
+        HandleToTxsMessage(msg_ptr, true);
+    }
+
     NetworkNewBlock(msg_ptr->thread_idx, nullptr);
     if (to_tx_leader_ == nullptr) {
         return;
@@ -63,11 +68,6 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     CreateToTx(msg_ptr->thread_idx);
-    auto now_tm_ms = common::TimeUtils::TimestampMs();
-    if (leader_to_txs_msg_ != nullptr && create_leader_to_tx_tm_ > now_tm_ms) {
-        leader_to_txs_msg_->thread_idx = msg_ptr->thread_idx;
-        network::Route::Instance()->Send(leader_to_txs_msg_);
-    }
 }
 
 void BlockManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members) {
@@ -91,7 +91,7 @@ void BlockManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& mem
 void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // verify signature valid and check leader valid
     if (msg_ptr->header.block_proto().to_txs_size() > 0) {
-        HandleToTxsMessage(msg_ptr);
+        HandleToTxsMessage(msg_ptr, false);
     }
 }
 
@@ -313,22 +313,34 @@ void BlockManager::ToTxsTimeout(uint32_t sharding_id) {
     to_txs_[sharding_id] = nullptr;
 }
 
-void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
-    if (create_to_tx_cb_ == nullptr) {
+void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool recreate) {
+    if (create_to_tx_cb_ == nullptr || msg_ptr == nullptr) {
         return;
     }
 
+    if (!recreate) {
+        leader_to_txs_msg_ = msg_ptr;
+    }
+
+    bool all_valid = true;
     for (int32_t i = 0; i < msg_ptr->header.block_proto().to_txs_size(); ++i) {
         auto& heights = msg_ptr->header.block_proto().to_txs(i);
+        if (!recreate) {
+            to_txs_[heights.sharding_id()] = nullptr;
+        } else {
+            if (to_txs_[heights.sharding_id()] != nullptr) {
+                continue;
+            }
+        }
+
         pools::protobuf::ToTxHeights to_heights;
         if (to_txs_pool_->BackupCreateToTx(
                 heights.sharding_id(),
                 heights,
-                &to_heights) != pools::kPoolsSuccess) {
-            continue;
-        }
-
-        if (to_heights.tos_hash().empty()) {
+                &to_heights) != pools::kPoolsSuccess ||
+                to_heights.tos_hash().empty() ||
+                to_heights.tos_hash() != heights.tos_hash()) {
+            all_valid = false;
             continue;
         }
 
@@ -357,6 +369,10 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr) {
         to_txs_ptr->tx_count = to_heights.tx_count();
         to_txs_[heights.sharding_id()] = to_txs_ptr;
         ZJC_DEBUG("follower success add txs");
+    }
+
+    if (all_valid) {
+        leader_to_txs_msg_ = nullptr;
     }
 }
 
@@ -478,6 +494,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     auto& broadcast = *msg.mutable_broadcast();
     broadcast.set_hop_limit(10);
     leader_to_txs_msg_ = msg_ptr;
+    network::Route::Instance()->Send(msg_ptr);
     create_leader_to_tx_tm_ = now_tm_ms + pools::kBftStartDeltaTime / 1000;
 }
 

@@ -64,7 +64,7 @@ public:
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
-    void HandleToTxsMessage(const transport::MessagePtr& msg_ptr);
+    void HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool recreate);
     void HandleAllConsensusBlocks(uint8_t thread_idx);
     void AddNewBlock(
         uint8_t thread_idx,
@@ -96,7 +96,6 @@ private:
     uint32_t prev_pool_index_ = network::kRootCongressNetworkId;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
     transport::MessagePtr leader_to_txs_msg_ = nullptr;
-    uint64_t create_leader_to_tx_tm_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };
