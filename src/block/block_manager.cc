@@ -494,6 +494,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     auto& broadcast = *msg.mutable_broadcast();
     broadcast.set_hop_limit(10);
     leader_to_txs_msg_ = nullptr;
+    msg_ptr->thread_idx = thread_idx;
     network::Route::Instance()->Send(msg_ptr);
 }
 
