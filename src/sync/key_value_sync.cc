@@ -57,7 +57,7 @@ int KeyValueSync::AddSync(uint32_t network_id, const std::string& key, uint32_t 
         std::lock_guard<std::mutex> guard(synced_map_mutex_);
         auto tmp_iter = synced_map_.find(key);
         if (tmp_iter != synced_map_.end()) {
-            SYNC_ERROR("kSyncKeyAdded [%d] [%s]", network_id, common::Encode::HexEncode(key).c_str());
+            ZJC_ERROR("kSyncKeyAdded [%d] [%s]", network_id, common::Encode::HexEncode(key).c_str());
             return kSyncKeyAdded;
         }
     }
@@ -67,7 +67,7 @@ int KeyValueSync::AddSync(uint32_t network_id, const std::string& key, uint32_t 
         std::lock_guard<std::mutex> guard(prio_sync_queue_[priority].mutex);
         prio_sync_queue_[priority].sync_queue.push(item);
     }
-//     SYNC_ERROR("ttttttttttttttt new sync item [%d] [%s]", network_id, common::Encode::HexEncode(key).c_str());
+//     ZJC_ERROR("ttttttttttttttt new sync item [%d] [%s]", network_id, common::Encode::HexEncode(key).c_str());
     return kSyncSuccess;
 }
 
@@ -224,7 +224,7 @@ uint64_t KeyValueSync::SendSyncRequest(
     }
 
     if (nodes.empty()) {
-        SYNC_ERROR("network id[%d] not exists.", network_id);
+        ZJC_ERROR("network id[%d] not exists.", network_id);
         return 0;
     }
 
@@ -255,16 +255,18 @@ uint64_t KeyValueSync::SendSyncRequest(
     }
 
     transport::protobuf::Header msg;
-    dht->SetFrequently(msg);
-    SyncProto::CreateSyncValueReqeust(dht->local_node(), node, sync_msg, msg);
-
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
+    msg.set_des_dht_key(dht_key.StrKey());
+    msg.set_type(common::kSyncMessage);
+    *msg.mutable_sync_proto() = sync_msg;
+    msg.set_hop_count(0);
 #ifdef ZJC_UNITTEST
     test_sync_req_msg_ = msg;
-    return node->id_hash;
+#else
+    transport::TcpTransport::Instance()->Send(
+        0, node->public_ip, node->public_port, msg);
 #endif
-
-    transport::MultiThreadHandler::Instance()->tcp_transport()->Send(
-            node->public_ip(), node->local_port + 1, 0, msg);
     return node->id_hash;
 }
 
@@ -273,7 +275,7 @@ void KeyValueSync::HandleMessage(const transport::TransportMessagePtr& header_pt
     assert(header.type() == common::kSyncMessage);
     protobuf::SyncMessage sync_msg;
     if (!sync_msg.ParseFromString(header.data())) {
-        DHT_ERROR("protobuf::DhtMessage ParseFromString failed!");
+        ZJC_ERROR("protobuf::DhtMessage ParseFromString failed!");
         return;
     }
 
@@ -293,7 +295,7 @@ void KeyValueSync::ProcessSyncValueRequest(
 //     auto dht = network::DhtManager::Instance()->GetDht(
 //             sync_msg.sync_value_req().network_id());
 //     if (!dht) {
-//         SYNC_ERROR("sync from network[%u] not exists",
+//         ZJC_ERROR("sync from network[%u] not exists",
 //                 sync_msg.sync_value_req().network_id());
 //         return;
 //     }
@@ -349,17 +351,17 @@ void KeyValueSync::ProcessSyncValueRequest(
     }
 
     transport::protobuf::Header msg;
-    auto dht = network::UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
-    dht->SetFrequently(msg);
-    SyncProto::CreateSyncValueResponse(dht->local_node(), header, res_sync_msg, msg);
-
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
+    msg.set_des_dht_key(dht_key.StrKey());
+    msg.set_type(common::kSyncMessage);
+    *msg.mutable_sync_proto() = res_sync_msg;
 #ifdef ZJC_UNITTEST
-    test_sync_res_msg_ = msg;
-    return;
+    test_sync_req_msg_ = msg;
+#else
+    transport::TcpTransport::Instance()->Send(
+        0, node->public_ip, node->public_port, msg);
 #endif
-
-    transport::MultiThreadHandler::Instance()->Send(
-        header.from_ip(), header.from_port(), 0, msg);
 }
 
 int KeyValueSync::HandleExistsBlock(const std::string& key) {
@@ -390,7 +392,7 @@ void KeyValueSync::ProcessSyncValueResponse(
         auto block_item = std::make_shared<bft::protobuf::Block>();
         if (block_item->ParseFromString(iter->value()) &&
                 (iter->has_height() || block_item->hash() == iter->key())) {
-            SYNC_ERROR("ttttttttttttttt recv sync response [%s], net: %d, pool_idx: %d, height: %lu",
+            ZJC_ERROR("ttttttttttttttt recv sync response [%s], net: %d, pool_idx: %d, height: %lu",
                 common::Encode::HexEncode(iter->key()).c_str(),
                 block_item->network_id(),
                 block_item->pool_index(),

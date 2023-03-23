@@ -48,4 +48,5 @@ message Header {
     optional block.protobuf.BlockMessage block_proto = 17;
     optional pools.protobuf.ToTxHeights to_tx_heights = 18;
     optional sync.protobuf.SyncInfo sync = 19;
+    optional sync.protobuf.SyncMessage sync_proto = 20;
 }

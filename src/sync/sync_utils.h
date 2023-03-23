@@ -3,11 +3,6 @@
 #include "common/utils.h"
 #include "common/log.h"
 
-#define SYNC_DEBUG(fmt, ...) ZJCHAIN_DEBUG("[SYNC]" fmt, ## __VA_ARGS__)
-#define SYNC_INFO(fmt, ...) ZJCHAIN_INFO("[SYNC]" fmt, ## __VA_ARGS__)
-#define SYNC_WARN(fmt, ...) ZJCHAIN_WARN("[SYNC]" fmt, ## __VA_ARGS__)
-#define SYNC_ERROR(fmt, ...) ZJCHAIN_ERROR("[SYNC]" fmt, ## __VA_ARGS__)
-
 namespace zjchain {
 
 namespace sync {
