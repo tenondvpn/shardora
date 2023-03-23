@@ -1,4 +1,4 @@
-#include "sync/height_tree_level.h"
+#include "pools/height_tree_level.h"
 
 #include <unordered_map>
 #include <cmath>
@@ -8,7 +8,7 @@
 
 namespace zjchain {
 
-namespace sync {
+namespace pools {
 
 HeightTreeLevel::HeightTreeLevel(
         const std::string& db_prefix,
@@ -403,6 +403,6 @@ void HeightTreeLevel::FlushToDb() {
     }
 }
 
-};  // namespace sync
+};  // namespace pools
 
 };  // namespace zjchain

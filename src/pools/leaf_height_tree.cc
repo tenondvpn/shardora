@@ -5,12 +5,11 @@
 #include "common/global_info.h"
 #include "db/db.h"
 #include "protos/sync.pb.h"
-#include "sync/leaf_height_tree.h"
-#include "sync/sync_utils.h"
+#include "pools/leaf_height_tree.h"
 
 namespace zjchain {
 
-namespace sync {
+namespace pools {
 
 LeafHeightTree::LeafHeightTree(
         const std::string& db_prefix,
@@ -445,6 +444,6 @@ void LeafHeightTree::GetLeafInvalidHeights(std::vector<uint64_t>* height_vec) {
 //     }
 }
 
-}  // namespace sync
+}  // namespace pools
 
 }  // namespace zjchain

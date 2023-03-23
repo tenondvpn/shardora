@@ -4,12 +4,11 @@
 #include <mutex>
 
 #include "common/utils.h"
-#include "sync/leaf_height_tree.h"
-#include "sync/sync_utils.h"
+#include "pools/leaf_height_tree.h"
 
 namespace zjchain {
 
-namespace sync {
+namespace pools {
 
 class HeightTreeLevel {
 public:
@@ -47,6 +46,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(HeightTreeLevel);
 };
 
-};  // namespace sync
+};  // namespace pools
 
 };  // namespace zjchain

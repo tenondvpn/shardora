@@ -10,7 +10,7 @@
 
 namespace zjchain {
 
-namespace sync {
+namespace pools {
 
 class LeafHeightTree {
 public:
@@ -80,6 +80,6 @@ private:
 
 typedef std::shared_ptr<LeafHeightTree> LeafHeightTreePtr;
 
-};  // namespace sync
+};  // namespace pools
 
 };  // namespace zjchain
