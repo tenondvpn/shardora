@@ -23,6 +23,7 @@ namespace pools {
 namespace test {
 
 static std::shared_ptr<db::Db> db_ptr = nullptr;
+static std::shared_ptr<protos::PrefixDb> prefix_db = nullptr;
 
 class TestTxPoolManager : public testing::Test {
 public:
@@ -32,6 +33,7 @@ public:
         system((std::string("rm -rf ./tx_pool_mgr").c_str()));
         std::string db_path = std::string("./tx_pool_mgr");
         db_ptr->Init(db_path);
+        prefix_db = std::make_shared<protos::PrefixDb>(db_path);
     }
 
     static void TearDownTestCase() {
@@ -60,7 +62,7 @@ static uint8_t GetTxThreadIndex(
     return address_info->pool_index() % thread_count;
 }
 
-std::shared_ptr<address::protobuf::AddressInfo> CreateAddressInfo() {
+std::shared_ptr<address::protobuf::AddressInfo> CreateAddressInfo(const std::string& addr) {
     auto single_to_address_info_ = std::make_shared<address::protobuf::AddressInfo>();
     single_to_address_info_->set_pubkey("");
     single_to_address_info_->set_balance(0);
@@ -69,6 +71,7 @@ std::shared_ptr<address::protobuf::AddressInfo> CreateAddressInfo() {
     single_to_address_info_->set_addr(common::kNormalToAddress);
     single_to_address_info_->set_type(address::protobuf::kNormal);
     single_to_address_info_->set_latest_height(0);
+    prefix_db->AddAddressInfo(addr, single_to_address_info_);
     return single_to_address_info_;
 }
 
