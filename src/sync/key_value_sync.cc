@@ -12,8 +12,6 @@
 #include "network/route.h"
 #include "network/universal_manager.h"
 #include "sync/sync_utils.h"
-#include "sync/proto/sync_proto.h"
-#include "transport/proto/transport.pb.h"
 
 namespace zjchain {
 
