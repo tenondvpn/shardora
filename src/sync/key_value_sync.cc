@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "sync/key_value_sync.h"
 
-#include "bft/proto/bft.pb.h"
-#include "bft/bft_manager.h"
 #include "block/block_manager.h"
 #include "db/db.h"
 #include "dht/base_dht.h"
@@ -11,6 +9,7 @@
 #include "network/dht_manager.h"
 #include "network/route.h"
 #include "network/universal_manager.h"
+#include "protos/block.pb.h"
 #include "sync/sync_utils.h"
 
 namespace zjchain {
@@ -369,7 +368,7 @@ int KeyValueSync::HandleExistsBlock(const std::string& key) {
         return kSyncError;
     }
 
-    auto zjc_block = std::make_shared<bft::protobuf::Block>();
+    auto zjc_block = std::make_shared<block::protobuf::Block>();
     if (zjc_block->ParseFromString(val) && zjc_block->hash() == key) {
         db::DbWriteBach db_batch;
         block::BlockManager::Instance()->AddNewBlock(zjc_block, db_batch, true, false);
@@ -387,7 +386,7 @@ void KeyValueSync::ProcessSyncValueResponse(
 //     SYNC_DEBUG("recv sync response from[%s:%d] key size: %u",
 //         header.from_ip().c_str(), header.from_port(), res_arr.size());
     for (auto iter = res_arr.begin(); iter != res_arr.end(); ++iter) {
-        auto block_item = std::make_shared<bft::protobuf::Block>();
+        auto block_item = std::make_shared<block::protobuf::Block>();
         if (block_item->ParseFromString(iter->value()) &&
                 (iter->has_height() || block_item->hash() == iter->key())) {
             ZJC_ERROR("ttttttttttttttt recv sync response [%s], net: %d, pool_idx: %d, height: %lu",
@@ -395,7 +394,7 @@ void KeyValueSync::ProcessSyncValueResponse(
                 block_item->network_id(),
                 block_item->pool_index(),
                 iter->height());
-            bft::BftManager::Instance()->AddKeyValueSyncBlock(header, block_item);
+//             bft::BftManager::Instance()->AddKeyValueSyncBlock(header, block_item);
         } else {
             db::Db::Instance()->Put(iter->key(), iter->value());
         }

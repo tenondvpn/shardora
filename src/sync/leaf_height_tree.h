@@ -5,6 +5,8 @@
 
 #include "common/utils.h"
 #include "common/bitmap.h"
+#include "db/db.h"
+#include "protos/prefix_db.h"
 
 namespace zjchain {
 
@@ -12,7 +14,11 @@ namespace sync {
 
 class LeafHeightTree {
 public:
-    LeafHeightTree(const std::string& db_prefix, uint32_t level, uint64_t node_index);
+    LeafHeightTree(
+        const std::string& db_prefix,
+        uint32_t level,
+        uint64_t node_index,
+        const std::shared_ptr<db::Db>& db);
     LeafHeightTree(const std::vector<uint64_t>& data);
     ~LeafHeightTree();
     void Set(uint64_t bit_index);
@@ -68,6 +74,8 @@ private:
     uint32_t max_vec_index_{ 0 };
     bool dirty_{ false };
     std::string db_key_;
+    std::shared_ptr<db::Db> db_ = nullptr;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 };
 
 typedef std::shared_ptr<LeafHeightTree> LeafHeightTreePtr;

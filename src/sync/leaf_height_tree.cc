@@ -12,7 +12,11 @@ namespace zjchain {
 
 namespace sync {
 
-LeafHeightTree::LeafHeightTree(const std::string& db_prefix, uint32_t level, uint64_t node_index) {
+LeafHeightTree::LeafHeightTree(
+        const std::string& db_prefix,
+        uint32_t level,
+        uint64_t node_index,
+        const std::shared_ptr<db::Db>& db) {
     if (level == 0) {
         global_leaf_index_ = node_index * kLeafMaxHeightCount;
     } else {
@@ -26,6 +30,7 @@ LeafHeightTree::LeafHeightTree(const std::string& db_prefix, uint32_t level, uin
         data_.push_back(0ull);
     }
 
+    db_ = db;
     LoadFromDb();
     InitVec();
 }
@@ -176,13 +181,13 @@ void LeafHeightTree::SyncToDb() {
 
     flush_db.set_max_height(max_height_);
     flush_db.set_max_vec_index(max_vec_index_);
-    db::Db::Instance()->Put(db_key_, flush_db.SerializeAsString());
+    db_->Put(db_key_, flush_db.SerializeAsString());
     dirty_ = false;
 }
 
 bool LeafHeightTree::LoadFromDb() {
     std::string data;
-    auto st = db::Db::Instance()->Get(db_key_, &data);
+    auto st = db_->Get(db_key_, &data);
     if (!st.ok()) {
         return false;
     }
