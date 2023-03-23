@@ -179,7 +179,7 @@ void BftManager::PopAllPoolTxs(uint8_t thread_index) {
     auto& thread_set = elect_items_[elect_item_idx_].thread_set;
     auto thread_item = thread_set[thread_index];
     if (thread_item == nullptr) {
-        return nullptr;
+        return;
     }
 
     for (auto begin_index = 0; begin_index < thread_item->pools.size(); ++begin_index) {
