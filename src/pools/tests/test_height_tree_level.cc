@@ -61,7 +61,7 @@ TEST_F(TestHeightTreeLevel, SetValid) {
         height_tree_level.Set(i);
     }
 
-    height_tree_level.PrintTree();
+//     height_tree_level.PrintTree();
 }
 
 TEST_F(TestHeightTreeLevel, LoadFromDb) {
@@ -72,7 +72,7 @@ TEST_F(TestHeightTreeLevel, LoadFromDb) {
             height_tree_level.Set(i);
         }
 
-        height_tree_level.PrintTree();
+//         height_tree_level.PrintTree();
         height_tree_level.FlushToDb();
         height_tree_level.GetTreeData(&old_data);
     }
@@ -80,7 +80,7 @@ TEST_F(TestHeightTreeLevel, LoadFromDb) {
     {
         HeightTreeLevel height_tree_level(kLeafMaxHeightCount * 10 - 1, db_ptr);
         std::vector<uint64_t> new_data;
-        height_tree_level.PrintTree();
+//         height_tree_level.PrintTree();
         height_tree_level.GetTreeData(&new_data);
         ASSERT_EQ(old_data, new_data);
     }
