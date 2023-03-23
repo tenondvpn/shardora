@@ -62,16 +62,17 @@ static uint8_t GetTxThreadIndex(
     return address_info->pool_index() % thread_count;
 }
 
-std::shared_ptr<address::protobuf::AddressInfo> CreateAddressInfo(const std::string& addr) {
+std::shared_ptr<address::protobuf::AddressInfo> CreateAddressInfo(
+        std::shared_ptr<security::Security>& security_ptr) {
     auto single_to_address_info_ = std::make_shared<address::protobuf::AddressInfo>();
-    single_to_address_info_->set_pubkey("");
+    single_to_address_info_->set_pubkey(security_ptr->GetPublicKey());
     single_to_address_info_->set_balance(0);
     single_to_address_info_->set_sharding_id(-1);
     single_to_address_info_->set_pool_index(0);
     single_to_address_info_->set_addr(common::kNormalToAddress);
     single_to_address_info_->set_type(address::protobuf::kNormal);
     single_to_address_info_->set_latest_height(0);
-    prefix_db->AddAddressInfo(addr, *single_to_address_info_);
+    prefix_db->AddAddressInfo(security_ptr->GetAddress(), *single_to_address_info_);
     return single_to_address_info_;
 }
 
@@ -79,6 +80,7 @@ TEST_F(TestTxPoolManager, All) {
     std::shared_ptr<security::Security> security_ptr = std::make_shared<security::Ecdsa>();
     security_ptr->SetPrivateKey(common::Encode::HexDecode(
         "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"));
+    CreateAddressInfo(security_ptr);
     TxPoolManager tx_pool_mgr(security_ptr, db_ptr);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
@@ -119,6 +121,7 @@ static void TestMultiThread(int32_t thread_count, int32_t leader_count, uint32_t
     std::shared_ptr<security::Security> security_ptr = std::make_shared<security::Ecdsa>();
     security_ptr->SetPrivateKey(common::Encode::HexDecode(
         "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"));
+    CreateAddressInfo(security_ptr);
     TxPoolManager tx_pool_mgr(security_ptr, db_ptr);
     srand(time(NULL));
     std::condition_variable con[thread_count];
@@ -129,6 +132,7 @@ static void TestMultiThread(int32_t thread_count, int32_t leader_count, uint32_t
             auto time0 = common::TimeUtils::TimestampUs();
             std::shared_ptr<security::Security> security_ptr = std::make_shared<security::Ecdsa>();
             security_ptr->SetPrivateKey(common::Random::RandomString(32));
+            CreateAddressInfo(security_ptr);
             auto time1 = common::TimeUtils::TimestampUs();
             times[0] += time1 - time0;
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
