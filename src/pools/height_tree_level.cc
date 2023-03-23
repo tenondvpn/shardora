@@ -372,7 +372,7 @@ void HeightTreeLevel::FlushToDb() {
     for (int32_t i = (int32_t)max_level_; i >= 0; --i) {
         auto level_map = tree_level_[i];
         if (level_map == nullptr) {
-            return;
+            break;
         }
 
         if (i == (int32_t)max_level_) {
