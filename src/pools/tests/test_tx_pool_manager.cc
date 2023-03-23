@@ -65,7 +65,7 @@ static uint8_t GetTxThreadIndex(
 std::shared_ptr<address::protobuf::AddressInfo> CreateAddressInfo(
         std::shared_ptr<security::Security>& security_ptr) {
     auto single_to_address_info_ = std::make_shared<address::protobuf::AddressInfo>();
-    single_to_address_info_->set_pubkey(security_ptr->GetPublicKey());
+    single_to_address_info_->set_pubkey(security_ptr->GetPublicKeyUnCompressed());
     single_to_address_info_->set_balance(100000);
     single_to_address_info_->set_sharding_id(-1);
     single_to_address_info_->set_pool_index(0);
@@ -91,7 +91,7 @@ TEST_F(TestTxPoolManager, All) {
     auto& tx_msg = *header.mutable_tx_proto();
     tx_msg.set_version(0);
     tx_msg.set_gid(common::Random::RandomString(32));
-    tx_msg.set_pubkey(security_ptr->GetPublicKey());
+    tx_msg.set_pubkey(security_ptr->GetPublicKeyUnCompressed());
     tx_msg.set_gas_limit(100000000);
     tx_msg.set_gas_price(100);
     tx_msg.set_key("key");
@@ -145,7 +145,7 @@ static void TestMultiThread(int32_t thread_count, int32_t leader_count, uint32_t
             auto& tx_msg = *header.mutable_tx_proto();
             tx_msg.set_version(0);
             tx_msg.set_gid(common::Random::RandomString(32));
-            tx_msg.set_pubkey(security_ptr->GetPublicKey());
+            tx_msg.set_pubkey(security_ptr->GetPublicKeyUnCompressed());
             tx_msg.set_gas_limit(100000000);
             tx_msg.set_gas_price(100);
             tx_msg.set_step(pools::protobuf::kNormalFrom);
