@@ -83,28 +83,29 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             return;
         }
 
-//         msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-//         if (security_->Verify(
-//                 msg_ptr->msg_hash,
-//                 tx_msg.pubkey(),
-//                 header.sign()) != security::kSecuritySuccess) {
-//             ZJC_ERROR("verify signature failed!");
-//             return;
-//         }
-// 
+        msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
+        if (security_->Verify(
+                msg_ptr->msg_hash,
+                tx_msg.pubkey(),
+                header.sign()) != security::kSecuritySuccess) {
+            ZJC_ERROR("verify signature failed!");
+            return;
+        }
+
         msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
         ++prev_count_[msg_ptr->address_info->pool_index()];
         auto now_tm = common::TimeUtils::TimestampUs();
         if (prev_timestamp_us_ + 3000000lu < now_tm) {
-            prev_timestamp_us_ = now_tm;
             for (uint32_t i = 0; i < 257; ++i) {
                 if (prev_count_[i] > 0) {
-                    ZJC_INFO("pool: %d tx tps: %.2f", i,
+                    ZJC_INFO("thread index: %d, pool: %d tx tps: %.2f",
+                        msg_ptr->thread_idx, i,
                         (double(prev_count_[i]) / (double((now_tm - prev_timestamp_us_) / 1000000.0))));
                     prev_count_[i] = 0;
                 }
             }
 
+            prev_timestamp_us_ = now_tm;
         }
 //         pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](msg_ptr);
 //         tx_pool_[msg_ptr->address_info->pool_index()].AddTx(tx_ptr);
@@ -130,17 +131,6 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
     while (msg_queues_[pool_index].size() > 0 && ++count < kPopMessageCountEachTime) {
         transport::MessagePtr msg_ptr = nullptr;
         msg_queues_[pool_index].pop(&msg_ptr);
-        auto& header = msg_ptr->header;
-        auto& tx_msg = msg_ptr->header.tx_proto();
-        msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-        if (security_->Verify(
-                msg_ptr->msg_hash,
-                tx_msg.pubkey(),
-                header.sign()) != security::kSecuritySuccess) {
-            ZJC_ERROR("verify signature failed!");
-            return;
-        }
-
         DispatchTx(pool_index, msg_ptr);
     }
 }
