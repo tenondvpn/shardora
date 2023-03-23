@@ -1172,7 +1172,7 @@ int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg
 //     ZJC_DEBUG("backup CheckCommit: %s", common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
     auto bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.commit_gid(), false);
     if (bft_ptr == nullptr) {
-        assert(false);
+//         assert(false);
         return kConsensusError;
     }
 

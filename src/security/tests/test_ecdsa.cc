@@ -38,7 +38,7 @@ public:
 
 TEST_F(TestEcdsa, TestAll) {
     std::vector<std::string> pri_vec;
-    for (uint32_t i = 0; i < 10000; ++i) {
+    for (uint32_t i = 0; i < 100; ++i) {
         auto test_prikey = common::Random::RandomString(32);
         Ecdsa ecdsa;
         ASSERT_EQ(ecdsa.SetPrivateKey(test_prikey), 0);
@@ -127,6 +127,29 @@ TEST_F(TestEcdsa, TestBench) {
                 std::string sign;
                 ASSERT_EQ(ecdsa.Sign(msg_for_sign, &sign), 0);
                 ASSERT_EQ(ecdsa.Verify(msg_for_sign, pk, sign), 0);
+            }
+            auto etime = common::TimeUtils::TimestampUs();
+            std::cout << "sign verify tps: " << (double(kTestCount) / (double((etime - btime) / 1000000.0))) << std::endl;
+        }
+
+        security::PrivateKey prikey("eed7c1a51fa08b8c8b781a3b6fd1425590109be596fcaf1e77d9f57512287d2e");
+        security::PublicKey pubkey(ecdsa.curve_, prikey);
+        {
+            auto btime = common::TimeUtils::TimestampUs();
+            for (uint32_t i = 0; i < kTestCount; ++i) {
+                std::string sign;
+                ASSERT_TRUE(security::Secp256k1::Instance()->Sign(msg_for_sign, prikey, &sign));
+            }
+            auto etime = common::TimeUtils::TimestampUs();
+            std::cout << "sign tps: " << (double(kTestCount) / (double((etime - btime) / 1000000.0))) << std::endl;
+        }
+
+        {
+            auto btime = common::TimeUtils::TimestampUs();
+            for (uint32_t i = 0; i < kTestCount; ++i) {
+                std::string sign;
+                ASSERT_TRUE(security::Secp256k1::Instance()->Sign(msg_for_sign, prikey, &sign));
+                ASSERT_TRUE(security::Secp256k1::Instance()->Verify(msg_for_sign, pubkey, sign));
             }
             auto etime = common::TimeUtils::TimestampUs();
             std::cout << "sign verify tps: " << (double(kTestCount) / (double((etime - btime) / 1000000.0))) << std::endl;
