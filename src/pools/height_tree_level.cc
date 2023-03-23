@@ -11,10 +11,9 @@ namespace zjchain {
 namespace pools {
 
 HeightTreeLevel::HeightTreeLevel(
-        const std::string& db_prefix,
         uint64_t max_height,
         const std::shared_ptr<db::Db>& db)
-        : max_height_(max_height), db_prefix_(db_prefix), db_(db) {
+        : max_height_(max_height), db_(db) {
     max_level_ = GetMaxLevel();
     LoadFromDb();
 }
@@ -32,9 +31,6 @@ int HeightTreeLevel::Set(uint64_t height) {
         max_level_ = GetMaxLevel();
     }
 
-//     ZJC_INFO("set height tree : %s, set height: %lu, max_height_: %lu, max_level_: %lu",
-//         db_prefix_.c_str(), height, max_height_, max_level_);
-//     std::cout << "height tree: " << db_prefix_ << " set height: " << height << ", max_height_: " << max_height_ << ", max_level_: " << max_level_ << std::endl;
     uint64_t leaf_index = height / kLeafMaxHeightCount;
     {
         TreeNodeMapPtr node_map_ptr = tree_level_[0];
@@ -46,7 +42,7 @@ int HeightTreeLevel::Set(uint64_t height) {
         LeafHeightTreePtr leaf_ptr = nullptr;
         auto iter = node_map_ptr->find(leaf_index);
         if (iter == node_map_ptr->end()) {
-            leaf_ptr = std::make_shared<LeafHeightTree>(db_prefix_, 0, leaf_index, db_);
+            leaf_ptr = std::make_shared<LeafHeightTree>(0, leaf_index, db_);
             (*node_map_ptr)[leaf_index] = leaf_ptr;
 //             std::cout << "create new leaf index: " << leaf_index << std::endl;
 //             if (leaf_index != 0) {
@@ -228,7 +224,7 @@ void HeightTreeLevel::BottomUpWithBrantchLevel(uint32_t level, uint64_t child_in
         LeafHeightTreePtr branch_ptr = nullptr;
         auto iter = node_map_ptr->find(branch_index);
         if (iter == node_map_ptr->end()) {
-            branch_ptr = std::make_shared<LeafHeightTree>(db_prefix_, level, branch_index, db_);
+            branch_ptr = std::make_shared<LeafHeightTree>(level, branch_index, db_);
             (*node_map_ptr)[branch_index] = branch_ptr;
 //             std::cout << "create new branch level: " << level << ", index: " << branch_index << std::endl;
         } else {
@@ -344,7 +340,7 @@ void HeightTreeLevel::LoadFromDb() {
         auto node_map_ptr = std::make_shared<TreeNodeMap>();
         tree_level_[max_level] = node_map_ptr;
 
-        LeafHeightTreePtr branch_ptr = std::make_shared<LeafHeightTree>(db_prefix_, 0, 0, db_);
+        LeafHeightTreePtr branch_ptr = std::make_shared<LeafHeightTree>(0, 0, db_);
         (*node_map_ptr)[0] = branch_ptr;
         return;
     }
@@ -353,7 +349,7 @@ void HeightTreeLevel::LoadFromDb() {
         auto level_map = std::make_shared<TreeNodeMap>();
         tree_level_[i] = level_map;
         if (i == (int32_t)max_level_) {
-            LeafHeightTreePtr branch_ptr = std::make_shared<LeafHeightTree>(db_prefix_, i, 0, db_);
+            LeafHeightTreePtr branch_ptr = std::make_shared<LeafHeightTree>(i, 0, db_);
             (*level_map)[0] = branch_ptr;
             level_vec_index = branch_ptr->max_vec_index() + 1;
             continue;
@@ -361,7 +357,7 @@ void HeightTreeLevel::LoadFromDb() {
 
         level_vec_index *= 2;
         for (uint64_t vec_idx = 0; vec_idx < level_vec_index; ++vec_idx) {
-            LeafHeightTreePtr branch_ptr = std::make_shared<LeafHeightTree>(db_prefix_, i, vec_idx, db_);
+            LeafHeightTreePtr branch_ptr = std::make_shared<LeafHeightTree>(i, vec_idx, db_);
             (*level_map)[vec_idx] = branch_ptr;
         }
 
@@ -372,6 +368,7 @@ void HeightTreeLevel::LoadFromDb() {
 void HeightTreeLevel::FlushToDb() {
     uint32_t level_vec_index = 1;
     int32_t max_level = (int32_t)(log(kBranchMaxCount) / log(2));
+    db::DbWriteBatch db_batch;
     for (int32_t i = (int32_t)max_level_; i >= 0; --i) {
         auto level_map = tree_level_[i];
         if (level_map == nullptr) {
@@ -380,10 +377,10 @@ void HeightTreeLevel::FlushToDb() {
 
         if (i == (int32_t)max_level_) {
             auto iter = level_map->begin();
-            iter->second->SyncToDb();
+            iter->second->SyncToDb(db_batch);
             level_vec_index = iter->second->max_vec_index() + 1;
             if (level_vec_index > kBranchMaxCount) {
-                return;
+                break;
             }
 
             continue;
@@ -396,10 +393,16 @@ void HeightTreeLevel::FlushToDb() {
                 break;
             }
 
-            iter->second->SyncToDb();
+            iter->second->SyncToDb(db_batch);
         }
 
         level_vec_index *= kBranchMaxCount;
+    }
+
+    if (db_batch.Count() > 0) {
+        if (!db_->Put(db_batch).ok()) {
+            ZJC_FATAL("write db failed!");
+        }
     }
 }
 

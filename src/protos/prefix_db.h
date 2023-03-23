@@ -57,6 +57,7 @@ static const std::string kBlockPrefix = "k\x01";
 static const std::string kToTxsHeightsPrefix = "l\x01";
 static const std::string kLatestToTxsHeightsPrefix = "m\x01";
 static const std::string kLatestPoolPrefix = "n\x01";
+static const std::string kHeightTreePrefix = "o\x01";
 
 static const std::string kTemporaryKeyPrefix = "t\x01";
 
@@ -618,6 +619,42 @@ public:
 
         return true;
     }
+
+    void SaveHeightTree(
+            uint32_t level,
+            uint64_t node_index,
+            const sync::protobuf::FlushDbItem& flush_db,
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(48);
+        key.append(kHeightTreePrefix);
+        key.append((char*)&level, sizeof(level));
+        key.append((char*)&node_index, sizeof(node_index));
+        db_batch.Put(key, flush_db.SerializeAsString());
+    }
+
+    bool GetHeightTree(
+            uint32_t level,
+            uint64_t node_index,
+            sync::protobuf::FlushDbItem* flush_db) {
+        std::string key;
+        key.reserve(48);
+        key.append(kHeightTreePrefix);
+        key.append((char*)&level, sizeof(level));
+        key.append((char*)&node_index, sizeof(node_index));
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            return false;
+        }
+
+        if (!flush_db->ParseFromString(val)) {
+            return false;
+        }
+
+        return true;
+    }
+
 private:
     std::shared_ptr<db::Db> db_ = nullptr;
 

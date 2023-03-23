@@ -16,7 +16,6 @@ namespace pools {
 class LeafHeightTree {
 public:
     LeafHeightTree(
-        const std::string& db_prefix,
         uint32_t level,
         uint64_t node_index,
         const std::shared_ptr<db::Db>& db);
@@ -27,7 +26,7 @@ public:
     bool Valid(uint64_t bit_index);
     void GetLeafInvalidHeights(std::vector<uint64_t>* height_vec);
     void GetBranchInvalidNode(uint64_t* vec_idx);
-    void SyncToDb();
+    void SyncToDb(db::DbWriteBatch& db_batch);
 
     const std::vector<uint64_t>& data() const {
         return data_;
@@ -74,9 +73,11 @@ private:
     bool is_branch_{ false };
     uint32_t max_vec_index_{ 0 };
     bool dirty_{ false };
-    std::string db_key_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    uint32_t level_ = 0;
+    uint64_t node_index_ = 0;
+
 };
 
 typedef std::shared_ptr<LeafHeightTree> LeafHeightTreePtr;

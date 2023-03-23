@@ -35,7 +35,7 @@ public:
     }
 
     void TestGetInvalidHeight(uint64_t height) {
-        LeafHeightTree leaf_height_tree("db_prefix", 0, 0, db_ptr);
+        LeafHeightTree leaf_height_tree(0, 0, db_ptr);
         for (uint64_t i = 0; i < kLeafMaxHeightCount; ++i) {
             if (i == height) {
                 continue;
@@ -68,7 +68,7 @@ private:
 };
 
 TEST_F(TestLeafHeightTree, TestGetInvalidHeights) {
-    LeafHeightTree leaf_height_tree("db_prefix", 0, 0, db_ptr);
+    LeafHeightTree leaf_height_tree(0, 0, db_ptr);
     std::vector<uint64_t> invalid_heights;
     for (uint32_t i = 0; i < 10; ++i) {
         invalid_heights.push_back(rand() % kLeafMaxHeightCount);
@@ -80,7 +80,7 @@ TEST_F(TestLeafHeightTree, TestGetInvalidHeights) {
 }
 
 TEST_F(TestLeafHeightTree, TestSetBranch) {
-    LeafHeightTree leaf_height_tree("db_prefix", 1, 0, db_ptr);
+    LeafHeightTree leaf_height_tree(1, 0, db_ptr);
     for (uint64_t i = 0; i < kBranchMaxCount * 2; ++i) {
         leaf_height_tree.Set(i, 0xFFFFFFFFFFFFFFFFlu);
     }

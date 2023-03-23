@@ -113,8 +113,9 @@ TEST_F(TestTxPoolManager, All) {
     msg_ptr->thread_idx = thread_idx;
     tx_pool_mgr.HandleMessage(msg_ptr);
     ASSERT_EQ(tx_pool_mgr.msg_queues_[msg_ptr->address_info->pool_index()].size(), 1);
+    tx_pool_mgr.PopTxs(msg_ptr->address_info->pool_index());
     std::map<std::string, pools::TxItemPtr> res_vec;
-    tx_pool_mgr.GetTx(10, msg_ptr->address_info->pool_index(), res_vec);
+    tx_pool_mgr.GetTx(msg_ptr->address_info->pool_index(), 10, res_vec);
     ASSERT_EQ(res_vec.size(), 1);
 }
 

@@ -12,7 +12,6 @@ namespace zjchain {
 namespace pools {
 
 LeafHeightTree::LeafHeightTree(
-        const std::string& db_prefix,
         uint32_t level,
         uint64_t node_index,
         const std::shared_ptr<db::Db>& db) {
@@ -23,13 +22,15 @@ LeafHeightTree::LeafHeightTree(
         is_branch_ = true;
     }
 
-    db_key_ = db_prefix + "_" + std::to_string(level) + "_" + std::to_string(node_index);
+    level_ = level;
+    node_index_ = node_index;
     uint32_t data_cnt = kBranchMaxCount * 2;
     for (uint32_t i = 0; i < data_cnt; ++i) {
         data_.push_back(0ull);
     }
 
     db_ = db;
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     LoadFromDb();
     InitVec();
 }
@@ -168,7 +169,7 @@ uint32_t LeafHeightTree::GetAlignMaxLevel() {
     return tmp;
 }
 
-void LeafHeightTree::SyncToDb() {
+void LeafHeightTree::SyncToDb(db::DbWriteBatch& db_batch) {
     if (!dirty_) {
         return;
     }
@@ -180,19 +181,13 @@ void LeafHeightTree::SyncToDb() {
 
     flush_db.set_max_height(max_height_);
     flush_db.set_max_vec_index(max_vec_index_);
-    db_->Put(db_key_, flush_db.SerializeAsString());
+    prefix_db_->SaveHeightTree(level_, node_index_, flush_db, db_batch);
     dirty_ = false;
 }
 
 bool LeafHeightTree::LoadFromDb() {
-    std::string data;
-    auto st = db_->Get(db_key_, &data);
-    if (!st.ok()) {
-        return false;
-    }
-
     sync::protobuf::FlushDbItem flush_db;
-    if (!flush_db.ParseFromString(data)) {
+    if (!prefix_db_->GetHeightTree(level_, node_index_, &flush_db)) {
         return false;
     }
 

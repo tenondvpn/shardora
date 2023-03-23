@@ -143,6 +143,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
 
     if (item_functions_[msg_ptr->header.tx_proto().step()] == nullptr) {
         ZJC_DEBUG("not registered step : %d", msg_ptr->header.tx_proto().step());
+        assert(false);
         return;
     }
 

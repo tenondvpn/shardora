@@ -21,6 +21,7 @@
 #include "consensus/consensus_utils.h"
 #include "pools/tx_utils.h"
 #include "protos/pools.pb.h"
+#include "pools/height_tree_level.h"
 
 namespace zjchain {
 
@@ -101,6 +102,7 @@ private:
     uint32_t pool_index_ = 0;
     uint64_t latest_height_ = 0;
     std::string latest_hash_;
+    std::shared_ptr<HeightTreeLevel> height_tree_ptr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };

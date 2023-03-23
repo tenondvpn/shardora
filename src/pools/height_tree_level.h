@@ -13,7 +13,6 @@ namespace pools {
 class HeightTreeLevel {
 public:
     HeightTreeLevel(
-        const std::string& db_prefix,
         uint64_t max_height,
         const std::shared_ptr<db::Db>& db);
     ~HeightTreeLevel();
@@ -39,7 +38,6 @@ private:
     TreeNodeMapPtr tree_level_[kMaxLevelCount];
     uint64_t max_height_{ common::kInvalidUint64 };
     uint32_t max_level_{ 0 };
-    std::string db_prefix_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 
