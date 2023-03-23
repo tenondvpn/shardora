@@ -495,7 +495,11 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     broadcast.set_hop_limit(10);
     leader_to_txs_msg_ = nullptr;
     msg_ptr->thread_idx = thread_idx;
+#ifdef ZJC_UNITTEST
+    leader_to_txs_msg_ = msg_ptr;
+#else
     network::Route::Instance()->Send(msg_ptr);
+#endif
 }
 
 }  // namespace block
