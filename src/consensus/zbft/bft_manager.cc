@@ -182,8 +182,10 @@ void BftManager::PopAllPoolTxs(uint8_t thread_index) {
         return;
     }
 
-    for (auto begin_index = 0; begin_index < thread_item->pools.size(); ++begin_index) {
-        pools_mgr_->PopTxs(thread_item->pools[begin_index]);
+    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
+        if (pool_idx % thread_count_ == thread_index) {
+            pools_mgr_->PopTxs(thread_item->pools[pool_idx]);
+        }
     }
 }
 

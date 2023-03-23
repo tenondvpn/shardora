@@ -130,6 +130,17 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
     while (msg_queues_[pool_index].size() > 0 && ++count < kPopMessageCountEachTime) {
         transport::MessagePtr msg_ptr = nullptr;
         msg_queues_[pool_index].pop(&msg_ptr);
+        auto& header = msg_ptr->header;
+        auto& tx_msg = msg_ptr->header.tx_proto();
+        msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
+        if (security_->Verify(
+                msg_ptr->msg_hash,
+                tx_msg.pubkey(),
+                header.sign()) != security::kSecuritySuccess) {
+            ZJC_ERROR("verify signature failed!");
+            return;
+        }
+
         DispatchTx(pool_index, msg_ptr);
     }
 }
@@ -152,7 +163,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
     }
 
     tx_pool_[pool_index].AddTx(tx_ptr);
-//     ZJC_DEBUG("success add tx %u, %s", pool_index, common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
+    ZJC_DEBUG("success add tx %u, %s", pool_index, common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
 }
 
 void TxPoolManager::GetTx(
