@@ -16,6 +16,8 @@ namespace pools {
 class LeafHeightTree {
 public:
     LeafHeightTree(
+        uint32_t net_id,
+        uint32_t pool_index,
         uint32_t level,
         uint64_t node_index,
         const std::shared_ptr<db::Db>& db);
@@ -77,6 +79,8 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint32_t level_ = 0;
     uint64_t node_index_ = 0;
+    uint32_t net_id_ = 0;
+    uint32_t pool_index_ = 0;
 
 };
 

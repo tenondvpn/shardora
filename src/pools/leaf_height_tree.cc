@@ -12,6 +12,8 @@ namespace zjchain {
 namespace pools {
 
 LeafHeightTree::LeafHeightTree(
+        uint32_t net_id,
+        uint32_t pool_index,
         uint32_t level,
         uint64_t node_index,
         const std::shared_ptr<db::Db>& db) {
@@ -22,6 +24,8 @@ LeafHeightTree::LeafHeightTree(
         is_branch_ = true;
     }
 
+    net_id_ = net_id;
+    pool_index_ = pool_index;
     level_ = level;
     node_index_ = node_index;
     uint32_t data_cnt = kBranchMaxCount * 2;
@@ -178,13 +182,13 @@ void LeafHeightTree::SyncToDb(db::DbWriteBatch& db_batch) {
 
     flush_db.set_max_height(max_height_);
     flush_db.set_max_vec_index(max_vec_index_);
-    prefix_db_->SaveHeightTree(level_, node_index_, flush_db, db_batch);
+    prefix_db_->SaveHeightTree(net_id_, pool_index_, level_, node_index_, flush_db, db_batch);
     dirty_ = false;
 }
 
 bool LeafHeightTree::LoadFromDb() {
     sync::protobuf::FlushDbItem flush_db;
-    if (!prefix_db_->GetHeightTree(level_, node_index_, &flush_db)) {
+    if (!prefix_db_->GetHeightTree(net_id_, pool_index_, level_, node_index_, &flush_db)) {
         return false;
     }
 

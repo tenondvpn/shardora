@@ -39,7 +39,7 @@ public:
         system((std::string("rm -rf ") + db_path).c_str());
         auto db_ptr = std::make_shared<db::Db>();
         db_ptr->Init(db_path);
-        HeightTreeLevel height_tree_level(0, db_ptr);
+        HeightTreeLevel height_tree_level(0, 0, 0, db_ptr);
         for (uint64_t i = 0; i < max_height; ++i) {
             if (i == invalid_height) {
                 continue;
@@ -60,7 +60,7 @@ private:
 };
 
 TEST_F(TestHeightTreeLevel, SetValid) {
-    HeightTreeLevel height_tree_level(0, db_ptr);
+    HeightTreeLevel height_tree_level(0, 0, 0, db_ptr);
     for (uint64_t i = 0; i < 1024; ++i) {
         height_tree_level.Set(i);
     }
@@ -71,7 +71,7 @@ TEST_F(TestHeightTreeLevel, SetValid) {
 TEST_F(TestHeightTreeLevel, LoadFromDb) {
     std::vector<uint64_t> old_data;
     {
-        HeightTreeLevel height_tree_level(0, db_ptr);
+        HeightTreeLevel height_tree_level(0, 0, 0, db_ptr);
         for (uint64_t i = 0; i < kLeafMaxHeightCount * 10; ++i) {
             height_tree_level.Set(i);
         }
@@ -82,7 +82,7 @@ TEST_F(TestHeightTreeLevel, LoadFromDb) {
     }
 
     {
-        HeightTreeLevel height_tree_level(kLeafMaxHeightCount * 10 - 1, db_ptr);
+        HeightTreeLevel height_tree_level(0, 0, kLeafMaxHeightCount * 10 - 1, db_ptr);
         std::vector<uint64_t> new_data;
 //         height_tree_level.PrintTree();
         height_tree_level.GetTreeData(&new_data);

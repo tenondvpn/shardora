@@ -44,6 +44,7 @@ private:
         uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);
+    void InitLocalNetworkId();
 
     common::Config conf_;
     bool inited_{ false };

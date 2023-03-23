@@ -18,7 +18,11 @@ TxPool::~TxPool() {}
 
 void TxPool::Init(uint32_t pool_idx, const std::shared_ptr<db::Db>& db) {
     pool_index_ = pool_idx;
-    height_tree_ptr_ = std::make_shared<HeightTreeLevel>(latest_height_, db);
+    height_tree_ptr_ = std::make_shared<HeightTreeLevel>(
+        common::GlobalInfo::Instance()->network_id(),
+        pool_index_,
+        latest_height_,
+        db);
     added_tx_map_.reserve(10240);
 }
 

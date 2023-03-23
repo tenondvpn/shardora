@@ -81,6 +81,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    InitLocalNetworkId();
     if (net_handler_.Init(db_) != transport::kTransportSuccess) {
         return kInitError;
     }
@@ -121,10 +122,10 @@ int NetworkInit::Init(int argc, char** argv) {
         pools_mgr_);
     block_mgr_->Init(account_mgr_, db_, pools_mgr_, security_->GetAddress());
     // check if is any consensus shard or root node or join in waiting pool
-    if (CheckJoinWaitingPool() != kInitSuccess) {
-        INIT_ERROR("CheckJoinWaitingPool failed!");
-        return kInitError;
-    }
+//     if (CheckJoinWaitingPool() != kInitSuccess) {
+//         INIT_ERROR("CheckJoinWaitingPool failed!");
+//         return kInitError;
+//     }
 
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     bft_mgr_ = std::make_shared<consensus::BftManager>();
@@ -166,6 +167,28 @@ int NetworkInit::Init(int argc, char** argv) {
     inited_ = true;
     cmd_.Run();
     return kInitSuccess;
+}
+
+void NetworkInit::InitLocalNetworkId() {
+    elect::ElectBlockManager elect_block_mgr;
+    elect_block_mgr.Init(db_);
+    for (uint32_t i = network::kRootCongressNetworkId; i < network::kConsensusShardEndNetworkId; ++i) {
+        auto block_ptr = elect_block_mgr.GetLatestElectBlock(i);
+        if (block_ptr == nullptr) {
+            break;
+        }
+
+        auto& in = block_ptr->in();
+        for (int32_t i = 0; i < in.size(); ++i) {
+            auto id = security_->GetAddress(in[i].pubkey());
+            if (id == security_->GetAddress()) {
+                common::GlobalInfo::Instance()->set_network_id(i);
+                break;
+            }
+        }
+    }
+
+    CheckJoinWaitingPool();
 }
 
 void NetworkInit::ElectBlockCallback(uint32_t sharding_id, common::MembersPtr& members) {

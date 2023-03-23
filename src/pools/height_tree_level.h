@@ -13,6 +13,8 @@ namespace pools {
 class HeightTreeLevel {
 public:
     HeightTreeLevel(
+        uint32_t net_id,
+        uint32_t pool_index,
         uint64_t max_height,
         const std::shared_ptr<db::Db>& db);
     ~HeightTreeLevel();
@@ -35,6 +37,8 @@ private:
     static const uint32_t kMaxLevelCount = 64u;
 
     // Max:  2 ^ (64 - 1) * 1M * 1M block height, 
+    uint32_t net_id_ = 0;
+    uint32_t pool_index_ = 0;
     TreeNodeMapPtr tree_level_[kMaxLevelCount];
     uint64_t max_height_{ common::kInvalidUint64 };
     uint32_t max_level_{ 0 };
