@@ -121,12 +121,6 @@ int NetworkInit::Init(int argc, char** argv) {
         db_,
         pools_mgr_);
     block_mgr_->Init(account_mgr_, db_, pools_mgr_, security_->GetAddress());
-    // check if is any consensus shard or root node or join in waiting pool
-//     if (CheckJoinWaitingPool() != kInitSuccess) {
-//         INIT_ERROR("CheckJoinWaitingPool failed!");
-//         return kInitError;
-//     }
-
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     bft_mgr_ = std::make_shared<consensus::BftManager>();
     auto bft_init_res = bft_mgr_->Init(
@@ -172,7 +166,8 @@ int NetworkInit::Init(int argc, char** argv) {
 void NetworkInit::InitLocalNetworkId() {
     elect::ElectBlockManager elect_block_mgr;
     elect_block_mgr.Init(db_);
-    for (uint32_t i = network::kRootCongressNetworkId; i < network::kConsensusShardEndNetworkId; ++i) {
+    for (uint32_t i = network::kRootCongressNetworkId;
+            i < network::kConsensusShardEndNetworkId; ++i) {
         auto block_ptr = elect_block_mgr.GetLatestElectBlock(i);
         if (block_ptr == nullptr) {
             break;
@@ -183,7 +178,7 @@ void NetworkInit::InitLocalNetworkId() {
             auto id = security_->GetAddress(in[i].pubkey());
             if (id == security_->GetAddress()) {
                 common::GlobalInfo::Instance()->set_network_id(i);
-                break;
+                return;
             }
         }
     }
