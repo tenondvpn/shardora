@@ -173,7 +173,7 @@ void LeafHeightTree::SyncToDb() {
         return;
     }
 
-    protobuf::FlushDbItem flush_db;
+    sync::protobuf::FlushDbItem flush_db;
     for (uint32_t i = 0; i < data_.size(); ++i) {
         flush_db.add_heights(data_[i]);
     }
@@ -191,7 +191,7 @@ bool LeafHeightTree::LoadFromDb() {
         return false;
     }
 
-    protobuf::FlushDbItem flush_db;
+    sync::protobuf::FlushDbItem flush_db;
     if (!flush_db.ParseFromString(data)) {
         return false;
     }

@@ -68,7 +68,7 @@ int HeightTreeLevel::Set(uint64_t height) {
         child_idx = child_idx / 2 / kBranchMaxCount;
     }
 
-    return kSyncSuccess;
+    return kPoolsSuccess;
 }
 
 bool HeightTreeLevel::Valid(uint64_t height) {
