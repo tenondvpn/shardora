@@ -69,9 +69,7 @@ private:
         const sync::protobuf::SyncMessage& sync_msg,
         const std::set<uint64_t>& sended_neigbors);
     void ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr);
-    void ProcessSyncValueResponse(
-        const transport::protobuf::Header& header,
-        protobuf::SyncMessage& sync_msg);
+    void ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr);
     int HandleExistsBlock(const std::string& key);
 
     std::unordered_map<std::string, SyncItemPtr> synced_map_;

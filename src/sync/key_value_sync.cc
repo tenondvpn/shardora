@@ -270,13 +270,12 @@ uint64_t KeyValueSync::SendSyncRequest(
 void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kSyncMessage);
-    const protobuf::SyncMessage& sync_msg = header.sync_proto();
     if (sync_msg.has_sync_value_req()) {
         ProcessSyncValueRequest(msg_ptr);
     }
 
     if (sync_msg.has_sync_value_res()) {
-        ProcessSyncValueResponse(header, sync_msg);
+        ProcessSyncValueResponse(msg_ptr);
     }
 }
 
@@ -371,9 +370,8 @@ int KeyValueSync::HandleExistsBlock(const std::string& key) {
     return kSyncError;
 }
 
-void KeyValueSync::ProcessSyncValueResponse(
-        const transport::protobuf::Header& header,
-        protobuf::SyncMessage& sync_msg) {
+void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr) {
+    auto& sync_msg = msg_ptr->header.sync_proto();
     assert(sync_msg.has_sync_value_res());
     auto& res_arr = sync_msg.sync_value_res().res();
 //     SYNC_DEBUG("recv sync response from[%s:%d] key size: %u",
