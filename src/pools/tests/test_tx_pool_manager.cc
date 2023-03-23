@@ -96,7 +96,7 @@ TEST_F(TestTxPoolManager, All) {
     tx_msg.set_value("value");
     tx_msg.set_to(common::Encode::HexDecode("a533262d5163e6feb6e1b70ade6d512fadadf0b5"));
     tx_msg.set_amount(100000000lu);
-    auto sign_hash = pools::GetTxMessageHash(header);
+    auto sign_hash = pools::GetTxMessageHash(tx_msg);
     std::string sign;
     if (security_ptr->Sign(
         sign_hash,
@@ -149,7 +149,7 @@ static void TestMultiThread(int32_t thread_count, int32_t leader_count, uint32_t
             tx_msg.set_amount(100000000lu);
             auto time2 = common::TimeUtils::TimestampUs();
             times[1] += time2 - time1;
-            auto sign_hash = pools::GetTxMessageHash(header);
+            auto sign_hash = pools::GetTxMessageHash(tx_msg);
             std::string sign;
             if (security_ptr->Sign(
                 sign_hash,
