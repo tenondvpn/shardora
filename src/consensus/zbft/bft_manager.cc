@@ -176,12 +176,6 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void BftManager::PopAllPoolTxs(uint8_t thread_index) {
-    auto& thread_set = elect_items_[elect_item_idx_].thread_set;
-    auto thread_item = thread_set[thread_index];
-    if (thread_item == nullptr) {
-        return;
-    }
-
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
         if (pool_idx % thread_count_ == thread_index) {
             pools_mgr_->PopTxs(pool_idx);
