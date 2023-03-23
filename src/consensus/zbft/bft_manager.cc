@@ -168,14 +168,14 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     auto bft_ptr = Start(msg_ptr->thread_idx, prepare_msg_ptr);
     if (bft_ptr == nullptr) {
         auto btime = common::TimeUtils::TimestampUs();
-        PopAllPoolTxs();
+        PopAllPoolTxs(msg_ptr->thread_idx);
         auto etime = common::TimeUtils::TimestampUs();
         ZJC_DEBUG("pop all txs use time: %lu us", (etime - btime));
     }
 #endif
 }
 
-void BftManager::PopAllPoolTxs() {
+void BftManager::PopAllPoolTxs(uint8_t thread_index) {
     auto& thread_set = elect_items_[elect_item_idx_].thread_set;
     auto thread_item = thread_set[thread_index];
     if (thread_item == nullptr) {
