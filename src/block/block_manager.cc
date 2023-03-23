@@ -493,9 +493,8 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     // send to other nodes
     auto& broadcast = *msg.mutable_broadcast();
     broadcast.set_hop_limit(10);
-    leader_to_txs_msg_ = msg_ptr;
+    leader_to_txs_msg_ = nullptr;
     network::Route::Instance()->Send(msg_ptr);
-    create_leader_to_tx_tm_ = now_tm_ms + pools::kBftStartDeltaTime / 1000;
 }
 
 }  // namespace block
