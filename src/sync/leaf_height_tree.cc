@@ -4,9 +4,9 @@
 
 #include "common/global_info.h"
 #include "db/db.h"
+#include "protos/sync.pb.h"
 #include "sync/leaf_height_tree.h"
 #include "sync/sync_utils.h"
-#include "sync/proto/sync.pb.h"
 
 namespace zjchain {
 
