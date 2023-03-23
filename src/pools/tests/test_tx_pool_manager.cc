@@ -33,7 +33,7 @@ public:
         system((std::string("rm -rf ./tx_pool_mgr").c_str()));
         std::string db_path = std::string("./tx_pool_mgr");
         db_ptr->Init(db_path);
-        prefix_db = std::make_shared<protos::PrefixDb>(db_path);
+        prefix_db = std::make_shared<protos::PrefixDb>(db_ptr);
     }
 
     static void TearDownTestCase() {
