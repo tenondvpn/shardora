@@ -7,13 +7,12 @@
 #include <cmath>
 
 #define private public
-#include "sync/leaf_height_tree.h"
-#include "sync/sync_utils.h"
+#include "pools/leaf_height_tree.h"
 #include "db/db.h"
 
 namespace zjchain {
 
-namespace sync {
+namespace pools {
 
 namespace test {
 
@@ -100,6 +99,6 @@ TEST_F(TestLeafHeightTree, TestSetBranch) {
 
 }  // namespace test
 
-}  // namespace sync
+}  // namespace pools
 
 }  // namespace zjchain

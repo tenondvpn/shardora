@@ -6,13 +6,12 @@
 #include <vector>
 
 #define private public
-#include "sync/height_tree_level.h"
-#include "sync/sync_utils.h"
+#include "pools/height_tree_level.h"
 #include "db/db.h"
 
 namespace zjchain {
 
-namespace sync {
+namespace pools {
 
 namespace test {
 
@@ -127,6 +126,6 @@ TEST_F(TestHeightTreeLevel, GetInvalidHeights) {
 
 }  // namespace test
 
-}  // namespace sync
+}  // namespace pools
 
 }  // namespace zjchain
