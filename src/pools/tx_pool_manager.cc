@@ -93,19 +93,19 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 //         }
 // 
         msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-//         ++prev_count_[msg_ptr->address_info->pool_index()];
-//         auto now_tm = common::TimeUtils::TimestampUs();
-//         if (prev_timestamp_us_ + 3000000lu < now_tm) {
-//             for (uint32_t i = 0; i < 257; ++i) {
-//                 if (prev_count_[i] > 0) {
-//                     ZJC_INFO("pool: %d tx tps: %.2f", i,
-//                         (double(prev_count_[i]) / (double((now_tm - prev_timestamp_us_) / 1000000.0))));
-//                     prev_count_[i] = 0;
-//                 }
-//             }
-// 
-//             prev_timestamp_us_ = now_tm;
-//         }
+        ++prev_count_[msg_ptr->address_info->pool_index()];
+        auto now_tm = common::TimeUtils::TimestampUs();
+        if (prev_timestamp_us_ + 3000000lu < now_tm) {
+            prev_timestamp_us_ = now_tm;
+            for (uint32_t i = 0; i < 257; ++i) {
+                if (prev_count_[i] > 0) {
+                    ZJC_INFO("pool: %d tx tps: %.2f", i,
+                        (double(prev_count_[i]) / (double((now_tm - prev_timestamp_us_) / 1000000.0))));
+                    prev_count_[i] = 0;
+                }
+            }
+
+        }
 //         pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](msg_ptr);
 //         tx_pool_[msg_ptr->address_info->pool_index()].AddTx(tx_ptr);
     } else {
@@ -163,7 +163,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
     }
 
     tx_pool_[pool_index].AddTx(tx_ptr);
-    ZJC_DEBUG("success add tx %u, %s", pool_index, common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
+//     ZJC_DEBUG("success add tx %u, %s", pool_index, common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
 }
 
 void TxPoolManager::GetTx(

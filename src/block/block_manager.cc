@@ -54,8 +54,12 @@ int BlockManager::Init(
 
 void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     if (leader_to_txs_msg_ != nullptr) {
-        auto msg_ptr = leader_to_txs_msg_;
-        HandleToTxsMessage(msg_ptr, true);
+        auto now_tm = common::TimeUtils::TimestampUs();
+        if (now_tm > prev_to_txs_tm_us_ + 1000000) {
+            auto msg_ptr = leader_to_txs_msg_;
+            HandleToTxsMessage(msg_ptr, true);
+            prev_to_txs_tm_us_ = now_tm;
+        }
     }
 
     NetworkNewBlock(msg_ptr->thread_idx, nullptr);

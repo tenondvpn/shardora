@@ -167,10 +167,10 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     transport::MessagePtr prepare_msg_ptr = nullptr;
     auto bft_ptr = Start(msg_ptr->thread_idx, prepare_msg_ptr);
     if (bft_ptr == nullptr) {
-        auto btime = common::TimeUtils::TimestampUs();
+//         auto btime = common::TimeUtils::TimestampUs();
         PopAllPoolTxs(msg_ptr->thread_idx);
-        auto etime = common::TimeUtils::TimestampUs();
-        ZJC_DEBUG("pop all txs use time: %lu us", (etime - btime));
+//         auto etime = common::TimeUtils::TimestampUs();
+//         ZJC_DEBUG("pop all txs use time: %lu us", (etime - btime));
     }
 #endif
 }
@@ -896,6 +896,10 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
     } else {
         ZJC_ERROR("invalid consensus, tx empty.");
         return nullptr;
+    }
+
+    if (txs_ptr != nullptr && txs_ptr->txs.size() != bft_msg.tx_bft().tx_hash_list_size()) {
+        txs_ptr = nullptr;
     }
 
     if (txs_ptr == nullptr) {

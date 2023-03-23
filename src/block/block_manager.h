@@ -96,6 +96,7 @@ private:
     uint32_t prev_pool_index_ = network::kRootCongressNetworkId;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
     transport::MessagePtr leader_to_txs_msg_ = nullptr;
+    uint64_t prev_to_txs_tm_us_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };
