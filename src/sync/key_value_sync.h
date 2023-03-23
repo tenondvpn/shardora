@@ -9,6 +9,7 @@
 
 #include "common/utils.h"
 #include "common/tick.h"
+#include "db/db.h"
 #include "protos/sync.pb.h"
 #include "protos/transport.pb.h"
 #include "sync/sync_utils.h"
