@@ -399,10 +399,8 @@ void HeightTreeLevel::FlushToDb() {
         level_vec_index *= kBranchMaxCount;
     }
 
-    if (db_batch.Count() > 0) {
-        if (!db_->Put(db_batch).ok()) {
-            ZJC_FATAL("write db failed!");
-        }
+    if (!db_->Put(db_batch).ok()) {
+        ZJC_FATAL("write db failed!");
     }
 }
 
