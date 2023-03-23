@@ -270,9 +270,9 @@ uint64_t KeyValueSync::SendSyncRequest(
 void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kSyncMessage);
-    protobuf::SyncMessage& sync_msg = header.sync_proto();
+    const protobuf::SyncMessage& sync_msg = header.sync_proto();
     if (sync_msg.has_sync_value_req()) {
-        ProcessSyncValueRequest(header, sync_msg);
+        ProcessSyncValueRequest(msg_ptr);
     }
 
     if (sync_msg.has_sync_value_res()) {
@@ -280,9 +280,8 @@ void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 }
 
-void KeyValueSync::ProcessSyncValueRequest(
-        const transport::MessagePtr& msg_ptr,
-        protobuf::SyncMessage& sync_msg) {
+void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr) {
+    auto& sync_msg = msg_ptr->header.sync_proto();
     assert(sync_msg.has_sync_value_req());
 //     auto dht = network::DhtManager::Instance()->GetDht(
 //             sync_msg.sync_value_req().network_id());

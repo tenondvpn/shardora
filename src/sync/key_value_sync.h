@@ -68,9 +68,7 @@ private:
         uint32_t network_id,
         const sync::protobuf::SyncMessage& sync_msg,
         const std::set<uint64_t>& sended_neigbors);
-    void ProcessSyncValueRequest(
-        const transport::protobuf::Header& header,
-        protobuf::SyncMessage& sync_msg);
+    void ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr);
     void ProcessSyncValueResponse(
         const transport::protobuf::Header& header,
         protobuf::SyncMessage& sync_msg);
