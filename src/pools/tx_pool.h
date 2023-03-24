@@ -22,6 +22,7 @@
 #include "pools/tx_utils.h"
 #include "protos/pools.pb.h"
 #include "pools/height_tree_level.h"
+#include "sync/key_value_sync.h"
 
 namespace zjchain {
 
