@@ -15,6 +15,7 @@
 #include "init/http_handler.h"
 #include "pools/tx_pool_manager.h"
 #include "security/security.h"
+#include "sync/key_value_sync.h"
 #include "timeblock/time_block_manager.h"
 #include "transport/multi_thread.h"
 
@@ -60,6 +61,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<consensus::BftManager> bft_mgr_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
+    std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     http::HttpServer http_server_;
     HttpHandler http_handler_;
     uint8_t main_thread_idx_ = 255;

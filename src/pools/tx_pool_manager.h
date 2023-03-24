@@ -11,6 +11,7 @@
 #include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
 #include "protos/transport.pb.h"
+#include "sync/key_value_sync.h"
 #include "security/security.h"
 #include "transport/transport_utils.h"
 
@@ -20,7 +21,10 @@ namespace pools {
 
 class TxPoolManager {
 public:
-    TxPoolManager(std::shared_ptr<security::Security>& security, std::shared_ptr<db::Db>& db);
+    TxPoolManager(
+        std::shared_ptr<security::Security>& security,
+        std::shared_ptr<db::Db>& db,
+        std::shared_ptr<sync::KeyValueSync>& kv_sync);
     ~TxPoolManager();
     void HandleMessage(const transport::MessagePtr& msg);
     void GetTx(

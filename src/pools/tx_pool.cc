@@ -16,7 +16,11 @@ TxPool::TxPool() {}
 
 TxPool::~TxPool() {}
 
-void TxPool::Init(uint32_t pool_idx, const std::shared_ptr<db::Db>& db) {
+void TxPool::Init(
+        uint32_t pool_idx,
+        const std::shared_ptr<db::Db>& db,
+        std::shared_ptr<sync::KeyValueSync>& kv_sync) {
+    kv_sync_ = kv_sync;
     pool_index_ = pool_idx;
     auto tmp_db = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(tmp_db);

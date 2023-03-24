@@ -37,7 +37,10 @@ class TxPool {
 public:
     TxPool();
     ~TxPool();
-    void Init(uint32_t pool_idx, const std::shared_ptr<db::Db>& db);
+    void Init(
+        uint32_t pool_idx,
+        const std::shared_ptr<db::Db>& db,
+        std::shared_ptr<sync::KeyValueSync>& kv_sync);
     int AddTx(TxItemPtr& tx_ptr);
     void GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count);
 
@@ -89,6 +92,12 @@ public:
             height_tree_ptr_->Set(height);
             if (synced_height_ + 1 == height) {
                 synced_height_ = height;
+            } else {
+                for (uint64_t i = synced_height_ + 1; i < latest_height_; ++i) {
+                    if (!height_tree_ptr_->Valid(i)) {
+
+                    }
+                }
             }
         }
 
@@ -120,6 +129,7 @@ private:
     std::shared_ptr<HeightTreeLevel> height_tree_ptr_ = nullptr;
     uint32_t pool_index_ = common::kInvalidPoolIndex;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     uint64_t synced_height_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);

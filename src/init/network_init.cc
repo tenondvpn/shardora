@@ -81,6 +81,8 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    kv_sync_ = std::make_shared<sync::KeyValueSync>();
+    kv_sync_->Init(db_);
     InitLocalNetworkId();
     if (net_handler_.Init(db_) != transport::kTransportSuccess) {
         return kInitError;
@@ -115,7 +117,7 @@ int NetworkInit::Init(int argc, char** argv) {
             this,
             std::placeholders::_1,
             std::placeholders::_2));
-    pools_mgr_ = std::make_shared<pools::TxPoolManager>(security_, db_);
+    pools_mgr_ = std::make_shared<pools::TxPoolManager>(security_, db_, kv_sync_);
     account_mgr_->Init(
         common::GlobalInfo::Instance()->message_handler_thread_count(),
         db_,

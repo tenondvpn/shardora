@@ -16,14 +16,15 @@ namespace pools {
 
 TxPoolManager::TxPoolManager(
         std::shared_ptr<security::Security>& security,
-        std::shared_ptr<db::Db>& db) {
+        std::shared_ptr<db::Db>& db,
+        std::shared_ptr<sync::KeyValueSync>& kv_sync) {
     security_ = security;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     address_map_.Init(10240, 32);
     tx_pool_ = new TxPool[common::kInvalidPoolIndex];
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        tx_pool_[i].Init(i, db);
+        tx_pool_[i].Init(i, db, kv_sync);
     }
 
     network::Route::Instance()->RegisterMessage(
