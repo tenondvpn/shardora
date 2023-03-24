@@ -96,13 +96,18 @@ public:
         if (latest_item->latest_height < height) {
             latest_item->latest_height = height;
             latest_item->latest_hash = hash;
-            height_tree_ptr_->Set(height);
+            if (height_tree_ptr_ != nullptr) {
+                height_tree_ptr_->Set(height);
+            }
+
             if (height == latest_item->consequent_to_height + 1) {
                 latest_item->consequent_to_height = height;
             } else {
-                for (; latest_item->consequent_to_height < height; ++latest_item->consequent_to_height) {
-                    if (!height_tree_ptr_->Valid(latest_item->consequent_to_height + 1)) {
-                        break;
+                if (height_tree_ptr_ != nullptr) {
+                    for (; latest_item->consequent_to_height < height; ++latest_item->consequent_to_height) {
+                        if (!height_tree_ptr_->Valid(latest_item->consequent_to_height + 1)) {
+                            break;
+                        }
                     }
                 }
             }
