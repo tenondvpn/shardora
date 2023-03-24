@@ -56,7 +56,7 @@ void KeyValueSync::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     prev_sync_tm_us_ = now_tm_us;
-    CheckSyncItem();
+    CheckSyncItem(msg_ptr->thread_idx);
     CheckSyncTimeout();
 }
 
@@ -95,7 +95,7 @@ void KeyValueSync::Init(const std::shared_ptr<db::Db>& db) {
         std::bind(&KeyValueSync::ConsensusTimerMessage, this, std::placeholders::_1));
 }
 
-void KeyValueSync::CheckSyncItem() {
+void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
     std::set<uint64_t> sended_neigbors;
     std::map<uint32_t, sync::protobuf::SyncMessage> sync_dht_map;
     std::set<std::string> added_key;
@@ -126,9 +126,10 @@ void KeyValueSync::CheckSyncItem() {
 
             if (sync_req->keys_size() + sync_req->heights_size() > (int32_t)kMaxSyncKeyCount) {
                 uint64_t choose_node = SendSyncRequest(
-                        item->network_id,
-                        sync_dht_map[item->network_id],
-                        sended_neigbors);
+                    thread_idx,
+                    item->network_id,
+                    sync_dht_map[item->network_id],
+                    sended_neigbors);
                 if (choose_node != 0) {
                     sended_neigbors.insert(choose_node);
                 }
@@ -173,6 +174,7 @@ void KeyValueSync::CheckSyncItem() {
 }
 
 uint64_t KeyValueSync::SendSyncRequest(
+        uint8_t thread_idx,
         uint32_t network_id,
         const sync::protobuf::SyncMessage& sync_msg,
         const std::set<uint64_t>& sended_neigbors) {
@@ -221,9 +223,8 @@ uint64_t KeyValueSync::SendSyncRequest(
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kSyncMessage);
     *msg.mutable_sync_proto() = sync_msg;
-    msg.set_hop_count(0);
     transport::TcpTransport::Instance()->Send(
-        0, node->public_ip, node->public_port, msg);
+        thread_idx, node->public_ip, node->public_port, msg);
     ZJC_DEBUG("sync new from %s:%d", node->public_ip.c_str(), node->public_port);
     return node->id_hash;
 }
@@ -231,6 +232,7 @@ uint64_t KeyValueSync::SendSyncRequest(
 void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kSyncMessage);
+    ZJC_DEBUG("key value sync message coming.");
     if (header.sync_proto().has_sync_value_req()) {
         ProcessSyncValueRequest(msg_ptr);
     }

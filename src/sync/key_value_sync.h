@@ -66,9 +66,10 @@ public:
     void HandleMessage(const transport::MessagePtr& msg);
 
 private:
-    void CheckSyncItem();
+    void CheckSyncItem(uint8_t thread_idx);
     void CheckSyncTimeout();
     uint64_t SendSyncRequest(
+        uint8_t thread_idx,
         uint32_t network_id,
         const sync::protobuf::SyncMessage& sync_msg,
         const std::set<uint64_t>& sended_neigbors);
