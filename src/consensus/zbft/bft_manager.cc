@@ -428,7 +428,7 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
         if (bft_ptr == nullptr) {
             // verify and add new block
             auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
-            block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_ptr);
+            block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, block_ptr);
             pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
             ZJC_DEBUG("removed bft gid coming: %s",
                 common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str());
