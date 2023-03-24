@@ -87,25 +87,27 @@ public:
     }
 
     uint64_t UpdateLatestInfo(uint8_t thread_idx, uint64_t height, const std::string& hash) {
+        height_tree_ptr_->Set(height);
         if (latest_height_ < height) {
             latest_height_ = height;
             latest_hash_ = hash;
-            height_tree_ptr_->Set(height);
-            if (synced_height_ + 1 == height) {
-                synced_height_ = height;
-                prev_synced_height_ = synced_height_;
-            } else {
-                for (; prev_synced_height_ < latest_height_ &&
-                        (prev_synced_height_ - synced_height_ < 64);
-                        ++prev_synced_height_) {
-                    if (!height_tree_ptr_->Valid(prev_synced_height_ + 1)) {
-                        kv_sync_->AddSyncHeight(
-                            thread_idx,
-                            common::GlobalInfo::Instance()->network_id(),
-                            pool_index_,
-                            prev_synced_height_ + 1,
-                            sync::kSyncHighest);
-                    }
+            
+        }
+
+        if (synced_height_ + 1 == height) {
+            synced_height_ = height;
+            prev_synced_height_ = synced_height_;
+        } else {
+            for (; prev_synced_height_ < latest_height_ &&
+                    (prev_synced_height_ - synced_height_ < 64);
+                    ++prev_synced_height_) {
+                if (!height_tree_ptr_->Valid(prev_synced_height_ + 1)) {
+                    kv_sync_->AddSyncHeight(
+                        thread_idx,
+                        common::GlobalInfo::Instance()->network_id(),
+                        pool_index_,
+                        prev_synced_height_ + 1,
+                        sync::kSyncHighest);
                 }
             }
         }

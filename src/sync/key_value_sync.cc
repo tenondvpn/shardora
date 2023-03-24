@@ -264,10 +264,6 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     for (int32_t i = 0; i < sync_msg.sync_value_req().heights_size(); ++i) {
         std::string value;
         auto network_id = sync_msg.sync_value_req().network_id();
-        if (network_id >= network::kConsensusShardEndNetworkId) {
-            network_id -= network::kConsensusWaitingShardOffset;
-        }
-
         if (prefix_db_->GetBlockStringWithHeight(
                 network_id,
                 sync_msg.sync_value_req().heights(i).pool_idx(),
@@ -296,6 +292,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kSyncMessage);
     transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
+    ZJC_DEBUG("sync response ok.");
 }
 
 void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr) {
