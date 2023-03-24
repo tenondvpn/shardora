@@ -29,7 +29,7 @@ KeyValueSync::KeyValueSync() {
             std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
     transport::Processor::Instance()->RegisterProcessor(
         common::kPoolTimerMessage,
-        std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
+        std::bind(&KeyValueSync::ConsensusTimerMessage, this, std::placeholders::_1));
 }
 
 KeyValueSync::~KeyValueSync() {}
@@ -70,7 +70,7 @@ void KeyValueSync::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 void KeyValueSync::PopItems() {
     uint32_t pop_count = 0;
     for (uint8_t thread_idx = 0; thread_idx < common::kMaxRotationCount; ++thread_idx) {
-        while (item_queues_[thread_idx].size() > 0) {
+        while (item_queues_[thread_idx].size() > 0 && pop_count++ < 64) {
             SyncItemPtr item = nullptr;
             item_queues_[thread_idx].pop(&item);
             auto iter = added_key_set_.find(item->key);
@@ -81,18 +81,10 @@ void KeyValueSync::PopItems() {
             added_key_set_.insert(item->key);
             auto tmp_iter = synced_map_.find(item->key);
             if (tmp_iter != synced_map_.end()) {
-                ZJC_ERROR("kSyncKeyAdded [%d] [%s]",
-                    network_id, common::Encode::HexEncode(key).c_str());
                 continue;
             }
 
             prio_sync_queue_[item->priority].push(item);
-            ZJC_DEBUG("new sync item [%d] [%s]",
-                network_id, common::Encode::HexEncode(key).c_str());
-            ++pop_count;
-            if (pop_count >= 64) {
-                break;
-            }
         }
     }
 }
@@ -108,7 +100,6 @@ void KeyValueSync::CheckSyncItem() {
     std::set<std::string> added_key;
     bool stop = false;
     for (int32_t i = kSyncHighest; i >= kSyncPriLowest; --i) {
-        std::lock_guard<std::mutex> guard(prio_sync_queue_[i].mutex);
         while (!prio_sync_queue_[i].empty()) {
             SyncItemPtr item = prio_sync_queue_[i].front();
             prio_sync_queue_[i].pop();
