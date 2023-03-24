@@ -30,6 +30,9 @@ void KeyValueSync::AddSync(
     assert(priority <= kSyncHighest);
     auto item = std::make_shared<SyncItem>(network_id, key, priority);
     item_queues_[thread_idx].push(item);
+    ZJC_DEBUG("key value add new sync item key: %s, priority: %u",
+        item->key.c_str(), item->priority);
+
 }
 
 void KeyValueSync::AddSyncHeight(
@@ -41,6 +44,8 @@ void KeyValueSync::AddSyncHeight(
     assert(priority <= kSyncHighest);
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority);
     item_queues_[thread_idx].push(item);
+    ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
+        item->key.c_str(), item->priority);
 }
 
 void KeyValueSync::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
@@ -73,6 +78,8 @@ void KeyValueSync::PopItems() {
             }
 
             prio_sync_queue_[item->priority].push(item);
+            ZJC_DEBUG("add new sync item key: %s, priority: %u",
+                item->key.c_str(), item->priority);
         }
     }
 }
@@ -217,6 +224,7 @@ uint64_t KeyValueSync::SendSyncRequest(
     msg.set_hop_count(0);
     transport::TcpTransport::Instance()->Send(
         0, node->public_ip, node->public_port, msg);
+    ZJC_DEBUG("sync new from %s:%d", node->public_ip.c_str(), node->public_port)
     return node->id_hash;
 }
 
