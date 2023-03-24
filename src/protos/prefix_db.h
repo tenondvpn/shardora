@@ -498,7 +498,7 @@ public:
         key.reserve(48);
         key.append(kBlockPrefix);
         key.append(block_hash);
-        auto st = db_->Get(key, &block_str);
+        auto st = db_->Get(key, block_str);
         if (!st.ok()) {
             return false;
         }
@@ -537,7 +537,7 @@ public:
             return false;
         }
 
-        return GetBlockString(block_hash, block);
+        return GetBlockString(block_hash, block_str);
     }
 
     void SaveToTxsHeights(const pools::protobuf::ToTxHeights& heights) {
