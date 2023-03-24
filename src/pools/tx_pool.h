@@ -152,6 +152,7 @@ private:
     std::shared_ptr<HeightTreeLevel> height_tree_ptr_ = nullptr;
     std::shared_ptr<PoolLatestItem> latest_item_ = nullptr;
     uint32_t pool_index_ = common::kInvalidPoolIndex;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };

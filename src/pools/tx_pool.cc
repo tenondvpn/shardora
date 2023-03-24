@@ -18,6 +18,7 @@ TxPool::~TxPool() {}
 
 void TxPool::Init(uint32_t pool_idx, const std::shared_ptr<db::Db>& db) {
     pool_index_ = pool_idx;
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     InitLatestInfo();
     uint64_t latest_height = 0;
     if (latest_item_ != nullptr) {
