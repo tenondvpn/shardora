@@ -302,7 +302,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
     for (auto iter = res_arr.begin(); iter != res_arr.end(); ++iter) {
         auto block_item = std::make_shared<block::protobuf::Block>();
         if (block_item->ParseFromString(iter->value()) &&
-                (iter->has_height() || block_item->hash() == iter->key())) {
+                (iter->has_height() || !block_item->hash().empty())) {
             ZJC_ERROR("recv sync block response [%s], net: %d, pool_idx: %d, height: %lu",
                 common::Encode::HexEncode(iter->key()).c_str(),
                 block_item->network_id(),
