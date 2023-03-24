@@ -64,7 +64,7 @@ static const std::string kTemporaryKeyPrefix = "t\x01";
 
 class PrefixDb {
 public:
-    PrefixDb(std::shared_ptr<db::Db>& db_ptr) : db_(db_ptr) {}
+    PrefixDb(const std::shared_ptr<db::Db>& db_ptr) : db_(db_ptr) {}
     ~PrefixDb() {}
     void AddAddressInfo(
             const std::string& addr,
