@@ -93,14 +93,17 @@ public:
             height_tree_ptr_->Set(height);
             if (synced_height_ + 1 == height) {
                 synced_height_ = height;
+                prev_synced_height_ = synced_height_;
             } else {
-                for (uint64_t i = synced_height_ + 1; i < latest_height_; ++i) {
-                    if (!height_tree_ptr_->Valid(i)) {
+                for (; prev_synced_height_ < latest_height_ &&
+                        (prev_synced_height_ - synced_height_ < 64);
+                        ++prev_synced_height_) {
+                    if (!height_tree_ptr_->Valid(prev_synced_height_ + 1)) {
                         kv_sync_->AddSyncHeight(
                             thread_idx,
                             common::GlobalInfo::Instance()->network_id(),
                             pool_index_,
-                            i,
+                            prev_synced_height_ + 1,
                             sync::kSyncHighest);
                     }
                 }
@@ -122,6 +125,7 @@ private:
                 latest_height_ = pool_info.height();
                 latest_hash_ = pool_info.hash();
                 synced_height_ = pool_info.synced_height();
+                prev_synced_height_ = synced_height_;
             }
         }
     }
@@ -137,6 +141,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     uint64_t synced_height_ = 0;
+    uint64_t prev_synced_height_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };
