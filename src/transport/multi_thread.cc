@@ -210,6 +210,7 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
             msg.set_type(common::kConsensusMessage);
             auto& bft_msg = *msg.mutable_zbft();
             bft_msg.set_sync_block(true);
+            bft_msg.set_member_index(-1);
             bft_msg.set_pool_index(block_item->pool_index());
             *bft_msg.mutable_block() = *block_item;
             auto queue_idx = GetThreadIndex(new_msg_ptr);
