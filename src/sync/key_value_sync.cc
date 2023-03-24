@@ -233,7 +233,9 @@ uint64_t KeyValueSync::SendSyncRequest(
 void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kSyncMessage);
-    ZJC_DEBUG("key value sync message coming.");
+    ZJC_DEBUG("key value sync message coming req: %d, res: %d",
+        header.sync_proto().has_sync_value_req(),
+        header.sync_proto().has_sync_value_res());
     if (header.sync_proto().has_sync_value_req()) {
         ProcessSyncValueRequest(msg_ptr);
     }
@@ -267,11 +269,11 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     for (int32_t i = 0; i < sync_msg.sync_value_req().heights_size(); ++i) {
         std::string value;
         auto network_id = sync_msg.sync_value_req().network_id();
-        if (prefix_db_->GetBlockStringWithHeight(
+        if (!prefix_db_->GetBlockStringWithHeight(
                 network_id,
                 sync_msg.sync_value_req().heights(i).pool_idx(),
                 sync_msg.sync_value_req().heights(i).height(),
-                &value) != block::kBlockSuccess) {
+                &value)) {
             continue;
         }
 
