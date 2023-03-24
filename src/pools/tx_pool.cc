@@ -18,20 +18,18 @@ TxPool::~TxPool() {}
 
 void TxPool::Init(uint32_t pool_idx, const std::shared_ptr<db::Db>& db) {
     pool_index_ = pool_idx;
-    latest_item_ = std::make_shared<PoolLatestItem>();
     auto tmp_db = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(tmp_db);
     InitLatestInfo();
     height_tree_ptr_ = std::make_shared<HeightTreeLevel>(
         common::GlobalInfo::Instance()->network_id(),
         pool_index_,
-        latest_item_->latest_height,
+        latest_height_,
         db);
     added_tx_map_.reserve(10240);
 }
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
-//     common::AutoSpinLock lock(mutex_);
     assert(tx_ptr != nullptr);
     auto iter = added_tx_map_.find(tx_ptr->tx_hash);
     if (iter != added_tx_map_.end()) {
@@ -48,7 +46,6 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
     auto timestamp_now = common::TimeUtils::TimestampUs();
     std::vector<TxItemPtr> recover_txs;
-//     common::AutoSpinLock lock(mutex_);
 //     if (prio_map_.size() < 2 * count) {
 //         return;
 //     }
@@ -101,7 +98,6 @@ bool TxPool::CheckTimeoutTx(TxItemPtr& tx_ptr, uint64_t timestamp_now) {
 void TxPool::GetTx(
         const common::BloomFilter& bloom_filter,
         std::map<std::string, TxItemPtr>& res_map) {
-//     common::AutoSpinLock lock(mutex_);
     for (auto iter = added_tx_map_.begin(); iter != added_tx_map_.end(); ++iter) {
         if (bloom_filter.Contain(common::Hash::Hash64(iter->second->tx_hash))) {
             res_map[iter->second->tx_hash] = iter->second;
@@ -112,7 +108,6 @@ void TxPool::GetTx(
 }
 
 void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
-//     common::AutoSpinLock lock(mutex_);
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
         iter->second->in_consensus = false;
         if (iter->second->step == pools::protobuf::kNormalTo) {
@@ -127,7 +122,6 @@ void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
 }
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
-//     common::AutoSpinLock lock(mutex_);
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         auto giter = gid_map_.find(tx_list[i].gid());
         if (giter == gid_map_.end()) {
@@ -153,7 +147,6 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
 }
 
 void TxPool::TxOver(std::map<std::string, TxItemPtr>& txs) {
-//     common::AutoSpinLock lock(mutex_);
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
         auto miter = added_tx_map_.find(iter->first);
         if (miter != added_tx_map_.end()) {

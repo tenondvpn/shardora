@@ -101,15 +101,7 @@ public:
             const std::shared_ptr<block::protobuf::Block>& block_item,
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
-        if (tx.step() == protobuf::kNormalTo) {
-            ZJC_DEBUG("pool index: %u, update to height: %lu",
-                block_item->pool_index(), block_item->height());
-            if (block_item->pool_index() >= common::kInvalidPoolIndex) {
-                return;
-            }
-
-            tx_pool_[block_item->pool_index()].UpdateToHeight(block_item->height());
-        }
+        return;
     }
 
 private:

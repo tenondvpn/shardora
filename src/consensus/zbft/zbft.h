@@ -270,6 +270,10 @@ public:
     }
 
     int AddPrepareOpposeNode(const std::string& id) {
+        if (leader_handled_precommit_) {
+            return kConsensusHandled;
+        }
+
         precommit_oppose_set_.insert(id);
         if (precommit_oppose_set_.size() >= min_oppose_member_count_) {
             leader_handled_precommit_ = true;
@@ -280,9 +284,13 @@ public:
     }
 
     int AddPrecommitOpposeNode(const std::string& id) {
+        if (leader_handled_commit_) {
+            return kConsensusHandled;
+        }
+
         commit_oppose_set_.insert(id);
         if (commit_oppose_set_.size() >= min_oppose_member_count_) {
-            leader_handled_precommit_ = true;
+            leader_handled_commit_ = true;
             return kConsensusOppose;
         }
 
