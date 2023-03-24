@@ -163,6 +163,7 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
         if (iter->second.sync_value_req().keys_size() > 0 ||
                 iter->second.sync_value_req().heights_size() > 0) {
             uint64_t choose_node = SendSyncRequest(
+                thread_idx,
                 iter->first,
                 iter->second,
                 sended_neigbors);
