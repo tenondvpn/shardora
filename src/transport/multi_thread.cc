@@ -156,6 +156,10 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
         return;
     }
 
+    if (msg_ptr->header.type() == common::kSyncMessage) {
+        HandleSyncBlockResponse(msg_ptr);
+    }
+
     auto queue_idx = GetThreadIndex(msg_ptr);
     if (queue_idx == consensus_thread_count_ &&
             threads_message_queues_[queue_idx][priority].size() >= kMaxMessageReserveCount) {
@@ -184,6 +188,34 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
     }
 }
 
+void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
+    auto& sync_msg = msg_ptr->header.sync_proto();
+    if (!sync_msg.has_sync_value_res()) {
+        return;
+    }
+
+    auto& res_arr = sync_msg.sync_value_res().res();
+    for (auto iter = res_arr.begin(); iter != res_arr.end(); ++iter) {
+        auto block_item = std::make_shared<block::protobuf::Block>();
+        if (block_item->ParseFromString(iter->value()) &&
+                (iter->has_height() || !block_item->hash().empty())) {
+            ZJC_DEBUG("create sync block message.");
+            auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto& msg = new_msg_ptr->header;
+            msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+            dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
+            msg.set_des_dht_key(dht_key.StrKey());
+            msg.set_type(common::kConsensusMessage);
+            auto& bft_msg = *msg.mutable_zbft();
+            bft_msg.set_sync_block(true);
+            bft_msg.set_pool_index(block_item->pool_index());
+            *bft_msg.mutable_block() = *block_item;
+            auto queue_idx = GetThreadIndex(new_msg_ptr);
+            threads_message_queues_[queue_idx][priority].push(new_msg_ptr);
+            wait_con_[queue_idx % all_thread_count_].notify_one();
+        }
+    }
+}
 bool MultiThreadHandler::IsMessageUnique(uint64_t msg_hash) {
     bool valid = unique_message_sets_.add(msg_hash);
     if (!valid) {
