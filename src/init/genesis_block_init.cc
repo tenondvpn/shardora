@@ -728,8 +728,8 @@ void GenesisBlockInit::AddBlockItemToCache(
     pools::protobuf::PoolLatestInfo pool_info;
     pool_info.set_height(block->height());
     pool_info.set_hash(block->hash());
-    prefix_db_->SaveLatestPoolInfo(block->pool_index(), pool_info, db_batch);
-
+    prefix_db_->SaveLatestPoolInfo(
+        block->network_id(), block->pool_index(), pool_info, db_batch);
 }
 
 int GenesisBlockInit::CreateShardGenesisBlocks(uint32_t net_id) {
