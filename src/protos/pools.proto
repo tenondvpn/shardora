@@ -41,8 +41,7 @@ message ToTxMessage {
 message PoolLatestInfo {
     optional uint64 height = 1;
     optional bytes hash = 2;
-    optional uint64 prev_to_height = 3;
-    optional uint64 consequent_to_height = 4;
+    optional uint64 synced_height = 3;
 }
 
 message TxMessage {

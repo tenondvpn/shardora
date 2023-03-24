@@ -26,6 +26,12 @@ void TxPool::Init(uint32_t pool_idx, const std::shared_ptr<db::Db>& db) {
         pool_index_,
         latest_height_,
         db);
+    for (; synced_height_ <= latest_height_; ++synced_height_) {
+        if (!height_tree_ptr_->Valid(synced_height_ + 1)) {
+            break;
+        }
+    }
+
     added_tx_map_.reserve(10240);
 }
 

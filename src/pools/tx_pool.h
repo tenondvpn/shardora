@@ -82,14 +82,17 @@ public:
         return latest_hash_;
     }
 
-    void UpdateLatestInfo(uint64_t height, const std::string& hash) {
+    uint64_t UpdateLatestInfo(uint64_t height, const std::string& hash) {
         if (latest_height_ < height) {
             latest_height_ = height;
             latest_hash_ = hash;
-            if (height_tree_ptr_ != nullptr) {
-                height_tree_ptr_->Set(height);
+            height_tree_ptr_->Set(height);
+            if (synced_height_ + 1 == height) {
+                synced_height_ = height;
             }
         }
+
+        return synced_height_;
     }
 
 private:
@@ -100,7 +103,11 @@ private:
                 common::GlobalInfo::Instance()->network_id(),
                 pool_index_,
                 &pool_info)) {
-            UpdateLatestInfo(pool_info.height(), pool_info.hash());
+            if (latest_height_ < pool_info.height()) {
+                latest_height_ = pool_info.height();
+                latest_hash_ = pool_info.hash();
+                synced_height_ = pool_info.synced_height();
+            }
         }
     }
 
@@ -113,6 +120,7 @@ private:
     std::shared_ptr<HeightTreeLevel> height_tree_ptr_ = nullptr;
     uint32_t pool_index_ = common::kInvalidPoolIndex;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    uint64_t synced_height_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };
