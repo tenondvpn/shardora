@@ -32,6 +32,8 @@ void TxPool::Init(uint32_t pool_idx, const std::shared_ptr<db::Db>& db) {
         }
     }
 
+    ZJC_DEBUG("pool_idx: %d, synced_height_: %lu, latest height: %lu",
+        pool_idx, synced_height_, latest_height_)
     added_tx_map_.reserve(10240);
 }
 
