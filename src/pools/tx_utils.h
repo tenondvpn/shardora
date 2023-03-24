@@ -75,7 +75,7 @@ typedef std::shared_ptr<TxItem> TxItemPtr;
 typedef std::function<TxItemPtr(const transport::MessagePtr& msg_ptr)> CreateConsensusItemFunction;
 
 struct PoolLatestItem {
-    PoolLatestItem() : latest_height(0), prev_to_height(0), consequent_to_height(0)) {}
+    PoolLatestItem() : latest_height(0), prev_to_height(0), consequent_to_height(0) {}
     uint64_t latest_height;
     std::string latest_hash;
     uint64_t prev_to_height;
