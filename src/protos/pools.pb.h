@@ -720,18 +720,28 @@ class PoolLatestInfo : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint64 height() const;
   void set_height(::google::protobuf::uint64 value);
 
+  // optional uint64 synced_height = 3;
+  bool has_synced_height() const;
+  void clear_synced_height();
+  static const int kSyncedHeightFieldNumber = 3;
+  ::google::protobuf::uint64 synced_height() const;
+  void set_synced_height(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.PoolLatestInfo)
  private:
   void set_has_height();
   void clear_has_height();
   void set_has_hash();
   void clear_has_hash();
+  void set_has_synced_height();
+  void clear_has_synced_height();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr hash_;
   ::google::protobuf::uint64 height_;
+  ::google::protobuf::uint64 synced_height_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -1639,6 +1649,30 @@ inline void PoolLatestInfo::set_allocated_hash(::std::string* hash) {
   }
   hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), hash);
   // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.PoolLatestInfo.hash)
+}
+
+// optional uint64 synced_height = 3;
+inline bool PoolLatestInfo::has_synced_height() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void PoolLatestInfo::set_has_synced_height() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void PoolLatestInfo::clear_has_synced_height() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void PoolLatestInfo::clear_synced_height() {
+  synced_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_synced_height();
+}
+inline ::google::protobuf::uint64 PoolLatestInfo::synced_height() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.PoolLatestInfo.synced_height)
+  return synced_height_;
+}
+inline void PoolLatestInfo::set_synced_height(::google::protobuf::uint64 value) {
+  set_has_synced_height();
+  synced_height_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.PoolLatestInfo.synced_height)
 }
 
 // -------------------------------------------------------------------
