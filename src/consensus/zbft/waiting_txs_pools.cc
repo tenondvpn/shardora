@@ -72,7 +72,8 @@ void WaitingTxsPools::LockPool(std::shared_ptr<Zbft>& zbft_ptr) {
 }
 
 uint64_t WaitingTxsPools::latest_height(uint32_t pool_index) const {
-    if (pipeline_pools_[pool_index].empty()) {
+    if (pipeline_pools_[pool_index].empty() ||
+            pipeline_pools_[pool_index].back()->local_prepare_hash().empty()) {
         return pool_mgr_->latest_height(pool_index);
     }
 
@@ -80,7 +81,8 @@ uint64_t WaitingTxsPools::latest_height(uint32_t pool_index) const {
 }
 
 std::string WaitingTxsPools::latest_hash(uint32_t pool_index) const {
-    if (pipeline_pools_[pool_index].empty()) {
+    if (pipeline_pools_[pool_index].empty() ||
+            pipeline_pools_[pool_index].back()->local_prepare_hash().empty()) {
         return pool_mgr_->latest_hash(pool_index);
     }
 
