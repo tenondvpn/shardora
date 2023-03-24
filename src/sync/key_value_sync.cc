@@ -26,85 +26,79 @@ KeyValueSync::KeyValueSync() {
     network::Route::Instance()->RegisterMessage(
             common::kSyncMessage,
             std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
+    transport::Processor::Instance()->RegisterProcessor(
+        common::kPoolTimerMessage,
+        std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
 }
 
 KeyValueSync::~KeyValueSync() {}
 
-int KeyValueSync::AddSync(uint32_t network_id, const std::string& key, uint32_t priority) {
+void KeyValueSync::AddSync(
+        uint8_t thread_idx,
+        uint32_t network_id,
+        const std::string& key,
+        uint32_t priority) {
     assert(priority <= kSyncHighest);
-    {
-        std::lock_guard<std::mutex> guard(added_key_set_mutex_);
-        auto iter = added_key_set_.find(key);
-        if (iter != added_key_set_.end()) {
-            return kSyncKeyAdded;
-        }
-
-        added_key_set_.insert(key);
-    }
-
-    if (db_->Exist(key)) {
-//         SYNC_DEBUG("::Db::Instance()->Exist [%d] [%s]", network_id, common::Encode::HexEncode(key).c_str());
-//         if (HandleExistsBlock(key) == kSyncSuccess) {
-//             return kSyncBlockReloaded;
-//         }
-        return kSyncKeyExsits;
-    }
-
-    {
-        std::lock_guard<std::mutex> guard(synced_map_mutex_);
-        auto tmp_iter = synced_map_.find(key);
-        if (tmp_iter != synced_map_.end()) {
-            ZJC_ERROR("kSyncKeyAdded [%d] [%s]", network_id, common::Encode::HexEncode(key).c_str());
-            return kSyncKeyAdded;
-        }
-    }
-
     auto item = std::make_shared<SyncItem>(network_id, key, priority);
-    {
-        std::lock_guard<std::mutex> guard(prio_sync_queue_[priority].mutex);
-        prio_sync_queue_[priority].sync_queue.push(item);
-    }
-//     ZJC_ERROR("ttttttttttttttt new sync item [%d] [%s]", network_id, common::Encode::HexEncode(key).c_str());
-    return kSyncSuccess;
+    item_queues_[thread_idx].push(item);
 }
 
-int KeyValueSync::AddSyncHeight(uint32_t network_id, uint32_t pool_idx, uint64_t height, uint32_t priority) {
+void KeyValueSync::AddSyncHeight(
+        uint8_t thread_idx,
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t height,
+        uint32_t priority) {
     assert(priority <= kSyncHighest);
-    {
-        std::string key = std::to_string(network_id) + "_" +
-            std::to_string(pool_idx) + "_" +
-            std::to_string(height);
-        std::lock_guard<std::mutex> guard(added_key_set_mutex_);
-        auto iter = added_key_set_.find(key);
-        if (iter != added_key_set_.end()) {
-            return kSyncKeyAdded;
-        }
-
-        added_key_set_.insert(key);
-    }
-
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority);
-    {
-        std::lock_guard<std::mutex> guard(prio_sync_queue_[priority].mutex);
-        prio_sync_queue_[priority].sync_queue.push(item);
+    item_queues_[thread_idx].push(item);
+}
+
+void KeyValueSync::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+    PopItems();
+    auto now_tm_us = common::TimeUtils::TimestampUs();
+    if (prev_sync_tm_us_ + kSyncPeriodUs > now_tm_us) {
+        return;
     }
 
-    return kSyncSuccess;
+    prev_sync_tm_us_ = now_tm_us;
+    CheckSyncItem();
+    CheckSyncTimeout();
+}
+
+void KeyValueSync::PopItems() {
+    uint32_t pop_count = 0;
+    for (uint8_t thread_idx = 0; thread_idx < common::kMaxRotationCount; ++thread_idx) {
+        while (item_queues_[thread_idx].size() > 0) {
+            SyncItemPtr item = nullptr;
+            item_queues_[thread_idx].pop(&item);
+            auto iter = added_key_set_.find(item->key);
+            if (iter != added_key_set_.end()) {
+                continue;
+            }
+
+            added_key_set_.insert(item->key);
+            auto tmp_iter = synced_map_.find(item->key);
+            if (tmp_iter != synced_map_.end()) {
+                ZJC_ERROR("kSyncKeyAdded [%d] [%s]",
+                    network_id, common::Encode::HexEncode(key).c_str());
+                continue;
+            }
+
+            prio_sync_queue_[item->priority].push(item);
+            ZJC_DEBUG("new sync item [%d] [%s]",
+                network_id, common::Encode::HexEncode(key).c_str());
+            ++pop_count;
+            if (pop_count >= 64) {
+                break;
+            }
+        }
+    }
 }
 
 void KeyValueSync::Init(const std::shared_ptr<db::Db>& db) {
     db_ = db;
-#ifndef ZJC_UNITTEST
-    tick_.CutOff(kSyncTickPeriod, std::bind(&KeyValueSync::CheckSyncItem, this));
-    sync_timeout_tick_.CutOff(
-            kTimeoutCheckPeriod,
-            std::bind(&KeyValueSync::CheckSyncTimeout, this));
-#endif
-}
-
-void KeyValueSync::Destroy() {
-    tick_.Destroy();
-    sync_timeout_tick_.Destroy();
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db);
 }
 
 void KeyValueSync::CheckSyncItem() {
@@ -114,9 +108,9 @@ void KeyValueSync::CheckSyncItem() {
     bool stop = false;
     for (int32_t i = kSyncHighest; i >= kSyncPriLowest; --i) {
         std::lock_guard<std::mutex> guard(prio_sync_queue_[i].mutex);
-        while (!prio_sync_queue_[i].sync_queue.empty()) {
-            SyncItemPtr item = prio_sync_queue_[i].sync_queue.front();
-            prio_sync_queue_[i].sync_queue.pop();
+        while (!prio_sync_queue_[i].empty()) {
+            SyncItemPtr item = prio_sync_queue_[i].front();
+            prio_sync_queue_[i].pop();
             auto iter = sync_dht_map.find(item->network_id);
             if (iter == sync_dht_map.end()) {
                 sync_dht_map[item->network_id] = sync::protobuf::SyncMessage();
@@ -155,17 +149,14 @@ void KeyValueSync::CheckSyncItem() {
             }
 
             ++(item->sync_times);
-            {
-                std::lock_guard<std::mutex> tmp_guard(synced_map_mutex_);
-                if (synced_map_.find(item->key) != synced_map_.end()) {
-                    continue;
-                }
+            if (synced_map_.find(item->key) != synced_map_.end()) {
+                continue;
+            }
 
-                synced_map_.insert(std::make_pair(item->key, item));
-                if (synced_map_.size() > kSyncMaxKeyCount) {
-                    stop = true;
-                    break;
-                }
+            synced_map_.insert(std::make_pair(item->key, item));
+            if (synced_map_.size() > kSyncMaxKeyCount) {
+                stop = true;
+                break;
             }
         }
 
@@ -186,10 +177,6 @@ void KeyValueSync::CheckSyncItem() {
             }
         }
     }
-
-#ifndef ZJC_UNITTEST
-    tick_.CutOff(kSyncTickPeriod, std::bind(&KeyValueSync::CheckSyncItem, this));
-#endif
 }
 
 uint64_t KeyValueSync::SendSyncRequest(
@@ -199,28 +186,12 @@ uint64_t KeyValueSync::SendSyncRequest(
     std::vector<dht::NodePtr> nodes;
     dht::DhtKeyManager dht_key(network_id);
     auto dht = network::DhtManager::Instance()->GetDht(network_id);
-    if (dht) {
-        nodes = *dht->readonly_hash_sort_dht();
+    if (dht == nullptr) {
+        ZJC_ERROR("network id[%d] not exists.", network_id);
+        return 0;
     }
 
-    if (nodes.empty()) {
-        if (network_id >= network::kConsensusShardEndNetworkId) {
-            network_id -= network::kConsensusWaitingShardOffset;
-            dht = network::DhtManager::Instance()->GetDht(network_id);
-            if (dht) {
-                nodes = *dht->readonly_hash_sort_dht();
-            }
-        }
-
-        if (nodes.empty()) {
-            dht = network::UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
-            if (dht) {
-                auto readonly_dht = dht->readonly_hash_sort_dht();
-                nodes = dht::DhtFunction::GetClosestNodes(*readonly_dht, dht_key.StrKey(), 4);
-            }
-        }
-    }
-
+    nodes = *dht->readonly_hash_sort_dht();
     if (nodes.empty()) {
         ZJC_ERROR("network id[%d] not exists.", network_id);
         return 0;
@@ -258,12 +229,8 @@ uint64_t KeyValueSync::SendSyncRequest(
     msg.set_type(common::kSyncMessage);
     *msg.mutable_sync_proto() = sync_msg;
     msg.set_hop_count(0);
-#ifdef ZJC_UNITTEST
-    test_sync_req_msg_ = msg;
-#else
     transport::TcpTransport::Instance()->Send(
         0, node->public_ip, node->public_port, msg);
-#endif
     return node->id_hash;
 }
 
@@ -282,15 +249,8 @@ void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
 void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr) {
     auto& sync_msg = msg_ptr->header.sync_proto();
     assert(sync_msg.has_sync_value_req());
-//     auto dht = network::DhtManager::Instance()->GetDht(
-//             sync_msg.sync_value_req().network_id());
-//     if (!dht) {
-//         ZJC_ERROR("sync from network[%u] not exists",
-//                 sync_msg.sync_value_req().network_id());
-//         return;
-//     }
-
-    protobuf::SyncMessage res_sync_msg;
+    transport::protobuf::Header msg;
+    protobuf::SyncMessage& res_sync_msg = *msg.mutable_sync_proto();
     auto sync_res = res_sync_msg.mutable_sync_value_res();
     uint32_t add_size = 0;
     for (int32_t i = 0; i < sync_msg.sync_value_req().keys_size(); ++i) {
@@ -309,21 +269,18 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
 
     for (int32_t i = 0; i < sync_msg.sync_value_req().heights_size(); ++i) {
         std::string value;
-//         if (sync_msg.sync_value_req().network_id() != common::GlobalInfo::Instance()->network_id()) {
-//             continue;
-//         }
         auto network_id = sync_msg.sync_value_req().network_id();
         if (network_id >= network::kConsensusShardEndNetworkId) {
             network_id -= network::kConsensusWaitingShardOffset;
         }
 
-//         if (block::BlockManager::Instance()->GetBlockStringWithHeight(
-//                 network_id,
-//                 sync_msg.sync_value_req().heights(i).pool_idx(),
-//                 sync_msg.sync_value_req().heights(i).height(),
-//                 &value) != block::kBlockSuccess) {
-//             continue;
-//         }
+        if (prefix_db_->GetBlockStringWithHeight(
+                network_id,
+                sync_msg.sync_value_req().heights(i).pool_idx(),
+                sync_msg.sync_value_req().heights(i).height(),
+                &value) != block::kBlockSuccess) {
+            continue;
+        }
 
         auto res = sync_res->add_res();
         res->set_network_id(network_id);
@@ -340,47 +297,22 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
         return;
     }
 
-    transport::protobuf::Header msg;
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kSyncMessage);
-    *msg.mutable_sync_proto() = res_sync_msg;
-#ifdef ZJC_UNITTEST
-    test_sync_req_msg_ = msg;
-#else
     transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
-#endif
-}
-
-int KeyValueSync::HandleExistsBlock(const std::string& key) {
-    std::string val;
-    auto res = db_->Get(key, &val);
-    if (!res.ok()) {
-        return kSyncError;
-    }
-
-    auto zjc_block = std::make_shared<block::protobuf::Block>();
-    if (zjc_block->ParseFromString(val) && zjc_block->hash() == key) {
-        db::DbWriteBatch db_batch;
-//         block::BlockManager::Instance()->AddNewBlock(zjc_block, db_batch, true, false);
-        return kSyncSuccess;
-    }
-
-    return kSyncError;
 }
 
 void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr) {
     auto& sync_msg = msg_ptr->header.sync_proto();
     assert(sync_msg.has_sync_value_res());
     auto& res_arr = sync_msg.sync_value_res().res();
-//     SYNC_DEBUG("recv sync response from[%s:%d] key size: %u",
-//         header.from_ip().c_str(), header.from_port(), res_arr.size());
     for (auto iter = res_arr.begin(); iter != res_arr.end(); ++iter) {
         auto block_item = std::make_shared<block::protobuf::Block>();
         if (block_item->ParseFromString(iter->value()) &&
                 (iter->has_height() || block_item->hash() == iter->key())) {
-            ZJC_ERROR("ttttttttttttttt recv sync response [%s], net: %d, pool_idx: %d, height: %lu",
+            ZJC_ERROR("recv sync block response [%s], net: %d, pool_idx: %d, height: %lu",
                 common::Encode::HexEncode(iter->key()).c_str(),
                 block_item->network_id(),
                 block_item->pool_index(),
@@ -397,49 +329,25 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 std::to_string(iter->height());
         }
 
-        {
-            std::lock_guard<std::mutex> guard(synced_map_mutex_);
-            auto tmp_iter = synced_map_.find(key);
-            if (tmp_iter != synced_map_.end()) {
-                {
-                    std::lock_guard<std::mutex> guard(added_key_set_mutex_);
-                    added_key_set_.erase(tmp_iter->second->key);
-                }
-
-                synced_map_.erase(tmp_iter);
-            }
+        auto tmp_iter = synced_map_.find(key);
+        if (tmp_iter != synced_map_.end()) {
+            added_key_set_.erase(tmp_iter->second->key);
+            synced_map_.erase(tmp_iter);
         }
     }
 }
 
 void KeyValueSync::CheckSyncTimeout() {
-    {
-        std::lock_guard<std::mutex> guard(synced_map_mutex_);
-        for (auto iter = synced_map_.begin(); iter != synced_map_.end();) {
-            if (iter->second->sync_times >= kSyncMaxRetryTimes) {
-                {
-                    std::lock_guard<std::mutex> guard(added_key_set_mutex_);
-                    added_key_set_.erase(iter->second->key);
-                }
-
-                synced_map_.erase(iter++);
-                continue;
-            }
-
-            {
-                std::lock_guard<std::mutex> tmp_guard(prio_sync_queue_[iter->second->priority].mutex);
-                prio_sync_queue_[iter->second->priority].sync_queue.push(iter->second);
-            }
-
+    for (auto iter = synced_map_.begin(); iter != synced_map_.end();) {
+        if (iter->second->sync_times >= kSyncMaxRetryTimes) {
+            added_key_set_.erase(iter->second->key);
             synced_map_.erase(iter++);
+            continue;
         }
+
+        prio_sync_queue_[iter->second->priority].push(iter->second);
+        synced_map_.erase(iter++);
     }
-    
-#ifndef ZJC_UNITTEST
-    sync_timeout_tick_.CutOff(
-            kTimeoutCheckPeriod,
-            std::bind(&KeyValueSync::CheckSyncTimeout, this));
-#endif
 }
 
 }  // namespace sync

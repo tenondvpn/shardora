@@ -493,6 +493,19 @@ public:
         return true;
     }
 
+    bool GetBlockString(const std::string& block_hash, std::string* block_str) {
+        std::string key;
+        key.reserve(48);
+        key.append(kBlockPrefix);
+        key.append(block_hash);
+        auto st = db_->Get(key, &block_str);
+        if (!st.ok()) {
+            return false;
+        }
+
+        return true;
+    }
+
     bool BlockExists(const std::string& block_hash) {
         std::string key;
         key.reserve(48);
@@ -512,6 +525,19 @@ public:
         }
 
         return GetBlock(block_hash, block);
+    }
+
+    bool GetBlockStringWithHeight(
+            uint32_t sharding_id,
+            uint32_t pool_index,
+            uint64_t height,
+            std::string* block_str) {
+        std::string block_hash;
+        if (!GetBlockHashWithBlockHeight(sharding_id, pool_index, height, &block_hash)) {
+            return false;
+        }
+
+        return GetBlockString(block_hash, block);
     }
 
     void SaveToTxsHeights(const pools::protobuf::ToTxHeights& heights) {

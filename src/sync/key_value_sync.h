@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "common/utils.h"
+#include "common/thread_safe_queue.h"
 #include "common/tick.h"
 #include "db/db.h"
 #include "protos/sync.pb.h"
@@ -48,18 +49,21 @@ typedef std::shared_ptr<SyncItem> SyncItemPtr;
 class KeyValueSync {
 public:
     static KeyValueSync* Instance();
-    int AddSync(uint32_t network_id, const std::string& key, uint32_t priority);
-    int AddSyncHeight(uint32_t network_id, uint32_t pool_idx, uint64_t height, uint32_t priority);
+    void AddSync(
+        uint8_t thread_idx,
+        uint32_t network_id,
+        const std::string& key,
+        uint32_t priority);
+    void AddSyncHeight(
+        uint8_t thread_idx,
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t height,
+        uint32_t priority);
     void Init(const std::shared_ptr<db::Db>& db);
-    void Destroy();
     void HandleMessage(const transport::MessagePtr& msg);
 
 private:
-    struct PrioSyncQueue {
-        std::queue<SyncItemPtr> sync_queue;
-        std::mutex mutex;
-    };
-
     KeyValueSync();
     ~KeyValueSync();
     void CheckSyncItem();
@@ -70,21 +74,18 @@ private:
         const std::set<uint64_t>& sended_neigbors);
     void ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr);
     void ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr);
-    int HandleExistsBlock(const std::string& key);
+    void PopItems();
+    void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
 
+    static const uint64_t kSyncPeriodUs = 300000lu;
+
+    common::ThreadSafeQueue<SyncItemPtr> item_queues_[common::kMaxThreadCount];
     std::unordered_map<std::string, SyncItemPtr> synced_map_;
-    std::mutex synced_map_mutex_;
-    PrioSyncQueue prio_sync_queue_[kSyncHighest + 1];
-    common::Tick tick_;
-    common::Tick sync_timeout_tick_;
+    std::queue<SyncItemPtr> prio_sync_queue_[kSyncHighest + 1];
     std::unordered_set<std::string> added_key_set_;
-    std::mutex added_key_set_mutex_;
     std::shared_ptr<db::Db> db_ = nullptr;
-
-#ifdef ZJC_UNITTEST
-    transport::protobuf::Header test_sync_req_msg_;
-    transport::protobuf::Header test_sync_res_msg_;
-#endif
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    uint64_t prev_sync_tm_us_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(KeyValueSync);
 };
