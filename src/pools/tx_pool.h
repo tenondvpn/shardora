@@ -96,7 +96,11 @@ public:
             } else {
                 for (uint64_t i = synced_height_ + 1; i < latest_height_; ++i) {
                     if (!height_tree_ptr_->Valid(i)) {
-
+                        kv_sync_->AddSyncHeight(
+                            common::GlobalInfo::Instance()->network_id(),
+                            pool_index_,
+                            i,
+                            sync::kSyncHighest);
                     }
                 }
             }
