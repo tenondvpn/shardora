@@ -49,7 +49,8 @@ typedef std::shared_ptr<SyncItem> SyncItemPtr;
 
 class KeyValueSync {
 public:
-    static KeyValueSync* Instance();
+    KeyValueSync();
+    ~KeyValueSync();
     void AddSync(
         uint8_t thread_idx,
         uint32_t network_id,
@@ -65,8 +66,6 @@ public:
     void HandleMessage(const transport::MessagePtr& msg);
 
 private:
-    KeyValueSync();
-    ~KeyValueSync();
     void CheckSyncItem();
     void CheckSyncTimeout();
     uint64_t SendSyncRequest(

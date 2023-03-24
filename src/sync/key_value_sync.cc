@@ -18,19 +18,7 @@ namespace zjchain {
 
 namespace sync {
 
-KeyValueSync* KeyValueSync::Instance() {
-    static KeyValueSync ins;
-    return &ins;
-}
-
-KeyValueSync::KeyValueSync() {
-    network::Route::Instance()->RegisterMessage(
-            common::kSyncMessage,
-            std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
-    transport::Processor::Instance()->RegisterProcessor(
-        common::kPoolTimerMessage,
-        std::bind(&KeyValueSync::ConsensusTimerMessage, this, std::placeholders::_1));
-}
+KeyValueSync::KeyValueSync() {}
 
 KeyValueSync::~KeyValueSync() {}
 
@@ -92,6 +80,12 @@ void KeyValueSync::PopItems() {
 void KeyValueSync::Init(const std::shared_ptr<db::Db>& db) {
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db);
+    network::Route::Instance()->RegisterMessage(
+        common::kSyncMessage,
+        std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
+    transport::Processor::Instance()->RegisterProcessor(
+        common::kPoolTimerMessage,
+        std::bind(&KeyValueSync::ConsensusTimerMessage, this, std::placeholders::_1));
 }
 
 void KeyValueSync::CheckSyncItem() {
