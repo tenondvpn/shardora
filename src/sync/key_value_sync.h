@@ -11,6 +11,7 @@
 #include "common/thread_safe_queue.h"
 #include "common/tick.h"
 #include "db/db.h"
+#include "protos/prefix_db.h"
 #include "protos/sync.pb.h"
 #include "protos/transport.pb.h"
 #include "sync/sync_utils.h"

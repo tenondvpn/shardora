@@ -12,6 +12,7 @@
 #include "network/universal_manager.h"
 #include "protos/block.pb.h"
 #include "sync/sync_utils.h"
+#include "transport/processor.h"
 
 namespace zjchain {
 
