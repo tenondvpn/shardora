@@ -305,19 +305,6 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
     assert(sync_msg.has_sync_value_res());
     auto& res_arr = sync_msg.sync_value_res().res();
     for (auto iter = res_arr.begin(); iter != res_arr.end(); ++iter) {
-        auto block_item = std::make_shared<block::protobuf::Block>();
-        if (block_item->ParseFromString(iter->value()) &&
-                (iter->has_height() || !block_item->hash().empty())) {
-            ZJC_ERROR("recv sync block response [%s], net: %d, pool_idx: %d, height: %lu",
-                common::Encode::HexEncode(iter->key()).c_str(),
-                block_item->network_id(),
-                block_item->pool_index(),
-                iter->height());
-//             bft::BftManager::Instance()->AddKeyValueSyncBlock(header, block_item);
-        } else {
-            db_->Put(iter->key(), iter->value());
-        }
-
         std::string key = iter->key();
         if (iter->has_height()) {
             key = std::to_string(iter->network_id()) + "_" +

@@ -203,15 +203,17 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             auto& msg = new_msg_ptr->header;
             msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-            dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
-            msg.set_des_dht_key(dht_key.StrKey());
+            common::DhtKey dht_key;
+            dht_key.construct.net_id = common::GlobalInfo::Instance()->network_id();
+            std::string str_key = std::string(dht_key.dht_key, sizeof(dht_key.dht_key));
+            msg.set_des_dht_key(str_key);
             msg.set_type(common::kConsensusMessage);
             auto& bft_msg = *msg.mutable_zbft();
             bft_msg.set_sync_block(true);
             bft_msg.set_pool_index(block_item->pool_index());
             *bft_msg.mutable_block() = *block_item;
             auto queue_idx = GetThreadIndex(new_msg_ptr);
-            threads_message_queues_[queue_idx][priority].push(new_msg_ptr);
+            threads_message_queues_[queue_idx][kTransportPriorityHigh].push(new_msg_ptr);
             wait_con_[queue_idx % all_thread_count_].notify_one();
         }
     }
