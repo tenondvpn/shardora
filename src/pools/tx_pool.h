@@ -86,7 +86,7 @@ public:
         return latest_hash_;
     }
 
-    uint64_t UpdateLatestInfo(uint64_t height, const std::string& hash) {
+    uint64_t UpdateLatestInfo(uint8_t thread_idx, uint64_t height, const std::string& hash) {
         if (latest_height_ < height) {
             latest_height_ = height;
             latest_hash_ = hash;
@@ -97,6 +97,7 @@ public:
                 for (uint64_t i = synced_height_ + 1; i < latest_height_; ++i) {
                     if (!height_tree_ptr_->Valid(i)) {
                         kv_sync_->AddSyncHeight(
+                            thread_idx,
                             common::GlobalInfo::Instance()->network_id(),
                             pool_index_,
                             i,

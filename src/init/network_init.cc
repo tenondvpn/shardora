@@ -628,6 +628,7 @@ void NetworkInit::AddBlockItemToCache(
     }
 
     pools_mgr_->UpdateLatestInfo(
+        thread_idx,
         block->network_id(),
         block->pool_index(),
         block->height(),

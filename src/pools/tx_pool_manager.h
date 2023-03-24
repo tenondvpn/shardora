@@ -82,6 +82,7 @@ public:
     }
 
     void UpdateLatestInfo(
+            uint8_t thread_idx,
             uint32_t sharding_id,
             uint32_t pool_index,
             uint64_t height,
@@ -96,7 +97,7 @@ public:
         pools::protobuf::PoolLatestInfo pool_info;
         pool_info.set_height(height);
         pool_info.set_hash(hash);
-        uint64_t synced_height = tx_pool_[pool_index].UpdateLatestInfo(height, hash);
+        uint64_t synced_height = tx_pool_[pool_index].UpdateLatestInfo(thread_idx, height, hash);
         pool_info.set_synced_height(synced_height);
         prefix_db_->SaveLatestPoolInfo(sharding_id, pool_index, pool_info, db_batch);
     }
