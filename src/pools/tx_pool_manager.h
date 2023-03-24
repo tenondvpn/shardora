@@ -78,6 +78,7 @@ public:
     }
 
     void UpdateLatestInfo(
+            uint32_t sharding_id,
             uint32_t pool_index,
             uint64_t height,
             const std::string& hash,
@@ -91,15 +92,34 @@ public:
         pools::protobuf::PoolLatestInfo pool_info;
         pool_info.set_height(height);
         pool_info.set_hash(hash);
-        prefix_db_->SaveLatestPoolInfo(pool_index, pool_info, db_batch);
+        prefix_db_->SaveLatestPoolInfo(sharding_id, pool_index, pool_info, db_batch);
         return tx_pool_[pool_index].UpdateLatestInfo(height, hash);
+    }
+
+    void NewBlockWithTx(
+            uint8_t thread_idx,
+            const std::shared_ptr<block::protobuf::Block>& block_item,
+            const block::protobuf::BlockTx& tx,
+            db::DbWriteBatch& db_batch) {
+        if (tx.step() == protobuf::kNormalTo) {
+            ZJC_DEBUG("pool index: %u, update to height: %lu",
+                block_item->pool_index(), block_item->height());
+            if (block_item->pool_index() >= common::kInvalidPoolIndex) {
+                return;
+            }
+
+            tx_pool_[block_item->pool_index()].UpdateToHeight(height);
+        }
     }
 
 private:
     void InitAllPoolInfo() {
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             pools::protobuf::PoolLatestInfo pool_info;
-            if (!prefix_db_->GetLatestPoolInfo(i, &pool_info)) {
+            if (!prefix_db_->GetLatestPoolInfo(
+                    common::GlobalInfo::Instance()->network_id(),
+                    i,
+                    &pool_info)) {
                 continue;
             }
 

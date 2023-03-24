@@ -615,6 +615,10 @@ void NetworkInit::AddBlockItemToCache(
         uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
+    if (block->network_id() != common::GlobalInfo::Instance()->network_id()) {
+        return;
+    }
+
     const auto& tx_list = block->tx_list();
     if (tx_list.empty()) {
         assert(false);
@@ -622,6 +626,7 @@ void NetworkInit::AddBlockItemToCache(
     }
 
     pools_mgr_->UpdateLatestInfo(
+        block->network_id(),
         block->pool_index(),
         block->height(),
         block->hash(),
@@ -632,6 +637,9 @@ void NetworkInit::AddBlockItemToCache(
         case pools::protobuf::kNormalFrom:
         case pools::protobuf::kConsensusLocalTos:
             account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
+            break;
+        case pools::protobuf::kNormalTo:
+            pools_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             break;
         case pools::protobuf::kConsensusRootTimeBlock:
             tm_block_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);

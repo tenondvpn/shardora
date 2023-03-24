@@ -21,12 +21,13 @@ public:
     void TxOver(std::shared_ptr<Zbft>& zbft_ptr);
     void TxRecover(std::shared_ptr<Zbft>& zbft_ptr);
     void UpdateLatestInfo(
+            uint32_t sharding_id,
             uint32_t pool_index,
             uint64_t height,
             const std::string& hash,
             db::DbWriteBatch& db_batch) {
         assert(height > 0);
-        pool_mgr_->UpdateLatestInfo(pool_index, height, hash, db_batch);
+        pool_mgr_->UpdateLatestInfo(sharding_id, pool_index, height, hash, db_batch);
     }
 
     uint64_t latest_height(uint32_t pool_index) const;

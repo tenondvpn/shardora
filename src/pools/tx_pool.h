@@ -42,7 +42,6 @@ public:
     void GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count);
 
     inline TxItemPtr GetTx(const std::string& tx_hash) {
-//         common::AutoSpinLock lock(mutex_);
         auto iter = added_tx_map_.find(tx_hash);
         if (iter != added_tx_map_.end()) {
             //         ZJC_DEBUG("success get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
@@ -53,18 +52,16 @@ public:
         return nullptr;
     }
 
-    std::shared_ptr<consensus::WaitingTxsItem> GetTx(const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list) {
+    std::shared_ptr<consensus::WaitingTxsItem> GetTx(
+            const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list) {
         auto txs_items = std::make_shared<consensus::WaitingTxsItem>();
         auto& tx_map = txs_items->txs;
-        {
-//             common::AutoSpinLock lock(mutex_);
-            for (int32_t i = 0; i < tx_hash_list.size(); ++i) {
-                auto& txhash = tx_hash_list[i];
-                auto iter = added_tx_map_.find(txhash);
-                if (iter != added_tx_map_.end()) {
-                    //         ZJC_DEBUG("success get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
-                    tx_map[txhash] = iter->second;
-                }
+        for (int32_t i = 0; i < tx_hash_list.size(); ++i) {
+            auto& txhash = tx_hash_list[i];
+            auto iter = added_tx_map_.find(txhash);
+            if (iter != added_tx_map_.end()) {
+                //         ZJC_DEBUG("success get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
+                tx_map[txhash] = iter->second;
             }
         }
         //     ZJC_DEBUG("failed get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
@@ -90,12 +87,31 @@ public:
             latest_height_ = height;
             latest_hash_ = hash;
             height_tree_ptr_->Set(height);
+            if (height == consequent_to_height_ + 1) {
+                consequent_to_height_ = height;
+            } else {
+                for (; consequent_to_height_ < height; ++consequent_to_height_) {
+                    if (!height_tree_ptr_->Valid(consequent_to_height_ + 1)) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    void UpdateToHeight(uint64_t to_height) {
+        if (prev_to_height_ < to_height) {
+            prev_to_height_ = to_height;
+        }
+
+        if (consequent_to_height_ < to_height) {
+            consequent_to_height_ = to_height;
         }
     }
 
 private:
     bool CheckTimeoutTx(TxItemPtr& tx_ptr, uint64_t timestamp_now);
-//     common::SpinMutex mutex_;
+
     std::deque<TxItemPtr> timeout_txs_;
     std::unordered_map<std::string, TxItemPtr> added_tx_map_;
     std::unordered_map<std::string, TxItemPtr> gid_map_;
@@ -104,6 +120,8 @@ private:
     uint64_t latest_height_ = 0;
     std::string latest_hash_;
     std::shared_ptr<HeightTreeLevel> height_tree_ptr_ = nullptr;
+    uint64_t prev_to_height_ = 0;
+    uint64_t consequent_to_height_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };
