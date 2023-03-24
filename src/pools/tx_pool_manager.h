@@ -108,7 +108,7 @@ public:
                 return;
             }
 
-            tx_pool_[block_item->pool_index()].UpdateToHeight(height);
+            tx_pool_[block_item->pool_index()].UpdateToHeight(block_item->height());
         }
     }
 
