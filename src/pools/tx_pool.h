@@ -134,6 +134,15 @@ public:
 
 private:
     bool CheckTimeoutTx(TxItemPtr& tx_ptr, uint64_t timestamp_now);
+    void InitLatestInfo() {
+        pools::protobuf::PoolLatestInfo pool_info;
+        if (prefix_db_->GetLatestPoolInfo(
+                common::GlobalInfo::Instance()->network_id(),
+                pool_index_,
+                &pool_info)) {
+            UpdateLatestInfo(pool_info.height(), pool_info.hash());
+        }
+    }
 
     std::deque<TxItemPtr> timeout_txs_;
     std::unordered_map<std::string, TxItemPtr> added_tx_map_;
@@ -142,6 +151,7 @@ private:
     std::string latest_hash_;
     std::shared_ptr<HeightTreeLevel> height_tree_ptr_ = nullptr;
     std::shared_ptr<PoolLatestItem> latest_item_ = nullptr;
+    uint32_t pool_index_ = common::kInvalidPoolIndex;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };

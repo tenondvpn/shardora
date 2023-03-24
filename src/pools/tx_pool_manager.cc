@@ -26,7 +26,6 @@ TxPoolManager::TxPoolManager(
         tx_pool_[i].Init(i, db);
     }
 
-    InitAllPoolInfo();
     network::Route::Instance()->RegisterMessage(
         common::kPoolsMessage,
         std::bind(&TxPoolManager::HandleMessage, this, std::placeholders::_1));

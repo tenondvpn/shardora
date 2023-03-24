@@ -113,19 +113,6 @@ public:
     }
 
 private:
-    void InitAllPoolInfo() {
-        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-            pools::protobuf::PoolLatestInfo pool_info;
-            if (!prefix_db_->GetLatestPoolInfo(
-                    common::GlobalInfo::Instance()->network_id(),
-                    i,
-                    &pool_info)) {
-                continue;
-            }
-
-            tx_pool_[i].UpdateLatestInfo(pool_info.height(), pool_info.hash());
-        }
-    }
     void SaveStorageToDb(const transport::protobuf::Header& msg);
     void DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& addr);
