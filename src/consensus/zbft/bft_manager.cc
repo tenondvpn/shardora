@@ -403,10 +403,10 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 //         }
 //         assert(false);
 //     }
-    ClearBft(msg_ptr);
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     CreateResponseMessage(!header.zbft().leader(), zbft_vec, msg_ptr, mem_ptr);
-//     ZJC_DEBUG("create response over.");
+    ClearBft(msg_ptr);
+    //     ZJC_DEBUG("create response over.");
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (zbft_vec[0] != nullptr) {
 //         ZJC_DEBUG("delay create bls verify hash leader: %d", header.zbft().leader());
@@ -571,6 +571,10 @@ void BftManager::ClearBft(const transport::MessagePtr& msg_ptr) {
     }
 
     bool is_leader = msg_ptr->header.zbft().leader();
+    if (!is_leader) {
+        return;
+    }
+
     auto& zbft = *msg_ptr->response->header.mutable_zbft();
     auto& from_zbft = msg_ptr->header.zbft();
     if (zbft.has_agree_commit() && !zbft.agree_commit()) {

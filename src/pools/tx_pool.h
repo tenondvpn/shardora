@@ -75,38 +75,61 @@ public:
     void TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
     void TxRecover(std::map<std::string, TxItemPtr>& txs);
     uint64_t latest_height() const {
-        return latest_height_;
+        auto tmp_ptr = latest_item_;
+        return tmp_ptr->latest_height;
     }
 
     std::string latest_hash() const {
-        return latest_hash_;
+        auto tmp_ptr = latest_item_;
+        return tmp_ptr->latest_hash;
     }
 
     void UpdateLatestInfo(uint64_t height, const std::string& hash) {
-        if (latest_height_ < height) {
-            latest_height_ = height;
-            latest_hash_ = hash;
+        auto latest_item = std::make_shared<PoolLatestItem>();
+        if (latest_item_ != nullptr) {
+            auto tmp_ptr = latest_item_;
+            latest_item->latest_height = tmp_ptr->latest_height;
+            latest_item->consequent_to_height = tmp_ptr->consequent_to_height;
+            latest_item->prev_to_height = tmp_ptr->prev_to_height;
+        }
+
+        if (latest_item->latest_height < height) {
+            latest_item->latest_height = height;
+            latest_item->latest_hash = hash;
             height_tree_ptr_->Set(height);
-            if (height == consequent_to_height_ + 1) {
-                consequent_to_height_ = height;
+            if (height == latest_item->consequent_to_height + 1) {
+                latest_item->consequent_to_height = height;
             } else {
-                for (; consequent_to_height_ < height; ++consequent_to_height_) {
-                    if (!height_tree_ptr_->Valid(consequent_to_height_ + 1)) {
+                for (; latest_item->consequent_to_height < height; ++latest_item->consequent_to_height) {
+                    if (!height_tree_ptr_->Valid(latest_item->consequent_to_height + 1)) {
                         break;
                     }
                 }
             }
+
+            latest_item_ = latest_item;
         }
     }
 
     void UpdateToHeight(uint64_t to_height) {
-        if (prev_to_height_ < to_height) {
-            prev_to_height_ = to_height;
+        auto latest_item = std::make_shared<PoolLatestItem>();
+        if (latest_item_ != nullptr) {
+            auto tmp_ptr = latest_item_;
+            latest_item->latest_height = tmp_ptr->latest_height;
+            latest_item->latest_hash = tmp_ptr->latest_hash;
+            latest_item->consequent_to_height = tmp_ptr->consequent_to_height;
+            latest_item->prev_to_height = tmp_ptr->prev_to_height;
         }
 
-        if (consequent_to_height_ < to_height) {
-            consequent_to_height_ = to_height;
+        if (latest_item->prev_to_height < to_height) {
+            latest_item->prev_to_height = to_height;
         }
+
+        if (latest_item->consequent_to_height < to_height) {
+            latest_item->consequent_to_height = to_height;
+        }
+
+        latest_item_ = latest_item;
     }
 
 private:
@@ -116,12 +139,9 @@ private:
     std::unordered_map<std::string, TxItemPtr> added_tx_map_;
     std::unordered_map<std::string, TxItemPtr> gid_map_;
     std::map<std::string, TxItemPtr> prio_map_;
-    uint32_t pool_index_ = 0;
-    uint64_t latest_height_ = 0;
     std::string latest_hash_;
     std::shared_ptr<HeightTreeLevel> height_tree_ptr_ = nullptr;
-    uint64_t prev_to_height_ = 0;
-    uint64_t consequent_to_height_ = 0;
+    std::shared_ptr<PoolLatestItem> latest_item_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };

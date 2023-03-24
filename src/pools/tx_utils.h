@@ -74,6 +74,14 @@ public:
 typedef std::shared_ptr<TxItem> TxItemPtr;
 typedef std::function<TxItemPtr(const transport::MessagePtr& msg_ptr)> CreateConsensusItemFunction;
 
+struct PoolLatestItem {
+    PoolLatestItem() : latest_height(0), prev_to_height(0), consequent_to_height(0)) {}
+    uint64_t latest_height;
+    std::string latest_hash;
+    uint64_t prev_to_height;
+    uint64_t consequent_to_height;
+};
+
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {
     std::string message;
     message.reserve(tx_info.ByteSizeLong());
