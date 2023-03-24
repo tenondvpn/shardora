@@ -428,7 +428,12 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
         if (bft_ptr == nullptr) {
             // verify and add new block
             auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
-            block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, block_ptr);
+            auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(zjc_block);
+            new_block_cache_callback_(
+                thread_idx,
+                queue_item_ptr->block_ptr,
+                queue_item_ptr->db_batch);
+            block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
             pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
             ZJC_DEBUG("removed bft gid coming: %s",
                 common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str());
