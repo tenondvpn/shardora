@@ -224,7 +224,7 @@ uint64_t KeyValueSync::SendSyncRequest(
     msg.set_hop_count(0);
     transport::TcpTransport::Instance()->Send(
         0, node->public_ip, node->public_port, msg);
-    ZJC_DEBUG("sync new from %s:%d", node->public_ip.c_str(), node->public_port)
+    ZJC_DEBUG("sync new from %s:%d", node->public_ip.c_str(), node->public_port);
     return node->id_hash;
 }
 
