@@ -107,6 +107,7 @@ public:
 
         if (synced_height_ + 1 == height) {
             synced_height_ = height;
+            UpdateSyncedHeight();
             if (prev_synced_height_ < synced_height_) {
                 prev_synced_height_ = synced_height_;
             }
@@ -146,6 +147,14 @@ private:
                 synced_height_ = pool_info.synced_height();
                 prev_synced_height_ = synced_height_;
                 to_sync_max_height_ = latest_height_;
+            }
+        }
+    }
+
+    void UpdateSyncedHeight() {
+        for (; synced_height_ <= latest_height_; ++synced_height_) {
+            if (!height_tree_ptr_->Valid(synced_height_)) {
+                break;
             }
         }
     }
