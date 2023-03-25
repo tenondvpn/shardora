@@ -53,6 +53,7 @@ int BlockManager::Init(
 }
 
 void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+    pools_mgr_->CheckSync(msg_ptr->thread_idx);
     if (leader_to_txs_msg_ != nullptr) {
         auto now_tm = common::TimeUtils::TimestampUs();
         if (now_tm > prev_to_txs_tm_us_ + 1000000) {
@@ -335,6 +336,13 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
             if (to_txs_[heights.sharding_id()] != nullptr) {
                 continue;
             }
+        }
+
+        for (int32_t l_pool_idx = 0; l_pool_idx < heights.heights_size(); ++l_pool_idx) {
+            pools_mgr_->UpdateToSyncHeight(
+                l_pool_idx,
+                msg_ptr->thread_idx,
+                heights.heights(l_pool_idx));
         }
 
         pools::protobuf::ToTxHeights to_heights;

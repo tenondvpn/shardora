@@ -310,6 +310,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             key = std::to_string(iter->network_id()) + "_" +
                 std::to_string(iter->pool_idx()) + "_" +
                 std::to_string(iter->height());
+            ZJC_DEBUG("block response coming: %s", key.c_str());
         }
 
         auto tmp_iter = synced_map_.find(key);

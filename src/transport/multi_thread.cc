@@ -47,14 +47,17 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
             msg_ptr->thread_idx = thread_idx_;
             auto btime = common::TimeUtils::TimestampUs();
+            if (msg_ptr->header.type() == common::kConsensusMessage) {
+                ZJC_DEBUG("thread index: %d, handle message: %d now", thread_idx_, msg_ptr->header.type());
+            }
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
-            if ((etime - btime) > 100000) {
+            if (msg_ptr->header.type() == common::kConsensusMessage) {
 //                 std::string t;
 //                 for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
 //                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
 //                 }
-                ZJC_DEBUG("handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), "");
+                ZJC_DEBUG("over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), "");
             }
         }
 
@@ -199,7 +202,6 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
         auto block_item = std::make_shared<block::protobuf::Block>();
         if (block_item->ParseFromString(iter->value()) &&
                 (iter->has_height() || !block_item->hash().empty())) {
-            ZJC_DEBUG("create sync block message.");
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             auto& msg = new_msg_ptr->header;
             msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
@@ -214,8 +216,10 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
             bft_msg.set_pool_index(block_item->pool_index());
             *bft_msg.mutable_block() = *block_item;
             auto queue_idx = GetThreadIndex(new_msg_ptr);
-            threads_message_queues_[queue_idx][kTransportPriorityHigh].push(new_msg_ptr);
+            threads_message_queues_[queue_idx][kTransportPriorityHighest].push(new_msg_ptr);
             wait_con_[queue_idx % all_thread_count_].notify_one();
+            ZJC_DEBUG("create sync block message: %d, index: %d, queue_idx: %d",
+                queue_idx, block_item->pool_index(), queue_idx);
         }
     }
 }

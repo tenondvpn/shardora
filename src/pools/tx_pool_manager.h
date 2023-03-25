@@ -81,6 +81,22 @@ public:
         return tx_pool_[pool_index].AddTx(tx_ptr);
     }
 
+    void UpdateToSyncHeight(uint32_t pool_index, uint8_t thread_idx, uint64_t to_sync_max_height) {
+        tx_pool_[pool_index].UpdateToSyncHeight(thread_idx, to_sync_max_height);
+    }
+
+    void CheckSync(uint8_t thread_idx) {
+        auto now_tm = common::TimeUtils::TimestampUs();
+        if (prev_sync_check_us_ + 100000lu >= now_tm) {
+            return;
+        }
+
+        prev_sync_check_us_ = now_tm;
+        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            tx_pool_[i].SyncBlock(thread_idx);
+        }
+    }
+
     void UpdateLatestInfo(
             uint8_t thread_idx,
             uint32_t sharding_id,
@@ -126,6 +142,7 @@ private:
     common::UniqueMap<std::string, protos::AddressInfoPtr> address_map_;
     uint32_t prev_count_[257] = { 0 };
     uint64_t prev_timestamp_us_ = 0;
+    uint64_t prev_sync_check_us_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

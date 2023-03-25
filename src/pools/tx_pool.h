@@ -86,6 +86,13 @@ public:
         return latest_hash_;
     }
 
+    void UpdateToSyncHeight(uint8_t thread_idx, uint64_t to_sync_max_height) {
+        if (to_sync_max_height_ < to_sync_max_height) {
+            to_sync_max_height_ = to_sync_max_height;
+            SyncBlock(thread_idx);
+        }
+    }
+
     uint64_t UpdateLatestInfo(uint8_t thread_idx, uint64_t height, const std::string& hash) {
         height_tree_ptr_->Set(height);
         if (latest_height_ < height) {
@@ -94,25 +101,35 @@ public:
             
         }
 
+        if (to_sync_max_height_ < latest_hash_) {
+            to_sync_max_height_ = latest_hash_;
+        }
+
         if (synced_height_ + 1 == height) {
             synced_height_ = height;
-            prev_synced_height_ = synced_height_;
-        } else {
-            for (; prev_synced_height_ < latest_height_ &&
-                    (prev_synced_height_ - synced_height_ < 64);
-                    ++prev_synced_height_) {
-                if (!height_tree_ptr_->Valid(prev_synced_height_ + 1)) {
-                    kv_sync_->AddSyncHeight(
-                        thread_idx,
-                        common::GlobalInfo::Instance()->network_id(),
-                        pool_index_,
-                        prev_synced_height_ + 1,
-                        sync::kSyncHighest);
-                }
+            if (prev_synced_height_ < synced_height_) {
+                prev_synced_height_ = synced_height_;
             }
+        } else {
+            SyncBlock(thread_idx);
         }
 
         return synced_height_;
+    }
+
+    void SyncBlock(uint8_t thread_idx) {
+        for (; prev_synced_height_ < to_sync_max_height_ &&
+                (prev_synced_height_ < synced_height_ + 64);
+                ++prev_synced_height_) {
+            if (!height_tree_ptr_->Valid(prev_synced_height_ + 1)) {
+                kv_sync_->AddSyncHeight(
+                    thread_idx,
+                    common::GlobalInfo::Instance()->network_id(),
+                    pool_index_,
+                    prev_synced_height_ + 1,
+                    sync::kSyncHighest);
+            }
+        }
     }
 
 private:
@@ -128,6 +145,7 @@ private:
                 latest_hash_ = pool_info.hash();
                 synced_height_ = pool_info.synced_height();
                 prev_synced_height_ = synced_height_;
+                to_sync_max_height_ = latest_height_;
             }
         }
     }
@@ -144,6 +162,7 @@ private:
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     uint64_t synced_height_ = 0;
     uint64_t prev_synced_height_ = 0;
+    uint64_t to_sync_max_height_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };
