@@ -28,10 +28,10 @@ namespace sync {
 
 struct SyncItem {
     SyncItem(uint32_t net_id, const std::string& in_key, uint32_t pri)
-            : network_id(net_id), key(in_key), priority(pri) {}
+            : network_id(net_id), key(in_key), priority(pri), sync_times(0) {}
 
     SyncItem(uint32_t net_id, uint32_t in_pool_idx, uint64_t in_height, uint32_t pri)
-            : network_id(net_id), pool_idx(in_pool_idx), height(in_height), priority(pri) {
+            : network_id(net_id), pool_idx(in_pool_idx), height(in_height), priority(pri), sync_times(0) {
         key = std::to_string(network_id) + "_" +
             std::to_string(pool_idx) + "_" +
             std::to_string(height);
@@ -43,6 +43,7 @@ struct SyncItem {
     uint32_t sync_times{ 0 };
     uint32_t pool_idx{ common::kInvalidUint32 };
     uint64_t height{ common::kInvalidUint64 };
+    uint64_t sync_tm_us;
 };
 
 typedef std::shared_ptr<SyncItem> SyncItemPtr;
@@ -79,6 +80,7 @@ private:
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
 
     static const uint64_t kSyncPeriodUs = 300000lu;
+    static const uint64_t kSyncTimeoutPeriodUs = 3000000lu;
 
     common::ThreadSafeQueue<SyncItemPtr> item_queues_[common::kMaxThreadCount];
     std::unordered_map<std::string, SyncItemPtr> synced_map_;
@@ -87,6 +89,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint64_t prev_sync_tm_us_ = 0;
+    uint64_t prev_sync_tmout_us_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(KeyValueSync);
 };

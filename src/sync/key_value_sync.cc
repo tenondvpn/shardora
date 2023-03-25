@@ -51,13 +51,15 @@ void KeyValueSync::AddSyncHeight(
 void KeyValueSync::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     PopItems();
     auto now_tm_us = common::TimeUtils::TimestampUs();
-    if (prev_sync_tm_us_ + kSyncPeriodUs > now_tm_us) {
-        return;
+    if (prev_sync_tm_us_ + kSyncPeriodUs < now_tm_us) {
+        prev_sync_tm_us_ = now_tm_us;
+        CheckSyncItem(msg_ptr->thread_idx);
     }
 
-    prev_sync_tm_us_ = now_tm_us;
-    CheckSyncItem(msg_ptr->thread_idx);
-    CheckSyncTimeout();
+    if (prev_sync_tmout_us_ + kSyncTimeoutPeriodUs < now_tm_us) {
+        prev_sync_tmout_us_ = now_tm_us;
+        CheckSyncTimeout();
+    }
 }
 
 void KeyValueSync::PopItems() {
@@ -100,10 +102,15 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
     std::map<uint32_t, sync::protobuf::SyncMessage> sync_dht_map;
     std::set<std::string> added_key;
     bool stop = false;
+    auto now_tm = common::TimeUtils::TimestampUs();
     for (int32_t i = kSyncHighest; i >= kSyncPriLowest; --i) {
         while (!prio_sync_queue_[i].empty()) {
             SyncItemPtr item = prio_sync_queue_[i].front();
             prio_sync_queue_[i].pop();
+            if (synced_map_.find(item->key) != synced_map_.end()) {
+                continue;
+            }
+
             auto iter = sync_dht_map.find(item->network_id);
             if (iter == sync_dht_map.end()) {
                 sync_dht_map[item->network_id] = sync::protobuf::SyncMessage();
@@ -143,11 +150,9 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
             }
 
             ++(item->sync_times);
-            if (synced_map_.find(item->key) != synced_map_.end()) {
-                continue;
-            }
-
+           
             synced_map_.insert(std::make_pair(item->key, item));
+            item->sync_tm_us = now_tm;
             if (synced_map_.size() > kSyncMaxKeyCount) {
                 stop = true;
                 break;
@@ -322,10 +327,15 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
 }
 
 void KeyValueSync::CheckSyncTimeout() {
+    auto now_tm = common::TimeUtils::TimestampUs();
     for (auto iter = synced_map_.begin(); iter != synced_map_.end();) {
         if (iter->second->sync_times >= kSyncMaxRetryTimes) {
             added_key_set_.erase(iter->second->key);
             synced_map_.erase(iter++);
+            continue;
+        }
+
+        if (iter->second->sync_tm_us + 500000 >= now_tm) {
             continue;
         }
 
