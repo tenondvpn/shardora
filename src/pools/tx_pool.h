@@ -101,8 +101,8 @@ public:
             
         }
 
-        if (to_sync_max_height_ < latest_hash_) {
-            to_sync_max_height_ = latest_hash_;
+        if (to_sync_max_height_ < latest_height_) {
+            to_sync_max_height_ = latest_height_;
         }
 
         if (synced_height_ + 1 == height) {
