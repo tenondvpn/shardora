@@ -323,7 +323,6 @@ int ToTxsPools::CreateToTxWithHeights(
     }
 
     if (acc_amount_map.empty()) {
-        assert(false);
         return kPoolsError;
     }
 
