@@ -32,6 +32,7 @@ public:
     virtual ~TxItem() {}
     TxItem(const transport::MessagePtr& msg)
             : msg_ptr(msg),
+            prev_consensus_tm_us(0),
             tx_hash(msg->msg_hash),
             gid(msg->header.tx_proto().gid()),
             gas_price(msg->header.tx_proto().gas_price()),
