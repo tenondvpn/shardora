@@ -177,7 +177,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(uint32_t pool_index, bool leader) {
-    auto tx_ptr = block_mgr_->GetToTx(pool_index);
+    auto tx_ptr = block_mgr_->GetToTx(pool_index, leader);
     if (tx_ptr != nullptr) {
         ZJC_DEBUG("success get to tx %u, %d", pool_index, leader);
         if (leader) {
