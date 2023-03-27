@@ -442,8 +442,8 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         }
 
         pools::protobuf::ToTxHeights& to_heights = *block_msg.add_to_txs();
-        to_txs_pool_->LeaderCreateToHeights(i, to_heights);
-        if (to_heights.heights_size() <= 0) {
+        int res = to_txs_pool_->LeaderCreateToHeights(i, to_heights);
+        if (res != pools::kPoolsSuccess || to_heights.heights_size() <= 0) {
             block_msg.mutable_to_txs()->RemoveLast();
         }
     }

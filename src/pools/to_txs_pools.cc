@@ -245,10 +245,20 @@ int ToTxsPools::LeaderCreateToHeights(
     }
 
     to_heights.set_sharding_id(sharding_id);
+    bool valid = false;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto pool_iter = net_iter->second.find(i);
         auto r_height_iter = pool_iter->second.rbegin();
-        to_heights.add_heights(r_height_iter->first);
+        if (r_height_iter == pool_iter->second.rend()) {
+            to_heights.add_heights(0);
+        } else {
+            to_heights.add_heights(r_height_iter->first);
+            valid = true;
+        }
+    }
+
+    if (!valid) {
+        return kPoolsError;
     }
 
     return kPoolsSuccess;
