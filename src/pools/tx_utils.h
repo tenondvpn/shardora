@@ -60,6 +60,7 @@ public:
         block::protobuf::BlockTx* block_tx) = 0;
 
     transport::MessagePtr msg_ptr;
+    uint64_t prev_consensus_tm_us;
     uint64_t timeout;
     uint64_t remove_timeout;
     uint64_t time_valid{ 0 };

@@ -179,6 +179,12 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(uint32_t pool_index) {
     auto tx_ptr = block_mgr_->GetToTx(pool_index);
     if (tx_ptr != nullptr) {
+        auto now_tm = common::TimeUtils::TimestampUs();
+        if (tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm) {
+            return nullptr;
+        }
+
+        tx_ptr->prev_consensus_tm_us = now_tm;
         auto txs_item = std::make_shared<WaitingTxsItem>();
         txs_item->pool_index = pool_index;
         txs_item->txs[tx_ptr->tx_hash] = tx_ptr;

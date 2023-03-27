@@ -261,7 +261,7 @@ int ToTxsPools::LeaderCreateToHeights(
         return kPoolsError;
     }
 
-    ZJC_DEBUG("leader success create to heights: %s", heights.c_str());
+    ZJC_DEBUG("sharding_id: %u, leader success create to heights: %s", sharding_id, heights.c_str());
     return kPoolsSuccess;
 }
 
@@ -292,7 +292,7 @@ int ToTxsPools::CreateToTxWithHeights(
 
         uint64_t min_height = 1;
         if (handled_iter != handled_map_.end()) {
-            min_height = handled_iter->second->heights(pool_idx);
+            min_height = handled_iter->second->heights(pool_idx) + 1;
         }
 
         uint64_t max_height = leader_to_heights.heights(pool_idx);
