@@ -81,7 +81,6 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
 }
 
 void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
-    ZJC_DEBUG("handle message: %d", header_ptr->header.type());
     auto& header = header_ptr->header;
     if (header.type() >= common::kLegoMaxMessageTypeCount) {
         return;
