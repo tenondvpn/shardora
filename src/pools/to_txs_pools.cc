@@ -304,7 +304,10 @@ int ToTxsPools::CreateToTxWithHeights(
             }
         }
 
-        ZJC_DEBUG("pool: %d, min_height: %lu, max_height: %lu", pool_idx, min_height, max_height);
+        if (max_height > 0) {
+            ZJC_DEBUG("pool: %d, min_height: %lu, max_height: %lu", pool_idx, min_height, max_height);
+        }
+
         for (auto height = min_height; height < max_height; ++height) {
             auto hiter = pool_iter->second.find(height);
             for (auto to_iter = hiter->second.begin();
@@ -320,6 +323,7 @@ int ToTxsPools::CreateToTxWithHeights(
     }
 
     if (acc_amount_map.empty()) {
+        assert(false);
         return kPoolsError;
     }
 
