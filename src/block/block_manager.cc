@@ -362,6 +362,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         auto to_txs_ptr = std::make_shared<ToTxsItem>();
         new_msg_ptr->address_info = account_mgr_->single_to_address_info();
         to_txs_ptr->tx_ptr = create_to_tx_cb_(new_msg_ptr);
+        to_txs_ptr->tx_ptr->time_valid += 3000000lu;
         to_txs_ptr->to_txs_hash = tos_hash;
         to_txs_[heights.sharding_id()] = to_txs_ptr;
         ZJC_DEBUG("success add txs: %s", common::Encode::HexEncode(tos_hash).c_str());
