@@ -259,6 +259,7 @@ int ToTxsPools::LeaderCreateToHeights(
         return kPoolsError;
     }
 
+    ZJC_DEBUG("leader success create to heights.");
     return kPoolsSuccess;
 }
 
