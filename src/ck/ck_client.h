@@ -28,7 +28,6 @@ private:
     void Statistic();
     void TickStatistic();
 
-    clickhouse::Client client_;
     common::Tick statistic_tick_;
 
     DISALLOW_COPY_AND_ASSIGN(ClickHouseClient);

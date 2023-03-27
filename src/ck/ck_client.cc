@@ -10,8 +10,7 @@ namespace ck {
 ClickHouseClient::ClickHouseClient(
         const std::string& host,
         const std::string& user,
-        const std::string& passwd)
-        : client_(clickhouse::ClientOptions().SetHost(host).SetPort(9000)) {
+        const std::string& passwd) {
     CreateTable(true);
 }
 
@@ -239,19 +238,14 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     account_attrs.AppendColumn("to", attr_to);
     account_attrs.AppendColumn("type", attr_tx_type);
 
-    client_.Insert(kClickhouseTransTableName, trans);
-    client_.Insert(kClickhouseBlockTableName, blocks);
-    client_.Insert(kClickhouseAccountTableName, accounts);
-    client_.Insert(kClickhouseAccountKvTableName, account_attrs);
+    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(9000));
+    ck_client.Insert(kClickhouseTransTableName, trans);
+    ck_client.Insert(kClickhouseBlockTableName, blocks);
+    ck_client.Insert(kClickhouseAccountTableName, accounts);
+    ck_client.Insert(kClickhouseAccountKvTableName, account_attrs);
     return true;
 } catch (std::exception& e) {
     ZJC_ERROR("add new block failed[%s]", e.what());
-//     try {
-//         client_.ResetConnection();
-//     } catch (std::exception& e) {
-//         ZJC_ERROR("ResetConnection failed[%s]", e.what());
-//     }
-
     return false;
 }
 
@@ -295,7 +289,8 @@ bool ClickHouseClient::CreateTransactionTable() {
         "PARTITION BY(shard_id, date) "
         "ORDER BY(pool_index,height,type,from,to) "
         "SETTINGS index_granularity = 8192;";
-    client_.Execute(create_cmd);
+    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(9000));
+    ck_client.Execute(create_cmd);
     return true;
 }
 
@@ -322,7 +317,8 @@ bool ClickHouseClient::CreateBlockTable() {
         "PARTITION BY(shard_id, date) "
         "ORDER BY(pool_index,height) "
         "SETTINGS index_granularity = 8192;";
-    client_.Execute(create_cmd);
+    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(9000));
+    ck_client.Execute(create_cmd);
     return true;
 }
 
@@ -337,7 +333,8 @@ bool ClickHouseClient::CreateAccountTable() {
         "PARTITION BY(shard_id) "
         "ORDER BY(id,pool_index) "
         "SETTINGS index_granularity = 8192;";
-    client_.Execute(create_cmd);
+    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(9000));
+    ck_client.Execute(create_cmd);
     return true;
 }
 
@@ -354,7 +351,8 @@ bool ClickHouseClient::CreateAccountKeyValueTable() {
         "PARTITION BY(shard_id) "
         "ORDER BY(type, key, from, to) "
         "SETTINGS index_granularity = 8192;";
-    client_.Execute(create_cmd);
+    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(9000));
+    ck_client.Execute(create_cmd);
     return true;
 }
 
@@ -373,7 +371,8 @@ bool ClickHouseClient::CreateStatisticTable() {
         "PARTITION BY(date) "
         "ORDER BY(time) "
         "SETTINGS index_granularity = 8192;";
-    client_.Execute(create_cmd);
+    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(9000));
+    ck_client.Execute(create_cmd);
     return true;
 }
 
@@ -387,7 +386,8 @@ bool ClickHouseClient::CreatePrivateKeyTable() {
         "PARTITION BY(date) "
         "ORDER BY(seckey) "
         "SETTINGS index_granularity = 8192;");
-    client_.Execute(create_cmd);
+    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(9000));
+    ck_client.Execute(create_cmd);
     return true;
 }
 
@@ -416,7 +416,8 @@ void ClickHouseClient::TickStatistic() {
 void ClickHouseClient::Statistic() try {
     std::string cmd = "select count(*) as cnt from zjc_ck_transaction_table;";
     uint32_t all_transactions = 0;
-    client_.Select(cmd, [&all_transactions](const clickhouse::Block& ck_block) {
+    clickhouse::Client ck_client0(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(9000));
+    ck_client0.Select(cmd, [&all_transactions](const clickhouse::Block& ck_block) {
         if (ck_block.GetRowCount() > 0) {
             all_transactions = (*ck_block[0]->As<clickhouse::ColumnUInt64>())[0];
         }
@@ -424,7 +425,8 @@ void ClickHouseClient::Statistic() try {
 
     cmd = "select count(*) from zjc_ck_account_table;";
     uint32_t all_address = 0;
-    client_.Select(cmd, [&all_address](const clickhouse::Block& ck_block) {
+    clickhouse::Client ck_client1(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(9000));
+    ck_client1.Select(cmd, [&all_address](const clickhouse::Block& ck_block) {
         if (ck_block.GetRowCount() > 0) {
             all_address = (*ck_block[0]->As<clickhouse::ColumnUInt64>())[0];
         }
@@ -432,7 +434,8 @@ void ClickHouseClient::Statistic() try {
 
     cmd = "select sum(balance) from zjc_ck_account_table;";
     uint64_t sum_balance = 0;
-    client_.Select(cmd, [&sum_balance](const clickhouse::Block& ck_block) {
+    clickhouse::Client ck_client2(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(9000));
+    ck_client2.Select(cmd, [&sum_balance](const clickhouse::Block& ck_block) {
         if (ck_block.GetRowCount() > 0) {
             sum_balance = (*ck_block[0]->As<clickhouse::ColumnUInt64>())[0];
         }
@@ -440,7 +443,8 @@ void ClickHouseClient::Statistic() try {
 
     cmd = "select count(*) from zjc_ck_account_key_value_table where type = 4 and key = '5f5f636279746573636f6465'";
     uint32_t all_contracts = 0;
-    client_.Select(cmd, [&all_contracts](const clickhouse::Block& ck_block) {
+    clickhouse::Client ck_client3(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(9000));
+    ck_client3.Select(cmd, [&all_contracts](const clickhouse::Block& ck_block) {
         if (ck_block.GetRowCount() > 0) {
             all_contracts = (*ck_block[0]->As<clickhouse::ColumnUInt64>())[0];
         }
@@ -471,7 +475,8 @@ void ClickHouseClient::Statistic() try {
     statistics.AppendColumn("all_nodes", st_nodes);
     statistics.AppendColumn("all_waiting_nodes", st_wnodes);
     statistics.AppendColumn("date", st_date);
-    client_.Insert(kClickhouseStatisticTableName, statistics);
+    clickhouse::Client ck_client4(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(9000));
+    ck_client4.Insert(kClickhouseStatisticTableName, statistics);
 } catch (std::exception& e) {
     ZJC_ERROR("add new block failed[%s]", e.what());
 }
