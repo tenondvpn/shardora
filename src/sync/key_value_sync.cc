@@ -271,13 +271,18 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     }
 
     for (int32_t i = 0; i < sync_msg.sync_value_req().heights_size(); ++i) {
-        std::string value;
         auto network_id = sync_msg.sync_value_req().network_id();
-        if (!prefix_db_->GetBlockStringWithHeight(
+        block::protobuf::Block block;
+        if (!prefix_db_->GetBlockWithHeight(
                 network_id,
                 sync_msg.sync_value_req().heights(i).pool_idx(),
                 sync_msg.sync_value_req().heights(i).height(),
-                &value)) {
+                &block)) {
+            continue;
+        }
+
+
+        if (!AddSyncKeyValue(&msg, block)) {
             continue;
         }
 
@@ -285,8 +290,8 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
         res->set_network_id(network_id);
         res->set_pool_idx(sync_msg.sync_value_req().heights(i).pool_idx());
         res->set_height(sync_msg.sync_value_req().heights(i).height());
-        res->set_value(value);
-        add_size += 16 + value.size();
+        res->set_value(block.SerializeAsString());
+        add_size += 16 + res->value().size();
         if (add_size >= kSyncPacketMaxSize) {
             break;
         }
@@ -302,6 +307,29 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     msg.set_type(common::kSyncMessage);
     transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
     ZJC_DEBUG("sync response ok.");
+}
+
+bool KeyValueSync::AddSyncKeyValue(transport::protobuf::Header* msg, const block::protobuf::Block& block) {
+    auto* sync_info = msg->mutable_sync();
+    for (int32_t i = 0; i < block.tx_list_size(); ++i) {
+        auto& tx = block.tx_list(i);
+        for (int32_t j = 0; j < block.tx_list(i).storages_size(); ++j) {
+            auto& storage = block.tx_list(i).storages(j);
+            ZJC_DEBUG("add storage %s, %s, %d", storage.key().c_str(), common::Encode::HexEncode(storage.val_hash()).c_str(), storage.val_size());
+            if (storage.val_size() == 0) {  // 0 just save value hash else direct value
+                std::string val;
+                if (!prefix_db_->GetTemporaryKv(storage.val_hash(), &val)) {
+                    return false;
+                }
+
+                auto* sync_item = sync_info->add_items();
+                sync_item->set_key(storage.val_hash());
+                sync_item->set_value(val);
+            }
+        }
+    }
+
+    return true;
 }
 
 void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr) {

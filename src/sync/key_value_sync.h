@@ -78,6 +78,7 @@ private:
     void ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr);
     void PopItems();
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
+    bool AddSyncKeyValue(transport::protobuf::Header* msg, const block::protobuf::Block& block);
 
     static const uint64_t kSyncPeriodUs = 300000lu;
     static const uint64_t kSyncTimeoutPeriodUs = 300000lu;

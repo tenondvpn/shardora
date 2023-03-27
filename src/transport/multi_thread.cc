@@ -197,6 +197,7 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
         return;
     }
 
+    SaveKeyValue(msg_ptr->header);
     auto& res_arr = sync_msg.sync_value_res().res();
     for (auto iter = res_arr.begin(); iter != res_arr.end(); ++iter) {
         auto block_item = std::make_shared<block::protobuf::Block>();
@@ -223,6 +224,18 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
         }
     }
 }
+
+void MultiThreadHandler::SaveKeyValue(const transport::protobuf::Header& msg) {
+    for (int32_t i = 0; i < msg.sync().items_size(); ++i) {
+        ZJC_DEBUG("save storage %s, %s",
+            common::Encode::HexEncode(msg.sync().items(i).key()).c_str(),
+            common::Encode::HexEncode(msg.sync().items(i).value()).c_str());
+        prefix_db_->SaveTemporaryKv(
+            msg.sync().items(i).key(),
+            msg.sync().items(i).value());
+    }
+}
+
 bool MultiThreadHandler::IsMessageUnique(uint64_t msg_hash) {
     bool valid = unique_message_sets_.add(msg_hash);
     if (!valid) {
