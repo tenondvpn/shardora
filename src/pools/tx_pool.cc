@@ -36,8 +36,8 @@ void TxPool::Init(
         }
     }
 
-    ZJC_DEBUG("pool_idx: %d, synced_height_: %lu, latest height: %lu",
-        pool_idx, synced_height_, latest_height_);
+//     ZJC_DEBUG("pool_idx: %d, synced_height_: %lu, latest height: %lu",
+//         pool_idx, synced_height_, latest_height_);
     added_tx_map_.reserve(10240);
 }
 

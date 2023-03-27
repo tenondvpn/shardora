@@ -1003,7 +1003,7 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
             bft_ptr = iter->second;
             bft_ptr->Destroy();
             bft_hash_map_[thread_idx].erase(iter);
-            ZJC_DEBUG("remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
+//             ZJC_DEBUG("remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
         }
     }
 }

@@ -74,19 +74,19 @@ int Zbft::Init(
 }
 
 void Zbft::Destroy() {
-    ZJC_DEBUG("called destroy.");
+//     ZJC_DEBUG("called destroy.");
     if (txs_ptr_ == nullptr) {
-        ZJC_DEBUG("failed called destroy.");
+//         ZJC_DEBUG("failed called destroy.");
         return;
     }
 
     if (consensus_status_ != kConsensusCommited) {
-        ZJC_DEBUG("not commit called destroy.");
+//         ZJC_DEBUG("not commit called destroy.");
         auto ptr = shared_from_this();
         pools_mgr_->TxRecover(ptr);
     } else {
         auto ptr = shared_from_this();
-        ZJC_DEBUG("commit called destroy: %d", prepare_block_->tx_list_size());
+//         ZJC_DEBUG("commit called destroy: %d", prepare_block_->tx_list_size());
         pools_mgr_->TxOver(ptr);
     }
 }
@@ -219,10 +219,10 @@ int Zbft::LeaderPrecommitOk(
         uint32_t index,
         const libff::alt_bn128_G1& backup_sign,
         const std::string& id) {
-    ZJC_DEBUG("leader precommit hash: %s, index: %d, gid: %s",
-        common::Encode::HexEncode(tx_prepare.prepare_final_hash()).c_str(),
-        index,
-        common::Encode::HexEncode(gid_).c_str());
+//     ZJC_DEBUG("leader precommit hash: %s, index: %d, gid: %s",
+//         common::Encode::HexEncode(tx_prepare.prepare_final_hash()).c_str(),
+//         index,
+//         common::Encode::HexEncode(gid_).c_str());
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     if (leader_handled_precommit_) {
 //         ZJC_DEBUG("leader_handled_precommit_: %d", leader_handled_precommit_);
@@ -671,7 +671,7 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     zjc_block.set_consistency_random(0);
     zjc_block.set_height(pool_height + 1);
     assert(zjc_block.height() > 0);
-    ZJC_DEBUG("add new block: %lu", zjc_block.height());
+//     ZJC_DEBUG("add new block: %lu", zjc_block.height());
     zjc_block.set_timestamp(common::TimeUtils::TimestampMs());
     zjc_block.set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
     zjc_block.set_electblock_height(elect_height_);
