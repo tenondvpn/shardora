@@ -324,6 +324,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
 
     if (!recreate) {
         to_txs_msg_ = msg_ptr;
+        ZJC_DEBUG("now handle to tx messages.");
     }
 
     bool all_valid = true;
