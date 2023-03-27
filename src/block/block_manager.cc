@@ -53,11 +53,10 @@ int BlockManager::Init(
 }
 
 void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
-    pools_mgr_->CheckSync(msg_ptr->thread_idx);
-    if (leader_to_txs_msg_ != nullptr) {
+    if (to_txs_msg_ != nullptr) {
         auto now_tm = common::TimeUtils::TimestampUs();
         if (now_tm > prev_to_txs_tm_us_ + 1000000) {
-            auto msg_ptr = leader_to_txs_msg_;
+            auto msg_ptr = to_txs_msg_;
             HandleToTxsMessage(msg_ptr, true);
             prev_to_txs_tm_us_ = now_tm;
         }
@@ -324,52 +323,34 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     }
 
     if (!recreate) {
-        leader_to_txs_msg_ = msg_ptr;
+        to_txs_msg_ = msg_ptr;
     }
 
     bool all_valid = true;
     for (int32_t i = 0; i < msg_ptr->header.block_proto().to_txs_size(); ++i) {
         auto& heights = msg_ptr->header.block_proto().to_txs(i);
-        if (!recreate) {
-            to_txs_[heights.sharding_id()] = nullptr;
-        } else {
-            if (to_txs_[heights.sharding_id()] != nullptr) {
-                continue;
-            }
-        }
-
-        for (int32_t l_pool_idx = 0; l_pool_idx < heights.heights_size(); ++l_pool_idx) {
-            pools_mgr_->UpdateToSyncHeight(
-                l_pool_idx,
-                msg_ptr->thread_idx,
-                heights.heights(l_pool_idx));
-        }
-
-        pools::protobuf::ToTxHeights to_heights;
-        if (to_txs_pool_->BackupCreateToTx(
-                heights.sharding_id(),
-                heights,
-                &to_heights) != pools::kPoolsSuccess ||
-                to_heights.tos_hash().empty() ||
-                to_heights.tos_hash() != heights.tos_hash()) {
-            all_valid = false;
+        if (to_txs_[heights.sharding_id()] != nullptr) {
             continue;
         }
 
-        auto tmp_to_txs = to_txs_[heights.sharding_id()];
-        if (tmp_to_txs != nullptr && tmp_to_txs->to_txs_hash == to_heights.tos_hash()) {
+        std::string tos_hash;
+        if (to_txs_pool_->CreateToTxWithHeights(
+                heights.sharding_id(),
+                heights,
+                &tos_hash) != pools::kPoolsSuccess) {
+            all_valid = false;
             continue;
         }
 
         auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
         auto* tx = new_msg_ptr->header.mutable_tx_proto();
         tx->set_key(protos::kNormalTos);
-        tx->set_value(to_heights.tos_hash());
+        tx->set_value(tos_hash);
         tx->set_pubkey("");
         tx->set_to(common::kNormalToAddress);
         tx->set_step(pools::protobuf::kNormalTo);
         auto gid = common::Hash::keccak256(
-            to_heights.tos_hash() + std::to_string(heights.sharding_id()));
+            tos_hash + std::to_string(heights.sharding_id()));
         tx->set_gas_limit(0);
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
@@ -377,14 +358,13 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         auto to_txs_ptr = std::make_shared<ToTxsItem>();
         new_msg_ptr->address_info = account_mgr_->single_to_address_info();
         to_txs_ptr->tx_ptr = create_to_tx_cb_(new_msg_ptr);
-        to_txs_ptr->to_txs_hash = to_heights.tos_hash();
-        to_txs_ptr->tx_count = to_heights.tx_count();
+        to_txs_ptr->to_txs_hash = tos_hash;
         to_txs_[heights.sharding_id()] = to_txs_ptr;
-        ZJC_DEBUG("follower success add txs");
+        ZJC_DEBUG("success add txs: %s", common::Encode::HexEncode(tos_hash).c_str());
     }
 
     if (all_valid) {
-        leader_to_txs_msg_ = nullptr;
+        to_txs_msg_ = nullptr;
     }
 }
 
@@ -462,40 +442,10 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         }
 
         pools::protobuf::ToTxHeights& to_heights = *block_msg.add_to_txs();
-        if (to_txs_pool_->LeaderCreateToTx(i, to_heights) != pools::kPoolsSuccess) {
-            block_msg.mutable_to_txs()->RemoveLast();
-            continue;
+        to_txs_pool_->LeaderCreateToHeights(i, to_heights);
+        if (to_heights.heights_size() <= 0) {
+            to_heights.RemoveLast();
         }
-
-        if (to_heights.tos_hash().empty()) {
-            block_msg.mutable_to_txs()->RemoveLast();
-            continue;
-        }
-
-        if (tmp_to_txs != nullptr && tmp_to_txs->to_txs_hash == to_heights.tos_hash()) {
-            block_msg.mutable_to_txs()->RemoveLast();
-            continue;
-        }
-
-        auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-        auto* tx = new_msg_ptr->header.mutable_tx_proto();
-        tx->set_key(protos::kNormalTos);
-        tx->set_value(to_heights.tos_hash());
-        tx->set_pubkey("");
-        tx->set_to(common::kNormalToAddress);
-        tx->set_step(pools::protobuf::kNormalTo);
-        auto gid = common::Hash::keccak256(to_heights.tos_hash() + std::to_string(i));
-        tx->set_gas_limit(0);
-        tx->set_amount(0);
-        tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_gid(gid);
-        auto to_txs_ptr = std::make_shared<ToTxsItem>();
-        new_msg_ptr->address_info = account_mgr_->single_to_address_info();
-        to_txs_ptr->tx_ptr = create_to_tx_cb_(new_msg_ptr);
-        to_txs_ptr->to_txs_hash = to_heights.tos_hash();
-        to_txs_ptr->tx_count = to_heights.tx_count();
-        to_txs_ptr->tx_ptr->time_valid += pools::kBftStartDeltaTime;
-        to_txs_[i] = to_txs_ptr;
     }
 
     if (block_msg.to_txs_size() <= 0) {
@@ -505,13 +455,9 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     // send to other nodes
     auto& broadcast = *msg.mutable_broadcast();
     broadcast.set_hop_limit(10);
-    leader_to_txs_msg_ = nullptr;
     msg_ptr->thread_idx = thread_idx;
-#ifdef ZJC_UNITTEST
-    leader_to_txs_msg_ = msg_ptr;
-#else
+    to_txs_msg_ = msg_ptr;
     network::Route::Instance()->Send(msg_ptr);
-#endif
 }
 
 }  // namespace block

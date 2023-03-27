@@ -17,11 +17,11 @@ public:
     ToTxsPools(std::shared_ptr<db::Db>& db, const std::string& local_id);
     ~ToTxsPools();
     void NewBlock(const block::protobuf::Block& block, db::DbWriteBatch& db_batch);
-    int BackupCreateToTx(
+    int CreateToTxWithHeights(
         uint32_t sharding_id,
         const pools::protobuf::ToTxHeights& leader_to_heights,
-        pools::protobuf::ToTxHeights* tx);
-    int LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeights& to_heights);
+        std::string* to_hash);
+    int LeaderCreateToHeights(uint32_t sharding_id, pools::protobuf::ToTxHeights& to_heights);
 
 private:
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(

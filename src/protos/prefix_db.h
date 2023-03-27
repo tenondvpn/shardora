@@ -457,9 +457,9 @@ public:
         return true;
     }
 
-    void SaveBlock(const block::protobuf::Block& block, db::DbWriteBatch& batch) {
+    bool SaveBlock(const block::protobuf::Block& block, db::DbWriteBatch& batch) {
         if (BlockExists(block.hash())) {
-            return;
+            return false;
         }
 
         std::string key;
@@ -473,6 +473,7 @@ public:
             block.hash(),
             batch);
         batch.Put(key, block.SerializeAsString());
+        return true;
     }
 
     bool GetBlock(const std::string& block_hash, block::protobuf::Block* block) {

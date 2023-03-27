@@ -49,33 +49,35 @@ void KeyValueSync::AddSyncHeight(
 }
 
 void KeyValueSync::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+    ZJC_DEBUG("key value timer calling!");
     PopItems();
     auto now_tm_us = common::TimeUtils::TimestampUs();
-    if (prev_sync_tm_us_ + kSyncPeriodUs < now_tm_us) {
-        prev_sync_tm_us_ = now_tm_us;
-        CheckSyncItem(msg_ptr->thread_idx);
-    }
-
+    CheckSyncItem(msg_ptr->thread_idx);
     if (prev_sync_tmout_us_ + kSyncTimeoutPeriodUs < now_tm_us) {
         prev_sync_tmout_us_ = now_tm_us;
         CheckSyncTimeout();
     }
+    ZJC_DEBUG("key value timer called!");
 }
 
 void KeyValueSync::PopItems() {
     uint32_t pop_count = 0;
-    for (uint8_t thread_idx = 0; thread_idx < common::kMaxRotationCount; ++thread_idx) {
+    for (uint8_t thread_idx = 0; thread_idx < common::kMaxThreadCount; ++thread_idx) {
         while (item_queues_[thread_idx].size() > 0 && pop_count++ < 64) {
             SyncItemPtr item = nullptr;
             item_queues_[thread_idx].pop(&item);
             auto iter = added_key_set_.find(item->key);
             if (iter != added_key_set_.end()) {
+                ZJC_DEBUG("key exists add new sync item key: %s, priority: %u",
+                    item->key.c_str(), item->priority);
                 continue;
             }
 
             added_key_set_.insert(item->key);
             auto tmp_iter = synced_map_.find(item->key);
             if (tmp_iter != synced_map_.end()) {
+                ZJC_DEBUG("key synced add new sync item key: %s, priority: %u",
+                    item->key.c_str(), item->priority);
                 continue;
             }
 
@@ -150,7 +152,6 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
             }
 
             ++(item->sync_times);
-           
             synced_map_.insert(std::make_pair(item->key, item));
             item->sync_tm_us = now_tm;
             if (synced_map_.size() > kSyncMaxKeyCount) {
@@ -315,7 +316,6 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             key = std::to_string(iter->network_id()) + "_" +
                 std::to_string(iter->pool_idx()) + "_" +
                 std::to_string(iter->height());
-            ZJC_DEBUG("block response coming: %s", key.c_str());
         }
 
         auto tmp_iter = synced_map_.find(key);
@@ -323,6 +323,9 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             added_key_set_.erase(tmp_iter->second->key);
             synced_map_.erase(tmp_iter);
         }
+
+        ZJC_DEBUG("block response coming: %s, sync map size: %u",
+            key.c_str(), synced_map_.size());
     }
 }
 
@@ -336,6 +339,7 @@ void KeyValueSync::CheckSyncTimeout() {
         }
 
         if (iter->second->sync_tm_us + 500000 >= now_tm) {
+            ++iter;
             continue;
         }
 

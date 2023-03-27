@@ -11,8 +11,18 @@ namespace pools {
 
 ToTxsPools::ToTxsPools(
         std::shared_ptr<db::Db>& db,
-        const std::string& local_id) : db_(db), local_id_(local_id) {
+        const std::string& local_id,
+        uint32_t max_sharding_id) : db_(db), local_id_(local_id) {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    PoolMap pool_map;
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        pool_map[i] = HeightMap();
+    }
+
+    for (uint32_t i = network::kRootCongressNetworkId; i <= max_sharding_id; ++i) {
+        network_txs_pools_[i] = pool_map;
+    }
+
     LoadLatestHeights();
     address_map_.Init(10240, 16);
 }
@@ -23,6 +33,21 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
     if (block.network_id() != common::GlobalInfo::Instance()->network_id()) {
         ZJC_DEBUG("network invalid!");
         return;
+    }
+
+    for (auto net_iter = network_txs_pools_.begin(); net_iter != network_txs_pools_.end(); ++net_iter) {
+        auto handled_iter = handled_map_.find(net_iter->first);
+        if (handled_iter != handled_map_.end()) {
+            if (handled_iter->second->heights(block.pool_index()) >= block.height()) {
+                continue;
+            }
+        }
+
+        TxMap tx_map;
+        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            // just clear and reload txs, height must unique
+            net_iter->second[block.height()] = tx_map;
+        }
     }
 
     const auto& tx_list = block.tx_list();
@@ -211,88 +236,28 @@ std::shared_ptr<address::protobuf::AddressInfo> ToTxsPools::GetAddressInfo(
     return address_info;
 }
 
-int ToTxsPools::LeaderCreateToTx(uint32_t sharding_id, pools::protobuf::ToTxHeights& to_heights) {
-    pools::protobuf::ToTxMessage to_tx;
+int ToTxsPools::LeaderCreateToHeights(
+        uint32_t sharding_id,
+        pools::protobuf::ToTxHeights& to_heights) {
     auto net_iter = network_txs_pools_.find(sharding_id);
     if (net_iter == network_txs_pools_.end()) {
         return kPoolsError;
     }
 
-//     ZJC_DEBUG("pool size: %lu, sharding: %u", net_iter->second.size(), sharding_id);
-    auto handled_iter = handled_map_.find(sharding_id);
     to_heights.set_sharding_id(sharding_id);
-    std::map<std::string, uint64_t> acc_amount_map;
-    std::string add_heights;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto pool_iter = net_iter->second.find(i);
-        if (pool_iter == net_iter->second.end() ||
-                pool_iter->second.empty() ||
-                acc_amount_map.size() >= kMaxToTxsCount) {
-            if (handled_iter == handled_map_.end()) {
-                to_heights.add_heights(0);
-            } else {
-                to_heights.add_heights(handled_iter->second->heights(i));
-            }
-
-            add_heights += std::to_string(to_heights.heights(to_heights.heights_size() - 1)) + " ";
-            continue;
-        }
-
         auto r_height_iter = pool_iter->second.rbegin();
         to_heights.add_heights(r_height_iter->first);
-        add_heights += std::to_string(r_height_iter->first) + " ";
-        for (auto hiter = pool_iter->second.begin();
-                hiter != pool_iter->second.end(); ++hiter) {
-            for (auto to_iter = hiter->second.begin();
-                    to_iter != hiter->second.end(); ++to_iter) {
-                auto amount_iter = acc_amount_map.find(to_iter->first);
-                if (amount_iter == acc_amount_map.end()) {
-                    acc_amount_map[to_iter->first] = to_iter->second;
-                } else {
-                    amount_iter->second += to_iter->second;
-                }
-            }
-        }
     }
 
-    if (acc_amount_map.empty()) {
-        return kPoolsError;
-    }
-
-    std::string str_for_hash;
-    str_for_hash.reserve(common::kImmutablePoolSize * 8 + acc_amount_map.size() * 48);
-    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
-        uint64_t height = to_heights.heights(i);
-        str_for_hash.append((char*)&height, sizeof(height));
-    }
-
-    for (auto iter = acc_amount_map.begin(); iter != acc_amount_map.end(); ++iter) {
-        str_for_hash.append(iter->first);
-        str_for_hash.append((char*)&iter->second, sizeof(iter->second));
-        auto to_item = to_tx.add_tos();
-        to_item->set_des(iter->first);
-        to_item->set_amount(iter->second);
-        ZJC_DEBUG("set to %s amount %lu", common::Encode::HexEncode(iter->first).c_str(), iter->second);
-    }
-
-    to_heights.set_tx_count(to_tx.tos_size());
-    auto tos_hash = common::Hash::keccak256(str_for_hash);
-    to_tx.set_heights_hash(tos_hash);
-    ZJC_DEBUG("sharding: %u add to txs heights: %s, hash: %s, str for hash: %s",
-        sharding_id, add_heights.c_str(),
-        common::Encode::HexEncode(tos_hash).c_str(),
-        common::Encode::HexEncode(str_for_hash).c_str());
-    *to_tx.mutable_to_heights() = to_heights;
-    auto val = to_tx.SerializeAsString();
-    to_heights.set_tos_hash(tos_hash);
-    prefix_db_->SaveTemporaryKv(tos_hash, val);
     return kPoolsSuccess;
 }
 
-int ToTxsPools::BackupCreateToTx(
+int ToTxsPools::CreateToTxWithHeights(
         uint32_t sharding_id,
         const pools::protobuf::ToTxHeights& leader_to_heights,
-        pools::protobuf::ToTxHeights* heights) {
+        std::string* to_hash) {
     pools::protobuf::ToTxMessage to_tx;
     auto net_iter = network_txs_pools_.find(sharding_id);
     if (net_iter == network_txs_pools_.end()) {
@@ -304,31 +269,28 @@ int ToTxsPools::BackupCreateToTx(
     }
 
     auto handled_iter = handled_map_.find(sharding_id);
-    pools::protobuf::ToTxHeights& to_heights = *heights;
-    to_heights.set_sharding_id(sharding_id);
     std::map<std::string, uint64_t> acc_amount_map;
-    std::string add_heights;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto pool_iter = net_iter->second.find(i);
         if (pool_iter == net_iter->second.end()) {
-            if (handled_iter == handled_map_.end()) {
-                to_heights.add_heights(0);
-            } else {
-                to_heights.add_heights(handled_iter->second->heights(i));
-            }
-
-            add_heights += std::to_string(to_heights.heights(to_heights.heights_size() - 1)) + " ";
-            continue;
+            return kPoolsError;
         }
 
-        to_heights.add_heights(leader_to_heights.heights(i));
-        add_heights += std::to_string(leader_to_heights.heights(i)) + " ";
-        for (auto hiter = pool_iter->second.begin();
-                hiter != pool_iter->second.end(); ++hiter) {
-            if (hiter->first > leader_to_heights.heights(i)) {
-                break;
-            }
+        uint64_t min_height = 1;
+        if (handled_iter == handled_map_.end()) {
+            min_height = handled_iter->second->heights(i);
+        }
 
+        uint64_t max_height = leader_to_heights.heights(i);
+        for (auto i = min_height; i < max_height; ++i) {
+            auto hiter = pool_iter->second.find(i);
+            if (hiter == pool_iter->second.end()) {
+                return kPoolsError;
+            }
+        }
+
+        for (auto i = min_height; i < max_height; ++i) {
+            auto hiter = pool_iter->second.find(i);
             for (auto to_iter = hiter->second.begin();
                     to_iter != hiter->second.end(); ++to_iter) {
                 auto amount_iter = acc_amount_map.find(to_iter->first);
@@ -348,7 +310,6 @@ int ToTxsPools::BackupCreateToTx(
     std::string str_for_hash;
     str_for_hash.reserve(common::kImmutablePoolSize * 8 + acc_amount_map.size() * 48);
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
-        uint64_t height = to_heights.heights(i);
         str_for_hash.append((char*)&height, sizeof(height));
     }
 
@@ -361,18 +322,15 @@ int ToTxsPools::BackupCreateToTx(
         ZJC_DEBUG("set to %s amount %lu", common::Encode::HexEncode(iter->first).c_str(), iter->second);
     }
 
-    to_heights.set_tx_count(to_tx.tos_size());
-    auto tos_hash = common::Hash::keccak256(str_for_hash);
+    *to_hash = common::Hash::keccak256(str_for_hash);
     ZJC_DEBUG("backup sharding: %u add to txs heights: %s, hash: %s, str for hash: %s",
-        sharding_id, add_heights.c_str(),
-        common::Encode::HexEncode(tos_hash).c_str(),
+        sharding_id,
+        common::Encode::HexEncode(to_hash).c_str(),
         common::Encode::HexEncode(str_for_hash).c_str());
-
-    to_tx.set_heights_hash(tos_hash);
-    *to_tx.mutable_to_heights() = to_heights;
+    to_tx.set_heights_hash(*to_hash);
+    *to_tx.mutable_to_heights() = leader_to_heights;
     auto val = to_tx.SerializeAsString();
-    to_heights.set_tos_hash(tos_hash);
-    prefix_db_->SaveTemporaryKv(tos_hash, val);
+    prefix_db_->SaveTemporaryKv(*to_hash, val);
     return kPoolsSuccess;
 }
 

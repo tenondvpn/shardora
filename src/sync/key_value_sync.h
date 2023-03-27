@@ -80,7 +80,7 @@ private:
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
 
     static const uint64_t kSyncPeriodUs = 300000lu;
-    static const uint64_t kSyncTimeoutPeriodUs = 3000000lu;
+    static const uint64_t kSyncTimeoutPeriodUs = 300000lu;
 
     common::ThreadSafeQueue<SyncItemPtr> item_queues_[common::kMaxThreadCount];
     std::unordered_map<std::string, SyncItemPtr> synced_map_;
