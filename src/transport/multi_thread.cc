@@ -199,7 +199,7 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
 
     db::DbWriteBatch db_batch;
     SaveKeyValue(msg_ptr->header, db_batch);
-    if (!db_->Put(db_batch)) {
+    if (!db_->Put(db_batch).ok()) {
         ZJC_FATAL("save db failed!");
         return;
     }
