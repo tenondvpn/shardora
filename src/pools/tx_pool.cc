@@ -122,9 +122,9 @@ void TxPool::GetTx(
 void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
         iter->second->in_consensus = false;
-        if (iter->second->step == pools::protobuf::kNormalTo) {
-            ZJC_DEBUG("pools::protobuf::kNormalTo recover and can get.");
-        }
+//         if (iter->second->step == pools::protobuf::kNormalTo) {
+//             ZJC_DEBUG("pools::protobuf::kNormalTo recover and can get.");
+//         }
 
         auto miter = added_tx_map_.find(iter->first);
         if (miter != added_tx_map_.end()) {
@@ -153,9 +153,9 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
 
         gid_map_.erase(giter);
     }
-
-    ZJC_DEBUG("0 tx over %u, map: %u, prio_map: %u, gid map: %u",
-        tx_list.size(), added_tx_map_.size(), prio_map_.size(), gid_map_.size());
+// 
+//     ZJC_DEBUG("0 tx over %u, map: %u, prio_map: %u, gid map: %u",
+//         tx_list.size(), added_tx_map_.size(), prio_map_.size(), gid_map_.size());
 }
 
 void TxPool::TxOver(std::map<std::string, TxItemPtr>& txs) {
@@ -177,8 +177,8 @@ void TxPool::TxOver(std::map<std::string, TxItemPtr>& txs) {
         }
     }
 
-    ZJC_DEBUG("tx over %u, map: %u, prio_map: %u, gid map: %u",
-        txs.size(), added_tx_map_.size(), prio_map_.size(), gid_map_.size());
+//     ZJC_DEBUG("tx over %u, map: %u, prio_map: %u, gid map: %u",
+//         txs.size(), added_tx_map_.size(), prio_map_.size(), gid_map_.size());
 }
 
 }  // namespace pools

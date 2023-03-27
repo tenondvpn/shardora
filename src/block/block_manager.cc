@@ -161,7 +161,7 @@ void BlockManager::HandleNormalToTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    ZJC_DEBUG("new normal to block coming.");
+//     ZJC_DEBUG("new normal to block coming.");
     if (tx.storages_size() != 1) {
         ZJC_WARN("normal to txs storages invalid.");
         return;
@@ -263,7 +263,7 @@ void BlockManager::HandleNormalToTx(
         tx->set_gid(gid);
         msg_ptr->address_info = account_mgr_->single_local_to_address_info();
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_DEBUG("success add local to txs.");
+//         ZJC_DEBUG("success add local to txs.");
     }
 }
 
@@ -325,14 +325,14 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
 
     if (!recreate) {
         to_txs_msg_ = msg_ptr;
-        ZJC_DEBUG("now handle to tx messages.");
+//         ZJC_DEBUG("now handle to tx messages.");
     }
 
     bool all_valid = true;
     for (int32_t i = 0; i < msg_ptr->header.block_proto().to_txs_size(); ++i) {
         auto& heights = msg_ptr->header.block_proto().to_txs(i);
         if (to_txs_[heights.sharding_id()] != nullptr) {
-            ZJC_DEBUG("to txs sharding not consensus yet: %u", heights.sharding_id());
+//             ZJC_DEBUG("to txs sharding not consensus yet: %u", heights.sharding_id());
             continue;
         }
 
@@ -342,7 +342,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
                 heights,
                 &tos_hash) != pools::kPoolsSuccess) {
             all_valid = false;
-            ZJC_DEBUG("error to txs sharding create to txs: %u", heights.sharding_id());
+//             ZJC_DEBUG("error to txs sharding create to txs: %u", heights.sharding_id());
             continue;
         }
 
@@ -365,7 +365,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         to_txs_ptr->tx_ptr->time_valid += 3000000lu;
         to_txs_ptr->to_txs_hash = tos_hash;
         to_txs_[heights.sharding_id()] = to_txs_ptr;
-        ZJC_DEBUG("success add txs: %s", common::Encode::HexEncode(tos_hash).c_str());
+//         ZJC_DEBUG("success add txs: %s", common::Encode::HexEncode(tos_hash).c_str());
     }
 
     if (all_valid) {

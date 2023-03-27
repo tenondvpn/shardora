@@ -46,7 +46,7 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
         TxMap tx_map;
         // just clear and reload txs, height must unique
         net_iter->second[block.pool_index()][block.height()] = tx_map;
-        ZJC_DEBUG("sharding %u, pool: %u, new height: %lu", block.network_id(), block.pool_index(), block.height());
+//         ZJC_DEBUG("sharding %u, pool: %u, new height: %lu", block.network_id(), block.pool_index(), block.height());
     }
 
     const auto& tx_list = block.tx_list();
@@ -123,16 +123,16 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
         }
 
         height_iter->second[tx_list[i].to()] += tx_list[i].amount();
-        if (i == tx_list.size() - 1) {
-            ZJC_DEBUG("new from add new to sharding: %u, id: %s, amount: %lu, pool: %u, height: %lu, tx size: %u, block hash: %s",
-                sharding_id,
-                common::Encode::HexEncode(tx_list[i].to()).c_str(),
-                height_iter->second[tx_list[i].to()],
-                block.pool_index(),
-                block.height(),
-                tx_list.size(),
-                common::Encode::HexEncode(block.hash()).c_str());
-        }
+//         if (i == tx_list.size() - 1) {
+//             ZJC_DEBUG("new from add new to sharding: %u, id: %s, amount: %lu, pool: %u, height: %lu, tx size: %u, block hash: %s",
+//                 sharding_id,
+//                 common::Encode::HexEncode(tx_list[i].to()).c_str(),
+//                 height_iter->second[tx_list[i].to()],
+//                 block.pool_index(),
+//                 block.height(),
+//                 tx_list.size(),
+//                 common::Encode::HexEncode(block.hash()).c_str());
+//         }
     }
 }
 
@@ -175,7 +175,7 @@ void ToTxsPools::HandleNormalToTx(
         return;
     }
 
-    ZJC_DEBUG("new to tx coming: %lu, sharding id: %u", block_height, heights.sharding_id());
+//     ZJC_DEBUG("new to tx coming: %lu, sharding id: %u", block_height, heights.sharding_id());
     auto handled_iter = handled_map_.find(heights.sharding_id());
     if (handled_iter != handled_map_.end()) {
         if (handled_iter->second->block_height() >= block_height) {
@@ -205,7 +205,7 @@ void ToTxsPools::HandleNormalToTx(
                 break;
             }
 
-            ZJC_DEBUG("erase sharding: %u, height: %lu", heights.sharding_id(), height_iter->first);
+//             ZJC_DEBUG("erase sharding: %u, height: %lu", heights.sharding_id(), height_iter->first);
             pool_iter->second.erase(height_iter++);
         }
     }
@@ -268,7 +268,7 @@ int ToTxsPools::LeaderCreateToHeights(
         return kPoolsError;
     }
 
-    ZJC_DEBUG("sharding_id: %u, leader success create to heights: %s", sharding_id, heights.c_str());
+//     ZJC_DEBUG("sharding_id: %u, leader success create to heights: %s", sharding_id, heights.c_str());
     return kPoolsSuccess;
 }
 
@@ -306,14 +306,14 @@ int ToTxsPools::CreateToTxWithHeights(
         for (auto height = min_height; height < max_height; ++height) {
             auto hiter = pool_iter->second.find(height);
             if (hiter == pool_iter->second.end()) {
-                ZJC_DEBUG("pool %u, invalid height: %lu", pool_idx, height);
+//                 ZJC_DEBUG("pool %u, invalid height: %lu", pool_idx, height);
                 return kPoolsError;
             }
         }
 
-        if (max_height > 0) {
-            ZJC_DEBUG("sharding_id: %u, pool: %d, min_height: %lu, max_height: %lu", sharding_id, pool_idx, min_height, max_height);
-        }
+//         if (max_height > 0) {
+//             ZJC_DEBUG("sharding_id: %u, pool: %d, min_height: %lu, max_height: %lu", sharding_id, pool_idx, min_height, max_height);
+//         }
 
         for (auto height = min_height; height < max_height; ++height) {
             auto hiter = pool_iter->second.find(height);
@@ -346,14 +346,14 @@ int ToTxsPools::CreateToTxWithHeights(
         auto to_item = to_tx.add_tos();
         to_item->set_des(iter->first);
         to_item->set_amount(iter->second);
-        ZJC_DEBUG("set to %s amount %lu", common::Encode::HexEncode(iter->first).c_str(), iter->second);
+//         ZJC_DEBUG("set to %s amount %lu", common::Encode::HexEncode(iter->first).c_str(), iter->second);
     }
 
     *to_hash = common::Hash::keccak256(str_for_hash);
-    ZJC_DEBUG("backup sharding: %u to_hash: %s, str for hash: %s",
-        sharding_id,
-        common::Encode::HexEncode(*to_hash).c_str(),
-        common::Encode::HexEncode(str_for_hash).c_str());
+//     ZJC_DEBUG("backup sharding: %u to_hash: %s, str for hash: %s",
+//         sharding_id,
+//         common::Encode::HexEncode(*to_hash).c_str(),
+//         common::Encode::HexEncode(str_for_hash).c_str());
     to_tx.set_heights_hash(*to_hash);
     *to_tx.mutable_to_heights() = leader_to_heights;
     auto val = to_tx.SerializeAsString();
