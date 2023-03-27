@@ -611,6 +611,14 @@ public:
         }
     }
 
+    void SaveTemporaryKv(
+            const std::string& tmp_key,
+            const std::string& val,
+            db::DbWriteBatch& db_batch) {
+        std::string key = kTemporaryKeyPrefix + tmp_key;
+        db_batch.Put(key, val);
+    }
+
     bool GetTemporaryKv(
             const std::string& tmp_key,
             std::string* val) {

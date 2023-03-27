@@ -197,7 +197,13 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
         return;
     }
 
-    SaveKeyValue(msg_ptr->header);
+    db::DbWriteBatch db_batch;
+    SaveKeyValue(msg_ptr->header, db_batch);
+    if (!db_->Put(db_batch)) {
+        ZJC_FATAL("save db failed!");
+        return;
+    }
+
     auto& res_arr = sync_msg.sync_value_res().res();
     for (auto iter = res_arr.begin(); iter != res_arr.end(); ++iter) {
         auto block_item = std::make_shared<block::protobuf::Block>();
@@ -225,14 +231,15 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
     }
 }
 
-void MultiThreadHandler::SaveKeyValue(const transport::protobuf::Header& msg) {
+void MultiThreadHandler::SaveKeyValue(const transport::protobuf::Header& msg, db::DbWriteBatch& db_batch) {
     for (int32_t i = 0; i < msg.sync().items_size(); ++i) {
         ZJC_DEBUG("save storage %s, %s",
             common::Encode::HexEncode(msg.sync().items(i).key()).c_str(),
             common::Encode::HexEncode(msg.sync().items(i).value()).c_str());
         prefix_db_->SaveTemporaryKv(
             msg.sync().items(i).key(),
-            msg.sync().items(i).value());
+            msg.sync().items(i).value(),
+            db_batch);
     }
 }
 

@@ -76,7 +76,7 @@ private:
     uint8_t GetThreadIndex(MessagePtr& msg_ptr);
     uint8_t GetTxThreadIndex(MessagePtr& msg_ptr);
     void HandleSyncBlockResponse(MessagePtr& msg_ptr);
-    void SaveKeyValue(const transport::protobuf::Header& msg);
+    void SaveKeyValue(const transport::protobuf::Header& msg, db::DbWriteBatch& db_batch);
 
     static const int kQueueObjectCount = 1024 * 1024;
 
