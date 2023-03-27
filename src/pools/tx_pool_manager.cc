@@ -83,14 +83,14 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             return;
         }
 
-        msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-        if (security_->Verify(
-                msg_ptr->msg_hash,
-                tx_msg.pubkey(),
-                header.sign()) != security::kSecuritySuccess) {
-            ZJC_ERROR("verify signature failed!");
-            return;
-        }
+//         msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
+//         if (security_->Verify(
+//                 msg_ptr->msg_hash,
+//                 tx_msg.pubkey(),
+//                 header.sign()) != security::kSecuritySuccess) {
+//             ZJC_ERROR("verify signature failed!");
+//             return;
+//         }
 
         msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
         ++prev_count_[msg_ptr->address_info->pool_index()];
@@ -131,6 +131,15 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
     while (msg_queues_[pool_index].size() > 0 && ++count < kPopMessageCountEachTime) {
         transport::MessagePtr msg_ptr = nullptr;
         msg_queues_[pool_index].pop(&msg_ptr);
+        msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
+        if (security_->Verify(
+                msg_ptr->msg_hash,
+                tx_msg.pubkey(),
+                header.sign()) != security::kSecuritySuccess) {
+            ZJC_ERROR("verify signature failed!");
+            continue;
+        }
+
         DispatchTx(pool_index, msg_ptr);
     }
 }
