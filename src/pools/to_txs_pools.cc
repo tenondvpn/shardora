@@ -46,7 +46,7 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
         TxMap tx_map;
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             // just clear and reload txs, height must unique
-            net_iter->second[block.height()] = tx_map;
+            net_iter->second[i][block.height()] = tx_map;
         }
     }
 
@@ -310,7 +310,12 @@ int ToTxsPools::CreateToTxWithHeights(
     std::string str_for_hash;
     str_for_hash.reserve(common::kImmutablePoolSize * 8 + acc_amount_map.size() * 48);
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
-        str_for_hash.append((char*)&height, sizeof(height));
+        auto pool_iter = net_iter->second.find(i);
+        assert(pool_iter != net_iter->second.end());
+        for (auto hiter = pool_iter->second.begin(); hiter != pool_iter->second.end(); ++hiter) {
+            auto& height = hiter->first;
+            str_for_hash.append((char*)&height, sizeof(height));
+        }
     }
 
     for (auto iter = acc_amount_map.begin(); iter != acc_amount_map.end(); ++iter) {
@@ -325,7 +330,7 @@ int ToTxsPools::CreateToTxWithHeights(
     *to_hash = common::Hash::keccak256(str_for_hash);
     ZJC_DEBUG("backup sharding: %u add to txs heights: %s, hash: %s, str for hash: %s",
         sharding_id,
-        common::Encode::HexEncode(to_hash).c_str(),
+        common::Encode::HexEncode(*to_hash).c_str(),
         common::Encode::HexEncode(str_for_hash).c_str());
     to_tx.set_heights_hash(*to_hash);
     *to_tx.mutable_to_heights() = leader_to_heights;
