@@ -299,6 +299,7 @@ int ToTxsPools::CreateToTxWithHeights(
             }
         }
 
+        ZJC_DEBUG("pool: %d, min_height: %lu, max_height: %lu", i, min_height, max_height);
         for (auto i = min_height; i < max_height; ++i) {
             auto hiter = pool_iter->second.find(i);
             for (auto to_iter = hiter->second.begin();
