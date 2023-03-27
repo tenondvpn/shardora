@@ -195,6 +195,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(uint32_t pool_index, b
         txs_item->tx_type = pools::protobuf::kNormalTo;
         FilterInvalidTx(pool_index, txs_item->txs);
         if (txs_item->txs.empty()) {
+            ZJC_DEBUG("0 filter failed get to tx %u, %d", pool_index, leader);
             return nullptr;
         }
 
