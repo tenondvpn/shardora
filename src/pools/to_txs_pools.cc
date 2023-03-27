@@ -346,7 +346,7 @@ int ToTxsPools::CreateToTxWithHeights(
         auto to_item = to_tx.add_tos();
         to_item->set_des(iter->first);
         to_item->set_amount(iter->second);
-//         ZJC_DEBUG("set to %s amount %lu", common::Encode::HexEncode(iter->first).c_str(), iter->second);
+        ZJC_DEBUG("set to %s amount %lu", common::Encode::HexEncode(iter->first).c_str(), iter->second);
     }
 
     *to_hash = common::Hash::keccak256(str_for_hash);
