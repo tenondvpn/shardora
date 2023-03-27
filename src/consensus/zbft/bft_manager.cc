@@ -889,7 +889,7 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
     } else if (bft_msg.tx_bft().tx_hash_list_size() > 0) {
         // get txs direct
         if (bft_msg.tx_bft().tx_type() == pools::protobuf::kNormalTo) {
-            txs_ptr = txs_pools_->GetToTxs(bft_msg.pool_index());
+            txs_ptr = txs_pools_->GetToTxs(bft_msg.pool_index(), false);
         } else if (bft_msg.tx_bft().tx_type() == pools::protobuf::kConsensusRootTimeBlock) {
             txs_ptr = txs_pools_->GetTimeblockTx(bft_msg.pool_index());
         } else {
