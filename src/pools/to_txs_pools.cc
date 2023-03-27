@@ -123,13 +123,15 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
         }
 
         height_iter->second[tx_list[i].to()] += tx_list[i].amount();
-        ZJC_DEBUG("new from add new to sharding: %u, id: %s, amount: %lu, pool: %u, height: %lu, pool size: %u",
-            sharding_id,
-            common::Encode::HexEncode(tx_list[i].to()).c_str(),
-            height_iter->second[tx_list[i].to()],
-            block.pool_index(),
-            block.height(),
-            net_iter->second.size());
+        if (i == tx_list.size() - 1) {
+            ZJC_DEBUG("new from add new to sharding: %u, id: %s, amount: %lu, pool: %u, height: %lu, pool size: %u",
+                sharding_id,
+                common::Encode::HexEncode(tx_list[i].to()).c_str(),
+                height_iter->second[tx_list[i].to()],
+                block.pool_index(),
+                block.height(),
+                net_iter->second.size());
+        }
     }
 }
 
