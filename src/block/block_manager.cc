@@ -161,6 +161,7 @@ void BlockManager::HandleNormalToTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
+    ZJC_DEBUG("new normal to block coming.");
     if (tx.storages_size() != 1) {
         ZJC_WARN("normal to txs storages invalid.");
         return;
@@ -331,6 +332,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     for (int32_t i = 0; i < msg_ptr->header.block_proto().to_txs_size(); ++i) {
         auto& heights = msg_ptr->header.block_proto().to_txs(i);
         if (to_txs_[heights.sharding_id()] != nullptr) {
+            ZJC_DEBUG("to txs sharding not consensus yet: %u", heights.sharding_id());
             continue;
         }
 
@@ -340,6 +342,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
                 heights,
                 &tos_hash) != pools::kPoolsSuccess) {
             all_valid = false;
+            ZJC_DEBUG("error to txs sharding create to txs: %u", heights.sharding_id());
             continue;
         }
 
