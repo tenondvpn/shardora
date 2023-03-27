@@ -30,8 +30,8 @@ void KeyValueSync::AddSync(
     assert(priority <= kSyncHighest);
     auto item = std::make_shared<SyncItem>(network_id, key, priority);
     item_queues_[thread_idx].push(item);
-    ZJC_DEBUG("key value add new sync item key: %s, priority: %u",
-        item->key.c_str(), item->priority);
+//     ZJC_DEBUG("key value add new sync item key: %s, priority: %u",
+//         item->key.c_str(), item->priority);
 
 }
 
@@ -44,8 +44,8 @@ void KeyValueSync::AddSyncHeight(
     assert(priority <= kSyncHighest);
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority);
     item_queues_[thread_idx].push(item);
-    ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
-        item->key.c_str(), item->priority);
+//     ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
+//         item->key.c_str(), item->priority);
 }
 
 void KeyValueSync::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
@@ -80,8 +80,8 @@ void KeyValueSync::PopItems() {
             }
 
             prio_sync_queue_[item->priority].push(item);
-            ZJC_DEBUG("add new sync item key: %s, priority: %u",
-                item->key.c_str(), item->priority);
+//             ZJC_DEBUG("add new sync item key: %s, priority: %u",
+//                 item->key.c_str(), item->priority);
         }
     }
 }
@@ -230,16 +230,16 @@ uint64_t KeyValueSync::SendSyncRequest(
     *msg.mutable_sync_proto() = sync_msg;
     transport::TcpTransport::Instance()->Send(
         thread_idx, node->public_ip, node->public_port, msg);
-    ZJC_DEBUG("sync new from %s:%d", node->public_ip.c_str(), node->public_port);
+//     ZJC_DEBUG("sync new from %s:%d", node->public_ip.c_str(), node->public_port);
     return node->id_hash;
 }
 
 void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kSyncMessage);
-    ZJC_DEBUG("key value sync message coming req: %d, res: %d",
-        header.sync_proto().has_sync_value_req(),
-        header.sync_proto().has_sync_value_res());
+//     ZJC_DEBUG("key value sync message coming req: %d, res: %d",
+//         header.sync_proto().has_sync_value_req(),
+//         header.sync_proto().has_sync_value_res());
     if (header.sync_proto().has_sync_value_req()) {
         ProcessSyncValueRequest(msg_ptr);
     }
@@ -306,7 +306,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kSyncMessage);
     transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
-    ZJC_DEBUG("sync response ok.");
+//     ZJC_DEBUG("sync response ok.");
 }
 
 bool KeyValueSync::AddSyncKeyValue(transport::protobuf::Header* msg, const block::protobuf::Block& block) {
@@ -315,7 +315,7 @@ bool KeyValueSync::AddSyncKeyValue(transport::protobuf::Header* msg, const block
         auto& tx = block.tx_list(i);
         for (int32_t j = 0; j < block.tx_list(i).storages_size(); ++j) {
             auto& storage = block.tx_list(i).storages(j);
-            ZJC_DEBUG("add storage %s, %s, %d", storage.key().c_str(), common::Encode::HexEncode(storage.val_hash()).c_str(), storage.val_size());
+//             ZJC_DEBUG("add storage %s, %s, %d", storage.key().c_str(), common::Encode::HexEncode(storage.val_hash()).c_str(), storage.val_size());
             if (storage.val_size() == 0) {  // 0 just save value hash else direct value
                 std::string val;
                 if (!prefix_db_->GetTemporaryKv(storage.val_hash(), &val)) {
@@ -350,8 +350,8 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             synced_map_.erase(tmp_iter);
         }
 
-        ZJC_DEBUG("block response coming: %s, sync map size: %u",
-            key.c_str(), synced_map_.size());
+//         ZJC_DEBUG("block response coming: %s, sync map size: %u",
+//             key.c_str(), synced_map_.size());
     }
 }
 
