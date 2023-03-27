@@ -308,7 +308,7 @@ int ToTxsPools::CreateToTxWithHeights(
         }
 
         if (max_height > 0) {
-            ZJC_DEBUG("pool: %d, min_height: %lu, max_height: %lu", pool_idx, min_height, max_height);
+            ZJC_DEBUG("sharding_id: %u, pool: %d, min_height: %lu, max_height: %lu", sharding_id, pool_idx, min_height, max_height);
         }
 
         for (auto height = min_height; height < max_height; ++height) {
