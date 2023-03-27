@@ -179,6 +179,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(uint32_t pool_index, bool leader) {
     auto tx_ptr = block_mgr_->GetToTx(pool_index);
     if (tx_ptr != nullptr) {
+        ZJC_DEBUG("success get to tx %u, %d", pool_index, leader);
         if (leader) {
             auto now_tm = common::TimeUtils::TimestampUs();
             if (tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm) {
@@ -197,6 +198,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(uint32_t pool_index, b
             return nullptr;
         }
 
+        ZJC_DEBUG("1 success get to tx %u, %d", pool_index, leader);
         return txs_item;
     }
 
