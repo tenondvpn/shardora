@@ -287,7 +287,7 @@ int ToTxsPools::CreateToTxWithHeights(
         }
 
         uint64_t min_height = 1;
-        if (handled_iter == handled_map_.end()) {
+        if (handled_iter != handled_map_.end()) {
             min_height = handled_iter->second->heights(i);
         }
 
