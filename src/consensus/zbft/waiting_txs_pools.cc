@@ -183,6 +183,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(uint32_t pool_index, b
         if (leader) {
             auto now_tm = common::TimeUtils::TimestampUs();
             if (tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm) {
+                tx_ptr->in_consensus = false;
                 return nullptr;
             }
 

@@ -372,14 +372,14 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     }
 }
 
-pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index) {
+pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
     auto now_tm = common::TimeUtils::TimestampUs();
     for (uint32_t i = prev_pool_index_; i <= max_consensus_sharding_id_; ++i) {
         uint32_t mod_idx = i % common::kImmutablePoolSize;
         if (mod_idx == pool_index) {
             auto tmp_to_txs = to_txs_[i];
             if (tmp_to_txs != nullptr && !tmp_to_txs->tx_ptr->in_consensus) {
-                if (tmp_to_txs->tx_ptr->time_valid > now_tm) {
+                if (leader && tmp_to_txs->tx_ptr->time_valid > now_tm) {
                     continue;
                 }
 
@@ -395,7 +395,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index) {
         if (mod_idx == pool_index) {
             auto tmp_to_txs = to_txs_[i];
             if (tmp_to_txs != nullptr && !tmp_to_txs->tx_ptr->in_consensus) {
-                if (tmp_to_txs->tx_ptr->time_valid > now_tm) {
+                if (leader && tmp_to_txs->tx_ptr->time_valid > now_tm) {
                     continue;
                 }
 
