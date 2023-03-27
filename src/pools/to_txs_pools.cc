@@ -244,6 +244,7 @@ int ToTxsPools::LeaderCreateToHeights(
 
     to_heights.set_sharding_id(sharding_id);
     bool valid = false;
+    std::string heights;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto pool_iter = net_iter->second.find(i);
         auto r_height_iter = pool_iter->second.rbegin();
@@ -251,6 +252,7 @@ int ToTxsPools::LeaderCreateToHeights(
             to_heights.add_heights(0);
         } else {
             to_heights.add_heights(r_height_iter->first);
+            heights += std::to_string(r_height_iter->first) + " ";
             valid = true;
         }
     }
@@ -259,7 +261,7 @@ int ToTxsPools::LeaderCreateToHeights(
         return kPoolsError;
     }
 
-    ZJC_DEBUG("leader success create to heights.");
+    ZJC_DEBUG("leader success create to heights: %s", heights.c_str());
     return kPoolsSuccess;
 }
 
@@ -270,37 +272,41 @@ int ToTxsPools::CreateToTxWithHeights(
     pools::protobuf::ToTxMessage to_tx;
     auto net_iter = network_txs_pools_.find(sharding_id);
     if (net_iter == network_txs_pools_.end()) {
+        assert(false);
         return kPoolsError;
     }
 
     if (leader_to_heights.heights_size() != common::kImmutablePoolSize) {
+        assert(false);
         return kPoolsError;
     }
 
     auto handled_iter = handled_map_.find(sharding_id);
     std::map<std::string, uint64_t> acc_amount_map;
-    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
-        auto pool_iter = net_iter->second.find(i);
+    for (uint32_t pool_idx = 0; pool_idx < common::kImmutablePoolSize; ++pool_idx) {
+        auto pool_iter = net_iter->second.find(pool_idx);
         if (pool_iter == net_iter->second.end()) {
+            assert(false);
             return kPoolsError;
         }
 
         uint64_t min_height = 1;
         if (handled_iter != handled_map_.end()) {
-            min_height = handled_iter->second->heights(i);
+            min_height = handled_iter->second->heights(pool_idx);
         }
 
-        uint64_t max_height = leader_to_heights.heights(i);
-        for (auto i = min_height; i < max_height; ++i) {
-            auto hiter = pool_iter->second.find(i);
+        uint64_t max_height = leader_to_heights.heights(pool_idx);
+        for (auto height = min_height; height < max_height; ++height) {
+            auto hiter = pool_iter->second.find(height);
             if (hiter == pool_iter->second.end()) {
+                ZJC_DEBUG("pool %u, invalid height: %lu", pool_idx, height)
                 return kPoolsError;
             }
         }
 
-        ZJC_DEBUG("pool: %d, min_height: %lu, max_height: %lu", i, min_height, max_height);
-        for (auto i = min_height; i < max_height; ++i) {
-            auto hiter = pool_iter->second.find(i);
+        ZJC_DEBUG("pool: %d, min_height: %lu, max_height: %lu", pool_idx, min_height, max_height);
+        for (auto height = min_height; height < max_height; ++height) {
+            auto hiter = pool_iter->second.find(height);
             for (auto to_iter = hiter->second.begin();
                     to_iter != hiter->second.end(); ++to_iter) {
                 auto amount_iter = acc_amount_map.find(to_iter->first);
