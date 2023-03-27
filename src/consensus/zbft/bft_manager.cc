@@ -427,17 +427,21 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
     if (req_bft_msg.has_block()) {
         if (bft_ptr == nullptr) {
             // verify and add new block
-//             auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
-//             auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block_ptr);
-//             new_block_cache_callback_(
-//                 msg_ptr->thread_idx,
-//                 queue_item_ptr->block_ptr,
-//                 queue_item_ptr->db_batch);
-//             block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
-//             pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
-//             ZJC_DEBUG("removed bft gid coming: %s, block hash: %s",
-//                 common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
-//                 common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str());
+            if (!req_bft_msg.block().has_bls_agg_sign_x() || !req_bft_msg.block().has_bls_agg_sign_y()) {
+                return;
+            }
+
+            auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
+            auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block_ptr);
+            new_block_cache_callback_(
+                msg_ptr->thread_idx,
+                queue_item_ptr->block_ptr,
+                queue_item_ptr->db_batch);
+            block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
+            pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
+            ZJC_DEBUG("removed bft gid coming: %s, block hash: %s",
+                common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
+                common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str());
         } else {
             if (bft_ptr->prepare_block() == nullptr) {
                 auto block_hash = GetBlockHash(req_bft_msg.block());
