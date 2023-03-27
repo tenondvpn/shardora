@@ -299,7 +299,7 @@ int ToTxsPools::CreateToTxWithHeights(
         for (auto height = min_height; height < max_height; ++height) {
             auto hiter = pool_iter->second.find(height);
             if (hiter == pool_iter->second.end()) {
-                ZJC_DEBUG("pool %u, invalid height: %lu", pool_idx, height)
+                ZJC_DEBUG("pool %u, invalid height: %lu", pool_idx, height);
                 return kPoolsError;
             }
         }
