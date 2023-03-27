@@ -136,7 +136,6 @@ void ToTxsPools::HandleNormalToTx(
         uint64_t block_height,
         const block::protobuf::BlockTx& tx_info,
         db::DbWriteBatch& db_batch) {
-    ZJC_DEBUG("new to tx coming: %lu", block_height);
     if (tx_info.storages_size() <= 0) {
         assert(false);
         return;
@@ -172,6 +171,7 @@ void ToTxsPools::HandleNormalToTx(
         return;
     }
 
+    ZJC_DEBUG("new to tx coming: %lu, sharding id: %u", block_height, heights.sharding_id());
     auto handled_iter = handled_map_.find(heights.sharding_id());
     if (handled_iter != handled_map_.end()) {
         if (handled_iter->second->block_height() >= block_height) {
