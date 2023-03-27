@@ -913,11 +913,11 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
     }
 
     if (txs_ptr != nullptr && txs_ptr->txs.size() != bft_msg.tx_bft().tx_hash_list_size()) {
+        ZJC_ERROR("invalid consensus, txs not equal to leader.");
         txs_ptr = nullptr;
     }
 
     if (txs_ptr == nullptr) {
-        ZJC_ERROR("invalid consensus, tx empty.");
         // just empty txs to continue next steps consensus
         txs_ptr = std::make_shared<WaitingTxsItem>();
     }
