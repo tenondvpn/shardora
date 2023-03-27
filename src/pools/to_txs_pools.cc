@@ -45,7 +45,7 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
 
         TxMap tx_map;
         // just clear and reload txs, height must unique
-        net_iter->second[block->pool_index()][block.height()] = tx_map;
+        net_iter->second[block.pool_index()][block.height()] = tx_map;
     }
 
     const auto& tx_list = block.tx_list();
