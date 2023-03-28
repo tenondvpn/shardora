@@ -137,8 +137,7 @@ public:
     }
 
     void reset_timeout() {
-        timeout_ = (std::chrono::steady_clock::now() +
-                std::chrono::microseconds(kBftTimeout));
+        timeout_ = common::TimeUtils::TimestampUs() + kBftTimeout;
     }
 
     uint32_t member_count() {
@@ -420,6 +419,14 @@ public:
         return height_;
     }
 
+    bool timeout(uint64_t now_tm) const {
+        if (timeout_ < now_tm) {
+            return true;
+        }
+
+        return false;
+    }
+
 protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
@@ -436,7 +443,6 @@ protected:
     uint32_t min_oppose_member_count_{ 0 };
     common::Bitmap precommit_bitmap_{ common::kEachShardMaxNodeCount };
     uint32_t consensus_status_{ kConsensusInit };
-    std::chrono::steady_clock::time_point timeout_;
     std::string prepare_hash_;
     std::chrono::steady_clock::time_point prepare_timeout_;
     std::chrono::steady_clock::time_point precommit_timeout_;
@@ -480,6 +486,7 @@ protected:
     uint64_t height_ = { common::kInvalidUint64 };
     uint32_t consensus_prepare_max_count_ = 0;
     uint32_t consensus_prepare_all_count_ = 0;
+    uint64_t timeout_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(Zbft);
 public:

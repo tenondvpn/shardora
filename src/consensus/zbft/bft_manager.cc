@@ -33,6 +33,10 @@ BftManager::~BftManager() {
     if (bft_hash_map_ != nullptr) {
         delete []bft_hash_map_;
     }
+
+    if (bft_queue_ != nullptr) {
+        delete []bft_queue_;
+    }
 }
 
 int BftManager::Init(
@@ -71,6 +75,7 @@ int BftManager::Init(
     txs_pools_ = std::make_shared<WaitingTxsPools>(pools_mgr_, block_mgr, tm_block_mgr);
     thread_count_ = thread_count;
     bft_hash_map_ = new std::unordered_map<std::string, ZbftPtr>[thread_count];
+    bft_queue_ = new std::queue<ZbftPtr>[thread_count];
 #ifdef ZJC_UNITTEST
     now_msg_ = new transport::MessagePtr[thread_count_];
 #endif
@@ -172,12 +177,8 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 //         auto etime = common::TimeUtils::TimestampUs();
 //         ZJC_DEBUG("pop all txs use time: %lu us", (etime - btime));
     }
-
-    auto now_tm = common::TimeUtils::TimestampUs();
-    if (prev_test_bft_size_[msg_ptr->thread_idx] + 3000000lu < now_tm) {
-        ZJC_INFO("thread index: %u, bft size: %u", msg_ptr->thread_idx, bft_hash_map_[msg_ptr->thread_idx].size());
-        prev_test_bft_size_[msg_ptr->thread_idx] = now_tm;
-    }
+    
+    CheckTimeout(thread_index);
 #endif
 }
 
@@ -197,7 +198,6 @@ ZbftPtr BftManager::Start(uint8_t thread_index, const transport::MessagePtr& pre
     }
 #endif
 
-//     CheckTimeout(thread_index);
     auto msg_ptr = prepare_msg_ptr;
     if (msg_ptr != nullptr) {
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -431,8 +431,8 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
     }
 
     if (req_bft_msg.has_block()) {
+        // verify and add new block
         if (bft_ptr == nullptr) {
-            // verify and add new block
             if (!req_bft_msg.block().has_bls_agg_sign_x() || !req_bft_msg.block().has_bls_agg_sign_y()) {
                 return;
             }
@@ -445,7 +445,8 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
                 queue_item_ptr->db_batch);
             block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
             pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
-//             ZJC_DEBUG("removed bft gid coming: %s, block hash: %s",
+            // remove bft
+    //             ZJC_DEBUG("removed bft gid coming: %s, block hash: %s",
 //                 common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
 //                 common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str());
         } else {
@@ -978,6 +979,7 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
 
     bft_hash_map_[bft_ptr->thread_index()][gid] = bft_ptr;
     txs_pools_->LockPool(bft_ptr);
+    bft_queue_[bft_ptr->thread_index()]->push(bft_ptr);
     return kConsensusSuccess;
 }
 
@@ -1227,7 +1229,6 @@ int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg
     } while (0);
     
     // start new bft
-    RemoveBft(bft_ptr->thread_index(), bft_ptr->gid(), false);
     return kConsensusSuccess;
 }
 
@@ -1439,10 +1440,7 @@ int BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
 //                     ZJC_DEBUG("invalid block and sync from other hash: %s, gid: %s",
 //                         common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
 //                         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-                    SyncConsensusBlock(
-                        msg_ptr->thread_idx,
-                        bft_ptr->pool_index(),
-                        bft_msg.prepare_gid());
+                    assert(false);
                 }
                 //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
                 //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
@@ -1631,7 +1629,6 @@ int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePt
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
-        RemoveBft(msg_ptr->thread_idx, prev_ptr->gid(), true);
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
@@ -1788,6 +1785,7 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         queue_item_ptr->block_ptr->pool_index(),
         queue_item_ptr->block_ptr->tx_list());
     block_mgr_->ConsensusAddBlock(thread_idx, queue_item_ptr);
+    RemoveBft(bft_ptr->thread_index(), bft_ptr->gid(), bft_ptr->this_node_is_leader());
     assert(bft_ptr->prepare_block()->precommit_bitmap_size() == zjc_block->precommit_bitmap_size());
     // for test
     auto now_tm_us = common::TimeUtils::TimestampUs();
@@ -1841,16 +1839,11 @@ int BftManager::LeaderCallCommit(
         //         bft_ptr->prepare_latest_height(),
         //         sync::kSyncHighest);
         // }
-        SyncConsensusBlock(
-            msg_ptr->thread_idx,
-            bft_ptr->pool_index(),
-            bft_ptr->gid());
 //         ZJC_DEBUG("leader should sync block now: %s.",
 //             common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
         return kConsensusSuccess;
     }
     
-    RemoveBft(bft_ptr->thread_index(), bft_ptr->gid(), true);
     return kConsensusSuccess;
 }
 
@@ -1889,17 +1882,11 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
     if (bft_ptr->prepare_block() != nullptr) {
         HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
     } else {
-        SyncConsensusBlock(
-            msg_ptr->thread_idx,
-            bft_ptr->pool_index(),
-            bft_ptr->gid());
 //         ZJC_DEBUG("should sync block now: %s.",
 //             common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
         return kConsensusError;
     }
 
-    // start new bft
-    RemoveBft(bft_ptr->thread_index(), bft_ptr->gid(), false);
     return kConsensusSuccess;
 }
 
@@ -1920,29 +1907,22 @@ bool BftManager::IsCreateContractLibraray(const block::protobuf::BlockTx& tx_inf
 }
 
 void BftManager::CheckTimeout(uint8_t thread_idx) {
-    auto now_timestamp_milli = common::TimeUtils::TimestampMs();
-    if (prev_checktime_out_milli_ > now_timestamp_milli) {
+    auto now_timestamp_us = common::TimeUtils::TimestampUs();
+    if (prev_checktime_out_milli_ > now_timestamp_us / 1000) {
         return;
     }
 
-    prev_checktime_out_milli_ = now_timestamp_milli + kCheckTimeoutPeriodMilli;
-    std::vector<ZbftPtr> timeout_vec;
-    auto& bft_hash_map = bft_hash_map_[thread_idx];
-    auto iter = bft_hash_map.begin();
-    while (iter != bft_hash_map.end()) {
-        int timeout_res = iter->second->CheckTimeout();
-        if (timeout_res == kTimeout) {
-            bft_hash_map.erase(iter++);
-            continue;
+    prev_checktime_out_milli_ = now_timestamp_us / 1000 + kCheckTimeoutPeriodMilli;
+    while (!bft_queue_[thread_idx].empty()) {
+        auto bft_ptr = bft_queue_[thread_idx].front();
+        if (!bft_ptr->timeout(now_timestamp_us)) {
+            break;
         }
 
-        if (timeout_res == kTimeoutCallPrecommit) {
-            iter->second->AddBftEpoch();
-//             LeaderCallPrecommit(iter->second);
-        }
-
-        ++iter;
+        RemoveBft(thread_idx, bft_ptr->gid(), bft_ptr->this_node_is_leader());
+        bft_queue_[thread_idx].pop();
     }
+    
 }
 
 }  // namespace consensus
