@@ -88,7 +88,7 @@ void TxPool::CheckTimeoutTx() {
     while (!timeout_txs_.empty()) {
         auto& gid = timeout_txs_.front();
         auto iter = gid_map_.find(gid);
-        if (iter == gid_map_, end()) {
+        if (iter == gid_map_.end()) {
             timeout_txs_.pop();
             continue;
         }
@@ -104,7 +104,7 @@ void TxPool::CheckTimeoutTx() {
     while (!timeout_remove_txs_.empty()) {
         auto& gid = timeout_remove_txs_.front();
         auto iter = gid_map_.find(gid);
-        if (iter == gid_map_, end()) {
+        if (iter == gid_map_.end()) {
             timeout_remove_txs_.pop();
             continue;
         }
