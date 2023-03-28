@@ -1498,7 +1498,9 @@ int BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
             if (bft_ptr->AddPrepareOpposeNode(member_ptr->id) == kConsensusOppose) {
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
                 msg_ptr->response->header.mutable_zbft()->set_prepare_gid(bft_msg.prepare_gid());
-                ZJC_DEBUG("precommit call oppose now.");
+                ZJC_INFO("precommit call oppose now gid: %s, prepare hash: %s",
+                    common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+                    common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
                 // just all consensus rollback
             }
         }
