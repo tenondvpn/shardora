@@ -369,17 +369,18 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kConsensusMessage);
     auto& elect_item = elect_items_[elect_item_idx_];
-//     ZJC_INFO("consensus message coming prepare gid: %s, precommit gid: %s, "
-//         "commit gid: %s thread idx: %d, has sync: %d, txhash: %lu, "
-//         "member index: %d, other member index: %d",
-//         common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
-//         common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
-//         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
-//         msg_ptr->thread_idx,
-//         header.zbft().has_sync_block(),
-//         header.hash64(),
-//         elect_item.local_node_member_index,
-//         header.zbft().member_index());
+    ZJC_INFO("consensus message coming prepare gid: %s, precommit gid: %s, "
+        "commit gid: %s thread idx: %d, has sync: %d, txhash: %lu, "
+        "member index: %d, other member index: %d, pool index: %d",
+        common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+        common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
+        common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+        msg_ptr->thread_idx,
+        header.zbft().has_sync_block(),
+        header.hash64(),
+        elect_item.local_node_member_index,
+        header.zbft().member_index(),
+        header.zbft().pool_index());
     if (elect_item.local_node_member_index == header.zbft().member_index()) {
         assert(false);
     }
@@ -738,9 +739,9 @@ void BftManager::CreateResponseMessage(
         auto& elect_item = elect_items_[elect_item_idx_];
         msg_ptr->response->header.mutable_zbft()->set_member_index(
             elect_item.local_node_member_index);
-        msg_ptr->response->header.mutable_zbft()->set_pool_index(
-            msg_ptr->header.zbft().pool_index());
         if (response_to_leader) {
+            msg_ptr->response->header.mutable_zbft()->set_pool_index(
+                msg_ptr->header.zbft().pool_index());
             assert(msg_ptr->response->header.mutable_zbft()->member_index() != 0);
             msg_ptr->response->header.mutable_zbft()->set_leader(true);
             if (!SetBackupEcdhData(msg_ptr->response, mem_ptr)) {
