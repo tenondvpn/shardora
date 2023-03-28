@@ -178,7 +178,7 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 //         ZJC_DEBUG("pop all txs use time: %lu us", (etime - btime));
     }
     
-    CheckTimeout(thread_index);
+    CheckTimeout(msg_ptr->thread_idx);
 #endif
 }
 
@@ -979,7 +979,7 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
 
     bft_hash_map_[bft_ptr->thread_index()][gid] = bft_ptr;
     txs_pools_->LockPool(bft_ptr);
-    bft_queue_[bft_ptr->thread_index()]->push(bft_ptr);
+    bft_queue_[bft_ptr->thread_index()].push(bft_ptr);
     return kConsensusSuccess;
 }
 
