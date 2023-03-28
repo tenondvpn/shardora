@@ -472,10 +472,10 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::std::string* release_bls_sign_y();
   void set_allocated_bls_sign_y(::std::string* bls_sign_y);
 
-  // optional bytes prepare_hash = 18;
+  // optional bytes prepare_hash = 19;
   bool has_prepare_hash() const;
   void clear_prepare_hash();
-  static const int kPrepareHashFieldNumber = 18;
+  static const int kPrepareHashFieldNumber = 19;
   const ::std::string& prepare_hash() const;
   void set_prepare_hash(const ::std::string& value);
   #if LANG_CXX11
@@ -499,10 +499,10 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::zjchain::zbft::protobuf::TxBft* mutable_tx_bft();
   void set_allocated_tx_bft(::zjchain::zbft::protobuf::TxBft* tx_bft);
 
-  // optional .zjchain.block.protobuf.Block block = 19;
+  // optional .zjchain.block.protobuf.Block block = 20;
   bool has_block() const;
   void clear_block();
-  static const int kBlockFieldNumber = 19;
+  static const int kBlockFieldNumber = 20;
   private:
   const ::zjchain::block::protobuf::Block& _internal_block() const;
   public:
@@ -525,6 +525,13 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::uint32 pool_index() const;
   void set_pool_index(::google::protobuf::uint32 value);
 
+  // optional int32 error = 10;
+  bool has_error() const;
+  void clear_error();
+  static const int kErrorFieldNumber = 10;
+  ::google::protobuf::int32 error() const;
+  void set_error(::google::protobuf::int32 value);
+
   // optional bool leader = 4;
   bool has_leader() const;
   void clear_leader();
@@ -546,19 +553,12 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   bool agree_commit() const;
   void set_agree_commit(bool value);
 
-  // optional bool sync_block = 20;
+  // optional bool sync_block = 21;
   bool has_sync_block() const;
   void clear_sync_block();
-  static const int kSyncBlockFieldNumber = 20;
+  static const int kSyncBlockFieldNumber = 21;
   bool sync_block() const;
   void set_sync_block(bool value);
-
-  // optional int32 error = 10;
-  bool has_error() const;
-  void clear_error();
-  static const int kErrorFieldNumber = 10;
-  ::google::protobuf::int32 error() const;
-  void set_error(::google::protobuf::int32 value);
 
   // optional uint64 elect_height = 14;
   bool has_elect_height() const;
@@ -566,6 +566,13 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   static const int kElectHeightFieldNumber = 14;
   ::google::protobuf::uint64 elect_height() const;
   void set_elect_height(::google::protobuf::uint64 value);
+
+  // optional uint64 prepare_height = 18;
+  bool has_prepare_height() const;
+  void clear_prepare_height();
+  static const int kPrepareHeightFieldNumber = 18;
+  ::google::protobuf::uint64 prepare_height() const;
+  void set_prepare_height(::google::protobuf::uint64 value);
 
   // optional uint32 member_index = 12;
   bool has_member_index() const;
@@ -606,6 +613,8 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   void clear_has_bls_sign_x();
   void set_has_bls_sign_y();
   void clear_has_bls_sign_y();
+  void set_has_prepare_height();
+  void clear_has_prepare_height();
   void set_has_prepare_hash();
   void clear_has_prepare_hash();
   void set_has_block();
@@ -629,12 +638,13 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::zjchain::block::protobuf::Block* block_;
   ::google::protobuf::uint32 net_id_;
   ::google::protobuf::uint32 pool_index_;
+  ::google::protobuf::int32 error_;
   bool leader_;
   bool agree_precommit_;
   bool agree_commit_;
   bool sync_block_;
-  ::google::protobuf::int32 error_;
   ::google::protobuf::uint64 elect_height_;
+  ::google::protobuf::uint64 prepare_height_;
   ::google::protobuf::uint32 member_index_;
   friend struct ::protobuf_protos_2fzbft_2eproto::TableStruct;
 };
@@ -1121,13 +1131,13 @@ inline void ZbftMessage::set_allocated_commit_gid(::std::string* commit_gid) {
 
 // optional bool leader = 4;
 inline bool ZbftMessage::has_leader() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void ZbftMessage::set_has_leader() {
-  _has_bits_[0] |= 0x00000800u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void ZbftMessage::clear_has_leader() {
-  _has_bits_[0] &= ~0x00000800u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void ZbftMessage::clear_leader() {
   leader_ = false;
@@ -1199,13 +1209,13 @@ ZbftMessage::mutable_bitmap() {
 
 // optional bool agree_precommit = 7 [default = false];
 inline bool ZbftMessage::has_agree_precommit() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 inline void ZbftMessage::set_has_agree_precommit() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00002000u;
 }
 inline void ZbftMessage::clear_has_agree_precommit() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 inline void ZbftMessage::clear_agree_precommit() {
   agree_precommit_ = false;
@@ -1223,13 +1233,13 @@ inline void ZbftMessage::set_agree_precommit(bool value) {
 
 // optional bool agree_commit = 8 [default = false];
 inline bool ZbftMessage::has_agree_commit() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00004000u) != 0;
 }
 inline void ZbftMessage::set_has_agree_commit() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00004000u;
 }
 inline void ZbftMessage::clear_has_agree_commit() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00004000u;
 }
 inline void ZbftMessage::clear_agree_commit() {
   agree_commit_ = false;
@@ -1271,13 +1281,13 @@ inline void ZbftMessage::set_pool_index(::google::protobuf::uint32 value) {
 
 // optional int32 error = 10;
 inline bool ZbftMessage::has_error() const {
-  return (_has_bits_[0] & 0x00008000u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 inline void ZbftMessage::set_has_error() {
-  _has_bits_[0] |= 0x00008000u;
+  _has_bits_[0] |= 0x00000800u;
 }
 inline void ZbftMessage::clear_has_error() {
-  _has_bits_[0] &= ~0x00008000u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 inline void ZbftMessage::clear_error() {
   error_ = 0;
@@ -1353,13 +1363,13 @@ inline void ZbftMessage::set_allocated_tx_bft(::zjchain::zbft::protobuf::TxBft* 
 
 // optional uint32 member_index = 12;
 inline bool ZbftMessage::has_member_index() const {
-  return (_has_bits_[0] & 0x00020000u) != 0;
+  return (_has_bits_[0] & 0x00040000u) != 0;
 }
 inline void ZbftMessage::set_has_member_index() {
-  _has_bits_[0] |= 0x00020000u;
+  _has_bits_[0] |= 0x00040000u;
 }
 inline void ZbftMessage::clear_has_member_index() {
-  _has_bits_[0] &= ~0x00020000u;
+  _has_bits_[0] &= ~0x00040000u;
 }
 inline void ZbftMessage::clear_member_index() {
   member_index_ = 0u;
@@ -1627,7 +1637,31 @@ ZbftMessage::mutable_commit_bitmap() {
   return &commit_bitmap_;
 }
 
-// optional bytes prepare_hash = 18;
+// optional uint64 prepare_height = 18;
+inline bool ZbftMessage::has_prepare_height() const {
+  return (_has_bits_[0] & 0x00020000u) != 0;
+}
+inline void ZbftMessage::set_has_prepare_height() {
+  _has_bits_[0] |= 0x00020000u;
+}
+inline void ZbftMessage::clear_has_prepare_height() {
+  _has_bits_[0] &= ~0x00020000u;
+}
+inline void ZbftMessage::clear_prepare_height() {
+  prepare_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_prepare_height();
+}
+inline ::google::protobuf::uint64 ZbftMessage::prepare_height() const {
+  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.prepare_height)
+  return prepare_height_;
+}
+inline void ZbftMessage::set_prepare_height(::google::protobuf::uint64 value) {
+  set_has_prepare_height();
+  prepare_height_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.prepare_height)
+}
+
+// optional bytes prepare_hash = 19;
 inline bool ZbftMessage::has_prepare_hash() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
@@ -1693,7 +1727,7 @@ inline void ZbftMessage::set_allocated_prepare_hash(::std::string* prepare_hash)
   // @@protoc_insertion_point(field_set_allocated:zjchain.zbft.protobuf.ZbftMessage.prepare_hash)
 }
 
-// optional .zjchain.block.protobuf.Block block = 19;
+// optional .zjchain.block.protobuf.Block block = 20;
 inline bool ZbftMessage::has_block() const {
   return (_has_bits_[0] & 0x00000100u) != 0;
 }
@@ -1747,15 +1781,15 @@ inline void ZbftMessage::set_allocated_block(::zjchain::block::protobuf::Block* 
   // @@protoc_insertion_point(field_set_allocated:zjchain.zbft.protobuf.ZbftMessage.block)
 }
 
-// optional bool sync_block = 20;
+// optional bool sync_block = 21;
 inline bool ZbftMessage::has_sync_block() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
+  return (_has_bits_[0] & 0x00008000u) != 0;
 }
 inline void ZbftMessage::set_has_sync_block() {
-  _has_bits_[0] |= 0x00004000u;
+  _has_bits_[0] |= 0x00008000u;
 }
 inline void ZbftMessage::clear_has_sync_block() {
-  _has_bits_[0] &= ~0x00004000u;
+  _has_bits_[0] &= ~0x00008000u;
 }
 inline void ZbftMessage::clear_sync_block() {
   sync_block_ = false;
