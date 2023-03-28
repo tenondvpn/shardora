@@ -72,8 +72,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
     if (txs_item == nullptr) {
         txs_item = wtxs[pool_index].LeaderGetValidTxs(direct);
         if (txs_item != nullptr) {
-            auto& tx_map = txs_item->txs;
-            assert(!tx_map.empty());
 //             uint32_t bitcount = ((kBitcountWithItemCount * tx_map.size()) / 64) * 64;
 //             if (((kBitcountWithItemCount * tx_map.size()) % 64) > 0) {
 //                 bitcount += 64;
