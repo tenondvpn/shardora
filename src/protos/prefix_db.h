@@ -7,6 +7,7 @@
 #include "common/encode.h"
 #include "common/hash.h"
 #include "common/string_utils.h"
+#include "common/unique_set.h"
 #include "db/db.h"
 #include "protos/address.pb.h"
 #include "protos/block.pb.h"
@@ -59,13 +60,24 @@ static const std::string kToTxsHeightsPrefix = "l\x01";
 static const std::string kLatestToTxsHeightsPrefix = "m\x01";
 static const std::string kLatestPoolPrefix = "n\x01";
 static const std::string kHeightTreePrefix = "o\x01";
+static const std::string kGidPrefix = "p\x01";
 
 static const std::string kTemporaryKeyPrefix = "t\x01";
 
 class PrefixDb {
 public:
-    PrefixDb(const std::shared_ptr<db::Db>& db_ptr) : db_(db_ptr) {}
-    ~PrefixDb() {}
+    PrefixDb(const std::shared_ptr<db::Db>& db_ptr) : db_(db_ptr) {
+        gid_set_.Init(10240, 32);
+    }
+
+    ~PrefixDb() {
+        if (db_batch.ApproximateSize() > 0 && prev_gid_tm_us_ + 10000000lu < now_tm) {
+            db_->Put(db_batch);
+            db_batch.Clear();
+            gid_set_.clear();
+        }
+    }
+
     void AddAddressInfo(
             const std::string& addr,
             const address::protobuf::AddressInfo& addr_info) {
@@ -705,8 +717,35 @@ public:
         return true;
     }
 
+    bool GidExists(const std::string& gid) {
+        auto now_tm = common::TimeUtils::TimestampUs();
+        if (db_batch.ApproximateSize() > 0 && prev_gid_tm_us_ + 10000000lu < now_tm) {
+            db_->Put(db_batch);
+            db_batch.Clear();
+            gid_set_.clear();
+            prev_gid_tm_us_ = now_tm;
+        }
+
+        std::string key = kGidPrefix + gid;
+        auto iter = gid_set_.find(key);
+        if (iter != gid_set_.end()) {
+            return true;
+        }
+
+        if (db_->Exist(key)) {
+            return true;
+        }
+
+        gid_set_.insert(key);
+        db_batch.Put(key, "1");
+        return false;
+    }
+
 private:
     std::shared_ptr<db::Db> db_ = nullptr;
+    std::unordered_set<std::string> gid_set_;
+    db::DbWriteBatch db_batch;
+    uint64_t prev_gid_tm_us_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(PrefixDb);
 };

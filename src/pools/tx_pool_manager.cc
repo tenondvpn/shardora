@@ -92,6 +92,11 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             return;
         }
 
+        if (prefix_db_->GidExists(tx_msg.gid())) {
+            ZJC_DEBUG("tx gid exists: %s failed!");
+            return;
+        }
+
         msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 //         ++prev_count_[msg_ptr->address_info->pool_index()];
 //         auto now_tm = common::TimeUtils::TimestampUs();

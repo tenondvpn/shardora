@@ -42,6 +42,11 @@ void TxPool::Init(
 }
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
+    auto rm_iter = removed_gid_.find(tx_ptr->gid);
+    if (rm_iter != removed_gid_.end()) {
+        return;
+    }
+
     assert(tx_ptr != nullptr);
     auto iter = added_tx_map_.find(tx_ptr->tx_hash);
     if (iter != added_tx_map_.end()) {
@@ -135,6 +140,7 @@ void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
     for (int32_t i = 0; i < tx_list.size(); ++i) {
+        removed_gid_.insert(tx_list[i].gid());
         auto giter = gid_map_.find(tx_list[i].gid());
         if (giter == gid_map_.end()) {
             continue;
@@ -153,9 +159,9 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
 
         gid_map_.erase(giter);
     }
-// 
-//     ZJC_DEBUG("0 tx over %u, map: %u, prio_map: %u, gid map: %u",
-//         tx_list.size(), added_tx_map_.size(), prio_map_.size(), gid_map_.size());
+
+    ZJC_DEBUG("0 tx over %u, map: %u, prio_map: %u, gid map: %u",
+        tx_list.size(), added_tx_map_.size(), prio_map_.size(), gid_map_.size());
 }
 
 void TxPool::TxOver(std::map<std::string, TxItemPtr>& txs) {
