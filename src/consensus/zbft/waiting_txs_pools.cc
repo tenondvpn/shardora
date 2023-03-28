@@ -231,6 +231,7 @@ void WaitingTxsPools::FilterInvalidTx(uint32_t pool_index,
         for (auto tx_iter = txs.begin(); tx_iter != txs.end();) {
             auto exist_tx_iter = (*set_iter)->txs_ptr()->txs.find(tx_iter->first);
             if (exist_tx_iter != (*set_iter)->txs_ptr()->txs.end()) {
+                ZJC_DEBUG("filtered tx: %s", common::Encode::HexEncode(tx_iter->second->gid).c_str());
                 txs.erase(tx_iter++);
                 continue;
             }
