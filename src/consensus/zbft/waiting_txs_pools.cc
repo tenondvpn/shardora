@@ -72,7 +72,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
     if (txs_item == nullptr) {
         txs_item = wtxs[pool_index].LeaderGetValidTxs(direct);
         if (txs_item != nullptr) {
-            txs_item->pool_index = pool_index;
             auto& tx_map = txs_item->txs;
             assert(!tx_map.empty());
 //             uint32_t bitcount = ((kBitcountWithItemCount * tx_map.size()) / 64) * 64;
@@ -102,17 +101,12 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
             FilterInvalidTx(pool_index, txs_item->txs);
             if (txs_item->txs.empty()) {
                 txs_item = nullptr;
-            } else {
-                auto& all_txs_hash = txs_item->all_txs_hash;
-                all_txs_hash.reserve(tx_map.size() * 32);
-                for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
-                    all_txs_hash.append(iter->first);
-                }
-
-//                 ZJC_DEBUG("leader get txs pools: %d, %s", pool_index, common::Encode::HexEncode(all_txs_hash).c_str());
-                all_txs_hash = common::Hash::keccak256(all_txs_hash);
             }
         }
+    }
+
+    if (txs_item != nullptr) {
+        txs_item->pool_index = pool_index;
     }
 
     return txs_item;
@@ -192,14 +186,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::FollowerGetTxs(
             return nullptr;
         }
 
-        auto& all_txs_hash = txs_item->all_txs_hash;
-        all_txs_hash.reserve(txs_item->txs.size() * 32);
-        for (auto iter = txs_item->txs.begin(); iter != txs_item->txs.end(); ++iter) {
-            all_txs_hash.append(iter->first);
-        }
-
-//         ZJC_DEBUG("backup get txs pools: %d %s", pool_index, common::Encode::HexEncode(all_txs_hash).c_str());
-        all_txs_hash = common::Hash::keccak256(all_txs_hash);
         return txs_item;
     }
 

@@ -86,7 +86,6 @@ struct WaitingTxsItem {
         : bloom_filter(nullptr),
         max_txs_hash_count(0),
         tx_type(pools::protobuf::kNormalFrom) {}
-    std::string all_txs_hash;
     std::map<std::string, pools::TxItemPtr> txs;
     std::shared_ptr<common::BloomFilter> bloom_filter;
     std::unordered_map<std::string, uint32_t> all_hash_count;
