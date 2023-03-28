@@ -116,6 +116,7 @@ void TxPool::CheckTimeoutTx() {
 
         RemoveTx(gid);
         timeout_remove_txs_.pop();
+        ZJC_DEBUG("timeout remove gid: %s", common::Encode::HexEncode(gid).c_str());
     }
 }
 
