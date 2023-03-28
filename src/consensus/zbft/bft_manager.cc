@@ -355,7 +355,7 @@ ZbftPtr BftManager::StartBft(
     }
 
     ZJC_INFO("use pipeline: %d, this node is leader and start bft: %s,"
-        "pool index: %d, thread index: %d, prev hash: %s, prepare hash: %s, tx size: %d",
+        "pool index: %d, thread index: %d, prepare hash: %s, tx size: %d",
         (prepare_msg_ptr != nullptr),
         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
         bft_ptr->pool_index(),
