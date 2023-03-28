@@ -7,7 +7,7 @@
 #include "common/encode.h"
 #include "common/hash.h"
 #include "common/string_utils.h"
-#include "common/unique_set.h"
+#include "common/time_utils.h"
 #include "db/db.h"
 #include "protos/address.pb.h"
 #include "protos/block.pb.h"
@@ -66,12 +66,10 @@ static const std::string kTemporaryKeyPrefix = "t\x01";
 
 class PrefixDb {
 public:
-    PrefixDb(const std::shared_ptr<db::Db>& db_ptr) : db_(db_ptr) {
-        gid_set_.Init(10240, 32);
-    }
+    PrefixDb(const std::shared_ptr<db::Db>& db_ptr) : db_(db_ptr) {}
 
     ~PrefixDb() {
-        if (db_batch.ApproximateSize() > 0 && prev_gid_tm_us_ + 10000000lu < now_tm) {
+        if (db_batch.ApproximateSize() > 0) {
             db_->Put(db_batch);
             db_batch.Clear();
             gid_set_.clear();
