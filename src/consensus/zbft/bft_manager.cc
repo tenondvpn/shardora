@@ -1418,7 +1418,7 @@ int BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         auto& member_ptr = (*bft_ptr->members_ptr())[bft_msg.member_index()];
-        if (bft_msg.agree_precommit()) {
+        if (bft_msg.agree_precommit() && bft_msg.prepare_hash() == bft_ptr->local_prepare_hash()) {
             libff::alt_bn128_G1 sign;
             try {
                 sign.X = libff::alt_bn128_Fq(bft_msg.bls_sign_x().c_str());
