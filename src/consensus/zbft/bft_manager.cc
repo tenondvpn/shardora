@@ -1778,7 +1778,9 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         thread_idx,
         queue_item_ptr->block_ptr,
         queue_item_ptr->db_batch);
-    pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
+    pools_mgr_->TxOver(
+        queue_item_ptr->block_ptr->pool_index(),
+        queue_item_ptr->block_ptr->tx_list());
     block_mgr_->ConsensusAddBlock(thread_idx, queue_item_ptr);
     assert(bft_ptr->prepare_block()->precommit_bitmap_size() == zjc_block->precommit_bitmap_size());
     // for test
