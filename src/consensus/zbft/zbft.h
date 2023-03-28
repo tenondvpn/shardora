@@ -426,6 +426,14 @@ public:
         return false;
     }
 
+    void set_leader_pre_height(uint64_t height) {
+        leader_pre_height_ = height;
+    }
+
+    void set_leader_pre_hash(const std::string& hash) {
+        leader_pre_hash_ = hash;
+    }
+
 protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
@@ -486,6 +494,8 @@ protected:
     uint32_t consensus_prepare_max_count_ = 0;
     uint32_t consensus_prepare_all_count_ = 0;
     uint64_t timeout_ = 0;
+    uint64_t leader_pre_height_ = 0;
+    std::string leader_pre_hash_;
 
     DISALLOW_COPY_AND_ASSIGN(Zbft);
 public:

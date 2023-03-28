@@ -975,6 +975,14 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
+    if (bft_msg.hash_prepare_height()) {
+        bft_ptr->set_leader_pre_height(bft_msg.prepare_height());
+    }
+
+    if (bft_msg.hash_prepare_hash()) {
+        bft_ptr->set_leader_pre_hash(bft_msg.prepare_hash());
+    }
+
     bft_ptr->set_gid(bft_msg.prepare_gid());
     bft_ptr->set_network_id(bft_msg.net_id());
     bft_ptr->set_consensus_status(kConsensusPrepare);
@@ -1349,7 +1357,7 @@ void BftManager::BackupPrepare(const transport::MessagePtr& msg_ptr) {
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
             bft_ptr->txs_ptr()->txs.size());
         if (!bft_ptr->local_prepare_hash().empty()) {
-            ZJC_DEBUG("backup create consensus bft prepare hash: %s, prehash: %s, leader prehash: %s, pre height: %l, leader pre height: %lu, gid: %s, tx size: %d",
+            ZJC_DEBUG("backup create consensus bft prepare hash: %s, prehash: %s, leader prehash: %s, pre height: %lu, leader pre height: %lu, gid: %s, tx size: %d",
                 common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
                 common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
                 common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
