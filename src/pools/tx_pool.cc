@@ -44,7 +44,7 @@ void TxPool::Init(
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
     auto rm_iter = removed_gid_.find(tx_ptr->gid);
     if (rm_iter != removed_gid_.end()) {
-        return;
+        return kPoolsTxAdded;
     }
 
     assert(tx_ptr != nullptr);
