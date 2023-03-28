@@ -358,6 +358,7 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
             set_prepare_hash(prpare_hash);
             CreatePrecommitVerifyHash();
             prepare_block_ = nullptr;
+            assert(false);
         }
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
         //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
