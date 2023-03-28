@@ -286,52 +286,6 @@ int Zbft::LeaderCommitOk(
     return kConsensusWaitingBackup;
 }
 
-int Zbft::CheckTimeout() {
-    auto now_timestamp = std::chrono::steady_clock::now();
-    if (timeout_ <= now_timestamp) {
-//         ZJC_DEBUG("%lu, %lu, Timeout %s,",
-//             timeout_.time_since_epoch().count(),
-//             now_timestamp.time_since_epoch().count(),
-//             common::Encode::HexEncode(gid()).c_str());
-        return kTimeout;
-    }
-
-    if (!this_node_is_leader_) {
-        return kConsensusSuccess;
-    }
-
-    if (!leader_handled_precommit_) {
-//         if (precommit_aggree_set_.size() >= min_prepare_member_count_ ||
-//                 (precommit_aggree_set_.size() >= min_aggree_member_count_ &&
-//                 now_timestamp >= prepare_timeout_)) {
-//             LeaderPrecommitAggSign("");
-//             leader_handled_precommit_ = true;
-//             ZJC_ERROR("kTimeoutCallPrecommit %s,", common::Encode::HexEncode(gid()).c_str());
-//             return kTimeoutCallPrecommit;
-//        
-        return kTimeoutWaitingBackup;
-    }
-
-    if (!leader_handled_commit_) {
-        if (now_timestamp >= precommit_timeout_) {
-            if (precommit_bitmap_.valid_count() < min_aggree_member_count_) {
-//                 ZJC_ERROR("precommit_bitmap_.valid_count() failed!");
-                return kTimeoutWaitingBackup;
-            }
-
-            prepare_bitmap_ = precommit_bitmap_;
-            LeaderPrecommitAggSign("");
-            RechallengePrecommitClear();
-            ZJC_ERROR("kTimeoutCallReChallenge %s,", common::Encode::HexEncode(gid()).c_str());
-            return kTimeoutCallReChallenge;
-        }
-
-        return kTimeoutWaitingBackup;
-    }
-
-    return kTimeoutNormal;
-}
-
 void Zbft::RechallengePrecommitClear() {
     leader_handled_commit_ = false;
     init_precommit_timeout();

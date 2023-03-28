@@ -58,7 +58,6 @@ public:
         uint32_t index,
         const libff::alt_bn128_G1& backup_sign,
         const std::string& id);
-    int CheckTimeout();
     bool BackupCheckLeaderValid(const zbft::protobuf::ZbftMessage* bft_msg);
     int InitZjcTvmContext();
     void Destroy();
