@@ -929,7 +929,8 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
                     break;
                 }
 
-                ZJC_ERROR("invalid consensus, txs not equal to leader. retry: %d", i);
+                ZJC_ERROR("invalid consensus, txs not equal to leader. retry: %d, pool index: %u, gid: %s",
+                    i, bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
                 pools_mgr_->PopTxs(bft_msg.pool_index());
             }
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
