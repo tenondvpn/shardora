@@ -981,7 +981,7 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
             tm_block_mgr_);
     }
     
-    if (precommit_ptr != nullptr) {
+    if (precommit_ptr != nullptr && precommit_ptr->prepare_block() != nullptr) {
         bft_ptr->set_prev_bft_ptr(precommit_ptr);
         if (bft_msg.has_prepare_height()) {
             assert(bft_msg.prepare_height() == precommit_ptr->prepare_block()->height());
