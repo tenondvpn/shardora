@@ -12,7 +12,7 @@ namespace zjchain {
 namespace pools {
 
 static const uint32_t kBftStartDeltaTime = 1000000u;
-static const uint32_t kTxPoolTimeoutUs = 120u * 1000u * 1000u;
+static const uint32_t kTxPoolTimeoutUs = 1800u * 1000u * 1000u;
 static const uint32_t kTxStorageKeyMaxSize = 12u;
 static const uint32_t kMaxToTxsCount = 10000u;
 static const uint32_t kLeafMaxHeightCount = 1024u * 1024u;// 1024u * 1024u;  // each merkle block 1M
