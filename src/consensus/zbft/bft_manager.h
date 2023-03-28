@@ -145,6 +145,7 @@ private:
     uint64_t prev_tps_tm_us_ = 0;
     uint32_t prev_count_ = 0;
     common::SpinMutex prev_count_mutex_;
+    uint64_t prev_test_bft_size_[common::kMaxThreadCount] = { 0 };
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {

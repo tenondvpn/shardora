@@ -172,6 +172,12 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 //         auto etime = common::TimeUtils::TimestampUs();
 //         ZJC_DEBUG("pop all txs use time: %lu us", (etime - btime));
     }
+
+    auto now_tm = common::TimeUtils::TimestampUs();
+    if (prev_test_bft_size_[msg_ptr->thread_idx] + 3000000lu < now_tm) {
+        ZJC_INFO("thread index: %u, bft size: %u", msg_ptr->thread_idx, bft_hash_map_[msg_ptr->thread_idx].size());
+        prev_test_bft_size_[msg_ptr->thread_idx] = now_tm;
+    }
 #endif
 }
 
