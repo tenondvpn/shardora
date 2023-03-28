@@ -20,6 +20,7 @@ void TxPool::Init(
         uint32_t pool_idx,
         const std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync) {
+    removed_gid_.Init(10240, 16);
     kv_sync_ = kv_sync;
     pool_index_ = pool_idx;
     auto tmp_db = db;
@@ -42,7 +43,7 @@ void TxPool::Init(
 }
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
-    if (removed_gid_.find(tx_ptr->gid) != removed_gid_.end()) {
+    if (removed_gid_.exists(tx_ptr->gid)) {
         return kPoolsTxAdded;
     }
 
@@ -55,7 +56,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     added_tx_map_[tx_ptr->tx_hash] = tx_ptr;
     prio_map_[tx_ptr->prio_key] = tx_ptr;
     gid_map_[tx_ptr->gid] = tx_ptr;
-    timeout_txs_.push(tx_ptr);
+    timeout_txs_.push(tx_ptr->gid);
 //     ZJC_DEBUG("success add tx %u, %u, %u", pool_index_, added_tx_map_.size(), prio_map_.size());
     return kPoolsSuccess;
 }
@@ -85,23 +86,35 @@ void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
 void TxPool::CheckTimeoutTx() {
     auto now_tm = common::TimeUtils::TimestampUs();
     while (!timeout_txs_.empty()) {
-        auto& item = timeout_txs_.front();
-        if (item->timeout > now_tm) {
+        auto& gid = timeout_txs_.front();
+        auto iter = gid_map_.find(gid);
+        if (iter == gid_map_, end()) {
+            timeout_txs_.pop();
+            continue;
+        }
+
+        if (iter->second->timeout > now_tm) {
             break;
         }
 
         timeout_txs_.pop();
-        timeout_remove_txs_.push_back(item);
+        timeout_remove_txs_.push(gid);
     }
 
     while (!timeout_remove_txs_.empty()) {
-        auto& item = timeout_remove_txs_.front();
-        if (item->remove_timeout > now_tm) {
+        auto& gid = timeout_remove_txs_.front();
+        auto iter = gid_map_.find(gid);
+        if (iter == gid_map_, end()) {
+            timeout_remove_txs_.pop();
+            continue;
+        }
+
+        if (iter->second->remove_timeout > now_tm) {
             break;
         }
 
-        RemoveTx(item->gid);
-        timeout_remove_txs_.pop_front();
+        RemoveTx(gid);
+        timeout_remove_txs_.pop();
     }
 }
 
@@ -132,7 +145,7 @@ void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
 }
 
 void TxPool::RemoveTx(const std::string& gid) {
-//     removed_gid_.insert(gid);
+    removed_gid_.add(gid);
     auto giter = gid_map_.find(gid);
     if (giter == gid_map_.end()) {
         return;
@@ -157,8 +170,8 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
         RemoveTx(tx_list[i].gid());
     }
 
-    ZJC_INFO("pool index: %u, tx over %u, map: %u, prio_map: %u, gid map: %u, removed_gid_: %u",
-        pool_index_, tx_list.size(), added_tx_map_.size(), prio_map_.size(), gid_map_.size(), removed_gid_.size());
+    ZJC_INFO("pool index: %u, tx over %u, map: %u, prio_map: %u, gid map: %u, timeout_txs_: %u, timeout_remove_txs_: %u",
+        pool_index_, tx_list.size(), added_tx_map_.size(), prio_map_.size(), gid_map_.size(), timeout_txs_.size(), timeout_remove_txs_.size());
 }
 
 }  // namespace pools
