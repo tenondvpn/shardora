@@ -170,7 +170,8 @@ void BftManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& membe
 void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 #ifndef ZJC_UNITTEST
     transport::MessagePtr prepare_msg_ptr = nullptr;
-    Start(msg_ptr->thread_idx, prepare_msg_ptr);
+    ZbftPtr prev_bft = nullptr;
+    Start(msg_ptr->thread_idx, prev_bft, prepare_msg_ptr);
 //     if (bft_ptr == nullptr) {
 //         auto btime = common::TimeUtils::TimestampUs();
         PopAllPoolTxs(msg_ptr->thread_idx);
@@ -198,7 +199,10 @@ void BftManager::PopAllPoolTxs(uint8_t thread_index) {
     }
 }
 
-ZbftPtr BftManager::Start(uint8_t thread_index, const transport::MessagePtr& prepare_msg_ptr) {
+ZbftPtr BftManager::Start(
+        uint8_t thread_index,
+        ZbftPtr& prev_bft,
+        const transport::MessagePtr& prepare_msg_ptr) {
 #ifndef ZJC_UNITTEST
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) < minimal_node_count_to_consensus_) {
@@ -265,7 +269,7 @@ ZbftPtr BftManager::Start(uint8_t thread_index, const transport::MessagePtr& pre
 //     ZJC_INFO("thread_index: %d, pool index: %d, tx size: %u, pool zbft size: %d",
 //         thread_index, txs_ptr->pool_index, txs_ptr->txs.size(), txs_pools_->ZbftSize(txs_ptr->pool_index));
     txs_ptr->thread_index = thread_index;
-    return StartBft(txs_ptr, prepare_msg_ptr);
+    return StartBft(txs_ptr, prev_bft, prepare_msg_ptr);
 }
 
 int BftManager::InitZbftPtr(bool leader, ZbftPtr& bft_ptr) {
@@ -290,6 +294,7 @@ int BftManager::InitZbftPtr(bool leader, ZbftPtr& bft_ptr) {
 
 ZbftPtr BftManager::StartBft(
         std::shared_ptr<WaitingTxsItem>& txs_ptr,
+        ZbftPtr& prev_bft,
         const transport::MessagePtr& prepare_msg_ptr) {
     ZbftPtr bft_ptr = nullptr;
     auto msg_ptr = prepare_msg_ptr;
@@ -344,6 +349,7 @@ ZbftPtr BftManager::StartBft(
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     }
 
+    bft_ptr->set_prev_bft_ptr(prev_bft);
     int leader_pre = LeaderPrepare(bft_ptr, prepare_msg_ptr);
     if (msg_ptr != nullptr) {
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -939,22 +945,21 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
         txs_ptr = nullptr;
     }
 
-    if (txs_ptr == nullptr) {
-        // just empty txs to continue next steps consensus
-        txs_ptr = std::make_shared<WaitingTxsItem>();
-    } else {
-        auto precommit_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
-        if (precommit_ptr != nullptr) {
-            for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
-                if (precommit_ptr->txs_ptr()->txs.find(iter->first) !=
-                        precommit_ptr->txs_ptr()->txs.end()) {
-                    txs_ptr = std::make_shared<WaitingTxsItem>();
-                    break;
-                }
+    auto precommit_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
+    if (txs_ptr != nullptr && precommit_ptr != nullptr) {
+        for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
+            if (precommit_ptr->txs_ptr()->txs.find(iter->first) !=
+                precommit_ptr->txs_ptr()->txs.end()) {
+                txs_ptr = nullptr;
+                break;
             }
         }
     }
     
+    if (txs_ptr == nullptr) {
+        txs_ptr = std::make_shared<WaitingTxsItem>();
+    }
+
     txs_ptr->thread_index = msg_ptr->thread_idx;
     txs_ptr->pool_index = bft_msg.pool_index();
     ZbftPtr bft_ptr = nullptr;
@@ -975,6 +980,18 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
             txs_pools_,
             tm_block_mgr_);
     }
+    
+    if (precommit_ptr != nullptr) {
+        bft_ptr->set_prev_bft_ptr(precommit_ptr);
+        if (bft_msg.has_prepare_height()) {
+            assert(bft_msg.prepare_height() == precommit_ptr->prepare_block()->height());
+        }
+
+        if (bft_msg.has_prepare_hash()) {
+            assert(bft_msg.prepare_hash() == precommit_ptr->prepare_block()->hash());
+        }
+    }
+
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
@@ -1610,12 +1627,11 @@ int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePt
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
-    auto next_prepare_bft = Start(msg_ptr->thread_idx, msg_ptr->response);
+    auto next_prepare_bft = Start(msg_ptr->thread_idx, bft_ptr, msg_ptr->response);
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
     if (next_prepare_bft != nullptr) {
-        next_prepare_bft->set_prev_bft_ptr(bft_ptr);
         bft_vec[0] = next_prepare_bft;
 //         ZJC_DEBUG("use next prepare.");
     } else {

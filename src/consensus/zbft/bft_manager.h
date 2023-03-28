@@ -53,9 +53,13 @@ public:
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
-    ZbftPtr Start(uint8_t thread_index, const transport::MessagePtr& prepare_msg_ptr);
+    ZbftPtr Start(
+        uint8_t thread_index,
+        ZbftPtr& prev_bft,
+        const transport::MessagePtr& prepare_msg_ptr);
     ZbftPtr StartBft(
         std::shared_ptr<WaitingTxsItem>& txs_ptr,
+        ZbftPtr& prev_bft,
         const transport::MessagePtr& prepare_msg_ptr);
     void RemoveBft(uint8_t thread_idx, const std::string& gid, bool is_leader);
     int LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& prepare_msg_ptr);
