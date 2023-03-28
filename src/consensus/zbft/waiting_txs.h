@@ -37,7 +37,7 @@ public:
         }
 
         all_txs_hash = common::Hash::keccak256(all_txs_hash);
-        if (txs_items_->txs.empty()) {
+        if (txs_items_ != nullptr && txs_items_->txs.empty()) {
             txs_items_ = nullptr;
         }
 
@@ -47,7 +47,7 @@ public:
     std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
             const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list) {
         txs_items_ = pools_mgr_->GetTx(pool_index_, tx_hash_list);
-        if (txs_items_->txs.empty()) {
+        if (txs_items_ != nullptr && txs_items_->txs.empty()) {
             txs_items_ = nullptr;
         }
 
