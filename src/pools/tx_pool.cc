@@ -171,8 +171,8 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
         RemoveTx(tx_list[i].gid());
     }
 
-    ZJC_INFO("pool index: %u, tx over %u, map: %u, prio_map: %u, gid map: %u, timeout_txs_: %u, timeout_remove_txs_: %u",
-        pool_index_, tx_list.size(), added_tx_map_.size(), prio_map_.size(), gid_map_.size(), timeout_txs_.size(), timeout_remove_txs_.size());
+//     ZJC_INFO("pool index: %u, tx over %u, map: %u, prio_map: %u, gid map: %u, timeout_txs_: %u, timeout_remove_txs_: %u",
+//         pool_index_, tx_list.size(), added_tx_map_.size(), prio_map_.size(), gid_map_.size(), timeout_txs_.size(), timeout_remove_txs_.size());
 }
 
 }  // namespace pools

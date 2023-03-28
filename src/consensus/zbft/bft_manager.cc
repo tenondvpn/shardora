@@ -170,21 +170,21 @@ void BftManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& membe
 void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 #ifndef ZJC_UNITTEST
     transport::MessagePtr prepare_msg_ptr = nullptr;
-    auto bft_ptr = Start(msg_ptr->thread_idx, prepare_msg_ptr);
-    if (bft_ptr == nullptr) {
+    Start(msg_ptr->thread_idx, prepare_msg_ptr);
+//     if (bft_ptr == nullptr) {
 //         auto btime = common::TimeUtils::TimestampUs();
         PopAllPoolTxs(msg_ptr->thread_idx);
 //         auto etime = common::TimeUtils::TimestampUs();
 //         ZJC_DEBUG("pop all txs use time: %lu us", (etime - btime));
-    }
+//     }
     
     CheckTimeout(msg_ptr->thread_idx);
     auto now_tm = common::TimeUtils::TimestampUs();
     if (prev_test_bft_size_[msg_ptr->thread_idx] + 3000000lu < now_tm) {
         prev_test_bft_size_[msg_ptr->thread_idx] = now_tm;
-        ZJC_INFO("thread idx: %d, bft size; %u",
-            msg_ptr->thread_idx,
-            bft_hash_map_[msg_ptr->thread_idx].size());
+//         ZJC_INFO("thread idx: %d, bft size; %u",
+//             msg_ptr->thread_idx,
+//             bft_hash_map_[msg_ptr->thread_idx].size());
     }
 #endif
 }
@@ -797,7 +797,7 @@ bool BftManager::LeaderSignMessage(transport::MessagePtr& msg_ptr) {
 }
 
 bool BftManager::SetBackupEcdhData(transport::MessagePtr& msg_ptr, common::BftMemberPtr& mem_ptr) {
-    std::string ecdh_key = mem_ptr->peer_ecdh_key;
+    std::string& ecdh_key = mem_ptr->peer_ecdh_key;
     if (ecdh_key.empty()) {
         if (security_ptr_->GetEcdhKey(
                 mem_ptr->pubkey,
