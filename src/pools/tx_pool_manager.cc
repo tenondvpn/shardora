@@ -33,6 +33,7 @@ TxPoolManager::TxPoolManager(
 }
 
 TxPoolManager::~TxPoolManager() {
+    prefix_db_->Destroy();
     if (tx_pool_ != nullptr) {
         delete []tx_pool_;
     }

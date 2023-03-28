@@ -68,8 +68,10 @@ class PrefixDb {
 public:
     PrefixDb(const std::shared_ptr<db::Db>& db_ptr) : db_(db_ptr) {}
 
-    ~PrefixDb() {
-        if (db_batch.ApproximateSize() > 0) {
+    ~PrefixDb() {}
+
+    void Destroy() {
+        if (!gid_set_.empty()) {
             db_->Put(db_batch);
             db_batch.Clear();
             gid_set_.clear();
@@ -717,7 +719,7 @@ public:
 
     bool GidExists(const std::string& gid) {
         auto now_tm = common::TimeUtils::TimestampUs();
-        if (db_batch.ApproximateSize() > 0 && prev_gid_tm_us_ + 10000000lu < now_tm) {
+        if (!gid_set_.empty() && prev_gid_tm_us_ + 10000000lu < now_tm) {
             db_->Put(db_batch);
             db_batch.Clear();
             gid_set_.clear();
