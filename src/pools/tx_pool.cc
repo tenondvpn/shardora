@@ -20,7 +20,6 @@ void TxPool::Init(
         uint32_t pool_idx,
         const std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync) {
-    removed_gid_.Init(10240, 32);
     kv_sync_ = kv_sync;
     pool_index_ = pool_idx;
     auto tmp_db = db;
@@ -39,11 +38,11 @@ void TxPool::Init(
 
 //     ZJC_DEBUG("pool_idx: %d, synced_height_: %lu, latest height: %lu",
 //         pool_idx, synced_height_, latest_height_);
-    added_tx_map_.reserve(10240);
+//     added_tx_map_.reserve(10240);
 }
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
-    if (removed_gid_.exists(tx_ptr->gid)) {
+    if (removed_gid_.find(tx_ptr->gid) != removed_gid_.end()) {
         return kPoolsTxAdded;
     }
 
@@ -133,7 +132,7 @@ void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
 }
 
 void TxPool::RemoveTx(const std::string& gid) {
-    removed_gid_.add(gid);
+//     removed_gid_.insert(gid);
     auto giter = gid_map_.find(gid);
     if (giter == gid_map_.end()) {
         return;
@@ -157,9 +156,9 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         RemoveTx(tx_list[i].gid());
     }
-// 
-//     ZJC_INFO("pool index: %u, tx over %u, map: %u, prio_map: %u, gid map: %u, removed_gid_: %u",
-//         pool_index_, tx_list.size(), added_tx_map_.size(), prio_map_.size(), gid_map_.size(), removed_gid_.size());
+
+    ZJC_INFO("pool index: %u, tx over %u, map: %u, prio_map: %u, gid map: %u, removed_gid_: %u",
+        pool_index_, tx_list.size(), added_tx_map_.size(), prio_map_.size(), gid_map_.size(), removed_gid_.size());
 }
 
 }  // namespace pools

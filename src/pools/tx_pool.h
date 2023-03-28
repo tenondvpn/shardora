@@ -168,7 +168,7 @@ private:
     std::unordered_map<std::string, TxItemPtr> added_tx_map_;
     std::unordered_map<std::string, TxItemPtr> gid_map_;
     std::queue<TxItemPtr> timeout_txs_;
-    common::UniqueSet<std::string> removed_gid_;
+    std::unordered_set<std::string> removed_gid_;
     std::map<std::string, TxItemPtr> prio_map_;
     uint64_t latest_height_ = 0;
     std::string latest_hash_;
