@@ -44,6 +44,7 @@ bool BftProto::LeaderCreatePrepare(
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
         bft_msg.set_prepare_hash(prev_btr->local_prepare_hash());
+        bft_msg.set_prepare_height(prev_btr->height());
     }
 
     return true;

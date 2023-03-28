@@ -1349,6 +1349,17 @@ void BftManager::BackupPrepare(const transport::MessagePtr& msg_ptr) {
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
             bft_ptr->txs_ptr()->txs.size());
         if (!bft_ptr->local_prepare_hash().empty()) {
+            ZJC_DEBUG("backup create consensus bft prepare hash: %s, prehash: %s, leader prehash: %s, pre height: %l, leader pre height: %lu, gid: %s, tx size: %d",
+                common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+                common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
+                common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
+                bft_ptr->prepare_block()->height(),
+                bft_msg.prepare_height(),
+                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+                bft_ptr->txs_ptr()->txs.size());
+            if (!bft_msg.prepare_hash().empty() && bft_ptr->prepare_block()->prehash() != bft_msg.prepare_hash()) {
+                assert(false);
+            }
             msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
         }
 
