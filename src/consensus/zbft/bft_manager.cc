@@ -926,9 +926,6 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
                 bft_msg.pool_index(),
                 bft_msg.tx_bft().tx_hash_list(),
                 msg_ptr->thread_idx);
-            if (txs_ptr != nullptr && txs_ptr->txs.size() == bft_msg.tx_bft().tx_hash_list_size()) {
-                break;
-            }
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
         }
