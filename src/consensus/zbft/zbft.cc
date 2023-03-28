@@ -74,20 +74,13 @@ int Zbft::Init(
 }
 
 void Zbft::Destroy() {
-//     ZJC_DEBUG("called destroy.");
     if (txs_ptr_ == nullptr) {
-//         ZJC_DEBUG("failed called destroy.");
         return;
     }
 
     if (consensus_status_ != kConsensusCommited) {
-//         ZJC_DEBUG("not commit called destroy.");
         auto ptr = shared_from_this();
         pools_mgr_->TxRecover(ptr);
-    } else {
-        auto ptr = shared_from_this();
-//         ZJC_DEBUG("commit called destroy: %d", prepare_block_->tx_list_size());
-        pools_mgr_->TxOver(ptr);
     }
 }
 

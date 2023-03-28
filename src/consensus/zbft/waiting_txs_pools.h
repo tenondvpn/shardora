@@ -18,7 +18,6 @@ public:
         std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<timeblock::TimeBlockManager>& timeblock_mgr);
     ~WaitingTxsPools();
-    void TxOver(std::shared_ptr<Zbft>& zbft_ptr);
     void TxRecover(std::shared_ptr<Zbft>& zbft_ptr);
     void UpdateLatestInfo(
             uint8_t thread_idx,
