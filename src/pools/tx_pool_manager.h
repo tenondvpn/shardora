@@ -52,7 +52,6 @@ public:
         return tx_pool_[pool_index].GetTx(tx_hash_list);
     }
 
-    void TxOver(uint32_t pool_index, std::map<std::string, TxItemPtr>& over_txs);
     void TxOver(
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);

@@ -196,11 +196,6 @@ void TxPoolManager::TxRecover(uint32_t pool_index, std::map<std::string, TxItemP
     return tx_pool_[pool_index].TxRecover(recover_txs);
 }
 
-void TxPoolManager::TxOver(uint32_t pool_index, std::map<std::string, TxItemPtr>& over_txs) {
-    assert(pool_index < common::kInvalidPoolIndex);
-    return tx_pool_[pool_index].TxOver(over_txs);
-}
-
 void TxPoolManager::TxOver(
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {

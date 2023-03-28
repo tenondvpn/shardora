@@ -83,7 +83,7 @@ void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
     }
 }
 
-bool TxPool::CheckTimeoutTx() {
+void TxPool::CheckTimeoutTx() {
     auto now_tm = common::TimeUtils::TimestampUs();
     while (!timeout_txs_.empty()) {
         auto& item = timeout_txs_.front();
@@ -104,9 +104,6 @@ bool TxPool::CheckTimeoutTx() {
         RemoveTx(item->gid);
         timeout_remove_txs_.pop_front();
     }
-
-    timeout_txs_.push_back(tx_ptr);
-    return true;
 }
 
 void TxPool::GetTx(
@@ -139,7 +136,7 @@ void TxPool::RemoveTx(const std::string& gid) {
     removed_gid_.add(gid);
     auto giter = gid_map_.find(gid);
     if (giter == gid_map_.end()) {
-        continue;
+        return;
     }
 
     giter->second->in_consensus = false;
