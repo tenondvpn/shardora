@@ -350,10 +350,10 @@ int ToTxsPools::CreateToTxWithHeights(
     }
 
     *to_hash = common::Hash::keccak256(str_for_hash);
-//     ZJC_DEBUG("backup sharding: %u to_hash: %s, str for hash: %s",
-//         sharding_id,
-//         common::Encode::HexEncode(*to_hash).c_str(),
-//         common::Encode::HexEncode(str_for_hash).c_str());
+    ZJC_DEBUG("backup sharding: %u to_hash: %s, str for hash: %s",
+        sharding_id,
+        common::Encode::HexEncode(*to_hash).c_str(),
+        common::Encode::HexEncode(str_for_hash).c_str());
     to_tx.set_heights_hash(*to_hash);
     *to_tx.mutable_to_heights() = leader_to_heights;
     auto val = to_tx.SerializeAsString();
