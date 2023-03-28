@@ -192,6 +192,8 @@ int main(int argc, char** argv) {
     uint32_t prikey_pos = 0;
     auto from_prikey = prikeys[prikey_pos % prikeys.size()];
     security->SetPrivateKey(from_prikey);
+    uint64_t now_tm_us = common::TimeUtils::TimestampUs();
+    uint32_t count = 0;
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
         uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos;
@@ -221,7 +223,7 @@ int main(int argc, char** argv) {
 //         std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << std::endl;
         if (pos % 1000 == 0) {
             ++prikey_pos;
-            from_prikey = prikeys[prikey_pos % 4];
+            from_prikey = prikeys[prikey_pos % prikeys.size()];
             security->SetPrivateKey(from_prikey);
             usleep(100000);
         }

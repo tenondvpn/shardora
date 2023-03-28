@@ -42,6 +42,7 @@ void TxPool::Init(
 }
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
+    common::AutoSpinLock auto_lock(mutex_);
     if (removed_gid_.DataExists(tx_ptr->gid)) {
         return kPoolsTxAdded;
     }
@@ -67,6 +68,7 @@ void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
 //         return;
 //     }
 
+    common::AutoSpinLock auto_lock(mutex_);
     auto iter = prio_map_.begin();
     while (iter != prio_map_.end()) {
         if (iter->second->time_valid >= timestamp_now) {
@@ -83,6 +85,7 @@ void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
 }
 
 void TxPool::CheckTimeoutTx() {
+    common::AutoSpinLock auto_lock(mutex_);
     auto now_tm = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
     while (!timeout_txs_.empty() && count++ < 64) {
@@ -123,6 +126,7 @@ void TxPool::CheckTimeoutTx() {
 void TxPool::GetTx(
         const common::BloomFilter& bloom_filter,
         std::map<std::string, TxItemPtr>& res_map) {
+    common::AutoSpinLock auto_lock(mutex_);
     for (auto iter = added_tx_map_.begin(); iter != added_tx_map_.end(); ++iter) {
         if (bloom_filter.Contain(common::Hash::Hash64(iter->second->tx_hash))) {
             res_map[iter->second->tx_hash] = iter->second;
@@ -133,6 +137,7 @@ void TxPool::GetTx(
 }
 
 void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
+    common::AutoSpinLock auto_lock(mutex_);
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
         iter->second->in_consensus = false;
 //         if (iter->second->step == pools::protobuf::kNormalTo) {
@@ -168,6 +173,7 @@ void TxPool::RemoveTx(const std::string& gid) {
 }
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
+    common::AutoSpinLock auto_lock(mutex_);
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         RemoveTx(tx_list[i].gid());
     }
