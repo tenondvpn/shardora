@@ -93,6 +93,7 @@ int Zbft::Prepare(bool leader, zbft::protobuf::ZbftMessage* bft_msg) {
     }
 
     if (txs_ptr_->txs.empty()) {
+        ZJC_ERROR("pool index invalid[%d], tx empty!", pool_index());
         return kConsensusInvalidPackage;
     }
 
