@@ -20,7 +20,6 @@ void TxPool::Init(
         uint32_t pool_idx,
         const std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync) {
-    removed_gid_.Init(1024, 16);
     kv_sync_ = kv_sync;
     pool_index_ = pool_idx;
     auto tmp_db = db;
@@ -39,11 +38,11 @@ void TxPool::Init(
 
 //     ZJC_DEBUG("pool_idx: %d, synced_height_: %lu, latest height: %lu",
 //         pool_idx, synced_height_, latest_height_);
-//     added_tx_map_.reserve(10240);
+    added_tx_map_.reserve(10240);
 }
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
-    if (removed_gid_.exists(tx_ptr->gid)) {
+    if (removed_gid_.DataExists(tx_ptr->gid)) {
         return kPoolsTxAdded;
     }
 
@@ -85,7 +84,8 @@ void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
 
 void TxPool::CheckTimeoutTx() {
     auto now_tm = common::TimeUtils::TimestampUs();
-    while (!timeout_txs_.empty()) {
+    uint32_t count = 0;
+    while (!timeout_txs_.empty() && count++ < 64) {
         auto& gid = timeout_txs_.front();
         auto iter = gid_map_.find(gid);
         if (iter == gid_map_.end()) {
@@ -101,7 +101,8 @@ void TxPool::CheckTimeoutTx() {
         timeout_remove_txs_.push(gid);
     }
 
-    while (!timeout_remove_txs_.empty()) {
+    count = 0;
+    while (!timeout_remove_txs_.empty() && count++ < 64) {
         auto& gid = timeout_remove_txs_.front();
         auto iter = gid_map_.find(gid);
         if (iter == gid_map_.end()) {
@@ -145,7 +146,7 @@ void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
 }
 
 void TxPool::RemoveTx(const std::string& gid) {
-    removed_gid_.add(gid);
+    removed_gid_.Push(gid);
     auto giter = gid_map_.find(gid);
     if (giter == gid_map_.end()) {
         return;

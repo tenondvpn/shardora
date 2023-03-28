@@ -16,7 +16,7 @@
 #include "common/hash.h"
 #include "common/spin_mutex.h"
 #include "common/time_utils.h"
-#include "common/unique_set.h"
+#include "common/limit_hash_set.h"
 #include "common/user_property_key_define.h"
 #include "common/utils.h"
 #include "consensus/consensus_utils.h"
@@ -168,7 +168,7 @@ private:
     std::unordered_map<std::string, TxItemPtr> gid_map_;
     std::queue<std::string> timeout_txs_;
     std::queue<std::string> timeout_remove_txs_;
-    common::UniqueSet<std::string> removed_gid_;
+    common::LimitHashSet<std::string> removed_gid_;
     std::map<std::string, TxItemPtr> prio_map_;
     uint64_t latest_height_ = 0;
     std::string latest_hash_;
