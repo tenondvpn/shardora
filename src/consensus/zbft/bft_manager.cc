@@ -219,9 +219,10 @@ ZbftPtr BftManager::Start(uint8_t thread_index, const transport::MessagePtr& pre
 
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
     auto begin_index = thread_item->prev_index;
+    auto can_new_bft = bft_hash_map_[thread_index].empty();
     for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
         auto pool_idx = thread_item->pools[thread_item->prev_index];
-        if (txs_pools_->ZbftSize(pool_idx) > 0 && prepare_msg_ptr == nullptr) {
+        if (!can_new_bft && prepare_msg_ptr == nullptr) {
             continue;
         }
 
@@ -241,7 +242,7 @@ ZbftPtr BftManager::Start(uint8_t thread_index, const transport::MessagePtr& pre
         for (thread_item->prev_index = 0;
                 thread_item->prev_index < begin_index; ++thread_item->prev_index) {
             auto pool_idx = thread_item->pools[thread_item->prev_index];
-            if (txs_pools_->ZbftSize(pool_idx) > 0 && prepare_msg_ptr == nullptr) {
+            if (!can_new_bft && prepare_msg_ptr == nullptr) {
                 continue;
             }
 
@@ -921,18 +922,12 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
         } else {
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-            for (int32_t i = 0; i < 3; ++i) {
-                txs_ptr = txs_pools_->FollowerGetTxs(
-                    bft_msg.pool_index(),
-                    bft_msg.tx_bft().tx_hash_list(),
-                    msg_ptr->thread_idx);
-                if (txs_ptr != nullptr && txs_ptr->txs.size() == bft_msg.tx_bft().tx_hash_list_size()) {
-                    break;
-                }
-
-                ZJC_ERROR("invalid consensus, txs not equal to leader. retry: %d, pool index: %u, gid: %s",
-                    i, bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-                pools_mgr_->PopTxs(bft_msg.pool_index());
+            txs_ptr = txs_pools_->FollowerGetTxs(
+                bft_msg.pool_index(),
+                bft_msg.tx_bft().tx_hash_list(),
+                msg_ptr->thread_idx);
+            if (txs_ptr != nullptr && txs_ptr->txs.size() == bft_msg.tx_bft().tx_hash_list_size()) {
+                break;
             }
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
@@ -950,6 +945,17 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
     if (txs_ptr == nullptr) {
         // just empty txs to continue next steps consensus
         txs_ptr = std::make_shared<WaitingTxsItem>();
+    } else {
+        auto precommit_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
+        if (precommit_ptr != nullptr) {
+            for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
+                if (precommit_ptr->txs_ptr()->txs.find(iter->first) !=
+                        precommit_ptr->txs_ptr()->txs.end()) {
+                    txs_ptr = std::make_shared<WaitingTxsItem>();
+                    break;
+                }
+            }
+        }
     }
     
     txs_ptr->thread_index = msg_ptr->thread_idx;
@@ -1009,7 +1015,6 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
     }
 
     bft_hash_map_[bft_ptr->thread_index()][gid] = bft_ptr;
-    txs_pools_->LockPool(bft_ptr);
     bft_queue_[bft_ptr->thread_index()].push(bft_ptr);
     return kConsensusSuccess;
 }
@@ -1383,11 +1388,6 @@ void BftManager::BackupPrepare(const transport::MessagePtr& msg_ptr) {
         bft_ptr->set_consensus_status(kConsensusPreCommit);
         std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
         bft_vec[0] = bft_ptr;
-        auto precommit_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
-        if (precommit_ptr != nullptr) {
-            bft_ptr->set_prev_bft_ptr(precommit_ptr);
-        }
-
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
         //         ZJC_DEBUG("BackupPrepare success: %s", common::Encode::HexEncode(bft_vec[0]->gid()).c_str());
