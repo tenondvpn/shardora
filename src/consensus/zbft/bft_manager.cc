@@ -1000,15 +1000,6 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
     }
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
-    if (bft_msg.has_prepare_height()) {
-        bft_ptr->set_leader_pre_height(bft_msg.prepare_height());
-    }
-
-    if (bft_msg.has_prepare_hash()) {
-        bft_ptr->set_leader_pre_hash(bft_msg.prepare_hash());
-    }
-
     bft_ptr->set_gid(bft_msg.prepare_gid());
     bft_ptr->set_network_id(bft_msg.net_id());
     bft_ptr->set_consensus_status(kConsensusPrepare);
