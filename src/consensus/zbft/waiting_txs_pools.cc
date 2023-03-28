@@ -18,6 +18,17 @@ WaitingTxsPools::WaitingTxsPools(
 
 WaitingTxsPools::~WaitingTxsPools() {}
 
+void WaitingTxsPools::TxOver(std::shared_ptr<Zbft>& zbft_ptr) {
+    auto& tx_ptr = zbft_ptr->txs_ptr();
+    auto& item_set = pipeline_pools_[tx_ptr->pool_index];
+    for (auto set_iter = item_set.begin(); set_iter != item_set.end(); ++set_iter) {
+        if (*set_iter == zbft_ptr) {
+            item_set.erase(set_iter);
+            break;
+        }
+    }
+}
+
 void WaitingTxsPools::TxRecover(std::shared_ptr<Zbft>& zbft_ptr) {
     auto& tx_ptr = zbft_ptr->txs_ptr();
     pool_mgr_->TxRecover(tx_ptr->pool_index, tx_ptr->txs);

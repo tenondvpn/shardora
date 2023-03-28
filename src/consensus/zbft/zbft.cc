@@ -81,6 +81,9 @@ void Zbft::Destroy() {
     if (consensus_status_ != kConsensusCommited) {
         auto ptr = shared_from_this();
         pools_mgr_->TxRecover(ptr);
+    } else {
+        auto ptr = shared_from_this();
+        pools_mgr_->TxOver(ptr);
     }
 }
 
