@@ -31,12 +31,6 @@ public:
         assert(false);
         txs_items_ = std::make_shared<WaitingTxsItem>();
         pools_mgr_->GetTx(bloom_filter, pool_index_, txs_items_->txs);
-        auto& all_txs_hash = txs_items_->all_txs_hash;
-        for (auto iter = txs_items_->txs.begin(); iter != txs_items_->txs.end(); ++iter) {
-            all_txs_hash.append(iter->first);
-        }
-
-        all_txs_hash = common::Hash::keccak256(all_txs_hash);
         if (txs_items_ != nullptr && txs_items_->txs.empty()) {
             txs_items_ = nullptr;
         }
