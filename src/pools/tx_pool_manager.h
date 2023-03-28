@@ -35,17 +35,6 @@ public:
         const common::BloomFilter& bloom_filter,
         uint32_t pool_index,
         std::map<std::string, TxItemPtr>& res_map);
-    inline TxItemPtr GetTx(uint32_t pool_index, const std::string& tx_hash) {
-        assert(pool_index < common::kInvalidPoolIndex);
-        //     while (msg_queues_[pool_index].size() > 0) {
-        //         transport::MessagePtr msg_ptr = nullptr;
-        //         msg_queues_[pool_index].pop(&msg_ptr);
-        //         DispatchTx(pool_index, msg_ptr);
-        //     }
-
-        return tx_pool_[pool_index].GetTx(tx_hash);
-    }
-
     std::shared_ptr<consensus::WaitingTxsItem> GetTx(
             uint32_t pool_index,
             const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list) {
