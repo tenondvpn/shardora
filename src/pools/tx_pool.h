@@ -16,6 +16,7 @@
 #include "common/hash.h"
 #include "common/spin_mutex.h"
 #include "common/time_utils.h"
+#include "common/unique_set.h"
 #include "common/user_property_key_define.h"
 #include "common/utils.h"
 #include "consensus/consensus_utils.h"
@@ -75,7 +76,6 @@ public:
     void GetTx(
         const common::BloomFilter& bloom_filter,
         std::map<std::string, TxItemPtr>& res_map);
-    void TxOver(std::map<std::string, TxItemPtr>& txs);
     void TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
     void TxRecover(std::map<std::string, TxItemPtr>& txs);
     uint64_t latest_height() const {
@@ -115,8 +115,8 @@ public:
             SyncBlock(thread_idx);
         }
 
-        ZJC_INFO("pool index: %d, new height: %lu, new synced height: %lu, prev_synced_height_: %lu, to_sync_max_height_: %lu, latest height: %lu",
-            pool_index_, height, synced_height_, prev_synced_height_, to_sync_max_height_, latest_height_);
+//         ZJC_INFO("pool index: %d, new height: %lu, new synced height: %lu, prev_synced_height_: %lu, to_sync_max_height_: %lu, latest height: %lu",
+//             pool_index_, height, synced_height_, prev_synced_height_, to_sync_max_height_, latest_height_);
         return synced_height_;
     }
 
@@ -135,8 +135,9 @@ public:
         }
     }
 
+    void CheckTimeoutTx();
+
 private:
-    bool CheckTimeoutTx(TxItemPtr& tx_ptr, uint64_t timestamp_now);
     void InitLatestInfo() {
         pools::protobuf::PoolLatestInfo pool_info;
         if (prefix_db_->GetLatestPoolInfo(
@@ -161,10 +162,13 @@ private:
         }
     }
 
-    std::deque<TxItemPtr> timeout_txs_;
+    void RemoveTx(const std::string& gid);
+
+    std::deque<TxItemPtr> timeout_remove_txs_;
     std::unordered_map<std::string, TxItemPtr> added_tx_map_;
     std::unordered_map<std::string, TxItemPtr> gid_map_;
-    std::unordered_set<std::string> removed_gid_;
+    std::queue<TxItemPtr> timeout_txs_;
+    common::UniqueSet<std::string> removed_gid_;
     std::map<std::string, TxItemPtr> prio_map_;
     uint64_t latest_height_ = 0;
     std::string latest_hash_;

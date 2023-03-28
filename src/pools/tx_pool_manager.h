@@ -126,6 +126,14 @@ public:
         return;
     }
 
+    void CheckTimeoutTx(uint32_t pool_index) {
+        if (pool_index >= common::kInvalidPoolIndex) {
+            return;
+        }
+
+        tx_pool_[pool_index].CheckTimeoutTx();
+    }
+
 private:
     void SaveStorageToDb(const transport::protobuf::Header& msg);
     void DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr);
