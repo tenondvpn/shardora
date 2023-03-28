@@ -20,7 +20,7 @@ void TxPool::Init(
         uint32_t pool_idx,
         const std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync) {
-    removed_gid_.Init(10240, 16);
+    removed_gid_.Init(1024, 16);
     kv_sync_ = kv_sync;
     pool_index_ = pool_idx;
     auto tmp_db = db;
