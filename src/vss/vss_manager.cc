@@ -1,6 +1,7 @@
 #include "vss/vss_manager.h"
 
 #include "common/time_utils.h"
+#include "dht/dht_key.h"
 #include "network/network_utils.h"
 #include "network/route.h"
 #include "protos/get_proto_hash.h"
@@ -25,6 +26,11 @@ void VssManager::OnTimeBlock(
         uint64_t tm_height,
         uint64_t elect_height,
         uint64_t epoch_random) {
+    auto& elect_item = elect_item_[elect_valid_index_];
+    if (elect_item.members == nullptr) {
+        return;
+    }
+
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
             common::GlobalInfo::Instance()->network_id() !=
             (network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
@@ -33,8 +39,9 @@ void VssManager::OnTimeBlock(
 
     ZJC_DEBUG("OnTimeBlock comming tm_block_tm: %lu, tm_height: %lu, elect_height: %lu, epoch_random: %lu",
     tm_block_tm, tm_height, elect_height, epoch_random);
-    if ((max_count_ * 3 / 2 + 1) < member_count_ || max_count_random_ == 0) {
-        ZJC_ERROR("use old random: %lu, max_count_: %d, expect: %d, member_count_: %d, max_count_random_: %lu", epoch_random_, max_count_, (max_count_ * 3 / 2 + 1), member_count_, max_count_random_);
+    if ((max_count_ * 3 / 2 + 1) < elect_item.member_count || max_count_random_ == 0) {
+        ZJC_ERROR("use old random: %lu, max_count_: %d, expect: %d, member_count: %d, max_count_random_: %lu",
+            epoch_random_, max_count_, (max_count_ * 3 / 2 + 1), elect_item.member_count, max_count_random_);
         prev_valid_vss_ = epoch_random_;
     } else {
         prev_valid_vss_ = max_count_random_;
@@ -111,13 +118,13 @@ void VssManager::ClearAll() {
     third_period_cheched_ = false;
     final_consensus_nodes_.clear();
     final_consensus_random_count_.clear();
-    max_count_ = 0;
     max_count_random_ = 0;
 }
 
 uint64_t VssManager::GetAllVssValid() {
     uint64_t final_random = 0;
-    for (uint32_t i = 0; i < member_count_; ++i) {
+    auto& elect_item = elect_item_[elect_valid_index_];
+    for (uint32_t i = 0; i < elect_item.member_count; ++i) {
         if (other_randoms_[i].IsRandomValid()) {
             final_random ^= other_randoms_[i].GetFinalRandomNum();
         }
@@ -281,15 +288,15 @@ void VssManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     // must verify message signature, to avoid evil node
-    protobuf::VssMessage& vss_msg = header.vss_proto();
+    auto& vss_msg = header.vss_proto();
     auto& elect_item = elect_item_[elect_valid_index_];
     if (vss_msg.member_index() >= elect_item.member_count) {
         return;
     }
 
-    auto& pubkey = elect_item->members[vss_msg.member_index()]->pubkey;
+    auto& pubkey = (*elect_item.members)[vss_msg.member_index()]->pubkey;
     std::string message_hash;
-    protos::GetProtoHash(msg, &message_hash);
+    protos::GetProtoHash(header, &message_hash);
     if (security_ptr_->Verify(message_hash, pubkey, header.sign()) != security::kSecuritySuccess) {
         ZJC_ERROR("security::Security::Instance()->Verify failed");
         return;
@@ -317,8 +324,8 @@ void VssManager::HandleFirstPeriodHash(const protobuf::VssMessage& vss_msg) {
     }
 
     auto& elect_item = elect_item_[elect_valid_index_];
-    auto& id = elect_item.members[elect_item.local_index]->id;
-    other_randoms_[mem_index].SetHash(id, vss_msg.random_hash());
+    auto& id = (*elect_item.members)[vss_msg.member_index()]->id;
+    other_randoms_[vss_msg.member_index()].SetHash(id, vss_msg.random_hash());
     ZJC_DEBUG("HandleFirstPeriodHash: %s, %llu",
         common::Encode::HexEncode(id).c_str(), vss_msg.random_hash());
 }
@@ -330,8 +337,8 @@ void VssManager::HandleSecondPeriodRandom(const protobuf::VssMessage& vss_msg) {
     }
 
     auto& elect_item = elect_item_[elect_valid_index_];
-    auto& id = elect_item.members[elect_item.local_index]->id;
-    other_randoms_[mem_index].SetFinalRandomNum(id, vss_msg.random());
+    auto& id = (*elect_item.members)[vss_msg.member_index()]->id;
+    other_randoms_[vss_msg.member_index()].SetFinalRandomNum(id, vss_msg.random());
     ZJC_DEBUG("HandleSecondPeriodRandom: %s, %llu",
         common::Encode::HexEncode(id).c_str(), vss_msg.random());
 }
@@ -362,11 +369,10 @@ void VssManager::SetConsensusFinalRandomNum(const std::string& id, uint64_t fina
 
 void VssManager::HandleThirdPeriodRandom(const protobuf::VssMessage& vss_msg) {
     auto& elect_item = elect_item_[elect_valid_index_];
-    auto& id = elect_item.members[elect_item.local_index]->id;
+    auto& id = (*elect_item.members)[vss_msg.member_index()]->id;
     if (!IsVssThirdPeriodsHandleMessage()) {
-        ZJC_ERROR("not IsVssThirdPeriodsHandleMessage, id: %s, pk: %s",
-            common::Encode::HexEncode(id).c_str(),
-            common::Encode::HexEncode(vss_msg.pubkey()).c_str());
+        ZJC_ERROR("not IsVssThirdPeriodsHandleMessage, id: %s",
+            common::Encode::HexEncode(id).c_str());
         return;
     }
 
