@@ -738,20 +738,24 @@ public:
         std::string key = kGidPrefix + gid;
         auto iter0 = gid_set_[0].find(key);
         if (iter0 != gid_set_[0].end()) {
+            assert(false);
             return true;
         }
 
         auto iter1 = gid_set_[1].find(key);
         if (iter1 != gid_set_[1].end()) {
+            assert(false);
             return true;
         }
 
         if (db_->Exist(key)) {
+            assert(false);
             return true;
         }
 
-        gid_set_[valid_index_].insert(key);
-        db_batch[valid_index_].Put(key, "1");
+        auto index = valid_index_;
+        gid_set_[index].insert(key);
+        db_batch[index].Put(key, "1");
         return false;
     }
 

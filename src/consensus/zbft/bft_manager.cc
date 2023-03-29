@@ -361,14 +361,14 @@ ZbftPtr BftManager::StartBft(
         return nullptr;
     }
 
-    ZJC_INFO("use pipeline: %d, this node is leader and start bft: %s,"
-        "pool index: %d, thread index: %d, prepare hash: %s, tx size: %d",
-        (prepare_msg_ptr != nullptr),
-        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-        bft_ptr->pool_index(),
-        bft_ptr->thread_index(),
-        common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-        txs_ptr->txs.size());
+//     ZJC_INFO("use pipeline: %d, this node is leader and start bft: %s,"
+//         "pool index: %d, thread index: %d, prepare hash: %s, tx size: %d",
+//         (prepare_msg_ptr != nullptr),
+//         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+//         bft_ptr->pool_index(),
+//         bft_ptr->thread_index(),
+//         common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+//         txs_ptr->txs.size());
     return bft_ptr;
 }
 
@@ -376,18 +376,18 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kConsensusMessage);
     auto& elect_item = elect_items_[elect_item_idx_];
-    ZJC_INFO("consensus message coming prepare gid: %s, precommit gid: %s, "
-        "commit gid: %s thread idx: %d, has sync: %d, txhash: %lu, "
-        "member index: %d, other member index: %d, pool index: %d",
-        common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
-        common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
-        common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
-        msg_ptr->thread_idx,
-        header.zbft().has_sync_block(),
-        header.hash64(),
-        elect_item.local_node_member_index,
-        header.zbft().member_index(),
-        header.zbft().pool_index());
+//     ZJC_INFO("consensus message coming prepare gid: %s, precommit gid: %s, "
+//         "commit gid: %s thread idx: %d, has sync: %d, txhash: %lu, "
+//         "member index: %d, other member index: %d, pool index: %d",
+//         common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+//         common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
+//         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+//         msg_ptr->thread_idx,
+//         header.zbft().has_sync_block(),
+//         header.hash64(),
+//         elect_item.local_node_member_index,
+//         header.zbft().member_index(),
+//         header.zbft().pool_index());
     if (elect_item.local_node_member_index == header.zbft().member_index()) {
         assert(false);
     }
@@ -1376,19 +1376,19 @@ void BftManager::BackupPrepare(const transport::MessagePtr& msg_ptr) {
             return;
         }
 #endif
-        ZJC_DEBUG("backup create consensus bft prepare hash: %s, gid: %s, tx size: %d",
-            common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-            bft_ptr->txs_ptr()->txs.size());
+//         ZJC_DEBUG("backup create consensus bft prepare hash: %s, gid: %s, tx size: %d",
+//             common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+//             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+//             bft_ptr->txs_ptr()->txs.size());
         if (!bft_ptr->local_prepare_hash().empty()) {
-            ZJC_DEBUG("backup create consensus bft prepare hash: %s, prehash: %s, leader prehash: %s, pre height: %lu, leader pre height: %lu, gid: %s, tx size: %d",
-                common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-                common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
-                common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
-                bft_ptr->prepare_block()->height(),
-                bft_msg.prepare_height(),
-                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-                bft_ptr->txs_ptr()->txs.size());
+//             ZJC_DEBUG("backup create consensus bft prepare hash: %s, prehash: %s, leader prehash: %s, pre height: %lu, leader pre height: %lu, gid: %s, tx size: %d",
+//                 common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+//                 common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
+//                 common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
+//                 bft_ptr->prepare_block()->height(),
+//                 bft_msg.prepare_height(),
+//                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+//                 bft_ptr->txs_ptr()->txs.size());
             if (!bft_msg.prepare_hash().empty() && bft_ptr->prepare_block()->prehash() != bft_msg.prepare_hash()) {
                 assert(false);
             }

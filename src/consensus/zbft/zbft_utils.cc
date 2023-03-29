@@ -68,7 +68,6 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
     msg.append((char*)&elect_height, sizeof(elect_height));
     uint64_t leader_idx = block.leader_index();
     msg.append((char*)&leader_idx, sizeof(leader_idx));
-    ZJC_DEBUG("block hash: %s, msg: %s", common::Encode::HexEncode(common::Hash::keccak256(msg)).c_str(), common::Encode::HexEncode(msg).c_str());
     return common::Hash::keccak256(msg);
 }
 
