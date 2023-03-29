@@ -3,6 +3,7 @@
 
 #include "common/time_utils.h"
 #include "network/route.h"
+#include "protos/get_proto_hash.h"
 #include "security/secp256k1.h"
 #include "security/aes.h"
 #include "security/crypto.h"
@@ -186,10 +187,8 @@ void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
     vss_msg.set_tm_height(prev_tm_height_);
     vss_msg.set_elect_height(prev_elect_height_);
     vss_msg.set_type(kVssRandomHash);
-    std::string hash_str = std::to_string(vss_msg.random_hash()) + "_" +
-        std::to_string(prev_tm_height_) + "_" +
-        std::to_string(prev_elect_height_);
-    auto message_hash = common::Hash::keccak256(hash_str);
+    std::string message_hash;
+    protos::GetProtoHash(msg, &message_hash);
     std::string sign;
     if (security_ptr_->Sign(
             message_hash,
@@ -220,10 +219,8 @@ void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
     vss_msg.set_tm_height(prev_tm_height_);
     vss_msg.set_elect_height(prev_elect_height_);
     vss_msg.set_type(kVssRandom);
-    std::string hash_str = std::to_string(vss_msg.random()) + "_" +
-        std::to_string(prev_tm_height_) + "_" +
-        std::to_string(prev_elect_height_);
-    auto message_hash = common::Hash::keccak256(hash_str);
+    std::string message_hash;
+    protos::GetProtoHash(msg, &message_hash);
     std::string sign;
     if (security_ptr_->Sign(
             message_hash,
@@ -254,14 +251,12 @@ void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
     vss_msg.set_tm_height(prev_tm_height_);
     vss_msg.set_elect_height(prev_elect_height_);
     vss_msg.set_type(kVssFinalRandom);
-    std::string hash_str = std::to_string(vss_msg.random()) + "_" +
-        std::to_string(prev_tm_height_) + "_" +
-        std::to_string(prev_elect_height_);
-    auto message_hash = common::Hash::keccak256(hash_str);
+    std::string message_hash;
+    protos::GetProtoHash(msg, &message_hash);
     std::string sign;
     if (security_ptr_->Sign(
-        message_hash,
-        &sign) != security::kSecuritySuccess) {
+            message_hash,
+            &sign) != security::kSecuritySuccess) {
         ZJC_ERROR("signature error.");
         return;
     }
@@ -291,21 +286,17 @@ void VssManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     // must verify message signature, to avoid evil node
-    protobuf::VssMessage vss_msg;
-    if (!vss_msg.ParseFromString(header.data())) {
-        ELECT_ERROR("protobuf::ElectMessage ParseFromString failed!");
+    protobuf::VssMessage& vss_msg = header.vss_proto();
+    auto& elect_item = elect_item_[elect_valid_index_];
+    if (vss_msg.member_index() >= elect_item.member_count) {
         return;
     }
 
-    if (!security::IsValidPublicKey(vss_msg.pubkey())) {
-        ELECT_ERROR("invalid public key: %s!", common::Encode::HexEncode(vss_msg.pubkey()));
-        return;
-    }
-
-    if (!security::IsValidSignature(vss_msg.sign_ch(), vss_msg.sign_res())) {
-        ELECT_ERROR("invalid sign: %s, %s!",
-            common::Encode::HexEncode(vss_msg.sign_ch()),
-            common::Encode::HexEncode(vss_msg.sign_res()));
+    auto& pubkey = elect_item->members[vss_msg.member_index()]->pubkey;
+    std::string message_hash;
+    protos::GetProtoHash(msg, &message_hash);
+    if (security_ptr_->Verify(message_hash, pubkey, header.sign()) != security::kSecuritySuccess) {
+        ZJC_ERROR("security::Security::Instance()->Verify failed");
         return;
     }
 
@@ -330,21 +321,6 @@ void VssManager::HandleFirstPeriodHash(const protobuf::VssMessage& vss_msg) {
         return;
     }
 
-    auto& elect_item = elect_item_[elect_valid_index_];
-    if (vss_msg.member_index() >= elect_item.member_count) {
-        return;
-    }
-
-    auto& pubkey = elect_item->members[vss_msg.member_index()]->pubkey;
-    std::string hash_str = std::to_string(vss_msg.random_hash()) + "_" +
-        std::to_string(vss_msg.tm_height()) + "_" +
-        std::to_string(vss_msg.elect_height());
-    auto message_hash = common::Hash::keccak256(hash_str);
-    if (security_ptr_->Verify(message_hash, pubkey, sign) != security::kSecuritySuccess) {
-        ZJC_ERROR("security::Security::Instance()->Verify failed");
-        return;
-    }
-
     other_randoms_[mem_index].SetHash(id, vss_msg.random_hash());
     ZJC_DEBUG("HandleFirstPeriodHash: %s, %llu",
         common::Encode::HexEncode(id).c_str(), vss_msg.random_hash());
@@ -353,21 +329,6 @@ void VssManager::HandleFirstPeriodHash(const protobuf::VssMessage& vss_msg) {
 void VssManager::HandleSecondPeriodRandom(const protobuf::VssMessage& vss_msg) {
     if (!IsVssSecondPeriodsHandleMessage()) {
         ZJC_DEBUG("invalid second period message.");
-        return;
-    }
-
-    auto& elect_item = elect_item_[elect_valid_index_];
-    if (vss_msg.member_index() >= elect_item.member_count) {
-        return;
-    }
-
-    auto& pubkey = elect_item->members[vss_msg.member_index()]->pubkey;
-    std::string hash_str = std::to_string(vss_msg.random()) + "_" +
-        std::to_string(vss_msg.tm_height()) + "_" +
-        std::to_string(vss_msg.elect_height());
-    auto message_hash = common::Hash::keccak256(hash_str);
-    if (security_ptr_->Verify(message_hash, pubkey, sign) != security::kSecuritySuccess) {
-        ZJC_ERROR("security::Security::Instance()->Verify failed");
         return;
     }
 
@@ -405,21 +366,6 @@ void VssManager::HandleThirdPeriodRandom(const protobuf::VssMessage& vss_msg) {
         ZJC_ERROR("not IsVssThirdPeriodsHandleMessage, id: %s, pk: %s",
             common::Encode::HexEncode(id).c_str(),
             common::Encode::HexEncode(vss_msg.pubkey()).c_str());
-        return;
-    }
-
-    auto& elect_item = elect_item_[elect_valid_index_];
-    if (vss_msg.member_index() >= elect_item.member_count) {
-        return;
-    }
-
-    auto& pubkey = elect_item->members[vss_msg.member_index()]->pubkey;
-    std::string hash_str = std::to_string(vss_msg.random()) + "_" +
-        std::to_string(vss_msg.tm_height()) + "_" +
-        std::to_string(vss_msg.elect_height());
-    auto message_hash = common::Hash::keccak256(hash_str);
-    if (security_ptr_->Verify(message_hash, pubkey, sign) != security::kSecuritySuccess) {
-        ZJC_ERROR("security::Security::Instance()->Verify failed");
         return;
     }
 

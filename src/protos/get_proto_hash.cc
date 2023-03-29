@@ -3,6 +3,7 @@
 #include "common/hash.h"
 #include "common/unique_map.h"
 #include "protos/address.pb.h"
+#include "protos/vss.pb.h"
 #include "protos/zbft.pb.h"
 
 namespace zjchain {
@@ -14,6 +15,7 @@ static void GetTxProtoHash(
         const pools::protobuf::TxMessage& pools_msg,
         std::string* msg) {
     std::string& msg_for_hash = *msg;
+    msg_for_hash.reserve(1024);
     msg_for_hash.append(pools_msg.gid());
     msg_for_hash.append(pools_msg.pubkey());
     uint64_t gas_limit = pools_msg.gas_limit();
@@ -33,6 +35,7 @@ static void GetZbftHash(
         const zbft::protobuf::ZbftMessage& zbft_msg,
         std::string* msg) {
     std::string& msg_for_hash = *msg;
+    msg_for_hash.reserve(1024);
     if (zbft_msg.has_prepare_gid()) {
         msg_for_hash.append(zbft_msg.prepare_gid());
     }
@@ -138,11 +141,39 @@ static void GetZbftHash(
     }
 }
 
+static void GetVssHash(
+        const vss::protobuf::VssMessage& vss_msg,
+        std::string* msg) {
+    std::string msg_for_hash;
+    msg_for_hash.reserve(128);
+    if (vss_msg.has_random_hash()) {
+        uint64_t random_hash = vss_msg.random_hash();
+        msg_for_hash.append((char*)&random_hash, sizeof(random_hash));
+    }
+
+    if (vss_msg.has_random()) {
+        uint64_t random = vss_msg.random();
+        msg_for_hash.append((char*)&random, sizeof(random));
+    }
+
+    uint32_t mem_idx = vss_msg.member_index();
+    msg_for_hash.append((char*)&mem_idx, sizeof(mem_idx));
+    uint64_t tm_height = vss_msg.tm_height();
+    msg_for_hash.append((char*)&tm_height, sizeof(tm_height));
+    uint64_t elect_height = vss_msg.elect_height();
+    msg_for_hash.append((char*)&elect_height, sizeof(elect_height));
+    int32_t type = vss_msg.type();
+    msg_for_hash.append((char*)&type, sizeof(type));
+    *msg = common::Hash::keccak256(msg_for_hash);
+}
+
 void GetProtoHash(const transport::protobuf::Header& msg, std::string* msg_for_hash) {
     if (msg.has_tx_proto()) {
         GetTxProtoHash(msg.tx_proto(), msg_for_hash);
     } else if (msg.has_zbft()) {
         GetZbftHash(msg.zbft(), msg_for_hash);
+    } else if (msg.has_vss_proto()) {
+        GetVssHash(msg.vss_proto(), msg_for_hash);
     }
 }
 
