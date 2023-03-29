@@ -1,8 +1,8 @@
-#include "stdafx.h"
 #include "vss/vss_manager.h"
 
 #include "common/time_utils.h"
 #include "network/network_utils.h"
+#include "network/route.h"
 #include "protos/get_proto_hash.h"
 
 namespace zjchain {
@@ -78,7 +78,7 @@ void VssManager::OnTimeBlock(
         tmblock_tm, begin_time_us_, first_offset, second_offset, third_offset, kDkgPeriodUs);
 }
 
-void VssManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
+void VssManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members) {
     if (sharding_id == network::kRootCongressNetworkId &&
             common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         auto index = (elect_valid_index_ + 1) % 2;
