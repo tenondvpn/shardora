@@ -127,7 +127,7 @@ private:
     void DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& addr);
 
-    static const uint32_t kPopMessageCountEachTime = 1024u;
+    static const uint32_t kPopMessageCountEachTime = 320u;
 
     TxPool* tx_pool_{ nullptr };
     std::shared_ptr<security::Security> security_ = nullptr;

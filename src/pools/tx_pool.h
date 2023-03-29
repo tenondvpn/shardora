@@ -49,7 +49,7 @@ public:
             const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list) {
         auto txs_items = std::make_shared<consensus::WaitingTxsItem>();
         auto& tx_map = txs_items->txs;
-        common::AutoSpinLock auto_lock(mutex_);
+//         common::AutoSpinLock auto_lock(mutex_);
         for (int32_t i = 0; i < tx_hash_list.size(); ++i) {
             auto& txhash = tx_hash_list[i];
             auto iter = added_tx_map_.find(txhash);
@@ -155,7 +155,7 @@ private:
 
     void RemoveTx(const std::string& gid);
 
-    common::SpinMutex mutex_;
+//     common::SpinMutex mutex_;
     std::unordered_map<std::string, TxItemPtr> added_tx_map_;
     std::unordered_map<std::string, TxItemPtr> gid_map_;
     std::queue<std::string> timeout_txs_;
