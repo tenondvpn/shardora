@@ -7,6 +7,7 @@
 #include "common/encode.h"
 #include "common/hash.h"
 #include "common/string_utils.h"
+#include "common/tick.h"
 #include "common/time_utils.h"
 #include "db/db.h"
 #include "protos/address.pb.h"
@@ -66,15 +67,23 @@ static const std::string kTemporaryKeyPrefix = "t\x01";
 
 class PrefixDb {
 public:
-    PrefixDb(const std::shared_ptr<db::Db>& db_ptr) : db_(db_ptr) {}
+    PrefixDb(const std::shared_ptr<db::Db>& db_ptr) : db_(db_ptr) {
+        gid_set_[0].reserve(202400);
+        gid_set_[1].reserve(202400);
+        db_batch_tick_.CutOff(
+            5000000lu,
+            std::bind(&PrefixDb::DumpGidToDb, this, std::placeholders::_1));
+    }
 
     ~PrefixDb() {}
 
     void Destroy() {
-        if (!gid_set_.empty()) {
-            db_->Put(db_batch);
-            db_batch.Clear();
-            gid_set_.clear();
+        for (int32_t i = 0; i < 2; ++i) {
+            if (!gid_set_[i].empty()) {
+                db_->Put(db_batch[i]);
+                db_batch[i].Clear();
+                gid_set_[i].clear();
+            }
         }
     }
 
@@ -719,16 +728,20 @@ public:
 
     bool GidExists(const std::string& gid) {
         auto now_tm = common::TimeUtils::TimestampUs();
-        if (!gid_set_.empty() && prev_gid_tm_us_ + 10000000lu < now_tm) {
-            db_->Put(db_batch);
-            db_batch.Clear();
-            gid_set_.clear();
+        if (!gid_set_.empty() && prev_gid_tm_us_ + 120000000lu < now_tm) {
+            valid_index_ = (valid_index_ + 1) % 2;
+            gid_set_[valid_index_].clear();
             prev_gid_tm_us_ = now_tm;
         }
 
         std::string key = kGidPrefix + gid;
-        auto iter = gid_set_.find(key);
-        if (iter != gid_set_.end()) {
+        auto iter0 = gid_set_[0].find(key);
+        if (iter0 != gid_set_[0].end()) {
+            return true;
+        }
+
+        auto iter1 = gid_set_[1].find(key);
+        if (iter1 != gid_set_[1].end()) {
             return true;
         }
 
@@ -736,16 +749,27 @@ public:
             return true;
         }
 
-        gid_set_.insert(key);
-        db_batch.Put(key, "1");
+        gid_set_[valid_index_].insert(key);
+        db_batch[valid_index_].Put(key, "1");
         return false;
     }
 
 private:
+    void DumpGidToDb(uint8_t thread_idx) {
+        uint32_t index = (valid_index_ + 1) % 2;
+        db_->Put(db_batch[index]);
+        db_batch[index].Clear();
+        db_batch_tick_.CutOff(
+            3000000lu,
+            std::bind(&PrefixDb::DumpGidToDb, this, std::placeholders::_1));
+    }
+
     std::shared_ptr<db::Db> db_ = nullptr;
-    std::unordered_set<std::string> gid_set_;
-    db::DbWriteBatch db_batch;
+    std::unordered_set<std::string> gid_set_[2];
+    db::DbWriteBatch db_batch[2];
+    uint32_t valid_index_ = 0;
     uint64_t prev_gid_tm_us_ = 0;
+    common::Tick db_batch_tick_;
 
     DISALLOW_COPY_AND_ASSIGN(PrefixDb);
 };

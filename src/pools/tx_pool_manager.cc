@@ -96,7 +96,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
         msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         if (prefix_db_->GidExists(tx_msg.gid())) {
-            ZJC_DEBUG("tx gid exists: %s failed!");
+            ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
             return;
         }
 
