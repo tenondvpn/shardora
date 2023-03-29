@@ -9,8 +9,8 @@
 #include "common/hash.h"
 #include "common/limit_heap.h"
 #include "common/global_info.h"
+#include "protos/vss.pb.h"
 #include "vss/vss_utils.h"
-#include "vss/proto/vss.pb.h"
 
 namespace zjchain {
 
@@ -110,8 +110,8 @@ private:
     uint64_t final_random_num_{ 0 };
     uint64_t tm_block_tm_{ 0 };
     uint64_t random_num_hash_{ 0 };
-    std::atomic<bool> valid_{ false };
-    std::atomic<bool> invalid_{ false };
+    bool valid_{ false };
+    bool invalid_{ false };
     bool is_local_{ false };
     std::string owner_id_;
 

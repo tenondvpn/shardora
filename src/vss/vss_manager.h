@@ -52,7 +52,7 @@ private:
     RandomNum other_randoms_[common::kEachShardMaxNodeCount];
     uint64_t prev_tm_height_{ common::kInvalidUint64 };
     uint64_t prev_elect_height_{ 0 };
-    std::atomic<uint64_t> latest_tm_block_tm_{ 0 };
+    uint64_t latest_tm_block_tm_{ 0 };
     uint64_t prev_epoch_final_random_{ 0 };
     bool first_period_cheched_{ false };
     bool second_period_cheched_{ false };
