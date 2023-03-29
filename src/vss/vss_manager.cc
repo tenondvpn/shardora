@@ -1,0 +1,431 @@
+#include "stdafx.h"
+#include "vss/vss_manager.h"
+
+#include "common/time_utils.h"
+#include "network/route.h"
+#include "security/secp256k1.h"
+#include "security/aes.h"
+#include "security/crypto.h"
+#include "timeblock/time_block_manager.h"
+#include "vss/proto/vss_proto.h"
+
+namespace zjchain {
+
+namespace vss {
+
+VssManager::VssManager(std::shared_ptr<security::Security>& security_ptr)
+        : security_ptr_(security_ptr) {
+    network::Route::Instance()->RegisterMessage(
+        common::kVssMessage,
+        std::bind(&VssManager::HandleMessage, this, std::placeholders::_1));
+}
+
+uint64_t VssManager::EpochRandom() {
+    return epoch_random_;
+}
+
+void VssManager::OnTimeBlock(
+        uint64_t tm_block_tm,
+        uint64_t tm_height,
+        uint64_t elect_height,
+        uint64_t epoch_random) {
+    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
+            common::GlobalInfo::Instance()->network_id() !=
+            (network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
+        return;
+    }
+
+    ZJC_DEBUG("OnTimeBlock comming tm_block_tm: %lu, tm_height: %lu, elect_height: %lu, epoch_random: %lu",
+    tm_block_tm, tm_height, elect_height, epoch_random);
+    if ((max_count_ * 3 / 2 + 1) < member_count_ || max_count_random_ == 0) {
+        ZJC_ERROR("use old random: %lu, max_count_: %d, expect: %d, member_count_: %d, max_count_random_: %lu", epoch_random_, max_count_, (max_count_ * 3 / 2 + 1), member_count_, max_count_random_);
+        prev_valid_vss_ = epoch_random_;
+    } else {
+        prev_valid_vss_ = max_count_random_;
+    }
+    ClearAll();
+    epoch_random_ = epoch_random;
+    latest_tm_block_tm_ = tm_block_tm;
+    prev_elect_height_ = elect_height;
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+        if (prev_tm_height_ != common::kInvalidUint64 && prev_tm_height_ >= tm_height) {
+            ZJC_ERROR("prev_tm_height_ >= tm_height[%lu][%lu].", prev_tm_height_, tm_height);
+            return;
+        }
+
+        if (elect_item_[elect_valid_index_].local_index == elect::kInvalidMemberIndex) {
+            ZJC_ERROR("not elected.");
+            return;
+        }
+
+        local_random_.OnTimeBlock(tm_block_tm);
+    }
+
+    prev_tm_height_ = tm_height;
+    int64_t local_offset_us = 0;
+    auto tmblock_tm = tmblock::TimeBlockManager::Instance()->LatestTimestamp() * 1000l * 1000l;
+    begin_time_us_ = common::TimeUtils::TimestampUs();
+    kDkgPeriodUs = common::kTimeBlockCreatePeriodSeconds / 10 * 1000u * 1000u;
+    auto first_offset = kDkgPeriodUs;
+    auto second_offset = kDkgPeriodUs * 4;
+    auto third_offset = kDkgPeriodUs * 8;
+    auto offset_tm = 30l * 1000l * 1000l;
+    if (begin_time_us_ < (int64_t)tmblock_tm + offset_tm) {
+        kDkgPeriodUs = (common::kTimeBlockCreatePeriodSeconds - 20) * 1000l * 1000l / 10l;
+        first_offset = tmblock_tm + offset_tm - begin_time_us_;
+        begin_time_us_ = tmblock_tm + offset_tm - kDkgPeriodUs;
+        second_offset = first_offset + kDkgPeriodUs * 3;
+        third_offset = first_offset + kDkgPeriodUs * 7;
+    }
+
+    ZJC_DEBUG("tmblock_tm: %lu, begin_time_us_: %lu, first_offset: %lu, second_offset: %lu, third_offset: %lu, kDkgPeriodUs: %lu",
+        tmblock_tm, begin_time_us_, first_offset, second_offset, third_offset, kDkgPeriodUs);
+}
+
+void VssManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
+    if (sharding_id == network::kRootCongressNetworkId &&
+            common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+        auto index = (elect_valid_index_ + 1) % 2;
+        elect_item_[index].members = members;
+        elect_item_[index].local_index = elect::kInvalidMemberIndex;
+        for (uint32_t i = 0; i < members->size(); ++i) {
+            if ((*members)[i]->id == security_ptr_->GetAddress()) {
+                elect_item_[index].local_index = i;
+                break;
+            }
+        }        
+        
+        elect_item_[index].member_count = members->size();
+        elect_valid_index_ = index;
+    }
+}
+
+uint64_t VssManager::GetConsensusFinalRandom() {
+    return prev_valid_vss_;
+}
+
+void VssManager::ClearAll() {
+    local_random_.ResetStatus();
+    for (uint32_t i = 0; i < common::kEachShardMaxNodeCount; ++i) {
+        other_randoms_[i].ResetStatus();
+    }
+
+    first_period_cheched_ = false;
+    second_period_cheched_ = false;
+    third_period_cheched_ = false;
+    final_consensus_nodes_.clear();
+    final_consensus_random_count_.clear();
+    max_count_ = 0;
+    max_count_random_ = 0;
+}
+
+uint64_t VssManager::GetAllVssValid() {
+    uint64_t final_random = 0;
+    for (uint32_t i = 0; i < member_count_; ++i) {
+        if (other_randoms_[i].IsRandomValid()) {
+            final_random ^= other_randoms_[i].GetFinalRandomNum();
+        }
+    }
+
+    return final_random;
+}
+
+bool VssManager::IsVssFirstPeriodsHandleMessage() {
+#ifdef ZJC_UNITTEST
+    return true;
+#endif
+    auto now_tm_us = common::TimeUtils::TimestampUs();
+    if ((int64_t)now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4)) {
+        return true;
+    }
+
+    ZJC_DEBUG("IsVssFirstPeriodsHandleMessage now_tm_us: %lu, (begin_time_us_ + kDkgPeriodUs * 4): %lu",
+        now_tm_us, (begin_time_us_ + kDkgPeriodUs * 4));
+    return false;
+}
+
+bool VssManager::IsVssSecondPeriodsHandleMessage() {
+#ifdef ZJC_UNITTEST
+    return true;
+#endif
+    auto now_tm_us = common::TimeUtils::TimestampUs();
+    if ((int64_t)now_tm_us < (begin_time_us_ + kDkgPeriodUs * 8) &&
+            (int64_t)now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 4)) {
+        return true;
+    }
+
+    ZJC_DEBUG("IsVssSecondPeriodsHandleMessage now_tm_us: %lu, (begin_time_us_ + kDkgPeriodUs * 8): %lu, (begin_time_us_ + kDkgPeriodUs * 4): %lu",
+        now_tm_us, (begin_time_us_ + kDkgPeriodUs * 8), (begin_time_us_ + kDkgPeriodUs * 4));
+    return false;
+}
+
+bool VssManager::IsVssThirdPeriodsHandleMessage() {
+#ifdef ZJC_UNITTEST
+    return true;
+#endif
+    auto now_tm_us = common::TimeUtils::TimestampUs();
+    if ((int64_t)now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 8)) {
+        return true;
+    }
+
+    ZJC_DEBUG("IsVssThirdPeriodsHandleMessage now_tm_us: %lu, (begin_time_us_ + kDkgPeriodUs * 8): %lu",
+        now_tm_us, (begin_time_us_ + kDkgPeriodUs * 8));
+    return false;
+}
+
+void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->thread_idx = thread_idx;
+    transport::protobuf::Header& msg = msg_ptr->header;
+    msg.set_type(common::kVssMessage);
+    dht::DhtKeyManager dht_key(network::kRootCongressNetworkId, 0);
+    msg.set_src_sharding_id(network::kRootCongressNetworkId);
+    msg.set_des_dht_key(dht_key.StrKey());
+    vss::protobuf::VssMessage& vss_msg = *msg.mutable_vss_proto();
+    vss_msg.set_random_hash(local_random_.GetHash());
+    vss_msg.set_tm_height(prev_tm_height_);
+    vss_msg.set_elect_height(prev_elect_height_);
+    vss_msg.set_type(kVssRandomHash);
+    std::string hash_str = std::to_string(vss_msg.random_hash()) + "_" +
+        std::to_string(prev_tm_height_) + "_" +
+        std::to_string(prev_elect_height_);
+    auto message_hash = common::Hash::keccak256(hash_str);
+    std::string sign;
+    if (security_ptr_->Sign(
+            message_hash,
+            &sign) != security::kSecuritySuccess) {
+        ZJC_ERROR("signature error.");
+        return;
+    }
+
+    msg.set_sign(sign);
+    network::Route::Instance()->Send(msg_ptr);
+    HandleFirstPeriodHash(msg.vss_proto());
+    ZJC_DEBUG("BroadcastFirstPeriodHash: %lu，prev_elect_height_: %lu", local_random_.GetHash(), prev_elect_height_);
+#ifdef ZJC_UNITTEST
+    first_msg_ = msg;
+#endif
+}
+
+void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->thread_idx = thread_idx;
+    transport::protobuf::Header& msg = msg_ptr->header;
+    msg.set_type(common::kVssMessage);
+    dht::DhtKeyManager dht_key(network::kRootCongressNetworkId, 0);
+    msg.set_src_sharding_id(network::kRootCongressNetworkId);
+    msg.set_des_dht_key(dht_key.StrKey());
+    vss::protobuf::VssMessage& vss_msg = *msg.mutable_vss_proto();
+    vss_msg.set_random(local_random_.GetFinalRandomNum());
+    vss_msg.set_tm_height(prev_tm_height_);
+    vss_msg.set_elect_height(prev_elect_height_);
+    vss_msg.set_type(kVssRandom);
+    std::string hash_str = std::to_string(vss_msg.random()) + "_" +
+        std::to_string(prev_tm_height_) + "_" +
+        std::to_string(prev_elect_height_);
+    auto message_hash = common::Hash::keccak256(hash_str);
+    std::string sign;
+    if (security_ptr_->Sign(
+            message_hash,
+            &sign) != security::kSecuritySuccess) {
+        ZJC_ERROR("signature error.");
+        return;
+    }
+
+    msg.set_sign(sign);
+    network::Route::Instance()->Send(msg_ptr);
+    HandleSecondPeriodRandom(msg.vss_proto());
+    ZJC_DEBUG("BroadcastSecondPeriodRandom: %lu，prev_elect_height_: %lu", local_random_.GetFinalRandomNum(), prev_elect_height_);
+#ifdef ZJC_UNITTEST
+    second_msg_ = msg;
+#endif
+}
+
+void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->thread_idx = thread_idx;
+    transport::protobuf::Header& msg = msg_ptr->header;
+    msg.set_type(common::kVssMessage);
+    dht::DhtKeyManager dht_key(network::kRootCongressNetworkId, 0);
+    msg.set_src_sharding_id(network::kRootCongressNetworkId);
+    msg.set_des_dht_key(dht_key.StrKey());
+    vss::protobuf::VssMessage& vss_msg = *msg.mutable_vss_proto();
+    vss_msg.set_random(GetAllVssValid());
+    vss_msg.set_tm_height(prev_tm_height_);
+    vss_msg.set_elect_height(prev_elect_height_);
+    vss_msg.set_type(kVssFinalRandom);
+    std::string hash_str = std::to_string(vss_msg.random()) + "_" +
+        std::to_string(prev_tm_height_) + "_" +
+        std::to_string(prev_elect_height_);
+    auto message_hash = common::Hash::keccak256(hash_str);
+    std::string sign;
+    if (security_ptr_->Sign(
+        message_hash,
+        &sign) != security::kSecuritySuccess) {
+        ZJC_ERROR("signature error.");
+        return;
+    }
+
+    msg.set_sign(sign);
+    network::Route::Instance()->Send(msg_ptr);
+    HandleThirdPeriodRandom(msg.vss_proto());
+    ZJC_DEBUG("BroadcastThirdPeriodRandom: %lu，prev_elect_height_: %lu", GetAllVssValid(), prev_elect_height_);
+#ifdef ZJC_UNITTEST
+    third_msg_ = msg;
+#endif
+}
+
+void VssManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
+    assert(header.type() == common::kVssMessage);
+    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
+            common::GlobalInfo::Instance()->network_id() !=
+            (network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
+        //ZJC_DEBUG("invalid vss message network_id: %d", common::GlobalInfo::Instance()->network_id());
+        return;
+    }
+
+    if (elect_item_[elect_valid_index_].local_index == elect::kInvalidMemberIndex) {
+        ZJC_ERROR("not elected.");
+        return;
+    }
+
+    // must verify message signature, to avoid evil node
+    protobuf::VssMessage vss_msg;
+    if (!vss_msg.ParseFromString(header.data())) {
+        ELECT_ERROR("protobuf::ElectMessage ParseFromString failed!");
+        return;
+    }
+
+    if (!security::IsValidPublicKey(vss_msg.pubkey())) {
+        ELECT_ERROR("invalid public key: %s!", common::Encode::HexEncode(vss_msg.pubkey()));
+        return;
+    }
+
+    if (!security::IsValidSignature(vss_msg.sign_ch(), vss_msg.sign_res())) {
+        ELECT_ERROR("invalid sign: %s, %s!",
+            common::Encode::HexEncode(vss_msg.sign_ch()),
+            common::Encode::HexEncode(vss_msg.sign_res()));
+        return;
+    }
+
+    switch (vss_msg.type()) {
+    case kVssRandomHash:
+        HandleFirstPeriodHash(vss_msg);
+        break;
+    case kVssRandom:
+        HandleSecondPeriodRandom(vss_msg);
+        break;
+    case kVssFinalRandom:
+        HandleThirdPeriodRandom(vss_msg);
+        break;
+    default:
+        break;
+    }
+}
+
+void VssManager::HandleFirstPeriodHash(const protobuf::VssMessage& vss_msg) {
+    if (!IsVssFirstPeriodsHandleMessage()) {
+        ZJC_DEBUG("invalid first period message.");
+        return;
+    }
+
+    auto& elect_item = elect_item_[elect_valid_index_];
+    if (vss_msg.member_index() >= elect_item.member_count) {
+        return;
+    }
+
+    auto& pubkey = elect_item->members[vss_msg.member_index()]->pubkey;
+    std::string hash_str = std::to_string(vss_msg.random_hash()) + "_" +
+        std::to_string(vss_msg.tm_height()) + "_" +
+        std::to_string(vss_msg.elect_height());
+    auto message_hash = common::Hash::keccak256(hash_str);
+    if (security_ptr_->Verify(message_hash, pubkey, sign) != security::kSecuritySuccess) {
+        ZJC_ERROR("security::Security::Instance()->Verify failed");
+        return;
+    }
+
+    other_randoms_[mem_index].SetHash(id, vss_msg.random_hash());
+    ZJC_DEBUG("HandleFirstPeriodHash: %s, %llu",
+        common::Encode::HexEncode(id).c_str(), vss_msg.random_hash());
+}
+
+void VssManager::HandleSecondPeriodRandom(const protobuf::VssMessage& vss_msg) {
+    if (!IsVssSecondPeriodsHandleMessage()) {
+        ZJC_DEBUG("invalid second period message.");
+        return;
+    }
+
+    auto& elect_item = elect_item_[elect_valid_index_];
+    if (vss_msg.member_index() >= elect_item.member_count) {
+        return;
+    }
+
+    auto& pubkey = elect_item->members[vss_msg.member_index()]->pubkey;
+    std::string hash_str = std::to_string(vss_msg.random()) + "_" +
+        std::to_string(vss_msg.tm_height()) + "_" +
+        std::to_string(vss_msg.elect_height());
+    auto message_hash = common::Hash::keccak256(hash_str);
+    if (security_ptr_->Verify(message_hash, pubkey, sign) != security::kSecuritySuccess) {
+        ZJC_ERROR("security::Security::Instance()->Verify failed");
+        return;
+    }
+
+    other_randoms_[mem_index].SetFinalRandomNum(id, vss_msg.random());
+    ZJC_DEBUG("HandleSecondPeriodRandom: %s, %llu",
+        common::Encode::HexEncode(id).c_str(), vss_msg.random());
+}
+
+void VssManager::SetConsensusFinalRandomNum(const std::string& id, uint64_t final_random_num) {
+    // random hash must coming
+    auto iter = final_consensus_nodes_.find(id);
+    if (iter != final_consensus_nodes_.end()) {
+        return;
+    }
+
+    final_consensus_nodes_.insert(id);
+    auto count_iter = final_consensus_random_count_.find(final_random_num);
+    if (count_iter == final_consensus_random_count_.end()) {
+        final_consensus_random_count_[final_random_num] = 1;
+        return;
+    }
+
+    ++count_iter->second;
+    if (max_count_ < count_iter->second) {
+        max_count_ = count_iter->second;
+        max_count_random_ = final_random_num;
+    }
+
+    ZJC_DEBUG("HandleThirdPeriodRandom: %s, %llu, max_count_: %d, count_iter->second: %d",
+        common::Encode::HexEncode(id).c_str(), final_random_num, max_count_, count_iter->second);
+}
+
+void VssManager::HandleThirdPeriodRandom(const protobuf::VssMessage& vss_msg) {
+    if (!IsVssThirdPeriodsHandleMessage()) {
+        ZJC_ERROR("not IsVssThirdPeriodsHandleMessage, id: %s, pk: %s",
+            common::Encode::HexEncode(id).c_str(),
+            common::Encode::HexEncode(vss_msg.pubkey()).c_str());
+        return;
+    }
+
+    auto& elect_item = elect_item_[elect_valid_index_];
+    if (vss_msg.member_index() >= elect_item.member_count) {
+        return;
+    }
+
+    auto& pubkey = elect_item->members[vss_msg.member_index()]->pubkey;
+    std::string hash_str = std::to_string(vss_msg.random()) + "_" +
+        std::to_string(vss_msg.tm_height()) + "_" +
+        std::to_string(vss_msg.elect_height());
+    auto message_hash = common::Hash::keccak256(hash_str);
+    if (security_ptr_->Verify(message_hash, pubkey, sign) != security::kSecuritySuccess) {
+        ZJC_ERROR("security::Security::Instance()->Verify failed");
+        return;
+    }
+
+    SetConsensusFinalRandomNum(id, vss_msg.random());
+}
+
+}  // namespace vss
+
+}  // namespace zjchain
