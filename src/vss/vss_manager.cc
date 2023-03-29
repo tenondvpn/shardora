@@ -4,10 +4,6 @@
 #include "common/time_utils.h"
 #include "network/route.h"
 #include "protos/get_proto_hash.h"
-#include "security/secp256k1.h"
-#include "security/aes.h"
-#include "security/crypto.h"
-#include "timeblock/time_block_manager.h"
 #include "vss/proto/vss_proto.h"
 
 namespace zjchain {
@@ -64,7 +60,7 @@ void VssManager::OnTimeBlock(
 
     prev_tm_height_ = tm_height;
     int64_t local_offset_us = 0;
-    auto tmblock_tm = tmblock::TimeBlockManager::Instance()->LatestTimestamp() * 1000l * 1000l;
+    auto tmblock_tm = tm_block_tm * 1000l * 1000l;
     begin_time_us_ = common::TimeUtils::TimestampUs();
     kDkgPeriodUs = common::kTimeBlockCreatePeriodSeconds / 10 * 1000u * 1000u;
     auto first_offset = kDkgPeriodUs;
