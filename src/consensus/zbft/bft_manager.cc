@@ -743,12 +743,11 @@ void BftManager::CreateResponseMessage(
     }
         
     if (msg_ptr->response->header.has_zbft()) {
+        assert(msg_ptr->response->header.zbft().has_pool_index());
         auto& elect_item = elect_items_[elect_item_idx_];
         msg_ptr->response->header.mutable_zbft()->set_member_index(
             elect_item.local_node_member_index);
         if (response_to_leader) {
-            msg_ptr->response->header.mutable_zbft()->set_pool_index(
-                msg_ptr->header.zbft().pool_index());
             assert(msg_ptr->response->header.mutable_zbft()->member_index() != 0);
             msg_ptr->response->header.mutable_zbft()->set_leader(true);
             if (!SetBackupEcdhData(msg_ptr->response, mem_ptr)) {
@@ -1330,6 +1329,7 @@ void BftManager::BackupPrepare(const transport::MessagePtr& msg_ptr) {
 //         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
 //         common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
 //         common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
+    msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_msg.pool_index());
     if (bft_msg.has_prepare_gid() && !bft_msg.prepare_gid().empty()) {
         msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -1497,18 +1497,23 @@ int BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
                 msg_ptr->response->header.mutable_zbft()->set_agree_commit(true);
                 LeaderCallPrecommit(bft_ptr, msg_ptr);
+                if (!msg_ptr->response->header.mutable_zbft()->has_pool_index()) {
+                    msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
+                }
                 //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
                 //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
             } else if (res == kConsensusOppose) {
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
                 msg_ptr->response->header.mutable_zbft()->set_prepare_gid(bft_msg.prepare_gid());
+                msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
                 ZJC_DEBUG("precommit call oppose now.");
             }
         } else {
             if (bft_ptr->AddPrepareOpposeNode(member_ptr->id) == kConsensusOppose) {
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
                 msg_ptr->response->header.mutable_zbft()->set_prepare_gid(bft_msg.prepare_gid());
+                msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
                 ZJC_INFO("precommit call oppose now gid: %s, prepare hash: %s",
                     common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
                     common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
@@ -1538,7 +1543,8 @@ int BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
         } else {
             if (bft_ptr->AddPrecommitOpposeNode(member_ptr->id) == kConsensusOppose) {
                 msg_ptr->response->header.mutable_zbft()->set_agree_commit(false);
-//                 ZJC_DEBUG("commit call oppose now.");
+                msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
+                //                 ZJC_DEBUG("commit call oppose now.");
             }
         }
     }
@@ -1589,28 +1595,6 @@ ZbftPtr BftManager::LeaderGetZbft(
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
     return bft_ptr;
-}
-
-int BftManager::LeaderCallPrecommitOppose(
-        const ZbftPtr& bft_ptr,
-        const transport::MessagePtr& msg_ptr) {
-    // check pre-commit multi sign
-    auto res = BftProto::LeaderCreatePreCommit(
-        bft_ptr,
-        false,
-        "",
-        msg_ptr->response->header);
-    if (!res) {
-        return kConsensusError;
-    }
-
-    ZJC_ERROR("LeaderCallPrecommitOppose gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
-#ifdef ZJC_UNITTEST
-    now_msg_[msg_ptr->thread_idx] = msg_ptr;
-#else
-    network::Route::Instance()->Send(msg_ptr);
-#endif
-    return kConsensusSuccess;
 }
 
 int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr) {
