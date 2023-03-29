@@ -61,7 +61,8 @@ public:
 // 
 //         delete it;
 //         return res;
-        return db_->KeyMayExist(DbReadOptions(), key, nullptr, nullptr);
+        bool find_val = false;
+        return db_->KeyMayExist(DbReadOptions(), key, nullptr, &find_val);
     }
 
     DbStatus Put(DbWriteBatch& db_batch) {
