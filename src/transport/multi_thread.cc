@@ -46,19 +46,12 @@ void ThreadHandler::HandleMessage() {
 
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
             msg_ptr->thread_idx = thread_idx_;
-//             auto btime = common::TimeUtils::TimestampUs();
-//             if (msg_ptr->header.type() == common::kConsensusMessage) {
-//                 ZJC_DEBUG("thread index: %d, handle message: %d now", thread_idx_, msg_ptr->header.type());
-//             }
+            auto btime = common::TimeUtils::TimestampUs();
             Processor::Instance()->HandleMessage(msg_ptr);
-//             auto etime = common::TimeUtils::TimestampUs();
-//             if (msg_ptr->header.type() == common::kConsensusMessage) {
-//                 std::string t;
-//                 for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
-//                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
-//                 }
-//                 ZJC_DEBUG("over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), "");
-//             }
+            auto etime = common::TimeUtils::TimestampUs();
+            if (etime - btime >= 30000lu) {
+                ZJC_DEBUG("over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), "");
+            }
         }
 
         if (thread_idx_ + 1 < common::GlobalInfo::Instance()->message_handler_thread_count()) {
