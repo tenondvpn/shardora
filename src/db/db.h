@@ -62,7 +62,8 @@ public:
 //         delete it;
 //         return res;
         bool find_val = false;
-        return db_->KeyMayExist(DbReadOptions(), key, nullptr, &find_val);
+        std::string val;
+        return db_->KeyMayExist(DbReadOptions(), key, &val, &find_val);
     }
 
     DbStatus Put(DbWriteBatch& db_batch) {
