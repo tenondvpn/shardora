@@ -51,19 +51,19 @@ public:
     bool Init(const std::string& db_path);
     void Destroy();
     bool Exist(const std::string& key) {
-//         DbIterator* it = db_->NewIterator(DbReadOptions());
-//         it->Seek(key);
-//         bool res = false;
-//         if (it->Valid() && it->key().size() == key.size() &&
-//                 memcmp(it->key().data(), key.c_str(), key.size()) == 0) {
-//             res = true;
-//         }
-// 
-//         delete it;
-//         return res;
-        bool find_val = false;
-        std::string val;
-        return db_->KeyMayExist(DbReadOptions(), key, &val, &find_val);
+        DbIterator* it = db_->NewIterator(DbReadOptions());
+        it->Seek(key);
+        bool res = false;
+        if (it->Valid() && it->key().size() == key.size() &&
+                memcmp(it->key().data(), key.c_str(), key.size()) == 0) {
+            res = true;
+        }
+
+        delete it;
+        return res;
+//         bool find_val = false;
+//         std::string val;
+//         return db_->KeyMayExist(DbReadOptions(), key, &val, &find_val);
     }
 
     DbStatus Put(DbWriteBatch& db_batch) {
