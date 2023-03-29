@@ -145,20 +145,22 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
         transport::MessagePtr msg_ptr = nullptr;
         msg_queues_[pool_index].pop(&msg_ptr);
         auto& tx_msg = msg_ptr->header.tx_proto();
-        msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-        if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
-            // avoid save gid different tx
-            ZJC_DEBUG("tx msg hash exists: %s failed!",
-                common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
-            continue;
-        }
+        if (tx_msg.step() == pools::protobuf::kNormalFrom) {
+            msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
+            if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
+                // avoid save gid different tx
+                ZJC_DEBUG("tx msg hash exists: %s failed!",
+                    common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+                continue;
+            }
 
-        if (security_->Verify(
-                msg_ptr->msg_hash,
-                tx_msg.pubkey(),
-                msg_ptr->header.sign()) != security::kSecuritySuccess) {
-            ZJC_ERROR("verify signature failed!");
-            continue;
+            if (security_->Verify(
+                    msg_ptr->msg_hash,
+                    tx_msg.pubkey(),
+                    msg_ptr->header.sign()) != security::kSecuritySuccess) {
+                ZJC_ERROR("verify signature failed!");
+                continue;
+            }
         }
 
         if (prefix_db_->GidExists(tx_msg.gid())) {
