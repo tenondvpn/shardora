@@ -38,7 +38,7 @@ void TxPool::Init(
 
 //     ZJC_DEBUG("pool_idx: %d, synced_height_: %lu, latest height: %lu",
 //         pool_idx, synced_height_, latest_height_);
-    added_tx_map_.reserve(10240);
+//     added_tx_map_.reserve(10240);
 }
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
@@ -48,12 +48,11 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     assert(tx_ptr != nullptr);
-    auto iter = added_tx_map_.find(tx_ptr->tx_hash);
-    if (iter != added_tx_map_.end()) {
+    auto iter = gid_map_.find(tx_ptr->tx_hash);
+    if (iter != gid_map_.end()) {
         return kPoolsTxAdded;
     }
 
-    added_tx_map_[tx_ptr->tx_hash] = tx_ptr;
     prio_map_[tx_ptr->prio_key] = tx_ptr;
     gid_map_[tx_ptr->gid] = tx_ptr;
     timeout_txs_.push(tx_ptr->gid);
@@ -127,7 +126,7 @@ void TxPool::GetTx(
         const common::BloomFilter& bloom_filter,
         std::map<std::string, TxItemPtr>& res_map) {
 //     common::AutoSpinLock auto_lock(mutex_);
-    for (auto iter = added_tx_map_.begin(); iter != added_tx_map_.end(); ++iter) {
+    for (auto iter = gid_map_.begin(); iter != gid_map_.end(); ++iter) {
         if (bloom_filter.Contain(common::Hash::Hash64(iter->second->tx_hash))) {
             res_map[iter->second->tx_hash] = iter->second;
 //             ZJC_DEBUG("bloom filter success get tx %u, %s",
@@ -144,8 +143,8 @@ void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
 //             ZJC_DEBUG("pools::protobuf::kNormalTo recover and can get.");
 //         }
 
-        auto miter = added_tx_map_.find(iter->first);
-        if (miter != added_tx_map_.end()) {
+        auto miter = gid_map_.find(iter->first);
+        if (miter != gid_map_.end()) {
             prio_map_[miter->second->prio_key] = miter->second;
         }
     }
@@ -159,11 +158,6 @@ void TxPool::RemoveTx(const std::string& gid) {
     }
 
     giter->second->in_consensus = false;
-    auto miter = added_tx_map_.find(giter->second->tx_hash);
-    if (miter != added_tx_map_.end()) {
-        added_tx_map_.erase(miter);
-    }
-
     auto prio_iter = prio_map_.find(giter->second->prio_key);
     if (prio_iter != prio_map_.end()) {
         prio_map_.erase(prio_iter);

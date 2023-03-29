@@ -33,7 +33,7 @@ public:
     TxItem(const transport::MessagePtr& msg)
             : msg_ptr(msg),
             prev_consensus_tm_us(0),
-            tx_hash(msg->msg_hash),
+            tx_hash(msg->header.tx_proto().gid()),
             gid(msg->header.tx_proto().gid()),
             gas_price(msg->header.tx_proto().gas_price()),
             in_consensus(false) {
@@ -49,7 +49,7 @@ public:
         }
 
         auto prio = common::ShiftUint64(now_tm);
-        prio_key = std::string((char*)&prio, sizeof(prio)) + tx_hash;
+        prio_key = std::string((char*)&prio, sizeof(prio)) + gid;
     }
 
     virtual int HandleTx(

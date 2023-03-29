@@ -68,8 +68,8 @@ static const std::string kTemporaryKeyPrefix = "t\x01";
 class PrefixDb {
 public:
     PrefixDb(const std::shared_ptr<db::Db>& db_ptr) : db_(db_ptr) {
-        gid_set_[0].reserve(20240);
-        gid_set_[1].reserve(20240);
+        gid_set_[0].reserve(30240);
+        gid_set_[1].reserve(30240);
         db_batch_tick_.CutOff(
             5000000lu,
             std::bind(&PrefixDb::DumpGidToDb, this, std::placeholders::_1));
@@ -729,7 +729,6 @@ public:
     bool GidExists(const std::string& gid) {
         auto now_tm = common::TimeUtils::TimestampUs();
         if (!gid_set_[valid_index_].empty() && dumped_gid_ && prev_gid_tm_us_ + 3000000lu < now_tm) {
-            ZJC_DEBUG("dump gid: %u", gid_set_[valid_index_].size());
             valid_index_ = (valid_index_ + 1) % 2;
             gid_set_[valid_index_].clear();
             prev_gid_tm_us_ = now_tm;

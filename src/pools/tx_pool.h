@@ -52,8 +52,8 @@ public:
 //         common::AutoSpinLock auto_lock(mutex_);
         for (int32_t i = 0; i < tx_hash_list.size(); ++i) {
             auto& txhash = tx_hash_list[i];
-            auto iter = added_tx_map_.find(txhash);
-            if (iter == added_tx_map_.end()) {
+            auto iter = gid_map_.find(txhash);
+            if (iter == gid_map_.end()) {
                 //         ZJC_DEBUG("success get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
                 return nullptr;
             }
@@ -156,7 +156,6 @@ private:
     void RemoveTx(const std::string& gid);
 
 //     common::SpinMutex mutex_;
-    std::unordered_map<std::string, TxItemPtr> added_tx_map_;
     std::unordered_map<std::string, TxItemPtr> gid_map_;
     std::queue<std::string> timeout_txs_;
     std::queue<std::string> timeout_remove_txs_;
