@@ -989,6 +989,14 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
         if (bft_msg.has_prepare_hash()) {
             assert(bft_msg.prepare_hash() == precommit_ptr->prepare_block()->hash());
         }
+    } else {
+        if (bft_msg.has_prepare_height()) {
+            bft_ptr->set_leader_pre_height(bft_msg.prepare_height());
+        }
+
+        if (bft_msg.has_prepare_hash()) {
+            bft_ptr->set_leader_pre_hash(bft_msg.prepare_hash());
+        }
     }
 
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
