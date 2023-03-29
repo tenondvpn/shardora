@@ -84,23 +84,20 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             return;
         }
 
-        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-        if (security_->Verify(
-                msg_ptr->msg_hash,
-                tx_msg.pubkey(),
-                header.sign()) != security::kSecuritySuccess) {
-            ZJC_ERROR("verify signature failed!");
-            return;
-        }
+//         msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
+//         if (security_->Verify(
+//                 msg_ptr->msg_hash,
+//                 tx_msg.pubkey(),
+//                 header.sign()) != security::kSecuritySuccess) {
+//             ZJC_ERROR("verify signature failed!");
+//             return;
+//         }
 
-        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        if (prefix_db_->GidExists(tx_msg.gid())) {
-            ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
-            return;
-        }
+//         if (prefix_db_->GidExists(tx_msg.gid())) {
+//             ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+//             return;
+//         }
 
-        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 //         ++prev_count_[msg_ptr->address_info->pool_index()];
 //         auto now_tm = common::TimeUtils::TimestampUs();
@@ -141,15 +138,25 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
     while (msg_queues_[pool_index].size() > 0 && ++count < kPopMessageCountEachTime) {
         transport::MessagePtr msg_ptr = nullptr;
         msg_queues_[pool_index].pop(&msg_ptr);
-//         auto& tx_msg = msg_ptr->header.tx_proto();
-//         msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-//         if (security_->Verify(
-//                 msg_ptr->msg_hash,
-//                 tx_msg.pubkey(),
-//                 msg_ptr->header.sign()) != security::kSecuritySuccess) {
-//             ZJC_ERROR("verify signature failed!");
-//             continue;
-//         }
+        auto& tx_msg = msg_ptr->header.tx_proto();
+        msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
+        if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
+            ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+            continue;
+        }
+
+        if (security_->Verify(
+                msg_ptr->msg_hash,
+                tx_msg.pubkey(),
+                msg_ptr->header.sign()) != security::kSecuritySuccess) {
+            ZJC_ERROR("verify signature failed!");
+            continue;
+        }
+
+        if (prefix_db_->GidExists(tx_msg.gid())) {
+            ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+            continue;
+        }
 
         DispatchTx(pool_index, msg_ptr);
     }

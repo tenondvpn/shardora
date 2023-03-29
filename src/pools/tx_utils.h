@@ -34,6 +34,7 @@ public:
             : msg_ptr(msg),
             prev_consensus_tm_us(0),
             tx_hash(msg->header.tx_proto().gid()),
+            unnique_tx_hash(msg_ptr->msg_hash),
             gid(msg->header.tx_proto().gid()),
             gas_price(msg->header.tx_proto().gas_price()),
             in_consensus(false) {
@@ -68,6 +69,7 @@ public:
     const uint64_t& gas_price;
     int32_t step = pools::protobuf::kNormalFrom;
     const std::string& tx_hash;
+    const std::string& unnique_tx_hash;
     const std::string& gid;
     std::string prio_key;
     bool in_consensus;
