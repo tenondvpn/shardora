@@ -2,7 +2,7 @@
 #include "vss/vss_manager.h"
 
 #include "common/time_utils.h"
-#include "network/route.h"
+#include "network/network_utils.h"
 #include "protos/get_proto_hash.h"
 
 namespace zjchain {
@@ -316,6 +316,8 @@ void VssManager::HandleFirstPeriodHash(const protobuf::VssMessage& vss_msg) {
         return;
     }
 
+    auto& elect_item = elect_item_[elect_valid_index_];
+    auto& id = elect_item.members[elect_item.local_index]->id;
     other_randoms_[mem_index].SetHash(id, vss_msg.random_hash());
     ZJC_DEBUG("HandleFirstPeriodHash: %s, %llu",
         common::Encode::HexEncode(id).c_str(), vss_msg.random_hash());
@@ -327,6 +329,8 @@ void VssManager::HandleSecondPeriodRandom(const protobuf::VssMessage& vss_msg) {
         return;
     }
 
+    auto& elect_item = elect_item_[elect_valid_index_];
+    auto& id = elect_item.members[elect_item.local_index]->id;
     other_randoms_[mem_index].SetFinalRandomNum(id, vss_msg.random());
     ZJC_DEBUG("HandleSecondPeriodRandom: %s, %llu",
         common::Encode::HexEncode(id).c_str(), vss_msg.random());
@@ -357,6 +361,8 @@ void VssManager::SetConsensusFinalRandomNum(const std::string& id, uint64_t fina
 }
 
 void VssManager::HandleThirdPeriodRandom(const protobuf::VssMessage& vss_msg) {
+    auto& elect_item = elect_item_[elect_valid_index_];
+    auto& id = elect_item.members[elect_item.local_index]->id;
     if (!IsVssThirdPeriodsHandleMessage()) {
         ZJC_ERROR("not IsVssThirdPeriodsHandleMessage, id: %s, pk: %s",
             common::Encode::HexEncode(id).c_str(),

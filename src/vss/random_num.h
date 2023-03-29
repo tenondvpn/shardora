@@ -27,14 +27,6 @@ public:
         Clear();
     }
 
-    void SetId(const std::string& id) {
-        owner_id_ = id;
-    }
-
-    std::string GetId() {
-        return owner_id_;
-    }
-
     void OnTimeBlock(uint64_t tm_block_tm) {
         std::lock_guard<std::mutex> guard(mutex_);
         if (tm_block_tm_ >= tm_block_tm) {
@@ -51,7 +43,6 @@ public:
         random_num_hash_ = common::Hash::Hash64(std::to_string(final_random_num_));
         tm_block_tm_ = tm_block_tm;
         valid_ = true;
-        owner_id_ = common::GlobalInfo::Instance()->id();
     }
 
     void SetHash(const std::string& id, uint64_t hash_num) {
