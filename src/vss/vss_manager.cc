@@ -4,7 +4,6 @@
 #include "common/time_utils.h"
 #include "network/route.h"
 #include "protos/get_proto_hash.h"
-#include "vss/proto/vss_proto.h"
 
 namespace zjchain {
 
