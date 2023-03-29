@@ -729,6 +729,7 @@ public:
     bool GidExists(const std::string& gid) {
         auto now_tm = common::TimeUtils::TimestampUs();
         if (!gid_set_[valid_index_].empty() && dumped_gid_ && prev_gid_tm_us_ + 10000000lu < now_tm) {
+            ZJC_DEBUG("dump gid: %u", gid_set_[valid_index_].size());
             valid_index_ = (valid_index_ + 1) % 2;
             gid_set_[valid_index_].clear();
             prev_gid_tm_us_ = now_tm;
@@ -759,14 +760,15 @@ private:
     void DumpGidToDb(uint8_t thread_idx) {
         if (!dumped_gid_) {
             uint32_t index = (valid_index_ + 1) % 2;
-            db_->Put(db_batch[index]);
             ZJC_DEBUG("dump gid: %u", db_batch[index].Count());
+            db_->Put(db_batch[index]);
             db_batch[index].Clear();
-            db_batch_tick_.CutOff(
-                3000000lu,
-                std::bind(&PrefixDb::DumpGidToDb, this, std::placeholders::_1));
             dumped_gid_ = true;
         }
+
+        db_batch_tick_.CutOff(
+            3000000lu,
+            std::bind(&PrefixDb::DumpGidToDb, this, std::placeholders::_1));
     }
 
     std::shared_ptr<db::Db> db_ = nullptr;
