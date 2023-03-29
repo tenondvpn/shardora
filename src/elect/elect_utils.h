@@ -33,7 +33,10 @@ struct HeapItem {
     uint32_t succ_count;
 };
 
-typedef std::function<void(uint32_t sharding_id, common::MembersPtr& members)> NewElectBlockCallback;
+typedef std::function<void(
+    uint32_t sharding_id,
+    uint64_t elect_height,
+    common::MembersPtr& members)> NewElectBlockCallback;
 
 inline bool operator<(const HeapItem& lhs, const HeapItem& rhs) {
     return lhs.succ_count < rhs.succ_count;

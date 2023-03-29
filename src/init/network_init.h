@@ -40,7 +40,10 @@ private:
     int InitSecurity();
     int CheckJoinWaitingPool();
     int GenesisCmd(common::ParserArgs& parser_arg);
-    void ElectBlockCallback(uint32_t sharding_id, common::MembersPtr& members);
+    void ElectBlockCallback(
+        uint32_t sharding_id,
+        uint64_t elect_height,
+        common::MembersPtr& members);
     void AddBlockItemToCache(
         uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,

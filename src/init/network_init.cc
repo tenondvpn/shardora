@@ -116,7 +116,8 @@ int NetworkInit::Init(int argc, char** argv) {
             &NetworkInit::ElectBlockCallback,
             this,
             std::placeholders::_1,
-            std::placeholders::_2));
+            std::placeholders::_2,
+            std::placeholders::_3));
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(security_, db_, kv_sync_);
     account_mgr_->Init(
         common::GlobalInfo::Instance()->message_handler_thread_count(),
@@ -188,7 +189,10 @@ void NetworkInit::InitLocalNetworkId() {
     CheckJoinWaitingPool();
 }
 
-void NetworkInit::ElectBlockCallback(uint32_t sharding_id, common::MembersPtr& members) {
+void NetworkInit::ElectBlockCallback(
+        uint32_t sharding_id,
+        uint64_t elect_height,
+        common::MembersPtr& members) {
     bft_mgr_->OnNewElectBlock(sharding_id, members);
     block_mgr_->OnNewElectBlock(sharding_id, members);
 }

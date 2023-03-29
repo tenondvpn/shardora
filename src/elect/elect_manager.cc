@@ -276,6 +276,7 @@ void ElectManager::OnNewElectBlock(
     if (new_elect_cb_ != nullptr) {
         new_elect_cb_(
             elect_block.shard_network_id(),
+            height,
             members_ptr_[elect_block.shard_network_id()]);
     }
 }
