@@ -728,10 +728,11 @@ public:
 
     bool GidExists(const std::string& gid) {
         auto now_tm = common::TimeUtils::TimestampUs();
-        if (!gid_set_.empty() && prev_gid_tm_us_ + 120000000lu < now_tm) {
+        if (!gid_set_[valid_index_].empty() && dumped_gid_ && prev_gid_tm_us_ + 120000000lu < now_tm) {
             valid_index_ = (valid_index_ + 1) % 2;
             gid_set_[valid_index_].clear();
             prev_gid_tm_us_ = now_tm;
+            dumped_gid_ = false;
         }
 
         std::string key = kGidPrefix + gid;
@@ -756,12 +757,16 @@ public:
 
 private:
     void DumpGidToDb(uint8_t thread_idx) {
-        uint32_t index = (valid_index_ + 1) % 2;
-        db_->Put(db_batch[index]);
-        db_batch[index].Clear();
-        db_batch_tick_.CutOff(
-            3000000lu,
-            std::bind(&PrefixDb::DumpGidToDb, this, std::placeholders::_1));
+        if (!dumped_gid_) {
+            uint32_t index = (valid_index_ + 1) % 2;
+            db_->Put(db_batch[index]);
+            ZJC_DEBUG("dump gid: %u", db_batch[index].Count());
+            db_batch[index].Clear();
+            db_batch_tick_.CutOff(
+                3000000lu,
+                std::bind(&PrefixDb::DumpGidToDb, this, std::placeholders::_1));
+            dumped_gid_ = true;
+        }
     }
 
     std::shared_ptr<db::Db> db_ = nullptr;
@@ -770,6 +775,7 @@ private:
     uint32_t valid_index_ = 0;
     uint64_t prev_gid_tm_us_ = 0;
     common::Tick db_batch_tick_;
+    volatile bool dumped_gid_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(PrefixDb);
 };
