@@ -84,13 +84,13 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             return;
         }
 
-//         msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-//         if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
-//             // avoid save gid different tx
-//             ZJC_DEBUG("tx msg hash exists: %s failed!",
-//                 common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
-//             return;
-//         }
+        msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
+        if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
+            // avoid save gid different tx
+            ZJC_DEBUG("tx msg hash exists: %s failed!",
+                common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+            return;
+        }
 //         if (security_->Verify(
 //                 msg_ptr->msg_hash,
 //                 tx_msg.pubkey(),
@@ -99,10 +99,10 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 //             return;
 //         }
 
-//         if (prefix_db_->GidExists(tx_msg.gid())) {
-//             ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
-//             return;
-//         }
+        if (prefix_db_->GidExists(tx_msg.gid())) {
+            ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+            return;
+        }
 
         msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 //         ++prev_count_[msg_ptr->address_info->pool_index()];
@@ -147,12 +147,12 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
         auto& tx_msg = msg_ptr->header.tx_proto();
         if (tx_msg.step() == pools::protobuf::kNormalFrom) {
             msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-            if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
-                // avoid save gid different tx
-                ZJC_DEBUG("tx msg hash exists: %s failed!",
-                    common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
-                continue;
-            }
+//             if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
+//                 // avoid save gid different tx
+//                 ZJC_DEBUG("tx msg hash exists: %s failed!",
+//                     common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+//                 continue;
+//             }
 
             if (security_->Verify(
                     msg_ptr->msg_hash,
@@ -163,10 +163,10 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
             }
         }
 
-        if (prefix_db_->GidExists(tx_msg.gid())) {
-            ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
-            continue;
-        }
+//         if (prefix_db_->GidExists(tx_msg.gid())) {
+//             ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+//             continue;
+//         }
 
         DispatchTx(pool_index, msg_ptr);
     }
