@@ -91,30 +91,25 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
         return;
     }
 
-    header_ptr->times[header_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto uni_dht = network::UniversalManager::Instance()->GetUniversal(
             kUniversalNetworkId);
     if (!uni_dht) {
         return;
     }
 
-    header_ptr->times[header_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto dht = GetDht(header.des_dht_key());
     if (!dht) {
         RouteByUniversal(header_ptr);
         return;
     }
 
-    header_ptr->times[header_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (header.has_broadcast()) {
         Broadcast(header_ptr->thread_idx, header_ptr);
 //         broadcast_queue_[header_ptr->thread_idx].push(header_ptr);
 //         broadcast_con_.notify_one();
     }
 
-    header_ptr->times[header_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     message_processor_[header.type()](header_ptr);
-    header_ptr->times[header_ptr->times_idx++] = common::TimeUtils::TimestampUs();
 }
 
 void Route::Broadcasting() {
