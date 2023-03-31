@@ -532,7 +532,7 @@ int GenesisBlockInit::GenerateShardSingleBlock() {
                 if (tenon_block->tx_list(i).storages(j).key() == timeblock::kAttrTimerBlock) {
                     uint64_t* data_arr = (uint64_t*)tenon_block->tx_list(i).storages(j).val_hash().c_str();
                     prefix_db_->SaveLatestTimeBlock(
-                        data_arr[0], tenon_block->height(), data_arr[1]);
+                        tenon_block->height(), data_arr[0], data_arr[1]);
                 }
             }
         }
