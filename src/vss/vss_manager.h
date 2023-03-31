@@ -51,7 +51,7 @@ private:
     void SetConsensusFinalRandomNum(const std::string& id, uint64_t final_random_num);
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
 
-    static const int64_t kDkgPeriodUs = common::kTimeBlockCreatePeriodSeconds / 10 * 1000u * 1000u;
+    int64_t kDkgPeriodUs = common::kTimeBlockCreatePeriodSeconds / 10 * 1000u * 1000u;
 
     RandomNum local_random_{ true };
     RandomNum other_randoms_[common::kEachShardMaxNodeCount];
