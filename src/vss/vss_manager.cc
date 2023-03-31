@@ -87,7 +87,7 @@ void VssManager::OnTimeBlock(
     third_offset_ = tmblock_tm + kDkgPeriodUs * 8;
     if (begin_time_us_ < (int64_t)tmblock_tm + offset_tm) {
         kDkgPeriodUs = (common::kTimeBlockCreatePeriodSeconds - 20) * 1000l * 1000l / 10l;
-        first_offset_ = tmblock_tm + offset_tm - begin_time_us_;
+        first_offset_ = tmblock_tm + offset_tm;
         begin_time_us_ = tmblock_tm + offset_tm - kDkgPeriodUs;
         second_offset_ = first_offset_ + kDkgPeriodUs * 3;
         third_offset_ = first_offset_ + kDkgPeriodUs * 7;
