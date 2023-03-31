@@ -319,7 +319,7 @@ void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {
                 network::kRootCongressNetworkId,
                 common::kRootChainPoolIndex,
                 tmblock.height(),
-                &tmblock) == kBlockSuccess) {
+                tmblock) == kBlockSuccess) {
             if (new_block_callback_ != nullptr) {
                 new_block_callback_(thread_idx, tmblock_ptr, db_batch);
             }
