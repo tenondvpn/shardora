@@ -666,9 +666,12 @@ void NetworkInit::DbNewBlockCallback(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
+    ZJC_DEBUG("ddddddd 9 1");
     if (block->tx_list_size() == 1) {
+        ZJC_DEBUG("ddddddd 9 2");
         switch (block->tx_list(0).step()) {
         case pools::protobuf::kConsensusRootTimeBlock:
+            ZJC_DEBUG("ddddddd 9");
             HandleTimeBlock(thread_idx, block, db_batch);
             break;
         default:
@@ -688,6 +691,7 @@ void NetworkInit::HandleTimeBlock(
                 return;
             }
 
+            ZJC_DEBUG("ddddddd 9 0");
             uint64_t* data_arr = (uint64_t*)tx.storages(i).val_hash().c_str();
             vss_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             tm_block_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);

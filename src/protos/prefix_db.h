@@ -422,6 +422,7 @@ public:
 
         tmblock.set_height(block_height);
         db_batch.Put(key, tmblock.SerializeAsString());
+        ZJC_DEBUG("dddddd success latest time block: %lu", block_height);
     }
 
     bool GetLatestTimeBlock(timeblock::protobuf::TimeBlock* tmblock) {
@@ -436,6 +437,7 @@ public:
             return false;
         }
 
+        ZJC_DEBUG("dddddd success get latest time block: %lu", tmblock->height());
         return true;
     }
 
@@ -489,6 +491,9 @@ public:
             block.hash(),
             batch);
         batch.Put(key, block.SerializeAsString());
+        if (block.tx_list(0).step() == pools::protobuf::kConsensusRootTimeBlock) {
+            ZJC_DEBUG("ddddddd save tm block: %lu", block.height());
+        }
         return true;
     }
 
