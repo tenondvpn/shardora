@@ -52,6 +52,7 @@ void VssManager::OnTimeBlock(
         }
     }
 
+    ClearAll();
     local_random_.OnTimeBlock(tm_block_tm);
     ZJC_DEBUG("OnTimeBlock comming tm_block_tm: %lu, tm_height: %lu, elect_height: %lu, epoch_random: %lu, local hash: %lu",
     tm_block_tm, tm_height, elect_item.elect_height, epoch_random, local_random_.GetHash());
@@ -65,7 +66,6 @@ void VssManager::OnTimeBlock(
 
     epoch_random_ = epoch_random;
     latest_tm_block_tm_ = tm_block_tm;
-    ClearAll();
     prev_tm_height_ = tm_height;
     int64_t local_offset_us = 0;
     auto tmblock_tm = tm_block_tm * 1000l * 1000l;
@@ -94,8 +94,8 @@ void VssManager::OnTimeBlock(
     }
 
     end_tm_ = tmblock_tm + common::kTimeBlockCreatePeriodSeconds * 1000000lu;
-    ZJC_DEBUG("tmblock_tm: %lu, begin_time_us_: %lu, first_offset_: %lu, second_offset_: %lu, third_offset_: %lu, kDkgPeriodUs: %lu",
-        tmblock_tm, begin_time_us_, first_offset_, second_offset_, third_offset_, kDkgPeriodUs);
+    ZJC_DEBUG("tmblock_tm: %lu, begin_time_us_: %lu, first_offset_: %lu, second_offset_: %lu, third_offset_: %lu, kDkgPeriodUs: %lu, local hash: %lu",
+        tmblock_tm, begin_time_us_, first_offset_, second_offset_, third_offset_, kDkgPeriodUs, local_random_.GetHash());
 }
 
 void VssManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
