@@ -1827,7 +1827,10 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         queue_item_ptr->block_ptr->pool_index(),
         queue_item_ptr->block_ptr->tx_list());
     block_mgr_->ConsensusAddBlock(thread_idx, queue_item_ptr);
-    LeaderBroadcastBlock(thread_idx, zjc_block)
+    if (bft_ptr->this_node_is_leader()) {
+        LeaderBroadcastBlock(thread_idx, zjc_block);
+    }
+
     RemoveBft(bft_ptr->thread_index(), bft_ptr->gid(), bft_ptr->this_node_is_leader());
     assert(bft_ptr->prepare_block()->precommit_bitmap_size() == zjc_block->precommit_bitmap_size());
     // for test
@@ -1854,15 +1857,11 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
 void BftManager::LeaderBroadcastBlock(
         uint8_t thread_index,
         const std::shared_ptr<block::protobuf::Block>& block) {
-    if (!bft_ptr->this_node_is_leader()) {
+    if (block->tx_list_size() != 1) {
         return;
     }
 
-    if (block.tx_list_size() != 1) {
-        return;
-    }
-
-    switch (block.tx_list(0).step()) {
+    switch (block->tx_list(0).step()) {
     case pools::protobuf::kConsensusRootTimeBlock:
         tm_block_mgr_->BroadcastTimeblock(thread_index, block);
         break;
