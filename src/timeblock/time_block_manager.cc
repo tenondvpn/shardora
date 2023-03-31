@@ -71,9 +71,13 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tx_info.set_amount(0);
     tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
     tx_info.set_key(kAttrTimerBlock);
-    tx_info.set_value(std::to_string(new_time_block_tm) + "_" + std::to_string(0));
+    char data[16];
+    uint64_t* u64_data = (uint64_t*)data;
+    u64_data[0] = new_time_block_tm;
+    u64_data[1] = vss_mgr_->GetConsensusFinalRandom();
+    tx_info.set_value(std::string(data, sizeof(data)));
     tmblock_tx_ptr_ = create_tm_tx_cb_(msg_ptr);
-    ZJC_DEBUG("success create timeblock tx.");
+    ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu", u64_data[0], u64_data[1]);
 }
 
 void TimeBlockManager::NewBlockWithTx(

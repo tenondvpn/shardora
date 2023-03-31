@@ -686,25 +686,12 @@ void NetworkInit::HandleTimeBlock(
     auto& tx = block->tx_list(0);
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == timeblock::kAttrTimerBlock) {
-            common::Split<> items(tx.storages(i).val_hash().c_str(), '_');
-            if (items.Count() != 2) {
-                assert(false);
+            if (tx.storages(i).val_hash().size() != 16) {
                 return;
             }
 
-            uint64_t tm = 0;
-            uint64_t vss = 0;
-            if (!common::StringUtil::ToUint64(items[0], &tm)) {
-                assert(false);
-                return;
-            }
-
-            if (!common::StringUtil::ToUint64(items[1], &vss)) {
-                assert(false);
-                return;
-            }
-
-            vss_mgr_->OnTimeBlock(tm, block->height(), vss);
+            uint64_t* data_arr = (uint64_t*)tx.storages(i).val_hash().c_str();
+            vss_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             break;
         }
     }
