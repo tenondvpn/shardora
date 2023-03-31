@@ -529,13 +529,9 @@ int GenesisBlockInit::GenerateShardSingleBlock() {
                 }
 
                 if (tenon_block->tx_list(i).storages(j).key() == timeblock::kAttrTimerBlock) {
-                    timeblock::protobuf::TimeBlock tm_block;
-                    if (!tm_block.ParseFromString(tenon_block->tx_list(i).storages(j).val_hash())) {
-                        assert(false);
-                    }
-
+                    uint64_t* data_arr = (uint64_t*)tenon_block->tx_list(i).storages(j).val_hash().c_str();
                     prefix_db_->SaveLatestTimeBlock(
-                        tm_block.height(), tm_block.timestamp(), tm_block.vss_random());
+                        data_arr[0], tenon_block->height(), data_arr[1]);
                 }
             }
         }
