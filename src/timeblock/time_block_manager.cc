@@ -122,6 +122,7 @@ void TimeBlockManager::OnTimeBlock(
         latest_time_block_tm,
         latest_time_block_tm_,
         vss_random);
+    assert(vss_random != 0);
     latest_time_block_height_ = latest_time_block_height;
     latest_time_block_tm_ = latest_time_block_tm;
     latest_tm_block_local_sec_ = common::TimeUtils::TimestampSeconds();
