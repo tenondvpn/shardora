@@ -405,10 +405,10 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         block::protobuf::Block tenon_block2;
         tenon_block2.ParseFromString(tmp_str);
         assert(tenon_block2.tx_list_size() > 0);
+        db::DbWriteBatch db_batch;
         prefix_db_->SaveLatestTimeBlock(tenon_block->height(), db_batch);
         fputs((common::Encode::HexEncode(tmp_str) + "\n").c_str(), root_gens_init_block_file);
 //         tmblock::TimeBlockManager::Instance()->UpdateTimeBlock(1, now_tm, now_tm);
-        db::DbWriteBatch db_batch;
         AddBlockItemToCache(tenon_block, db_batch);
         db_->Put(db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
