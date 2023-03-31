@@ -324,7 +324,7 @@ void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {
                 tmblock) == kBlockSuccess) {
             ZJC_DEBUG("ddddd2");
             if (new_block_callback_ != nullptr) {
-                ZJC_DEBUG("ddddd3");
+                ZJC_DEBUG("ddddd3: %lu, %d", tmblock_ptr->height(), tmblock_ptr->tx_list(0).step());
                 new_block_callback_(thread_idx, tmblock_ptr, db_batch);
             }
         }
