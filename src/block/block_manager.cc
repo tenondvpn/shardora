@@ -312,7 +312,9 @@ void BlockManager::AddNewBlock(
 void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {
     timeblock::protobuf::TimeBlock tmblock;
     db::DbWriteBatch db_batch;
+    ZJC_DEBUG("ddddd0");
     if (prefix_db_->GetLatestTimeBlock(&tmblock)) {
+        ZJC_DEBUG("ddddd1");
         auto tmblock_ptr = std::make_shared<block::protobuf::Block>();
         auto& tmblock = *tmblock_ptr;
         if (GetBlockWithHeight(
@@ -320,7 +322,9 @@ void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {
                 common::kRootChainPoolIndex,
                 tmblock.height(),
                 tmblock) == kBlockSuccess) {
+            ZJC_DEBUG("ddddd2");
             if (new_block_callback_ != nullptr) {
+                ZJC_DEBUG("ddddd3");
                 new_block_callback_(thread_idx, tmblock_ptr, db_batch);
             }
         }

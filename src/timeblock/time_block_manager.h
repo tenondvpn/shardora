@@ -58,8 +58,6 @@ public:
             }
 
             tmblock_tx_ptr_->prev_consensus_tm_us = now_tm_us;
-        } else {
-            ZJC_DEBUG("time block ptr is null");
         }
 
         return tmblock_tx_ptr_;
