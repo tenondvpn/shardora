@@ -150,7 +150,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
-    tm_block_mgr_->Init(pools_mgr_, db_, vss_mgr_);
+    tm_block_mgr_->Init(vss_mgr_,pools_mgr_, db_);
     if (elect_mgr_->Init() != elect::kElectSuccess) {
         INIT_ERROR("init elect manager failed!");
         return kInitError;
@@ -683,7 +683,7 @@ void NetworkInit::HandleTimeBlock(
         db::DbWriteBatch& db_batch) {
     auto& tx = block->tx_list(0);
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).key() == kAttrTimerBlock) {
+        if (tx.storages(i).key() == timeblock::kAttrTimerBlock) {
             common::Split<> items(tx.storages(i).val_hash().c_str(), '_');
             if (items.Count() != 2) {
                 assert(false);
@@ -706,6 +706,7 @@ void NetworkInit::HandleTimeBlock(
             break;
         }
     }
+}
 
 }  // namespace init
 
