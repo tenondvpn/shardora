@@ -40,18 +40,6 @@ void VssManager::OnTimeBlock(
         return;
     }
 
-    ZJC_DEBUG("OnTimeBlock comming tm_block_tm: %lu, tm_height: %lu, elect_height: %lu, epoch_random: %lu",
-    tm_block_tm, tm_height, elect_item.elect_height, epoch_random);
-    if ((max_count_ * 3 / 2 + 1) < elect_item.member_count || max_count_random_ == 0) {
-        ZJC_ERROR("use old random: %lu, max_count_: %d, expect: %d, member_count: %d, max_count_random_: %lu",
-            epoch_random_, max_count_, (max_count_ * 3 / 2 + 1), elect_item.member_count, max_count_random_);
-        prev_valid_vss_ = epoch_random_;
-    } else {
-        prev_valid_vss_ = max_count_random_;
-    }
-    ClearAll();
-    epoch_random_ = epoch_random;
-    latest_tm_block_tm_ = tm_block_tm;
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         if (prev_tm_height_ != common::kInvalidUint64 && prev_tm_height_ >= tm_height) {
             ZJC_ERROR("prev_tm_height_ >= tm_height[%lu][%lu].", prev_tm_height_, tm_height);
@@ -62,10 +50,22 @@ void VssManager::OnTimeBlock(
             ZJC_ERROR("not elected.");
             return;
         }
-
-        local_random_.OnTimeBlock(tm_block_tm);
     }
 
+    local_random_.OnTimeBlock(tm_block_tm);
+    ZJC_DEBUG("OnTimeBlock comming tm_block_tm: %lu, tm_height: %lu, elect_height: %lu, epoch_random: %lu, local hash: %lu",
+    tm_block_tm, tm_height, elect_item.elect_height, epoch_random, local_random_.GetHash());
+    if ((max_count_ * 3 / 2 + 1) < elect_item.member_count || max_count_random_ == 0) {
+        ZJC_ERROR("use old random: %lu, max_count_: %d, expect: %d, member_count: %d, max_count_random_: %lu",
+            epoch_random_, max_count_, (max_count_ * 3 / 2 + 1), elect_item.member_count, max_count_random_);
+        prev_valid_vss_ = epoch_random_;
+    } else {
+        prev_valid_vss_ = max_count_random_;
+    }
+
+    epoch_random_ = epoch_random;
+    latest_tm_block_tm_ = tm_block_tm;
+    ClearAll();
     prev_tm_height_ = tm_height;
     int64_t local_offset_us = 0;
     auto tmblock_tm = tm_block_tm * 1000l * 1000l;
@@ -174,11 +174,13 @@ bool VssManager::IsVssFirstPeriodsHandleMessage() {
 
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if ((int64_t)now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4)) {
+        ZJC_DEBUG("IsVssFirstPeriodsHandleMessage now_tm_us: %lu, begin_time_us_: %lu, (begin_time_us_ + kDkgPeriodUs * 4): %lu",
+            now_tm_us, begin_time_us_, (begin_time_us_ + kDkgPeriodUs * 4));
         return true;
     }
 
-    ZJC_DEBUG("IsVssFirstPeriodsHandleMessage now_tm_us: %lu, (begin_time_us_ + kDkgPeriodUs * 4): %lu",
-        now_tm_us, (begin_time_us_ + kDkgPeriodUs * 4));
+//     ZJC_DEBUG("IsVssFirstPeriodsHandleMessage now_tm_us: %lu, (begin_time_us_ + kDkgPeriodUs * 4): %lu",
+//         now_tm_us, (begin_time_us_ + kDkgPeriodUs * 4));
     return false;
 }
 
@@ -196,8 +198,8 @@ bool VssManager::IsVssSecondPeriodsHandleMessage() {
         return true;
     }
 
-    ZJC_DEBUG("IsVssSecondPeriodsHandleMessage now_tm_us: %lu, (begin_time_us_ + kDkgPeriodUs * 8): %lu, (begin_time_us_ + kDkgPeriodUs * 4): %lu",
-        now_tm_us, (begin_time_us_ + kDkgPeriodUs * 8), (begin_time_us_ + kDkgPeriodUs * 4));
+//     ZJC_DEBUG("IsVssSecondPeriodsHandleMessage now_tm_us: %lu, (begin_time_us_ + kDkgPeriodUs * 8): %lu, (begin_time_us_ + kDkgPeriodUs * 4): %lu",
+//         now_tm_us, (begin_time_us_ + kDkgPeriodUs * 8), (begin_time_us_ + kDkgPeriodUs * 4));
     return false;
 }
 
@@ -213,9 +215,9 @@ bool VssManager::IsVssThirdPeriodsHandleMessage() {
     if ((int64_t)now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 8)) {
         return true;
     }
-
-    ZJC_DEBUG("IsVssThirdPeriodsHandleMessage now_tm_us: %lu, (begin_time_us_ + kDkgPeriodUs * 8): %lu",
-        now_tm_us, (begin_time_us_ + kDkgPeriodUs * 8));
+// 
+//     ZJC_DEBUG("IsVssThirdPeriodsHandleMessage now_tm_us: %lu, (begin_time_us_ + kDkgPeriodUs * 8): %lu",
+//         now_tm_us, (begin_time_us_ + kDkgPeriodUs * 8));
     return false;
 }
 

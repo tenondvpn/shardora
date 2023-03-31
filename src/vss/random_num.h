@@ -23,12 +23,10 @@ public:
     ~RandomNum() {}
 
     void ResetStatus() {
-        std::lock_guard<std::mutex> guard(mutex_);
         Clear();
     }
 
     void OnTimeBlock(uint64_t tm_block_tm) {
-        std::lock_guard<std::mutex> guard(mutex_);
         if (tm_block_tm_ >= tm_block_tm) {
             return;
         }
@@ -46,7 +44,6 @@ public:
     }
 
     void SetHash(const std::string& id, uint64_t hash_num) {
-        std::lock_guard<std::mutex> guard(mutex_);
         // owner has came
         if (valid_ || is_local_ || !owner_id_.empty()) {
             return;
@@ -57,17 +54,14 @@ public:
     }
 
     uint64_t GetHash() {
-        std::lock_guard<std::mutex> guard(mutex_);
         return random_num_hash_;
     }
 
     uint64_t GetFinalRandomNum() {
-        std::lock_guard<std::mutex> guard(mutex_);
         return final_random_num_;
     }
     
     void SetFinalRandomNum(const std::string& id, uint64_t final_random_num) {
-        std::lock_guard<std::mutex> guard(mutex_);
         // random hash must coming
         if (valid_ || is_local_ || owner_id_ != id) {
             return;
@@ -97,7 +91,6 @@ private:
         owner_id_ = "";
     }
 
-    std::mutex mutex_;
     uint64_t final_random_num_{ 0 };
     uint64_t tm_block_tm_{ 0 };
     uint64_t random_num_hash_{ 0 };
