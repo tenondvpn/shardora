@@ -29,6 +29,7 @@ public:
         common::MembersPtr& members);
     uint64_t EpochRandom();
     uint64_t GetConsensusFinalRandom();
+
     void SetFinalVss(uint64_t vss_random) {
         prev_valid_vss_ = vss_random;
     }
@@ -48,6 +49,7 @@ private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     uint64_t GetAllVssValid();
     void SetConsensusFinalRandomNum(const std::string& id, uint64_t final_random_num);
+    void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
 
     int64_t kDkgPeriodUs = common::kTimeBlockCreatePeriodSeconds / 10 * 1000u * 1000u;
     RandomNum local_random_{ true };

@@ -17,6 +17,10 @@
 
 namespace zjchain {
 
+namespace vss {
+    class VssManager;
+}
+
 namespace timeblock {
 
 class TimeBlockManager {
@@ -24,18 +28,9 @@ public:
     TimeBlockManager();
     ~TimeBlockManager();
     void Init(
-            std::shared_ptr<pools::TxPoolManager>& pools_mgr,
-            std::shared_ptr<db::Db>& db) {
-        pools_mgr_ = pools_mgr;
-        db_ = db;
-        prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-        LoadLatestTimeBlock();
-    }
-
-    void SetCreateTmTxFunction(pools::CreateConsensusItemFunction func) {
-        create_tm_tx_cb_ = func;
-    }
-
+        std::shared_ptr<vss::VssManager>& vss_mgr,
+        std::shared_ptr<pools::TxPoolManager>& pools_mgr,
+        std::shared_ptr<db::Db>& db);
     void BroadcastTimeblock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item);
@@ -46,10 +41,11 @@ public:
         db::DbWriteBatch& db_batch);
     uint64_t LatestTimestamp();
     uint64_t LatestTimestampHeight();
-    void UpdateTimeBlock(
-        uint64_t latest_time_block_height,
-        uint64_t lastest_time_block_tm,
-        uint64_t vss_random);
+
+    void SetCreateTmTxFunction(pools::CreateConsensusItemFunction func) {
+        create_tm_tx_cb_ = func;
+    }
+
     pools::TxItemPtr tmblock_tx_ptr(bool leader) const {
         if (tmblock_tx_ptr_ != nullptr) {
             auto now_tm_us = common::TimeUtils::TimestampUs();
@@ -76,6 +72,11 @@ public:
 private:
     void CreateTimeBlockTx();
     void LoadLatestTimeBlock();
+    void UpdateTimeBlock(
+        uint64_t latest_time_block_height,
+        uint64_t lastest_time_block_tm,
+        uint64_t vss_random);
+
     bool CanCallTimeBlockTx() const {
         uint64_t now_sec = common::TimeUtils::TimestampSeconds();
         if (now_sec >= latest_time_block_tm_ + common::kTimeBlockCreatePeriodSeconds) {
@@ -102,6 +103,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     pools::TxItemPtr tmblock_tx_ptr_ = nullptr;
     pools::CreateConsensusItemFunction create_tm_tx_cb_ = nullptr;
+    std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(TimeBlockManager);
 };

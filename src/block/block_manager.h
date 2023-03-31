@@ -31,7 +31,8 @@ public:
         std::shared_ptr<AccountManager>& account_mgr,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<pools::TxPoolManager>& pools_mgr,
-        const std::string& local_id);
+        const std::string& local_id,
+        DbBlockCallback new_block_callback);
     void NetworkNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item);
@@ -97,6 +98,7 @@ private:
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
     transport::MessagePtr to_txs_msg_ = nullptr;
     uint64_t prev_to_txs_tm_us_ = 0;
+    DbBlockCallback new_block_callback_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

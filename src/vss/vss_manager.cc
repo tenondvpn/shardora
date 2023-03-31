@@ -15,6 +15,9 @@ VssManager::VssManager(std::shared_ptr<security::Security>& security_ptr)
     network::Route::Instance()->RegisterMessage(
         common::kVssMessage,
         std::bind(&VssManager::HandleMessage, this, std::placeholders::_1));
+    transport::Processor::Instance()->RegisterProcessor(
+        common::kPoolTimerMessage,
+        std::bind(&VssManager::ConsensusTimerMessage, this, std::placeholders::_1));
 }
 
 uint64_t VssManager::EpochRandom() {
@@ -81,6 +84,10 @@ void VssManager::OnTimeBlock(
 
     ZJC_DEBUG("tmblock_tm: %lu, begin_time_us_: %lu, first_offset: %lu, second_offset: %lu, third_offset: %lu, kDkgPeriodUs: %lu",
         tmblock_tm, begin_time_us_, first_offset, second_offset, third_offset, kDkgPeriodUs);
+}
+
+void VssManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+    
 }
 
 void VssManager::OnNewElectBlock(

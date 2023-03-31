@@ -124,7 +124,12 @@ int NetworkInit::Init(int argc, char** argv) {
         common::GlobalInfo::Instance()->message_handler_thread_count(),
         db_,
         pools_mgr_);
-    block_mgr_->Init(account_mgr_, db_, pools_mgr_, security_->GetAddress());
+    auto new_db_cb = std::bind(
+        &NetworkInit::DbNewBlockCallback,
+        this,
+        std::placeholders::_1,
+        std::placeholders::_2);
+    block_mgr_->Init(account_mgr_, db_, pools_mgr_, security_->GetAddress(), new_db_cb);
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     bft_mgr_ = std::make_shared<consensus::BftManager>();
     auto bft_init_res = bft_mgr_->Init(
@@ -623,10 +628,6 @@ void NetworkInit::AddBlockItemToCache(
         uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
-    if (block->network_id() != common::GlobalInfo::Instance()->network_id()) {
-        return;
-    }
-
     const auto& tx_list = block->tx_list();
     if (tx_list.empty()) {
         assert(false);
@@ -652,11 +653,19 @@ void NetworkInit::AddBlockItemToCache(
             break;
         case pools::protobuf::kConsensusRootTimeBlock:
             tm_block_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
+            vss_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             break;
         default:
             break;
         }
     }
+}
+
+// pool tx thread, thread safe
+void NetworkInit::DbNewBlockCallback(
+        std::shared_ptr<block::protobuf::Block>& block,
+        db::DbWriteBatch& db_batch) {
+
 }
 
 }  // namespace init

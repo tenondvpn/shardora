@@ -462,9 +462,9 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
             block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
             pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
             // remove bft
-    //             ZJC_DEBUG("removed bft gid coming: %s, block hash: %s",
-//                 common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
-//                 common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str());
+            ZJC_DEBUG("sync block message height: %lu, block hash: %s",
+                block_ptr->height(),
+                common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str());
         } else {
             if (bft_ptr->prepare_block() == nullptr) {
                 auto block_hash = GetBlockHash(req_bft_msg.block());

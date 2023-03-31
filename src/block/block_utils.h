@@ -109,6 +109,10 @@ struct BlockToDbItem {
 
 typedef std::shared_ptr<BlockToDbItem> BlockToDbItemPtr;
 
+typedef std::function<void(
+    std::shared_ptr<block::protobuf::Block>& block,
+    db::DbWriteBatch& db_batch)> DbBlockCallback;
+
 static const uint32_t kUnicastAddressLength = 20u;
 static const std::string kLastBlockHashPrefix("last_block_hash_pre_");
 static const std::string kFieldContractOwner = common::Encode::HexDecode(

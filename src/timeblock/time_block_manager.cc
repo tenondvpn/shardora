@@ -15,7 +15,7 @@
 #include "timeblock/time_block_utils.h"
 #include "transport/tcp_transport.h"
 #include "transport/transport_utils.h"
-// #include "vss/vss_manager.h"
+#include "vss/vss_manager.h"
 
 namespace zjchain {
 
@@ -23,6 +23,17 @@ namespace timeblock {
 
 static const std::string kTimeBlockGidPrefix = common::Encode::HexDecode(
     "c575ff0d3eea61205e3433495431e312056d0d51a64c6badfd4ad8cc092b7daa");
+
+void TimeBlockManager::Init(
+        std::shared_ptr<vss::VssManager>& vss_mgr,
+        std::shared_ptr<pools::TxPoolManager>& pools_mgr,
+        std::shared_ptr<db::Db>& db) {
+    pools_mgr_ = pools_mgr;
+    db_ = db;
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    vss_mgr_ = vss_mgr;
+    LoadLatestTimeBlock();
+}
 
 uint64_t TimeBlockManager::LatestTimestamp() {
     return latest_time_block_tm_;
@@ -108,11 +119,14 @@ void TimeBlockManager::BroadcastTimeblock(
     msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
     msg.set_src_sharding_id(network::kRootCongressNetworkId);
+    msg.set_type(common::kConsensusMessage);
     dht::DhtKeyManager dht_key(network::kNodeNetworkId);
     msg.set_des_dht_key(dht_key.StrKey());
     auto& bft_msg = *msg.mutable_zbft();
     *bft_msg.mutable_block() = *block_item;
     bft_msg.set_pool_index(common::kRootChainPoolIndex);
+    bft_msg.set_member_index(-1);
+    bft_msg.set_sync_block(true);
     auto* brdcast = msg.mutable_broadcast();
     std::string msg_hash;
     protos::GetProtoHash(msg, &msg_hash);
@@ -127,7 +141,6 @@ void TimeBlockManager::UpdateTimeBlock(
         uint64_t vss_random) {
     if (latest_time_block_height_ != common::kInvalidUint64 &&
             latest_time_block_height_ >= latest_time_block_height) {
-        assert(false);
         return;
     }
 
@@ -145,13 +158,6 @@ void TimeBlockManager::UpdateTimeBlock(
         latest_time_block_height,
         latest_time_block_tm,
         vss_random);
-//     vss::VssManager::Instance()->OnTimeBlock(
-//         latest_time_block_tm,
-//         latest_time_block_height,
-//         elect::ElectManager::Instance()->latest_height(
-//             common::GlobalInfo::Instance()->network_id()),
-//         vss_random);
-//     elect::ElectManager::Instance()->OnTimeBlock(latest_time_block_tm);
 }
 
 void TimeBlockManager::LoadLatestTimeBlock() {

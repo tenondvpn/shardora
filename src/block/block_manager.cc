@@ -28,11 +28,13 @@ int BlockManager::Init(
         std::shared_ptr<AccountManager>& account_mgr,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<pools::TxPoolManager>& pools_mgr,
-        const std::string& local_id) {
+        const std::string& local_id,
+        DbBlockCallback new_block_callback) {
     account_mgr_ = account_mgr;
     db_ = db;
     pools_mgr_ = pools_mgr;
     local_id_ = local_id;
+    new_block_callback_ = new_block_callback;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(db_, local_id, max_consensus_sharding_id_);
     if (common::GlobalInfo::Instance()->for_ck_server()) {
@@ -154,7 +156,6 @@ void BlockManager::AddAllAccount(
         prefix_db_->AddAddressInfo(account_info->addr(), *account_info, db_batch);
     }
 }
-
 
 void BlockManager::HandleNormalToTx(
         uint8_t thread_idx,
@@ -294,6 +295,10 @@ void BlockManager::AddNewBlock(
                 break;
             }
         }
+    }
+
+    if (new_block_callback_ != nullptr) {
+        new_block_callback_(block_item, db_batch);
     }
 
     auto st = db_->Put(db_batch);
