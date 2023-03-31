@@ -56,14 +56,6 @@ void VssManager::OnTimeBlock(
     local_random_.OnTimeBlock(tm_block_tm);
     ZJC_DEBUG("OnTimeBlock comming tm_block_tm: %lu, tm_height: %lu, elect_height: %lu, epoch_random: %lu, local hash: %lu",
     tm_block_tm, tm_height, elect_item.elect_height, epoch_random, local_random_.GetHash());
-    if ((max_count_ * 3 / 2 + 1) < elect_item.member_count || max_count_random_ == 0) {
-        ZJC_ERROR("use old random: %lu, max_count_: %d, expect: %d, member_count: %d, max_count_random_: %lu",
-            epoch_random_, max_count_, (max_count_ * 3 / 2 + 1), elect_item.member_count, max_count_random_);
-        prev_valid_vss_ = epoch_random_;
-    } else {
-        prev_valid_vss_ = max_count_random_;
-    }
-
     epoch_random_ = epoch_random;
     latest_tm_block_tm_ = tm_block_tm;
     prev_tm_height_ = tm_height;
@@ -131,7 +123,7 @@ uint64_t VssManager::GetConsensusFinalRandom() {
         return max_count_random_;
     }
 
-    return prev_valid_vss_;
+    return epoch_random_;
 }
 
 void VssManager::ClearAll() {

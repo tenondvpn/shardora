@@ -31,7 +31,7 @@ public:
     uint64_t GetConsensusFinalRandom();
 
     void SetFinalVss(uint64_t vss_random) {
-        prev_valid_vss_ = vss_random;
+        epoch_random_ = vss_random;
     }
    
 private:
@@ -68,7 +68,6 @@ private:
     uint32_t max_count_{ 0 };
     uint64_t max_count_random_{ 0 };
     int64_t begin_time_us_{ 0 };
-    uint64_t prev_valid_vss_{ 0 };
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     ElectItem elect_item_[2];
     uint32_t elect_valid_index_ = 0;
