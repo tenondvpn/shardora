@@ -376,18 +376,18 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kConsensusMessage);
     auto& elect_item = elect_items_[elect_item_idx_];
-//     ZJC_INFO("consensus message coming prepare gid: %s, precommit gid: %s, "
-//         "commit gid: %s thread idx: %d, has sync: %d, txhash: %lu, "
-//         "member index: %d, other member index: %d, pool index: %d",
-//         common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
-//         common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
-//         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
-//         msg_ptr->thread_idx,
-//         header.zbft().has_sync_block(),
-//         header.hash64(),
-//         elect_item.local_node_member_index,
-//         header.zbft().member_index(),
-//         header.zbft().pool_index());
+    ZJC_INFO("consensus message coming prepare gid: %s, precommit gid: %s, "
+        "commit gid: %s thread idx: %d, has sync: %d, txhash: %lu, "
+        "member index: %d, other member index: %d, pool index: %d",
+        common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+        common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
+        common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+        msg_ptr->thread_idx,
+        header.zbft().has_sync_block(),
+        header.hash64(),
+        elect_item.local_node_member_index,
+        header.zbft().member_index(),
+        header.zbft().pool_index());
     if (elect_item.local_node_member_index == header.zbft().member_index()) {
         assert(false);
     }
@@ -923,7 +923,7 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
                     bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             }
         } else if (bft_msg.tx_bft().tx_type() == pools::protobuf::kConsensusRootTimeBlock) {
-            txs_ptr = txs_pools_->GetTimeblockTx(bft_msg.pool_index());
+            txs_ptr = txs_pools_->GetTimeblockTx(bft_msg.pool_index(), false);
         } else {
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
@@ -1827,6 +1827,7 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         queue_item_ptr->block_ptr->pool_index(),
         queue_item_ptr->block_ptr->tx_list());
     block_mgr_->ConsensusAddBlock(thread_idx, queue_item_ptr);
+    LeaderBroadcastBlock(thread_idx, zjc_block)
     RemoveBft(bft_ptr->thread_index(), bft_ptr->gid(), bft_ptr->this_node_is_leader());
     assert(bft_ptr->prepare_block()->precommit_bitmap_size() == zjc_block->precommit_bitmap_size());
     // for test
@@ -1848,6 +1849,26 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
 //     ZJC_DEBUG("new block: %s, gid: %s",
 //         common::Encode::HexEncode(zjc_block->hash()).c_str(),
 //         common::Encode::HexEncode(bft_ptr->gid()).c_str());
+}
+
+void BftManager::LeaderBroadcastBlock(
+        uint8_t thread_index,
+        const std::shared_ptr<block::protobuf::Block>& block) {
+    if (!bft_ptr->this_node_is_leader()) {
+        return;
+    }
+
+    if (block.tx_list_size() != 1) {
+        return;
+    }
+
+    switch (block.tx_list(0).step()) {
+    case pools::protobuf::kConsensusRootTimeBlock:
+        tm_block_mgr_->BroadcastTimeblock(thread_index, block);
+        break;
+    default:
+        break;
+    }
 }
 
 int BftManager::LeaderCallCommit(

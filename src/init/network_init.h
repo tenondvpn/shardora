@@ -18,6 +18,7 @@
 #include "sync/key_value_sync.h"
 #include "timeblock/time_block_manager.h"
 #include "transport/multi_thread.h"
+#include "vss/vss_manager.h"
 
 namespace zjchain {
 
@@ -65,6 +66,7 @@ private:
     std::shared_ptr<consensus::BftManager> bft_mgr_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
+    std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     http::HttpServer http_server_;
     HttpHandler http_handler_;
     uint8_t main_thread_idx_ = 255;

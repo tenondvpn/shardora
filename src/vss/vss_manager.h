@@ -22,9 +22,11 @@ public:
     void OnTimeBlock(
         uint64_t tm_block_tm,
         uint64_t tm_height,
-        uint64_t elect_height,
         uint64_t epoch_random);
-    void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
+    void OnNewElectBlock(
+        uint32_t sharding_id,
+        uint64_t elect_height,
+        common::MembersPtr& members);
     uint64_t EpochRandom();
     uint64_t GetConsensusFinalRandom();
     void SetFinalVss(uint64_t vss_random) {

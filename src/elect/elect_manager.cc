@@ -286,6 +286,8 @@ void ElectManager::ElectedToConsensusShard(
         protobuf::ElectBlock& elect_block,
         bool cons_elected) {
     auto local_netid = common::GlobalInfo::Instance()->network_id();
+    ZJC_DEBUG("now join network local sharding id: %u, elect sharding id: %u, elected: %d",
+        local_netid, elect_block.shard_network_id(), cons_elected);
     if (!cons_elected) {
         if (local_netid == elect_block.shard_network_id()) {
 //             Quit(local_netid);
@@ -324,6 +326,11 @@ void ElectManager::ElectedToConsensusShard(
             }
 
             prev_elected_ids_ = now_elected_ids_;
+            if (Join(thread_idx, elect_block.shard_network_id()) != kElectSuccess) {
+                ELECT_ERROR("join elected network failed![%u]", elect_block.shard_network_id());
+            } else {
+                ELECT_INFO("join new election shard network: %u", elect_block.shard_network_id());
+            }
         }
     }
 }

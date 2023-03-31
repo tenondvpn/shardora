@@ -24,7 +24,6 @@ uint64_t VssManager::EpochRandom() {
 void VssManager::OnTimeBlock(
         uint64_t tm_block_tm,
         uint64_t tm_height,
-        uint64_t elect_height,
         uint64_t epoch_random) {
     auto& elect_item = elect_item_[elect_valid_index_];
     if (elect_item.members == nullptr) {
@@ -38,7 +37,7 @@ void VssManager::OnTimeBlock(
     }
 
     ZJC_DEBUG("OnTimeBlock comming tm_block_tm: %lu, tm_height: %lu, elect_height: %lu, epoch_random: %lu",
-    tm_block_tm, tm_height, elect_height, epoch_random);
+    tm_block_tm, tm_height, elect_item.elect_height, epoch_random);
     if ((max_count_ * 3 / 2 + 1) < elect_item.member_count || max_count_random_ == 0) {
         ZJC_ERROR("use old random: %lu, max_count_: %d, expect: %d, member_count: %d, max_count_random_: %lu",
             epoch_random_, max_count_, (max_count_ * 3 / 2 + 1), elect_item.member_count, max_count_random_);
@@ -49,7 +48,6 @@ void VssManager::OnTimeBlock(
     ClearAll();
     epoch_random_ = epoch_random;
     latest_tm_block_tm_ = tm_block_tm;
-    prev_elect_height_ = elect_height;
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         if (prev_tm_height_ != common::kInvalidUint64 && prev_tm_height_ >= tm_height) {
             ZJC_ERROR("prev_tm_height_ >= tm_height[%lu][%lu].", prev_tm_height_, tm_height);
@@ -85,7 +83,10 @@ void VssManager::OnTimeBlock(
         tmblock_tm, begin_time_us_, first_offset, second_offset, third_offset, kDkgPeriodUs);
 }
 
-void VssManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members) {
+void VssManager::OnNewElectBlock(
+        uint32_t sharding_id, 
+        uint64_t elect_height,
+        common::MembersPtr& members) {
     if (sharding_id == network::kRootCongressNetworkId &&
             common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         auto index = (elect_valid_index_ + 1) % 2;
@@ -99,6 +100,7 @@ void VssManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& membe
         }        
         
         elect_item_[index].member_count = members->size();
+        elect_item_[index].elect_height = elect_height;
         elect_valid_index_ = index;
     }
 }

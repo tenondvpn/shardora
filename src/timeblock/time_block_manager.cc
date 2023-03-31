@@ -6,10 +6,13 @@
 #include "common/split.h"
 #include "common/string_utils.h"
 #include "common/user_property_key_define.h"
+#include "dht/dht_key.h"
 #include "network/network_utils.h"
+#include "protos//get_proto_hash.h"
 #include "protos/prefix_db.h"
 #include "protos/pools.pb.h"
 #include "timeblock/time_block_utils.h"
+#include "transport/tcp_transport.h"
 #include "transport/transport_utils.h"
 // #include "vss/vss_manager.h"
 
@@ -91,6 +94,29 @@ void TimeBlockManager::NewBlockWithTx(
             break;
         }
     }
+}
+
+void TimeBlockManager::BroadcastTimeblock(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block_item) {
+    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
+        return;
+    }
+
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->thread_idx = thread_idx;
+    auto& msg = msg_ptr->header;
+    msg.set_src_sharding_id(network::kRootCongressNetworkId);
+    dht::DhtKeyManager dht_key(network::kNodeNetworkId);
+    msg.set_des_dht_key(dht_key.StrKey());
+    auto& bft_msg = msg.mutable_zbft();
+    *bft_msg.mutable_block() = *block_item;
+    bft_msg.set_pool_index(common::kRootChainPoolIndex);
+    auto* brdcast = msg.mutable_broadcast();
+    std::string msg_hash;
+    protos::GetProtoHash(msg, &msg_hash);
+    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
+    network::Route::Instance()->Send(msg_ptr);
 }
 
 void TimeBlockManager::UpdateTimeBlock(

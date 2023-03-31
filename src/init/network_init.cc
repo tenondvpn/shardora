@@ -81,6 +81,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    vss_mgr_ = std::make_shared<vss::VssManager>(security_);
     kv_sync_ = std::make_shared<sync::KeyValueSync>();
     kv_sync_->Init(db_);
     InitLocalNetworkId();
@@ -169,18 +170,19 @@ int NetworkInit::Init(int argc, char** argv) {
 void NetworkInit::InitLocalNetworkId() {
     elect::ElectBlockManager elect_block_mgr;
     elect_block_mgr.Init(db_);
-    for (uint32_t i = network::kRootCongressNetworkId;
-            i < network::kConsensusShardEndNetworkId; ++i) {
-        auto block_ptr = elect_block_mgr.GetLatestElectBlock(i);
+    for (uint32_t sharding_id = network::kRootCongressNetworkId;
+            sharding_id < network::kConsensusShardEndNetworkId; ++sharding_id) {
+        auto block_ptr = elect_block_mgr.GetLatestElectBlock(sharding_id);
         if (block_ptr == nullptr) {
             break;
         }
 
         auto& in = block_ptr->in();
-        for (int32_t i = 0; i < in.size(); ++i) {
-            auto id = security_->GetAddress(in[i].pubkey());
+        for (int32_t member_idx = 0; member_idx < in.size(); ++member_idx) {
+            auto id = security_->GetAddress(in[member_idx].pubkey());
             if (id == security_->GetAddress()) {
-                common::GlobalInfo::Instance()->set_network_id(i);
+                ZJC_DEBUG("should join network: %u", sharding_id);
+                common::GlobalInfo::Instance()->set_network_id(sharding_id);
                 return;
             }
         }

@@ -36,6 +36,9 @@ public:
         create_tm_tx_cb_ = func;
     }
 
+    void BroadcastTimeblock(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block_item);
     void NewBlockWithTx(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
@@ -47,11 +50,24 @@ public:
         uint64_t latest_time_block_height,
         uint64_t lastest_time_block_tm,
         uint64_t vss_random);
-    pools::TxItemPtr tmblock_tx_ptr() const {
+    pools::TxItemPtr tmblock_tx_ptr(bool leader) const {
         if (tmblock_tx_ptr_ != nullptr) {
+            auto now_tm_us = common::TimeUtils::TimestampUs();
+            if (tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us) {
+                return nullptr;
+            }
+
             if (!CanCallTimeBlockTx()) {
                 return nullptr;
             }
+
+            if (tmblock_tx_ptr_->in_consensus) {
+                return nullptr;
+            }
+
+            tmblock_tx_ptr_->prev_consensus_tm_us = now_tm_us;
+        } else {
+            ZJC_DEBUG("time block ptr is null");
         }
 
         return tmblock_tx_ptr_;
@@ -72,6 +88,7 @@ private:
 
         return false;
     }
+
 
     uint64_t latest_time_block_height_ = common::kInvalidUint64;
     uint64_t latest_time_block_tm_{ 0 };

@@ -47,7 +47,11 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index) {
-    std::shared_ptr<WaitingTxsItem> txs_item = GetTimeblockTx(pool_index);
+    std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
+    if (pool_index == common::kRootChainPoolIndex) {
+        txs_item = GetTimeblockTx(pool_index, true);
+    }
+
     if (txs_item == nullptr) {
         txs_item = GetToTxs(pool_index, true);
     }
@@ -55,18 +59,21 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
     return txs_item;
 }
 
-std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_index) {
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_index, bool leader) {
     if (pool_index != common::kRootChainPoolIndex ||
             common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
+        ZJC_DEBUG("pool index invalid: %u", pool_index);
         return nullptr;
     }
 
-    auto tx_ptr = timeblock_mgr_->tmblock_tx_ptr();
+    auto tx_ptr = timeblock_mgr_->tmblock_tx_ptr(leader);
     if (tx_ptr != nullptr) {
         auto txs_item = std::make_shared<WaitingTxsItem>();
         txs_item->pool_index = pool_index;
         txs_item->txs[tx_ptr->tx_hash] = tx_ptr;
         txs_item->tx_type = pools::protobuf::kConsensusRootTimeBlock;
+        ZJC_DEBUG("success to get timeblock tx: tx hash: %s",
+            common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
         return txs_item;
     }
 
