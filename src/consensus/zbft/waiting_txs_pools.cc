@@ -62,7 +62,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_index, bool leader) {
     if (pool_index != common::kRootChainPoolIndex ||
             common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
-        ZJC_DEBUG("pool index invalid: %u", pool_index);
         return nullptr;
     }
 

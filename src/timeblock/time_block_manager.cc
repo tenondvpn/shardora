@@ -118,6 +118,7 @@ void TimeBlockManager::BroadcastTimeblock(
     protos::GetProtoHash(msg, &msg_hash);
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     network::Route::Instance()->Send(msg_ptr);
+    ZJC_DEBUG("success broadcast timeblock: %lu", block_item->height());
 }
 
 void TimeBlockManager::UpdateTimeBlock(
