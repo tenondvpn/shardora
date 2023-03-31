@@ -261,6 +261,10 @@ void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
 }
 
 void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
+    if (first_try_times_ <= 0) {
+        return;
+    }
+
     auto now_us = common::TimeUtils::TimestampUs();
     auto rand_tm = std::rand() % 60000000lu;
     if (!IsVssSecondPeriodsHandleMessage()) {
@@ -308,6 +312,10 @@ void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
 }
 
 void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
+    if (first_try_times_ <= 0) {
+        return;
+    }
+
     auto now_us = common::TimeUtils::TimestampUs();
     auto rand_tm = std::rand() % 60000000lu;
     if (!IsVssThirdPeriodsHandleMessage()) {
