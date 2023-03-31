@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "common/encode.h"
+#include "common/random.h"
 #include "common/split.h"
 #include "block/account_manager.h"
 #include "block/block_manager.h"
