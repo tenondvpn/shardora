@@ -411,7 +411,7 @@ public:
         return true;
     }
 
-    void SaveLatestTimeBlock(uint64_t block_height, uint64_t timestamp, uint64_t vss_random) {
+    void SaveLatestTimeBlock(uint64_t block_height, db::DbWriteBatch& db_batch) {
         std::string key(kLatestTimeBlockPrefix);
         timeblock::protobuf::TimeBlock tmblock;
         if (GetLatestTimeBlock(&tmblock)) {
@@ -421,12 +421,7 @@ public:
         }
 
         tmblock.set_height(block_height);
-        tmblock.set_timestamp(timestamp);
-        tmblock.set_vss_random(vss_random);
-        auto st = db_->Put(key, tmblock.SerializeAsString());
-        if (!st.ok()) {
-            ZJC_FATAL("write db failed!");
-        }
+        db_batch.Put(key, tmblock.SerializeAsString());
     }
 
     bool GetLatestTimeBlock(timeblock::protobuf::TimeBlock* tmblock) {

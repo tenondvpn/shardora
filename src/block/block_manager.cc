@@ -291,6 +291,8 @@ void BlockManager::AddNewBlock(
             case pools::protobuf::kNormalTo:
                 HandleNormalToTx(thread_idx, *block_item, tx_list[i], db_batch);
                 break;
+            case pools::protobuf::kConsensusRootTimeBlock:
+                prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
             default:
                 break;
             }
@@ -304,6 +306,24 @@ void BlockManager::AddNewBlock(
     auto st = db_->Put(db_batch);
     if (!st.ok()) {
         ZJC_FATAL("write block to db failed!");
+    }
+}
+
+void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {
+    timeblock::protobuf::TimeBlock tmblock;
+    db::DbWriteBatch db_batch;
+    if (prefix_db_->GetLatestTimeBlock(&tmblock)) {
+        auto tmblock_ptr = std::make_shared<block::protobuf::Block>();
+        auto& tmblock = *tmblock_ptr;
+        if (GetBlockWithHeight(
+                network::kRootCongressNetworkId,
+                common::kRootChainPoolIndex,
+                tmblock.height(),
+                &tmblock) == kBlockSuccess) {
+            if (new_block_callback_ != nullptr) {
+                new_block_callback_(thread_idx, tmblock_ptr, db_batch);
+            }
+        }
     }
 }
 

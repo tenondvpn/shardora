@@ -157,6 +157,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    block_mgr_->LoadLatestBlocks(common::GlobalInfo::Instance()->message_handler_thread_count());
     transport::TcpTransport::Instance()->Start(false);
     if (InitHttpServer() != kInitSuccess) {
         INIT_ERROR("InitHttpServer failed!");

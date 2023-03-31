@@ -24,15 +24,8 @@ namespace timeblock {
 static const std::string kTimeBlockGidPrefix = common::Encode::HexDecode(
     "c575ff0d3eea61205e3433495431e312056d0d51a64c6badfd4ad8cc092b7daa");
 
-void TimeBlockManager::Init(
-        std::shared_ptr<vss::VssManager>& vss_mgr,
-        std::shared_ptr<pools::TxPoolManager>& pools_mgr,
-        std::shared_ptr<db::Db>& db) {
-    pools_mgr_ = pools_mgr;
-    db_ = db;
-    prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+void TimeBlockManager::Init(std::shared_ptr<vss::VssManager>& vss_mgr) {
     vss_mgr_ = vss_mgr;
-    LoadLatestTimeBlock();
 }
 
 uint64_t TimeBlockManager::LatestTimestamp() {
@@ -127,21 +120,6 @@ void TimeBlockManager::OnTimeBlock(
     latest_time_block_tm_ = latest_time_block_tm;
     latest_tm_block_local_sec_ = common::TimeUtils::TimestampSeconds();
     CreateTimeBlockTx();
-    prefix_db_->SaveLatestTimeBlock(
-        latest_time_block_height,
-        latest_time_block_tm,
-        vss_random);
-}
-
-void TimeBlockManager::LoadLatestTimeBlock() {
-    timeblock::protobuf::TimeBlock tm_block;
-    ZJC_DEBUG("init time block now.");
-    if (prefix_db_->GetLatestTimeBlock(&tm_block)) {
-        timeblock_ = std::make_shared<timeblock::protobuf::TimeBlock>(tm_block);
-        OnTimeBlock(tm_block.timestamp(), tm_block.height(), tm_block.vss_random());
-        ZJC_DEBUG("init time block success: %lu, %lu, %lu",
-            tm_block.timestamp(), tm_block.height(), tm_block.vss_random());
-    }
 }
 
 }  // namespace timeblock

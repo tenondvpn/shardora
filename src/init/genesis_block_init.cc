@@ -379,7 +379,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto timeblock_storage = tx_info->add_storages();
         tenon_block->set_height(root_single_block_height++);
         timeblock::protobuf::TimeBlock tm_block;
-        tm_block.set_timestamp(common::TimeUtils::TimestampSeconds() - common::kTimeBlockCreatePeriodSeconds);
+        tm_block.set_timestamp(common::TimeUtils::TimestampSeconds());
         tm_block.set_height(tenon_block->height());
         tm_block.set_vss_random(common::Random::RandomUint64());
         timeblock_storage->set_key(timeblock::kAttrTimerBlock);

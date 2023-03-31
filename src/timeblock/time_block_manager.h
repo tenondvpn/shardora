@@ -27,10 +27,7 @@ class TimeBlockManager {
 public:
     TimeBlockManager();
     ~TimeBlockManager();
-    void Init(
-        std::shared_ptr<vss::VssManager>& vss_mgr,
-        std::shared_ptr<pools::TxPoolManager>& pools_mgr,
-        std::shared_ptr<db::Db>& db);
+    void Init(std::shared_ptr<vss::VssManager>& vss_mgr);
     void BroadcastTimeblock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item);
@@ -70,7 +67,6 @@ public:
 
 private:
     void CreateTimeBlockTx();
-    void LoadLatestTimeBlock();
 
     bool CanCallTimeBlockTx() const {
         uint64_t now_sec = common::TimeUtils::TimestampSeconds();
