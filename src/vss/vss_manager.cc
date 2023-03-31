@@ -69,13 +69,13 @@ void VssManager::OnTimeBlock(
     prev_tm_height_ = tm_height;
     int64_t local_offset_us = 0;
     auto tmblock_tm = tm_block_tm * 1000l * 1000l;
-    begin_time_us_ = common::TimeUtils::TimestampUs();
     auto offset_tm = 30l * 1000l * 1000l;
-    if (tmblock_tm + kDkgPeriodUs + offset_tm < begin_time_us_) {
+    if (tmblock_tm + kDkgPeriodUs + offset_tm < common::TimeUtils::TimestampUs()) {
         // ignore
         return;
     }
 
+    begin_time_us_ = common::TimeUtils::TimestampUs();
     first_offset_ = tmblock_tm + kDkgPeriodUs;
     second_offset_ = tmblock_tm + kDkgPeriodUs * 4;
     third_offset_ = tmblock_tm + kDkgPeriodUs * 8;
@@ -87,6 +87,7 @@ void VssManager::OnTimeBlock(
         third_offset_ = first_offset_ + kDkgPeriodUs * 7;
     }
 
+    end_tm_ = tmblock_tm + common::kTimeBlockCreatePeriodSeconds * 1000000lu;
     ZJC_DEBUG("tmblock_tm: %lu, begin_time_us_: %lu, first_offset_: %lu, second_offset_: %lu, third_offset_: %lu, kDkgPeriodUs: %lu",
         tmblock_tm, begin_time_us_, first_offset_, second_offset_, third_offset_, kDkgPeriodUs);
 }
@@ -124,6 +125,7 @@ uint64_t VssManager::GetConsensusFinalRandom() {
 }
 
 void VssManager::ClearAll() {
+    begin_time_us_ = 0;
     local_random_.ResetStatus();
     for (uint32_t i = 0; i < common::kEachShardMaxNodeCount; ++i) {
         other_randoms_[i].ResetStatus();
@@ -141,6 +143,7 @@ void VssManager::ClearAll() {
     first_try_times_ = 0;
     second_try_times_ = 0;
     third_try_times_ = 0;
+    end_tm_ = 0;
 }
 
 uint64_t VssManager::GetAllVssValid() {
@@ -159,6 +162,10 @@ bool VssManager::IsVssFirstPeriodsHandleMessage() {
 #ifdef ZJC_UNITTEST
     return true;
 #endif
+    if (begin_time_us_ == 0) {
+        return false;
+    }
+
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if ((int64_t)now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4)) {
         return true;
@@ -173,6 +180,10 @@ bool VssManager::IsVssSecondPeriodsHandleMessage() {
 #ifdef ZJC_UNITTEST
     return true;
 #endif
+    if (begin_time_us_ == 0) {
+        return false;
+    }
+
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if ((int64_t)now_tm_us < (begin_time_us_ + kDkgPeriodUs * 8) &&
             (int64_t)now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 4)) {
@@ -188,6 +199,10 @@ bool VssManager::IsVssThirdPeriodsHandleMessage() {
 #ifdef ZJC_UNITTEST
     return true;
 #endif
+    if (begin_time_us_ == 0) {
+        return false;
+    }
+
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if ((int64_t)now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 8)) {
         return true;
@@ -201,7 +216,7 @@ bool VssManager::IsVssThirdPeriodsHandleMessage() {
 void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
     auto now_us = common::TimeUtils::TimestampUs();
     auto rand_tm = std::rand() % 60000000lu;
-    if (now_us < (first_offset_ + rand_tm) || now_us + 10000000lu >= second_offset_) {
+    if (!IsVssFirstPeriodsHandleMessage()) {
         return;
     }
 
@@ -248,7 +263,7 @@ void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
 void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
     auto now_us = common::TimeUtils::TimestampUs();
     auto rand_tm = std::rand() % 60000000lu;
-    if (now_us < (second_offset_ + rand_tm) || now_us + 10000000lu >= third_offset_) {
+    if (!IsVssSecondPeriodsHandleMessage()) {
         return;
     }
 
@@ -295,7 +310,7 @@ void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
 void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
     auto now_us = common::TimeUtils::TimestampUs();
     auto rand_tm = std::rand() % 60000000lu;
-    if (now_us < (third_offset_ + rand_tm)) {
+    if (!IsVssThirdPeriodsHandleMessage()) {
         return;
     }
 
@@ -312,7 +327,7 @@ void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
     msg_ptr->thread_idx = thread_idx;
     transport::protobuf::Header& msg = msg_ptr->header;
     msg.set_type(common::kVssMessage);
-    dht::DhtKeyManager dht_key(network::kRootCongressNetworkId, 0);
+    dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
     msg.set_src_sharding_id(network::kRootCongressNetworkId);
     msg.set_des_dht_key(dht_key.StrKey());
     vss::protobuf::VssMessage& vss_msg = *msg.mutable_vss_proto();

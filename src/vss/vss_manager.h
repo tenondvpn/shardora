@@ -82,6 +82,7 @@ private:
     uint64_t second_prev_tm_ = 0;
     uint64_t third_try_times_ = 0;
     uint64_t third_prev_tm_ = 0;
+    uint64_t end_tm_  = 0;
 
     // for unit test
 #ifdef ZJC_UNITTEST
