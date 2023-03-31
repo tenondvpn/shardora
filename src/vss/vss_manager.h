@@ -51,7 +51,8 @@ private:
     void SetConsensusFinalRandomNum(const std::string& id, uint64_t final_random_num);
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
 
-    int64_t kDkgPeriodUs = common::kTimeBlockCreatePeriodSeconds / 10 * 1000u * 1000u;
+    static const int64_t kDkgPeriodUs = common::kTimeBlockCreatePeriodSeconds / 10 * 1000u * 1000u;
+
     RandomNum local_random_{ true };
     RandomNum other_randoms_[common::kEachShardMaxNodeCount];
     uint64_t prev_tm_height_{ common::kInvalidUint64 };
@@ -71,6 +72,16 @@ private:
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     ElectItem elect_item_[2];
     uint32_t elect_valid_index_ = 0;
+
+    uint64_t first_offset_ = 0;
+    uint64_t second_offset_ = 0;
+    uint64_t third_offset_ = 0;
+    uint64_t first_try_times_ = 0;
+    uint64_t first_prev_tm_ = 0;
+    uint64_t second_try_times_ = 0;
+    uint64_t second_prev_tm_ = 0;
+    uint64_t third_try_times_ = 0;
+    uint64_t third_prev_tm_ = 0;
 
     // for unit test
 #ifdef ZJC_UNITTEST

@@ -70,25 +70,31 @@ void VssManager::OnTimeBlock(
     int64_t local_offset_us = 0;
     auto tmblock_tm = tm_block_tm * 1000l * 1000l;
     begin_time_us_ = common::TimeUtils::TimestampUs();
-    kDkgPeriodUs = common::kTimeBlockCreatePeriodSeconds / 10 * 1000u * 1000u;
-    auto first_offset = kDkgPeriodUs;
-    auto second_offset = kDkgPeriodUs * 4;
-    auto third_offset = kDkgPeriodUs * 8;
     auto offset_tm = 30l * 1000l * 1000l;
-    if (begin_time_us_ < (int64_t)tmblock_tm + offset_tm) {
-        kDkgPeriodUs = (common::kTimeBlockCreatePeriodSeconds - 20) * 1000l * 1000l / 10l;
-        first_offset = tmblock_tm + offset_tm - begin_time_us_;
-        begin_time_us_ = tmblock_tm + offset_tm - kDkgPeriodUs;
-        second_offset = first_offset + kDkgPeriodUs * 3;
-        third_offset = first_offset + kDkgPeriodUs * 7;
+    if (tmblock_tm + kDkgPeriodUs + offset_tm < begin_time_us_) {
+        // ignore
+        return;
     }
 
-    ZJC_DEBUG("tmblock_tm: %lu, begin_time_us_: %lu, first_offset: %lu, second_offset: %lu, third_offset: %lu, kDkgPeriodUs: %lu",
-        tmblock_tm, begin_time_us_, first_offset, second_offset, third_offset, kDkgPeriodUs);
+    first_offset_ = tmblock_tm + kDkgPeriodUs;
+    second_offset_ = tmblock_tm + kDkgPeriodUs * 4;
+    third_offset_ = tmblock_tm + kDkgPeriodUs * 8;
+    if (begin_time_us_ < (int64_t)tmblock_tm + offset_tm) {
+        kDkgPeriodUs = (common::kTimeBlockCreatePeriodSeconds - 20) * 1000l * 1000l / 10l;
+        first_offset_ = tmblock_tm + offset_tm - begin_time_us_;
+        begin_time_us_ = tmblock_tm + offset_tm - kDkgPeriodUs;
+        second_offset_ = first_offset_ + kDkgPeriodUs * 3;
+        third_offset_ = first_offset_ + kDkgPeriodUs * 7;
+    }
+
+    ZJC_DEBUG("tmblock_tm: %lu, begin_time_us_: %lu, first_offset_: %lu, second_offset_: %lu, third_offset_: %lu, kDkgPeriodUs: %lu",
+        tmblock_tm, begin_time_us_, first_offset_, second_offset_, third_offset_, kDkgPeriodUs);
 }
 
 void VssManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
-    
+    BroadcastFirstPeriodHash(msg_ptr->thread_idx);
+    BroadcastSecondPeriodRandom(msg_ptr->thread_idx);
+    BroadcastThirdPeriodRandom(msg_ptr->thread_idx);
 }
 
 void VssManager::OnNewElectBlock(
@@ -129,6 +135,12 @@ void VssManager::ClearAll() {
     final_consensus_nodes_.clear();
     final_consensus_random_count_.clear();
     max_count_random_ = 0;
+    first_offset_ = 0;
+    second_offset_ = 0;
+    third_offset_ = 0;
+    first_try_times_ = 0;
+    second_try_times_ = 0;
+    third_try_times_ = 0;
 }
 
 uint64_t VssManager::GetAllVssValid() {
@@ -187,6 +199,21 @@ bool VssManager::IsVssThirdPeriodsHandleMessage() {
 }
 
 void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
+    auto now_us = common::TimeUtils::TimestampUs();
+    auto rand_tm = std::rand() % 60000000lu;
+    if (now_us < (first_offset_ + rand_tm) || now_us + 10000000lu >= second_offset_) {
+        return;
+    }
+
+    if (first_prev_tm_ + 1000000lu >= now_us) {
+        return;
+    }
+    if (first_try_times_ >= 3) {
+        return;
+    }
+
+    ++first_try_times_;
+    first_prev_tm_ = now_us;
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
     transport::protobuf::Header& msg = msg_ptr->header;
@@ -219,6 +246,21 @@ void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
 }
 
 void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
+    auto now_us = common::TimeUtils::TimestampUs();
+    auto rand_tm = std::rand() % 60000000lu;
+    if (now_us < (second_offset_ + rand_tm) || now_us + 10000000lu >= third_offset_) {
+        return;
+    }
+
+    if (second_prev_tm_ + 1000000lu >= now_us) {
+        return;
+    }
+    if (second_try_times_ >= 3) {
+        return;
+    }
+
+    ++second_try_times_;
+    second_prev_tm_ = now_us;
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
     transport::protobuf::Header& msg = msg_ptr->header;
@@ -251,6 +293,21 @@ void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
 }
 
 void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
+    auto now_us = common::TimeUtils::TimestampUs();
+    auto rand_tm = std::rand() % 60000000lu;
+    if (now_us < (third_offset_ + rand_tm)) {
+        return;
+    }
+
+    if (third_prev_tm_ + 1000000lu >= now_us) {
+        return;
+    }
+    if (third_try_times_ >= 3) {
+        return;
+    }
+
+    ++third_try_times_;
+    third_prev_tm_ = now_us;
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
     transport::protobuf::Header& msg = msg_ptr->header;
