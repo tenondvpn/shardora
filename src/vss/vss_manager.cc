@@ -123,6 +123,10 @@ uint64_t VssManager::GetConsensusFinalRandom() {
         return max_count_random_;
     }
 
+    if (prev_max_count_random_ != 0) {
+        return prev_max_count_random_;
+    }
+
     return epoch_random_;
 }
 
@@ -138,6 +142,7 @@ void VssManager::ClearAll() {
     third_period_cheched_ = false;
     final_consensus_nodes_.clear();
     final_consensus_random_count_.clear();
+    prev_max_count_random_ = max_count_random_;
     max_count_random_ = 0;
     first_offset_ = 0;
     second_offset_ = 0;
@@ -466,8 +471,6 @@ void VssManager::SetConsensusFinalRandomNum(const std::string& id, uint64_t fina
         max_count_random_ = final_random_num;
     }
 
-    ZJC_DEBUG("HandleThirdPeriodRandom: %s, %llu, max_count_: %d, count_iter->second: %d",
-        common::Encode::HexEncode(id).c_str(), final_random_num, max_count_, count_iter->second);
 }
 
 void VssManager::HandleThirdPeriodRandom(const protobuf::VssMessage& vss_msg) {
@@ -479,6 +482,8 @@ void VssManager::HandleThirdPeriodRandom(const protobuf::VssMessage& vss_msg) {
         return;
     }
 
+    ZJC_DEBUG("HandleThirdPeriodRandom: %s, %llu",
+        common::Encode::HexEncode(id).c_str(), vss_msg.random());
     SetConsensusFinalRandomNum(id, vss_msg.random());
 }
 

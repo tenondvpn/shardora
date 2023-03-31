@@ -67,6 +67,7 @@ private:
     std::unordered_map<uint64_t, uint32_t> final_consensus_random_count_;
     uint32_t max_count_{ 0 };
     uint64_t max_count_random_{ 0 };
+    uint64_t prev_max_count_random_{ 0 };
     int64_t begin_time_us_{ 0 };
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     ElectItem elect_item_[2];
