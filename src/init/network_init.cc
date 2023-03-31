@@ -128,7 +128,8 @@ int NetworkInit::Init(int argc, char** argv) {
         &NetworkInit::DbNewBlockCallback,
         this,
         std::placeholders::_1,
-        std::placeholders::_2);
+        std::placeholders::_2,
+        std::placeholders::_3);
     block_mgr_->Init(account_mgr_, db_, pools_mgr_, security_->GetAddress(), new_db_cb);
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     bft_mgr_ = std::make_shared<consensus::BftManager>();
@@ -653,7 +654,6 @@ void NetworkInit::AddBlockItemToCache(
             break;
         case pools::protobuf::kConsensusRootTimeBlock:
             tm_block_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
-            vss_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             break;
         default:
             break;
@@ -663,9 +663,46 @@ void NetworkInit::AddBlockItemToCache(
 
 // pool tx thread, thread safe
 void NetworkInit::DbNewBlockCallback(
+        uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
+    if (block->tx_list_size() == 1) {
+        switch (block->tx_list(0).step()) {
+        case pools::protobuf::kConsensusRootTimeBlock:
+            HandleTimeBlock(thread_idx, block, db_batch);
+            break;
+        default:
+            break;
+        }
+    }
+}
 
+void NetworkInit::HandleTimeBlock(
+        uint8_t thread_idx,
+        std::shared_ptr<block::protobuf::Block>& block,
+        db::DbWriteBatch& db_batch) {
+    auto& tx = block->tx_list(0);
+    if (tx.storages(i).key() == kAttrTimerBlock) {
+        common::Split<> items(tx.storages(i).val_hash().c_str(), '_');
+        if (items.Count() != 2) {
+            assert(false);
+            return;
+        }
+
+        uint64_t tm = 0;
+        uint64_t vss = 0;
+        if (!common::StringUtil::ToUint64(items[0], &tm)) {
+            assert(false);
+            return;
+        }
+
+        if (!common::StringUtil::ToUint64(items[1], &vss)) {
+            assert(false);
+            return;
+        }
+
+        vss_mgr_->OnTimeBlock(tm, block->height(), vss);
+    }
 }
 
 }  // namespace init

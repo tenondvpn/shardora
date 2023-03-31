@@ -298,7 +298,7 @@ void BlockManager::AddNewBlock(
     }
 
     if (new_block_callback_ != nullptr) {
-        new_block_callback_(block_item, db_batch);
+        new_block_callback_(thread_idx, block_item, db_batch);
     }
 
     auto st = db_->Put(db_batch);
