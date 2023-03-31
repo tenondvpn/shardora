@@ -5,6 +5,7 @@
 #include "network/network_utils.h"
 #include "network/route.h"
 #include "protos/get_proto_hash.h"
+#include "transport/processor.h"
 
 namespace zjchain {
 

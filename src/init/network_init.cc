@@ -679,7 +679,7 @@ void NetworkInit::DbNewBlockCallback(
 
 void NetworkInit::HandleTimeBlock(
         uint8_t thread_idx,
-        std::shared_ptr<block::protobuf::Block>& block,
+        const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
     auto& tx = block->tx_list(0);
     if (tx.storages(i).key() == kAttrTimerBlock) {

@@ -56,7 +56,7 @@ private:
         db::DbWriteBatch& db_batch);
     void HandleTimeBlock(
         uint8_t thread_idx,
-        std::shared_ptr<block::protobuf::Block>& block,
+        const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);
 
     common::Config conf_;
