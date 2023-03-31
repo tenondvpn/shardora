@@ -245,6 +245,7 @@ void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
     dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
     msg.set_src_sharding_id(network::kRootCongressNetworkId);
     msg.set_des_dht_key(dht_key.StrKey());
+    auto broadcast = msg.mutable_broadcast();
     vss::protobuf::VssMessage& vss_msg = *msg.mutable_vss_proto();
     vss_msg.set_random_hash(local_random_.GetHash());
     vss_msg.set_tm_height(prev_tm_height_);
@@ -298,6 +299,7 @@ void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
     dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
     msg.set_src_sharding_id(network::kRootCongressNetworkId);
     msg.set_des_dht_key(dht_key.StrKey());
+    auto broadcast = msg.mutable_broadcast();
     vss::protobuf::VssMessage& vss_msg = *msg.mutable_vss_proto();
     vss_msg.set_random(local_random_.GetFinalRandomNum());
     vss_msg.set_tm_height(prev_tm_height_);
@@ -351,6 +353,7 @@ void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
     dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
     msg.set_src_sharding_id(network::kRootCongressNetworkId);
     msg.set_des_dht_key(dht_key.StrKey());
+    auto broadcast = msg.mutable_broadcast();
     vss::protobuf::VssMessage& vss_msg = *msg.mutable_vss_proto();
     vss_msg.set_random(GetAllVssValid());
     vss_msg.set_tm_height(prev_tm_height_);
