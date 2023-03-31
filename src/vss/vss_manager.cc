@@ -247,7 +247,7 @@ void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
     vss_msg.set_tm_height(prev_tm_height_);
     vss_msg.set_elect_height(prev_elect_height_);
     auto& elect_item = elect_item_[elect_valid_index_];
-    vss_msg.set_member_index(elect_item->local_index);
+    vss_msg.set_member_index(elect_item.local_index);
     vss_msg.set_type(kVssRandomHash);
     std::string message_hash;
     protos::GetProtoHash(msg, &message_hash);
@@ -300,7 +300,7 @@ void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
     vss_msg.set_tm_height(prev_tm_height_);
     vss_msg.set_elect_height(prev_elect_height_);
     auto& elect_item = elect_item_[elect_valid_index_];
-    vss_msg.set_member_index(elect_item->local_index);
+    vss_msg.set_member_index(elect_item.local_index);
     vss_msg.set_type(kVssRandom);
     std::string message_hash;
     protos::GetProtoHash(msg, &message_hash);
@@ -354,7 +354,7 @@ void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
     vss_msg.set_elect_height(prev_elect_height_);
     vss_msg.set_type(kVssFinalRandom);
     auto& elect_item = elect_item_[elect_valid_index_];
-    vss_msg.set_member_index(elect_item->local_index);
+    vss_msg.set_member_index(elect_item.local_index);
     std::string message_hash;
     protos::GetProtoHash(msg, &message_hash);
     std::string sign;
