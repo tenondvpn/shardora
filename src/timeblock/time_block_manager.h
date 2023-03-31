@@ -34,13 +34,12 @@ public:
     void BroadcastTimeblock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item);
-    void NewBlockWithTx(
-        uint8_t thread_idx,
-        const std::shared_ptr<block::protobuf::Block>& block_item,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch);
     uint64_t LatestTimestamp();
     uint64_t LatestTimestampHeight();
+    void OnTimeBlock(
+        uint64_t lastest_time_block_tm,
+        uint64_t latest_time_block_height,
+        uint64_t vss_random);
 
     void SetCreateTmTxFunction(pools::CreateConsensusItemFunction func) {
         create_tm_tx_cb_ = func;
@@ -72,10 +71,6 @@ public:
 private:
     void CreateTimeBlockTx();
     void LoadLatestTimeBlock();
-    void UpdateTimeBlock(
-        uint64_t latest_time_block_height,
-        uint64_t lastest_time_block_tm,
-        uint64_t vss_random);
 
     bool CanCallTimeBlockTx() const {
         uint64_t now_sec = common::TimeUtils::TimestampSeconds();
