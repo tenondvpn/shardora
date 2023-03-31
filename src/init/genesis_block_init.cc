@@ -405,10 +405,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         block::protobuf::Block tenon_block2;
         tenon_block2.ParseFromString(tmp_str);
         assert(tenon_block2.tx_list_size() > 0);
-        prefix_db_->SaveLatestTimeBlock(
-            tenon_block->height(),
-            tm_block.timestamp(),
-            tm_block.vss_random());
+        prefix_db_->SaveLatestTimeBlock(tenon_block->height());
         fputs((common::Encode::HexEncode(tmp_str) + "\n").c_str(), root_gens_init_block_file);
 //         tmblock::TimeBlockManager::Instance()->UpdateTimeBlock(1, now_tm, now_tm);
         db::DbWriteBatch db_batch;
@@ -530,9 +527,7 @@ int GenesisBlockInit::GenerateShardSingleBlock() {
                 }
 
                 if (tenon_block->tx_list(i).storages(j).key() == timeblock::kAttrTimerBlock) {
-                    uint64_t* data_arr = (uint64_t*)tenon_block->tx_list(i).storages(j).val_hash().c_str();
-                    prefix_db_->SaveLatestTimeBlock(
-                        tenon_block->height(), data_arr[0], data_arr[1]);
+                    prefix_db_->SaveLatestTimeBlock(tenon_block->height());
                 }
             }
         }
