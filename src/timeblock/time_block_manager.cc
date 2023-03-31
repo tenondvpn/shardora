@@ -64,7 +64,6 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
     tx_info.set_key(kAttrTimerBlock);
     tmblock_tx_ptr_ = create_tm_tx_cb_(msg_ptr);
-    ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu", u64_data[0], u64_data[1]);
 }
 
 pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader) {
@@ -90,6 +89,7 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader) {
         u64_data[1] = vss_mgr_->GetConsensusFinalRandom();
         tx_info.set_value(std::string(data, sizeof(data)));
         tmblock_tx_ptr_->prev_consensus_tm_us = now_tm_us;
+        ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu", u64_data[0], u64_data[1]);
     }
 
     return tmblock_tx_ptr_;
