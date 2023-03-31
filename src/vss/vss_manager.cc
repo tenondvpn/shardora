@@ -246,6 +246,8 @@ void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
     vss_msg.set_random_hash(local_random_.GetHash());
     vss_msg.set_tm_height(prev_tm_height_);
     vss_msg.set_elect_height(prev_elect_height_);
+    auto& elect_item = elect_item_[elect_valid_index_];
+    vss_msg.set_member_index(elect_item->local_index);
     vss_msg.set_type(kVssRandomHash);
     std::string message_hash;
     protos::GetProtoHash(msg, &message_hash);
@@ -297,6 +299,8 @@ void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
     vss_msg.set_random(local_random_.GetFinalRandomNum());
     vss_msg.set_tm_height(prev_tm_height_);
     vss_msg.set_elect_height(prev_elect_height_);
+    auto& elect_item = elect_item_[elect_valid_index_];
+    vss_msg.set_member_index(elect_item->local_index);
     vss_msg.set_type(kVssRandom);
     std::string message_hash;
     protos::GetProtoHash(msg, &message_hash);
@@ -349,6 +353,8 @@ void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
     vss_msg.set_tm_height(prev_tm_height_);
     vss_msg.set_elect_height(prev_elect_height_);
     vss_msg.set_type(kVssFinalRandom);
+    auto& elect_item = elect_item_[elect_valid_index_];
+    vss_msg.set_member_index(elect_item->local_index);
     std::string message_hash;
     protos::GetProtoHash(msg, &message_hash);
     std::string sign;
@@ -371,6 +377,7 @@ void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
 void VssManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kVssMessage);
+    ZJC_DEBUG("vss message coming.");
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
             common::GlobalInfo::Instance()->network_id() !=
             (network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
