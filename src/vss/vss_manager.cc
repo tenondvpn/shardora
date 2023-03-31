@@ -70,8 +70,14 @@ void VssManager::OnTimeBlock(
     int64_t local_offset_us = 0;
     auto tmblock_tm = tm_block_tm * 1000l * 1000l;
     auto offset_tm = 30l * 1000l * 1000l;
+    kDkgPeriodUs = common::kTimeBlockCreatePeriodSeconds / 10 * 1000u * 1000u;
     if (tmblock_tm + kDkgPeriodUs + offset_tm < common::TimeUtils::TimestampUs()) {
         // ignore
+        ZJC_ERROR("may be local time invalid, tmblock tm: %lu, "
+            "tmblock_tm + kDkgPeriodUs + offset_tm: %lu, local tm: %lu",
+            tmblock_tm, kDkgPeriodUs, offset_tm,
+            (tmblock_tm + kDkgPeriodUs + offset_tm),
+            common::TimeUtils::TimestampUs());
         return;
     }
 
