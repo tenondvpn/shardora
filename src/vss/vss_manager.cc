@@ -233,7 +233,7 @@ void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
     msg_ptr->thread_idx = thread_idx;
     transport::protobuf::Header& msg = msg_ptr->header;
     msg.set_type(common::kVssMessage);
-    dht::DhtKeyManager dht_key(network::kRootCongressNetworkId, 0);
+    dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
     msg.set_src_sharding_id(network::kRootCongressNetworkId);
     msg.set_des_dht_key(dht_key.StrKey());
     vss::protobuf::VssMessage& vss_msg = *msg.mutable_vss_proto();
@@ -284,7 +284,7 @@ void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
     msg_ptr->thread_idx = thread_idx;
     transport::protobuf::Header& msg = msg_ptr->header;
     msg.set_type(common::kVssMessage);
-    dht::DhtKeyManager dht_key(network::kRootCongressNetworkId, 0);
+    dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
     msg.set_src_sharding_id(network::kRootCongressNetworkId);
     msg.set_des_dht_key(dht_key.StrKey());
     vss::protobuf::VssMessage& vss_msg = *msg.mutable_vss_proto();
