@@ -137,7 +137,7 @@ void TimeBlockManager::LoadLatestTimeBlock() {
     ZJC_DEBUG("init time block now.");
     if (prefix_db_->GetLatestTimeBlock(&tm_block)) {
         timeblock_ = std::make_shared<timeblock::protobuf::TimeBlock>(tm_block);
-        OnTimeBlock(tm_block.height(), tm_block.timestamp(), tm_block.vss_random());
+        OnTimeBlock(tm_block.timestamp(), tm_block.height(), tm_block.vss_random());
         ZJC_DEBUG("init time block success: %lu, %lu, %lu",
             tm_block.timestamp(), tm_block.height(), tm_block.vss_random());
     }
