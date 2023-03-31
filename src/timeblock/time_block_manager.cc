@@ -141,6 +141,7 @@ void TimeBlockManager::OnTimeBlock(
     latest_time_block_height_ = latest_time_block_height;
     latest_time_block_tm_ = latest_time_block_tm;
     latest_tm_block_local_sec_ = common::TimeUtils::TimestampSeconds();
+    vss_mgr_->SetFinalVss(vss_random);
     CreateTimeBlockTx();
 }
 
