@@ -53,7 +53,6 @@ void TimeBlockManager::CreateTimeBlockTx() {
 
     auto gid = common::Hash::keccak256(kTimeBlockGidPrefix +
         std::to_string(latest_time_block_tm_));
-    uint64_t new_time_block_tm = latest_time_block_tm_ + common::kTimeBlockCreatePeriodSeconds;
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     pools::protobuf::TxMessage& tx_info = *msg_ptr->header.mutable_tx_proto();
     tx_info.set_step(pools::protobuf::kConsensusRootTimeBlock);
@@ -64,13 +63,36 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tx_info.set_amount(0);
     tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
     tx_info.set_key(kAttrTimerBlock);
-    char data[16];
-    uint64_t* u64_data = (uint64_t*)data;
-    u64_data[0] = new_time_block_tm;
-    u64_data[1] = vss_mgr_->GetConsensusFinalRandom();
-    tx_info.set_value(std::string(data, sizeof(data)));
     tmblock_tx_ptr_ = create_tm_tx_cb_(msg_ptr);
     ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu", u64_data[0], u64_data[1]);
+}
+
+pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader) {
+    if (tmblock_tx_ptr_ != nullptr) {
+        auto now_tm_us = common::TimeUtils::TimestampUs();
+        if (tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us) {
+            return nullptr;
+        }
+
+        if (!CanCallTimeBlockTx()) {
+            return nullptr;
+        }
+
+        if (tmblock_tx_ptr_->in_consensus) {
+            return nullptr;
+        }
+
+        auto& tx_info = *tmblock_tx_ptr_->msg_ptr->header.mutable_tx_proto();
+        char data[16];
+        uint64_t* u64_data = (uint64_t*)data;
+        uint64_t new_time_block_tm = latest_time_block_tm_ + common::kTimeBlockCreatePeriodSeconds;
+        u64_data[0] = new_time_block_tm;
+        u64_data[1] = vss_mgr_->GetConsensusFinalRandom();
+        tx_info.set_value(std::string(data, sizeof(data)));
+        tmblock_tx_ptr_->prev_consensus_tm_us = now_tm_us;
+    }
+
+    return tmblock_tx_ptr_;
 }
 
 void TimeBlockManager::BroadcastTimeblock(

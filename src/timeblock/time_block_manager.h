@@ -37,30 +37,10 @@ public:
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random);
+    pools::TxItemPtr tmblock_tx_ptr(bool leader);
 
     void SetCreateTmTxFunction(pools::CreateConsensusItemFunction func) {
         create_tm_tx_cb_ = func;
-    }
-
-    pools::TxItemPtr tmblock_tx_ptr(bool leader) const {
-        if (tmblock_tx_ptr_ != nullptr) {
-            auto now_tm_us = common::TimeUtils::TimestampUs();
-            if (tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us) {
-                return nullptr;
-            }
-
-            if (!CanCallTimeBlockTx()) {
-                return nullptr;
-            }
-
-            if (tmblock_tx_ptr_->in_consensus) {
-                return nullptr;
-            }
-
-            tmblock_tx_ptr_->prev_consensus_tm_us = now_tm_us;
-        }
-
-        return tmblock_tx_ptr_;
     }
 
 private:

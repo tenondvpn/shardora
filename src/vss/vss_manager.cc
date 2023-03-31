@@ -127,6 +127,10 @@ void VssManager::OnNewElectBlock(
 }
 
 uint64_t VssManager::GetConsensusFinalRandom() {
+    if (max_count_random_ != 0) {
+        return max_count_random_;
+    }
+
     return prev_valid_vss_;
 }
 
@@ -383,7 +387,7 @@ void VssManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
             common::GlobalInfo::Instance()->network_id() !=
             (network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
-        //ZJC_DEBUG("invalid vss message network_id: %d", common::GlobalInfo::Instance()->network_id());
+        ZJC_DEBUG("invalid vss message network_id: %d", common::GlobalInfo::Instance()->network_id());
         return;
     }
 
@@ -396,6 +400,7 @@ void VssManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& vss_msg = header.vss_proto();
     auto& elect_item = elect_item_[elect_valid_index_];
     if (vss_msg.member_index() >= elect_item.member_count) {
+        ZJC_ERROR("mmeber index invalid.");
         return;
     }
 
@@ -452,6 +457,7 @@ void VssManager::SetConsensusFinalRandomNum(const std::string& id, uint64_t fina
     // random hash must coming
     auto iter = final_consensus_nodes_.find(id);
     if (iter != final_consensus_nodes_.end()) {
+        ZJC_ERROR("invalid id: %s, final_random_num: %lu", common::Encode::HexEncode(id).c_str(), final_random_num);
         return;
     }
 
