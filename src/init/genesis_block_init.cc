@@ -380,9 +380,13 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         timeblock::protobuf::TimeBlock tm_block;
         tm_block.set_timestamp(common::TimeUtils::TimestampSeconds() - common::kTimeBlockCreatePeriodSeconds);
         tm_block.set_height(tenon_block->height());
-        tm_block.set_vss_random(0);
+        tm_block.set_vss_random(common::Random::RandomUint64());
         timeblock_storage->set_key(timeblock::kAttrTimerBlock);
-        timeblock_storage->set_val_hash(tm_block.SerializeAsString());
+        char data[16];
+        uint64_t* u64_data = (uint64_t*)data;
+        u64_data[0] = tm_block.timestamp();
+        u64_data[1] = tm_block.vss_random();
+        timeblock_storage->set_val_hash(std::string(data, sizeof(data)));
 //         auto vss_random_attr = tx_info->add_attr();
 //         vss_random_attr->set_key(tmblock::kVssRandomAttr);
 //         vss_random_attr->set_value(std::to_string(now_tm));
