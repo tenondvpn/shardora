@@ -408,7 +408,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         prefix_db_->SaveLatestTimeBlock(
             tenon_block->height(),
             tm_block.timestamp(),
-            0);
+            tm_block.vss_random());
         fputs((common::Encode::HexEncode(tmp_str) + "\n").c_str(), root_gens_init_block_file);
 //         tmblock::TimeBlockManager::Instance()->UpdateTimeBlock(1, now_tm, now_tm);
         db::DbWriteBatch db_batch;
