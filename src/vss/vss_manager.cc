@@ -216,14 +216,14 @@ bool VssManager::IsVssThirdPeriodsHandleMessage() {
 void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
     auto now_us = common::TimeUtils::TimestampUs();
     auto rand_tm = std::rand() % 60000000lu;
-    if (!IsVssFirstPeriodsHandleMessage()) {
-        return;
-    }
-
     if (first_prev_tm_ + 1000000lu >= now_us) {
         return;
     }
     if (first_try_times_ >= 3) {
+        return;
+    }
+
+    if (!IsVssFirstPeriodsHandleMessage()) {
         return;
     }
 
@@ -267,14 +267,14 @@ void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
 
     auto now_us = common::TimeUtils::TimestampUs();
     auto rand_tm = std::rand() % 60000000lu;
-    if (!IsVssSecondPeriodsHandleMessage()) {
-        return;
-    }
-
     if (second_prev_tm_ + 1000000lu >= now_us) {
         return;
     }
     if (second_try_times_ >= 3) {
+        return;
+    }
+
+    if (!IsVssSecondPeriodsHandleMessage()) {
         return;
     }
 
@@ -318,14 +318,14 @@ void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
 
     auto now_us = common::TimeUtils::TimestampUs();
     auto rand_tm = std::rand() % 60000000lu;
-    if (!IsVssThirdPeriodsHandleMessage()) {
-        return;
-    }
-
     if (third_prev_tm_ + 1000000lu >= now_us) {
         return;
     }
     if (third_try_times_ >= 3) {
+        return;
+    }
+
+    if (!IsVssThirdPeriodsHandleMessage()) {
         return;
     }
 
