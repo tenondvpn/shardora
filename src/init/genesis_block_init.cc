@@ -46,7 +46,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
     int res = kInitSuccess;
     std::shared_ptr<pools::TxPoolManager> pools_mgr = nullptr;
     account_mgr_->Init(1, db_, pools_mgr);
-    block_mgr_->Init(account_mgr_, db_, pools_mgr, "");
+    block_mgr_->Init(account_mgr_, db_, pools_mgr, "", nullptr);
     if (net_id == network::kRootCongressNetworkId) {
         common::GlobalInfo::Instance()->set_network_id(network::kRootCongressNetworkId);
         res = CreateRootGenesisBlocks(root_genesis_nodes, cons_genesis_nodes);
