@@ -76,11 +76,6 @@ int ShardNetwork<DhtType>::Init(uint8_t thread_idx) {
         return kNetworkJoinShardFailed;
     }
 
-//     if (JoinUniversal(thread_idx) != kNetworkSuccess) {
-//         NETWORK_ERROR("create universal network failed!");
-//         return kNetworkJoinUniversalError;
-//     }
-
     return kNetworkSuccess;
 }
 
@@ -97,43 +92,6 @@ void ShardNetwork<DhtType>::Destroy() {
 //         elect_dht_->Destroy();
 //         elect_dht_.reset();
     }
-}
-
-// every one should join universal
-template<class DhtType>
-int ShardNetwork<DhtType>::JoinUniversal(uint8_t thread_idx) {
-    auto unversal_dht = network::UniversalManager::Instance()->GetUniversal(
-        network::kUniversalNetworkId);
-    assert(unversal_dht);
-    assert(unversal_dht->local_node());
-    auto local_node = std::make_shared<dht::Node>(*unversal_dht->local_node());
-    dht::DhtKeyManager dht_key(sharding_id_, security_->GetPublicKey());
-    local_node->dht_key = dht_key.StrKey();
-    local_node->dht_key_hash = common::Hash::Hash64(dht_key.StrKey());
-    universal_role_ = std::make_shared<network::Universal>(local_node);
-    if (universal_role_->Init(
-            security_,
-            nullptr,
-            std::bind(
-                &network::UniversalManager::AddNodeToUniversal,
-                network::UniversalManager::Instance(),
-                std::placeholders::_1)) != network::kNetworkSuccess) {
-        NETWORK_ERROR("init universal role dht failed!");
-        return kNetworkError;
-    }
-
-    network::UniversalManager::Instance()->RegisterUniversal(sharding_id_, universal_role_);
-    if (universal_role_->Bootstrap(
-            thread_idx,
-            network::Bootstrap::Instance()->root_bootstrap(),
-            0,
-            sharding_id_) != dht::kDhtSuccess) {
-        NETWORK_ERROR("join universal network failed!");
-        network::UniversalManager::Instance()->UnRegisterUniversal(sharding_id_);
-        return kNetworkError;
-    }
-
-    return kNetworkSuccess;
 }
 
 template<class DhtType>

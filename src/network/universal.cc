@@ -58,6 +58,7 @@ int Universal::Join(dht::NodePtr& node) {
         return res;
     }
 
+    AddNodeToUniversal(node);
     // add to subnetworks
 //     ZJC_DEBUG("universal join node: %s:%d", node->public_ip.c_str(), node->public_port);
     DhtManager::Instance()->Join(node);
@@ -215,6 +216,44 @@ int Universal::Destroy() {
     uint32_t net_id = dht::DhtKeyManager::DhtKeyGetNetId(local_node_->dht_key);
     universal_dht->RemoveNetworkId(net_id);
     return kNetworkSuccess;
+}
+
+void Universal::OnNewElectBlock(
+        uint32_t sharding_id,
+        uint64_t elect_height,
+        common::MembersPtr& members) {
+    auto iter = sharding_latest_height_map_.find(sharding_id);
+    if (iter != sharding_latest_height_map_.end() && iter->second->height >= elect_height) {
+        return;
+    }
+
+    auto new_item = std::make_shared<ElectItem>();
+    new_item->height = elect_height;
+    for (auto iter = members->begin(); iter != members->end(); ++iter) {
+        new_item->id_set.insert((*iter)->id);
+    }
+
+    sharding_latest_height_map_[sharding_id] = new_item;
+}
+
+int UniversalManager::AddNodeToUniversal(dht::NodePtr& node) {
+    for (auto sharding_iter = sharding_latest_height_map_.begin();
+        sharding_iter != sharding_latest_height_map_.end(); ++sharding_iter) {
+        auto id_iter = sharding_iter->second->id_set.find(node->id);
+        if (id_iter != sharding_iter->second->id_set.end()) {
+            auto new_node = std::make_shared<dht::Node>(
+                sharding_iter->first,
+                node->public_ip,
+                node->public_port,
+                node->pubkey_str,
+                node->id);
+            BaseDht::Join(new_node);
+            ZJC_DEBUG("universal add node: %s, sharding id: %u",
+                common::Encode::HexEncode(node->id).c_str(), sharding_iter->first);
+        }
+    }
+
+    return dht::kDhtSuccess;
 }
 
 }  // namespace network

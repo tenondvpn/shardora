@@ -24,13 +24,8 @@ public:
     int CreateNodeNetwork(uint8_t thread_idx, const common::Config& config);
     void Init(std::shared_ptr<security::Security>& security);
     void Destroy();
-    int AddNodeToUniversal(dht::NodePtr& node);
     void DropNode(const std::string& ip, uint16_t port);
     void Join(const dht::NodePtr& node);
-    void OnNewElectBlock(
-        uint32_t sharding_id,
-        uint64_t elect_height,
-        common::MembersPtr& members);
 
 private:
     UniversalManager();
@@ -44,12 +39,6 @@ private:
 
     dht::BaseDhtPtr dhts_[kUniversalNetworkCount];  // just universal and node network
     std::shared_ptr<security::Security> security_ = nullptr;
-    struct ElectItem {
-        uint64_t height;
-        std::unordered_set<std::string> id_set;
-    };
-
-    std::unordered_map<int32_t, std::shared_ptr<ElectItem>> sharding_latest_height_map_;
 
     DISALLOW_COPY_AND_ASSIGN(UniversalManager);
 };

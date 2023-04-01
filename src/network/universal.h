@@ -26,6 +26,10 @@ public:
     virtual bool CheckDestination(const std::string& des_dht_key, bool closest);
     virtual void HandleMessage(const transport::MessagePtr& msg);
     virtual bool IsUniversal() { return true; }
+    void OnNewElectBlock(
+        uint32_t sharding_id,
+        uint64_t elect_height,
+        common::MembersPtr& members);
 
     void AddNetworkId(uint32_t network_id);
     void RemoveNetworkId(uint32_t network_id);
@@ -33,6 +37,11 @@ public:
     std::vector<dht::NodePtr> LocalGetNetworkNodes(uint32_t network_id, uint32_t count);
 
 private:
+    struct ElectItem {
+        uint64_t height;
+        std::unordered_set<std::string> id_set;
+    };
+
     void ProcessGetNetworkNodesRequest(const transport::MessagePtr& header);
     void ProcessGetNetworkNodesResponse(const transport::MessagePtr& header);
 
@@ -41,6 +50,7 @@ private:
     std::mutex wait_mutex_;
     std::shared_ptr<security::Security> security_ = nullptr;
     std::vector<dht::NodePtr> wait_nodes_;
+    std::unordered_map<int32_t, std::shared_ptr<ElectItem>> sharding_latest_height_map_;
 
     DISALLOW_COPY_AND_ASSIGN(Universal);
 };
