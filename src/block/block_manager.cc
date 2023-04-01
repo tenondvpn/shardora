@@ -196,7 +196,10 @@ void BlockManager::HandleNormalToTx(
     }
 }
 
-void BlockManager::RootHandleNormalToTx(uint64_t height, pools::protobuf::ToTxMessage& to_txs) {
+void BlockManager::RootHandleNormalToTx(
+        uint8_t thread_idx,
+        uint64_t height,
+        pools::protobuf::ToTxMessage& to_txs) {
     std::mt19937_64 g2(height);
     std::string string_for_hash;
     string_for_hash.reserve(to_txs.tos_size() * (32 + 16));
@@ -243,7 +246,7 @@ void BlockManager::RootHandleNormalToTx(uint64_t height, pools::protobuf::ToTxMe
     tx->set_pubkey("");
     tx->set_to(common::kNormalLocalToAddress);
     tx->set_step(pools::protobuf::kRootLocalTos);
-    auto gid = common::Hash::keccak256(tos_hash + std::to_string(height));
+    auto gid = common::Hash::keccak256(new_hash + std::to_string(height));
     tx->set_gas_limit(0);
     tx->set_amount(0);
     tx->set_gas_price(common::kBuildinTransactionGasPrice);

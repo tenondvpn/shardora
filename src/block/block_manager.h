@@ -84,7 +84,10 @@ private:
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleLocalNormalToTx(uint8_t thread_idx, const pools::protobuf::ToTxMessage& to_txs);
-    void RootHandleNormalToTx(uint64_t height, pools::protobuf::ToTxMessage& to_txs);
+    void RootHandleNormalToTx(
+        uint8_t thread_idx,
+        uint64_t height,
+        pools::protobuf::ToTxMessage& to_txs);
 
     static const uint64_t kCreateToTxPeriodMs = 10000u;
 
