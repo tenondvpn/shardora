@@ -113,7 +113,7 @@ int NetworkInit::Init(int argc, char** argv) {
     block_mgr_ = std::make_shared<block::BlockManager>();
     bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_);
     elect_mgr_ = std::make_shared<elect::ElectManager>(
-        block_mgr_, security_, bls_mgr_, db_,
+        vss_mgr_, block_mgr_, security_, bls_mgr_, db_,
         std::bind(
             &NetworkInit::ElectBlockCallback,
             this,
