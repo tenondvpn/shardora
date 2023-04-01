@@ -1880,9 +1880,25 @@ void BftManager::BroadcastLocalTosBlock(
         return;
     }
 
+    if (block_item->tx_list_size() != 1) {
+        return;
+    }
+
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
+    auto& tx = block_item->tx_list(0);
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        if (tx.storages(i).val_size() == 0) {
+            std::string val;
+            if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+                auto kv = msg.mutable_sync()->add_items();
+                kv->set_key(tx.storages(i).val_hash());
+                kv->set_value(val);
+            }
+        }
+    }
+
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     msg.set_type(common::kPoolsMessage);
     dht::DhtKeyManager dht_key(block_item->network_id());

@@ -136,6 +136,17 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     if (header.has_cross_tos()) {
+        if (header.has_sync() && header.sync().items_size() > 0) {
+            db::DbWriteBatch db_batch;
+            for (int32_t i = 0; i < header.sync().items_size(); ++i) {
+                db_batch.Put(header.sync().items(i).key(), header.sync().items(i).value());
+            }
+
+            if (!db_->Put(db_batch).ok()) {
+                ZJC_FATAL("write db failed!");
+            }
+        }
+
         auto block_ptr = std::make_shared<block::protobuf::Block>(header.cross_tos().block());
         block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_ptr);
     }
