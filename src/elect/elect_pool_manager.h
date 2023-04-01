@@ -98,7 +98,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     NodeHistoryCredit node_credit_;
     ElectManager* elect_mgr_ = nullptr;
-    std::shared_ptr<vss::VssManager> vss_mgr_ = nullptrl
+    std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<NodesStokeManager> stoke_mgr_ = nullptr;
     std::unordered_map<uint32_t, ElectPoolPtr> elect_pool_map_;
