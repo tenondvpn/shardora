@@ -188,6 +188,8 @@ int UniversalManager::AddNodeToUniversal(dht::NodePtr& node) {
                 node->pubkey_str,
                 node->id);
             universal_dht->Join(new_node);
+            ZJC_DEBUG("universal add node: %s, sharding id: %u",
+                common::Encode::HexEncode(node->id).c_str(), sharding_iter->first);
         }
     }
 
