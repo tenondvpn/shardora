@@ -10,6 +10,7 @@
 #include "elect/elect_manager.h"
 #include "elect/nodes_stoke_manager.h"
 #include "network/network_utils.h"
+#include "vss/vss_manager.h"
 
 namespace zjchain {
 
@@ -19,10 +20,11 @@ static const std::string kElectGidPrefix = common::Encode::HexDecode(
     "fc04c804d4049808ae33755fe9ae5acd50248f249a3ca8aea74fbea679274a11");
 ElectPoolManager::ElectPoolManager(
         ElectManager* elect_mgr,
+        std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<NodesStokeManager>& stoke_mgr,
         std::shared_ptr<db::Db>& db)
-        : db_(db), node_credit_(db), elect_mgr_(elect_mgr),
+        : vss_mgr_(vss_mgr), db_(db), node_credit_(db), elect_mgr_(elect_mgr),
         security_ptr_(security_ptr),
         stoke_mgr_(stoke_mgr) {
     update_stoke_tick_.CutOff(30000000l, std::bind(&ElectPoolManager::UpdateNodesStoke, this));
@@ -652,7 +654,7 @@ void ElectPoolManager::FtsGetNodes(
         const std::vector<NodeDetailPtr>& src_nodes,
         std::set<int32_t>& res_nodes) {
     auto sort_vec = src_nodes;
-    std::mt19937_64 g2(0);//vss::VssManager::Instance()->EpochRandom());
+    std::mt19937_64 g2(vss_mgr_->EpochRandom());
     SmoothFtsValue(
         shard_netid,
         (src_nodes.size() - (src_nodes.size() / 3)),

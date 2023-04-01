@@ -189,45 +189,110 @@ void BlockManager::HandleNormalToTx(
         return;
     }
 
-    std::unordered_map<std::string, std::pair<uint64_t, uint32_t>> addr_amount_map;
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
-        for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
-            if (to_txs.tos(i).amount() > 0) {
-                // dispatch to txs to tx pool
-                uint32_t sharding_id = common::kInvalidUint32;
-                uint32_t pool_index = common::kInvalidUint32;
+        HandleLocalNormalToTx(to_txs);
+    } else {
+        RootHandleNormalToTx(block->height(), to_txs);
+    }
+}
+
+void BlockManager::RootHandleNormalToTx(uint64_t height, pools::protobuf::ToTxMessage& to_txs) {
+    std::mt19937_64 g2(height);
+    std::string string_for_hash;
+    string_for_hash.reserve(to_txs.tos_size() * (32 + 16));
+    std::unordered_map<std::string, std::pair<uint32_t, uint32_t>> addr_amount_map;
+    for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
+        if (to_txs.tos(i).amount() > 0) {
+            uint32_t sharding_id = common::kInvalidUint32;
+            uint32_t pool_index = common::kInvalidUint32;
+            auto* tos_item = to_txs.mutable_tos(i);
+            auto iter = addr_amount_map.find(to_txs.tos(i).des());
+            if (iter != addr_amount_map.end()) {
+                sharding_id = iter->second.first;
+                pool_index = iter->second.second;
+            } else {
                 auto account_info = account_mgr_->GetAcountInfo(thread_idx, to_txs.tos(i).des());
                 if (account_info == nullptr) {
-                    assert(false);
-                    if (!to_txs.tos(i).has_sharding_id() || !to_txs.tos(i).has_pool_index()) {
-                        continue;
-                    }
-
-                    if (to_txs.tos(i).sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-                        continue;
-                    }
-
-                    if (to_txs.tos(i).pool_index() >= common::kImmutablePoolSize) {
-                        continue;
-                    }
-
-                    sharding_id = to_txs.tos(i).sharding_id();
-                    pool_index = to_txs.tos(i).pool_index();
+                    sharding_id = network::kRootCongressNetworkId +
+                        (g2() % (max_consensus_sharding_id_ - network::kRootCongressNetworkId) + 1);
+                    pool_index = g2() % common::kImmutablePoolSize;
                 } else {
                     sharding_id = account_info->sharding_id();
                     pool_index = account_info->pool_index();
                 }
 
-                if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
+                addr_amount_map[to_txs.tos(i).des()] = std::make_pair(sharding_id, pool_index);
+            }
+
+            tos_item->set_sharding_id(sharding_id);
+            tos_item->set_pool_index(pool_index);
+            string_for_hash.append(tos_item->des());
+            uint64_t amount = tos_item->amount();
+            string_for_hash.append((char*)&amount, sizeof(amount));
+            string_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
+            string_for_hash.append((char*)&pool_index, sizeof(pool_index));
+        }
+    }
+
+    auto new_hash = common::Hash::keccak256(string_for_hash);
+    prefix_db_->SaveTemporaryKv(new_hash, to_txs.SerializeAsString());
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto tx = msg_ptr->header.mutable_tx_proto();
+    tx->set_key(protos::kLocalNormalTos);
+    tx->set_value(new_hash);
+    tx->set_pubkey("");
+    tx->set_to(common::kNormalLocalToAddress);
+    tx->set_step(pools::protobuf::kRootLocalTos);
+    auto gid = common::Hash::keccak256(tos_hash + std::to_string(height));
+    tx->set_gas_limit(0);
+    tx->set_amount(0);
+    tx->set_gas_price(common::kBuildinTransactionGasPrice);
+    tx->set_gid(gid);
+    msg_ptr->address_info = account_mgr_->single_local_to_address_info(
+        height % common::kImmutablePoolSize);
+    pools_mgr_->HandleMessage(msg_ptr);
+}
+
+void BlockManager::HandleLocalNormalToTx(const pools::protobuf::ToTxMessage& to_txs) {
+    std::unordered_map<std::string, std::pair<uint64_t, uint32_t>> addr_amount_map;
+    for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
+        if (to_txs.tos(i).amount() > 0) {
+            // dispatch to txs to tx pool
+            uint32_t sharding_id = common::kInvalidUint32;
+            uint32_t pool_index = common::kInvalidUint32;
+            auto account_info = account_mgr_->GetAcountInfo(thread_idx, to_txs.tos(i).des());
+            if (account_info == nullptr) {
+                assert(false);
+                if (!to_txs.tos(i).has_sharding_id() || !to_txs.tos(i).has_pool_index()) {
                     continue;
                 }
 
-                auto iter = addr_amount_map.find(to_txs.tos(i).des());
-                if (iter == addr_amount_map.end()) {
-                    addr_amount_map[to_txs.tos(i).des()] = std::make_pair(to_txs.tos(i).amount(), pool_index);
-                } else {
-                    iter->second.first += to_txs.tos(i).amount();
+                if (to_txs.tos(i).sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+                    continue;
                 }
+
+                if (to_txs.tos(i).pool_index() >= common::kImmutablePoolSize) {
+                    continue;
+                }
+
+                sharding_id = to_txs.tos(i).sharding_id();
+                pool_index = to_txs.tos(i).pool_index();
+            } else {
+                sharding_id = account_info->sharding_id();
+                pool_index = account_info->pool_index();
+            }
+
+            if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
+                continue;
+            }
+
+            auto iter = addr_amount_map.find(to_txs.tos(i).des());
+            if (iter == addr_amount_map.end()) {
+                addr_amount_map[to_txs.tos(i).des()] = std::make_pair(
+                    to_txs.tos(i).amount(),
+                    pool_index);
+            } else {
+                iter->second.first += to_txs.tos(i).amount();
             }
         }
     }
@@ -263,9 +328,8 @@ void BlockManager::HandleNormalToTx(
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
-        msg_ptr->address_info = account_mgr_->single_local_to_address_info();
+        msg_ptr->address_info = account_mgr_->single_local_to_address_info(iter->first);
         pools_mgr_->HandleMessage(msg_ptr);
-//         ZJC_DEBUG("success add local to txs.");
     }
 }
 

@@ -14,6 +14,10 @@
 
 namespace zjchain {
 
+namespace vss {
+    class VssManager;
+}
+
 namespace elect {
 
 class ElectManager;
@@ -21,6 +25,7 @@ class ElectPoolManager {
 public:
     ElectPoolManager(
         ElectManager* elect_mgr,
+        std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<NodesStokeManager>& stoke_mgr,
         std::shared_ptr<db::Db>& db);
@@ -93,6 +98,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     NodeHistoryCredit node_credit_;
     ElectManager* elect_mgr_ = nullptr;
+    std::shared_ptr<vss::VssManager> vss_mgr_ = nullptrl
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<NodesStokeManager> stoke_mgr_ = nullptr;
     std::unordered_map<uint32_t, ElectPoolPtr> elect_pool_map_;

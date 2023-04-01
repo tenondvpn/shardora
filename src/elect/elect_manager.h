@@ -27,6 +27,10 @@
 
 namespace zjchain {
 
+namespace vss {
+    class VssManager;
+}
+
 namespace elect {
 
 typedef network::ShardNetwork<dht::BaseDht> ElectNode;
@@ -35,6 +39,7 @@ typedef std::shared_ptr<ElectNode> ElectNodePtr;
 class ElectManager {
 public:
     ElectManager(
+        std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
@@ -163,6 +168,7 @@ private:
     static const uint64_t kWaitingHeartbeatPeriod = 20000000llu;
 
     // visit not frequently, just mutex lock
+    std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::map<uint32_t, ElectNodePtr> elect_network_map_;
     std::mutex elect_network_map_mutex_;

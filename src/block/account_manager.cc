@@ -57,25 +57,31 @@ int AccountManager::Init(
 }
 
 void AccountManager::CreateNormalToAddressInfo() {
-    single_to_address_info_ = std::make_shared<address::protobuf::AddressInfo>();
-    single_to_address_info_->set_pubkey("");
-    single_to_address_info_->set_balance(0);
-    single_to_address_info_->set_sharding_id(-1);
-    single_to_address_info_->set_pool_index(0);
-    single_to_address_info_->set_addr(common::kNormalToAddress);
-    single_to_address_info_->set_type(address::protobuf::kToTxAddress);
-    single_to_address_info_->set_latest_height(0);
+    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
+        single_to_address_info_[i] = std::make_shared<address::protobuf::AddressInfo>();
+        single_to_address_info_[i]->set_pubkey("");
+        single_to_address_info_[i]->set_balance(0);
+        single_to_address_info_[i]->set_sharding_id(-1);
+        single_to_address_info_[i]->set_pool_index(i);
+        single_to_address_info_[i]->set_addr(
+            common::Hash::keccak256(common::kNormalToAddress + std::to_string(i)));
+        single_to_address_info_[i]->set_type(address::protobuf::kToTxAddress);
+        single_to_address_info_[i]->set_latest_height(0);
+    }
 }
 
 void AccountManager::CreateNormalLocalToAddressInfo() {
-    single_local_to_address_info_ = std::make_shared<address::protobuf::AddressInfo>();
-    single_local_to_address_info_->set_pubkey("");
-    single_local_to_address_info_->set_balance(0);
-    single_local_to_address_info_->set_sharding_id(-1);
-    single_local_to_address_info_->set_pool_index(0);
-    single_local_to_address_info_->set_addr(common::kNormalLocalToAddress);
-    single_local_to_address_info_->set_type(address::protobuf::kLocalToTxAddress);
-    single_local_to_address_info_->set_latest_height(0);
+    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
+        single_local_to_address_info_[i] = std::make_shared<address::protobuf::AddressInfo>();
+        single_local_to_address_info_[i]->set_pubkey("");
+        single_local_to_address_info_[i]->set_balance(0);
+        single_local_to_address_info_[i]->set_sharding_id(-1);
+        single_local_to_address_info_[i]->set_pool_index(i);
+        single_local_to_address_info_[i]->set_addr(
+            common::Hash::keccak256(common::kNormalLocalToAddress + std::to_string(i)));
+        single_local_to_address_info_[i]->set_type(address::protobuf::kLocalToTxAddress);
+        single_local_to_address_info_[i]->set_latest_height(0);
+    }
 }
 
 bool AccountManager::AccountExists(uint8_t thread_idx, const std::string& addr) {

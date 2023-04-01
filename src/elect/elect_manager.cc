@@ -13,6 +13,7 @@
 #include "elect/nodes_stoke_manager.h"
 #include "network/route.h"
 #include "network/shard_network.h"
+#include "vss/vss_manager.h"
 
 namespace zjchain {
 
@@ -38,17 +39,19 @@ int ElectManager::Init() {
 }
 
 ElectManager::ElectManager(
+        std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         std::shared_ptr<db::Db>& db,
         NewElectBlockCallback new_elect_cb) {
+    vss_mgr_ = vss_mgr;
     block_mgr_ = block_mgr;
     security_ = security;
     db_ = db;
     new_elect_cb_ = new_elect_cb;
     elect_block_mgr_.Init(db_);
-    pool_manager_ = std::make_shared<ElectPoolManager>(this, security, stoke_mgr_, db_);
+    pool_manager_ = std::make_shared<ElectPoolManager>(this, vss_mgr, security, stoke_mgr_, db_);
     height_with_block_ = std::make_shared<HeightWithElectBlock>(security, db_);
     leader_rotation_ = std::make_shared<LeaderRotation>(security_);
     stoke_mgr_ = std::make_shared<NodesStokeManager>(security_);
