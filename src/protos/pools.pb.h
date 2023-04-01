@@ -83,18 +83,21 @@ namespace protobuf {
 enum StepType {
   kNormalFrom = 0,
   kNormalTo = 1,
-  kContractUserCall = 2,
-  kContractCallExcute = 3,
-  kContractBroadcast = 4,
-  kConsensusRootElectShard = 5,
-  kConsensusRootTimeBlock = 6,
-  kConsensusFinalStatistic = 7,
-  kConsensusCreateGenesisAcount = 8,
-  kConsensusLocalTos = 9
+  kConsensusRootElectShard = 2,
+  kConsensusRootTimeBlock = 3,
+  kConsensusFinalStatistic = 4,
+  kConsensusCreateGenesisAcount = 5,
+  kConsensusLocalTos = 6,
+  kContractUserCreateCall = 7,
+  kContractRootCreateCall = 8,
+  kContractShardCreateCall = 9,
+  kContractUserCall = 10,
+  kContractExcute = 11,
+  kContractBroadcast = 12
 };
 bool StepType_IsValid(int value);
 const StepType StepType_MIN = kNormalFrom;
-const StepType StepType_MAX = kConsensusLocalTos;
+const StepType StepType_MAX = kContractBroadcast;
 const int StepType_ARRAYSIZE = StepType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* StepType_descriptor();
@@ -950,6 +953,13 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::google::protobuf::uint64 amount() const;
   void set_amount(::google::protobuf::uint64 value);
 
+  // optional uint64 contract_prepayment = 11;
+  bool has_contract_prepayment() const;
+  void clear_contract_prepayment();
+  static const int kContractPrepaymentFieldNumber = 11;
+  ::google::protobuf::uint64 contract_prepayment() const;
+  void set_contract_prepayment(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.TxMessage)
  private:
   void set_has_version();
@@ -972,6 +982,8 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   void clear_has_amount();
   void set_has_step();
   void clear_has_step();
+  void set_has_contract_prepayment();
+  void clear_has_contract_prepayment();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -986,6 +998,7 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::google::protobuf::uint32 version_;
   int step_;
   ::google::protobuf::uint64 amount_;
+  ::google::protobuf::uint64 contract_prepayment_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // ===================================================================
@@ -2128,6 +2141,30 @@ inline void TxMessage::set_step(::zjchain::pools::protobuf::StepType value) {
   set_has_step();
   step_ = value;
   // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.TxMessage.step)
+}
+
+// optional uint64 contract_prepayment = 11;
+inline bool TxMessage::has_contract_prepayment() const {
+  return (_has_bits_[0] & 0x00000400u) != 0;
+}
+inline void TxMessage::set_has_contract_prepayment() {
+  _has_bits_[0] |= 0x00000400u;
+}
+inline void TxMessage::clear_has_contract_prepayment() {
+  _has_bits_[0] &= ~0x00000400u;
+}
+inline void TxMessage::clear_contract_prepayment() {
+  contract_prepayment_ = GOOGLE_ULONGLONG(0);
+  clear_has_contract_prepayment();
+}
+inline ::google::protobuf::uint64 TxMessage::contract_prepayment() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.TxMessage.contract_prepayment)
+  return contract_prepayment_;
+}
+inline void TxMessage::set_contract_prepayment(::google::protobuf::uint64 value) {
+  set_has_contract_prepayment();
+  contract_prepayment_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.TxMessage.contract_prepayment)
 }
 
 #ifdef __GNUC__

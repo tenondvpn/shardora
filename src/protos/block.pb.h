@@ -678,6 +678,13 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::uint32 status() const;
   void set_status(::google::protobuf::uint32 value);
 
+  // optional uint64 contract_prepayment = 13;
+  bool has_contract_prepayment() const;
+  void clear_contract_prepayment();
+  static const int kContractPrepaymentFieldNumber = 13;
+  ::google::protobuf::uint64 contract_prepayment() const;
+  void set_contract_prepayment(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.block.protobuf.BlockTx)
  private:
   void set_has_gid();
@@ -700,6 +707,8 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   void clear_has_step();
   void set_has_status();
   void clear_has_status();
+  void set_has_contract_prepayment();
+  void clear_has_contract_prepayment();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -716,6 +725,7 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::uint64 balance_;
   int step_;
   ::google::protobuf::uint32 status_;
+  ::google::protobuf::uint64 contract_prepayment_;
   friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -5092,6 +5102,30 @@ inline const ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::T
 BlockTx::contract_txs() const {
   // @@protoc_insertion_point(field_list:zjchain.block.protobuf.BlockTx.contract_txs)
   return contract_txs_;
+}
+
+// optional uint64 contract_prepayment = 13;
+inline bool BlockTx::has_contract_prepayment() const {
+  return (_has_bits_[0] & 0x00000400u) != 0;
+}
+inline void BlockTx::set_has_contract_prepayment() {
+  _has_bits_[0] |= 0x00000400u;
+}
+inline void BlockTx::clear_has_contract_prepayment() {
+  _has_bits_[0] &= ~0x00000400u;
+}
+inline void BlockTx::clear_contract_prepayment() {
+  contract_prepayment_ = GOOGLE_ULONGLONG(0);
+  clear_has_contract_prepayment();
+}
+inline ::google::protobuf::uint64 BlockTx::contract_prepayment() const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.BlockTx.contract_prepayment)
+  return contract_prepayment_;
+}
+inline void BlockTx::set_contract_prepayment(::google::protobuf::uint64 value) {
+  set_has_contract_prepayment();
+  contract_prepayment_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.BlockTx.contract_prepayment)
 }
 
 // -------------------------------------------------------------------
