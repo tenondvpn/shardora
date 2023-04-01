@@ -1,5 +1,6 @@
 #include "consensus/zbft/zbft_utils.h"
 
+#include "consensus/consensus_utils.h"
 #include "elect/elect_manager.h"
 #include "network/network_utils.h"
 
