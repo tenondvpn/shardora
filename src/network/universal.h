@@ -45,7 +45,7 @@ private:
 
     void ProcessGetNetworkNodesRequest(const transport::MessagePtr& header);
     void ProcessGetNetworkNodesResponse(const transport::MessagePtr& header);
-    int AddNodeToUniversal(dht::NodePtr& node)
+    int AddNodeToUniversal(dht::NodePtr& node);
 
     bool* universal_ids_{ nullptr };
     std::condition_variable wait_con_;
