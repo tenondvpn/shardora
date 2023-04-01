@@ -174,7 +174,7 @@ void UniversalManager::OnNewElectBlock(
         uint64_t elect_height,
         common::MembersPtr& members) {
     if (dhts_[kUniversalNetworkId] != nullptr) {
-        dhts_[kUniversalNetworkId]->OnNewElectBlock(node);
+        dhts_[kUniversalNetworkId]->OnNewElectBlock(sharding_id, elect_height, members);
     }
 }
 
