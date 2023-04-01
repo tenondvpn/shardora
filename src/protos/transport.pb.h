@@ -637,6 +637,18 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::zjchain::vss::protobuf::VssMessage* mutable_vss_proto();
   void set_allocated_vss_proto(::zjchain::vss::protobuf::VssMessage* vss_proto);
 
+  // optional .zjchain.block.protobuf.CrossShardingTosMessage cross_tos = 22;
+  bool has_cross_tos() const;
+  void clear_cross_tos();
+  static const int kCrossTosFieldNumber = 22;
+  private:
+  const ::zjchain::block::protobuf::CrossShardingTosMessage& _internal_cross_tos() const;
+  public:
+  const ::zjchain::block::protobuf::CrossShardingTosMessage& cross_tos() const;
+  ::zjchain::block::protobuf::CrossShardingTosMessage* release_cross_tos();
+  ::zjchain::block::protobuf::CrossShardingTosMessage* mutable_cross_tos();
+  void set_allocated_cross_tos(::zjchain::block::protobuf::CrossShardingTosMessage* cross_tos);
+
   // optional int32 src_sharding_id = 1;
   bool has_src_sharding_id() const;
   void clear_src_sharding_id();
@@ -716,6 +728,8 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   void clear_has_sync_proto();
   void set_has_vss_proto();
   void clear_has_vss_proto();
+  void set_has_cross_tos();
+  void clear_has_cross_tos();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -736,6 +750,7 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::zjchain::sync::protobuf::SyncInfo* sync_;
   ::zjchain::sync::protobuf::SyncMessage* sync_proto_;
   ::zjchain::vss::protobuf::VssMessage* vss_proto_;
+  ::zjchain::block::protobuf::CrossShardingTosMessage* cross_tos_;
   ::google::protobuf::int32 src_sharding_id_;
   ::google::protobuf::uint32 hop_count_;
   ::google::protobuf::uint64 hash64_;
@@ -1186,13 +1201,13 @@ inline void BroadcastParam::set_ign_bloomfilter_hop(::google::protobuf::uint32 v
 
 // optional int32 src_sharding_id = 1;
 inline bool Header::has_src_sharding_id() const {
-  return (_has_bits_[0] & 0x00010000u) != 0;
+  return (_has_bits_[0] & 0x00020000u) != 0;
 }
 inline void Header::set_has_src_sharding_id() {
-  _has_bits_[0] |= 0x00010000u;
+  _has_bits_[0] |= 0x00020000u;
 }
 inline void Header::clear_has_src_sharding_id() {
-  _has_bits_[0] &= ~0x00010000u;
+  _has_bits_[0] &= ~0x00020000u;
 }
 inline void Header::clear_src_sharding_id() {
   src_sharding_id_ = 0;
@@ -1276,13 +1291,13 @@ inline void Header::set_allocated_des_dht_key(::std::string* des_dht_key) {
 
 // optional uint32 hop_count = 3 [default = 0];
 inline bool Header::has_hop_count() const {
-  return (_has_bits_[0] & 0x00020000u) != 0;
+  return (_has_bits_[0] & 0x00040000u) != 0;
 }
 inline void Header::set_has_hop_count() {
-  _has_bits_[0] |= 0x00020000u;
+  _has_bits_[0] |= 0x00040000u;
 }
 inline void Header::clear_has_hop_count() {
-  _has_bits_[0] &= ~0x00020000u;
+  _has_bits_[0] &= ~0x00040000u;
 }
 inline void Header::clear_hop_count() {
   hop_count_ = 0u;
@@ -1366,13 +1381,13 @@ inline void Header::set_allocated_debug(::std::string* debug) {
 
 // optional uint64 hash64 = 5;
 inline bool Header::has_hash64() const {
-  return (_has_bits_[0] & 0x00040000u) != 0;
+  return (_has_bits_[0] & 0x00080000u) != 0;
 }
 inline void Header::set_has_hash64() {
-  _has_bits_[0] |= 0x00040000u;
+  _has_bits_[0] |= 0x00080000u;
 }
 inline void Header::clear_has_hash64() {
-  _has_bits_[0] &= ~0x00040000u;
+  _has_bits_[0] &= ~0x00080000u;
 }
 inline void Header::clear_hash64() {
   hash64_ = GOOGLE_ULONGLONG(0);
@@ -1390,13 +1405,13 @@ inline void Header::set_hash64(::google::protobuf::uint64 value) {
 
 // optional uint32 type = 6;
 inline bool Header::has_type() const {
-  return (_has_bits_[0] & 0x00080000u) != 0;
+  return (_has_bits_[0] & 0x00100000u) != 0;
 }
 inline void Header::set_has_type() {
-  _has_bits_[0] |= 0x00080000u;
+  _has_bits_[0] |= 0x00100000u;
 }
 inline void Header::clear_has_type() {
-  _has_bits_[0] &= ~0x00080000u;
+  _has_bits_[0] &= ~0x00100000u;
 }
 inline void Header::clear_type() {
   type_ = 0u;
@@ -1538,13 +1553,13 @@ inline void Header::set_allocated_sign(::std::string* sign) {
 
 // optional int32 version = 9 [default = 0];
 inline bool Header::has_version() const {
-  return (_has_bits_[0] & 0x00100000u) != 0;
+  return (_has_bits_[0] & 0x00200000u) != 0;
 }
 inline void Header::set_has_version() {
-  _has_bits_[0] |= 0x00100000u;
+  _has_bits_[0] |= 0x00200000u;
 }
 inline void Header::clear_has_version() {
-  _has_bits_[0] &= ~0x00100000u;
+  _has_bits_[0] &= ~0x00200000u;
 }
 inline void Header::clear_version() {
   version_ = 0;
@@ -2206,6 +2221,60 @@ inline void Header::set_allocated_vss_proto(::zjchain::vss::protobuf::VssMessage
   }
   vss_proto_ = vss_proto;
   // @@protoc_insertion_point(field_set_allocated:zjchain.transport.protobuf.Header.vss_proto)
+}
+
+// optional .zjchain.block.protobuf.CrossShardingTosMessage cross_tos = 22;
+inline bool Header::has_cross_tos() const {
+  return (_has_bits_[0] & 0x00010000u) != 0;
+}
+inline void Header::set_has_cross_tos() {
+  _has_bits_[0] |= 0x00010000u;
+}
+inline void Header::clear_has_cross_tos() {
+  _has_bits_[0] &= ~0x00010000u;
+}
+inline const ::zjchain::block::protobuf::CrossShardingTosMessage& Header::_internal_cross_tos() const {
+  return *cross_tos_;
+}
+inline const ::zjchain::block::protobuf::CrossShardingTosMessage& Header::cross_tos() const {
+  const ::zjchain::block::protobuf::CrossShardingTosMessage* p = cross_tos_;
+  // @@protoc_insertion_point(field_get:zjchain.transport.protobuf.Header.cross_tos)
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::block::protobuf::CrossShardingTosMessage*>(
+      &::zjchain::block::protobuf::_CrossShardingTosMessage_default_instance_);
+}
+inline ::zjchain::block::protobuf::CrossShardingTosMessage* Header::release_cross_tos() {
+  // @@protoc_insertion_point(field_release:zjchain.transport.protobuf.Header.cross_tos)
+  clear_has_cross_tos();
+  ::zjchain::block::protobuf::CrossShardingTosMessage* temp = cross_tos_;
+  cross_tos_ = NULL;
+  return temp;
+}
+inline ::zjchain::block::protobuf::CrossShardingTosMessage* Header::mutable_cross_tos() {
+  set_has_cross_tos();
+  if (cross_tos_ == NULL) {
+    auto* p = CreateMaybeMessage<::zjchain::block::protobuf::CrossShardingTosMessage>(GetArenaNoVirtual());
+    cross_tos_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:zjchain.transport.protobuf.Header.cross_tos)
+  return cross_tos_;
+}
+inline void Header::set_allocated_cross_tos(::zjchain::block::protobuf::CrossShardingTosMessage* cross_tos) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete reinterpret_cast< ::google::protobuf::MessageLite*>(cross_tos_);
+  }
+  if (cross_tos) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      cross_tos = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, cross_tos, submessage_arena);
+    }
+    set_has_cross_tos();
+  } else {
+    clear_has_cross_tos();
+  }
+  cross_tos_ = cross_tos;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.transport.protobuf.Header.cross_tos)
 }
 
 #ifdef __GNUC__
