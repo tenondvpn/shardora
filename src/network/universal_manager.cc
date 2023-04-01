@@ -181,7 +181,7 @@ int UniversalManager::AddNodeToUniversal(dht::NodePtr& node) {
             sharding_iter != sharding_latest_height_map_.end(); ++sharding_iter) {
         auto id_iter = sharding_iter->second->id_set.find(node->id);
         if (id_iter != sharding_iter->second->id_set.end()) {
-            auto new_node = std::make_shared<dht:Node>(
+            auto new_node = std::make_shared<dht::Node>(
                 sharding_iter->first,
                 node->public_ip,
                 node->public_port,
