@@ -25,6 +25,10 @@ public:
     void Destroy();
     void DropNode(const std::string& ip, uint16_t port);
     void Join(const dht::NodePtr& node);
+    void OnNewElectBlock(
+        uint32_t sharding_id,
+        uint64_t elect_height,
+        common::MembersPtr& members);
 
 private:
     UniversalManager();
