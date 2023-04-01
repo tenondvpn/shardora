@@ -1,6 +1,7 @@
 syntax = "proto2";
 
 package zjchain.pools.protobuf;
+import "protos/block.proto";
 
 enum StepType {
     kNormalFrom = 0;
@@ -45,6 +46,10 @@ message PoolLatestInfo {
     optional uint64 height = 1;
     optional bytes hash = 2;
     optional uint64 synced_height = 3;
+}
+
+message CrossShardingTosMessage {
+    optional block.protobuf.Block block = 1;
 }
 
 message TxMessage {

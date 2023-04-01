@@ -71,6 +71,7 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
         }
         return kNetworkSuccess;
     }
+
     // this node not in this network, relay by universal
     RouteByUniversal(msg_ptr);
     if (message.type() == common::kElectMessage) {

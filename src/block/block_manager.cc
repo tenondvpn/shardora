@@ -7,6 +7,7 @@
 #include "common/time_utils.h"
 #include "db/db.h"
 #include "network/route.h"
+#include "pools/tx_pool_manager.h"
 #include "protos/block.pb.h"
 #include "protos/elect.pb.h"
 #include "transport/processor.h"

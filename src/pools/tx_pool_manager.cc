@@ -1,5 +1,6 @@
 #include "pools/tx_pool_manager.h"
 
+#include "block/block_manager.h"
 #include "common/log.h"
 #include "common/global_info.h"
 #include "common/hash.h"
@@ -15,9 +16,11 @@ namespace zjchain {
 namespace pools {
 
 TxPoolManager::TxPoolManager(
+        std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync) {
+    block_mgr_ = block_mgr;
     security_ = security;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
@@ -59,80 +62,84 @@ std::shared_ptr<address::protobuf::AddressInfo> TxPoolManager::GetAddressInfo(
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // just one thread
     auto& header = msg_ptr->header;
-    if (!header.has_tx_proto()) {
-        return;
+    if (header.has_tx_proto()) {
+        auto& tx_msg = header.tx_proto();
+        if (tx_msg.step() == pools::protobuf::kNormalFrom) {
+            msg_ptr->address_info = GetAddressInfo(security_->GetAddress(tx_msg.pubkey()));
+            if (msg_ptr->address_info == nullptr) {
+                ZJC_WARN("no address info.");
+                return;
+            }
+
+            if (msg_ptr->address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+                ZJC_WARN("sharding error: %d, %d",
+                    msg_ptr->address_info->sharding_id(),
+                    common::GlobalInfo::Instance()->network_id());
+                return;
+            }
+
+            if (tx_msg.has_key() && tx_msg.key().size() > kTxStorageKeyMaxSize) {
+                ZJC_DEBUG("key size error now: %d, max: %d.",
+                    tx_msg.key().size(), kTxStorageKeyMaxSize);
+                return;
+            }
+
+            msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
+            if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
+                // avoid save gid different tx
+                ZJC_DEBUG("tx msg hash exists: %s failed!",
+                    common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+                return;
+            }
+    //         if (security_->Verify(
+    //                 msg_ptr->msg_hash,
+    //                 tx_msg.pubkey(),
+    //                 header.sign()) != security::kSecuritySuccess) {
+    //             ZJC_ERROR("verify signature failed!");
+    //             return;
+    //         }
+
+            if (prefix_db_->GidExists(tx_msg.gid())) {
+                ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+                return;
+            }
+
+            msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
+    //         ++prev_count_[msg_ptr->address_info->pool_index()];
+    //         auto now_tm = common::TimeUtils::TimestampUs();
+    //         if (prev_timestamp_us_ + 3000000lu < now_tm) {
+    //             for (uint32_t i = 0; i < 257; ++i) {
+    //                 if (prev_count_[i] > 0) {
+    //                     ZJC_INFO("thread index: %d, pool: %d tx tps: %.2f",
+    //                         msg_ptr->thread_idx, i,
+    //                         (double(prev_count_[i]) / (double((now_tm - prev_timestamp_us_) / 1000000.0))));
+    //                     prev_count_[i] = 0;
+    //                 }
+    //             }
+    // 
+    //             prev_timestamp_us_ = now_tm;
+    //         }
+    //         pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](msg_ptr);
+    //         tx_pool_[msg_ptr->address_info->pool_index()].AddTx(tx_ptr);
+    //         msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+        } else {
+            // check valid
+            msg_queues_[0].push(msg_ptr);
+    //         auto ptr = msg_ptr;
+    //         pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](msg_ptr);
+    //         tx_pool_[msg_ptr->address_info->pool_index()].AddTx(tx_ptr);
+    //         ZJC_DEBUG("success add tx to queue: %d", msg_ptr->address_info->pool_index());
+        }
+    
+        // storage item not package in block, just package storage hash 
+        SaveStorageToDb(header);
     }
 
-    auto& tx_msg = header.tx_proto();
-    if (tx_msg.step() == pools::protobuf::kNormalFrom) {
-        msg_ptr->address_info = GetAddressInfo(security_->GetAddress(tx_msg.pubkey()));
-        if (msg_ptr->address_info == nullptr) {
-            ZJC_WARN("no address info.");
-            return;
-        }
-
-        if (msg_ptr->address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-            ZJC_WARN("sharding error: %d, %d",
-                msg_ptr->address_info->sharding_id(),
-                common::GlobalInfo::Instance()->network_id());
-            return;
-        }
-
-        if (tx_msg.has_key() && tx_msg.key().size() > kTxStorageKeyMaxSize) {
-            ZJC_DEBUG("key size error now: %d, max: %d.",
-                tx_msg.key().size(), kTxStorageKeyMaxSize);
-            return;
-        }
-
-        msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-        if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
-            // avoid save gid different tx
-            ZJC_DEBUG("tx msg hash exists: %s failed!",
-                common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
-            return;
-        }
-//         if (security_->Verify(
-//                 msg_ptr->msg_hash,
-//                 tx_msg.pubkey(),
-//                 header.sign()) != security::kSecuritySuccess) {
-//             ZJC_ERROR("verify signature failed!");
-//             return;
-//         }
-
-        if (prefix_db_->GidExists(tx_msg.gid())) {
-            ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
-            return;
-        }
-
-        msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-//         ++prev_count_[msg_ptr->address_info->pool_index()];
-//         auto now_tm = common::TimeUtils::TimestampUs();
-//         if (prev_timestamp_us_ + 3000000lu < now_tm) {
-//             for (uint32_t i = 0; i < 257; ++i) {
-//                 if (prev_count_[i] > 0) {
-//                     ZJC_INFO("thread index: %d, pool: %d tx tps: %.2f",
-//                         msg_ptr->thread_idx, i,
-//                         (double(prev_count_[i]) / (double((now_tm - prev_timestamp_us_) / 1000000.0))));
-//                     prev_count_[i] = 0;
-//                 }
-//             }
-// 
-//             prev_timestamp_us_ = now_tm;
-//         }
-//         pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](msg_ptr);
-//         tx_pool_[msg_ptr->address_info->pool_index()].AddTx(tx_ptr);
-//         msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    } else {
-        // check valid
-        msg_queues_[0].push(msg_ptr);
-//         auto ptr = msg_ptr;
-//         pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](msg_ptr);
-//         tx_pool_[msg_ptr->address_info->pool_index()].AddTx(tx_ptr);
-//         ZJC_DEBUG("success add tx to queue: %d", msg_ptr->address_info->pool_index());
+    if (header.has_cross_tos()) {
+        auto block_ptr = std::make_shared<block::protobuf::Block>(header.cross_tos().block());
+        block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_ptr);
     }
     
-    // storage item not package in block, just package storage hash 
-    SaveStorageToDb(header);
 }
 
 void TxPoolManager::SaveStorageToDb(const transport::protobuf::Header& msg) {

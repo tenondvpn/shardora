@@ -104,6 +104,8 @@ private:
     void LeaderBroadcastBlock(
         uint8_t thread_index,
         const std::shared_ptr<block::protobuf::Block>& block);
+    void BroadcastLocalTosBlock(uint8_t thread_idx, const std::shared_ptr<block::protobuf::Block>& block);
+
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
     }

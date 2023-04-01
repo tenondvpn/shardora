@@ -1865,9 +1865,30 @@ void BftManager::LeaderBroadcastBlock(
     case pools::protobuf::kConsensusRootTimeBlock:
         tm_block_mgr_->BroadcastTimeblock(thread_index, block);
         break;
+    case pools::protobuf::kConsensusLocalTos:
+        BroadcastLocalTosBlock(thread_index, block);
+        break;
     default:
         break;
     }
+}
+
+void BftManager::BroadcastLocalTosBlock(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block_item) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->thread_idx = thread_idx;
+    auto& msg = msg_ptr->header;
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    msg.set_type(common::kPoolsMessage);
+    dht::DhtKeyManager dht_key(block_item->network_id());
+    msg.set_des_dht_key(dht_key.StrKey());
+    auto& cross_msg = *msg.mutable_cross_tos();
+    *cross_msg.mutable_block() = *block_item;
+    auto* brdcast = msg.mutable_broadcast();
+    network::Route::Instance()->Send(msg_ptr);
+    ZJC_DEBUG("success broadcast cross tos height: %lu, sharding id: %u",
+        block_item->height(), block_item->network_id());
 }
 
 int BftManager::LeaderCallCommit(
