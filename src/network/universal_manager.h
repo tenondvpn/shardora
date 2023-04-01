@@ -5,6 +5,7 @@
 
 #include "common/utils.h"
 #include "common/config.h"
+#include "common/node_members.h"
 #include "dht/base_dht.h"
 #include "network/universal.h"
 #include "security/security.h"
