@@ -190,9 +190,9 @@ void BlockManager::HandleNormalToTx(
     }
 
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
-        HandleLocalNormalToTx(to_txs);
+        HandleLocalNormalToTx(thread_idx, to_txs);
     } else {
-        RootHandleNormalToTx(block->height(), to_txs);
+        RootHandleNormalToTx(block.height(), to_txs);
     }
 }
 
@@ -253,7 +253,9 @@ void BlockManager::RootHandleNormalToTx(uint64_t height, pools::protobuf::ToTxMe
     pools_mgr_->HandleMessage(msg_ptr);
 }
 
-void BlockManager::HandleLocalNormalToTx(const pools::protobuf::ToTxMessage& to_txs) {
+void BlockManager::HandleLocalNormalToTx(
+        uint8_t thread_idx,
+        const pools::protobuf::ToTxMessage& to_txs) {
     std::unordered_map<std::string, std::pair<uint64_t, uint32_t>> addr_amount_map;
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         if (to_txs.tos(i).amount() > 0) {
@@ -454,7 +456,8 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
         auto to_txs_ptr = std::make_shared<ToTxsItem>();
-        new_msg_ptr->address_info = account_mgr_->single_to_address_info();
+        new_msg_ptr->address_info = account_mgr_->single_to_address_info(
+            heights.sharding_id() % common::kImmutablePoolSize);
         to_txs_ptr->tx_ptr = create_to_tx_cb_(new_msg_ptr);
         to_txs_ptr->tx_ptr->time_valid += 3000000lu;
         to_txs_ptr->to_txs_hash = tos_hash;

@@ -117,8 +117,8 @@ private:
     bool inited_{ false };
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    std::shared_ptr<address::protobuf::AddressInfo> single_to_address_info_[common::kImmutablePoolSize] = nullptr;
-    std::shared_ptr<address::protobuf::AddressInfo> single_local_to_address_info_[common::kImmutablePoolSize] = nullptr;
+    std::shared_ptr<address::protobuf::AddressInfo> single_to_address_info_[common::kImmutablePoolSize] = { nullptr };
+    std::shared_ptr<address::protobuf::AddressInfo> single_local_to_address_info_[common::kImmutablePoolSize] = { nullptr };
 
     DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };
