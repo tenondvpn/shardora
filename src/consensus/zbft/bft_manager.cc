@@ -1865,7 +1865,7 @@ void BftManager::LeaderBroadcastBlock(
     case pools::protobuf::kConsensusRootTimeBlock:
         tm_block_mgr_->BroadcastTimeblock(thread_index, block);
         break;
-    case pools::protobuf::kConsensusLocalTos:
+    case pools::protobuf::kNormalTo:
         BroadcastLocalTosBlock(thread_index, block);
         break;
     default:
@@ -1876,6 +1876,10 @@ void BftManager::LeaderBroadcastBlock(
 void BftManager::BroadcastLocalTosBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item) {
+    if (block_item->network_id() == common::GlobalInfo::Instance()->network_id()) {
+        return;
+    }
+
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
