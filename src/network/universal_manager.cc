@@ -199,7 +199,7 @@ void UniversalManager::OnNewElectBlock(
         uint64_t elect_height,
         common::MembersPtr& members) {
     auto iter = sharding_latest_height_map_.find(sharding_id);
-    if (iter->second->height >= elect_height) {
+    if (iter != sharding_latest_height_map_.end() && iter->second->height >= elect_height) {
         return;
     }
 
