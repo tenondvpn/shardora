@@ -5,14 +5,17 @@ package zjchain.pools.protobuf;
 enum StepType {
     kNormalFrom = 0;
     kNormalTo = 1;
-    kContractUserCall = 2;
-    kContractCallExcute = 3;
-    kContractBroadcast = 4;
-    kConsensusRootElectShard = 5;  // shard consensus network election
-    kConsensusRootTimeBlock = 6;  // create time block
-    kConsensusFinalStatistic = 7;  // create shard time block's final statistic block
-    kConsensusCreateGenesisAcount = 8;
-    kConsensusLocalTos = 9;
+    kConsensusRootElectShard = 2;  // shard consensus network election
+    kConsensusRootTimeBlock = 3;  // create time block
+    kConsensusFinalStatistic = 4;  // create shard time block's final statistic block
+    kConsensusCreateGenesisAcount = 5;
+    kConsensusLocalTos = 6;
+    kContractUserCreateCall = 7;
+    kContractRootCreateCall = 8;
+    kContractShardCreateCall = 9;
+    kContractUserCall = 10;
+    kContractExcute = 11;
+    kContractBroadcast = 12;
 }
 
 message ToTxHeights {
@@ -55,4 +58,5 @@ message TxMessage {
     optional bytes to = 8;
     optional uint64 amount = 9;
     optional StepType step = 10 [default=kNormalFrom];
+    optional uint64 contract_prepayment = 11;
 }

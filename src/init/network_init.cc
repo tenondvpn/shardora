@@ -206,6 +206,7 @@ void NetworkInit::ElectBlockCallback(
     bft_mgr_->OnNewElectBlock(sharding_id, members);
     block_mgr_->OnNewElectBlock(sharding_id, members);
     vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
+    network::UniversalManager::Instance()->OnNewElectBlock(sharding_id, elect_height, members);
 }
 
 int NetworkInit::CheckJoinWaitingPool() {

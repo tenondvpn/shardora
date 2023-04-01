@@ -151,6 +151,7 @@ void VssManager::ClearAll() {
     second_try_times_ = 0;
     third_try_times_ = 0;
     end_tm_ = 0;
+    max_count_ = 0;
 }
 
 uint64_t VssManager::GetAllVssValid() {
@@ -485,9 +486,9 @@ void VssManager::HandleThirdPeriodRandom(const protobuf::VssMessage& vss_msg) {
         return;
     }
 
-    ZJC_DEBUG("HandleThirdPeriodRandom: %s, %llu",
-        common::Encode::HexEncode(id).c_str(), vss_msg.random());
     SetConsensusFinalRandomNum(id, vss_msg.random());
+    ZJC_DEBUG("HandleThirdPeriodRandom: %s, %llu, max_count_random_: %lu",
+        common::Encode::HexEncode(id).c_str(), vss_msg.random(), max_count_random_);
 }
 
 }  // namespace vss

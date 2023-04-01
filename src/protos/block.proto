@@ -28,6 +28,7 @@ message BlockTx {
     optional uint32 status = 10;
     repeated StorageItem storages = 11;
     repeated TransferItem contract_txs = 12;
+    optional uint64 contract_prepayment = 13;
 }
 
 message Block {

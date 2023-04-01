@@ -176,8 +176,40 @@ int UniversalManager::AddNodeToUniversal(dht::NodePtr& node) {
     }
 
     node->join_way = dht::kJoinFromUnknown;
-    int res = universal_dht->Join(node);
+    universal_dht->Join(node);
+    for (auto sharding_iter = sharding_latest_height_map_.begin();
+            sharding_iter != sharding_latest_height_map_.end(); ++sharding_iter) {
+        auto id_iter = sharding_iter->second->id_set.find(node->id);
+        if (id_iter != sharding_iter->second->id_set.end()) {
+            auto new_node = std::make_shared<dht:Node>(
+                sharding_iter->first,
+                node->public_ip,
+                node->public_port,
+                node->pubkey_str,
+                node->id);
+            universal_dht->Join(new_node);
+        }
+    }
+
     return dht::kDhtSuccess;
+}
+
+void UniversalManager::OnNewElectBlock(
+        uint32_t sharding_id,
+        uint64_t elect_height,
+        common::MembersPtr& members) {
+    auto iter = sharding_latest_height_map_.find(sharding_id);
+    if (iter->second->height >= elect_height) {
+        return;
+    }
+
+    auto new_item = std::make_shared<ElectItem>();
+    new_item->height = elect_height;
+    for (auto iter = members->begin(); iter != members->end(); ++iter) {
+        new_item->id_set.insert((*iter)->id);
+    }
+
+    sharding_latest_height_map_[sharding_id] = new_item;
 }
 
 UniversalManager::UniversalManager() {}

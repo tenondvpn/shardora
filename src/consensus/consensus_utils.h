@@ -77,6 +77,7 @@ static const uint32_t kDirectTxCount = kBitcountWithItemCount * 8 / 32;
 // gas consume
 static const uint64_t kTransferGas = 1000llu;
 static const uint64_t kCallContractDefaultUseGas = 10000llu;
+static const uint64_t kCreateContractDefaultUseGas = 100000llu;
 static const uint64_t kKeyValueStorageEachBytes = 10llu;
 
 typedef std::function<int(const std::shared_ptr<block::protobuf::Block>& block)> BlockCallback;

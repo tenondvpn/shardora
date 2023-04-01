@@ -273,7 +273,11 @@ void BlockManager::AddNewBlock(
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBatch& db_batch) {
 //     ZJC_DEBUG("new block coming.");
-    prefix_db_->SaveBlock(*block_item, db_batch);
+    if (!prefix_db_->SaveBlock(*block_item, db_batch)) {
+        ZJC_DEBUG("block saved: %lu", block_item->height());
+        return;
+    }
+
     to_txs_pool_->NewBlock(*block_item, db_batch);
     if (ck_client_ != nullptr) {
         ck_client_->AddNewBlock(block_item);

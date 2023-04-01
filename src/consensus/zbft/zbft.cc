@@ -597,9 +597,9 @@ void Zbft::LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg) {
 }
 
 int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
-//     if (InitZjcTvmContext() != kConsensusSuccess) {
-//         return kConsensusError;
-//     }
+    if (InitZjcTvmContext() != kConsensusSuccess) {
+        return kConsensusError;
+    }
 
     std::string pool_hash = pools_mgr_->latest_hash(txs_ptr_->pool_index);
     uint64_t pool_height = pools_mgr_->latest_height(txs_ptr_->pool_index);
