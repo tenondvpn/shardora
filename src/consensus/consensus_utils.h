@@ -3,8 +3,9 @@
 #include <functional>
 #include <memory>
 
-#include "common/utils.h"
+#include "common/bloom_filter.h"
 #include "common/log.h"
+#include "common/utils.h"
 #include "pools/tx_utils.h"
 #include "protos/block.pb.h"
 
