@@ -236,7 +236,7 @@ void Universal::OnNewElectBlock(
     sharding_latest_height_map_[sharding_id] = new_item;
 }
 
-int UniversalManager::AddNodeToUniversal(dht::NodePtr& node) {
+int Universal::AddNodeToUniversal(dht::NodePtr& node) {
     for (auto sharding_iter = sharding_latest_height_map_.begin();
         sharding_iter != sharding_latest_height_map_.end(); ++sharding_iter) {
         auto id_iter = sharding_iter->second->id_set.find(node->id);

@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "common/node_members.h"
 #include "dht/base_dht.h"
 #include "dht/dht_utils.h"
 #include "protos/network.pb.h"
@@ -44,6 +45,7 @@ private:
 
     void ProcessGetNetworkNodesRequest(const transport::MessagePtr& header);
     void ProcessGetNetworkNodesResponse(const transport::MessagePtr& header);
+    int AddNodeToUniversal(dht::NodePtr& node)
 
     bool* universal_ids_{ nullptr };
     std::condition_variable wait_con_;
