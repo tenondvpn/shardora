@@ -49,7 +49,7 @@ private:
         std::unordered_set<std::string> id_set;
     };
 
-    std::unordered_map<uint32_t, std::shared_ptr<ElectItem>> sharding_latest_height_map_;
+    std::unordered_map<int32_t, std::shared_ptr<ElectItem>> sharding_latest_height_map_;
 
     DISALLOW_COPY_AND_ASSIGN(UniversalManager);
 };
