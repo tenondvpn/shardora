@@ -317,7 +317,7 @@ int AccountManager::AddNewAccount(
 
         account_info->set_type(address::protobuf::kNormal);
         break;
-    case common::kConsensusCreateContract: {
+    case pools::protobuf::kContractRootCreateCall: {
         account_info->set_type(address::protobuf::kContract);
         for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
             if (tx_info.storages(i).key() == protos::kContractCreatedBytesCode) {
