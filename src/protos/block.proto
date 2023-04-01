@@ -167,6 +167,10 @@ message GetAccountShardReponse {
     optional uint32 shard_id = 2;
 }
 
+message CrossShardingTosMessage {
+    optional Block block = 1;
+}
+
 message BlockMessage {
     optional GetTxBlockRequest block_req = 1;
     optional GetTxBlockResponse block_res = 2;
