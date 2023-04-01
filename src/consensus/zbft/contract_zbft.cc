@@ -83,7 +83,7 @@ int ContractZbft::AddCallContract(
     switch (out_tx.step()) {
     case pools::protobuf::kContractUserCall:
         return CallContractDefault(tx_info, acc_balance_map, out_tx);
-    case pools::protobuf::kContractCallExcute:
+    case pools::protobuf::kContractExcute:
         return CallContractExceute(tx_info, acc_balance_map, out_tx);
     case pools::protobuf::kContractBroadcast:
         return CallContractCalled(tx_info, acc_balance_map, out_tx);
