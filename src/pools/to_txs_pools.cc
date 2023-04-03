@@ -45,7 +45,7 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
     uint32_t consistent_pool_index = common::kInvalidPoolIndex;
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         if (tx_list[i].step() == pools::protobuf::kNormalTo) {
-            HandleNormalToTx(block.height(), tx_list[i], db_batch);
+            HandleNormalToTx(block, tx_list[i], db_batch);
         }
 
         if (tx_list[i].step() == pools::protobuf::kNormalFrom) {
@@ -153,7 +153,7 @@ void ToTxsPools::AddTxToMap(
 }
 
 void ToTxsPools::HandleNormalToTx(
-        uint64_t block_height,
+        const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx_info,
         db::DbWriteBatch& db_batch) {
     for (auto net_iter = network_txs_pools_.begin();

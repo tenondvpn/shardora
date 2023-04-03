@@ -27,7 +27,7 @@ private:
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(
         const std::string& addr);
     void HandleNormalToTx(
-        uint64_t block_height,
+        const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx_info,
         db::DbWriteBatch& db_batch);
     void LoadLatestHeights();
