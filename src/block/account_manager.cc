@@ -41,17 +41,6 @@ int AccountManager::Init(
 
     CreateNormalToAddressInfo();
     CreateNormalLocalToAddressInfo();
-    srand(time(NULL));
-    prev_refresh_heights_tm_ = common::TimeUtils::TimestampSeconds() + rand() % 30;
-//     check_missing_height_tick_.CutOff(
-//         kCheckMissingHeightPeriod,
-//         std::bind(&AccountManager::CheckMissingHeight, this));
-//     flush_db_tick_.CutOff(
-//         kFushTreeToDbPeriod,
-//         std::bind(&AccountManager::FlushPoolHeightTreeToDb, this));
-    refresh_pool_max_height_tick_.CutOff(
-        kRefreshPoolMaxHeightPeriod,
-        std::bind(&AccountManager::RefreshPoolMaxHeight, this));
     inited_ = true;
     return kBlockSuccess;
 }
@@ -138,73 +127,6 @@ int AccountManager::GetAddressConsensusNetworkId(
     *network_id = account_ptr->sharding_id();
     return kBlockSuccess;
 }
-// 
-// int AccountManager::HandleElectBlock(
-//         uint64_t height,
-//         const block::protobuf::BlockTx& tx_info,
-//         db::DbWriteBatch& db_batch) {
-//     elect::protobuf::ElectBlock elect_block;
-//     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
-//         if (tx_info.storages(i).key() == elect::kElectNodeAttrElectBlock) {
-//             elect_block.ParseFromString(tx_info.storages(i).val_hash());
-//         }
-//     }
-// 
-//     if (!elect_block.IsInitialized()) {
-//         return kBlockSuccess;
-//     }
-// 
-//     elect::ElectManager::Instance()->OnNewElectBlock(height, elect_block);
-//     // vss::VssManager::Instance()->OnElectBlock(elect_block.shard_network_id(), height);
-//     if (elect_block.prev_members().bls_pubkey_size() > 0) {
-//         std::string key = GetElectBlsMembersKey(
-//             elect_block.prev_members().prev_elect_height(),
-//             elect_block.shard_network_id());
-//         db_batch.Put(key, elect_block.prev_members().SerializeAsString());
-//     }
-// 
-//     return kBlockSuccess;
-// }
-// 
-// int AccountManager::HandleRootSingleBlockTx(
-//         uint64_t height,
-//         const block::protobuf::BlockTx& tx_info,
-//         db::DbWriteBatch& db_batch) {
-//     switch (tx_info.type()) {
-//     case common::kConsensusRootElectShard:
-//         return HandleElectBlock(height, tx_info, db_batch);
-//     case common::kConsensusRootTimeBlock:
-//         return HandleTimeBlock(height, tx_info);
-//     default:
-//         break;
-//     }
-// 
-//     return kBlockSuccess;
-// }
-// 
-// int AccountManager::HandleFinalStatisticBlock(
-//         uint64_t height,
-//         const block::protobuf::BlockTx& tx_info) {
-//     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-//         // add elect root transaction
-//         auto tx_ptr = std::make_shared<pools::TxItem>();
-//         tx_ptr->msg_ptr = std::make_shared<transport::TransportMessage>();
-//         auto& elect_tx = *tx_ptr->msg_ptr->header.mutable_tx_proto();
-//         if (elect::ElectManager::Instance()->CreateElectTransaction(
-//                 tx_info.network_id(),
-//                 height,
-//                 tx_info,
-//                 elect_tx) != elect::kElectSuccess) {
-//             ZJC_ERROR("create elect transaction error!");
-//         }
-// 
-//         if (pools_mgr_->Add(tx_ptr) != pools::kPoolsSuccess) {
-//             ZJC_ERROR("dispatch pool failed!");
-//         }
-//     }
-// 
-//     return kBlockSuccess;
-// }
 
 protos::AddressInfoPtr AccountManager::GetAcountInfo(
         const std::shared_ptr<block::protobuf::Block>& block_item,
@@ -306,79 +228,6 @@ void AccountManager::NewBlockWithTx(
     default:
         break;
     }
-}
-
-void AccountManager::RefreshPoolMaxHeight() {
-    SendRefreshHeightsRequest();
-    refresh_pool_max_height_tick_.CutOff(
-        kRefreshPoolMaxHeightPeriod,
-        std::bind(&AccountManager::RefreshPoolMaxHeight, this));
-}
-
-void AccountManager::SendRefreshHeightsRequest() {
-//     transport::protobuf::Header msg;
-//     dht::BaseDhtPtr dht = nullptr;
-//     uint32_t des_net_id = common::GlobalInfo::Instance()->network_id();
-//     dht = network::UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
-//     if (des_net_id >= network::kConsensusShardEndNetworkId) {
-//         des_net_id -= network::kConsensusWaitingShardOffset;
-//     }
-// 
-//     msg.set_src_sharding_id(dht->local_node()->sharding_id);
-//     dht::DhtKeyManager dht_key(des_net_id);
-//     msg.set_des_dht_key(dht_key.StrKey());
-//     msg.set_type(common::kBlockMessage);
-//     block::protobuf::BlockMessage block_msg;
-//     auto ref_hegihts_req = block_msg.mutable_ref_heights_req();
-//     for (uint32_t i = 0; i <= common::kImmutablePoolSize; ++i) {
-//         uint64_t height = 0;
-//         block_pools_[i]->GetHeight(&height);
-//         ref_hegihts_req->add_heights(height);
-//     }
-// 
-//     msg.set_data(block_msg.SerializeAsString());
-//     dht->RandomSend(msg);
-}
-
-void AccountManager::SendRefreshHeightsResponse(const transport::protobuf::Header& header) {
-//     transport::protobuf::Header msg;
-//     msg.set_src_dht_key(header.des_dht_key());
-//     msg.set_des_dht_key(header.src_dht_key());
-//     msg.set_priority(transport::kTransportPriorityMiddle);
-//     msg.set_id(common::GlobalInfo::Instance()->MessageId());
-//     msg.set_universal(false);
-//     msg.set_type(common::kBlockMessage);
-//     msg.set_hop_count(0);
-//     msg.set_client(false);
-//     block::protobuf::BlockMessage block_msg;
-//     auto ref_hegihts_req = block_msg.mutable_ref_heights_res();
-//     for (uint32_t i = 0; i <= common::kImmutablePoolSize; ++i) {
-//         uint64_t height = 0;
-//         block_pools_[i]->GetHeight(&height);
-//         ref_hegihts_req->add_heights(height);
-//     }
-// 
-//     msg.set_data(block_msg.SerializeAsString());
-//     transport::MultiThreadHandler::Instance()->tcp_transport()->Send(
-//         header.from_ip(), header.from_port(), 0, msg);
-}
-
-int AccountManager::HandleRefreshHeightsReq(const transport::MessagePtr& msg_ptr) {
-//     if (!inited_) {
-//         return kBlockSuccess;
-//     }
-// 
-//     for (int32_t i = 0; i < block_msg.ref_heights_req().heights_size(); ++i) {
-//         block_pools_[i]->SetMaxHeight(block_msg.ref_heights_req().heights(i));
-//     }
-// 
-//     SendRefreshHeightsResponse(header);
-    return kBlockSuccess;
-}
-
-int AccountManager::HandleRefreshHeightsRes(const transport::MessagePtr& msg_ptr) {
-    
-    return kBlockSuccess;
 }
 
 }  // namespace block

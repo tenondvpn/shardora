@@ -46,7 +46,6 @@ public:
     protos::AddressInfoPtr GetContractInfoByAddress(uint8_t thread_idx, const std::string& address);
     std::string GetPoolBaseAddr(uint32_t pool_index);
     void PrintPoolHeightTree(uint32_t pool_idx);
-//     void FlushPoolHeightTreeToDb();
     void SetMaxHeight(uint32_t pool_idx, uint64_t height);
     int HandleRefreshHeightsReq(const transport::MessagePtr& msg_ptr);
     int HandleRefreshHeightsRes(const transport::MessagePtr& msg_ptr);
@@ -64,20 +63,6 @@ private:
         uint32_t pool_index,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBatch& db_batch);
-//     int HandleRootSingleBlockTx(
-//         uint64_t height,
-//         const block::protobuf::BlockTx& tx_info,
-//         db::DbWriteBatch& db_batch);
-//     int HandleElectBlock(
-//         uint64_t height,
-//         const block::protobuf::BlockTx& tx_info,
-//         db::DbWriteBatch& db_batch);
-//     int HandleTimeBlock(
-//         uint64_t height,
-//         const block::protobuf::BlockTx& tx_info);
-//     int HandleFinalStatisticBlock(uint64_t height, const block::protobuf::BlockTx& tx_info);
-//     void CheckMissingHeight();
-    void RefreshPoolMaxHeight();
     void SendRefreshHeightsRequest();
     void SendRefreshHeightsResponse(const transport::protobuf::Header& header);
     void HandleNormalFromTx(
