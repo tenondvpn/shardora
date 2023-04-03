@@ -31,9 +31,22 @@ private:
         const block::protobuf::BlockTx& tx_info,
         db::DbWriteBatch& db_batch);
     void LoadLatestHeights();
+    void HandleNormalFrom(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
+    void HandleRootCreateAddress(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
+    void AddTxToMap(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        uint64_t des_sharding_id,
+        int32_t pool_index);
 
     // destination shard -> pool -> height -> items
-    typedef std::unordered_map<std::string, uint64_t> TxMap;
+    typedef std::unordered_map<std::string, std::pair<uint64_t, int32_t>> TxMap;
     typedef std::map<uint64_t, TxMap> HeightMap;  // order by height
     typedef std::unordered_map <uint32_t, HeightMap> PoolMap;
     typedef std::unordered_map <uint32_t, PoolMap> ShardingMap;
