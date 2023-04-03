@@ -44,7 +44,8 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
     // one block must be one consensus pool
     uint32_t consistent_pool_index = common::kInvalidPoolIndex;
     for (int32_t i = 0; i < tx_list.size(); ++i) {
-        if (tx_list[i].step() == pools::protobuf::kNormalTo) {
+        if (tx_list[i].step() == pools::protobuf::kNormalTo ||
+                tx_list[i].step() == pools::protobuf::kRootCreateAddressCrossSharding) {
             HandleNormalToTx(block, tx_list[i], db_batch);
         }
 

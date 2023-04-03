@@ -221,14 +221,18 @@ protos::AddressInfoPtr AccountManager::GetAcountInfo(
 }
 
 std::string AccountManager::GetTxValidAddress(const block::protobuf::BlockTx& tx_info) {
-    if (tx_info.step() == pools::protobuf::kNormalTo ||
-        tx_info.step() == pools::protobuf::kConsensusRootElectShard ||
-        tx_info.step() == pools::protobuf::kConsensusRootTimeBlock ||
-        tx_info.step() == pools::protobuf::kConsensusFinalStatistic ||
-        tx_info.step() == pools::protobuf::kConsensusCreateGenesisAcount) {
+    switch (tx_info.step()) {
+    case pools::protobuf::kConsensusLocalTos:
+    case pools::protobuf::kConsensusRootElectShard:
+    case pools::protobuf::kConsensusRootTimeBlock:
+    case pools::protobuf::kConsensusFinalStatistic:
+    case pools::protobuf::kConsensusCreateGenesisAcount:
         return tx_info.to();
-    } else {
+    case pools::protobuf::kNormalFrom:
         return tx_info.from();
+    default:
+        assert(false);
+        return "";
     }
 }
 
@@ -302,86 +306,6 @@ void AccountManager::NewBlockWithTx(
     default:
         break;
     }
-}
-
-int AccountManager::AddNewAccount(
-        uint8_t thread_idx,
-        const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx_info) {
-    auto& account_id = tx_info.to();
-    if (AccountExists(thread_idx, account_id)) {
-        return kBlockSuccess;
-    }
-
-    auto account_info = std::make_shared<address::protobuf::AddressInfo>();
-    switch (tx_info.step()) {
-    case pools::protobuf::kNormalTo:
-        if (tx_info.amount() == 0) {
-            ZJC_ERROR("invalid tx amount: %lu, step: %d", tx_info.amount(), tx_info.step());
-            return kBlockSuccess;
-        }
-
-        account_info->set_type(address::protobuf::kNormal);
-        break;
-    case pools::protobuf::kContractRootCreateCall: {
-        account_info->set_type(address::protobuf::kContract);
-        for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
-            if (tx_info.storages(i).key() == protos::kContractCreatedBytesCode) {
-                account_info->set_bytes_code(tx_info.storages(i).val_hash());
-            }
-        }
-
-        break;
-    }
-    case pools::protobuf::kConsensusCreateGenesisAcount:
-        account_info->set_type(address::protobuf::kNormal);
-        break;
-    case pools::protobuf::kConsensusFinalStatistic:
-        account_info->set_type(address::protobuf::kStatistic);
-        break;
-    case pools::protobuf::kConsensusRootTimeBlock:
-        account_info->set_type(address::protobuf::kRootTimer);
-        break;
-    case pools::protobuf::kConsensusRootElectShard:
-        account_info->set_type(address::protobuf::kRootElect);
-        break;
-    default:
-        return kBlockError;
-    }
-
-    account_info->set_sharding_id(block.network_id());
-    account_info->set_addr(tx_info.to());
-    account_info->set_pool_index(block.pool_index());
-    account_info->set_latest_height(block.height());
-    account_info->set_balance(tx_info.balance());
-    address_map_[thread_idx].add(account_id, account_info);
-//     ZJC_DEBUG("add account success: %s", common::Encode::HexEncode(account_id).c_str());
-    return kBlockSuccess;
-}
-
-int AccountManager::UpdateAccountInfo(
-        uint8_t thread_idx,
-        const std::string& account_id,
-        const block::protobuf::BlockTx& tx_info,
-        const std::shared_ptr<block::protobuf::Block>& block_item,
-        uint32_t* pool_index) {
-    if (tx_info.status() != 0 || tx_info.step() != pools::protobuf::kNormalTo) {
-        if (tx_info.step() != common::kConsensusCallContract &&
-            tx_info.step() != common::kConsensusCreateContract) {
-            return kBlockSuccess;
-        }
-    }
-
-    std::shared_ptr<address::protobuf::AddressInfo> account_info = nullptr;
-    address_map_[thread_idx].get(account_id, &account_info);
-    if (account_info == nullptr) {
-        AddNewAccount(thread_idx, *block_item, tx_info);
-        return kBlockError;
-    }
-
-    account_info->set_latest_height(block_item->height());
-    account_info->set_balance(tx_info.balance());
-    return kBlockSuccess;
 }
 
 void AccountManager::RefreshPoolMaxHeight() {

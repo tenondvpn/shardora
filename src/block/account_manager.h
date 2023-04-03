@@ -39,10 +39,6 @@ public:
         const block::protobuf::BlockTx& tx_info);
     protos::AddressInfoPtr GetAcountInfoFromDb(const std::string& acc_id);
     bool AccountExists(uint8_t thread_idx, const std::string& acc_id);
-    int AddNewAccount(
-        uint8_t thread_idx,
-        const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& block_tx);
     int GetAddressConsensusNetworkId(
         uint8_t thread_idx,
         const std::string& addr,
@@ -64,12 +60,6 @@ public:
     }
 
 private:
-    int UpdateAccountInfo(
-        uint8_t thread_idx,
-        const std::string& account_id,
-        const block::protobuf::BlockTx& tx_info,
-        const std::shared_ptr<block::protobuf::Block>& block_item,
-        uint32_t* pool_index);
     void SetPool(
         uint32_t pool_index,
         const std::shared_ptr<block::protobuf::Block>& block_item,
