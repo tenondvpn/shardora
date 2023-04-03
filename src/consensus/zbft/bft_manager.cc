@@ -1858,9 +1858,9 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         }
     }
 
-//     ZJC_DEBUG("new block: %s, gid: %s",
-//         common::Encode::HexEncode(zjc_block->hash()).c_str(),
-//         common::Encode::HexEncode(bft_ptr->gid()).c_str());
+    ZJC_DEBUG("new block: %s, gid: %s",
+        common::Encode::HexEncode(zjc_block->hash()).c_str(),
+        common::Encode::HexEncode(bft_ptr->gid()).c_str());
 }
 
 void BftManager::LeaderBroadcastBlock(
@@ -1921,14 +1921,14 @@ void BftManager::BroadcastLocalTosBlock(
 
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     msg.set_type(common::kPoolsMessage);
-    dht::DhtKeyManager dht_key(block_item->network_id());
+    dht::DhtKeyManager dht_key(to_tx.to_heights().sharding_id());
     msg.set_des_dht_key(dht_key.StrKey());
     auto& cross_msg = *msg.mutable_cross_tos();
     *cross_msg.mutable_block() = *block_item;
     auto* brdcast = msg.mutable_broadcast();
     network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("success broadcast cross tos height: %lu, sharding id: %u",
-        block_item->height(), block_item->network_id());
+        block_item->height(), to_tx.to_heights().sharding_id());
 }
 
 int BftManager::LeaderCallCommit(
