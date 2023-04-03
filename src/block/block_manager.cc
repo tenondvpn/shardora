@@ -191,7 +191,7 @@ void BlockManager::HandleNormalToTx(
             return;
         }
 
-        HandleLocalNormalToTx(thread_idx, to_txs);
+        HandleLocalNormalToTx(thread_idx, to_txs, tx.step());
     } else {
         RootHandleNormalToTx(thread_idx, block.height(), to_txs);
     }
@@ -229,15 +229,21 @@ void BlockManager::RootHandleNormalToTx(
 
 void BlockManager::HandleLocalNormalToTx(
         uint8_t thread_idx,
-        const pools::protobuf::ToTxMessage& to_txs) {
+        const pools::protobuf::ToTxMessage& to_txs,
+        uint32_t step) {
     std::unordered_map<std::string, std::pair<uint64_t, uint32_t>> addr_amount_map;
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         if (to_txs.tos(i).amount() > 0) {
             // dispatch to txs to tx pool
             uint32_t sharding_id = common::kInvalidUint32;
-            uint32_t pool_index = common::kInvalidUint32;
+            uint32_t pool_index = common::kInvalidPoolIndex;
             auto account_info = account_mgr_->GetAcountInfo(thread_idx, to_txs.tos(i).des());
             if (account_info == nullptr) {
+                if (step != pools::protobuf::kRootCreateAddressCrossSharding) {
+                    assert(false);
+                    continue;
+                }
+
                 if (!to_txs.tos(i).has_sharding_id() || !to_txs.tos(i).has_pool_index()) {
                     assert(false);
                     continue;
@@ -338,8 +344,8 @@ void BlockManager::AddNewBlock(
 
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         switch (tx_list[i].step()) {
-        case pools::protobuf::kNormalTo:
         case pools::protobuf::kRootCreateAddressCrossSharding:
+        case pools::protobuf::kNormalTo:
             HandleNormalToTx(thread_idx, *block_item, tx_list[i], db_batch);
             break;
         case pools::protobuf::kConsensusRootTimeBlock:
@@ -357,6 +363,10 @@ void BlockManager::AddNewBlock(
     if (!st.ok()) {
         ZJC_FATAL("write block to db failed!");
     }
+}
+
+void BlockManager::CreateNewAddress() {
+
 }
 
 void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {

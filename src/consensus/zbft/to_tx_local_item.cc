@@ -38,10 +38,10 @@ int ToTxLocalItem::HandleTx(
             int balance_status = GetTempAccountBalance(
                 thread_idx, to_txs.tos(i).des(), acc_balance_map, &to_balance);
             if (balance_status != kConsensusSuccess) {
-                block_tx.set_status(balance_status);
-                // will never happen
-                assert(false);
-                return kConsensusSuccess;
+                ZJC_DEBUG("create new address: %s, balance: %lu",
+                    common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
+                    to_txs.tos(i).amount());
+                to_balance = 0;
             }
 
             auto to_tx = block_to_txs.add_tos();
