@@ -37,7 +37,7 @@ int RootToTxItem::HandleTx(
         des_info[1] = account_info->pool_index();
     } else {
         std::mt19937_64 g2(block.height() ^ vss_mgr_->EpochRandom());
-        des_info[0] = (g2() % (max_sharding_id_ - network::kConsensusShardBeginNetworkId)) +
+        des_info[0] = (g2() % (max_sharding_id_ - network::kConsensusShardBeginNetworkId + 1)) +
             network::kConsensusShardBeginNetworkId;
         des_info[1] = g2() % common::kImmutablePoolSize;
     }
