@@ -188,7 +188,7 @@ int main(int argc, char** argv) {
 
     std::string gid = common::Random::RandomString(32);
     std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
-    std::string to = common::Encode::HexDecode("d9ec5aff3001dece14e1f4a35a39ed506bd6274a");
+    std::string to = common::Encode::HexDecode("d9ec5aff3001dece14e1f4a35a39ed506bd6274b");
     uint32_t prikey_pos = 0;
     auto from_prikey = prikeys[prikey_pos % prikeys.size()];
     security->SetPrivateKey(from_prikey);
