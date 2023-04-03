@@ -35,6 +35,25 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
         return;
     }
 
+    if (block.height() > pool_max_heihgts_[block.pool_index()]) {
+        pool_max_heihgts_[block.pool_index()] = block.height();
+    }
+
+    if (pool_consensus_heihgts_[block.pool_index()] + 1 == block.height()) {
+        ++pool_consensus_heihgts_[block.pool_index()];
+        for (; pool_consensus_heihgts_[block.pool_index()] <= pool_max_heihgts_[block.pool_index()];
+                ++pool_consensus_heihgts_[block.pool_index()]) {
+            auto iter = added_heights_[block.pool_index()]->find(pool_consensus_heihgts_[block.pool_index()] + 1);
+            if (iter == added_heights_[block.pool_index()].end()) {
+                break;
+            }
+
+            added_heights_[block.pool_index()].erase(iter);
+        }
+    } else {
+        added_heights_[block.pool_index()]->insert(block.height());
+    }
+
     const auto& tx_list = block.tx_list();
     if (tx_list.empty()) {
         ZJC_DEBUG("tx list empty!");
@@ -335,13 +354,11 @@ int ToTxsPools::CreateToTxWithHeights(
         }
 
         uint64_t max_height = leader_to_heights.heights(pool_idx);
-//         for (auto height = min_height; height <= max_height; ++height) {
-//             auto hiter = pool_iter->second.find(height);
-//             if (hiter == pool_iter->second.end()) {
-//                 ZJC_DEBUG("pool %u, invalid height: %lu", pool_idx, height);
-//                 return kPoolsError;
-//             }
-//         }
+        if (max_height > pool_consensus_heihgts_[pool_idx]) {
+            ZJC_DEBUG("pool %u, invalid height: %lu, consensus height: %lu",
+                pool_idx, max_height, pool_consensus_heihgts_[pool_idx]);
+            return kPoolsError;
+        }
 
         if (max_height > 0) {
             ZJC_DEBUG("sharding_id: %u, pool: %d, min_height: %lu, max_height: %lu", sharding_id, pool_idx, min_height, max_height);

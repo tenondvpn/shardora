@@ -56,6 +56,9 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::unordered_map<uint32_t, std::shared_ptr<pools::protobuf::ToTxHeights>> handled_map_;
     std::string local_id_;
+    uint64_t pool_consensus_heihgts_[common::kInvalidPoolIndex] = { 0 };
+    uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
+    std::unordered_set<uint64_t> added_heights_[common::kInvalidPoolIndex];
 
     DISALLOW_COPY_AND_ASSIGN(ToTxsPools);
 };
