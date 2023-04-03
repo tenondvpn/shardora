@@ -115,7 +115,9 @@ int Zbft::Prepare(bool leader, zbft::protobuf::ZbftMessage* bft_msg) {
 int Zbft::LeaderCreatePrepare(zbft::protobuf::ZbftMessage* bft_msg) {
     local_member_index_ = leader_index_;
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
-    LeaderCallTransaction(bft_msg);
+    if (LeaderCallTransaction(bft_msg) != kConsensusSuccess) {
+        return kConsensusError;
+    }
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
 
@@ -568,11 +570,11 @@ bool Zbft::set_bls_precommit_agg_sign(
     return true;
 }
 
-void Zbft::LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg) {
+int Zbft::LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg) {
     auto& res_tx_bft = *bft_msg->mutable_tx_bft();
     if (DoTransaction(res_tx_bft) != kConsensusSuccess) {
         ZJC_ERROR("leader do transaction failed!");
-        return;
+        return kConsensusError;
     }
 
     libff::alt_bn128_G1 bn_sign;
@@ -583,7 +585,7 @@ void Zbft::LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg) {
             g1_prepare_hash_,
             &bn_sign) != bls::kBlsSuccess) {
         ZJC_ERROR("leader do transaction sign data failed!");
-        return;
+        return kConsensusError;
     }
 
     if (LeaderPrecommitOk(
@@ -592,8 +594,10 @@ void Zbft::LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg) {
             bn_sign,
             leader_mem_ptr_->id) != bls::kBlsSuccess) {
         ZJC_ERROR("leader call LeaderPrecommitOk failed!");
-        return;
+        return kConsensusError;
     }
+
+    return kConsensusSuccess;
 }
 
 int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {

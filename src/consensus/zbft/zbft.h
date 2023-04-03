@@ -48,7 +48,7 @@ public:
         zbft::protobuf::ZbftMessage* bft_msg,
         int32_t* invalid_tx_idx);
     int DoTransaction(zbft::protobuf::TxBft& ltx_msg);
-    void LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg);
+    int LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg);
     int LeaderPrecommitOk(
         const zbft::protobuf::TxBft& tx_prepare,
         uint32_t index,
