@@ -335,7 +335,7 @@ int ToTxsPools::CreateToTxWithHeights(
         }
 
         uint64_t max_height = leader_to_heights.heights(pool_idx);
-        for (auto height = min_height; height < max_height; ++height) {
+        for (auto height = min_height; height <= max_height; ++height) {
             auto hiter = pool_iter->second.find(height);
             if (hiter == pool_iter->second.end()) {
                 ZJC_DEBUG("pool %u, invalid height: %lu", pool_idx, height);
@@ -343,9 +343,9 @@ int ToTxsPools::CreateToTxWithHeights(
             }
         }
 
-//         if (max_height > 0) {
-//             ZJC_DEBUG("sharding_id: %u, pool: %d, min_height: %lu, max_height: %lu", sharding_id, pool_idx, min_height, max_height);
-//         }
+        if (max_height > 0) {
+            ZJC_DEBUG("sharding_id: %u, pool: %d, min_height: %lu, max_height: %lu", sharding_id, pool_idx, min_height, max_height);
+        }
 
         for (auto height = min_height; height <= max_height; ++height) {
             auto hiter = pool_iter->second.find(height);
@@ -362,7 +362,7 @@ int ToTxsPools::CreateToTxWithHeights(
     }
 
     if (acc_amount_map.empty()) {
-        assert(false);
+//         assert(false);
         return kPoolsError;
     }
 
