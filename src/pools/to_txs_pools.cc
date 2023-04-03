@@ -365,9 +365,11 @@ int ToTxsPools::CreateToTxWithHeights(
 
     std::string str_for_hash;
     str_for_hash.reserve(common::kImmutablePoolSize * 8 + acc_amount_map.size() * 48);
+    std::string test_heights;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto height = leader_to_heights.heights(i);
         str_for_hash.append((char*)&height, sizeof(height));
+        test_heights += std::to_string(height) + " ";
     }
 
     for (auto iter = acc_amount_map.begin(); iter != acc_amount_map.end(); ++iter) {
@@ -386,10 +388,10 @@ int ToTxsPools::CreateToTxWithHeights(
     }
 
     *to_hash = common::Hash::keccak256(str_for_hash);
-    ZJC_DEBUG("backup sharding: %u to_hash: %s, str for hash: %s",
+    ZJC_DEBUG("backup sharding: %u to_hash: %s, test_heights: %s",
         sharding_id,
         common::Encode::HexEncode(*to_hash).c_str(),
-        common::Encode::HexEncode(str_for_hash).c_str());
+        test_heights.c_str());
     to_tx.set_heights_hash(*to_hash);
     *to_tx.mutable_to_heights() = leader_to_heights;
     auto val = to_tx.SerializeAsString();
