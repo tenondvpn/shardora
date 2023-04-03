@@ -299,7 +299,7 @@ int ToTxsPools::LeaderCreateToHeights(
         return kPoolsError;
     }
 
-//     ZJC_DEBUG("sharding_id: %u, leader success create to heights: %s", sharding_id, heights.c_str());
+    ZJC_DEBUG("sharding_id: %u, leader success create to heights: %s", sharding_id, heights.c_str());
     return kPoolsSuccess;
 }
 
