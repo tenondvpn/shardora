@@ -96,7 +96,7 @@ void BftManager::RegisterCreateTxCallbacks() {
         pools::protobuf::kConsensusLocalTos,
         std::bind(&BftManager::CreateToTxLocal, this, std::placeholders::_1));
     pools_mgr_->RegisterCreateTxFunction(
-        pools::protobuf::kRootLocalTos,
+        pools::protobuf::kRootCreateAddress,
         std::bind(&BftManager::CreateRootToTxItem, this, std::placeholders::_1));
     block_mgr_->SetCreateToTxFunction(
         std::bind(&BftManager::CreateToTx, this, std::placeholders::_1));

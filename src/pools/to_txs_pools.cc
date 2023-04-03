@@ -52,7 +52,7 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
             HandleNormalFrom(block, tx_list[i], db_batch);
         }
 
-        if (tx_list[i].step() == pools::protobuf::kRootLocalTos) {
+        if (tx_list[i].step() == pools::protobuf::kRootCreateAddress) {
             HandleRootCreateAddress(block, tx_list[i], db_batch);
         }
     }

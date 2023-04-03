@@ -212,7 +212,7 @@ void BlockManager::RootHandleNormalToTx(
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_pubkey("");
         tx->set_to(tos_item.des());
-        tx->set_step(pools::protobuf::kRootLocalTos);
+        tx->set_step(pools::protobuf::kRootCreateAddress);
         auto gid = common::Hash::keccak256(
             tos_item.des() + "_" +
             std::to_string(height) + "_" +

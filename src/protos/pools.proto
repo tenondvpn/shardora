@@ -16,7 +16,7 @@ enum StepType {
     kContractUserCall = 10;
     kContractExcute = 11;
     kContractBroadcast = 12;
-    kRootLocalTos = 13;
+    kRootCreateAddress = 13;
 }
 
 message ToTxHeights {

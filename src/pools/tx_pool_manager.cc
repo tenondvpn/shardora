@@ -122,7 +122,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     //         pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](msg_ptr);
     //         tx_pool_[msg_ptr->address_info->pool_index()].AddTx(tx_ptr);
     //         msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        } else if (tx_msg.step() == pools::protobuf::kRootLocalTos) {
+        } else if (tx_msg.step() == pools::protobuf::kRootCreateAddress) {
             if (tx_msg.to().size() != block::kUnicastAddressLength) {
                 return;
             }
