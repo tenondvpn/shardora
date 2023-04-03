@@ -35,20 +35,6 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
         return;
     }
 
-    for (auto net_iter = network_txs_pools_.begin(); net_iter != network_txs_pools_.end(); ++net_iter) {
-        auto handled_iter = handled_map_.find(net_iter->first);
-        if (handled_iter != handled_map_.end()) {
-            if (handled_iter->second->heights(block.pool_index()) >= block.height()) {
-                continue;
-            }
-        }
-
-        TxMap tx_map;
-        // just clear and reload txs, height must unique
-        net_iter->second[block.pool_index()][block.height()] = tx_map;
-//         ZJC_DEBUG("sharding %u, pool: %u, new height: %lu", block.network_id(), block.pool_index(), block.height());
-    }
-
     const auto& tx_list = block.tx_list();
     if (tx_list.empty()) {
         ZJC_DEBUG("tx list empty!");
@@ -170,6 +156,20 @@ void ToTxsPools::HandleNormalToTx(
         uint64_t block_height,
         const block::protobuf::BlockTx& tx_info,
         db::DbWriteBatch& db_batch) {
+    for (auto net_iter = network_txs_pools_.begin();
+            net_iter != network_txs_pools_.end(); ++net_iter) {
+        auto handled_iter = handled_map_.find(net_iter->first);
+        if (handled_iter != handled_map_.end()) {
+            if (handled_iter->second->heights(block.pool_index()) >= block.height()) {
+                continue;
+            }
+        }
+
+        TxMap tx_map;
+        // just clear and reload txs, height must unique
+        net_iter->second[block.pool_index()][block.height()] = tx_map;
+    }
+
     if (tx_info.storages_size() <= 0) {
         assert(false);
         return;

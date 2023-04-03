@@ -182,14 +182,14 @@ void BlockManager::HandleNormalToTx(
     }
 
     to_txs_[to_txs.to_heights().sharding_id()] = nullptr;
-    if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-        ZJC_WARN("sharding invalid: %lu, %lu.",
-            to_txs.to_heights().sharding_id(),
-            common::GlobalInfo::Instance()->network_id());
-        return;
-    }
-
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
+        if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+            ZJC_WARN("sharding invalid: %lu, %lu.",
+                to_txs.to_heights().sharding_id(),
+                common::GlobalInfo::Instance()->network_id());
+            return;
+        }
+
         HandleLocalNormalToTx(thread_idx, to_txs);
     } else {
         RootHandleNormalToTx(thread_idx, block.height(), to_txs);
@@ -312,7 +312,11 @@ void BlockManager::AddNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBatch& db_batch) {
-//     ZJC_DEBUG("new block coming.");
+    ZJC_DEBUG("new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u",
+        block_item->network_id(),
+        block_item->pool_index(),
+        block_item->height(),
+        block_item->tx_list_size());
     if (!prefix_db_->SaveBlock(*block_item, db_batch)) {
         ZJC_DEBUG("block saved: %lu", block_item->height());
         return;
@@ -324,22 +328,20 @@ void BlockManager::AddNewBlock(
         ZJC_DEBUG("add to ck.");
     }
 
-    if (block_item->network_id() == common::GlobalInfo::Instance()->network_id()) {
-        const auto& tx_list = block_item->tx_list();
-        if (tx_list.empty()) {
-            return;
-        }
+    const auto& tx_list = block_item->tx_list();
+    if (tx_list.empty()) {
+        return;
+    }
 
-        for (int32_t i = 0; i < tx_list.size(); ++i) {
-            switch (tx_list[i].step()) {
-            case pools::protobuf::kNormalTo:
-                HandleNormalToTx(thread_idx, *block_item, tx_list[i], db_batch);
-                break;
-            case pools::protobuf::kConsensusRootTimeBlock:
-                prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
-            default:
-                break;
-            }
+    for (int32_t i = 0; i < tx_list.size(); ++i) {
+        switch (tx_list[i].step()) {
+        case pools::protobuf::kNormalTo:
+            HandleNormalToTx(thread_idx, *block_item, tx_list[i], db_batch);
+            break;
+        case pools::protobuf::kConsensusRootTimeBlock:
+            prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
+        default:
+            break;
         }
     }
 
