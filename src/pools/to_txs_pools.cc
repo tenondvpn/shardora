@@ -43,7 +43,8 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
         ++pool_consensus_heihgts_[block.pool_index()];
         for (; pool_consensus_heihgts_[block.pool_index()] <= pool_max_heihgts_[block.pool_index()];
                 ++pool_consensus_heihgts_[block.pool_index()]) {
-            auto iter = added_heights_[block.pool_index()]->find(pool_consensus_heihgts_[block.pool_index()] + 1);
+            auto iter = added_heights_[block.pool_index()].find(
+                    pool_consensus_heihgts_[block.pool_index()] + 1);
             if (iter == added_heights_[block.pool_index()].end()) {
                 break;
             }
@@ -51,7 +52,7 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
             added_heights_[block.pool_index()].erase(iter);
         }
     } else {
-        added_heights_[block.pool_index()]->insert(block.height());
+        added_heights_[block.pool_index()].insert(block.height());
     }
 
     const auto& tx_list = block.tx_list();
