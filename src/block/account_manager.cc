@@ -144,6 +144,9 @@ protos::AddressInfoPtr AccountManager::GetAcountInfo(
 
 std::string AccountManager::GetTxValidAddress(const block::protobuf::BlockTx& tx_info) {
     switch (tx_info.step()) {
+    case pools::protobuf::kNormalTo:
+    case pools::protobuf::kRootCreateAddress:
+    case pools::protobuf::kRootCreateAddressCrossSharding:
     case pools::protobuf::kConsensusLocalTos:
     case pools::protobuf::kConsensusRootElectShard:
     case pools::protobuf::kConsensusRootTimeBlock:
