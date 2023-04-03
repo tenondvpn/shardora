@@ -53,6 +53,7 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
         // create address must to and have transfer amount
         if (tx.step() != pools::protobuf::kNormalTo || tx.amount() <= 0) {
             tx_list->RemoveLast();
+            assert(false);
             continue;
         }
 
@@ -60,6 +61,7 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
             txs_ptr_->thread_index, zjc_block, acc_balance_map, tx);
         if (do_tx_res != kConsensusSuccess) {
             tx_list->RemoveLast();
+            assert(false);
             continue;
         }
     }
