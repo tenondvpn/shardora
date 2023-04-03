@@ -78,7 +78,7 @@ void ToTxsPools::HandleNormalFrom(
         db::DbWriteBatch& db_batch) {
     if (tx.amount() <= 0) {
         ZJC_DEBUG("from transfer amount invalid!");
-        continue;
+        return;
     }
 
     uint32_t sharding_id = common::kInvalidUint32;
@@ -105,7 +105,7 @@ void ToTxsPools::HandleRootCreateAddress(
     int32_t pool_index = common::kInvalidPoolIndex;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kRootCreateNewAccountAttrKey) {
-            int32_t* data = (uint32_t*)tx.storages(i).val_hash().c_str();
+            auto* data = (const uint32_t*)tx.storages(i).val_hash().c_str();
             sharding_id = data[0];
             pool_index  = data[1];
             break;
@@ -160,7 +160,7 @@ void ToTxsPools::AddTxToMap(
 
     auto to_iter = height_iter->second.find(tx.to());
     if (to_iter == height_iter->second.end()) {
-        height_iter->second[tx.to()] = std::make_pair<uint64_t, int32_t>(0, pool_index);
+        height_iter->second[tx.to()] = std::make_pair<uint64_t, int32_t>(0lu, pool_index);
     }
 
     height_iter->second[tx.to()].first += tx.amount();
@@ -351,7 +351,7 @@ int ToTxsPools::CreateToTxWithHeights(
                     to_iter != hiter->second.end(); ++to_iter) {
                 auto amount_iter = acc_amount_map.find(to_iter->first);
                 if (amount_iter == acc_amount_map.end()) {
-                    acc_amount_map[to_iter->first] = to_iter->second
+                    acc_amount_map[to_iter->first] = to_iter->second;
                 } else {
                     amount_iter->second.first += to_iter->second.first;
                 }
