@@ -18,6 +18,7 @@ public:
     virtual ~RootZbft();
     virtual void DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block);
     void RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block);
+    void RootCreateAddressCrossSharding(block::protobuf::Block& zjc_block);
     void RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_block);
     void RootCreateTimerBlock(block::protobuf::Block& zjc_block);
     void RootCreateFinalStatistic(block::protobuf::Block& zjc_block);
