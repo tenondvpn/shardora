@@ -205,12 +205,16 @@ void AccountManager::HandleLocalToTx(
             account_info->set_addr(to_txs.tos(i).to());
             account_info->set_type(address::protobuf::kNormal);
             account_info->set_sharding_id(block.network_id());
+            account_info->set_latest_height(block.height());
+            account_info->set_balance(to_txs.tos(i).balance());
             address_map_[thread_idx].add(to_txs.tos(i).to(), account_info);
+            prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info);
+        } else {
+            account_info->set_latest_height(block.height());
+            account_info->set_balance(to_txs.tos(i).balance());
+            prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
         }
 
-        account_info->set_latest_height(block.height());
-        account_info->set_balance(to_txs.tos(i).balance());
-        prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
         ZJC_DEBUG("transfer to address new balance %s: %lu",
             common::Encode::HexEncode(to_txs.tos(i).to()).c_str(), to_txs.tos(i).balance());
     }

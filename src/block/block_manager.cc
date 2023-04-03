@@ -224,6 +224,8 @@ void BlockManager::RootHandleNormalToTx(
         auto pool_index = common::Hash::Hash32(tos_item.des()) % common::kImmutablePoolSize;
         msg_ptr->address_info = account_mgr_->single_local_to_address_info(pool_index);
         pools_mgr_->HandleMessage(msg_ptr);
+        ZJC_DEBUG("create new address %s, amount: %lu",
+            common::Encode::HexEncode(tos_item.des()).c_str(), tos_item.amount());
     }
 }
 
