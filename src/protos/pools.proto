@@ -17,6 +17,7 @@ enum StepType {
     kContractExcute = 11;
     kContractBroadcast = 12;
     kRootCreateAddress = 13;
+    kRootCreateAddressCrossSharding = 14;
 }
 
 message ToTxHeights {

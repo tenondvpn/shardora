@@ -424,7 +424,11 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         tx->set_value(tos_hash);
         tx->set_pubkey("");
         tx->set_to(common::kNormalToAddress);
-        tx->set_step(pools::protobuf::kNormalTo);
+        if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+            tx->set_step(pools::protobuf::kRootCreateAddressCrossSharding);
+        } else {
+            tx->set_step(pools::protobuf::kNormalTo);
+        }
         auto gid = common::Hash::keccak256(
             tos_hash + std::to_string(heights.sharding_id()));
         tx->set_gas_limit(0);
