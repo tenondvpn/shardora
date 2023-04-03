@@ -276,7 +276,7 @@ void AddDescriptorsImpl() {
       "\005 \001(\004\022\013\n\003key\030\006 \001(\014\022\r\n\005value\030\007 \001(\014\022\n\n\002to\030"
       "\010 \001(\014\022\016\n\006amount\030\t \001(\004\022;\n\004step\030\n \001(\0162 .zj"
       "chain.pools.protobuf.StepType:\013kNormalFr"
-      "om\022\033\n\023contract_prepayment\030\013 \001(\004*\355\002\n\010Step"
+      "om\022\033\n\023contract_prepayment\030\013 \001(\004*\227\003\n\010Step"
       "Type\022\017\n\013kNormalFrom\020\000\022\r\n\tkNormalTo\020\001\022\034\n\030"
       "kConsensusRootElectShard\020\002\022\033\n\027kConsensus"
       "RootTimeBlock\020\003\022\034\n\030kConsensusFinalStatis"
@@ -285,10 +285,12 @@ void AddDescriptorsImpl() {
       "rCreateCall\020\007\022\033\n\027kContractRootCreateCall"
       "\020\010\022\034\n\030kContractShardCreateCall\020\t\022\025\n\021kCon"
       "tractUserCall\020\n\022\023\n\017kContractExcute\020\013\022\026\n\022"
-      "kContractBroadcast\020\014\022\021\n\rkRootLocalTos\020\r"
+      "kContractBroadcast\020\014\022\026\n\022kRootCreateAddre"
+      "ss\020\r\022#\n\037kRootCreateAddressCrossSharding\020"
+      "\016"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1119);
+      descriptor, 1161);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/pools.proto", &protobuf_RegisterTypes);
 }
@@ -327,6 +329,7 @@ bool StepType_IsValid(int value) {
     case 11:
     case 12:
     case 13:
+    case 14:
       return true;
     default:
       return false;
