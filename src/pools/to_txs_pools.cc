@@ -287,6 +287,7 @@ int ToTxsPools::LeaderCreateToHeights(
         auto pool_iter = net_iter->second.find(i);
         auto r_height_iter = pool_iter->second.rbegin();
         if (r_height_iter == pool_iter->second.rend()) {
+            heights += std::to_string(0) + " ";
             to_heights.add_heights(0);
         } else {
             to_heights.add_heights(r_height_iter->first);
@@ -337,7 +338,7 @@ int ToTxsPools::CreateToTxWithHeights(
         for (auto height = min_height; height < max_height; ++height) {
             auto hiter = pool_iter->second.find(height);
             if (hiter == pool_iter->second.end()) {
-//                 ZJC_DEBUG("pool %u, invalid height: %lu", pool_idx, height);
+                ZJC_DEBUG("pool %u, invalid height: %lu", pool_idx, height);
                 return kPoolsError;
             }
         }
@@ -361,6 +362,7 @@ int ToTxsPools::CreateToTxWithHeights(
     }
 
     if (acc_amount_map.empty()) {
+        assert(false);
         return kPoolsError;
     }
 
