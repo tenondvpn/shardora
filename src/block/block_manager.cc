@@ -192,7 +192,7 @@ void BlockManager::HandleNormalToTx(
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         HandleLocalNormalToTx(thread_idx, to_txs);
     } else {
-        RootHandleNormalToTx(thread_idx, block.height(), tx);
+        RootHandleNormalToTx(thread_idx, block.height(), to_txs);
     }
 }
 
