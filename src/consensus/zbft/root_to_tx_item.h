@@ -27,6 +27,12 @@ public:
         const block::protobuf::Block& block,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx);
+    virtual int TxToBlockTx(
+            const pools::protobuf::TxMessage& tx_info,
+            block::protobuf::BlockTx* block_tx) {
+        DefaultTxItem(tx_info, block_tx);
+        return consensus::kConsensusSuccess;
+    }
 
 private:
     uint32_t max_sharding_id_ = 0;
