@@ -48,10 +48,12 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
     std::unordered_map<std::string, int64_t> acc_balance_map;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto& tx = *tx_list->Add();
-        iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), &tx);
-        tx.set_status(kConsensusSuccess);
+        auto& src_tx = iter->second->msg_ptr->header.tx_proto();
+        iter->second->TxToBlockTx(src_tx, &tx);
         // create address must to and have transfer amount
-        if (tx.step() != pools::protobuf::kNormalTo || tx.amount() <= 0) {
+        if (tx.step() != pools::protobuf::kRootLocalTos || tx.amount() <= 0) {
+            ZJC_DEBUG("tx invalid step: %d, amount: %lu, src: %d, %lu",
+                tx.step(), tx.amount(), src_tx.step(), src_tx.amount())
             tx_list->RemoveLast();
             assert(false);
             continue;
