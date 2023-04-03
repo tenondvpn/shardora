@@ -100,7 +100,7 @@ void BftManager::RegisterCreateTxCallbacks() {
         std::bind(&BftManager::CreateRootToTxItem, this, std::placeholders::_1));
     block_mgr_->SetCreateToTxFunction(
         std::bind(&BftManager::CreateToTx, this, std::placeholders::_1));
-    tm_block_mgr->SetCreateTmTxFunction(
+    tm_block_mgr_->SetCreateTmTxFunction(
         std::bind(&BftManager::CreateTimeblockTx, this, std::placeholders::_1));
 }
 
