@@ -53,7 +53,7 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
         // create address must to and have transfer amount
         if (tx.step() != pools::protobuf::kRootLocalTos || tx.amount() <= 0) {
             ZJC_DEBUG("tx invalid step: %d, amount: %lu, src: %d, %lu",
-                tx.step(), tx.amount(), src_tx.step(), src_tx.amount())
+                tx.step(), tx.amount(), src_tx.step(), src_tx.amount());
             tx_list->RemoveLast();
             assert(false);
             continue;
