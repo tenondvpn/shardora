@@ -269,6 +269,7 @@ void BlockManager::HandleLocalNormalToTx(
             }
 
             if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
+                assert(false);
                 continue;
             }
 
@@ -296,6 +297,8 @@ void BlockManager::HandleLocalNormalToTx(
         to_item->set_pool_index(iter->second.second);
         to_item->set_des(iter->first);
         to_item->set_amount(iter->second.first);
+        ZJC_DEBUG("success add local transfer to %s, %lu",
+            common::Encode::HexEncode(iter->first).c_str(), iter->second.first);
     }
 
     for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
