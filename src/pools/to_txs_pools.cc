@@ -160,7 +160,7 @@ void ToTxsPools::AddTxToMap(
 
     auto to_iter = height_iter->second.find(tx.to());
     if (to_iter == height_iter->second.end()) {
-        height_iter->second[tx.to()] = std::make_pair<uint64_t, int32_t>(0lu, pool_index);
+        height_iter->second[tx.to()] = std::make_pair(0lu, pool_index);
     }
 
     height_iter->second[tx.to()].first += tx.amount();
