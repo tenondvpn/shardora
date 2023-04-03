@@ -30,6 +30,7 @@ public:
 
 private:
     uint32_t max_sharding_id_ = 0;
+    std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     
     DISALLOW_COPY_AND_ASSIGN(RootToTxItem);
 };

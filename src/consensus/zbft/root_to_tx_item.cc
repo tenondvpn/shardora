@@ -2,24 +2,27 @@
 
 #include "network/network_utils.h"
 #include "protos/tx_storage_key.h"
+#include "vss/vss_manager.h"
 
 namespace zjchain {
 
 namespace consensus {
 
 RootToTxItem::RootToTxItem(
-    uint32_t max_consensus_sharding_id,
-    const transport::MessagePtr& msg,
-    std::shared_ptr<block::AccountManager>& account_mgr,
-    std::shared_ptr<security::Security>& sec_ptr)
-    : TxItemBase(msg, account_mgr, sec_ptr),
-      max_sharding_id_(max_consensus_sharding_id) {
+        uint32_t max_consensus_sharding_id,
+        const transport::MessagePtr& msg,
+        std::shared_ptr<vss::VssManager>& vss_mgr,
+        std::shared_ptr<block::AccountManager>& account_mgr,
+        std::shared_ptr<security::Security>& sec_ptr)
+        : TxItemBase(msg, account_mgr, sec_ptr),
+        max_sharding_id_(max_consensus_sharding_id),
+        vss_mgr_(vss_mgr) {
     if (max_sharding_id_ < network::kConsensusShardBeginNetworkId) {
         max_sharding_id_ = network::kConsensusShardBeginNetworkId;
     }
 }
 
-virtual RootToTxItem::~RootToTxItem() {}
+RootToTxItem::~RootToTxItem() {}
 
 int RootToTxItem::HandleTx(
         uint8_t thread_idx,
@@ -39,7 +42,7 @@ int RootToTxItem::HandleTx(
         des_info[1] = g2() % common::kImmutablePoolSize;
     }
 
-    auto& storage = *block_tx->add_storages();
+    auto& storage = *block_tx.add_storages();
     storage.set_key(protos::kRootCreateAddressKey);
     storage.set_val_hash(std::string(des_sharding_and_pool, sizeof(des_sharding_and_pool)));
     return kConsensusSuccess;
