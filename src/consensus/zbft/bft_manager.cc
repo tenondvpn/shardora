@@ -1874,6 +1874,7 @@ void BftManager::LeaderBroadcastBlock(
     case pools::protobuf::kConsensusRootTimeBlock:
         tm_block_mgr_->BroadcastTimeblock(thread_index, block);
         break;
+    case pools::protobuf::kRootCreateAddressCrossSharding:
     case pools::protobuf::kNormalTo:
         BroadcastLocalTosBlock(thread_index, block);
         break;
