@@ -135,6 +135,7 @@ int NetworkInit::Init(int argc, char** argv) {
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     bft_mgr_ = std::make_shared<consensus::BftManager>();
     auto bft_init_res = bft_mgr_->Init(
+        vss_mgr_,
         account_mgr_,
         block_mgr_,
         elect_mgr_,

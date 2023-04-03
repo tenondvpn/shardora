@@ -27,7 +27,6 @@ protected:
 
     virtual int TxToBlockTx(
             const pools::protobuf::TxMessage& tx_info,
-            const block::protobuf::Block& block,
             block::protobuf::BlockTx* block_tx) {
         DefaultTxItem(tx_info, block_tx);
         // change
