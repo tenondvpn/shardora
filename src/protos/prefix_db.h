@@ -28,8 +28,6 @@ static const std::string kFieldBytesCode = "__bytes_code";
 static const std::string kGenesisElectPrikeyEncryptKey = common::Encode::HexDecode(
     "17dfdd4d49509691361225e9059934675dea440d123aa8514441aa6788354016");
 
-static const std::string kRootCreateNewAccountAttrKey("kRootNewAddr_netid");
-
 // transaction contract attr keys
 
 static const std::string kAddressPrefix = "a\x01";

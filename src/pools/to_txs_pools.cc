@@ -90,7 +90,7 @@ void ToTxsPools::HandleRootCreateAddress(
     uint32_t sharding_id = common::kInvalidUint32;
     int32_t pool_index = common::kInvalidPoolIndex;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).key() == protos::kRootCreateNewAccountAttrKey) {
+        if (tx.storages(i).key() == protos::kRootCreateAddressKey) {
             auto* data = (const uint32_t*)tx.storages(i).val_hash().c_str();
             sharding_id = data[0];
             pool_index  = data[1];

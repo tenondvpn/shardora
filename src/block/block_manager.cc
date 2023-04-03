@@ -171,7 +171,8 @@ void BlockManager::HandleNormalToTx(
 
     std::string to_txs_str;
     if (!prefix_db_->GetTemporaryKv(tx.storages(0).val_hash(), &to_txs_str)) {
-        ZJC_WARN("normal to get val hash failed.");
+        ZJC_WARN("normal to get val hash failed: %s",
+            common::Encode::HexEncode(tx.storages(0).val_hash()).c_str());
         return;
     }
 
