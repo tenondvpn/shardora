@@ -6,28 +6,32 @@
 
 namespace zjchain {
 
+namespace vss {
+    class VssManager;
+};
+
 namespace consensus {
 
-class ContractUserCreateCall : public TxItemBase {
+class RootToTxItem : public TxItemBase {
 public:
-    ContractUserCreateCall(
+    RootToTxItem(
+        uint32_t max_consensus_sharding_id,
         const transport::MessagePtr& msg,
+        std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<block::AccountManager>& account_mgr,
-        std::shared_ptr<security::Security>& sec_ptr)
-        : TxItemBase(msg, account_mgr, sec_ptr) {}
+        std::shared_ptr<security::Security>& sec_ptr);
+    virtual ~RootToTxItem();
 
-    virtual ~ContractUserCreateCall() {}
     virtual int HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx);
-    virtual int TxToBlockTx(
-        const pools::protobuf::TxMessage& tx_info,
-        block::protobuf::BlockTx* block_tx);
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(ContractUserCreateCall);
+    uint32_t max_sharding_id_ = 0;
+    
+    DISALLOW_COPY_AND_ASSIGN(RootToTxItem);
 };
 
 };  // namespace consensus

@@ -10,6 +10,7 @@
 #include "common/limit_hash_map.h"
 #include "consensus/consensus.h"
 #include "consensus/zbft/from_tx_item.h"
+#include "consensus/zbft/root_to_tx_item.h"
 #include "consensus/zbft/time_block_tx.h"
 #include "consensus/zbft/to_tx_item.h"
 #include "consensus/zbft/to_tx_local_item.h"
@@ -28,12 +29,17 @@
 
 namespace zjchain {
 
+namespace vss {
+    class VssManager;
+}
+
 namespace consensus {
 
 class WaitingTxsPools;
 class BftManager : public Consensus {
 public:
     int Init(
+        std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<elect::ElectManager>& elect_mgr,
@@ -105,6 +111,7 @@ private:
         uint8_t thread_index,
         const std::shared_ptr<block::protobuf::Block>& block);
     void BroadcastLocalTosBlock(uint8_t thread_idx, const std::shared_ptr<block::protobuf::Block>& block);
+    void RegisterCreateTxCallbacks();
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
@@ -122,8 +129,18 @@ private:
         return std::make_shared<TimeBlockTx>(msg_ptr, account_mgr_, security_ptr_);
     }
 
+    pools::TxItemPtr CreateRootToTxItem(const transport::MessagePtr& msg_ptr) {
+        return std::make_shared<RootToTxItem>(
+            max_consensus_sharding_id_,
+            msg_ptr,
+            vss_mgr_,
+            account_mgr_,
+            security_ptr_);
+    }
+
     static const uint32_t kCheckTimeoutPeriodMilli = 3000lu;
 
+    std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
@@ -155,6 +172,7 @@ private:
     uint32_t prev_count_ = 0;
     common::SpinMutex prev_count_mutex_;
     uint64_t prev_test_bft_size_[common::kMaxThreadCount] = { 0 };
+    uint32_t max_consensus_sharding_id_ = 3;
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {

@@ -607,14 +607,7 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     block::protobuf::Block& zjc_block = *prepare_block;
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-    DoTransactionAndCreateTxBlock(zjc_block);
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
-    //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-
-    if (zjc_block.tx_list_size() <= 0) {
-        ZJC_ERROR("all choose tx invalid!");
-        return kConsensusNoNewTxs;
-    }
+    
 
     zjc_block.set_pool_index(txs_ptr_->pool_index);
     zjc_block.set_prehash(pool_hash);
@@ -640,14 +633,19 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     zjc_block.set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
     zjc_block.set_electblock_height(elect_height_);
     zjc_block.set_leader_index(leader_index_);
+    DoTransactionAndCreateTxBlock(zjc_block);
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
+    if (zjc_block.tx_list_size() <= 0) {
+        ZJC_ERROR("all choose tx invalid!");
+        return kConsensusNoNewTxs;
+    }
 
+    // times_[times_index_++] = common::TimeUtils::TimestampUs();
+    //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
     zjc_block.set_hash(GetBlockHash(zjc_block));
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-
-
     tx_bft.set_prepare_final_hash(zjc_block.hash());
     tx_bft.set_height(zjc_block.height());
     tx_bft.set_tx_type(txs_ptr_->tx_type);
@@ -655,13 +653,7 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     set_prepare_hash(zjc_block.hash());
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-
-
     prepare_block_ = prepare_block;
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
-    //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-
-
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
     return kConsensusSuccess;

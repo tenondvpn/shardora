@@ -122,6 +122,13 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     //         pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](msg_ptr);
     //         tx_pool_[msg_ptr->address_info->pool_index()].AddTx(tx_ptr);
     //         msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+        } else if (tx_msg.step() == pools::protobuf::kRootLocalTos) {
+            if (tx_msg.to().size() != block::kUnicastAddressLength) {
+                return;
+            }
+
+            auto pool_index = common::Hash::Hash32(tx_msg.to()) % common::kImmutablePoolSize;
+            msg_queues_[pool_index].push(msg_ptr);
         } else {
             // check valid
             msg_queues_[0].push(msg_ptr);

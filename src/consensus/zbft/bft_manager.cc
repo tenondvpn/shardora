@@ -40,6 +40,7 @@ BftManager::~BftManager() {
 }
 
 int BftManager::Init(
+        std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<elect::ElectManager>& elect_mgr,
@@ -50,6 +51,7 @@ int BftManager::Init(
         BlockCallback block_cb,
         uint8_t thread_count,
         BlockCacheCallback new_block_cache_callback) {
+    vss_mgr_ = vss_mgr;
     account_mgr_ = account_mgr;
     block_mgr_ = block_mgr;
     elect_mgr_ = elect_mgr;
@@ -58,19 +60,7 @@ int BftManager::Init(
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     new_block_cache_callback_ = new_block_cache_callback;
-    pools_mgr_->RegisterCreateTxFunction(
-        pools::protobuf::kNormalFrom,
-        std::bind(&BftManager::CreateFromTx, this, std::placeholders::_1));
-    pools_mgr_->RegisterCreateTxFunction(
-        pools::protobuf::kNormalTo,
-        std::bind(&BftManager::CreateToTx, this, std::placeholders::_1));
-    pools_mgr_->RegisterCreateTxFunction(
-        pools::protobuf::kConsensusLocalTos,
-        std::bind(&BftManager::CreateToTxLocal, this, std::placeholders::_1));
-    block_mgr_->SetCreateToTxFunction(
-        std::bind(&BftManager::CreateToTx, this, std::placeholders::_1));
-    tm_block_mgr->SetCreateTmTxFunction(
-        std::bind(&BftManager::CreateTimeblockTx, this, std::placeholders::_1));
+    RegisterCreateTxCallbacks();
     security_ptr_ = security_ptr;
     txs_pools_ = std::make_shared<WaitingTxsPools>(pools_mgr_, block_mgr, tm_block_mgr);
     thread_count_ = thread_count;
@@ -93,6 +83,25 @@ int BftManager::Init(
         common::kConsensusTimerMessage,
         std::bind(&BftManager::ConsensusTimerMessage, this, std::placeholders::_1));
     return kConsensusSuccess;
+}
+
+void BftManager::RegisterCreateTxCallbacks() {
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kNormalFrom,
+        std::bind(&BftManager::CreateFromTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kNormalTo,
+        std::bind(&BftManager::CreateToTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kConsensusLocalTos,
+        std::bind(&BftManager::CreateToTxLocal, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kRootLocalTos,
+        std::bind(&BftManager::CreateRootToTxItem, this, std::placeholders::_1));
+    block_mgr_->SetCreateToTxFunction(
+        std::bind(&BftManager::CreateToTx, this, std::placeholders::_1));
+    tm_block_mgr->SetCreateTmTxFunction(
+        std::bind(&BftManager::CreateTimeblockTx, this, std::placeholders::_1));
 }
 
 void BftManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members) {

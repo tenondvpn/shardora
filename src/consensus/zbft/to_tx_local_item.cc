@@ -7,6 +7,7 @@ namespace consensus {
 
 int ToTxLocalItem::HandleTx(
         uint8_t thread_idx,
+        const block::protobuf::Block& block,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     // gas just consume by from

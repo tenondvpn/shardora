@@ -19,6 +19,7 @@ protected:
 
     virtual int HandleTx(
             uint8_t thread_idx,
+            const block::protobuf::Block& block,
             std::unordered_map<std::string, int64_t>& acc_balance_map,
             block::protobuf::BlockTx& block_tx) {
         return consensus::kConsensusSuccess;
@@ -26,6 +27,7 @@ protected:
 
     virtual int TxToBlockTx(
             const pools::protobuf::TxMessage& tx_info,
+            const block::protobuf::Block& block,
             block::protobuf::BlockTx* block_tx) {
         DefaultTxItem(tx_info, block_tx);
         // change
