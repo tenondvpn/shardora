@@ -146,7 +146,12 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         if (header.has_sync() && header.sync().items_size() > 0) {
             db::DbWriteBatch db_batch;
             for (int32_t i = 0; i < header.sync().items_size(); ++i) {
-                db_batch.Put(header.sync().items(i).key(), header.sync().items(i).value());
+                prefix_db_->SaveTemporaryKv(
+                    header.sync().items(i).key(),
+                    header.sync().items(i).value(),
+                    db_batch);
+                ZJC_DEBUG("save key: %s",
+                    common::Encode::HexEncode(header.sync().items(i).key()).c_str());
             }
 
             if (!db_->Put(db_batch).ok()) {
