@@ -205,12 +205,12 @@ void ToTxsPools::HandleNormalToTx(
         return;
     }
 
-//     ZJC_DEBUG("new to tx coming: %lu, sharding id: %u", block_height, heights.sharding_id());
+//     ZJC_DEBUG("new to tx coming: %lu, sharding id: %u", block.height(), heights.sharding_id());
     auto handled_iter = handled_map_.find(heights.sharding_id());
     if (handled_iter != handled_map_.end()) {
-        if (handled_iter->second->block_height() >= block_height) {
+        if (handled_iter->second->block_height() >= block.height()) {
             ZJC_WARN("block_height failed: %lu, %lu!",
-                handled_iter->second->block_height(), block_height);
+                handled_iter->second->block_height(), block.height());
             return;
         }
     }
