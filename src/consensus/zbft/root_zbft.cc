@@ -45,49 +45,23 @@ void RootZbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) 
 void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) {
     auto tx_list = zjc_block.mutable_tx_list();
     auto& tx_map = txs_ptr_->txs;
+    std::unordered_map<std::string, int64_t> acc_balance_map;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto& tx = *tx_list->Add();
         iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), &tx);
         tx.set_status(kConsensusSuccess);
         // create address must to and have transfer amount
         if (tx.step() != pools::protobuf::kNormalTo || tx.amount() <= 0) {
+            tx_list->RemoveLast();
             continue;
         }
 
-        // auto acc_info = block::AccountManager::Instance()->GetAcountInfo(tx.to());
-        // if (acc_info != nullptr) {
-        //     continue;
-        // }
-
-        // if (tx.step() == common::kConsensusCreateContract) {
-        //     uint32_t network_id = 0;
-            // if (block::AccountManager::Instance()->GetAddressConsensusNetworkId(
-            //         tx.from(),
-            //         &network_id) != block::kBlockSuccess) {
-            //     BFT_ERROR("get network_id error!");
-            //     continue;
-            // }
-
-            // same to from address's network id
-            // tx.set_network_id(network_id);
-        // } else {
-        //     tx.set_network_id(NewAccountGetNetworkId(tx.to()));
-        // }
-        uint64_t pool_height = 0;
-        uint32_t local_pool_idx = common::kInvalidPoolIndex;
-        if (tx.to() == common::kRootChainSingleBlockTxAddress ||
-                tx.to() == common::kRootChainTimeBlockTxAddress ||
-                tx.to() == common::kRootChainElectionBlockTxAddress) {
-            local_pool_idx = common::kRootChainPoolIndex;
-        } else {
-            std::mt19937_64 g2(pool_height);
-            local_pool_idx = g2() % common::kImmutablePoolSize;
-            ZJC_DEBUG("set random pool index, pool_height: %lu, local_pool_idx: %d", pool_height, local_pool_idx);
+        int do_tx_res = iter->second->HandleTx(
+            txs_ptr_->thread_index, zjc_block, acc_balance_map, tx);
+        if (do_tx_res != kConsensusSuccess) {
+            tx_list->RemoveLast();
+            continue;
         }
-
-        // tx.set_pool_index(local_pool_idx);
-        // add_item_index_vec(tx_vec[i]->index);
-        // *add_tx = tx;
     }
 }
 
