@@ -177,7 +177,7 @@ void ToTxsPools::HandleNormalToTx(
 
     auto heights_ptr = std::make_shared<pools::protobuf::ToTxHeights>();
     auto& heights = *heights_ptr;
-    heights.set_block_height(block_height);
+    heights.set_block_height(block.height());
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
         if (tx_info.storages(i).key() == protos::kNormalTos) {
             std::string to_txs_str;
