@@ -238,16 +238,18 @@ void BlockManager::HandleLocalNormalToTx(
             uint32_t pool_index = common::kInvalidUint32;
             auto account_info = account_mgr_->GetAcountInfo(thread_idx, to_txs.tos(i).des());
             if (account_info == nullptr) {
-                assert(false);
                 if (!to_txs.tos(i).has_sharding_id() || !to_txs.tos(i).has_pool_index()) {
+                    assert(false);
                     continue;
                 }
 
                 if (to_txs.tos(i).sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+                    assert(false);
                     continue;
                 }
 
                 if (to_txs.tos(i).pool_index() >= common::kImmutablePoolSize) {
+                    assert(false);
                     continue;
                 }
 
