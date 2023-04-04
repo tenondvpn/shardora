@@ -726,6 +726,7 @@ void GenesisBlockInit::AddBlockItemToCache(
     pool_info.set_hash(block->hash());
     prefix_db_->SaveLatestPoolInfo(
         block->network_id(), block->pool_index(), pool_info, db_batch);
+    ZJC_DEBUG("success add pool latest info: %u, %u, %lu", block->network_id(), block->pool_index(), block->height());
 }
 
 int GenesisBlockInit::CreateShardGenesisBlocks(uint32_t net_id) {
