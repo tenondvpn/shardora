@@ -20,6 +20,7 @@
 #include "common/user_property_key_define.h"
 #include "common/utils.h"
 #include "consensus/consensus_utils.h"
+#include "network/network_utils.h"
 #include "pools/tx_utils.h"
 #include "protos/pools.pb.h"
 #include "pools/height_tree_level.h"
