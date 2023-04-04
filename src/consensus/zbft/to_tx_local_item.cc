@@ -1,5 +1,6 @@
 #include "consensus/zbft/to_tx_local_item.h"
 
+#include "zjcvm/execution.h"
 #include "zjcvm/zjcvm_utils.h"
 
 namespace zjchain {
