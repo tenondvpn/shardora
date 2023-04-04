@@ -2023,8 +2023,8 @@ bool BftManager::IsCreateContractLibraray(const block::protobuf::BlockTx& tx_inf
     }
 
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
-        if (tx_info.storages(i).key() == protos::kContractBytesCode) {
-            if (zjcvm::IsContractBytesCode(tx_info.storages(i).val_hash())) {
+        if (tx_info.has_contract_code()) {
+            if (zjcvm::IsContractBytesCode(tx_info.contract_code())) {
                 return true;
             }
         }
