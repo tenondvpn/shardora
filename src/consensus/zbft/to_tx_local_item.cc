@@ -46,6 +46,33 @@ int ToTxLocalItem::HandleTx(
                     common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
                     to_txs.tos(i).amount());
                 to_balance = 0;
+                std::string tx_str = prefix_db_->GetAddressTmpBytesCode(to_txs.tos(i).des());
+                if (!tx_str.empty()) {
+                    block::protobuf::BlockTx tx;
+                    if (!tx.ParseFromString(tx_str)) {
+                        ZJC_DEBUG("parser contract tx failed!");
+                        block_tx.set_status(kConsensusError);
+                        return consensus::kConsensusSuccess;
+                    }
+
+                    // contract create call
+                    zjcvm::ZjchainHost zjc_host;
+                    zjc_host.my_address_ = to;
+                    // get caller prepaid gas
+                    zjc_host.AddTmpAccountBalance(
+                        tx.from(),
+                        tx.contract_prepayment());
+                    zjc_host_.AddTmpAccountBalance(
+                        tx.to(),
+                        to_txs.tos(i).amount());
+                    evmc_result evmc_res = {};
+                    evmc::Result res{ evmc_res };
+                    if (CreateContractCallExcute(zjc_host, tx, &res) != kConsensusSuccess) {
+                        ZJC_DEBUG("create contract failed!");
+                        block_tx.set_status(kConsensusError);
+                        return consensus::kConsensusSuccess;
+                    }
+                }
             }
 
             auto to_tx = block_to_txs.add_tos();
@@ -83,6 +110,35 @@ int ToTxLocalItem::TxToBlockTx(
     return consensus::kConsensusSuccess;
 }
 
+
+int ToTxLocalItem::CreateContractCallExcute(
+        zjcvm::ZjchainHost& zjc_host,
+        block::protobuf::BlockTx& tx,
+        evmc::Result* out_res) {
+    uint32_t call_mode = zjcvm::kJustCreate;
+    if (!tx.has_contract_input()) {
+        call_mode = zjcvm::kCreateAndCall;
+    }
+
+    int exec_res = zjcvm::Execution::Instance()->execute(
+        tx.contract_code(),
+        tx.contract_input(),
+        tx.from(),
+        tx.to(),
+        tx.from(),
+        tx.amount(),
+        tx.gas_limit(),
+        0,
+        call_mode,
+        zjc_host,
+        out_res);
+    if (exec_res != zjcvm::kZjcvmSuccess) {
+        ZJC_ERROR("CreateContractCallExcute failed: %d", exec_res);
+        return kConsensusError;
+    }
+
+    return kConsensusSuccess;
+}
 };  // namespace consensus
 
 };  // namespace zjchain

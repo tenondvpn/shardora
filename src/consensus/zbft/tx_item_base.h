@@ -57,6 +57,14 @@ protected:
             }
         }
 
+        if (tx_info.has_contract_code()) {
+            block_tx->set_contract_code(tx_info.contract_code());
+        }
+
+        if (tx_info.has_contract_input()) {
+            block_tx->set_contract_input(tx_info.contract_input());
+        }
+
         block_tx->set_amount(tx_info.amount());
         block_tx->set_status(kConsensusSuccess);
     }

@@ -62,4 +62,6 @@ message TxMessage {
     optional uint64 amount = 9;
     optional StepType step = 10 [default=kNormalFrom];
     optional uint64 contract_prepayment = 11;
+    optional bytes contract_code = 12;
+    optional bytes contract_input = 13;
 }

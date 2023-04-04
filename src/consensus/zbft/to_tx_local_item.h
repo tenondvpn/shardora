@@ -31,6 +31,11 @@ public:
         block::protobuf::BlockTx* block_tx);
 
 private:
+    int CreateContractCallExcute(
+        zjcvm::ZjchainHost& zjc_host,
+        block::protobuf::BlockTx& tx,
+        evmc::Result* out_res);
+
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 

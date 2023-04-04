@@ -46,7 +46,7 @@ static const std::string kLatestToTxsHeightsPrefix = "m\x01";
 static const std::string kLatestPoolPrefix = "n\x01";
 static const std::string kHeightTreePrefix = "o\x01";
 static const std::string kGidPrefix = "p\x01";
-
+static const std::string kTmpContractAddressCodesPrefix = "q\x01";
 static const std::string kTemporaryKeyPrefix = "t\x01";
 
 class PrefixDb {
@@ -742,6 +742,25 @@ public:
         gid_set_[index].insert(key);
         db_batch[index].Put(key, "1");
         return false;
+    }
+
+    void SaveAddressTmpBytesCode(
+            const std::string& addr,
+            const std::string& bytescode,
+            db::DbWriteBatch& db_batch) {
+        std::string key = kTmpContractAddressCodesPrefix + addr;
+        db_batch.Put(key, bytescode);
+    }
+
+    std::string GetAddressTmpBytesCode(const std::string& addr) {
+        std::string key = kTmpContractAddressCodesPrefix + addr;
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            return "";
+        }
+
+        return val;
     }
 
 private:
