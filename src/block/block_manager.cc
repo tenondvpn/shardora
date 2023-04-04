@@ -308,9 +308,9 @@ void BlockManager::HandleLocalNormalToTx(
         for (int32_t i = 0; i < iter->second.tos_size(); ++i) {
             str_for_hash.append(iter->second.tos(i).des());
             uint32_t pool_idx = iter->second.tos(i).pool_index();
-            str_for_hash.append((char*)pool_idx, sizeof(pool_idx));
+            str_for_hash.append((char*)&pool_idx, sizeof(pool_idx));
             uint64_t amount = iter->second.tos(i).amount();
-            str_for_hash.append((char*)amount, sizeof(amount));
+            str_for_hash.append((char*)&amount, sizeof(amount));
         }
 
         auto val = iter->second.SerializeAsString();
