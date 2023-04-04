@@ -98,6 +98,7 @@ void TxPoolManager::SaveStorageToDb(const transport::protobuf::Header& msg) {
 }
 
 void TxPoolManager::HandleCrossShardingToTxs(const transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
     if (header.has_sync() && header.sync().items_size() > 0) {
         db::DbWriteBatch db_batch;
         for (int32_t i = 0; i < header.sync().items_size(); ++i) {
@@ -119,6 +120,8 @@ void TxPoolManager::HandleCrossShardingToTxs(const transport::MessagePtr& msg_pt
 }
 
 void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
+    auto& tx_msg = header.tx_proto();
     msg_ptr->address_info = GetAddressInfo(security_->GetAddress(tx_msg.pubkey()));
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no address info.");
@@ -155,6 +158,8 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
 }
 
 void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
+    auto& tx_msg = header.tx_proto();
     msg_ptr->address_info = GetAddressInfo(security_->GetAddress(tx_msg.pubkey()));
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no address info.");
