@@ -1001,14 +1001,14 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
         if (bft_msg.has_prepare_hash()) {
             assert(bft_msg.prepare_hash() == precommit_ptr->prepare_block()->hash());
         }
-    } else {
-        if (bft_msg.has_prepare_height()) {
-            bft_ptr->set_leader_pre_height(bft_msg.prepare_height());
-        }
-
-        if (bft_msg.has_prepare_hash()) {
-            bft_ptr->set_leader_pre_hash(bft_msg.prepare_hash());
-        }
+//     } else {
+//         if (bft_msg.has_prepare_height()) {
+//             bft_ptr->set_leader_pre_height(bft_msg.prepare_height());
+//         }
+// 
+//         if (bft_msg.has_prepare_hash()) {
+//             bft_ptr->set_leader_pre_hash(bft_msg.prepare_hash());
+//         }
     }
 
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -1401,9 +1401,9 @@ void BftManager::BackupPrepare(const transport::MessagePtr& msg_ptr) {
 //                 bft_msg.prepare_height(),
 //                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
 //                 bft_ptr->txs_ptr()->txs.size());
-            if (!bft_msg.prepare_hash().empty() && bft_ptr->prepare_block()->prehash() != bft_msg.prepare_hash()) {
-                assert(false);
-            }
+//             if (!bft_msg.prepare_hash().empty() && bft_ptr->prepare_block()->prehash() != bft_msg.prepare_hash()) {
+//                 assert(false);
+//             }
             msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
         }
 
