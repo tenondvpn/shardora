@@ -26,6 +26,7 @@
 #include "transport/multi_thread.h"
 #include "transport/tcp_transport.h"
 #include "transport/transport_utils.h"
+#include "zjcvm/execution.h"
 
 namespace zjchain {
 
@@ -85,6 +86,7 @@ int NetworkInit::Init(int argc, char** argv) {
     vss_mgr_ = std::make_shared<vss::VssManager>(security_);
     kv_sync_ = std::make_shared<sync::KeyValueSync>();
     kv_sync_->Init(db_);
+    zjcvm::Execution::Instance()->Init(db_);
     InitLocalNetworkId();
     if (net_handler_.Init(db_) != transport::kTransportSuccess) {
         return kInitError;
