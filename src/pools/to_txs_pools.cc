@@ -69,7 +69,8 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
             HandleNormalToTx(block, tx_list[i], db_batch);
         }
 
-        if (tx_list[i].step() == pools::protobuf::kNormalFrom) {
+        if (tx_list[i].step() == pools::protobuf::kNormalFrom ||
+                tx_list[i].step() == pools::protobuf::kContractUserCreateCall) {
             HandleNormalFrom(block, tx_list[i], db_batch);
         }
 
@@ -167,10 +168,14 @@ void ToTxsPools::AddTxToMap(
 
     auto to_iter = height_iter->second.find(tx.to());
     if (to_iter == height_iter->second.end()) {
-        height_iter->second[tx.to()] = std::make_pair(0lu, pool_index);
+        ToAddressItemInfo item;
+        item.amount = 0lu;
+        item.pool_index = pool_index;
+        item.type = tx.step();
+        height_iter->second[tx.to()] = item;
     }
 
-    height_iter->second[tx.to()].first += tx.amount();
+    height_iter->second[tx.to()].amount += tx.amount();
 }
 
 void ToTxsPools::HandleNormalToTx(
@@ -328,7 +333,6 @@ int ToTxsPools::CreateToTxWithHeights(
         uint32_t sharding_id,
         const pools::protobuf::ToTxHeights& leader_to_heights,
         std::string* to_hash) {
-    pools::protobuf::ToTxMessage to_tx;
     auto net_iter = network_txs_pools_.find(sharding_id);
     if (net_iter == network_txs_pools_.end()) {
         assert(false);
@@ -341,7 +345,7 @@ int ToTxsPools::CreateToTxWithHeights(
     }
 
     auto handled_iter = handled_map_.find(sharding_id);
-    std::map<std::string, std::pair<uint64_t, int32_t>> acc_amount_map;
+    std::map<std::string, ToAddressItemInfo> acc_amount_map;
     for (uint32_t pool_idx = 0; pool_idx < common::kImmutablePoolSize; ++pool_idx) {
         auto pool_iter = net_iter->second.find(pool_idx);
         if (pool_iter == net_iter->second.end()) {
@@ -373,7 +377,7 @@ int ToTxsPools::CreateToTxWithHeights(
                 if (amount_iter == acc_amount_map.end()) {
                     acc_amount_map[to_iter->first] = to_iter->second;
                 } else {
-                    amount_iter->second.first += to_iter->second.first;
+                    amount_iter->second.amount += to_iter->second.amount;
                 }
             }
         }
@@ -393,19 +397,30 @@ int ToTxsPools::CreateToTxWithHeights(
         test_heights += std::to_string(height) + " ";
     }
 
+    pools::protobuf::ToTxMessage to_tx;
     for (auto iter = acc_amount_map.begin(); iter != acc_amount_map.end(); ++iter) {
         str_for_hash.append(iter->first);
-        str_for_hash.append((char*)&iter->second.first, sizeof(iter->second.first));
+        str_for_hash.append((char*)&iter->second.amount, sizeof(iter->second.amount));
         str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
-        str_for_hash.append((char*)&iter->second.second, sizeof(iter->second.second));
+        str_for_hash.append((char*)&iter->second.pool_index, sizeof(iter->second.pool_index));
+        str_for_hash.append((char*)&iter->second.type, sizeof(iter->second.type));
         auto to_item = to_tx.add_tos();
         to_item->set_des(iter->first);
-        to_item->set_amount(iter->second.first);
-        to_item->set_sharding_id(sharding_id);
-        to_item->set_pool_index(iter->second.second);
+        to_item->set_amount(iter->second.amount);
+        to_item->set_pool_index(iter->second.pool_index);
+        // create contract just in caller sharding
+        if (iter->second.type == pools::protobuf::kContractUserCreateCall) {
+            assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
+            to_item->set_sharding_id(common::GlobalInfo::Instance()->network_id());
+        } else if (iter->second.type == pools::protobuf::kRootCreateAddress) {
+            to_item->set_sharding_id(sharding_id);
+        } else {
+            to_item->set_sharding_id(common::kInvalidUint32);
+        }
+
         ZJC_DEBUG("set to %s amount %lu, sharding id: %u, pool index: %d",
             common::Encode::HexEncode(iter->first).c_str(),
-            iter->second.first, sharding_id, iter->second.second);
+            iter->second.amount, to_item->sharding_id(), iter->second.pool_index);
     }
 
     *to_hash = common::Hash::keccak256(str_for_hash);

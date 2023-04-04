@@ -77,6 +77,10 @@ static transport::MessagePtr CreateTransactionWithAttr(
     new_tx->set_gid(gid);
     new_tx->set_pubkey(security->GetPublicKeyUnCompressed());
     new_tx->set_step(pools::protobuf::kNormalFrom);
+    if (key == protos::kContractBytesCode) {
+        new_tx->set_step(pools::protobuf::kContractUserCreateCall);
+    }
+
     new_tx->set_to(to);
     new_tx->set_amount(amount);
     new_tx->set_gas_limit(gas_limit);

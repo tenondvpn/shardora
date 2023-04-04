@@ -36,10 +36,24 @@ int RootToTxItem::HandleTx(
         des_info[0] = account_info->sharding_id();
         des_info[1] = account_info->pool_index();
     } else {
-        std::mt19937_64 g2(block.height() ^ vss_mgr_->EpochRandom());
-        des_info[0] = (g2() % (max_sharding_id_ - network::kConsensusShardBeginNetworkId + 1)) +
-            network::kConsensusShardBeginNetworkId;
-        des_info[1] = g2() % common::kImmutablePoolSize;
+        uint32_t sharding_id = 0;
+        for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
+            if (block_tx.storages(i).key() == protos::kCreateContractCallerSharding) {
+                if (common::StringUtil::ToUint32(block_tx.storages(i).val_hash(), &sharding_id)) {
+                    des_info[0] = sharding_id;
+                }
+
+                break;
+            }
+        }
+
+        if (sharding_id == 0) {
+            std::mt19937_64 g2(block.height() ^ vss_mgr_->EpochRandom());
+            des_info[0] = (g2() % (max_sharding_id_ - network::kConsensusShardBeginNetworkId + 1)) +
+                network::kConsensusShardBeginNetworkId;
+        }
+
+        des_info[1] = g2() % common::kImmutablePoolSize;;
     }
 
     auto& storage = *block_tx.add_storages();

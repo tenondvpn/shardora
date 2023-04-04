@@ -92,6 +92,11 @@ private:
         uint8_t thread_idx,
         uint64_t height,
         pools::protobuf::ToTxMessage& to_txs);
+    void CheckContractTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
     void CreateNewAddress();
 
     static const uint64_t kCreateToTxPeriodMs = 10000u;

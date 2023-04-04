@@ -203,16 +203,17 @@ void BlockManager::RootHandleNormalToTx(
         pools::protobuf::ToTxMessage& to_txs) {
     std::unordered_map<std::string, std::pair<uint32_t, uint32_t>> addr_amount_map;
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
-        if (to_txs.tos(i).amount() <= 0) {
-            continue;
-        }
-
         auto tos_item = to_txs.tos(i);
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_pubkey("");
         tx->set_to(tos_item.des());
         tx->set_step(pools::protobuf::kRootCreateAddress);
+        if (tos_item.sharding_id() != common::kInvalidUint32) {
+            tx->set_key(kCreateContractCallerSharding);
+            tx->set_value(std::to_string(tos_item.sharding_id()));
+        }
+
         auto gid = common::Hash::keccak256(
             tos_item.des() + "_" +
             std::to_string(height) + "_" +
@@ -236,52 +237,50 @@ void BlockManager::HandleLocalNormalToTx(
         const std::string& heights_hash) {
     std::unordered_map<std::string, std::pair<uint64_t, uint32_t>> addr_amount_map;
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
-        if (to_txs.tos(i).amount() > 0) {
-            // dispatch to txs to tx pool
-            uint32_t sharding_id = common::kInvalidUint32;
-            uint32_t pool_index = common::kInvalidPoolIndex;
-            auto account_info = account_mgr_->GetAcountInfo(thread_idx, to_txs.tos(i).des());
-            if (account_info == nullptr) {
-                if (step != pools::protobuf::kRootCreateAddressCrossSharding) {
-                    assert(false);
-                    continue;
-                }
-
-                if (!to_txs.tos(i).has_sharding_id() || !to_txs.tos(i).has_pool_index()) {
-                    assert(false);
-                    continue;
-                }
-
-                if (to_txs.tos(i).sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-                    assert(false);
-                    continue;
-                }
-
-                if (to_txs.tos(i).pool_index() >= common::kImmutablePoolSize) {
-                    assert(false);
-                    continue;
-                }
-
-                sharding_id = to_txs.tos(i).sharding_id();
-                pool_index = to_txs.tos(i).pool_index();
-            } else {
-                sharding_id = account_info->sharding_id();
-                pool_index = account_info->pool_index();
-            }
-
-            if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
+        // dispatch to txs to tx pool
+        uint32_t sharding_id = common::kInvalidUint32;
+        uint32_t pool_index = common::kInvalidPoolIndex;
+        auto account_info = account_mgr_->GetAcountInfo(thread_idx, to_txs.tos(i).des());
+        if (account_info == nullptr) {
+            if (step != pools::protobuf::kRootCreateAddressCrossSharding) {
                 assert(false);
                 continue;
             }
 
-            auto iter = addr_amount_map.find(to_txs.tos(i).des());
-            if (iter == addr_amount_map.end()) {
-                addr_amount_map[to_txs.tos(i).des()] = std::make_pair(
-                    to_txs.tos(i).amount(),
-                    pool_index);
-            } else {
-                iter->second.first += to_txs.tos(i).amount();
+            if (!to_txs.tos(i).has_sharding_id() || !to_txs.tos(i).has_pool_index()) {
+                assert(false);
+                continue;
             }
+
+            if (to_txs.tos(i).sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+                assert(false);
+                continue;
+            }
+
+            if (to_txs.tos(i).pool_index() >= common::kImmutablePoolSize) {
+                assert(false);
+                continue;
+            }
+
+            sharding_id = to_txs.tos(i).sharding_id();
+            pool_index = to_txs.tos(i).pool_index();
+        } else {
+            sharding_id = account_info->sharding_id();
+            pool_index = account_info->pool_index();
+        }
+
+        if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
+            assert(false);
+            continue;
+        }
+
+        auto iter = addr_amount_map.find(to_txs.tos(i).des());
+        if (iter == addr_amount_map.end()) {
+            addr_amount_map[to_txs.tos(i).des()] = std::make_pair(
+                to_txs.tos(i).amount(),
+                pool_index);
+        } else {
+            iter->second.first += to_txs.tos(i).amount();
         }
     }
 
@@ -382,8 +381,31 @@ void BlockManager::AddNewBlock(
     }
 }
 
-void BlockManager::CreateNewAddress() {
-
+void BlockManager::CheckContractTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        if (tx.storages(i).key() == protos::kContractBytesCode) {
+            // that is create contract now, add tx to call create contract
+            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto tx = msg_ptr->header.mutable_tx_proto();
+            tx->set_key(protos::kContractBytesCode);
+            tx->set_value(tos_hash);
+            tx->set_pubkey("");
+            tx->set_to(common::kNormalLocalToAddress);
+            tx->set_step(pools::protobuf::kConsensusLocalTos);
+            auto gid = common::Hash::keccak256(tos_hash + heights_hash);
+            tx->set_gas_limit(0);
+            tx->set_amount(0);
+            tx->set_gas_price(common::kBuildinTransactionGasPrice);
+            tx->set_gid(gid);
+            msg_ptr->address_info = account_mgr_->single_local_to_address_info(iter->first);
+            pools_mgr_->HandleMessage(msg_ptr);
+            break;
+        }
+    }
 }
 
 void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {

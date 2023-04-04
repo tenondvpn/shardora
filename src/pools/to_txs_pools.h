@@ -45,8 +45,14 @@ private:
         uint64_t des_sharding_id,
         int32_t pool_index);
 
+    struct ToAddressItemInfo {
+        uint64_t amount;
+        int32_t pool_index;
+        pools::protobuf::StepType type;
+    };
+
     // destination shard -> pool -> height -> items
-    typedef std::unordered_map<std::string, std::pair<uint64_t, int32_t>> TxMap;
+    typedef std::unordered_map<std::string, ToAddressItemInfo> TxMap;
     typedef std::map<uint64_t, TxMap> HeightMap;  // order by height
     typedef std::unordered_map <uint32_t, HeightMap> PoolMap;
     typedef std::unordered_map <uint32_t, PoolMap> ShardingMap;
