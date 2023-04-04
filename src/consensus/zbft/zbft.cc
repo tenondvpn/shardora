@@ -625,7 +625,7 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     zjc_block.set_network_id(common::GlobalInfo::Instance()->network_id());
     zjc_block.set_consistency_random(0);
     zjc_block.set_height(pool_height + 1);
-    if (pipeline_prev_zbft_ptr_ != nullptr) {
+    if (pipeline_prev_zbft_ptr_ != nullptr && pipeline_prev_zbft_ptr_->pool_index() == pool_index()) {
         zjc_block.set_height(pipeline_prev_zbft_ptr_->prepare_block()->height() + 1);
     } else if (leader_pre_height_ != 0) {
         zjc_block.set_height(leader_pre_height_ + 1);
