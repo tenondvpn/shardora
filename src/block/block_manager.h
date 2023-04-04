@@ -86,7 +86,8 @@ private:
     void HandleLocalNormalToTx(
         uint8_t thread_idx,
         const pools::protobuf::ToTxMessage& to_txs,
-        uint32_t step);
+        uint32_t step,
+        const std::string& heights_hash);
     void RootHandleNormalToTx(
         uint8_t thread_idx,
         uint64_t height,

@@ -191,7 +191,7 @@ void BlockManager::HandleNormalToTx(
             return;
         }
 
-        HandleLocalNormalToTx(thread_idx, to_txs, tx.step());
+        HandleLocalNormalToTx(thread_idx, to_txs, tx.step(), tx.storages(0).val_hash());
     } else {
         RootHandleNormalToTx(thread_idx, block.height(), to_txs);
     }
@@ -232,7 +232,8 @@ void BlockManager::RootHandleNormalToTx(
 void BlockManager::HandleLocalNormalToTx(
         uint8_t thread_idx,
         const pools::protobuf::ToTxMessage& to_txs,
-        uint32_t step) {
+        uint32_t step,
+        const std::string& heights_hash) {
     std::unordered_map<std::string, std::pair<uint64_t, uint32_t>> addr_amount_map;
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         if (to_txs.tos(i).amount() > 0) {
@@ -302,8 +303,18 @@ void BlockManager::HandleLocalNormalToTx(
     }
 
     for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
+        std::string str_for_hash;
+        str_for_hash.reserve(iter->second.tos_size() * 48);
+        for (int32_t i = 0; i < iter->second.tos_size(); ++i) {
+            str_for_hash.append(iter->second.tos(i).des());
+            uint32_t pool_idx = iter->second.tos(i).pool_index();
+            str_for_hash.append((char*)pool_idx, sizeof(pool_idx));
+            uint64_t amount = iter->second.tos(i).amount();
+            str_for_hash.append((char*)amount, sizeof(amount));
+        }
+
         auto val = iter->second.SerializeAsString();
-        auto tos_hash = common::Hash::keccak256(val);
+        auto tos_hash = common::Hash::keccak256(str_for_hash);
         prefix_db_->SaveTemporaryKv(tos_hash, val);
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto tx = msg_ptr->header.mutable_tx_proto();
@@ -312,7 +323,7 @@ void BlockManager::HandleLocalNormalToTx(
         tx->set_pubkey("");
         tx->set_to(common::kNormalLocalToAddress);
         tx->set_step(pools::protobuf::kConsensusLocalTos);
-        auto gid = common::Hash::keccak256(tos_hash + std::to_string(iter->first));
+        auto gid = common::Hash::keccak256(tos_hash + heights_hash);
         tx->set_gas_limit(0);
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
