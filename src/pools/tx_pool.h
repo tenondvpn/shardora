@@ -147,7 +147,8 @@ private:
         }
 
         if (latest_height_ == common::kInvalidUint64) {
-            ZJC_FATAL("init pool failed!");
+            ZJC_FATAL("init pool failed sharding: %u, pool index: %u!",
+                common::GlobalInfo::Instance()->network_id(), pool_index_);
         }
     }
 
