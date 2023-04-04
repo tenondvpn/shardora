@@ -84,7 +84,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
     new_tx->set_gas_limit(gas_limit);
     new_tx->set_gas_price(gas_price);
     if (!key.empty()) {
-        if (key == "create_conract") {
+        if (key == "create_contract") {
             new_tx->set_step(pools::protobuf::kContractUserCreateCall);
             new_tx->set_contract_code(val);
         } else {
