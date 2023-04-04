@@ -325,7 +325,7 @@ int contract_main(int argc, char** argv) {
         return 1;
     }
 
-//         std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << std::endl;
+    std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << std::endl;
     if (pos % 1000 == 0) {
         ++prikey_pos;
         from_prikey = prikeys[prikey_pos % prikeys.size()];
