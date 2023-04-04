@@ -72,7 +72,7 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
         if (tx_list[i].step() == pools::protobuf::kContractUserCreateCall) {
             // save contract address contract info
             for (int32_t storage_idx = 0; storage_idx < tx_list[i].storages_size(); ++storage_idx) {
-                if (tx_list[i].storages(storage_idx).key() == protos::kContractBytesCode) {
+                if (tx_list[i].has_contract_code()) {
                     prefix_db_->SaveAddressTmpBytesCode(
                         tx_list[i].to(),
                         tx_list[i].SerializeAsString(),
