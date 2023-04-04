@@ -77,18 +77,21 @@ static transport::MessagePtr CreateTransactionWithAttr(
     new_tx->set_gid(gid);
     new_tx->set_pubkey(security->GetPublicKeyUnCompressed());
     new_tx->set_step(pools::protobuf::kNormalFrom);
-    if (key == protos::kContractBytesCode) {
-        new_tx->set_step(pools::protobuf::kContractUserCreateCall);
-    }
+    
 
     new_tx->set_to(to);
     new_tx->set_amount(amount);
     new_tx->set_gas_limit(gas_limit);
     new_tx->set_gas_price(gas_price);
     if (!key.empty()) {
-        new_tx->set_key(key);
-        if (!val.empty()) {
-            new_tx->set_value(val);
+        if (key == protos::kContractBytesCode) {
+            new_tx->set_step(pools::protobuf::kContractUserCreateCall);
+            new_tx->set_contract_code(val);
+        } else {
+            new_tx->set_key(key);
+            if (!val.empty()) {
+                new_tx->set_value(val);
+            }
         }
     }
 
