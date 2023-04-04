@@ -3,6 +3,7 @@
 #include "block/account_manager.h"
 #include "consensus/zbft/tx_item_base.h"
 #include "security/security.h"
+#include "zjcvm/zjc_host.h"
 
 namespace zjchain {
 
