@@ -186,9 +186,20 @@ void AccountManager::HandleLocalToTx(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     std::string to_txs_str;
-    if (!prefix_db_->GetTemporaryKv(tx.storages(1).val_hash(), &to_txs_str)) {
-        ZJC_DEBUG("handle local to tx failed get val hash error: %s",
-            common::Encode::HexEncode(tx.storages(1).val_hash()).c_str());
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        if (tx.storages(i).key() == protos::kConsensusLocalNormalTos) {
+            if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &to_txs_str)) {
+                ZJC_DEBUG("handle local to tx failed get val hash error: %s",
+                    common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
+                return;
+            }
+
+            break;
+        }
+    }
+
+    if (to_txs_str.empty()) {
+        ZJC_WARN("get local tos info failed!");
         return;
     }
 
