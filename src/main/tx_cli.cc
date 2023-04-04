@@ -84,7 +84,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
     new_tx->set_gas_limit(gas_limit);
     new_tx->set_gas_price(gas_price);
     if (!key.empty()) {
-        if (key == protos::kContractBytesCode) {
+        if (key == "create_conract") {
             new_tx->set_step(pools::protobuf::kContractUserCreateCall);
             new_tx->set_contract_code(val);
         } else {
@@ -311,7 +311,7 @@ int contract_main(int argc, char** argv) {
         gid,
         from_prikey,
         to,
-        protos::kContractBytesCode,
+        "create_contract",
         bytescode,
         100000,
         10000000,
