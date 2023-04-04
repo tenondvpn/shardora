@@ -1,5 +1,7 @@
 #include "consensus/zbft/to_tx_local_item.h"
 
+#include "zjcvm/zjcvm_utils.h"
+
 namespace zjchain {
 
 namespace consensus {
@@ -57,12 +59,12 @@ int ToTxLocalItem::HandleTx(
 
                     // contract create call
                     zjcvm::ZjchainHost zjc_host;
-                    zjc_host.my_address_ = to;
+                    zjc_host.my_address_ = tx.to();
                     // get caller prepaid gas
                     zjc_host.AddTmpAccountBalance(
                         tx.from(),
                         tx.contract_prepayment());
-                    zjc_host_.AddTmpAccountBalance(
+                    zjc_host.AddTmpAccountBalance(
                         tx.to(),
                         to_txs.tos(i).amount());
                     evmc_result evmc_res = {};
