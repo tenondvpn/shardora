@@ -135,7 +135,7 @@ private:
                 common::GlobalInfo::Instance()->network_id(),
                 pool_index_,
                 &pool_info)) {
-            if (latest_height_ < pool_info.height()) {
+            if (latest_height_ == common::kInvalidUint64 || latest_height_ < pool_info.height()) {
                 latest_height_ = pool_info.height();
                 latest_hash_ = pool_info.hash();
                 synced_height_ = pool_info.synced_height();
@@ -144,6 +144,10 @@ private:
 
                 ZJC_DEBUG("pool %lu, init height: %lu", pool_index_, latest_height_);
             }
+        }
+
+        if (latest_height_ == common::kInvalidUint64) {
+            ZJC_FATAL("init pool failed!");
         }
     }
 
@@ -163,7 +167,7 @@ private:
     std::queue<std::string> timeout_remove_txs_;
     common::LimitHashSet<std::string> removed_gid_{ 10240 };
     std::map<std::string, TxItemPtr> prio_map_;
-    uint64_t latest_height_ = 0;
+    uint64_t latest_height_ = common::kInvalidUint64;
     std::string latest_hash_;
     std::shared_ptr<HeightTreeLevel> height_tree_ptr_ = nullptr;
     uint32_t pool_index_ = common::kInvalidPoolIndex;
