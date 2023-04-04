@@ -3,8 +3,9 @@
 #include <memory>
 #include <vector>
 
-#include "common/utils.h"
+#include "common/hash.h"
 #include "common/log.h"
+#include "common/utils.h"
 
 #define CRYPTO_DEBUG(fmt, ...) ZJC_DEBUG("[crypto]" fmt, ## __VA_ARGS__)
 #define CRYPTO_INFO(fmt, ...) ZJC_INFO("[crypto]" fmt, ## __VA_ARGS__)
