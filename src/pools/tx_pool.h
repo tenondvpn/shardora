@@ -147,8 +147,11 @@ private:
         }
 
         if (latest_height_ == common::kInvalidUint64) {
-            ZJC_FATAL("init pool failed sharding: %u, pool index: %u!",
-                common::GlobalInfo::Instance()->network_id(), pool_index_);
+            if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
+                    pool_index_ != common::kRootChainPoolIndex) {
+                ZJC_FATAL("init pool failed sharding: %u, pool index: %u!",
+                    common::GlobalInfo::Instance()->network_id(), pool_index_);
+            }
         }
     }
 
