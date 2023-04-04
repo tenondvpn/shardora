@@ -615,7 +615,7 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
 
     zjc_block.set_pool_index(txs_ptr_->pool_index);
     zjc_block.set_prehash(pool_hash);
-    if (pipeline_prev_zbft_ptr_ != nullptr) {
+    if (pipeline_prev_zbft_ptr_ != nullptr && pipeline_prev_zbft_ptr_->pool_index() == pool_index()) {
         zjc_block.set_prehash(pipeline_prev_zbft_ptr_->prepare_block()->hash());
     } else if (!leader_pre_hash_.empty()) {
         zjc_block.set_prehash(leader_pre_hash_);
