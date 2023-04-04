@@ -98,6 +98,9 @@ void BftManager::RegisterCreateTxCallbacks() {
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kRootCreateAddress,
         std::bind(&BftManager::CreateRootToTxItem, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kContractUserCreateCall,
+        std::bind(&BftManager::CreateContractUserCreateCallTx, this, std::placeholders::_1));
     block_mgr_->SetCreateToTxFunction(
         std::bind(&BftManager::CreateToTx, this, std::placeholders::_1));
     tm_block_mgr_->SetCreateTmTxFunction(
