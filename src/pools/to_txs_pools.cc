@@ -75,7 +75,8 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
                 if (tx_list[i].storages(storage_idx).key() == protos::kContractBytesCode) {
                     prefix_db_->SaveAddressTmpBytesCode(
                         tx_list[i].to(),
-                        tx_list[i].SerializeAsString());
+                        tx_list[i].SerializeAsString(),
+                        db_batch);
                     break;
                 }
             }
