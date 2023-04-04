@@ -632,6 +632,12 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     tx_bft.set_prepare_final_hash(zjc_block.hash());
     tx_bft.set_height(zjc_block.height());
     tx_bft.set_tx_type(txs_ptr_->tx_type);
+    ZJC_DEBUG("pool %d, prepool: %d, height: %lu, prehash: %s, hash: %s",
+        pool_index(),
+        pipeline_prev_zbft_ptr_ != nullptr ? pipeline_prev_zbft_ptr_->pool_index() : -1,
+        zjc_block.height(),
+        common::Encode::HexEncode(zjc_block.prehash()).c_str(),
+        common::Encode::HexEncode(zjc_block.hash()).c_str());
     height_ = zjc_block.height();
     set_prepare_hash(zjc_block.hash());
     prepare_block_ = prepare_block;
