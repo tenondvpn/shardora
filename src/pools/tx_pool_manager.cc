@@ -173,8 +173,8 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
         return;
     }
 
-    if (tx_msg.has_key() && tx_msg.key() != protos::kContractBytesCode) {
-        ZJC_DEBUG("create contract key error: %s.", tx_msg.key().c_str());
+    if (!tx_msg.has_contract_code()) {
+        ZJC_DEBUG("create contract not has contract code.");
         return;
     }
 
