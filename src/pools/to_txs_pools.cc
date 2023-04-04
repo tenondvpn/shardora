@@ -412,8 +412,15 @@ int ToTxsPools::CreateToTxWithHeights(
         if (iter->second.type == pools::protobuf::kContractUserCreateCall) {
             assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
             to_item->set_sharding_id(common::GlobalInfo::Instance()->network_id());
+            ZJC_DEBUG("create contract use caller sharding address: %s, %u",
+                common::Encode::HexEncode(iter->first).c_str(),
+                common::GlobalInfo::Instance()->network_id());
         } else if (iter->second.type == pools::protobuf::kRootCreateAddress) {
             to_item->set_sharding_id(sharding_id);
+            ZJC_DEBUG("root create sharding address: %s, %u, pool: %u",
+                common::Encode::HexEncode(iter->first).c_str(),
+                sharding_id,
+                iter->second.pool_index);
         } else {
             to_item->set_sharding_id(common::kInvalidUint32);
         }

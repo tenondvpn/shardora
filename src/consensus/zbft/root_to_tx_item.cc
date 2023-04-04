@@ -41,6 +41,7 @@ int RootToTxItem::HandleTx(
             if (block_tx.storages(i).key() == protos::kCreateContractCallerSharding) {
                 if (common::StringUtil::ToUint32(block_tx.storages(i).val_hash(), &sharding_id)) {
                     des_info[0] = sharding_id;
+                    ZJC_DEBUG("create contract use caller sharding: %u", sharding_id);
                 }
 
                 break;
