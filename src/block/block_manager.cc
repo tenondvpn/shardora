@@ -210,7 +210,7 @@ void BlockManager::RootHandleNormalToTx(
         tx->set_to(tos_item.des());
         tx->set_step(pools::protobuf::kRootCreateAddress);
         if (tos_item.sharding_id() != common::kInvalidUint32) {
-            tx->set_key(kCreateContractCallerSharding);
+            tx->set_key(protos::kCreateContractCallerSharding);
             tx->set_value(std::to_string(tos_item.sharding_id()));
         }
 
@@ -378,33 +378,6 @@ void BlockManager::AddNewBlock(
     auto st = db_->Put(db_batch);
     if (!st.ok()) {
         ZJC_FATAL("write block to db failed!");
-    }
-}
-
-void BlockManager::CheckContractTx(
-        uint8_t thread_idx,
-        const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch) {
-    for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).key() == protos::kContractBytesCode) {
-            // that is create contract now, add tx to call create contract
-            auto msg_ptr = std::make_shared<transport::TransportMessage>();
-            auto tx = msg_ptr->header.mutable_tx_proto();
-            tx->set_key(protos::kContractBytesCode);
-            tx->set_value(tos_hash);
-            tx->set_pubkey("");
-            tx->set_to(common::kNormalLocalToAddress);
-            tx->set_step(pools::protobuf::kConsensusLocalTos);
-            auto gid = common::Hash::keccak256(tos_hash + heights_hash);
-            tx->set_gas_limit(0);
-            tx->set_amount(0);
-            tx->set_gas_price(common::kBuildinTransactionGasPrice);
-            tx->set_gid(gid);
-            msg_ptr->address_info = account_mgr_->single_local_to_address_info(iter->first);
-            pools_mgr_->HandleMessage(msg_ptr);
-            break;
-        }
     }
 }
 
