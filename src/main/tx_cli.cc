@@ -292,19 +292,12 @@ int contract_main(int argc, char** argv) {
     std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
     std::string to = common::Encode::HexDecode("d9ec5aff3001dece14e1f4a35a39ed506bd6274b");
     uint32_t prikey_pos = 0;
-    auto from_prikey = prikeys[prikey_pos % prikeys.size()];
+    auto from_prikey = prikeys[254];
     security->SetPrivateKey(from_prikey);
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
     uint64_t* gid_int = (uint64_t*)gid.data();
     gid_int[0] = pos;
-    if (addrs_map[from_prikey] == to) {
-        ++prikey_pos;
-        from_prikey = prikeys[prikey_pos % prikeys.size()];
-        security->SetPrivateKey(from_prikey);
-        continue;
-    }
-
     auto tx_msg_ptr = CreateTransactionWithAttr(
         security,
         gid,
