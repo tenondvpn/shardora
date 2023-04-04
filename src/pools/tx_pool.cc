@@ -76,7 +76,8 @@ void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
 
         res_map[iter->second->tx_hash] = iter->second;
         if (iter->second->msg_ptr->header.tx_proto().step() == pools::protobuf::kConsensusLocalTos) {
-            ZJC_DEBUG("success get local transfer to tx %u, %s", pool_index, common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
+            ZJC_DEBUG("success get local transfer to tx %u, %s",
+                pool_index_, common::Encode::HexEncode(iter->second->tx_hash).c_str());
         }
         prio_map_.erase(iter++);
         if (res_map.size() >= count) {
