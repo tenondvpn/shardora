@@ -75,6 +75,8 @@ int ToTxLocalItem::HandleTx(
                         block_tx.set_status(kConsensusError);
                         return consensus::kConsensusSuccess;
                     }
+
+                    ZJC_DEBUG("success create contract.");
                 }
             }
 
