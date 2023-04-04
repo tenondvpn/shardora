@@ -537,7 +537,6 @@ bool Zbft::set_bls_precommit_agg_sign(
     uint32_t t = min_aggree_member_count_;
     uint32_t n = members_ptr_->size();
     std::string sign_commit_hash;
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
     if (bls_mgr_->GetVerifyHash(
             t,
             n,
@@ -547,12 +546,6 @@ bool Zbft::set_bls_precommit_agg_sign(
         return false;
     }
 
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
-//     if (times_[times_index_ - 1] - times_[times_index_ - 2] >= 10000) {
-//         ZJC_DEBUG("verify sign get hash use time: %lu", (times_[times_index_ - 1] - times_[times_index_ - 2]));
-//     }
-    // times_[times_index_ - 2] = times_[times_index_ - 1];
-    //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
     bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(agg_sign);
     if (sign_commit_hash != sign_hash) {
         ZJC_ERROR("backup verify leader precommit agg sign failed! %s: %s",
@@ -560,12 +553,6 @@ bool Zbft::set_bls_precommit_agg_sign(
             common::Encode::HexEncode(sign_hash).c_str());
         return false;
     }
-// 
-//     ZJC_DEBUG("success verify leader precommit agg sign! %s: %s",
-//         common::Encode::HexEncode(sign_commit_hash).c_str(),
-//         common::Encode::HexEncode(sign_hash).c_str());
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
-    //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
 
     return true;
 }
@@ -609,13 +596,10 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     uint64_t pool_height = pools_mgr_->latest_height(txs_ptr_->pool_index);
     auto prepare_block = std::make_shared<block::protobuf::Block>(*(tx_bft.mutable_block()));
     block::protobuf::Block& zjc_block = *prepare_block;
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
-    //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-    
-
     zjc_block.set_pool_index(txs_ptr_->pool_index);
     zjc_block.set_prehash(pool_hash);
-    if (pipeline_prev_zbft_ptr_ != nullptr && pipeline_prev_zbft_ptr_->pool_index() == pool_index()) {
+    if (pipeline_prev_zbft_ptr_ != nullptr &&
+            pipeline_prev_zbft_ptr_->pool_index() == pool_index()) {
         zjc_block.set_prehash(pipeline_prev_zbft_ptr_->prepare_block()->hash());
     } else if (!leader_pre_hash_.empty()) {
         zjc_block.set_prehash(leader_pre_hash_);
@@ -625,7 +609,8 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     zjc_block.set_network_id(common::GlobalInfo::Instance()->network_id());
     zjc_block.set_consistency_random(0);
     zjc_block.set_height(pool_height + 1);
-    if (pipeline_prev_zbft_ptr_ != nullptr && pipeline_prev_zbft_ptr_->pool_index() == pool_index()) {
+    if (pipeline_prev_zbft_ptr_ != nullptr &&
+            pipeline_prev_zbft_ptr_->pool_index() == pool_index()) {
         zjc_block.set_height(pipeline_prev_zbft_ptr_->prepare_block()->height() + 1);
     } else if (leader_pre_height_ != 0) {
         zjc_block.set_height(leader_pre_height_ + 1);
@@ -638,28 +623,18 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     zjc_block.set_electblock_height(elect_height_);
     zjc_block.set_leader_index(leader_index_);
     DoTransactionAndCreateTxBlock(zjc_block);
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
-    //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
     if (zjc_block.tx_list_size() <= 0) {
         ZJC_ERROR("all choose tx invalid!");
         return kConsensusNoNewTxs;
     }
 
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
-    //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
     zjc_block.set_hash(GetBlockHash(zjc_block));
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
-    //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
     tx_bft.set_prepare_final_hash(zjc_block.hash());
     tx_bft.set_height(zjc_block.height());
     tx_bft.set_tx_type(txs_ptr_->tx_type);
     height_ = zjc_block.height();
     set_prepare_hash(zjc_block.hash());
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
-    //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
     prepare_block_ = prepare_block;
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
-    //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
     return kConsensusSuccess;
 }
 
@@ -686,13 +661,6 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
             continue;
         }
     }
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
-//     if (times_[times_index_ - 1] - times_[times_index_ - 2] > 10000) {
-//         ZJC_DEBUG("DoTransactionAndCreateTxBlock size: %d use time %lu us", (times_[times_index_ - 1] - times_[times_index_ - 2]));
-//     }
-
-    // times_[times_index_ - 2] = times_[times_index_ - 1];
-    //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
 }
 
 };  // namespace consensus
