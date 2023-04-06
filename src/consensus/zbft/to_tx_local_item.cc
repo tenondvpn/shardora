@@ -61,7 +61,11 @@ int ToTxLocalItem::HandleTx(
 
                     // contract create call
                     zjc_host.thread_idx_ = thread_idx;
+                    zjcvm::Uint64ToEvmcBytes32(
+                        zjc_host.tx_context_.tx_gas_price,
+                        tx.gas_price());
                     zjc_host.my_address_ = tx.to();
+                    zjc_host_.tx_context_.block_gas_limit = tx.gas_limit();
                     // get caller prepaid gas
                     zjc_host.AddTmpAccountBalance(
                         tx.from(),

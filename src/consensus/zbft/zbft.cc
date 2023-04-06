@@ -155,23 +155,6 @@ int Zbft::BackupCheckPrepare(
     return kConsensusSuccess;
 }
 
-int Zbft::InitZjcTvmContext() {
-    zjcvm::Uint64ToEvmcBytes32(
-        zjc_host_.tx_context_.tx_gas_price,
-        common::GlobalInfo::Instance()->gas_price());
-    zjc_host_.tx_context_.tx_origin = evmc::address{};
-    zjc_host_.tx_context_.block_coinbase = evmc::address{};
-    zjc_host_.tx_context_.block_number = pools_mgr_->latest_height(txs_ptr_->pool_index) + 1;
-    zjc_host_.tx_context_.block_timestamp = common::TimeUtils::TimestampSeconds();
-    zjc_host_.tx_context_.block_gas_limit = 0;
-    uint64_t chanin_id = (((uint64_t)common::GlobalInfo::Instance()->network_id()) << 32 |
-        (uint64_t)pool_index());
-    zjcvm::Uint64ToEvmcBytes32(
-        zjc_host_.tx_context_.chain_id,
-        chanin_id);
-    return kConsensusSuccess;
-}
-
 bool Zbft::BackupCheckLeaderValid(const zbft::protobuf::ZbftMessage* bft_msg) {
 //     if (members_ptr_ == nullptr ||
 //             common_pk_ == libff::alt_bn128_G2::zero() ||
@@ -588,10 +571,6 @@ int Zbft::LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg) {
 }
 
 int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
-    if (InitZjcTvmContext() != kConsensusSuccess) {
-        return kConsensusError;
-    }
-
     std::string pool_hash = pools_mgr_->latest_hash(txs_ptr_->pool_index);
     uint64_t pool_height = pools_mgr_->latest_height(txs_ptr_->pool_index);
     auto prepare_block = std::make_shared<block::protobuf::Block>(*(tx_bft.mutable_block()));
@@ -622,6 +601,15 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     zjc_block.set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
     zjc_block.set_electblock_height(elect_height_);
     zjc_block.set_leader_index(leader_index_);
+    zjc_host_.tx_context_.tx_origin = evmc::address{};
+    zjc_host_.tx_context_.block_coinbase = evmc::address{};
+    zjc_host_.tx_context_.block_number = zjc_block.height();
+    zjc_host_.tx_context_.block_timestamp = zjc_block.timestamp() / 1000;
+    uint64_t chanin_id = (((uint64_t)common::GlobalInfo::Instance()->network_id()) << 32 |
+        (uint64_t)pool_index());
+    zjcvm::Uint64ToEvmcBytes32(
+        zjc_host_.tx_context_.chain_id,
+        chanin_id);
     DoTransactionAndCreateTxBlock(zjc_block);
     if (zjc_block.tx_list_size() <= 0) {
         ZJC_ERROR("all choose tx invalid!");

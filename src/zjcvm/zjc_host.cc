@@ -188,6 +188,11 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
                     sender_iter->second[dest_str] = params.value;
                 }
             }
+
+            ZJC_DEBUG("contract transfer from: %s, to: %s, amount: %lu",
+                common::Encode::HexEncode(from_str).c_str(),
+                common::Encode::HexEncode(dest_str).c_str(),
+                params.value);
         }
     }
     

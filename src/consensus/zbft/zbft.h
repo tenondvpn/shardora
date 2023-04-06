@@ -59,7 +59,6 @@ public:
         const libff::alt_bn128_G1& backup_sign,
         const std::string& id);
     bool BackupCheckLeaderValid(const zbft::protobuf::ZbftMessage* bft_msg);
-    int InitZjcTvmContext();
     void Destroy();
     void AfterNetwork();
 
