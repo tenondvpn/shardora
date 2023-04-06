@@ -41,26 +41,33 @@ public:
     bool get(const KeyType& key, ValueType* value) {
         uint32_t idx = Hash32(key) % BucketSize;
         if (!buckets_[idx].IsEmpty()) {
-            uint8_t i = buckets_[idx].rear_;
-            for (; i <= buckets_[idx].front_ && i < EachBucketSize; ++i) {
-                if (buckets_[idx].data_[i]->k == key) {
-                    *value = buckets_[idx].data_[i]->v;
-                    return true;
+            if (buckets_[idx].rear_ == buckets_[idx].front_) {
+                for (uint8_t i = 0; i < EachBucketSize; ++i) {
+                    if (buckets_[idx].data_[i]->k == key) {
+                        *value = buckets_[idx].data_[i]->v;
+                        return true;
+                    }
                 }
-            }
+            } else if (buckets_[idx].rear_ > buckets_[idx].front_) {
+                for (uint8_t i = buckets_[idx].front_; i < buckets_[idx].rear_; ++i) {
+                    if (buckets_[idx].data_[i]->k == key) {
+                        *value = buckets_[idx].data_[i]->v;
+                        return true;
+                    }
+                }
+            } else {
+                for (uint8_t i = buckets_[idx].front_; i < EachBucketSize; ++i) {
+                    if (buckets_[idx].data_[i]->k == key) {
+                        *value = buckets_[idx].data_[i]->v;
+                        return true;
+                    }
+                }
 
-            if (i == buckets_[idx].front_) {
-                return false;
-            }
-
-            if (i == EachBucketSize) {
-                i = 0;
-            }
-
-            for (; i <= buckets_[idx].front_ && i < EachBucketSize; ++i) {
-                if (buckets_[idx].data_[i]->k == key) {
-                    *value = buckets_[idx].data_[i]->v;
-                    return true;
+                for (uint8_t i = 0; i < buckets_[idx].rear_; ++i) {
+                    if (buckets_[idx].data_[i]->k == key) {
+                        *value = buckets_[idx].data_[i]->v;
+                        return true;
+                    }
                 }
             }
         }
@@ -88,24 +95,29 @@ public:
 private:
     bool Exists(uint32_t idx, const KeyType& key) {
         if (!buckets_[idx].IsEmpty()) {
-            uint8_t i = buckets_[idx].rear_;
-            for (; i <= buckets_[idx].front_ && i < EachBucketSize; ++i) {
-                if (buckets_[idx].data_[i]->k == key) {
-                    return true;
+            if (buckets_[idx].rear_ == buckets_[idx].front_) {
+                for (uint8_t i = 0; i < EachBucketSize; ++i) {
+                    if (buckets_[idx].data_[i]->k == key) {
+                        return true;
+                    }
                 }
-            }
+            } else if (buckets_[idx].rear_ > buckets_[idx].front_) {
+                for (uint8_t i = buckets_[idx].front_; i < buckets_[idx].rear_; ++i) {
+                    if (buckets_[idx].data_[i]->k == key) {
+                        return true;
+                    }
+                }
+            } else {
+                for (uint8_t i = buckets_[idx].front_; i < EachBucketSize; ++i) {
+                    if (buckets_[idx].data_[i]->k == key) {
+                        return true;
+                    }
+                }
 
-            if (i == buckets_[idx].front_) {
-                return false;
-            }
-
-            if (i == EachBucketSize) {
-                i = 0;
-            }
-
-            for (; i <= buckets_[idx].front_ && i < EachBucketSize; ++i) {
-                if (buckets_[idx].data_[i]->k == key) {
-                    return true;
+                for (uint8_t i = 0; i < buckets_[idx].rear_; ++i) {
+                    if (buckets_[idx].data_[i]->k == key) {
+                        return true;
+                    }
                 }
             }
         }
