@@ -123,7 +123,7 @@ int ContractUserCreateCall::CreateContractCallExcute(
         block::protobuf::BlockTx& tx,
         evmc::Result* out_res) {
     uint32_t call_mode = zjcvm::kJustCreate;
-    if (!tx.has_contract_input()) {
+    if (tx.has_contract_input() && !tx.contract_input().empty()) {
         call_mode = zjcvm::kCreateAndCall;
     }
 
