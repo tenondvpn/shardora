@@ -1,5 +1,7 @@
 #include "consensus/zbft/from_tx_item.h"
 
+#include "zjcvm/execution.h"
+
 namespace zjchain {
 
 namespace consensus {
@@ -118,7 +120,6 @@ int FromTxItem::CreateContractUserCall(
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     // contract create call
-    uint64_t gas_used = 0;
     // gas just consume by from
     uint64_t from_balance = 0;
     uint64_t to_balance = 0;
@@ -162,7 +163,7 @@ int FromTxItem::CreateContractUserCall(
     evmc_result evmc_res = {};
     evmc::Result res{ evmc_res };
     if (CreateContractCallExcute(zjc_host, block_tx, &res) != kConsensusSuccess ||
-            res.status_code != evmc::EVMC_SUCCESS) {
+            res.status_code != EVMC_SUCCESS) {
         block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
         ZJC_DEBUG("create contract failed!");
     }
