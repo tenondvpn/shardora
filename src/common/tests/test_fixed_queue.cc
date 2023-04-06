@@ -38,6 +38,13 @@ TEST_F(TestFixedQueue, all) {
 
     ASSERT_EQ(queue.Front(), "0");
     ASSERT_EQ(queue.Rear(), "9");
+    for (int i = 0; i < 10; i++) {
+        ASSERT_TRUE(queue.Exists(std::to_string(i)));
+    }
+
+    for (int i = 10; i < 110; i++) {
+        ASSERT_FALSE(queue.Exists(std::to_string(i)));
+    }
 
     while (!queue.IsEmpty()) {
         queue.Dequeue();
