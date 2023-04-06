@@ -1830,11 +1830,11 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->X));
     zjc_block->set_bls_agg_sign_y(
         libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->Y));
-    auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(zjc_block);
+    auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(zjc_block, bft_ptr->db_batch());
     new_block_cache_callback_(
         thread_idx,
         queue_item_ptr->block_ptr,
-        queue_item_ptr->db_batch);
+        *queue_item_ptr->db_batch);
     pools_mgr_->TxOver(
         queue_item_ptr->block_ptr->pool_index(),
         queue_item_ptr->block_ptr->tx_list());

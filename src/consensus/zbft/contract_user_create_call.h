@@ -35,6 +35,9 @@ private:
         zjcvm::ZjchainHost& zjc_host,
         block::protobuf::BlockTx& tx,
         evmc::Result* out_res);
+    int SaveContractCreateInfo(
+        zjcvm::ZjchainHost& zjc_host,
+        block::protobuf::BlockTx& tx);
 
     DISALLOW_COPY_AND_ASSIGN(ContractUserCreateCall);
 };

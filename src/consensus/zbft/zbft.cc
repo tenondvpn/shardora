@@ -70,6 +70,7 @@ int Zbft::Init(
         this_node_is_leader_ = true;
     }
 
+    db_batch_ = std::make_shared<db::DbWriteBatch>();
     return kConsensusSuccess;
 }
 

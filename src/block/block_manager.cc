@@ -133,7 +133,7 @@ void BlockManager::HandleAllConsensusBlocks(uint8_t thread_idx) {
         while (consensus_block_queues_[i].size() > 0) {
             BlockToDbItemPtr db_item_ptr = nullptr;
             if (consensus_block_queues_[i].pop(&db_item_ptr)) {
-                AddNewBlock(thread_idx, db_item_ptr->block_ptr, db_item_ptr->db_batch);
+                AddNewBlock(thread_idx, db_item_ptr->block_ptr, *db_item_ptr->db_batch);
             }
         }
     }

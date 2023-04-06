@@ -433,6 +433,10 @@ public:
         leader_pre_hash_ = hash;
     }
 
+    std::shared_ptr<db::DbWriteBatch> db_batch() {
+        return db_batch_;
+    }
+
 protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
@@ -481,6 +485,7 @@ protected:
     std::shared_ptr<WaitingTxsItem> txs_ptr_ = nullptr;
     std::shared_ptr<consensus::WaitingTxsPools> pools_mgr_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
+    std::shared_ptr<db::DbWriteBatch> db_batch_ = nullptr;
     std::string precommit_bls_agg_verify_hash_;
     std::string commit_bls_agg_verify_hash_;
     libff::alt_bn128_G1 g1_prepare_hash_;

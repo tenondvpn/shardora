@@ -106,15 +106,22 @@ int ContractUserCreateCall::HandleTx(
     }
 
     if (block_tx.status() == kConsensusSuccess) {
-        auto storage = block_tx.add_storages();
-        storage->set_key(protos::kCreateContractBytesCode);
-        storage->set_val_hash(zjc_host.create_bytes_code_);
-        ZJC_DEBUG("user success call create contract.");
+        SaveContractCreateInfo(zjc_host, block_tx);
     }
 
     acc_balance_map[from] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
+    return kConsensusSuccess;
+}
+
+int SaveContractCreateInfo(
+        zjcvm::ZjchainHost& zjc_host,
+        block::protobuf::BlockTx& tx) {
+    auto storage = block_tx.add_storages();
+    storage->set_key(protos::kCreateContractBytesCode);
+    storage->set_val_hash(zjc_host.create_bytes_code_);
+    ZJC_DEBUG("user success call create contract.");
     return kConsensusSuccess;
 }
 
