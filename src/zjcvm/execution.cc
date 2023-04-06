@@ -1,6 +1,7 @@
 #include "zjcvm/execution.h"
 
 #include "common/encode.h"
+#include "common/global_info.h"
 #include "evmone/evmone.h"
 #include "evmc/loader.h"
 #include "evmc/hex.hpp"
@@ -16,7 +17,15 @@ namespace zjcvm {
 
 Execution::Execution() {}
 
-Execution::~Execution() {}
+Execution::~Execution() {
+    if (address_exists_set_ != nullptr) {
+        delete[] address_exists_set_;
+    }
+
+    if (storage_map_ != nullptr) {
+        delete[] storage_map_;
+    }
+}
 
 Execution* Execution::Instance() {
     static Execution ins;
@@ -27,6 +36,9 @@ void Execution::Init(std::shared_ptr<db::Db>& db) {
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     evm_ = evmc::VM{ evmc_create_evmone()};
+    uint32_t thread_count = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
+    address_exists_set_ = new common::StringUniqueSet<1024, 16>[thread_count];
+    storage_map_ = new common::UniqueMap<std::string, std::string, 1024, 16>[thread_count];
 }
 
 int Execution::execute(

@@ -103,8 +103,8 @@ private:
     ~Execution();
 
     evmc::VM evm_;
-    common::StringUniqueSet<1024, 16> address_exists_set_[common::kMaxThreadCount];
-    common::UniqueMap<std::string, std::string, 1024, 16> storage_map_[common::kMaxThreadCount];
+    common::StringUniqueSet<1024, 16>* address_exists_set_ = nullptr;
+    common::UniqueMap<std::string, std::string, 1024, 16>* storage_map_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 
