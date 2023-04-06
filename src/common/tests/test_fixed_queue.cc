@@ -4,18 +4,6 @@
 #include <chrono>
 
 #define private public
-#include "common/ip.h"
-
-namespace zjchain {
-
-namespace common {
-
-namespace test {#include <gtest/gtest.h>
-
-#include <iostream>
-#include <chrono>
-
-#define private public
 #include "common/fixed_queue.h"
 
 namespace zjchain {
