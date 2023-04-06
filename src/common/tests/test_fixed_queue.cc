@@ -44,7 +44,6 @@ TEST_F(TestFixedQueue, all) {
     }
 
     ASSERT_TRUE(queue.IsEmpty());
-    return 0;
 }
 
 }  // namespace test
