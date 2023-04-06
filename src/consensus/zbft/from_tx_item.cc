@@ -233,7 +233,7 @@ int FromTxItem::CreateContractUserCall(
         str_for_hash.append((char*)&contract_prepayment, sizeof(contract_prepayment));
         auto hash = common::Hash::keccak256(str_for_hash);
         auto storage = block_tx.add_storages();
-        storage->set_key(kCreateContractUserCalled);
+        storage->set_key(protos::kCreateContractUserCalled);
         storage->set_val_hash(hash);
         prefix_db_->SaveTemporaryKv(hash, contract_tx.SerializeAsString());
     }
