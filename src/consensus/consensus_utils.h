@@ -102,49 +102,49 @@ static const uint64_t kCallContractDefaultUseGas = 10000llu;
 static const uint64_t kCreateContractDefaultUseGas = 100000llu;
 static const uint64_t kKeyValueStorageEachBytes = 10llu;
 
-static int32_t EvmcStatusToZbftStatus(evmc::evmc_status_code status_code) {
+static int32_t EvmcStatusToZbftStatus(evmc_status_code status_code) {
     switch (status_code) {
-    case evmc::EVMC_SUCCESS:
+    case EVMC_SUCCESS:
         return kConsensusSuccess;
-    case evmc::EVMC_FAILURE:
+    case EVMC_FAILURE:
         return kConsensusError;
-    case evmc::EVMC_REVERT:
+    case EVMC_REVERT:
         return kConsensusRevert;
-    case evmc::EVMC_OUT_OF_GAS:
+    case EVMC_OUT_OF_GAS:
         return kConsensusOutOfGas;
-    case evmc::EVMC_INVALID_INSTRUCTION:
+    case EVMC_INVALID_INSTRUCTION:
         return kConsensusInvalidInstruction;
-    case evmc::EVMC_UNDEFINED_INSTRUCTION:
+    case EVMC_UNDEFINED_INSTRUCTION:
         return kConsensusUndefinedInstruction;
-    case evmc::EVMC_STACK_OVERFLOW:
+    case EVMC_STACK_OVERFLOW:
         return kConsensusStackOverflow;
-    case evmc::EVMC_STACK_UNDERFLOW:
+    case EVMC_STACK_UNDERFLOW:
         return kConsensusStackUnderflow;
-    case evmc::EVMC_BAD_JUMP_DESTINATION:
+    case EVMC_BAD_JUMP_DESTINATION:
         return kConsensusBadJumpDestination;
-    case evmc::EVMC_INVALID_MEMORY_ACCESS:
+    case EVMC_INVALID_MEMORY_ACCESS:
         return kConsensusInvalidMemoryAccess;
-    case evmc::EVMC_CALL_DEPTH_EXCEEDED:
+    case EVMC_CALL_DEPTH_EXCEEDED:
         return kConsensusCallDepthExceeded;
-    case evmc::EVMC_STATIC_MODE_VIOLATION:
+    case EVMC_STATIC_MODE_VIOLATION:
         return kConsensusStaticModeViolation;
-    case evmc::EVMC_PRECOMPILE_FAILURE:
+    case EVMC_PRECOMPILE_FAILURE:
         return kConsensusPrecompileFailure;
-    case evmc::EVMC_CONTRACT_VALIDATION_FAILURE:
+    case EVMC_CONTRACT_VALIDATION_FAILURE:
         return kConsensusContractValidationFailure;
-    case evmc::EVMC_ARGUMENT_OUT_OF_RANGE:
+    case EVMC_ARGUMENT_OUT_OF_RANGE:
         return kConsensusArgumentOutOfRange;
-    case evmc::EVMC_WASM_UNREACHABLE_INSTRUCTION:
+    case EVMC_WASM_UNREACHABLE_INSTRUCTION:
         return kConsensusWasmRnreachableInstruction;
-    case evmc::EVMC_WASM_TRAP:
+    case EVMC_WASM_TRAP:
         return kConsensusWasmTrap;
-    case evmc::EVMC_INSUFFICIENT_BALANCE:
+    case EVMC_INSUFFICIENT_BALANCE:
         return kConsensusInsufficientBalance;
-    case evmc::EVMC_INTERNAL_ERROR:
+    case EVMC_INTERNAL_ERROR:
         return kConsensusInternalError;
-    case evmc::EVMC_REJECTED:
+    case EVMC_REJECTED:
         return kConsensusRejected;
-    case evmc::EVMC_OUT_OF_MEMORY:
+    case EVMC_OUT_OF_MEMORY:
         return kConsensusOutOfMemory;
     default:
         return kConsensusError;
