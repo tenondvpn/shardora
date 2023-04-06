@@ -14,9 +14,7 @@ namespace security {
 
 class Ecdsa : public Security {
 public:
-    Ecdsa() : pubkey_(curve_) {
-        pk_addr_map_.Init(10240, 16);
-    }
+    Ecdsa() : pubkey_(curve_) {}
 
     virtual ~Ecdsa() {}
 
@@ -59,7 +57,7 @@ private:
     std::string str_prikey_;
     std::string str_addr_;
     std::string str_pk_;
-    common::UniqueMap<std::string, std::string> pk_addr_map_;
+    common::UniqueMap<std::string, std::string, 10240, 16> pk_addr_map_;
 
     DISALLOW_COPY_AND_ASSIGN(Ecdsa);
 };
