@@ -50,7 +50,7 @@ TEST_F(TestUniqueSet, String) {
     ASSERT_FALSE(test_unique.add(std::to_string(10000000 - 1)));
 }
 
-TEST_F(TestStringUniqueSet, String) {
+TEST_F(TestUniqueSet, StringSet) {
     StringUniqueSet<1024 * 1024, 32> test_unique;
     for (uint64_t i = 0; i < 10000000lu; ++i) {
         ASSERT_TRUE(test_unique.add(std::to_string(i)));
