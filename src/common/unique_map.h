@@ -9,7 +9,7 @@ namespace zjchain {
 
 namespace common {
 
-template<class KeyType, class ValueType, uint8_t BucketSize, uint8_t EachBucketSize>
+template<class KeyType, class ValueType, uint32_t BucketSize, uint8_t EachBucketSize>
 class UniqueMap {
     struct Item {
         Item(const KeyType& key, const ValueType& val) : k(key), v(val) {}

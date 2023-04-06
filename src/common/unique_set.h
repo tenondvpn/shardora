@@ -9,7 +9,7 @@ namespace zjchain {
 
 namespace common {
 
-template<class T, uint8_t BucketSize, uint8_t EachBucketSize>
+template<class T, uint32_t BucketSize, uint8_t EachBucketSize>
 class UniqueSet {
 public:
     explicit UniqueSet() {}
