@@ -37,8 +37,8 @@ void Execution::Init(std::shared_ptr<db::Db>& db) {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     evm_ = evmc::VM{ evmc_create_evmone()};
     uint32_t thread_count = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
-    address_exists_set_ = new common::StringUniqueSet<1024, 16>[thread_count];
-    storage_map_ = new common::UniqueMap<std::string, std::string, 1024, 16>[thread_count];
+    address_exists_set_ = new common::StringUniqueSet<10240, 16>[thread_count];
+    storage_map_ = new common::UniqueMap<std::string, std::string, 10240, 16>[thread_count];
 }
 
 int Execution::execute(
