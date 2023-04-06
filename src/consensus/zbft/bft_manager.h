@@ -115,7 +115,7 @@ private:
     void RegisterCreateTxCallbacks();
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<FromTxItem>(db_, msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
     }
 
     pools::TxItemPtr CreateToTx(const transport::MessagePtr& msg_ptr) {
@@ -140,7 +140,7 @@ private:
     }
 
     pools::TxItemPtr CreateContractUserCreateCallTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ContractUserCreateCall>(msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<ContractUserCreateCall>(db_, msg_ptr, account_mgr_, security_ptr_);
     }
 
     static const uint32_t kCheckTimeoutPeriodMilli = 3000lu;

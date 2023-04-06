@@ -9,7 +9,7 @@ int ContractUserCreateCall::HandleTx(
         const block::protobuf::Block& block,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
-    uint64_t gas_used = 0;
+    // contract create call
     // gas just consume by from
     uint64_t from_balance = 0;
     uint64_t to_balance = 0;
@@ -23,26 +23,58 @@ int ContractUserCreateCall::HandleTx(
         return kConsensusSuccess;
     }
 
-    do  {
-        gas_used = consensus::kCreateContractDefaultUseGas;
-        for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-            // TODO(): check key exists and reserve gas
-            gas_used += (block_tx.storages(i).key().size() + block_tx.storages(i).val_size()) *
-                consensus::kKeyValueStorageEachBytes;
-        }
+    if (block_tx.gas_price() * block_tx.gas_limit() > from_balance) {
+        block_tx.set_status(kConsensusOutOfGas);
+        return kConsensusSuccess;
+    }
 
-        if (from_balance < block_tx.gas_limit()  * block_tx.gas_price()) {
-            block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
-            ZJC_DEBUG("balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), block_tx.gas_price());
-            break;
-        }
+    if (block_tx.gas_price() * block_tx.gas_limit() + block_tx.contract_prepayment() > from_balance) {
+        block_tx.set_status(kConsensusAccountBalanceError);
+        return kConsensusSuccess;
+    }
 
-        if (block_tx.gas_limit() < gas_used) {
-            block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
-            ZJC_DEBUG("1 balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), gas_used);
-            break;
-        }
-    } while (0);
+    block::protobuf::BlockTx contract_tx;
+    zjcvm::ZjchainHost zjc_host;
+    zjc_host.tx_context_.tx_origin = evmc::address{};
+    zjc_host.tx_context_.block_coinbase = evmc::address{};
+    zjc_host.tx_context_.block_number = block.height();
+    zjc_host.tx_context_.block_timestamp = block.timestamp() / 1000;
+    uint64_t chanin_id = (((uint64_t)block.network_id()) << 32 | (uint64_t)block.pool_index());
+    zjcvm::Uint64ToEvmcBytes32(
+        zjc_host.tx_context_.chain_id,
+        chanin_id);
+    zjc_host.thread_idx_ = thread_idx;
+    zjcvm::Uint64ToEvmcBytes32(
+        zjc_host.tx_context_.tx_gas_price,
+        block_tx.gas_price());
+    zjc_host.my_address_ = block_tx.to();
+    zjc_host.tx_context_.block_gas_limit = block_tx.gas_limit();
+    // get caller prepaid gas
+    zjc_host.AddTmpAccountBalance(
+        block_tx.from(),
+        from_balance);
+    zjc_host.AddTmpAccountBalance(
+        block_tx.to(),
+        block_tx.amount());
+    evmc_result evmc_res = {};
+    evmc::Result res{ evmc_res };
+    if (CreateContractCallExcute(zjc_host, block_tx, &res) != kConsensusSuccess ||
+            res.status_code != EVMC_SUCCESS) {
+        block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
+        ZJC_DEBUG("create contract failed!");
+    }
+
+    auto gas_used = block_tx.gas_limit() - res.gas_left;
+    for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
+        // TODO(): check key exists and reserve gas
+        gas_used += (block_tx.storages(i).key().size() + block_tx.storages(i).val_size()) *
+            consensus::kKeyValueStorageEachBytes;
+    }
+
+    if (block_tx.gas_limit() < gas_used) {
+        block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
+        ZJC_DEBUG("1 balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), gas_used);
+    }
 
     if (block_tx.status() == kConsensusSuccess) {
         uint64_t dec_amount = block_tx.amount() +
@@ -70,14 +102,63 @@ int ContractUserCreateCall::HandleTx(
         }
     }
 
+    if (block_tx.status() == kConsensusSuccess) {
+        contract_tx.set_status(block_tx.status());
+        contract_tx.set_contract_code(zjc_host.create_bytes_code_);
+        contract_tx.set_contract_prepayment(block_tx.contract_prepayment());
+        contract_tx.set_amount(block_tx.amount());
+        contract_tx.set_from(block_tx.from());
+        contract_tx.set_to(block_tx.to());
+        std::string str_for_hash;
+        str_for_hash.reserve(zjc_host.create_bytes_code_.size() +
+            16 + block_tx.from().size() + block_tx.to().size());
+        str_for_hash.append(zjc_host.create_bytes_code_);
+        str_for_hash.append(block_tx.from());
+        str_for_hash.append(block_tx.to());
+        uint64_t amount = block_tx.amount();
+        str_for_hash.append((char*)&amount, sizeof(amount));
+        uint64_t contract_prepayment = block_tx.contract_prepayment();
+        str_for_hash.append((char*)&contract_prepayment, sizeof(contract_prepayment));
+        auto hash = common::Hash::keccak256(str_for_hash);
+        auto storage = block_tx.add_storages();
+        storage->set_key(protos::kCreateContractUserCalled);
+        storage->set_val_hash(hash);
+        prefix_db_->SaveTemporaryKv(hash, contract_tx.SerializeAsString());
+    }
+
     acc_balance_map[from] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
-    ZJC_DEBUG("handle tx success: %s, %lu, %lu, status: %d",
-        common::Encode::HexEncode(block_tx.gid()).c_str(),
-        block_tx.balance(),
-        block_tx.gas_used(),
-        block_tx.status());
+    ZJC_DEBUG("user success call create contract.");
+    return kConsensusSuccess;
+}
+
+int ContractUserCreateCall::CreateContractCallExcute(
+        zjcvm::ZjchainHost& zjc_host,
+        block::protobuf::BlockTx& tx,
+        evmc::Result* out_res) {
+    uint32_t call_mode = zjcvm::kJustCreate;
+    if (!tx.has_contract_input()) {
+        call_mode = zjcvm::kCreateAndCall;
+    }
+
+    int exec_res = zjcvm::Execution::Instance()->execute(
+        tx.contract_code(),
+        tx.contract_input(),
+        tx.from(),
+        tx.to(),
+        tx.from(),
+        tx.amount(),
+        tx.gas_limit(),
+        0,
+        call_mode,
+        zjc_host,
+        out_res);
+    if (exec_res != zjcvm::kZjcvmSuccess) {
+        ZJC_ERROR("CreateContractCallExcute failed: %d", exec_res);
+        return kConsensusError;
+    }
+
     return kConsensusSuccess;
 }
 
