@@ -64,35 +64,30 @@ public:
             return false;
         }
 
-        if (IsFull()) {
+        std::cout << (uint32_t)front_ << ":" << (uint32_t)rear_ << ", " << (uint32_t)Capacity << std::endl;
+        if (rear_ == front_) {
             for (uint8_t i = 0; i < Capacity; ++i) {
                 if (data_[i] == val) {
                     return true;
                 }
             }
-
-            return false;
-        }
-
-        std::cout << (uint32_t)front_ << ":" << (uint32_t)rear_ << ", " << (uint32_t)Capacity << std::endl;
-        uint8_t i = front_;
-        for (; i < rear_ && i < Capacity; ++i) {
-            if (data_[i] == val) {
-                return true;
+        } else if (rear_ > front_) {
+            for (uint8_t i = front_; i < rear_; ++i) {
+                if (data_[i] == val) {
+                    return true;
+                }
             }
-        }
+        } else {
+            for (uint8_t i = front_; i < Capacity; ++i) {
+                if (data_[i] == val) {
+                    return true;
+                }
+            }
 
-        if (i == rear_) {
-            return false;
-        }
-
-        if (i == Capacity) {
-            i = 0;
-        }
-
-        for (; i < rear_; ++i) {
-            if (data_[i] == val) {
-                return true;
+            for (uint8_t i = 0; i < rear_; ++i) {
+                if (data_[i] == val) {
+                    return true;
+                }
             }
         }
 
