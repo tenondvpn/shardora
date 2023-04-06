@@ -466,11 +466,12 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
             }
 
             auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
-            auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block_ptr);
+            auto db_batch = std::make_shared<db::DbWriteBatch>();
+            auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block_ptr, db_batch);
             new_block_cache_callback_(
                 msg_ptr->thread_idx,
                 queue_item_ptr->block_ptr,
-                queue_item_ptr->db_batch);
+                *queue_item_ptr->db_batch);
             block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
             pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
             // remove bft

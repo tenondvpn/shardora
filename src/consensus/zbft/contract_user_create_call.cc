@@ -117,7 +117,7 @@ int ContractUserCreateCall::HandleTx(
 
 int SaveContractCreateInfo(
         zjcvm::ZjchainHost& zjc_host,
-        block::protobuf::BlockTx& tx) {
+        block::protobuf::BlockTx& block_tx) {
     auto storage = block_tx.add_storages();
     storage->set_key(protos::kCreateContractBytesCode);
     storage->set_val_hash(zjc_host.create_bytes_code_);
