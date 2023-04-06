@@ -24,7 +24,7 @@ public:
 
     bool add(const T& key) {
         uint32_t idx = Hash32(key) % BucketSize;
-        if (!buckets_[idx].IsEmpty() && buckets_[idx].Exists(key)) {
+        if (buckets_[idx].Exists(key)) {
             return false;
         }
 
