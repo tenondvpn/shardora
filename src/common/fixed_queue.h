@@ -65,7 +65,7 @@ public:
         }
 
         uint8_t i = front_;
-        for (; i <= rear_ && i < Capacity; ++i) {
+        for (; i < rear_ && i < Capacity; ++i) {
             if (data_[i] == val) {
                 return true;
             }
@@ -79,7 +79,7 @@ public:
             i = 0;
         }
 
-        for (; i <= rear_; ++i) {
+        for (; i < rear_; ++i) {
             if (data_[i] == val) {
                 return true;
             }
