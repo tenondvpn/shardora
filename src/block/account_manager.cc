@@ -249,6 +249,11 @@ void AccountManager::HandleContractCreateUserCall(
             address_map_[thread_idx].add(tx.to(), account_info);
             prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
             prefix_db_->SaveAddressTmpBytesCode(tx.to(), tx.storages(i).val_hash(), db_batch);
+            ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
+                common::Encode::HexEncode(tx.to()).c_str(),
+                tx.amount(),
+                block.network_id(),
+                block.pool_index());
         }
     }
 }
