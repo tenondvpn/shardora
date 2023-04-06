@@ -18,6 +18,8 @@ int FromTxItem::HandleTx(
     if (block_tx.step() == pools::protobuf::kContractUserCreateCall) {
         return CreateContractUserCall(thread_idx, block, acc_balance_map, block_tx);
     }
+
+    return kConsensusError;
 }  
 
 int FromTxItem::NormalTx(
