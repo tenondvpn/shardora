@@ -50,7 +50,7 @@ public:
         buckets_ = new common::FixedQueue<std::string*, EachBucketSize>[BucketSize];
     }
 
-    ~UniqueSet() {
+    ~StringUniqueSet() {
         delete[] buckets_;
     }
 
