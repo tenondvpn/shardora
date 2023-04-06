@@ -2,21 +2,20 @@
 
 #include <queue>
 
+#include "common/fixed_queue.h"
 #include "common/hash.h"
 
 namespace zjchain {
 
 namespace common {
 
-template<class T>
+template<class T, uint8_t BucketSize, uint8_t EachBucketSize>
 class UniqueSet {
 public:
     explicit UniqueSet() {}
 
-    void Init(uint32_t bucket_count, uint32_t max_save) {
-        bucket_count_ = bucket_count;
-        max_save_ = max_save;
-        buckets_ = new std::deque<T>[bucket_count_];
+    void Init(uint32_t bucket_count) {
+        buckets_ = new common::FixedQueue<T, EachBucketSize>[BucketSize];
     }
 
     ~UniqueSet() {
@@ -24,43 +23,30 @@ public:
     }
 
     bool add(const T& key) {
-        uint32_t idx = Hash32(key) % bucket_count_;
-        if (!buckets_[idx].empty()) {
-            for (auto iter = buckets_[idx].begin(); iter != buckets_[idx].end(); ++iter) {
-                if ((*iter) == key) {
-                    return false;
-                }
-            }
+        uint32_t idx = Hash32(key) % BucketSize;
+        if (!buckets_[idx].empty() && buckets_[idx].Exists(key)) {
+            return false;
         }
 
-        if (buckets_[idx].size() > max_save_) {
-            buckets_[idx].pop_front();
+        if (buckets_[idx].size() > EachBucketSize) {
+            buckets_[idx].Dequeue();
         }
 
-        buckets_[idx].push_back(key);
+        buckets_[idx].Enqueue(key);
         return true;
     }
 
     bool exists(const T& key) {
-        uint32_t idx = Hash32(key) % bucket_count_;
+        uint32_t idx = Hash32(key) % BucketSize;
         if (buckets_[idx].empty()) {
             return false;
         }
 
-        for (auto iter = buckets_[idx].begin(); iter != buckets_[idx].end(); ++iter) {
-            if ((*iter) == key) {
-                return true;
-            }
-        }
-
-        return false;
+        return buckets_[idx].Exists(key);
     }
 
 private:
-    std::deque<T>* buckets_ = nullptr;
-    uint32_t bucket_count_{ 1024 * 1024 };
-    uint32_t max_save_ = 0;
-    bool is_integer_ = false;
+    common::FixedQueue<T, EachBucketSize>* buckets_ = nullptr;
 };
 
 }  // namespace common
