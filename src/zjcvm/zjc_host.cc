@@ -268,6 +268,23 @@ int ZjchainHost::GetKeyValue(const std::string& id, const std::string& key_str, 
     return kZjcvmSuccess;
 }
 
+evmc_access_status ZjchainHost::access_account(const evmc::address& addr) noexcept {
+    if (Execution::Instance()->AddressWarm(thread_idx_, addr)) {
+        return EVMC_ACCESS_WARM;
+    }
+
+    return EVMC_ACCESS_COLD;
+}
+
+evmc_access_status ZjchainHost::access_storage(
+        const evmc::address& addr,
+        const evmc::bytes32& key) noexcept {
+    if (Execution::Instance()->StorageKeyWarm(thread_idx_, addr, key)) {
+        return EVMC_ACCESS_WARM;
+    }
+
+    return EVMC_ACCESS_COLD;
+}
 }  // namespace zjcvm
 
 }  // namespace zjchain

@@ -85,24 +85,10 @@ public:
         size_t data_size,
         const evmc::bytes32 topics[],
         size_t topics_count) noexcept override;
-
-    virtual evmc_access_status access_account(const evmc::address& addr) noexcept {
-        if (Execution::Instance()->AddressWarm(thread_idx_, addr)) {
-            return EVMC_ACCESS_WARM;
-        }
-
-        return EVMC_ACCESS_COLD;
-    }
-
+    virtual evmc_access_status access_account(const evmc::address& addr) noexcept;
     virtual evmc_access_status access_storage(
-            const evmc::address& addr,
-            const evmc::bytes32& key) noexcept {
-        if (Execution::Instance()->StorageKeyWarm(thread_idx_, addr, key)) {
-            return EVMC_ACCESS_WARM;
-        }
-
-        return EVMC_ACCESS_COLD;
-    }
+        const evmc::address& addr,
+        const evmc::bytes32& key) noexcept;
 
     // tmp item
     void AddTmpAccountBalance(const std::string& address, uint64_t balance);
