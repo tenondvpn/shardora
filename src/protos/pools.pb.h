@@ -31,6 +31,7 @@
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
+#include "protos/address.pb.h"
 // @@protoc_insertion_point(includes)
 #define PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto 
 
@@ -920,6 +921,36 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::std::string* release_to();
   void set_allocated_to(::std::string* to);
 
+  // optional bytes contract_code = 12;
+  bool has_contract_code() const;
+  void clear_contract_code();
+  static const int kContractCodeFieldNumber = 12;
+  const ::std::string& contract_code() const;
+  void set_contract_code(const ::std::string& value);
+  #if LANG_CXX11
+  void set_contract_code(::std::string&& value);
+  #endif
+  void set_contract_code(const char* value);
+  void set_contract_code(const void* value, size_t size);
+  ::std::string* mutable_contract_code();
+  ::std::string* release_contract_code();
+  void set_allocated_contract_code(::std::string* contract_code);
+
+  // optional bytes contract_input = 13;
+  bool has_contract_input() const;
+  void clear_contract_input();
+  static const int kContractInputFieldNumber = 13;
+  const ::std::string& contract_input() const;
+  void set_contract_input(const ::std::string& value);
+  #if LANG_CXX11
+  void set_contract_input(::std::string&& value);
+  #endif
+  void set_contract_input(const char* value);
+  void set_contract_input(const void* value, size_t size);
+  ::std::string* mutable_contract_input();
+  ::std::string* release_contract_input();
+  void set_allocated_contract_input(::std::string* contract_input);
+
   // optional uint64 gas_limit = 4;
   bool has_gas_limit() const;
   void clear_gas_limit();
@@ -986,6 +1017,10 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   void clear_has_step();
   void set_has_contract_prepayment();
   void clear_has_contract_prepayment();
+  void set_has_contract_code();
+  void clear_has_contract_code();
+  void set_has_contract_input();
+  void clear_has_contract_input();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -995,6 +1030,8 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::google::protobuf::internal::ArenaStringPtr key_;
   ::google::protobuf::internal::ArenaStringPtr value_;
   ::google::protobuf::internal::ArenaStringPtr to_;
+  ::google::protobuf::internal::ArenaStringPtr contract_code_;
+  ::google::protobuf::internal::ArenaStringPtr contract_input_;
   ::google::protobuf::uint64 gas_limit_;
   ::google::protobuf::uint64 gas_price_;
   ::google::protobuf::uint32 version_;
@@ -1696,13 +1733,13 @@ inline void PoolLatestInfo::set_synced_height(::google::protobuf::uint64 value) 
 
 // optional uint32 version = 1;
 inline bool TxMessage::has_version() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
 inline void TxMessage::set_has_version() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000200u;
 }
 inline void TxMessage::clear_has_version() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000200u;
 }
 inline void TxMessage::clear_version() {
   version_ = 0u;
@@ -1852,13 +1889,13 @@ inline void TxMessage::set_allocated_pubkey(::std::string* pubkey) {
 
 // optional uint64 gas_limit = 4;
 inline bool TxMessage::has_gas_limit() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void TxMessage::set_has_gas_limit() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void TxMessage::clear_has_gas_limit() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void TxMessage::clear_gas_limit() {
   gas_limit_ = GOOGLE_ULONGLONG(0);
@@ -1876,13 +1913,13 @@ inline void TxMessage::set_gas_limit(::google::protobuf::uint64 value) {
 
 // optional uint64 gas_price = 5;
 inline bool TxMessage::has_gas_price() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void TxMessage::set_has_gas_price() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void TxMessage::clear_has_gas_price() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void TxMessage::clear_gas_price() {
   gas_price_ = GOOGLE_ULONGLONG(0);
@@ -2098,13 +2135,13 @@ inline void TxMessage::set_allocated_to(::std::string* to) {
 
 // optional uint64 amount = 9;
 inline bool TxMessage::has_amount() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 inline void TxMessage::set_has_amount() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000800u;
 }
 inline void TxMessage::clear_has_amount() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 inline void TxMessage::clear_amount() {
   amount_ = GOOGLE_ULONGLONG(0);
@@ -2122,13 +2159,13 @@ inline void TxMessage::set_amount(::google::protobuf::uint64 value) {
 
 // optional .zjchain.pools.protobuf.StepType step = 10 [default = kNormalFrom];
 inline bool TxMessage::has_step() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void TxMessage::set_has_step() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void TxMessage::clear_has_step() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void TxMessage::clear_step() {
   step_ = 0;
@@ -2147,13 +2184,13 @@ inline void TxMessage::set_step(::zjchain::pools::protobuf::StepType value) {
 
 // optional uint64 contract_prepayment = 11;
 inline bool TxMessage::has_contract_prepayment() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void TxMessage::set_has_contract_prepayment() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void TxMessage::clear_has_contract_prepayment() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void TxMessage::clear_contract_prepayment() {
   contract_prepayment_ = GOOGLE_ULONGLONG(0);
@@ -2167,6 +2204,138 @@ inline void TxMessage::set_contract_prepayment(::google::protobuf::uint64 value)
   set_has_contract_prepayment();
   contract_prepayment_ = value;
   // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.TxMessage.contract_prepayment)
+}
+
+// optional bytes contract_code = 12;
+inline bool TxMessage::has_contract_code() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void TxMessage::set_has_contract_code() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void TxMessage::clear_has_contract_code() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void TxMessage::clear_contract_code() {
+  contract_code_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_contract_code();
+}
+inline const ::std::string& TxMessage::contract_code() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.TxMessage.contract_code)
+  return contract_code_.GetNoArena();
+}
+inline void TxMessage::set_contract_code(const ::std::string& value) {
+  set_has_contract_code();
+  contract_code_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.TxMessage.contract_code)
+}
+#if LANG_CXX11
+inline void TxMessage::set_contract_code(::std::string&& value) {
+  set_has_contract_code();
+  contract_code_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.pools.protobuf.TxMessage.contract_code)
+}
+#endif
+inline void TxMessage::set_contract_code(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_contract_code();
+  contract_code_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.pools.protobuf.TxMessage.contract_code)
+}
+inline void TxMessage::set_contract_code(const void* value, size_t size) {
+  set_has_contract_code();
+  contract_code_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.pools.protobuf.TxMessage.contract_code)
+}
+inline ::std::string* TxMessage::mutable_contract_code() {
+  set_has_contract_code();
+  // @@protoc_insertion_point(field_mutable:zjchain.pools.protobuf.TxMessage.contract_code)
+  return contract_code_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* TxMessage::release_contract_code() {
+  // @@protoc_insertion_point(field_release:zjchain.pools.protobuf.TxMessage.contract_code)
+  if (!has_contract_code()) {
+    return NULL;
+  }
+  clear_has_contract_code();
+  return contract_code_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void TxMessage::set_allocated_contract_code(::std::string* contract_code) {
+  if (contract_code != NULL) {
+    set_has_contract_code();
+  } else {
+    clear_has_contract_code();
+  }
+  contract_code_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), contract_code);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.TxMessage.contract_code)
+}
+
+// optional bytes contract_input = 13;
+inline bool TxMessage::has_contract_input() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void TxMessage::set_has_contract_input() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void TxMessage::clear_has_contract_input() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void TxMessage::clear_contract_input() {
+  contract_input_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_contract_input();
+}
+inline const ::std::string& TxMessage::contract_input() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.TxMessage.contract_input)
+  return contract_input_.GetNoArena();
+}
+inline void TxMessage::set_contract_input(const ::std::string& value) {
+  set_has_contract_input();
+  contract_input_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.TxMessage.contract_input)
+}
+#if LANG_CXX11
+inline void TxMessage::set_contract_input(::std::string&& value) {
+  set_has_contract_input();
+  contract_input_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.pools.protobuf.TxMessage.contract_input)
+}
+#endif
+inline void TxMessage::set_contract_input(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_contract_input();
+  contract_input_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.pools.protobuf.TxMessage.contract_input)
+}
+inline void TxMessage::set_contract_input(const void* value, size_t size) {
+  set_has_contract_input();
+  contract_input_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.pools.protobuf.TxMessage.contract_input)
+}
+inline ::std::string* TxMessage::mutable_contract_input() {
+  set_has_contract_input();
+  // @@protoc_insertion_point(field_mutable:zjchain.pools.protobuf.TxMessage.contract_input)
+  return contract_input_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* TxMessage::release_contract_input() {
+  // @@protoc_insertion_point(field_release:zjchain.pools.protobuf.TxMessage.contract_input)
+  if (!has_contract_input()) {
+    return NULL;
+  }
+  clear_has_contract_input();
+  return contract_input_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void TxMessage::set_allocated_contract_input(::std::string* contract_input) {
+  if (contract_input != NULL) {
+    set_has_contract_input();
+  } else {
+    clear_has_contract_input();
+  }
+  contract_input_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), contract_input);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.TxMessage.contract_input)
 }
 
 #ifdef __GNUC__
