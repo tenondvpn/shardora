@@ -149,16 +149,16 @@ int FromTxItem::CreateContractUserCall(
     zjc_host.thread_idx_ = thread_idx;
     zjcvm::Uint64ToEvmcBytes32(
         zjc_host.tx_context_.tx_gas_price,
-        tx.gas_price());
-    zjc_host.my_address_ = tx.to();
-    zjc_host.tx_context_.block_gas_limit = tx.gas_limit();
+        block_tx.gas_price());
+    zjc_host.my_address_ = block_tx.to();
+    zjc_host.tx_context_.block_gas_limit = block_tx.gas_limit();
     // get caller prepaid gas
     zjc_host.AddTmpAccountBalance(
-        tx.from(),
-        tx.contract_prepayment());
+        block_tx.from(),
+        from_balance);
     zjc_host.AddTmpAccountBalance(
-        tx.to(),
-        to_txs.tos(i).amount());
+        block_tx.to(),
+        block_tx.amount());
     evmc_result evmc_res = {};
     evmc::Result res{ evmc_res };
     if (CreateContractCallExcute(zjc_host, block_tx, &res) != kConsensusSuccess ||
