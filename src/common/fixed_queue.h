@@ -64,7 +64,6 @@ public:
             return false;
         }
 
-        std::cout << (uint32_t)front_ << ":" << (uint32_t)rear_ << ", " << (uint32_t)Capacity << std::endl;
         if (rear_ == front_) {
             for (uint8_t i = 0; i < Capacity; ++i) {
                 if (data_[i] == val) {
