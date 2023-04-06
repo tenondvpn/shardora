@@ -85,9 +85,7 @@ int ContractUserCreateCall::HandleTx(
             block_tx.contract_prepayment() +
             gas_used * block_tx.gas_price();
         if (from_balance >= gas_used * block_tx.gas_price()) {
-            if (from_balance >= dec_amount) {
-                from_balance -= dec_amount;
-            } else {
+            if (from_balance < dec_amount) {
                 from_balance -= gas_used * block_tx.gas_price();
                 block_tx.set_status(consensus::kConsensusAccountBalanceError);
                 ZJC_ERROR("leader balance error: %llu, %llu", from_balance, dec_amount);
@@ -107,7 +105,50 @@ int ContractUserCreateCall::HandleTx(
     }
 
     if (block_tx.status() == kConsensusSuccess) {
-        SaveContractCreateInfo(zjc_host, block_tx, db_batch);
+        int64_t contract_balance_add = 0;
+        int64_t caller_balance_add = 0;
+        int64_t gas_more = 0;
+        from_balance -= gas_used * block_tx.gas_price();
+        int res = SaveContractCreateInfo(
+            zjc_host,
+            block_tx,
+            db_batch,
+            contract_balance_add,
+            caller_balance_add,
+            gas_more);
+        do {
+            if (res != kConsensusSuccess) {
+                block_tx.set_status(consensus::kConsensusAccountBalanceError);
+                break;
+            }
+
+            if (gas_more + gas_used > block_tx.gas_limit()) {
+                block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
+                ZJC_DEBUG("1 balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), gas_more);
+                break;
+            }
+
+            if (from_balance < gas_more * block_tx.gas_price()) {
+                block_tx.set_status(consensus::kConsensusAccountBalanceError);
+                ZJC_ERROR("balance error: %llu, %llu", from_balance, gas_more * block_tx.gas_price());
+                break;
+            }
+
+            from_balance -= gas_more * block_tx.gas_price();
+            gas_used += gas_more;
+            // just dec caller_balance_add
+            int64_t dec_amount = static_cast<int64_t>(block_tx.amount()) - caller_balance_add
+                static_cast<int64_t>(block_tx.contract_prepayment());
+            if ((int64_t)from_balance < dec_amount) {
+                block_tx.set_status(consensus::kConsensusAccountBalanceError);
+                ZJC_ERROR("leader balance error: %llu, %llu", from_balance, caller_balance_add);
+                break;
+            }
+
+            from_balance -= dec_amount;
+            // change contract create amount
+            block_tx.set_amount(static_cast<int64_t>(block_tx.amount()) + contract_balance_add);
+        } while (0)
     }
 
     acc_balance_map[from] = from_balance;
@@ -119,10 +160,108 @@ int ContractUserCreateCall::HandleTx(
 int ContractUserCreateCall::SaveContractCreateInfo(
         zjcvm::ZjchainHost& zjc_host,
         block::protobuf::BlockTx& block_tx,
-        std::shared_ptr<db::DbWriteBatch>& db_batch) {
+        std::shared_ptr<db::DbWriteBatch>& db_batch,
+        int64_t& contract_balance_add,
+        int64_t& caller_balance_add,,
+        int64_t& gas_more) {
     auto storage = block_tx.add_storages();
     storage->set_key(protos::kCreateContractBytesCode);
     storage->set_val_hash(zjc_host.create_bytes_code_);
+    for (auto account_iter = tenon_host_.accounts_.begin();
+            account_iter != zjc_host.accounts_.end(); ++account_iter) {
+        for (auto storage_iter = account_iter->second.storage.begin();
+            storage_iter != account_iter->second.storage.end(); ++storage_iter) {
+            prefix_db_->SaveAddressStorage(
+                account_iter->first,
+                storage_iter->first,
+                storage_iter->second.value,
+                *db_batch);
+            gas_more += (account_iter->first.size() +
+                storage_iter->first.size() +
+                storage_iter->second.value.size()) *
+                consensus::kKeyValueStorageEachBytes;
+        }
+
+        for (auto storage_iter = account_iter->second.str_storage.begin();
+                storage_iter != account_iter->second.str_storage.end(); ++storage_iter) {
+            prefix_db_->SaveAddressStorage(
+                account_iter->first,
+                storage_iter->first,
+                storage_iter->second.str_val,
+                *db_batch);
+            gas_more += (account_iter->first.size() +
+                storage_iter->first.size() +
+                storage_iter->second.str_val.size()) *
+                consensus::kKeyValueStorageEachBytes;
+        }
+    }
+
+    int64_t other_add = 0;
+    for (auto transfer_iter = zjc_host.to_account_value_.begin();
+            transfer_iter != zjc_host.to_account_value_.end(); ++transfer_iter) {
+        // transfer from must caller or contract address, other not allowed.
+        if (transfer_iter->first != block_tx.from() && transfer_iter->first != block_tx.to()) {
+            return kConsensusError;
+        }
+
+        for (auto to_iter = transfer_iter->second.begin();
+                to_iter != transfer_iter->second.end(); ++to_iter) {
+            if (transfer_iter->first == to_iter->first) {
+                return kConsensusError;
+            }
+
+            if (tx_info->tx.to() == transfer_iter->first) {
+                contract_balance_add -= to_iter->second;
+            }
+
+            if (tx_info->tx.to() == to_iter->first) {
+                contract_balance_add += to_iter->second;
+            }
+
+            if (tx_info->tx.from() == transfer_iter->first) {
+                caller_balance_add -= to_iter->second;
+            }
+
+            if (tx_info->tx.from() == to_iter->first) {
+                caller_balance_add += to_iter->second;
+            }
+
+            if (transfer_iter->second != block_tx.to() && transfer_iter->second != block_tx.from()) {
+                // from and contract itself transfers direct handled
+                // transfer to other address
+                auto trans_item = block_tx.add_contract_txs();
+                trans_item->set_from(transfer_iter->first);
+                trans_item->set_to(to_iter->first);
+                trans_item->set_amount(to_iter->second);
+                other_add += to_iter->second;
+            }
+        }
+    }
+
+    if (caller_balance_add > 0 && contract_balance_add > 0) {
+        return kConsensusError;
+    }
+
+    if (contract_balance_add > 0) {
+        if (other_add + contract_balance_add != -caller_balance_add) {
+            return kConsensusError;
+        }
+    } else {
+        if (block_tx.amount() < -contract_balance_add) {
+            return kConsensusError;
+        }
+
+        if (caller_balance_add > 0) {
+            if (other_add + caller_balance_add != -contract_balance_add) {
+                return kConsensusError;
+            }
+        } else {
+            if (-(contract_balance_add + caller_balance_add) != other_add) {
+                return kConsensusError;
+            }
+        }
+    }
+
     ZJC_DEBUG("user success call create contract.");
     return kConsensusSuccess;
 }

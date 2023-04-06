@@ -228,6 +228,33 @@ public:
         return tmp_val;
     }
 
+    void SaveAddressStorage(
+            const evmc::address& addr,
+            const evmc::bytes32& k,
+            const evmc::bytes32& v,
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(128);
+        key.append(kAddressStorageKeyPrefex);
+        key.append((char*)addr.bytes, sizeof(addr.bytes));
+        key.append((char*)k.bytes, sizeof(k.bytes));
+        std::string val((char*)v.bytes, sizeof(v.bytes));
+        db_batch.Put(key, val);
+    }
+
+    void SaveAddressStorage(
+            const evmc::address& addr,
+            const evmc::bytes32& k,
+            const std::string& val,
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(128);
+        key.append(kAddressStorageKeyPrefex);
+        key.append((char*)addr.bytes, sizeof(addr.bytes));
+        key.append((char*)k.bytes, sizeof(k.bytes));
+        db_batch.Put(key, val);
+    }
+
     bool GetAddressStorage(
             const evmc::address& addr,
             const std::string& k,
