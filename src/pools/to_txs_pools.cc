@@ -24,7 +24,6 @@ ToTxsPools::ToTxsPools(
     }
 
     LoadLatestHeights();
-    address_map_.Init(10240, 16);
 }
 
 ToTxsPools::~ToTxsPools() {}
