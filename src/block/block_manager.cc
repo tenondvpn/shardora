@@ -213,6 +213,11 @@ void BlockManager::RootHandleNormalToTx(
             account_info->set_latest_height(height);
             account_info->set_balance(tos_item.amount());
             prefix_db_->AddAddressInfo(tos_item.des(), *account_info);
+            ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
+                common::Encode::HexEncode(tos_item.des()).c_str(),
+                tos_item.amount(),
+                tos_item.sharding_id(),
+                tos_item.pool_index());
             continue;
         }
 
