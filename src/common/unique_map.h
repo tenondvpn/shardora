@@ -114,7 +114,7 @@ private:
         return false;
     }
 
-    std::deque<Item*>* buckets_ = nullptr;
+    common::FixedQueue<Item*, EachBucketSize>* buckets_ = nullptr;
 
 };
 
