@@ -9,7 +9,7 @@ namespace common {
 template<typename T, uint8_t Capacity>
 class FixedQueue {
 public:
-    FixedQueue() : front_(0), rear_(0), size_(0) {}
+    FixedQueue() {}
 
     void Enqueue(const T& value) {
         if (IsFull()) {
@@ -64,6 +64,17 @@ public:
             return false;
         }
 
+        if (IsFull()) {
+            for (uint8_ t i = 0; i < Capacity; ++i) {
+                if (data_[i] == val) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        std::cout << (uint32_t)front_ << ":" << (uint32_t)rear_ << ", " << (uint32_t)Capacity << std::endl;
         uint8_t i = front_;
         for (; i < rear_ && i < Capacity; ++i) {
             if (data_[i] == val) {
@@ -91,9 +102,9 @@ public:
     uint8_t Size() const { return size_; }
 
     T data_[Capacity];
-    uint8_t front_;
-    uint8_t rear_;
-    uint8_t size_;
+    uint8_t front_ = 0;
+    uint8_t rear_ = 0;
+    uint8_t size_ = 0;
 };
 
 

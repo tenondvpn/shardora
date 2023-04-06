@@ -46,8 +46,16 @@ TEST_F(TestFixedQueue, all) {
         ASSERT_FALSE(queue.Exists(std::to_string(i)));
     }
 
+    int32_t t = 0;
     while (!queue.IsEmpty()) {
         queue.Dequeue();
+        for (int i = 0; i <= t; ++i) {
+            ASSERT_FALSE(queue.Exists(std::to_string(i)));
+        }
+
+        for (int i = t + 1; i < 10; i++) {
+            ASSERT_TRUE(queue.Exists(std::to_string(i)));
+        }
     }
 
     ASSERT_TRUE(queue.IsEmpty());
