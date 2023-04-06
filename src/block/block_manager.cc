@@ -204,7 +204,8 @@ void BlockManager::RootHandleNormalToTx(
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         auto tos_item = to_txs.tos(i);
         if (tos_item.sharding_id() != common::kInvalidUint32) {
-            account_info = std::make_shared<address::protobuf::AddressInfo>();
+            // that's contract address, just add address
+            auto account_info = std::make_shared<address::protobuf::AddressInfo>();
             account_info->set_pool_index(tos_item.pool_index());
             account_info->set_addr(tos_item.des());
             account_info->set_type(address::protobuf::kContract);
