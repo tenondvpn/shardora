@@ -60,10 +60,11 @@ int ContractUserCreateCall::HandleTx(
         block_tx.amount());
     evmc_result evmc_res = {};
     evmc::Result res{ evmc_res };
-    if (CreateContractCallExcute(zjc_host, block_tx, &res) != kConsensusSuccess ||
-            res.status_code != EVMC_SUCCESS) {
+    int call_res = CreateContractCallExcute(zjc_host, block_tx, &res);
+    if (call_res != kConsensusSuccess || res.status_code != EVMC_SUCCESS) {
         block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
-        ZJC_DEBUG("create contract failed!");
+        ZJC_DEBUG("create contract failed, call_res: %d, evmc res: %d!",
+            call_res, res.status_code);
     }
 
     auto gas_used = block_tx.gas_limit() - res.gas_left;
