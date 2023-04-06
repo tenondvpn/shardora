@@ -64,14 +64,14 @@ public:
             return false;
         }
 
-        uint8_t i = rear_;
-        for (; i <= front_ && i < Capacity; ++i) {
+        uint8_t i = front_;
+        for (; i <= rear_ && i < Capacity; ++i) {
             if (data_[i] == val) {
                 return true;
             }
         }
 
-        if (i == front_) {
+        if (i == rear_) {
             return false;
         }
 
@@ -79,7 +79,7 @@ public:
             i = 0;
         }
 
-        for (; i <= front_; ++i) {
+        for (; i <= rear_; ++i) {
             if (data_[i] == val) {
                 return true;
             }
