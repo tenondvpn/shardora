@@ -101,7 +101,7 @@ struct StatisticItem {
 typedef std::shared_ptr<block::protobuf::Block> BlockPtr;
 
 struct BlockToDbItem {
-    BlockToDbItem(BlockPtr& bptr, std::shared_ptr<db::DbWriteBatch>& batch)
+    BlockToDbItem(BlockPtr& bptr, const std::shared_ptr<db::DbWriteBatch>& batch)
         : block_ptr(bptr), db_batch(batch) {}
     BlockPtr block_ptr;
     std::shared_ptr<db::DbWriteBatch> db_batch;
