@@ -57,6 +57,7 @@ public:
     virtual int HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
+        std::shared_ptr<db::DbWriteBatch>& db_batch,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) = 0;
     virtual int TxToBlockTx(

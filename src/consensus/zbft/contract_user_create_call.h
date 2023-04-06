@@ -24,6 +24,7 @@ public:
     virtual int HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
+        std::shared_ptr<db::DbWriteBatch>& db_batch,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx);
     virtual int TxToBlockTx(
@@ -37,7 +38,8 @@ private:
         evmc::Result* out_res);
     int SaveContractCreateInfo(
         zjcvm::ZjchainHost& zjc_host,
-        block::protobuf::BlockTx& tx);
+        block::protobuf::BlockTx& tx,
+        std::shared_ptr<db::DbWriteBatch>& db_batch);
 
     DISALLOW_COPY_AND_ASSIGN(ContractUserCreateCall);
 };

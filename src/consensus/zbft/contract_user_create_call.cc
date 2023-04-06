@@ -9,6 +9,7 @@ namespace consensus {
 int ContractUserCreateCall::HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
+        std::shared_ptr<db::DbWriteBatch>& db_batch,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     // contract create call
@@ -106,7 +107,7 @@ int ContractUserCreateCall::HandleTx(
     }
 
     if (block_tx.status() == kConsensusSuccess) {
-        SaveContractCreateInfo(zjc_host, block_tx);
+        SaveContractCreateInfo(zjc_host, block_tx, db_batch);
     }
 
     acc_balance_map[from] = from_balance;
@@ -117,7 +118,8 @@ int ContractUserCreateCall::HandleTx(
 
 int ContractUserCreateCall::SaveContractCreateInfo(
         zjcvm::ZjchainHost& zjc_host,
-        block::protobuf::BlockTx& block_tx) {
+        block::protobuf::BlockTx& block_tx,
+        std::shared_ptr<db::DbWriteBatch>& db_batch) {
     auto storage = block_tx.add_storages();
     storage->set_key(protos::kCreateContractBytesCode);
     storage->set_val_hash(zjc_host.create_bytes_code_);
