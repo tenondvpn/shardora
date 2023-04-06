@@ -14,12 +14,10 @@ namespace consensus {
 class ContractUserCreateCall : public TxItemBase {
 public:
     ContractUserCreateCall(
-            std::shared_ptr<db::Db>& db,
             const transport::MessagePtr& msg,
             std::shared_ptr<block::AccountManager>& account_mgr,
             std::shared_ptr<security::Security>& sec_ptr)
             : TxItemBase(msg, account_mgr, sec_ptr) {
-        prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     }
 
     virtual ~ContractUserCreateCall() {}
@@ -37,8 +35,6 @@ private:
         zjcvm::ZjchainHost& zjc_host,
         block::protobuf::BlockTx& tx,
         evmc::Result* out_res);
-
-    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ContractUserCreateCall);
 };

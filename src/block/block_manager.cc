@@ -201,19 +201,25 @@ void BlockManager::RootHandleNormalToTx(
         uint8_t thread_idx,
         uint64_t height,
         pools::protobuf::ToTxMessage& to_txs) {
-    std::unordered_map<std::string, std::pair<uint32_t, uint32_t>> addr_amount_map;
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         auto tos_item = to_txs.tos(i);
+        if (tos_item.sharding_id() != common::kInvalidUint32) {
+            account_info = std::make_shared<address::protobuf::AddressInfo>();
+            account_info->set_pool_index(tos_item.pool_index());
+            account_info->set_addr(tos_item.des());
+            account_info->set_type(address::protobuf::kContract);
+            account_info->set_sharding_id(tos_item.sharding_id());
+            account_info->set_latest_height(height);
+            account_info->set_balance(tos_item.amount());
+            prefix_db_->AddAddressInfo(tos_item.des(), *account_info);
+            continue;
+        }
+
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_pubkey("");
         tx->set_to(tos_item.des());
         tx->set_step(pools::protobuf::kRootCreateAddress);
-        if (tos_item.sharding_id() != common::kInvalidUint32) {
-            tx->set_key(protos::kCreateContractCallerSharding);
-            tx->set_value(std::to_string(tos_item.sharding_id()));
-        }
-
         auto gid = common::Hash::keccak256(
             tos_item.des() + "_" +
             std::to_string(height) + "_" +

@@ -12,7 +12,7 @@ static const std::string kNormalTos = "__normal_tos";
 static const std::string kLocalNormalTos = "__local_tos";
 static const std::string kConsensusLocalNormalTos = "__consensus_local_tos";
 static const std::string kCreateContractCallerSharding = "__new_contract_user_shard";
-static const std::string kCreateContractUserCalled = "__kCreateContractUserCalled";
+static const std::string kCreateContractBytesCode = "__kCreateContractBytesCode";
 
 };  // namespace protos
 

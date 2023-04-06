@@ -227,6 +227,32 @@ void AccountManager::HandleLocalToTx(
     }
 }
 
+void AccountManager::HandleContractCreateUserCall(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
+    auto account_info = GetAcountInfo(thread_idx, tx.to());
+    if (account_info != nullptr) {
+        return;
+    }
+
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
+            account_info = std::make_shared<address::protobuf::AddressInfo>();
+            account_info->set_pool_index(block.pool_index());
+            account_info->set_addr(tx.to());
+            account_info->set_type(address::protobuf::kContract);
+            account_info->set_sharding_id(block.network_id());
+            account_info->set_latest_height(block.height());
+            account_info->set_balance(tx.amount());
+            address_map_[thread_idx].add(tx.to(), account_info);
+            prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
+            prefix_db_->SaveAddressTmpBytesCode(tx.to(), tx.storages(i).val_hash(), db_batch);
+        }
+    }
+}
+
 void AccountManager::NewBlockWithTx(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
@@ -238,6 +264,9 @@ void AccountManager::NewBlockWithTx(
         break;
     case pools::protobuf::kConsensusLocalTos:
         HandleLocalToTx(thread_idx, *block_item, tx, db_batch);
+        break;
+    case pools::protobuf::kContractUserCreateCall:
+        HandleContractCreateUserCall(thread_idx, *block_item, tx, db_batch);
         break;
     default:
         break;

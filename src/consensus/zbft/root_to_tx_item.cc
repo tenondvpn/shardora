@@ -39,11 +39,9 @@ int RootToTxItem::HandleTx(
         uint32_t sharding_id = 0;
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             if (block_tx.storages(i).key() == protos::kCreateContractCallerSharding) {
-                if (common::StringUtil::ToUint32(block_tx.storages(i).val_hash(), &sharding_id)) {
-                    des_info[0] = sharding_id;
-                    ZJC_DEBUG("create contract use caller sharding: %u", sharding_id);
-                }
-
+                uint32_t* data = (uint32_t*)block_tx.storages(i).val_hash().c_str();
+                des_info[0] = data[0];
+                des_info[1] = data[1];
                 break;
             }
         }
@@ -52,9 +50,8 @@ int RootToTxItem::HandleTx(
         if (sharding_id == 0) {
             des_info[0] = (g2() % (max_sharding_id_ - network::kConsensusShardBeginNetworkId + 1)) +
                 network::kConsensusShardBeginNetworkId;
+            des_info[1] = g2() % common::kImmutablePoolSize;;
         }
-
-        des_info[1] = g2() % common::kImmutablePoolSize;;
     }
 
     auto& storage = *block_tx.add_storages();

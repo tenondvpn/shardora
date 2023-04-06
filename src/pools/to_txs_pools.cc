@@ -68,19 +68,8 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
             HandleNormalToTx(block, tx_list[i], db_batch);
         }
 
-        if (tx_list[i].step() == pools::protobuf::kContractUserCreateCall) {
-            // save contract address contract info
-            if (tx_list[i].has_contract_code()) {
-                prefix_db_->SaveAddressTmpBytesCode(
-                    tx_list[i].to(),
-                    tx_list[i].SerializeAsString(),
-                    db_batch);
-            }
-
-            HandleNormalFrom(block, tx_list[i], db_batch);
-        }
-
-        if (tx_list[i].step() == pools::protobuf::kNormalFrom) {
+        if (tx_list[i].step() == pools::protobuf::kNormalFrom ||
+                tx_list[i].step() == pools::protobuf::kContractUserCreateCall) {
             HandleNormalFrom(block, tx_list[i], db_batch);
         }
 
@@ -101,7 +90,7 @@ void ToTxsPools::HandleNormalFrom(
 
     uint32_t sharding_id = common::kInvalidUint32;
     auto addr_info = GetAddressInfo(tx.to());
-    if (addr_info == nullptr) {
+    if (tx.step() == pools::protobuf::kContractUserCreateCall || addr_info == nullptr) {
         sharding_id = network::kRootCongressNetworkId;
     } else {
         sharding_id = addr_info->sharding_id();
@@ -423,6 +412,7 @@ int ToTxsPools::CreateToTxWithHeights(
         if (iter->second.type == pools::protobuf::kContractUserCreateCall) {
             assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
             to_item->set_sharding_id(common::GlobalInfo::Instance()->network_id());
+            to_item->set_pool_index(iter->second.pool_index);
             ZJC_DEBUG("create contract use caller sharding address: %s, %u",
                 common::Encode::HexEncode(iter->first).c_str(),
                 common::GlobalInfo::Instance()->network_id());

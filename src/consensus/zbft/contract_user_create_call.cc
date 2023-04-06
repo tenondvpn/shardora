@@ -105,27 +105,9 @@ int ContractUserCreateCall::HandleTx(
     }
 
     if (block_tx.status() == kConsensusSuccess) {
-        contract_tx.set_status(block_tx.status());
-        contract_tx.set_contract_code(zjc_host.create_bytes_code_);
-        contract_tx.set_contract_prepayment(block_tx.contract_prepayment());
-        contract_tx.set_amount(block_tx.amount());
-        contract_tx.set_from(block_tx.from());
-        contract_tx.set_to(block_tx.to());
-        std::string str_for_hash;
-        str_for_hash.reserve(zjc_host.create_bytes_code_.size() +
-            16 + block_tx.from().size() + block_tx.to().size());
-        str_for_hash.append(zjc_host.create_bytes_code_);
-        str_for_hash.append(block_tx.from());
-        str_for_hash.append(block_tx.to());
-        uint64_t amount = block_tx.amount();
-        str_for_hash.append((char*)&amount, sizeof(amount));
-        uint64_t contract_prepayment = block_tx.contract_prepayment();
-        str_for_hash.append((char*)&contract_prepayment, sizeof(contract_prepayment));
-        auto hash = common::Hash::keccak256(str_for_hash);
         auto storage = block_tx.add_storages();
-        storage->set_key(protos::kCreateContractUserCalled);
-        storage->set_val_hash(hash);
-        prefix_db_->SaveTemporaryKv(hash, contract_tx.SerializeAsString());
+        storage->set_key(protos::kCreateContractBytesCode);
+        storage->set_val_hash(zjc_host.create_bytes_code_);
     }
 
     acc_balance_map[from] = from_balance;
