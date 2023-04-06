@@ -24,11 +24,11 @@ public:
 
     bool add(const T& key) {
         uint32_t idx = Hash32(key) % BucketSize;
-        if (!buckets_[idx].empty() && buckets_[idx].Exists(key)) {
+        if (!buckets_[idx].IsEmpty() && buckets_[idx].Exists(key)) {
             return false;
         }
 
-        if (buckets_[idx].size() > EachBucketSize) {
+        if (buckets_[idx].IsFull()) {
             buckets_[idx].Dequeue();
         }
 
@@ -38,10 +38,6 @@ public:
 
     bool exists(const T& key) {
         uint32_t idx = Hash32(key) % BucketSize;
-        if (buckets_[idx].empty()) {
-            return false;
-        }
-
         return buckets_[idx].Exists(key);
     }
 
