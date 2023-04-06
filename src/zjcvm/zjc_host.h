@@ -87,26 +87,20 @@ public:
         size_t topics_count) noexcept override;
 
     virtual evmc_access_status access_account(const evmc::address& addr) noexcept {
-        std::string addr_str = std::string((char*)addr.bytes, sizeof(addr.bytes));
-        auto iter = access_account_cold_map_.find(addr_str);
-        if (iter != access_account_cold_map_.end()) {
+        if (Execution::Instance()->AddressWarm(thread_idx_, addr)) {
             return EVMC_ACCESS_WARM;
         }
 
-        access_account_cold_map_[addr_str] = true;
         return EVMC_ACCESS_COLD;
     }
 
-    virtual evmc_access_status access_storage(const evmc::address& addr, const evmc::bytes32& key) noexcept {
-        std::string addr_str = std::string((char*)addr.bytes, sizeof(addr.bytes));
-        std::string key_str = std::string((char*)key.bytes, sizeof(key.bytes));
-        std::string cold_key = addr_str + key_str;
-        auto iter = access_storage_cold_map_.find(cold_key);
-        if (iter != access_storage_cold_map_.end()) {
+    virtual evmc_access_status access_storage(
+            const evmc::address& addr,
+            const evmc::bytes32& key) noexcept {
+        if (Execution::Instance()->StorageKeyWarm(thread_idx_, addr, key)) {
             return EVMC_ACCESS_WARM;
         }
 
-        access_storage_cold_map_[cold_key] = true;
         return EVMC_ACCESS_COLD;
     }
 
@@ -128,8 +122,6 @@ public:
     std::unordered_map<std::string, std::unordered_map<std::string, uint64_t>> to_account_value_;
     std::unordered_map<evmc::address, evmc::uint256be> account_balance_;
     std::string create_bytes_code_;
-    std::unordered_map<std::string, bool> access_account_cold_map_;
-    std::unordered_map<std::string, bool> access_storage_cold_map_;
     uint8_t thread_idx_;
 };
 

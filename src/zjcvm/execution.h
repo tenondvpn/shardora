@@ -48,6 +48,24 @@ public:
         return false;
     }
 
+    bool AddressWarm(uint8_t thread_idx, const evmc::address& addr) {
+        auto str_addr = std::string((char*)addr.bytes, sizeof(addr.bytes));
+        assert(thread_idx < common::kMaxThreadCount);
+        if (address_exists_set_[thread_idx].exists(str_addr)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    bool StorageKeyWarm(
+            uint8_t thread_idx,
+            const evmc::address& addr,
+            const evmc::bytes32& key) {
+        auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
+            std::string((char*)key.bytes, sizeof(key.bytes));
+        return storage_map_[thread_idx].exists(str_key);
+    }
     evmc::bytes32 GetStorage(
             uint8_t thread_idx,
             const evmc::address& addr,
@@ -103,8 +121,8 @@ private:
     ~Execution();
 
     evmc::VM evm_;
-    common::StringUniqueSet<1024, 16>* address_exists_set_ = nullptr;
-    common::UniqueMap<std::string, std::string, 1024, 16>* storage_map_ = nullptr;
+    common::StringUniqueSet<10240, 16>* address_exists_set_ = nullptr;
+    common::UniqueMap<std::string, std::string, 10240, 16>* storage_map_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 

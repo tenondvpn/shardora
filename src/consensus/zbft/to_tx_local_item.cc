@@ -11,7 +11,6 @@ namespace consensus {
 int ToTxLocalItem::HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
-        zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     // gas just consume by from
@@ -40,59 +39,25 @@ int ToTxLocalItem::HandleTx(
     std::string str_for_hash;
     str_for_hash.reserve(to_txs.tos_size() * 48);
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
-        if (to_txs.tos(i).amount() > 0) {
-            // dispatch to txs to tx pool
-            uint64_t to_balance = 0;
-            int balance_status = GetTempAccountBalance(
-                thread_idx, to_txs.tos(i).des(), acc_balance_map, &to_balance);
-            if (balance_status != kConsensusSuccess) {
-                ZJC_DEBUG("create new address: %s, balance: %lu",
-                    common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
-                    to_txs.tos(i).amount());
-                to_balance = 0;
-                std::string tx_str = prefix_db_->GetAddressTmpBytesCode(to_txs.tos(i).des());
-                if (!tx_str.empty()) {
-                    block::protobuf::BlockTx tx;
-                    if (!tx.ParseFromString(tx_str)) {
-                        ZJC_DEBUG("parser contract tx failed!");
-                        block_tx.set_status(kConsensusError);
-                        return consensus::kConsensusSuccess;
-                    }
-
-                    // contract create call
-                    zjc_host.thread_idx_ = thread_idx;
-                    zjcvm::Uint64ToEvmcBytes32(
-                        zjc_host.tx_context_.tx_gas_price,
-                        tx.gas_price());
-                    zjc_host.my_address_ = tx.to();
-                    zjc_host.tx_context_.block_gas_limit = tx.gas_limit();
-                    // get caller prepaid gas
-                    zjc_host.AddTmpAccountBalance(
-                        tx.from(),
-                        tx.contract_prepayment());
-                    zjc_host.AddTmpAccountBalance(
-                        tx.to(),
-                        to_txs.tos(i).amount());
-                    evmc_result evmc_res = {};
-                    evmc::Result res{ evmc_res };
-                    if (CreateContractCallExcute(zjc_host, tx, &res) != kConsensusSuccess) {
-                        ZJC_DEBUG("create contract failed!");
-                        block_tx.set_status(kConsensusError);
-                        return consensus::kConsensusSuccess;
-                    }
-
-                    ZJC_DEBUG("success create contract.");
-                }
-            }
-
-            auto to_tx = block_to_txs.add_tos();
-            to_balance += to_txs.tos(i).amount();
-            to_tx->set_to(to_txs.tos(i).des());
-            to_tx->set_balance(to_balance);
-            str_for_hash.append(to_txs.tos(i).des());
-            str_for_hash.append((char*)&to_balance, sizeof(to_balance));
-            acc_balance_map[to_txs.tos(i).des()] = to_balance;
+        // dispatch to txs to tx pool
+        uint64_t to_balance = 0;
+        int balance_status = GetTempAccountBalance(
+            thread_idx, to_txs.tos(i).des(), acc_balance_map, &to_balance);
+        if (balance_status != kConsensusSuccess) {
+            ZJC_DEBUG("create new address: %s, balance: %lu",
+                common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
+                to_txs.tos(i).amount());
+            to_balance = 0;
         }
+
+        auto to_tx = block_to_txs.add_tos();
+        to_balance += to_txs.tos(i).amount();
+        to_tx->set_to(to_txs.tos(i).des());
+        to_tx->set_balance(to_balance);
+        str_for_hash.append(to_txs.tos(i).des());
+        str_for_hash.append((char*)&to_balance, sizeof(to_balance));
+        acc_balance_map[to_txs.tos(i).des()] = to_balance;
+
     }
 
     auto tos_hash = common::Hash::keccak256(str_for_hash);
@@ -120,35 +85,6 @@ int ToTxLocalItem::TxToBlockTx(
     return consensus::kConsensusSuccess;
 }
 
-
-int ToTxLocalItem::CreateContractCallExcute(
-        zjcvm::ZjchainHost& zjc_host,
-        block::protobuf::BlockTx& tx,
-        evmc::Result* out_res) {
-    uint32_t call_mode = zjcvm::kJustCreate;
-    if (!tx.has_contract_input()) {
-        call_mode = zjcvm::kCreateAndCall;
-    }
-
-    int exec_res = zjcvm::Execution::Instance()->execute(
-        tx.contract_code(),
-        tx.contract_input(),
-        tx.from(),
-        tx.to(),
-        tx.from(),
-        tx.amount(),
-        tx.gas_limit(),
-        0,
-        call_mode,
-        zjc_host,
-        out_res);
-    if (exec_res != zjcvm::kZjcvmSuccess) {
-        ZJC_ERROR("CreateContractCallExcute failed: %d", exec_res);
-        return kConsensusError;
-    }
-
-    return kConsensusSuccess;
-}
 };  // namespace consensus
 
 };  // namespace zjchain

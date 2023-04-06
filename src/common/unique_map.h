@@ -92,6 +92,11 @@ public:
         return true;
     }
 
+    bool exists(const KeyType& key) {
+        uint32_t idx = Hash32(key) % BucketSize;
+        return Exists(idx, key);
+    }
+
 private:
     bool Exists(uint32_t idx, const KeyType& key) {
         if (!buckets_[idx].IsEmpty()) {

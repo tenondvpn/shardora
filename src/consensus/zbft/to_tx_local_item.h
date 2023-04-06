@@ -3,7 +3,6 @@
 #include "block/account_manager.h"
 #include "consensus/zbft/tx_item_base.h"
 #include "security/security.h"
-#include "zjcvm/zjc_host.h"
 
 namespace zjchain {
 
@@ -25,7 +24,6 @@ public:
     virtual int HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
-        zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx);
     virtual int TxToBlockTx(
@@ -33,11 +31,6 @@ public:
         block::protobuf::BlockTx* block_tx);
 
 private:
-    int CreateContractCallExcute(
-        zjcvm::ZjchainHost& zjc_host,
-        block::protobuf::BlockTx& tx,
-        evmc::Result* out_res);
-
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 

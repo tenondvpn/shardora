@@ -471,7 +471,6 @@ protected:
     libff::alt_bn128_Fr local_sec_key_{ libff::alt_bn128_Fr::zero() };
     libff::alt_bn128_G2 common_pk_{ libff::alt_bn128_G2::zero() };
     uint32_t local_member_index_ = -1;
-    zjcvm::ZjchainHost zjc_host_;
     std::map<uint64_t, std::set<uint32_t>> vss_random_map_;
     int32_t handle_last_error_code_{ 0 };
     std::string handle_last_error_msg_;

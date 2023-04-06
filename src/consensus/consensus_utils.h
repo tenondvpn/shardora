@@ -3,6 +3,8 @@
 #include <functional>
 #include <memory>
 
+#include "evmc/evmc.h"
+
 #include "common/bloom_filter.h"
 #include "common/log.h"
 #include "common/utils.h"
@@ -43,6 +45,25 @@ enum ConsensusErrorCode {
     kConsensusLeaderTxInfoInvalid = 27,
     kConsensusVssRandomNotMatch = 28,
     kConsensusWaiting = 29,
+    kConsensusOutOfGas = 30,
+    kConsensusRevert = 31,
+    kConsensusInvalidInstruction = 32,
+    kConsensusUndefinedInstruction = 33,
+    kConsensusStackOverflow = 34,
+    kConsensusStackUnderflow = 35,
+    kConsensusBadJumpDestination = 36,
+    kConsensusInvalidMemoryAccess = 37,
+    kConsensusCallDepthExceeded = 38,
+    kConsensusStaticModeViolation = 39,
+    kConsensusPrecompileFailure = 40,
+    kConsensusContractValidationFailure = 41,
+    kConsensusArgumentOutOfRange = 42,
+    kConsensusWasmRnreachableInstruction = 43,
+    kConsensusWasmTrap = 44,
+    kConsensusInsufficientBalance = 45,
+    kConsensusInternalError = 46,
+    kConsensusRejected = 47,
+    kConsensusOutOfMemory = 48,
 };
 
 enum BftStatus {
@@ -80,6 +101,55 @@ static const uint64_t kTransferGas = 1000llu;
 static const uint64_t kCallContractDefaultUseGas = 10000llu;
 static const uint64_t kCreateContractDefaultUseGas = 100000llu;
 static const uint64_t kKeyValueStorageEachBytes = 10llu;
+
+static int32_t EvmcStatusToZbftStatus(evmc::evmc_status_code status_code) {
+    switch (status_code) {
+    case evmc::EVMC_SUCCESS:
+        return kConsensusSuccess;
+    case evmc::EVMC_FAILURE:
+        return kConsensusError;
+    case evmc::EVMC_REVERT:
+        return kConsensusRevert;
+    case evmc::EVMC_OUT_OF_GAS:
+        return kConsensusOutOfGas;
+    case evmc::EVMC_INVALID_INSTRUCTION:
+        return kConsensusInvalidInstruction;
+    case evmc::EVMC_UNDEFINED_INSTRUCTION:
+        return kConsensusUndefinedInstruction;
+    case evmc::EVMC_STACK_OVERFLOW:
+        return kConsensusStackOverflow;
+    case evmc::EVMC_STACK_UNDERFLOW:
+        return kConsensusStackUnderflow;
+    case evmc::EVMC_BAD_JUMP_DESTINATION:
+        return kConsensusBadJumpDestination;
+    case evmc::EVMC_INVALID_MEMORY_ACCESS:
+        return kConsensusInvalidMemoryAccess;
+    case evmc::EVMC_CALL_DEPTH_EXCEEDED:
+        return kConsensusCallDepthExceeded;
+    case evmc::EVMC_STATIC_MODE_VIOLATION:
+        return kConsensusStaticModeViolation;
+    case evmc::EVMC_PRECOMPILE_FAILURE:
+        return kConsensusPrecompileFailure;
+    case evmc::EVMC_CONTRACT_VALIDATION_FAILURE:
+        return kConsensusContractValidationFailure;
+    case evmc::EVMC_ARGUMENT_OUT_OF_RANGE:
+        return kConsensusArgumentOutOfRange;
+    case evmc::EVMC_WASM_UNREACHABLE_INSTRUCTION:
+        return kConsensusWasmRnreachableInstruction;
+    case evmc::EVMC_WASM_TRAP:
+        return kConsensusWasmTrap;
+    case evmc::EVMC_INSUFFICIENT_BALANCE:
+        return kConsensusInsufficientBalance;
+    case evmc::EVMC_INTERNAL_ERROR:
+        return kConsensusInternalError;
+    case evmc::EVMC_REJECTED:
+        return kConsensusRejected;
+    case evmc::EVMC_OUT_OF_MEMORY:
+        return kConsensusOutOfMemory;
+    default:
+        return kConsensusError;
+    }
+}
 
 typedef std::function<int(const std::shared_ptr<block::protobuf::Block>& block)> BlockCallback;
 

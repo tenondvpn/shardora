@@ -601,15 +601,6 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     zjc_block.set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
     zjc_block.set_electblock_height(elect_height_);
     zjc_block.set_leader_index(leader_index_);
-    zjc_host_.tx_context_.tx_origin = evmc::address{};
-    zjc_host_.tx_context_.block_coinbase = evmc::address{};
-    zjc_host_.tx_context_.block_number = zjc_block.height();
-    zjc_host_.tx_context_.block_timestamp = zjc_block.timestamp() / 1000;
-    uint64_t chanin_id = (((uint64_t)common::GlobalInfo::Instance()->network_id()) << 32 |
-        (uint64_t)pool_index());
-    zjcvm::Uint64ToEvmcBytes32(
-        zjc_host_.tx_context_.chain_id,
-        chanin_id);
     DoTransactionAndCreateTxBlock(zjc_block);
     if (zjc_block.tx_list_size() <= 0) {
         ZJC_ERROR("all choose tx invalid!");
@@ -651,7 +642,6 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
         int do_tx_res = iter->second->HandleTx(
             txs_ptr_->thread_index,
             zjc_block,
-            zjc_host_,
             acc_balance_map,
             block_tx);
         if (do_tx_res != kConsensusSuccess) {
