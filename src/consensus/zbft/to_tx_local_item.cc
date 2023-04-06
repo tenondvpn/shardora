@@ -60,6 +60,7 @@ int ToTxLocalItem::HandleTx(
 
                     // contract create call
                     zjcvm::ZjchainHost zjc_host;
+                    zjc_host.thread_idx_ = thread_idx;
                     zjc_host.my_address_ = tx.to();
                     // get caller prepaid gas
                     zjc_host.AddTmpAccountBalance(
