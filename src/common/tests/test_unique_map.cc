@@ -31,8 +31,7 @@ private:
 };
 
 TEST_F(TestUniqueMap, All) {
-    UniqueMap<std::string, uint64_t> test_unique;
-    test_unique.Init(1024 * 1024, 32);
+    UniqueMap<std::string, uint64_t, 1024 * 1024, 32> test_unique;
     for (uint64_t i = 0; i < 10000000lu; ++i) {
         ASSERT_TRUE(test_unique.add(std::to_string(i), i));
     }

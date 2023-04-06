@@ -31,8 +31,7 @@ private:
 };
 
 TEST_F(TestUniqueSet, All) {
-    UniqueSet<uint64_t> test_unique;
-    test_unique.Init(1024 * 1024, 64);
+    UniqueSet<uint64_t, 1024 * 1024, 64> test_unique;
     for (uint64_t i = 0; i < 10000000lu; ++i) {
         ASSERT_TRUE(test_unique.add(i));
     }
@@ -42,8 +41,7 @@ TEST_F(TestUniqueSet, All) {
 }
 
 TEST_F(TestUniqueSet, String) {
-    UniqueSet<std::string> test_unique;
-    test_unique.Init(1024 * 1024, 32);
+    UniqueSet<std::string, 1024 * 1024, 32> test_unique;
     for (uint64_t i = 0; i < 10000000lu; ++i) {
         ASSERT_TRUE(test_unique.add(std::to_string(i)));
     }
