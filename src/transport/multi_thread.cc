@@ -122,7 +122,6 @@ int MultiThreadHandler::Init(std::shared_ptr<db::Db>& db) {
 
     wait_con_ = new std::condition_variable[all_thread_count_];
     wait_mutex_ = new std::mutex[all_thread_count_];
-    unique_message_sets_.Init(1024 * 10, 32);
     inited_ = true;
     TRANSPORT_INFO("MultiThreadHandler::Init() success");
     return kTransportSuccess;
