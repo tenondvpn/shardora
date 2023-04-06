@@ -14,9 +14,7 @@ namespace zjchain {
 
 namespace zjcvm {
 
-Execution::Execution() {
-    for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {}
-}
+Execution::Execution() {}
 
 Execution::~Execution() {}
 
