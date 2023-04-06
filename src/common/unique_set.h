@@ -12,9 +12,7 @@ namespace common {
 template<class T, uint32_t BucketSize, uint8_t EachBucketSize>
 class UniqueSet {
 public:
-    explicit UniqueSet() {}
-
-    void Init(uint32_t bucket_count) {
+    explicit UniqueSet() {
         buckets_ = new common::FixedQueue<T, EachBucketSize>[BucketSize];
     }
 

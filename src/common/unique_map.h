@@ -18,8 +18,7 @@ class UniqueMap {
     };
 
 public:
-    explicit UniqueMap() {}
-    void Init(uint32_t bucket_count, uint32_t max_save) {
+    explicit UniqueMap() {
         buckets_ = new common::FixedQueue<Item*, EachBucketSize>[BucketSize];
     }
 
