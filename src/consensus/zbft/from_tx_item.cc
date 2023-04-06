@@ -1,7 +1,5 @@
 #include "consensus/zbft/from_tx_item.h"
 
-#include "zjcvm/execution.h"
-
 namespace zjchain {
 
 namespace consensus {

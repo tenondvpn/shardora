@@ -1,5 +1,7 @@
 #include "consensus/zbft/contract_user_create_call.h"
 
+#include "zjcvm/execution.h"
+
 namespace zjchain {
 
 namespace consensus {
