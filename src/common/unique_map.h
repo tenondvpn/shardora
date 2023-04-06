@@ -20,7 +20,7 @@ class UniqueMap {
 public:
     explicit UniqueMap() {}
     void Init(uint32_t bucket_count, uint32_t max_save) {
-        buckets_ = new common::FixedQueue<T, EachBucketSize>[BucketSize];
+        buckets_ = new common::FixedQueue<Item*, EachBucketSize>[BucketSize];
     }
 
     ~UniqueMap() {
