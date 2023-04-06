@@ -65,7 +65,7 @@ public:
         }
 
         if (IsFull()) {
-            for (uint8_ t i = 0; i < Capacity; ++i) {
+            for (uint8_t i = 0; i < Capacity; ++i) {
                 if (data_[i] == val) {
                     return true;
                 }
