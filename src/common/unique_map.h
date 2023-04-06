@@ -2,6 +2,7 @@
 
 #include <queue>
 
+#include "common/fixed_queue.h"
 #include "common/hash.h"
 
 namespace zjchain {

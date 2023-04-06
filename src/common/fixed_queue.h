@@ -1,4 +1,10 @@
+#pragma once
+
 #include <iostream>
+
+namespace zjchain {
+
+namespace common {
 
 template<typename T, uint8_t Capacity>
 class FixedQueue {
@@ -7,7 +13,6 @@ public:
 
     void Enqueue(const T& value) {
         if (IsFull()) {
-            std::cerr << "Error: Queue is full" << std::endl;
             return;
         }
 
@@ -90,3 +95,8 @@ public:
     uint8_t rear_;
     uint8_t size_;
 };
+
+
+}  // namespace common
+
+}  // namespace zjchain
