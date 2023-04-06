@@ -82,6 +82,7 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
         int do_tx_res = iter->second->HandleTx(
             txs_ptr_->thread_index,
             zjc_block,
+            zjc_host_,
             acc_balance_map,
             tx);
         if (do_tx_res != kConsensusSuccess) {
