@@ -44,8 +44,8 @@ public:
         if (!buckets_[idx].IsEmpty()) {
             uint8_t i = buckets_[idx].rear_;
             for (; i <= buckets_[idx].front_ && i < EachBucketSize; ++i) {
-                if (buckets_[idx].data_[i].k == key) {
-                    *value = buckets_[idx].data_[i].v;
+                if (buckets_[idx].data_[i]->k == key) {
+                    *value = buckets_[idx].data_[i]->v;
                     return true;
                 }
             }
@@ -59,8 +59,8 @@ public:
             }
 
             for (; i <= buckets_[idx].front_ && i < EachBucketSize; ++i) {
-                if (buckets_[idx].data_[i].k == key) {
-                    *value = buckets_[idx].data_[i].v;
+                if (buckets_[idx].data_[i]->k == key) {
+                    *value = buckets_[idx].data_[i]->v;
                     return true;
                 }
             }
@@ -91,7 +91,7 @@ private:
         if (!buckets_[idx].IsEmpty()) {
             uint8_t i = buckets_[idx].rear_;
             for (; i <= buckets_[idx].front_ && i < EachBucketSize; ++i) {
-                if (buckets_[idx].data_[i].k == key) {
+                if (buckets_[idx].data_[i]->k == key) {
                     return true;
                 }
             }
@@ -105,7 +105,7 @@ private:
             }
 
             for (; i <= buckets_[idx].front_ && i < EachBucketSize; ++i) {
-                if (buckets_[idx].data_[i].k == key) {
+                if (buckets_[idx].data_[i]->k == key) {
                     return true;
                 }
             }
