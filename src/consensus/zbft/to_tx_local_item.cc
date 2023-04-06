@@ -11,6 +11,7 @@ namespace consensus {
 int ToTxLocalItem::HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
+        zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     // gas just consume by from
@@ -59,7 +60,6 @@ int ToTxLocalItem::HandleTx(
                     }
 
                     // contract create call
-                    zjcvm::ZjchainHost zjc_host;
                     zjc_host.thread_idx_ = thread_idx;
                     zjc_host.my_address_ = tx.to();
                     // get caller prepaid gas

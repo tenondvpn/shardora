@@ -6,6 +6,7 @@
 #include "protos/pools.pb.h"
 #include "security/security.h"
 #include "transport/transport_utils.h"
+#include "zjcvm/zjc_host.h"
 
 namespace zjchain {
 
@@ -56,6 +57,7 @@ public:
     virtual int HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
+        zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) = 0;
     virtual int TxToBlockTx(

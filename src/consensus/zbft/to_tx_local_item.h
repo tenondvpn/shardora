@@ -25,6 +25,7 @@ public:
     virtual int HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
+        zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx);
     virtual int TxToBlockTx(

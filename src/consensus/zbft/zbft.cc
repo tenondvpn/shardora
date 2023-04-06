@@ -661,7 +661,10 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
 
         block_tx.set_status(kConsensusSuccess);
         int do_tx_res = iter->second->HandleTx(
-            txs_ptr_->thread_index, zjc_block, acc_balance_map, block_tx);
+            txs_ptr_->thread_index,
+            zjc_block,
+            acc_balance_map,
+            block_tx);
         if (do_tx_res != kConsensusSuccess) {
             tx_list->RemoveLast();
             continue;
