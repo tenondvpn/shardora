@@ -234,6 +234,7 @@ void AccountManager::HandleContractCreateUserCall(
         db::DbWriteBatch& db_batch) {
     auto account_info = GetAcountInfo(thread_idx, tx.to());
     if (account_info != nullptr) {
+        assert(false);
         return;
     }
 
@@ -254,6 +255,7 @@ void AccountManager::HandleContractCreateUserCall(
                 tx.amount(),
                 block.network_id(),
                 block.pool_index());
+            break;
         }
     }
 }
@@ -263,6 +265,11 @@ void AccountManager::NewBlockWithTx(
         const std::shared_ptr<block::protobuf::Block>& block_item,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
+    if (tx.status() != consensus::kConsensusSuccess) {
+        assert(false);
+        return;
+    }
+
     switch (tx.step()) {
     case pools::protobuf::kNormalFrom:
         HandleNormalFromTx(thread_idx, *block_item, tx, db_batch);

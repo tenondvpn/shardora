@@ -108,12 +108,12 @@ int ContractUserCreateCall::HandleTx(
         auto storage = block_tx.add_storages();
         storage->set_key(protos::kCreateContractBytesCode);
         storage->set_val_hash(zjc_host.create_bytes_code_);
+        ZJC_DEBUG("user success call create contract.");
     }
 
     acc_balance_map[from] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
-    ZJC_DEBUG("user success call create contract.");
     return kConsensusSuccess;
 }
 
