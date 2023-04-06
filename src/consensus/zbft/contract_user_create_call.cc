@@ -115,7 +115,7 @@ int ContractUserCreateCall::HandleTx(
     return kConsensusSuccess;
 }
 
-int SaveContractCreateInfo(
+int ContractUserCreateCall::SaveContractCreateInfo(
         zjcvm::ZjchainHost& zjc_host,
         block::protobuf::BlockTx& block_tx) {
     auto storage = block_tx.add_storages();
