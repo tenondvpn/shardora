@@ -2,6 +2,7 @@
 
 #include "block/account_manager.h"
 #include "consensus/zbft/tx_item_base.h"
+#include "protos/prefix_db.h"
 #include "security/security.h"
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
@@ -18,7 +19,7 @@ public:
             std::shared_ptr<block::AccountManager>& account_mgr,
             std::shared_ptr<security::Security>& sec_ptr)
             : TxItemBase(msg, account_mgr, sec_ptr) {
-        prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+        prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     }
 
     virtual ~FromTxItem() {}
