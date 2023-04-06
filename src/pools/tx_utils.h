@@ -3,6 +3,7 @@
 #include "common/hash.h"
 #include "common/time_utils.h"
 #include "common/utils.h"
+#include "db/db.h"
 #include "protos/pools.pb.h"
 #include "security/security.h"
 #include "transport/transport_utils.h"
