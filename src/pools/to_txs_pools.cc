@@ -89,14 +89,21 @@ void ToTxsPools::HandleNormalFrom(
     }
 
     uint32_t sharding_id = common::kInvalidUint32;
-    auto addr_info = GetAddressInfo(tx.to());
-    if (tx.step() == pools::protobuf::kContractUserCreateCall || addr_info == nullptr) {
+    uint32_t pool_index = -1;
+    if (tx.step() == pools::protobuf::kContractUserCreateCall) {
         sharding_id = network::kRootCongressNetworkId;
+        pool_index = block.pool_index();
     } else {
-        sharding_id = addr_info->sharding_id();
+        auto addr_info = GetAddressInfo(tx.to());
+        if (addr_info == nullptr) {
+            sharding_id = network::kRootCongressNetworkId;
+        } else {
+            sharding_id = addr_info->sharding_id();
+        }
     }
+    
 
-    AddTxToMap(block, tx, sharding_id, -1);
+    AddTxToMap(block, tx, sharding_id, pool_index);
 }
 
 void ToTxsPools::HandleRootCreateAddress(
