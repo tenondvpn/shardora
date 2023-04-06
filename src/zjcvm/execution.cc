@@ -15,10 +15,7 @@ namespace zjchain {
 namespace zjcvm {
 
 Execution::Execution() {
-    for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
-        address_exists_set_[i].Init(10000, 16);
-        storage_map_[i].Init(20000, 16);
-    }
+    for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {}
 }
 
 Execution::~Execution() {}
