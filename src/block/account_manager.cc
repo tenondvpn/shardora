@@ -34,11 +34,7 @@ int AccountManager::Init(
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     pools_mgr_ = pools_mgr;
-    address_map_ = new common::UniqueMap<std::string, protos::AddressInfoPtr>[thread_count];
-    for (uint32_t i = 0; i < thread_count; ++i) {
-        address_map_[i].Init(1024 * 1, 16);
-    }
-
+    address_map_ = new common::UniqueMap<std::string, protos::AddressInfoPtr, 1024, 16>[thread_count];
     CreateNormalToAddressInfo();
     CreateNormalLocalToAddressInfo();
     inited_ = true;

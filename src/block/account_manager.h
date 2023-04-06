@@ -83,7 +83,7 @@ private:
     static const uint64_t kRefreshPoolMaxHeightPeriod = 4000000llu;
 
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
-    common::UniqueMap<std::string, protos::AddressInfoPtr>* address_map_ = nullptr;
+    common::UniqueMap<std::string, protos::AddressInfoPtr, 1024, 16>* address_map_ = nullptr;
     common::Tick check_missing_height_tick_;
     common::Tick flush_db_tick_;
     common::Tick refresh_pool_max_height_tick_;
