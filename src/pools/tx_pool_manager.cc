@@ -129,7 +129,7 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
             "prepayment: %lu, default call contract gas: %lu",
             msg_ptr->address_info->balance(),
             tx_msg.amount(),
-            consensus::kCallContractDefaultUseGas)
+            consensus::kCallContractDefaultUseGas);
             return;
     }
 
@@ -193,6 +193,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
 }
 
 void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr) {
+    auto& tx_msg = msg_ptr->header.tx_proto();
     if (!tx_msg.has_contract_code() || memcmp(
             tx_msg.contract_code().c_str(),
             protos::kContractBytesStartCode.c_str(),
