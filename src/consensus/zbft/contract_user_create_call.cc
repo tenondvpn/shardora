@@ -227,8 +227,8 @@ int ContractUserCreateCall::SaveContractCreateInfo(
             }
 
             if (transfer_iter->second != block_tx.to() && transfer_iter->second != block_tx.from()) {
-                // from and contract itself transfers direct handled
-                // transfer to other address
+                // from and contract itself transfers direct
+                // transfer to other address by cross sharding transfer
                 auto trans_item = block_tx.add_contract_txs();
                 trans_item->set_from(transfer_iter->first);
                 trans_item->set_to(to_iter->first);
