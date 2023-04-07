@@ -9,7 +9,7 @@ namespace zjchain {
 
 namespace consensus {
 
-class ContractGasPrepayment : public TxItemBase {
+class ContractGasPrepayment {
 public:
     ContractGasPrepayment(
             uint8_t thread_count,
