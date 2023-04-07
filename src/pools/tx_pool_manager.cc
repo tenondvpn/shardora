@@ -67,6 +67,8 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             HandleNormalFromTx(msg_ptr);
         } else if (tx_msg.step() == pools::protobuf::kContractUserCreateCall) {
             HandleCreateContractTx(msg_ptr);
+        } else if (tx_msg.step() == pools::protobuf::kContractUserCall) {
+            HandleUserCallContractTx(msg_ptr);
         } else if (tx_msg.step() == pools::protobuf::kRootCreateAddress) {
             if (tx_msg.to().size() != block::kUnicastAddressLength) {
                 return;
@@ -93,6 +95,10 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void TxPoolManager::SaveStorageToDb(const transport::protobuf::Header& msg) {
+
+}
+
+void TxPoolManager::HandleUserCallContractTx(const transport::MessagePtr& msg_ptr) {
 
 }
 
@@ -172,8 +178,12 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
         return;
     }
 
-    if (!tx_msg.has_contract_code()) {
-        ZJC_DEBUG("create contract not has contract code.");
+    if (!tx_msg.has_contract_code() || memcmp(
+            tx_msg.contract_code().c_str(),
+            protos::kContractBytesStartCode.c_str(),
+            protos::kContractBytesStartCode.size()) != 0) {
+        ZJC_DEBUG("create contract not has valid contract code: %s",
+            common::Encode::HexEncode(tx_msg.contract_code()).c_str());
         return;
     }
 

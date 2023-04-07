@@ -12,13 +12,11 @@ enum StepType {
     kConsensusCreateGenesisAcount = 5;
     kConsensusLocalTos = 6;
     kContractUserCreateCall = 7;
-    kContractRootCreateCall = 8;
-    kContractShardCreateCall = 9;
-    kContractUserCall = 10;
-    kContractExcute = 11;
-    kContractBroadcast = 12;
-    kRootCreateAddress = 13;
-    kRootCreateAddressCrossSharding = 14;
+    kContractUserCall = 8;
+    kContractExcute = 9;
+    kContractBroadcast = 10;
+    kRootCreateAddress = 11;
+    kRootCreateAddressCrossSharding = 12;
 }
 
 message ToTxHeights {

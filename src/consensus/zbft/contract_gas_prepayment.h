@@ -47,6 +47,10 @@ public:
         std::string key = tx.to() + tx.from();
         prepayment_gas_[thread_idx].update(key, tx.contract_prepayment());
         pools_max_heights_[block_item->pool_index()] = block_item->height();
+        ZJC_DEBUG("contract: %s, set user: %s, prepaymen: %lu",
+            common::Encode::HexEncode(tx.to()).c_str(),
+            common::Encode::HexEncode(tx.from()).c_str(),
+            tx.contract_prepayment());
     }
   
     uint64_t GetAddressPrepayment(

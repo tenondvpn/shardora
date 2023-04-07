@@ -132,6 +132,7 @@ private:
     void DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& addr);
     void HandleCreateContractTx(const transport::MessagePtr& msg_ptr);
+    void HandleUserCallContractTx(const transport::MessagePtr& msg_ptr);
     void HandleNormalFromTx(const transport::MessagePtr& msg_ptr);
     void HandleCrossShardingToTxs(const transport::MessagePtr& msg_ptr);
 
