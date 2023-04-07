@@ -59,7 +59,7 @@ void RootZbft::RootCreateAddressCrossSharding(block::protobuf::Block& zjc_block)
 
     auto tx_list = zjc_block.mutable_tx_list();
     auto& tx = *tx_list->Add();
-    iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), &tx);
+    iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), db_batch_, &tx);
 }
 
 void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) {
@@ -69,7 +69,7 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         auto& tx = *tx_list->Add();
         auto& src_tx = iter->second->msg_ptr->header.tx_proto();
-        iter->second->TxToBlockTx(src_tx, &tx);
+        iter->second->TxToBlockTx(src_tx, db_batch_, &tx);
         // create address must to and have transfer amount
         if (tx.step() != pools::protobuf::kRootCreateAddress || tx.amount() <= 0) {
             ZJC_DEBUG("tx invalid step: %d, amount: %lu, src: %d, %lu",
@@ -107,7 +107,7 @@ void RootZbft::RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_bl
 
     auto tx_list = zjc_block.mutable_tx_list();
     auto& tx = *tx_list->Add();
-    iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), &tx);
+    iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), db_batch_, &tx);
     // use new node status
 //     if (elect_mgr_->GetElectionTxInfo(tx) != elect::kElectSuccess) {
 //         assert(false);
@@ -135,7 +135,7 @@ void RootZbft::RootCreateTimerBlock(block::protobuf::Block& zjc_block) {
 
     auto tx_list = zjc_block.mutable_tx_list();
     auto& tx = *tx_list->Add();
-    iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), &tx);
+    iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), db_batch_, &tx);
 
     // (TODO): check elect is valid in the time block period,
     // one time block, one elect block
@@ -152,7 +152,7 @@ void RootZbft::RootCreateFinalStatistic(block::protobuf::Block& zjc_block) {
 
     auto iter = tx_map.begin();
     auto& src_tx = iter->second->msg_ptr->header.tx_proto();
-    iter->second->TxToBlockTx(src_tx, &tx);
+    iter->second->TxToBlockTx(src_tx, db_batch_, &tx);
     tx.set_amount(0);
     tx.set_gas_limit(0);
     tx.set_gas_used(0);

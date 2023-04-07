@@ -633,7 +633,7 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
         auto& tx_info = iter->second->msg_ptr->header.tx_proto();
         auto& block_tx = *tx_list->Add();
         block_tx.set_from(iter->second->msg_ptr->address_info->addr());
-        int res = iter->second->TxToBlockTx(tx_info, &block_tx);
+        int res = iter->second->TxToBlockTx(tx_info, db_batch_, &block_tx);
         if (res != kConsensusSuccess) {
             tx_list->RemoveLast();
             continue;
