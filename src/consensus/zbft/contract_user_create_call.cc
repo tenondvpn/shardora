@@ -185,13 +185,13 @@ int ContractUserCreateCall::SaveContractCreateInfo(
 
         for (auto storage_iter = account_iter->second.str_storage.begin();
                 storage_iter != account_iter->second.str_storage.end(); ++storage_iter) {
-            prefix_db_->SaveAddressStorage(
+            prefix_db_->SaveAddressStringStorage(
                 account_iter->first,
                 storage_iter->first,
                 storage_iter->second.str_val,
                 *db_batch);
             gas_more += (sizeof(account_iter->first.bytes) +
-                sizeof(storage_iter->first.bytes) +
+                storage_iter->first.size() +
                 storage_iter->second.str_val.size()) *
                 consensus::kKeyValueStorageEachBytes;
         }

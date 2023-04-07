@@ -228,7 +228,7 @@ public:
         return tmp_val;
     }
 
-    void SaveAddressStorage(
+    void SaveAddressStringStorage(
             const evmc::address& addr,
             const evmc::bytes32& k,
             const evmc::bytes32& v,
