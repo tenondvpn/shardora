@@ -130,7 +130,7 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
             msg_ptr->address_info->balance(),
             tx_msg.amount(),
             consensus::kCallContractDefaultUseGas);
-            return;
+        return false;
     }
 
     if (msg_ptr->address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
