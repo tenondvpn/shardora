@@ -98,6 +98,7 @@ public:
             return;
         }
 
+        uint32_t idx = Hash32(key) % BucketSize;
         if (buckets_[idx].rear_ == buckets_[idx].front_) {
             for (uint8_t i = 0; i < EachBucketSize; ++i) {
                 if (buckets_[idx].data_[i]->k == key) {
