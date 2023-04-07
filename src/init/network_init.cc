@@ -646,6 +646,12 @@ void NetworkInit::AddBlockItemToCache(
         return;
     }
 
+    ZJC_DEBUG("cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
+        block->network_id(),
+        block->pool_index(),
+        block->height(),
+        block->tx_list_size(),
+        common::Encode::HexEncode(block->hash()).c_str());
     pools_mgr_->UpdateLatestInfo(
         thread_idx,
         block->network_id(),
