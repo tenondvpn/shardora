@@ -228,7 +228,7 @@ public:
         return tmp_val;
     }
 
-    void SaveAddressStringStorage(
+    void SaveAddressStorage(
             const evmc::address& addr,
             const evmc::bytes32& k,
             const evmc::bytes32& v,
@@ -242,7 +242,7 @@ public:
         db_batch.Put(key, val);
     }
 
-    void SaveAddressStorage(
+    void SaveAddressStringStorage(
             const evmc::address& addr,
             const evmc::bytes32& k,
             const std::string& val,
