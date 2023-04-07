@@ -37,6 +37,7 @@ protected:
         }
 
         auto storage = block_tx->add_storages();
+        storage->set_key(tx_info.key());
         if (tx_info.value().size() > 32) {
             auto hash = common::Hash::keccak256(tx_info.value());
             storage->set_val_hash(hash);
