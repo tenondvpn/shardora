@@ -29,9 +29,6 @@ public:
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx);
-    virtual int TxToBlockTx(
-        const pools::protobuf::TxMessage& tx_info,
-        block::protobuf::BlockTx* block_tx);
 
 private:
     int CreateContractCallExcute(

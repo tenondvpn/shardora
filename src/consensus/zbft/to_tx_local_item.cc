@@ -70,6 +70,7 @@ int ToTxLocalItem::HandleTx(
 
 int ToTxLocalItem::TxToBlockTx(
         const pools::protobuf::TxMessage& tx_info,
+        std::shared_ptr<db::DbWriteBatch>& db_batch,
         block::protobuf::BlockTx* block_tx) {
     DefaultTxItem(tx_info, block_tx);
     // change

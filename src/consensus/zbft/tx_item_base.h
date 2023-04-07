@@ -28,17 +28,23 @@ protected:
 
     virtual int TxToBlockTx(
             const pools::protobuf::TxMessage& tx_info,
+            std::shared_ptr<db::DbWriteBatch>& db_batch,
             block::protobuf::BlockTx* block_tx) {
         DefaultTxItem(tx_info, block_tx);
         // change
         if (tx_info.key().empty()) {
-            return consensus::kConsensusError;
+            return consensus::kConsensusSuccess;
         }
 
         auto storage = block_tx->add_storages();
-        storage->set_key(tx_info.key());
-        storage->set_val_hash(tx_info.value());
-        storage->set_val_size(0);
+        if (tx_info.value().size() > 32) {
+            auto hash = common::Hash::keccak256(tx_info.value());
+            storage->set_val_hash(hash);
+            storage->set_val_size(tx_info.value().size());
+            db_batch->Put(hash, tx_info.value());
+        } else {
+            storage->set_val_hash(tx_info.value());
+        }
         return consensus::kConsensusSuccess;
     }
 

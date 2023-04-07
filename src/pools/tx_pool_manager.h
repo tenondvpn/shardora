@@ -135,6 +135,7 @@ private:
     void HandleUserCallContractTx(const transport::MessagePtr& msg_ptr);
     void HandleNormalFromTx(const transport::MessagePtr& msg_ptr);
     void HandleCrossShardingToTxs(const transport::MessagePtr& msg_ptr);
+    bool UserTxValid(const transport::MessagePtr& msg_ptr);
 
     static const uint32_t kPopMessageCountEachTime = 320u;
 

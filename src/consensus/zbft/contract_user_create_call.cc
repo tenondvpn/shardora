@@ -311,22 +311,6 @@ int ContractUserCreateCall::CreateContractCallExcute(
     return kConsensusSuccess;
 }
 
-int ContractUserCreateCall::TxToBlockTx(
-        const pools::protobuf::TxMessage& tx_info,
-        block::protobuf::BlockTx* block_tx) {
-    DefaultTxItem(tx_info, block_tx);
-    // change
-    if (!tx_info.key().empty()) {
-        auto storage = block_tx->add_storages();
-        storage->set_key(tx_info.key());
-        // create contract by from to create just save all data
-        storage->set_val_hash(tx_info.value());
-        storage->set_val_size(0);
-    }
-
-    return kConsensusSuccess;
-}
-
 };  // namespace consensus
 
 };  // namespace zjchain

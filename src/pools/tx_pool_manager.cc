@@ -99,7 +99,67 @@ void TxPoolManager::SaveStorageToDb(const transport::protobuf::Header& msg) {
 }
 
 void TxPoolManager::HandleUserCallContractTx(const transport::MessagePtr& msg_ptr) {
+    auto& tx_msg = msg_ptr->header.tx_proto();
+    if (tx_msg.contract_input().empty() &&
+            tx_msg.contract_prepayment() < consensus::kCallContractDefaultUseGas) {
+        ZJC_DEBUG("call contract not has valid contract input"
+            "and contract prepayment invalid.");
+        return;
+    }
 
+    if (!UserTxValid(msg_ptr)) {
+        return;
+    }
+
+    msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
+}
+
+bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
+    auto& tx_msg = header.tx_proto();
+    msg_ptr->address_info = GetAddressInfo(security_->GetAddress(tx_msg.pubkey()));
+    if (msg_ptr->address_info == nullptr) {
+        ZJC_WARN("no address info.");
+        return false;
+    }
+
+    if (msg_ptr->address_info->balance() <
+            tx_msg.amount() + tx_msg.contract_prepayment() + consensus::kCallContractDefaultUseGas) {
+        ZJC_DEBUG("address balance invalid: %lu, transfer amount: %lu, "
+            "prepayment: %lu, default call contract gas: %lu",
+            msg_ptr->address_info->balance(),
+            tx_msg.amount(),
+            consensus::kCallContractDefaultUseGas)
+            return;
+    }
+
+    if (msg_ptr->address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+        ZJC_WARN("sharding error: %d, %d",
+            msg_ptr->address_info->sharding_id(),
+            common::GlobalInfo::Instance()->network_id());
+        return false;
+    }
+
+    if (tx_msg.has_key() && tx_msg.key().size() > kTxStorageKeyMaxSize) {
+        ZJC_DEBUG("key size error now: %d, max: %d.",
+            tx_msg.key().size(), kTxStorageKeyMaxSize);
+        return false;
+    }
+
+    msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
+    if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
+        // avoid save gid different tx
+        ZJC_DEBUG("tx msg hash exists: %s failed!",
+            common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+        return false;
+    }
+
+    if (prefix_db_->GidExists(tx_msg.gid())) {
+        ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+        return false;
+    }
+
+    return true;
 }
 
 void TxPoolManager::HandleCrossShardingToTxs(const transport::MessagePtr& msg_ptr) {
@@ -125,37 +185,7 @@ void TxPoolManager::HandleCrossShardingToTxs(const transport::MessagePtr& msg_pt
 }
 
 void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
-    auto& header = msg_ptr->header;
-    auto& tx_msg = header.tx_proto();
-    msg_ptr->address_info = GetAddressInfo(security_->GetAddress(tx_msg.pubkey()));
-    if (msg_ptr->address_info == nullptr) {
-        ZJC_WARN("no address info.");
-        return;
-    }
-
-    if (msg_ptr->address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-        ZJC_WARN("sharding error: %d, %d",
-            msg_ptr->address_info->sharding_id(),
-            common::GlobalInfo::Instance()->network_id());
-        return;
-    }
-
-    if (tx_msg.has_key() && tx_msg.key().size() > kTxStorageKeyMaxSize) {
-        ZJC_DEBUG("key size error now: %d, max: %d.",
-            tx_msg.key().size(), kTxStorageKeyMaxSize);
-        return;
-    }
-
-    msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-    if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
-        // avoid save gid different tx
-        ZJC_DEBUG("tx msg hash exists: %s failed!",
-            common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
-        return;
-    }
-
-    if (prefix_db_->GidExists(tx_msg.gid())) {
-        ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+    if (!UserTxValid(msg_ptr)) {
         return;
     }
 
@@ -163,21 +193,6 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
 }
 
 void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr) {
-    auto& header = msg_ptr->header;
-    auto& tx_msg = header.tx_proto();
-    msg_ptr->address_info = GetAddressInfo(security_->GetAddress(tx_msg.pubkey()));
-    if (msg_ptr->address_info == nullptr) {
-        ZJC_WARN("no address info.");
-        return;
-    }
-
-    if (msg_ptr->address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-        ZJC_WARN("sharding error: %d, %d",
-            msg_ptr->address_info->sharding_id(),
-            common::GlobalInfo::Instance()->network_id());
-        return;
-    }
-
     if (!tx_msg.has_contract_code() || memcmp(
             tx_msg.contract_code().c_str(),
             protos::kContractBytesStartCode.c_str(),
@@ -187,16 +202,7 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
         return;
     }
 
-    msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-    if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
-        // avoid save gid different tx
-        ZJC_DEBUG("tx msg hash exists: %s failed!",
-            common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
-        return;
-    }
-
-    if (prefix_db_->GidExists(tx_msg.gid())) {
-        ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+    if (!UserTxValid(msg_ptr)) {
         return;
     }
 
