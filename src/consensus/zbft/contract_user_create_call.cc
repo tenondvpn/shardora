@@ -69,7 +69,7 @@ int ContractUserCreateCall::HandleTx(
     }
 
     auto gas_used = block_tx.gas_limit() - res.gas_left;
-    if (res.gas_left > block_tx.gas_limit()) {
+    if (res.gas_left > (int64_t)block_tx.gas_limit()) {
         gas_used = block_tx.gas_limit();
     }
 
@@ -94,10 +94,10 @@ int ContractUserCreateCall::HandleTx(
 
     int64_t tmp_from_balance = from_balance;
     if (block_tx.status() == kConsensusSuccess) {
-        uint64_t dec_amount = block_tx.amount() +
+        int64_t dec_amount = block_tx.amount() +
             block_tx.contract_prepayment() +
             gas_used * block_tx.gas_price();
-        if (tmp_from_balance >= gas_used * block_tx.gas_price()) {
+        if (tmp_from_balance >= int64_t(gas_used * block_tx.gas_price())) {
             if (tmp_from_balance < dec_amount) {
                 block_tx.set_status(consensus::kConsensusAccountBalanceError);
                 ZJC_ERROR("leader balance error: %llu, %llu", tmp_from_balance, dec_amount);
@@ -109,7 +109,7 @@ int ContractUserCreateCall::HandleTx(
                 tmp_from_balance, gas_used * block_tx.gas_price());
         }
     } else {
-        if (tmp_from_balance >= gas_used * block_tx.gas_price()) {
+        if (tmp_from_balance >= int64_t(gas_used * block_tx.gas_price())) {
             tmp_from_balance -= gas_used * block_tx.gas_price();
         } else {
             tmp_from_balance = 0;
@@ -140,7 +140,7 @@ int ContractUserCreateCall::HandleTx(
                 break;
             }
 
-            if (tmp_from_balance < gas_used * block_tx.gas_price()) {
+            if (tmp_from_balance < int64_t(gas_used * block_tx.gas_price())) {
                 block_tx.set_status(consensus::kConsensusAccountBalanceError);
                 ZJC_ERROR("balance error: %llu, %llu", tmp_from_balance, gas_more * block_tx.gas_price());
                 break;
@@ -150,7 +150,7 @@ int ContractUserCreateCall::HandleTx(
             int64_t dec_amount = static_cast<int64_t>(block_tx.amount()) -
                 caller_balance_add +
                 static_cast<int64_t>(block_tx.contract_prepayment()) +
-                gas_used * block_tx.gas_price();
+                static_cast<int64_t>(gas_used * block_tx.gas_price());
             if ((int64_t)tmp_from_balance < dec_amount) {
                 block_tx.set_status(consensus::kConsensusAccountBalanceError);
                 ZJC_ERROR("leader balance error: %llu, %llu", tmp_from_balance, caller_balance_add);
@@ -263,7 +263,7 @@ int ContractUserCreateCall::SaveContractCreateInfo(
             return kConsensusError;
         }
     } else {
-        if (block_tx.amount() < -contract_balance_add) {
+        if (int64_t(block_tx.amount()) < -contract_balance_add) {
             return kConsensusError;
         }
 
