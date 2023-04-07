@@ -8,6 +8,7 @@
 #include "common/parse_args.h"
 #include "common/tick.h"
 #include "consensus/zbft/bft_manager.h"
+#include "consensus/zbft/contract_gas_prepayment.h"
 #include "db/db.h"
 #include "elect/elect_manager.h"
 #include "http/http_server.h"
@@ -75,6 +76,7 @@ private:
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
+    std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
     http::HttpServer http_server_;
     HttpHandler http_handler_;
     uint8_t main_thread_idx_ = 255;

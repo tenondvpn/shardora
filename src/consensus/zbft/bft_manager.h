@@ -9,6 +9,7 @@
 #include "common/tick.h"
 #include "common/limit_hash_map.h"
 #include "consensus/consensus.h"
+#include "consensus/zbft/contract_gas_prepayment.h"
 #include "consensus/zbft/contract_user_create_call.h"
 #include "consensus/zbft/from_tx_item.h"
 #include "consensus/zbft/root_to_tx_item.h"
@@ -40,6 +41,7 @@ class WaitingTxsPools;
 class BftManager : public Consensus {
 public:
     int Init(
+        std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
         std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<block::BlockManager>& block_mgr,
@@ -145,6 +147,7 @@ private:
 
     static const uint32_t kCheckTimeoutPeriodMilli = 3000lu;
 
+    std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;

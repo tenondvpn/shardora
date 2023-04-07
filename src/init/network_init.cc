@@ -86,6 +86,9 @@ int NetworkInit::Init(int argc, char** argv) {
     vss_mgr_ = std::make_shared<vss::VssManager>(security_);
     kv_sync_ = std::make_shared<sync::KeyValueSync>();
     kv_sync_->Init(db_);
+    gas_prepayment_ = std::make_shared<consensus::ContractGasPrepayment>(
+        common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
+        db_);
     zjcvm::Execution::Instance()->Init(db_);
     InitLocalNetworkId();
     if (net_handler_.Init(db_) != transport::kTransportSuccess) {
@@ -137,6 +140,7 @@ int NetworkInit::Init(int argc, char** argv) {
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     bft_mgr_ = std::make_shared<consensus::BftManager>();
     auto bft_init_res = bft_mgr_->Init(
+        gas_prepayment_,
         vss_mgr_,
         account_mgr_,
         block_mgr_,
@@ -654,8 +658,11 @@ void NetworkInit::AddBlockItemToCache(
         switch (tx_list[i].step()) {
         case pools::protobuf::kNormalFrom:
         case pools::protobuf::kConsensusLocalTos:
+            account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
+            break;
         case pools::protobuf::kContractUserCreateCall:
             account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
+            gas_prepayment_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             break;
         case pools::protobuf::kNormalTo:
             pools_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);

@@ -92,6 +92,43 @@ public:
         return true;
     }
 
+    void update(const KeyType& key, const ValueType& value) {
+        if (!exists(key)) {
+            add(key, value);
+            return;
+        }
+
+        if (buckets_[idx].rear_ == buckets_[idx].front_) {
+            for (uint8_t i = 0; i < EachBucketSize; ++i) {
+                if (buckets_[idx].data_[i]->k == key) {
+                    buckets_[idx].data_[i]->v = value;
+                    return;
+                }
+            }
+        } else if (buckets_[idx].rear_ > buckets_[idx].front_) {
+            for (uint8_t i = buckets_[idx].front_; i < buckets_[idx].rear_; ++i) {
+                if (buckets_[idx].data_[i]->k == key) {
+                    buckets_[idx].data_[i]->v = value;
+                    return;
+                }
+            }
+        } else {
+            for (uint8_t i = buckets_[idx].front_; i < EachBucketSize; ++i) {
+                if (buckets_[idx].data_[i]->k == key) {
+                    buckets_[idx].data_[i]->v = value;
+                    return;
+                }
+            }
+
+            for (uint8_t i = 0; i < buckets_[idx].rear_; ++i) {
+                if (buckets_[idx].data_[i]->k == key) {
+                    buckets_[idx].data_[i]->v = value;
+                    return;
+                }
+            }
+        }
+    }
+
     bool exists(const KeyType& key) {
         uint32_t idx = Hash32(key) % BucketSize;
         return Exists(idx, key);

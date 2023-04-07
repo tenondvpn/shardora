@@ -43,6 +43,7 @@ public:
             static const T empty_value{};
             return empty_value;
         }
+
         return data_[front_];
     }
 
@@ -51,6 +52,7 @@ public:
             static const T empty_value{};
             return empty_value;
         }
+
         const uint8_t rear_index = rear_ == 0 ? Capacity - 1 : rear_ - 1;
         return data_[rear_index];
     }

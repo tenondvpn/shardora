@@ -47,6 +47,7 @@ static const std::string kLatestPoolPrefix = "n\x01";
 static const std::string kHeightTreePrefix = "o\x01";
 static const std::string kGidPrefix = "p\x01";
 static const std::string kTmpContractAddressCodesPrefix = "q\x01";
+static const std::string kContractGasPrepaymentPrefix = "r\x01";
 static const std::string kTemporaryKeyPrefix = "t\x01";
 
 class PrefixDb {
@@ -788,6 +789,47 @@ public:
         }
 
         return val;
+    }
+
+    void SaveContractUserPrepayment(
+            const std::string& contract_addr,
+            const std::string& user_addr
+            uint64_t height,
+            uint64_t prepayment,
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(128);
+        key.append(kContractGasPrepaymentPrefix);
+        key.append(contract_addr);
+        key.append(user_addr);
+        char data[16];
+        uint64_t* tmp = (uint64_t*)data;
+        tmp[0] = height;
+        tmp[1] = prepayment;
+        std::string val(tmp, sizeof(tmp));
+        db_batch.Put(key, val);
+    }
+
+    bool GetContractUserPrepayment(
+            const std::string& contract_addr,
+            const std::string& user_addr,
+            uint64_t* height,
+            uint64_t* prepayment) {
+        std::string key;
+        key.reserve(128);
+        key.append(kContractGasPrepaymentPrefix);
+        key.append(contract_addr);
+        key.append(user_addr);
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            return false;
+        }
+
+        uint64_t* data = (uint64_t*)val.c_str();
+        *height = data[0];
+        *prepayment = data[1];
+        return true;
     }
 
 private:
