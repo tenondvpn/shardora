@@ -27,14 +27,14 @@ int ContractUserCall::HandleTx(
     }
 
     do  {
-        gas_used = consensus::kCallContractDefaultUseGas;
+        gas_used = consensus::kTransferGas;
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
             gas_used += (block_tx.storages(i).key().size() + block_tx.storages(i).val_size()) *
                 consensus::kKeyValueStorageEachBytes;
         }
 
-        if (from_balance < block_tx.gas_limit()  * block_tx.gas_price()) {
+        if (from_balance < gas_used  * block_tx.gas_price()) {
             block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
             ZJC_DEBUG("balance error: %lu, %lu, %lu",
                 from_balance,
@@ -54,7 +54,7 @@ int ContractUserCall::HandleTx(
     if (block_tx.status() == kConsensusSuccess) {
         uint64_t dec_amount = block_tx.amount() +
             block_tx.contract_prepayment() +
-            block_tx.gas_limit() * block_tx.gas_price();
+            gas_used * block_tx.gas_price();
         if (from_balance >= gas_used * block_tx.gas_price()) {
             if (from_balance >= dec_amount) {
                 from_balance -= dec_amount;

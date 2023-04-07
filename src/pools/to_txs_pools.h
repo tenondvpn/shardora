@@ -39,6 +39,10 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
+    void HandleCallContractUserCall(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
     void HandleRootCreateAddress(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,

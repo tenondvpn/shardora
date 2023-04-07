@@ -100,7 +100,8 @@ void TxPoolManager::SaveStorageToDb(const transport::protobuf::Header& msg) {
 
 void TxPoolManager::HandleUserCallContractTx(const transport::MessagePtr& msg_ptr) {
     auto& tx_msg = msg_ptr->header.tx_proto();
-    if (tx_msg.contract_input().empty() &&
+    // user can't direct call contract, pay contract prepayment and call contract direct
+    if (!tx_msg.contract_input().empty() ||
             tx_msg.contract_prepayment() < consensus::kCallContractDefaultUseGas) {
         ZJC_DEBUG("call contract not has valid contract input"
             "and contract prepayment invalid.");

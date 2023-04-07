@@ -17,6 +17,7 @@ enum StepType {
     kContractBroadcast = 10;
     kRootCreateAddress = 11;
     kRootCreateAddressCrossSharding = 12;
+    kContractGasPrepayment = 13;
 }
 
 message ToTxHeights {
@@ -34,6 +35,7 @@ message ToTxMessageItem {
     optional uint64 amount = 2;
     optional uint32 sharding_id = 3;  // for root to diplacement shard and pool
     optional uint32 pool_index = 4;
+    optional int32 step = 5;
 }
 
 message ToTxMessage {

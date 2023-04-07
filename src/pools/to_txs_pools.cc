@@ -68,22 +68,54 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
             continue;
         }
 
-        if (tx_list[i].step() == pools::protobuf::kNormalTo ||
-                tx_list[i].step() == pools::protobuf::kRootCreateAddressCrossSharding) {
+        switch (tx_list[i].step()) {
+        case pools::protobuf::kNormalTo:
+        case pools::protobuf::kRootCreateAddressCrossSharding:
             HandleNormalToTx(block, tx_list[i], db_batch);
-        }
-
-        if (tx_list[i].step() == pools::protobuf::kContractUserCreateCall) {
+            break;
+        case pools::protobuf::kContractUserCreateCall:
             HandleCreateContractUserCall(block, tx_list[i], db_batch);
-        }
-
-        if (tx_list[i].step() == pools::protobuf::kNormalFrom) {
+            break;
+        case pools::protobuf::kContractUserCall:
+            HandleCallContractUserCall(block, tx_list[i], db_batch);
+            break;
+        case pools::protobuf::kNormalFrom:
             HandleNormalFrom(block, tx_list[i], db_batch);
+            break;
+        case pools::protobuf::kRootCreateAddress:
+            HandleRootCreateAddress(block, tx_list[i], db_batch);
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+void ToTxsPools::HandleCallContractUserCall(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
+    if (tx.amount() > 0) {
+        HandleNormalFrom(block, tx, db_batch);
+    }
+
+    if (tx.contract_prepayment() > 0) {
+        uint32_t sharding_id = common::kInvalidUint32;
+        uint32_t pool_index = -1;
+        auto addr_info = GetAddressInfo(tx.to());
+        if (addr_info == nullptr) {
+            sharding_id = network::kRootCongressNetworkId;
+        } else {
+            sharding_id = addr_info->sharding_id();
         }
 
-        if (tx_list[i].step() == pools::protobuf::kRootCreateAddress) {
-            HandleRootCreateAddress(block, tx_list[i], db_batch);
-        }
+        AddTxToMap(
+            block,
+            tx.to(),
+            pools::protobuf::kContractGasPrepayment,
+            tx.contract_prepayment(),
+            sharding_id,
+            pool_index);
     }
 }
 
@@ -446,6 +478,7 @@ int ToTxsPools::CreateToTxWithHeights(
         to_item->set_des(iter->first);
         to_item->set_amount(iter->second.amount);
         to_item->set_pool_index(iter->second.pool_index);
+        to_item->set_step(iter->second.type);
         // create contract just in caller sharding
         if (iter->second.type == pools::protobuf::kContractUserCreateCall) {
             assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
