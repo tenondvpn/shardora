@@ -77,8 +77,6 @@ static transport::MessagePtr CreateTransactionWithAttr(
     new_tx->set_gid(gid);
     new_tx->set_pubkey(security->GetPublicKeyUnCompressed());
     new_tx->set_step(pools::protobuf::kNormalFrom);
-    
-
     new_tx->set_to(to);
     new_tx->set_amount(amount);
     new_tx->set_gas_limit(gas_limit);
@@ -87,6 +85,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
         if (key == "create_contract") {
             new_tx->set_step(pools::protobuf::kContractUserCreateCall);
             new_tx->set_contract_code(val);
+            new_tx->set_contract_prepayment(9000000000lu);
         } else {
             new_tx->set_key(key);
             if (!val.empty()) {
