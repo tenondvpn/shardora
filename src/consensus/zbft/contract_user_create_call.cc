@@ -211,23 +211,23 @@ int ContractUserCreateCall::SaveContractCreateInfo(
                 return kConsensusError;
             }
 
-            if (tx_info->tx.to() == transfer_iter->first) {
+            if (block_tx.to() == transfer_iter->first) {
                 contract_balance_add -= to_iter->second;
             }
 
-            if (tx_info->tx.to() == to_iter->first) {
+            if (block_tx.to() == to_iter->first) {
                 contract_balance_add += to_iter->second;
             }
 
-            if (tx_info->tx.from() == transfer_iter->first) {
+            if (block_tx.from() == transfer_iter->first) {
                 caller_balance_add -= to_iter->second;
             }
 
-            if (tx_info->tx.from() == to_iter->first) {
+            if (block_tx.from() == to_iter->first) {
                 caller_balance_add += to_iter->second;
             }
 
-            if (transfer_iter->second != block_tx.to() && transfer_iter->second != block_tx.from()) {
+            if (to_iter->first != block_tx.to() && to_iter->first != block_tx.from()) {
                 // from and contract itself transfers direct
                 // transfer to other address by cross sharding transfer
                 auto trans_item = block_tx.add_contract_txs();
