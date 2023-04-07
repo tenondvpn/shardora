@@ -27,6 +27,7 @@ public:
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
         if (block.height() <= pools_max_heights_[block.pool_index()]) {
+            assert(false);
             return;
         }
 
@@ -36,6 +37,7 @@ public:
                 if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &to_txs_str)) {
                     ZJC_DEBUG("handle local to tx failed get val hash error: %s",
                         common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
+                    assert(false);
                     return;
                 }
 
@@ -45,11 +47,13 @@ public:
 
         if (to_txs_str.empty()) {
             ZJC_WARN("get local tos info failed!");
+            assert(false);
             return;
         }
 
         block::protobuf::ConsensusToTxs to_txs;
         if (!to_txs.ParseFromString(to_txs_str)) {
+            assert(false);
             return;
         }
 
@@ -65,7 +69,7 @@ public:
                 to_txs.tos(i).balance(),
                 db_batch);
             prepayment_gas_[thread_idx].update(to_txs.tos(i).to(), to_txs.tos(i).balance());
-            ZJC_DEBUG("contract: %s, prepaymen: %lu",
+            ZJC_DEBUG("contract: %s, prepayment: %lu",
                 common::Encode::HexEncode(to_txs.tos(i).to()).c_str(),
                 to_txs.tos(i).balance());
         }
@@ -79,6 +83,7 @@ public:
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
         if (tx.step() == pools::protobuf::kConsensusLocalTos) {
+            ZJC_DEBUG("called local consensus to set prepayment.");
             HandleLocalToTx(thread_idx, *block_item, tx, db_batch);
             return;
         }
@@ -104,7 +109,7 @@ public:
         std::string key = tx.to() + tx.from();
         prepayment_gas_[thread_idx].update(key, tx.contract_prepayment());
         pools_max_heights_[block_item->pool_index()] = block_item->height();
-        ZJC_DEBUG("contract: %s, set user: %s, prepaymen: %lu",
+        ZJC_DEBUG("contract: %s, set user: %s, prepayment: %lu",
             common::Encode::HexEncode(tx.to()).c_str(),
             common::Encode::HexEncode(tx.from()).c_str(),
             tx.contract_prepayment());
