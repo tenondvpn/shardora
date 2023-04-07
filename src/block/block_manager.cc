@@ -252,7 +252,12 @@ void BlockManager::HandleLocalNormalToTx(
         // dispatch to txs to tx pool
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = common::kInvalidPoolIndex;
-        auto account_info = account_mgr_->GetAcountInfo(thread_idx, to_txs.tos(i).des());
+        auto addr = to_txs.tos(i).des();
+        if (to_txs.tos(i).des().size() == security::kUnicastAddressLength * 2) {
+            addr = to_txs.tos(i).des().substr(0, security::kUnicastAddressLength);
+        }
+
+        auto account_info = account_mgr_->GetAcountInfo(thread_idx, addr);
         if (account_info == nullptr) {
             if (step != pools::protobuf::kRootCreateAddressCrossSharding) {
                 assert(false);

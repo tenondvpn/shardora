@@ -58,18 +58,15 @@ public:
                 continue;
             }
 
-            auto contract_addr = to_txs.tos(i).to().substr(0, 20);
-            auto user_addr = to_txs.tos(i).to().substr(20, 20);
             prefix_db_->SaveContractUserPrepayment(
-                contract_addr,
-                user_addr,
+                to_txs.tos(i).to(),
+                "",
                 block.height(),
                 to_txs.tos(i).balance(),
                 db_batch);
             prepayment_gas_[thread_idx].update(to_txs.tos(i).to(), to_txs.tos(i).balance());
-            ZJC_DEBUG("contract: %s, set user: %s, prepaymen: %lu",
-                common::Encode::HexEncode(tx.to()).c_str(),
-                common::Encode::HexEncode(tx.from()).c_str(),
+            ZJC_DEBUG("contract: %s, prepaymen: %lu",
+                common::Encode::HexEncode(to_txs.tos(i).to()).c_str(),
                 to_txs.tos(i).balance());
         }
 
