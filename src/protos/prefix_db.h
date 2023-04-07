@@ -793,7 +793,7 @@ public:
 
     void SaveContractUserPrepayment(
             const std::string& contract_addr,
-            const std::string& user_addr
+            const std::string& user_addr,
             uint64_t height,
             uint64_t prepayment,
             db::DbWriteBatch& db_batch) {
