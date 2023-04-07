@@ -88,7 +88,7 @@ int ContractUserCreateCall::HandleTx(
         }
     } else {
         block_tx.set_status(consensus::kConsensusAccountBalanceError);
-        ZJC_ERROR("leader balance error: %llu, %llu", tmp_from_balance, dec_amount);
+        ZJC_ERROR("leader balance error: %llu, %llu", from_balance, gas_used * block_tx.gas_price());
         from_balance = 0;
     }
 
