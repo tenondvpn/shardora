@@ -56,7 +56,7 @@ int ToTxLocalItem::HandleTx(
                 to_txs.tos(i).des().substr(0, security::kUnicastAddressLength),
                 to_txs.tos(i).des().substr(security::kUnicastAddressLength, security::kUnicastAddressLength));
             ZJC_DEBUG("success add contract prepayment: %s, %lu",
-                common::Encode::HexEncode(to_txs.tos(i).des()).c_str(), to_balance)
+                common::Encode::HexEncode(to_txs.tos(i).des()).c_str(), to_balance);
         } else {
             continue;
         }
