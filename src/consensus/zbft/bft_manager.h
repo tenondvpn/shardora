@@ -126,7 +126,7 @@ private:
     }
 
     pools::TxItemPtr CreateToTxLocal(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ToTxLocalItem>(msg_ptr, gas_prepayment_, db_, account_mgr_, security_ptr_);
+        return std::make_shared<ToTxLocalItem>(msg_ptr, db_, gas_prepayment_, account_mgr_, security_ptr_);
     }
 
     pools::TxItemPtr CreateTimeblockTx(const transport::MessagePtr& msg_ptr) {

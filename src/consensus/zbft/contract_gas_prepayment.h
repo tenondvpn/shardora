@@ -26,7 +26,7 @@ public:
             const block::protobuf::Block& block,
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
-        if (block_item->height() <= pools_max_heights_[block_item->pool_index()]) {
+        if (block.height() <= pools_max_heights_[block.pool_index()]) {
             return;
         }
 
@@ -82,7 +82,7 @@ public:
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
         if (tx.step() == pools::protobuf::kConsensusLocalTos) {
-            HandleLocalToTx(thread_idx, block_item, tx, db_batch);
+            HandleLocalToTx(thread_idx, *block_item, tx, db_batch);
             return;
         }
 
