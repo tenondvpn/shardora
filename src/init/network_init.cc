@@ -661,9 +661,9 @@ void NetworkInit::AddBlockItemToCache(
 
         switch (tx_list[i].step()) {
         case pools::protobuf::kNormalFrom:
-        case pools::protobuf::kConsensusLocalTos:
             account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             break;
+        case pools::protobuf::kConsensusLocalTos:
         case pools::protobuf::kContractUserCreateCall:
             account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             gas_prepayment_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);

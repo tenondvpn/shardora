@@ -30,6 +30,7 @@ public:
         block::protobuf::BlockTx& block_tx);
 
 private:
+
     uint32_t max_sharding_id_ = 0;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     

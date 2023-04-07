@@ -114,42 +114,6 @@ typedef std::function<void(
     const std::shared_ptr<block::protobuf::Block>& block,
     db::DbWriteBatch& db_batch)> DbBlockCallback;
 
-static const uint32_t kUnicastAddressLength = 20u;
-static const std::string kLastBlockHashPrefix("last_block_hash_pre_");
-static const std::string kFieldContractOwner = common::Encode::HexDecode(
-    "0000000000000000000000000000000000000000000000000000000000000000");
-static const std::string kFieldFullAddress = common::Encode::HexDecode(
-    "0000000000000000000000000000000000000000000000000000000000001000");
-
-static inline std::string GetLastBlockHash(uint32_t network_id, uint32_t pool_idx) {
-    return (kLastBlockHashPrefix + std::to_string(network_id) + "_" + std::to_string(pool_idx));
-}
-
-static inline std::string UnicastAddress(const std::string& src_address) {
-    assert(src_address.size() >= kUnicastAddressLength);
-    return src_address.substr(
-        src_address.size() - kUnicastAddressLength,
-        kUnicastAddressLength);
-}
-
-inline static std::string StorageDbKey(const std::string& account_id,  const std::string& key) {
-    return account_id + "_vms_" + key;
-}
-
-inline static bool IsPoolBaseAddress(const std::string& address) {
-    if (address.substr(2, 16) == common::kStatisticFromAddressMidllefixDecode) {
-        return true;
-    }
-
-    return false;
-}
-
-inline static std::string GetElectBlsMembersKey(uint64_t height, uint32_t shard_id) {
-    return std::string("__EM_") +
-        std::to_string(shard_id) + "_" +
-        std::to_string(height);
-}
-
 }  // namespace block
 
 }  // namespace zjchain

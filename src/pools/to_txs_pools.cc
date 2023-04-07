@@ -109,9 +109,10 @@ void ToTxsPools::HandleCallContractUserCall(
             sharding_id = addr_info->sharding_id();
         }
 
+        // gas prepayment contain contract address and user's address
         AddTxToMap(
             block,
-            tx.to(),
+            tx.to() + tx.from(),
             pools::protobuf::kContractGasPrepayment,
             tx.contract_prepayment(),
             sharding_id,
@@ -183,7 +184,6 @@ void ToTxsPools::HandleRootCreateAddress(
             auto* data = (const uint32_t*)tx.storages(i).val_hash().c_str();
             sharding_id = data[0];
             pool_index  = data[1];
-            break;
         }
     }
 

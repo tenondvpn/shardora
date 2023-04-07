@@ -203,7 +203,7 @@ void BlockManager::RootHandleNormalToTx(
         pools::protobuf::ToTxMessage& to_txs) {
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         auto tos_item = to_txs.tos(i);
-        if (tos_item.sharding_id() != common::kInvalidUint32) {
+        if (tos_item.step() == pools::protobuf::kContractUserCreateCall) {
             // that's contract address, just add address
             auto account_info = std::make_shared<address::protobuf::AddressInfo>();
             account_info->set_pool_index(tos_item.pool_index());

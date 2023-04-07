@@ -27,10 +27,23 @@ RootToTxItem::~RootToTxItem() {}
 int RootToTxItem::HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
-    std::shared_ptr<db::DbWriteBatch>& db_batch,
-    std::unordered_map<std::string, int64_t>& acc_balance_map,
+        std::shared_ptr<db::DbWriteBatch>& db_batch,
+        std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
-    auto account_info = account_mgr_->GetAcountInfo(thread_idx, block_tx.to());
+    protos::AddressInfoPtr account_info = nullptr;
+    if (block_tx.to().size() == security::kUnicastAddressLength * 2) {
+        // gas prepayment
+        account_info = account_mgr_->GetAcountInfo(
+            thread_idx,
+            block_tx.to().substr(0, security::kUnicastAddressLength));
+        if (account_info == nullptr) {
+            block_tx.set_status(kConsensusAccountNotExists);
+            return kConsensusSuccess;
+        }
+    } else {
+        account_info = account_mgr_->GetAcountInfo(thread_idx, block_tx.to());
+    }
+
     char des_sharding_and_pool[8];
     uint32_t* des_info = (uint32_t*)des_sharding_and_pool;
     if (account_info != nullptr) {

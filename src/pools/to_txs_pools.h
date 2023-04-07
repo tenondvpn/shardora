@@ -59,6 +59,7 @@ private:
         uint64_t amount;
         int32_t pool_index;
         pools::protobuf::StepType type;
+        int32_t src_step;
     };
 
     // destination shard -> pool -> height -> items

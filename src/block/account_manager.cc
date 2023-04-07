@@ -205,6 +205,10 @@ void AccountManager::HandleLocalToTx(
     }
 
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
+        if (to_txs.tos(i).to().size() != security::kUnicastAddressLength) {
+            continue;
+        }
+
         auto account_info = GetAcountInfo(thread_idx, to_txs.tos(i).to());
         if (account_info == nullptr) {
             account_info = std::make_shared<address::protobuf::AddressInfo>();

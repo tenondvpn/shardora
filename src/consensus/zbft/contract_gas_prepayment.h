@@ -21,11 +21,71 @@ public:
 
     virtual ~ContractGasPrepayment() {}
 
+    void HandleLocalToTx(
+            uint8_t thread_idx,
+            const block::protobuf::Block& block,
+            const block::protobuf::BlockTx& tx,
+            db::DbWriteBatch& db_batch) {
+        if (block_item->height() <= pools_max_heights_[block_item->pool_index()]) {
+            return;
+        }
+
+        std::string to_txs_str;
+        for (int32_t i = 0; i < tx.storages_size(); ++i) {
+            if (tx.storages(i).key() == protos::kConsensusLocalNormalTos) {
+                if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &to_txs_str)) {
+                    ZJC_DEBUG("handle local to tx failed get val hash error: %s",
+                        common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
+                    return;
+                }
+
+                break;
+            }
+        }
+
+        if (to_txs_str.empty()) {
+            ZJC_WARN("get local tos info failed!");
+            return;
+        }
+
+        block::protobuf::ConsensusToTxs to_txs;
+        if (!to_txs.ParseFromString(to_txs_str)) {
+            return;
+        }
+
+        for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
+            if (to_txs.tos(i).to().size() != security::kUnicastAddressLength * 2) {
+                continue;
+            }
+
+            auto contract_addr = to_txs.tos(i).to().substr(0, 20);
+            auto user_addr = to_txs.tos(i).to().substr(20, 20);
+            prefix_db_->SaveContractUserPrepayment(
+                contract_addr,
+                user_addr,
+                block_item->height(),
+                to_txs.tos(i).balance(),
+                db_batch);
+            prepayment_gas_[thread_idx].update(to_txs.tos(i).to(), to_txs.tos(i).balance());
+            ZJC_DEBUG("contract: %s, set user: %s, prepaymen: %lu",
+                common::Encode::HexEncode(tx.to()).c_str(),
+                common::Encode::HexEncode(tx.from()).c_str(),
+                to_txs.tos(i).balance());
+        }
+
+        pools_max_heights_[block_item->pool_index()] = block_item->height();
+    }
+
     void NewBlockWithTx(
             uint8_t thread_idx,
             const std::shared_ptr<block::protobuf::Block>& block_item,
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
+        if (tx.step() == pools::protobuf::kConsensusLocalTos) {
+            HandleLocalToTx(thread_idx, block_item, tx, db_batch);
+            return;
+        }
+
         if (tx.step() != pools::protobuf::kContractUserCreateCall) {
             return;
         }

@@ -40,13 +40,23 @@ int ToTxLocalItem::HandleTx(
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         // dispatch to txs to tx pool
         uint64_t to_balance = 0;
-        int balance_status = GetTempAccountBalance(
-            thread_idx, to_txs.tos(i).des(), acc_balance_map, &to_balance);
-        if (balance_status != kConsensusSuccess) {
-            ZJC_DEBUG("create new address: %s, balance: %lu",
-                common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
-                to_txs.tos(i).amount());
-            to_balance = 0;
+        if (to_txs.tos(i).des().size() == security::kUnicastAddressLength) {
+            int balance_status = GetTempAccountBalance(
+                thread_idx, to_txs.tos(i).des(), acc_balance_map, &to_balance);
+            if (balance_status != kConsensusSuccess) {
+                ZJC_DEBUG("create new address: %s, balance: %lu",
+                    common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
+                    to_txs.tos(i).amount());
+                to_balance = 0;
+            }
+        } else if (to_txs.tos(i).des().size() == security::kUnicastAddressLength * 2) {
+            to_balance = gas_prepayment_->GetAddressPrepayment(
+                thread_idx,
+                block.pool_index(),
+                to_txs.tos(i).des().substr(0, security::kUnicastAddressLength),
+                to_txs.tos(i).des().substr(security::kUnicastAddressLength, security::kUnicastAddressLength));
+        } else {
+            continue;
         }
 
         auto to_tx = block_to_txs.add_tos();
