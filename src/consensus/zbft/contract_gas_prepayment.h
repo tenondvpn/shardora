@@ -42,7 +42,8 @@ public:
             tx.to(),
             tx.from(),
             block_item->height(),
-            tx.contract_prepayment());
+            tx.contract_prepayment(),
+            db_batch);
         std::string key = tx.to() + tx.from();
         prepayment_gas_[thread_idx].update(key, tx.contract_prepayment());
         pools_max_heights_[block_item->pool_index()] = block_item->height();
