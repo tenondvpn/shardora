@@ -260,7 +260,7 @@ public:
             const std::string& k,
             std::string* val) {
         std::string key;
-        key.reserve(128);
+        key.reserve(k.size() + sizeof(addr.bytes) + 8);
         key.append(kAddressStorageKeyPrefex);
         key.append((char*)addr.bytes, sizeof(addr.bytes));
         key.append(k);
