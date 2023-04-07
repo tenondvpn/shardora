@@ -70,7 +70,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         } else if (tx_msg.step() == pools::protobuf::kContractUserCall) {
             HandleUserCallContractTx(msg_ptr);
         } else if (tx_msg.step() == pools::protobuf::kRootCreateAddress) {
-            if (tx_msg.to().size() != block::kUnicastAddressLength) {
+            if (tx_msg.to().size() != security::kUnicastAddressLength) {
                 return;
             }
 
