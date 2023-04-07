@@ -393,7 +393,7 @@ int contract_set_prepayment(int argc, char** argv) {
     uint32_t count = 0;
     uint64_t* gid_int = (uint64_t*)gid.data();
     gid_int[0] = pos;
-    std::string to = common::Encode::HexDecode(argv[2])
+    std::string to = common::Encode::HexDecode(argv[2]);
     auto tx_msg_ptr = CreateTransactionWithAttr(
         security,
         gid,
