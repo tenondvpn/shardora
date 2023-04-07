@@ -63,7 +63,7 @@ public:
             prefix_db_->SaveContractUserPrepayment(
                 contract_addr,
                 user_addr,
-                block_item->height(),
+                block.height(),
                 to_txs.tos(i).balance(),
                 db_batch);
             prepayment_gas_[thread_idx].update(to_txs.tos(i).to(), to_txs.tos(i).balance());
@@ -73,7 +73,7 @@ public:
                 to_txs.tos(i).balance());
         }
 
-        pools_max_heights_[block_item->pool_index()] = block_item->height();
+        pools_max_heights_[block.pool_index()] = block.height();
     }
 
     void NewBlockWithTx(
