@@ -177,9 +177,9 @@ int ContractUserCreateCall::SaveContractCreateInfo(
                 storage_iter->first,
                 storage_iter->second.value,
                 *db_batch);
-            gas_more += (account_iter->first.size() +
-                storage_iter->first.size() +
-                storage_iter->second.value.size()) *
+            gas_more += (sizeof(account_iter->first.bytes) +
+                sizeof(storage_iter->first.bytes) +
+                sizeof(storage_iter->second.value.bytes)) *
                 consensus::kKeyValueStorageEachBytes;
         }
 
@@ -190,8 +190,8 @@ int ContractUserCreateCall::SaveContractCreateInfo(
                 storage_iter->first,
                 storage_iter->second.str_val,
                 *db_batch);
-            gas_more += (account_iter->first.size() +
-                storage_iter->first.size() +
+            gas_more += (sizeof(account_iter->first.bytes) +
+                sizeof(storage_iter->first.bytes) +
                 storage_iter->second.str_val.size()) *
                 consensus::kKeyValueStorageEachBytes;
         }
