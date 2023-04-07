@@ -35,13 +35,19 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
+    void HandleCreateContractUserCall(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
     void HandleRootCreateAddress(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void AddTxToMap(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
+        const std::string& to,
+        pools::protobuf::StepType type,
+        uint64_t amount,
         uint64_t des_sharding_id,
         int32_t pool_index);
 

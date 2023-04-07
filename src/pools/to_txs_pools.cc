@@ -68,8 +68,11 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
             HandleNormalToTx(block, tx_list[i], db_batch);
         }
 
-        if (tx_list[i].step() == pools::protobuf::kNormalFrom ||
-                tx_list[i].step() == pools::protobuf::kContractUserCreateCall) {
+        if (tx_list[i].step() == pools::protobuf::kContractUserCreateCall) {
+            HandleCreateContractUserCall(block, tx_list[i], db_batch);
+        }
+
+        if (tx_list[i].step() == pools::protobuf::kNormalFrom) {
             HandleNormalFrom(block, tx_list[i], db_batch);
         }
 
@@ -90,20 +93,41 @@ void ToTxsPools::HandleNormalFrom(
 
     uint32_t sharding_id = common::kInvalidUint32;
     uint32_t pool_index = -1;
-    if (tx.step() == pools::protobuf::kContractUserCreateCall) {
+    auto addr_info = GetAddressInfo(tx.to());
+    if (addr_info == nullptr) {
         sharding_id = network::kRootCongressNetworkId;
-        pool_index = block.pool_index();
     } else {
-        auto addr_info = GetAddressInfo(tx.to());
+        sharding_id = addr_info->sharding_id();
+    }
+
+    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index);
+}
+
+void ToTxsPools::HandleCreateContractUserCall(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
+    uint32_t sharding_id = network::kRootCongressNetworkId;
+    uint32_t pool_index = block.pool_index();
+    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index);
+    for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
+        uint32_t sharding_id = common::kInvalidUint32;
+        uint32_t pool_index = -1;
+        auto addr_info = GetAddressInfo(tx.contract_txs(i).to());
         if (addr_info == nullptr) {
             sharding_id = network::kRootCongressNetworkId;
         } else {
             sharding_id = addr_info->sharding_id();
         }
-    }
-    
 
-    AddTxToMap(block, tx, sharding_id, pool_index);
+        AddTxToMap(
+            block,
+            tx.contract_txs(i).to(),
+            pools::protobuf::kNormalFrom,
+            tx.contract_txs(i).amount(),
+            sharding_id,
+            pool_index);
+    }
 }
 
 void ToTxsPools::HandleRootCreateAddress(
@@ -131,12 +155,14 @@ void ToTxsPools::HandleRootCreateAddress(
         return;
     }
 
-    AddTxToMap(block, tx, sharding_id, pool_index);
+    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index);
 }
 
 void ToTxsPools::AddTxToMap(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
+        const std::string& to,
+        pools::protobuf::StepType type,
+        uint64_t amount,
         uint64_t sharding_id,
         int32_t pool_index) {
     auto handled_iter = handled_map_.find(sharding_id);
@@ -172,17 +198,17 @@ void ToTxsPools::AddTxToMap(
         height_iter = pool_iter->second.find(block.height());
     }
 
-    auto to_iter = height_iter->second.find(tx.to());
+    auto to_iter = height_iter->second.find(to);
     if (to_iter == height_iter->second.end()) {
         ToAddressItemInfo item;
         item.amount = 0lu;
         item.pool_index = pool_index;
-        item.type = tx.step();
-        height_iter->second[tx.to()] = item;
-        ZJC_DEBUG("add to %s step: %u", common::Encode::HexEncode(tx.to()).c_str(), tx.step());
+        item.type = type;
+        height_iter->second[to] = item;
+        ZJC_DEBUG("add to %s step: %u", common::Encode::HexEncode(to).c_str(), type);
     }
 
-    height_iter->second[tx.to()].amount += tx.amount();
+    height_iter->second[to].amount += amount;
 }
 
 void ToTxsPools::HandleNormalToTx(
