@@ -806,7 +806,7 @@ public:
         uint64_t* tmp = (uint64_t*)data;
         tmp[0] = height;
         tmp[1] = prepayment;
-        std::string val(tmp, sizeof(tmp));
+        std::string val(data, sizeof(data));
         db_batch.Put(key, val);
     }
 
