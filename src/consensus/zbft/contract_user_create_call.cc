@@ -168,7 +168,7 @@ int ContractUserCreateCall::SaveContractCreateInfo(
     auto storage = block_tx.add_storages();
     storage->set_key(protos::kCreateContractBytesCode);
     storage->set_val_hash(zjc_host.create_bytes_code_);
-    for (auto account_iter = tenon_host_.accounts_.begin();
+    for (auto account_iter = zjc_host.accounts_.begin();
             account_iter != zjc_host.accounts_.end(); ++account_iter) {
         for (auto storage_iter = account_iter->second.storage.begin();
             storage_iter != account_iter->second.storage.end(); ++storage_iter) {
