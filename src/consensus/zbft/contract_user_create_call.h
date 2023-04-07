@@ -41,7 +41,10 @@ private:
     int SaveContractCreateInfo(
         zjcvm::ZjchainHost& zjc_host,
         block::protobuf::BlockTx& tx,
-        std::shared_ptr<db::DbWriteBatch>& db_batch);
+        std::shared_ptr<db::DbWriteBatch>& db_batch,
+        int64_t& contract_balance_add,
+        int64_t& caller_balance_add, ,
+        int64_t& gas_more);
 
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     DISALLOW_COPY_AND_ASSIGN(ContractUserCreateCall);

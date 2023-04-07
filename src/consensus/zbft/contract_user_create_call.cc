@@ -137,7 +137,8 @@ int ContractUserCreateCall::HandleTx(
             from_balance -= gas_more * block_tx.gas_price();
             gas_used += gas_more;
             // just dec caller_balance_add
-            int64_t dec_amount = static_cast<int64_t>(block_tx.amount()) - caller_balance_add
+            int64_t dec_amount = static_cast<int64_t>(block_tx.amount()) -
+                caller_balance_add +
                 static_cast<int64_t>(block_tx.contract_prepayment());
             if ((int64_t)from_balance < dec_amount) {
                 block_tx.set_status(consensus::kConsensusAccountBalanceError);
@@ -148,7 +149,7 @@ int ContractUserCreateCall::HandleTx(
             from_balance -= dec_amount;
             // change contract create amount
             block_tx.set_amount(static_cast<int64_t>(block_tx.amount()) + contract_balance_add);
-        } while (0)
+        } while (0);
     }
 
     acc_balance_map[from] = from_balance;
