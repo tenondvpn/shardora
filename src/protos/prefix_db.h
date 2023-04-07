@@ -244,7 +244,7 @@ public:
 
     void SaveAddressStringStorage(
             const evmc::address& addr,
-            const evmc::bytes32& k,
+            const std::string& k,
             const std::string& val,
             db::DbWriteBatch& db_batch) {
         std::string key;
