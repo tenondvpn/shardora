@@ -248,10 +248,10 @@ public:
             const std::string& val,
             db::DbWriteBatch& db_batch) {
         std::string key;
-        key.reserve(128);
+        key.reserve(k.size() + sizeof(addr.bytes) + 8);
         key.append(kAddressStorageKeyPrefex);
         key.append((char*)addr.bytes, sizeof(addr.bytes));
-        key.append((char*)k.bytes, sizeof(k.bytes));
+        key.append(k);
         db_batch.Put(key, val);
     }
 
