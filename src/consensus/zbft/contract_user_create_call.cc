@@ -163,7 +163,7 @@ int ContractUserCreateCall::SaveContractCreateInfo(
         block::protobuf::BlockTx& block_tx,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         int64_t& contract_balance_add,
-        int64_t& caller_balance_add,,
+        int64_t& caller_balance_add,
         int64_t& gas_more) {
     auto storage = block_tx.add_storages();
     storage->set_key(protos::kCreateContractBytesCode);

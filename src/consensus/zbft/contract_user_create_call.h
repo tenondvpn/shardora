@@ -43,7 +43,7 @@ private:
         block::protobuf::BlockTx& tx,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         int64_t& contract_balance_add,
-        int64_t& caller_balance_add, ,
+        int64_t& caller_balance_add,
         int64_t& gas_more);
 
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
