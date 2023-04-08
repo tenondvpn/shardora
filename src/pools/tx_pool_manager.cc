@@ -63,40 +63,34 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     if (header.has_tx_proto()) {
         auto& tx_msg = header.tx_proto();
-        if (tx_msg.step() == pools::protobuf::kNormalFrom) {
+        switch (tx_msg.step()) {
+        case pools::protobuf::kNormalFrom:
             HandleNormalFromTx(msg_ptr);
-        } else if (tx_msg.step() == pools::protobuf::kContractUserCreateCall) {
+            break;
+        case pools::protobuf::kContractUserCreateCall:
             HandleCreateContractTx(msg_ptr);
-        } else if (tx_msg.step() == pools::protobuf::kContractUserCall) {
+            break;
+        case pools::protobuf::kContractUserCall:
             HandleUserCallContractTx(msg_ptr);
-        } else if (tx_msg.step() == pools::protobuf::kRootCreateAddress) {
+            break;
+        case pools::protobuf::kRootCreateAddress: {
             if (tx_msg.to().size() != security::kUnicastAddressLength) {
                 return;
             }
 
             auto pool_index = common::Hash::Hash32(tx_msg.to()) % common::kImmutablePoolSize;
             msg_queues_[pool_index].push(msg_ptr);
-        } else {
-            // check valid
-            assert(msg_ptr->address_info != nullptr);
-            msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-    //         auto ptr = msg_ptr;
-    //         pools::TxItemPtr tx_ptr = item_functions_[msg_ptr->header.tx_proto().step()](msg_ptr);
-    //         tx_pool_[msg_ptr->address_info->pool_index()].AddTx(tx_ptr);
-    //         ZJC_DEBUG("success add tx to queue: %d", msg_ptr->address_info->pool_index());
+            break;
         }
-    
-        // storage item not package in block, just package storage hash 
-        SaveStorageToDb(header);
+        default:
+            msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
+            break;
+        }
     }
 
     if (header.has_cross_tos()) {
         HandleCrossShardingToTxs(msg_ptr);
     }
-}
-
-void TxPoolManager::SaveStorageToDb(const transport::protobuf::Header& msg) {
-
 }
 
 void TxPoolManager::HandleUserCallContractTx(const transport::MessagePtr& msg_ptr) {

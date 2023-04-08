@@ -128,7 +128,6 @@ public:
     }
 
 private:
-    void SaveStorageToDb(const transport::protobuf::Header& msg);
     void DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& addr);
     void HandleCreateContractTx(const transport::MessagePtr& msg_ptr);
