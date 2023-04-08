@@ -124,7 +124,7 @@ int AccountManager::GetAddressConsensusNetworkId(
     return kBlockSuccess;
 }
 
-std::string AccountManager::GetTxValidAddress(const block::protobuf::BlockTx& tx_info) {
+const std::string& AccountManager::GetTxValidAddress(const block::protobuf::BlockTx& tx_info) {
     switch (tx_info.step()) {
     case pools::protobuf::kNormalTo:
     case pools::protobuf::kRootCreateAddress:
@@ -134,6 +134,7 @@ std::string AccountManager::GetTxValidAddress(const block::protobuf::BlockTx& tx
     case pools::protobuf::kConsensusRootTimeBlock:
     case pools::protobuf::kConsensusFinalStatistic:
     case pools::protobuf::kConsensusCreateGenesisAcount:
+    case pools::protobuf::kContractExcute:
         return tx_info.to();
     case pools::protobuf::kNormalFrom:
         return tx_info.from();
@@ -148,7 +149,7 @@ void AccountManager::HandleNormalFromTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    std::string account_id = GetTxValidAddress(tx);
+    std::string& account_id = GetTxValidAddress(tx);
     auto account_info = GetAccountInfo(thread_idx, account_id);
     if (account_info == nullptr) {
         assert(false);
@@ -250,6 +251,24 @@ void AccountManager::HandleContractCreateUserCall(
     }
 }
 
+void AccountManager::HandleContractExecuteTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
+    std::string& account_id = GetTxValidAddress(tx);
+    auto account_info = GetAccountInfo(thread_idx, account_id);
+    if (account_info == nullptr) {
+        assert(false);
+        return;
+    }
+
+    account_info->set_latest_height(block.height());
+    // amount is contract 's new balance
+    account_info->set_balance(tx.amount());
+    prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
+}
+
 void AccountManager::NewBlockWithTx(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
@@ -269,6 +288,9 @@ void AccountManager::NewBlockWithTx(
         break;
     case pools::protobuf::kContractUserCreateCall:
         HandleContractCreateUserCall(thread_idx, *block_item, tx, db_batch);
+        break;
+    case pools::protobuf::kContractExcute:
+        HandleContractExecuteTx(thread_idx, *block_item, tx, db_batch);
         break;
     default:
         break;
