@@ -159,8 +159,8 @@ void AccountManager::HandleNormalFromTx(
     account_info->set_latest_height(block.height());
     account_info->set_balance(tx.balance());
     prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
-//     ZJC_DEBUG("transfer from address new balance %s: %lu",
-//         common::Encode::HexEncode(account_id).c_str(), tx.balance());
+    ZJC_DEBUG("transfer from address new balance %s: %lu",
+        common::Encode::HexEncode(account_id).c_str(), tx.balance());
 }
 
 void AccountManager::HandleLocalToTx(
@@ -267,6 +267,8 @@ void AccountManager::HandleContractExecuteTx(
     // amount is contract 's new balance
     account_info->set_balance(tx.amount());
     prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
+    ZJC_DEBUG("contract call address new balance %s: %lu",
+        common::Encode::HexEncode(account_id).c_str(), tx.amount());
 }
 
 void AccountManager::NewBlockWithTx(

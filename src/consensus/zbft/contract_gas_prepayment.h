@@ -130,7 +130,7 @@ public:
         ZJC_DEBUG("contract: %s, set user: %s, prepayment: %lu, pool: %u, height: %lu",
             common::Encode::HexEncode(tx.to()).c_str(),
             common::Encode::HexEncode(tx.from()).c_str(),
-            tx.contract_prepayment(),
+            tx.balance(),
             block.pool_index(),
             block.height());
     }
