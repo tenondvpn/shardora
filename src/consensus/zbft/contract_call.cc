@@ -13,6 +13,7 @@ int ContractCall::HandleTx(
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     // gas just consume from 's prepayment
+    ZJC_DEBUG("contract called now.");
     uint64_t from_balance = prepayment_->GetAddressPrepayment(
         thread_idx,
         block.pool_index(),
@@ -21,6 +22,7 @@ int ContractCall::HandleTx(
     auto gas_used = kCallContractDefaultUseGas;
     if (block_tx.gas_price() * block_tx.gas_limit() + block_tx.amount() > from_balance) {
         block_tx.set_status(kConsensusOutOfGas);
+        assert(false);
         return kConsensusSuccess;
     }
 
@@ -221,12 +223,14 @@ int ContractCall::SaveContractCreateInfo(
             transfer_iter != zjc_host.to_account_value_.end(); ++transfer_iter) {
         // transfer from must caller or contract address, other not allowed.
         if (transfer_iter->first != block_tx.from() && transfer_iter->first != block_tx.to()) {
+            assert(false);
             return kConsensusError;
         }
 
         for (auto to_iter = transfer_iter->second.begin();
                 to_iter != transfer_iter->second.end(); ++to_iter) {
             if (transfer_iter->first == to_iter->first) {
+                assert(false);
                 return kConsensusError;
             }
 
@@ -259,24 +263,29 @@ int ContractCall::SaveContractCreateInfo(
     }
 
     if (caller_balance_add > 0 && contract_balance_add > 0) {
+        assert(false);
         return kConsensusError;
     }
 
     if (contract_balance_add > 0) {
         if (other_add + contract_balance_add != -caller_balance_add) {
+            assert(false);
             return kConsensusError;
         }
     } else {
         if (int64_t(block_tx.amount()) < -contract_balance_add) {
+            assert(false);
             return kConsensusError;
         }
 
         if (caller_balance_add > 0) {
             if (other_add + caller_balance_add != -contract_balance_add) {
+                assert(false);
                 return kConsensusError;
             }
         } else {
             if (-(contract_balance_add + caller_balance_add) != other_add) {
+                assert(false);
                 return kConsensusError;
             }
         }
@@ -306,6 +315,7 @@ int ContractCall::ContractExcute(
         out_res);
     if (exec_res != zjcvm::kZjcvmSuccess) {
         ZJC_ERROR("ContractExcute failed: %d", exec_res);
+        assert(false);
         return kConsensusError;
     }
 

@@ -145,6 +145,7 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
+    ZJC_DEBUG("success add contract call.");
 }
 
 void TxPoolManager::HandleUserCallContractTx(const transport::MessagePtr& msg_ptr) {
