@@ -22,6 +22,12 @@ int ContractCall::HandleTx(
     auto gas_used = kCallContractDefaultUseGas;
     if (block_tx.gas_price() * block_tx.gas_limit() + block_tx.amount() > from_balance) {
         block_tx.set_status(kConsensusOutOfGas);
+        ZJC_WARN("prepayent invalid user: %s, prepayment: %lu, contract: %s,"
+            "amount: %lu, gas limit: %lu, gas price: %lu",
+            common::Encode::HexEncode(block_tx.from()).c_str(),
+            from_balance,
+            common::Encode::HexEncode(block_tx.to()).c_str(),
+            block_tx.amount(), block_tx.gas_limit(), block_tx.gas_price());
         assert(false);
         return kConsensusSuccess;
     }
