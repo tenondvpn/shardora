@@ -149,7 +149,7 @@ void AccountManager::HandleNormalFromTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    std::string& account_id = GetTxValidAddress(tx);
+    auto& account_id = GetTxValidAddress(tx);
     auto account_info = GetAccountInfo(thread_idx, account_id);
     if (account_info == nullptr) {
         assert(false);
@@ -256,7 +256,7 @@ void AccountManager::HandleContractExecuteTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    std::string& account_id = GetTxValidAddress(tx);
+    auto& account_id = GetTxValidAddress(tx);
     auto account_info = GetAccountInfo(thread_idx, account_id);
     if (account_info == nullptr) {
         assert(false);
