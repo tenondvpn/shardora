@@ -634,7 +634,7 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
         auto& block_tx = *tx_list->Add();
         if (block_tx.step() == pools::protobuf::kContractExcute) {
             block_tx.set_from(security_ptr_->GetAddress(
-                iter->second->msg_ptr->header.tx_proto().pubkey());
+                iter->second->msg_ptr->header.tx_proto().pubkey()));
         } else {
             block_tx.set_from(iter->second->msg_ptr->address_info->addr());
         }
