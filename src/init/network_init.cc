@@ -674,9 +674,6 @@ void NetworkInit::AddBlockItemToCache(
             account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             gas_prepayment_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             break;
-        case pools::protobuf::kNormalTo:
-            pools_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
-            break;
         default:
             break;
         }

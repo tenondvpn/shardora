@@ -171,7 +171,7 @@ int ContractCall::HandleTx(
         from_balance = tmp_from_balance;
     }
 
-    acc_balance_map[from] = from_balance;
+    acc_balance_map[block_tx.from()] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     return kConsensusSuccess;
