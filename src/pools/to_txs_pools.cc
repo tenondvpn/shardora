@@ -98,7 +98,24 @@ void ToTxsPools::HandleContractExecute(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    HandleCreateContractUserCall(block, tx, db_batch);
+    for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
+        uint32_t sharding_id = common::kInvalidUint32;
+        uint32_t pool_index = -1;
+        auto addr_info = GetAddressInfo(tx.contract_txs(i).to());
+        if (addr_info == nullptr) {
+            sharding_id = network::kRootCongressNetworkId;
+        } else {
+            sharding_id = addr_info->sharding_id();
+        }
+
+        AddTxToMap(
+            block,
+            tx.contract_txs(i).to(),
+            pools::protobuf::kNormalFrom,
+            tx.contract_txs(i).amount(),
+            sharding_id,
+            pool_index);
+    }
 }
 
 void ToTxsPools::HandleCallContractUserCall(
