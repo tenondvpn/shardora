@@ -6,6 +6,26 @@ namespace zjchain {
 
 namespace consensus {
 
+int ContractCall::GetTempPerpaymentBalance(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& block_tx
+        std::unordered_map<std::string, int64_t>& acc_balance_map,
+        uint64_t* balance) {
+    auto iter = acc_balance_map.find("pre_" + block_tx.from());
+    if (iter == acc_balance_map.end()) {
+        uint64_t from_balance = prepayment_->GetAddressPrepayment(
+            thread_idx,
+            block.pool_index(),
+            block_tx.to(),
+            block_tx.from());
+        acc_balance_map["pre_" + block_tx.from()] = from_balance;
+        *balance = from_balance;
+    } else {
+        *balance = iter->second;
+    }
+}
+
 int ContractCall::HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
@@ -14,11 +34,13 @@ int ContractCall::HandleTx(
         block::protobuf::BlockTx& block_tx) {
     // gas just consume from 's prepayment
     ZJC_DEBUG("contract called now.");
-    uint64_t from_balance = prepayment_->GetAddressPrepayment(
-        thread_idx,
-        block.pool_index(),
-        block_tx.to(),
-        block_tx.from());
+    GetTempPerpaymentBalance(thread_idx, block, block_tx, acc_balance_map, &to_balance);
+    if (to_balance <= kCallContractDefaultUseGas * block_tx.gas_price()) {
+        block_tx.set_status(kConsensusOutOfGas);
+        assert(false);
+        return kConsensusSuccess;
+    }
+
     auto gas_used = kCallContractDefaultUseGas;
     if (block_tx.gas_price() * block_tx.gas_limit() + block_tx.amount() > from_balance) {
         block_tx.set_status(kConsensusOutOfGas);
@@ -104,9 +126,7 @@ int ContractCall::HandleTx(
 
     int64_t tmp_from_balance = from_balance;
     if (block_tx.status() == kConsensusSuccess) {
-        int64_t dec_amount = block_tx.amount() +
-            block_tx.contract_prepayment() +
-            gas_used * block_tx.gas_price();
+        int64_t dec_amount = block_tx.amount() + gas_used * block_tx.gas_price();
         if (tmp_from_balance >= int64_t(gas_used * block_tx.gas_price())) {
             if (tmp_from_balance < dec_amount) {
                 block_tx.set_status(consensus::kConsensusAccountBalanceError);
@@ -178,9 +198,10 @@ int ContractCall::HandleTx(
 
     if (block_tx.status() == kConsensusSuccess) {
         from_balance = tmp_from_balance;
+        acc_balance_map[block_tx.to()] = block_tx.amount();
     }
 
-    acc_balance_map[block_tx.from()] = from_balance;
+    acc_balance_map["pre_" + block_tx.from()] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     return kConsensusSuccess;
