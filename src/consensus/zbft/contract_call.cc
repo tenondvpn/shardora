@@ -30,6 +30,14 @@ int ContractCall::HandleTx(
         return kConsensusSuccess;
     }
 
+    auto contract_info = account_mgr_->GetAccountInfo(thread_idx, block_tx.to());
+    if (contract_info == nullptr) {
+        block_tx.set_status(balance_status);
+        // will never happen
+        assert(false);
+        return kConsensusSuccess;
+    }
+
     uint64_t to_balance = 0;
     int balance_status = GetTempAccountBalance(
         thread_idx, block_tx.to(), acc_balance_map, &to_balance);
@@ -40,6 +48,7 @@ int ContractCall::HandleTx(
         return kConsensusSuccess;
     }
 
+    to_balance += block_tx.amount();
     block::protobuf::BlockTx contract_tx;
     zjcvm::ZjchainHost zjc_host;
     zjc_host.tx_context_.tx_origin = evmc::address{};
@@ -62,10 +71,10 @@ int ContractCall::HandleTx(
         from_balance);
     zjc_host.AddTmpAccountBalance(
         block_tx.to(),
-        block_tx.amount() + to_balance);
+        to_balance);
     evmc_result evmc_res = {};
     evmc::Result res{ evmc_res };
-    int call_res = ContractExcute(zjc_host, block_tx, &res);
+    int call_res = ContractExcute(contract_info, to_balance, zjc_host, block_tx, &res);
     if (call_res != kConsensusSuccess || res.status_code != EVMC_SUCCESS) {
         block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
         ZJC_DEBUG("create contract failed, call_res: %d, evmc res: %d!",
@@ -167,8 +176,8 @@ int ContractCall::HandleTx(
             }
 
             tmp_from_balance -= dec_amount;
-            // change contract create amount
-            block_tx.set_amount(static_cast<int64_t>(block_tx.amount()) + contract_balance_add);
+            // change contract 's amount, now is contract 's new balance
+            block_tx.set_amount(static_cast<int64_t>(to_balance) + contract_balance_add);
         } while (0);
     }
 
@@ -292,24 +301,21 @@ int ContractCall::SaveContractCreateInfo(
 }
 
 int ContractCall::ContractExcute(
+        protos::AddressInfoPtr& contract_info,
+        uint64_t contract_balance,
         zjcvm::ZjchainHost& zjc_host,
         block::protobuf::BlockTx& tx,
         evmc::Result* out_res) {
-    uint32_t call_mode = zjcvm::kJustCreate;
-    if (tx.has_contract_input() && !tx.contract_input().empty()) {
-        call_mode = zjcvm::kCreateAndCall;
-    }
-
     int exec_res = zjcvm::Execution::Instance()->execute(
-        tx.contract_code(),
+        contract_info->bytes_code(),
         tx.contract_input(),
         tx.from(),
         tx.to(),
         tx.from(),
-        tx.amount(),
+        contract_balance,
         tx.gas_limit(),
         0,
-        call_mode,
+        zjcvm::kJustCall,
         zjc_host,
         out_res);
     if (exec_res != zjcvm::kZjcvmSuccess) {

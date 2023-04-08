@@ -35,6 +35,8 @@ public:
 
 private:
     int ContractExcute(
+        protos::AddressInfoPtr& contract_info,
+        uint64_t contract_balance,
         zjcvm::ZjchainHost& zjc_host,
         block::protobuf::BlockTx& tx,
         evmc::Result* out_res);
