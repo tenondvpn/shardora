@@ -32,7 +32,7 @@ int ContractCall::HandleTx(
 
     auto contract_info = account_mgr_->GetAccountInfo(thread_idx, block_tx.to());
     if (contract_info == nullptr) {
-        block_tx.set_status(balance_status);
+        block_tx.set_status(kConsensusAccountNotExists);
         // will never happen
         assert(false);
         return kConsensusSuccess;
