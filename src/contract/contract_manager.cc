@@ -16,16 +16,11 @@ namespace zjchain {
 
 namespace contract {
 
-ContractManager* ContractManager::Instance() {
-    static ContractManager ins;
-    return &ins;
-}
-
 ContractManager::ContractManager() {}
 
 ContractManager::~ContractManager() {}
 
-int ContractManager::Init(std::shared_ptr<security::Security>& secptr) {
+void ContractManager::Init(std::shared_ptr<security::Security>& secptr) {
     auto ecrecover = std::make_shared<Ecrecover>("", secptr);
     auto contract_sha256 = std::make_shared<ContractSha256>("");
     auto contract_rip160 = std::make_shared<Ripemd160>("");
@@ -44,8 +39,6 @@ int ContractManager::Init(std::shared_ptr<security::Security>& secptr) {
     contract_map_[kContractAlt_bn128_G1_mul] = alt_mul;
     contract_map_[kContractAlt_bn128_pairing_product] = alt_product;
     contract_map_[kContractBlake2_compression] = blake2;
-
-    return kContractSuccess;
 }
 
 int ContractManager::call(

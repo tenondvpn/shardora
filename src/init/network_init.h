@@ -9,6 +9,7 @@
 #include "common/tick.h"
 #include "consensus/zbft/bft_manager.h"
 #include "consensus/zbft/contract_gas_prepayment.h"
+#include "contract/contract_manager.h"
 #include "db/db.h"
 #include "elect/elect_manager.h"
 #include "http/http_server.h"
@@ -65,6 +66,7 @@ private:
     Command cmd_;
     transport::MultiThreadHandler net_handler_;
     std::string config_path_;
+    std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;

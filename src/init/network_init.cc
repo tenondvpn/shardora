@@ -64,6 +64,8 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    contract_mgr_ = std::make_shared<contract::ContractManager>();
+    contract_mgr_->Init(security_);
     common::ParserArgs parser_arg;
     if (ParseParams(argc, argv, parser_arg) != kInitSuccess) {
         INIT_ERROR("parse params failed!");
@@ -140,6 +142,7 @@ int NetworkInit::Init(int argc, char** argv) {
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     bft_mgr_ = std::make_shared<consensus::BftManager>();
     auto bft_init_res = bft_mgr_->Init(
+        contract_mgr_,
         gas_prepayment_,
         vss_mgr_,
         account_mgr_,

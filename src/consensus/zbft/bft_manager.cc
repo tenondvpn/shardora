@@ -40,6 +40,7 @@ BftManager::~BftManager() {
 }
 
 int BftManager::Init(
+        std::shared_ptr<contract::ContractManager>& contract_mgr,
         std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
         std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<block::AccountManager>& account_mgr,
@@ -52,6 +53,7 @@ int BftManager::Init(
         BlockCallback block_cb,
         uint8_t thread_count,
         BlockCacheCallback new_block_cache_callback) {
+    contract_mgr_ = contract_mgr;
     gas_prepayment_ = gas_prepayment;
     vss_mgr_ = vss_mgr;
     account_mgr_ = account_mgr;

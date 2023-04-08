@@ -1,5 +1,6 @@
 #include "consensus/zbft/contract_user_call.h"
 
+#include "contract/contract_manager.h"
 #include "zjcvm/execution.h"
 
 namespace zjchain {

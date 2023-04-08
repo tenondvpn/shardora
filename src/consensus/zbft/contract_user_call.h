@@ -31,8 +31,8 @@ public:
         block::protobuf::BlockTx& block_tx);
 
 private:
-
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+
     DISALLOW_COPY_AND_ASSIGN(ContractUserCall);
 };
 

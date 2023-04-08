@@ -15,8 +15,9 @@ namespace contract {
 
 class ContractManager {
 public:
-    static ContractManager* Instance();
-    int Init(std::shared_ptr<security::Security>& secptr);
+    ContractManager();
+    ~ContractManager();
+    void Init(std::shared_ptr<security::Security>& secptr);
     virtual int call(
         const CallParameters& param,
         uint64_t gas,
@@ -24,9 +25,6 @@ public:
         evmc_result* res);
 
 private:
-    ContractManager();
-    ~ContractManager();
-
     std::unordered_map<std::string, ContractInterfacePtr> contract_map_;
 
     DISALLOW_COPY_AND_ASSIGN(ContractManager);

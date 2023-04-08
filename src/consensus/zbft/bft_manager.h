@@ -37,12 +37,17 @@ namespace vss {
     class VssManager;
 }
 
+namespace contract {
+    class ContractManager;
+};
+
 namespace consensus {
 
 class WaitingTxsPools;
 class BftManager : public Consensus {
 public:
     int Init(
+        std::shared_ptr<contract::ContractManager>& contract_mgr,
         std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
         std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<block::AccountManager>& account_mgr,
@@ -115,7 +120,9 @@ private:
     void LeaderBroadcastBlock(
         uint8_t thread_index,
         const std::shared_ptr<block::protobuf::Block>& block);
-    void BroadcastLocalTosBlock(uint8_t thread_idx, const std::shared_ptr<block::protobuf::Block>& block);
+    void BroadcastLocalTosBlock(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block);
     void RegisterCreateTxCallbacks();
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
@@ -127,7 +134,8 @@ private:
     }
 
     pools::TxItemPtr CreateToTxLocal(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ToTxLocalItem>(msg_ptr, db_, gas_prepayment_, account_mgr_, security_ptr_);
+        return std::make_shared<ToTxLocalItem>(
+            msg_ptr, db_, gas_prepayment_, account_mgr_, security_ptr_);
     }
 
     pools::TxItemPtr CreateTimeblockTx(const transport::MessagePtr& msg_ptr) {
@@ -144,7 +152,8 @@ private:
     }
 
     pools::TxItemPtr CreateContractUserCreateCallTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ContractUserCreateCall>(db_, msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<ContractUserCreateCall>(
+            contract_mgr_, db_, msg_ptr, account_mgr_, security_ptr_);
     }
 
     pools::TxItemPtr CreateContractUserCallTx(const transport::MessagePtr& msg_ptr) {
@@ -152,11 +161,13 @@ private:
     }
 
     pools::TxItemPtr CreateContractCallTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ContractCall>(gas_prepayment_, db_, msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<ContractCall>(
+            contract_mgr_, gas_prepayment_, db_, msg_ptr, account_mgr_, security_ptr_);
     }
 
     static const uint32_t kCheckTimeoutPeriodMilli = 3000lu;
 
+    std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
