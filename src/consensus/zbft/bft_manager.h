@@ -9,6 +9,7 @@
 #include "common/tick.h"
 #include "common/limit_hash_map.h"
 #include "consensus/consensus.h"
+#include "consensus/zbft/contract_call.h"
 #include "consensus/zbft/contract_gas_prepayment.h"
 #include "consensus/zbft/contract_user_call.h"
 #include "consensus/zbft/contract_user_create_call.h"
@@ -148,6 +149,10 @@ private:
 
     pools::TxItemPtr CreateContractUserCallTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ContractUserCall>(db_, msg_ptr, account_mgr_, security_ptr_);
+    }
+
+    pools::TxItemPtr CreateContractCallTx(const transport::MessagePtr& msg_ptr) {
+        return std::make_shared<ContractCall>(gas_prepayment_, db_, msg_ptr, account_mgr_, security_ptr_);
     }
 
     static const uint32_t kCheckTimeoutPeriodMilli = 3000lu;

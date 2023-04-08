@@ -82,6 +82,9 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             msg_queues_[pool_index].push(msg_ptr);
             break;
         }
+        case pools::protobuf::kContractExcute:
+            HandleContractExcute(msg_ptr);
+            break;
         default:
             msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
             break;
@@ -91,6 +94,57 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (header.has_cross_tos()) {
         HandleCrossShardingToTxs(msg_ptr);
     }
+}
+
+void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
+    auto& tx_msg = header.tx_proto();
+    msg_ptr->address_info = GetAddressInfo(tx_msg.to());
+    if (msg_ptr->address_info == nullptr) {
+        ZJC_WARN("no contract address info.");
+        return;
+    }
+
+    if (msg_ptr->address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+        ZJC_WARN("sharding error: %d, %d",
+            msg_ptr->address_info->sharding_id(),
+            common::GlobalInfo::Instance()->network_id());
+        return;
+    }
+
+    if (tx_msg.has_key() && tx_msg.key().size() > 0) {
+        ZJC_DEBUG("call contract key must empty.");
+        return;
+    }
+
+    uint64_t height = 0;
+    uint64_t prepayment = 0;
+    if (!prefix_db_->GetContractUserPrepayment(
+            tx_msg.to(),
+            security_->GetAddress(tx_msg.pubkey()),
+            &height,
+            &prepayment)) {
+        return;
+    }
+
+    if (prepayment < tx_msg.amount() + tx_msg.gas_limit() * tx_msg.gas_price()) {
+        return;
+    }
+
+    msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
+    if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
+        // avoid save gid different tx
+        ZJC_DEBUG("tx msg hash exists: %s failed!",
+            common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+        return;
+    }
+
+    if (prefix_db_->GidExists(tx_msg.gid())) {
+        ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+        return;
+    }
+
+    msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 }
 
 void TxPoolManager::HandleUserCallContractTx(const transport::MessagePtr& msg_ptr) {

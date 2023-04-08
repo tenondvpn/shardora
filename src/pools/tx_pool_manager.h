@@ -111,14 +111,6 @@ public:
         prefix_db_->SaveLatestPoolInfo(sharding_id, pool_index, pool_info, db_batch);
     }
 
-    void NewBlockWithTx(
-            uint8_t thread_idx,
-            const std::shared_ptr<block::protobuf::Block>& block_item,
-            const block::protobuf::BlockTx& tx,
-            db::DbWriteBatch& db_batch) {
-        return;
-    }
-
     void CheckTimeoutTx(uint32_t pool_index) {
         if (pool_index >= common::kInvalidPoolIndex) {
             return;
@@ -134,11 +126,13 @@ private:
     void HandleUserCallContractTx(const transport::MessagePtr& msg_ptr);
     void HandleNormalFromTx(const transport::MessagePtr& msg_ptr);
     void HandleCrossShardingToTxs(const transport::MessagePtr& msg_ptr);
+    void HandleContractExcute(const transport::MessagePtr& msg_ptr);
     bool UserTxValid(const transport::MessagePtr& msg_ptr);
 
     static const uint32_t kPopMessageCountEachTime = 320u;
 
     TxPool* tx_pool_{ nullptr };
+    std::shared_ptr<consensus::ContractGasPrepayment> prepayment_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;

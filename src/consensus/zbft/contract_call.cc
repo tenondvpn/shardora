@@ -13,28 +13,14 @@ int ContractCall::HandleTx(
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     // gas just consume from 's prepayment
-    auto& from = msg_ptr->address_info->addr();
     uint64_t from_balance = prepayment_->GetAddressPrepayment(
         thread_idx,
         block.pool_index(),
         block_tx.to(),
-        from);
+        block_tx.from());
     auto gas_used = kCallContractDefaultUseGas;
-    if (from_balance <= kCallContractDefaultUseGas) {
-        block_tx.set_status(kConsensusOutOfPrepayment);
-        return kConsensusSuccess;
-    }
-
     if (block_tx.gas_price() * block_tx.gas_limit() + block_tx.amount() > from_balance) {
         block_tx.set_status(kConsensusOutOfGas);
-        return kConsensusSuccess;
-    }
-
-    auto contract_info = account_mgr_->GetAccountInfo(thread_idx, block_tx.to());
-    if (contract_info == nullptr) {
-        block_tx.set_status(kConsensusAccountNotExists);
-        // will never happen
-        assert(false);
         return kConsensusSuccess;
     }
 
@@ -74,7 +60,7 @@ int ContractCall::HandleTx(
         to_balance);
     evmc_result evmc_res = {};
     evmc::Result res{ evmc_res };
-    int call_res = ContractExcute(contract_info, to_balance, zjc_host, block_tx, &res);
+    int call_res = ContractExcute(msg_ptr->address_info, to_balance, zjc_host, block_tx, &res);
     if (call_res != kConsensusSuccess || res.status_code != EVMC_SUCCESS) {
         block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
         ZJC_DEBUG("create contract failed, call_res: %d, evmc res: %d!",
@@ -296,7 +282,7 @@ int ContractCall::SaveContractCreateInfo(
         }
     }
 
-    ZJC_DEBUG("user success call create contract.");
+    ZJC_DEBUG("user success call contract.");
     return kConsensusSuccess;
 }
 
