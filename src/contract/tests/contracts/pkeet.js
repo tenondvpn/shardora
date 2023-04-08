@@ -267,6 +267,7 @@ function call_verify(index) {
         var param1 = "pkeet";
         var hexparam1 = web3.utils.toHex(param1 + data);
         var addParam1 = web3.eth.abi.encodeParameter('bytes', hexparam1);
+        console.log("call params: " + addParamCode.substring(2) + addParam1.substring(2);
         call_contract_function(addParamCode.substring(2) + addParam1.substring(2));
     } catch (err) {
         console.error(err);
