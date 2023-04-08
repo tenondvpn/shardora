@@ -6,7 +6,7 @@ namespace zjchain {
 
 namespace consensus {
 
-int ContractCall::GetTempPerpaymentBalance(
+void ContractCall::GetTempPerpaymentBalance(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& block_tx
