@@ -9,6 +9,10 @@
 
 namespace zjchain {
 
+namespace contract {
+    class ContractManager;
+};
+
 namespace zjcvm {
 
 using bytes = std::basic_string<uint8_t>;
@@ -109,6 +113,7 @@ public:
     std::unordered_map<evmc::address, evmc::uint256be> account_balance_;
     std::string create_bytes_code_;
     uint8_t thread_idx_;
+    std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
 };
 
 }  // namespace zjcvm

@@ -140,8 +140,10 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
     evmc::Result evmc_res{ call_result };
     evmc_result* raw_result = (evmc_result*)&evmc_res;
     raw_result->gas_left = msg.gas;
-    std::cout << "host called kind: " << msg.kind << ", from: " << common::Encode::HexEncode(params.from) << ", to: " << common::Encode::HexEncode(params.to) << std::endl;
-    if (contract::ContractManager::Instance()->call(
+    std::cout << "host called kind: " << msg.kind
+        << ", from: " << common::Encode::HexEncode(params.from)
+        << ", to: " << common::Encode::HexEncode(params.to) << std::endl;
+    if (contract_mgr_->call(
             params,
             gas_price_,
             origin_address_,
