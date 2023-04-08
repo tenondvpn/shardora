@@ -140,7 +140,7 @@ const std::string& AccountManager::GetTxValidAddress(const block::protobuf::Bloc
         return tx_info.from();
     default:
         assert(false);
-        return "";
+        return tx_info.from();
     }
 }
 
