@@ -46,7 +46,6 @@ public:
     void SetMaxHeight(uint32_t pool_idx, uint64_t height);
     int HandleRefreshHeightsReq(const transport::MessagePtr& msg_ptr);
     int HandleRefreshHeightsRes(const transport::MessagePtr& msg_ptr);
-    const std::string& GetTxValidAddress(const block::protobuf::BlockTx& tx_info);
     std::shared_ptr<address::protobuf::AddressInfo>& single_to_address_info(uint32_t pool_idx) {
         return single_to_address_info_[pool_idx % common::kImmutablePoolSize];
     }
@@ -58,7 +57,7 @@ public:
     protos::AddressInfoPtr GetAccountInfo(
             const std::shared_ptr<block::protobuf::Block>& block_item,
             const block::protobuf::BlockTx& tx_info) {
-        std::string account_id = GetTxValidAddress(tx_info);
+        auto& account_id = GetTxValidAddress(tx_info);
         auto account_info = std::make_shared<address::protobuf::AddressInfo>();
         account_info->set_pool_index(block_item->pool_index());
         account_info->set_addr(account_id);
@@ -70,6 +69,7 @@ public:
     }
 
 private:
+    const std::string& GetTxValidAddress(const block::protobuf::BlockTx& tx_info);
     void SetPool(
         uint32_t pool_index,
         const std::shared_ptr<block::protobuf::Block>& block_item,

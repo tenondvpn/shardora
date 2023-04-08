@@ -88,25 +88,25 @@ public:
             return;
         }
 
-        if (block_item->height() <= pools_max_heights_[block_item->pool_index()]) {
+        if (block.height() <= pools_max_heights_[block.pool_index()]) {
             return;
         }
 
         prefix_db_->SaveContractUserPrepayment(
             tx.to(),
             tx.from(),
-            block_item->height(),
+            block.height(),
             tx.contract_prepayment(),
             db_batch);
         std::string key = tx.to() + tx.from();
         prepayment_gas_[thread_idx].update(key, tx.contract_prepayment());
-        pools_max_heights_[block_item->pool_index()] = block_item->height();
+        pools_max_heights_[block.pool_index()] = block.height();
         ZJC_DEBUG("contract: %s, set user: %s, prepayment: %lu, pool: %u, height: %lu",
             common::Encode::HexEncode(tx.to()).c_str(),
             common::Encode::HexEncode(tx.from()).c_str(),
             tx.contract_prepayment(),
-            block_item->pool_index(),
-            block_item->height());
+            block.pool_index(),
+            block.height());
     }
 
     void HandleContractExecute(
@@ -114,25 +114,25 @@ public:
             const block::protobuf::Block& block,
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
-        if (block_item->height() <= pools_max_heights_[block_item->pool_index()]) {
+        if (block.height() <= pools_max_heights_[block.pool_index()]) {
             return;
         }
 
         prefix_db_->SaveContractUserPrepayment(
             tx.to(),
             tx.from(),
-            block_item->height(),
+            block.height(),
             tx.balance(),
             db_batch);
         std::string key = tx.to() + tx.from();
         prepayment_gas_[thread_idx].update(key, tx.balance());
-        pools_max_heights_[block_item->pool_index()] = block_item->height();
+        pools_max_heights_[block.pool_index()] = block.height();
         ZJC_DEBUG("contract: %s, set user: %s, prepayment: %lu, pool: %u, height: %lu",
             common::Encode::HexEncode(tx.to()).c_str(),
             common::Encode::HexEncode(tx.from()).c_str(),
             tx.contract_prepayment(),
-            block_item->pool_index(),
-            block_item->height());
+            block.pool_index(),
+            block.height());
     }
 
     void NewBlockWithTx(
