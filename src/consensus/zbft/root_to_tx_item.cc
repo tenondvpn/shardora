@@ -33,7 +33,7 @@ int RootToTxItem::HandleTx(
     protos::AddressInfoPtr account_info = nullptr;
     if (block_tx.to().size() == security::kUnicastAddressLength * 2) {
         // gas prepayment
-        account_info = account_mgr_->GetAcountInfo(
+        account_info = account_mgr_->GetAccountInfo(
             thread_idx,
             block_tx.to().substr(0, security::kUnicastAddressLength));
         if (account_info == nullptr) {
@@ -41,7 +41,7 @@ int RootToTxItem::HandleTx(
             return kConsensusSuccess;
         }
     } else {
-        account_info = account_mgr_->GetAcountInfo(thread_idx, block_tx.to());
+        account_info = account_mgr_->GetAccountInfo(thread_idx, block_tx.to());
     }
 
     char des_sharding_and_pool[8];

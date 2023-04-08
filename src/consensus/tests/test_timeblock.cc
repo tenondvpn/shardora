@@ -168,7 +168,7 @@ public:
             const pools::protobuf::TxMessage& tx_info) {
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
 //         auto from_addr = bft_mgr.security_ptr_->GetAddress(tx_info.pubkey());
-//         msg_ptr->address_info = bft_mgr.account_mgr_->GetAcountInfo(0, from_addr);
+//         msg_ptr->address_info = bft_mgr.account_mgr_->GetAccountInfo(0, from_addr);
 //         ASSERT_TRUE(msg_ptr->address_info->balance() > 0);
         *msg_ptr->header.mutable_tx_proto() = tx_info;
         pools::TxItemPtr tx_ptr = std::make_shared<FromTxItem>(

@@ -142,20 +142,22 @@ void BlockManager::HandleAllConsensusBlocks(uint8_t thread_idx) {
 void BlockManager::AddAllAccount(
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBatch& db_batch) {
-    const auto& tx_list = block_item->tx_list();
-    if (tx_list.empty()) {
-        return;
-    }
-
-    // one block must be one consensus pool
-    uint32_t consistent_pool_index = common::kInvalidPoolIndex;
-    for (int32_t i = 0; i < tx_list.size(); ++i) {
-        auto account_info = account_mgr_->GetAcountInfo(block_item, tx_list[i]);
-        ZJC_DEBUG("add new account %s : %lu",
-            common::Encode::HexEncode(account_info->addr()).c_str(),
-            account_info->balance());
-        prefix_db_->AddAddressInfo(account_info->addr(), *account_info, db_batch);
-    }
+    // (TODO: XX): for create contract error, check address's shard and pool index valid, fix it
+    assert(false);
+//     const auto& tx_list = block_item->tx_list();
+//     if (tx_list.empty()) {
+//         return;
+//     }
+// 
+//     // one block must be one consensus pool
+//     uint32_t consistent_pool_index = common::kInvalidPoolIndex;
+//     for (int32_t i = 0; i < tx_list.size(); ++i) {
+//         auto account_info = account_mgr_->GetAccountInfo(block_item, tx_list[i]);
+//         ZJC_DEBUG("add new account %s : %lu",
+//             common::Encode::HexEncode(account_info->addr()).c_str(),
+//             account_info->balance());
+//         prefix_db_->AddAddressInfo(account_info->addr(), *account_info, db_batch);
+//     }
 }
 
 void BlockManager::HandleNormalToTx(
@@ -257,7 +259,7 @@ void BlockManager::HandleLocalNormalToTx(
             addr = to_txs.tos(i).des().substr(0, security::kUnicastAddressLength);
         }
 
-        auto account_info = account_mgr_->GetAcountInfo(thread_idx, addr);
+        auto account_info = account_mgr_->GetAccountInfo(thread_idx, addr);
         if (account_info == nullptr) {
             if (step != pools::protobuf::kRootCreateAddressCrossSharding) {
                 assert(false);

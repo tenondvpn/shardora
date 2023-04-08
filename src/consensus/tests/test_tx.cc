@@ -199,7 +199,7 @@ public:
             const pools::protobuf::TxMessage& tx_info) {
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto from_addr = bft_mgr.security_ptr_->GetAddress(tx_info.pubkey());
-        msg_ptr->address_info = bft_mgr.account_mgr_->GetAcountInfo(0, from_addr);
+        msg_ptr->address_info = bft_mgr.account_mgr_->GetAccountInfo(0, from_addr);
         ASSERT_TRUE(msg_ptr->address_info->balance() > 0);
         *msg_ptr->header.mutable_tx_proto() = tx_info;
         pools::TxItemPtr tx_ptr = std::make_shared<FromTxItem>(
@@ -315,7 +315,7 @@ TEST_F(TestTx, TestMultiThread) {
         t3.new_block_cache_callback_,
         kThreadCount);
     auto to_addr = common::Encode::HexDecode("e70c72fcdb57df6844e4c44cd9f02435b628398c");
-    auto to_acc = leader_bft_mgr.account_mgr_->GetAcountInfo(0, to_addr);
+    auto to_acc = leader_bft_mgr.account_mgr_->GetAccountInfo(0, to_addr);
     ASSERT_TRUE(to_acc != nullptr);
     uint64_t src_balance = to_acc->balance();
     uint64_t invalid_count = 0lu;
@@ -457,7 +457,7 @@ TEST_F(TestTx, TestMoreTx) {
         "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"),
         t3.new_block_cache_callback_);
     auto to_addr = common::Encode::HexDecode("e70c72fcdb57df6844e4c44cd9f02435b628398c");
-    auto to_acc = leader_bft_mgr.account_mgr_->GetAcountInfo(0, to_addr);
+    auto to_acc = leader_bft_mgr.account_mgr_->GetAccountInfo(0, to_addr);
     ASSERT_TRUE(to_acc != nullptr);
     uint64_t src_balance = to_acc->balance();
     uint64_t invalid_count = 0lu;
@@ -683,17 +683,17 @@ TEST_F(TestTx, TestMoreTx) {
         backup_bft_mgr1.HandleMessage(leader_bft_mgr.now_msg_[0]);
     }
 
-    auto to_acc_b1 = backup_bft_mgr0.account_mgr_->GetAcountInfo(0, to_addr);
+    auto to_acc_b1 = backup_bft_mgr0.account_mgr_->GetAccountInfo(0, to_addr);
     ASSERT_TRUE(to_acc_b1 != nullptr);
     std::cout << src_balance << ":" << to_acc_b1->balance() << ", " << kTestCount << ", " << invalid_count << std::endl;
     ASSERT_EQ(src_balance + (kTestCount - invalid_count) * 100000lu, to_acc_b1->balance());
 
-    auto to_acc_b2 = backup_bft_mgr1.account_mgr_->GetAcountInfo(0, to_addr);
+    auto to_acc_b2 = backup_bft_mgr1.account_mgr_->GetAccountInfo(0, to_addr);
     ASSERT_TRUE(to_acc_b2 != nullptr);
     std::cout << src_balance << ":" << to_acc_b2->balance() << ", " << kTestCount << ", " << invalid_count << std::endl;
     ASSERT_EQ(src_balance + (kTestCount - invalid_count) * 100000lu, to_acc_b2->balance());
 
-    auto to_acc_leader = leader_bft_mgr.account_mgr_->GetAcountInfo(0, to_addr);
+    auto to_acc_leader = leader_bft_mgr.account_mgr_->GetAccountInfo(0, to_addr);
     ASSERT_TRUE(to_acc_leader != nullptr);
     std::cout << src_balance << ":" << to_acc_leader->balance() << ", " << kTestCount << ", " << invalid_count << std::endl;
     ASSERT_EQ(src_balance + (kTestCount - invalid_count) * 100000lu, to_acc_leader->balance());

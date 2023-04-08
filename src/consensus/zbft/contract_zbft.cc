@@ -34,7 +34,7 @@
 //         input = tx.value();
 //     }
 // 
-//     // auto contract_info = block::AccountManager::Instance()->GetAcountInfo(tx_info->tx.to());
+//     // auto contract_info = block::AccountManager::Instance()->GetAccountInfo(tx_info->tx.to());
 //     // if (contract_info == nullptr) {
 //     //     ZJC_ERROR("contract address not exists[%s]",
 //     //         common::Encode::HexEncode(tx_info->tx.to()).c_str());
@@ -383,7 +383,7 @@
 //         return kConsensusError;
 //     }
 // 
-//     // auto account_info = block::AccountManager::Instance()->GetAcountInfo(tx_info->tx.from());
+//     // auto account_info = block::AccountManager::Instance()->GetAccountInfo(tx_info->tx.from());
 //     // if (!account_info->locked()) {
 //     //     ZJC_ERROR("account not locked for contrtact: %s",
 //     //         common::Encode::HexEncode(tx_info->tx.to()).c_str());

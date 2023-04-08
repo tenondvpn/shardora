@@ -84,7 +84,7 @@ protected:
             uint64_t* balance) {
         auto iter = acc_balance_map.find(id);
         if (iter == acc_balance_map.end()) {
-            auto acc_info = account_mgr_->GetAcountInfo(thread_idx, id);
+            auto acc_info = account_mgr_->GetAccountInfo(thread_idx, id);
             if (acc_info == nullptr) {
                 ZJC_ERROR("account addres not exists[%s]", common::Encode::HexEncode(id).c_str());
                 return consensus::kConsensusAccountNotExists;

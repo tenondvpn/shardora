@@ -120,7 +120,8 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     }
 
     if (msg_ptr->address_info->balance() <
-            tx_msg.amount() + tx_msg.contract_prepayment() + consensus::kCallContractDefaultUseGas) {
+            tx_msg.amount() + tx_msg.contract_prepayment() +
+            consensus::kCallContractDefaultUseGas) {
         ZJC_DEBUG("address balance invalid: %lu, transfer amount: %lu, "
             "prepayment: %lu, default call contract gas: %lu",
             msg_ptr->address_info->balance(),
@@ -246,7 +247,8 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
 
     tx_pool_[pool_index].AddTx(tx_ptr);
     if (msg_ptr->header.tx_proto().step() == pools::protobuf::kConsensusLocalTos) {
-        ZJC_DEBUG("success add local transfer to tx %u, %s", pool_index, common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
+        ZJC_DEBUG("success add local transfer to tx %u, %s",
+            pool_index, common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
     }
 }
 

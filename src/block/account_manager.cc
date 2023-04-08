@@ -70,14 +70,14 @@ void AccountManager::CreateNormalLocalToAddressInfo() {
 }
 
 bool AccountManager::AccountExists(uint8_t thread_idx, const std::string& addr) {
-    return GetAcountInfo(thread_idx, addr) != nullptr;
+    return GetAccountInfo(thread_idx, addr) != nullptr;
 }
 
 protos::AddressInfoPtr AccountManager::GetAcountInfoFromDb(const std::string& addr) {
     return prefix_db_->GetAddressInfo(addr);
 }
 
-protos::AddressInfoPtr AccountManager::GetAcountInfo(
+protos::AddressInfoPtr AccountManager::GetAccountInfo(
         uint8_t thread_idx,
         const std::string& addr) {
     // first get from cache
@@ -98,7 +98,7 @@ protos::AddressInfoPtr AccountManager::GetAcountInfo(
 protos::AddressInfoPtr AccountManager::GetContractInfoByAddress(
         uint8_t thread_idx,
         const std::string& addr) {
-    auto account_info = GetAcountInfo(thread_idx, addr);
+    auto account_info = GetAccountInfo(thread_idx, addr);
     if (account_info == nullptr) {
         BLOCK_ERROR("get account failed[%s]", common::Encode::HexEncode(addr).c_str());
         return nullptr;
@@ -115,7 +115,7 @@ int AccountManager::GetAddressConsensusNetworkId(
         uint8_t thread_idx,
         const std::string& addr,
         uint32_t* network_id) {
-    auto account_ptr = GetAcountInfo(thread_idx, addr);
+    auto account_ptr = GetAccountInfo(thread_idx, addr);
     if (account_ptr == nullptr) {
         return kBlockAddressNotExists;
     }
@@ -124,20 +124,20 @@ int AccountManager::GetAddressConsensusNetworkId(
     return kBlockSuccess;
 }
 
-protos::AddressInfoPtr AccountManager::GetAcountInfo(
-        const std::shared_ptr<block::protobuf::Block>& block_item,
-        const block::protobuf::BlockTx& tx_info) {
-    std::string account_id = GetTxValidAddress(tx_info);
-    auto account_info = std::make_shared<address::protobuf::AddressInfo>();
-    account_info->set_pool_index(block_item->pool_index());
-    account_info->set_addr(account_id);
-    account_info->set_type(address::protobuf::kNormal);
-    account_info->set_sharding_id(block_item->network_id());
-    account_info->set_latest_height(block_item->height());
-    account_info->set_balance(tx_info.balance());
-    return account_info;
-}
-
+// protos::AddressInfoPtr AccountManager::GetAccountInfo(
+//         const std::shared_ptr<block::protobuf::Block>& block_item,
+//         const block::protobuf::BlockTx& tx_info) {
+//     std::string account_id = GetTxValidAddress(tx_info);
+//     auto account_info = std::make_shared<address::protobuf::AddressInfo>();
+//     account_info->set_pool_index(block_item->pool_index());
+//     account_info->set_addr(account_id);
+//     account_info->set_type(address::protobuf::kNormal);
+//     account_info->set_sharding_id(block_item->network_id());
+//     account_info->set_latest_height(block_item->height());
+//     account_info->set_balance(tx_info.balance());
+//     return account_info;
+// }
+// 
 std::string AccountManager::GetTxValidAddress(const block::protobuf::BlockTx& tx_info) {
     switch (tx_info.step()) {
     case pools::protobuf::kNormalTo:
@@ -163,7 +163,7 @@ void AccountManager::HandleNormalFromTx(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     std::string account_id = GetTxValidAddress(tx);
-    auto account_info = GetAcountInfo(thread_idx, account_id);
+    auto account_info = GetAccountInfo(thread_idx, account_id);
     if (account_info == nullptr) {
         assert(false);
         return;
@@ -209,7 +209,7 @@ void AccountManager::HandleLocalToTx(
             continue;
         }
 
-        auto account_info = GetAcountInfo(thread_idx, to_txs.tos(i).to());
+        auto account_info = GetAccountInfo(thread_idx, to_txs.tos(i).to());
         if (account_info == nullptr) {
             account_info = std::make_shared<address::protobuf::AddressInfo>();
             account_info->set_pool_index(block.pool_index());
@@ -236,7 +236,7 @@ void AccountManager::HandleContractCreateUserCall(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    auto account_info = GetAcountInfo(thread_idx, tx.to());
+    auto account_info = GetAccountInfo(thread_idx, tx.to());
     if (account_info != nullptr) {
         assert(false);
         return;

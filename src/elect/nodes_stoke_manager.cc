@@ -15,7 +15,7 @@ namespace elect {
 void NodesStokeManager::SyncAddressStoke(const std::vector<std::string>& addrs) {
     // std::map<uint32_t, std::vector<std::pair<std::string, uint64_t>>> sync_map;
     // for (auto iter = addrs.begin(); iter != addrs.end(); ++iter) {
-        // auto acc_info = block::AccountManager::Instance()->GetAcountInfo(*iter);
+        // auto acc_info = block::AccountManager::Instance()->GetAccountInfo(*iter);
         // if (acc_info == nullptr) {
         //     continue;
         // }
@@ -96,7 +96,7 @@ void NodesStokeManager::HandleSyncAddressStoke(
     // protobuf::ElectMessage res_ec_msg;
     // auto sync_stoke_res = res_ec_msg.mutable_sync_stoke_res();
     // for (int32_t i = 0; i < ec_msg.sync_stoke_req().sync_item_size(); ++i) {
-        // auto acc_info = block::AccountManager::Instance()->GetAcountInfo(
+        // auto acc_info = block::AccountManager::Instance()->GetAccountInfo(
         //     ec_msg.sync_stoke_req().sync_item(i).id());
         // if (acc_info == nullptr) {
         //     ELECT_DEBUG("TTTTTTT get account info failed: %s",
