@@ -471,6 +471,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         } else {
             tx->set_step(pools::protobuf::kNormalTo);
         }
+
         auto gid = common::Hash::keccak256(
             tos_hash + std::to_string(heights.sharding_id()));
         tx->set_gas_limit(0);
