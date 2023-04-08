@@ -9,7 +9,7 @@ namespace consensus {
 void ContractCall::GetTempPerpaymentBalance(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& block_tx
+        const block::protobuf::BlockTx& block_tx,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         uint64_t* balance) {
     auto iter = acc_balance_map.find("pre_" + block_tx.from());
