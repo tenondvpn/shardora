@@ -105,7 +105,9 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     }
 
     if (tx_msg.gas_price() <= 0 || tx_msg.gas_limit() <= consensus::kCallContractDefaultUseGas) {
-        return false;
+        ZJC_DEBUG("gas price and gas limit error %lu, %lu",
+            tx_msg.gas_price(), tx_msg.gas_limit());
+        return;
     }
 
     msg_ptr->address_info = GetAddressInfo(tx_msg.to());
