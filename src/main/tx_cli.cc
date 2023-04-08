@@ -520,24 +520,32 @@ int contract_call(int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
-    int32_t tx = 0;
     std::cout << argc << std::endl;
-    if (argc > 1) {
+    if (argc <= 1) {
+        return -1;
+    }
         if (argv[1][0] == '1') {
             tx = 1;
         } else if (argv[1][0] == '2') {
             tx = 2;
+        } else if (argv[1][0] == '3') {
+            tx = 3;
         }
     }
 
-    if (tx == 0) {
-        tx_main(argc, argv);
-    } else if (tx == 1) {
+    if (argv[1][0] == '1') {
         contract_main(argc, argv);
-    } else if (tx == 2) {
+    } else if (argv[1][0] == '2') {
         if (argc > 2) {
             contract_set_prepayment(argc, argv);
         }
+    } else if (argv[1][0] == '3') {
+        if (argc > 2) {
+            contract_call(argc, argv);
+        }
+    } else {
+        tx_main(argc, argv);
     }
+
     return 0;
 }
