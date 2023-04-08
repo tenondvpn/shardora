@@ -89,7 +89,6 @@ int BlsManager::Sign(
         const libff::alt_bn128_G1& g1_hash,
         libff::alt_bn128_G1* bn_sign) {
     BlsSign::Sign(t, n, local_sec_key, g1_hash, bn_sign);
-    std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
     return kBlsSuccess;
 }
 

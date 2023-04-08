@@ -798,6 +798,10 @@ void BlsDkg::CreateContribution() {
         g2_vec[i] = polynomial[i] * libff::alt_bn128_G2::one();
     }
 
+#ifdef ZJC_UNITTEST
+    g2_vec_ = g2_vec;
+#endif // ZJC_UNITTEST
+
     bls::protobuf::VerifyVecItem verify_item;
     verify_item.set_x_c0(libBLS::ThresholdUtils::fieldElementToString(g2_vec[0].X.c0));
     verify_item.set_x_c1(libBLS::ThresholdUtils::fieldElementToString(g2_vec[0].X.c1));

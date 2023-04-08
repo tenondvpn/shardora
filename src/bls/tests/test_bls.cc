@@ -95,6 +95,35 @@ public:
     }
 };
 
+TEST_F(TestBls, ContributionSignAndVerify) {
+    static const uint32_t t = 7;
+    static const uint32_t n = 10;
+    auto hash_str = common::Hash::Sha256("hello world");
+    libff::alt_bn128_G1 hash;
+    BlsSign bls_sign;
+    ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
+
+    BlsDkg* dkg = new BlsDkg[n];
+    for (uint32_t i = 0; i < n; i++) {
+        dkg[i].Init(
+            bls_manager,
+            security_ptr,
+            t,
+            n,
+            libff::alt_bn128_Fr::zero(),
+            libff::alt_bn128_G2::zero(),
+            libff::alt_bn128_G2::zero(),
+            db_ptr);
+        dkg[i].dkg_instance_ = std::make_shared<libBLS::Dkg>(t, n);
+        dkg[i].local_member_index_ = 0;
+        dkg[i].CreateContribution();
+    }
+
+    for (uint32_t i = 0; i < n; i++) {
+        auto val = dkg[i].dkg_instance_->GetVerification(i, dkg[i].g2_vec_);
+    }
+}
+
 TEST_F(TestBls, AllSuccess) {
 //     static const uint32_t t = 700;
 //     static const uint32_t n = 1024;
