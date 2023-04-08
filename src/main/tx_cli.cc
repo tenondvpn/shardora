@@ -89,6 +89,9 @@ static transport::MessagePtr CreateTransactionWithAttr(
         } else if (key == "prepayment") {
             new_tx->set_step(pools::protobuf::kContractUserCall);
             new_tx->set_contract_prepayment(9000000000lu);
+        } else if (key == "call") {
+            new_tx->set_step(pools::protobuf::kContractExcute);
+            new_tx->set_contract_input(val);
         } else {
             new_tx->set_key(key);
             if (!val.empty()) {
@@ -480,13 +483,14 @@ int contract_call(int argc, char** argv) {
     uint64_t* gid_int = (uint64_t*)gid.data();
     gid_int[0] = pos;
     std::string to = common::Encode::HexDecode(argv[2]);
+    std::string input = common::Encode::HexDecode("4162d68f00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000006706b656574310000000000000000000000000000000000000000000000000000");
     auto tx_msg_ptr = CreateTransactionWithAttr(
         security,
         gid,
         from_prikey,
         to,
         "call",
-        "",
+        input,
         100000,
         10000000,
         ((uint32_t)(1000 - pos)) % 1000,
