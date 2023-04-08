@@ -98,7 +98,7 @@ void ToTxsPools::HandleContractExecute(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    HandleCreateContractUserCall(block, tx_list[i], db_batch);
+    HandleCreateContractUserCall(block, tx, db_batch);
 }
 
 void ToTxsPools::HandleCallContractUserCall(
