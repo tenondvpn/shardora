@@ -645,6 +645,7 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
             continue;
         }
 
+        assert(block_tx.from() != block_tx.to());
         block_tx.set_status(kConsensusSuccess);
         int do_tx_res = iter->second->HandleTx(
             txs_ptr_->thread_index,
