@@ -522,15 +522,8 @@ int contract_call(int argc, char** argv) {
 int main(int argc, char** argv) {
     std::cout << argc << std::endl;
     if (argc <= 1) {
-        return -1;
-    }
-        if (argv[1][0] == '1') {
-            tx = 1;
-        } else if (argv[1][0] == '2') {
-            tx = 2;
-        } else if (argv[1][0] == '3') {
-            tx = 3;
-        }
+        tx_main(argc, argv);
+        return 0;
     }
 
     if (argv[1][0] == '1') {
