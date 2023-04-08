@@ -34,8 +34,9 @@ int ContractCall::HandleTx(
         block::protobuf::BlockTx& block_tx) {
     // gas just consume from 's prepayment
     ZJC_DEBUG("contract called now.");
-    GetTempPerpaymentBalance(thread_idx, block, block_tx, acc_balance_map, &to_balance);
-    if (to_balance <= kCallContractDefaultUseGas * block_tx.gas_price()) {
+    uint64_t from_balance = 0;
+    GetTempPerpaymentBalance(thread_idx, block, block_tx, acc_balance_map, &from_balance);
+    if (from_balance <= kCallContractDefaultUseGas * block_tx.gas_price()) {
         block_tx.set_status(kConsensusOutOfGas);
         assert(false);
         return kConsensusSuccess;
