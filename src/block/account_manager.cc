@@ -124,20 +124,6 @@ int AccountManager::GetAddressConsensusNetworkId(
     return kBlockSuccess;
 }
 
-// protos::AddressInfoPtr AccountManager::GetAccountInfo(
-//         const std::shared_ptr<block::protobuf::Block>& block_item,
-//         const block::protobuf::BlockTx& tx_info) {
-//     std::string account_id = GetTxValidAddress(tx_info);
-//     auto account_info = std::make_shared<address::protobuf::AddressInfo>();
-//     account_info->set_pool_index(block_item->pool_index());
-//     account_info->set_addr(account_id);
-//     account_info->set_type(address::protobuf::kNormal);
-//     account_info->set_sharding_id(block_item->network_id());
-//     account_info->set_latest_height(block_item->height());
-//     account_info->set_balance(tx_info.balance());
-//     return account_info;
-// }
-// 
 std::string AccountManager::GetTxValidAddress(const block::protobuf::BlockTx& tx_info) {
     switch (tx_info.step()) {
     case pools::protobuf::kNormalTo:

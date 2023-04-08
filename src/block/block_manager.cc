@@ -144,20 +144,6 @@ void BlockManager::AddAllAccount(
         db::DbWriteBatch& db_batch) {
     // (TODO: XX): for create contract error, check address's shard and pool index valid, fix it
     assert(false);
-//     const auto& tx_list = block_item->tx_list();
-//     if (tx_list.empty()) {
-//         return;
-//     }
-// 
-//     // one block must be one consensus pool
-//     uint32_t consistent_pool_index = common::kInvalidPoolIndex;
-//     for (int32_t i = 0; i < tx_list.size(); ++i) {
-//         auto account_info = account_mgr_->GetAccountInfo(block_item, tx_list[i]);
-//         ZJC_DEBUG("add new account %s : %lu",
-//             common::Encode::HexEncode(account_info->addr()).c_str(),
-//             account_info->balance());
-//         prefix_db_->AddAddressInfo(account_info->addr(), *account_info, db_batch);
-//     }
 }
 
 void BlockManager::HandleNormalToTx(

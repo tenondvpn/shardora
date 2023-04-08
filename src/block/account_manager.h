@@ -34,9 +34,6 @@ public:
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     protos::AddressInfoPtr GetAccountInfo(uint8_t thread_idx, const std::string& acc_id);
-//     protos::AddressInfoPtr GetAccountInfo(
-//         const std::shared_ptr<block::protobuf::Block>& block_item,
-//         const block::protobuf::BlockTx& tx_info);
     protos::AddressInfoPtr GetAcountInfoFromDb(const std::string& acc_id);
     bool AccountExists(uint8_t thread_idx, const std::string& acc_id);
     int GetAddressConsensusNetworkId(
