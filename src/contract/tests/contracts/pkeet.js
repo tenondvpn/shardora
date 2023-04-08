@@ -263,7 +263,7 @@ init_private_key();
 
 function call_verify(index) {
     try {
-        const data = fs.readFileSync('./index_' + index, 'UTF-8');
+        const data = index
         var param1 = "pkeet";
         var hexparam1 = web3.utils.toHex(param1 + data);
         var addParam1 = web3.eth.abi.encodeParameter('bytes', hexparam1);

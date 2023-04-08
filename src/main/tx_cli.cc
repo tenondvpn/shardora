@@ -429,6 +429,92 @@ int contract_set_prepayment(int argc, char** argv) {
     return 0;
 }
 
+int contract_call(int argc, char** argv) {
+    LoadAllAccounts();
+    SignalRegister();
+    WriteDefaultLogConf();
+    log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
+    transport::MultiThreadHandler net_handler;
+    std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+    auto db_ptr = std::make_shared<db::Db>();
+    if (!db_ptr->Init("./txclidb")) {
+        std::cout << "init db failed!" << std::endl;
+        return 1;
+    }
+
+    std::string val;
+    uint64_t pos = 0;
+    if (db_ptr->Get("contract_pos", &val).ok()) {
+        if (!common::StringUtil::ToUint64(val, &pos)) {
+            std::cout << "get pos failed!" << std::endl;
+            return 1;
+        }
+    }
+
+    if (net_handler.Init(db_ptr) != 0) {
+        std::cout << "init net handler failed!" << std::endl;
+        return 1;
+    }
+
+    if (transport::TcpTransport::Instance()->Init(
+        "127.0.0.1:13791",
+        128,
+        false,
+        &net_handler) != 0) {
+        std::cout << "init tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    if (transport::TcpTransport::Instance()->Start(false) != 0) {
+        std::cout << "start tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    std::string gid = common::Random::RandomString(32);
+    std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
+    uint32_t prikey_pos = 0;
+    auto from_prikey = prikeys[254];
+    security->SetPrivateKey(from_prikey);
+    uint64_t now_tm_us = common::TimeUtils::TimestampUs();
+    uint32_t count = 0;
+    uint64_t* gid_int = (uint64_t*)gid.data();
+    gid_int[0] = pos;
+    std::string to = common::Encode::HexDecode(argv[2]);
+    auto tx_msg_ptr = CreateTransactionWithAttr(
+        security,
+        gid,
+        from_prikey,
+        to,
+        "call",
+        "",
+        100000,
+        10000000,
+        ((uint32_t)(1000 - pos)) % 1000,
+        3);
+    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
+        std::cout << "send tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 22001, tx_msg_ptr->header) != 0) {
+        std::cout << "send tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 21001, tx_msg_ptr->header) != 0) {
+        std::cout << "send tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << std::endl;
+    if (!db_ptr->Put("contract_pos", std::to_string(pos)).ok()) {
+        std::cout << "save pos failed!" << std::endl;
+        return 1;
+    }
+
+    return 0;
+}
+
 int main(int argc, char** argv) {
     int32_t tx = 0;
     std::cout << argc << std::endl;
