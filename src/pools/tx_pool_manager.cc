@@ -99,6 +99,15 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& tx_msg = header.tx_proto();
+    if (tx_msg.has_key() && tx_msg.key().size() > 0) {
+        ZJC_DEBUG("call contract key must empty.");
+        return;
+    }
+
+    if (tx_msg.gas_price() <= 0 || tx_msg.gas_limit() <= consensus::kCallContractDefaultUseGas) {
+        return false;
+    }
+
     msg_ptr->address_info = GetAddressInfo(tx_msg.to());
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no contract address info.");
@@ -109,11 +118,6 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
         ZJC_WARN("sharding error: %d, %d",
             msg_ptr->address_info->sharding_id(),
             common::GlobalInfo::Instance()->network_id());
-        return;
-    }
-
-    if (tx_msg.has_key() && tx_msg.key().size() > 0) {
-        ZJC_DEBUG("call contract key must empty.");
         return;
     }
 

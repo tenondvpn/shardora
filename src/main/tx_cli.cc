@@ -225,7 +225,7 @@ int tx_main(int argc, char** argv) {
             "",
             100000,
             10000000,
-            ((uint32_t)(1000 - pos)) % 1000,
+            ((uint32_t)(1000 - pos)) % 1000 + 1,
             3);
         if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
             std::cout << "send tcp client failed!" << std::endl;
@@ -320,7 +320,7 @@ int contract_main(int argc, char** argv) {
         bytescode,
         100000,
         10000000,
-        ((uint32_t)(1000 - pos)) % 1000,
+        10,
         3);
     if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
         std::cout << "send tcp client failed!" << std::endl;
@@ -406,7 +406,7 @@ int contract_set_prepayment(int argc, char** argv) {
         "",
         100000,
         10000000,
-        ((uint32_t)(1000 - pos)) % 1000,
+        10,
         3);
     if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
         std::cout << "send tcp client failed!" << std::endl;
@@ -493,7 +493,7 @@ int contract_call(int argc, char** argv) {
         input,
         100000,
         10000000,
-        ((uint32_t)(1000 - pos)) % 1000,
+        10,
         3);
     if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
         std::cout << "send tcp client failed!" << std::endl;
