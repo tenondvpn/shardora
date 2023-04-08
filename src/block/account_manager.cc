@@ -237,9 +237,9 @@ void AccountManager::HandleContractCreateUserCall(
             account_info->set_sharding_id(block.network_id());
             account_info->set_latest_height(block.height());
             account_info->set_balance(tx.amount());
+            account_info->set_bytes_code(tx.storages(i).val_hash());
             address_map_[thread_idx].add(tx.to(), account_info);
             prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
-            prefix_db_->SaveAddressTmpBytesCode(tx.to(), tx.storages(i).val_hash(), db_batch);
             ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
                 common::Encode::HexEncode(tx.to()).c_str(),
                 tx.amount(),
