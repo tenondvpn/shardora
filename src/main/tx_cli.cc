@@ -108,6 +108,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
     }
 
     msg.set_sign(sign);
+    assert(new_tx->gas_price() > 0);
     return msg_ptr;
 }
 
