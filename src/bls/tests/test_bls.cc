@@ -100,6 +100,14 @@ TEST_F(TestBls, ContributionSignAndVerify) {
     static const uint32_t n = 1024;
     static const uint32_t valid_t = 2;
     static const uint32_t valid_count = 3;
+
+    std::vector<libff::alt_bn128_Fr> local_src_secret_key_contribution;
+    std::vector<libff::alt_bn128_G2> g2_vec;
+    for (uint32_t i = 0; i < n; ++i) {
+        local_src_secret_key_contribution.push_back(libff::alt_bn128_Fr::zero());
+        g2_vec.push_back(libff::alt_bn128_G2::zero());
+    }
+
     BlsDkg* dkg = new BlsDkg[n];
     auto btime0 = common::TimeUtils::TimestampUs();
     for (uint32_t i = 0; i < valid_count; i++) {
@@ -115,15 +123,13 @@ TEST_F(TestBls, ContributionSignAndVerify) {
         dkg[i].dkg_instance_ = std::make_shared<libBLS::Dkg>(t, n);
         dkg[i].local_member_index_ = i;
         dkg[i].CreateContribution();
-    }
 
-    std::vector<libff::alt_bn128_Fr> local_src_secret_key_contribution;
-    std::vector<libff::alt_bn128_G2> g2_vec;
-    for (uint32_t i = 0; i < n; ++i) {
-        local_src_secret_key_contribution.push_back(libff::alt_bn128_Fr::zero());
-        g2_vec.push_back(libff::alt_bn128_G2::zero());
+        for (uint32_t j = valid_count; j < n; ++j) {
+            dkg[i].local_src_secret_key_contribution_.push_back(libff::alt_bn128_Fr::zero());
+            dkg[i].g2_vec_.push_back(libff::alt_bn128_G2::zero());
+        }
     }
-
+    
     for (uint32_t i = valid_count; i < n; ++i) {
         dkg[i].Init(
             bls_manager,
