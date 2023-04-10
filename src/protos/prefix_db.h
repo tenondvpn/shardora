@@ -798,13 +798,38 @@ public:
             const std::string&id,
             const std::vector<libff::alt_bn128_Fr>& polynomial) {
         std::string key = kBlsPolynomialPrefix + id;
+        bls::protobuf::PolynomialItem item;
+        for (uint32_t i = 0; i < polynomial.size(); ++i) {
+            item.add_data(libBLS::ThresholdUtils::fieldElementToString(polynomial[i]));
+        }
 
+        auto st = db_->Put(key, item.SerializeAsString());
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
     }
 
     bool GetBlsPolynomial(
             const std::string& prikey,
             const std::string& id,
             std::vector<libff::alt_bn128_Fr>* polynomial) {
+        std::string key = kBlsPolynomialPrefix + id;
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+
+        bls::protobuf::PolynomialItem item;
+        if (!item.ParseFromString(val)) {
+            return false;
+        }
+
+        polynomial->clear();
+        for (int32_t i = 0; i < item.data_size(); ++i) {
+            polynomial->push_back(libff::alt_bn128_Fr(item.data(i)));
+        }
+
         return true;
     }
 

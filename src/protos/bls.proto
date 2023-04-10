@@ -25,6 +25,7 @@ message VerifyVecBrdReq {
 }
 
 message PolynomialItem {
+    repeated bytes data = 1;
 }
 
 message VerifyVecBrdRes {

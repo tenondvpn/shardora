@@ -831,7 +831,12 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
 }
 
 void BlsDkg::InitPolynomial() {
+    if (prefix_db_->GetBlsPolynomial(security_->GetPrikey(), security_->GetAddress(), &polynomial_)) {
+        return;
+    }
+
     polynomial_ = dkg_instance_->GeneratePolynomial();
+    prefix_db_->SaveBlsPolynomial(security_->GetPrikey(), security_->GetAddress(), polynomial_);
 }
 
 void BlsDkg::DumpContribution() {
