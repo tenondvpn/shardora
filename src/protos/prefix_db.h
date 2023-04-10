@@ -817,7 +817,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_FATAL("write db failed!");
+            return false;
         }
 
         bls::protobuf::PolynomialItem item;
@@ -827,7 +827,7 @@ public:
 
         polynomial->clear();
         for (int32_t i = 0; i < item.data_size(); ++i) {
-            polynomial->push_back(libff::alt_bn128_Fr(item.data(i)));
+            polynomial->push_back(libff::alt_bn128_Fr(item.data(i).c_str()));
         }
 
         return true;
