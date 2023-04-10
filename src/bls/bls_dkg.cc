@@ -810,7 +810,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
 #endif // ZJC_UNITTEST
 
     bls::protobuf::VerifyVecBrdReq bls_verify_req;
-    for (int32_t i = 0; i < dkg[i].g2_vec_.size(); ++i) {
+    for (int32_t i = 0; i < g2_vec.size(); ++i) {
         bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req.add_verify_vec();
         verify_item.set_x_c0(common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
