@@ -122,7 +122,7 @@ TEST_F(TestBls, ContributionSignAndVerify) {
             db_ptr);
         dkg[i].dkg_instance_ = std::make_shared<libBLS::Dkg>(t, n);
         dkg[i].local_member_index_ = i;
-        dkg[i].CreateContribution();
+        dkg[i].CreateContribution(valid_count);
 
         for (uint32_t j = valid_count; j < n; ++j) {
             dkg[i].local_src_secret_key_contribution_.push_back(libff::alt_bn128_Fr::zero());
