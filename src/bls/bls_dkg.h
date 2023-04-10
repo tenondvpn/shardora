@@ -94,6 +94,7 @@ private:
     void CheckSwapKeyAllValid(uint8_t thread_idx);
     void SendGetSwapKey(uint8_t thread_idx, int32_t index);
     libff::alt_bn128_G2 GetVerifyG2FromDb(uint32_t first_index, uint32_t second_index);
+    void InitPolynomial();
 
     bool IsVerifyBrdPeriod() {
 #ifdef ZJC_UNITTEST
@@ -157,6 +158,8 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     int32_t max_member_count_ = 1024;
+    int32_t max_agree_count_ = 1024 * 2 / 3 + 1;
+    std::vector<libff::alt_bn128_Fr> polynomial_;
 
 #ifdef ZJC_UNITTEST
     transport::protobuf::Header ver_brd_msg_;

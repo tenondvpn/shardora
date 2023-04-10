@@ -6,6 +6,8 @@
 
 #include <gtest/gtest.h>
 
+#include "bzlib.h"
+
 #include "common/random.h"
 #include "common/hash.h"
 #include "db/db.h"
@@ -18,10 +20,11 @@
 #include "transport/tcp_transport.h"
 #include "transport/transport_utils.h"
 #define private public
-#include "network/network_utils.h"
 #include "bls/bls_sign.h"
 #include "bls/bls_dkg.h"
 #include "bls/bls_manager.h"
+#include "protos/bls.pb.h"
+#include "network/network_utils.h"
 
 namespace zjchain {
 
@@ -124,10 +127,29 @@ TEST_F(TestBls, ContributionSignAndVerify) {
         dkg[i].local_member_index_ = i;
         dkg[i].CreateContribution(n, valid_t);
 
-//         for (uint32_t j = valid_count; j < n; ++j) {
-//             dkg[i].local_src_secret_key_contribution_.push_back(libff::alt_bn128_Fr::zero());
-//             dkg[i].g2_vec_.push_back(libff::alt_bn128_G2::zero());
+//         bls::protobuf::VerifyVecBrdReq bls_verify_req;
+//         for (int32_t test_idx = 0; test_idx < dkg[i].g2_vec_.size(); ++test_idx) {
+//             bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req.add_verify_vec();
+//             verify_item.set_x_c0(common::Encode::HexDecode(libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[test_idx].X.c0)));
+//             verify_item.set_x_c1(common::Encode::HexDecode(libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[test_idx].X.c1)));
+//             verify_item.set_y_c0(common::Encode::HexDecode(libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[test_idx].Y.c0)));
+//             verify_item.set_y_c1(common::Encode::HexDecode(libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[test_idx].Y.c1)));
+//             verify_item.set_z_c0(common::Encode::HexDecode(libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[test_idx].Z.c0)));
+//             verify_item.set_z_c1(common::Encode::HexDecode(libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[test_idx].Z.c1)));
+//             std::cout << test_idx << std::endl;
+//             dkg[i].g2_vec_[i].print();
 //         }
+// 
+//         auto str = bls_verify_req.SerializeAsString();
+//         std::cout << "src size: " << str.size() << std::endl;
+        for (int32_t poly_idx = 0; poly_idx < dkg[i].polynomial_.size(); ++i) {
+            std::cout << poly_idx << ":" << libBLS::ThresholdUtils::fieldElementToString(dkg[i].polynomial_[poly_idx]) << std::endl;
+        }
+
+        for (int32_t idx = 0; idx < n; ++idx) {
+            ASSERT_TRUE(dkg[i].dkg_instance_->Verification(
+                idx, dkg[i].local_src_secret_key_contribution_[idx], dkg[i].g2_vec_, valid_t));
+        }
     }
     
     for (uint32_t i = valid_count; i < n; ++i) {
@@ -165,7 +187,7 @@ TEST_F(TestBls, ContributionSignAndVerify) {
     ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     auto common_public_key = libff::alt_bn128_G2::zero();
     auto btime1 = common::TimeUtils::TimestampUs();
-    for (uint32_t i = 0; i < n; ++i) {
+    for (uint32_t i = 0; i < valid_count; ++i) {
         common_public_key = common_public_key + dkg[i].g2_vec_[0];
         libBLS::Dkg tmpdkg(valid_t, n);
         dkg[i].local_sec_key_ = tmpdkg.SecretKeyShareCreate(dkg[i].local_src_secret_key_contribution_);

@@ -47,6 +47,7 @@ static const std::string kLatestPoolPrefix = "n\x01";
 static const std::string kHeightTreePrefix = "o\x01";
 static const std::string kGidPrefix = "p\x01";
 static const std::string kContractGasPrepaymentPrefix = "q\x01";
+static const std::string kBlsPolynomialPrefix = "r\x01";
 static const std::string kTemporaryKeyPrefix = "t\x01";
 
 class PrefixDb {
@@ -114,20 +115,10 @@ public:
     }
 
     void AddBlsVerifyG2(
-            uint32_t local_member_idx,
-            const bls::protobuf::VerifyVecItem& verify_item,
-            uint64_t height,
-            uint32_t local_idx,
-            uint32_t peer_idx) {
-        std::string key;
-        key.reserve(32);
-        key.append(kBlsVerifyPrefex);
-        key.append((char*)&local_member_idx, sizeof(local_member_idx));
-        key.append((char*)&height, sizeof(height));
-        key.append((char*)&local_idx, sizeof(local_idx));
-        key.append((char*)&peer_idx, sizeof(peer_idx));
-        ZJC_DEBUG("save g2: %s", common::Encode::HexEncode(key).c_str());
-        std::string val = verify_item.SerializeAsString();
+            const std::string& id,
+            const bls::protobuf::VerifyVecBrdReq& verfy_req) {
+        std::string key = kBlsVerifyPrefex + id;
+        std::string val = verfy_req.SerializeAsString();
         auto st = db_->Put(key, val);
         if (!st.ok()) {
             ZJC_FATAL("write db failed!");
@@ -135,26 +126,16 @@ public:
     }
 
     bool GetBlsVerifyG2(
-            uint32_t local_member_idx,
-            uint64_t height,
-            uint32_t local_idx,
-            uint32_t peer_idx,
-            bls::protobuf::VerifyVecItem* verify_item) {
-        std::string key;
-        key.reserve(32);
-        key.append(kBlsVerifyPrefex);
-        key.append((char*)&local_member_idx, sizeof(local_member_idx));
-        key.append((char*)&height, sizeof(height));
-        key.append((char*)&local_idx, sizeof(local_idx));
-        key.append((char*)&peer_idx, sizeof(peer_idx));
+            const std::string& id,
+            bls::protobuf::VerifyVecBrdReq* verfy_req) {
+        std::string key = kBlsVerifyPrefex + id;
         std::string val;
         auto st = db_->Get(key, &val);
-        ZJC_DEBUG("get g2: %s, %d", common::Encode::HexEncode(key).c_str(), st.ok());
         if (!st.ok()) {
             return false;
         }
 
-        if (!verify_item->ParseFromString(val)) {
+        if (!verfy_req->ParseFromString(val)) {
             assert(false);
             return false;
         }
@@ -809,6 +790,21 @@ public:
         uint64_t* data = (uint64_t*)val.c_str();
         *height = data[0];
         *prepayment = data[1];
+        return true;
+    }
+
+    void SaveBlsPolynomial(
+            const std::string& prikey,
+            const std::string&id,
+            const std::vector<libff::alt_bn128_Fr>& polynomial) {
+        std::string key = kBlsPolynomialPrefix + id;
+
+    }
+
+    bool GetBlsPolynomial(
+            const std::string& prikey,
+            const std::string& id,
+            std::vector<libff::alt_bn128_Fr>* polynomial) {
         return true;
     }
 

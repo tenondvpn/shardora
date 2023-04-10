@@ -24,6 +24,9 @@ message VerifyVecBrdReq {
     optional uint32 public_port = 3;
 }
 
+message PolynomialItem {
+}
+
 message VerifyVecBrdRes {
     optional bytes public_ip = 1;
     optional uint32 public_port = 2;
