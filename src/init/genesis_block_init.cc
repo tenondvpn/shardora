@@ -65,8 +65,10 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         std::vector<std::shared_ptr<BLSPrivateKeyShare>>* skeys,
         std::vector<std::shared_ptr<BLSPublicKeyShare>>* pkeys,
         libff::alt_bn128_G2* common_public_key) {
-    static const uint32_t t = 2;
-    static const uint32_t n = 3;
+    static const uint32_t valid_t = 2;
+    static const uint32_t valid_n = 3;
+    static const uint32_t n = 1024;
+    static const uint32_t t = common::GetSignerCount(n);
     libBLS::Dkg dkg_instance = libBLS::Dkg(t, n);
     std::vector<std::vector<libff::alt_bn128_Fr>> polynomial(n);
     for (auto& pol : polynomial) {
@@ -75,7 +77,8 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
 
     std::vector<std::vector<libff::alt_bn128_Fr>> secret_key_contribution(n);
     for (size_t i = 0; i < n; ++i) {
-        secret_key_contribution[i] = dkg_instance.SecretKeyContribution(polynomial[i]);
+        secret_key_contribution[i] = dkg_instance.SecretKeyContribution(
+            polynomial[i], valid_n, valid_t);
     }
 
     std::vector<std::vector<libff::alt_bn128_G2>> verification_vector(n);
@@ -83,9 +86,15 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         verification_vector[i] = dkg_instance.VerificationVector(polynomial[i]);
     }
 
-    for (size_t i = 0; i < n; ++i) {
-        for (size_t j = i; j < n; ++j) {
+    for (size_t i = 0; i < valid_n; ++i) {
+        for (size_t j = i; j < valid_n; ++j) {
             std::swap(secret_key_contribution[j][i], secret_key_contribution[i][j]);
+        }
+    }
+
+    for (size_t i = 0; i < valid_n; ++i) {
+        for (size_t j = valid_n; j < n; ++j) {
+            secret_key_contribution[i][j] = libff::alt_bn128_Fr::zero();
         }
     }
 

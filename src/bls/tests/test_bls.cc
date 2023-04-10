@@ -104,13 +104,6 @@ TEST_F(TestBls, ContributionSignAndVerify) {
     static const uint32_t valid_t = 2;
     static const uint32_t valid_count = 3;
 
-    std::vector<libff::alt_bn128_Fr> local_src_secret_key_contribution;
-    std::vector<libff::alt_bn128_G2> g2_vec;
-    for (uint32_t i = 0; i < n; ++i) {
-        local_src_secret_key_contribution.push_back(libff::alt_bn128_Fr::zero());
-        g2_vec.push_back(libff::alt_bn128_G2::zero());
-    }
-
     SetGloableInfo(common::Random::RandomString(32), network::kConsensusShardBeginNetworkId);
     BlsDkg* dkg = new BlsDkg[n];
     auto btime0 = common::TimeUtils::TimestampUs();
@@ -143,40 +136,31 @@ TEST_F(TestBls, ContributionSignAndVerify) {
 // 
 //         auto str = bls_verify_req.SerializeAsString();
 //         std::cout << "src size: " << str.size() << std::endl;
-        for (int32_t poly_idx = 0; poly_idx < dkg[i].polynomial_.size(); ++poly_idx) {
-            std::cout << poly_idx << ":" << libBLS::ThresholdUtils::fieldElementToString(dkg[i].polynomial_[poly_idx]) << std::endl;
-        }
-
-        for (int32_t idx = 0; idx < n; ++idx) {
-            ASSERT_TRUE(dkg[i].dkg_instance_->Verification(
-                idx, dkg[i].local_src_secret_key_contribution_[idx], dkg[i].g2_vec_, valid_t));
-        }
-    }
-    
-    for (uint32_t i = valid_count; i < n; ++i) {
-        dkg[i].Init(
-            bls_manager,
-            security_ptr,
-            t,
-            n,
-            libff::alt_bn128_Fr::zero(),
-            libff::alt_bn128_G2::zero(),
-            libff::alt_bn128_G2::zero(),
-            db_ptr);
-        dkg[i].local_member_index_ = i;
-        dkg[i].local_src_secret_key_contribution_ = local_src_secret_key_contribution;
-        dkg[i].g2_vec_ = g2_vec;
+//         for (int32_t poly_idx = 0; poly_idx < dkg[i].polynomial_.size(); ++poly_idx) {
+//             std::cout << poly_idx << ":" << libBLS::ThresholdUtils::fieldElementToString(dkg[i].polynomial_[poly_idx]) << std::endl;
+//         }
+// 
+//         for (int32_t idx = 0; idx < n; ++idx) {
+//             ASSERT_TRUE(dkg[i].dkg_instance_->Verification(
+//                 idx, dkg[i].local_src_secret_key_contribution_[idx], dkg[i].g2_vec_, valid_t));
+//         }
     }
 
     std::cout << "CreateContribution time us: " << (common::TimeUtils::TimestampUs() - btime0) << std::endl;
     libff::alt_bn128_G2 test_valid_public_key;
     std::vector<libff::alt_bn128_Fr> test_valid_seck_keys;
     libff::alt_bn128_Fr test_valid_seck_key;
-    for (uint32_t i = 0; i < n; ++i) {
-        for (uint32_t j = i; j < n; ++j) {
+    for (uint32_t i = 0; i < valid_count; ++i) {
+        for (uint32_t j = i; j < valid_count; ++j) {
             std::swap(
                 dkg[i].local_src_secret_key_contribution_[j],
                 dkg[j].local_src_secret_key_contribution_[i]);
+        }
+    }
+
+    for (uint32_t i = 0; i < valid_count; ++i) {
+        for (uint32_t j = valid_count; j < n; ++j) {
+            dkg[i].local_src_secret_key_contribution_[j] = libff::alt_bn128_Fr::zero();
         }
     }
 

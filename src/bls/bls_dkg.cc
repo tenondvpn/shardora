@@ -789,11 +789,26 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
 void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     valid_swapkey_set_.insert(local_member_index_);
     ++valid_sec_key_count_;
-    if (!polynomial_.empty()) {
+    if (prefix_db_->GetBlsPolynomial(
+            security_,
+            security_->GetPrikey(),
+            security_->GetAddress(),
+            &polynomial_)) {
+        local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(
+            polynomial_, valid_n, valid_t);
+        auto val = libBLS::ThresholdUtils::fieldElementToString(
+            local_src_secret_key_contribution_[local_member_index_]);
+        prefix_db_->SaveSwapKey(
+            local_member_index_, elect_hegiht_, local_member_index_, local_member_index_, val);
         return;
     }
 
-    InitPolynomial();
+    polynomial_ = dkg_instance_->GeneratePolynomial();
+    prefix_db_->SaveBlsPolynomial(
+        security_,
+        security_->GetPrikey(),
+        security_->GetAddress(),
+        polynomial_);
     local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(
         polynomial_, valid_n, valid_t);
     auto val = libBLS::ThresholdUtils::fieldElementToString(
@@ -828,15 +843,6 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
 
     auto str = bls_verify_req.SerializeAsString();
     prefix_db_->AddBlsVerifyG2(security_->GetAddress(), bls_verify_req);
-}
-
-void BlsDkg::InitPolynomial() {
-    if (prefix_db_->GetBlsPolynomial(security_->GetPrikey(), security_->GetAddress(), &polynomial_)) {
-        return;
-    }
-
-    polynomial_ = dkg_instance_->GeneratePolynomial();
-    prefix_db_->SaveBlsPolynomial(security_->GetPrikey(), security_->GetAddress(), polynomial_);
 }
 
 void BlsDkg::DumpContribution() {

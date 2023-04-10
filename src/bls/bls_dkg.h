@@ -94,7 +94,6 @@ private:
     void CheckSwapKeyAllValid(uint8_t thread_idx);
     void SendGetSwapKey(uint8_t thread_idx, int32_t index);
     libff::alt_bn128_G2 GetVerifyG2FromDb(uint32_t first_index);
-    void InitPolynomial();
 
     bool IsVerifyBrdPeriod() {
 #ifdef ZJC_UNITTEST

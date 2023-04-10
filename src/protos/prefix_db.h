@@ -794,6 +794,7 @@ public:
     }
 
     void SaveBlsPolynomial(
+            std::shared_ptr<security::Security>& secptr,
             const std::string& prikey,
             const std::string&id,
             const std::vector<libff::alt_bn128_Fr>& polynomial) {
@@ -803,13 +804,21 @@ public:
             item.add_data(libBLS::ThresholdUtils::fieldElementToString(polynomial[i]));
         }
 
-        auto st = db_->Put(key, item.SerializeAsString());
+        auto str = item.SerializeAsString();
+        std::string enc_str;
+        if (secptr->Encrypt(str, prikey, &enc_str) != security::kSecuritySuccess) {
+            ZJC_FATAL("encrypt data failed!");
+            return;
+        }
+
+        auto st = db_->Put(key, enc_str);
         if (!st.ok()) {
             ZJC_FATAL("write db failed!");
         }
     }
 
     bool GetBlsPolynomial(
+            std::shared_ptr<security::Security>& secptr,
             const std::string& prikey,
             const std::string& id,
             std::vector<libff::alt_bn128_Fr>* polynomial) {
@@ -820,8 +829,14 @@ public:
             return false;
         }
 
+        std::string dec_str;
+        if (secptr->Decrypt(val, prikey, &dec_str) != security::kSecuritySuccess) {
+            ZJC_ERROR("decrypt data failed!");
+            return false;
+        }
+
         bls::protobuf::PolynomialItem item;
-        if (!item.ParseFromString(val)) {
+        if (!item.ParseFromString(dec_str)) {
             return false;
         }
 
