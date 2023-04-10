@@ -454,7 +454,7 @@ libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t first_index) {
     auto res = prefix_db_->GetBlsVerifyG2((*members_)[first_index]->id, &req);
     if (!res) {
         ZJC_DEBUG("get verify g2 failed local: %d, %lu, %u, %u",
-            local_member_index_, elect_hegiht_, first_index, second_index);
+            local_member_index_, elect_hegiht_, first_index);
         return libff::alt_bn128_G2::zero();
     }
 
@@ -484,13 +484,12 @@ void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
     auto verfiy_brd = bls_msg.mutable_verify_brd();
     std::string content_to_hash;
     content_to_hash.reserve(1024);
-    auto verify_item = verfiy_brd->add_verify_vec();
-    auto res = prefix_db_->GetBlsVerifyG2(
-       local_member_index_, elect_hegiht_, local_member_index_, 0, verify_item);
+    auto res = prefix_db_->GetBlsVerifyG2((*members_)[local_member_index_]->id, verfiy_brd);
     if (!res) {
         return;
     }
 
+    auto* verify_item = &verfiy_brd->verify_vec(0);
     content_to_hash += verify_item->x_c0();
     content_to_hash += verify_item->x_c1();
     content_to_hash += verify_item->y_c0();
@@ -814,17 +813,17 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     for (int32_t i = 0; i < dkg[i].g2_vec_.size(); ++i) {
         bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req.add_verify_vec();
         verify_item.set_x_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec.X.c0)));
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
         verify_item.set_x_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec.X.c1)));
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c1)));
         verify_item.set_y_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec.Y.c0)));
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
         verify_item.set_y_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec.Y.c1)));
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
         verify_item.set_z_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec.Z.c0)));
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
         verify_item.set_z_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec.Z.c1)));
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
     }
 
     auto str = bls_verify_req.SerializeAsString();
