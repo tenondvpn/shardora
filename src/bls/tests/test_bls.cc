@@ -111,6 +111,7 @@ TEST_F(TestBls, ContributionSignAndVerify) {
         g2_vec.push_back(libff::alt_bn128_G2::zero());
     }
 
+    SetGloableInfo(common::Random::RandomString(32), network::kConsensusShardBeginNetworkId);
     BlsDkg* dkg = new BlsDkg[n];
     auto btime0 = common::TimeUtils::TimestampUs();
     for (uint32_t i = 0; i < valid_count; i++) {
