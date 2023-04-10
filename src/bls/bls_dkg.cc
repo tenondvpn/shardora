@@ -476,7 +476,7 @@ void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
         return;
     }
 
-    CreateContribution(members_->size());
+    CreateContribution(members_->size(), min_aggree_member_count_);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
@@ -787,9 +787,9 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
 #endif
 }
 
-void BlsDkg::CreateContribution(uint32_t valid_n) {
+void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     std::vector<libff::alt_bn128_Fr> polynomial = dkg_instance_->GeneratePolynomial();
-    local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(polynomial, valid_n);
+    local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(polynomial, valid_n, valid_t);
     auto val = libBLS::ThresholdUtils::fieldElementToString(
         local_src_secret_key_contribution_[local_member_index_]);
     prefix_db_->SaveSwapKey(

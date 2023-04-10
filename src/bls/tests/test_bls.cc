@@ -122,12 +122,12 @@ TEST_F(TestBls, ContributionSignAndVerify) {
             db_ptr);
         dkg[i].dkg_instance_ = std::make_shared<libBLS::Dkg>(t, n);
         dkg[i].local_member_index_ = i;
-        dkg[i].CreateContribution(valid_count);
+        dkg[i].CreateContribution(n, valid_t);
 
-        for (uint32_t j = valid_count; j < n; ++j) {
-            dkg[i].local_src_secret_key_contribution_.push_back(libff::alt_bn128_Fr::zero());
-            dkg[i].g2_vec_.push_back(libff::alt_bn128_G2::zero());
-        }
+//         for (uint32_t j = valid_count; j < n; ++j) {
+//             dkg[i].local_src_secret_key_contribution_.push_back(libff::alt_bn128_Fr::zero());
+//             dkg[i].g2_vec_.push_back(libff::alt_bn128_G2::zero());
+//         }
     }
     
     for (uint32_t i = valid_count; i < n; ++i) {
@@ -149,7 +149,7 @@ TEST_F(TestBls, ContributionSignAndVerify) {
     libff::alt_bn128_G2 test_valid_public_key;
     std::vector<libff::alt_bn128_Fr> test_valid_seck_keys;
     libff::alt_bn128_Fr test_valid_seck_key;
-    for (uint32_t i = 0; i < valid_count; ++i) {
+    for (uint32_t i = 0; i < n; ++i) {
         for (uint32_t j = i; j < n; ++j) {
             std::swap(
                 dkg[i].local_src_secret_key_contribution_[j],
@@ -165,7 +165,7 @@ TEST_F(TestBls, ContributionSignAndVerify) {
     ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
     auto common_public_key = libff::alt_bn128_G2::zero();
     auto btime1 = common::TimeUtils::TimestampUs();
-    for (uint32_t i = 0; i < valid_count; ++i) {
+    for (uint32_t i = 0; i < n; ++i) {
         common_public_key = common_public_key + dkg[i].g2_vec_[0];
         libBLS::Dkg tmpdkg(valid_t, n);
         dkg[i].local_sec_key_ = tmpdkg.SecretKeyShareCreate(dkg[i].local_src_secret_key_contribution_);
