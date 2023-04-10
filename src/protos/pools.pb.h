@@ -90,17 +90,16 @@ enum StepType {
   kConsensusCreateGenesisAcount = 5,
   kConsensusLocalTos = 6,
   kContractUserCreateCall = 7,
-  kContractRootCreateCall = 8,
-  kContractShardCreateCall = 9,
-  kContractUserCall = 10,
-  kContractExcute = 11,
-  kContractBroadcast = 12,
-  kRootCreateAddress = 13,
-  kRootCreateAddressCrossSharding = 14
+  kContractUserCall = 8,
+  kContractExcute = 9,
+  kContractBroadcast = 10,
+  kRootCreateAddress = 11,
+  kRootCreateAddressCrossSharding = 12,
+  kContractGasPrepayment = 13
 };
 bool StepType_IsValid(int value);
 const StepType StepType_MIN = kNormalFrom;
-const StepType StepType_MAX = kRootCreateAddressCrossSharding;
+const StepType StepType_MAX = kContractGasPrepayment;
 const int StepType_ARRAYSIZE = StepType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* StepType_descriptor();
@@ -438,6 +437,13 @@ class ToTxMessageItem : public ::google::protobuf::Message /* @@protoc_insertion
   ::google::protobuf::uint32 pool_index() const;
   void set_pool_index(::google::protobuf::uint32 value);
 
+  // optional int32 step = 5;
+  bool has_step() const;
+  void clear_step();
+  static const int kStepFieldNumber = 5;
+  ::google::protobuf::int32 step() const;
+  void set_step(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.ToTxMessageItem)
  private:
   void set_has_des();
@@ -448,6 +454,8 @@ class ToTxMessageItem : public ::google::protobuf::Message /* @@protoc_insertion
   void clear_has_sharding_id();
   void set_has_pool_index();
   void clear_has_pool_index();
+  void set_has_step();
+  void clear_has_step();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -456,6 +464,7 @@ class ToTxMessageItem : public ::google::protobuf::Message /* @@protoc_insertion
   ::google::protobuf::uint64 amount_;
   ::google::protobuf::uint32 sharding_id_;
   ::google::protobuf::uint32 pool_index_;
+  ::google::protobuf::int32 step_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -1449,6 +1458,30 @@ inline void ToTxMessageItem::set_pool_index(::google::protobuf::uint32 value) {
   set_has_pool_index();
   pool_index_ = value;
   // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ToTxMessageItem.pool_index)
+}
+
+// optional int32 step = 5;
+inline bool ToTxMessageItem::has_step() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void ToTxMessageItem::set_has_step() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void ToTxMessageItem::clear_has_step() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void ToTxMessageItem::clear_step() {
+  step_ = 0;
+  clear_has_step();
+}
+inline ::google::protobuf::int32 ToTxMessageItem::step() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ToTxMessageItem.step)
+  return step_;
+}
+inline void ToTxMessageItem::set_step(::google::protobuf::int32 value) {
+  set_has_step();
+  step_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ToTxMessageItem.step)
 }
 
 // -------------------------------------------------------------------
