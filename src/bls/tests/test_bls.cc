@@ -142,7 +142,7 @@ TEST_F(TestBls, ContributionSignAndVerify) {
 // 
 //         auto str = bls_verify_req.SerializeAsString();
 //         std::cout << "src size: " << str.size() << std::endl;
-        for (int32_t poly_idx = 0; poly_idx < dkg[i].polynomial_.size(); ++i) {
+        for (int32_t poly_idx = 0; poly_idx < dkg[i].polynomial_.size(); ++poly_idx) {
             std::cout << poly_idx << ":" << libBLS::ThresholdUtils::fieldElementToString(dkg[i].polynomial_[poly_idx]) << std::endl;
         }
 
