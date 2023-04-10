@@ -79,7 +79,7 @@ private:
     void BroadcastVerfify(uint8_t thread_idx);
     void SwapSecKey(uint8_t thread_idx);
     void FinishNoLock(uint8_t thread_idx);
-    void CreateContribution(uint32_t valid_n);
+    void CreateContribution(uint32_t valid_n, uint32_t valid_t);
     void CreateDkgMessage(
         const dht::NodePtr& local_node,
         protobuf::BlsMessage& bls_msg,
