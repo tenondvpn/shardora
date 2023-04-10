@@ -44,7 +44,7 @@ void BlsDkg::Init(
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     max_member_count_ = common::GlobalInfo::Instance()->each_shard_max_members();
-    max_agree_count_ = max_member_count_ * 2 / 3 + 1
+    max_agree_count_ = max_member_count_ * 2 / 3 + 1;
 }
 
 void BlsDkg::Destroy() {
@@ -234,8 +234,7 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-    prefix_db_->AddBlsVerifyG2(
-        local_member_index_, bls_msg.verify_brd().verify_vec(0), elect_hegiht_, bls_msg.index(), 0);
+    prefix_db_->AddBlsVerifyG2((*members_)[bls_msg.index()]->id, bls_msg.verify_brd());
     ZJC_DEBUG("save verify g2 success local: %d, %lu, %u, %u",
         local_member_index_, elect_hegiht_, bls_msg.index(), 0);
 } catch (std::exception& e) {
@@ -419,7 +418,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, bls_msg.index(), sec_key);
     // verify it valid, if not broadcast against.
-    auto first_g2 = GetVerifyG2FromDb(bls_msg.index(), 0);
+    auto first_g2 = GetVerifyG2FromDb(bls_msg.index());
     auto verify_g2 = dkg_instance_->GetFirstVerification(
         bls_msg.index(),
         tmp_swap_key,
@@ -450,16 +449,16 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     BLS_ERROR("catch error: %s", e.what());
 }
 
-libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t first_index, uint32_t second_index) {
-    bls::protobuf::VerifyVecItem item;
-    auto res = prefix_db_->GetBlsVerifyG2(
-        local_member_index_, elect_hegiht_, first_index, second_index, &item);
+libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t first_index) {
+    bls::protobuf::VerifyVecBrdReq req;
+    auto res = prefix_db_->GetBlsVerifyG2((*members_)[first_index]->id, &req);
     if (!res) {
         ZJC_DEBUG("get verify g2 failed local: %d, %lu, %u, %u",
             local_member_index_, elect_hegiht_, first_index, second_index);
         return libff::alt_bn128_G2::zero();
     }
 
+    auto& item = req.verify_vec(0);
     auto x_c0 = libff::alt_bn128_Fq(item.x_c0().c_str());
     auto x_c1 = libff::alt_bn128_Fq(item.x_c1().c_str());
     auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
@@ -554,7 +553,7 @@ void BlsDkg::SwapSecKey(uint8_t thread_idx) try {
             continue;
         }
 
-        auto first_g2 = GetVerifyG2FromDb(local_member_index_, 0);
+        auto first_g2 = GetVerifyG2FromDb(local_member_index_);
         auto verify_g2 = dkg_instance_->GetFirstVerification(
             local_member_index_,
             local_src_secret_key_contribution_[local_member_index_],
@@ -676,7 +675,7 @@ void BlsDkg::FinishNoLock(uint8_t thread_idx) try {
             continue;
         }
 
-        auto g2_val = GetVerifyG2FromDb(i, 0);
+        auto g2_val = GetVerifyG2FromDb(i);
         if (g2_val == libff::alt_bn128_G2::zero()) {
             valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
             common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
@@ -815,17 +814,17 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     for (int32_t i = 0; i < dkg[i].g2_vec_.size(); ++i) {
         bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req.add_verify_vec();
         verify_item.set_x_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[i].X.c0)));
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec.X.c0)));
         verify_item.set_x_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[i].X.c1)));
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec.X.c1)));
         verify_item.set_y_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[i].Y.c0)));
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec.Y.c0)));
         verify_item.set_y_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[i].Y.c1)));
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec.Y.c1)));
         verify_item.set_z_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[i].Z.c0)));
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec.Z.c0)));
         verify_item.set_z_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[i].Z.c1)));
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec.Z.c1)));
     }
 
     auto str = bls_verify_req.SerializeAsString();
