@@ -43,6 +43,7 @@ void BlsDkg::Init(
     common_public_key_ = common_public_key;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    max_member_count_ = common::GlobalInfo::Instance()->each_shard_max_members();
 }
 
 void BlsDkg::Destroy() {
@@ -74,7 +75,7 @@ void BlsDkg::OnNewElectionBlock(
 //     memset(invalid_node_map_, 0, sizeof(invalid_node_map_));
     min_aggree_member_count_ = common::GetSignerCount(members_->size());
     member_count_ = members_->size();
-    dkg_instance_ = std::make_shared<libBLS::Dkg>(min_aggree_member_count_, members_->size());
+    dkg_instance_ = std::make_shared<libBLS::Dkg>(min_aggree_member_count_, max_member_count_);
     elect_hegiht_ = elect_height;
     for (uint32_t i = 0; i < members_->size(); ++i) {
         if ((*members_)[i]->id == security_->GetAddress()) {
@@ -788,7 +789,7 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
 
 void BlsDkg::CreateContribution() {
     std::vector<libff::alt_bn128_Fr> polynomial = dkg_instance_->GeneratePolynomial();
-    local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(polynomial);
+    local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(polynomial, 3);
     auto val = libBLS::ThresholdUtils::fieldElementToString(
         local_src_secret_key_contribution_[local_member_index_]);
     prefix_db_->SaveSwapKey(

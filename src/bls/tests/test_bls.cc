@@ -96,15 +96,13 @@ public:
 };
 
 TEST_F(TestBls, ContributionSignAndVerify) {
-    static const uint32_t t = 7;
-    static const uint32_t n = 10;
-    auto hash_str = common::Hash::Sha256("hello world");
-    libff::alt_bn128_G1 hash;
-    BlsSign bls_sign;
-    ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
-
+    static const uint32_t t = 700;
+    static const uint32_t n = 1024;
+    static const uint32_t valid_t = 2;
+    static const uint32_t valid_count = 3;
     BlsDkg* dkg = new BlsDkg[n];
-    for (uint32_t i = 0; i < n; i++) {
+    auto btime0 = common::TimeUtils::TimestampUs();
+    for (uint32_t i = 0; i < valid_count; i++) {
         dkg[i].Init(
             bls_manager,
             security_ptr,
@@ -115,13 +113,87 @@ TEST_F(TestBls, ContributionSignAndVerify) {
             libff::alt_bn128_G2::zero(),
             db_ptr);
         dkg[i].dkg_instance_ = std::make_shared<libBLS::Dkg>(t, n);
-        dkg[i].local_member_index_ = 0;
+        dkg[i].local_member_index_ = i;
         dkg[i].CreateContribution();
     }
 
-    for (uint32_t i = 0; i < n; i++) {
-        auto val = dkg[i].dkg_instance_->GetVerification(i, dkg[i].g2_vec_);
+    std::vector<libff::alt_bn128_Fr> local_src_secret_key_contribution;
+    std::vector<libff::alt_bn128_G2> g2_vec;
+    for (uint32_t i = 0; i < n; ++i) {
+        local_src_secret_key_contribution.push_back(libff::alt_bn128_Fr::zero());
+        g2_vec.push_back(libff::alt_bn128_G2::zero());
     }
+
+    for (uint32_t i = valid_count; i < n; ++i) {
+        dkg[i].Init(
+            bls_manager,
+            security_ptr,
+            t,
+            n,
+            libff::alt_bn128_Fr::zero(),
+            libff::alt_bn128_G2::zero(),
+            libff::alt_bn128_G2::zero(),
+            db_ptr);
+        dkg[i].local_member_index_ = i;
+        dkg[i].local_src_secret_key_contribution_ = local_src_secret_key_contribution;
+        dkg[i].g2_vec_ = g2_vec;
+    }
+
+    std::cout << "CreateContribution time us: " << (common::TimeUtils::TimestampUs() - btime0) << std::endl;
+    libff::alt_bn128_G2 test_valid_public_key;
+    std::vector<libff::alt_bn128_Fr> test_valid_seck_keys;
+    libff::alt_bn128_Fr test_valid_seck_key;
+    for (uint32_t i = 0; i < valid_count; ++i) {
+        for (uint32_t j = i; j < n; ++j) {
+            std::swap(
+                dkg[i].local_src_secret_key_contribution_[j],
+                dkg[j].local_src_secret_key_contribution_[i]);
+        }
+    }
+
+    std::vector<libff::alt_bn128_G1> all_signs;
+    std::vector<size_t> idx_vec(valid_t);
+    auto hash_str = common::Hash::Sha256("hello world");
+    libff::alt_bn128_G1 hash;
+    BlsSign bls_sign;
+    ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
+    auto common_public_key = libff::alt_bn128_G2::zero();
+    auto btime1 = common::TimeUtils::TimestampUs();
+    for (uint32_t i = 0; i < valid_count; ++i) {
+        common_public_key = common_public_key + dkg[i].g2_vec_[0];
+        libBLS::Dkg tmpdkg(valid_t, n);
+        dkg[i].local_sec_key_ = tmpdkg.SecretKeyShareCreate(dkg[i].local_src_secret_key_contribution_);
+        dkg[i].local_publick_key_ = tmpdkg.GetPublicKeyFromSecretKey(dkg[i].local_sec_key_);
+        libff::alt_bn128_G1 sign;
+        bls_sign.Sign(valid_t, n, dkg[i].local_sec_key_, hash, &sign);
+        std::string verify_hash;
+        // slow
+        ASSERT_EQ(
+            bls_sign.Verify(valid_t, n, sign, hash, dkg[i].local_publick_key_, &verify_hash),
+            kBlsSuccess);
+        if (i < valid_t) {
+            all_signs.push_back(sign);
+            idx_vec[i] = i + 1;
+        }
+    }
+
+    std::cout << "sign time us: " << (common::TimeUtils::TimestampUs() - btime1) << std::endl;
+    auto t0 = common::TimeUtils::TimestampUs();
+    libBLS::Bls bls_instance = libBLS::Bls(valid_t, n);
+    auto lagrange_coeffs = libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, valid_t);
+    std::cout << "LagrangeCoeffs use time us: " << (common::TimeUtils::TimestampUs() - t0) << std::endl;
+    auto t1 = common::TimeUtils::TimestampUs();
+    libff::alt_bn128_G1 agg_sign = bls_instance.SignatureRecover(
+        all_signs,
+        lagrange_coeffs);
+    std::cout << "SignatureRecover use time us: " << (common::TimeUtils::TimestampUs() - t1) << std::endl;
+    std::string verify_hash;
+    // slow
+    auto t2 = common::TimeUtils::TimestampUs();
+    ASSERT_EQ(
+        bls_sign.Verify(valid_t, n, agg_sign, hash, common_public_key, &verify_hash),
+        kBlsSuccess);
+    std::cout << "use time us: " << (common::TimeUtils::TimestampUs() - t2) << std::endl;
 }
 
 TEST_F(TestBls, AllSuccess) {

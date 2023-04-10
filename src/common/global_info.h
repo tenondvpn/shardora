@@ -122,6 +122,10 @@ public:
         return for_ck_server_;
     }
 
+    uint32_t each_shard_max_members() {
+        return each_shard_max_members_;
+    }
+
 private:
     GlobalInfo();
     ~GlobalInfo();
@@ -151,6 +155,7 @@ private:
     uint8_t now_thread_idx_ = 0;
     uint8_t message_handler_thread_count_ = 4;
     bool for_ck_server_ = false;
+    uint32_t each_shard_max_members_ = 1024u;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };

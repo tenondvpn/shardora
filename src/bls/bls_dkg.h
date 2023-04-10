@@ -156,11 +156,13 @@ private:
     std::unordered_map<int32_t, std::string> swap_key_map_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    int32_t max_member_count_ = 1024;
 
 #ifdef ZJC_UNITTEST
     transport::protobuf::Header ver_brd_msg_;
     transport::protobuf::Header sec_swap_msgs_;
     std::vector<transport::protobuf::Header> sec_against_msgs_;
+    std::vector<libff::alt_bn128_Fr> test_valid_seck_keys_;
     std::vector<libff::alt_bn128_G2> g2_vec_;
 #endif
     DISALLOW_COPY_AND_ASSIGN(BlsDkg);

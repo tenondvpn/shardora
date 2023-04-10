@@ -43,6 +43,7 @@ int GlobalInfo::Init(const common::Config& config) {
 
     config.Get("zjchain", "tcp_spec", tcp_spec_);
     config.Get("zjchain", "for_ck", for_ck_server_);
+    config.Get("zjchain", "each_shard_max_members", each_shard_max_members_);
     std::string str_contry;
     if (!config.Get("zjchain", "country", str_contry) || str_contry.empty()) {
         ZJC_ERROR("get zjchain country from config failed.");
