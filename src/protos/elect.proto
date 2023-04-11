@@ -8,7 +8,7 @@ message BlsPublicKey {
     optional bytes y_c0 = 3;
     optional bytes y_c1 = 4;
     optional int32 pool_idx_mod_num = 5;
-
+}
 
 message member {
     optional bytes id = 1;
