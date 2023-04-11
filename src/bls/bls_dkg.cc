@@ -481,6 +481,11 @@ void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
         return;
     }
 
+    ZJC_DEBUG("brd verify g2 success local: %d,  %s, %s",
+        local_member_index_,
+        common::Encode::HexEncode((*members_)[local_member_index_]->id).c_str(),
+        common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str());
+
     CreateDkgMessage(msg_ptr);
     auto broad_param = msg.mutable_broadcast();
     broad_param->set_hop_to_layer(0);
