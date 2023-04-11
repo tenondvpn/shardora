@@ -454,6 +454,8 @@ libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t first_index) {
 
 void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
     if (members_ == nullptr || local_member_index_ >= members_->size()) {
+        ZJC_ERROR("member null or member index invalid!");
+        assert(false);
         return;
     }
 
@@ -717,6 +719,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     bls::protobuf::LocalBlsItem local_item;
     polynomial_.clear();
     if (prefix_db_->GetBlsInfo(security_, &local_item)) {
+        ZJC_DEBUG("use exists data.");
         for (int32_t i = 0; i < local_item.polynomial_size(); ++i) {
             polynomial_.push_back(libff::alt_bn128_Fr(local_item.polynomial(i).c_str()));
         }
