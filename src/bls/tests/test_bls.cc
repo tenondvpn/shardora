@@ -240,9 +240,11 @@ static void GetPrivateKey(std::vector<std::string>& pri_vec, uint32_t n) {
 }
 
 static void CreateContribution(
+        common::MembersPtr members,
         BlsDkg* dkg,
         const std::vector<std::string>& pri_vec,
-        std::shared_ptr<TimeBlockItem>& latest_timeblock_info) {
+        std::shared_ptr<TimeBlockItem>& latest_timeblock_info,
+        std::vector<transport::MessagePtr>& verify_brd_msgs) {
     FILE* rlocal_bls_fd = fopen("local_bls", "r");
     bool exists = false;
     if (rlocal_bls_fd != nullptr) {
@@ -330,7 +332,7 @@ TEST_F(TestBls, AllSuccess) {
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
     latest_timeblock_info->latest_time_block_height = 1;
     latest_timeblock_info->vss_random = common::Random::RandomUint64();
-    CreateContribution(dkg, pri_vec, latest_timeblock_info);
+    CreateContribution(members, dkg, pri_vec, latest_timeblock_info, verify_brd_msgs);
     auto time1 = common::TimeUtils::TimestampUs();
     std::cout << "0: " << (time1 - time0) << std::endl;
     for (uint32_t i = 0; i < n; ++i) {
