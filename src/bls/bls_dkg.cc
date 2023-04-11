@@ -384,7 +384,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
 
     auto tmp_swap_key = libff::alt_bn128_Fr(sec_key.c_str());
     if (!dkg_instance_->Verification(
-            local_member_index_,
+            bls_msg.index(),
             tmp_swap_key,
             g2_vec,
             min_aggree_member_count_)) {
@@ -395,6 +395,10 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
+    ZJC_DEBUG("swap verify success member: %d, index: %d, %s ,%s ",
+        local_member_index_, bls_msg.index(),
+        libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g2_vec[0].X.c0).c_str());
     // swap
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, bls_msg.index(), sec_key);
