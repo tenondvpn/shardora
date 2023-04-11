@@ -389,7 +389,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
             g2_vec,
             min_aggree_member_count_)) {
         ZJC_DEBUG("verify error member: %d, index: %d, %s ,%s ",
-            local_member_index_, i,
+            local_member_index_, bls_msg.index(),
             libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(g2_vec[0].X.c0).c_str());
         return;
