@@ -137,7 +137,7 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
             libBLS::ThresholdUtils::fieldElementToString(verify_vec_val.Y.c1)));
         verify_val->set_z_c0(common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(verify_vec_val.Z.c0)));
-        verify_val->set_zx_c1(common::Encode::HexDecode(
+        verify_val->set_z_c1(common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(verify_vec_val.Z.c1)));
 
         bls::protobuf::LocalBlsItem local_item;
