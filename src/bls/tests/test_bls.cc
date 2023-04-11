@@ -277,7 +277,7 @@ TEST_F(TestBls, AllSuccess) {
     }
 
     auto time0 = common::TimeUtils::TimestampUs();
-    std::vector<transport::protobuf::Header> verify_brd_msgs;
+    std::vector<transport::MessagePtr> verify_brd_msgs;
     auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
     latest_timeblock_info->latest_time_block_height = 1;
@@ -308,9 +308,8 @@ TEST_F(TestBls, AllSuccess) {
             bls_manager->security_ = tmp_security_ptr;
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
-            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto msg_ptr = verify_brd_msgs[i];
             msg_ptr->thread_idx = 0;
-            msg_ptr->header = verify_brd_msgs[i];
             dkg[j].HandleMessage(msg_ptr);
         }
     }
@@ -318,7 +317,7 @@ TEST_F(TestBls, AllSuccess) {
     auto time2 = common::TimeUtils::TimestampUs();
     std::cout << "1: " << (time2 - time1) << std::endl;
     // swap sec key
-    std::vector<transport::protobuf::Header> swap_sec_msgs;
+    std::vector<transport::MessagePtr> swap_sec_msgs;
     for (uint32_t i = 0; i < n; ++i) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
@@ -343,9 +342,8 @@ TEST_F(TestBls, AllSuccess) {
             bls_manager->security_ = tmp_security_ptr;
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
-            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto msg_ptr = swap_sec_msgs[i];
             msg_ptr->thread_idx = 0;
-            msg_ptr->header = swap_sec_msgs[i];
             dkg[j].HandleMessage(msg_ptr);
         }
         auto t1 = common::TimeUtils::TimestampUs();

@@ -473,10 +473,9 @@ void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
     auto& msg = msg_ptr->header;
     auto& bls_msg = *msg.mutable_bls_proto();
     auto verfiy_brd = bls_msg.mutable_verify_brd();
-    std::string content_to_hash;
-    content_to_hash.reserve(1024);
     auto res = prefix_db_->GetBlsVerifyG2((*members_)[local_member_index_]->id, verfiy_brd);
     if (!res) {
+        assert(false);
         return;
     }
 
@@ -484,7 +483,7 @@ void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
     auto broad_param = msg.mutable_broadcast();
     broad_param->set_hop_to_layer(0);
 #ifdef ZJC_UNITTEST
-    ver_brd_msg_ = msg;
+    ver_brd_msg_ = msg_ptr;
 #else
     network::Route::Instance()->Send(msg_ptr);
 #endif
@@ -539,7 +538,7 @@ void BlsDkg::SwapSecKey(uint8_t thread_idx) try {
     auto broad_param = msg.mutable_broadcast();
     broad_param->set_hop_to_layer(0);
 #ifdef ZJC_UNITTEST
-    sec_swap_msgs_ = msg;
+    sec_swap_msgs_ = msg_ptr;
     ZJC_DEBUG("success add swap msg");
 #else
     network::Route::Instance()->Send(msg_ptr);

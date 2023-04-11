@@ -156,8 +156,8 @@ private:
     uint64_t finish_offset_ = 0;
 
 #ifdef ZJC_UNITTEST
-    transport::protobuf::Header ver_brd_msg_;
-    transport::protobuf::Header sec_swap_msgs_;
+    transport::MessagePtr ver_brd_msg_;
+    transport::MessagePtr sec_swap_msgs_;
     std::vector<transport::protobuf::Header> sec_against_msgs_;
     std::vector<libff::alt_bn128_Fr> test_valid_seck_keys_;
     std::vector<libff::alt_bn128_G2> g2_vec_;
