@@ -263,7 +263,6 @@ TEST_F(TestBls, AllSuccess) {
         pri_vec.push_back(common::Random::RandomString(32));
     }
 
-    auto elect_block_ptr = std::make_shared<elect::protobuf::ElectBlock>();
     for (uint32_t i = 0; i < pri_vec.size(); ++i) {
         security::Ecdsa ecdsa;
         ecdsa.SetPrivateKey(pri_vec[i]);
@@ -288,7 +287,7 @@ TEST_F(TestBls, AllSuccess) {
         bls_manager->security_ = tmp_security_ptr;
         dkg[i].security_ = tmp_security_ptr;
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info, elect_block_ptr);
+        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
         dkg[i].local_member_index_ = i;
         dkg[i].BroadcastVerfify(0);
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
@@ -392,7 +391,7 @@ TEST_F(TestBls, AllSuccess) {
         BlsSign bls_sign;
         std::string verify_hash;
         // slow
-        EXPECT_EQ(
+        ASSERT_EQ(
             bls_sign.Verify(t, n, agg_sign, hash, dkg[i].common_public_key_, &verify_hash),
             kBlsSuccess);
     }
@@ -435,14 +434,13 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
     latest_timeblock_info->latest_time_block_height = 1;
     latest_timeblock_info->vss_random = common::Random::RandomUint64();
-    auto elect_block_ptr = std::make_shared<elect::protobuf::ElectBlock>();
     for (uint32_t i = 0; i < n; ++i) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
         bls_manager->security_ = tmp_security_ptr;
         dkg[i].security_ = tmp_security_ptr;
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info, elect_block_ptr);
+        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
         dkg[i].local_member_index_ = i;
         dkg[i].BroadcastVerfify(0);
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
@@ -592,14 +590,13 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
     latest_timeblock_info->latest_time_block_height = 1;
     latest_timeblock_info->vss_random = common::Random::RandomUint64();
-    auto elect_block_ptr = std::make_shared<elect::protobuf::ElectBlock>();
     for (uint32_t i = 0; i < n; ++i) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
         bls_manager->security_ = tmp_security_ptr;
         dkg[i].security_ = tmp_security_ptr;
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info, elect_block_ptr);
+        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
         dkg[i].local_member_index_ = i;
         dkg[i].BroadcastVerfify(0);
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
@@ -742,14 +739,13 @@ TEST_F(TestBls, ThreeRatioFailFine) {
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
     latest_timeblock_info->latest_time_block_height = 1;
     latest_timeblock_info->vss_random = common::Random::RandomUint64();
-    auto elect_block_ptr = std::make_shared<elect::protobuf::ElectBlock>();
     for (uint32_t i = 0; i < n; ++i) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
         bls_manager->security_ = tmp_security_ptr;
         dkg[i].security_ = tmp_security_ptr;
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info, elect_block_ptr);
+        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
         dkg[i].local_member_index_ = i;
         dkg[i].BroadcastVerfify(0);
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
@@ -894,14 +890,13 @@ TEST_F(TestBls, ThreeRatioFail) {
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
     latest_timeblock_info->latest_time_block_height = 1;
     latest_timeblock_info->vss_random = common::Random::RandomUint64();
-    auto elect_block_ptr = std::make_shared<elect::protobuf::ElectBlock>();
     for (uint32_t i = 0; i < n; ++i) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
         bls_manager->security_ = tmp_security_ptr;
         dkg[i].security_ = tmp_security_ptr;
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info, elect_block_ptr);
+        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
         dkg[i].local_member_index_ = i;
         dkg[i].BroadcastVerfify(0);
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);

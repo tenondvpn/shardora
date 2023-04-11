@@ -37,7 +37,6 @@ message VerifyVecBrdRes {
 message SwapSecKeyItem {
     optional bytes sec_key = 1;
     optional uint32 sec_key_len = 2;
-    optional bytes verify_hash = 3;
 }
 
 message SwapSecKeyReq {

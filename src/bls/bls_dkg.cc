@@ -182,6 +182,9 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
     }
 
     if (members_->size() <= bls_msg.index()) {
+        BLS_ERROR("members_->size() <= bls_msg.index(), %u : %u",
+            members_->size(), bls_msg.index());
+        assert(false);
         return;
     }
 
@@ -373,62 +376,53 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-    // swap
+    std::vector<libff::alt_bn128_G2> g2_vec;
+    if (!GetVerifyG2FromDb(bls_msg.index(), g2_vec)) {
+        BLS_ERROR("get member: %u verify vector failed!", bls_msg.index());
+        return;
+    }
+
     auto tmp_swap_key = libff::alt_bn128_Fr(sec_key.c_str());
+    if (!dkg_instance_->Verification(bls_msg.index(), tmp_swap_key, g2_vec)) {
+        BLS_ERROR("verify: %u failed!", bls_msg.index());
+        return;
+    }
+
+    // swap
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, bls_msg.index(), sec_key);
-    // verify it valid, if not broadcast against.
-    auto first_g2 = GetVerifyG2FromDb(bls_msg.index());
-    auto verify_g2 = dkg_instance_->GetFirstVerification(
-        bls_msg.index(),
-        tmp_swap_key,
-        first_g2);
-    if (verify_g2 == libff::alt_bn128_G2::zero()) {
-        BLS_DEBUG("get verify g2 failed!");
-        return;
-    }
-
-    std::string gw_to_hash = common::Hash::keccak256(
-        libBLS::ThresholdUtils::fieldElementToString(verify_g2.X.c0) +
-        libBLS::ThresholdUtils::fieldElementToString(verify_g2.X.c1) +
-        libBLS::ThresholdUtils::fieldElementToString(verify_g2.Y.c0) +
-        libBLS::ThresholdUtils::fieldElementToString(verify_g2.Y.c1) +
-        libBLS::ThresholdUtils::fieldElementToString(verify_g2.Z.c0) +
-        libBLS::ThresholdUtils::fieldElementToString(verify_g2.Z.c1));
-    if (gw_to_hash != bls_msg.swap_req().keys(local_member_index_).verify_hash()) {
-        BLS_WARN("invalid verify g2.");
-        return;
-    }
-
     valid_swapkey_set_.insert(bls_msg.index());
     ++valid_sec_key_count_;
     has_swaped_keys_[bls_msg.index()] = true;
-//     swap_key_map_[bls_msg.index()] = header.bls_proto().SerializeAsString();
     ZJC_DEBUG("success handle swap sec key: %d", valid_sec_key_count_);
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
 }
 
-libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t first_index) {
+bool BlsDkg::GetVerifyG2FromDb(uint32_t first_index, std::vector<libff::alt_bn128_G2>& g2_vec) {
     bls::protobuf::VerifyVecBrdReq req;
     auto res = prefix_db_->GetBlsVerifyG2((*members_)[first_index]->id, &req);
     if (!res) {
         ZJC_DEBUG("get verify g2 failed local: %d, %lu, %u, %u",
             local_member_index_, elect_hegiht_, first_index);
-        return libff::alt_bn128_G2::zero();
+        return false;
     }
 
-    auto& item = req.verify_vec(0);
-    auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
-    auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
-    auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
-    auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
-    auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
-    auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
-    auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
-    auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
-    auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
-    return libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+    for (int32_t i = 0; i < req.verify_vec_size(); ++i) {
+        auto& item = req.verify_vec(i);
+        auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+        auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+        auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+        auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+        auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+        auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+        auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+        auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+        auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+        g2_vec.push_back(libff::alt_bn128_G2(x_coord, y_coord, z_coord));
+    }
+    
+    return true;
 }
 
 void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
@@ -497,25 +491,8 @@ void BlsDkg::SwapSecKey(uint8_t thread_idx) try {
             continue;
         }
 
-        auto first_g2 = GetVerifyG2FromDb(local_member_index_);
-        auto verify_g2 = dkg_instance_->GetFirstVerification(
-            local_member_index_,
-            local_src_secret_key_contribution_[local_member_index_],
-            first_g2);
-        if (verify_g2 == libff::alt_bn128_G2::zero()) {
-            return;
-        }
-
-        std::string gw_to_hash = common::Hash::keccak256(
-            libBLS::ThresholdUtils::fieldElementToString(verify_g2.X.c0) +
-            libBLS::ThresholdUtils::fieldElementToString(verify_g2.X.c1) +
-            libBLS::ThresholdUtils::fieldElementToString(verify_g2.Y.c0) +
-            libBLS::ThresholdUtils::fieldElementToString(verify_g2.Y.c1) +
-            libBLS::ThresholdUtils::fieldElementToString(verify_g2.Z.c0) +
-            libBLS::ThresholdUtils::fieldElementToString(verify_g2.Z.c1));
         swap_item->set_sec_key(seckey);
         swap_item->set_sec_key_len(seckey_len);
-        swap_item->set_verify_hash(gw_to_hash);
     }
 
     CreateDkgMessage(msg_ptr);
