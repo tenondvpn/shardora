@@ -388,8 +388,8 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
             tmp_swap_key,
             g2_vec,
             min_aggree_member_count_)) {
-        BLS_ERROR("verify: %u failed, min_aggree_member_count: %d!",
-            bls_msg.index(), min_aggree_member_count_);
+        BLS_ERROR("local_member_index_: %d, verify: %u failed, min_aggree_member_count: %d!",
+            local_member_index_, bls_msg.index(), min_aggree_member_count_);
         return;
     }
 
@@ -747,7 +747,10 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     }
 
     for (int32_t i = 0; i < local_src_secret_key_contribution_.size(); ++i) {
-        ZJC_DEBUG("verify success member: %d, index: %d ", local_member_index_, i);
+        ZJC_DEBUG("verify success member: %d, index: %d, %s ,%s ",
+            local_member_index_, i,
+            libBLS::ThresholdUtils::fieldElementToString(local_src_secret_key_contribution_[i]).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[0].X.c0).c_str());
         assert(dkg_instance_->Verification(
             i,
             local_src_secret_key_contribution_[i],
