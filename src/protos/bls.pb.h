@@ -1019,21 +1019,6 @@ class SwapSecKeyItem : public ::google::protobuf::Message /* @@protoc_insertion_
   ::std::string* release_sec_key();
   void set_allocated_sec_key(::std::string* sec_key);
 
-  // optional bytes verify_hash = 3;
-  bool has_verify_hash() const;
-  void clear_verify_hash();
-  static const int kVerifyHashFieldNumber = 3;
-  const ::std::string& verify_hash() const;
-  void set_verify_hash(const ::std::string& value);
-  #if LANG_CXX11
-  void set_verify_hash(::std::string&& value);
-  #endif
-  void set_verify_hash(const char* value);
-  void set_verify_hash(const void* value, size_t size);
-  ::std::string* mutable_verify_hash();
-  ::std::string* release_verify_hash();
-  void set_allocated_verify_hash(::std::string* verify_hash);
-
   // optional uint32 sec_key_len = 2;
   bool has_sec_key_len() const;
   void clear_sec_key_len();
@@ -1047,14 +1032,11 @@ class SwapSecKeyItem : public ::google::protobuf::Message /* @@protoc_insertion_
   void clear_has_sec_key();
   void set_has_sec_key_len();
   void clear_has_sec_key_len();
-  void set_has_verify_hash();
-  void clear_has_verify_hash();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr sec_key_;
-  ::google::protobuf::internal::ArenaStringPtr verify_hash_;
   ::google::protobuf::uint32 sec_key_len_;
   friend struct ::protobuf_protos_2fbls_2eproto::TableStruct;
 };
@@ -3077,13 +3059,13 @@ inline void SwapSecKeyItem::set_allocated_sec_key(::std::string* sec_key) {
 
 // optional uint32 sec_key_len = 2;
 inline bool SwapSecKeyItem::has_sec_key_len() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void SwapSecKeyItem::set_has_sec_key_len() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void SwapSecKeyItem::clear_has_sec_key_len() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void SwapSecKeyItem::clear_sec_key_len() {
   sec_key_len_ = 0u;
@@ -3097,72 +3079,6 @@ inline void SwapSecKeyItem::set_sec_key_len(::google::protobuf::uint32 value) {
   set_has_sec_key_len();
   sec_key_len_ = value;
   // @@protoc_insertion_point(field_set:zjchain.bls.protobuf.SwapSecKeyItem.sec_key_len)
-}
-
-// optional bytes verify_hash = 3;
-inline bool SwapSecKeyItem::has_verify_hash() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void SwapSecKeyItem::set_has_verify_hash() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void SwapSecKeyItem::clear_has_verify_hash() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void SwapSecKeyItem::clear_verify_hash() {
-  verify_hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_verify_hash();
-}
-inline const ::std::string& SwapSecKeyItem::verify_hash() const {
-  // @@protoc_insertion_point(field_get:zjchain.bls.protobuf.SwapSecKeyItem.verify_hash)
-  return verify_hash_.GetNoArena();
-}
-inline void SwapSecKeyItem::set_verify_hash(const ::std::string& value) {
-  set_has_verify_hash();
-  verify_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.bls.protobuf.SwapSecKeyItem.verify_hash)
-}
-#if LANG_CXX11
-inline void SwapSecKeyItem::set_verify_hash(::std::string&& value) {
-  set_has_verify_hash();
-  verify_hash_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.bls.protobuf.SwapSecKeyItem.verify_hash)
-}
-#endif
-inline void SwapSecKeyItem::set_verify_hash(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_verify_hash();
-  verify_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.bls.protobuf.SwapSecKeyItem.verify_hash)
-}
-inline void SwapSecKeyItem::set_verify_hash(const void* value, size_t size) {
-  set_has_verify_hash();
-  verify_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.bls.protobuf.SwapSecKeyItem.verify_hash)
-}
-inline ::std::string* SwapSecKeyItem::mutable_verify_hash() {
-  set_has_verify_hash();
-  // @@protoc_insertion_point(field_mutable:zjchain.bls.protobuf.SwapSecKeyItem.verify_hash)
-  return verify_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* SwapSecKeyItem::release_verify_hash() {
-  // @@protoc_insertion_point(field_release:zjchain.bls.protobuf.SwapSecKeyItem.verify_hash)
-  if (!has_verify_hash()) {
-    return NULL;
-  }
-  clear_has_verify_hash();
-  return verify_hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void SwapSecKeyItem::set_allocated_verify_hash(::std::string* verify_hash) {
-  if (verify_hash != NULL) {
-    set_has_verify_hash();
-  } else {
-    clear_has_verify_hash();
-  }
-  verify_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), verify_hash);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.bls.protobuf.SwapSecKeyItem.verify_hash)
 }
 
 // -------------------------------------------------------------------

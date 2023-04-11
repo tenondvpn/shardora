@@ -121,192 +121,6 @@ namespace protobuf {
 
 // ===================================================================
 
-class BlsPublicKey : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.elect.protobuf.BlsPublicKey) */ {
- public:
-  BlsPublicKey();
-  virtual ~BlsPublicKey();
-
-  BlsPublicKey(const BlsPublicKey& from);
-
-  inline BlsPublicKey& operator=(const BlsPublicKey& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  #if LANG_CXX11
-  BlsPublicKey(BlsPublicKey&& from) noexcept
-    : BlsPublicKey() {
-    *this = ::std::move(from);
-  }
-
-  inline BlsPublicKey& operator=(BlsPublicKey&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-  #endif
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const BlsPublicKey& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const BlsPublicKey* internal_default_instance() {
-    return reinterpret_cast<const BlsPublicKey*>(
-               &_BlsPublicKey_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    0;
-
-  void Swap(BlsPublicKey* other);
-  friend void swap(BlsPublicKey& a, BlsPublicKey& b) {
-    a.Swap(&b);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline BlsPublicKey* New() const final {
-    return CreateMaybeMessage<BlsPublicKey>(NULL);
-  }
-
-  BlsPublicKey* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<BlsPublicKey>(arena);
-  }
-  void CopyFrom(const ::google::protobuf::Message& from) final;
-  void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const BlsPublicKey& from);
-  void MergeFrom(const BlsPublicKey& from);
-  void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input) final;
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const final;
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(BlsPublicKey* other);
-  private:
-  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
-  }
-  inline void* MaybeArenaPtr() const {
-    return NULL;
-  }
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional bytes x_c0 = 1;
-  bool has_x_c0() const;
-  void clear_x_c0();
-  static const int kXC0FieldNumber = 1;
-  const ::std::string& x_c0() const;
-  void set_x_c0(const ::std::string& value);
-  #if LANG_CXX11
-  void set_x_c0(::std::string&& value);
-  #endif
-  void set_x_c0(const char* value);
-  void set_x_c0(const void* value, size_t size);
-  ::std::string* mutable_x_c0();
-  ::std::string* release_x_c0();
-  void set_allocated_x_c0(::std::string* x_c0);
-
-  // optional bytes x_c1 = 2;
-  bool has_x_c1() const;
-  void clear_x_c1();
-  static const int kXC1FieldNumber = 2;
-  const ::std::string& x_c1() const;
-  void set_x_c1(const ::std::string& value);
-  #if LANG_CXX11
-  void set_x_c1(::std::string&& value);
-  #endif
-  void set_x_c1(const char* value);
-  void set_x_c1(const void* value, size_t size);
-  ::std::string* mutable_x_c1();
-  ::std::string* release_x_c1();
-  void set_allocated_x_c1(::std::string* x_c1);
-
-  // optional bytes y_c0 = 3;
-  bool has_y_c0() const;
-  void clear_y_c0();
-  static const int kYC0FieldNumber = 3;
-  const ::std::string& y_c0() const;
-  void set_y_c0(const ::std::string& value);
-  #if LANG_CXX11
-  void set_y_c0(::std::string&& value);
-  #endif
-  void set_y_c0(const char* value);
-  void set_y_c0(const void* value, size_t size);
-  ::std::string* mutable_y_c0();
-  ::std::string* release_y_c0();
-  void set_allocated_y_c0(::std::string* y_c0);
-
-  // optional bytes y_c1 = 4;
-  bool has_y_c1() const;
-  void clear_y_c1();
-  static const int kYC1FieldNumber = 4;
-  const ::std::string& y_c1() const;
-  void set_y_c1(const ::std::string& value);
-  #if LANG_CXX11
-  void set_y_c1(::std::string&& value);
-  #endif
-  void set_y_c1(const char* value);
-  void set_y_c1(const void* value, size_t size);
-  ::std::string* mutable_y_c1();
-  ::std::string* release_y_c1();
-  void set_allocated_y_c1(::std::string* y_c1);
-
-  // optional int32 pool_idx_mod_num = 5;
-  bool has_pool_idx_mod_num() const;
-  void clear_pool_idx_mod_num();
-  static const int kPoolIdxModNumFieldNumber = 5;
-  ::google::protobuf::int32 pool_idx_mod_num() const;
-  void set_pool_idx_mod_num(::google::protobuf::int32 value);
-
-  // @@protoc_insertion_point(class_scope:zjchain.elect.protobuf.BlsPublicKey)
- private:
-  void set_has_x_c0();
-  void clear_has_x_c0();
-  void set_has_x_c1();
-  void clear_has_x_c1();
-  void set_has_y_c0();
-  void clear_has_y_c0();
-  void set_has_y_c1();
-  void clear_has_y_c1();
-  void set_has_pool_idx_mod_num();
-  void clear_has_pool_idx_mod_num();
-
-  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::HasBits<1> _has_bits_;
-  mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::internal::ArenaStringPtr x_c0_;
-  ::google::protobuf::internal::ArenaStringPtr x_c1_;
-  ::google::protobuf::internal::ArenaStringPtr y_c0_;
-  ::google::protobuf::internal::ArenaStringPtr y_c1_;
-  ::google::protobuf::int32 pool_idx_mod_num_;
-  friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
-};
-// -------------------------------------------------------------------
-
 class member : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.elect.protobuf.member) */ {
  public:
   member();
@@ -349,7 +163,7 @@ class member : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
                &_member_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    1;
+    0;
 
   void Swap(member* other);
   friend void swap(member& a, member& b) {
@@ -603,7 +417,7 @@ class VerifyVecValue : public ::google::protobuf::Message /* @@protoc_insertion_
                &_VerifyVecValue_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    1;
 
   void Swap(VerifyVecValue* other);
   friend void swap(VerifyVecValue& a, VerifyVecValue& b) {
@@ -783,6 +597,207 @@ class VerifyVecValue : public ::google::protobuf::Message /* @@protoc_insertion_
 };
 // -------------------------------------------------------------------
 
+class BlsPublicKey : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.elect.protobuf.BlsPublicKey) */ {
+ public:
+  BlsPublicKey();
+  virtual ~BlsPublicKey();
+
+  BlsPublicKey(const BlsPublicKey& from);
+
+  inline BlsPublicKey& operator=(const BlsPublicKey& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  BlsPublicKey(BlsPublicKey&& from) noexcept
+    : BlsPublicKey() {
+    *this = ::std::move(from);
+  }
+
+  inline BlsPublicKey& operator=(BlsPublicKey&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const BlsPublicKey& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const BlsPublicKey* internal_default_instance() {
+    return reinterpret_cast<const BlsPublicKey*>(
+               &_BlsPublicKey_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    2;
+
+  void Swap(BlsPublicKey* other);
+  friend void swap(BlsPublicKey& a, BlsPublicKey& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline BlsPublicKey* New() const final {
+    return CreateMaybeMessage<BlsPublicKey>(NULL);
+  }
+
+  BlsPublicKey* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<BlsPublicKey>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const BlsPublicKey& from);
+  void MergeFrom(const BlsPublicKey& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(BlsPublicKey* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional bytes x_c0 = 1;
+  bool has_x_c0() const;
+  void clear_x_c0();
+  static const int kXC0FieldNumber = 1;
+  const ::std::string& x_c0() const;
+  void set_x_c0(const ::std::string& value);
+  #if LANG_CXX11
+  void set_x_c0(::std::string&& value);
+  #endif
+  void set_x_c0(const char* value);
+  void set_x_c0(const void* value, size_t size);
+  ::std::string* mutable_x_c0();
+  ::std::string* release_x_c0();
+  void set_allocated_x_c0(::std::string* x_c0);
+
+  // optional bytes x_c1 = 2;
+  bool has_x_c1() const;
+  void clear_x_c1();
+  static const int kXC1FieldNumber = 2;
+  const ::std::string& x_c1() const;
+  void set_x_c1(const ::std::string& value);
+  #if LANG_CXX11
+  void set_x_c1(::std::string&& value);
+  #endif
+  void set_x_c1(const char* value);
+  void set_x_c1(const void* value, size_t size);
+  ::std::string* mutable_x_c1();
+  ::std::string* release_x_c1();
+  void set_allocated_x_c1(::std::string* x_c1);
+
+  // optional bytes y_c0 = 3;
+  bool has_y_c0() const;
+  void clear_y_c0();
+  static const int kYC0FieldNumber = 3;
+  const ::std::string& y_c0() const;
+  void set_y_c0(const ::std::string& value);
+  #if LANG_CXX11
+  void set_y_c0(::std::string&& value);
+  #endif
+  void set_y_c0(const char* value);
+  void set_y_c0(const void* value, size_t size);
+  ::std::string* mutable_y_c0();
+  ::std::string* release_y_c0();
+  void set_allocated_y_c0(::std::string* y_c0);
+
+  // optional bytes y_c1 = 4;
+  bool has_y_c1() const;
+  void clear_y_c1();
+  static const int kYC1FieldNumber = 4;
+  const ::std::string& y_c1() const;
+  void set_y_c1(const ::std::string& value);
+  #if LANG_CXX11
+  void set_y_c1(::std::string&& value);
+  #endif
+  void set_y_c1(const char* value);
+  void set_y_c1(const void* value, size_t size);
+  ::std::string* mutable_y_c1();
+  ::std::string* release_y_c1();
+  void set_allocated_y_c1(::std::string* y_c1);
+
+  // optional .zjchain.elect.protobuf.VerifyVecValue verify_val = 6;
+  bool has_verify_val() const;
+  void clear_verify_val();
+  static const int kVerifyValFieldNumber = 6;
+  private:
+  const ::zjchain::elect::protobuf::VerifyVecValue& _internal_verify_val() const;
+  public:
+  const ::zjchain::elect::protobuf::VerifyVecValue& verify_val() const;
+  ::zjchain::elect::protobuf::VerifyVecValue* release_verify_val();
+  ::zjchain::elect::protobuf::VerifyVecValue* mutable_verify_val();
+  void set_allocated_verify_val(::zjchain::elect::protobuf::VerifyVecValue* verify_val);
+
+  // optional int32 pool_idx_mod_num = 5;
+  bool has_pool_idx_mod_num() const;
+  void clear_pool_idx_mod_num();
+  static const int kPoolIdxModNumFieldNumber = 5;
+  ::google::protobuf::int32 pool_idx_mod_num() const;
+  void set_pool_idx_mod_num(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:zjchain.elect.protobuf.BlsPublicKey)
+ private:
+  void set_has_x_c0();
+  void clear_has_x_c0();
+  void set_has_x_c1();
+  void clear_has_x_c1();
+  void set_has_y_c0();
+  void clear_has_y_c0();
+  void set_has_y_c1();
+  void clear_has_y_c1();
+  void set_has_pool_idx_mod_num();
+  void clear_has_pool_idx_mod_num();
+  void set_has_verify_val();
+  void clear_has_verify_val();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::internal::ArenaStringPtr x_c0_;
+  ::google::protobuf::internal::ArenaStringPtr x_c1_;
+  ::google::protobuf::internal::ArenaStringPtr y_c0_;
+  ::google::protobuf::internal::ArenaStringPtr y_c1_;
+  ::zjchain::elect::protobuf::VerifyVecValue* verify_val_;
+  ::google::protobuf::int32 pool_idx_mod_num_;
+  friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class PrevMembers : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.elect.protobuf.PrevMembers) */ {
  public:
   PrevMembers();
@@ -889,22 +904,10 @@ class PrevMembers : public ::google::protobuf::Message /* @@protoc_insertion_poi
   const ::google::protobuf::RepeatedPtrField< ::zjchain::elect::protobuf::BlsPublicKey >&
       bls_pubkey() const;
 
-  // optional .zjchain.elect.protobuf.VerifyVecValue verify_val = 2;
-  bool has_verify_val() const;
-  void clear_verify_val();
-  static const int kVerifyValFieldNumber = 2;
-  private:
-  const ::zjchain::elect::protobuf::VerifyVecValue& _internal_verify_val() const;
-  public:
-  const ::zjchain::elect::protobuf::VerifyVecValue& verify_val() const;
-  ::zjchain::elect::protobuf::VerifyVecValue* release_verify_val();
-  ::zjchain::elect::protobuf::VerifyVecValue* mutable_verify_val();
-  void set_allocated_verify_val(::zjchain::elect::protobuf::VerifyVecValue* verify_val);
-
-  // optional .zjchain.elect.protobuf.BlsPublicKey common_pubkey = 4;
+  // optional .zjchain.elect.protobuf.BlsPublicKey common_pubkey = 3;
   bool has_common_pubkey() const;
   void clear_common_pubkey();
-  static const int kCommonPubkeyFieldNumber = 4;
+  static const int kCommonPubkeyFieldNumber = 3;
   private:
   const ::zjchain::elect::protobuf::BlsPublicKey& _internal_common_pubkey() const;
   public:
@@ -913,17 +916,15 @@ class PrevMembers : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::zjchain::elect::protobuf::BlsPublicKey* mutable_common_pubkey();
   void set_allocated_common_pubkey(::zjchain::elect::protobuf::BlsPublicKey* common_pubkey);
 
-  // optional uint64 prev_elect_height = 3;
+  // optional uint64 prev_elect_height = 2;
   bool has_prev_elect_height() const;
   void clear_prev_elect_height();
-  static const int kPrevElectHeightFieldNumber = 3;
+  static const int kPrevElectHeightFieldNumber = 2;
   ::google::protobuf::uint64 prev_elect_height() const;
   void set_prev_elect_height(::google::protobuf::uint64 value);
 
   // @@protoc_insertion_point(class_scope:zjchain.elect.protobuf.PrevMembers)
  private:
-  void set_has_verify_val();
-  void clear_has_verify_val();
   void set_has_prev_elect_height();
   void clear_has_prev_elect_height();
   void set_has_common_pubkey();
@@ -933,7 +934,6 @@ class PrevMembers : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::elect::protobuf::BlsPublicKey > bls_pubkey_;
-  ::zjchain::elect::protobuf::VerifyVecValue* verify_val_;
   ::zjchain::elect::protobuf::BlsPublicKey* common_pubkey_;
   ::google::protobuf::uint64 prev_elect_height_;
   friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
@@ -2645,298 +2645,6 @@ class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
-// BlsPublicKey
-
-// optional bytes x_c0 = 1;
-inline bool BlsPublicKey::has_x_c0() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void BlsPublicKey::set_has_x_c0() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void BlsPublicKey::clear_has_x_c0() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void BlsPublicKey::clear_x_c0() {
-  x_c0_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_x_c0();
-}
-inline const ::std::string& BlsPublicKey::x_c0() const {
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.BlsPublicKey.x_c0)
-  return x_c0_.GetNoArena();
-}
-inline void BlsPublicKey::set_x_c0(const ::std::string& value) {
-  set_has_x_c0();
-  x_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.BlsPublicKey.x_c0)
-}
-#if LANG_CXX11
-inline void BlsPublicKey::set_x_c0(::std::string&& value) {
-  set_has_x_c0();
-  x_c0_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.elect.protobuf.BlsPublicKey.x_c0)
-}
-#endif
-inline void BlsPublicKey::set_x_c0(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_x_c0();
-  x_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.elect.protobuf.BlsPublicKey.x_c0)
-}
-inline void BlsPublicKey::set_x_c0(const void* value, size_t size) {
-  set_has_x_c0();
-  x_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.elect.protobuf.BlsPublicKey.x_c0)
-}
-inline ::std::string* BlsPublicKey::mutable_x_c0() {
-  set_has_x_c0();
-  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.BlsPublicKey.x_c0)
-  return x_c0_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* BlsPublicKey::release_x_c0() {
-  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.BlsPublicKey.x_c0)
-  if (!has_x_c0()) {
-    return NULL;
-  }
-  clear_has_x_c0();
-  return x_c0_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void BlsPublicKey::set_allocated_x_c0(::std::string* x_c0) {
-  if (x_c0 != NULL) {
-    set_has_x_c0();
-  } else {
-    clear_has_x_c0();
-  }
-  x_c0_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), x_c0);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.BlsPublicKey.x_c0)
-}
-
-// optional bytes x_c1 = 2;
-inline bool BlsPublicKey::has_x_c1() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void BlsPublicKey::set_has_x_c1() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void BlsPublicKey::clear_has_x_c1() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void BlsPublicKey::clear_x_c1() {
-  x_c1_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_x_c1();
-}
-inline const ::std::string& BlsPublicKey::x_c1() const {
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.BlsPublicKey.x_c1)
-  return x_c1_.GetNoArena();
-}
-inline void BlsPublicKey::set_x_c1(const ::std::string& value) {
-  set_has_x_c1();
-  x_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.BlsPublicKey.x_c1)
-}
-#if LANG_CXX11
-inline void BlsPublicKey::set_x_c1(::std::string&& value) {
-  set_has_x_c1();
-  x_c1_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.elect.protobuf.BlsPublicKey.x_c1)
-}
-#endif
-inline void BlsPublicKey::set_x_c1(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_x_c1();
-  x_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.elect.protobuf.BlsPublicKey.x_c1)
-}
-inline void BlsPublicKey::set_x_c1(const void* value, size_t size) {
-  set_has_x_c1();
-  x_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.elect.protobuf.BlsPublicKey.x_c1)
-}
-inline ::std::string* BlsPublicKey::mutable_x_c1() {
-  set_has_x_c1();
-  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.BlsPublicKey.x_c1)
-  return x_c1_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* BlsPublicKey::release_x_c1() {
-  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.BlsPublicKey.x_c1)
-  if (!has_x_c1()) {
-    return NULL;
-  }
-  clear_has_x_c1();
-  return x_c1_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void BlsPublicKey::set_allocated_x_c1(::std::string* x_c1) {
-  if (x_c1 != NULL) {
-    set_has_x_c1();
-  } else {
-    clear_has_x_c1();
-  }
-  x_c1_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), x_c1);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.BlsPublicKey.x_c1)
-}
-
-// optional bytes y_c0 = 3;
-inline bool BlsPublicKey::has_y_c0() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void BlsPublicKey::set_has_y_c0() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void BlsPublicKey::clear_has_y_c0() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void BlsPublicKey::clear_y_c0() {
-  y_c0_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_y_c0();
-}
-inline const ::std::string& BlsPublicKey::y_c0() const {
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.BlsPublicKey.y_c0)
-  return y_c0_.GetNoArena();
-}
-inline void BlsPublicKey::set_y_c0(const ::std::string& value) {
-  set_has_y_c0();
-  y_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.BlsPublicKey.y_c0)
-}
-#if LANG_CXX11
-inline void BlsPublicKey::set_y_c0(::std::string&& value) {
-  set_has_y_c0();
-  y_c0_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.elect.protobuf.BlsPublicKey.y_c0)
-}
-#endif
-inline void BlsPublicKey::set_y_c0(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_y_c0();
-  y_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.elect.protobuf.BlsPublicKey.y_c0)
-}
-inline void BlsPublicKey::set_y_c0(const void* value, size_t size) {
-  set_has_y_c0();
-  y_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.elect.protobuf.BlsPublicKey.y_c0)
-}
-inline ::std::string* BlsPublicKey::mutable_y_c0() {
-  set_has_y_c0();
-  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.BlsPublicKey.y_c0)
-  return y_c0_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* BlsPublicKey::release_y_c0() {
-  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.BlsPublicKey.y_c0)
-  if (!has_y_c0()) {
-    return NULL;
-  }
-  clear_has_y_c0();
-  return y_c0_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void BlsPublicKey::set_allocated_y_c0(::std::string* y_c0) {
-  if (y_c0 != NULL) {
-    set_has_y_c0();
-  } else {
-    clear_has_y_c0();
-  }
-  y_c0_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), y_c0);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.BlsPublicKey.y_c0)
-}
-
-// optional bytes y_c1 = 4;
-inline bool BlsPublicKey::has_y_c1() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void BlsPublicKey::set_has_y_c1() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void BlsPublicKey::clear_has_y_c1() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void BlsPublicKey::clear_y_c1() {
-  y_c1_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_y_c1();
-}
-inline const ::std::string& BlsPublicKey::y_c1() const {
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.BlsPublicKey.y_c1)
-  return y_c1_.GetNoArena();
-}
-inline void BlsPublicKey::set_y_c1(const ::std::string& value) {
-  set_has_y_c1();
-  y_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.BlsPublicKey.y_c1)
-}
-#if LANG_CXX11
-inline void BlsPublicKey::set_y_c1(::std::string&& value) {
-  set_has_y_c1();
-  y_c1_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.elect.protobuf.BlsPublicKey.y_c1)
-}
-#endif
-inline void BlsPublicKey::set_y_c1(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_y_c1();
-  y_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.elect.protobuf.BlsPublicKey.y_c1)
-}
-inline void BlsPublicKey::set_y_c1(const void* value, size_t size) {
-  set_has_y_c1();
-  y_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.elect.protobuf.BlsPublicKey.y_c1)
-}
-inline ::std::string* BlsPublicKey::mutable_y_c1() {
-  set_has_y_c1();
-  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.BlsPublicKey.y_c1)
-  return y_c1_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* BlsPublicKey::release_y_c1() {
-  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.BlsPublicKey.y_c1)
-  if (!has_y_c1()) {
-    return NULL;
-  }
-  clear_has_y_c1();
-  return y_c1_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void BlsPublicKey::set_allocated_y_c1(::std::string* y_c1) {
-  if (y_c1 != NULL) {
-    set_has_y_c1();
-  } else {
-    clear_has_y_c1();
-  }
-  y_c1_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), y_c1);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.BlsPublicKey.y_c1)
-}
-
-// optional int32 pool_idx_mod_num = 5;
-inline bool BlsPublicKey::has_pool_idx_mod_num() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void BlsPublicKey::set_has_pool_idx_mod_num() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void BlsPublicKey::clear_has_pool_idx_mod_num() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void BlsPublicKey::clear_pool_idx_mod_num() {
-  pool_idx_mod_num_ = 0;
-  clear_has_pool_idx_mod_num();
-}
-inline ::google::protobuf::int32 BlsPublicKey::pool_idx_mod_num() const {
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.BlsPublicKey.pool_idx_mod_num)
-  return pool_idx_mod_num_;
-}
-inline void BlsPublicKey::set_pool_idx_mod_num(::google::protobuf::int32 value) {
-  set_has_pool_idx_mod_num();
-  pool_idx_mod_num_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.BlsPublicKey.pool_idx_mod_num)
-}
-
-// -------------------------------------------------------------------
-
 // member
 
 // optional bytes id = 1;
@@ -3839,6 +3547,356 @@ inline void VerifyVecValue::set_valid_t(::google::protobuf::uint32 value) {
 
 // -------------------------------------------------------------------
 
+// BlsPublicKey
+
+// optional bytes x_c0 = 1;
+inline bool BlsPublicKey::has_x_c0() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void BlsPublicKey::set_has_x_c0() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void BlsPublicKey::clear_has_x_c0() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void BlsPublicKey::clear_x_c0() {
+  x_c0_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_x_c0();
+}
+inline const ::std::string& BlsPublicKey::x_c0() const {
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.BlsPublicKey.x_c0)
+  return x_c0_.GetNoArena();
+}
+inline void BlsPublicKey::set_x_c0(const ::std::string& value) {
+  set_has_x_c0();
+  x_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.BlsPublicKey.x_c0)
+}
+#if LANG_CXX11
+inline void BlsPublicKey::set_x_c0(::std::string&& value) {
+  set_has_x_c0();
+  x_c0_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.elect.protobuf.BlsPublicKey.x_c0)
+}
+#endif
+inline void BlsPublicKey::set_x_c0(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_x_c0();
+  x_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.elect.protobuf.BlsPublicKey.x_c0)
+}
+inline void BlsPublicKey::set_x_c0(const void* value, size_t size) {
+  set_has_x_c0();
+  x_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.elect.protobuf.BlsPublicKey.x_c0)
+}
+inline ::std::string* BlsPublicKey::mutable_x_c0() {
+  set_has_x_c0();
+  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.BlsPublicKey.x_c0)
+  return x_c0_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* BlsPublicKey::release_x_c0() {
+  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.BlsPublicKey.x_c0)
+  if (!has_x_c0()) {
+    return NULL;
+  }
+  clear_has_x_c0();
+  return x_c0_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void BlsPublicKey::set_allocated_x_c0(::std::string* x_c0) {
+  if (x_c0 != NULL) {
+    set_has_x_c0();
+  } else {
+    clear_has_x_c0();
+  }
+  x_c0_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), x_c0);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.BlsPublicKey.x_c0)
+}
+
+// optional bytes x_c1 = 2;
+inline bool BlsPublicKey::has_x_c1() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void BlsPublicKey::set_has_x_c1() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void BlsPublicKey::clear_has_x_c1() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void BlsPublicKey::clear_x_c1() {
+  x_c1_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_x_c1();
+}
+inline const ::std::string& BlsPublicKey::x_c1() const {
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.BlsPublicKey.x_c1)
+  return x_c1_.GetNoArena();
+}
+inline void BlsPublicKey::set_x_c1(const ::std::string& value) {
+  set_has_x_c1();
+  x_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.BlsPublicKey.x_c1)
+}
+#if LANG_CXX11
+inline void BlsPublicKey::set_x_c1(::std::string&& value) {
+  set_has_x_c1();
+  x_c1_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.elect.protobuf.BlsPublicKey.x_c1)
+}
+#endif
+inline void BlsPublicKey::set_x_c1(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_x_c1();
+  x_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.elect.protobuf.BlsPublicKey.x_c1)
+}
+inline void BlsPublicKey::set_x_c1(const void* value, size_t size) {
+  set_has_x_c1();
+  x_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.elect.protobuf.BlsPublicKey.x_c1)
+}
+inline ::std::string* BlsPublicKey::mutable_x_c1() {
+  set_has_x_c1();
+  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.BlsPublicKey.x_c1)
+  return x_c1_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* BlsPublicKey::release_x_c1() {
+  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.BlsPublicKey.x_c1)
+  if (!has_x_c1()) {
+    return NULL;
+  }
+  clear_has_x_c1();
+  return x_c1_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void BlsPublicKey::set_allocated_x_c1(::std::string* x_c1) {
+  if (x_c1 != NULL) {
+    set_has_x_c1();
+  } else {
+    clear_has_x_c1();
+  }
+  x_c1_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), x_c1);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.BlsPublicKey.x_c1)
+}
+
+// optional bytes y_c0 = 3;
+inline bool BlsPublicKey::has_y_c0() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void BlsPublicKey::set_has_y_c0() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void BlsPublicKey::clear_has_y_c0() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void BlsPublicKey::clear_y_c0() {
+  y_c0_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_y_c0();
+}
+inline const ::std::string& BlsPublicKey::y_c0() const {
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.BlsPublicKey.y_c0)
+  return y_c0_.GetNoArena();
+}
+inline void BlsPublicKey::set_y_c0(const ::std::string& value) {
+  set_has_y_c0();
+  y_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.BlsPublicKey.y_c0)
+}
+#if LANG_CXX11
+inline void BlsPublicKey::set_y_c0(::std::string&& value) {
+  set_has_y_c0();
+  y_c0_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.elect.protobuf.BlsPublicKey.y_c0)
+}
+#endif
+inline void BlsPublicKey::set_y_c0(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_y_c0();
+  y_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.elect.protobuf.BlsPublicKey.y_c0)
+}
+inline void BlsPublicKey::set_y_c0(const void* value, size_t size) {
+  set_has_y_c0();
+  y_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.elect.protobuf.BlsPublicKey.y_c0)
+}
+inline ::std::string* BlsPublicKey::mutable_y_c0() {
+  set_has_y_c0();
+  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.BlsPublicKey.y_c0)
+  return y_c0_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* BlsPublicKey::release_y_c0() {
+  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.BlsPublicKey.y_c0)
+  if (!has_y_c0()) {
+    return NULL;
+  }
+  clear_has_y_c0();
+  return y_c0_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void BlsPublicKey::set_allocated_y_c0(::std::string* y_c0) {
+  if (y_c0 != NULL) {
+    set_has_y_c0();
+  } else {
+    clear_has_y_c0();
+  }
+  y_c0_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), y_c0);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.BlsPublicKey.y_c0)
+}
+
+// optional bytes y_c1 = 4;
+inline bool BlsPublicKey::has_y_c1() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void BlsPublicKey::set_has_y_c1() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void BlsPublicKey::clear_has_y_c1() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void BlsPublicKey::clear_y_c1() {
+  y_c1_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_y_c1();
+}
+inline const ::std::string& BlsPublicKey::y_c1() const {
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.BlsPublicKey.y_c1)
+  return y_c1_.GetNoArena();
+}
+inline void BlsPublicKey::set_y_c1(const ::std::string& value) {
+  set_has_y_c1();
+  y_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.BlsPublicKey.y_c1)
+}
+#if LANG_CXX11
+inline void BlsPublicKey::set_y_c1(::std::string&& value) {
+  set_has_y_c1();
+  y_c1_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.elect.protobuf.BlsPublicKey.y_c1)
+}
+#endif
+inline void BlsPublicKey::set_y_c1(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_y_c1();
+  y_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.elect.protobuf.BlsPublicKey.y_c1)
+}
+inline void BlsPublicKey::set_y_c1(const void* value, size_t size) {
+  set_has_y_c1();
+  y_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.elect.protobuf.BlsPublicKey.y_c1)
+}
+inline ::std::string* BlsPublicKey::mutable_y_c1() {
+  set_has_y_c1();
+  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.BlsPublicKey.y_c1)
+  return y_c1_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* BlsPublicKey::release_y_c1() {
+  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.BlsPublicKey.y_c1)
+  if (!has_y_c1()) {
+    return NULL;
+  }
+  clear_has_y_c1();
+  return y_c1_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void BlsPublicKey::set_allocated_y_c1(::std::string* y_c1) {
+  if (y_c1 != NULL) {
+    set_has_y_c1();
+  } else {
+    clear_has_y_c1();
+  }
+  y_c1_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), y_c1);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.BlsPublicKey.y_c1)
+}
+
+// optional int32 pool_idx_mod_num = 5;
+inline bool BlsPublicKey::has_pool_idx_mod_num() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void BlsPublicKey::set_has_pool_idx_mod_num() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void BlsPublicKey::clear_has_pool_idx_mod_num() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void BlsPublicKey::clear_pool_idx_mod_num() {
+  pool_idx_mod_num_ = 0;
+  clear_has_pool_idx_mod_num();
+}
+inline ::google::protobuf::int32 BlsPublicKey::pool_idx_mod_num() const {
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.BlsPublicKey.pool_idx_mod_num)
+  return pool_idx_mod_num_;
+}
+inline void BlsPublicKey::set_pool_idx_mod_num(::google::protobuf::int32 value) {
+  set_has_pool_idx_mod_num();
+  pool_idx_mod_num_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.BlsPublicKey.pool_idx_mod_num)
+}
+
+// optional .zjchain.elect.protobuf.VerifyVecValue verify_val = 6;
+inline bool BlsPublicKey::has_verify_val() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void BlsPublicKey::set_has_verify_val() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void BlsPublicKey::clear_has_verify_val() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void BlsPublicKey::clear_verify_val() {
+  if (verify_val_ != NULL) verify_val_->Clear();
+  clear_has_verify_val();
+}
+inline const ::zjchain::elect::protobuf::VerifyVecValue& BlsPublicKey::_internal_verify_val() const {
+  return *verify_val_;
+}
+inline const ::zjchain::elect::protobuf::VerifyVecValue& BlsPublicKey::verify_val() const {
+  const ::zjchain::elect::protobuf::VerifyVecValue* p = verify_val_;
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.BlsPublicKey.verify_val)
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::elect::protobuf::VerifyVecValue*>(
+      &::zjchain::elect::protobuf::_VerifyVecValue_default_instance_);
+}
+inline ::zjchain::elect::protobuf::VerifyVecValue* BlsPublicKey::release_verify_val() {
+  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.BlsPublicKey.verify_val)
+  clear_has_verify_val();
+  ::zjchain::elect::protobuf::VerifyVecValue* temp = verify_val_;
+  verify_val_ = NULL;
+  return temp;
+}
+inline ::zjchain::elect::protobuf::VerifyVecValue* BlsPublicKey::mutable_verify_val() {
+  set_has_verify_val();
+  if (verify_val_ == NULL) {
+    auto* p = CreateMaybeMessage<::zjchain::elect::protobuf::VerifyVecValue>(GetArenaNoVirtual());
+    verify_val_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.BlsPublicKey.verify_val)
+  return verify_val_;
+}
+inline void BlsPublicKey::set_allocated_verify_val(::zjchain::elect::protobuf::VerifyVecValue* verify_val) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete verify_val_;
+  }
+  if (verify_val) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      verify_val = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, verify_val, submessage_arena);
+    }
+    set_has_verify_val();
+  } else {
+    clear_has_verify_val();
+  }
+  verify_val_ = verify_val;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.BlsPublicKey.verify_val)
+}
+
+// -------------------------------------------------------------------
+
 // PrevMembers
 
 // repeated .zjchain.elect.protobuf.BlsPublicKey bls_pubkey = 1;
@@ -3871,73 +3929,15 @@ PrevMembers::bls_pubkey() const {
   return bls_pubkey_;
 }
 
-// optional .zjchain.elect.protobuf.VerifyVecValue verify_val = 2;
-inline bool PrevMembers::has_verify_val() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void PrevMembers::set_has_verify_val() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void PrevMembers::clear_has_verify_val() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void PrevMembers::clear_verify_val() {
-  if (verify_val_ != NULL) verify_val_->Clear();
-  clear_has_verify_val();
-}
-inline const ::zjchain::elect::protobuf::VerifyVecValue& PrevMembers::_internal_verify_val() const {
-  return *verify_val_;
-}
-inline const ::zjchain::elect::protobuf::VerifyVecValue& PrevMembers::verify_val() const {
-  const ::zjchain::elect::protobuf::VerifyVecValue* p = verify_val_;
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.PrevMembers.verify_val)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::elect::protobuf::VerifyVecValue*>(
-      &::zjchain::elect::protobuf::_VerifyVecValue_default_instance_);
-}
-inline ::zjchain::elect::protobuf::VerifyVecValue* PrevMembers::release_verify_val() {
-  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.PrevMembers.verify_val)
-  clear_has_verify_val();
-  ::zjchain::elect::protobuf::VerifyVecValue* temp = verify_val_;
-  verify_val_ = NULL;
-  return temp;
-}
-inline ::zjchain::elect::protobuf::VerifyVecValue* PrevMembers::mutable_verify_val() {
-  set_has_verify_val();
-  if (verify_val_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::elect::protobuf::VerifyVecValue>(GetArenaNoVirtual());
-    verify_val_ = p;
-  }
-  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.PrevMembers.verify_val)
-  return verify_val_;
-}
-inline void PrevMembers::set_allocated_verify_val(::zjchain::elect::protobuf::VerifyVecValue* verify_val) {
-  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
-    delete verify_val_;
-  }
-  if (verify_val) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
-    if (message_arena != submessage_arena) {
-      verify_val = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, verify_val, submessage_arena);
-    }
-    set_has_verify_val();
-  } else {
-    clear_has_verify_val();
-  }
-  verify_val_ = verify_val;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.PrevMembers.verify_val)
-}
-
-// optional uint64 prev_elect_height = 3;
+// optional uint64 prev_elect_height = 2;
 inline bool PrevMembers::has_prev_elect_height() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void PrevMembers::set_has_prev_elect_height() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void PrevMembers::clear_has_prev_elect_height() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void PrevMembers::clear_prev_elect_height() {
   prev_elect_height_ = GOOGLE_ULONGLONG(0);
@@ -3953,15 +3953,15 @@ inline void PrevMembers::set_prev_elect_height(::google::protobuf::uint64 value)
   // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.PrevMembers.prev_elect_height)
 }
 
-// optional .zjchain.elect.protobuf.BlsPublicKey common_pubkey = 4;
+// optional .zjchain.elect.protobuf.BlsPublicKey common_pubkey = 3;
 inline bool PrevMembers::has_common_pubkey() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
 inline void PrevMembers::set_has_common_pubkey() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000001u;
 }
 inline void PrevMembers::clear_has_common_pubkey() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void PrevMembers::clear_common_pubkey() {
   if (common_pubkey_ != NULL) common_pubkey_->Clear();
