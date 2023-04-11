@@ -29,8 +29,6 @@ message LocalBlsItem {
     repeated VerifyVecItem verify_vec = 2;
     optional uint32 valid_t = 3;
     optional uint32 valid_n = 4;
-    optional bytes local_sec_key = 5;
-    optional uint64 elect_height = 64;
 }
 
 message VerifyVecBrdRes {

@@ -145,8 +145,6 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
 
         local_item.set_valid_t(valid_t);
         local_item.set_valid_n(valid_n);
-        local_item.set_elect_height(elect_height);
-        local_item.set_local_sec_key(libBLS::ThresholdUtils::fieldElementToString(local_sec_key));
         prefix_db_->SaveBlsInfo(secptr, local_item);
         auto str = common::Encode::HexEncode(local_item.SerializeAsString()) + "\n";
         fwrite(str.c_str(), 1, str.size(), fd);

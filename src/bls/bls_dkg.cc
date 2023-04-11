@@ -694,14 +694,6 @@ void BlsDkg::FinishNoLock(uint8_t thread_idx) try {
     libBLS::Dkg dkg(min_aggree_member_count_, members_->size());
     local_sec_key_ = dkg.SecretKeyShareCreate(valid_seck_keys);
     local_publick_key_ = dkg.GetPublicKeyFromSecretKey(local_sec_key_);
-    bls::protobuf::LocalBlsItem local_item;
-    if (!prefix_db_->GetBlsInfo(security_, &local_item)) {
-        ZJC_FATAL("get bls info failed!");
-        return;
-    }
-
-    local_item.set_local_sec_key(libBLS::ThresholdUtils::fieldElementToString(local_sec_key_));
-    prefix_db_->SaveBlsInfo(security_, local_item);
     DumpLocalPrivateKey();
     BroadcastFinish(thread_idx, bitmap);
     finished_ = true;
