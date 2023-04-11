@@ -388,7 +388,8 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
             tmp_swap_key,
             g2_vec,
             min_aggree_member_count_)) {
-        BLS_ERROR("verify: %u failed!", bls_msg.index());
+        BLS_ERROR("verify: %u failed, min_aggree_member_count: %d!",
+            bls_msg.index(), min_aggree_member_count_);
         return;
     }
 
