@@ -384,7 +384,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
 
     auto tmp_swap_key = libff::alt_bn128_Fr(sec_key.c_str());
     if (!dkg_instance_->Verification(
-            bls_msg.index(),
+            local_member_index_,
             tmp_swap_key,
             g2_vec,
             min_aggree_member_count_)) {
