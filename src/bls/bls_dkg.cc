@@ -160,7 +160,7 @@ bool BlsDkg::IsSignValid(const transport::MessagePtr& msg_ptr, std::string* cont
     if (security_->Verify(
             *content_to_hash,
             pubkey,
-            bls_msg.sign()) != security::kSecuritySuccess) {
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
         BLS_INFO("bls create IsSignValid error block elect_height: %lu", elect_hegiht_);
         return false;
     }
@@ -790,7 +790,8 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
 
 void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
     auto& msg = msg_ptr->header;
-    msg.set_src_sharding_id(local_node->sharding_id);
+    auto& bls_msg = *msg.mutable_bls_proto();
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     if (bls_msg.has_finish_req()) {
         dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
         msg.set_des_dht_key(dht_key.StrKey());
@@ -800,7 +801,6 @@ void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
     }
 
     msg.set_type(common::kBlsMessage);
-    auto& bls_msg = *msg.mutable_bls_proto();
     bls_msg.set_elect_height(elect_hegiht_);
     bls_msg.set_index(local_member_index_);
     std::string message_hash;
