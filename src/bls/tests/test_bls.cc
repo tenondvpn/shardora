@@ -351,7 +351,8 @@ TEST_F(TestBls, AllSuccess) {
         }
     }
 
-    verify_brd_msgs.swap(std::vector<transport::MessagePtr>());
+    auto tmp_vec = std::vector<transport::MessagePtr>();
+    verify_brd_msgs.swap(tmp_vec);
     auto time2 = common::TimeUtils::TimestampUs();
     std::cout << "1: " << (time2 - time1) << std::endl;
     // swap sec key
@@ -387,7 +388,7 @@ TEST_F(TestBls, AllSuccess) {
         auto t1 = common::TimeUtils::TimestampUs();
     }
 
-    swap_sec_msgs.swap(std::vector<transport::MessagePtr>());
+    swap_sec_msgs.swap(tmp_vec);
     auto time4 = common::TimeUtils::TimestampUs();
     std::cout << "3: " << (time4 - time3) << std::endl;
     std::cout << "success handle bls test message." << std::endl;
