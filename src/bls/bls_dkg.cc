@@ -384,11 +384,11 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
 
     auto tmp_swap_key = libff::alt_bn128_Fr(sec_key.c_str());
     if (!dkg_instance_->Verification(
-            bls_msg.index(),
+            local_member_index_,
             tmp_swap_key,
             g2_vec,
             min_aggree_member_count_)) {
-        ZJC_DEBUG("verify error member: %d, index: %d, %s ,%s ",
+        ZJC_ERROR("verify error member: %d, index: %d, %s ,%s ",
             local_member_index_, bls_msg.index(),
             libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(g2_vec[0].X.c0).c_str());
