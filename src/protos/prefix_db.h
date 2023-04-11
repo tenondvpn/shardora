@@ -752,8 +752,8 @@ public:
 
         ZJC_DEBUG("save bls info success: %s, %s, enc: %s",
             common::Encode::HexEncode(key).c_str(),
-            common::Encode::HexEncode(str).c_str(),
-            common::Encode::HexEncode(enc_str).c_str());
+            common::Encode::HexSubstr(str).c_str(),
+            common::Encode::HexSubstr(enc_str).c_str());
     }
 
     bool GetBlsInfo(
@@ -778,8 +778,8 @@ public:
         if (!bls_info->ParseFromString(dec_str)) {
             ZJC_DEBUG("get bls info failed: %s, %s, enc: %s",
                 common::Encode::HexEncode(key).c_str(),
-                common::Encode::HexEncode(dec_str).c_str(),
-                common::Encode::HexEncode(dec_str).c_str());
+                common::Encode::HexSubstr(dec_str).c_str(),
+                common::Encode::HexSubstr(val).c_str());
             return false;
         }
 
