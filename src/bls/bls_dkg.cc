@@ -743,6 +743,14 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         g2_vec[i] = polynomial_[i] * libff::alt_bn128_G2::one();
     }
 
+    for (int32_t i = 0; i < local_src_secret_key_contribution_.size(); ++i) {
+        assert(dkg_instance_->Verification(
+            i,
+            local_src_secret_key_contribution_[i],
+            g2_vec,
+            min_aggree_member_count_));
+    }
+
 #ifdef ZJC_UNITTEST
     g2_vec_ = g2_vec;
 #endif // ZJC_UNITTEST
