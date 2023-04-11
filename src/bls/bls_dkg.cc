@@ -828,14 +828,13 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
     }
 
-    for (uint32_t i = 0; i < polynomial_[idx].size(); ++i) {
+    for (uint32_t i = 0; i < polynomial_.size(); ++i) {
         local_item.add_polynomial(
-            libBLS::ThresholdUtils::fieldElementToString(polynomial_[idx][i]));
+            libBLS::ThresholdUtils::fieldElementToString(polynomial_[i]));
     }
 
     local_item.set_valid_t(valid_t);
     local_item.set_valid_n(valid_n);
-    local_item.set_local_sec_key(libBLS::ThresholdUtils::fieldElementToString(local_sec_key));
     bls::protobuf::VerifyVecBrdReq bls_verify_req;
     for (int32_t i = 0; i < g2_vec.size(); ++i) {
         bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req.add_verify_vec();
