@@ -292,7 +292,7 @@ TEST_F(TestBls, AllSuccess) {
         dkg[i].local_member_index_ = i;
         dkg[i].BroadcastVerfify(0);
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
-        ASSERT_EQ(dkg[i].ver_brd_msg_.bls_proto().elect_height(), 1);
+        ASSERT_EQ(dkg[i].ver_brd_msg_->header.bls_proto().elect_height(), 1);
         dkg[i].ver_brd_msg_ = nullptr;
     }
 
