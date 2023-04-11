@@ -198,8 +198,10 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
     }
 
     prefix_db_->AddBlsVerifyG2((*members_)[bls_msg.index()]->id, bls_msg.verify_brd());
-    ZJC_DEBUG("save verify g2 success local: %d, %lu, %u, %u",
-        local_member_index_, elect_hegiht_, bls_msg.index(), 0);
+    ZJC_DEBUG("save verify g2 success local: %d, %lu, %u, %u, %s, %s",
+        local_member_index_, elect_hegiht_, bls_msg.index(), 0,
+        common::Encode::HexEncode((*members_)[bls_msg.index()]->id).c_str(),
+        common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str());
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
 }
