@@ -256,6 +256,7 @@ static void CreateContribution(
             bls::protobuf::LocalBlsItem local_item;
             ASSERT_TRUE(local_item.ParseFromString(val));
             dkg[idx].prefix_db_->SaveBlsInfo(dkg[idx].security_, local_item);
+            ++idx;
         }
 
         exists = true;
@@ -268,11 +269,6 @@ static void CreateContribution(
     }
 
     for (uint32_t i = 0; i < pri_vec.size(); ++i) {
-        auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
-        tmp_security_ptr->SetPrivateKey(pri_vec[i]);
-        bls_manager->security_ = tmp_security_ptr;
-        dkg[i].security_ = tmp_security_ptr;
-        //         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
         dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
         dkg[i].local_member_index_ = i;
         dkg[i].BroadcastVerfify(0);
@@ -315,15 +311,17 @@ TEST_F(TestBls, AllSuccess) {
     std::vector<std::string> pri_vec;
     GetPrivateKey(pri_vec, n);
     for (uint32_t i = 0; i < pri_vec.size(); ++i) {
-        security::Ecdsa ecdsa;
-        ecdsa.SetPrivateKey(pri_vec[i]);
-        std::string pubkey_str = ecdsa.GetPublicKey();
-        std::string id = ecdsa.GetAddress();
+        auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
+        tmp_security_ptr->SetPrivateKey(pri_vec[i]);
+        std::string pubkey_str = tmp_security_ptr->GetPublicKey();
+        std::string id = tmp_security_ptr->GetAddress();
         auto member = std::make_shared<common::BftMember>(
             network::kConsensusShardBeginNetworkId, id, pubkey_str, i, 0, i == 0 ? 0 : -1);
         member->public_ip = common::IpToUint32("127.0.0.1");
         member->public_port = 123;
         members->push_back(member);
+        bls_manager->security_ = tmp_security_ptr;
+        dkg[i].security_ = tmp_security_ptr;
     }
 
     auto time0 = common::TimeUtils::TimestampUs();
@@ -340,11 +338,11 @@ TEST_F(TestBls, AllSuccess) {
             if (i == j) {
                 continue;
             }
-            auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
-            tmp_security_ptr->SetPrivateKey(pri_vec[j]);
-            bls_manager->security_ = tmp_security_ptr;
-            dkg[j].security_ = tmp_security_ptr;
-            SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
+//             auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
+//             tmp_security_ptr->SetPrivateKey(pri_vec[j]);
+//             bls_manager->security_ = tmp_security_ptr;
+//             dkg[j].security_ = tmp_security_ptr;
+//             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
             auto msg_ptr = verify_brd_msgs[i];
             msg_ptr->thread_idx = 0;
             dkg[j].HandleMessage(msg_ptr);
@@ -358,11 +356,11 @@ TEST_F(TestBls, AllSuccess) {
     // swap sec key
     std::vector<transport::MessagePtr> swap_sec_msgs;
     for (uint32_t i = 0; i < n; ++i) {
-        auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
-        tmp_security_ptr->SetPrivateKey(pri_vec[i]);
-        bls_manager->security_ = tmp_security_ptr;
-        dkg[i].security_ = tmp_security_ptr;
-        SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
+//         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
+//         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
+//         bls_manager->security_ = tmp_security_ptr;
+//         dkg[i].security_ = tmp_security_ptr;
+//         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
         dkg[i].SwapSecKey(0);
         swap_sec_msgs.push_back(dkg[i].sec_swap_msgs_);
     }
@@ -376,11 +374,11 @@ TEST_F(TestBls, AllSuccess) {
                 continue;
             }
 
-            auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
-            tmp_security_ptr->SetPrivateKey(pri_vec[j]);
-            bls_manager->security_ = tmp_security_ptr;
-            dkg[j].security_ = tmp_security_ptr;
-            SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
+//             auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
+//             tmp_security_ptr->SetPrivateKey(pri_vec[j]);
+//             bls_manager->security_ = tmp_security_ptr;
+//             dkg[j].security_ = tmp_security_ptr;
+//             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
             auto msg_ptr = swap_sec_msgs[i];
             msg_ptr->thread_idx = 0;
             dkg[j].HandleMessage(msg_ptr);
