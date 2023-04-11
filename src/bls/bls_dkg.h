@@ -86,7 +86,6 @@ private:
         const std::string& message_hash,
         transport::protobuf::Header& msg);
     void DumpContribution();
-    void DumpLocalPrivateKey();
     void BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap);
     void CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* seckey_len);
     void CheckVerifyAllValid(uint8_t thread_idx);

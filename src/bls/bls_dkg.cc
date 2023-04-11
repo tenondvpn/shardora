@@ -627,23 +627,6 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
     *seckey_len = msg.size();
 }
 
-void BlsDkg::DumpLocalPrivateKey() {
-    std::string enc_data;
-    std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key_);
-    if (security_->Encrypt(
-            sec_key,
-            security_->GetPrikey(),
-            &enc_data) != security::kSecuritySuccess) {
-        return;
-    }
-
-    prefix_db_->SaveBlsPrikey(
-        elect_hegiht_,
-        common::GlobalInfo::Instance()->network_id(),
-        security_->GetAddress(),
-        enc_data);
-}
-
 void BlsDkg::FinishNoLock(uint8_t thread_idx) try {
     swapkey_valid_ = false;
     if (members_ == nullptr ||
@@ -711,7 +694,14 @@ void BlsDkg::FinishNoLock(uint8_t thread_idx) try {
     libBLS::Dkg dkg(min_aggree_member_count_, members_->size());
     local_sec_key_ = dkg.SecretKeyShareCreate(valid_seck_keys);
     local_publick_key_ = dkg.GetPublicKeyFromSecretKey(local_sec_key_);
-    DumpLocalPrivateKey();
+    bls::protobuf::LocalBlsItem local_item;
+    if (!prefix_db_->GetBlsInfo(security_, &local_item)) {
+        ZJC_FATAL("get bls info failed!");
+        return;
+    }
+
+    local_item.set_local_sec_key(libBLS::ThresholdUtils::fieldElementToString(local_sec_key_));
+    prefix_db_->SaveBlsInfo(security_, local_item);
     BroadcastFinish(thread_idx, bitmap);
     finished_ = true;
 } catch (std::exception& e) {
@@ -845,7 +835,6 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
 
     local_item.set_valid_t(valid_t);
     local_item.set_valid_n(valid_n);
-    local_item.set_elect_height(elect_height);
     local_item.set_local_sec_key(libBLS::ThresholdUtils::fieldElementToString(local_sec_key));
     bls::protobuf::VerifyVecBrdReq bls_verify_req;
     for (int32_t i = 0; i < g2_vec.size(); ++i) {
