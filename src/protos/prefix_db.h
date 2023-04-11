@@ -750,9 +750,10 @@ public:
             ZJC_FATAL("write db failed!");
         }
 
-        ZJC_DEBUG("save bls info success: %s, %s",
+        ZJC_DEBUG("save bls info success: %s, %s, enc: %s",
             common::Encode::HexEncode(key).c_str(),
-            common::Encode::HexEncode(str).c_str());
+            common::Encode::HexEncode(str).c_str(),
+            common::Encode::HexEncode(enc_str).c_str());
     }
 
     bool GetBlsInfo(
@@ -775,8 +776,9 @@ public:
         }
 
         if (!bls_info->ParseFromString(dec_str)) {
-            ZJC_DEBUG("get bls info failed: %s, %s",
+            ZJC_DEBUG("get bls info failed: %s, %s, enc: %s",
                 common::Encode::HexEncode(key).c_str(),
+                common::Encode::HexEncode(dec_str).c_str(),
                 common::Encode::HexEncode(dec_str).c_str());
             return false;
         }
