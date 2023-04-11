@@ -215,7 +215,7 @@ TEST_F(TestBls, ContributionSignAndVerify) {
     std::cout << "use time us: " << (common::TimeUtils::TimestampUs() - t2) << std::endl;
 }
 
-static void GetPrivateKey(std::vector<std::string>& pri_vec) {
+static void GetPrivateKey(std::vector<std::string>& pri_vec, uint32_t n) {
     FILE* prikey_fd = fopen("prikey", "r");
     if (prikey_fd != nullptr) {
         char line[128];
@@ -265,7 +265,7 @@ static void CreateContribution(
         local_bls_fd = fopen("local_bls", "w");
     }
 
-    for (uint32_t i = 0; i < n; ++i) {
+    for (uint32_t i = 0; i < pri_vec.size(); ++i) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
         bls_manager->security_ = tmp_security_ptr;
@@ -311,7 +311,7 @@ TEST_F(TestBls, AllSuccess) {
 
     common::MembersPtr members = std::make_shared<common::Members>();
     std::vector<std::string> pri_vec;
-    GetPrivateKey(pri_vec);
+    GetPrivateKey(pri_vec, n);
     for (uint32_t i = 0; i < pri_vec.size(); ++i) {
         security::Ecdsa ecdsa;
         ecdsa.SetPrivateKey(pri_vec[i]);
