@@ -257,7 +257,8 @@ void ElectManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 void ElectManager::OnNewElectBlock(
         uint8_t thread_idx,
         uint64_t height,
-        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
+        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block_ptr) {
+    auto& elect_block = *elect_block_ptr;
     std::lock_guard<std::mutex> guard(elect_members_mutex_);
     if (elect_block.shard_network_id() >= network::kConsensusShardEndNetworkId ||
             elect_block.shard_network_id() < network::kRootCongressNetworkId) {
@@ -275,14 +276,14 @@ void ElectManager::OnNewElectBlock(
     }
 
     ElectedToConsensusShard(thread_idx, elect_block, elected);
-    pool_manager_->OnNewElectBlock(height, *elect_block);
-    elect_block_mgr_.OnNewElectBlock(height, *elect_block);
+    pool_manager_->OnNewElectBlock(height, elect_block);
+    elect_block_mgr_.OnNewElectBlock(height, elect_block);
     if (new_elect_cb_ != nullptr) {
         new_elect_cb_(
             elect_block.shard_network_id(),
             height,
             members_ptr_[elect_block.shard_network_id()],
-            elect_block);
+            elect_block_ptr);
     }
 }
 
