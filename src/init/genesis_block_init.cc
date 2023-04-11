@@ -76,13 +76,13 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         pol = dkg_instance.GeneratePolynomial();
     }
 
-    std::vector<std::vector<libff::alt_bn128_Fr>> secret_key_contribution(n);
+    std::vector<std::vector<libff::alt_bn128_Fr>> secret_key_contribution(valid_n);
     for (size_t i = 0; i < valid_n; ++i) {
         secret_key_contribution[i] = dkg_instance.SecretKeyContribution(
             polynomial[i], valid_n, valid_t);
     }
 
-    std::vector<std::vector<libff::alt_bn128_G2>> verification_vector(n);
+    std::vector<std::vector<libff::alt_bn128_G2>> verification_vector(valid_n);
     for (size_t i = 0; i < valid_n; ++i) {
         verification_vector[i] = dkg_instance.VerificationVector(polynomial[i]);
     }
@@ -95,8 +95,10 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
 
     for (size_t i = 0; i < valid_n; ++i) {
         for (size_t j = valid_n; j < n; ++j) {
-            secret_key_contribution[i][j] = libff::alt_bn128_Fr::zero();
+            secret_key_contribution[i].push_back(libff::alt_bn128_Fr::zero());
         }
+
+        assert(secret_key_contribution[i].size() == n);
     }
 
     FILE* fd = fopen(
