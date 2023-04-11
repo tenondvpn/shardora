@@ -114,35 +114,6 @@ public:
         return addr_info;
     }
 
-    void AddBlsVerifyG2(
-            const std::string& id,
-            const bls::protobuf::VerifyVecBrdReq& verfy_req) {
-        std::string key = kBlsVerifyPrefex + id;
-        std::string val = verfy_req.SerializeAsString();
-        auto st = db_->Put(key, val);
-        if (!st.ok()) {
-            ZJC_FATAL("write db failed!");
-        }
-    }
-
-    bool GetBlsVerifyG2(
-            const std::string& id,
-            bls::protobuf::VerifyVecBrdReq* verfy_req) {
-        std::string key = kBlsVerifyPrefex + id;
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            return false;
-        }
-
-        if (!verfy_req->ParseFromString(val)) {
-            assert(false);
-            return false;
-        }
-
-        return true;
-    }
-
     void SaveSwapKey(
             uint32_t local_member_idx,
             uint64_t height,
@@ -301,68 +272,6 @@ public:
         if (!st.ok()) {
             ZJC_FATAL("write db failed!");
         }
-    }
-
-    void SaveBlsPrikey(
-            uint64_t elect_height,
-            uint32_t sharding_id,
-            const std::string& node_addr,
-            const std::string& bls_prikey) {
-        std::string key;
-        key.reserve(48);
-        key.append(kBlsPrivateKeyPrefix);
-        key.append((char*)&elect_height, sizeof(elect_height));
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        key.append(node_addr);
-        auto st = db_->Put(key, bls_prikey);
-        if (!st.ok()) {
-            ZJC_FATAL("write db failed!");
-        }
-        
-        ZJC_DEBUG("save bls success: %lu, %u, %s", elect_height,
-            sharding_id,
-            common::Encode::HexEncode(node_addr).c_str());
-    }
-
-    bool GetBlsPrikey(
-            std::shared_ptr<security::Security>& security_ptr,
-            uint64_t elect_height,
-            uint32_t sharding_id,
-            std::string* bls_prikey) {
-        std::string key;
-        key.reserve(48);
-        key.append(kBlsPrivateKeyPrefix);
-        key.append((char*)&elect_height, sizeof(elect_height));
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        key.append(security_ptr->GetAddress());
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            ZJC_ERROR("get bls failed: %lu, %u, %s",
-                elect_height,
-                sharding_id,
-                common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
-            return false;
-        }
-
-        if (elect_height <= 4) {
-            // for genesis block with sure encrypt key
-            if (security_ptr->Decrypt(
-                    val,
-                    kGenesisElectPrikeyEncryptKey,
-                    bls_prikey) != security::kSecuritySuccess) {
-                return false;
-            }
-        } else {
-            if (security_ptr->Decrypt(
-                    val,
-                    security_ptr->GetPrikey(),
-                    bls_prikey) != security::kSecuritySuccess) {
-                return false;
-            }
-        }
-        
-        return true;
     }
 
     void SaveLatestElectBlock(const elect::protobuf::ElectBlock& elect_block) {
@@ -792,19 +701,43 @@ public:
         *prepayment = data[1];
         return true;
     }
+    
+    void AddBlsVerifyG2(
+            const std::string& id,
+            const bls::protobuf::VerifyVecBrdReq& verfy_req) {
+        std::string key = kBlsVerifyPrefex + id;
+        std::string val = verfy_req.SerializeAsString();
+        auto st = db_->Put(key, val);
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+    }
 
-    void SaveBlsPolynomial(
-            std::shared_ptr<security::Security>& secptr,
-            const std::string& prikey,
-            const std::string&id,
-            const std::vector<libff::alt_bn128_Fr>& polynomial) {
-        std::string key = kBlsPolynomialPrefix + id;
-        bls::protobuf::PolynomialItem item;
-        for (uint32_t i = 0; i < polynomial.size(); ++i) {
-            item.add_data(libBLS::ThresholdUtils::fieldElementToString(polynomial[i]));
+    bool GetBlsVerifyG2(
+            const std::string& id,
+            bls::protobuf::VerifyVecBrdReq* verfy_req) {
+        std::string key = kBlsVerifyPrefex + id;
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            return false;
         }
 
-        auto str = item.SerializeAsString();
+        if (!verfy_req->ParseFromString(val)) {
+            assert(false);
+            return false;
+        }
+
+        return true;
+    }
+
+    void SaveBlsInfo(
+            std::shared_ptr<security::Security>& secptr,
+            const bls::protobuf::LocalBlsItem& bls_info) {
+        const std::string& prikey = secptr->GetPrikey();
+        const std::string& id = secptr->GetAddress();
+        std::string key = kBlsPolynomialPrefix + id;
+        auto str = bls_info.SerializeAsString();
         std::string enc_str;
         if (secptr->Encrypt(str, prikey, &enc_str) != security::kSecuritySuccess) {
             ZJC_FATAL("encrypt data failed!");
@@ -817,11 +750,11 @@ public:
         }
     }
 
-    bool GetBlsPolynomial(
+    bool GetBlsInfo(
             std::shared_ptr<security::Security>& secptr,
-            const std::string& prikey,
-            const std::string& id,
-            std::vector<libff::alt_bn128_Fr>* polynomial) {
+            bls::protobuf::LocalBlsItem* bls_info) {
+        const std::string& prikey = secptr->GetPrikey();
+        const std::string& id = secptr->GetAddress();
         std::string key = kBlsPolynomialPrefix + id;
         std::string val;
         auto st = db_->Get(key, &val);
@@ -835,18 +768,13 @@ public:
             return false;
         }
 
-        bls::protobuf::PolynomialItem item;
-        if (!item.ParseFromString(dec_str)) {
+        if (!bls_info->ParseFromString(dec_str)) {
             return false;
-        }
-
-        polynomial->clear();
-        for (int32_t i = 0; i < item.data_size(); ++i) {
-            polynomial->push_back(libff::alt_bn128_Fr(item.data(i).c_str()));
         }
 
         return true;
     }
+
 
 private:
     void DumpGidToDb(uint8_t thread_idx) {

@@ -52,9 +52,10 @@ private:
         const std::vector<dht::NodePtr>& genesis_nodes);
     std::string GetValidPoolBaseAddr(uint32_t network_id, uint32_t pool_index);
     int CreateBlsGenesisKeys(
-        std::vector<std::shared_ptr<BLSPrivateKeyShare>>* skeys,
-        std::vector<std::shared_ptr<BLSPublicKeyShare>>* pkeys,
-        libff::alt_bn128_G2* common_public_key);
+        uint64_t elect_height,
+        uint32_t sharding_id,
+        const std::vector<std::string>& prikeys,
+        elect::protobuf::PrevMembers* prev_members);
     void DumpLocalPrivateKey(
         uint32_t shard_netid,
         uint64_t height,

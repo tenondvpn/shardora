@@ -789,26 +789,24 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
 void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     valid_swapkey_set_.insert(local_member_index_);
     ++valid_sec_key_count_;
-    if (prefix_db_->GetBlsPolynomial(
-            security_,
-            security_->GetPrikey(),
-            security_->GetAddress(),
-            &polynomial_)) {
+    bls::protobuf::LocalBlsItem local_item;
+    polynomial_.clear();
+    if (prefix_db_->GetBlsInfo(security_, &local_item)) {
+        for (int32_t i = 0; i < local_item.polynomial_size(); ++i) {
+            polynomial_.push_back(libff::alt_bn128_Fr(local_item.polynomial(i).c_str()));
+        }
+
         local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(
             polynomial_, valid_n, valid_t);
         auto val = libBLS::ThresholdUtils::fieldElementToString(
             local_src_secret_key_contribution_[local_member_index_]);
         prefix_db_->SaveSwapKey(
             local_member_index_, elect_hegiht_, local_member_index_, local_member_index_, val);
+        prefix_db_->SaveBlsInfo(security_, local_item);
         return;
     }
 
     polynomial_ = dkg_instance_->GeneratePolynomial();
-    prefix_db_->SaveBlsPolynomial(
-        security_,
-        security_->GetPrikey(),
-        security_->GetAddress(),
-        polynomial_);
     local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(
         polynomial_, valid_n, valid_t);
     auto val = libBLS::ThresholdUtils::fieldElementToString(
@@ -824,6 +822,31 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     g2_vec_ = g2_vec;
 #endif // ZJC_UNITTEST
 
+    for (int32_t i = 0; i < g2_vec.size(); ++i) {
+        bls::protobuf::VerifyVecItem& verify_item = *local_item.add_verify_vec();
+        verify_item.set_x_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
+        verify_item.set_x_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c1)));
+        verify_item.set_y_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
+        verify_item.set_y_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
+        verify_item.set_z_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
+        verify_item.set_z_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
+    }
+
+    for (uint32_t i = 0; i < polynomial_[idx].size(); ++i) {
+        local_item.add_polynomial(
+            libBLS::ThresholdUtils::fieldElementToString(polynomial_[idx][i]));
+    }
+
+    local_item.set_valid_t(valid_t);
+    local_item.set_valid_n(valid_n);
+    local_item.set_elect_height(elect_height);
+    local_item.set_local_sec_key(libBLS::ThresholdUtils::fieldElementToString(local_sec_key));
     bls::protobuf::VerifyVecBrdReq bls_verify_req;
     for (int32_t i = 0; i < g2_vec.size(); ++i) {
         bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req.add_verify_vec();
@@ -843,6 +866,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
 
     auto str = bls_verify_req.SerializeAsString();
     prefix_db_->AddBlsVerifyG2(security_->GetAddress(), bls_verify_req);
+    prefix_db_->SaveBlsInfo(security_, local_item);
 }
 
 void BlsDkg::DumpContribution() {
