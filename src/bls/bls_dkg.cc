@@ -44,18 +44,13 @@ void BlsDkg::Init(
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     max_member_count_ = common::GlobalInfo::Instance()->each_shard_max_members();
-    max_agree_count_ = max_member_count_ * 2 / 3 + 1;
+    max_agree_count_ = common::GetSignerCount(max_member_count_);
 }
 
 void BlsDkg::Destroy() {
-    dkg_verify_brd_timer_.Destroy();
-    dkg_swap_seckkey_timer_.Destroy();
-    dkg_finish_timer_.Destroy();
 }
 
-void BlsDkg::OnNewElectionBlock(
-        uint64_t elect_height,
-        common::MembersPtr& members) try {
+void BlsDkg::OnNewElectionBlock(uint64_t elect_height, common::MembersPtr& members) try {
     if (elect_height <= elect_hegiht_) {
         ZJC_DEBUG("elect height error: %lu, %lu", elect_height, elect_hegiht_);
         return;
@@ -65,9 +60,6 @@ void BlsDkg::OnNewElectionBlock(
     memset(has_swaped_keys_, 0, sizeof(has_swaped_keys_));
     finished_ = false;
     // destroy old timer
-    dkg_verify_brd_timer_.Destroy();
-    dkg_swap_seckkey_timer_.Destroy();
-    dkg_finish_timer_.Destroy();
     max_finish_count_ = 0;
     max_finish_hash_ = "";
     valid_sec_key_count_ = 0;
@@ -88,40 +80,22 @@ void BlsDkg::OnNewElectionBlock(
     //     auto tmblock_tm = tmblock::TimeBlockManager::Instance()->LatestTimestamp() * 1000l * 1000l;
     auto tmblock_tm = 1 * 1000l * 1000l;
     begin_time_us_ = common::TimeUtils::TimestampUs();
-    auto ver_offset = kDkgPeriodUs;
-    auto swap_offset = kDkgPeriodUs * 4;
-    auto finish_offset = kDkgPeriodUs * 8;
+    ver_offset_ = kDkgPeriodUs;
+    swap_offset_ = kDkgPeriodUs * 4;
+    finish_offset_ = kDkgPeriodUs * 8;
     auto timeblock_period = common::kTimeBlockCreatePeriodSeconds * 1000l * 1000l;
     auto offset_period = timeblock_period / 3l;
     if (begin_time_us_ < tmblock_tm + offset_period) {
         kDkgPeriodUs = (timeblock_period - offset_period) / 10l;
-        ver_offset = tmblock_tm + offset_period - begin_time_us_;
+        ver_offset_ = tmblock_tm + offset_period - begin_time_us_;
         begin_time_us_ = tmblock_tm + offset_period - kDkgPeriodUs;
-        swap_offset = ver_offset + kDkgPeriodUs * 3;
-        finish_offset = ver_offset + kDkgPeriodUs * 7;
+        swap_offset_ = ver_offset_ + kDkgPeriodUs * 3;
+        finish_offset_ = ver_offset_ + kDkgPeriodUs * 7;
     }
 
-    ver_offset += rand() % kDkgPeriodUs;
-    swap_offset += rand() % kDkgPeriodUs;
-    finish_offset += rand() % kDkgPeriodUs;
-    swapkey_valid_ = true;
-#ifndef ZJC_UNITTEST
-    dkg_verify_brd_timer_.CutOff(
-        ver_offset,
-        std::bind(&BlsDkg::BroadcastVerfify, this, std::placeholders::_1));
-    dkg_swap_seckkey_timer_.CutOff(
-        swap_offset,
-        std::bind(&BlsDkg::SwapSecKey, this, std::placeholders::_1));
-    dkg_finish_timer_.CutOff(
-        finish_offset,
-        std::bind(&BlsDkg::FinishNoLock, this, std::placeholders::_1));
-    check_verify_brd_timer_.CutOff(
-        3000000l,
-        std::bind(&BlsDkg::CheckVerifyAllValid, this, std::placeholders::_1));
-    check_swap_seckkey_timer_.CutOff(
-        3000000l,
-        std::bind(&BlsDkg::CheckSwapKeyAllValid, this, std::placeholders::_1));
-#endif
+    ver_offset_ += rand() % kDkgPeriodUs;
+    swap_offset_ += rand() % kDkgPeriodUs;
+    finish_offset_ += rand() % kDkgPeriodUs;
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
 }
@@ -628,7 +602,6 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
 }
 
 void BlsDkg::FinishNoLock(uint8_t thread_idx) try {
-    swapkey_valid_ = false;
     if (members_ == nullptr ||
             local_member_index_ >= members_->size() ||
             valid_sec_key_count_ < min_aggree_member_count_) {
@@ -865,40 +838,6 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     auto str = bls_verify_req.SerializeAsString();
     prefix_db_->AddBlsVerifyG2(security_->GetAddress(), bls_verify_req);
     prefix_db_->SaveBlsInfo(security_, local_item);
-}
-
-void BlsDkg::DumpContribution() {
-//     nlohmann::json data;
-//     data["idx"] = std::to_string(local_member_index_);
-//     for (size_t i = 0; i < members_->size(); ++i) {
-//         data["secret_key_contribution"][std::to_string(i)] =
-//             libBLS::ThresholdUtils::fieldElementToString(
-//                 all_secret_key_contribution_[local_member_index_][i]);
-//     }
-// 
-//     for (size_t i = 0; i < min_aggree_member_count_; ++i) {
-//         data["verification_vector"][std::to_string(i)]["X"]["c0"] =
-//             libBLS::ThresholdUtils::fieldElementToString(
-//                 all_verification_vector_[local_member_index_][i].X.c0);
-//         data["verification_vector"][std::to_string(i)]["X"]["c1"] =
-//             libBLS::ThresholdUtils::fieldElementToString(
-//                 all_verification_vector_[local_member_index_][i].X.c1);
-//         data["verification_vector"][std::to_string(i)]["Y"]["c0"] =
-//             libBLS::ThresholdUtils::fieldElementToString(
-//                 all_verification_vector_[local_member_index_][i].Y.c0);
-//         data["verification_vector"][std::to_string(i)]["Y"]["c1"] =
-//             libBLS::ThresholdUtils::fieldElementToString(
-//                 all_verification_vector_[local_member_index_][i].Y.c1);
-//         data["verification_vector"][std::to_string(i)]["Z"]["c0"] =
-//             libBLS::ThresholdUtils::fieldElementToString(
-//                 all_verification_vector_[local_member_index_][i].Z.c0);
-//         data["verification_vector"][std::to_string(i)]["Z"]["c1"] =
-//             libBLS::ThresholdUtils::fieldElementToString(
-//                 all_verification_vector_[local_member_index_][i].Z.c1);
-//     }
-// 
-//     std::ofstream outfile("data_for_" + std::to_string(local_member_index_) + "-th_participant.json");
-//     outfile << data.dump(4) << "\n\n";
 }
 
 void BlsDkg::CreateDkgMessage(

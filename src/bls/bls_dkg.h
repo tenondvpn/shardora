@@ -85,7 +85,6 @@ private:
         protobuf::BlsMessage& bls_msg,
         const std::string& message_hash,
         transport::protobuf::Header& msg);
-    void DumpContribution();
     void BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap);
     void CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* seckey_len);
     void CheckVerifyAllValid(uint8_t thread_idx);
@@ -127,11 +126,6 @@ private:
     int64_t kDkgPeriodUs = common::kTimeBlockCreatePeriodSeconds / 10 * 1000u * 1000u;
     common::MembersPtr members_{ nullptr };
     uint64_t elect_hegiht_{ 0 };
-    common::Tick dkg_verify_brd_timer_;
-    common::Tick check_verify_brd_timer_;
-    common::Tick dkg_swap_seckkey_timer_;
-    common::Tick check_swap_seckkey_timer_;
-    common::Tick dkg_finish_timer_;
     std::vector<libff::alt_bn128_Fr> local_src_secret_key_contribution_;
     uint32_t local_member_index_{ common::kInvalidUint32 };
     std::shared_ptr<libBLS::Dkg> dkg_instance_;
@@ -148,7 +142,6 @@ private:
     std::string max_finish_hash_;
     uint32_t max_finish_count_{ 0 };
     std::unordered_set<uint32_t> valid_swapkey_set_;
-    bool swapkey_valid_{ false };
     bool valid_swaped_keys_[common::kEachShardMaxNodeCount];
     bool has_swaped_keys_[common::kEachShardMaxNodeCount];
     uint64_t begin_time_us_{ 0 };
@@ -159,6 +152,9 @@ private:
     int32_t max_member_count_ = 1024;
     int32_t max_agree_count_ = 1024 * 2 / 3 + 1;
     std::vector<libff::alt_bn128_Fr> polynomial_;
+    uint64_t ver_offset_ = 0;
+    uint64_t swap_offset_ = 0;
+    uint64_t finish_offset_ = 0;
 
 #ifdef ZJC_UNITTEST
     transport::protobuf::Header ver_brd_msg_;
