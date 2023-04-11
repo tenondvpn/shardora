@@ -50,7 +50,10 @@ void BlsDkg::Init(
 void BlsDkg::Destroy() {
 }
 
-void BlsDkg::OnNewElectionBlock(uint64_t elect_height, common::MembersPtr& members) try {
+void BlsDkg::OnNewElectionBlock(
+        uint64_t elect_height,
+        common::MembersPtr& members,
+        std::shared_ptr<TimeBlockItem>& latest_timeblock_info) try {
     if (elect_height <= elect_hegiht_) {
         ZJC_DEBUG("elect height error: %lu, %lu", elect_height, elect_hegiht_);
         return;
@@ -77,8 +80,7 @@ void BlsDkg::OnNewElectionBlock(uint64_t elect_height, common::MembersPtr& membe
         }
     }
 
-    //     auto tmblock_tm = tmblock::TimeBlockManager::Instance()->LatestTimestamp() * 1000l * 1000l;
-    auto tmblock_tm = 1 * 1000l * 1000l;
+    auto tmblock_tm = latest_timeblock_info->lastest_time_block_tm * 1000l * 1000l;
     begin_time_us_ = common::TimeUtils::TimestampUs();
     ver_offset_ = kDkgPeriodUs;
     swap_offset_ = kDkgPeriodUs * 4;
@@ -151,25 +153,8 @@ void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) try {
     BLS_ERROR("catch error: %s", e.what());
 }
 
-bool BlsDkg::IsSignValid(const protobuf::BlsMessage& bls_msg, std::string* content_to_hash) {
-    if (bls_msg.has_verify_brd()) {
-        for (int32_t i = 0; i < bls_msg.verify_brd().verify_vec_size(); ++i) {
-            *content_to_hash += bls_msg.verify_brd().verify_vec(i).x_c0() +
-                bls_msg.verify_brd().verify_vec(i).x_c1() +
-                bls_msg.verify_brd().verify_vec(i).y_c0() +
-                bls_msg.verify_brd().verify_vec(i).y_c1() +
-                bls_msg.verify_brd().verify_vec(i).z_c0() +
-                bls_msg.verify_brd().verify_vec(i).z_c1();
-        }
-    } else if (bls_msg.has_swap_req()) {
-        for (int32_t i = 0; i < bls_msg.swap_req().keys_size(); ++i) {
-            *content_to_hash += bls_msg.swap_req().keys(i).sec_key();
-        }
-    } else {
-        return false;
-    }
-
-    *content_to_hash = common::Hash::keccak256(*content_to_hash);
+bool BlsDkg::IsSignValid(const transport::MessagePtr& msg_ptr, std::string* content_to_hash) {
+    protos::GetProtoHash(msg_ptr->header, content_to_hash);
     auto& pubkey = (*members_)[bls_msg.index()]->pubkey;
     if (security_->Verify(
             *content_to_hash,
@@ -190,7 +175,7 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
     }
 
     std::string msg_hash;
-    if (!IsSignValid(bls_msg, &msg_hash)) {
+    if (!IsSignValid(msg_ptr, &msg_hash)) {
         BLS_ERROR("sign verify failed!");
         return;
     }
@@ -350,7 +335,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     }
 
     std::string msg_hash;
-    if (!IsSignValid(bls_msg, &msg_hash)) {
+    if (!IsSignValid(msg_ptr, &msg_hash)) {
         BLS_ERROR("sign verify failed!");
         return;
     }

@@ -707,6 +707,20 @@ public:
             const bls::protobuf::VerifyVecBrdReq& verfy_req) {
         std::string key = kBlsVerifyPrefex + id;
         std::string val = verfy_req.SerializeAsString();
+//         std::string str_for_hash;
+//         str_for_hash.reserve(1024 * 1024);
+//         str_for_hash.append(key);
+//         for (int32_t i = 0; i < verfy_req.verify_vec_size(); ++i) {
+//             str_for_hash.append(verfy_req.verify_vec(i).x_c0());
+//             str_for_hash.append(verfy_req.verify_vec(i).x_c1());
+//             str_for_hash.append(verfy_req.verify_vec(i).y_c0());
+//             str_for_hash.append(verfy_req.verify_vec(i).y_c1());
+//             str_for_hash.append(verfy_req.verify_vec(i).z_c0());
+//             str_for_hash.append(verfy_req.verify_vec(i).z_c1());
+//         }
+// 
+//         std::string verify_hash = common::Hash::keccak256(str_for_hash);
+//         SaveTemporaryKv(verify_hash, val);
         auto st = db_->Put(key, val);
         if (!st.ok()) {
             ZJC_FATAL("write db failed!");

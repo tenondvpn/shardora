@@ -23,6 +23,10 @@ public:
         uint32_t network_id,
         uint64_t elect_height,
         common::MembersPtr& new_members);
+    void OnTimeBlock(
+        uint64_t lastest_time_block_tm,
+        uint64_t latest_time_block_height,
+        uint64_t vss_random);
     void SetUsedElectionBlock(
         uint64_t elect_height,
         uint32_t network_id,
@@ -97,6 +101,7 @@ private:
     std::unordered_map<uint32_t, BlsFinishItemPtr> finish_networks_map_;
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
+    std::shared_ptr<TimeBlockItem> latest_timeblock_info_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(BlsManager);
 };

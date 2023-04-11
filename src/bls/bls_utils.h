@@ -57,6 +57,12 @@ struct BlsFinishItem {
 
 typedef std::shared_ptr<BlsFinishItem> BlsFinishItemPtr;
 
+struct TimeBlockItem {
+    uint64_t lastest_time_block_tm;
+    uint64_t latest_time_block_height;
+    uint64_t vss_random;
+};
+
 static inline bool IsValidBigInt(const std::string& big_int) {
     for (size_t i = 0; i < big_int.size(); ++i)
     {

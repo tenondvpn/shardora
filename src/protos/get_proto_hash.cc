@@ -167,6 +167,60 @@ static void GetVssHash(
     *msg = common::Hash::keccak256(msg_for_hash);
 }
 
+static void GetBlsHash(
+        const bls::protobuf::BlsMessage& bls_msg,
+        std::string* msg) {
+    std::string msg_for_hash;
+    bool has_filed = false;
+    msg_for_hash.reserve(1024 * 1024);
+    if (bls_msg.has_verify_brd()) {
+        for (int32_t i = 0; i < bls_msg.verify_brd().verify_vec_size(); ++i) {
+            msg_for_hash.append(bls_msg.verify_brd().verify_vec(i).x_c0());
+            msg_for_hash.append(bls_msg.verify_brd().verify_vec(i).x_c1());
+            msg_for_hash.append(bls_msg.verify_brd().verify_vec(i).y_c0());
+            msg_for_hash.append(bls_msg.verify_brd().verify_vec(i).y_c1());
+            msg_for_hash.append(bls_msg.verify_brd().verify_vec(i).z_c0());
+            msg_for_hash.append(bls_msg.verify_brd().verify_vec(i).z_c1());
+        }
+    } else {
+        msg_for_hash.append((char*)&has_filed, sizeof(has_filed));
+    }
+
+    if (bls_msg.has_swap_req()) {
+        for (int32_t i = 0; i < bls_msg.swap_req().keys_size(); ++i) {
+            msg_for_hash.append(bls_msg.swap_req().keys(i).sec_key());
+            uint32_t sec_key_len = bls_msg.swap_req().keys(i).sec_key_len();
+            msg_for_hash.append((char*)&sec_key_len, sizeof(sec_key_len));
+            msg_for_hash.append(bls_msg.swap_req().keys(i).verify_hash());
+        }
+    } else {
+        msg_for_hash.append((char*)&has_filed, sizeof(has_filed));
+    }
+
+    if (bls_msg.has_finish_req()) {
+        for (int32_t i = 0; i < bls_msg.finish_req().bitmap_size(); ++i) {
+            uint64_t bitmap_data = bls_msg.finish_req().bitmap(i);
+            msg_for_hash.append((char*)&bitmap_data, sizeof(bitmap_data));
+            if (bls_msg.finish_req().has_pubkey()) {
+                msg_for_hash.append(bls_msg.finish_req().pubkey().x_c0());
+                msg_for_hash.append(bls_msg.finish_req().pubkey().x_c1());
+                msg_for_hash.append(bls_msg.finish_req().pubkey().y_c0());
+                msg_for_hash.append(bls_msg.finish_req().pubkey().y_c1());
+            } else {
+                msg_for_hash.append((char*)&has_filed, sizeof(has_filed));
+            }
+        }
+    } else {
+        msg_for_hash.append((char*)&has_filed, sizeof(has_filed));
+    }
+
+    uint32_t index = bls_msg.index();
+    msg_for_hash.append((char*)&index, sizeof(index));
+    uint64_t elect_height = bls_msg.elect_height();
+    msg_for_hash.append((char*)&elect_height, sizeof(elect_height));
+    *msg = common::Hash::keccak256(msg_for_hash);
+}
+
 void GetProtoHash(const transport::protobuf::Header& msg, std::string* msg_for_hash) {
     if (msg.has_tx_proto()) {
         GetTxProtoHash(msg.tx_proto(), msg_for_hash);
@@ -174,6 +228,8 @@ void GetProtoHash(const transport::protobuf::Header& msg, std::string* msg_for_h
         GetZbftHash(msg.zbft(), msg_for_hash);
     } else if (msg.has_vss_proto()) {
         GetVssHash(msg.vss_proto(), msg_for_hash);
+    } else if (msg.has_bls_proto()) {
+        GetBlsHash(msg.bls_proto(), msg_for_hash);
     }
 }
 

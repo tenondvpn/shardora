@@ -62,8 +62,25 @@ void BlsManager::ProcessNewElectBlock(
         libff::alt_bn128_G2::zero(),
         libff::alt_bn128_G2::zero(),
         db_);
-    waiting_bls_->OnNewElectionBlock(elect_height, new_members);
+    waiting_bls_->OnNewElectionBlock(elect_height, new_members, latest_timeblock_info_);
     BLS_DEBUG("success add new bls dkg, elect_height: %lu", elect_height);
+}
+
+void BlsManager::OnTimeBlock(
+        uint64_t lastest_time_block_tm,
+        uint64_t latest_time_block_height,
+        uint64_t vss_random) {
+    if (latest_timeblock_info_ != nullptr) {
+        if (latest_time_block_height <= latest_timeblock_info_->latest_time_block_height) {
+            return;
+        }
+    }
+
+    auto timeblock_info = std::make_shared<TimeBlockItem>();
+    timeblock_info->lastest_time_block_tm = lastest_time_block_tm;
+    timeblock_info->latest_time_block_height = latest_time_block_height;
+    timeblock_info->vss_random = vss_random;
+    latest_timeblock_info_ = timeblock_info;
 }
 
 void BlsManager::SetUsedElectionBlock(
@@ -172,7 +189,6 @@ int BlsManager::GetVerifyHash(
     BLS_ERROR("catch error: %s", e.what());
     return kBlsError;
 }
-
 
 void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;

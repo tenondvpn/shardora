@@ -47,7 +47,8 @@ public:
         std::shared_ptr<db::Db>& db);
     void OnNewElectionBlock(
         uint64_t elect_height,
-        common::MembersPtr& members);
+        common::MembersPtr& members,
+        std::shared_ptr<TimeBlockItem>& latest_timeblock_info);
     void HandleMessage(const transport::MessagePtr& header);
     uint64_t elect_hegiht() {
         return elect_hegiht_;
@@ -75,7 +76,7 @@ private:
     void HandleSwapSecKey(const transport::MessagePtr& header);
     void HandleCheckVerifyReq(const transport::MessagePtr& header);
     void HandleCheckSwapKeyReq(const transport::MessagePtr& header);
-    bool IsSignValid(const protobuf::BlsMessage& bls_msg, std::string* msg_hash);
+    bool IsSignValid(const transport::MessagePtr& msg_ptr, std::string* msg_hash);
     void BroadcastVerfify(uint8_t thread_idx);
     void SwapSecKey(uint8_t thread_idx);
     void FinishNoLock(uint8_t thread_idx);
