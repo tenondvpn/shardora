@@ -141,8 +141,8 @@ TEST_F(TestBls, ContributionSignAndVerify) {
         dkg[i].Init(
             bls_manager,
             security_ptr,
-            t,
-            n,
+            valid_t,
+            valid_count,
             libff::alt_bn128_Fr::zero(),
             libff::alt_bn128_G2::zero(),
             libff::alt_bn128_G2::zero(),
