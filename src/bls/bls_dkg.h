@@ -151,7 +151,6 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     int32_t max_member_count_ = 1024;
     int32_t max_agree_count_ = 1024 * 2 / 3 + 1;
-    std::vector<libff::alt_bn128_Fr> polynomial_;
     uint64_t ver_offset_ = 0;
     uint64_t swap_offset_ = 0;
     uint64_t finish_offset_ = 0;
@@ -159,7 +158,6 @@ private:
 #ifdef ZJC_UNITTEST
     transport::MessagePtr ver_brd_msg_;
     transport::MessagePtr sec_swap_msgs_;
-    std::vector<libff::alt_bn128_Fr> test_valid_seck_keys_;
     libff::alt_bn128_G2 g2_vec_;
 #endif
     DISALLOW_COPY_AND_ASSIGN(BlsDkg);

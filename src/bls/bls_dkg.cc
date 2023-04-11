@@ -749,15 +749,15 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     valid_swapkey_set_.insert(local_member_index_);
     ++valid_sec_key_count_;
     bls::protobuf::LocalBlsItem local_item;
-    polynomial_.clear();
+    std::vector<libff::alt_bn128_Fr> polynomial;
     if (prefix_db_->GetBlsInfo(security_, &local_item)) {
         ZJC_DEBUG("use exists data.");
         for (int32_t i = 0; i < local_item.polynomial_size(); ++i) {
-            polynomial_.push_back(libff::alt_bn128_Fr(local_item.polynomial(i).c_str()));
+            polynomial.push_back(libff::alt_bn128_Fr(local_item.polynomial(i).c_str()));
         }
 
         local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(
-            polynomial_, valid_n, valid_t);
+            polynomial, valid_n, valid_t);
         auto val = libBLS::ThresholdUtils::fieldElementToString(
             local_src_secret_key_contribution_[local_member_index_]);
         prefix_db_->SaveSwapKey(
@@ -766,16 +766,16 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         return;
     }
 
-    polynomial_ = dkg_instance_->GeneratePolynomial();
+    polynomial = dkg_instance_->GeneratePolynomial();
     local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(
-        polynomial_, valid_n, valid_t);
+        polynomial, valid_n, valid_t);
     auto val = libBLS::ThresholdUtils::fieldElementToString(
         local_src_secret_key_contribution_[local_member_index_]);
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, local_member_index_, val);
     std::vector<libff::alt_bn128_G2> g2_vec(max_agree_count_);
     for (size_t i = 0; i < max_agree_count_; ++i) {
-        g2_vec[i] = polynomial_[i] * libff::alt_bn128_G2::one();
+        g2_vec[i] = polynomial[i] * libff::alt_bn128_G2::one();
     }
 // 
 //     for (int32_t i = 0; i < local_src_secret_key_contribution_.size(); ++i) {
@@ -811,9 +811,9 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
     }
 
-    for (uint32_t i = 0; i < polynomial_.size(); ++i) {
+    for (uint32_t i = 0; i < polynomial.size(); ++i) {
         local_item.add_polynomial(
-            libBLS::ThresholdUtils::fieldElementToString(polynomial_[i]));
+            libBLS::ThresholdUtils::fieldElementToString(polynomial[i]));
     }
 
     local_item.set_valid_t(valid_t);

@@ -215,6 +215,78 @@ TEST_F(TestBls, ContributionSignAndVerify) {
     std::cout << "use time us: " << (common::TimeUtils::TimestampUs() - t2) << std::endl;
 }
 
+static void GetPrivateKey(std::vector<std::string>& pri_vec) {
+    FILE* prikey_fd = fopen("prikey", "r");
+    if (prikey_fd != nullptr) {
+        char line[128];
+        while (!feof(prikey_fd)) {
+            fgets(line, 128, fp);
+            pri_vec.push_back(common::Encode::HexDecode(std::string(line, 64)));
+        }
+
+        fclose(prikey_fd);
+    }
+
+    if (pri_vec.empty()) {
+        FILE* prikey_fd = fopen("prikey", "w");
+        for (uint32_t i = 0; i < n; ++i) {
+            pri_vec.push_back(common::Random::RandomString(32));
+            std::string val = common::Encode::HexEncode(pri_vec[i]) + "\n";
+            fwrite(val.c_str(), 1, val.size(), prikey_fd);
+        }
+
+        fclose(prikey_fd);
+    }
+}
+
+static void CreateContribution(BlsDkg* dkg) {
+    FILE* rlocal_bls_fd = fopen("local_bls", "r");
+    bool exists = false;
+    if (rlocal_bls_fd != nullptr) {
+        char* line = new char[1024 * 1024];
+        uint32_t idx = 0;
+        while (!feof(rlocal_bls_fd)) {
+            fgets(line, 1024 * 1024, fp);
+            std::string val = common::Encode::HexDecode(std::string(line, strlen(line) - 1));
+            bls::protobuf::LocalBlsItem local_item;
+            ASSERT_TRUE(local_item.ParseFromString(val));
+            dkg[idx].prefix_db_->SaveBlsInfo(dkg[idx].security_, local_item);
+        }
+
+        exists = true;
+        fclose(rlocal_bls_fd);
+    }
+
+    FILE* local_bls_fd = nullptr;
+    if (!exists) {
+        local_bls_fd = fopen("local_bls", "w");
+    }
+
+    for (uint32_t i = 0; i < n; ++i) {
+        auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
+        tmp_security_ptr->SetPrivateKey(pri_vec[i]);
+        bls_manager->security_ = tmp_security_ptr;
+        dkg[i].security_ = tmp_security_ptr;
+        //         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
+        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
+        dkg[i].local_member_index_ = i;
+        dkg[i].BroadcastVerfify(0);
+        verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
+        ASSERT_EQ(dkg[i].ver_brd_msg_->header.bls_proto().elect_height(), 1);
+        dkg[i].ver_brd_msg_ = nullptr;
+        if (!exists) {
+            bls::protobuf::LocalBlsItem local_item;
+            ASSERT_TRUE(dkg[i].prefix_db_->GetBlsInfo(dkg[i].security_, &local_item));
+            std::string val = common::Encode::HexEncode(local_item.SerializeAsString()) + "\n";
+            fwrite(val.c_str(), 1, val.size(), local_bls_fd);
+        }
+    }
+
+    if (!exists) {
+        fclose(local_bls_fd);
+    }
+}
+
 TEST_F(TestBls, AllSuccess) {
 //     static const uint32_t t = 700;
 //     static const uint32_t n = 1024;
@@ -236,15 +308,7 @@ TEST_F(TestBls, AllSuccess) {
 
     common::MembersPtr members = std::make_shared<common::Members>();
     std::vector<std::string> pri_vec;
-    FILE* prikey_fd = fopen("prikey", "w");
-    for (uint32_t i = 0; i < n; ++i) {
-        pri_vec.push_back(common::Random::RandomString(32));
-        std::string val = common::Encode::HexEncode(pri_vec[i]) + "\n";
-        fwrite(val.c_str(), 1, val.size(), prikey_fd);
-    }
-
-    fclose(prikey_fd);
-
+    GetPrivateKey(pri_vec);
     for (uint32_t i = 0; i < pri_vec.size(); ++i) {
         security::Ecdsa ecdsa;
         ecdsa.SetPrivateKey(pri_vec[i]);
@@ -263,26 +327,7 @@ TEST_F(TestBls, AllSuccess) {
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
     latest_timeblock_info->latest_time_block_height = 1;
     latest_timeblock_info->vss_random = common::Random::RandomUint64();
-    FILE* local_bls_fd = fopen("local_bls", "w");
-    for (uint32_t i = 0; i < n; ++i) {
-        auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
-        tmp_security_ptr->SetPrivateKey(pri_vec[i]);
-        bls_manager->security_ = tmp_security_ptr;
-        dkg[i].security_ = tmp_security_ptr;
-        SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
-        dkg[i].local_member_index_ = i;
-        dkg[i].BroadcastVerfify(0);
-        verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
-        ASSERT_EQ(dkg[i].ver_brd_msg_->header.bls_proto().elect_height(), 1);
-        dkg[i].ver_brd_msg_ = nullptr;
-        bls::protobuf::LocalBlsItem local_item;
-        ASSERT_TRUE(dkg[i].prefix_db_->GetBlsInfo(dkg[i].security_, &local_item));
-        std::string val = common::Encode::HexEncode(local_item.SerializeAsString()) + "\n";
-        fwrite(val.c_str(), 1, val.size(), local_bls_fd);
-    }
-
-    fclose(local_bls_fd);
+    CreateContribution(dkg);
     auto time1 = common::TimeUtils::TimestampUs();
     std::cout << "0: " << (time1 - time0) << std::endl;
     for (uint32_t i = 0; i < n; ++i) {
@@ -301,6 +346,7 @@ TEST_F(TestBls, AllSuccess) {
         }
     }
 
+    verify_brd_msgs.swap(std::vector<transport::MessagePtr>());
     auto time2 = common::TimeUtils::TimestampUs();
     std::cout << "1: " << (time2 - time1) << std::endl;
     // swap sec key
@@ -336,6 +382,7 @@ TEST_F(TestBls, AllSuccess) {
         auto t1 = common::TimeUtils::TimestampUs();
     }
 
+    swap_sec_msgs.swap(std::vector<transport::MessagePtr>());
     auto time4 = common::TimeUtils::TimestampUs();
     std::cout << "3: " << (time4 - time3) << std::endl;
     std::cout << "success handle bls test message." << std::endl;
