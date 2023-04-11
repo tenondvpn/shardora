@@ -31,15 +31,27 @@ void initLibSnark() noexcept {
     (void)s_initialized;
 }
 
-void BlsManager::ProcessNewElectBlock(
-        bool this_node_elected,
-        uint32_t network_id,
-        uint64_t elect_height,
-        common::MembersPtr& new_members) {
+void BlsManager::(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members) {
     {
-        auto iter = finish_networks_map_.find(network_id);
+        auto iter = finish_networks_map_.find(sharding_id);
         if (iter != finish_networks_map_.end()) {
             finish_networks_map_.erase(iter);
+        }
+    }
+
+    if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
+        return;
+    }
+
+    if (elect_height <= latest_elect_height_) {
+        return;
+    }
+
+    bool this_node_elected = false;
+    for (auto iter = members->begin(); iter != members->end(); ++iter) {
+        if ((*iter)->id == security_->GetAddress()) {
+            this_node_elected = true;
+            break;
         }
     }
 
@@ -63,7 +75,7 @@ void BlsManager::ProcessNewElectBlock(
         libff::alt_bn128_G2::zero(),
         libff::alt_bn128_G2::zero(),
         db_);
-    waiting_bls_->OnNewElectionBlock(elect_height, new_members, latest_timeblock_info_);
+    waiting_bls_->OnNewElectionBlock(elect_height, members, latest_timeblock_info_);
     BLS_DEBUG("success add new bls dkg, elect_height: %lu", elect_height);
 }
 

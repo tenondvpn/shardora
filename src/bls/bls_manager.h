@@ -18,11 +18,7 @@ public:
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<db::Db>& db);
     ~BlsManager();
-    void ProcessNewElectBlock(
-        bool this_node_elected,
-        uint32_t network_id,
-        uint64_t elect_height,
-        common::MembersPtr& new_members);
+    void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members);
     void OnTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
@@ -98,6 +94,7 @@ private:
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<TimeBlockItem> latest_timeblock_info_ = nullptr;
+    uint64_t latest_elect_height_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(BlsManager);
 };
