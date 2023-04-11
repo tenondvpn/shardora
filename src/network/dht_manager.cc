@@ -55,7 +55,6 @@ void DhtManager::RegisterDht(uint32_t net_id, dht::BaseDhtPtr& dht) {
     dhts_[net_id] = dht;
     dht_map_[net_id] = dht;
     dht_map_ptr_ = std::make_shared<std::unordered_map<uint32_t, dht::BaseDhtPtr>>(dht_map_);
-    ZJC_DEBUG("register dht success: %d, local node net: %d", net_id, dht->local_node()->sharding_id);
 }
 
 void DhtManager::UnRegisterDht(uint32_t net_id) {
