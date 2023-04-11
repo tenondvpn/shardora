@@ -114,7 +114,7 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         mem_pk->set_x_c1(pkeys_str->at(1));
         mem_pk->set_y_c0(pkeys_str->at(2));
         mem_pk->set_y_c1(pkeys_str->at(3));
-        if (i == 0) {
+        if (idx == 0) {
             mem_pk->set_pool_idx_mod_num(0);
         } else {
             mem_pk->set_pool_idx_mod_num(-1);
@@ -180,7 +180,7 @@ void GenesisBlockInit::DumpLocalPrivateKey(
         return;
     }
 
-    prefix_db_->SaveBlsPrikey(height, shard_netid, id, enc_data);
+//     prefix_db_->SaveBlsPrikey(height, shard_netid, id, enc_data);
     std::string key = std::to_string(height) + "_" +
         std::to_string(shard_netid) + "_" + common::Encode::HexEncode(id);
     fputs((common::Encode::HexEncode(key) + "," + common::Encode::HexEncode(enc_data) + "\n").c_str(), fd);
@@ -208,7 +208,7 @@ void GenesisBlockInit::ReloadBlsPri() {
             }
 
             std::string id = common::Encode::HexDecode(keys[2]);
-            prefix_db_->SaveBlsPrikey(height, shard_netid, id, val);
+//             prefix_db_->SaveBlsPrikey(height, shard_netid, id, val);
         }
     }
 
