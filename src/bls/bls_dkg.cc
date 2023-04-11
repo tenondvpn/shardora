@@ -792,7 +792,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
 //     }
 
 #ifdef ZJC_UNITTEST
-    g2_vec_ = g2_vec;
+    g2_vec_ = g2_vec[0];
 #endif // ZJC_UNITTEST
 
     for (int32_t i = 0; i < g2_vec.size(); ++i) {

@@ -179,7 +179,7 @@ TEST_F(TestBls, ContributionSignAndVerify) {
     auto common_public_key = libff::alt_bn128_G2::zero();
     auto btime1 = common::TimeUtils::TimestampUs();
     for (uint32_t i = 0; i < valid_count; ++i) {
-        common_public_key = common_public_key + dkg[i].g2_vec_[0];
+        common_public_key = common_public_key + dkg[i].g2_vec_;
         libBLS::Dkg tmpdkg(valid_t, n);
         dkg[i].local_sec_key_ = tmpdkg.SecretKeyShareCreate(dkg[i].local_src_secret_key_contribution_);
         dkg[i].local_publick_key_ = tmpdkg.GetPublicKeyFromSecretKey(dkg[i].local_sec_key_);

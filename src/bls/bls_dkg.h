@@ -160,7 +160,7 @@ private:
     transport::MessagePtr ver_brd_msg_;
     transport::MessagePtr sec_swap_msgs_;
     std::vector<libff::alt_bn128_Fr> test_valid_seck_keys_;
-    std::vector<libff::alt_bn128_G2> g2_vec_;
+    libff::alt_bn128_G2 g2_vec_;
 #endif
     DISALLOW_COPY_AND_ASSIGN(BlsDkg);
 };
