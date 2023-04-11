@@ -31,12 +31,13 @@ void initLibSnark() noexcept {
     (void)s_initialized;
 }
 
-void BlsManager::(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members) {
-    {
-        auto iter = finish_networks_map_.find(sharding_id);
-        if (iter != finish_networks_map_.end()) {
-            finish_networks_map_.erase(iter);
-        }
+void BlsManager::OnNewElectBlock(
+        uint32_t sharding_id,
+        uint64_t elect_height,
+        common::MembersPtr& members) {
+    auto iter = finish_networks_map_.find(sharding_id);
+    if (iter != finish_networks_map_.end()) {
+        finish_networks_map_.erase(iter);
     }
 
     if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
