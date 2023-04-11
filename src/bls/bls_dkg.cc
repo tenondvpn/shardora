@@ -744,6 +744,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     }
 
     for (int32_t i = 0; i < local_src_secret_key_contribution_.size(); ++i) {
+        ZJC_DEBUG("verify success member: %d, index: %d ", local_member_index_, i);
         assert(dkg_instance_->Verification(
             i,
             local_src_secret_key_contribution_[i],
