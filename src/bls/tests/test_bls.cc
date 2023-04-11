@@ -293,7 +293,7 @@ TEST_F(TestBls, AllSuccess) {
         dkg[i].BroadcastVerfify(0);
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
         ASSERT_EQ(dkg[i].ver_brd_msg_.bls_proto().elect_height(), 1);
-        dkg[i].ver_brd_msg_ = transport::protobuf::Header();
+        dkg[i].ver_brd_msg_ = nullptr;
     }
 
     auto time1 = common::TimeUtils::TimestampUs();
@@ -428,7 +428,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
         members->push_back(member);
     }
 
-    std::vector<transport::protobuf::Header> verify_brd_msgs;
+    std::vector<transport::MessagePtr> verify_brd_msgs;
     auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
     latest_timeblock_info->latest_time_block_height = 1;
@@ -459,9 +459,8 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
             bls_manager->security_ = tmp_security_ptr;
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
-            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto msg_ptr = verify_brd_msgs[i];
             msg_ptr->thread_idx = 0;
-            msg_ptr->header = verify_brd_msgs[i];
             if (i == kInvalidNodeIndex) {
                 continue;
             }
@@ -471,7 +470,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
     }
 
     // swap sec key
-    std::vector<transport::protobuf::Header> swap_sec_msgs;
+    std::vector<transport::MessagePtr> swap_sec_msgs;
     for (uint32_t i = 0; i < n; ++i) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
@@ -493,9 +492,8 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
             bls_manager->security_ = tmp_security_ptr;
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
-            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto msg_ptr = swap_sec_msgs[i];
             msg_ptr->thread_idx = 0;
-            msg_ptr->header = swap_sec_msgs[i];
             if (i == kInvalidSwapNodeIndex && j == kInvalidSwapNodeIndex2) {
                 continue;
             }
@@ -584,7 +582,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
         members->push_back(member);
     }
 
-    std::vector<transport::protobuf::Header> verify_brd_msgs;
+    std::vector<transport::MessagePtr> verify_brd_msgs;
     auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
     latest_timeblock_info->latest_time_block_height = 1;
@@ -613,9 +611,8 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
             bls_manager->security_ = tmp_security_ptr;
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
-            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto msg_ptr = verify_brd_msgs[i];
             msg_ptr->thread_idx = 0;
-            msg_ptr->header = verify_brd_msgs[i];
             if (i == kInvalidNodeIndex) {
                 continue;
             }
@@ -625,7 +622,7 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
     }
 
     // swap sec key
-    std::vector<transport::protobuf::Header> swap_sec_msgs;
+    std::vector<transport::MessagePtr> swap_sec_msgs;
     for (uint32_t i = 0; i < n; ++i) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
@@ -647,9 +644,8 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
             bls_manager->security_ = tmp_security_ptr;
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
-            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto msg_ptr = swap_sec_msgs[i];
             msg_ptr->thread_idx = 0;
-            msg_ptr->header = swap_sec_msgs[i];
             dkg[j].HandleMessage(msg_ptr);
         }
     }
@@ -733,7 +729,7 @@ TEST_F(TestBls, ThreeRatioFailFine) {
         members->push_back(member);
     }
 
-    std::vector<transport::protobuf::Header> verify_brd_msgs;
+    std::vector<transport::MessagePtr> verify_brd_msgs;
     auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
     latest_timeblock_info->latest_time_block_height = 1;
@@ -761,15 +757,14 @@ TEST_F(TestBls, ThreeRatioFailFine) {
             bls_manager->security_ = tmp_security_ptr;
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
-            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto msg_ptr = verify_brd_msgs[i];
             msg_ptr->thread_idx = 0;
-            msg_ptr->header = verify_brd_msgs[i];
             dkg[j].HandleMessage(msg_ptr);
         }
     }
 
     // swap sec key
-    std::vector<transport::protobuf::Header> swap_sec_msgs;
+    std::vector<transport::MessagePtr> swap_sec_msgs;
     for (uint32_t i = 0; i < n; ++i) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
@@ -791,9 +786,8 @@ TEST_F(TestBls, ThreeRatioFailFine) {
             bls_manager->security_ = tmp_security_ptr;
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
-            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto msg_ptr = swap_sec_msgs[i];
             msg_ptr->thread_idx = 0;
-            msg_ptr->header = swap_sec_msgs[i];
             dkg[j].HandleMessage(msg_ptr);
         }
     }
@@ -884,7 +878,7 @@ TEST_F(TestBls, ThreeRatioFail) {
         members->push_back(member);
     }
 
-    std::vector<transport::protobuf::Header> verify_brd_msgs;
+    std::vector<transport::MessagePtr> verify_brd_msgs;
     auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
     latest_timeblock_info->latest_time_block_height = 1;
@@ -912,15 +906,14 @@ TEST_F(TestBls, ThreeRatioFail) {
             bls_manager->security_ = tmp_security_ptr;
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
-            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto msg_ptr = verify_brd_msgs[i];
             msg_ptr->thread_idx = 0;
-            msg_ptr->header = verify_brd_msgs[i];
             dkg[j].HandleMessage(msg_ptr);
         }
     }
 
     // swap sec key
-    std::vector<transport::protobuf::Header> swap_sec_msgs;
+    std::vector<transport::MessagePtr> swap_sec_msgs;
     for (uint32_t i = 0; i < n; ++i) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
@@ -942,9 +935,8 @@ TEST_F(TestBls, ThreeRatioFail) {
             bls_manager->security_ = tmp_security_ptr;
             dkg[j].security_ = tmp_security_ptr;
             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
-            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto msg_ptr = swap_sec_msgs[i];
             msg_ptr->thread_idx = 0;
-            msg_ptr->header = swap_sec_msgs[i];
             dkg[j].HandleMessage(msg_ptr);
         }
     }
