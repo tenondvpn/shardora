@@ -388,10 +388,12 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
             tmp_swap_key,
             g2_vec,
             min_aggree_member_count_)) {
-        ZJC_ERROR("verify error member: %d, index: %d, %s ,%s ",
+        ZJC_ERROR("verify error member: %d, index: %d, %s ,%s, min_aggree_member_count_: %d",
             local_member_index_, bls_msg.index(),
             libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[0].X.c0).c_str());
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[0].X.c0).c_str(),
+            min_aggree_member_count_);
+        assert(false);
         return;
     }
 
@@ -753,10 +755,11 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     }
 
     for (int32_t i = 0; i < local_src_secret_key_contribution_.size(); ++i) {
-        ZJC_DEBUG("verify success member: %d, index: %d, %s ,%s ",
+        ZJC_DEBUG("verify success member: %d, index: %d, %s ,%s, min_aggree_member_count_: %d",
             local_member_index_, i,
             libBLS::ThresholdUtils::fieldElementToString(local_src_secret_key_contribution_[i]).c_str(),
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[0].X.c0).c_str());
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[0].X.c0).c_str(),
+            min_aggree_member_count_);
         assert(dkg_instance_->Verification(
             i,
             local_src_secret_key_contribution_[i],
