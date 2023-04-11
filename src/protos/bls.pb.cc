@@ -361,14 +361,10 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::LocalBlsItem, verify_vec_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::LocalBlsItem, valid_t_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::LocalBlsItem, valid_n_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::LocalBlsItem, local_sec_key_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::LocalBlsItem, elect_height_),
   ~0u,
   ~0u,
-  1,
-  2,
   0,
-  3,
+  1,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::VerifyVecBrdRes, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::VerifyVecBrdRes, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -471,16 +467,16 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 0, 11, sizeof(::zjchain::bls::protobuf::VerifyVecItem)},
   { 17, 26, sizeof(::zjchain::bls::protobuf::BlsPublicKey)},
   { 30, 38, sizeof(::zjchain::bls::protobuf::VerifyVecBrdReq)},
-  { 41, 52, sizeof(::zjchain::bls::protobuf::LocalBlsItem)},
-  { 58, 65, sizeof(::zjchain::bls::protobuf::VerifyVecBrdRes)},
-  { 67, 75, sizeof(::zjchain::bls::protobuf::SwapSecKeyItem)},
-  { 78, 84, sizeof(::zjchain::bls::protobuf::SwapSecKeyReq)},
-  { 85, 93, sizeof(::zjchain::bls::protobuf::SwapSecKeyRes)},
-  { 96, 102, sizeof(::zjchain::bls::protobuf::AgainstParticipant)},
-  { 103, 114, sizeof(::zjchain::bls::protobuf::FinishBroadcast)},
-  { 120, 126, sizeof(::zjchain::bls::protobuf::CheckVerfiyReq)},
-  { 127, 133, sizeof(::zjchain::bls::protobuf::CheckSwapKeyReq)},
-  { 134, 147, sizeof(::zjchain::bls::protobuf::BlsMessage)},
+  { 41, 50, sizeof(::zjchain::bls::protobuf::LocalBlsItem)},
+  { 54, 61, sizeof(::zjchain::bls::protobuf::VerifyVecBrdRes)},
+  { 63, 71, sizeof(::zjchain::bls::protobuf::SwapSecKeyItem)},
+  { 74, 80, sizeof(::zjchain::bls::protobuf::SwapSecKeyReq)},
+  { 81, 89, sizeof(::zjchain::bls::protobuf::SwapSecKeyRes)},
+  { 92, 98, sizeof(::zjchain::bls::protobuf::AgainstParticipant)},
+  { 99, 110, sizeof(::zjchain::bls::protobuf::FinishBroadcast)},
+  { 116, 122, sizeof(::zjchain::bls::protobuf::CheckVerfiyReq)},
+  { 123, 129, sizeof(::zjchain::bls::protobuf::CheckSwapKeyReq)},
+  { 130, 143, sizeof(::zjchain::bls::protobuf::BlsMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -528,38 +524,37 @@ void AddDescriptorsImpl() {
       "\014\n\004y_c1\030\004 \001(\014\"r\n\017VerifyVecBrdReq\0227\n\nveri"
       "fy_vec\030\001 \003(\0132#.zjchain.bls.protobuf.Veri"
       "fyVecItem\022\021\n\tpublic_ip\030\002 \001(\014\022\023\n\013public_p"
-      "ort\030\003 \001(\r\"\252\001\n\014LocalBlsItem\022\022\n\npolynomial"
-      "\030\001 \003(\014\0227\n\nverify_vec\030\002 \003(\0132#.zjchain.bls"
-      ".protobuf.VerifyVecItem\022\017\n\007valid_t\030\003 \001(\r"
-      "\022\017\n\007valid_n\030\004 \001(\r\022\025\n\rlocal_sec_key\030\005 \001(\014"
-      "\022\024\n\014elect_height\030@ \001(\004\"9\n\017VerifyVecBrdRe"
-      "s\022\021\n\tpublic_ip\030\001 \001(\014\022\023\n\013public_port\030\002 \001("
-      "\r\"K\n\016SwapSecKeyItem\022\017\n\007sec_key\030\001 \001(\014\022\023\n\013"
-      "sec_key_len\030\002 \001(\r\022\023\n\013verify_hash\030\003 \001(\014\"C"
-      "\n\rSwapSecKeyReq\0222\n\004keys\030\001 \003(\0132$.zjchain."
-      "bls.protobuf.SwapSecKeyItem\"D\n\rSwapSecKe"
-      "yRes\022\r\n\005index\030\001 \001(\r\022\017\n\007sec_key\030\002 \001(\014\022\023\n\013"
-      "sec_key_len\030\003 \001(\r\"+\n\022AgainstParticipant\022"
-      "\025\n\ragainst_index\030\001 \001(\r\"\314\001\n\017FinishBroadca"
-      "st\022\016\n\006bitmap\030\001 \003(\004\0222\n\006pubkey\030\002 \001(\0132\".zjc"
-      "hain.bls.protobuf.BlsPublicKey\0229\n\rcommon"
-      "_pubkey\030\003 \001(\0132\".zjchain.bls.protobuf.Bls"
-      "PublicKey\022\022\n\nnetwork_id\030\004 \001(\r\022\022\n\nbls_sig"
-      "n_x\030\005 \001(\014\022\022\n\nbls_sign_y\030\006 \001(\014\"\037\n\016CheckVe"
-      "rfiyReq\022\r\n\005index\030\001 \001(\r\" \n\017CheckSwapKeyRe"
-      "q\022\r\n\005index\030\001 \001(\r\"\356\002\n\nBlsMessage\0229\n\nverif"
-      "y_brd\030\001 \001(\0132%.zjchain.bls.protobuf.Verif"
-      "yVecBrdReq\0225\n\010swap_req\030\002 \001(\0132#.zjchain.b"
-      "ls.protobuf.SwapSecKeyReq\0229\n\nfinish_req\030"
-      "\003 \001(\0132%.zjchain.bls.protobuf.FinishBroad"
-      "cast\022>\n\020check_verify_req\030\004 \001(\0132$.zjchain"
-      ".bls.protobuf.CheckVerfiyReq\022@\n\021check_sw"
-      "apkey_req\030\005 \001(\0132%.zjchain.bls.protobuf.C"
-      "heckSwapKeyReq\022\r\n\005index\030\006 \001(\r\022\014\n\004sign\030\007 "
-      "\001(\014\022\024\n\014elect_height\030\010 \001(\004"
+      "ort\030\003 \001(\r\"}\n\014LocalBlsItem\022\022\n\npolynomial\030"
+      "\001 \003(\014\0227\n\nverify_vec\030\002 \003(\0132#.zjchain.bls."
+      "protobuf.VerifyVecItem\022\017\n\007valid_t\030\003 \001(\r\022"
+      "\017\n\007valid_n\030\004 \001(\r\"9\n\017VerifyVecBrdRes\022\021\n\tp"
+      "ublic_ip\030\001 \001(\014\022\023\n\013public_port\030\002 \001(\r\"K\n\016S"
+      "wapSecKeyItem\022\017\n\007sec_key\030\001 \001(\014\022\023\n\013sec_ke"
+      "y_len\030\002 \001(\r\022\023\n\013verify_hash\030\003 \001(\014\"C\n\rSwap"
+      "SecKeyReq\0222\n\004keys\030\001 \003(\0132$.zjchain.bls.pr"
+      "otobuf.SwapSecKeyItem\"D\n\rSwapSecKeyRes\022\r"
+      "\n\005index\030\001 \001(\r\022\017\n\007sec_key\030\002 \001(\014\022\023\n\013sec_ke"
+      "y_len\030\003 \001(\r\"+\n\022AgainstParticipant\022\025\n\raga"
+      "inst_index\030\001 \001(\r\"\314\001\n\017FinishBroadcast\022\016\n\006"
+      "bitmap\030\001 \003(\004\0222\n\006pubkey\030\002 \001(\0132\".zjchain.b"
+      "ls.protobuf.BlsPublicKey\0229\n\rcommon_pubke"
+      "y\030\003 \001(\0132\".zjchain.bls.protobuf.BlsPublic"
+      "Key\022\022\n\nnetwork_id\030\004 \001(\r\022\022\n\nbls_sign_x\030\005 "
+      "\001(\014\022\022\n\nbls_sign_y\030\006 \001(\014\"\037\n\016CheckVerfiyRe"
+      "q\022\r\n\005index\030\001 \001(\r\" \n\017CheckSwapKeyReq\022\r\n\005i"
+      "ndex\030\001 \001(\r\"\356\002\n\nBlsMessage\0229\n\nverify_brd\030"
+      "\001 \001(\0132%.zjchain.bls.protobuf.VerifyVecBr"
+      "dReq\0225\n\010swap_req\030\002 \001(\0132#.zjchain.bls.pro"
+      "tobuf.SwapSecKeyReq\0229\n\nfinish_req\030\003 \001(\0132"
+      "%.zjchain.bls.protobuf.FinishBroadcast\022>"
+      "\n\020check_verify_req\030\004 \001(\0132$.zjchain.bls.p"
+      "rotobuf.CheckVerfiyReq\022@\n\021check_swapkey_"
+      "req\030\005 \001(\0132%.zjchain.bls.protobuf.CheckSw"
+      "apKeyReq\022\r\n\005index\030\006 \001(\r\022\014\n\004sign\030\007 \001(\014\022\024\n"
+      "\014elect_height\030\010 \001(\004"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1465);
+      descriptor, 1419);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/bls.proto", &protobuf_RegisterTypes);
 }
@@ -1790,8 +1785,6 @@ const int LocalBlsItem::kPolynomialFieldNumber;
 const int LocalBlsItem::kVerifyVecFieldNumber;
 const int LocalBlsItem::kValidTFieldNumber;
 const int LocalBlsItem::kValidNFieldNumber;
-const int LocalBlsItem::kLocalSecKeyFieldNumber;
-const int LocalBlsItem::kElectHeightFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 LocalBlsItem::LocalBlsItem()
@@ -1808,21 +1801,16 @@ LocalBlsItem::LocalBlsItem(const LocalBlsItem& from)
       polynomial_(from.polynomial_),
       verify_vec_(from.verify_vec_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  local_sec_key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.has_local_sec_key()) {
-    local_sec_key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.local_sec_key_);
-  }
   ::memcpy(&valid_t_, &from.valid_t_,
-    static_cast<size_t>(reinterpret_cast<char*>(&elect_height_) -
-    reinterpret_cast<char*>(&valid_t_)) + sizeof(elect_height_));
+    static_cast<size_t>(reinterpret_cast<char*>(&valid_n_) -
+    reinterpret_cast<char*>(&valid_t_)) + sizeof(valid_n_));
   // @@protoc_insertion_point(copy_constructor:zjchain.bls.protobuf.LocalBlsItem)
 }
 
 void LocalBlsItem::SharedCtor() {
-  local_sec_key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&valid_t_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&elect_height_) -
-      reinterpret_cast<char*>(&valid_t_)) + sizeof(elect_height_));
+      reinterpret_cast<char*>(&valid_n_) -
+      reinterpret_cast<char*>(&valid_t_)) + sizeof(valid_n_));
 }
 
 LocalBlsItem::~LocalBlsItem() {
@@ -1831,7 +1819,6 @@ LocalBlsItem::~LocalBlsItem() {
 }
 
 void LocalBlsItem::SharedDtor() {
-  local_sec_key_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void LocalBlsItem::SetCachedSize(int size) const {
@@ -1857,13 +1844,10 @@ void LocalBlsItem::Clear() {
   polynomial_.Clear();
   verify_vec_.Clear();
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    local_sec_key_.ClearNonDefaultToEmptyNoArena();
-  }
-  if (cached_has_bits & 14u) {
+  if (cached_has_bits & 3u) {
     ::memset(&valid_t_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&elect_height_) -
-        reinterpret_cast<char*>(&valid_t_)) + sizeof(elect_height_));
+        reinterpret_cast<char*>(&valid_n_) -
+        reinterpret_cast<char*>(&valid_t_)) + sizeof(valid_n_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -1875,7 +1859,7 @@ bool LocalBlsItem::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:zjchain.bls.protobuf.LocalBlsItem)
   for (;;) {
-    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(16383u);
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -1931,32 +1915,6 @@ bool LocalBlsItem::MergePartialFromCodedStream(
         break;
       }
 
-      // optional bytes local_sec_key = 5;
-      case 5: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->mutable_local_sec_key()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // optional uint64 elect_height = 64;
-      case 64: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(0u /* 512 & 0xFF */)) {
-          set_has_elect_height();
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
-                 input, &elect_height_)));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -2000,24 +1958,13 @@ void LocalBlsItem::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 valid_t = 3;
-  if (cached_has_bits & 0x00000002u) {
+  if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->valid_t(), output);
   }
 
   // optional uint32 valid_n = 4;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->valid_n(), output);
-  }
-
-  // optional bytes local_sec_key = 5;
-  if (cached_has_bits & 0x00000001u) {
-    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
-      5, this->local_sec_key(), output);
-  }
-
-  // optional uint64 elect_height = 64;
-  if (cached_has_bits & 0x00000008u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt64(64, this->elect_height(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2050,25 +1997,13 @@ void LocalBlsItem::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 valid_t = 3;
-  if (cached_has_bits & 0x00000002u) {
+  if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->valid_t(), target);
   }
 
   // optional uint32 valid_n = 4;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->valid_n(), target);
-  }
-
-  // optional bytes local_sec_key = 5;
-  if (cached_has_bits & 0x00000001u) {
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        5, this->local_sec_key(), target);
-  }
-
-  // optional uint64 elect_height = 64;
-  if (cached_has_bits & 0x00000008u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(64, this->elect_height(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2107,14 +2042,7 @@ size_t LocalBlsItem::ByteSizeLong() const {
     }
   }
 
-  if (_has_bits_[0 / 32] & 15u) {
-    // optional bytes local_sec_key = 5;
-    if (has_local_sec_key()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->local_sec_key());
-    }
-
+  if (_has_bits_[0 / 32] & 3u) {
     // optional uint32 valid_t = 3;
     if (has_valid_t()) {
       total_size += 1 +
@@ -2127,13 +2055,6 @@ size_t LocalBlsItem::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
           this->valid_n());
-    }
-
-    // optional uint64 elect_height = 64;
-    if (has_elect_height()) {
-      total_size += 2 +
-        ::google::protobuf::internal::WireFormatLite::UInt64Size(
-          this->elect_height());
     }
 
   }
@@ -2167,19 +2088,12 @@ void LocalBlsItem::MergeFrom(const LocalBlsItem& from) {
   polynomial_.MergeFrom(from.polynomial_);
   verify_vec_.MergeFrom(from.verify_vec_);
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 15u) {
+  if (cached_has_bits & 3u) {
     if (cached_has_bits & 0x00000001u) {
-      set_has_local_sec_key();
-      local_sec_key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.local_sec_key_);
-    }
-    if (cached_has_bits & 0x00000002u) {
       valid_t_ = from.valid_t_;
     }
-    if (cached_has_bits & 0x00000004u) {
+    if (cached_has_bits & 0x00000002u) {
       valid_n_ = from.valid_n_;
-    }
-    if (cached_has_bits & 0x00000008u) {
-      elect_height_ = from.elect_height_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -2211,11 +2125,8 @@ void LocalBlsItem::InternalSwap(LocalBlsItem* other) {
   using std::swap;
   polynomial_.InternalSwap(CastToBase(&other->polynomial_));
   CastToBase(&verify_vec_)->InternalSwap(CastToBase(&other->verify_vec_));
-  local_sec_key_.Swap(&other->local_sec_key_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-    GetArenaNoVirtual());
   swap(valid_t_, other->valid_t_);
   swap(valid_n_, other->valid_n_);
-  swap(elect_height_, other->elect_height_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }

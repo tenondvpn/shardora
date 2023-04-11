@@ -774,21 +774,6 @@ class LocalBlsItem : public ::google::protobuf::Message /* @@protoc_insertion_po
   const ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::VerifyVecItem >&
       verify_vec() const;
 
-  // optional bytes local_sec_key = 5;
-  bool has_local_sec_key() const;
-  void clear_local_sec_key();
-  static const int kLocalSecKeyFieldNumber = 5;
-  const ::std::string& local_sec_key() const;
-  void set_local_sec_key(const ::std::string& value);
-  #if LANG_CXX11
-  void set_local_sec_key(::std::string&& value);
-  #endif
-  void set_local_sec_key(const char* value);
-  void set_local_sec_key(const void* value, size_t size);
-  ::std::string* mutable_local_sec_key();
-  ::std::string* release_local_sec_key();
-  void set_allocated_local_sec_key(::std::string* local_sec_key);
-
   // optional uint32 valid_t = 3;
   bool has_valid_t() const;
   void clear_valid_t();
@@ -803,33 +788,20 @@ class LocalBlsItem : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::google::protobuf::uint32 valid_n() const;
   void set_valid_n(::google::protobuf::uint32 value);
 
-  // optional uint64 elect_height = 64;
-  bool has_elect_height() const;
-  void clear_elect_height();
-  static const int kElectHeightFieldNumber = 64;
-  ::google::protobuf::uint64 elect_height() const;
-  void set_elect_height(::google::protobuf::uint64 value);
-
   // @@protoc_insertion_point(class_scope:zjchain.bls.protobuf.LocalBlsItem)
  private:
   void set_has_valid_t();
   void clear_has_valid_t();
   void set_has_valid_n();
   void clear_has_valid_n();
-  void set_has_local_sec_key();
-  void clear_has_local_sec_key();
-  void set_has_elect_height();
-  void clear_has_elect_height();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::std::string> polynomial_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::VerifyVecItem > verify_vec_;
-  ::google::protobuf::internal::ArenaStringPtr local_sec_key_;
   ::google::protobuf::uint32 valid_t_;
   ::google::protobuf::uint32 valid_n_;
-  ::google::protobuf::uint64 elect_height_;
   friend struct ::protobuf_protos_2fbls_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -3029,13 +3001,13 @@ LocalBlsItem::verify_vec() const {
 
 // optional uint32 valid_t = 3;
 inline bool LocalBlsItem::has_valid_t() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
 inline void LocalBlsItem::set_has_valid_t() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000001u;
 }
 inline void LocalBlsItem::clear_has_valid_t() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void LocalBlsItem::clear_valid_t() {
   valid_t_ = 0u;
@@ -3053,13 +3025,13 @@ inline void LocalBlsItem::set_valid_t(::google::protobuf::uint32 value) {
 
 // optional uint32 valid_n = 4;
 inline bool LocalBlsItem::has_valid_n() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void LocalBlsItem::set_has_valid_n() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void LocalBlsItem::clear_has_valid_n() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void LocalBlsItem::clear_valid_n() {
   valid_n_ = 0u;
@@ -3073,96 +3045,6 @@ inline void LocalBlsItem::set_valid_n(::google::protobuf::uint32 value) {
   set_has_valid_n();
   valid_n_ = value;
   // @@protoc_insertion_point(field_set:zjchain.bls.protobuf.LocalBlsItem.valid_n)
-}
-
-// optional bytes local_sec_key = 5;
-inline bool LocalBlsItem::has_local_sec_key() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void LocalBlsItem::set_has_local_sec_key() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void LocalBlsItem::clear_has_local_sec_key() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void LocalBlsItem::clear_local_sec_key() {
-  local_sec_key_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_local_sec_key();
-}
-inline const ::std::string& LocalBlsItem::local_sec_key() const {
-  // @@protoc_insertion_point(field_get:zjchain.bls.protobuf.LocalBlsItem.local_sec_key)
-  return local_sec_key_.GetNoArena();
-}
-inline void LocalBlsItem::set_local_sec_key(const ::std::string& value) {
-  set_has_local_sec_key();
-  local_sec_key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.bls.protobuf.LocalBlsItem.local_sec_key)
-}
-#if LANG_CXX11
-inline void LocalBlsItem::set_local_sec_key(::std::string&& value) {
-  set_has_local_sec_key();
-  local_sec_key_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.bls.protobuf.LocalBlsItem.local_sec_key)
-}
-#endif
-inline void LocalBlsItem::set_local_sec_key(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_local_sec_key();
-  local_sec_key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.bls.protobuf.LocalBlsItem.local_sec_key)
-}
-inline void LocalBlsItem::set_local_sec_key(const void* value, size_t size) {
-  set_has_local_sec_key();
-  local_sec_key_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.bls.protobuf.LocalBlsItem.local_sec_key)
-}
-inline ::std::string* LocalBlsItem::mutable_local_sec_key() {
-  set_has_local_sec_key();
-  // @@protoc_insertion_point(field_mutable:zjchain.bls.protobuf.LocalBlsItem.local_sec_key)
-  return local_sec_key_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* LocalBlsItem::release_local_sec_key() {
-  // @@protoc_insertion_point(field_release:zjchain.bls.protobuf.LocalBlsItem.local_sec_key)
-  if (!has_local_sec_key()) {
-    return NULL;
-  }
-  clear_has_local_sec_key();
-  return local_sec_key_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void LocalBlsItem::set_allocated_local_sec_key(::std::string* local_sec_key) {
-  if (local_sec_key != NULL) {
-    set_has_local_sec_key();
-  } else {
-    clear_has_local_sec_key();
-  }
-  local_sec_key_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), local_sec_key);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.bls.protobuf.LocalBlsItem.local_sec_key)
-}
-
-// optional uint64 elect_height = 64;
-inline bool LocalBlsItem::has_elect_height() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void LocalBlsItem::set_has_elect_height() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void LocalBlsItem::clear_has_elect_height() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void LocalBlsItem::clear_elect_height() {
-  elect_height_ = GOOGLE_ULONGLONG(0);
-  clear_has_elect_height();
-}
-inline ::google::protobuf::uint64 LocalBlsItem::elect_height() const {
-  // @@protoc_insertion_point(field_get:zjchain.bls.protobuf.LocalBlsItem.elect_height)
-  return elect_height_;
-}
-inline void LocalBlsItem::set_elect_height(::google::protobuf::uint64 value) {
-  set_has_elect_height();
-  elect_height_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.bls.protobuf.LocalBlsItem.elect_height)
 }
 
 // -------------------------------------------------------------------
