@@ -38,7 +38,7 @@ namespace protobuf_protos_2felect_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[14];
+  static const ::google::protobuf::internal::ParseTable schema[15];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -81,6 +81,9 @@ extern SyncNodeStokeResItemDefaultTypeInternal _SyncNodeStokeResItem_default_ins
 class SyncNodeStokeResponse;
 class SyncNodeStokeResponseDefaultTypeInternal;
 extern SyncNodeStokeResponseDefaultTypeInternal _SyncNodeStokeResponse_default_instance_;
+class VerifyVecValue;
+class VerifyVecValueDefaultTypeInternal;
+extern VerifyVecValueDefaultTypeInternal _VerifyVecValue_default_instance_;
 class WaitingNodeHeartbeat;
 class WaitingNodeHeartbeatDefaultTypeInternal;
 extern WaitingNodeHeartbeatDefaultTypeInternal _WaitingNodeHeartbeat_default_instance_;
@@ -106,6 +109,7 @@ template<> ::zjchain::elect::protobuf::SyncNodeStokeItem* Arena::CreateMaybeMess
 template<> ::zjchain::elect::protobuf::SyncNodeStokeRequest* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::SyncNodeStokeRequest>(Arena*);
 template<> ::zjchain::elect::protobuf::SyncNodeStokeResItem* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::SyncNodeStokeResItem>(Arena*);
 template<> ::zjchain::elect::protobuf::SyncNodeStokeResponse* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::SyncNodeStokeResponse>(Arena*);
+template<> ::zjchain::elect::protobuf::VerifyVecValue* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::VerifyVecValue>(Arena*);
 template<> ::zjchain::elect::protobuf::WaitingNodeHeartbeat* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::WaitingNodeHeartbeat>(Arena*);
 template<> ::zjchain::elect::protobuf::WaitingNodesMessage* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::WaitingNodesMessage>(Arena*);
 template<> ::zjchain::elect::protobuf::member* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::member>(Arena*);
@@ -557,6 +561,228 @@ class member : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
 };
 // -------------------------------------------------------------------
 
+class VerifyVecValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.elect.protobuf.VerifyVecValue) */ {
+ public:
+  VerifyVecValue();
+  virtual ~VerifyVecValue();
+
+  VerifyVecValue(const VerifyVecValue& from);
+
+  inline VerifyVecValue& operator=(const VerifyVecValue& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  VerifyVecValue(VerifyVecValue&& from) noexcept
+    : VerifyVecValue() {
+    *this = ::std::move(from);
+  }
+
+  inline VerifyVecValue& operator=(VerifyVecValue&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const VerifyVecValue& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const VerifyVecValue* internal_default_instance() {
+    return reinterpret_cast<const VerifyVecValue*>(
+               &_VerifyVecValue_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    2;
+
+  void Swap(VerifyVecValue* other);
+  friend void swap(VerifyVecValue& a, VerifyVecValue& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline VerifyVecValue* New() const final {
+    return CreateMaybeMessage<VerifyVecValue>(NULL);
+  }
+
+  VerifyVecValue* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<VerifyVecValue>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const VerifyVecValue& from);
+  void MergeFrom(const VerifyVecValue& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(VerifyVecValue* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional bytes x_c0 = 1;
+  bool has_x_c0() const;
+  void clear_x_c0();
+  static const int kXC0FieldNumber = 1;
+  const ::std::string& x_c0() const;
+  void set_x_c0(const ::std::string& value);
+  #if LANG_CXX11
+  void set_x_c0(::std::string&& value);
+  #endif
+  void set_x_c0(const char* value);
+  void set_x_c0(const void* value, size_t size);
+  ::std::string* mutable_x_c0();
+  ::std::string* release_x_c0();
+  void set_allocated_x_c0(::std::string* x_c0);
+
+  // optional bytes x_c1 = 2;
+  bool has_x_c1() const;
+  void clear_x_c1();
+  static const int kXC1FieldNumber = 2;
+  const ::std::string& x_c1() const;
+  void set_x_c1(const ::std::string& value);
+  #if LANG_CXX11
+  void set_x_c1(::std::string&& value);
+  #endif
+  void set_x_c1(const char* value);
+  void set_x_c1(const void* value, size_t size);
+  ::std::string* mutable_x_c1();
+  ::std::string* release_x_c1();
+  void set_allocated_x_c1(::std::string* x_c1);
+
+  // optional bytes y_c0 = 3;
+  bool has_y_c0() const;
+  void clear_y_c0();
+  static const int kYC0FieldNumber = 3;
+  const ::std::string& y_c0() const;
+  void set_y_c0(const ::std::string& value);
+  #if LANG_CXX11
+  void set_y_c0(::std::string&& value);
+  #endif
+  void set_y_c0(const char* value);
+  void set_y_c0(const void* value, size_t size);
+  ::std::string* mutable_y_c0();
+  ::std::string* release_y_c0();
+  void set_allocated_y_c0(::std::string* y_c0);
+
+  // optional bytes y_c1 = 4;
+  bool has_y_c1() const;
+  void clear_y_c1();
+  static const int kYC1FieldNumber = 4;
+  const ::std::string& y_c1() const;
+  void set_y_c1(const ::std::string& value);
+  #if LANG_CXX11
+  void set_y_c1(::std::string&& value);
+  #endif
+  void set_y_c1(const char* value);
+  void set_y_c1(const void* value, size_t size);
+  ::std::string* mutable_y_c1();
+  ::std::string* release_y_c1();
+  void set_allocated_y_c1(::std::string* y_c1);
+
+  // optional bytes z_c0 = 5;
+  bool has_z_c0() const;
+  void clear_z_c0();
+  static const int kZC0FieldNumber = 5;
+  const ::std::string& z_c0() const;
+  void set_z_c0(const ::std::string& value);
+  #if LANG_CXX11
+  void set_z_c0(::std::string&& value);
+  #endif
+  void set_z_c0(const char* value);
+  void set_z_c0(const void* value, size_t size);
+  ::std::string* mutable_z_c0();
+  ::std::string* release_z_c0();
+  void set_allocated_z_c0(::std::string* z_c0);
+
+  // optional bytes z_c1 = 6;
+  bool has_z_c1() const;
+  void clear_z_c1();
+  static const int kZC1FieldNumber = 6;
+  const ::std::string& z_c1() const;
+  void set_z_c1(const ::std::string& value);
+  #if LANG_CXX11
+  void set_z_c1(::std::string&& value);
+  #endif
+  void set_z_c1(const char* value);
+  void set_z_c1(const void* value, size_t size);
+  ::std::string* mutable_z_c1();
+  ::std::string* release_z_c1();
+  void set_allocated_z_c1(::std::string* z_c1);
+
+  // optional uint32 valid_t = 7;
+  bool has_valid_t() const;
+  void clear_valid_t();
+  static const int kValidTFieldNumber = 7;
+  ::google::protobuf::uint32 valid_t() const;
+  void set_valid_t(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:zjchain.elect.protobuf.VerifyVecValue)
+ private:
+  void set_has_x_c0();
+  void clear_has_x_c0();
+  void set_has_x_c1();
+  void clear_has_x_c1();
+  void set_has_y_c0();
+  void clear_has_y_c0();
+  void set_has_y_c1();
+  void clear_has_y_c1();
+  void set_has_z_c0();
+  void clear_has_z_c0();
+  void set_has_z_c1();
+  void clear_has_z_c1();
+  void set_has_valid_t();
+  void clear_has_valid_t();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::internal::ArenaStringPtr x_c0_;
+  ::google::protobuf::internal::ArenaStringPtr x_c1_;
+  ::google::protobuf::internal::ArenaStringPtr y_c0_;
+  ::google::protobuf::internal::ArenaStringPtr y_c1_;
+  ::google::protobuf::internal::ArenaStringPtr z_c0_;
+  ::google::protobuf::internal::ArenaStringPtr z_c1_;
+  ::google::protobuf::uint32 valid_t_;
+  friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class PrevMembers : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.elect.protobuf.PrevMembers) */ {
  public:
   PrevMembers();
@@ -599,7 +825,7 @@ class PrevMembers : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_PrevMembers_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    3;
 
   void Swap(PrevMembers* other);
   friend void swap(PrevMembers& a, PrevMembers& b) {
@@ -663,10 +889,22 @@ class PrevMembers : public ::google::protobuf::Message /* @@protoc_insertion_poi
   const ::google::protobuf::RepeatedPtrField< ::zjchain::elect::protobuf::BlsPublicKey >&
       bls_pubkey() const;
 
-  // optional .zjchain.elect.protobuf.BlsPublicKey common_pubkey = 3;
+  // optional .zjchain.elect.protobuf.VerifyVecValue verify_val = 2;
+  bool has_verify_val() const;
+  void clear_verify_val();
+  static const int kVerifyValFieldNumber = 2;
+  private:
+  const ::zjchain::elect::protobuf::VerifyVecValue& _internal_verify_val() const;
+  public:
+  const ::zjchain::elect::protobuf::VerifyVecValue& verify_val() const;
+  ::zjchain::elect::protobuf::VerifyVecValue* release_verify_val();
+  ::zjchain::elect::protobuf::VerifyVecValue* mutable_verify_val();
+  void set_allocated_verify_val(::zjchain::elect::protobuf::VerifyVecValue* verify_val);
+
+  // optional .zjchain.elect.protobuf.BlsPublicKey common_pubkey = 4;
   bool has_common_pubkey() const;
   void clear_common_pubkey();
-  static const int kCommonPubkeyFieldNumber = 3;
+  static const int kCommonPubkeyFieldNumber = 4;
   private:
   const ::zjchain::elect::protobuf::BlsPublicKey& _internal_common_pubkey() const;
   public:
@@ -675,15 +913,17 @@ class PrevMembers : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::zjchain::elect::protobuf::BlsPublicKey* mutable_common_pubkey();
   void set_allocated_common_pubkey(::zjchain::elect::protobuf::BlsPublicKey* common_pubkey);
 
-  // optional uint64 prev_elect_height = 2;
+  // optional uint64 prev_elect_height = 3;
   bool has_prev_elect_height() const;
   void clear_prev_elect_height();
-  static const int kPrevElectHeightFieldNumber = 2;
+  static const int kPrevElectHeightFieldNumber = 3;
   ::google::protobuf::uint64 prev_elect_height() const;
   void set_prev_elect_height(::google::protobuf::uint64 value);
 
   // @@protoc_insertion_point(class_scope:zjchain.elect.protobuf.PrevMembers)
  private:
+  void set_has_verify_val();
+  void clear_has_verify_val();
   void set_has_prev_elect_height();
   void clear_has_prev_elect_height();
   void set_has_common_pubkey();
@@ -693,6 +933,7 @@ class PrevMembers : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::elect::protobuf::BlsPublicKey > bls_pubkey_;
+  ::zjchain::elect::protobuf::VerifyVecValue* verify_val_;
   ::zjchain::elect::protobuf::BlsPublicKey* common_pubkey_;
   ::google::protobuf::uint64 prev_elect_height_;
   friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
@@ -741,7 +982,7 @@ class ElectBlock : public ::google::protobuf::Message /* @@protoc_insertion_poin
                &_ElectBlock_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    3;
+    4;
 
   void Swap(ElectBlock* other);
   friend void swap(ElectBlock& a, ElectBlock& b) {
@@ -952,7 +1193,7 @@ class ElectStatisticInfo : public ::google::protobuf::Message /* @@protoc_insert
                &_ElectStatisticInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    5;
 
   void Swap(ElectStatisticInfo* other);
   friend void swap(ElectStatisticInfo& a, ElectStatisticInfo& b) {
@@ -1092,7 +1333,7 @@ class StatisticInfo : public ::google::protobuf::Message /* @@protoc_insertion_p
                &_StatisticInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    6;
 
   void Swap(StatisticInfo* other);
   friend void swap(StatisticInfo& a, StatisticInfo& b) {
@@ -1229,7 +1470,7 @@ class WaitingNodesMessage : public ::google::protobuf::Message /* @@protoc_inser
                &_WaitingNodesMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    7;
 
   void Swap(WaitingNodesMessage* other);
   friend void swap(WaitingNodesMessage& a, WaitingNodesMessage& b) {
@@ -1374,7 +1615,7 @@ class WaitingNodeHeartbeat : public ::google::protobuf::Message /* @@protoc_inse
                &_WaitingNodeHeartbeat_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    8;
 
   void Swap(WaitingNodeHeartbeat* other);
   friend void swap(WaitingNodeHeartbeat& a, WaitingNodeHeartbeat& b) {
@@ -1526,7 +1767,7 @@ class LeaderRotationMessage : public ::google::protobuf::Message /* @@protoc_ins
                &_LeaderRotationMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    9;
 
   void Swap(LeaderRotationMessage* other);
   friend void swap(LeaderRotationMessage& a, LeaderRotationMessage& b) {
@@ -1658,7 +1899,7 @@ class SyncNodeStokeItem : public ::google::protobuf::Message /* @@protoc_inserti
                &_SyncNodeStokeItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    10;
 
   void Swap(SyncNodeStokeItem* other);
   friend void swap(SyncNodeStokeItem& a, SyncNodeStokeItem& b) {
@@ -1790,7 +2031,7 @@ class SyncNodeStokeRequest : public ::google::protobuf::Message /* @@protoc_inse
                &_SyncNodeStokeRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    11;
 
   void Swap(SyncNodeStokeRequest* other);
   friend void swap(SyncNodeStokeRequest& a, SyncNodeStokeRequest& b) {
@@ -1917,7 +2158,7 @@ class SyncNodeStokeResItem : public ::google::protobuf::Message /* @@protoc_inse
                &_SyncNodeStokeResItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    12;
 
   void Swap(SyncNodeStokeResItem* other);
   friend void swap(SyncNodeStokeResItem& a, SyncNodeStokeResItem& b) {
@@ -2049,7 +2290,7 @@ class SyncNodeStokeResponse : public ::google::protobuf::Message /* @@protoc_ins
                &_SyncNodeStokeResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    13;
 
   void Swap(SyncNodeStokeResponse* other);
   friend void swap(SyncNodeStokeResponse& a, SyncNodeStokeResponse& b) {
@@ -2176,7 +2417,7 @@ class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_ElectMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    14;
 
   void Swap(ElectMessage* other);
   friend void swap(ElectMessage& a, ElectMessage& b) {
@@ -3174,6 +3415,430 @@ inline void member::set_pool_idx_mod_num(::google::protobuf::int32 value) {
 
 // -------------------------------------------------------------------
 
+// VerifyVecValue
+
+// optional bytes x_c0 = 1;
+inline bool VerifyVecValue::has_x_c0() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void VerifyVecValue::set_has_x_c0() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void VerifyVecValue::clear_has_x_c0() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void VerifyVecValue::clear_x_c0() {
+  x_c0_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_x_c0();
+}
+inline const ::std::string& VerifyVecValue::x_c0() const {
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.VerifyVecValue.x_c0)
+  return x_c0_.GetNoArena();
+}
+inline void VerifyVecValue::set_x_c0(const ::std::string& value) {
+  set_has_x_c0();
+  x_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.VerifyVecValue.x_c0)
+}
+#if LANG_CXX11
+inline void VerifyVecValue::set_x_c0(::std::string&& value) {
+  set_has_x_c0();
+  x_c0_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.elect.protobuf.VerifyVecValue.x_c0)
+}
+#endif
+inline void VerifyVecValue::set_x_c0(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_x_c0();
+  x_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.elect.protobuf.VerifyVecValue.x_c0)
+}
+inline void VerifyVecValue::set_x_c0(const void* value, size_t size) {
+  set_has_x_c0();
+  x_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.elect.protobuf.VerifyVecValue.x_c0)
+}
+inline ::std::string* VerifyVecValue::mutable_x_c0() {
+  set_has_x_c0();
+  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.VerifyVecValue.x_c0)
+  return x_c0_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* VerifyVecValue::release_x_c0() {
+  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.VerifyVecValue.x_c0)
+  if (!has_x_c0()) {
+    return NULL;
+  }
+  clear_has_x_c0();
+  return x_c0_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void VerifyVecValue::set_allocated_x_c0(::std::string* x_c0) {
+  if (x_c0 != NULL) {
+    set_has_x_c0();
+  } else {
+    clear_has_x_c0();
+  }
+  x_c0_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), x_c0);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.VerifyVecValue.x_c0)
+}
+
+// optional bytes x_c1 = 2;
+inline bool VerifyVecValue::has_x_c1() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void VerifyVecValue::set_has_x_c1() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void VerifyVecValue::clear_has_x_c1() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void VerifyVecValue::clear_x_c1() {
+  x_c1_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_x_c1();
+}
+inline const ::std::string& VerifyVecValue::x_c1() const {
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.VerifyVecValue.x_c1)
+  return x_c1_.GetNoArena();
+}
+inline void VerifyVecValue::set_x_c1(const ::std::string& value) {
+  set_has_x_c1();
+  x_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.VerifyVecValue.x_c1)
+}
+#if LANG_CXX11
+inline void VerifyVecValue::set_x_c1(::std::string&& value) {
+  set_has_x_c1();
+  x_c1_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.elect.protobuf.VerifyVecValue.x_c1)
+}
+#endif
+inline void VerifyVecValue::set_x_c1(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_x_c1();
+  x_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.elect.protobuf.VerifyVecValue.x_c1)
+}
+inline void VerifyVecValue::set_x_c1(const void* value, size_t size) {
+  set_has_x_c1();
+  x_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.elect.protobuf.VerifyVecValue.x_c1)
+}
+inline ::std::string* VerifyVecValue::mutable_x_c1() {
+  set_has_x_c1();
+  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.VerifyVecValue.x_c1)
+  return x_c1_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* VerifyVecValue::release_x_c1() {
+  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.VerifyVecValue.x_c1)
+  if (!has_x_c1()) {
+    return NULL;
+  }
+  clear_has_x_c1();
+  return x_c1_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void VerifyVecValue::set_allocated_x_c1(::std::string* x_c1) {
+  if (x_c1 != NULL) {
+    set_has_x_c1();
+  } else {
+    clear_has_x_c1();
+  }
+  x_c1_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), x_c1);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.VerifyVecValue.x_c1)
+}
+
+// optional bytes y_c0 = 3;
+inline bool VerifyVecValue::has_y_c0() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void VerifyVecValue::set_has_y_c0() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void VerifyVecValue::clear_has_y_c0() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void VerifyVecValue::clear_y_c0() {
+  y_c0_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_y_c0();
+}
+inline const ::std::string& VerifyVecValue::y_c0() const {
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.VerifyVecValue.y_c0)
+  return y_c0_.GetNoArena();
+}
+inline void VerifyVecValue::set_y_c0(const ::std::string& value) {
+  set_has_y_c0();
+  y_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.VerifyVecValue.y_c0)
+}
+#if LANG_CXX11
+inline void VerifyVecValue::set_y_c0(::std::string&& value) {
+  set_has_y_c0();
+  y_c0_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.elect.protobuf.VerifyVecValue.y_c0)
+}
+#endif
+inline void VerifyVecValue::set_y_c0(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_y_c0();
+  y_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.elect.protobuf.VerifyVecValue.y_c0)
+}
+inline void VerifyVecValue::set_y_c0(const void* value, size_t size) {
+  set_has_y_c0();
+  y_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.elect.protobuf.VerifyVecValue.y_c0)
+}
+inline ::std::string* VerifyVecValue::mutable_y_c0() {
+  set_has_y_c0();
+  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.VerifyVecValue.y_c0)
+  return y_c0_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* VerifyVecValue::release_y_c0() {
+  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.VerifyVecValue.y_c0)
+  if (!has_y_c0()) {
+    return NULL;
+  }
+  clear_has_y_c0();
+  return y_c0_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void VerifyVecValue::set_allocated_y_c0(::std::string* y_c0) {
+  if (y_c0 != NULL) {
+    set_has_y_c0();
+  } else {
+    clear_has_y_c0();
+  }
+  y_c0_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), y_c0);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.VerifyVecValue.y_c0)
+}
+
+// optional bytes y_c1 = 4;
+inline bool VerifyVecValue::has_y_c1() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void VerifyVecValue::set_has_y_c1() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void VerifyVecValue::clear_has_y_c1() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void VerifyVecValue::clear_y_c1() {
+  y_c1_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_y_c1();
+}
+inline const ::std::string& VerifyVecValue::y_c1() const {
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.VerifyVecValue.y_c1)
+  return y_c1_.GetNoArena();
+}
+inline void VerifyVecValue::set_y_c1(const ::std::string& value) {
+  set_has_y_c1();
+  y_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.VerifyVecValue.y_c1)
+}
+#if LANG_CXX11
+inline void VerifyVecValue::set_y_c1(::std::string&& value) {
+  set_has_y_c1();
+  y_c1_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.elect.protobuf.VerifyVecValue.y_c1)
+}
+#endif
+inline void VerifyVecValue::set_y_c1(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_y_c1();
+  y_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.elect.protobuf.VerifyVecValue.y_c1)
+}
+inline void VerifyVecValue::set_y_c1(const void* value, size_t size) {
+  set_has_y_c1();
+  y_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.elect.protobuf.VerifyVecValue.y_c1)
+}
+inline ::std::string* VerifyVecValue::mutable_y_c1() {
+  set_has_y_c1();
+  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.VerifyVecValue.y_c1)
+  return y_c1_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* VerifyVecValue::release_y_c1() {
+  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.VerifyVecValue.y_c1)
+  if (!has_y_c1()) {
+    return NULL;
+  }
+  clear_has_y_c1();
+  return y_c1_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void VerifyVecValue::set_allocated_y_c1(::std::string* y_c1) {
+  if (y_c1 != NULL) {
+    set_has_y_c1();
+  } else {
+    clear_has_y_c1();
+  }
+  y_c1_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), y_c1);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.VerifyVecValue.y_c1)
+}
+
+// optional bytes z_c0 = 5;
+inline bool VerifyVecValue::has_z_c0() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void VerifyVecValue::set_has_z_c0() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void VerifyVecValue::clear_has_z_c0() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void VerifyVecValue::clear_z_c0() {
+  z_c0_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_z_c0();
+}
+inline const ::std::string& VerifyVecValue::z_c0() const {
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.VerifyVecValue.z_c0)
+  return z_c0_.GetNoArena();
+}
+inline void VerifyVecValue::set_z_c0(const ::std::string& value) {
+  set_has_z_c0();
+  z_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.VerifyVecValue.z_c0)
+}
+#if LANG_CXX11
+inline void VerifyVecValue::set_z_c0(::std::string&& value) {
+  set_has_z_c0();
+  z_c0_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.elect.protobuf.VerifyVecValue.z_c0)
+}
+#endif
+inline void VerifyVecValue::set_z_c0(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_z_c0();
+  z_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.elect.protobuf.VerifyVecValue.z_c0)
+}
+inline void VerifyVecValue::set_z_c0(const void* value, size_t size) {
+  set_has_z_c0();
+  z_c0_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.elect.protobuf.VerifyVecValue.z_c0)
+}
+inline ::std::string* VerifyVecValue::mutable_z_c0() {
+  set_has_z_c0();
+  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.VerifyVecValue.z_c0)
+  return z_c0_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* VerifyVecValue::release_z_c0() {
+  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.VerifyVecValue.z_c0)
+  if (!has_z_c0()) {
+    return NULL;
+  }
+  clear_has_z_c0();
+  return z_c0_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void VerifyVecValue::set_allocated_z_c0(::std::string* z_c0) {
+  if (z_c0 != NULL) {
+    set_has_z_c0();
+  } else {
+    clear_has_z_c0();
+  }
+  z_c0_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), z_c0);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.VerifyVecValue.z_c0)
+}
+
+// optional bytes z_c1 = 6;
+inline bool VerifyVecValue::has_z_c1() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void VerifyVecValue::set_has_z_c1() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void VerifyVecValue::clear_has_z_c1() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void VerifyVecValue::clear_z_c1() {
+  z_c1_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_z_c1();
+}
+inline const ::std::string& VerifyVecValue::z_c1() const {
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.VerifyVecValue.z_c1)
+  return z_c1_.GetNoArena();
+}
+inline void VerifyVecValue::set_z_c1(const ::std::string& value) {
+  set_has_z_c1();
+  z_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.VerifyVecValue.z_c1)
+}
+#if LANG_CXX11
+inline void VerifyVecValue::set_z_c1(::std::string&& value) {
+  set_has_z_c1();
+  z_c1_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.elect.protobuf.VerifyVecValue.z_c1)
+}
+#endif
+inline void VerifyVecValue::set_z_c1(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_z_c1();
+  z_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.elect.protobuf.VerifyVecValue.z_c1)
+}
+inline void VerifyVecValue::set_z_c1(const void* value, size_t size) {
+  set_has_z_c1();
+  z_c1_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.elect.protobuf.VerifyVecValue.z_c1)
+}
+inline ::std::string* VerifyVecValue::mutable_z_c1() {
+  set_has_z_c1();
+  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.VerifyVecValue.z_c1)
+  return z_c1_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* VerifyVecValue::release_z_c1() {
+  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.VerifyVecValue.z_c1)
+  if (!has_z_c1()) {
+    return NULL;
+  }
+  clear_has_z_c1();
+  return z_c1_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void VerifyVecValue::set_allocated_z_c1(::std::string* z_c1) {
+  if (z_c1 != NULL) {
+    set_has_z_c1();
+  } else {
+    clear_has_z_c1();
+  }
+  z_c1_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), z_c1);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.VerifyVecValue.z_c1)
+}
+
+// optional uint32 valid_t = 7;
+inline bool VerifyVecValue::has_valid_t() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void VerifyVecValue::set_has_valid_t() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void VerifyVecValue::clear_has_valid_t() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void VerifyVecValue::clear_valid_t() {
+  valid_t_ = 0u;
+  clear_has_valid_t();
+}
+inline ::google::protobuf::uint32 VerifyVecValue::valid_t() const {
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.VerifyVecValue.valid_t)
+  return valid_t_;
+}
+inline void VerifyVecValue::set_valid_t(::google::protobuf::uint32 value) {
+  set_has_valid_t();
+  valid_t_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.VerifyVecValue.valid_t)
+}
+
+// -------------------------------------------------------------------
+
 // PrevMembers
 
 // repeated .zjchain.elect.protobuf.BlsPublicKey bls_pubkey = 1;
@@ -3206,15 +3871,73 @@ PrevMembers::bls_pubkey() const {
   return bls_pubkey_;
 }
 
-// optional uint64 prev_elect_height = 2;
+// optional .zjchain.elect.protobuf.VerifyVecValue verify_val = 2;
+inline bool PrevMembers::has_verify_val() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void PrevMembers::set_has_verify_val() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void PrevMembers::clear_has_verify_val() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void PrevMembers::clear_verify_val() {
+  if (verify_val_ != NULL) verify_val_->Clear();
+  clear_has_verify_val();
+}
+inline const ::zjchain::elect::protobuf::VerifyVecValue& PrevMembers::_internal_verify_val() const {
+  return *verify_val_;
+}
+inline const ::zjchain::elect::protobuf::VerifyVecValue& PrevMembers::verify_val() const {
+  const ::zjchain::elect::protobuf::VerifyVecValue* p = verify_val_;
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.PrevMembers.verify_val)
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::elect::protobuf::VerifyVecValue*>(
+      &::zjchain::elect::protobuf::_VerifyVecValue_default_instance_);
+}
+inline ::zjchain::elect::protobuf::VerifyVecValue* PrevMembers::release_verify_val() {
+  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.PrevMembers.verify_val)
+  clear_has_verify_val();
+  ::zjchain::elect::protobuf::VerifyVecValue* temp = verify_val_;
+  verify_val_ = NULL;
+  return temp;
+}
+inline ::zjchain::elect::protobuf::VerifyVecValue* PrevMembers::mutable_verify_val() {
+  set_has_verify_val();
+  if (verify_val_ == NULL) {
+    auto* p = CreateMaybeMessage<::zjchain::elect::protobuf::VerifyVecValue>(GetArenaNoVirtual());
+    verify_val_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.PrevMembers.verify_val)
+  return verify_val_;
+}
+inline void PrevMembers::set_allocated_verify_val(::zjchain::elect::protobuf::VerifyVecValue* verify_val) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete verify_val_;
+  }
+  if (verify_val) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      verify_val = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, verify_val, submessage_arena);
+    }
+    set_has_verify_val();
+  } else {
+    clear_has_verify_val();
+  }
+  verify_val_ = verify_val;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.PrevMembers.verify_val)
+}
+
+// optional uint64 prev_elect_height = 3;
 inline bool PrevMembers::has_prev_elect_height() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void PrevMembers::set_has_prev_elect_height() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void PrevMembers::clear_has_prev_elect_height() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void PrevMembers::clear_prev_elect_height() {
   prev_elect_height_ = GOOGLE_ULONGLONG(0);
@@ -3230,15 +3953,15 @@ inline void PrevMembers::set_prev_elect_height(::google::protobuf::uint64 value)
   // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.PrevMembers.prev_elect_height)
 }
 
-// optional .zjchain.elect.protobuf.BlsPublicKey common_pubkey = 3;
+// optional .zjchain.elect.protobuf.BlsPublicKey common_pubkey = 4;
 inline bool PrevMembers::has_common_pubkey() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void PrevMembers::set_has_common_pubkey() {
-  _has_bits_[0] |= 0x00000001u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void PrevMembers::clear_has_common_pubkey() {
-  _has_bits_[0] &= ~0x00000001u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void PrevMembers::clear_common_pubkey() {
   if (common_pubkey_ != NULL) common_pubkey_->Clear();
@@ -5074,6 +5797,8 @@ inline void ElectMessage::set_allocated_sync_stoke_res(::zjchain::elect::protobu
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

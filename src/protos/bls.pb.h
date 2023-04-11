@@ -607,41 +607,13 @@ class VerifyVecBrdReq : public ::google::protobuf::Message /* @@protoc_insertion
   const ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::VerifyVecItem >&
       verify_vec() const;
 
-  // optional bytes public_ip = 2;
-  bool has_public_ip() const;
-  void clear_public_ip();
-  static const int kPublicIpFieldNumber = 2;
-  const ::std::string& public_ip() const;
-  void set_public_ip(const ::std::string& value);
-  #if LANG_CXX11
-  void set_public_ip(::std::string&& value);
-  #endif
-  void set_public_ip(const char* value);
-  void set_public_ip(const void* value, size_t size);
-  ::std::string* mutable_public_ip();
-  ::std::string* release_public_ip();
-  void set_allocated_public_ip(::std::string* public_ip);
-
-  // optional uint32 public_port = 3;
-  bool has_public_port() const;
-  void clear_public_port();
-  static const int kPublicPortFieldNumber = 3;
-  ::google::protobuf::uint32 public_port() const;
-  void set_public_port(::google::protobuf::uint32 value);
-
   // @@protoc_insertion_point(class_scope:zjchain.bls.protobuf.VerifyVecBrdReq)
  private:
-  void set_has_public_ip();
-  void clear_has_public_ip();
-  void set_has_public_port();
-  void clear_has_public_port();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::VerifyVecItem > verify_vec_;
-  ::google::protobuf::internal::ArenaStringPtr public_ip_;
-  ::google::protobuf::uint32 public_port_;
   friend struct ::protobuf_protos_2fbls_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -1976,21 +1948,6 @@ class BlsMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
 
   // accessors -------------------------------------------------------
 
-  // optional bytes sign = 7;
-  bool has_sign() const;
-  void clear_sign();
-  static const int kSignFieldNumber = 7;
-  const ::std::string& sign() const;
-  void set_sign(const ::std::string& value);
-  #if LANG_CXX11
-  void set_sign(::std::string&& value);
-  #endif
-  void set_sign(const char* value);
-  void set_sign(const void* value, size_t size);
-  ::std::string* mutable_sign();
-  ::std::string* release_sign();
-  void set_allocated_sign(::std::string* sign);
-
   // optional .zjchain.bls.protobuf.VerifyVecBrdReq verify_brd = 1;
   bool has_verify_brd() const;
   void clear_verify_brd();
@@ -2051,10 +2008,10 @@ class BlsMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::zjchain::bls::protobuf::CheckSwapKeyReq* mutable_check_swapkey_req();
   void set_allocated_check_swapkey_req(::zjchain::bls::protobuf::CheckSwapKeyReq* check_swapkey_req);
 
-  // optional uint64 elect_height = 8;
+  // optional uint64 elect_height = 7;
   bool has_elect_height() const;
   void clear_elect_height();
-  static const int kElectHeightFieldNumber = 8;
+  static const int kElectHeightFieldNumber = 7;
   ::google::protobuf::uint64 elect_height() const;
   void set_elect_height(::google::protobuf::uint64 value);
 
@@ -2079,15 +2036,12 @@ class BlsMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
   void clear_has_check_swapkey_req();
   void set_has_index();
   void clear_has_index();
-  void set_has_sign();
-  void clear_has_sign();
   void set_has_elect_height();
   void clear_has_elect_height();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::internal::ArenaStringPtr sign_;
   ::zjchain::bls::protobuf::VerifyVecBrdReq* verify_brd_;
   ::zjchain::bls::protobuf::SwapSecKeyReq* swap_req_;
   ::zjchain::bls::protobuf::FinishBroadcast* finish_req_;
@@ -2804,96 +2758,6 @@ inline const ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::Ver
 VerifyVecBrdReq::verify_vec() const {
   // @@protoc_insertion_point(field_list:zjchain.bls.protobuf.VerifyVecBrdReq.verify_vec)
   return verify_vec_;
-}
-
-// optional bytes public_ip = 2;
-inline bool VerifyVecBrdReq::has_public_ip() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void VerifyVecBrdReq::set_has_public_ip() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void VerifyVecBrdReq::clear_has_public_ip() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void VerifyVecBrdReq::clear_public_ip() {
-  public_ip_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_public_ip();
-}
-inline const ::std::string& VerifyVecBrdReq::public_ip() const {
-  // @@protoc_insertion_point(field_get:zjchain.bls.protobuf.VerifyVecBrdReq.public_ip)
-  return public_ip_.GetNoArena();
-}
-inline void VerifyVecBrdReq::set_public_ip(const ::std::string& value) {
-  set_has_public_ip();
-  public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.bls.protobuf.VerifyVecBrdReq.public_ip)
-}
-#if LANG_CXX11
-inline void VerifyVecBrdReq::set_public_ip(::std::string&& value) {
-  set_has_public_ip();
-  public_ip_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.bls.protobuf.VerifyVecBrdReq.public_ip)
-}
-#endif
-inline void VerifyVecBrdReq::set_public_ip(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_public_ip();
-  public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.bls.protobuf.VerifyVecBrdReq.public_ip)
-}
-inline void VerifyVecBrdReq::set_public_ip(const void* value, size_t size) {
-  set_has_public_ip();
-  public_ip_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.bls.protobuf.VerifyVecBrdReq.public_ip)
-}
-inline ::std::string* VerifyVecBrdReq::mutable_public_ip() {
-  set_has_public_ip();
-  // @@protoc_insertion_point(field_mutable:zjchain.bls.protobuf.VerifyVecBrdReq.public_ip)
-  return public_ip_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* VerifyVecBrdReq::release_public_ip() {
-  // @@protoc_insertion_point(field_release:zjchain.bls.protobuf.VerifyVecBrdReq.public_ip)
-  if (!has_public_ip()) {
-    return NULL;
-  }
-  clear_has_public_ip();
-  return public_ip_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void VerifyVecBrdReq::set_allocated_public_ip(::std::string* public_ip) {
-  if (public_ip != NULL) {
-    set_has_public_ip();
-  } else {
-    clear_has_public_ip();
-  }
-  public_ip_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), public_ip);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.bls.protobuf.VerifyVecBrdReq.public_ip)
-}
-
-// optional uint32 public_port = 3;
-inline bool VerifyVecBrdReq::has_public_port() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void VerifyVecBrdReq::set_has_public_port() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void VerifyVecBrdReq::clear_has_public_port() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void VerifyVecBrdReq::clear_public_port() {
-  public_port_ = 0u;
-  clear_has_public_port();
-}
-inline ::google::protobuf::uint32 VerifyVecBrdReq::public_port() const {
-  // @@protoc_insertion_point(field_get:zjchain.bls.protobuf.VerifyVecBrdReq.public_port)
-  return public_port_;
-}
-inline void VerifyVecBrdReq::set_public_port(::google::protobuf::uint32 value) {
-  set_has_public_port();
-  public_port_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.bls.protobuf.VerifyVecBrdReq.public_port)
 }
 
 // -------------------------------------------------------------------
@@ -3849,13 +3713,13 @@ inline void CheckSwapKeyReq::set_index(::google::protobuf::uint32 value) {
 
 // optional .zjchain.bls.protobuf.VerifyVecBrdReq verify_brd = 1;
 inline bool BlsMessage::has_verify_brd() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
 inline void BlsMessage::set_has_verify_brd() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000001u;
 }
 inline void BlsMessage::clear_has_verify_brd() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void BlsMessage::clear_verify_brd() {
   if (verify_brd_ != NULL) verify_brd_->Clear();
@@ -3907,13 +3771,13 @@ inline void BlsMessage::set_allocated_verify_brd(::zjchain::bls::protobuf::Verif
 
 // optional .zjchain.bls.protobuf.SwapSecKeyReq swap_req = 2;
 inline bool BlsMessage::has_swap_req() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void BlsMessage::set_has_swap_req() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void BlsMessage::clear_has_swap_req() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void BlsMessage::clear_swap_req() {
   if (swap_req_ != NULL) swap_req_->Clear();
@@ -3965,13 +3829,13 @@ inline void BlsMessage::set_allocated_swap_req(::zjchain::bls::protobuf::SwapSec
 
 // optional .zjchain.bls.protobuf.FinishBroadcast finish_req = 3;
 inline bool BlsMessage::has_finish_req() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void BlsMessage::set_has_finish_req() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void BlsMessage::clear_has_finish_req() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void BlsMessage::clear_finish_req() {
   if (finish_req_ != NULL) finish_req_->Clear();
@@ -4023,13 +3887,13 @@ inline void BlsMessage::set_allocated_finish_req(::zjchain::bls::protobuf::Finis
 
 // optional .zjchain.bls.protobuf.CheckVerfiyReq check_verify_req = 4;
 inline bool BlsMessage::has_check_verify_req() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void BlsMessage::set_has_check_verify_req() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void BlsMessage::clear_has_check_verify_req() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void BlsMessage::clear_check_verify_req() {
   if (check_verify_req_ != NULL) check_verify_req_->Clear();
@@ -4081,13 +3945,13 @@ inline void BlsMessage::set_allocated_check_verify_req(::zjchain::bls::protobuf:
 
 // optional .zjchain.bls.protobuf.CheckSwapKeyReq check_swapkey_req = 5;
 inline bool BlsMessage::has_check_swapkey_req() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void BlsMessage::set_has_check_swapkey_req() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void BlsMessage::clear_has_check_swapkey_req() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void BlsMessage::clear_check_swapkey_req() {
   if (check_swapkey_req_ != NULL) check_swapkey_req_->Clear();
@@ -4139,13 +4003,13 @@ inline void BlsMessage::set_allocated_check_swapkey_req(::zjchain::bls::protobuf
 
 // optional uint32 index = 6;
 inline bool BlsMessage::has_index() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void BlsMessage::set_has_index() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void BlsMessage::clear_has_index() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void BlsMessage::clear_index() {
   index_ = 0u;
@@ -4161,81 +4025,15 @@ inline void BlsMessage::set_index(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:zjchain.bls.protobuf.BlsMessage.index)
 }
 
-// optional bytes sign = 7;
-inline bool BlsMessage::has_sign() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void BlsMessage::set_has_sign() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void BlsMessage::clear_has_sign() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void BlsMessage::clear_sign() {
-  sign_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_sign();
-}
-inline const ::std::string& BlsMessage::sign() const {
-  // @@protoc_insertion_point(field_get:zjchain.bls.protobuf.BlsMessage.sign)
-  return sign_.GetNoArena();
-}
-inline void BlsMessage::set_sign(const ::std::string& value) {
-  set_has_sign();
-  sign_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.bls.protobuf.BlsMessage.sign)
-}
-#if LANG_CXX11
-inline void BlsMessage::set_sign(::std::string&& value) {
-  set_has_sign();
-  sign_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.bls.protobuf.BlsMessage.sign)
-}
-#endif
-inline void BlsMessage::set_sign(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_sign();
-  sign_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.bls.protobuf.BlsMessage.sign)
-}
-inline void BlsMessage::set_sign(const void* value, size_t size) {
-  set_has_sign();
-  sign_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.bls.protobuf.BlsMessage.sign)
-}
-inline ::std::string* BlsMessage::mutable_sign() {
-  set_has_sign();
-  // @@protoc_insertion_point(field_mutable:zjchain.bls.protobuf.BlsMessage.sign)
-  return sign_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* BlsMessage::release_sign() {
-  // @@protoc_insertion_point(field_release:zjchain.bls.protobuf.BlsMessage.sign)
-  if (!has_sign()) {
-    return NULL;
-  }
-  clear_has_sign();
-  return sign_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void BlsMessage::set_allocated_sign(::std::string* sign) {
-  if (sign != NULL) {
-    set_has_sign();
-  } else {
-    clear_has_sign();
-  }
-  sign_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), sign);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.bls.protobuf.BlsMessage.sign)
-}
-
-// optional uint64 elect_height = 8;
+// optional uint64 elect_height = 7;
 inline bool BlsMessage::has_elect_height() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void BlsMessage::set_has_elect_height() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void BlsMessage::clear_has_elect_height() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void BlsMessage::clear_elect_height() {
   elect_height_ = GOOGLE_ULONGLONG(0);
