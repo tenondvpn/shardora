@@ -99,7 +99,9 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         }
     }
 
-    FILE* fd = fopen(std::string(std::string("./bls_info_") + std::to_string(sharding_id)).c_str(), "w");
+    FILE* fd = fopen(
+        std::string(std::string("./bls_info_") + std::to_string(sharding_id)).c_str(),
+        "w");
     auto common_public_key = libff::alt_bn128_G2::zero();
     for (int32_t idx = 0; idx < prikeys.size(); ++idx) {
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
@@ -121,7 +123,11 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         }
 
         libff::alt_bn128_G2 verify_vec_val;
-        if (!dkg_instance.GetVerification(idx, verification_vector[idx], valid_t, &verify_vec_val)) {
+        if (!dkg_instance.GetVerification(
+                idx,
+                verification_vector[idx],
+                valid_t,
+                &verify_vec_val)) {
             return kInitError;
         }
 
@@ -139,7 +145,6 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
             libBLS::ThresholdUtils::fieldElementToString(verify_vec_val.Z.c0)));
         verify_val->set_z_c1(common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(verify_vec_val.Z.c1)));
-
         bls::protobuf::LocalBlsItem local_item;
         auto& g2_vec = verification_vector[idx];
         common_public_key = common_public_key + g2_vec[0];
@@ -160,7 +165,8 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         }
 
         for (uint32_t i = 0; i < polynomial[idx].size(); ++i) {
-            local_item.add_polynomial(libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][i]));
+            local_item.add_polynomial(
+                libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][i]));
         }
 
         local_item.set_valid_t(valid_t);
@@ -265,17 +271,19 @@ int GenesisBlockInit::CreateElectBlock(
     ec_block.set_shard_network_id(shard_netid);
     std::vector<std::string> prikeys;
     if (shard_netid == 2) {
-        prikeys = std::vector<std::string>{
-            common::Encode::HexDecode("67dfdd4d49509691369225e9059934675dea440d123aa8514441aa6788354016"),
-            common::Encode::HexDecode("356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe"),
-            common::Encode::HexDecode("a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee"),
-        };
+        prikeys.push_back(common::Encode::HexDecode(
+            "67dfdd4d49509691369225e9059934675dea440d123aa8514441aa6788354016"));
+        prikeys.push_back(common::Encode::HexDecode(
+            "356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe"));
+        prikeys.push_back(common::Encode::HexDecode(
+            "a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee"));
     } else if (shard_netid == 3) {
-        prikeys = std::vector<std::string>{
-            common::Encode::HexDecode("e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"),
-            common::Encode::HexDecode("b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"),
-            common::Encode::HexDecode("0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"),
-        };
+        prikeys.push_back(common::Encode::HexDecode(
+            "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"));
+        prikeys.push_back(common::Encode::HexDecode(
+            "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"));
+        prikeys.push_back(common::Encode::HexDecode(
+            "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
     }
 
     if (!prikeys.empty() && prev_height != common::kInvalidUint64) {
