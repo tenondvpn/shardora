@@ -191,7 +191,6 @@ static void GetBlsHash(
             msg_for_hash.append(bls_msg.swap_req().keys(i).sec_key());
             uint32_t sec_key_len = bls_msg.swap_req().keys(i).sec_key_len();
             msg_for_hash.append((char*)&sec_key_len, sizeof(sec_key_len));
-            msg_for_hash.append(bls_msg.swap_req().keys(i).verify_hash());
         }
     } else {
         msg_for_hash.append((char*)&has_filed, sizeof(has_filed));
