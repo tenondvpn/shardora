@@ -775,6 +775,67 @@ public:
         return true;
     }
 
+    void SaveBlsPrikey(
+            uint64_t elect_height,
+            uint32_t sharding_id,
+            const std::string& node_addr,
+            const std::string& bls_prikey) {
+        std::string key;
+        key.reserve(48);
+        key.append(kBlsPrivateKeyPrefix);
+        key.append((char*)&elect_height, sizeof(elect_height));
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        key.append(node_addr);
+        auto st = db_->Put(key, bls_prikey);
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+        
+        ZJC_DEBUG("save bls success: %lu, %u, %s", elect_height,
+            sharding_id,
+            common::Encode::HexEncode(node_addr).c_str());
+    }
+
+    bool GetBlsPrikey(
+            std::shared_ptr<security::Security>& security_ptr,
+            uint64_t elect_height,
+            uint32_t sharding_id,
+            std::string* bls_prikey) {
+        std::string key;
+        key.reserve(48);
+        key.append(kBlsPrivateKeyPrefix);
+        key.append((char*)&elect_height, sizeof(elect_height));
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        key.append(security_ptr->GetAddress());
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            ZJC_ERROR("get bls failed: %lu, %u, %s",
+                elect_height,
+                sharding_id,
+                common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
+            return false;
+        }
+
+        if (elect_height <= 4) {
+            // for genesis block with sure encrypt key
+            if (security_ptr->Decrypt(
+                    val,
+                    kGenesisElectPrikeyEncryptKey,
+                    bls_prikey) != security::kSecuritySuccess) {
+                return false;
+            }
+        } else {
+            if (security_ptr->Decrypt(
+                    val,
+                    security_ptr->GetPrikey(),
+                    bls_prikey) != security::kSecuritySuccess) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
 
 private:
     void DumpGidToDb(uint8_t thread_idx) {

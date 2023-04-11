@@ -702,11 +702,29 @@ void BlsDkg::FinishNoLock(uint8_t thread_idx) try {
 
     local_item.set_local_sec_key(libBLS::ThresholdUtils::fieldElementToString(local_sec_key_));
     prefix_db_->SaveBlsInfo(security_, local_item);
+    DumpLocalPrivateKey();
     BroadcastFinish(thread_idx, bitmap);
     finished_ = true;
 } catch (std::exception& e) {
     local_sec_key_ = libff::alt_bn128_Fr::zero();
     BLS_ERROR("catch error: %s", e.what());
+}
+
+void BlsDkg::DumpLocalPrivateKey() {
+    std::string enc_data;
+    std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key_);
+    if (security_->Encrypt(
+            sec_key,
+            security_->GetPrikey(),
+            &enc_data) != security::kSecuritySuccess) {
+        return;
+    }
+
+    prefix_db_->SaveBlsPrikey(
+        elect_hegiht_,
+        common::GlobalInfo::Instance()->network_id(),
+        security_->GetAddress(),
+        enc_data);
 }
 
 void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
