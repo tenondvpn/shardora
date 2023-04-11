@@ -31,7 +31,7 @@ message VerifyVecValue {
     optional bytes y_c1 = 4;
     optional bytes z_c0 = 5;
     optional bytes z_c1 = 6;
-    optional uint32_t valid_t;
+    optional uint32_t valid_t = 7;
 }
 
 message PrevMembers {
