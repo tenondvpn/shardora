@@ -237,12 +237,6 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    if (!IsSignValid(members, bls_msg, &msg_hash)) {
-        BLS_ERROR("IsSignValid failed network id: %u",
-            bls_msg.finish_req().network_id());
-        return;
-    }
-
     std::vector<std::string> pkey_str = {
             bls_msg.finish_req().pubkey().x_c0(),
             bls_msg.finish_req().pubkey().x_c1(),

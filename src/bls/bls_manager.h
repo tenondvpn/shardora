@@ -70,10 +70,6 @@ public:
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void HandleFinish(const transport::MessagePtr& msg_ptr);
-    bool IsSignValid(
-        const common::MembersPtr& members,
-        const protobuf::BlsMessage& bls_msg,
-        std::string* content_to_hash);
     void CheckAggSignValid(
         uint32_t t,
         uint32_t n,
