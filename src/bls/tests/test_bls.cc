@@ -220,7 +220,7 @@ static void GetPrivateKey(std::vector<std::string>& pri_vec) {
     if (prikey_fd != nullptr) {
         char line[128];
         while (!feof(prikey_fd)) {
-            fgets(line, 128, fp);
+            fgets(line, 128, prikey_fd);
             pri_vec.push_back(common::Encode::HexDecode(std::string(line, 64)));
         }
 
@@ -239,14 +239,17 @@ static void GetPrivateKey(std::vector<std::string>& pri_vec) {
     }
 }
 
-static void CreateContribution(BlsDkg* dkg) {
+static void CreateContribution(
+        BlsDkg* dkg,
+        const std::vector<std::string>& pri_vec,
+        std::shared_ptr<TimeBlockItem>& latest_timeblock_info) {
     FILE* rlocal_bls_fd = fopen("local_bls", "r");
     bool exists = false;
     if (rlocal_bls_fd != nullptr) {
         char* line = new char[1024 * 1024];
         uint32_t idx = 0;
         while (!feof(rlocal_bls_fd)) {
-            fgets(line, 1024 * 1024, fp);
+            fgets(line, 1024 * 1024, rlocal_bls_fd);
             std::string val = common::Encode::HexDecode(std::string(line, strlen(line) - 1));
             bls::protobuf::LocalBlsItem local_item;
             ASSERT_TRUE(local_item.ParseFromString(val));
@@ -327,7 +330,7 @@ TEST_F(TestBls, AllSuccess) {
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
     latest_timeblock_info->latest_time_block_height = 1;
     latest_timeblock_info->vss_random = common::Random::RandomUint64();
-    CreateContribution(dkg);
+    CreateContribution(dkg, pri_vec, latest_timeblock_info);
     auto time1 = common::TimeUtils::TimestampUs();
     std::cout << "0: " << (time1 - time0) << std::endl;
     for (uint32_t i = 0; i < n; ++i) {
