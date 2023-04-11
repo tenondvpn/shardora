@@ -47,7 +47,8 @@ static const std::string kLatestPoolPrefix = "n\x01";
 static const std::string kHeightTreePrefix = "o\x01";
 static const std::string kGidPrefix = "p\x01";
 static const std::string kContractGasPrepaymentPrefix = "q\x01";
-static const std::string kBlsPolynomialPrefix = "r\x01";
+static const std::string kBlsInfoPrefix = "r\x01";
+static const std::string kBlsVerifyValuePrefix = "s\x01";
 static const std::string kTemporaryKeyPrefix = "t\x01";
 
 class PrefixDb {
@@ -736,7 +737,7 @@ public:
             const bls::protobuf::LocalBlsItem& bls_info) {
         const std::string& prikey = secptr->GetPrikey();
         const std::string& id = secptr->GetAddress();
-        std::string key = kBlsPolynomialPrefix + id;
+        std::string key = kBlsInfoPrefix + id;
         auto str = bls_info.SerializeAsString();
         std::string enc_str;
         if (secptr->Encrypt(str, prikey, &enc_str) != security::kSecuritySuccess) {
@@ -755,7 +756,7 @@ public:
             bls::protobuf::LocalBlsItem* bls_info) {
         const std::string& prikey = secptr->GetPrikey();
         const std::string& id = secptr->GetAddress();
-        std::string key = kBlsPolynomialPrefix + id;
+        std::string key = kBlsInfoPrefix + id;
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
@@ -835,6 +836,77 @@ public:
         }
         
         return true;
+    }
+
+    void SaveBlsVerifyValue(
+            const std::string& id,
+            uint32_t idx,
+            uint32_t valid_t,
+            const libff::alt_bn128_G2& verfiy) {
+        std::string key;
+        key.reserve(128);
+        key.append(kBlsVerifyValuePrefix);
+        key.append(id);
+        key.append((char*)&idx, sizeof(idx));
+        key.append((char*)&valid_t, sizeof(valid_t));
+        elect::protobuf::VerifyVecValue verfiy_value;
+        verfiy_value.set_x_c0(libBLS::ThresholdUtils::fieldElementToString(verfiy.X.c0));
+        verfiy_value.set_x_c1(libBLS::ThresholdUtils::fieldElementToString(verfiy.X.c1));
+        verfiy_value.set_y_c0(libBLS::ThresholdUtils::fieldElementToString(verfiy.Y.c0));
+        verfiy_value.set_y_c1(libBLS::ThresholdUtils::fieldElementToString(verfiy.Y.c1));
+        verfiy_value.set_z_c0(libBLS::ThresholdUtils::fieldElementToString(verfiy.Z.c0));
+        verfiy_value.set_z_c1(libBLS::ThresholdUtils::fieldElementToString(verfiy.Z.c1));
+        std::string val = verfiy_value.SerializeAsString();
+        auto st = db_->Put(key, val);
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+    }
+
+    bool GetBlsVerifyValue(
+            const std::string& id,
+            uint32_t idx,
+            uint32_t max_t,
+            uint32_t* valid_t,
+            libff::alt_bn128_G2* verfiy) {
+        for (int32_t i = (int32_t)max_t; i > 0; --i) {
+            std::string key;
+            key.reserve(128);
+            key.append(kBlsVerifyValuePrefix);
+            key.append(id);
+            key.append((char*)&idx, sizeof(idx));
+            key.append((char*)&valid_t, sizeof(valid_t));
+            if (!db_->Exist(key)) {
+                continue;
+            }
+
+            std::string val;
+            auto st = db_->Get(key, &val);
+            if (!st.ok()) {
+                ZJC_ERROR("write db failed!");
+                return false;
+            }
+
+            elect::protobuf::VerifyVecValue item;
+            if (!item.ParseFromString(val)) {
+                return false;
+            }
+
+            auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+            auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+            auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+            auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+            auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+            auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+            auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+            auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+            auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+            *verfiy = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+            *valid_t = i;
+            return true;
+        }
+        
+        return false;
     }
 
 private:

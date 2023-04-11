@@ -92,6 +92,7 @@ private:
     bool GetVerifyG2FromDb(uint32_t first_index, std::vector<libff::alt_bn128_G2>& g2_vec);
     libff::alt_bn128_G2 GetVerifyG2FromDb(uint32_t first_index);
     void DumpLocalPrivateKey();
+    bool GetLatestAgreeVerifyValue(elect::protobuf::VerifyVecValue* verfiy_value);
 
     bool IsVerifyBrdPeriod() {
 #ifdef ZJC_UNITTEST

@@ -150,30 +150,6 @@ TEST_F(TestBls, ContributionSignAndVerify) {
         dkg[i].dkg_instance_ = std::make_shared<libBLS::Dkg>(t, n);
         dkg[i].local_member_index_ = i;
         dkg[i].CreateContribution(n, valid_t);
-
-//         bls::protobuf::VerifyVecBrdReq bls_verify_req;
-//         for (int32_t test_idx = 0; test_idx < dkg[i].g2_vec_.size(); ++test_idx) {
-//             bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req.add_verify_vec();
-//             verify_item.set_x_c0(common::Encode::HexDecode(libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[test_idx].X.c0)));
-//             verify_item.set_x_c1(common::Encode::HexDecode(libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[test_idx].X.c1)));
-//             verify_item.set_y_c0(common::Encode::HexDecode(libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[test_idx].Y.c0)));
-//             verify_item.set_y_c1(common::Encode::HexDecode(libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[test_idx].Y.c1)));
-//             verify_item.set_z_c0(common::Encode::HexDecode(libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[test_idx].Z.c0)));
-//             verify_item.set_z_c1(common::Encode::HexDecode(libBLS::ThresholdUtils::fieldElementToString(dkg[i].g2_vec_[test_idx].Z.c1)));
-//             std::cout << test_idx << std::endl;
-//             dkg[i].g2_vec_[i].print();
-//         }
-// 
-//         auto str = bls_verify_req.SerializeAsString();
-//         std::cout << "src size: " << str.size() << std::endl;
-//         for (int32_t poly_idx = 0; poly_idx < dkg[i].polynomial_.size(); ++poly_idx) {
-//             std::cout << poly_idx << ":" << libBLS::ThresholdUtils::fieldElementToString(dkg[i].polynomial_[poly_idx]) << std::endl;
-//         }
-// 
-//         for (int32_t idx = 0; idx < n; ++idx) {
-//             ASSERT_TRUE(dkg[i].dkg_instance_->Verification(
-//                 idx, dkg[i].local_src_secret_key_contribution_[idx], dkg[i].g2_vec_, valid_t));
-//         }
     }
 
     std::cout << "CreateContribution time us: " << (common::TimeUtils::TimestampUs() - btime0) << std::endl;
@@ -242,8 +218,8 @@ TEST_F(TestBls, ContributionSignAndVerify) {
 TEST_F(TestBls, AllSuccess) {
 //     static const uint32_t t = 700;
 //     static const uint32_t n = 1024;
-    static const uint32_t t = 7;
-    static const uint32_t n = 10;
+    static const uint32_t n = 1024;
+    static const uint32_t t = common::GetSignerCount(n);
 
     BlsDkg* dkg = new BlsDkg[n];
     for (uint32_t i = 0; i < n; i++) {
@@ -260,9 +236,14 @@ TEST_F(TestBls, AllSuccess) {
 
     common::MembersPtr members = std::make_shared<common::Members>();
     std::vector<std::string> pri_vec;
+    FILE* prikey_fd = fopen("prikey", "w");
     for (uint32_t i = 0; i < n; ++i) {
         pri_vec.push_back(common::Random::RandomString(32));
+        std::string val = common::Encode::HexEncode(pri_vec[i]) + "\n";
+        fwrite(val.c_str(), 1, val.size(), prikey_fd);
     }
+
+    fclose(prikey_fd);
 
     for (uint32_t i = 0; i < pri_vec.size(); ++i) {
         security::Ecdsa ecdsa;
@@ -282,6 +263,7 @@ TEST_F(TestBls, AllSuccess) {
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
     latest_timeblock_info->latest_time_block_height = 1;
     latest_timeblock_info->vss_random = common::Random::RandomUint64();
+    FILE* local_bls_fd = fopen("local_bls", "w");
     for (uint32_t i = 0; i < n; ++i) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
@@ -294,8 +276,13 @@ TEST_F(TestBls, AllSuccess) {
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
         ASSERT_EQ(dkg[i].ver_brd_msg_->header.bls_proto().elect_height(), 1);
         dkg[i].ver_brd_msg_ = nullptr;
+        bls::protobuf::LocalBlsItem local_item;
+        ASSERT_TRUE(dkg[i].prefix_db_->GetBlsInfo(dkg[i].security_, &local_item));
+        std::string val = common::Encode::HexEncode(local_item.SerializeAsString()) + "\n";
+        fwrite(val.c_str(), 1, val.size(), local_bls_fd);
     }
 
+    fclose(local_bls_fd);
     auto time1 = common::TimeUtils::TimestampUs();
     std::cout << "0: " << (time1 - time0) << std::endl;
     for (uint32_t i = 0; i < n; ++i) {

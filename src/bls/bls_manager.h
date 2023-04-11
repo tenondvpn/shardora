@@ -90,15 +90,13 @@ private:
         BlsFinishItemPtr& finish_item,
         std::vector<libff::alt_bn128_G1>& all_signs,
         std::vector<size_t>& idx_vec);
-    void SaveBlsVerifyValue(
-        common::MembersPtr& members,
-        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block);
 
     std::shared_ptr<bls::BlsDkg> waiting_bls_{ nullptr };
     uint64_t max_height_{ common::kInvalidUint64 };
     std::unordered_map<uint32_t, BlsFinishItemPtr> finish_networks_map_;
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<TimeBlockItem> latest_timeblock_info_ = nullptr;
     uint64_t latest_elect_height_ = 0;
 
