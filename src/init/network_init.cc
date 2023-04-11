@@ -126,7 +126,8 @@ int NetworkInit::Init(int argc, char** argv) {
             this,
             std::placeholders::_1,
             std::placeholders::_2,
-            std::placeholders::_3));
+            std::placeholders::_3,
+            std::placeholders::_4));
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(block_mgr_, security_, db_, kv_sync_);
     account_mgr_->Init(
         common::GlobalInfo::Instance()->message_handler_thread_count(),
@@ -212,11 +213,12 @@ void NetworkInit::InitLocalNetworkId() {
 void NetworkInit::ElectBlockCallback(
         uint32_t sharding_id,
         uint64_t elect_height,
-        common::MembersPtr& members) {
+        common::MembersPtr& members,
+        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
     bft_mgr_->OnNewElectBlock(sharding_id, members);
     block_mgr_->OnNewElectBlock(sharding_id, members);
     vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
-    bls_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
+    bls_mgr_->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
     network::UniversalManager::Instance()->OnNewElectBlock(sharding_id, elect_height, members);
 }
 

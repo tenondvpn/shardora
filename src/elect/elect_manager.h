@@ -62,7 +62,7 @@ public:
     void OnNewElectBlock(
         uint8_t thread_idx,
         uint64_t height,
-        protobuf::ElectBlock& elect_block);
+        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block);
     int GetElectionTxInfo(block::protobuf::BlockTx& tx_info);
     std::shared_ptr<elect::protobuf::ElectBlock> GetLatestElectBlock(uint32_t sharding_id) {
         return elect_block_mgr_.GetLatestElectBlock(sharding_id);

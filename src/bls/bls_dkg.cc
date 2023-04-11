@@ -54,12 +54,14 @@ void BlsDkg::Destroy() {
 void BlsDkg::OnNewElectionBlock(
         uint64_t elect_height,
         common::MembersPtr& members,
-        std::shared_ptr<TimeBlockItem>& latest_timeblock_info) try {
+        std::shared_ptr<TimeBlockItem>& latest_timeblock_info,
+        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) try {
     if (elect_height <= elect_hegiht_) {
         ZJC_DEBUG("elect height error: %lu, %lu", elect_height, elect_hegiht_);
         return;
     }
 
+    elect_block_ = elect_block;
     memset(valid_swaped_keys_, 0, sizeof(valid_swaped_keys_));
     memset(has_swaped_keys_, 0, sizeof(has_swaped_keys_));
     finished_ = false;
@@ -72,7 +74,7 @@ void BlsDkg::OnNewElectionBlock(
 //     memset(invalid_node_map_, 0, sizeof(invalid_node_map_));
     min_aggree_member_count_ = common::GetSignerCount(members_->size());
     member_count_ = members_->size();
-    dkg_instance_ = std::make_shared<libBLS::Dkg>(min_aggree_member_count_, max_member_count_);
+    dkg_instance_ = std::make_shared<libBLS::Dkg>(max_agree_count_, max_member_count_);
     elect_hegiht_ = elect_height;
     for (uint32_t i = 0; i < members_->size(); ++i) {
         if ((*members_)[i]->id == security_->GetAddress()) {
@@ -188,7 +190,7 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
     if (max_agree_count_ != (uint32_t)bls_msg.verify_brd().verify_vec_size()) {
         BLS_ERROR("min_aggree_member_count_ != "
             "bls_msg.verify_brd().verify_vec_size()[%d: %d]",
-            1,
+            max_agree_count_,
             bls_msg.verify_brd().verify_vec_size());
         assert(false);
         return;
@@ -419,14 +421,14 @@ libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t first_index) {
     }
 
     auto& item = req.verify_vec(0);
-    auto x_c0 = libff::alt_bn128_Fq(item.x_c0().c_str());
-    auto x_c1 = libff::alt_bn128_Fq(item.x_c1().c_str());
+    auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+    auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
     auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
-    auto y_c0 = libff::alt_bn128_Fq(item.y_c0().c_str());
-    auto y_c1 = libff::alt_bn128_Fq(item.y_c1().c_str());
+    auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+    auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
     auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
-    auto z_c0 = libff::alt_bn128_Fq(item.z_c0().c_str());
-    auto z_c1 = libff::alt_bn128_Fq(item.z_c1().c_str());
+    auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+    auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
     auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
     return libff::alt_bn128_G2(x_coord, y_coord, z_coord);
 }
@@ -734,8 +736,8 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         local_src_secret_key_contribution_[local_member_index_]);
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, local_member_index_, val);
-    std::vector<libff::alt_bn128_G2> g2_vec(min_aggree_member_count_);
-    for (size_t i = 0; i < min_aggree_member_count_; ++i) {
+    std::vector<libff::alt_bn128_G2> g2_vec(max_agree_count_);
+    for (size_t i = 0; i < max_agree_count_; ++i) {
         g2_vec[i] = polynomial_[i] * libff::alt_bn128_G2::one();
     }
 

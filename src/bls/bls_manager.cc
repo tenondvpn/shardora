@@ -34,7 +34,8 @@ void initLibSnark() noexcept {
 void BlsManager::OnNewElectBlock(
         uint32_t sharding_id,
         uint64_t elect_height,
-        common::MembersPtr& members) {
+        common::MembersPtr& members,
+        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
     auto iter = finish_networks_map_.find(sharding_id);
     if (iter != finish_networks_map_.end()) {
         finish_networks_map_.erase(iter);
@@ -76,7 +77,7 @@ void BlsManager::OnNewElectBlock(
         libff::alt_bn128_G2::zero(),
         libff::alt_bn128_G2::zero(),
         db_);
-    waiting_bls_->OnNewElectionBlock(elect_height, members, latest_timeblock_info_);
+    waiting_bls_->OnNewElectionBlock(elect_height, members, latest_timeblock_info_, elect_block_);
     BLS_DEBUG("success add new bls dkg, elect_height: %lu", elect_height);
 }
 

@@ -21,9 +21,10 @@
 #include "common/utils.h"
 #include "db/db.h"
 #include "dht/dht_utils.h"
+#include "protos/bls.pb.h"
+#include "protos/elect.pb.h"
 #include "protos/prefix_db.h"
 #include "protos/transport.pb.h"
-#include "protos/bls.pb.h"
 #include "security/security.h"
 #include "transport/transport_utils.h"
 
@@ -48,7 +49,8 @@ public:
     void OnNewElectionBlock(
         uint64_t elect_height,
         common::MembersPtr& members,
-        std::shared_ptr<TimeBlockItem>& latest_timeblock_info);
+        std::shared_ptr<TimeBlockItem>& latest_timeblock_info,
+        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block);
     void HandleMessage(const transport::MessagePtr& header);
     uint64_t elect_hegiht() {
         return elect_hegiht_;
@@ -152,6 +154,7 @@ private:
     uint64_t ver_offset_ = 0;
     uint64_t swap_offset_ = 0;
     uint64_t finish_offset_ = 0;
+    std::shared_ptr<elect::protobuf::ElectBlock> elect_block_ = nullptr;
 
 #ifdef ZJC_UNITTEST
     transport::protobuf::Header ver_brd_msg_;

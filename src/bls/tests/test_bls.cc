@@ -39,9 +39,38 @@ static std::shared_ptr<db::Db> db_ptr = nullptr;
 class TestBls : public testing::Test {
 public:
     static void SetUpTestCase() {
+        std::string config_path_ = "./";
+        std::string log_conf_path = config_path_ + "/log4cpp.properties";
+        std::string log_path = config_path_ + "/zjc.log";
+        WriteDefaultLogConf(log_conf_path, log_path);
+        log4cpp::PropertyConfigurator::configure(log_conf_path);
         db_ptr = std::make_shared<db::Db>();
         db_ptr->Init("./db");
         bls_manager = new BlsManager(security_ptr, db_ptr);
+    }
+
+    static void WriteDefaultLogConf(
+        const std::string& log_conf_path,
+        const std::string& log_path) {
+        FILE* file = NULL;
+        file = fopen(log_conf_path.c_str(), "w");
+        if (file == NULL) {
+            return;
+        }
+        std::string log_str = ("# log4cpp.properties\n"
+            "log4cpp.rootCategory = DEBUG\n"
+            "log4cpp.category.sub1 = DEBUG, programLog\n"
+            "log4cpp.appender.rootAppender = ConsoleAppender\n"
+            "log4cpp.appender.rootAppender.layout = PatternLayout\n"
+            "log4cpp.appender.rootAppender.layout.ConversionPattern = %d [%p] %m%n\n"
+            "log4cpp.appender.programLog = RollingFileAppender\n"
+            "log4cpp.appender.programLog.fileName = ") + log_path + "\n" +
+            std::string("log4cpp.appender.programLog.maxFileSize = 1073741824\n"
+                "log4cpp.appender.programLog.maxBackupIndex = 1\n"
+                "log4cpp.appender.programLog.layout = PatternLayout\n"
+                "log4cpp.appender.programLog.layout.ConversionPattern = %d [%p] %m%n\n");
+        fwrite(log_str.c_str(), log_str.size(), 1, file);
+        fclose(file);
     }
 
     static void TearDownTestCase() {
@@ -220,8 +249,8 @@ TEST_F(TestBls, AllSuccess) {
         dkg[i].Init(
             bls_manager,
             security_ptr,
-            0,
-            0,
+            t,
+            n,
             libff::alt_bn128_Fr::zero(),
             libff::alt_bn128_G2::zero(),
             libff::alt_bn128_G2::zero(),
@@ -248,21 +277,21 @@ TEST_F(TestBls, AllSuccess) {
 
     auto time0 = common::TimeUtils::TimestampUs();
     std::vector<transport::protobuf::Header> verify_brd_msgs;
+    auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
+    latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
+    latest_timeblock_info->latest_time_block_height = 1;
+    latest_timeblock_info->vss_random = common::Random::RandomUint64();
     for (uint32_t i = 0; i < n; ++i) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
         bls_manager->security_ = tmp_security_ptr;
         dkg[i].security_ = tmp_security_ptr;
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].OnNewElectionBlock(1, members);
-        dkg[i].dkg_verify_brd_timer_.Destroy();
-        dkg[i].dkg_swap_seckkey_timer_.Destroy();
-        dkg[i].dkg_finish_timer_.Destroy();
+        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
         dkg[i].local_member_index_ = i;
         dkg[i].BroadcastVerfify(0);
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
         ASSERT_EQ(dkg[i].ver_brd_msg_.bls_proto().elect_height(), 1);
-        dkg[i].DumpContribution();
         dkg[i].ver_brd_msg_ = transport::protobuf::Header();
     }
 
@@ -401,20 +430,20 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify) {
     }
 
     std::vector<transport::protobuf::Header> verify_brd_msgs;
+    auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
+    latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
+    latest_timeblock_info->latest_time_block_height = 1;
+    latest_timeblock_info->vss_random = common::Random::RandomUint64();
     for (uint32_t i = 0; i < n; ++i) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
         bls_manager->security_ = tmp_security_ptr;
         dkg[i].security_ = tmp_security_ptr;
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].OnNewElectionBlock(1, members);
-        dkg[i].dkg_verify_brd_timer_.Destroy();
-        dkg[i].dkg_swap_seckkey_timer_.Destroy();
-        dkg[i].dkg_finish_timer_.Destroy();
+        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
         dkg[i].local_member_index_ = i;
         dkg[i].BroadcastVerfify(0);
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
-        dkg[i].DumpContribution();
     }
 
     static const uint32_t kInvalidNodeIndex = 5;
@@ -557,20 +586,20 @@ TEST_F(TestBls, FinishWithMissingNodesNoVerify5) {
     }
 
     std::vector<transport::protobuf::Header> verify_brd_msgs;
+    auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
+    latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
+    latest_timeblock_info->latest_time_block_height = 1;
+    latest_timeblock_info->vss_random = common::Random::RandomUint64();
     for (uint32_t i = 0; i < n; ++i) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
         bls_manager->security_ = tmp_security_ptr;
         dkg[i].security_ = tmp_security_ptr;
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].OnNewElectionBlock(1, members);
-        dkg[i].dkg_verify_brd_timer_.Destroy();
-        dkg[i].dkg_swap_seckkey_timer_.Destroy();
-        dkg[i].dkg_finish_timer_.Destroy();
+        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
         dkg[i].local_member_index_ = i;
         dkg[i].BroadcastVerfify(0);
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
-        dkg[i].DumpContribution();
     }
 
     static const uint32_t kInvalidNodeIndex = 3;
@@ -706,20 +735,20 @@ TEST_F(TestBls, ThreeRatioFailFine) {
     }
 
     std::vector<transport::protobuf::Header> verify_brd_msgs;
+    auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
+    latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
+    latest_timeblock_info->latest_time_block_height = 1;
+    latest_timeblock_info->vss_random = common::Random::RandomUint64();
     for (uint32_t i = 0; i < n; ++i) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
         bls_manager->security_ = tmp_security_ptr;
         dkg[i].security_ = tmp_security_ptr;
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].OnNewElectionBlock(1, members);
-        dkg[i].dkg_verify_brd_timer_.Destroy();
-        dkg[i].dkg_swap_seckkey_timer_.Destroy();
-        dkg[i].dkg_finish_timer_.Destroy();
+        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
         dkg[i].local_member_index_ = i;
         dkg[i].BroadcastVerfify(0);
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
-        dkg[i].DumpContribution();
     }
 
     for (uint32_t i = 0; i < n; ++i) {
@@ -857,20 +886,20 @@ TEST_F(TestBls, ThreeRatioFail) {
     }
 
     std::vector<transport::protobuf::Header> verify_brd_msgs;
+    auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
+    latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
+    latest_timeblock_info->latest_time_block_height = 1;
+    latest_timeblock_info->vss_random = common::Random::RandomUint64();
     for (uint32_t i = 0; i < n; ++i) {
         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
         bls_manager->security_ = tmp_security_ptr;
         dkg[i].security_ = tmp_security_ptr;
         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].OnNewElectionBlock(1, members);
-        dkg[i].dkg_verify_brd_timer_.Destroy();
-        dkg[i].dkg_swap_seckkey_timer_.Destroy();
-        dkg[i].dkg_finish_timer_.Destroy();
+        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
         dkg[i].local_member_index_ = i;
         dkg[i].BroadcastVerfify(0);
         verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
-        dkg[i].DumpContribution();
     }
 
     for (uint32_t i = 0; i < n; ++i) {

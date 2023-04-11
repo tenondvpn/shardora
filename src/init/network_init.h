@@ -16,6 +16,7 @@
 #include "init/command.h"
 #include "init/http_handler.h"
 #include "pools/tx_pool_manager.h"
+#include "protos/elect.pb.h"
 #include "security/security.h"
 #include "sync/key_value_sync.h"
 #include "timeblock/time_block_manager.h"
@@ -46,7 +47,8 @@ private:
     void ElectBlockCallback(
         uint32_t sharding_id,
         uint64_t elect_height,
-        common::MembersPtr& members);
+        common::MembersPtr& members,
+        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block);
     void AddBlockItemToCache(
         uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,
