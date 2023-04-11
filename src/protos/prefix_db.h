@@ -749,6 +749,10 @@ public:
         if (!st.ok()) {
             ZJC_FATAL("write db failed!");
         }
+
+        ZJC_DEBUG("save bls info success: %s, %s",
+            common::Encode::HexEncode(key).c_str(),
+            common::Encode::HexEncode(str).c_str());
     }
 
     bool GetBlsInfo(
@@ -760,6 +764,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
+            ZJC_DEBUG("get bls info failed: %s", common::Encode::HexEncode(key).c_str());
             return false;
         }
 
@@ -770,6 +775,9 @@ public:
         }
 
         if (!bls_info->ParseFromString(dec_str)) {
+            ZJC_DEBUG("get bls info failed: %s, %s",
+                common::Encode::HexEncode(key).c_str(),
+                common::Encode::HexEncode(dec_str).c_str());
             return false;
         }
 
