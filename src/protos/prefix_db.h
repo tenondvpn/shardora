@@ -745,7 +745,11 @@ public:
             return;
         }
 
-        auto st = db_->Put(key, enc_str);
+        char len[4];
+        uint32_t* int_len = (uint32_t*)len;
+        int_len[0] = str.size();
+        std::string des_str = std::string(len, sizeof(len)) + enc_str;
+        auto st = db_->Put(key, des_str);
         if (!st.ok()) {
             ZJC_FATAL("write db failed!");
         }
@@ -764,18 +768,22 @@ public:
         std::string key = kBlsInfoPrefix + id;
         std::string val;
         auto st = db_->Get(key, &val);
-        if (!st.ok()) {
+        if (!st.ok() || val.size() <= 4) {
             ZJC_DEBUG("get bls info failed: %s", common::Encode::HexEncode(key).c_str());
             return false;
         }
 
+        uint32_t* int_len = (uint32_t*)val.c_str();
         std::string dec_str;
-        if (secptr->Decrypt(val, prikey, &dec_str) != security::kSecuritySuccess) {
+        if (secptr->Decrypt(
+                val.substr(4, val.size() - 4),
+                prikey,
+                &dec_str) != security::kSecuritySuccess) {
             ZJC_ERROR("decrypt data failed!");
             return false;
         }
 
-        if (!bls_info->ParseFromString(dec_str)) {
+        if (!bls_info->ParseFromArray(dec_str.c_str(), int_len[0])) {
             ZJC_DEBUG("get bls info failed: %s, %s, enc: %s",
                 common::Encode::HexEncode(key).c_str(),
                 common::Encode::HexSubstr(dec_str).c_str(),
