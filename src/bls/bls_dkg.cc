@@ -14,6 +14,7 @@
 #include "network/dht_manager.h"
 #include "network/route.h"
 #include "network/network_utils.h"
+#include "protos/get_proto_hash.h"
 #include "protos/prefix_db.h"
 #include "json/json.hpp"
 
@@ -155,7 +156,7 @@ void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) try {
 
 bool BlsDkg::IsSignValid(const transport::MessagePtr& msg_ptr, std::string* content_to_hash) {
     protos::GetProtoHash(msg_ptr->header, content_to_hash);
-    auto& pubkey = (*members_)[bls_msg.index()]->pubkey;
+    auto& pubkey = (*members_)[msg_ptr->header.bls_proto().index()]->pubkey;
     if (security_->Verify(
             *content_to_hash,
             pubkey,
@@ -448,21 +449,7 @@ void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
         return;
     }
 
-    auto* verify_item = &verfiy_brd->verify_vec(0);
-    content_to_hash += verify_item->x_c0();
-    content_to_hash += verify_item->x_c1();
-    content_to_hash += verify_item->y_c0();
-    content_to_hash += verify_item->y_c1();
-    content_to_hash += verify_item->z_c0();
-    content_to_hash += verify_item->z_c1();
-    auto dht = network::DhtManager::Instance()->GetDht(
-        common::GlobalInfo::Instance()->network_id());
-    if (!dht) {
-        return;
-    }
-
-    auto message_hash = common::Hash::keccak256(content_to_hash);
-    CreateDkgMessage(dht->local_node(), bls_msg, message_hash, msg);
+    CreateDkgMessage(msg_ptr);
     auto broad_param = msg.mutable_broadcast();
     broad_param->set_hop_to_layer(0);
 #ifdef ZJC_UNITTEST
@@ -485,7 +472,6 @@ void BlsDkg::SwapSecKey(uint8_t thread_idx) try {
         return;
     }
 
-    std::string content_to_hash;
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
@@ -530,18 +516,9 @@ void BlsDkg::SwapSecKey(uint8_t thread_idx) try {
         swap_item->set_sec_key(seckey);
         swap_item->set_sec_key_len(seckey_len);
         swap_item->set_verify_hash(gw_to_hash);
-        content_to_hash += seckey;
     }
 
-    auto dht = network::DhtManager::Instance()->GetDht(
-        common::GlobalInfo::Instance()->network_id());
-    if (!dht) {
-        ZJC_ERROR("get network failed: %d", common::GlobalInfo::Instance()->network_id());
-        return;
-    }
-
-    auto message_hash = common::Hash::keccak256(content_to_hash);
-    CreateDkgMessage(dht->local_node(), bls_msg, message_hash, msg);
+    CreateDkgMessage(msg_ptr);
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
     msg.set_des_dht_key(dht_key.StrKey());
@@ -684,22 +661,6 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
     auto& bls_msg = *msg.mutable_bls_proto();
     auto finish_msg = bls_msg.mutable_finish_req();
     auto& data = bitmap.data();
-    std::string msg_for_hash;
-    for (auto iter = data.begin(); iter != data.end(); ++iter) {
-        finish_msg->add_bitmap(*iter);
-        msg_for_hash += std::to_string(*iter);
-    }
-
-    msg_for_hash += std::string("_") +
-        std::to_string(common::GlobalInfo::Instance()->network_id());
-    BLS_DEBUG("BroadcastFinish: %s", msg_for_hash.c_str());
-    auto message_hash = common::Hash::keccak256(msg_for_hash);
-    auto dht = network::DhtManager::Instance()->GetDht(
-        common::GlobalInfo::Instance()->network_id());
-    if (!dht) {
-        return;
-    }
-
     local_publick_key_.to_affine_coordinates();
     auto local_pk = finish_msg->mutable_pubkey();
     local_pk->set_x_c0(
@@ -724,6 +685,8 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
     std::string sign_x;
     std::string sign_y;
     libff::alt_bn128_G1 g1_hash;
+    std::string message_hash;
+    protos::GetProtoHash(msg_ptr->header, &message_hash);
     bls_mgr_->GetLibffHash(message_hash, &g1_hash);
     if (bls_mgr_->Sign(
             min_aggree_member_count_,
@@ -737,7 +700,7 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
 
     finish_msg->set_bls_sign_x(sign_x);
     finish_msg->set_bls_sign_y(sign_y);
-    CreateDkgMessage(dht->local_node(), bls_msg, message_hash, msg);
+    CreateDkgMessage(msg_ptr);
     local_publick_key_.to_affine_coordinates();
 #ifndef ZJC_UNITTEST
     network::Route::Instance()->Send(msg_ptr);
@@ -825,11 +788,8 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     prefix_db_->SaveBlsInfo(security_, local_item);
 }
 
-void BlsDkg::CreateDkgMessage(
-        const dht::NodePtr& local_node,
-        protobuf::BlsMessage& bls_msg,
-        const std::string& message_hash,
-        transport::protobuf::Header& msg) {
+void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
+    auto& msg = msg_ptr->header;
     msg.set_src_sharding_id(local_node->sharding_id);
     if (bls_msg.has_finish_req()) {
         dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
@@ -840,19 +800,19 @@ void BlsDkg::CreateDkgMessage(
     }
 
     msg.set_type(common::kBlsMessage);
-    if (!message_hash.empty()) {
-        std::string sign_out;
-        int sign_res = security_->Sign(message_hash, &sign_out);
-        if (sign_res != security::kSecuritySuccess) {
-            BLS_ERROR("signature error.");
-            return;
-        }
-
-        bls_msg.set_sign(sign_out);
-    }
-    
+    auto& bls_msg = *msg.mutable_bls_proto();
     bls_msg.set_elect_height(elect_hegiht_);
     bls_msg.set_index(local_member_index_);
+    std::string message_hash;
+    protos::GetProtoHash(msg_ptr->header, &message_hash);
+    std::string sign_out;
+    int sign_res = security_->Sign(message_hash, &sign_out);
+    if (sign_res != security::kSecuritySuccess) {
+        BLS_ERROR("signature error.");
+        return;
+    }
+
+    msg.set_sign(sign_out);
 }
 
 };  // namespace bls

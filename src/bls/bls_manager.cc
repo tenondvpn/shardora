@@ -12,6 +12,7 @@
 #include "common/global_info.h"
 #include "network/route.h"
 #include "network/network_utils.h"
+#include "protos/get_proto_hash.h"
 #include "protos/prefix_db.h"
 #include "init/init_utils.h"
 
@@ -206,24 +207,6 @@ void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 }
 
-bool BlsManager::IsSignValid(
-        const common::MembersPtr& members,
-        const protobuf::BlsMessage& bls_msg,
-        std::string* content_to_hash) {
-    for (int32_t i = 0; i < bls_msg.finish_req().bitmap_size(); ++i) {
-        *content_to_hash += std::to_string(bls_msg.finish_req().bitmap(i));
-    }
-
-    *content_to_hash += std::string("_") + std::to_string(bls_msg.finish_req().network_id());
-    *content_to_hash = common::Hash::keccak256(*content_to_hash);
-    auto& pubkey = (*members)[bls_msg.index()]->pubkey;
-    if (!security_->Verify(*content_to_hash, bls_msg.sign(), pubkey)) {
-        return false;
-    }
-
-    return true;
-}
-
 int BlsManager::GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g1_hash) {
     return BlsSign::GetLibffHash(str_hash, g1_hash);
 }
@@ -246,6 +229,14 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     }
 
     std::string msg_hash;
+    protos::GetProtoHash(msg_ptr->header, &msg_hash);
+    if (security_->Verify(
+            msg_hash,
+            (*members)[bls_msg.index()]->pubkey,
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        return;
+    }
+
     if (!IsSignValid(members, bls_msg, &msg_hash)) {
         BLS_ERROR("IsSignValid failed network id: %u",
             bls_msg.finish_req().network_id());

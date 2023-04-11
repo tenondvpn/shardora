@@ -81,11 +81,7 @@ private:
     void SwapSecKey(uint8_t thread_idx);
     void FinishNoLock(uint8_t thread_idx);
     void CreateContribution(uint32_t valid_n, uint32_t valid_t);
-    void CreateDkgMessage(
-        const dht::NodePtr& local_node,
-        protobuf::BlsMessage& bls_msg,
-        const std::string& message_hash,
-        transport::protobuf::Header& msg);
+    void CreateDkgMessage(transport::MessagePtr& msg_ptr);
     void BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap);
     void CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* seckey_len);
     void CheckVerifyAllValid(uint8_t thread_idx);
