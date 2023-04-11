@@ -90,6 +90,9 @@ private:
         BlsFinishItemPtr& finish_item,
         std::vector<libff::alt_bn128_G1>& all_signs,
         std::vector<size_t>& idx_vec);
+    void SaveBlsVerifyValue(
+        common::MembersPtr& members,
+        std::shared_ptr<elect::protobuf::ElectBlock>& elect_block);
 
     std::shared_ptr<bls::BlsDkg> waiting_bls_{ nullptr };
     uint64_t max_height_{ common::kInvalidUint64 };

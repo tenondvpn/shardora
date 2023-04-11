@@ -54,14 +54,12 @@ void BlsDkg::Destroy() {
 void BlsDkg::OnNewElectionBlock(
         uint64_t elect_height,
         common::MembersPtr& members,
-        std::shared_ptr<TimeBlockItem>& latest_timeblock_info,
-        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) try {
+        std::shared_ptr<TimeBlockItem>& latest_timeblock_info) try {
     if (elect_height <= elect_hegiht_) {
         ZJC_DEBUG("elect height error: %lu, %lu", elect_height, elect_hegiht_);
         return;
     }
 
-    elect_block_ = elect_block;
     memset(valid_swaped_keys_, 0, sizeof(valid_swaped_keys_));
     memset(has_swaped_keys_, 0, sizeof(has_swaped_keys_));
     finished_ = false;

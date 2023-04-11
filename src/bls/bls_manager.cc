@@ -61,6 +61,7 @@ void BlsManager::OnNewElectBlock(
         return;
     }
 
+    SaveBlsVerifyValue(members, elect_block);
     latest_elect_height_ = elect_height;
     if (waiting_bls_ != nullptr) {
         waiting_bls_->Destroy();
@@ -77,8 +78,20 @@ void BlsManager::OnNewElectBlock(
         libff::alt_bn128_G2::zero(),
         libff::alt_bn128_G2::zero(),
         db_);
-    waiting_bls_->OnNewElectionBlock(elect_height, members, latest_timeblock_info_, elect_block);
+    waiting_bls_->OnNewElectionBlock(elect_height, members, latest_timeblock_info_);
     BLS_DEBUG("success add new bls dkg, elect_height: %lu", elect_height);
+}
+
+void BlsManager::SaveBlsVerifyValue(
+        common::MembersPtr& members,
+        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
+    if (!elect_block->has_prev_members()) {
+        return;
+    }
+
+    if (elect_block->prev_members().bls_pubkey_size() <= 0) {
+        return;
+    }
 }
 
 void BlsManager::OnTimeBlock(

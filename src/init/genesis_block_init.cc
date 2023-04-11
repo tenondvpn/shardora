@@ -133,7 +133,7 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
             return kInitError;
         }
 
-        auto verify_val = prev_members->mutable_verify_val();
+        auto verify_val = mem_pk->mutable_verify_val();
         verify_val->set_valid_t(valid_t);
         verify_val->set_x_c0(common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(verify_vec_val.X.c0)));
