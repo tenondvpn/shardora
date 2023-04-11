@@ -60,7 +60,7 @@ void BlsManager::OnNewElectBlock(
         return;
     }
 
-    std::lock_guard<std::mutex> guard(mutex_);
+    latest_elect_height_ = elect_height;
     if (waiting_bls_ != nullptr) {
         waiting_bls_->Destroy();
         waiting_bls_.reset();
@@ -102,7 +102,6 @@ void BlsManager::SetUsedElectionBlock(
         uint32_t network_id,
         uint32_t member_count,
         const libff::alt_bn128_G2& common_public_key) try {
-    std::lock_guard<std::mutex> guard(mutex_);
     if (max_height_ != common::kInvalidUint64 && elect_height <= max_height_) {
         BLS_ERROR("elect_height error: %lu, %lu", elect_height, max_height_);
         return;
@@ -212,11 +211,8 @@ void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    {
-        std::lock_guard<std::mutex> guard(mutex_);
-        if (waiting_bls_ != nullptr) {
-            waiting_bls_->HandleMessage(msg_ptr);
-        }
+    if (waiting_bls_ != nullptr) {
+        waiting_bls_->HandleMessage(msg_ptr);
     }
 }
 

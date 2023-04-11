@@ -89,7 +89,6 @@ private:
 
     std::shared_ptr<bls::BlsDkg> waiting_bls_{ nullptr };
     uint64_t max_height_{ common::kInvalidUint64 };
-    std::mutex mutex_;
     std::unordered_map<uint32_t, BlsFinishItemPtr> finish_networks_map_;
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
