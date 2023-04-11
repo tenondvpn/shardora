@@ -230,12 +230,12 @@ void BlsDkg::CheckVerifyAllValid(uint8_t thread_idx) {
             }
         }
     }
-
-    if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4 - 5)) {
-        check_verify_brd_timer_.CutOff(
-            3000000l,
-            std::bind(&BlsDkg::CheckVerifyAllValid, this, std::placeholders::_1));
-    }
+// 
+//     if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4 - 5)) {
+//         check_verify_brd_timer_.CutOff(
+//             3000000l,
+//             std::bind(&BlsDkg::CheckVerifyAllValid, this, std::placeholders::_1));
+//     }
 }
 
 void BlsDkg::SendGetVerifyInfo(uint8_t thread_idx, int32_t index) {
@@ -272,11 +272,11 @@ void BlsDkg::CheckSwapKeyAllValid(uint8_t thread_idx) {
         }
     }
 
-    if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 8 - 5)) {
-        check_swap_seckkey_timer_.CutOff(
-            3000000l,
-            std::bind(&BlsDkg::CheckSwapKeyAllValid, this, std::placeholders::_1));
-    }
+//     if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 8 - 5)) {
+//         check_swap_seckkey_timer_.CutOff(
+//             3000000l,
+//             std::bind(&BlsDkg::CheckSwapKeyAllValid, this, std::placeholders::_1));
+//     }
 }
 
 void BlsDkg::SendGetSwapKey(uint8_t thread_idx, int32_t index) {
