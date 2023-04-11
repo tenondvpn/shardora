@@ -20,15 +20,14 @@
 // @@protoc_insertion_point(includes)
 
 namespace protobuf_protos_2felect_2eproto {
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_BlsPublicKey;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_ElectStatisticInfo;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_LeaderRotationMessage;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_SyncNodeStokeItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_SyncNodeStokeResItem;
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_VerifyVecValue;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_WaitingNodeHeartbeat;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_WaitingNodesMessage;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_member;
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_BlsPublicKey;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_PrevMembers;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_SyncNodeStokeRequest;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_SyncNodeStokeResponse;
@@ -155,9 +154,8 @@ static void InitDefaultsBlsPublicKey() {
   ::zjchain::elect::protobuf::BlsPublicKey::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<1> scc_info_BlsPublicKey =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsBlsPublicKey}, {
-      &protobuf_protos_2felect_2eproto::scc_info_VerifyVecValue.base,}};
+::google::protobuf::internal::SCCInfo<0> scc_info_BlsPublicKey =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsBlsPublicKey}, {}};
 
 static void InitDefaultsPrevMembers() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -416,12 +414,10 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::BlsPublicKey, y_c0_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::BlsPublicKey, y_c1_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::BlsPublicKey, pool_idx_mod_num_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::BlsPublicKey, verify_val_),
   0,
   1,
   2,
   3,
-  5,
   4,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::PrevMembers, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::PrevMembers, _internal_metadata_),
@@ -573,19 +569,19 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 16, sizeof(::zjchain::elect::protobuf::member)},
   { 27, 39, sizeof(::zjchain::elect::protobuf::VerifyVecValue)},
-  { 46, 57, sizeof(::zjchain::elect::protobuf::BlsPublicKey)},
-  { 63, 71, sizeof(::zjchain::elect::protobuf::PrevMembers)},
-  { 74, 86, sizeof(::zjchain::elect::protobuf::ElectBlock)},
-  { 93, 101, sizeof(::zjchain::elect::protobuf::ElectStatisticInfo)},
-  { 104, 112, sizeof(::zjchain::elect::protobuf::StatisticInfo)},
-  { 115, 123, sizeof(::zjchain::elect::protobuf::WaitingNodesMessage)},
-  { 126, 135, sizeof(::zjchain::elect::protobuf::WaitingNodeHeartbeat)},
-  { 139, 146, sizeof(::zjchain::elect::protobuf::LeaderRotationMessage)},
-  { 148, 155, sizeof(::zjchain::elect::protobuf::SyncNodeStokeItem)},
-  { 157, 164, sizeof(::zjchain::elect::protobuf::SyncNodeStokeRequest)},
-  { 166, 173, sizeof(::zjchain::elect::protobuf::SyncNodeStokeResItem)},
-  { 175, 182, sizeof(::zjchain::elect::protobuf::SyncNodeStokeResponse)},
-  { 184, 199, sizeof(::zjchain::elect::protobuf::ElectMessage)},
+  { 46, 56, sizeof(::zjchain::elect::protobuf::BlsPublicKey)},
+  { 61, 69, sizeof(::zjchain::elect::protobuf::PrevMembers)},
+  { 72, 84, sizeof(::zjchain::elect::protobuf::ElectBlock)},
+  { 91, 99, sizeof(::zjchain::elect::protobuf::ElectStatisticInfo)},
+  { 102, 110, sizeof(::zjchain::elect::protobuf::StatisticInfo)},
+  { 113, 121, sizeof(::zjchain::elect::protobuf::WaitingNodesMessage)},
+  { 124, 133, sizeof(::zjchain::elect::protobuf::WaitingNodeHeartbeat)},
+  { 137, 144, sizeof(::zjchain::elect::protobuf::LeaderRotationMessage)},
+  { 146, 153, sizeof(::zjchain::elect::protobuf::SyncNodeStokeItem)},
+  { 155, 162, sizeof(::zjchain::elect::protobuf::SyncNodeStokeRequest)},
+  { 164, 171, sizeof(::zjchain::elect::protobuf::SyncNodeStokeResItem)},
+  { 173, 180, sizeof(::zjchain::elect::protobuf::SyncNodeStokeResponse)},
+  { 182, 197, sizeof(::zjchain::elect::protobuf::ElectMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -636,57 +632,56 @@ void AddDescriptorsImpl() {
       "mod_num\030\013 \001(\005\"u\n\016VerifyVecValue\022\014\n\004x_c0\030"
       "\001 \001(\014\022\014\n\004x_c1\030\002 \001(\014\022\014\n\004y_c0\030\003 \001(\014\022\014\n\004y_c"
       "1\030\004 \001(\014\022\014\n\004z_c0\030\005 \001(\014\022\014\n\004z_c1\030\006 \001(\014\022\017\n\007v"
-      "alid_t\030\007 \001(\r\"\234\001\n\014BlsPublicKey\022\014\n\004x_c0\030\001 "
-      "\001(\014\022\014\n\004x_c1\030\002 \001(\014\022\014\n\004y_c0\030\003 \001(\014\022\014\n\004y_c1\030"
-      "\004 \001(\014\022\030\n\020pool_idx_mod_num\030\005 \001(\005\022:\n\nverif"
-      "y_val\030\006 \001(\0132&.zjchain.elect.protobuf.Ver"
-      "ifyVecValue\"\237\001\n\013PrevMembers\0228\n\nbls_pubke"
-      "y\030\001 \003(\0132$.zjchain.elect.protobuf.BlsPubl"
-      "icKey\022\031\n\021prev_elect_height\030\002 \001(\004\022;\n\rcomm"
-      "on_pubkey\030\003 \001(\0132$.zjchain.elect.protobuf"
-      ".BlsPublicKey\"\336\001\n\nElectBlock\022*\n\002in\030\001 \003(\013"
-      "2\036.zjchain.elect.protobuf.member\022\022\n\nacc_"
-      "pubkey\030\002 \001(\014\022\020\n\010acc_sign\030\003 \001(\014\022\030\n\020shard_"
-      "network_id\030\004 \001(\r\0229\n\014prev_members\030\005 \001(\0132#"
-      ".zjchain.elect.protobuf.PrevMembers\022\023\n\013w"
-      "eedout_ids\030\006 \003(\014\022\024\n\014elect_height\030\007 \001(\004\"V"
-      "\n\022ElectStatisticInfo\022\024\n\014elect_height\030\001 \001"
-      "(\004\022\025\n\rsucc_tx_count\030\002 \003(\r\022\023\n\013lof_leaders"
-      "\030\003 \003(\r\"\204\001\n\rStatisticInfo\022\030\n\020timeblock_he"
-      "ight\030\001 \001(\004\022\024\n\014all_tx_count\030\002 \001(\r\022C\n\017elec"
-      "t_statistic\030\003 \003(\0132*.zjchain.elect.protob"
-      "uf.ElectStatisticInfo\"Y\n\023WaitingNodesMes"
-      "sage\022\024\n\014nodes_filter\030\001 \003(\004\022\030\n\020waiting_sh"
-      "ard_id\030\002 \001(\r\022\022\n\nstoke_hash\030\003 \001(\014\"i\n\024Wait"
-      "ingNodeHeartbeat\022\021\n\tpublic_ip\030\001 \001(\014\022\023\n\013p"
-      "ublic_port\030\002 \001(\r\022\022\n\nnetwork_id\030\003 \001(\r\022\025\n\r"
-      "timestamp_sec\030\004 \001(\004\"@\n\025LeaderRotationMes"
-      "sage\022\021\n\tleader_id\030\001 \001(\014\022\024\n\014pool_mod_num\030"
-      "\002 \001(\r\"9\n\021SyncNodeStokeItem\022\n\n\002id\030\001 \001(\014\022\030"
-      "\n\020synced_tm_height\030\002 \001(\004\"k\n\024SyncNodeStok"
-      "eRequest\022<\n\tsync_item\030\001 \003(\0132).zjchain.el"
-      "ect.protobuf.SyncNodeStokeItem\022\025\n\rnow_tm"
-      "_height\030\002 \001(\004\"3\n\024SyncNodeStokeResItem\022\n\n"
-      "\002id\030\001 \001(\014\022\017\n\007balance\030\002 \001(\004\"k\n\025SyncNodeSt"
-      "okeResponse\022;\n\005items\030\001 \003(\0132,.zjchain.ele"
-      "ct.protobuf.SyncNodeStokeResItem\022\025\n\rnow_"
-      "tm_height\030\002 \001(\004\"\232\004\n\014ElectMessage\0227\n\013elec"
-      "t_block\030\001 \001(\0132\".zjchain.elect.protobuf.E"
-      "lectBlock\022<\n\020prev_elect_block\030\002 \001(\0132\".zj"
-      "chain.elect.protobuf.ElectBlock\022B\n\rwaiti"
-      "ng_nodes\030\003 \001(\0132+.zjchain.elect.protobuf."
-      "WaitingNodesMessage\022\016\n\006pubkey\030\004 \001(\014\022\017\n\007s"
-      "ign_ch\030\005 \001(\014\022\020\n\010sign_res\030\006 \001(\014\022G\n\021waitin"
-      "g_heartbeat\030\007 \001(\0132,.zjchain.elect.protob"
-      "uf.WaitingNodeHeartbeat\022F\n\017leader_rotati"
-      "on\030\010 \001(\0132-.zjchain.elect.protobuf.Leader"
-      "RotationMessage\022D\n\016sync_stoke_req\030\t \001(\0132"
-      ",.zjchain.elect.protobuf.SyncNodeStokeRe"
-      "quest\022E\n\016sync_stoke_res\030\n \001(\0132-.zjchain."
-      "elect.protobuf.SyncNodeStokeResponse"
+      "alid_t\030\007 \001(\r\"`\n\014BlsPublicKey\022\014\n\004x_c0\030\001 \001"
+      "(\014\022\014\n\004x_c1\030\002 \001(\014\022\014\n\004y_c0\030\003 \001(\014\022\014\n\004y_c1\030\004"
+      " \001(\014\022\030\n\020pool_idx_mod_num\030\005 \001(\005\"\237\001\n\013PrevM"
+      "embers\0228\n\nbls_pubkey\030\001 \003(\0132$.zjchain.ele"
+      "ct.protobuf.BlsPublicKey\022\031\n\021prev_elect_h"
+      "eight\030\002 \001(\004\022;\n\rcommon_pubkey\030\003 \001(\0132$.zjc"
+      "hain.elect.protobuf.BlsPublicKey\"\336\001\n\nEle"
+      "ctBlock\022*\n\002in\030\001 \003(\0132\036.zjchain.elect.prot"
+      "obuf.member\022\022\n\nacc_pubkey\030\002 \001(\014\022\020\n\010acc_s"
+      "ign\030\003 \001(\014\022\030\n\020shard_network_id\030\004 \001(\r\0229\n\014p"
+      "rev_members\030\005 \001(\0132#.zjchain.elect.protob"
+      "uf.PrevMembers\022\023\n\013weedout_ids\030\006 \003(\014\022\024\n\014e"
+      "lect_height\030\007 \001(\004\"V\n\022ElectStatisticInfo\022"
+      "\024\n\014elect_height\030\001 \001(\004\022\025\n\rsucc_tx_count\030\002"
+      " \003(\r\022\023\n\013lof_leaders\030\003 \003(\r\"\204\001\n\rStatisticI"
+      "nfo\022\030\n\020timeblock_height\030\001 \001(\004\022\024\n\014all_tx_"
+      "count\030\002 \001(\r\022C\n\017elect_statistic\030\003 \003(\0132*.z"
+      "jchain.elect.protobuf.ElectStatisticInfo"
+      "\"Y\n\023WaitingNodesMessage\022\024\n\014nodes_filter\030"
+      "\001 \003(\004\022\030\n\020waiting_shard_id\030\002 \001(\r\022\022\n\nstoke"
+      "_hash\030\003 \001(\014\"i\n\024WaitingNodeHeartbeat\022\021\n\tp"
+      "ublic_ip\030\001 \001(\014\022\023\n\013public_port\030\002 \001(\r\022\022\n\nn"
+      "etwork_id\030\003 \001(\r\022\025\n\rtimestamp_sec\030\004 \001(\004\"@"
+      "\n\025LeaderRotationMessage\022\021\n\tleader_id\030\001 \001"
+      "(\014\022\024\n\014pool_mod_num\030\002 \001(\r\"9\n\021SyncNodeStok"
+      "eItem\022\n\n\002id\030\001 \001(\014\022\030\n\020synced_tm_height\030\002 "
+      "\001(\004\"k\n\024SyncNodeStokeRequest\022<\n\tsync_item"
+      "\030\001 \003(\0132).zjchain.elect.protobuf.SyncNode"
+      "StokeItem\022\025\n\rnow_tm_height\030\002 \001(\004\"3\n\024Sync"
+      "NodeStokeResItem\022\n\n\002id\030\001 \001(\014\022\017\n\007balance\030"
+      "\002 \001(\004\"k\n\025SyncNodeStokeResponse\022;\n\005items\030"
+      "\001 \003(\0132,.zjchain.elect.protobuf.SyncNodeS"
+      "tokeResItem\022\025\n\rnow_tm_height\030\002 \001(\004\"\232\004\n\014E"
+      "lectMessage\0227\n\013elect_block\030\001 \001(\0132\".zjcha"
+      "in.elect.protobuf.ElectBlock\022<\n\020prev_ele"
+      "ct_block\030\002 \001(\0132\".zjchain.elect.protobuf."
+      "ElectBlock\022B\n\rwaiting_nodes\030\003 \001(\0132+.zjch"
+      "ain.elect.protobuf.WaitingNodesMessage\022\016"
+      "\n\006pubkey\030\004 \001(\014\022\017\n\007sign_ch\030\005 \001(\014\022\020\n\010sign_"
+      "res\030\006 \001(\014\022G\n\021waiting_heartbeat\030\007 \001(\0132,.z"
+      "jchain.elect.protobuf.WaitingNodeHeartbe"
+      "at\022F\n\017leader_rotation\030\010 \001(\0132-.zjchain.el"
+      "ect.protobuf.LeaderRotationMessage\022D\n\016sy"
+      "nc_stoke_req\030\t \001(\0132,.zjchain.elect.proto"
+      "buf.SyncNodeStokeRequest\022E\n\016sync_stoke_r"
+      "es\030\n \001(\0132-.zjchain.elect.protobuf.SyncNo"
+      "deStokeResponse"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 2276);
+      descriptor, 2215);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/elect.proto", &protobuf_RegisterTypes);
 }
@@ -1909,8 +1904,6 @@ void VerifyVecValue::InternalSwap(VerifyVecValue* other) {
 // ===================================================================
 
 void BlsPublicKey::InitAsDefaultInstance() {
-  ::zjchain::elect::protobuf::_BlsPublicKey_default_instance_._instance.get_mutable()->verify_val_ = const_cast< ::zjchain::elect::protobuf::VerifyVecValue*>(
-      ::zjchain::elect::protobuf::VerifyVecValue::internal_default_instance());
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int BlsPublicKey::kXC0FieldNumber;
@@ -1918,7 +1911,6 @@ const int BlsPublicKey::kXC1FieldNumber;
 const int BlsPublicKey::kYC0FieldNumber;
 const int BlsPublicKey::kYC1FieldNumber;
 const int BlsPublicKey::kPoolIdxModNumFieldNumber;
-const int BlsPublicKey::kVerifyValFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 BlsPublicKey::BlsPublicKey()
@@ -1949,11 +1941,6 @@ BlsPublicKey::BlsPublicKey(const BlsPublicKey& from)
   if (from.has_y_c1()) {
     y_c1_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.y_c1_);
   }
-  if (from.has_verify_val()) {
-    verify_val_ = new ::zjchain::elect::protobuf::VerifyVecValue(*from.verify_val_);
-  } else {
-    verify_val_ = NULL;
-  }
   pool_idx_mod_num_ = from.pool_idx_mod_num_;
   // @@protoc_insertion_point(copy_constructor:zjchain.elect.protobuf.BlsPublicKey)
 }
@@ -1963,9 +1950,7 @@ void BlsPublicKey::SharedCtor() {
   x_c1_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   y_c0_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   y_c1_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(&verify_val_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&pool_idx_mod_num_) -
-      reinterpret_cast<char*>(&verify_val_)) + sizeof(pool_idx_mod_num_));
+  pool_idx_mod_num_ = 0;
 }
 
 BlsPublicKey::~BlsPublicKey() {
@@ -1978,7 +1963,6 @@ void BlsPublicKey::SharedDtor() {
   x_c1_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   y_c0_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   y_c1_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != internal_default_instance()) delete verify_val_;
 }
 
 void BlsPublicKey::SetCachedSize(int size) const {
@@ -2002,7 +1986,7 @@ void BlsPublicKey::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 31u) {
+  if (cached_has_bits & 15u) {
     if (cached_has_bits & 0x00000001u) {
       x_c0_.ClearNonDefaultToEmptyNoArena();
     }
@@ -2014,10 +1998,6 @@ void BlsPublicKey::Clear() {
     }
     if (cached_has_bits & 0x00000008u) {
       y_c1_.ClearNonDefaultToEmptyNoArena();
-    }
-    if (cached_has_bits & 0x00000010u) {
-      GOOGLE_DCHECK(verify_val_ != NULL);
-      verify_val_->Clear();
     }
   }
   pool_idx_mod_num_ = 0;
@@ -2097,18 +2077,6 @@ bool BlsPublicKey::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .zjchain.elect.protobuf.VerifyVecValue verify_val = 6;
-      case 6: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(50u /* 50 & 0xFF */)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_verify_val()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -2161,14 +2129,8 @@ void BlsPublicKey::SerializeWithCachedSizes(
   }
 
   // optional int32 pool_idx_mod_num = 5;
-  if (cached_has_bits & 0x00000020u) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(5, this->pool_idx_mod_num(), output);
-  }
-
-  // optional .zjchain.elect.protobuf.VerifyVecValue verify_val = 6;
   if (cached_has_bits & 0x00000010u) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      6, this->_internal_verify_val(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(5, this->pool_idx_mod_num(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2215,15 +2177,8 @@ void BlsPublicKey::SerializeWithCachedSizes(
   }
 
   // optional int32 pool_idx_mod_num = 5;
-  if (cached_has_bits & 0x00000020u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(5, this->pool_idx_mod_num(), target);
-  }
-
-  // optional .zjchain.elect.protobuf.VerifyVecValue verify_val = 6;
   if (cached_has_bits & 0x00000010u) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      InternalWriteMessageToArray(
-        6, this->_internal_verify_val(), deterministic, target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(5, this->pool_idx_mod_num(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2243,7 +2198,7 @@ size_t BlsPublicKey::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 63u) {
+  if (_has_bits_[0 / 32] & 31u) {
     // optional bytes x_c0 = 1;
     if (has_x_c0()) {
       total_size += 1 +
@@ -2270,13 +2225,6 @@ size_t BlsPublicKey::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::BytesSize(
           this->y_c1());
-    }
-
-    // optional .zjchain.elect.protobuf.VerifyVecValue verify_val = 6;
-    if (has_verify_val()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::MessageSize(
-          *verify_val_);
     }
 
     // optional int32 pool_idx_mod_num = 5;
@@ -2315,7 +2263,7 @@ void BlsPublicKey::MergeFrom(const BlsPublicKey& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 63u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_x_c0();
       x_c0_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.x_c0_);
@@ -2333,9 +2281,6 @@ void BlsPublicKey::MergeFrom(const BlsPublicKey& from) {
       y_c1_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.y_c1_);
     }
     if (cached_has_bits & 0x00000010u) {
-      mutable_verify_val()->::zjchain::elect::protobuf::VerifyVecValue::MergeFrom(from.verify_val());
-    }
-    if (cached_has_bits & 0x00000020u) {
       pool_idx_mod_num_ = from.pool_idx_mod_num_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -2374,7 +2319,6 @@ void BlsPublicKey::InternalSwap(BlsPublicKey* other) {
     GetArenaNoVirtual());
   y_c1_.Swap(&other->y_c1_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
-  swap(verify_val_, other->verify_val_);
   swap(pool_idx_mod_num_, other->pool_idx_mod_num_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);

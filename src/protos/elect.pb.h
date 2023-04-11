@@ -751,18 +751,6 @@ class BlsPublicKey : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::std::string* release_y_c1();
   void set_allocated_y_c1(::std::string* y_c1);
 
-  // optional .zjchain.elect.protobuf.VerifyVecValue verify_val = 6;
-  bool has_verify_val() const;
-  void clear_verify_val();
-  static const int kVerifyValFieldNumber = 6;
-  private:
-  const ::zjchain::elect::protobuf::VerifyVecValue& _internal_verify_val() const;
-  public:
-  const ::zjchain::elect::protobuf::VerifyVecValue& verify_val() const;
-  ::zjchain::elect::protobuf::VerifyVecValue* release_verify_val();
-  ::zjchain::elect::protobuf::VerifyVecValue* mutable_verify_val();
-  void set_allocated_verify_val(::zjchain::elect::protobuf::VerifyVecValue* verify_val);
-
   // optional int32 pool_idx_mod_num = 5;
   bool has_pool_idx_mod_num() const;
   void clear_pool_idx_mod_num();
@@ -782,8 +770,6 @@ class BlsPublicKey : public ::google::protobuf::Message /* @@protoc_insertion_po
   void clear_has_y_c1();
   void set_has_pool_idx_mod_num();
   void clear_has_pool_idx_mod_num();
-  void set_has_verify_val();
-  void clear_has_verify_val();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -792,7 +778,6 @@ class BlsPublicKey : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::google::protobuf::internal::ArenaStringPtr x_c1_;
   ::google::protobuf::internal::ArenaStringPtr y_c0_;
   ::google::protobuf::internal::ArenaStringPtr y_c1_;
-  ::zjchain::elect::protobuf::VerifyVecValue* verify_val_;
   ::google::protobuf::int32 pool_idx_mod_num_;
   friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
 };
@@ -3815,13 +3800,13 @@ inline void BlsPublicKey::set_allocated_y_c1(::std::string* y_c1) {
 
 // optional int32 pool_idx_mod_num = 5;
 inline bool BlsPublicKey::has_pool_idx_mod_num() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void BlsPublicKey::set_has_pool_idx_mod_num() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void BlsPublicKey::clear_has_pool_idx_mod_num() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void BlsPublicKey::clear_pool_idx_mod_num() {
   pool_idx_mod_num_ = 0;
@@ -3835,64 +3820,6 @@ inline void BlsPublicKey::set_pool_idx_mod_num(::google::protobuf::int32 value) 
   set_has_pool_idx_mod_num();
   pool_idx_mod_num_ = value;
   // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.BlsPublicKey.pool_idx_mod_num)
-}
-
-// optional .zjchain.elect.protobuf.VerifyVecValue verify_val = 6;
-inline bool BlsPublicKey::has_verify_val() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void BlsPublicKey::set_has_verify_val() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void BlsPublicKey::clear_has_verify_val() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void BlsPublicKey::clear_verify_val() {
-  if (verify_val_ != NULL) verify_val_->Clear();
-  clear_has_verify_val();
-}
-inline const ::zjchain::elect::protobuf::VerifyVecValue& BlsPublicKey::_internal_verify_val() const {
-  return *verify_val_;
-}
-inline const ::zjchain::elect::protobuf::VerifyVecValue& BlsPublicKey::verify_val() const {
-  const ::zjchain::elect::protobuf::VerifyVecValue* p = verify_val_;
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.BlsPublicKey.verify_val)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::elect::protobuf::VerifyVecValue*>(
-      &::zjchain::elect::protobuf::_VerifyVecValue_default_instance_);
-}
-inline ::zjchain::elect::protobuf::VerifyVecValue* BlsPublicKey::release_verify_val() {
-  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.BlsPublicKey.verify_val)
-  clear_has_verify_val();
-  ::zjchain::elect::protobuf::VerifyVecValue* temp = verify_val_;
-  verify_val_ = NULL;
-  return temp;
-}
-inline ::zjchain::elect::protobuf::VerifyVecValue* BlsPublicKey::mutable_verify_val() {
-  set_has_verify_val();
-  if (verify_val_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::elect::protobuf::VerifyVecValue>(GetArenaNoVirtual());
-    verify_val_ = p;
-  }
-  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.BlsPublicKey.verify_val)
-  return verify_val_;
-}
-inline void BlsPublicKey::set_allocated_verify_val(::zjchain::elect::protobuf::VerifyVecValue* verify_val) {
-  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
-    delete verify_val_;
-  }
-  if (verify_val) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
-    if (message_arena != submessage_arena) {
-      verify_val = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, verify_val, submessage_arena);
-    }
-    set_has_verify_val();
-  } else {
-    clear_has_verify_val();
-  }
-  verify_val_ = verify_val;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.BlsPublicKey.verify_val)
 }
 
 // -------------------------------------------------------------------
