@@ -90,6 +90,7 @@ private:
     void CheckSwapKeyAllValid(uint8_t thread_idx);
     void SendGetSwapKey(uint8_t thread_idx, int32_t index);
     bool GetVerifyG2FromDb(uint32_t first_index, std::vector<libff::alt_bn128_G2>& g2_vec);
+    libff::alt_bn128_G2 GetVerifyG2FromDb(uint32_t first_index);
     void DumpLocalPrivateKey();
 
     bool IsVerifyBrdPeriod() {

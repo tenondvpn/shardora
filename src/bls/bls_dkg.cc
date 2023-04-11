@@ -425,6 +425,28 @@ bool BlsDkg::GetVerifyG2FromDb(uint32_t first_index, std::vector<libff::alt_bn12
     return true;
 }
 
+libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t first_index) {
+    bls::protobuf::VerifyVecBrdReq req;
+    auto res = prefix_db_->GetBlsVerifyG2((*members_)[first_index]->id, &req);
+    if (!res) {
+        ZJC_DEBUG("get verify g2 failed local: %d, %lu, %u, %u",
+            local_member_index_, elect_hegiht_, first_index);
+        return libff::alt_bn128_G2::zero();
+    }
+
+    auto& item = req.verify_vec(0);
+    auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+    auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+    auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+    auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+    auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+    auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+    auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+    auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+    auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+    return libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+}
+
 void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
     if (members_ == nullptr || local_member_index_ >= members_->size()) {
         return;
