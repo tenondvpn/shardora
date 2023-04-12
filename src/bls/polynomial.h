@@ -119,7 +119,7 @@ public:
         fclose(saved_polynomial_fd);
 
         uint16_t t = common::GetSignerCount(n);
-        static const uint32_t kThreadCount = 4;
+        static const uint32_t kThreadCount = 8;
         for (int32_t i = 0; i < g2_vec.size(); ++i) {
             auto btime = common::TimeUtils::TimestampUs();
             auto run_func = [&](int32_t b, int32_t e, int thread_idx) {
