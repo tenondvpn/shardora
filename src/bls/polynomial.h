@@ -157,7 +157,7 @@ public:
                     prefix_db_->SavePresetVerifyValue(idx, i, verify_val);
                 }
 
-                fclose(saved_verify_fd);
+//                 fclose(saved_verify_fd);
             };
 
             std::vector<std::thread> thread_vec;
