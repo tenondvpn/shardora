@@ -983,6 +983,7 @@ public:
         key.append(kPresetPolynomialPrefix);
         key.append((char*)&idx, sizeof(idx));
         key.append((char*)&pos, sizeof(pos));
+        std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
             ZJC_ERROR("write db failed!");
