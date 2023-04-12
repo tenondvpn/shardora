@@ -974,6 +974,15 @@ public:
         }
     }
 
+    bool ExistsPresetVerifyValue(uint32_t idx, uint32_t pos) {
+        std::string key;
+        key.reserve(64);
+        key.append(kPresetPolynomialPrefix);
+        key.append((char*)&idx, sizeof(idx));
+        key.append((char*)&pos, sizeof(pos));
+        return db_->Exist(key);
+    }
+
     bool GetPresetVerifyValue(
             uint32_t idx,
             uint32_t pos,

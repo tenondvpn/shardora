@@ -45,7 +45,6 @@ public:
         std::string log_path = config_path_ + "/zjc.log";
         WriteDefaultLogConf(log_conf_path, log_path);
         log4cpp::PropertyConfigurator::configure(log_conf_path);
-        system("rm -rf ./db");
         db_ptr = std::make_shared<db::Db>();
         db_ptr->Init("./db");
         bls_manager = new BlsManager(security_ptr, db_ptr);
