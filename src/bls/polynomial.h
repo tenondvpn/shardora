@@ -121,9 +121,10 @@ public:
         uint16_t t = common::GetSignerCount(n);
         static const uint32_t kThreadCount = 4;
         for (int32_t i = 0; i < g2_vec.size(); ++i) {
+            auto btime = common::TimeUtils::TimestampUs();
             auto run_func = [&](int32_t b, int32_t e, int thread_idx) {
                 std::string file = std::string("saved_verify_") + std::to_string(thread_idx);
-                FILE* saved_verify_fd = fopen(file.c_str(), "w");
+                FILE* saved_verify_fd = fopen(file.c_str(), "a+");
                 for (int32_t idx = b; idx < e; ++idx) {
                     bls::protobuf::BlsVerifyValue verify_val;
                     for (size_t tidx = 0; tidx < t; ++tidx) {
@@ -170,7 +171,9 @@ public:
             for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
                 thread_vec[thread_idx].join();
             }
-            std::cout << "finished: " << i << std::endl;
+
+            auto etime = common::TimeUtils::TimestampUs();
+            std::cout << "finished: " << i << ", use time us: " << (etime - btime) << std::endl;
         }
 
         return kBlsSuccess;
