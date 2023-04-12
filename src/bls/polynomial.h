@@ -118,6 +118,7 @@ public:
         fwrite(val.c_str(), 1, val.size(), saved_polynomial_fd);
         fclose(saved_polynomial_fd);
 
+        uint16_t t = common::GetSignerCount(n);
         FILE* saved_verify_fd = fopen("saved_verify", "w");
         for (int32_t i = 0; i < g2_vec.size(); ++i) {
             for (int32_t idx = 0; idx < n; ++idx) {
