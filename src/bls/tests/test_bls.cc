@@ -130,7 +130,7 @@ public:
 
 TEST_F(TestBls, TestPolynomial) {
     Polynomial polynomial;
-    polynomial.GenesisInit(db_ptr, 256, 1024);
+    polynomial.GenesisInit(db_ptr, 16, 1024);
 }
 
 TEST_F(TestBls, ContributionSignAndVerify) {
