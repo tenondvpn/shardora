@@ -126,10 +126,6 @@ public:
 //                 std::string file = std::string("saved_verify_") + std::to_string(thread_idx);
 //                 FILE* saved_verify_fd = fopen(file.c_str(), "a+");
                 for (int32_t idx = b; idx < e; ++idx) {
-                    if (prefix_db_->ExistsPresetVerifyValue(idx, i)) {
-                        continue;
-                    }
-
                     bls::protobuf::BlsVerifyValue verify_val;
                     for (size_t tidx = 0; tidx < t; ++tidx) {
                         auto value = power(libff::alt_bn128_Fr(idx + 1), tidx) * g2_vec[i];
