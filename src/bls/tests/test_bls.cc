@@ -23,6 +23,7 @@
 #include "bls/bls_sign.h"
 #include "bls/bls_dkg.h"
 #include "bls/bls_manager.h"
+#include "bls/polynomial.h"
 #include "protos/bls.pb.h"
 #include "network/network_utils.h"
 
@@ -127,6 +128,11 @@ public:
         }
     }
 };
+
+TEST_F(TestBls, TestPolynomial) {
+    Polynomial polynomial;
+    polynomial.GenesisInit(db_ptr, 256, 1024);
+}
 
 TEST_F(TestBls, ContributionSignAndVerify) {
     static const uint32_t t = 700;

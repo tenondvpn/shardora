@@ -23,8 +23,10 @@ namespace bls {
 
 class Polynomial {
 public:
-    Polynomial();
-    ~Polynomial();
+    Polynomial() {}
+
+    ~Polynomial() {}
+
     int Init(std::shared_ptr<db::Db>& db, uint16_t t, uint16_t n) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
         bls::protobuf::LocalBlsItem saved_polynomial;
@@ -141,6 +143,8 @@ public:
                 fwrite(val.c_str(), 1, val.size(), saved_verify_fd);
                 prefix_db_->SavePresetVerifyValue(idx, i, verify_val);
             }
+
+            std::cout << "finished: " << i << std::endl;
         }
 
         fclose(saved_verify_fd);
