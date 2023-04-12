@@ -57,7 +57,7 @@ private:
     std::string str_prikey_;
     std::string str_addr_;
     std::string str_pk_;
-    common::UniqueMap<std::string, std::string, 10240, 16> pk_addr_map_;
+//     common::UniqueMap<std::string, std::string, 16, 4> pk_addr_map_;
 
     DISALLOW_COPY_AND_ASSIGN(Ecdsa);
 };

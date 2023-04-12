@@ -29,6 +29,10 @@ message LocalBlsItem {
     optional uint32 valid_n = 4;
 }
 
+message BlsVerifyValue {
+    repeated VerifyVecItem verify_vec = 1;
+}
+
 message VerifyVecBrdRes {
     optional bytes public_ip = 1;
     optional uint32 public_port = 2;

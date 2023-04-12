@@ -50,15 +50,17 @@ static const std::string kContractGasPrepaymentPrefix = "q\x01";
 static const std::string kBlsInfoPrefix = "r\x01";
 static const std::string kBlsVerifyValuePrefix = "s\x01";
 static const std::string kTemporaryKeyPrefix = "t\x01";
+static const std::string kPresetPolynomialPrefix = "u\x01";
+static const std::string kPresetVerifyValuePrefix = "v\x01";
 
 class PrefixDb {
 public:
     PrefixDb(const std::shared_ptr<db::Db>& db_ptr) : db_(db_ptr) {
-        gid_set_[0].reserve(30240);
-        gid_set_[1].reserve(30240);
-        db_batch_tick_.CutOff(
-            5000000lu,
-            std::bind(&PrefixDb::DumpGidToDb, this, std::placeholders::_1));
+//         gid_set_[0].reserve(30240);
+//         gid_set_[1].reserve(30240);
+//         db_batch_tick_.CutOff(
+//             5000000lu,
+//             std::bind(&PrefixDb::DumpGidToDb, this, std::placeholders::_1));
     }
 
     ~PrefixDb() {}
@@ -702,6 +704,11 @@ public:
         *prepayment = data[1];
         return true;
     }
+
+    bool ExistsBlsVerifyG2(const std::string& id) {
+        std::string key = kBlsVerifyPrefex + id;
+        return db_->Exist(key);
+    }
     
     void AddBlsVerifyG2(
             const std::string& id,
@@ -874,6 +881,7 @@ public:
         verfiy_value.set_y_c1(libBLS::ThresholdUtils::fieldElementToString(verfiy.Y.c1));
         verfiy_value.set_z_c0(libBLS::ThresholdUtils::fieldElementToString(verfiy.Z.c0));
         verfiy_value.set_z_c1(libBLS::ThresholdUtils::fieldElementToString(verfiy.Z.c1));
+        verfiy_value.set_valid_t(valid_t);
         std::string val = verfiy_value.SerializeAsString();
         auto st = db_->Put(key, val);
         if (!st.ok()) {
@@ -893,7 +901,7 @@ public:
             key.append(kBlsVerifyValuePrefix);
             key.append(id);
             key.append((char*)&idx, sizeof(idx));
-            key.append((char*)&valid_t, sizeof(valid_t));
+            key.append((char*)&i, sizeof(i));
             if (!db_->Exist(key)) {
                 continue;
             }
@@ -925,6 +933,67 @@ public:
         }
         
         return false;
+    }
+
+    void SavePresetPolynomial(const bls::protobuf::LocalBlsItem& bls_polynomial) {
+        std::string key = kPresetPolynomialPrefix;
+        std::string val = bls_polynomial.SerializeAsString();
+        auto st = db_->Put(key, val);
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+    }
+
+    bool GetPresetPolynomial(bls::protobuf::LocalBlsItem* bls_polynomial) {
+        std::string key = kPresetPolynomialPrefix;
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            ZJC_ERROR("write db failed!");
+            return false;
+        }
+
+        if (!bls_polynomial->ParseFromString(val)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    void SavePresetVerifyValue(
+            uint32_t idx, uint32_t pos, const bls::protobuf::BlsVerifyValue& verify_val) {
+        std::string key;
+        key.reserve(64);
+        key.append(kPresetPolynomialPrefix);
+        key.append((char*)&idx, sizeof(idx));
+        key.append((char*)&pos, sizeof(pos));
+        std::string val = verify_val.SerializeAsString();
+        auto st = db_->Put(key, val);
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+    }
+
+    bool GetPresetVerifyValue(
+            uint32_t idx,
+            uint32_t pos,
+            bls::protobuf::BlsVerifyValue* verify_val) {
+        std::string key;
+        key.reserve(64);
+        key.append(kPresetPolynomialPrefix);
+        key.append((char*)&idx, sizeof(idx));
+        key.append((char*)&pos, sizeof(pos));
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            ZJC_ERROR("write db failed!");
+            return false;
+        }
+
+        if (!verify_val->ParseFromString(val)) {
+            return false;
+        }
+
+        return true;
     }
 
 private:

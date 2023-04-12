@@ -222,11 +222,16 @@ static void GetPrivateKey(std::vector<std::string>& pri_vec, uint32_t n) {
         while (!feof(prikey_fd)) {
             fgets(line, 128, prikey_fd);
             pri_vec.push_back(common::Encode::HexDecode(std::string(line, 64)));
+            if (pri_vec.size() == n) {
+                break;
+            }
         }
 
         fclose(prikey_fd);
     }
 
+    ASSERT_TRUE(pri_vec.size() <= n);
+    ASSERT_TRUE(pri_vec.size() <= 1024);
     if (pri_vec.empty()) {
         FILE* prikey_fd = fopen("prikey", "w");
         for (uint32_t i = 0; i < n; ++i) {
@@ -254,11 +259,18 @@ static void CreateContribution(
             fgets(line, 1024 * 1024, rlocal_bls_fd);
             std::string val = common::Encode::HexDecode(std::string(line, strlen(line) - 1));
             bls::protobuf::LocalBlsItem local_item;
+            bls::protobuf::VerifyVecBrdReq bls_verify_req;
             ASSERT_TRUE(local_item.ParseFromString(val));
+            *bls_verify_req.mutable_verify_vec() = local_item.verify_vec();
             dkg[idx].prefix_db_->SaveBlsInfo(dkg[idx].security_, local_item);
+            dkg[idx].prefix_db_->AddBlsVerifyG2(dkg[idx].security_->GetAddress(), bls_verify_req);
             ++idx;
+            if (idx >= pri_vec.size()) {
+                break;
+            }
         }
 
+        delete[] line;
         exists = true;
         fclose(rlocal_bls_fd);
     }
@@ -288,17 +300,66 @@ static void CreateContribution(
     }
 }
 
+
+static void GetSwapSeckeyMessage(
+        BlsDkg* dkg,
+        int32_t n,
+        std::vector<transport::MessagePtr>& swap_sec_msgs) {
+    FILE* rswap_seckey_fd = fopen("./swap_keys", "r");
+    if (rswap_seckey_fd != nullptr) {
+        char* line = new char[1024 * 1024];
+        uint32_t idx = 0;
+        while (!feof(rswap_seckey_fd)) {
+            fgets(line, 1024 * 1024, rswap_seckey_fd);
+            std::string val = common::Encode::HexDecode(std::string(line, strlen(line) - 1));
+            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            msg_ptr->thread_idx = 0;
+            ASSERT_TRUE(msg_ptr->header.ParseFromString(val));
+            swap_sec_msgs.push_back(msg_ptr);
+            if (swap_sec_msgs.size() >= n) {
+                break;
+            }
+        }
+
+        delete[] line;
+        fclose(rswap_seckey_fd);
+    }
+
+    if (swap_sec_msgs.size() >= n) {
+        return;
+    }
+        
+    FILE* swap_seckey_fd = fopen("./swap_keys", "w");
+    for (uint32_t i = 0; i < n; ++i) {
+        //         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
+        //         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
+        bls_manager->security_ = dkg[i].security_;
+        //         dkg[i].security_ = tmp_security_ptr;
+        //         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
+        dkg[i].SwapSecKey(0);
+        swap_sec_msgs.push_back(dkg[i].sec_swap_msgs_);
+        std::string val = common::Encode::HexEncode(dkg[i].sec_swap_msgs_->header.SerializeAsString()) + "\n";
+        fwrite(val.c_str(), 1, val.size(), swap_seckey_fd);
+    }
+
+    fclose(swap_seckey_fd);
+
+}
 TEST_F(TestBls, AllSuccess) {
 //     static const uint32_t t = 700;
 //     static const uint32_t n = 1024;
     static const uint32_t n = 1024;
     static const uint32_t t = common::GetSignerCount(n);
-
+    std::vector<std::string> pri_vec;
+    GetPrivateKey(pri_vec, n);
     BlsDkg* dkg = new BlsDkg[n];
+    system("sudo rm -rf ./db_*");
     for (uint32_t i = 0; i < n; i++) {
+        std::shared_ptr<security::Security> tmp_security_ptr = std::make_shared<security::Ecdsa>();
+        tmp_security_ptr->SetPrivateKey(pri_vec[i]);
         dkg[i].Init(
             bls_manager,
-            security_ptr,
+            tmp_security_ptr,
             t,
             n,
             libff::alt_bn128_Fr::zero(),
@@ -308,11 +369,8 @@ TEST_F(TestBls, AllSuccess) {
     }
 
     common::MembersPtr members = std::make_shared<common::Members>();
-    std::vector<std::string> pri_vec;
-    GetPrivateKey(pri_vec, n);
     for (uint32_t i = 0; i < pri_vec.size(); ++i) {
-        auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
-        tmp_security_ptr->SetPrivateKey(pri_vec[i]);
+        auto tmp_security_ptr = dkg[i].security_;
         std::string pubkey_str = tmp_security_ptr->GetPublicKey();
         std::string id = tmp_security_ptr->GetAddress();
         auto member = std::make_shared<common::BftMember>(
@@ -320,8 +378,6 @@ TEST_F(TestBls, AllSuccess) {
         member->public_ip = common::IpToUint32("127.0.0.1");
         member->public_port = 123;
         members->push_back(member);
-        bls_manager->security_ = tmp_security_ptr;
-        dkg[i].security_ = tmp_security_ptr;
     }
 
     auto time0 = common::TimeUtils::TimestampUs();
@@ -340,7 +396,7 @@ TEST_F(TestBls, AllSuccess) {
             }
 //             auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
 //             tmp_security_ptr->SetPrivateKey(pri_vec[j]);
-//             bls_manager->security_ = tmp_security_ptr;
+            bls_manager->security_ = dkg[j].security_;
 //             dkg[j].security_ = tmp_security_ptr;
 //             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
             auto msg_ptr = verify_brd_msgs[i];
@@ -355,18 +411,11 @@ TEST_F(TestBls, AllSuccess) {
     std::cout << "1: " << (time2 - time1) << std::endl;
     // swap sec key
     std::vector<transport::MessagePtr> swap_sec_msgs;
-    for (uint32_t i = 0; i < n; ++i) {
-//         auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
-//         tmp_security_ptr->SetPrivateKey(pri_vec[i]);
-//         bls_manager->security_ = tmp_security_ptr;
-//         dkg[i].security_ = tmp_security_ptr;
-//         SetGloableInfo(pri_vec[i], network::kConsensusShardBeginNetworkId);
-        dkg[i].SwapSecKey(0);
-        swap_sec_msgs.push_back(dkg[i].sec_swap_msgs_);
-    }
-
+    GetSwapSeckeyMessage(dkg, n, swap_sec_msgs);
+    ASSERT_EQ(swap_sec_msgs.size(), n);
     auto time3 = common::TimeUtils::TimestampUs();
     std::cout << "2: " << (time3 - time2) << std::endl;
+    FILE* verify_fd = fopen("verify_value", "w");
     for (uint32_t i = 0; i < n; ++i) {
         auto t0 = common::TimeUtils::TimestampUs();
         for (uint32_t j = 0; j < n; ++j) {
@@ -376,16 +425,41 @@ TEST_F(TestBls, AllSuccess) {
 
 //             auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
 //             tmp_security_ptr->SetPrivateKey(pri_vec[j]);
-//             bls_manager->security_ = tmp_security_ptr;
+            bls_manager->security_ = dkg[j].security_;
 //             dkg[j].security_ = tmp_security_ptr;
 //             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
             auto msg_ptr = swap_sec_msgs[i];
             msg_ptr->thread_idx = 0;
             dkg[j].HandleMessage(msg_ptr);
+            libff::alt_bn128_G2 verfiy = libff::alt_bn128_G2::zero();
+            uint32_t saved_valid_t = 0;
+            dkg[j].prefix_db_->GetBlsVerifyValue(
+                (*members)[i]->id,
+                j,
+                t,
+                &saved_valid_t,
+                &verfiy);
+            ASSERT_EQ(saved_valid_t, t);
+            std::string key;
+            key.reserve(128);
+            key.append(protos::kBlsVerifyValuePrefix);
+            key.append((*members)[i]->id);
+            key.append((char*)&i, sizeof(i));
+            key.append((char*)&saved_valid_t, sizeof(saved_valid_t));
+            elect::protobuf::VerifyVecValue verfiy_value;
+            verfiy_value.set_x_c0(libBLS::ThresholdUtils::fieldElementToString(verfiy.X.c0));
+            verfiy_value.set_x_c1(libBLS::ThresholdUtils::fieldElementToString(verfiy.X.c1));
+            verfiy_value.set_y_c0(libBLS::ThresholdUtils::fieldElementToString(verfiy.Y.c0));
+            verfiy_value.set_y_c1(libBLS::ThresholdUtils::fieldElementToString(verfiy.Y.c1));
+            verfiy_value.set_z_c0(libBLS::ThresholdUtils::fieldElementToString(verfiy.Z.c0));
+            verfiy_value.set_z_c1(libBLS::ThresholdUtils::fieldElementToString(verfiy.Z.c1));
+            std::string val = common::Encode::HexEncode(key + verfiy_value.SerializeAsString()) + "\n";
+            fwrite(val.c_str(), 1, val.size(), verify_fd);
         }
         auto t1 = common::TimeUtils::TimestampUs();
     }
 
+    fclose(verify_fd);
     swap_sec_msgs.swap(tmp_vec);
     auto time4 = common::TimeUtils::TimestampUs();
     std::cout << "3: " << (time4 - time3) << std::endl;

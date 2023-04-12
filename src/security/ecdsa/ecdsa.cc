@@ -62,14 +62,14 @@ const std::string& Ecdsa::GetAddress() const {
 }
 
 std::string Ecdsa::GetAddress(const std::string& pubkey) {
-    std::string addr;
-    if (pk_addr_map_.get(pubkey, &addr)) {
-        return addr;
-    }
-
-    addr = Secp256k1::Instance()->ToAddressWithPublicKey(curve_, pubkey);
-    pk_addr_map_.add(pubkey, addr);
-    return addr;
+//     std::string addr;
+//     if (pk_addr_map_.get(pubkey, &addr)) {
+//         return addr;
+//     }
+// 
+    return Secp256k1::Instance()->ToAddressWithPublicKey(curve_, pubkey);
+//     pk_addr_map_.add(pubkey, addr);
+//     return addr;
 }
 
 const std::string& Ecdsa::GetPublicKey() const {

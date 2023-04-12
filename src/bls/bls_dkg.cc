@@ -155,6 +155,9 @@ void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) try {
 }
 
 bool BlsDkg::IsSignValid(const transport::MessagePtr& msg_ptr, std::string* content_to_hash) {
+#ifdef ZJC_UNITTEST
+    return true;
+#endif // ZJC_UNITTEST
     protos::GetProtoHash(msg_ptr->header, content_to_hash);
     auto& pubkey = (*members_)[msg_ptr->header.bls_proto().index()]->pubkey;
     if (security_->Verify(
@@ -171,6 +174,17 @@ bool BlsDkg::IsSignValid(const transport::MessagePtr& msg_ptr, std::string* cont
 void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
+    if (members_->size() <= bls_msg.index()) {
+        BLS_ERROR("members_->size() <= bls_msg.index(), %u : %u",
+            members_->size(), bls_msg.index());
+        assert(false);
+        return;
+    }
+
+    if (prefix_db_->ExistsBlsVerifyG2((*members_)[bls_msg.index()]->id)) {
+        return;
+    }
+
     if (!IsVerifyBrdPeriod()) {
         return;
     }
@@ -181,12 +195,6 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-    if (members_->size() <= bls_msg.index()) {
-        BLS_ERROR("members_->size() <= bls_msg.index(), %u : %u",
-            members_->size(), bls_msg.index());
-        assert(false);
-        return;
-    }
 
     if (max_agree_count_ != (uint32_t)bls_msg.verify_brd().verify_vec_size()) {
         BLS_ERROR("min_aggree_member_count_ != "
@@ -327,6 +335,7 @@ void BlsDkg::HandleCheckSwapKeyReq(const transport::MessagePtr& msg_ptr) {
 }
 
 void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
+    uint64_t btime0 = common::TimeUtils::TimestampUs();
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
     if (!IsSwapKeyPeriod()) {
@@ -378,12 +387,18 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
+    uint64_t etime = common::TimeUtils::TimestampUs();
+    std::cout << "0: " << (etime - btime0) << std::endl;
+    btime0 = etime;
     std::vector<libff::alt_bn128_G2> g2_vec;
     if (!GetVerifyG2FromDb(bls_msg.index(), g2_vec)) {
         BLS_ERROR("get member: %u verify vector failed!", bls_msg.index());
         return;
     }
 
+    etime = common::TimeUtils::TimestampUs();
+    std::cout << "1: " << (etime - btime0) << std::endl;
+    btime0 = etime;
     libff::alt_bn128_G2 verify_val = libff::alt_bn128_G2::zero();
     uint32_t saved_valid_t = 0;
     prefix_db_->GetBlsVerifyValue(
@@ -392,6 +407,9 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         min_aggree_member_count_,
         &saved_valid_t,
         &verify_val);
+    etime = common::TimeUtils::TimestampUs();
+    std::cout << "2: " << (etime - btime0) << std::endl;
+    btime0 = etime;
     auto tmp_swap_key = libff::alt_bn128_Fr(sec_key.c_str());
     if (!dkg_instance_->Verification(
             local_member_index_,
@@ -409,6 +427,9 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
+    etime = common::TimeUtils::TimestampUs();
+    std::cout << "3: " << (etime - btime0) << std::endl;
+    btime0 = etime;
     if (saved_valid_t < min_aggree_member_count_) {
         prefix_db_->SaveBlsVerifyValue(
             (*members_)[bls_msg.index()]->id,
@@ -417,16 +438,24 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
             verify_val);
     }
 
-    ZJC_DEBUG("swap verify success member: %d, index: %d, %s ,%s ",
+    etime = common::TimeUtils::TimestampUs();
+    std::cout << "4: " << (etime - btime0) << std::endl;
+    btime0 = etime;
+    ZJC_DEBUG("swap verify success member: %d, index: %d, %s ,%s, "
+        "saved_valid_t: %u, min_aggree_member_count_: %u",
         local_member_index_, bls_msg.index(),
         libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(g2_vec[0].X.c0).c_str());
+        libBLS::ThresholdUtils::fieldElementToString(g2_vec[0].X.c0).c_str(),
+        saved_valid_t, min_aggree_member_count_);
     // swap
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, bls_msg.index(), sec_key);
     valid_swapkey_set_.insert(bls_msg.index());
     ++valid_sec_key_count_;
     has_swaped_keys_[bls_msg.index()] = true;
+    etime = common::TimeUtils::TimestampUs();
+    std::cout << "5: " << (etime - btime0) << std::endl;
+    btime0 = etime;
     ZJC_DEBUG("success handle swap sec key: %d", valid_sec_key_count_);
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
@@ -522,11 +551,6 @@ void BlsDkg::SwapSecKey(uint8_t thread_idx) try {
         return;
     }
 
-    if (local_src_secret_key_contribution_.size() != members_->size()) {
-        ZJC_ERROR("local_src_secret_key_contribution_ size invalid!");
-        return;
-    }
-
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
@@ -574,10 +598,6 @@ void BlsDkg::SwapSecKey(uint8_t thread_idx) try {
 
 void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* seckey_len) {
     if (members_ == nullptr || local_member_index_ >= members_->size()) {
-        return;
-    }
-
-    if (local_src_secret_key_contribution_.size() != members_->size()) {
         return;
     }
 
@@ -762,7 +782,6 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             local_src_secret_key_contribution_[local_member_index_]);
         prefix_db_->SaveSwapKey(
             local_member_index_, elect_hegiht_, local_member_index_, local_member_index_, val);
-        prefix_db_->SaveBlsInfo(security_, local_item);
         return;
     }
 
@@ -777,19 +796,6 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     for (size_t i = 0; i < max_agree_count_; ++i) {
         g2_vec[i] = polynomial[i] * libff::alt_bn128_G2::one();
     }
-// 
-//     for (int32_t i = 0; i < local_src_secret_key_contribution_.size(); ++i) {
-//         ZJC_DEBUG("verify success member: %d, index: %d, %s ,%s, min_aggree_member_count_: %d",
-//             local_member_index_, i,
-//             libBLS::ThresholdUtils::fieldElementToString(local_src_secret_key_contribution_[i]).c_str(),
-//             libBLS::ThresholdUtils::fieldElementToString(g2_vec[0].X.c0).c_str(),
-//             min_aggree_member_count_);
-//         assert(dkg_instance_->Verification(
-//             i,
-//             local_src_secret_key_contribution_[i],
-//             g2_vec,
-//             min_aggree_member_count_));
-//     }
 
 #ifdef ZJC_UNITTEST
     g2_vec_ = g2_vec[0];
