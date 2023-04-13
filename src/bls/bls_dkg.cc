@@ -37,7 +37,7 @@ void BlsDkg::Init(
         std::shared_ptr<db::Db>& db) {
     bls_mgr_ = bls_mgr;
     security_ = security;
-    min_aggree_member_count_ = t;
+    min_aggree_member_count_ = common::GetSignerCount(n);
     member_count_ = n;
     local_sec_key_ = local_sec_key;
     local_publick_key_ = local_publick_key;
