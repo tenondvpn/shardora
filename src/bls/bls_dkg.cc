@@ -336,7 +336,6 @@ void BlsDkg::HandleCheckSwapKeyReq(const transport::MessagePtr& msg_ptr) {
 }
 
 void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
-    uint64_t btime0 = common::TimeUtils::TimestampUs();
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
     if (!IsSwapKeyPeriod()) {
@@ -388,9 +387,6 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-    uint64_t etime = common::TimeUtils::TimestampUs();
-    std::cout << "0: " << (etime - btime0) << std::endl;
-    btime0 = etime;
     libff::alt_bn128_G2 first_g2 = libff::alt_bn128_G2::zero();
     auto tmp_swap_key = libff::alt_bn128_Fr(sec_key.c_str());
     if (!VerifySekkeyValid(local_member_index_, bls_msg.index(), tmp_swap_key)) {
@@ -401,9 +397,6 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         assert(false);
         return;
     }
-    etime = common::TimeUtils::TimestampUs();
-    std::cout << "1: " << (etime - btime0) << std::endl;
-    btime0 = etime;
     ZJC_DEBUG("swap verify success member: %d, index: %d, %s, min_aggree_member_count_: %u",
         local_member_index_, bls_msg.index(),
         libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
@@ -414,20 +407,15 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     valid_swapkey_set_.insert(bls_msg.index());
     ++valid_sec_key_count_;
     has_swaped_keys_[bls_msg.index()] = true;
-    etime = common::TimeUtils::TimestampUs();
-    std::cout << "2: " << (etime - btime0) << std::endl;
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
 }
 
 bool BlsDkg::VerifySekkeyValid(uint32_t idx, uint32_t peer_index, libff::alt_bn128_Fr& seckey) {
     bls::protobuf::BlsVerifyValue verify_val;
-    uint64_t btime0 = common::TimeUtils::TimestampUs();
     libff::alt_bn128_G2 g2_val = GetVerifyG2FromDb(peer_index);
     libff::alt_bn128_G2 value = power(libff::alt_bn128_Fr(idx + 1), 0) * g2_val;
     if (prefix_db_->GetPresetVerifyValue(idx, 0, &verify_val)) {
-        std::cout << "success get verify val: " << verify_val.verify_vec_size()
-            << ", " << (min_aggree_member_count_ - 1) << std::endl;
         if (verify_val.verify_vec_size() >= min_aggree_member_count_ - 1) {
             auto& item = verify_val.verify_vec(min_aggree_member_count_ - 2);
             auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
@@ -439,14 +427,8 @@ bool BlsDkg::VerifySekkeyValid(uint32_t idx, uint32_t peer_index, libff::alt_bn1
             auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
             auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
             auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
-            uint64_t etime = common::TimeUtils::TimestampUs();
-            std::cout << "t 1: " << (etime - btime0) << std::endl;
-            btime0 = etime;
             value = value + libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-            bool eq = value == seckey * libff::alt_bn128_G2::one();
-            etime = common::TimeUtils::TimestampUs();
-            std::cout << "t 2: " << (etime - btime0) << std::endl;
-            return eq;
+            return value == seckey * libff::alt_bn128_G2::one();
         }
     }
 
