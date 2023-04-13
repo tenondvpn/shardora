@@ -282,56 +282,41 @@ static void CreateContribution(
         const std::vector<std::string>& pri_vec,
         std::shared_ptr<TimeBlockItem>& latest_timeblock_info,
         std::vector<transport::MessagePtr>& verify_brd_msgs) {
-    FILE* rlocal_bls_fd = fopen("local_bls", "r");
-    bool exists = false;
-    if (rlocal_bls_fd != nullptr) {
-        char* line = new char[1024 * 1024];
-        uint32_t idx = 0;
-        while (!feof(rlocal_bls_fd)) {
-            fgets(line, 1024 * 1024, rlocal_bls_fd);
-            std::string val = common::Encode::HexDecode(std::string(line, strlen(line) - 1));
-            bls::protobuf::LocalBlsItem local_item;
-            bls::protobuf::VerifyVecBrdReq bls_verify_req;
-            ASSERT_TRUE(local_item.ParseFromString(val));
-            *bls_verify_req.mutable_verify_vec() = local_item.verify_vec();
-            dkg[idx].prefix_db_->SaveBlsInfo(dkg[idx].security_, local_item);
-            dkg[idx].prefix_db_->AddBlsVerifyG2(dkg[idx].security_->GetAddress(), bls_verify_req);
-            ++idx;
-            if (idx >= pri_vec.size()) {
-                break;
-            }
-        }
-
-        delete[] line;
-        exists = true;
-        fclose(rlocal_bls_fd);
-    }
-
-    FILE* local_bls_fd = nullptr;
-    if (!exists) {
-        local_bls_fd = fopen("local_bls", "w");
-    }
-
-    for (uint32_t i = 0; i < pri_vec.size(); ++i) {
-        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
-        dkg[i].local_member_index_ = i;
-        dkg[i].BroadcastVerfify(0);
-        verify_brd_msgs.push_back(dkg[i].ver_brd_msg_);
-        ASSERT_EQ(dkg[i].ver_brd_msg_->header.bls_proto().elect_height(), 1);
-        dkg[i].ver_brd_msg_ = nullptr;
-        if (!exists) {
-            bls::protobuf::LocalBlsItem local_item;
-            ASSERT_TRUE(dkg[i].prefix_db_->GetBlsInfo(dkg[i].security_, &local_item));
-            std::string val = common::Encode::HexEncode(local_item.SerializeAsString()) + "\n";
-            fwrite(val.c_str(), 1, val.size(), local_bls_fd);
+    static const uint32_t kThreadCount = 4;
+    std::vector<transport::MessagePtr> tmp_verify_brd_msgs[kThreadCount];
+    auto test_func = [&](uint32_t b, uint32_t e, uint32_t thread_idx) {
+        for (uint32_t i = b; i < e; ++i) {
+            dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
+            dkg[i].local_member_index_ = i;
+            dkg[i].BroadcastVerfify(0);
+            tmp_verify_brd_msgs[thread_idx].push_back(dkg[i].ver_brd_msg_);
+            ASSERT_EQ(dkg[i].ver_brd_msg_->header.bls_proto().elect_height(), 1);
+            dkg[i].ver_brd_msg_ = nullptr;
         }
     }
 
-    if (!exists) {
-        fclose(local_bls_fd);
+    std::vector<std::thread> thread_vec;
+    for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+        int32_t b = (pri_vec.size() / kThreadCount) * thread_idx;
+        int32_t e = (pri_vec.size() / kThreadCount) * (thread_idx + 1);
+        if (thread_idx == kThreadCount - 1) {
+            e += pri_vec.size() % kThreadCount;
+        }
+
+        std::cout << thread_idx << " : " << b << ", " << e << std::endl;
+        thread_vec.push_back(std::thread(test_func, b, e, thread_idx));
+    }
+
+    for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+        thread_vec[thread_idx].join();
+    }
+
+    for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+        for (uint32_t j = 0; j < tmp_verify_brd_msgs[thread_idx].size(); ++j) {
+            verify_brd_msgs.push_back(tmp_verify_brd_msgs[thread_idx][j]);
+        }
     }
 }
-
 
 static void GetSwapSeckeyMessage(
         BlsDkg* dkg,
