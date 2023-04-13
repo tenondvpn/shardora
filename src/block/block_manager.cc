@@ -439,12 +439,12 @@ void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {
             ZJC_INFO("get block with height success: %u, %u, %lu",
                 network::kRootCongressNetworkId,
                 common::kRootChainPoolIndex,
-                elect_block.elect_height())
+                elect_block.elect_height());
         } else {
             ZJC_FATAL("get block with height failed: %u, %u, %lu",
                 network::kRootCongressNetworkId,
                 common::kRootChainPoolIndex,
-                elect_block.elect_height())
+                elect_block.elect_height());
         }
     }
 
