@@ -38,7 +38,7 @@ namespace protobuf_protos_2fbls_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[13];
+  static const ::google::protobuf::internal::ParseTable schema[14];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -57,6 +57,9 @@ extern BlsMessageDefaultTypeInternal _BlsMessage_default_instance_;
 class BlsPublicKey;
 class BlsPublicKeyDefaultTypeInternal;
 extern BlsPublicKeyDefaultTypeInternal _BlsPublicKey_default_instance_;
+class BlsVerifyValue;
+class BlsVerifyValueDefaultTypeInternal;
+extern BlsVerifyValueDefaultTypeInternal _BlsVerifyValue_default_instance_;
 class CheckSwapKeyReq;
 class CheckSwapKeyReqDefaultTypeInternal;
 extern CheckSwapKeyReqDefaultTypeInternal _CheckSwapKeyReq_default_instance_;
@@ -95,6 +98,7 @@ namespace protobuf {
 template<> ::zjchain::bls::protobuf::AgainstParticipant* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::AgainstParticipant>(Arena*);
 template<> ::zjchain::bls::protobuf::BlsMessage* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::BlsMessage>(Arena*);
 template<> ::zjchain::bls::protobuf::BlsPublicKey* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::BlsPublicKey>(Arena*);
+template<> ::zjchain::bls::protobuf::BlsVerifyValue* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::BlsVerifyValue>(Arena*);
 template<> ::zjchain::bls::protobuf::CheckSwapKeyReq* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::CheckSwapKeyReq>(Arena*);
 template<> ::zjchain::bls::protobuf::CheckVerfiyReq* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::CheckVerfiyReq>(Arena*);
 template<> ::zjchain::bls::protobuf::FinishBroadcast* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::FinishBroadcast>(Arena*);
@@ -778,6 +782,123 @@ class LocalBlsItem : public ::google::protobuf::Message /* @@protoc_insertion_po
 };
 // -------------------------------------------------------------------
 
+class BlsVerifyValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.bls.protobuf.BlsVerifyValue) */ {
+ public:
+  BlsVerifyValue();
+  virtual ~BlsVerifyValue();
+
+  BlsVerifyValue(const BlsVerifyValue& from);
+
+  inline BlsVerifyValue& operator=(const BlsVerifyValue& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  BlsVerifyValue(BlsVerifyValue&& from) noexcept
+    : BlsVerifyValue() {
+    *this = ::std::move(from);
+  }
+
+  inline BlsVerifyValue& operator=(BlsVerifyValue&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const BlsVerifyValue& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const BlsVerifyValue* internal_default_instance() {
+    return reinterpret_cast<const BlsVerifyValue*>(
+               &_BlsVerifyValue_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    4;
+
+  void Swap(BlsVerifyValue* other);
+  friend void swap(BlsVerifyValue& a, BlsVerifyValue& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline BlsVerifyValue* New() const final {
+    return CreateMaybeMessage<BlsVerifyValue>(NULL);
+  }
+
+  BlsVerifyValue* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<BlsVerifyValue>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const BlsVerifyValue& from);
+  void MergeFrom(const BlsVerifyValue& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(BlsVerifyValue* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated .zjchain.bls.protobuf.VerifyVecItem verify_vec = 1;
+  int verify_vec_size() const;
+  void clear_verify_vec();
+  static const int kVerifyVecFieldNumber = 1;
+  ::zjchain::bls::protobuf::VerifyVecItem* mutable_verify_vec(int index);
+  ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::VerifyVecItem >*
+      mutable_verify_vec();
+  const ::zjchain::bls::protobuf::VerifyVecItem& verify_vec(int index) const;
+  ::zjchain::bls::protobuf::VerifyVecItem* add_verify_vec();
+  const ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::VerifyVecItem >&
+      verify_vec() const;
+
+  // @@protoc_insertion_point(class_scope:zjchain.bls.protobuf.BlsVerifyValue)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::VerifyVecItem > verify_vec_;
+  friend struct ::protobuf_protos_2fbls_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class VerifyVecBrdRes : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.bls.protobuf.VerifyVecBrdRes) */ {
  public:
   VerifyVecBrdRes();
@@ -820,7 +941,7 @@ class VerifyVecBrdRes : public ::google::protobuf::Message /* @@protoc_insertion
                &_VerifyVecBrdRes_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    5;
 
   void Swap(VerifyVecBrdRes* other);
   friend void swap(VerifyVecBrdRes& a, VerifyVecBrdRes& b) {
@@ -952,7 +1073,7 @@ class SwapSecKeyItem : public ::google::protobuf::Message /* @@protoc_insertion_
                &_SwapSecKeyItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    6;
 
   void Swap(SwapSecKeyItem* other);
   friend void swap(SwapSecKeyItem& a, SwapSecKeyItem& b) {
@@ -1084,7 +1205,7 @@ class SwapSecKeyReq : public ::google::protobuf::Message /* @@protoc_insertion_p
                &_SwapSecKeyReq_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    7;
 
   void Swap(SwapSecKeyReq* other);
   friend void swap(SwapSecKeyReq& a, SwapSecKeyReq& b) {
@@ -1201,7 +1322,7 @@ class SwapSecKeyRes : public ::google::protobuf::Message /* @@protoc_insertion_p
                &_SwapSecKeyRes_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    8;
 
   void Swap(SwapSecKeyRes* other);
   friend void swap(SwapSecKeyRes& a, SwapSecKeyRes& b) {
@@ -1343,7 +1464,7 @@ class AgainstParticipant : public ::google::protobuf::Message /* @@protoc_insert
                &_AgainstParticipant_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    9;
 
   void Swap(AgainstParticipant* other);
   friend void swap(AgainstParticipant& a, AgainstParticipant& b) {
@@ -1457,7 +1578,7 @@ class FinishBroadcast : public ::google::protobuf::Message /* @@protoc_insertion
                &_FinishBroadcast_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    10;
 
   void Swap(FinishBroadcast* other);
   friend void swap(FinishBroadcast& a, FinishBroadcast& b) {
@@ -1650,7 +1771,7 @@ class CheckVerfiyReq : public ::google::protobuf::Message /* @@protoc_insertion_
                &_CheckVerfiyReq_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    11;
 
   void Swap(CheckVerfiyReq* other);
   friend void swap(CheckVerfiyReq& a, CheckVerfiyReq& b) {
@@ -1764,7 +1885,7 @@ class CheckSwapKeyReq : public ::google::protobuf::Message /* @@protoc_insertion
                &_CheckSwapKeyReq_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    12;
 
   void Swap(CheckSwapKeyReq* other);
   friend void swap(CheckSwapKeyReq& a, CheckSwapKeyReq& b) {
@@ -1878,7 +1999,7 @@ class BlsMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
                &_BlsMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    13;
 
   void Swap(BlsMessage* other);
   friend void swap(BlsMessage& a, BlsMessage& b) {
@@ -2891,6 +3012,40 @@ inline void LocalBlsItem::set_valid_n(::google::protobuf::uint32 value) {
   set_has_valid_n();
   valid_n_ = value;
   // @@protoc_insertion_point(field_set:zjchain.bls.protobuf.LocalBlsItem.valid_n)
+}
+
+// -------------------------------------------------------------------
+
+// BlsVerifyValue
+
+// repeated .zjchain.bls.protobuf.VerifyVecItem verify_vec = 1;
+inline int BlsVerifyValue::verify_vec_size() const {
+  return verify_vec_.size();
+}
+inline void BlsVerifyValue::clear_verify_vec() {
+  verify_vec_.Clear();
+}
+inline ::zjchain::bls::protobuf::VerifyVecItem* BlsVerifyValue::mutable_verify_vec(int index) {
+  // @@protoc_insertion_point(field_mutable:zjchain.bls.protobuf.BlsVerifyValue.verify_vec)
+  return verify_vec_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::VerifyVecItem >*
+BlsVerifyValue::mutable_verify_vec() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.bls.protobuf.BlsVerifyValue.verify_vec)
+  return &verify_vec_;
+}
+inline const ::zjchain::bls::protobuf::VerifyVecItem& BlsVerifyValue::verify_vec(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.bls.protobuf.BlsVerifyValue.verify_vec)
+  return verify_vec_.Get(index);
+}
+inline ::zjchain::bls::protobuf::VerifyVecItem* BlsVerifyValue::add_verify_vec() {
+  // @@protoc_insertion_point(field_add:zjchain.bls.protobuf.BlsVerifyValue.verify_vec)
+  return verify_vec_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::VerifyVecItem >&
+BlsVerifyValue::verify_vec() const {
+  // @@protoc_insertion_point(field_list:zjchain.bls.protobuf.BlsVerifyValue.verify_vec)
+  return verify_vec_;
 }
 
 // -------------------------------------------------------------------
@@ -3968,6 +4123,8 @@ inline void BlsMessage::set_elect_height(::google::protobuf::uint64 value) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
