@@ -322,16 +322,38 @@ static void GetSwapSeckeyMessage(
         BlsDkg* dkg,
         int32_t n,
         std::vector<transport::MessagePtr>& swap_sec_msgs) {
-    FILE* swap_seckey_fd = fopen("./swap_keys", "w");
-    for (uint32_t i = 0; i < n; ++i) {
-        bls_manager->security_ = dkg[i].security_;
-        dkg[i].SwapSecKey(0);
-        swap_sec_msgs.push_back(dkg[i].sec_swap_msgs_);
-        std::string val = common::Encode::HexEncode(dkg[i].sec_swap_msgs_->header.SerializeAsString()) + "\n";
-        fwrite(val.c_str(), 1, val.size(), swap_seckey_fd);
+    static const uint32_t kThreadCount = 4;
+    std::vector<transport::MessagePtr> swap_sec_msgs_thread[kThreadCount];
+    std::vector<transport::MessagePtr> tmp_verify_brd_msgs[kThreadCount];
+    auto test_func = [&](uint32_t b, uint32_t e, uint32_t thread_idx) {
+        for (uint32_t i = b; i < e; ++i) {
+            bls_manager->security_ = dkg[i].security_;
+            dkg[i].SwapSecKey(0);
+            swap_sec_msgs_thread[thread_idx].push_back(dkg[i].sec_swap_msgs_);
+        }
+    };
+
+    std::vector<std::thread> thread_vec;
+    for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+        int32_t b = (pri_vec.size() / kThreadCount) * thread_idx;
+        int32_t e = (pri_vec.size() / kThreadCount) * (thread_idx + 1);
+        if (thread_idx == kThreadCount - 1) {
+            e += pri_vec.size() % kThreadCount;
+        }
+
+        std::cout << thread_idx << " : " << b << ", " << e << std::endl;
+        thread_vec.push_back(std::thread(test_func, b, e, thread_idx));
     }
 
-    fclose(swap_seckey_fd);
+    for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+        thread_vec[thread_idx].join();
+    }
+
+    for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+        for (uint32_t j = 0; j < swap_sec_msgs_thread[thread_idx].size(); ++j) {
+            swap_sec_msgs.push_back(swap_sec_msgs_thread[thread_idx][j]);
+        }
+    }
 }
 
 static void HandleSwapSeckey(
