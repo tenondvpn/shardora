@@ -293,7 +293,7 @@ static void CreateContribution(
             ASSERT_EQ(dkg[i].ver_brd_msg_->header.bls_proto().elect_height(), 1);
             dkg[i].ver_brd_msg_ = nullptr;
         }
-    }
+    };
 
     std::vector<std::thread> thread_vec;
     for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
