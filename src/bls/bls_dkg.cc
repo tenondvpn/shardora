@@ -418,12 +418,12 @@ void BlsDkg::LoadAllVerifyValues() {
         ZJC_FATAL("load verifcation values failed: %d!", local_member_index_);
     }
 
-    for (int32_t i = 0; i < verify_val.verify_vec_size(); ++i) {
-        if (verify_value_vec_.size() != local_member_index_ - 1) {
-            ZJC_FATAL("load verifcation values failed: %d!", local_member_index_);
-            return;
-        }
+    if (verify_val.verify_vec_size() != local_member_index_ - 1) {
+        ZJC_FATAL("load verifcation values failed: %d!", local_member_index_);
+        return;
+    }
 
+    for (int32_t i = 0; i < verify_val.verify_vec_size(); ++i) {
         auto& item = verify_val.verify_vec(min_aggree_member_count_ - 2);
         auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
         auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
@@ -436,7 +436,6 @@ void BlsDkg::LoadAllVerifyValues() {
         auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
         verify_value_vec_.push_back(libff::alt_bn128_G2(x_coord, y_coord, z_coord));
     }
-
 }
 
 bool BlsDkg::VerifySekkeyValid(uint32_t idx, uint32_t peer_index, libff::alt_bn128_Fr& seckey) {
