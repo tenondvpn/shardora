@@ -40,7 +40,8 @@ int GlobalInfo::Init(const common::Config& config) {
     if (!config.Get("zjchain", "http_port", http_port_)) {
         http_port_ = 0;
     }
-
+       
+    config.Get("zjchain", "sharding_min_nodes_count", sharding_min_nodes_count_);
     config.Get("zjchain", "tcp_spec", tcp_spec_);
     config.Get("zjchain", "for_ck", for_ck_server_);
     config.Get("zjchain", "each_shard_max_members", each_shard_max_members_);

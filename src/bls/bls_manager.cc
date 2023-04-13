@@ -48,6 +48,12 @@ BlsManager::BlsManager(
 BlsManager::~BlsManager() {}
 
 void BlsManager::TimerMessage(const transport::MessagePtr& msg_ptr) {
+    if (network::DhtManager::Instance()->valid_count(
+        common::GlobalInfo::Instance()->network_id()) <
+        common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
+        return;
+    }
+
     if (waiting_bls_ != nullptr) {
         waiting_bls_->TimerMessage(msg_ptr);
     }
