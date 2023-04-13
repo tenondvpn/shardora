@@ -91,9 +91,12 @@ void VssManager::OnTimeBlock(
 }
 
 void VssManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
-    BroadcastFirstPeriodHash(msg_ptr->thread_idx);
-    BroadcastSecondPeriodRandom(msg_ptr->thread_idx);
-    BroadcastThirdPeriodRandom(msg_ptr->thread_idx);
+    if (sharding_id == network::kRootCongressNetworkId &&
+            common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+        BroadcastFirstPeriodHash(msg_ptr->thread_idx);
+        BroadcastSecondPeriodRandom(msg_ptr->thread_idx);
+        BroadcastThirdPeriodRandom(msg_ptr->thread_idx);
+    }
 }
 
 void VssManager::OnNewElectBlock(
@@ -224,6 +227,10 @@ bool VssManager::IsVssThirdPeriodsHandleMessage() {
 }
 
 void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
+    if (elect_item_[elect_valid_index_].members == nullptr) {
+        return;
+    }
+
     auto now_us = common::TimeUtils::TimestampUs();
     auto rand_tm = std::rand() % 60000000lu;
     if (first_prev_tm_ + 1000000lu >= now_us) {
@@ -401,7 +408,7 @@ void VssManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& vss_msg = header.vss_proto();
     auto& elect_item = elect_item_[elect_valid_index_];
     if (vss_msg.member_index() >= elect_item.member_count) {
-        ZJC_ERROR("mmeber index invalid.");
+        ZJC_ERROR("member index invalid.");
         return;
     }
 
