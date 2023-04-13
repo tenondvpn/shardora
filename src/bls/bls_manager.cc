@@ -52,11 +52,11 @@ void BlsManager::TimerMessage(const transport::MessagePtr& msg_ptr) {
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) <
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
+        ZJC_DEBUG("nodes count error.");
         return;
     }
 
     if (waiting_bls_ != nullptr) {
-        ZJC_DEBUG("bls timer called!");
         waiting_bls_->TimerMessage(msg_ptr);
     }
 }
