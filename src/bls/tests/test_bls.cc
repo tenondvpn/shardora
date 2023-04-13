@@ -426,16 +426,40 @@ static void HandleSwapSeckey(
 }
 
 TEST_F(TestBls, LagrangeCoeffs) {
-    const uint32_t t = 684;
-    std::vector<size_t> idx_vec(t);
-    for (int32_t i = 0; i < t; ++i) {
-        idx_vec[i] = i + 1;
+    const uint32_t n = 1024;
+    const uint32_t t = common::GetSignerCount(n);
+    std::vector<libff::alt_bn128_G1> signs;
+    std::vector<size_t> idx_vec_all(n);
+    for (int32_t i = 0; i < n; ++i) {
+        idx_vec_all[i] = i + 1;
+        if (i < t) {
+            signs.push_back(libff::alt_bn128_Fr::random_element() * libff::alt_bn128_G1::one());
+        }
     }
 
+    std::random_shuffle(idx_vec_all.begin(), idx_vec_all.end());
+    std::vector<size_t> idx_vec(idx_vec_all.begin(), idx_vec_all.begin() + t);
+    std::sort(idx_vec.begin(), idx_vec.end());
+    ASSERT_TRUE(idx_vec[1] > idx_vec[0]);
     auto time5 = common::TimeUtils::TimestampUs();
-    auto lagrange_coeffs = libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t);
+    std::vector< libff::alt_bn128_Fr > lagrange_coeffs(t);
+    libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
     auto time61 = common::TimeUtils::TimestampUs();
-    std::cout << "LagrangeCoeffs : " << (time61 - time5) << std::endl;
+    std::unordered_set<std::string> unique_set;
+    for (int32_t i = 0; i < lagrange_coeffs.size(); ++i) {
+        unique_set.insert(libBLS::ThresholdUtils::fieldElementToString(lagrange_coeffs[i]));
+    }
+    libBLS::Bls bls_instance = libBLS::Bls(t, n);
+    std::cout << "LagrangeCoeffs : " << (time61 - time5)
+        << ", size: " << unique_set.size()
+        << ", real size: " << lagrange_coeffs.size() << std::endl;
+
+    time5 = common::TimeUtils::TimestampUs();
+    libff::alt_bn128_G1 agg_sign = bls_instance.SignatureRecover(
+        signs,
+        lagrange_coeffs);
+    auto time6 = common::TimeUtils::TimestampUs();
+    std::cout << "SignatureRecover 5: " << (time6 - time5) << std::endl;
 }
 
 TEST_F(TestBls, FileSigns) {

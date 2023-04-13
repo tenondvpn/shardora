@@ -315,7 +315,8 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
         //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
 
-        auto lagrange_coeffs = libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t);
+        std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
+        libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
         //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
 
@@ -477,7 +478,8 @@ int Zbft::LeaderCreateCommitAggSign() {
 
     try {
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
-        auto lagrange_coeffs = libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t);
+        std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
+        libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
         bls_commit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(bls_instance.SignatureRecover(
             all_signs,
             lagrange_coeffs));
