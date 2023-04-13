@@ -121,13 +121,7 @@ int NetworkInit::Init(int argc, char** argv) {
     bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_);
     elect_mgr_ = std::make_shared<elect::ElectManager>(
         vss_mgr_, block_mgr_, security_, bls_mgr_, db_,
-        std::bind(
-            &NetworkInit::ElectBlockCallback,
-            this,
-            std::placeholders::_1,
-            std::placeholders::_2,
-            std::placeholders::_3,
-            std::placeholders::_4));
+        nullptr);
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(block_mgr_, security_, db_, kv_sync_);
     account_mgr_->Init(
         common::GlobalInfo::Instance()->message_handler_thread_count(),
@@ -208,18 +202,6 @@ void NetworkInit::InitLocalNetworkId() {
     }
 
     CheckJoinWaitingPool();
-}
-
-void NetworkInit::ElectBlockCallback(
-        uint32_t sharding_id,
-        uint64_t elect_height,
-        common::MembersPtr& members,
-        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
-    bft_mgr_->OnNewElectBlock(sharding_id, members);
-    block_mgr_->OnNewElectBlock(sharding_id, members);
-    vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
-    bls_mgr_->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
-    network::UniversalManager::Instance()->OnNewElectBlock(sharding_id, elect_height, members);
 }
 
 int NetworkInit::CheckJoinWaitingPool() {
@@ -697,6 +679,9 @@ void NetworkInit::DbNewBlockCallback(
         case pools::protobuf::kConsensusRootTimeBlock:
             HandleTimeBlock(thread_idx, block, db_batch);
             break;
+        case pools::protobuf::kConsensusRootElectShard:
+            HandleElectionBlock(thread_idx, block, db_batch);
+            break;
         default:
             break;
         }
@@ -721,6 +706,37 @@ void NetworkInit::HandleTimeBlock(
         }
     }
 }
+
+void NetworkInit::HandleElectionBlock(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block,
+        db::DbWriteBatch& db_batch) {
+    auto elect_block = std::make_shared<elect::protobuf::ElectBlock>();
+    for (int32_t i = 0; i < block->tx_list(0).storages_size(); ++i) {
+        if (block->tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
+            if (!elect_block->ParseFromString(block->tx_list(0).storages(i).val_hash())) {
+                ZJC_FATAL("parse elect block failed!");
+                return;
+            }
+
+            break;
+        }
+    }
+    auto members = elect_mgr_->OnNewElectBlock(thread_idx, block->height(), elect_block);
+    if (members == nullptr) {
+        ZJC_FATAL("parse elect block failed!");
+        return;
+    }
+
+    auto elect_height = block->height();
+    auto sharding_id = elect_block->shard_network_id();
+    bft_mgr_->OnNewElectBlock(sharding_id, members);
+    block_mgr_->OnNewElectBlock(sharding_id, members);
+    vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
+    bls_mgr_->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
+    network::UniversalManager::Instance()->OnNewElectBlock(sharding_id, elect_height, members);
+}
+
 
 }  // namespace init
 

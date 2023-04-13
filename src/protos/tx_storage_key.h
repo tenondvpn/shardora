@@ -15,7 +15,11 @@ static const std::string kLocalNormalTos = "__local_tos";
 static const std::string kConsensusLocalNormalTos = "__consensus_local_tos";
 static const std::string kCreateContractCallerSharding = "__new_contract_user_shard";
 static const std::string kCreateContractBytesCode = "__kCreateContractBytesCode";
-
+static const std::string kElectNodeAttrKeyAllBloomfilter = "__elect_allbloomfilter";
+static const std::string kElectNodeAttrKeyWeedoutBloomfilter = "__elect_weedoutbloomfilter";
+static const std::string kElectNodeAttrKeyAllPickBloomfilter = "__elect_allpickbloomfilter";
+static const std::string kElectNodeAttrKeyPickInBloomfilter = "__elect_pickinbloomfilter";
+static const std::string kElectNodeAttrElectBlock = "__elect_block";
 };  // namespace protos
 
 };  // namespace zjchain

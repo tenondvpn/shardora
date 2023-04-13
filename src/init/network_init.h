@@ -44,11 +44,6 @@ private:
     int InitSecurity();
     int CheckJoinWaitingPool();
     int GenesisCmd(common::ParserArgs& parser_arg);
-    void ElectBlockCallback(
-        uint32_t sharding_id,
-        uint64_t elect_height,
-        common::MembersPtr& members,
-        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block);
     void AddBlockItemToCache(
         uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,
@@ -59,6 +54,10 @@ private:
         const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);
     void HandleTimeBlock(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block,
+        db::DbWriteBatch& db_batch);
+    void HandleElectionBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);

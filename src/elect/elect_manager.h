@@ -59,7 +59,7 @@ public:
         const block::protobuf::BlockTx& local_tx_info,
         const block::protobuf::BlockTx& tx_info);
     void OnTimeBlock(uint64_t tm_block_tm);
-    void OnNewElectBlock(
+    common::MembersPtr OnNewElectBlock(
         uint8_t thread_idx,
         uint64_t height,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block);

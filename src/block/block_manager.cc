@@ -416,6 +416,28 @@ void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {
             }
         }
     }
+
+    for (uint32_t i = network::kRootCongressNetworkId;
+            i < network::kConsensusShardEndNetworkId; ++i) {
+        elect::protobuf::ElectBlock elect_block;
+        if (!prefix_db_->GetLatestElectBlock(i, &elect_block)) {
+            break;
+        }
+
+        auto elect_block_ptr = std::make_shared<block::protobuf::Block>();
+        auto& block = *elect_block_ptr;
+        if (GetBlockWithHeight(
+                network::kRootCongressNetworkId,
+                common::kRootChainPoolIndex,
+                elect_block.elect_height(),
+                block) == kBlockSuccess) {
+            if (new_block_callback_ != nullptr) {
+                new_block_callback_(thread_idx, elect_block_ptr, db_batch);
+            }
+        }
+    }
+
+    db_->Put(db_batch);
 }
 
 int BlockManager::GetBlockWithHeight(
