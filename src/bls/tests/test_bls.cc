@@ -64,6 +64,7 @@ public:
                 uint32_t idx = int_data[1];
                 bls::protobuf::BlsVerifyValue verify_val;
                 ASSERT_TRUE(verify_val.ParseFromArray(val.c_str() + 8, val.size() - 8));
+                std::cout << "save idx: " << idx << ", val size: " << verify_val.verify_vec_size() << std::endl;
                 prefix_db->SavePresetVerifyValue(idx, 0, verify_val);
                 ++idx;
                 if (idx >= 1024) {
