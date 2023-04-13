@@ -300,13 +300,14 @@ int GenesisBlockInit::CreateElectBlock(
         prev_members->set_prev_elect_height(prev_height);
     }
 
+    tenon_block->set_height(height);
+    ec_block.set_elect_height(tenon_block->height());
     auto storage = tx_info->add_storages();
     storage->set_key(protos::kElectNodeAttrElectBlock);
     storage->set_val_hash(ec_block.SerializeAsString());
     tenon_block->set_prehash(root_pre_hash);
     tenon_block->set_version(common::kTransactionVersion);
     tenon_block->set_pool_index(common::kRootChainPoolIndex);
-    tenon_block->set_height(height);
     const auto& bitmap_data = root_bitmap_.data();
     for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
         tenon_block->add_precommit_bitmap(bitmap_data[i]);
@@ -314,7 +315,6 @@ int GenesisBlockInit::CreateElectBlock(
 
     tenon_block->set_network_id(network::kRootCongressNetworkId);
     tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-    ec_block.set_elect_height(tenon_block->height());
     prefix_db_->SaveLatestElectBlock(ec_block);
     fputs((common::Encode::HexEncode(tenon_block->SerializeAsString()) + "\n").c_str(),
         root_gens_init_block_file);
