@@ -282,7 +282,7 @@ static void CreateContribution(
         const std::vector<std::string>& pri_vec,
         std::shared_ptr<TimeBlockItem>& latest_timeblock_info,
         std::vector<transport::MessagePtr>& verify_brd_msgs) {
-    static const uint32_t kThreadCount = 4;
+    static const int32_t kThreadCount = 4;
     std::vector<transport::MessagePtr> tmp_verify_brd_msgs[kThreadCount];
     auto test_func = [&](uint32_t b, uint32_t e, uint32_t thread_idx) {
         for (uint32_t i = b; i < e; ++i) {
@@ -322,7 +322,7 @@ static void GetSwapSeckeyMessage(
         BlsDkg* dkg,
         int32_t n,
         std::vector<transport::MessagePtr>& swap_sec_msgs) {
-    static const uint32_t kThreadCount = 4;
+    static const int32_t kThreadCount = 4;
     std::vector<transport::MessagePtr> swap_sec_msgs_thread[kThreadCount];
     std::vector<transport::MessagePtr> tmp_verify_brd_msgs[kThreadCount];
     auto test_func = [&](uint32_t b, uint32_t e, uint32_t thread_idx) {
@@ -360,7 +360,7 @@ static void HandleSwapSeckey(
         BlsDkg* dkg,
         const std::vector<std::string>& pri_vec,
         const std::vector<transport::MessagePtr>& verify_brd_msgs) {
-    static const uint32_t kThreadCount = 4;
+    static const int32_t kThreadCount = 4;
     uint32_t n = pri_vec.size();
     std::vector<transport::MessagePtr> tmp_verify_brd_msgs[kThreadCount];
     auto test_func = [&](uint32_t b, uint32_t e, uint32_t thread_idx) {
