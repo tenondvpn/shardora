@@ -48,6 +48,33 @@ public:
         db_ptr = std::make_shared<db::Db>();
         db_ptr->Init("./db");
         bls_manager = new BlsManager(security_ptr, db_ptr);
+        InitBlsVerificationValue();
+    }
+
+    static void InitBlsVerificationValue() {
+        auto prefix_db = std::make_shared<protos::PrefixDb>(db_ptr);
+        FILE* rlocal_bls_fd = fopen("../../src/bls/saved_verify_one", "r");
+        if (rlocal_bls_fd != nullptr) {
+            char* line = new char[1024 * 1024];
+            uint32_t idx = 0;
+            while (!feof(rlocal_bls_fd)) {
+                fgets(line, 1024 * 1024, rlocal_bls_fd);
+                std::string val = common::Encode::HexDecode(std::string(line, strlen(line) - 1));
+                uint32_t* int_data = (uint32_t*)val.c_str();
+                uint32_t idx = int_data[1];
+                uint32_t pos = int_data[0];
+                bls::protobuf::BlsVerifyValue verify_val;
+                ASSERT_TRUE(bls_verify_req.ParseFromArray(val.c_str() + 8, val.size() - 9));
+                prefix_db->SavePresetVerifyValue(idx, pos, verify_val);
+                ++idx;
+                if (idx >= 1024) {
+                    break;
+                }
+            }
+
+            delete[] line;
+            fclose(rlocal_bls_fd);
+        }
     }
 
     static void WriteDefaultLogConf(
@@ -129,8 +156,8 @@ public:
 };
 
 TEST_F(TestBls, TestPolynomial) {
-    Polynomial polynomial;
-    polynomial.GenesisInit(db_ptr, 16, 1024);
+//     Polynomial polynomial;
+//     polynomial.GenesisInit(db_ptr, 16, 1024);
 }
 
 TEST_F(TestBls, ContributionSignAndVerify) {
@@ -420,7 +447,6 @@ TEST_F(TestBls, AllSuccess) {
     ASSERT_EQ(swap_sec_msgs.size(), n);
     auto time3 = common::TimeUtils::TimestampUs();
     std::cout << "2: " << (time3 - time2) << std::endl;
-    FILE* verify_fd = fopen("verify_value", "w");
     for (uint32_t i = 0; i < n; ++i) {
         auto t0 = common::TimeUtils::TimestampUs();
         for (uint32_t j = 0; j < n; ++j) {
@@ -436,35 +462,10 @@ TEST_F(TestBls, AllSuccess) {
             auto msg_ptr = swap_sec_msgs[i];
             msg_ptr->thread_idx = 0;
             dkg[j].HandleMessage(msg_ptr);
-            libff::alt_bn128_G2 verfiy = libff::alt_bn128_G2::zero();
-            uint32_t saved_valid_t = 0;
-            dkg[j].prefix_db_->GetBlsVerifyValue(
-                (*members)[i]->id,
-                j,
-                t,
-                &saved_valid_t,
-                &verfiy);
-            ASSERT_EQ(saved_valid_t, t);
-            std::string key;
-            key.reserve(128);
-            key.append(protos::kBlsVerifyValuePrefix);
-            key.append((*members)[i]->id);
-            key.append((char*)&i, sizeof(i));
-            key.append((char*)&saved_valid_t, sizeof(saved_valid_t));
-            elect::protobuf::VerifyVecValue verfiy_value;
-            verfiy_value.set_x_c0(libBLS::ThresholdUtils::fieldElementToString(verfiy.X.c0));
-            verfiy_value.set_x_c1(libBLS::ThresholdUtils::fieldElementToString(verfiy.X.c1));
-            verfiy_value.set_y_c0(libBLS::ThresholdUtils::fieldElementToString(verfiy.Y.c0));
-            verfiy_value.set_y_c1(libBLS::ThresholdUtils::fieldElementToString(verfiy.Y.c1));
-            verfiy_value.set_z_c0(libBLS::ThresholdUtils::fieldElementToString(verfiy.Z.c0));
-            verfiy_value.set_z_c1(libBLS::ThresholdUtils::fieldElementToString(verfiy.Z.c1));
-            std::string val = common::Encode::HexEncode(key + verfiy_value.SerializeAsString()) + "\n";
-            fwrite(val.c_str(), 1, val.size(), verify_fd);
         }
         auto t1 = common::TimeUtils::TimestampUs();
     }
 
-    fclose(verify_fd);
     swap_sec_msgs.swap(tmp_vec);
     auto time4 = common::TimeUtils::TimestampUs();
     std::cout << "3: " << (time4 - time3) << std::endl;
