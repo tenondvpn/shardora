@@ -255,6 +255,7 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     auto& bls_msg = header.bls_proto();
     if (bls_msg.finish_req().network_id() < network::kRootCongressNetworkId ||
             bls_msg.finish_req().network_id() >= network::kConsensusShardEndNetworkId) {
+        ZJC_DEBUG("finish network error: %d", bls_msg.finish_req().network_id());
         return;
     }
 
@@ -273,6 +274,8 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
             msg_hash,
             (*members)[bls_msg.index()]->pubkey,
             msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        BLS_ERROR("verify message failed network id: %u, index: %d",
+            bls_msg.finish_req().network_id(), bls_msg.index());
         return;
     }
 
@@ -325,6 +328,7 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     }
 
     if (finish_item->verified[bls_msg.index()]) {
+        ZJC_DEBUG("has verifed member: %d", bls_msg.index());
         return;
     }
 
