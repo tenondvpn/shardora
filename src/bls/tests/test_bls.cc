@@ -337,29 +337,29 @@ static void GetSwapSeckeyMessage(
         BlsDkg* dkg,
         int32_t n,
         std::vector<transport::MessagePtr>& swap_sec_msgs) {
-    FILE* rswap_seckey_fd = fopen("./swap_keys", "r");
-    if (rswap_seckey_fd != nullptr) {
-        char* line = new char[1024 * 1024];
-        uint32_t idx = 0;
-        while (!feof(rswap_seckey_fd)) {
-            fgets(line, 1024 * 1024, rswap_seckey_fd);
-            std::string val = common::Encode::HexDecode(std::string(line, strlen(line) - 1));
-            auto msg_ptr = std::make_shared<transport::TransportMessage>();
-            msg_ptr->thread_idx = 0;
-            ASSERT_TRUE(msg_ptr->header.ParseFromString(val));
-            swap_sec_msgs.push_back(msg_ptr);
-            if (swap_sec_msgs.size() >= n) {
-                break;
-            }
-        }
-
-        delete[] line;
-        fclose(rswap_seckey_fd);
-    }
-
-    if (swap_sec_msgs.size() >= n) {
-        return;
-    }
+//     FILE* rswap_seckey_fd = fopen("./swap_keys", "r");
+//     if (rswap_seckey_fd != nullptr) {
+//         char* line = new char[1024 * 1024];
+//         uint32_t idx = 0;
+//         while (!feof(rswap_seckey_fd)) {
+//             fgets(line, 1024 * 1024, rswap_seckey_fd);
+//             std::string val = common::Encode::HexDecode(std::string(line, strlen(line) - 1));
+//             auto msg_ptr = std::make_shared<transport::TransportMessage>();
+//             msg_ptr->thread_idx = 0;
+//             ASSERT_TRUE(msg_ptr->header.ParseFromString(val));
+//             swap_sec_msgs.push_back(msg_ptr);
+//             if (swap_sec_msgs.size() >= n) {
+//                 break;
+//             }
+//         }
+// 
+//         delete[] line;
+//         fclose(rswap_seckey_fd);
+//     }
+// 
+//     if (swap_sec_msgs.size() >= n) {
+//         return;
+//     }
         
     FILE* swap_seckey_fd = fopen("./swap_keys", "w");
     for (uint32_t i = 0; i < n; ++i) {

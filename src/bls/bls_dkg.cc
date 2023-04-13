@@ -424,7 +424,7 @@ bool BlsDkg::VerifySekkeyValid(uint32_t idx, uint32_t peer_index, libff::alt_bn1
     libff::alt_bn128_G2 value = power(libff::alt_bn128_Fr(idx + 1), 0) * g2_val;
     if (prefix_db_->GetPresetVerifyValue(idx, 0, &verify_val)) {
         if (verify_val.verify_vec_size() >= min_aggree_member_count_) {
-            auto& item = verify_val.verify_vec(min_aggree_member_count_ - 1);
+            auto& item = verify_val.verify_vec(min_aggree_member_count_);
             auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
             auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
             auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
