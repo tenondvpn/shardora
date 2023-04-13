@@ -154,6 +154,9 @@ private:
     uint64_t ver_offset_ = 0;
     uint64_t swap_offset_ = 0;
     uint64_t finish_offset_ = 0;
+    libff::alt_bn128_Fr common_polynomial_ = libff::alt_bn128_Fr::one();
+    libff::alt_bn128_G2 common_g2_ = libff::alt_bn128_Fr::one() * libff::alt_bn128_G2::one();
+    std::vector<libff::alt_bn128_G2> idx_values_;
 
 #ifdef ZJC_UNITTEST
     transport::MessagePtr ver_brd_msg_;

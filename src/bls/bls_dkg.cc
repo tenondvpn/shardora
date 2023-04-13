@@ -99,6 +99,7 @@ void BlsDkg::OnNewElectionBlock(
     ver_offset_ += rand() % kDkgPeriodUs;
     swap_offset_ += rand() % kDkgPeriodUs;
     finish_offset_ += rand() % kDkgPeriodUs;
+
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
 }

@@ -81,6 +81,28 @@ public:
         return kBlsSuccess;
     }
 
+    int GenerateVerifications(std::shared_ptr<db::Db>& db, uint16_t t, uint16_t n) {
+        for (uint16_t i = 0; i < n; ++i) {
+            for (uint16_t j = 0; j < t; ++t) {
+                auto value = power(libff::alt_bn128_Fr(idx + 1), tidx) * libff::alt_bn128_G2::one();
+                bls::protobuf::VerifyVecItem& verify_item = *verify_val.add_verify_vec();
+                verify_item.set_x_c0(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(value.X.c0)));
+                verify_item.set_x_c1(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(value.X.c1)));
+                verify_item.set_y_c0(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(value.Y.c0)));
+                verify_item.set_y_c1(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(value.Y.c1)));
+                verify_item.set_z_c0(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(value.Z.c0)));
+                verify_item.set_z_c1(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(value.Z.c1)));
+            }
+        }
+        return kBlsSuccess;
+    }
+
     int GenesisInit(std::shared_ptr<db::Db>& db, uint16_t count, uint16_t n) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
         auto dkg_instance = std::make_shared<libBLS::Dkg>(count, count);
@@ -120,61 +142,59 @@ public:
 
         uint16_t t = common::GetSignerCount(n);
         static const uint32_t kThreadCount = 8;
-        for (int32_t i = 0; i < g2_vec.size(); ++i) {
-            auto btime = common::TimeUtils::TimestampUs();
-            auto run_func = [&](int32_t b, int32_t e, int thread_idx) {
-                std::string file = std::string("saved_verify_") + std::to_string(thread_idx);
-                FILE* saved_verify_fd = fopen(file.c_str(), "a+");
-                for (int32_t idx = b; idx < e; ++idx) {
-                    bls::protobuf::BlsVerifyValue verify_val;
-                    for (size_t tidx = 0; tidx < t; ++tidx) {
-                        auto value = power(libff::alt_bn128_Fr(idx + 1), tidx) * g2_vec[i];
-                        bls::protobuf::VerifyVecItem& verify_item = *verify_val.add_verify_vec();
-                        verify_item.set_x_c0(common::Encode::HexDecode(
-                            libBLS::ThresholdUtils::fieldElementToString(value.X.c0)));
-                        verify_item.set_x_c1(common::Encode::HexDecode(
-                            libBLS::ThresholdUtils::fieldElementToString(value.X.c1)));
-                        verify_item.set_y_c0(common::Encode::HexDecode(
-                            libBLS::ThresholdUtils::fieldElementToString(value.Y.c0)));
-                        verify_item.set_y_c1(common::Encode::HexDecode(
-                            libBLS::ThresholdUtils::fieldElementToString(value.Y.c1)));
-                        verify_item.set_z_c0(common::Encode::HexDecode(
-                            libBLS::ThresholdUtils::fieldElementToString(value.Z.c0)));
-                        verify_item.set_z_c1(common::Encode::HexDecode(
-                            libBLS::ThresholdUtils::fieldElementToString(value.Z.c1)));
-                    }
-
-                    char data[8];
-                    uint32_t* int_data = (uint32_t*)data;
-                    int_data[0] = i;
-                    int_data[1] = idx;
-                    std::string val = common::Encode::HexEncode(std::string(data, sizeof(data)) + verify_val.SerializeAsString()) + "\n";
-                    fwrite(val.c_str(), 1, val.size(), saved_verify_fd);
-                    prefix_db_->SavePresetVerifyValue(idx, i, verify_val);
+        auto btime = common::TimeUtils::TimestampUs();
+        auto run_func = [&](int32_t b, int32_t e, int thread_idx) {
+            std::string file = std::string("saved_verify_one_") + std::to_string(thread_idx);
+            FILE* saved_verify_fd = fopen(file.c_str(), "a+");
+            for (int32_t idx = b; idx < e; ++idx) {
+                bls::protobuf::BlsVerifyValue verify_val;
+                for (size_t tidx = 0; tidx < t; ++tidx) {
+                    auto value = power(libff::alt_bn128_Fr(idx + 1), tidx) * libff::alt_bn128_G2::one();
+                    bls::protobuf::VerifyVecItem& verify_item = *verify_val.add_verify_vec();
+                    verify_item.set_x_c0(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(value.X.c0)));
+                    verify_item.set_x_c1(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(value.X.c1)));
+                    verify_item.set_y_c0(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(value.Y.c0)));
+                    verify_item.set_y_c1(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(value.Y.c1)));
+                    verify_item.set_z_c0(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(value.Z.c0)));
+                    verify_item.set_z_c1(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(value.Z.c1)));
                 }
 
-                fclose(saved_verify_fd);
-            };
-
-            std::vector<std::thread> thread_vec;
-            for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
-                int32_t b = (n / kThreadCount) * thread_idx;
-                int32_t e = (n / kThreadCount) * (thread_idx + 1);
-                if (thread_idx == kThreadCount - 1) {
-                    e += n % kThreadCount;
-                }
-
-                std::cout << thread_idx << " : " << b << ", " << e << std::endl;
-                thread_vec.push_back(std::thread(run_func, b, e, thread_idx));
+                char data[8];
+                uint32_t* int_data = (uint32_t*)data;
+                int_data[0] = i;
+                int_data[1] = idx;
+                std::string val = common::Encode::HexEncode(std::string(data, sizeof(data)) + verify_val.SerializeAsString()) + "\n";
+                fwrite(val.c_str(), 1, val.size(), saved_verify_fd);
+                prefix_db_->SavePresetVerifyValue(idx, i, verify_val);
             }
 
-            for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
-                thread_vec[thread_idx].join();
+            fclose(saved_verify_fd);
+        };
+
+        std::vector<std::thread> thread_vec;
+        for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+            int32_t b = (n / kThreadCount) * thread_idx;
+            int32_t e = (n / kThreadCount) * (thread_idx + 1);
+            if (thread_idx == kThreadCount - 1) {
+                e += n % kThreadCount;
             }
 
-            auto etime = common::TimeUtils::TimestampUs();
-            std::cout << "finished: " << i << ", use time us: " << (etime - btime) << std::endl;
+            std::cout << thread_idx << " : " << b << ", " << e << std::endl;
+            thread_vec.push_back(std::thread(run_func, b, e, thread_idx));
         }
+
+        for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+            thread_vec[thread_idx].join();
+        }
+
+        auto etime = common::TimeUtils::TimestampUs();
+        std::cout << "finished: " << 0 << ", use time us: " << (etime - btime) << std::endl;
 
         return kBlsSuccess;
     }
