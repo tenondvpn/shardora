@@ -262,7 +262,7 @@ common::MembersPtr ElectManager::OnNewElectBlock(
     std::lock_guard<std::mutex> guard(elect_members_mutex_);
     if (elect_block.shard_network_id() >= network::kConsensusShardEndNetworkId ||
             elect_block.shard_network_id() < network::kRootCongressNetworkId) {
-        return;
+        return nullptr;
     }
 
     bool elected = false;
@@ -369,7 +369,7 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
     elect::protobuf::ElectBlock prev_elect_block;
     bool ec_block_loaded = false;
     for (int32_t i = 0; i < block_item.tx_list(0).storages_size(); ++i) {
-        if (block_item.tx_list(0).storages(i).key() == elect::kElectNodeAttrElectBlock) {
+        if (block_item.tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
             prev_elect_block.ParseFromString(block_item.tx_list(0).storages(i).val_hash());
             ec_block_loaded = true;
             break;

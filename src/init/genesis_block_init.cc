@@ -301,7 +301,7 @@ int GenesisBlockInit::CreateElectBlock(
     }
 
     auto storage = tx_info->add_storages();
-    storage->set_key(elect::kElectNodeAttrElectBlock);
+    storage->set_key(protos::kElectNodeAttrElectBlock);
     storage->set_val_hash(ec_block.SerializeAsString());
     tenon_block->set_prehash(root_pre_hash);
     tenon_block->set_version(common::kTransactionVersion);
@@ -592,7 +592,7 @@ int GenesisBlockInit::GenerateShardSingleBlock() {
         block_mgr_->NetworkNewBlock(0, tenon_block);
         for (int32_t i = 0; i < tenon_block->tx_list_size(); ++i) {
             for (int32_t j = 0; j < tenon_block->tx_list(i).storages_size(); ++j) {
-                if (tenon_block->tx_list(i).storages(j).key() == elect::kElectNodeAttrElectBlock) {
+                if (tenon_block->tx_list(i).storages(j).key() == protos::kElectNodeAttrElectBlock) {
                     elect::protobuf::ElectBlock ec_block;
                     if (!ec_block.ParseFromString(tenon_block->tx_list(i).storages(j).val_hash())) {
                         assert(false);

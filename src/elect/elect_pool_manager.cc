@@ -129,16 +129,16 @@ int ElectPoolManager::GetElectionTxInfo(block::protobuf::BlockTx& tx_info) {
     }
 
     auto all_exits_attr = tx_info.add_storages();
-    all_exits_attr->set_key(kElectNodeAttrKeyAllBloomfilter);
+    all_exits_attr->set_key(protos::kElectNodeAttrKeyAllBloomfilter);
     all_exits_attr->set_val_hash(cons_all.Serialize());
     auto weed_out_attr = tx_info.add_storages();
-    weed_out_attr->set_key(kElectNodeAttrKeyWeedoutBloomfilter);
+    weed_out_attr->set_key(protos::kElectNodeAttrKeyWeedoutBloomfilter);
     weed_out_attr->set_val_hash(cons_weed_out.Serialize());
     auto all_pick_attr = tx_info.add_storages();
-    all_pick_attr->set_key(kElectNodeAttrKeyAllPickBloomfilter);
+    all_pick_attr->set_key(protos::kElectNodeAttrKeyAllPickBloomfilter);
     all_pick_attr->set_val_hash(pick_all.Serialize());
     auto pick_in_attr = tx_info.add_storages();
-    pick_in_attr->set_key(kElectNodeAttrKeyPickInBloomfilter);
+    pick_in_attr->set_key(protos::kElectNodeAttrKeyPickInBloomfilter);
     pick_in_attr->set_val_hash(pick_in.Serialize());
     elect::protobuf::ElectBlock ec_block;
     int32_t idx = 0;
@@ -163,7 +163,7 @@ int ElectPoolManager::GetElectionTxInfo(block::protobuf::BlockTx& tx_info) {
     }
 
     auto ec_block_attr = tx_info.add_storages();
-    ec_block_attr->set_key(kElectNodeAttrElectBlock);
+    ec_block_attr->set_key(protos::kElectNodeAttrElectBlock);
     ec_block_attr->set_val_hash(ec_block.SerializeAsString());
     return kElectSuccess;
 }
@@ -841,7 +841,7 @@ int ElectPoolManager::GetAllTxInfoBloomFiler(
         common::BloomFilter* pick_in,
         elect::protobuf::ElectBlock* ec_block) {
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
-        if (tx_info.storages(i).key() == kElectNodeAttrKeyAllBloomfilter) {
+        if (tx_info.storages(i).key() == protos::kElectNodeAttrKeyAllBloomfilter) {
             if (tx_info.storages(i).val_hash().size() != kBloomfilterSize / 8) {
                 return kElectError;
             }
@@ -852,7 +852,7 @@ int ElectPoolManager::GetAllTxInfoBloomFiler(
                 kBloomfilterHashCount);
         }
 
-        if (tx_info.storages(i).key() == kElectNodeAttrKeyWeedoutBloomfilter) {
+        if (tx_info.storages(i).key() == protos::kElectNodeAttrKeyWeedoutBloomfilter) {
             if (tx_info.storages(i).val_hash().size() != kBloomfilterSize / 8) {
                 return kElectError;
             }
@@ -863,7 +863,7 @@ int ElectPoolManager::GetAllTxInfoBloomFiler(
                 kBloomfilterHashCount);
         }
 
-        if (tx_info.storages(i).key() == kElectNodeAttrKeyAllPickBloomfilter) {
+        if (tx_info.storages(i).key() == protos::kElectNodeAttrKeyAllPickBloomfilter) {
             if (tx_info.storages(i).val_hash().size() != kBloomfilterWaitingSize / 8) {
                 return kElectError;
             }
@@ -874,7 +874,7 @@ int ElectPoolManager::GetAllTxInfoBloomFiler(
                 kBloomfilterWaitingHashCount);
         }
 
-        if (tx_info.storages(i).key() == kElectNodeAttrKeyPickInBloomfilter) {
+        if (tx_info.storages(i).key() == protos::kElectNodeAttrKeyPickInBloomfilter) {
             if (tx_info.storages(i).val_hash().size() != kBloomfilterSize / 8) {
                 return kElectError;
             }
@@ -885,7 +885,7 @@ int ElectPoolManager::GetAllTxInfoBloomFiler(
                 kBloomfilterHashCount);
         }
 
-        if (tx_info.storages(i).key() == kElectNodeAttrElectBlock) {
+        if (tx_info.storages(i).key() == protos::kElectNodeAttrElectBlock) {
             if (!ec_block->ParseFromString(tx_info.storages(i).val_hash())) {
                 return kElectError;
             }
