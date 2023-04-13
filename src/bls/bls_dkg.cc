@@ -393,7 +393,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     btime0 = etime;
     libff::alt_bn128_G2 first_g2 = libff::alt_bn128_G2::zero();
     auto tmp_swap_key = libff::alt_bn128_Fr(sec_key.c_str());
-    if (!VerifySekkeyValid(local_member_index_, tmp_swap_key)) {
+    if (!VerifySekkeyValid(local_member_index_, bls_msg.index(), tmp_swap_key)) {
         ZJC_ERROR("verify error member: %d, index: %d, %s , min_aggree_member_count_: %d",
             local_member_index_, bls_msg.index(),
             libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
@@ -418,10 +418,10 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     BLS_ERROR("catch error: %s", e.what());
 }
 
-bool BlsDkg::VerifySekkeyValid(uint32_t idx, libff::alt_bn128_Fr& seckey) {
+bool BlsDkg::VerifySekkeyValid(uint32_t idx, uint32_t peer_index, libff::alt_bn128_Fr& seckey) {
     bls::protobuf::BlsVerifyValue verify_val;
-    libff::alt_bn128_G2 g2_val = GetVerifyG2FromDb(bls_msg.index());
-    libff::alt_bn128_G2 value = power(libff::alt_bn128_Fr(idx + 1), i) * first_g2;
+    libff::alt_bn128_G2 g2_val = GetVerifyG2FromDb(peer_index);
+    libff::alt_bn128_G2 value = power(libff::alt_bn128_Fr(idx + 1), 0) * g2_val;
     if (prefix_db_->GetPresetVerifyValue(idx, 0, &verify_val)) {
         if (verify_val.verify_vec_size() >= min_aggree_member_count_) {
             auto& item = verify_val.verify_vec(min_aggree_member_count_ - 1);
