@@ -64,7 +64,7 @@ public:
                 uint32_t idx = int_data[1];
                 uint32_t pos = int_data[0];
                 bls::protobuf::BlsVerifyValue verify_val;
-                ASSERT_TRUE(bls_verify_req.ParseFromArray(val.c_str() + 8, val.size() - 9));
+                ASSERT_TRUE(verify_val.ParseFromArray(val.c_str() + 8, val.size() - 9));
                 prefix_db->SavePresetVerifyValue(idx, pos, verify_val);
                 ++idx;
                 if (idx >= 1024) {
