@@ -73,7 +73,10 @@ void GenesisBlockInit::InitBlsVerificationValue() {
             uint32_t* int_data = (uint32_t*)val.c_str();
             uint32_t idx = int_data[1];
             bls::protobuf::BlsVerifyValue verify_val;
-            ASSERT_TRUE(verify_val.ParseFromArray(val.c_str() + 8, val.size() - 8));
+            if (!verify_val.ParseFromArray(val.c_str() + 8, val.size() - 8)) {
+                ZJC_FATAL("parse BlsVerifyValue failed!");
+            }
+
             prefix_db_->SavePresetVerifyValue(idx, 0, verify_val);
             ++idx;
             if (idx >= 1024) {
