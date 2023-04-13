@@ -312,7 +312,7 @@ int GenesisBlockInit::CreateElectBlock(
         tenon_block->add_precommit_bitmap(bitmap_data[i]);
     }
 
-    tenon_block->set_network_id(kRootCongressNetworkId);
+    tenon_block->set_network_id(network::kRootCongressNetworkId);
     tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
     ec_block.set_elect_height(tenon_block->height());
     prefix_db_->SaveLatestElectBlock(ec_block);
