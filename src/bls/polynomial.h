@@ -149,7 +149,7 @@ public:
                 int_data[1] = idx;
                 std::string val = common::Encode::HexEncode(std::string(data, sizeof(data)) + verify_val.SerializeAsString()) + "\n";
                 fwrite(val.c_str(), 1, val.size(), saved_verify_fd);
-                prefix_db_->SavePresetVerifyValue(idx, i, verify_val);
+                prefix_db_->SavePresetVerifyValue(idx, 0, verify_val);
             }
 
             fclose(saved_verify_fd);
