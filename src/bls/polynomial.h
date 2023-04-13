@@ -35,7 +35,7 @@ public:
         auto btime = common::TimeUtils::TimestampUs();
         auto run_func = [&](int32_t b, int32_t e, int thread_idx) {
             std::string file = std::string("saved_verify_one_") + std::to_string(thread_idx);
-            FILE* saved_verify_fd = fopen(file.c_str(), "a+");
+            FILE* saved_verify_fd = fopen(file.c_str(), "w");
             for (int32_t idx = b; idx < e; ++idx) {
                 libff::alt_bn128_G2 value = libff::alt_bn128_G2::zero();
                 bls::protobuf::BlsVerifyValue verify_val;
