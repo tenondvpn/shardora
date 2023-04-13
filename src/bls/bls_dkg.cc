@@ -216,10 +216,10 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-    if (max_agree_count_ != (uint32_t)bls_msg.verify_brd().verify_vec_size()) {
+    if (1 != (uint32_t)bls_msg.verify_brd().verify_vec_size()) {
         BLS_ERROR("min_aggree_member_count_ != "
             "bls_msg.verify_brd().verify_vec_size()[%d: %d]",
-            max_agree_count_,
+            1,
             bls_msg.verify_brd().verify_vec_size());
         assert(false);
         return;
