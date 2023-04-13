@@ -750,6 +750,7 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
     CreateDkgMessage(msg_ptr);
     local_publick_key_.to_affine_coordinates();
 #ifndef ZJC_UNITTEST
+    ZJC_DEBUG("success broadcast finish message.");
     network::Route::Instance()->Send(msg_ptr);
 #endif
 }
