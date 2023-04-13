@@ -436,8 +436,9 @@ void BlsDkg::LoadAllVerifyValues() {
         ZJC_FATAL("load verifcation values failed: %d!", local_member_index_);
     }
 
-    if (verify_val.verify_vec_size() != min_aggree_member_count_ - 1) {
-        ZJC_FATAL("load verifcation values failed: %d!", local_member_index_);
+    if (verify_val.verify_vec_size() < min_aggree_member_count_ - 1) {
+        ZJC_FATAL("load verifcation values failed %d, %d!",
+            verify_val.verify_vec_size(), (min_aggree_member_count_ - 1));
         return;
     }
 
