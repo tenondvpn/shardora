@@ -57,12 +57,12 @@ void BlsDkg::TimerMessage(const transport::MessagePtr& msg_ptr) {
         has_broadcast_verify_ = true;
     }
 
-    if (!has_broadcast_swapkey_ && IsSwapKeyPeriod()) {
+    if (has_broadcast_verify_ && !has_broadcast_swapkey_ && IsSwapKeyPeriod()) {
         SwapSecKey(msg_ptr->thread_idx);
         has_broadcast_swapkey_ = true;
     }
 
-    if (!has_finished_ && IsFinishPeriod()) {
+    if (has_broadcast_swapkey_ && !has_finished_ && IsFinishPeriod()) {
         FinishNoLock(msg_ptr->thread_idx);
         has_finished_ = true;
     }
