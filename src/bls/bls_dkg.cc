@@ -439,6 +439,7 @@ bool BlsDkg::VerifySekkeyValid(uint32_t idx, uint32_t peer_index, libff::alt_bn1
         }
     }
 
+    assert(false);
     for (size_t i = 1; i < min_aggree_member_count_; ++i) {
         value = value + power(libff::alt_bn128_Fr(idx + 1), i) * libff::alt_bn128_G2::one();
     }
