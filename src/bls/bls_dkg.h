@@ -93,6 +93,7 @@ private:
     void DumpLocalPrivateKey();
     bool VerifySekkeyValid(uint32_t idx, uint32_t peer_index, libff::alt_bn128_Fr& seckey);
     void LoadAllVerifyValues();
+    void TimerMessage(const transport::MessagePtr& msg_ptr);
 
     bool IsVerifyBrdPeriod() {
 #ifdef ZJC_UNITTEST
@@ -113,6 +114,19 @@ private:
         auto now_tm_us = common::TimeUtils::TimestampUs();
         if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 8) &&
                 now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 4)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    bool IsFinishPeriod() {
+#ifdef ZJC_UNITTEST
+        return true;
+#endif
+        auto now_tm_us = common::TimeUtils::TimestampUs();
+        if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 9) &&
+            now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 8)) {
             return true;
         }
 
@@ -155,6 +169,10 @@ private:
     uint64_t swap_offset_ = 0;
     uint64_t finish_offset_ = 0;
     std::vector<libff::alt_bn128_G2> verify_value_vec_;
+    bool has_broadcast_verify_ = false;
+    bool has_broadcast_swapkey_ = false;
+    bool has_finished_ = false;
+
 #ifdef ZJC_UNITTEST
     transport::MessagePtr ver_brd_msg_;
     transport::MessagePtr sec_swap_msgs_;

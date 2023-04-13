@@ -51,6 +51,23 @@ void BlsDkg::Init(
 void BlsDkg::Destroy() {
 }
 
+void BlsDkg::TimerMessage(const transport::MessagePtr& msg_ptr) {
+    if (!has_broadcast_verify_ && IsVerifyBrdPeriod()) {
+        BroadcastVerfify(msg_ptr->thread_idx);
+        has_broadcast_verify_ = true;
+    }
+
+    if (!has_broadcast_swapkey_ && IsSwapKeyPeriod()) {
+        SwapSecKey(msg_ptr->thread_idx);
+        has_broadcast_swapkey_ = true;
+    }
+
+    if (!has_finished_ && IsFinishPeriod()) {
+        FinishNoLock(msg_ptr->thread_idx);
+        has_finished_ = true;
+    }
+}
+
 void BlsDkg::OnNewElectionBlock(
         uint64_t elect_height,
         common::MembersPtr& members,
@@ -100,7 +117,9 @@ void BlsDkg::OnNewElectionBlock(
     ver_offset_ += rand() % kDkgPeriodUs;
     swap_offset_ += rand() % kDkgPeriodUs;
     finish_offset_ += rand() % kDkgPeriodUs;
-
+    has_broadcast_verify_ = false;
+    has_broadcast_swapkey_ = false;
+    has_finished_ = false;
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
 }
@@ -196,7 +215,6 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
         BLS_ERROR("sign verify failed!");
         return;
     }
-
 
     if (max_agree_count_ != (uint32_t)bls_msg.verify_brd().verify_vec_size()) {
         BLS_ERROR("min_aggree_member_count_ != "

@@ -90,6 +90,7 @@ private:
         BlsFinishItemPtr& finish_item,
         std::vector<libff::alt_bn128_G1>& all_signs,
         std::vector<size_t>& idx_vec);
+    void TimerMessage(const transport::MessagePtr& msg_ptr);
 
     std::shared_ptr<bls::BlsDkg> waiting_bls_{ nullptr };
     uint64_t max_height_{ common::kInvalidUint64 };

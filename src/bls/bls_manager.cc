@@ -31,6 +31,27 @@ void initLibSnark() noexcept {
     (void)s_initialized;
 }
 
+BlsManager::BlsManager(
+    std::shared_ptr<security::Security>& security,
+    std::shared_ptr<db::Db>& db) : security_(security), db_(db) {
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db);
+    initLibSnark();
+    network::Route::Instance()->RegisterMessage(
+        common::kBlsMessage,
+        std::bind(&BlsManager::HandleMessage, this, std::placeholders::_1));
+    transport::Processor::Instance()->RegisterProcessor(
+        common::kPoolTimerMessage,
+        std::bind(&BlsManager::TimerMessage, this, std::placeholders::_1));
+}
+
+BlsManager::~BlsManager() {}
+
+void BlsManager::TimerMessage(const transport::MessagePtr& msg_ptr) {
+    if (waiting_bls_ != nullptr) {
+        waiting_bls_->TimerMessage(msg_ptr);
+    }
+}
+
 void BlsManager::OnNewElectBlock(
         uint32_t sharding_id,
         uint64_t elect_height,
@@ -736,18 +757,6 @@ bool BlsManager::VerifyAggSignValid(
 //         common_pk->y_c0().c_str(), common_pk->y_c1().c_str());
 //     return kBlsSuccess;
 // }
-
-BlsManager::BlsManager(
-        std::shared_ptr<security::Security>& security,
-        std::shared_ptr<db::Db>& db) : security_(security), db_(db) {
-    prefix_db_ = std::make_shared<protos::PrefixDb>(db);
-    initLibSnark();
-    network::Route::Instance()->RegisterMessage(
-        common::kBlsMessage,
-        std::bind(&BlsManager::HandleMessage, this, std::placeholders::_1));
-}
-
-BlsManager::~BlsManager() {}
 
 };  // namespace bls
 
