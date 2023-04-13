@@ -81,28 +81,6 @@ public:
         return kBlsSuccess;
     }
 
-    int GenerateVerifications(std::shared_ptr<db::Db>& db, uint16_t t, uint16_t n) {
-        for (uint16_t i = 0; i < n; ++i) {
-            for (uint16_t j = 0; j < t; ++t) {
-                auto value = power(libff::alt_bn128_Fr(idx + 1), tidx) * libff::alt_bn128_G2::one();
-                bls::protobuf::VerifyVecItem& verify_item = *verify_val.add_verify_vec();
-                verify_item.set_x_c0(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(value.X.c0)));
-                verify_item.set_x_c1(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(value.X.c1)));
-                verify_item.set_y_c0(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(value.Y.c0)));
-                verify_item.set_y_c1(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(value.Y.c1)));
-                verify_item.set_z_c0(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(value.Z.c0)));
-                verify_item.set_z_c1(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(value.Z.c1)));
-            }
-        }
-        return kBlsSuccess;
-    }
-
     int GenesisInit(std::shared_ptr<db::Db>& db, uint16_t count, uint16_t n) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
         auto dkg_instance = std::make_shared<libBLS::Dkg>(count, count);
