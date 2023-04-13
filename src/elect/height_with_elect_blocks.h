@@ -234,7 +234,7 @@ public:
         bool eb_valid = false;
         elect::protobuf::ElectBlock elect_block;
         for (int32_t i = 0; i < block.tx_list(0).storages_size(); ++i) {
-            if (block.tx_list(0).storages(i).key() == elect::kElectNodeAttrElectBlock) {
+            if (block.tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
                 if (!elect_block.ParseFromString(block.tx_list(0).storages(i).val_hash())) {
                     return nullptr;
                 }
