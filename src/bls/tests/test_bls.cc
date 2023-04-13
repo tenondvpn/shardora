@@ -425,10 +425,82 @@ static void HandleSwapSeckey(
     }
 }
 
+TEST_F(TestBls, LagrangeCoeffs) {
+    const uint32_t t = 684;
+    std::vector<size_t> idx_vec(t);
+    for (int32_t i = 0; i < t; ++i) {
+        idx_vec[i] = i + 1;
+    }
+
+    auto time5 = common::TimeUtils::TimestampUs();
+    auto lagrange_coeffs = libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t);
+    auto time61 = common::TimeUtils::TimestampUs();
+    std::cout << "LagrangeCoeffs : " << (time61 - time5) << std::endl;
+}
+
+TEST_F(TestBls, FileSigns) {
+    static const uint32_t n = 1024;
+    static const uint32_t t = common::GetSignerCount(n);
+    FILE* fd_signs = fopen("signs", "r");
+    char* data = new char[1024 * 1024 * 10];
+    size_t len = fread(data, 1, 10 * 1024 * 1024, fd_signs);
+    fclose(fd_signs);
+    bls::protobuf::VerifyVecBrdReq proto_signs;
+    ASSERT_TRUE(proto_signs.ParseFromArray(data, len));
+    std::vector<libff::alt_bn128_G1> all_signs;
+    std::vector<size_t> idx_vec(t);
+    for (int32_t i = 0; i < proto_signs.verify_vec_size() - 1; ++i) {
+        auto X = libff::alt_bn128_Fq(common::Encode::HexEncode(proto_signs.verify_vec(i).x_c0()).c_str());
+        auto Y = libff::alt_bn128_Fq(common::Encode::HexEncode(proto_signs.verify_vec(i).x_c1()).c_str());
+        auto Z = libff::alt_bn128_Fq(common::Encode::HexEncode(proto_signs.verify_vec(i).y_c0()).c_str());
+        all_signs.push_back(libff::alt_bn128_G1(X, Y, Z));
+        idx_vec[i] = i + 1;
+        if (all_signs.size() >= t) {
+            break;
+        }
+    }
+
+    auto& item = proto_signs.verify_vec(proto_signs.verify_vec_size() - 1);
+    auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+    auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+    auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+    auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+    auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+    auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+    auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+    auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+    auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+    auto common_pk = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+
+    libBLS::Bls bls_instance = libBLS::Bls(t, n);
+    auto time5 = common::TimeUtils::TimestampUs();
+    auto lagrange_coeffs = libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t);
+    auto time61 = common::TimeUtils::TimestampUs();
+    std::cout << "LagrangeCoeffs : " << (time61 - time5) << std::endl;
+    time5 = time61;
+    libff::alt_bn128_G1 agg_sign = bls_instance.SignatureRecover(
+        all_signs,
+        lagrange_coeffs);
+    auto time6 = common::TimeUtils::TimestampUs();
+    std::cout << "SignatureRecover 5: " << (time6 - time5) << std::endl;
+    std::string verify_hash;
+    auto hash_str = common::Hash::Sha256("hello world");
+    libff::alt_bn128_G1 hash;
+    BlsSign bls_sign;
+    ASSERT_EQ(bls_sign.GetLibffHash(hash_str, &hash), kBlsSuccess);
+
+    // slow
+    ASSERT_EQ(
+        bls_sign.Verify(t, n, agg_sign, hash, common_pk, &verify_hash),
+        kBlsSuccess);
+    auto time7 = common::TimeUtils::TimestampUs();
+    std::cout << "2: " << (time7 - time6) << std::endl;
+}
+
 TEST_F(TestBls, AllSuccess) {
 //     static const uint32_t t = 700;
 //     static const uint32_t n = 1024;
-    static const uint32_t n = 10;
+    static const uint32_t n = 1024;
     static const uint32_t t = common::GetSignerCount(n);
     std::vector<std::string> pri_vec;
     GetPrivateKey(pri_vec, n);
@@ -481,21 +553,6 @@ TEST_F(TestBls, AllSuccess) {
     auto time3 = common::TimeUtils::TimestampUs();
     std::cout << "2: " << (time3 - time2) << std::endl;
     HandleSwapSeckey(dkg, pri_vec, swap_sec_msgs);
-//     for (uint32_t i = 0; i < n; ++i) {
-//         auto t0 = common::TimeUtils::TimestampUs();
-//         for (uint32_t j = 0; j < n; ++j) {
-//             if (i == j) {
-//                 continue;
-//             }
-// 
-//             bls_manager->security_ = dkg[j].security_;
-//             auto msg_ptr = swap_sec_msgs[i];
-//             msg_ptr->thread_idx = 0;
-//             dkg[j].HandleMessage(msg_ptr);
-//         }
-//         auto t1 = common::TimeUtils::TimestampUs();
-//     }
-
     swap_sec_msgs.swap(tmp_vec);
     auto time4 = common::TimeUtils::TimestampUs();
     std::cout << "3: " << (time4 - time3) << std::endl;
@@ -511,6 +568,7 @@ TEST_F(TestBls, AllSuccess) {
         ASSERT_TRUE(dkg[i].finished_);
     }
 
+    bls::protobuf::VerifyVecBrdReq proto_signs;
     std::vector<size_t> idx_vec(t);
     for (size_t i = 0; i < t; ++i) {
         BlsSign bls_sign;
@@ -521,19 +579,50 @@ TEST_F(TestBls, AllSuccess) {
         ASSERT_EQ(
             bls_sign.Verify(t, n, sign, hash, dkg[i].local_publick_key_, &verify_hash),
             kBlsSuccess);
-        all_signs.push_back(sign);
-        idx_vec[i] = i + 1;
+        bls::protobuf::VerifyVecItem& verify_item = *proto_signs.add_verify_vec();
+        verify_item.set_x_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(sign.X)));
+        verify_item.set_x_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(sign.Y)));
+        verify_item.set_y_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(sign.Z)));
+        if (all_signs.size() < t) {
+            all_signs.push_back(sign);
+            idx_vec[i] = i + 1;
+        }
     }
 
+    bls::protobuf::VerifyVecItem& verify_item = *proto_signs.add_verify_vec();
+    verify_item.set_x_c0(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(dkg[0].common_public_key_.X.c0)));
+    verify_item.set_x_c1(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(dkg[0].common_public_key_.X.c1)));
+    verify_item.set_y_c0(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(dkg[0].common_public_key_.Y.c0)));
+    verify_item.set_y_c1(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(dkg[0].common_public_key_.Y.c1)));
+    verify_item.set_z_c0(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(dkg[0].common_public_key_.Z.c0)));
+    verify_item.set_z_c1(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(dkg[0].common_public_key_.Z.c1)));
+
+    FILE* fd_signs = fopen("signs", "w");
+    std::string signs_val = common::Encode::HexEncode(proto_signs.SerializeAsString());
+    fwrite(signs_val.c_str(), 1, signs_val.size(), fd_signs);
+    fclose(fd_signs);
+
+    libBLS::Bls bls_instance = libBLS::Bls(t, n);
     auto time5 = common::TimeUtils::TimestampUs();
     std::cout << "4: " << (time5 - time4) << std::endl;
-    libBLS::Bls bls_instance = libBLS::Bls(t, n);
     auto lagrange_coeffs = libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t);
+    auto time61 = common::TimeUtils::TimestampUs();
+    std::cout << "LagrangeCoeffs : " << (time61 - time5) << std::endl;
+    time5 = time61;
     libff::alt_bn128_G1 agg_sign = bls_instance.SignatureRecover(
         all_signs,
         lagrange_coeffs);
     auto time6 = common::TimeUtils::TimestampUs();
-    std::cout << "5: " << (time6 - time5) << std::endl;
+    std::cout << "SignatureRecover 5: " << (time6 - time5) << std::endl;
     for (uint32_t i = 0; i < n; ++i) {
         BlsSign bls_sign;
         std::string verify_hash;

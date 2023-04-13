@@ -462,12 +462,12 @@ bool BlsDkg::VerifySekkeyValid(uint32_t idx, uint32_t peer_index, libff::alt_bn1
     bls::protobuf::BlsVerifyValue verify_val;
     libff::alt_bn128_G2 g2_val = GetVerifyG2FromDb(peer_index);
     libff::alt_bn128_G2 value = power(libff::alt_bn128_Fr(idx + 1), 0) * g2_val;
-//     if (verify_value_vec_.size() >= min_aggree_member_count_ - 1) {
-//         value = value + verify_value_vec_[min_aggree_member_count_ - 2];
-//         return value == seckey * libff::alt_bn128_G2::one();
-//     }
-// 
-//     assert(false);
+    if (verify_value_vec_.size() >= min_aggree_member_count_ - 1) {
+        value = value + verify_value_vec_[min_aggree_member_count_ - 2];
+        return value == seckey * libff::alt_bn128_G2::one();
+    }
+
+    assert(false);
     for (size_t i = 1; i < min_aggree_member_count_; ++i) {
         value = value + power(libff::alt_bn128_Fr(idx + 1), i) * libff::alt_bn128_G2::one();
     }
