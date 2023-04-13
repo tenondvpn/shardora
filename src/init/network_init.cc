@@ -686,6 +686,9 @@ void NetworkInit::DbNewBlockCallback(
             break;
         }
     }
+
+    ZJC_DEBUG("DbNewBlockCallback new block height: %lu, tx size: %u",
+        block->height(), block->tx_list_size());
 }
 
 void NetworkInit::HandleTimeBlock(
