@@ -702,6 +702,7 @@ void NetworkInit::HandleTimeBlock(
             uint64_t* data_arr = (uint64_t*)tx.storages(i).val_hash().c_str();
             vss_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             tm_block_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
+            bls_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             break;
         }
     }
