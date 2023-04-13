@@ -413,6 +413,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
 }
 
 void BlsDkg::LoadAllVerifyValues() {
+    bls::protobuf::BlsVerifyValue verify_val;
     if (!prefix_db_->GetPresetVerifyValue(local_member_index_, 0, &verify_val)) {
         ZJC_FATAL("load verifcation values failed: %d!", local_member_index_);
     }
