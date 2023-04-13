@@ -335,10 +335,10 @@ static void GetSwapSeckeyMessage(
 
     std::vector<std::thread> thread_vec;
     for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
-        int32_t b = (pri_vec.size() / kThreadCount) * thread_idx;
-        int32_t e = (pri_vec.size() / kThreadCount) * (thread_idx + 1);
+        int32_t b = (n / kThreadCount) * thread_idx;
+        int32_t e = (n / kThreadCount) * (thread_idx + 1);
         if (thread_idx == kThreadCount - 1) {
-            e += pri_vec.size() % kThreadCount;
+            e += n % kThreadCount;
         }
 
         std::cout << thread_idx << " : " << b << ", " << e << std::endl;
