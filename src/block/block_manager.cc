@@ -410,7 +410,7 @@ void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {
                 network::kRootCongressNetworkId,
                 common::kRootChainPoolIndex,
                 tmblock.height(),
-            block) == kBlockSuccess) {
+                block) == kBlockSuccess) {
             if (new_block_callback_ != nullptr) {
                 new_block_callback_(thread_idx, tmblock_ptr, db_batch);
             }
@@ -421,6 +421,7 @@ void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {
             i < network::kConsensusShardEndNetworkId; ++i) {
         elect::protobuf::ElectBlock elect_block;
         if (!prefix_db_->GetLatestElectBlock(i, &elect_block)) {
+            ZJC_FATAL("get elect latest block failed: %u", i);
             break;
         }
 
