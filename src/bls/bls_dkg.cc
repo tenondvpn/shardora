@@ -391,63 +391,21 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     uint64_t etime = common::TimeUtils::TimestampUs();
     std::cout << "0: " << (etime - btime0) << std::endl;
     btime0 = etime;
-    std::vector<libff::alt_bn128_G2> g2_vec;
-    if (!GetVerifyG2FromDb(bls_msg.index(), g2_vec)) {
-        BLS_ERROR("get member: %u verify vector failed!", bls_msg.index());
-        return;
-    }
-
-    etime = common::TimeUtils::TimestampUs();
-    std::cout << "1: " << (etime - btime0) << std::endl;
-    btime0 = etime;
-    libff::alt_bn128_G2 verify_val = libff::alt_bn128_G2::zero();
-    uint32_t saved_valid_t = 0;
-    prefix_db_->GetBlsVerifyValue(
-        (*members_)[bls_msg.index()]->id,
-        local_member_index_,
-        min_aggree_member_count_,
-        &saved_valid_t,
-        &verify_val);
-    etime = common::TimeUtils::TimestampUs();
-    std::cout << "2: " << (etime - btime0) << std::endl;
-    btime0 = etime;
+    libff::alt_bn128_G2 first_g2 = libff::alt_bn128_G2::zero();
     auto tmp_swap_key = libff::alt_bn128_Fr(sec_key.c_str());
-    if (!dkg_instance_->Verification(
-            local_member_index_,
-            tmp_swap_key,
-            g2_vec,
-            saved_valid_t,
-            min_aggree_member_count_,
-            &verify_val)) {
-        ZJC_ERROR("verify error member: %d, index: %d, %s ,%s, min_aggree_member_count_: %d",
+    if (!VerifySekkeyValid(local_member_index_, tmp_swap_key)) {
+        ZJC_ERROR("verify error member: %d, index: %d, %s , min_aggree_member_count_: %d",
             local_member_index_, bls_msg.index(),
             libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[0].X.c0).c_str(),
             min_aggree_member_count_);
         assert(false);
         return;
     }
 
-    etime = common::TimeUtils::TimestampUs();
-    std::cout << "3: " << (etime - btime0) << std::endl;
-    btime0 = etime;
-    if (saved_valid_t < min_aggree_member_count_) {
-        prefix_db_->SaveBlsVerifyValue(
-            (*members_)[bls_msg.index()]->id,
-            local_member_index_,
-            min_aggree_member_count_,
-            verify_val);
-    }
-
-    etime = common::TimeUtils::TimestampUs();
-    std::cout << "4: " << (etime - btime0) << std::endl;
-    btime0 = etime;
-    ZJC_DEBUG("swap verify success member: %d, index: %d, %s ,%s, "
-        "saved_valid_t: %u, min_aggree_member_count_: %u",
+    ZJC_DEBUG("swap verify success member: %d, index: %d, %s, min_aggree_member_count_: %u",
         local_member_index_, bls_msg.index(),
         libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(g2_vec[0].X.c0).c_str(),
-        saved_valid_t, min_aggree_member_count_);
+        min_aggree_member_count_);
     // swap
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, bls_msg.index(), sec_key);
@@ -456,36 +414,36 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     has_swaped_keys_[bls_msg.index()] = true;
     etime = common::TimeUtils::TimestampUs();
     std::cout << "5: " << (etime - btime0) << std::endl;
-    btime0 = etime;
-    ZJC_DEBUG("success handle swap sec key: %d", valid_sec_key_count_);
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
 }
 
-bool BlsDkg::GetVerifyG2FromDb(uint32_t first_index, std::vector<libff::alt_bn128_G2>& g2_vec) {
-    bls::protobuf::VerifyVecBrdReq req;
-    auto res = prefix_db_->GetBlsVerifyG2((*members_)[first_index]->id, &req);
-    if (!res) {
-        ZJC_DEBUG("get verify g2 failed local: %d, %lu, %u, %u",
-            local_member_index_, elect_hegiht_, first_index);
-        return false;
+bool BlsDkg::VerifySekkeyValid(uint32_t idx, libff::alt_bn128_Fr& seckey) {
+    bls::protobuf::BlsVerifyValue verify_val;
+    libff::alt_bn128_G2 g2_val = GetVerifyG2FromDb(bls_msg.index());
+    libff::alt_bn128_G2 value = power(libff::alt_bn128_Fr(idx + 1), i) * first_g2;
+    if (prefix_db_->GetPresetVerifyValue(idx, 0, &verify_val)) {
+        if (verify_val.verify_vec_size() >= min_aggree_member_count_) {
+            auto& item = verify_val.verify_vec(min_aggree_member_count_ - 1);
+            auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+            auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+            auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+            auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+            auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+            auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+            auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+            auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+            auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+            value = value + libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+            return value == seckey * libff::alt_bn128_G2::one();
+        }
     }
 
-    for (int32_t i = 0; i < req.verify_vec_size(); ++i) {
-        auto& item = req.verify_vec(i);
-        auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
-        auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
-        auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
-        auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
-        auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
-        auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
-        auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
-        auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
-        auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
-        g2_vec.push_back(libff::alt_bn128_G2(x_coord, y_coord, z_coord));
+    for (size_t i = 1; i < min_aggree_member_count_; ++i) {
+        value = value + power(libff::alt_bn128_Fr(idx + 1), i) * libff::alt_bn128_G2::one();
     }
-    
-    return true;
+
+    return value == seckey * libff::alt_bn128_G2::one();
 }
 
 libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t first_index) {
@@ -770,81 +728,40 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     valid_swapkey_set_.insert(local_member_index_);
     ++valid_sec_key_count_;
     bls::protobuf::LocalBlsItem local_item;
-    std::vector<libff::alt_bn128_Fr> polynomial;
-    if (prefix_db_->GetBlsInfo(security_, &local_item)) {
-        ZJC_DEBUG("use exists data.");
-        for (int32_t i = 0; i < local_item.polynomial_size(); ++i) {
-            polynomial.push_back(libff::alt_bn128_Fr(local_item.polynomial(i).c_str()));
-        }
-
-        local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(
-            polynomial, valid_n, valid_t);
-        auto val = libBLS::ThresholdUtils::fieldElementToString(
-            local_src_secret_key_contribution_[local_member_index_]);
-        prefix_db_->SaveSwapKey(
-            local_member_index_, elect_hegiht_, local_member_index_, local_member_index_, val);
-        return;
+    std::vector<libff::alt_bn128_Fr> polynomial(valid_n, libff::alt_bn128_Fr::one());
+    while (polynomial[0] == libff::alt_bn128_Fr::one() ||
+            polynomial[0] == libff::alt_bn128_Fr::zero()) {
+        polynomial[0] = libff::alt_bn128_Fr::random_element();
     }
 
-    polynomial = dkg_instance_->GeneratePolynomial();
     local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(
         polynomial, valid_n, valid_t);
     auto val = libBLS::ThresholdUtils::fieldElementToString(
         local_src_secret_key_contribution_[local_member_index_]);
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, local_member_index_, val);
-    std::vector<libff::alt_bn128_G2> g2_vec(max_agree_count_);
-    for (size_t i = 0; i < max_agree_count_; ++i) {
-        g2_vec[i] = polynomial[i] * libff::alt_bn128_G2::one();
-    }
+    libff::alt_bn128_G2 first_g2_val = polynomial[0] * libff::alt_bn128_G2::one();
 
 #ifdef ZJC_UNITTEST
-    g2_vec_ = g2_vec[0];
+    g2_vec_ = first_g2_val;
 #endif // ZJC_UNITTEST
 
-    for (int32_t i = 0; i < g2_vec.size(); ++i) {
-        bls::protobuf::VerifyVecItem& verify_item = *local_item.add_verify_vec();
-        verify_item.set_x_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
-        verify_item.set_x_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c1)));
-        verify_item.set_y_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
-        verify_item.set_y_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
-        verify_item.set_z_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
-        verify_item.set_z_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
-    }
-
-    for (uint32_t i = 0; i < polynomial.size(); ++i) {
-        local_item.add_polynomial(
-            libBLS::ThresholdUtils::fieldElementToString(polynomial[i]));
-    }
-
-    local_item.set_valid_t(valid_t);
-    local_item.set_valid_n(valid_n);
     bls::protobuf::VerifyVecBrdReq bls_verify_req;
-    for (int32_t i = 0; i < g2_vec.size(); ++i) {
-        bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req.add_verify_vec();
-        verify_item.set_x_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
-        verify_item.set_x_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c1)));
-        verify_item.set_y_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
-        verify_item.set_y_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
-        verify_item.set_z_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
-        verify_item.set_z_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
-    }
-
+    bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req.add_verify_vec();
+    verify_item.set_x_c0(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(first_g2_val.X.c0)));
+    verify_item.set_x_c1(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(first_g2_val.X.c1)));
+    verify_item.set_y_c0(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(first_g2_val.Y.c0)));
+    verify_item.set_y_c1(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(first_g2_val.Y.c1)));
+    verify_item.set_z_c0(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(first_g2_val.Z.c0)));
+    verify_item.set_z_c1(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(first_g2_val.Z.c1)));
     auto str = bls_verify_req.SerializeAsString();
     prefix_db_->AddBlsVerifyG2(security_->GetAddress(), bls_verify_req);
-    prefix_db_->SaveBlsInfo(security_, local_item);
 }
 
 void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
