@@ -443,21 +443,9 @@ bool BlsDkg::VerifySekkeyValid(uint32_t idx, uint32_t peer_index, libff::alt_bn1
     bls::protobuf::BlsVerifyValue verify_val;
     libff::alt_bn128_G2 g2_val = GetVerifyG2FromDb(peer_index);
     libff::alt_bn128_G2 value = power(libff::alt_bn128_Fr(idx + 1), 0) * g2_val;
-    if (prefix_db_->GetPresetVerifyValue(idx, 0, &verify_val)) {
-        if (verify_val.verify_vec_size() >= min_aggree_member_count_ - 1) {
-            auto& item = verify_val.verify_vec(min_aggree_member_count_ - 2);
-            auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
-            auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
-            auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
-            auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
-            auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
-            auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
-            auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
-            auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
-            auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
-            value = value + libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-            return value == seckey * libff::alt_bn128_G2::one();
-        }
+    if (verify_value_vec_.size() >= min_aggree_member_count_ - 1) {
+        value = value + verify_value_vec_[min_aggree_member_count_ - 2];
+        return value == seckey * libff::alt_bn128_G2::one();
     }
 
     assert(false);
