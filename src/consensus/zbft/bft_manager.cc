@@ -227,7 +227,8 @@ ZbftPtr BftManager::Start(
         const transport::MessagePtr& prepare_msg_ptr) {
 #ifndef ZJC_UNITTEST
     if (network::DhtManager::Instance()->valid_count(
-            common::GlobalInfo::Instance()->network_id()) < minimal_node_count_to_consensus_) {
+            common::GlobalInfo::Instance()->network_id()) <
+            common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
         return nullptr;
     }
 #endif
