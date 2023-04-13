@@ -52,7 +52,11 @@ void BlsManager::TimerMessage(const transport::MessagePtr& msg_ptr) {
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) <
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
-        ZJC_DEBUG("nodes count error.");
+        ZJC_DEBUG("nodes count error. net: %u, count: %u, min: %u",
+            common::GlobalInfo::Instance()->network_id(),
+            network::DhtManager::Instance()->valid_count(
+                common::GlobalInfo::Instance()->network_id()),
+            common::GlobalInfo::Instance()->sharding_min_nodes_count());
         return;
     }
 
