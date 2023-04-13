@@ -426,6 +426,8 @@ bool BlsDkg::VerifySekkeyValid(uint32_t idx, uint32_t peer_index, libff::alt_bn1
     libff::alt_bn128_G2 g2_val = GetVerifyG2FromDb(peer_index);
     libff::alt_bn128_G2 value = power(libff::alt_bn128_Fr(idx + 1), 0) * g2_val;
     if (prefix_db_->GetPresetVerifyValue(idx, 0, &verify_val)) {
+        std::cout << "success get verify val: " << verify_val.verify_vec_size()
+            << ", " << (min_aggree_member_count_ - 1) << std::endl;
         if (verify_val.verify_vec_size() > min_aggree_member_count_ - 1) {
             auto& item = verify_val.verify_vec(min_aggree_member_count_ - 1);
             auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
