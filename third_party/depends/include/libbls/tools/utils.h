@@ -138,6 +138,9 @@ std::string ThresholdUtils::fieldElementToString( const T& field_elem, int base 
     mpz_clear( t );
 
     std::string output = tmp;
+    if (output.size() % 2 != 0) {
+        output = "0" + output;
+    }
 
     return output;
 }
