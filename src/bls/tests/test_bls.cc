@@ -356,7 +356,7 @@ static void GetSwapSeckeyMessage(
     }
 }
 
-static void HandleSwapSeckey(
+static void HandleVerifyBroadcast(
         BlsDkg* dkg,
         const std::vector<std::string>& pri_vec,
         const std::vector<transport::MessagePtr>& verify_brd_msgs) {
@@ -370,6 +370,43 @@ static void HandleSwapSeckey(
                     continue;
                 }
                 auto msg_ptr = verify_brd_msgs[i];
+                msg_ptr->thread_idx = 0;
+                dkg[j].HandleMessage(msg_ptr);
+            }
+        }
+    };
+
+    std::vector<std::thread> thread_vec;
+    for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+        int32_t b = (pri_vec.size() / kThreadCount) * thread_idx;
+        int32_t e = (pri_vec.size() / kThreadCount) * (thread_idx + 1);
+        if (thread_idx == kThreadCount - 1) {
+            e += pri_vec.size() % kThreadCount;
+        }
+
+        std::cout << thread_idx << " : " << b << ", " << e << std::endl;
+        thread_vec.push_back(std::thread(test_func, b, e, thread_idx));
+    }
+
+    for (int32_t thread_idx = 0; thread_idx < kThreadCount; ++thread_idx) {
+        thread_vec[thread_idx].join();
+    }
+}
+
+static void HandleSwapSeckey(
+        BlsDkg* dkg,
+        const std::vector<std::string>& pri_vec,
+        const std::vector<transport::MessagePtr>& swap_seckey_msgs) {
+    static const int32_t kThreadCount = 4;
+    uint32_t n = pri_vec.size();
+    std::vector<transport::MessagePtr> tmp_verify_brd_msgs[kThreadCount];
+    auto test_func = [&](uint32_t b, uint32_t e, uint32_t thread_idx) {
+        for (uint32_t i = 0; i < n; ++i) {
+            for (uint32_t j = b; j < e; ++j) {
+                if (i == j) {
+                    continue;
+                }
+                auto msg_ptr = swap_seckey_msgs[i];
                 msg_ptr->thread_idx = 0;
                 dkg[j].HandleMessage(msg_ptr);
             }
@@ -437,19 +474,7 @@ TEST_F(TestBls, AllSuccess) {
     CreateContribution(members, dkg, pri_vec, latest_timeblock_info, verify_brd_msgs);
     auto time1 = common::TimeUtils::TimestampUs();
     std::cout << "0: " << (time1 - time0) << std::endl;
-    HandleSwapSeckey(dkg, pri_vec, verify_brd_msgs);
-//     for (uint32_t i = 0; i < n; ++i) {
-//         for (uint32_t j = 0; j < n; ++j) {
-//             if (i == j) {
-//                 continue;
-//             }
-//             bls_manager->security_ = dkg[j].security_;
-//             auto msg_ptr = verify_brd_msgs[i];
-//             msg_ptr->thread_idx = 0;
-//             dkg[j].HandleMessage(msg_ptr);
-//         }
-//     }
-
+    HandleVerifyBroadcast(dkg, pri_vec, verify_brd_msgs);
     auto tmp_vec = std::vector<transport::MessagePtr>();
     verify_brd_msgs.swap(tmp_vec);
     auto time2 = common::TimeUtils::TimestampUs();
@@ -460,24 +485,21 @@ TEST_F(TestBls, AllSuccess) {
     ASSERT_EQ(swap_sec_msgs.size(), n);
     auto time3 = common::TimeUtils::TimestampUs();
     std::cout << "2: " << (time3 - time2) << std::endl;
-    for (uint32_t i = 0; i < n; ++i) {
-        auto t0 = common::TimeUtils::TimestampUs();
-        for (uint32_t j = 0; j < n; ++j) {
-            if (i == j) {
-                continue;
-            }
-
-//             auto tmp_security_ptr = std::make_shared<security::Ecdsa>();
-//             tmp_security_ptr->SetPrivateKey(pri_vec[j]);
-            bls_manager->security_ = dkg[j].security_;
-//             dkg[j].security_ = tmp_security_ptr;
-//             SetGloableInfo(pri_vec[j], network::kConsensusShardBeginNetworkId);
-            auto msg_ptr = swap_sec_msgs[i];
-            msg_ptr->thread_idx = 0;
-            dkg[j].HandleMessage(msg_ptr);
-        }
-        auto t1 = common::TimeUtils::TimestampUs();
-    }
+    HandleSwapSeckey(dkg, pri_vec, swap_sec_msgs);
+//     for (uint32_t i = 0; i < n; ++i) {
+//         auto t0 = common::TimeUtils::TimestampUs();
+//         for (uint32_t j = 0; j < n; ++j) {
+//             if (i == j) {
+//                 continue;
+//             }
+// 
+//             bls_manager->security_ = dkg[j].security_;
+//             auto msg_ptr = swap_sec_msgs[i];
+//             msg_ptr->thread_idx = 0;
+//             dkg[j].HandleMessage(msg_ptr);
+//         }
+//         auto t1 = common::TimeUtils::TimestampUs();
+//     }
 
     swap_sec_msgs.swap(tmp_vec);
     auto time4 = common::TimeUtils::TimestampUs();

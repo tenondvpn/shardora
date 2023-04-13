@@ -92,6 +92,7 @@ private:
     libff::alt_bn128_G2 GetVerifyG2FromDb(uint32_t first_index);
     void DumpLocalPrivateKey();
     bool VerifySekkeyValid(uint32_t idx, uint32_t peer_index, libff::alt_bn128_Fr& seckey);
+    void LoadAllVerifyValues();
 
     bool IsVerifyBrdPeriod() {
 #ifdef ZJC_UNITTEST
@@ -153,7 +154,7 @@ private:
     uint64_t ver_offset_ = 0;
     uint64_t swap_offset_ = 0;
     uint64_t finish_offset_ = 0;
-
+    std::vector<libff::alt_bn128_G2> verify_value_vec_;
 #ifdef ZJC_UNITTEST
     transport::MessagePtr ver_brd_msg_;
     transport::MessagePtr sec_swap_msgs_;

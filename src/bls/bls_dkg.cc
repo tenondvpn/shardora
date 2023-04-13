@@ -77,6 +77,7 @@ void BlsDkg::OnNewElectionBlock(
     for (uint32_t i = 0; i < members_->size(); ++i) {
         if ((*members_)[i]->id == security_->GetAddress()) {
             local_member_index_ = i;
+            LoadAllVerifyValues();
             break;
         }
     }
@@ -409,6 +410,32 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     has_swaped_keys_[bls_msg.index()] = true;
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
+}
+
+void BlsDkg::LoadAllVerifyValues() {
+    if (!prefix_db_->GetPresetVerifyValue(local_member_index_, 0, &verify_val)) {
+        ZJC_FATAL("load verifcation values failed: %d!", local_member_index_);
+    }
+
+    for (int32_t i = 0; i < verify_val.verify_vec_size(); ++i) {
+        if (verify_value_vec_.size() != local_member_index_ - 1) {
+            ZJC_FATAL("load verifcation values failed: %d!", local_member_index_);
+            return;
+        }
+
+        auto& item = verify_val.verify_vec(min_aggree_member_count_ - 2);
+        auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+        auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+        auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+        auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+        auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+        auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+        auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+        auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+        auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+        verify_value_vec_.push_back(libff::alt_bn128_G2(x_coord, y_coord, z_coord));
+    }
+
 }
 
 bool BlsDkg::VerifySekkeyValid(uint32_t idx, uint32_t peer_index, libff::alt_bn128_Fr& seckey) {
