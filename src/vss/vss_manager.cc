@@ -91,8 +91,7 @@ void VssManager::OnTimeBlock(
 }
 
 void VssManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
-    if (sharding_id == network::kRootCongressNetworkId &&
-            common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         BroadcastFirstPeriodHash(msg_ptr->thread_idx);
         BroadcastSecondPeriodRandom(msg_ptr->thread_idx);
         BroadcastThirdPeriodRandom(msg_ptr->thread_idx);
