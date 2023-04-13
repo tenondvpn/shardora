@@ -357,9 +357,11 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
         BLS_DEBUG("success check all members agg signature, elect_height: %lu", bls_msg.elect_height());
     }
 
+    ZJC_DEBUG("handle finish success.");
     auto max_iter = finish_item->max_bls_members.find(msg_hash);
     if (max_iter != finish_item->max_bls_members.end()) {
         ++max_iter->second->count;
+        ZJC_DEBUG("handle finish success count: %d.", max_iter->second->count);
         if (max_iter->second->count > finish_item->max_finish_count) {
             finish_item->max_finish_count = max_iter->second->count;
             finish_item->max_finish_hash = msg_hash;
