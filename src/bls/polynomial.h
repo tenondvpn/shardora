@@ -145,7 +145,7 @@ public:
 
                 char data[8];
                 uint32_t* int_data = (uint32_t*)data;
-                int_data[0] = i;
+                int_data[0] = 0;
                 int_data[1] = idx;
                 std::string val = common::Encode::HexEncode(std::string(data, sizeof(data)) + verify_val.SerializeAsString()) + "\n";
                 fwrite(val.c_str(), 1, val.size(), saved_verify_fd);
