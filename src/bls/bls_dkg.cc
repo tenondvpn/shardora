@@ -442,7 +442,7 @@ bool BlsDkg::VerifySekkeyValid(uint32_t idx, uint32_t peer_index, libff::alt_bn1
             btime0 = etime;
             value = value + libff::alt_bn128_G2(x_coord, y_coord, z_coord);
             bool eq = value == seckey * libff::alt_bn128_G2::one();
-            uint64_t etime = common::TimeUtils::TimestampUs();
+            etime = common::TimeUtils::TimestampUs();
             std::cout << "t 2: " << (etime - btime0) << std::endl;
             return eq;
         }
