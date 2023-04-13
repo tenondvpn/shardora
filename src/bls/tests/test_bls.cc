@@ -342,12 +342,11 @@ static void HandleSwapSeckey(
     uint32_t n = pri_vec.size();
     std::vector<transport::MessagePtr> tmp_verify_brd_msgs[kThreadCount];
     auto test_func = [&](uint32_t b, uint32_t e, uint32_t thread_idx) {
-        for (uint32_t i = b; i < e; ++i) {
-            for (uint32_t j = 0; j < n; ++j) {
+        for (uint32_t i = 0; i < n; ++i) {
+            for (uint32_t j = b; j < e; ++j) {
                 if (i == j) {
                     continue;
                 }
-                bls_manager->security_ = dkg[j].security_;
                 auto msg_ptr = verify_brd_msgs[i];
                 msg_ptr->thread_idx = 0;
                 dkg[j].HandleMessage(msg_ptr);
