@@ -421,7 +421,7 @@ void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {
             i < network::kConsensusShardEndNetworkId; ++i) {
         elect::protobuf::ElectBlock elect_block;
         if (!prefix_db_->GetLatestElectBlock(i, &elect_block)) {
-            ZJC_FATAL("get elect latest block failed: %u", i);
+            ZJC_ERROR("get elect latest block failed: %u", i);
             break;
         }
 
