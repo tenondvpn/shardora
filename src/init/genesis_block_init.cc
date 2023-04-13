@@ -56,9 +56,34 @@ int GenesisBlockInit::CreateGenesisBlocks(
         res = CreateShardGenesisBlocks(net_id);
     }
 
+    InitBlsVerificationValue();
     db_->ClearPrefix("db_for_gid_");
     assert(res == kInitSuccess);
     return res;
+}
+
+void GenesisBlockInit::InitBlsVerificationValue() {
+    FILE* rlocal_bls_fd = fopen("./saved_verify_one", "r");
+    if (rlocal_bls_fd != nullptr) {
+        char* line = new char[1024 * 1024];
+        uint32_t idx = 0;
+        while (!feof(rlocal_bls_fd)) {
+            fgets(line, 1024 * 1024, rlocal_bls_fd);
+            std::string val = common::Encode::HexDecode(std::string(line, strlen(line) - 1));
+            uint32_t* int_data = (uint32_t*)val.c_str();
+            uint32_t idx = int_data[1];
+            bls::protobuf::BlsVerifyValue verify_val;
+            ASSERT_TRUE(verify_val.ParseFromArray(val.c_str() + 8, val.size() - 8));
+            prefix_db_->SavePresetVerifyValue(idx, 0, verify_val);
+            ++idx;
+            if (idx >= 1024) {
+                break;
+            }
+        }
+
+        delete[] line;
+        fclose(rlocal_bls_fd);
+    }
 }
 
 int GenesisBlockInit::CreateBlsGenesisKeys(
@@ -73,7 +98,8 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
     libBLS::Dkg dkg_instance = libBLS::Dkg(t, n);
     std::vector<std::vector<libff::alt_bn128_Fr>> polynomial(valid_n);
     for (auto& pol : polynomial) {
-        pol = dkg_instance.GeneratePolynomial();
+        pol = std::vector<libff::alt_bn128_Fr>(valid_n, libff::alt_bn128_Fr::one());
+        pol[0] = libff::alt_bn128_Fr::random_element();
     }
 
     std::vector<std::vector<libff::alt_bn128_Fr>> secret_key_contribution(valid_n);

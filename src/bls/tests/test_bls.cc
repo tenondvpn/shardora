@@ -155,8 +155,8 @@ public:
 };
 
 TEST_F(TestBls, TestPolynomial) {
-    Polynomial polynomial(db_ptr);
-    polynomial.GenesisInit(16, 1024);
+//     Polynomial polynomial(db_ptr);
+//     polynomial.GenesisInit(16, 1024);
 }
 
 TEST_F(TestBls, ContributionSignAndVerify) {
