@@ -15,6 +15,7 @@
 #include "protos/get_proto_hash.h"
 #include "protos/prefix_db.h"
 #include "init/init_utils.h"
+#include "transport/processor.h"
 
 namespace zjchain {
 

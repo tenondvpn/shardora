@@ -72,6 +72,8 @@ public:
 
     void Destroy();
 
+    void TimerMessage(const transport::MessagePtr& msg_ptr);
+
 private:
     void HandleVerifyBroadcast(const transport::MessagePtr& header);
     void HandleSwapSecKey(const transport::MessagePtr& header);
@@ -93,7 +95,6 @@ private:
     void DumpLocalPrivateKey();
     bool VerifySekkeyValid(uint32_t idx, uint32_t peer_index, libff::alt_bn128_Fr& seckey);
     void LoadAllVerifyValues();
-    void TimerMessage(const transport::MessagePtr& msg_ptr);
 
     bool IsVerifyBrdPeriod() {
 #ifdef ZJC_UNITTEST
