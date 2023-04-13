@@ -62,10 +62,9 @@ public:
                 std::string val = common::Encode::HexDecode(std::string(line, strlen(line) - 1));
                 uint32_t* int_data = (uint32_t*)val.c_str();
                 uint32_t idx = int_data[1];
-                uint32_t pos = int_data[0];
                 bls::protobuf::BlsVerifyValue verify_val;
                 ASSERT_TRUE(verify_val.ParseFromArray(val.c_str() + 8, val.size() - 8));
-                prefix_db->SavePresetVerifyValue(idx, pos, verify_val);
+                prefix_db->SavePresetVerifyValue(idx, 0, verify_val);
                 ++idx;
                 if (idx >= 1024) {
                     break;
