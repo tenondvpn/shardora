@@ -339,6 +339,7 @@ static void HandleSwapSeckey(
         const std::vector<std::string>& pri_vec,
         const std::vector<transport::MessagePtr>& verify_brd_msgs) {
     static const uint32_t kThreadCount = 4;
+    uint32_t n = pri_vec.size();
     std::vector<transport::MessagePtr> tmp_verify_brd_msgs[kThreadCount];
     auto test_func = [&](uint32_t b, uint32_t e, uint32_t thread_idx) {
         for (uint32_t i = b; i < e; ++i) {
@@ -415,7 +416,7 @@ TEST_F(TestBls, AllSuccess) {
     CreateContribution(members, dkg, pri_vec, latest_timeblock_info, verify_brd_msgs);
     auto time1 = common::TimeUtils::TimestampUs();
     std::cout << "0: " << (time1 - time0) << std::endl;
-    HandleSwapSeckey(dkg, pri_vec, verify_brd_msgs)
+    HandleSwapSeckey(dkg, pri_vec, verify_brd_msgs);
 //     for (uint32_t i = 0; i < n; ++i) {
 //         for (uint32_t j = 0; j < n; ++j) {
 //             if (i == j) {
