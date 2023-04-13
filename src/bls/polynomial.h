@@ -37,9 +37,10 @@ public:
             std::string file = std::string("saved_verify_one_") + std::to_string(thread_idx);
             FILE* saved_verify_fd = fopen(file.c_str(), "a+");
             for (int32_t idx = b; idx < e; ++idx) {
+                libff::alt_bn128_G2 value = libff::alt_bn128_G2::zero();
                 bls::protobuf::BlsVerifyValue verify_val;
                 for (size_t tidx = 1; tidx < t; ++tidx) {
-                    auto value = power(libff::alt_bn128_Fr(idx + 1), tidx) * libff::alt_bn128_G2::one();
+                    value = value + power(libff::alt_bn128_Fr(idx + 1), tidx) * libff::alt_bn128_G2::one();
                     bls::protobuf::VerifyVecItem& verify_item = *verify_val.add_verify_vec();
                     verify_item.set_x_c0(common::Encode::HexDecode(
                         libBLS::ThresholdUtils::fieldElementToString(value.X.c0)));
