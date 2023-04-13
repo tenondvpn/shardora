@@ -741,6 +741,7 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
             g1_hash,
             &sign_x,
             &sign_y) != kBlsSuccess) {
+        ZJC_FATAL("sign bls message failed!");
         return;
     }
 
