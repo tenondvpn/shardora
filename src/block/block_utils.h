@@ -56,48 +56,6 @@ struct ToTxsItem {
     uint32_t tx_count;
 };
 
-struct StatisticElectItem {
-    StatisticElectItem() : elect_height(0) {
-        memset(succ_tx_count, 0, sizeof(succ_tx_count));
-    }
-
-    void Clear() {
-        elect_height = 0;
-        memset(succ_tx_count, 0, sizeof(succ_tx_count));
-        leader_lof_map.clear();
-    }
-
-    uint64_t elect_height{ 0 };
-    uint32_t succ_tx_count[common::kEachShardMaxNodeCount];
-    std::unordered_map<int32_t, std::shared_ptr<common::Point>> leader_lof_map;
-    std::mutex leader_lof_map_mutex;
-};
-
-typedef std::shared_ptr<StatisticElectItem> StatisticElectItemPtr;
-
-struct StatisticItem {
-    StatisticItem() {
-        for (uint32_t i = 0; i < kStatisticMaxCount; ++i) {
-            elect_items[i] = std::make_shared<StatisticElectItem>();
-        }
-    }
-
-    void Clear() {
-        for (uint32_t i = 0; i < kStatisticMaxCount; ++i) {
-            elect_items[i]->Clear();
-        }
-
-        all_tx_count = 0;
-        tmblock_height = 0;
-        added_height.clear();
-    }
-
-    StatisticElectItemPtr elect_items[kStatisticMaxCount];
-    uint32_t all_tx_count{ 0 };
-    std::unordered_set<uint64_t> added_height;
-    uint64_t tmblock_height{ 0 };
-};
-
 typedef std::shared_ptr<block::protobuf::Block> BlockPtr;
 
 struct BlockToDbItem {
