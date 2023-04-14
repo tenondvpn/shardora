@@ -2,6 +2,7 @@
 
 #include "common/hash.h"
 #include "common/lof.h"
+#include "common/node_members.h"
 #include "common/time_utils.h"
 #include "common/utils.h"
 #include "db/db.h"
