@@ -267,8 +267,7 @@ void ShardStatistic::CreateStatisticTransaction(uint64_t timeblock_height) {
     tx_info.set_gas_limit(0llu);
     tx_info.set_amount(0);
     tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
-    tx_info.set_network_id(common::GlobalInfo::Instance()->network_id());
-    tx_info.set_key(tmblock::kAttrTimerBlockHeight);
+    tx_info.set_key(protos::kAttrTimerBlockHeight);
     tx_info.set_value(std::to_string(timeblock_height));
 //     if (bft::DispatchPool::Instance()->Dispatch(tx_info) != bft::kBftSuccess) {
 //         ZJC_ERROR("CreateStatisticTransaction dispatch pool failed!");
