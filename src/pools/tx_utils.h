@@ -128,6 +128,11 @@ struct StatisticItem {
     uint64_t tmblock_height{ 0 };
 };
 
+struct ElectItem {
+    uint64_t height;
+    common::MembersPtr members;
+};
+
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {
     std::string message;
     message.reserve(tx_info.ByteSizeLong());

@@ -14,11 +14,16 @@
 
 namespace zjchain {
 
+namespace elect {
+    class ElectManager;
+};
+
 namespace pools {
 
 class ShardStatistic {
 public:
-    ShardStatistic() {
+    ShardStatistic(std::shared_ptr<elect::ElectManager>& elect_mgr)
+            : elect_mgr_(elect_mgr) {
         for (uint32_t i = 0; i < kStatisticMaxCount; ++i) {
             statistic_items_[i] = std::make_shared<StatisticItem>();
         }
@@ -40,6 +45,7 @@ private:
     static const uint32_t kLofMaxNodes = 8;
 
     std::shared_ptr<StatisticItem> statistic_items_[kStatisticMaxCount];
+    std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };

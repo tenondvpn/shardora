@@ -2,6 +2,8 @@
 
 #include "common/global_info.h"
 #include "common/encode.h"
+#include "elect/elect_manager.h"
+#include "network/network_utils.h"
 #include "protos/pools.pb.h"
 
 namespace zjchain {
@@ -11,15 +13,10 @@ namespace pools {
 static const std::string kShardFinalStaticPrefix = common::Encode::HexDecode(
     "027a252b30589b8ed984cf437c475b069d0597fc6d51ec6570e95a681ffa9fe7");
 
-ShardStatistic* ShardStatistic::Instance() {
-    static ShardStatistic ins;
-    return &ins;
-}
-
 void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& block_item) {
     if (block_item->network_id() == network::kRootCongressNetworkId) {
         if (block_item->tx_list_size() == 1 &&
-                block_item->tx_list(0).type() == common::kConsensusRootTimeBlock) {
+                block_item->tx_list(0).step() == pools::protobuf::kConsensusRootTimeBlock) {
             CreateStatisticTransaction(block_item->timeblock_height());
         }
     }
@@ -72,11 +69,11 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
     match_st_ptr->tmblock_height = block_item->timeblock_height();
     match_st_ptr->all_tx_count += block_item->tx_list_size();
     std::vector<uint64_t> bitmap_data;
-    for (int32_t i = 0; i < block_item->bitmap_size(); ++i) {
-        bitmap_data.push_back(block_item->bitmap(i));
+    for (int32_t i = 0; i < block_item->precommit_bitmap_size(); ++i) {
+        bitmap_data.push_back(block_item->precommit_bitmap(i));
     }
 
-    uint32_t member_count = elect::ElectManager::Instance()->GetMemberCountWithHeight(
+    uint32_t member_count = elect_mgr_->GetMemberCountWithHeight(
         block_item->electblock_height(),
         block_item->network_id());
     common::Bitmap final_bitmap(bitmap_data);
@@ -89,7 +86,7 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
     if (iter == match_ec_ptr->leader_lof_map.end()) {
         libff::alt_bn128_G2 common_pk;
         libff::alt_bn128_Fr sec_key;
-        auto members = elect::ElectManager::Instance()->GetNetworkMembersWithHeight(
+        auto members = elect_mgr_->GetNetworkMembersWithHeight(
             block_item->electblock_height(),
             common::GlobalInfo::Instance()->network_id(),
             &common_pk,
@@ -124,7 +121,7 @@ void ShardStatistic::NormalizePoints(
         std::unordered_map<int32_t, std::shared_ptr<common::Point>>& leader_lof_map) {
     libff::alt_bn128_G2 common_pk;
     libff::alt_bn128_Fr sec_key;
-    auto members = elect::ElectManager::Instance()->GetNetworkMembersWithHeight(
+    auto members = elect_mgr_->GetNetworkMembersWithHeight(
         elect_height,
         common::GlobalInfo::Instance()->network_id(),
         &common_pk,
@@ -133,7 +130,7 @@ void ShardStatistic::NormalizePoints(
         return;
     }
 
-    auto leader_count = elect::ElectManager::Instance()->GetNetworkLeaderCount(
+    auto leader_count = elect_mgr_->GetNetworkLeaderCount(
         common::GlobalInfo::Instance()->network_id());
     if (leader_count <= 0) {
         ZJC_ERROR("leader_count invalid[%d] net: %d.",
@@ -232,7 +229,7 @@ void ShardStatistic::GetStatisticInfo(
         }
 
         elect_st->set_elect_height(elect_item_ptr->elect_height);
-        auto member_count = elect::ElectManager::Instance()->GetMemberCountWithHeight(
+        auto member_count = elect_mgr_->GetMemberCountWithHeight(
             elect_st->elect_height(),
             common::GlobalInfo::Instance()->network_id());
         for (uint32_t m = 0; m < member_count; ++m) {
