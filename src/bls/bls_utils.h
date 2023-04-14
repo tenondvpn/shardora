@@ -63,6 +63,11 @@ struct TimeBlockItem {
     uint64_t vss_random;
 };
 
+struct ElectItem {
+    uint64_t height;
+    common::MembersPtr members;
+};
+
 static inline bool IsValidBigInt(const std::string& big_int) {
     for (size_t i = 0; i < big_int.size(); ++i)
     {

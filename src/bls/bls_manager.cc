@@ -70,6 +70,17 @@ void BlsManager::OnNewElectBlock(
         finish_networks_map_.erase(iter);
     }
 
+    auto elect_iter = elect_members_.find(sharding_id);
+    if (elect_iter != elect_members_.end()) {
+        if (elect_iter->second->height >= elect_height) {
+            return;
+        }
+    }
+
+    auto elect_item = std::make_shared<ElectItem>();
+    elect_item->height = elect_height;
+    elect_item->members = members;
+    elect_members_[sharding_id] = elect_item;
     if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
         return;
     }
@@ -255,13 +266,25 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     auto& bls_msg = header.bls_proto();
     if (bls_msg.finish_req().network_id() < network::kRootCongressNetworkId ||
             bls_msg.finish_req().network_id() >= network::kConsensusShardEndNetworkId) {
-        ZJC_DEBUG("finish network error: %d", bls_msg.finish_req().network_id());
+        ZJC_WARN("finish network error: %d", bls_msg.finish_req().network_id());
         return;
     }
 
-    common::MembersPtr members = nullptr;
-//     elect::ElectManager::Instance()->GetWaitingNetworkMembers(
-//         bls_msg.finish_req().network_id());
+    auto elect_iter = elect_members_.find(bls_msg.finish_req().network_id());
+    if (elect_iter == elect_members_.end()) {
+        ZJC_WARN("finish network error: %d", bls_msg.finish_req().network_id());
+        return;
+    }
+
+    if (elect_iter->second->height != bls_msg.elect_height()) {
+        ZJC_WARN("finish network error: %d, elect height now: %lu, req: %lu",
+            bls_msg.finish_req().network_id(),
+            elect_iter->second->height,
+            bls_msg.elect_height());
+        return;
+    }
+
+    common::MembersPtr members = elect_iter->second;
     if (members == nullptr || bls_msg.index() >= members->size()) {
         BLS_ERROR("not get waiting network members network id: %u, index: %d",
             bls_msg.finish_req().network_id(), bls_msg.index());
