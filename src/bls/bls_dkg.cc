@@ -767,8 +767,9 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
     finish_msg->set_bls_sign_y(sign_y);
     CreateDkgMessage(msg_ptr);
 #ifndef ZJC_UNITTEST
-    ZJC_DEBUG("success broadcast finish message. t: %d, n: %d",
-        min_aggree_member_count_, member_count_);
+    ZJC_DEBUG("success broadcast finish message. t: %d, n: %d, msg hash: %s",
+        min_aggree_member_count_, member_count_,
+        common::Encode::HexEncode(message_hash).c_str());
     network::Route::Instance()->Send(msg_ptr);
 #endif
 }
