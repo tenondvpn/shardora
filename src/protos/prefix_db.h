@@ -781,21 +781,11 @@ public:
             return false;
         }
 
-        if (elect_height <= 4) {
-            // for genesis block with sure encrypt key
-            if (security_ptr->Decrypt(
-                    val,
-                    kGenesisElectPrikeyEncryptKey,
-                    bls_prikey) != security::kSecuritySuccess) {
-                return false;
-            }
-        } else {
-            if (security_ptr->Decrypt(
-                    val,
-                    security_ptr->GetPrikey(),
-                    bls_prikey) != security::kSecuritySuccess) {
-                return false;
-            }
+        if (security_ptr->Decrypt(
+                val,
+                security_ptr->GetPrikey(),
+                bls_prikey) != security::kSecuritySuccess) {
+            return false;
         }
         
         return true;
