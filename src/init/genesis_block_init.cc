@@ -457,7 +457,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tm_block.set_timestamp(common::TimeUtils::TimestampSeconds());
         tm_block.set_height(tenon_block->height());
         tm_block.set_vss_random(common::Random::RandomUint64());
-        timeblock_storage->set_key(timeblock::kAttrTimerBlock);
+        timeblock_storage->set_key(protos::kAttrTimerBlock);
         char data[16];
         uint64_t* u64_data = (uint64_t*)data;
         u64_data[0] = tm_block.timestamp();
@@ -601,7 +601,7 @@ int GenesisBlockInit::GenerateShardSingleBlock() {
                     prefix_db_->SaveLatestElectBlock(ec_block);
                 }
 
-                if (tenon_block->tx_list(i).storages(j).key() == timeblock::kAttrTimerBlock) {
+                if (tenon_block->tx_list(i).storages(j).key() == protos::kAttrTimerBlock) {
                     prefix_db_->SaveLatestTimeBlock(tenon_block->height(), db_batch);
                 }
             }

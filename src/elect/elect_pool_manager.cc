@@ -23,10 +23,12 @@ ElectPoolManager::ElectPoolManager(
         std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<NodesStokeManager>& stoke_mgr,
-        std::shared_ptr<db::Db>& db)
+        std::shared_ptr<db::Db>& db,
+        std::shared_ptr<bls::BlsManager>& bls_mgr)
         : vss_mgr_(vss_mgr), db_(db), node_credit_(db), elect_mgr_(elect_mgr),
         security_ptr_(security_ptr),
-        stoke_mgr_(stoke_mgr) {
+        stoke_mgr_(stoke_mgr),
+        bls_mgr_(bls_mgr) {
     update_stoke_tick_.CutOff(30000000l, std::bind(&ElectPoolManager::UpdateNodesStoke, this));
 }
 
@@ -152,8 +154,8 @@ int ElectPoolManager::GetElectionTxInfo(block::protobuf::BlockTx& tx_info) {
 
     ec_block.set_shard_network_id(0);
     common::Bitmap bitmap;
-    if (bls::BlsManager::Instance()->AddBlsConsensusInfo(ec_block, &bitmap) == bls::kBlsSuccess) {
-        if (SelectLeader(tx_info.network_id(), bitmap, &ec_block) != kElectSuccess) {
+    if (bls_mgr_->AddBlsConsensusInfo(ec_block, &bitmap) == bls::kBlsSuccess) {
+        if (SelectLeader(ec_block.shard_network_id(), bitmap, &ec_block) != kElectSuccess) {
             BLS_ERROR("SelectLeader info failed!");
             return kElectError;
         }

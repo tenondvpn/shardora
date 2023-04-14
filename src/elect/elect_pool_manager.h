@@ -18,6 +18,10 @@ namespace vss {
     class VssManager;
 }
 
+namespace bls {
+    class BlsManager;
+}
+
 namespace elect {
 
 class ElectManager;
@@ -28,7 +32,8 @@ public:
         std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<NodesStokeManager>& stoke_mgr,
-        std::shared_ptr<db::Db>& db);
+        std::shared_ptr<db::Db>& db,
+        std::shared_ptr<bls::BlsManager>& bls_mgr);
     ~ElectPoolManager();
     void NetworkMemberChange(uint32_t network_id, common::MembersPtr& members_ptr);
     void AddWaitingPoolNode(uint32_t network_id, NodeDetailPtr& node_ptr);
@@ -112,6 +117,7 @@ private:
     std::mutex waiting_pool_map_mutex_;
     uint32_t updated_net_id_{ common::kInvalidUint32 };
     common::Tick update_stoke_tick_;
+    std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ElectPoolManager);
 };
