@@ -700,6 +700,10 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
     auto& bls_msg = *msg.mutable_bls_proto();
     auto finish_msg = bls_msg.mutable_finish_req();
     auto& data = bitmap.data();
+    for (uint32_t i = 0; i < data.size(); ++i) {
+        finish_msg->add_bitmap(data[i]);
+    }
+
     local_publick_key_.to_affine_coordinates();
     auto local_pk = finish_msg->mutable_pubkey();
     local_pk->set_x_c0(

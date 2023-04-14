@@ -200,14 +200,24 @@ static void GetBlsHash(
         for (int32_t i = 0; i < bls_msg.finish_req().bitmap_size(); ++i) {
             uint64_t bitmap_data = bls_msg.finish_req().bitmap(i);
             msg_for_hash.append((char*)&bitmap_data, sizeof(bitmap_data));
-            if (bls_msg.finish_req().has_pubkey()) {
-                msg_for_hash.append(bls_msg.finish_req().pubkey().x_c0());
-                msg_for_hash.append(bls_msg.finish_req().pubkey().x_c1());
-                msg_for_hash.append(bls_msg.finish_req().pubkey().y_c0());
-                msg_for_hash.append(bls_msg.finish_req().pubkey().y_c1());
-            } else {
-                msg_for_hash.append((char*)&has_filed, sizeof(has_filed));
-            }
+        }
+
+        if (bls_msg.finish_req().has_pubkey()) {
+            msg_for_hash.append(bls_msg.finish_req().pubkey().x_c0());
+            msg_for_hash.append(bls_msg.finish_req().pubkey().x_c1());
+            msg_for_hash.append(bls_msg.finish_req().pubkey().y_c0());
+            msg_for_hash.append(bls_msg.finish_req().pubkey().y_c1());
+        } else {
+            msg_for_hash.append((char*)&has_filed, sizeof(has_filed));
+        }
+
+        if (bls_msg.finish_req().has_common_pubkey()) {
+            msg_for_hash.append(bls_msg.finish_req().common_pubkey().x_c0());
+            msg_for_hash.append(bls_msg.finish_req().common_pubkey().x_c1());
+            msg_for_hash.append(bls_msg.finish_req().common_pubkey().y_c0());
+            msg_for_hash.append(bls_msg.finish_req().common_pubkey().y_c1());
+        } else {
+            msg_for_hash.append((char*)&has_filed, sizeof(has_filed));
         }
     } else {
         msg_for_hash.append((char*)&has_filed, sizeof(has_filed));
