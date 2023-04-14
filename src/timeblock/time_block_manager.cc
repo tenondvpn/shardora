@@ -62,7 +62,7 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tx_info.set_gas_limit(0llu);
     tx_info.set_amount(0);
     tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
-    tx_info.set_key(kAttrTimerBlock);
+    tx_info.set_key(protos::kAttrTimerBlock);
     tmblock_tx_ptr_ = create_tm_tx_cb_(msg_ptr);
 }
 
