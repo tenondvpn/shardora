@@ -109,11 +109,11 @@ void RootZbft::RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_bl
     auto& tx = *tx_list->Add();
     iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), db_batch_, &tx);
     // use new node status
-//     if (elect_mgr_->GetElectionTxInfo(tx) != elect::kElectSuccess) {
-//         assert(false);
-//         tx_list->RemoveLast();  
-//         return;
-//     }
+    if (elect_mgr_->GetElectionTxInfo(tx) != elect::kElectSuccess) {
+        assert(false);
+        tx_list->RemoveLast();  
+        return;
+    }
 
     // (TODO): check elect is valid in the time block period,
     // one time block, one elect block

@@ -40,7 +40,7 @@ int ElectPoolManager::CreateElectTransaction(
     bool statistic_valid = false;
     std::string tm_str;
     for (int32_t i = 0; i < src_tx_info.storages_size(); ++i) {
-        if (src_tx_info.storages(i).key() == "tmblock::kAttrTimerBlockHeight") {
+        if (src_tx_info.storages(i).key() == protos::kAttrTimerBlockHeight) {
             tx_info.set_gid(common::Hash::Hash256(
                 kElectGidPrefix +
                 "_" +
@@ -63,8 +63,8 @@ int ElectPoolManager::CreateElectTransaction(
         return kElectError;
     }
 
-    if (src_tx_info.storages(0).key() != "bft::kStatisticAttr") {
-        ELECT_ERROR("tx info storage key error[%s]", "bft::kStatisticAttr");
+    if (src_tx_info.storages(0).key() != protos::kStatisticAttr) {
+        ELECT_ERROR("tx info storage key error[%s]", protos::kStatisticAttr.c_str());
         return kElectError;
     }
 
@@ -73,9 +73,10 @@ int ElectPoolManager::CreateElectTransaction(
         return kElectError;
     }
 
-    tx_info.set_key("bft::kStatisticAttr");
+    tx_info.set_key(protos::kStatisticAttr);
     tx_info.set_value(src_tx_info.storages(0).val_hash());
-    tx_info.set_pubkey("common::kRootChainElectionBlockTxAddress pubkey");
+    tx_info.set_pubkey("");
+    tx_info.set_to(common::kRootChainElectionBlockTxAddress);
     tx_info.set_gas_limit(0llu);
     tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
     ELECT_INFO("CreateElectTransaction success gid: %s, shard id: %u, "
@@ -151,12 +152,12 @@ int ElectPoolManager::GetElectionTxInfo(block::protobuf::BlockTx& tx_info) {
 
     ec_block.set_shard_network_id(0);
     common::Bitmap bitmap;
-    // if (bls::BlsManager::Instance()->AddBlsConsensusInfo(ec_block, &bitmap) == bls::kBlsSuccess) {
-    //     if (SelectLeader(tx_info.network_id(), bitmap, &ec_block) != kElectSuccess) {
-    //         BLS_ERROR("SelectLeader info failed!");
-    //         return kElectError;
-    //     }
-    // }
+    if (bls::BlsManager::Instance()->AddBlsConsensusInfo(ec_block, &bitmap) == bls::kBlsSuccess) {
+        if (SelectLeader(tx_info.network_id(), bitmap, &ec_block) != kElectSuccess) {
+            BLS_ERROR("SelectLeader info failed!");
+            return kElectError;
+        }
+    }
     
     for (auto iter = weed_out_ids.begin(); iter != weed_out_ids.end(); ++iter) {
         ec_block.add_weedout_ids(*iter);

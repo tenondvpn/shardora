@@ -3,6 +3,7 @@
 #include <deque>
 
 #include "block/block_utils.h"
+#include "block/shard_statistic.h"
 #include "ck/ck_client.h"
 #include "common/config.h"
 #include "common/node_members.h"
@@ -113,6 +114,7 @@ private:
     transport::MessagePtr to_txs_msg_ = nullptr;
     uint64_t prev_to_txs_tm_us_ = 0;
     DbBlockCallback new_block_callback_ = nullptr;
+    std::shared_ptr<ShardStatistic> shard_statistic_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

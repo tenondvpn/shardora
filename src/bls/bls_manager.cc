@@ -658,145 +658,144 @@ bool BlsManager::VerifyAggSignValid(
     return false;
 }
 
-// int BlsManager::AddBlsConsensusInfo(
-//         elect::protobuf::ElectBlock& ec_block,
-//         common::Bitmap* bitmap) {
-//     std::lock_guard<std::mutex> guard(finish_networks_map_mutex_);
-//     auto iter = finish_networks_map_.find(ec_block.shard_network_id());
-//     if (iter == finish_networks_map_.end()) {
-//         BLS_ERROR("find finish_networks_map_ failed![%u]", ec_block.shard_network_id());
-//         return kBlsError;
-//     }
-// 
-//     if (!iter->second->success_verified) {
-//         BLS_ERROR("success_verified failed![%u]", ec_block.shard_network_id());
-//         return kBlsError;
-//     }
-// 
-//     auto members = elect::ElectManager::Instance()->GetWaitingNetworkMembers(
-//         ec_block.shard_network_id());
-//     if (members == nullptr) {
-//         BLS_ERROR("get waiting members failed![%u]", ec_block.shard_network_id());
-//         return kBlsError;
-//     }
-// 
-//     // At least so many nodes are required to successfully exchange keys
-//     auto exchange_member_count = (uint32_t)((float)members->size() * kBlsMaxExchangeMembersRatio);
-//     if (exchange_member_count < members->size()) {
-//         ++exchange_member_count;
-//     }
-// 
-//     auto t = common::GetSignerCount(members->size());
-//     BlsFinishItemPtr finish_item = iter->second;
-//     if (finish_item->max_finish_count < exchange_member_count) {
-//         BLS_ERROR("network: %u, finish_item->max_finish_count < t[%u][%u]",
-//             ec_block.shard_network_id(),
-//             finish_item->max_finish_count, exchange_member_count);
-//         return kBlsError;
-//     }
-// 
-//     auto item_iter = finish_item->max_bls_members.find(finish_item->max_finish_hash);
-//     if (item_iter == finish_item->max_bls_members.end()) {
-//         BLS_ERROR("finish_item->max_bls_members failed");
-//         return kBlsError;
-//     }
-// 
-//     uint32_t max_mem_size = item_iter->second->bitmap.data().size() * 64;
-//     if (max_mem_size < members->size()) {
-//         BLS_ERROR("max_mem_size < members->size()[%u][%u]", max_mem_size, members->size());
-//         return kBlsError;
-//     }
-// 
-//     uint32_t max_cpk_count = 0;
-//     std::string max_cpk_hash;
-//     for (auto max_cpk_count_iter = finish_item->max_public_pk_map.begin();
-//         max_cpk_count_iter != finish_item->max_public_pk_map.end(); ++max_cpk_count_iter) {
-//         if (max_cpk_count_iter->second > max_cpk_count) {
-//             max_cpk_count = max_cpk_count_iter->second;
-//             max_cpk_hash = max_cpk_count_iter->first;
-//         }
-//     }
-// 
-//     auto common_pk_iter = finish_item->common_pk_map.find(max_cpk_hash);
-//     if (common_pk_iter == finish_item->common_pk_map.end()) {
-//         BLS_ERROR("finish_item->common_pk_map failed!");
-//         return kBlsError;
-//     }
-// 
-//     *bitmap = common::Bitmap(item_iter->second->bitmap.data().size() * 64);
-//     auto pre_ec_members = ec_block.mutable_prev_members();
-//     for (size_t i = 0; i < members->size(); ++i) {
-//         auto mem_bls_pk = pre_ec_members->add_bls_pubkey();
-//         if (!item_iter->second->bitmap.Valid(i)) {
-//             mem_bls_pk->set_x_c0("");
-//             mem_bls_pk->set_x_c1("");
-//             mem_bls_pk->set_y_c0("");
-//             mem_bls_pk->set_y_c1("");
-//             BLS_WARN("0 invalid bitmap: %d", i);
-//             continue;
-//         }
-// 
-//         if (finish_item->all_public_keys[i] == libff::alt_bn128_G2::zero()) {
-//             mem_bls_pk->set_x_c0("");
-//             mem_bls_pk->set_x_c1("");
-//             mem_bls_pk->set_y_c0("");
-//             mem_bls_pk->set_y_c1("");
-//             BLS_WARN("0 invalid all_public_keys: %d", i);
-//             continue;
-//         }
-// 
-//         if (finish_item->all_common_public_keys[i] != common_pk_iter->second) {
-//             mem_bls_pk->set_x_c0("");
-//             mem_bls_pk->set_x_c1("");
-//             mem_bls_pk->set_y_c0("");
-//             mem_bls_pk->set_y_c1("");
-//             BLS_WARN("0 invalid all_common_public_keys: %d", i);
-//             continue;
-//         }
-// 
-//         finish_item->all_public_keys[i].to_affine_coordinates();
-//         mem_bls_pk->set_x_c0(
-//             libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].X.c0));
-//         mem_bls_pk->set_x_c1(
-//             libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].X.c1));
-//         mem_bls_pk->set_y_c0(
-//             libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c0));
-//         mem_bls_pk->set_y_c1(
-//             libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c1));
-//         mem_bls_pk->set_pool_idx_mod_num(-1);
-//         bitmap->Set(i);
-//     }
-// 
-//     if (bitmap->valid_count() < exchange_member_count) {
-//         ec_block.clear_prev_members();
-//         BLS_ERROR("all_valid_count < t[%u][%u][%f][%u]",
-//             bitmap->valid_count(),
-//             members->size(),
-//             kBlsMaxExchangeMembersRatio,
-//             exchange_member_count);
-//         return kBlsError;
-//     }
-// 
-//     common_pk_iter->second.to_affine_coordinates();
-//     auto common_pk = pre_ec_members->mutable_common_pubkey();
-//     common_pk->set_x_c0(
-//         libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.X.c0));
-//     common_pk->set_x_c1(
-//         libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.X.c1));
-//     common_pk->set_y_c0(
-//         libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.Y.c0));
-//     common_pk->set_y_c1(
-//         libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.Y.c1));
-//     pre_ec_members->set_prev_elect_height(
-//         elect::ElectManager::Instance()->waiting_elect_height(ec_block.shard_network_id()));
-//     BLS_DEBUG("network: %u, AddBlsConsensusInfo success max_finish_count_: %d,"
-//         "member count: %d, x_c0: %s, x_c1: %s, y_c0: %s, y_c1: %s.",
-//         ec_block.shard_network_id(),
-//         bitmap->valid_count(), members->size(),
-//         common_pk->x_c0().c_str(), common_pk->x_c1().c_str(),
-//         common_pk->y_c0().c_str(), common_pk->y_c1().c_str());
-//     return kBlsSuccess;
-// }
+int BlsManager::AddBlsConsensusInfo(
+        elect::protobuf::ElectBlock& ec_block,
+        common::Bitmap* bitmap) {
+    auto iter = finish_networks_map_.find(ec_block.shard_network_id());
+    if (iter == finish_networks_map_.end()) {
+        BLS_ERROR("find finish_networks_map_ failed![%u]", ec_block.shard_network_id());
+        return kBlsError;
+    }
+
+    if (!iter->second->success_verified) {
+        BLS_ERROR("success_verified failed![%u]", ec_block.shard_network_id());
+        return kBlsError;
+    }
+
+    auto members = elect::ElectManager::Instance()->GetWaitingNetworkMembers(
+        ec_block.shard_network_id());
+    if (members == nullptr) {
+        BLS_ERROR("get waiting members failed![%u]", ec_block.shard_network_id());
+        return kBlsError;
+    }
+
+    // At least so many nodes are required to successfully exchange keys
+    auto exchange_member_count = (uint32_t)((float)members->size() * kBlsMaxExchangeMembersRatio);
+    if (exchange_member_count < members->size()) {
+        ++exchange_member_count;
+    }
+
+    auto t = common::GetSignerCount(members->size());
+    BlsFinishItemPtr finish_item = iter->second;
+    if (finish_item->max_finish_count < exchange_member_count) {
+        BLS_ERROR("network: %u, finish_item->max_finish_count < t[%u][%u]",
+            ec_block.shard_network_id(),
+            finish_item->max_finish_count, exchange_member_count);
+        return kBlsError;
+    }
+
+    auto item_iter = finish_item->max_bls_members.find(finish_item->max_finish_hash);
+    if (item_iter == finish_item->max_bls_members.end()) {
+        BLS_ERROR("finish_item->max_bls_members failed");
+        return kBlsError;
+    }
+
+    uint32_t max_mem_size = item_iter->second->bitmap.data().size() * 64;
+    if (max_mem_size < members->size()) {
+        BLS_ERROR("max_mem_size < members->size()[%u][%u]", max_mem_size, members->size());
+        return kBlsError;
+    }
+
+    uint32_t max_cpk_count = 0;
+    std::string max_cpk_hash;
+    for (auto max_cpk_count_iter = finish_item->max_public_pk_map.begin();
+        max_cpk_count_iter != finish_item->max_public_pk_map.end(); ++max_cpk_count_iter) {
+        if (max_cpk_count_iter->second > max_cpk_count) {
+            max_cpk_count = max_cpk_count_iter->second;
+            max_cpk_hash = max_cpk_count_iter->first;
+        }
+    }
+
+    auto common_pk_iter = finish_item->common_pk_map.find(max_cpk_hash);
+    if (common_pk_iter == finish_item->common_pk_map.end()) {
+        BLS_ERROR("finish_item->common_pk_map failed!");
+        return kBlsError;
+    }
+
+    *bitmap = common::Bitmap(item_iter->second->bitmap.data().size() * 64);
+    auto pre_ec_members = ec_block.mutable_prev_members();
+    for (size_t i = 0; i < members->size(); ++i) {
+        auto mem_bls_pk = pre_ec_members->add_bls_pubkey();
+        if (!item_iter->second->bitmap.Valid(i)) {
+            mem_bls_pk->set_x_c0("");
+            mem_bls_pk->set_x_c1("");
+            mem_bls_pk->set_y_c0("");
+            mem_bls_pk->set_y_c1("");
+            BLS_WARN("0 invalid bitmap: %d", i);
+            continue;
+        }
+
+        if (finish_item->all_public_keys[i] == libff::alt_bn128_G2::zero()) {
+            mem_bls_pk->set_x_c0("");
+            mem_bls_pk->set_x_c1("");
+            mem_bls_pk->set_y_c0("");
+            mem_bls_pk->set_y_c1("");
+            BLS_WARN("0 invalid all_public_keys: %d", i);
+            continue;
+        }
+
+        if (finish_item->all_common_public_keys[i] != common_pk_iter->second) {
+            mem_bls_pk->set_x_c0("");
+            mem_bls_pk->set_x_c1("");
+            mem_bls_pk->set_y_c0("");
+            mem_bls_pk->set_y_c1("");
+            BLS_WARN("0 invalid all_common_public_keys: %d", i);
+            continue;
+        }
+
+        finish_item->all_public_keys[i].to_affine_coordinates();
+        mem_bls_pk->set_x_c0(
+            libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].X.c0));
+        mem_bls_pk->set_x_c1(
+            libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].X.c1));
+        mem_bls_pk->set_y_c0(
+            libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c0));
+        mem_bls_pk->set_y_c1(
+            libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c1));
+        mem_bls_pk->set_pool_idx_mod_num(-1);
+        bitmap->Set(i);
+    }
+
+    if (bitmap->valid_count() < exchange_member_count) {
+        ec_block.clear_prev_members();
+        BLS_ERROR("all_valid_count < t[%u][%u][%f][%u]",
+            bitmap->valid_count(),
+            members->size(),
+            kBlsMaxExchangeMembersRatio,
+            exchange_member_count);
+        return kBlsError;
+    }
+
+    common_pk_iter->second.to_affine_coordinates();
+    auto common_pk = pre_ec_members->mutable_common_pubkey();
+    common_pk->set_x_c0(
+        libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.X.c0));
+    common_pk->set_x_c1(
+        libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.X.c1));
+    common_pk->set_y_c0(
+        libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.Y.c0));
+    common_pk->set_y_c1(
+        libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.Y.c1));
+    pre_ec_members->set_prev_elect_height(
+        elect::ElectManager::Instance()->waiting_elect_height(ec_block.shard_network_id()));
+    BLS_DEBUG("network: %u, AddBlsConsensusInfo success max_finish_count_: %d,"
+        "member count: %d, x_c0: %s, x_c1: %s, y_c0: %s, y_c1: %s.",
+        ec_block.shard_network_id(),
+        bitmap->valid_count(), members->size(),
+        common_pk->x_c0().c_str(), common_pk->x_c1().c_str(),
+        common_pk->y_c0().c_str(), common_pk->y_c1().c_str());
+    return kBlsSuccess;
+}
 
 };  // namespace bls
 

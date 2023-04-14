@@ -24,10 +24,6 @@ static const uint64_t kTimeBlockMaxOffsetSeconds = 10ll;
 static const uint32_t kTimeBlockAvgCount = 6u;
 static const uint64_t kCheckTimeBlockPeriodUs = 1000000llu;
 static const uint64_t kCheckBftPeriodUs = 1000000llu;
-static const std::string kAttrTimerBlock = "__tmblock_tmblock";
-static const std::string kAttrTimerBlockHeight = "__tmblock_tmblock_height";
-static const std::string kAttrTimerBlockTm = "__tmblock_tmblock_tm";
-static const std::string kVssRandomAttr = "__vssrandomattr";
 
 }  // namespace timeblock
 

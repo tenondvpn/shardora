@@ -41,7 +41,6 @@ public:
         const std::string& addr,
         uint32_t* network_id);
     protos::AddressInfoPtr GetContractInfoByAddress(uint8_t thread_idx, const std::string& address);
-    std::string GetPoolBaseAddr(uint32_t pool_index);
     void PrintPoolHeightTree(uint32_t pool_idx);
     void SetMaxHeight(uint32_t pool_idx, uint64_t height);
     int HandleRefreshHeightsReq(const transport::MessagePtr& msg_ptr);
