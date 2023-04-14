@@ -329,7 +329,7 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     sign.Z = libff::alt_bn128_Fq::one();
     std::string verify_hash;
     libff::alt_bn128_G1 g1_hash;
-    GetLibffHash(msg_hash, &g1_hash);
+    GetLibffHash(cpk_hash, &g1_hash);
     if (Verify(
             t,
             members->size(),

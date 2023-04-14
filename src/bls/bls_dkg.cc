@@ -733,9 +733,8 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
     std::string sign_y;
     libff::alt_bn128_G1 g1_hash;
     CreateDkgMessage(msg_ptr);
-    std::string message_hash;
-    protos::GetProtoHash(msg_ptr->header, &message_hash);
-    bls_mgr_->GetLibffHash(message_hash, &g1_hash);
+    std::string sign_hash = common::Hash::keccak256(pk);
+    bls_mgr_->GetLibffHash(sign_hash, &g1_hash);
     if (bls_mgr_->Sign(
             min_aggree_member_count_,
             member_count_,
@@ -752,7 +751,7 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
 #ifndef ZJC_UNITTEST
     ZJC_DEBUG("success broadcast finish message. t: %d, n: %d, msg hash: %s",
         min_aggree_member_count_, member_count_,
-        common::Encode::HexEncode(message_hash).c_str());
+        common::Encode::HexEncode(sign_hash).c_str());
     network::Route::Instance()->Send(msg_ptr);
 #endif
 }
