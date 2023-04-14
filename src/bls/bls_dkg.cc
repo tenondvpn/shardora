@@ -725,6 +725,10 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
         libBLS::ThresholdUtils::fieldElementToString(common_public_key_.Y.c0));
     common_pk->set_y_c1(
         libBLS::ThresholdUtils::fieldElementToString(common_public_key_.Y.c1));
+    std::string pk = common_pk->x_c0() + common_pk->x_c1() + common_pk->y_c0() + common_pk->y_c1();
+    ZJC_DEBUG("valid bls members: %d, pk: %s",
+        bitmap.valid_count(), common::Encode::HexEncode(pk).c_str());
+
     std::string sign_x;
     std::string sign_y;
     libff::alt_bn128_G1 g1_hash;
