@@ -743,10 +743,19 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
     sign.Y = libff::alt_bn128_Fq(sign_y.c_str());
     sign.Z = libff::alt_bn128_Fq::one();
     std::string verify_hash;
+
+    std::vector<std::string> pkey_str = {
+        bls_msg.finish_req().pubkey().x_c0(),
+        bls_msg.finish_req().pubkey().x_c1(),
+        bls_msg.finish_req().pubkey().y_c0(),
+        bls_msg.finish_req().pubkey().y_c1()
+    };
+
+    BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
     if (bls_mgr_->Verify(
             min_aggree_member_count_,
             member_count_,
-            local_publick_key_,
+            *pkey.getPublicKey(),
             sign,
             g1_hash,
             &verify_hash) != kBlsSuccess) {
@@ -758,7 +767,8 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
     finish_msg->set_bls_sign_y(sign_y);
     CreateDkgMessage(msg_ptr);
 #ifndef ZJC_UNITTEST
-    ZJC_DEBUG("success broadcast finish message.");
+    ZJC_DEBUG("success broadcast finish message. t: %d, n: %d",
+        min_aggree_member_count_, member_count_);
     network::Route::Instance()->Send(msg_ptr);
 #endif
 }
