@@ -184,7 +184,7 @@ void GenesisBlockInit::DumpLocalPrivateKey(
 
     prefix_db_->SaveBlsPrikey(height, shard_netid, id, enc_data);
     char data[16];
-    uint64_t* tmp = (uint32_t*)data;
+    uint64_t* tmp = (uint64_t*)data;
     tmp[0] = height;
     tmp[1] = shard_netid;
     std::string val = common::Encode::HexEncode(std::string(data, sizeof(data)) + id + enc_data) + "\n";
