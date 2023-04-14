@@ -52,7 +52,8 @@ ElectManager::ElectManager(
     db_ = db;
     new_elect_cb_ = new_elect_cb;
     elect_block_mgr_.Init(db_);
-    pool_manager_ = std::make_shared<ElectPoolManager>(this, vss_mgr, security, stoke_mgr_, db_);
+    pool_manager_ = std::make_shared<ElectPoolManager>(
+        this, vss_mgr, security, stoke_mgr_, db_, bls_mgr);
     height_with_block_ = std::make_shared<HeightWithElectBlock>(security, db_);
     leader_rotation_ = std::make_shared<LeaderRotation>(security_);
     stoke_mgr_ = std::make_shared<NodesStokeManager>(security_);

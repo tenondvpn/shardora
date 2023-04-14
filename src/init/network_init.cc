@@ -698,7 +698,7 @@ void NetworkInit::HandleTimeBlock(
         db::DbWriteBatch& db_batch) {
     auto& tx = block->tx_list(0);
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).key() == timeblock::kAttrTimerBlock) {
+        if (tx.storages(i).key() == protos::kAttrTimerBlock) {
             if (tx.storages(i).val_hash().size() != 16) {
                 return;
             }
