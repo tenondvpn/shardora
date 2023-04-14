@@ -468,6 +468,10 @@ int ToTxsPools::CreateToTxWithHeights(
 
         for (auto height = min_height; height <= max_height; ++height) {
             auto hiter = pool_iter->second.find(height);
+            if (hiter == pool_iter->second.end()) {
+                continue;
+            }
+
             for (auto to_iter = hiter->second.begin();
                     to_iter != hiter->second.end(); ++to_iter) {
                 auto amount_iter = acc_amount_map.find(to_iter->first);
