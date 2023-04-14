@@ -472,6 +472,7 @@ int ToTxsPools::CreateToTxWithHeights(
                     to_iter != hiter->second.end(); ++to_iter) {
                 auto amount_iter = acc_amount_map.find(to_iter->first);
                 if (amount_iter == acc_amount_map.end()) {
+                    ZJC_DEBUG("len: %u, addr: %s", to_iter->first.size(), common::Encode::HexEncode(to_iter->first).c_str())
                     acc_amount_map[to_iter->first] = to_iter->second;
                 } else {
                     amount_iter->second.amount += to_iter->second.amount;
