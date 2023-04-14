@@ -284,7 +284,7 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    common::MembersPtr members = elect_iter->second;
+    common::MembersPtr members = elect_iter->second->members;
     if (members == nullptr || bls_msg.index() >= members->size()) {
         BLS_ERROR("not get waiting network members network id: %u, index: %d",
             bls_msg.finish_req().network_id(), bls_msg.index());
