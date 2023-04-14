@@ -100,6 +100,7 @@ public:
             members_ptrs_[network_id][min_index]->local_sec_key = libff::alt_bn128_Fr(bls_prikey.c_str());
         } else {
             members_ptrs_[network_id][min_index]->local_sec_key = libff::alt_bn128_Fr::zero();
+            assert(false);
         }
         ZJC_DEBUG("1 save bls pk and secret key success.height: %lu, network_id: %u",
             height, network_id);
@@ -172,7 +173,6 @@ public:
                     *local_sec_key = members_ptrs_[network_id][i]->local_sec_key;
                     ZJC_DEBUG("1 get bls pk and secret key success.height: %lu, network_id: %u",
                         height, network_id);
-
                 }
 
                 return members_ptrs_[network_id][i]->members_ptr;
