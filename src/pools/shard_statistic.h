@@ -34,6 +34,10 @@ public:
     void GetStatisticInfo(
         uint64_t timeblock_height,
         block::protobuf::StatisticInfo* statistic_info);
+    void OnTimeBlock(
+        uint64_t lastest_time_block_tm,
+        uint64_t latest_time_block_height,
+        uint64_t vss_random);
 
 private:
     void CreateStatisticTransaction(uint64_t timeblock_height);
@@ -46,6 +50,7 @@ private:
 
     std::shared_ptr<StatisticItem> statistic_items_[kStatisticMaxCount];
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
+    uint64_t latest_timeblock_tm_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };

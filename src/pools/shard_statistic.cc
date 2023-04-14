@@ -115,6 +115,12 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
         (*point_ptr)[i] += block_item->tx_list_size();
     }
 }
+void ShardStatistic::OnTimeBlock(
+        uint64_t lastest_time_block_tm,
+        uint64_t latest_time_block_height,
+        uint64_t vss_random) {
+    latest_timeblock_tm_ = lastest_time_block_tm;
+}
 
 void ShardStatistic::NormalizePoints(
         uint64_t elect_height,
@@ -245,8 +251,8 @@ void ShardStatistic::CreateStatisticTransaction(uint64_t timeblock_height) {
     }
 
     int32_t pool_idx = 0;
-    pools::protobuf::TxInfo tx_info;
-    tx_info.set_type(common::kConsensusFinalStatistic);
+    pools::protobuf::TxMessage tx_info;
+    tx_info.set_step(pools::protobuf::kConsensusFinalStatistic);
 //     tx_info.set_from(account_mgr_->GetPoolBaseAddr(pool_idx));
 //     if (tx_info.from().empty()) {
 //         return;
@@ -255,7 +261,7 @@ void ShardStatistic::CreateStatisticTransaction(uint64_t timeblock_height) {
     tx_info.set_gid(common::Hash::Hash256(
         kShardFinalStaticPrefix + "_" +
         std::to_string(common::GlobalInfo::Instance()->network_id()) + "_" +
-        std::to_string(tmblock::TimeBlockManager::Instance()->LatestTimestamp())));
+        std::to_string(latest_timeblock_tm_)));
 //     BLOCK_INFO("create new final statistic time stamp: %lu",
 //         tmblock::TimeBlockManager::Instance()->LatestTimestamp());
     tx_info.set_gas_limit(0llu);
