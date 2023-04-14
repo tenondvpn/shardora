@@ -382,7 +382,8 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     }
 
     if (finish_item->success_verified) {
-        BLS_DEBUG("success check all members agg signature, elect_height: %lu", bls_msg.elect_height());
+        BLS_DEBUG("success check all members agg signature, elect_height: %lu",
+            bls_msg.elect_height());
     }
 
     ZJC_DEBUG("handle finish success.");
@@ -650,6 +651,7 @@ bool BlsManager::VerifyAggSignValid(
             return false;
         }
 
+        ZJC_ERROR("verify agg sign success!");
         return true;
     } catch (...) {
     }
