@@ -336,8 +336,8 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
             sign,
             g1_hash,
             &verify_hash) != bls::kBlsSuccess) {
-        ZJC_ERROR("verify bls finish bls sign error t: %d, size: %d, cpk_hash: %s!",
-            t, members->size(), common::Encode::HexEncode(cpk_hash).c_str());
+        ZJC_ERROR("verify bls finish bls sign error t: %d, size: %d, cpk_hash: %s, pk: %s",
+            t, members->size(), common::Encode::HexEncode(cpk_hash).c_str(), common_pk_str.c_str());
         return;
     }
 
