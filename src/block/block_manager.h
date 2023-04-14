@@ -3,7 +3,6 @@
 #include <deque>
 
 #include "block/block_utils.h"
-#include "block/shard_statistic.h"
 #include "ck/ck_client.h"
 #include "common/config.h"
 #include "common/node_members.h"
