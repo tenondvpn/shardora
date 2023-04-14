@@ -356,7 +356,7 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     }
 
     finish_item->verified[bls_msg.index()] = true;
-    auto common_pk_iter = finish_item->common_pk_map.find(msg_hash);
+    auto common_pk_iter = finish_item->common_pk_map.find(cpk_hash);
     if (common_pk_iter == finish_item->common_pk_map.end()) {
         finish_item->common_pk_map[cpk_hash] = *common_pkey.getPublicKey();
     }
@@ -386,13 +386,13 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     }
 
     ZJC_DEBUG("handle finish success.");
-    auto max_iter = finish_item->max_bls_members.find(msg_hash);
+    auto max_iter = finish_item->max_bls_members.find(cpk_hash);
     if (max_iter != finish_item->max_bls_members.end()) {
         ++max_iter->second->count;
         ZJC_DEBUG("handle finish success count: %d.", max_iter->second->count);
         if (max_iter->second->count > finish_item->max_finish_count) {
             finish_item->max_finish_count = max_iter->second->count;
-            finish_item->max_finish_hash = msg_hash;
+            finish_item->max_finish_hash = cpk_hash;
         }
 
         return;
@@ -405,10 +405,10 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
 
     common::Bitmap bitmap(bitmap_data);
     auto item = std::make_shared<MaxBlsMemberItem>(1, bitmap);
-    finish_item->max_bls_members[msg_hash] = item;
+    finish_item->max_bls_members[cpk_hash] = item;
     if (finish_item->max_finish_count == 0) {
         finish_item->max_finish_count = 1;
-        finish_item->max_finish_hash = msg_hash;
+        finish_item->max_finish_hash = cpk_hash;
     }
 }
 
