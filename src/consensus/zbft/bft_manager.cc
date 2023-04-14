@@ -994,7 +994,8 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
             bls_mgr_,
             txs_ptr,
             txs_pools_,
-            tm_block_mgr_);
+            tm_block_mgr_,
+            elect_mgr_);
     } else {
         bft_ptr = std::make_shared<Zbft>(
             account_mgr_,
