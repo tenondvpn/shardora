@@ -317,11 +317,10 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
             bls_msg.finish_req().common_pubkey().y_c1()
     };
     BLSPublicKey common_pkey(std::make_shared<std::vector<std::string>>(common_pkey_str));
-    std::string common_pk_str;
-    for (uint32_t i = 0; i < common_pkey_str.size(); ++i) {
-        common_pk_str += common_pkey_str[i];
-    }
-
+    std::string common_pk_str = bls_msg.finish_req().common_pubkey().x_c0() +
+        bls_msg.finish_req().common_pubkey().x_c1() +
+        bls_msg.finish_req().common_pubkey().y_c0() +
+        bls_msg.finish_req().common_pubkey().y_c1();
     std::string cpk_hash = common::Hash::Hash256(common_pk_str);
     libff::alt_bn128_G1 sign;
     sign.X = libff::alt_bn128_Fq(bls_msg.finish_req().bls_sign_x().c_str());
@@ -337,8 +336,8 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
             sign,
             g1_hash,
             &verify_hash) != bls::kBlsSuccess) {
-        ZJC_ERROR("verify bls finish bls sign error t: %d, size: %d, msg_hash: %s!",
-            t, members->size(), common::Encode::HexEncode(msg_hash).c_str());
+        ZJC_ERROR("verify bls finish bls sign error t: %d, size: %d, cpk_hash: %s!",
+            t, members->size(), common::Encode::HexEncode(cpk_hash).c_str());
         return;
     }
 
