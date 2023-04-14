@@ -728,6 +728,7 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
     std::string sign_x;
     std::string sign_y;
     libff::alt_bn128_G1 g1_hash;
+    CreateDkgMessage(msg_ptr);
     std::string message_hash;
     protos::GetProtoHash(msg_ptr->header, &message_hash);
     bls_mgr_->GetLibffHash(message_hash, &g1_hash);
@@ -769,7 +770,6 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
 
     finish_msg->set_bls_sign_x(sign_x);
     finish_msg->set_bls_sign_y(sign_y);
-    CreateDkgMessage(msg_ptr);
 #ifndef ZJC_UNITTEST
     ZJC_DEBUG("success broadcast finish message. t: %d, n: %d, msg hash: %s",
         min_aggree_member_count_, member_count_,
