@@ -199,7 +199,7 @@ void GenesisBlockInit::ReloadBlsPri(uint32_t sharding_id) {
     char data[20480];
     while (fgets(data, 20480, bls_fd) != nullptr) {
         std::string tmp_data(data, strlen(data) - 1);
-        std::string val = common::Encode::HexDecode(tmp_data());
+        std::string val = common::Encode::HexDecode(tmp_data);
         uint64_t* tmp = (uint64_t*)val.c_str();
         uint64_t height = tmp[0];
         std::string id = val.substr(16, 20);
