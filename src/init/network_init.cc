@@ -162,6 +162,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    shard_statistic_ = std::make_shared<pools::ShardStatistic>(elect_mgr_);
     block_mgr_->LoadLatestBlocks(common::GlobalInfo::Instance()->message_handler_thread_count());
     transport::TcpTransport::Instance()->Start(false);
     if (InitHttpServer() != kInitSuccess) {
@@ -687,6 +688,7 @@ void NetworkInit::DbNewBlockCallback(
         }
     }
 
+    shard_statistic_->OnNewBlock(block);
     ZJC_DEBUG("DbNewBlockCallback new block height: %lu, tx size: %u, step: %d, %d",
         block->height(), block->tx_list_size(),
         block->tx_list(0).step(), pools::protobuf::kConsensusRootElectShard);
