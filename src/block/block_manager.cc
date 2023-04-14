@@ -36,7 +36,6 @@ int BlockManager::Init(
     pools_mgr_ = pools_mgr;
     local_id_ = local_id;
     new_block_callback_ = new_block_callback;
-    shard_statistic_ = std::make_shared<ShardStatistic>();
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(db_, local_id, max_consensus_sharding_id_);
     if (common::GlobalInfo::Instance()->for_ck_server()) {
