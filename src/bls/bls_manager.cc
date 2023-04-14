@@ -672,8 +672,12 @@ int BlsManager::AddBlsConsensusInfo(
         return kBlsError;
     }
 
-    auto members = elect::ElectManager::Instance()->GetWaitingNetworkMembers(
-        ec_block.shard_network_id());
+    auto elect_iter = elect_members_.find(ec_block.shard_network_id());
+    if (elect_iter == elect_members_.end()) {
+        return kBlsError;
+    }
+
+    auto members = elect_iter->second->members;
     if (members == nullptr) {
         BLS_ERROR("get waiting members failed![%u]", ec_block.shard_network_id());
         return kBlsError;
@@ -786,8 +790,7 @@ int BlsManager::AddBlsConsensusInfo(
         libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.Y.c0));
     common_pk->set_y_c1(
         libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.Y.c1));
-    pre_ec_members->set_prev_elect_height(
-        elect::ElectManager::Instance()->waiting_elect_height(ec_block.shard_network_id()));
+    pre_ec_members->set_prev_elect_height(elect_iter->second->height);
     BLS_DEBUG("network: %u, AddBlsConsensusInfo success max_finish_count_: %d,"
         "member count: %d, x_c0: %s, x_c1: %s, y_c0: %s, y_c1: %s.",
         ec_block.shard_network_id(),
