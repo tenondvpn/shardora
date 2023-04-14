@@ -355,12 +355,14 @@ void BlockManager::AddNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBatch& db_batch) {
-    ZJC_DEBUG("new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
+    ZJC_DEBUG("new block coming sharding id: %u, pool: %d, height: %lu,"
+        "tx size: %u, hash: %s, thread_idx: %d",
         block_item->network_id(),
         block_item->pool_index(),
         block_item->height(),
         block_item->tx_list_size(),
-        common::Encode::HexEncode(block_item->hash()).c_str());
+        common::Encode::HexEncode(block_item->hash()).c_str(),
+        thread_idx);
     if (!prefix_db_->SaveBlock(*block_item, db_batch)) {
         ZJC_DEBUG("block saved: %lu", block_item->height());
         return;
