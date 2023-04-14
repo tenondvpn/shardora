@@ -47,8 +47,6 @@ struct HeightItem {
     std::string hash;
 };
 
-static const uint32_t kStatisticMaxCount = 3u;
-
 struct ToTxsItem {
     ToTxsItem() : tx_ptr(nullptr), tx_count(0) {}
     pools::TxItemPtr tx_ptr;

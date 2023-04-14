@@ -23,6 +23,7 @@ static const uint32_t kEachHeightTreeMaxByteSize = kLeafMaxHeightCount * 2u;  //
 static const uint32_t kBranchMaxCount = kLeafMaxHeightCount / 64u;
 static const uint32_t kHeightLevelItemMaxCount = 2 * kBranchMaxCount - 1;
 static const uint64_t kLevelNodeValidHeights = 0xFFFFFFFFFFFFFFFFlu;
+static const uint32_t kStatisticMaxCount = 3u;
 
 enum PoolsErrorCode {
     kPoolsSuccess = 0,
