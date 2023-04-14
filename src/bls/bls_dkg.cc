@@ -475,12 +475,12 @@ bool BlsDkg::VerifySekkeyValid(uint32_t idx, uint32_t peer_index, libff::alt_bn1
     return value == seckey * libff::alt_bn128_G2::one();
 }
 
-libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t first_index) {
+libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t peer_mem_index) {
     bls::protobuf::VerifyVecBrdReq req;
-    auto res = prefix_db_->GetBlsVerifyG2((*members_)[first_index]->id, &req);
+    auto res = prefix_db_->GetBlsVerifyG2((*members_)[peer_mem_index]->id, &req);
     if (!res) {
-        ZJC_DEBUG("get verify g2 failed local: %d, %lu, %u, %u",
-            local_member_index_, elect_hegiht_, first_index);
+        ZJC_DEBUG("get verify g2 failed local: %d, %lu, %u",
+            local_member_index_, elect_hegiht_, peer_mem_index);
         return libff::alt_bn128_G2::zero();
     }
 
@@ -522,8 +522,6 @@ void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
         common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str());
 
     CreateDkgMessage(msg_ptr);
-    auto broad_param = msg.mutable_broadcast();
-    broad_param->set_hop_to_layer(0);
 #ifdef ZJC_UNITTEST
     ver_brd_msg_ = msg_ptr;
 #else
@@ -569,11 +567,6 @@ void BlsDkg::SwapSecKey(uint8_t thread_idx) try {
     }
 
     CreateDkgMessage(msg_ptr);
-    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
-    msg.set_des_dht_key(dht_key.StrKey());
-    auto broad_param = msg.mutable_broadcast();
-    broad_param->set_hop_to_layer(0);
 #ifdef ZJC_UNITTEST
     sec_swap_msgs_ = msg_ptr;
     ZJC_DEBUG("success add swap msg");
@@ -806,10 +799,11 @@ void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
         dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
         msg.set_des_dht_key(dht_key.StrKey());
     }
-
     msg.set_type(common::kBlsMessage);
+    auto broad_param = msg.mutable_broadcast();
     bls_msg.set_elect_height(elect_hegiht_);
     bls_msg.set_index(local_member_index_);
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
     std::string message_hash;
     protos::GetProtoHash(msg_ptr->header, &message_hash);
     std::string sign_out;
