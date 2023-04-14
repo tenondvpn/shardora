@@ -803,7 +803,7 @@ void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
     auto broad_param = msg.mutable_broadcast();
     bls_msg.set_elect_height(elect_hegiht_);
     bls_msg.set_index(local_member_index_);
-    transport::TcpTransport::Instance()->SetMessageHash(msg);
+    transport::TcpTransport::Instance()->SetMessageHash(msg, msg_ptr->thread_idx);
     std::string message_hash;
     protos::GetProtoHash(msg_ptr->header, &message_hash);
     std::string sign_out;
