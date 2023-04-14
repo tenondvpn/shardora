@@ -321,7 +321,7 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
         bls_msg.finish_req().common_pubkey().x_c1() +
         bls_msg.finish_req().common_pubkey().y_c0() +
         bls_msg.finish_req().common_pubkey().y_c1();
-    std::string cpk_hash = common::Hash::Hash256(common_pk_str);
+    std::string cpk_hash = common::Hash::keccak256(common_pk_str);
     libff::alt_bn128_G1 sign;
     sign.X = libff::alt_bn128_Fq(bls_msg.finish_req().bls_sign_x().c_str());
     sign.Y = libff::alt_bn128_Fq(bls_msg.finish_req().bls_sign_y().c_str());
