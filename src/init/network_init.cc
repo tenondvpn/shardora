@@ -709,6 +709,7 @@ void NetworkInit::HandleTimeBlock(
             vss_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             tm_block_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             bls_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
+            shard_statistic_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             break;
         }
     }
