@@ -738,10 +738,25 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
         return;
     }
 
+    libff::alt_bn128_G1 sign;
+    sign.X = libff::alt_bn128_Fq(sign_x.c_str());
+    sign.Y = libff::alt_bn128_Fq(sign_y.c_str());
+    sign.Z = libff::alt_bn128_Fq::one();
+    std::string verify_hash;
+    if (bls_mgr_->Verify(
+            min_aggree_member_count_,
+            member_count_,
+            local_publick_key_,
+            sign,
+            g1_hash,
+            &verify_hash) != kBlsSuccess) {
+        ZJC_FATAL("verify bls message failed!");
+        return;
+    }
+
     finish_msg->set_bls_sign_x(sign_x);
     finish_msg->set_bls_sign_y(sign_y);
     CreateDkgMessage(msg_ptr);
-    local_publick_key_.to_affine_coordinates();
 #ifndef ZJC_UNITTEST
     ZJC_DEBUG("success broadcast finish message.");
     network::Route::Instance()->Send(msg_ptr);
