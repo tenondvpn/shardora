@@ -4,6 +4,10 @@
 
 namespace zjchain {
 
+namespace elect {
+    class ElectManager;
+}
+
 namespace consensus {
 
 class RootZbft : public Zbft {
@@ -14,7 +18,8 @@ public:
         std::shared_ptr<bls::BlsManager>& bls_mgr, 
         std::shared_ptr<WaitingTxsItem>& tx_ptr,
         std::shared_ptr<consensus::WaitingTxsPools>& pools_mgr,
-        std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr);
+        std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
+        std::shared_ptr<elect::ElectManager>& elect_mgr);
     virtual ~RootZbft();
     virtual void DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block);
     void RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block);
@@ -26,6 +31,9 @@ public:
         const transport::MessagePtr& msg_ptr,
         int32_t* invalid_tx_idx,
         std::string* prepare);
+
+private:
+    std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(RootZbft);
 };
