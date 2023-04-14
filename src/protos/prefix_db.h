@@ -739,68 +739,6 @@ public:
         return true;
     }
 
-    void SaveBlsInfo(
-            std::shared_ptr<security::Security>& secptr,
-            const bls::protobuf::LocalBlsItem& bls_info) {
-        const std::string& prikey = secptr->GetPrikey();
-        const std::string& id = secptr->GetAddress();
-        std::string key = kBlsInfoPrefix + id;
-        auto str = bls_info.SerializeAsString();
-        std::string enc_str;
-        if (secptr->Encrypt(str, prikey, &enc_str) != security::kSecuritySuccess) {
-            ZJC_FATAL("encrypt data failed!");
-            return;
-        }
-
-        char len[4];
-        uint32_t* int_len = (uint32_t*)len;
-        int_len[0] = str.size();
-        std::string des_str = std::string(len, sizeof(len)) + enc_str;
-        auto st = db_->Put(key, des_str);
-        if (!st.ok()) {
-            ZJC_FATAL("write db failed!");
-        }
-
-        ZJC_DEBUG("save bls info success: %s, %s, enc: %s",
-            common::Encode::HexEncode(key).c_str(),
-            common::Encode::HexSubstr(str).c_str(),
-            common::Encode::HexSubstr(enc_str).c_str());
-    }
-
-    bool GetBlsInfo(
-            std::shared_ptr<security::Security>& secptr,
-            bls::protobuf::LocalBlsItem* bls_info) {
-        const std::string& prikey = secptr->GetPrikey();
-        const std::string& id = secptr->GetAddress();
-        std::string key = kBlsInfoPrefix + id;
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok() || val.size() <= 4) {
-            ZJC_DEBUG("get bls info failed: %s", common::Encode::HexEncode(key).c_str());
-            return false;
-        }
-
-        uint32_t* int_len = (uint32_t*)val.c_str();
-        std::string dec_str;
-        if (secptr->Decrypt(
-                val.substr(4, val.size() - 4),
-                prikey,
-                &dec_str) != security::kSecuritySuccess) {
-            ZJC_ERROR("decrypt data failed!");
-            return false;
-        }
-
-        if (!bls_info->ParseFromArray(dec_str.c_str(), int_len[0])) {
-            ZJC_DEBUG("get bls info failed: %s, %s, enc: %s",
-                common::Encode::HexEncode(key).c_str(),
-                common::Encode::HexSubstr(dec_str).c_str(),
-                common::Encode::HexSubstr(val).c_str());
-            return false;
-        }
-
-        return true;
-    }
-
     void SaveBlsPrikey(
             uint64_t elect_height,
             uint32_t sharding_id,

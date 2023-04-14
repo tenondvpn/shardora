@@ -96,9 +96,7 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         elect::protobuf::PrevMembers* prev_members) {
     static const uint32_t valid_n = 3;
     static const uint32_t valid_t = common::GetSignerCount(valid_n);
-    static const uint32_t n = 1024;
-    static const uint32_t t = common::GetSignerCount(n);
-    libBLS::Dkg dkg_instance = libBLS::Dkg(t, n);
+    libBLS::Dkg dkg_instance = libBLS::Dkg(valid_t, valid_n);
     std::vector<std::vector<libff::alt_bn128_Fr>> polynomial(valid_n);
     for (auto& pol : polynomial) {
         pol = std::vector<libff::alt_bn128_Fr>(valid_n, libff::alt_bn128_Fr::one());
@@ -122,22 +120,14 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         }
     }
 
-    for (size_t i = 0; i < valid_n; ++i) {
-        for (size_t j = valid_n; j < n; ++j) {
-            secret_key_contribution[i].push_back(libff::alt_bn128_Fr::zero());
-        }
-
-        assert(secret_key_contribution[i].size() == n);
-    }
-
     FILE* fd = fopen(
-        std::string(std::string("./bls_info_") + std::to_string(sharding_id)).c_str(),
+        std::string(std::string("./bls_pri_") + std::to_string(sharding_id)).c_str(),
         "w");
     auto common_public_key = libff::alt_bn128_G2::zero();
     for (int32_t idx = 0; idx < prikeys.size(); ++idx) {
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
         secptr->SetPrivateKey(prikeys[idx]);
-        libBLS::Dkg tmpdkg(valid_t, n);
+        libBLS::Dkg tmpdkg(valid_t, valid_n);
         auto local_sec_key = tmpdkg.SecretKeyShareCreate(secret_key_contribution[idx]);
         auto local_publick_key = tmpdkg.GetPublicKeyFromSecretKey(local_sec_key);
         auto local_pk_ptr = std::make_shared<BLSPublicKey>(local_publick_key);
@@ -153,35 +143,15 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
             mem_pk->set_pool_idx_mod_num(-1);
         }
 
-        bls::protobuf::LocalBlsItem local_item;
         auto& g2_vec = verification_vector[idx];
         common_public_key = common_public_key + g2_vec[0];
-        for (int32_t i = 0; i < g2_vec.size(); ++i) {
-            bls::protobuf::VerifyVecItem& verify_item = *local_item.add_verify_vec();
-            verify_item.set_x_c0(common::Encode::HexDecode(
-                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
-            verify_item.set_x_c1(common::Encode::HexDecode(
-                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c1)));
-            verify_item.set_y_c0(common::Encode::HexDecode(
-                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
-            verify_item.set_y_c1(common::Encode::HexDecode(
-                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
-            verify_item.set_z_c0(common::Encode::HexDecode(
-                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
-            verify_item.set_z_c1(common::Encode::HexDecode(
-                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
-        }
-
-        for (uint32_t i = 0; i < polynomial[idx].size(); ++i) {
-            local_item.add_polynomial(
-                libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][i]));
-        }
-
-        local_item.set_valid_t(valid_t);
-        local_item.set_valid_n(valid_n);
-        prefix_db_->SaveBlsInfo(secptr, local_item);
-        auto str = common::Encode::HexEncode(local_item.SerializeAsString()) + "\n";
-        fwrite(str.c_str(), 1, str.size(), fd);
+        DumpLocalPrivateKey(
+            sharding_id,
+            elect_height,
+            secptr->GetAddress(),
+            prikeys[idx],
+            libBLS::ThresholdUtils::fieldElementToString(local_sec_key),
+            fd);
     }
 
     fclose(fd);
@@ -213,35 +183,30 @@ void GenesisBlockInit::DumpLocalPrivateKey(
     }
 
     prefix_db_->SaveBlsPrikey(height, shard_netid, id, enc_data);
-    std::string key = std::to_string(height) + "_" +
-        std::to_string(shard_netid) + "_" + common::Encode::HexEncode(id);
-    fputs((common::Encode::HexEncode(key) + "," + common::Encode::HexEncode(enc_data) + "\n").c_str(), fd);
+    char data[16];
+    uint64_t* tmp = (uint32_t*)data;
+    tmp[0] = height;
+    tmp[1] = shard_netid;
+    std::string val = common::Encode::HexEncode(std::string(data, sizeof(data)) + id + enc_data) + "\n";
+    fputs(val.c_str(), fd);
 }
 
-void GenesisBlockInit::ReloadBlsPri() {
-    FILE* bls_fd = fopen("./bls_pri", "r");
+void GenesisBlockInit::ReloadBlsPri(uint32_t sharding_id) {
+    FILE* bls_fd = fopen(
+        std::string(std::string("./bls_pri_") + std::to_string(sharding_id)).c_str(),
+        "r");
     assert(bls_fd != nullptr);
     char data[20480];
     while (fgets(data, 20480, bls_fd) != nullptr) {
         std::string tmp_data(data, strlen(data) - 1);
-        common::Split<> spliter(tmp_data.c_str(), ',', tmp_data.size());
-        if (spliter.Count() == 2) {
-            std::string key = common::Encode::HexDecode(spliter[0]);
-            std::string val = common::Encode::HexDecode(spliter[1]);
-            common::Split<> keys(key.c_str(), '_', key.size());
-            uint64_t height = 0;
-            uint32_t shard_netid = 0;
-            if (!common::StringUtil::ToUint64(keys[0], &height)) {
-                ZJC_FATAL("invalid bls height!");
-            }
-
-            if (!common::StringUtil::ToUint32(keys[1], &shard_netid)) {
-                ZJC_FATAL("invalid bls height!");
-            }
-
-            std::string id = common::Encode::HexDecode(keys[2]);
-            prefix_db_->SaveBlsPrikey(height, shard_netid, id, val);
-        }
+        std::string val = common::Encode::HexDecode(tmp_data());
+        uint64_t* tmp = (uint64_t*)val.c_str();
+        uint64_t height = tmp[0];
+        std::string id = val.substr(16, 20);
+        std::string bls_prikey = val.substr(36, val.size() - 36);
+        prefix_db_->SaveBlsPrikey(height, sharding_id, id, bls_prikey);
+        ZJC_DEBUG("success add bls prikey: %lu, %u, %s",
+            height, sharding_id, common::Encode::HexEncode(id).c_str());
     }
 
     fclose(bls_fd);
@@ -571,7 +536,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
     return kInitSuccess;
 }
 
-int GenesisBlockInit::GenerateShardSingleBlock() {
+int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
     FILE* root_gens_init_block_file = fopen("./root_blocks", "r");
     if (root_gens_init_block_file == nullptr) {
         return kInitError;
@@ -657,7 +622,7 @@ int GenesisBlockInit::GenerateShardSingleBlock() {
         }
     }
 
-    ReloadBlsPri();
+    ReloadBlsPri(sharding_id);
     return kInitSuccess;
 }
 
@@ -890,7 +855,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(uint32_t net_id) {
         return kInitError;
     }
 
-    return GenerateShardSingleBlock();
+    return GenerateShardSingleBlock(net_id);
 }
 
 void GenesisBlockInit::InitGenesisAccount() {

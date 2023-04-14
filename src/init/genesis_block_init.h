@@ -43,7 +43,7 @@ private:
     int GenerateRootSingleBlock(
         const std::vector<dht::NodePtr>& root_genesis_nodes,
         const std::vector<dht::NodePtr>& cons_genesis_nodes);
-    int GenerateShardSingleBlock();
+    int GenerateShardSingleBlock(uint32_t sharding_id);
     int CreateElectBlock(
         uint32_t shard_netid,
         std::string& root_pre_hash,
@@ -64,7 +64,7 @@ private:
         const std::string& prikey,
         const std::string& sec_key,
         FILE* fd);
-    void ReloadBlsPri();
+    void ReloadBlsPri(uint32_t sharding_id);
     void CreateDefaultAccount();
     void AddBlockItemToCache(
         std::shared_ptr<block::protobuf::Block>& block,
