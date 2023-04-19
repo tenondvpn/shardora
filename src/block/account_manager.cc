@@ -76,7 +76,7 @@ void AccountManager::CreateStatisticAddressInfo() {
     statistic_address_info_->set_balance(0);
     statistic_address_info_->set_sharding_id(-1);
     statistic_address_info_->set_pool_index(i);
-    statistic_address_info_->set_addr(kShardStatisticAddress);
+    statistic_address_info_->set_addr(common::kShardStatisticAddress);
     statistic_address_info_->set_type(address::protobuf::kStatistic);
     statistic_address_info_->set_latest_height(0);
 }
