@@ -716,6 +716,7 @@ void NetworkInit::HandleTimeBlock(
             tm_block_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             bls_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             shard_statistic_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
+            block_mgr_->OnTimeBlock(thread_idx, data_arr[0], block->height(), data_arr[1]);
             break;
         }
     }
@@ -754,7 +755,6 @@ void NetworkInit::HandleElectionBlock(
     shard_statistic_->OnNewElectBlock(sharding_id, elect_height);
     network::UniversalManager::Instance()->OnNewElectBlock(sharding_id, elect_height, members);
 }
-
 
 }  // namespace init
 

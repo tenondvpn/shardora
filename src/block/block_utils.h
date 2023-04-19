@@ -52,6 +52,7 @@ struct ToTxsItem {
     pools::TxItemPtr tx_ptr;
     std::string tx_hash;
     uint32_t tx_count;
+    uint64_t timeout;
 };
 
 typedef std::shared_ptr<block::protobuf::Block> BlockPtr;

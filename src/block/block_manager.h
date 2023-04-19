@@ -41,6 +41,11 @@ public:
     void NetworkNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item);
+    void OnTimeBlock(
+        uint8_t thread_idx,
+        uint64_t lastest_time_block_tm,
+        uint64_t latest_time_block_height,
+        uint64_t vss_random);
     void ConsensusAddBlock(
         uint8_t thread_idx,
         const BlockToDbItemPtr& block_item);
@@ -66,7 +71,6 @@ public:
     void CreateStatisticTx(uint8_t thread_idx);
     void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
     pools::TxItemPtr GetToTx(uint32_t pool_index, bool leader);
-    void ToTxsTimeout(uint32_t sharding_id);
     void LoadLatestBlocks(uint8_t thread_idx);
 
 private:
@@ -120,6 +124,8 @@ private:
     uint64_t prev_to_txs_tm_us_ = 0;
     DbBlockCallback new_block_callback_ = nullptr;
     std::shared_ptr<pools::ShardStatistic> statistic_mgr_ = nullptr;
+    uint64_t latest_timeblock_height_ = 0;
+    uint64_t consensused_timeblock_height_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

@@ -78,6 +78,7 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     CreateToTx(msg_ptr->thread_idx);
+    CreateStatisticTx(msg_ptr->thread_idx);
 }
 
 void BlockManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members) {
@@ -410,6 +411,13 @@ void BlockManager::AddNewBlock(
 }
 
 void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {
+    if (!prefix_db_->GetConsensusedStatisticTimeBlockHeight(
+            common::GlobalInfo::Instance()->network_id(),
+            &consensused_timeblock_height_)) {
+        ZJC_FATAL("init latest consensused statistic time block height failed!");
+        return;
+    }
+
     timeblock::protobuf::TimeBlock tmblock;
     db::DbWriteBatch db_batch;
     if (prefix_db_->GetLatestTimeBlock(&tmblock)) {
@@ -472,10 +480,6 @@ int BlockManager::GetBlockWithHeight(
     return kBlockSuccess;
 }
 
-void BlockManager::ToTxsTimeout(uint32_t sharding_id) {
-    to_txs_[sharding_id] = nullptr;
-}
-
 void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) {
     auto& heights = msg_ptr->header.block_proto().shard_statistic_tx();
     if (shard_statistic_tx_ != nullptr) {
@@ -510,6 +514,7 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
     shard_statistic_tx->tx_ptr = create_to_tx_cb_(new_msg_ptr);
     shard_statistic_tx->tx_ptr->time_valid += 3000000lu;
     shard_statistic_tx->tx_hash = statistic_hash;
+    shard_statistic_tx->timeout = common::TimeUtils::ToTimestampMs() + 20000lu;
     shard_statistic_tx_ = shard_statistic_tx;
     ZJC_DEBUG("success add statistic tx: %s", common::Encode::HexEncode(statistic_hash).c_str());
 }
@@ -525,6 +530,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     }
 
     bool all_valid = true;
+    auto now_time_ms = common::TimeUtils::ToTimestampMs();
     for (int32_t i = 0; i < msg_ptr->header.block_proto().to_txs_size(); ++i) {
         auto& heights = msg_ptr->header.block_proto().to_txs(i);
         if (to_txs_[heights.sharding_id()] != nullptr) {
@@ -566,6 +572,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         to_txs_ptr->tx_ptr = create_to_tx_cb_(new_msg_ptr);
         to_txs_ptr->tx_ptr->time_valid += 3000000lu;
         to_txs_ptr->tx_hash = tos_hash;
+        to_txs_ptr->timeout = now_time_ms + 30000lu;
         to_txs_[heights.sharding_id()] = to_txs_ptr;
         ZJC_DEBUG("success add txs: %s", common::Encode::HexEncode(tos_hash).c_str());
     }
@@ -612,7 +619,25 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
     return nullptr;
 }
 
+void BlockManager::OnTimeBlock(
+        uint8_t thread_idx,
+        uint64_t lastest_time_block_tm,
+        uint64_t latest_time_block_height,
+        uint64_t vss_random) {
+    if (latest_timeblock_height_ >= latest_time_block_height) {
+        return;
+    }
+
+    latest_timeblock_height_ = latest_time_block_height;
+    shard_statistic_tx_ = nullptr;
+    CreateStatisticTx(thread_idx);
+}
+
 void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
+    if (latest_timeblock_height_ <= consensused_timeblock_height_) {
+        return;
+    }
+
     // check this node is leader
     if (to_tx_leader_ == nullptr) {
         ZJC_DEBUG("leader null");
@@ -629,6 +654,14 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
         return;
     }
 
+    if (shard_statistic_tx_ != nullptr && shard_statistic_tx_->tx_ptr->in_consensus) {
+        return;
+    }
+
+    if (shard_statistic_tx_ != nullptr && shard_statistic_tx_->timeout >= now_tm_ms) {
+        shard_statistic_tx_ = nullptr;
+    }
+
     prev_create_statistic_tx_ms_ = now_tm_ms + kCreateToTxPeriodMs;
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
@@ -637,10 +670,6 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kBlockMessage);
     auto& block_msg = *msg.mutable_block_proto();
-    if (shard_statistic_tx_ != nullptr && shard_statistic_tx_->tx_ptr->in_consensus) {
-        return;
-    }
-
     pools::protobuf::ToTxHeights& to_heights = *block_msg.mutable_shard_statistic_tx();
     int res = statistic_mgr_->LeaderCreateStatisticHeights(to_heights);
     if (res != pools::kPoolsSuccess || to_heights.heights_size() <= 0) {
@@ -651,7 +680,7 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
     auto& broadcast = *msg.mutable_broadcast();
     msg_ptr->thread_idx = thread_idx;
     network::Route::Instance()->Send(msg_ptr);
-    HandleToTxsMessage(msg_ptr, false);
+    HandleStatisticMessage(msg_ptr);
 }
 
 void BlockManager::CreateToTx(uint8_t thread_idx) {
@@ -688,6 +717,10 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         auto tmp_to_txs = to_txs_[i];
         if (tmp_to_txs != nullptr && tmp_to_txs->tx_ptr->in_consensus) {
             continue;
+        }
+
+        if (tmp_to_txs != nullptr && tmp_to_txs->timeout >= now_tm_ms) {
+            to_txs_[i] = nullptr;
         }
 
         pools::protobuf::ToTxHeights& to_heights = *block_msg.add_to_txs();

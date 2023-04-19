@@ -53,6 +53,7 @@ static const std::string kTemporaryKeyPrefix = "t\x01";
 static const std::string kPresetPolynomialPrefix = "u\x01";
 static const std::string kPresetVerifyValuePrefix = "v\x01";
 static const std::string kStatisticHeightsPrefix = "w\x01";
+static const std::string kConsensusedStatisticPrefix = "x\x01";
 
 class PrefixDb {
 public:
@@ -935,7 +936,9 @@ public:
         return true;
     }
 
-    void SaveStatisticLatestHeihgts(uint32_t sharding_id, const pools::protobuf::ToTxHeights& to_heights) {
+    void SaveStatisticLatestHeihgts(
+            uint32_t sharding_id,
+            const pools::protobuf::ToTxHeights& to_heights) {
         std::string key;
         key.reserve(64);
         key.append(kPresetPolynomialPrefix);
@@ -947,7 +950,9 @@ public:
         }
     }
 
-    bool GetStatisticLatestHeihgts(uint32_t sharding_id, pools::protobuf::ToTxHeights* to_heights) {
+    bool GetStatisticLatestHeihgts(
+            uint32_t sharding_id,
+            pools::protobuf::ToTxHeights* to_heights) {
         std::string key;
         key.reserve(64);
         key.append(kPresetPolynomialPrefix);
@@ -963,6 +968,39 @@ public:
             return false;
         }
 
+        return true;
+    }
+
+    void SaveConsensusedStatisticTimeBlockHeight(
+            uint32_t sharding_id,
+            uint64_t timeblock_height,
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(64);
+        key.append(kConsensusedStatisticPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        std::string val((char*)&timeblock_height, sizeof(timeblock_height));
+        db_batch.Put(key, val);
+    }
+
+    bool GetConsensusedStatisticTimeBlockHeight(uint32_t sharding_id, uint64_t* timeblock_height) {
+        std::string key;
+        key.reserve(64);
+        key.append(kConsensusedStatisticPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        std::string val;
+        auto st = db_->Get(key, val);
+        if (!st.ok()) {
+            ZJC_ERROR("write db failed!");
+            return false;
+        }
+
+        if (val.size() != sizeof(*timeblock_height)) {
+            return false;
+        }
+
+        uint64_t* tm_height = (uint64_t*)val.c_str();
+        *timeblock_height = tm_height[0];
         return true;
     }
 
