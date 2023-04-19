@@ -38,7 +38,7 @@ public:
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random);
-    void StatisticWithHeights(const pools::protobuf::ToTxHeights& leader_to_heights);
+    int StatisticWithHeights(const pools::protobuf::ToTxHeights& leader_to_heights);
     int LeaderCreateToHeights(pools::protobuf::ToTxHeights& to_heights);
 
 private:
@@ -62,7 +62,7 @@ private:
     uint64_t latest_heights_[common::kInvalidPoolIndex] = { 0 };
     uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
     uint64_t pool_consensus_heihgts_[common::kInvalidPoolIndex] = { 0 };
-    std::unordered_map<uint64_t, std::shared_ptr<HeightStatisticInfo>> node_height_count_map_;
+    std::map<uint64_t, std::shared_ptr<HeightStatisticInfo>> node_height_count_map_;
     std::unordered_map<uint32_t, std::shared_ptr<common::Point>> point_ptr_map_;
     std::shared_ptr<pools::protobuf::ToTxHeights> tx_heights_ptr_ = nullptr;
     std::unordered_set<uint64_t> added_heights_[common::kInvalidPoolIndex];

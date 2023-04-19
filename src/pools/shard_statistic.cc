@@ -273,7 +273,7 @@ void ShardStatistic::OnTimeBlock(
     CreateStatisticTransaction(latest_time_block_height);
 }
 
-void ShardStatistic::StatisticWithHeights(const pools::protobuf::ToTxHeights& leader_to_heights) {
+int ShardStatistic::StatisticWithHeights(const pools::protobuf::ToTxHeights& leader_to_heights) {
     uint32_t pool_size = common::kImmutablePoolSize;
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         ++pool_size;
@@ -352,7 +352,7 @@ void ShardStatistic::StatisticWithHeights(const pools::protobuf::ToTxHeights& le
         }
     }
 
-
+    return kPoolsSuccess;
 }
 
 void ShardStatistic::LoadLatestHeights() {
