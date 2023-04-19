@@ -5,6 +5,7 @@
 #include "common/user_property_key_define.h"
 #include "network/network_utils.h"
 #include "network/route.h"
+#include "pools/tx_pool_manager.h"
 
 namespace zjchain {
 
@@ -13,7 +14,9 @@ namespace pools {
 ToTxsPools::ToTxsPools(
         std::shared_ptr<db::Db>& db,
         const std::string& local_id,
-        uint32_t max_sharding_id) : db_(db), local_id_(local_id) {
+        uint32_t max_sharding_id,
+        std::shared_ptr<pools::TxPoolManager>& pools_mgr)
+        : db_(db), local_id_(local_id), pools_mgr_(pools_mgr) {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     PoolMap pool_map;
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {

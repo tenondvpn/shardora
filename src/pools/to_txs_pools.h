@@ -12,9 +12,14 @@ namespace zjchain {
 
 namespace pools {
 
+class TxPoolManager;
 class ToTxsPools {
 public:
-    ToTxsPools(std::shared_ptr<db::Db>& db, const std::string& local_id, uint32_t max_sharding_id);
+    ToTxsPools(
+        std::shared_ptr<db::Db>& db,
+        const std::string& local_id,
+        uint32_t max_sharding_id,
+        std::shared_ptr<pools::TxPoolManager>& pools_mgr);
     ~ToTxsPools();
     void NewBlock(const block::protobuf::Block& block, db::DbWriteBatch& db_batch);
     int CreateToTxWithHeights(

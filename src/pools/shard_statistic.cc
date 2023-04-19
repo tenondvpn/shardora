@@ -6,6 +6,7 @@
 #include "elect/elect_manager.h"
 #include "network/network_utils.h"
 #include "protos/pools.pb.h"
+#include "pools/tx_pool_manager.h"
 
 namespace zjchain {
 

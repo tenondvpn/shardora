@@ -21,10 +21,14 @@ namespace elect {
 
 namespace pools {
 
+class TxPoolManager;
 class ShardStatistic {
 public:
-    ShardStatistic(std::shared_ptr<elect::ElectManager>& elect_mgr, std::shared_ptr<db::Db>& db)
-            : elect_mgr_(elect_mgr) {
+    ShardStatistic(
+            std::shared_ptr<elect::ElectManager>& elect_mgr,
+            std::shared_ptr<db::Db>& db,
+            std::shared_ptr<pools::TxPoolManager>& pools_mgr)
+            : elect_mgr_(elect_mgr), pools_mgr_(pools_mgr) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
         LoadLatestHeights();
     }
@@ -71,6 +75,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint64_t prev_elect_height_ = 0;
     uint64_t now_elect_height_ = 0;
+    std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };
