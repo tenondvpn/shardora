@@ -219,6 +219,7 @@ public:
         }
 
         if (block.tx_list_size() != 1) {
+            assert(false);
             return nullptr;
         }
 
@@ -227,6 +228,7 @@ public:
         for (int32_t i = 0; i < block.tx_list(0).storages_size(); ++i) {
             if (block.tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
                 if (!elect_block.ParseFromString(block.tx_list(0).storages(i).val_hash())) {
+                    assert(false);
                     return nullptr;
                 }
 
@@ -236,6 +238,7 @@ public:
         }
 
         if (!eb_valid) {
+            assert(false);
             return nullptr;
         }
 
@@ -272,6 +275,7 @@ public:
             BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
             tmp_common_pk = *pkey.getPublicKey();
             if (tmp_common_pk == libff::alt_bn128_G2::zero()) {
+                assert(false);
                 return nullptr;
             }
 
