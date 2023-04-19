@@ -71,16 +71,18 @@ void AccountManager::CreateNormalLocalToAddressInfo() {
 }
 
 void AccountManager::CreateStatisticAddressInfo() {
-    statistic_address_info_ = std::make_shared<address::protobuf::AddressInfo>();
-    statistic_address_info_->set_pubkey("");
-    statistic_address_info_->set_balance(0);
-    statistic_address_info_->set_sharding_id(-1);
-    statistic_address_info_->set_pool_index(i);
-    statistic_address_info_->set_addr(common::kShardStatisticAddress);
-    statistic_address_info_->set_type(address::protobuf::kStatistic);
-    statistic_address_info_->set_latest_height(0);
+    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
+        statistic_address_info_[i] = std::make_shared<address::protobuf::AddressInfo>();
+        statistic_address_info_[i]->set_pubkey("");
+        statistic_address_info_[i]->set_balance(0);
+        statistic_address_info_[i]->set_sharding_id(-1);
+        statistic_address_info_[i]->set_pool_index(i);
+        statistic_address_info_[i]->set_addr(
+            common::Hash::keccak256(common::kShardStatisticAddress + std::to_string(i)));
+        statistic_address_info_[i]->set_type(address::protobuf::kStatistic);
+        statistic_address_info_[i]->set_latest_height(0);
+    }
 }
-
 
 bool AccountManager::AccountExists(uint8_t thread_idx, const std::string& addr) {
     return GetAccountInfo(thread_idx, addr) != nullptr;

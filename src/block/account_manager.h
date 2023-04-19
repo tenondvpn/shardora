@@ -53,8 +53,8 @@ public:
         return single_local_to_address_info_[pool_idx % common::kImmutablePoolSize];
     }
 
-    std::shared_ptr<address::protobuf::AddressInfo>& GetStatisticAddressInfo() {
-        return statistic_address_info_;
+    std::shared_ptr<address::protobuf::AddressInfo>& GetStatisticAddressInfo(uint32_t pool_idx) {
+        return statistic_address_info_[pool_idx % common::kImmutablePoolSize];
     }
 
     protos::AddressInfoPtr GetAccountInfo(
@@ -119,7 +119,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<address::protobuf::AddressInfo> single_to_address_info_[common::kImmutablePoolSize] = { nullptr };
     std::shared_ptr<address::protobuf::AddressInfo> single_local_to_address_info_[common::kImmutablePoolSize] = { nullptr };
-    std::shared_ptr<address::protobuf::AddressInfo> statistic_address_info_ = nullptr;
+    std::shared_ptr<address::protobuf::AddressInfo> statistic_address_info_[common::kImmutablePoolSize] = { nullptr };
 
     DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };
