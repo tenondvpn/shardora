@@ -514,7 +514,7 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
     shard_statistic_tx->tx_ptr = create_to_tx_cb_(new_msg_ptr);
     shard_statistic_tx->tx_ptr->time_valid += 3000000lu;
     shard_statistic_tx->tx_hash = statistic_hash;
-    shard_statistic_tx->timeout = common::TimeUtils::ToTimestampMs() + 20000lu;
+    shard_statistic_tx->timeout = common::TimeUtils::TimestampMs() + 20000lu;
     shard_statistic_tx_ = shard_statistic_tx;
     ZJC_DEBUG("success add statistic tx: %s", common::Encode::HexEncode(statistic_hash).c_str());
 }
@@ -530,7 +530,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     }
 
     bool all_valid = true;
-    auto now_time_ms = common::TimeUtils::ToTimestampMs();
+    auto now_time_ms = common::TimeUtils::TimestampMs();
     for (int32_t i = 0; i < msg_ptr->header.block_proto().to_txs_size(); ++i) {
         auto& heights = msg_ptr->header.block_proto().to_txs(i);
         if (to_txs_[heights.sharding_id()] != nullptr) {
