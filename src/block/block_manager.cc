@@ -8,6 +8,7 @@
 #include "db/db.h"
 #include "network/route.h"
 #include "pools/tx_pool_manager.h"
+#include "pools/shard_statistic.h"
 #include "protos/block.pb.h"
 #include "protos/elect.pb.h"
 #include "transport/processor.h"

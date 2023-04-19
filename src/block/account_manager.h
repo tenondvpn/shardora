@@ -54,7 +54,7 @@ public:
     }
 
     std::shared_ptr<address::protobuf::AddressInfo>& GetStatisticAddressInfo() {
-        return single_local_to_address_info_[pool_idx % common::kImmutablePoolSize];
+        return statistic_address_info_;
     }
 
     protos::AddressInfoPtr GetAccountInfo(
