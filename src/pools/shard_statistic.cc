@@ -91,12 +91,14 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
         &common_pk,
         &sec_key);
     if (members == nullptr) {
+        assert(false);
         return;
     }
 
     uint32_t member_count = members->size();
     if (members == nullptr || block.leader_index() >= members->size() ||
             (*members)[block.leader_index()]->pool_index_mod_num < 0) {
+        assert(false);
         return;
     }
 
@@ -129,6 +131,8 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
     }
 
     node_height_count_map_[block.height()] = statistic_info_ptr;
+    ZJC_DEBUG("success add statistic block: net; %u, pool: %u, height: %lu",
+        block.network_id(), block.pool_index(), block.height());
 }
 
 int ShardStatistic::LeaderCreateStatisticHeights(pools::protobuf::ToTxHeights& to_heights) {
