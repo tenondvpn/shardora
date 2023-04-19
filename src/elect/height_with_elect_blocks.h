@@ -255,7 +255,7 @@ public:
 
         if (common_pk == nullptr) {
             libff::alt_bn128_G2 tmp_common_pk = libff::alt_bn128_G2::zero();
-            elect::protobuf::PrevMembers& prev_members = elect_block.prev_members();
+            auto& prev_members = elect_block.prev_members();
             std::vector<std::string> pkey_str = {
                 prev_members.common_pubkey().x_c0(),
                 prev_members.common_pubkey().x_c1(),
@@ -282,10 +282,7 @@ public:
 
         height_queue_.push(height);
         height_with_members_[network_id][height] = shard_members_ptr;
-        if (st.ok()) {
-            height_with_common_pks_[network_id][height] = tmp_common_pk;
-        }
-
+        height_with_common_pks_[network_id][height] = *common_pk;
         if (height_queue_.size() > kMaxCacheElectBlockCount) {
             auto min_height = height_queue_.top();
             auto iter = height_with_members_[network_id].find(min_height);
