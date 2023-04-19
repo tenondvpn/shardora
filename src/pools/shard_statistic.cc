@@ -68,11 +68,12 @@ void ShardStatistic::HandleStatisticBlock(
 }
 
 void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
+    ZJC_DEBUG("new block to statistic now: %lu, elect height: %lu", block.height(), block.electblock_height());
     if (block.electblock_height() == 0) {
         return;
     }
 
-    ZJC_DEBUG("new block to statistic now: %lu", block.height());
+    ZJC_DEBUG("success new block to statistic now: %lu, elect height: %lu", block.height(), block.electblock_height());
     auto hiter = node_height_count_map_.find(block.height());
     if (hiter != node_height_count_map_.end()) {
         return;
