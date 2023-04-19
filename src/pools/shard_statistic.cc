@@ -15,6 +15,12 @@ namespace pools {
 static const std::string kShardFinalStaticPrefix = common::Encode::HexDecode(
     "027a252b30589b8ed984cf437c475b069d0597fc6d51ec6570e95a681ffa9fe7");
 
+void ShardStatistic::Init() {
+    if (pools_mgr_ != nullptr) {
+        LoadLatestHeights();
+    }
+}
+
 void ShardStatistic::OnNewBlock(const block::protobuf::Block& block) {
     if (block.network_id() != common::GlobalInfo::Instance()->network_id()) {
         ZJC_DEBUG("network invalid!");
@@ -84,6 +90,10 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
         common::GlobalInfo::Instance()->network_id(),
         &common_pk,
         &sec_key);
+    if (members == nullptr) {
+        return;
+    }
+
     uint32_t member_count = members->size();
     if (members == nullptr || block.leader_index() >= members->size() ||
             (*members)[block.leader_index()]->pool_index_mod_num < 0) {

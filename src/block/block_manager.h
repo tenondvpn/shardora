@@ -35,7 +35,6 @@ public:
         std::shared_ptr<AccountManager>& account_mgr,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<pools::TxPoolManager>& pools_mgr,
-        std::shared_ptr<pools::ShardStatistic>& statistic_mgr,
         const std::string& local_id,
         DbBlockCallback new_block_callback);
     void NetworkNewBlock(

@@ -30,12 +30,10 @@ public:
             std::shared_ptr<pools::TxPoolManager>& pools_mgr)
             : elect_mgr_(elect_mgr), pools_mgr_(pools_mgr) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
-        if (pools_mgr_ != nullptr) {
-            LoadLatestHeights();
-        }
     }
 
     ~ShardStatistic() {}
+    void Init();
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height);
     void OnNewBlock(const block::protobuf::Block& block);
     void GetStatisticInfo(
