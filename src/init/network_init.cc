@@ -717,6 +717,7 @@ void NetworkInit::HandleTimeBlock(
             bls_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             shard_statistic_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             block_mgr_->OnTimeBlock(thread_idx, data_arr[0], block->height(), data_arr[1]);
+            ZJC_DEBUG("new time block called height: %lu, tm: %lu", block->height(), data_arr[1]);
             break;
         }
     }
