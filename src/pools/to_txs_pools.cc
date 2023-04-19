@@ -411,6 +411,13 @@ void ToTxsPools::LoadLatestHeights() {
             }
         }
     }
+
+    std::string init_consensus_height;
+    for (uint32_t i = 0; i < max_pool_index; ++i) {
+        init_consensus_height += std::to_string(pool_consensus_heihgts_[i]) + " ";
+    }
+
+    ZJC_DEBUG("to txs get consensus heights: %s", init_consensus_height.c_str());
 }
 
 std::shared_ptr<address::protobuf::AddressInfo> ToTxsPools::GetAddressInfo(

@@ -332,6 +332,13 @@ void ShardStatistic::LoadLatestHeights() {
             }
         }
     }
+
+    std::string init_consensus_height;
+    for (uint32_t i = 0; i < max_pool_index; ++i) {
+        init_consensus_height += std::to_string(pool_consensus_heihgts_[i]) + " ";
+    }
+
+    ZJC_DEBUG("statistic get consensus heights: %s", init_consensus_height.c_str());
 }
 
 void ShardStatistic::NormalizePoints(
