@@ -95,10 +95,6 @@ protos::AddressInfoPtr AccountManager::GetAcountInfoFromDb(const std::string& ad
 protos::AddressInfoPtr AccountManager::GetAccountInfo(
         uint8_t thread_idx,
         const std::string& addr) {
-    if (addr == common::kShardStatisticAddress) {
-        return statistic_address_info_;
-    }
-
     // first get from cache
     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
     if (address_map_[thread_idx].get(addr, &address_info)) {
