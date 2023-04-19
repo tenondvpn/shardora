@@ -37,6 +37,7 @@ int AccountManager::Init(
     address_map_ = new common::UniqueMap<std::string, protos::AddressInfoPtr, 1024, 16>[thread_count];
     CreateNormalToAddressInfo();
     CreateNormalLocalToAddressInfo();
+    CreateStatisticAddressInfo();
     inited_ = true;
     return kBlockSuccess;
 }
@@ -69,6 +70,18 @@ void AccountManager::CreateNormalLocalToAddressInfo() {
     }
 }
 
+void AccountManager::CreateStatisticAddressInfo() {
+    statistic_address_info_ = std::make_shared<address::protobuf::AddressInfo>();
+    statistic_address_info_->set_pubkey("");
+    statistic_address_info_->set_balance(0);
+    statistic_address_info_->set_sharding_id(-1);
+    statistic_address_info_->set_pool_index(i);
+    statistic_address_info_->set_addr(kShardStatisticAddress);
+    statistic_address_info_->set_type(address::protobuf::kStatistic);
+    statistic_address_info_->set_latest_height(0);
+}
+
+
 bool AccountManager::AccountExists(uint8_t thread_idx, const std::string& addr) {
     return GetAccountInfo(thread_idx, addr) != nullptr;
 }
@@ -80,6 +93,10 @@ protos::AddressInfoPtr AccountManager::GetAcountInfoFromDb(const std::string& ad
 protos::AddressInfoPtr AccountManager::GetAccountInfo(
         uint8_t thread_idx,
         const std::string& addr) {
+    if (addr == common::kShardStatisticAddress) {
+        return statistic_address_info_;
+    }
+
     // first get from cache
     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
     if (address_map_[thread_idx].get(addr, &address_info)) {

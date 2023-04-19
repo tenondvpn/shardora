@@ -63,6 +63,8 @@ static const std::string kNormalToAddress = common::Encode::HexDecode(
     "1000000000000000000000000000000000000004");
 static const std::string kNormalLocalToAddress = common::Encode::HexDecode(
     "1000000000000000000000000000000000000005");
+static const std::string kShardStatisticAddress = common::Encode::HexDecode(
+    "1000000000000000000000000000000000000006");
 
 static const uint32_t kVpnShareStakingPrice = 1u;
 

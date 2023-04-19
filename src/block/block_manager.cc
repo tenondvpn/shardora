@@ -102,6 +102,10 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.block_proto().to_txs_size() > 0) {
         HandleToTxsMessage(msg_ptr, false);
     }
+
+    if (msg_ptr->header.block_proto().has_shard_statistic_tx()) {
+        HandleStatisticMessage(msg_ptr);
+    }
 }
 
 void BlockManager::NetworkNewBlock(
@@ -471,6 +475,44 @@ void BlockManager::ToTxsTimeout(uint32_t sharding_id) {
     to_txs_[sharding_id] = nullptr;
 }
 
+void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) {
+    auto& heights = msg_ptr->header.block_proto().shard_statistic_tx();
+    if (shard_statistic_tx_ != nullptr) {
+        ZJC_DEBUG("statistic tx sharding not consensus yet");
+        return;
+    }
+
+    std::string statistic_hash;
+    if (statistic_mgr_->StatisticWithHeights(
+            heights,
+            &statistic_hash) != pools::kPoolsSuccess) {
+        ZJC_DEBUG("error to txs sharding create to txs: %u", heights.sharding_id());
+        return;
+    }
+
+    auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto* tx = new_msg_ptr->header.mutable_tx_proto();
+    tx->set_key(protos::kShardStatistic);
+    tx->set_value(statistic_hash);
+    tx->set_pubkey("");
+    tx->set_to(common::kShardStatisticAddress);
+    tx->set_step(pools::protobuf::kStatistic);
+    auto gid = common::Hash::keccak256(
+        statistic_hash + std::to_string(common::GlobalInfo::Instance()->network_id()));
+    tx->set_gas_limit(0);
+    tx->set_amount(0);
+    tx->set_gas_price(common::kBuildinTransactionGasPrice);
+    tx->set_gid(gid);
+    auto shard_statistic_tx = std::make_shared<ToTxsItem>();
+    new_msg_ptr->address_info = account_mgr_->single_to_address_info(
+        heights.sharding_id() % common::kImmutablePoolSize);
+    shard_statistic_tx->tx_ptr = create_to_tx_cb_(new_msg_ptr);
+    shard_statistic_tx->tx_ptr->time_valid += 3000000lu;
+    shard_statistic_tx->tx_hash = statistic_hash;
+    shard_statistic_tx_ = shard_statistic_tx;
+    ZJC_DEBUG("success add statistic tx: %s", common::Encode::HexEncode(statistic_hash).c_str());
+}
+
 void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool recreate) {
     if (create_to_tx_cb_ == nullptr || msg_ptr == nullptr) {
         return;
@@ -522,7 +564,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
             heights.sharding_id() % common::kImmutablePoolSize);
         to_txs_ptr->tx_ptr = create_to_tx_cb_(new_msg_ptr);
         to_txs_ptr->tx_ptr->time_valid += 3000000lu;
-        to_txs_ptr->to_txs_hash = tos_hash;
+        to_txs_ptr->tx_hash = tos_hash;
         to_txs_[heights.sharding_id()] = to_txs_ptr;
         ZJC_DEBUG("success add txs: %s", common::Encode::HexEncode(tos_hash).c_str());
     }
@@ -567,6 +609,48 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
     }
 
     return nullptr;
+}
+
+void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
+    // check this node is leader
+    if (to_tx_leader_ == nullptr) {
+        ZJC_DEBUG("leader null");
+        return;
+    }
+
+    if (local_id_ != to_tx_leader_->id) {
+        ZJC_DEBUG("not leader");
+        return;
+    }
+
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    if (prev_create_statistic_tx_ms_ >= now_tm_ms) {
+        return;
+    }
+
+    prev_create_statistic_tx_ms_ = now_tm_ms + kCreateToTxPeriodMs;
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& msg = msg_ptr->header;
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
+    msg.set_des_dht_key(dht_key.StrKey());
+    msg.set_type(common::kBlockMessage);
+    auto& block_msg = *msg.mutable_block_proto();
+    if (shard_statistic_tx_ != nullptr && shard_statistic_tx_->tx_ptr->in_consensus) {
+        return;
+    }
+
+    pools::protobuf::ToTxHeights& to_heights = *block_msg.mutable_shard_statistic_tx();
+    int res = statistic_mgr_->LeaderCreateStatisticHeights(to_heights);
+    if (res != pools::kPoolsSuccess || to_heights.heights_size() <= 0) {
+        return;
+    }
+
+    // send to other nodes
+    auto& broadcast = *msg.mutable_broadcast();
+    msg_ptr->thread_idx = thread_idx;
+    network::Route::Instance()->Send(msg_ptr);
+    HandleToTxsMessage(msg_ptr, false);
 }
 
 void BlockManager::CreateToTx(uint8_t thread_idx) {

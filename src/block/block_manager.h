@@ -63,6 +63,7 @@ public:
     }
 
     void CreateToTx(uint8_t thread_idx);
+    void CreateStatisticTx(uint8_t thread_idx);
     void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
     pools::TxItemPtr GetToTx(uint32_t pool_index, bool leader);
     void ToTxsTimeout(uint32_t sharding_id);
@@ -72,6 +73,7 @@ private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
     void HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool recreate);
+    void HandleStatisticMessage(const transport::MessagePtr& msg_ptr);
     void HandleAllConsensusBlocks(uint8_t thread_idx);
     void AddNewBlock(
         uint8_t thread_idx,
@@ -105,10 +107,12 @@ private:
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<pools::ToTxsPools> to_txs_pool_ = nullptr;
     uint64_t prev_create_to_tx_ms_ = 0;
+    uint64_t prev_create_statistic_tx_ms_ = 0;
     common::BftMemberPtr to_tx_leader_ = nullptr;
     uint32_t max_consensus_sharding_id_ = 3;
     std::string local_id_;
     std::shared_ptr<ToTxsItem> to_txs_[network::kConsensusShardEndNetworkId] = { nullptr };
+    std::shared_ptr<ToTxsItem> shard_statistic_tx_ = nullptr;
     pools::CreateConsensusItemFunction create_to_tx_cb_ = nullptr;
     uint32_t prev_pool_index_ = network::kRootCongressNetworkId;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;

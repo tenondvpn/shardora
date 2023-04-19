@@ -191,4 +191,5 @@ message BlockMessage {
     optional GetAccountShardRequest acc_shard_req = 15;
     optional GetAccountShardReponse acc_shard_res = 16;
     repeated pools.protobuf.ToTxHeights to_txs = 17;
+    repeated pools.protobuf.ToTxHeights shard_statistic_tx = 18;
 }

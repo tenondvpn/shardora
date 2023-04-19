@@ -50,7 +50,7 @@ struct HeightItem {
 struct ToTxsItem {
     ToTxsItem() : tx_ptr(nullptr), tx_count(0) {}
     pools::TxItemPtr tx_ptr;
-    std::string to_txs_hash;
+    std::string tx_hash;
     uint32_t tx_count;
 };
 

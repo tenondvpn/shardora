@@ -53,9 +53,8 @@ message PoolLatestInfo {
 
 message PoolStatisticInfo {
     optional bytes id = 1;
-    optional uint32 member_idx = 2;
-    optional bool is_leader = 3;
-    optional uint32 tx_count = 4;
+    optional int32 pool_index_mod_num = 2;
+    optional uint32 tx_count = 3;
 }
 
 message PoolStatisticItem {

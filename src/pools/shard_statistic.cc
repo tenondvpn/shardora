@@ -68,12 +68,10 @@ void ShardStatistic::HandleStatisticBlock(
 }
 
 void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
-    ZJC_DEBUG("new block to statistic now: %lu, elect height: %lu", block.height(), block.electblock_height());
     if (block.electblock_height() == 0) {
         return;
     }
 
-    ZJC_DEBUG("success new block to statistic now: %lu, elect height: %lu", block.height(), block.electblock_height());
     auto hiter = node_height_count_map_.find(block.height());
     if (hiter != node_height_count_map_.end()) {
         return;
@@ -123,7 +121,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
     node_height_count_map_[block.height()] = statistic_info_ptr;
 }
 
-int ShardStatistic::LeaderCreateToHeights(pools::protobuf::ToTxHeights& to_heights) {
+int ShardStatistic::LeaderCreateStatisticHeights(pools::protobuf::ToTxHeights& to_heights) {
     bool valid = false;
     std::string heights;
     uint32_t max_pool = common::kImmutablePoolSize;
@@ -174,7 +172,9 @@ void ShardStatistic::OnTimeBlock(
     CreateStatisticTransaction(latest_time_block_height);
 }
 
-int ShardStatistic::StatisticWithHeights(const pools::protobuf::ToTxHeights& leader_to_heights) {
+int ShardStatistic::StatisticWithHeights(
+        const pools::protobuf::ToTxHeights& leader_to_heights,
+        std::string* statistic_hash) {
     uint32_t pool_size = common::kImmutablePoolSize;
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         ++pool_size;
@@ -192,6 +192,7 @@ int ShardStatistic::StatisticWithHeights(const pools::protobuf::ToTxHeights& lea
 
     std::unordered_map<std::string, uint32_t> node_count_map;
     std::unordered_map<std::string, uint32_t> epoch_node_count_map;
+    pools::protobuf::ElectStatistic elect_statistic;
     for (uint32_t pool_idx = 0; pool_idx < max_pool; ++pool_idx) {
         uint64_t min_height = 1;
         if (tx_heights_ptr_ != nullptr) {
@@ -233,7 +234,7 @@ int ShardStatistic::StatisticWithHeights(const pools::protobuf::ToTxHeights& lea
             // epoch credit statistic
             for (auto niter = hiter->second->node_tx_count_map.begin();
                     niter != hiter->second->node_tx_count_map.end(); ++niter) {
-                if (elect_height == prev_elect_height_) {
+                if (elect_height == now_elect_height_) {
                     auto tmp_iter = epoch_node_count_map.find(niter->first);
                     if (tmp_iter == epoch_node_count_map.end()) {
                         epoch_node_count_map[niter->first] = niter->second;
@@ -252,8 +253,42 @@ int ShardStatistic::StatisticWithHeights(const pools::protobuf::ToTxHeights& lea
         }
     }
 
-    pools::protobuf::ElectStatistic elect_statistic;
+    auto& statistic_item = *elect_statistic.add_statistics();
+    libff::alt_bn128_G2 common_pk;
+    libff::alt_bn128_Fr sec_key;
+    auto members = elect_mgr_->GetNetworkMembersWithHeight(
+        now_elect_height_,
+        common::GlobalInfo::Instance()->network_id(),
+        &common_pk,
+        &sec_key);
+    std::string str_for_hash;
+    str_for_hash.reserve(1024 * 1024);
+    for (uint32_t midx = 0; midx < members->size(); ++midx) {
+        auto& id = (*members)[midx]->id;
+        auto iter = epoch_node_count_map.find(id);
+        auto& statistic_info = *statistic_item.add_node_statistic();
+        uint32_t tx_count = 0;
+        if (iter != epoch_node_count_map.end()) {
+            tx_count = iter->second;
+        }
+        
+        statistic_info.set_tx_count(tx_count);
+        statistic_info.set_pool_index_mod_num((*members)[midx]->pool_index_mod_num);
+        str_for_hash.append((char*)&tx_count, sizeof(tx_count));
+    }
 
+    statistic_item.set_elect_height(now_elect_height_);
+    auto& all_statistic_item = *elect_statistic.add_statistics();
+    for (auto iter = node_count_map.begin(); iter != node_count_map.end(); ++iter) {
+        auto& statistic_info = *statistic_item.add_node_statistic();
+        all_statistic_item.set_tx_count(iter->second);
+        all_statistic_item.set_id(iter->first);
+        str_for_hash.append(iter->first);
+        str_for_hash.append((char*)&iter->second, sizeof(iter->second));
+    }
+
+    all_statistic_item.set_elect_height(0);
+    *statistic_hash = common::Hash::keccak256(str_for_hash);
     return kPoolsSuccess;
 }
 

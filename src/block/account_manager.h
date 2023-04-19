@@ -53,6 +53,10 @@ public:
         return single_local_to_address_info_[pool_idx % common::kImmutablePoolSize];
     }
 
+    std::shared_ptr<address::protobuf::AddressInfo>& GetStatisticAddressInfo() {
+        return single_local_to_address_info_[pool_idx % common::kImmutablePoolSize];
+    }
+
     protos::AddressInfoPtr GetAccountInfo(
             const std::shared_ptr<block::protobuf::Block>& block_item,
             const block::protobuf::BlockTx& tx_info) {
@@ -97,6 +101,7 @@ private:
         db::DbWriteBatch& db_batch);
     void CreateNormalToAddressInfo();
     void CreateNormalLocalToAddressInfo();
+    void CreateStatisticAddressInfo();
 
     static const uint64_t kCheckMissingHeightPeriod = 3000000llu;
     static const uint64_t kFushTreeToDbPeriod = 6000000llu;
@@ -114,6 +119,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<address::protobuf::AddressInfo> single_to_address_info_[common::kImmutablePoolSize] = { nullptr };
     std::shared_ptr<address::protobuf::AddressInfo> single_local_to_address_info_[common::kImmutablePoolSize] = { nullptr };
+    std::shared_ptr<address::protobuf::AddressInfo> statistic_address_info_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };
