@@ -719,8 +719,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             tenon_block->add_precommit_bitmap(bitmap_data[i]);
         }
 
-        tenon_block->set_timeblock_height(1);
-        tenon_block->set_electblock_height(2);
+        tenon_block->set_timeblock_height(0);
+        tenon_block->set_electblock_height(0);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
         db::DbWriteBatch db_batch;
@@ -843,8 +843,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(uint32_t net_id) {
             tenon_block->add_precommit_bitmap(bitmap_data[i]);
         }
 
-        tenon_block->set_timeblock_height(1);
-        tenon_block->set_electblock_height(2);
+        tenon_block->set_timeblock_height(0);
+        tenon_block->set_electblock_height(0);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
 //         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
