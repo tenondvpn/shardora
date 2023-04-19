@@ -147,6 +147,15 @@ int ShardStatistic::LeaderCreateToHeights(pools::protobuf::ToTxHeights& to_heigh
     return kPoolsSuccess;
 }
 
+void ShardStatistic::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height) {
+    if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
+        return;
+    }
+
+    prev_elect_height_ = now_elect_height_;
+    now_elect_height_ = elect_height;
+}
+
 void ShardStatistic::OnTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
@@ -192,7 +201,6 @@ int ShardStatistic::StatisticWithHeights(const pools::protobuf::ToTxHeights& lea
 
         common::MembersPtr members = nullptr;
         uint64_t prev_height = 0;
-        uint64_t handled_elect_height = 0;
         for (auto height = min_height; height <= max_height; ++height) {
             auto hiter = node_height_count_map_.find(height);
             if (hiter == node_height_count_map_.end()) {
@@ -219,7 +227,7 @@ int ShardStatistic::StatisticWithHeights(const pools::protobuf::ToTxHeights& lea
             // epoch credit statistic
             for (auto niter = hiter->second->node_tx_count_map.begin();
                     niter != hiter->second->node_tx_count_map.end(); ++niter) {
-                if (elect_height == handled_elect_height + 1) {
+                if (elect_height == prev_elect_height_) {
                     auto tmp_iter = epoch_node_count_map.find(niter->first);
                     if (tmp_iter == epoch_node_count_map.end()) {
                         epoch_node_count_map[niter->first] = niter->second;
@@ -237,6 +245,8 @@ int ShardStatistic::StatisticWithHeights(const pools::protobuf::ToTxHeights& lea
             }
         }
     }
+
+    pools::protobuf::ElectStatistic elect_statistic;
 
     return kPoolsSuccess;
 }

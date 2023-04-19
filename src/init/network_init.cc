@@ -751,6 +751,7 @@ void NetworkInit::HandleElectionBlock(
     block_mgr_->OnNewElectBlock(sharding_id, members);
     vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     bls_mgr_->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
+    shard_statistic_->OnNewElectBlock(sharding_id, elect_height);
     network::UniversalManager::Instance()->OnNewElectBlock(sharding_id, elect_height, members);
 }
 

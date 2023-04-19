@@ -29,6 +29,7 @@ public:
     }
 
     ~ShardStatistic() {}
+    void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height);
     void OnNewBlock(const std::shared_ptr<block::protobuf::Block>& block_item);
     void GetStatisticInfo(
         uint64_t timeblock_height,
@@ -65,6 +66,8 @@ private:
     std::shared_ptr<pools::protobuf::ToTxHeights> tx_heights_ptr_ = nullptr;
     std::unordered_set<uint64_t> added_heights_[common::kInvalidPoolIndex];
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    uint64_t prev_elect_height_ = 0;
+    uint64_t now_elect_height_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };
