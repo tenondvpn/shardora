@@ -85,14 +85,14 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTxs(uint32_t pool_index, bool leader) {
     if (pool_index != 0) {
-        return;
+        return nullptr;
     }
 
     auto tx_ptr = block_mgr_->GetStatisticTx(leader);
     if (tx_ptr != nullptr) {
         if (leader) {
             auto now_tm = common::TimeUtils::TimestampUs();
-            if (tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm) {
+            if (tx_ptr->prev_consensus_tm_us + 300000lu > now_tm) {
                 tx_ptr->in_consensus = false;
                 return nullptr;
             }
