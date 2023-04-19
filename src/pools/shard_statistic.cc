@@ -201,7 +201,7 @@ int ShardStatistic::StatisticWithHeights(
 
         uint64_t max_height = leader_to_heights.heights(pool_idx);
         if (max_height > pool_consensus_heihgts_[pool_idx]) {
-            ZJC_DEBUG("pool %u, invalid height: %lu, consensus height: %lu",
+            ZJC_WARN("pool %u, invalid height: %lu, consensus height: %lu",
                 pool_idx, max_height, pool_consensus_heihgts_[pool_idx]);
             return kPoolsError;
         }
@@ -211,6 +211,7 @@ int ShardStatistic::StatisticWithHeights(
         for (auto height = min_height; height <= max_height; ++height) {
             auto hiter = node_height_count_map_.find(height);
             if (hiter == node_height_count_map_.end()) {
+                ZJC_WARN("statistic get height failed, pool: %u, height: %lu", pool_idx, height);
                 return kPoolsError;
             }
 

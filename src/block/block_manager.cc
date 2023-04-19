@@ -499,7 +499,7 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
     if (statistic_mgr_->StatisticWithHeights(
             heights,
             &statistic_hash) != pools::kPoolsSuccess) {
-        ZJC_DEBUG("error to txs sharding create to txs: %u", heights.sharding_id());
+        ZJC_DEBUG("error to txs sharding create statistic tx");
         return;
     }
 
