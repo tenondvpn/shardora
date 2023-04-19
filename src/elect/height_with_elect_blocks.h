@@ -256,37 +256,38 @@ public:
                 in[i].pool_idx_mod_num()));
         }
 
-        if (common_pk == nullptr) {
-            libff::alt_bn128_G2 tmp_common_pk = libff::alt_bn128_G2::zero();
-            auto& prev_members = elect_block.prev_members();
-            std::vector<std::string> pkey_str = {
-                prev_members.common_pubkey().x_c0(),
-                prev_members.common_pubkey().x_c1(),
-                prev_members.common_pubkey().y_c0(),
-                prev_members.common_pubkey().y_c1()
-            };
+        libff::alt_bn128_G2 tmp_common_pk = libff::alt_bn128_G2::zero();
+        auto& prev_members = elect_block.prev_members();
+        std::vector<std::string> pkey_str = {
+            prev_members.common_pubkey().x_c0(),
+            prev_members.common_pubkey().x_c1(),
+            prev_members.common_pubkey().y_c0(),
+            prev_members.common_pubkey().y_c1()
+        };
 
-            auto n = prev_members.bls_pubkey_size();
-            auto t = n * 2 / 3;
-            if ((n * 2) % 3 > 0) {
-                t += 1;
-            }
+        auto n = prev_members.bls_pubkey_size();
+        auto t = n * 2 / 3;
+        if ((n * 2) % 3 > 0) {
+            t += 1;
+        }
 
-            BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
-            tmp_common_pk = *pkey.getPublicKey();
-            if (tmp_common_pk == libff::alt_bn128_G2::zero()) {
-                assert(false);
-                return nullptr;
-            }
+        BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
+        tmp_common_pk = *pkey.getPublicKey();
+        if (tmp_common_pk == libff::alt_bn128_G2::zero()) {
+            assert(false);
+            return nullptr;
+        }
 
+        ZJC_DEBUG("4 get bls pk and secret key success.height: %lu, network_id: %u",
+            height, network_id);
+
+        if (common_pk != nullptr) {
             *common_pk = tmp_common_pk;
-            ZJC_DEBUG("4 get bls pk and secret key success.height: %lu, network_id: %u",
-                height, network_id);
         }
 
         height_queue_.push(height);
         height_with_members_[network_id][height] = shard_members_ptr;
-        height_with_common_pks_[network_id][height] = *common_pk;
+        height_with_common_pks_[network_id][height] = tmp_common_pk;
         if (height_queue_.size() > kMaxCacheElectBlockCount) {
             auto min_height = height_queue_.top();
             auto iter = height_with_members_[network_id].find(min_height);
