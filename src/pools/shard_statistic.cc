@@ -14,8 +14,7 @@ namespace pools {
 static const std::string kShardFinalStaticPrefix = common::Encode::HexDecode(
     "027a252b30589b8ed984cf437c475b069d0597fc6d51ec6570e95a681ffa9fe7");
 
-void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& block_item) {
-    const block::protobuf::Block& block = *block_item;
+void ShardStatistic::OnNewBlock(const block::protobuf::Block& block) {
     if (block.network_id() != common::GlobalInfo::Instance()->network_id()) {
         ZJC_DEBUG("network invalid!");
         return;
@@ -298,9 +297,39 @@ void ShardStatistic::LoadLatestHeights() {
     tx_heights_ptr_ = std::make_shared<pools::protobuf::ToTxHeights>();
     auto& to_heights = *tx_heights_ptr_;
     if (!prefix_db_->GetStatisticLatestHeihgts(
-        common::GlobalInfo::Instance()->network_id(),
-        &to_heights)) {
+            common::GlobalInfo::Instance()->network_id(),
+            &to_heights)) {
         ZJC_FATAL("load init statistic heights failed!");
+    }
+
+    uint32_t max_pool_index = kImmutablePoolSize;
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+        ++max_pool_index;
+    }
+
+    auto& this_net_heights = tx_heights_ptr_->heights();
+    for (int32_t i = 0; i < this_net_heights.size(); ++i) {
+        pool_consensus_heihgts_[i] = this_net_heights[i];
+    }
+
+    db::DbWriteBatch db_batch;
+    for (uint32_t i = 0; i < max_pool_index; ++i) {
+        uint64_t pool_latest_height = pools_mgr_->latest_height(i);
+        bool consensus_stop = false;
+        for (uint64_t height = pool_consensus_heihgts_[i];
+                height <= pool_latest_height; ++height) {
+            block::protobuf::Block block;
+            if (!prefix_db_->GetBlockWithHeight(
+                    common::GlobalInfo::Instance()->network_id(), i, height, &block)) {
+                consensus_stop = true;
+            } else {
+                OnNewBlock(block);
+            }
+
+            if (!consensus_stop) {
+                pool_consensus_heihgts_[i] = height;
+            }
+        }
     }
 }
 

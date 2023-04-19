@@ -375,6 +375,39 @@ void ToTxsPools::LoadLatestHeights() {
 
         handled_map_[i] = heights_ptr;
     }
+
+    uint32_t max_pool_index = kImmutablePoolSize;
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+        ++max_pool_index;
+    }
+
+    auto iter = handled_map_.find(common::GlobalInfo::Instance()->network_id());
+    if (iter != handled_map_.end()) {
+        auto& this_net_heights = iter->second->heights();
+        for (int32_t i = 0; i < this_net_heights.size(); ++i) {
+            pool_consensus_heihgts_[i] = this_net_heights[i];
+        }
+    }
+
+    db::DbWriteBatch db_batch;
+    for (uint32_t i = 0; i < max_pool_index; ++i) {
+        uint64_t pool_latest_height = pools_mgr_->latest_height(i);
+        bool consensus_stop = false;
+        for (uint64_t height = pool_consensus_heihgts_[i];
+                height <= pool_latest_height; ++height) {
+            block::protobuf::Block block;
+            if (!prefix_db_->GetBlockWithHeight(
+                    common::GlobalInfo::Instance()->network_id(), i, height, &block)) {
+                consensus_stop = true;
+            } else {
+                NewBlock(block, db_batch);
+            }
+
+            if (!consensus_stop) {
+                pool_consensus_heihgts_[i] = height;
+            }
+        }
+    }
 }
 
 std::shared_ptr<address::protobuf::AddressInfo> ToTxsPools::GetAddressInfo(

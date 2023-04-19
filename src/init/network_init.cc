@@ -694,7 +694,7 @@ void NetworkInit::DbNewBlockCallback(
         }
     }
 
-    shard_statistic_->OnNewBlock(block);
+    shard_statistic_->OnNewBlock(*block);
     ZJC_DEBUG("DbNewBlockCallback new block height: %lu, tx size: %u, step: %d, %d",
         block->height(), block->tx_list_size(),
         block->tx_list(0).step(), pools::protobuf::kConsensusRootElectShard);

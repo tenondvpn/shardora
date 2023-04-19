@@ -537,7 +537,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
     }
 
     fclose(root_gens_init_block_file);
-    *root_pool_height = root_single_block_height;
+    *root_pool_height = root_single_block_height - 1;
     return kInitSuccess;
 }
 
