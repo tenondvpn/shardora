@@ -232,11 +232,6 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
 }
 
 int ShardStatistic::LeaderCreateToHeights(pools::protobuf::ToTxHeights& to_heights) {
-    auto net_iter = network_txs_pools_.find(sharding_id);
-    if (net_iter == network_txs_pools_.end()) {
-        return kPoolsError;
-    }
-
     to_heights.set_sharding_id(sharding_id);
     bool valid = false;
     std::string heights;
@@ -246,9 +241,9 @@ int ShardStatistic::LeaderCreateToHeights(pools::protobuf::ToTxHeights& to_heigh
     }
 
     for (uint32_t i = 0; i < max_pool; ++i) {
-        auto pool_iter = net_iter->second.find(i);
-        auto r_height_iter = pool_iter->second.rbegin();
-        if (r_height_iter == pool_iter->second.rend()) {
+        auto pool_iter = node_height_count_map_.find(i);
+        auto r_height_iter = node_height_count_map_.rbegin();
+        if (r_height_iter == node_height_count_map_.rend()) {
             heights += std::to_string(0) + " ";
             to_heights.add_heights(0);
         } else {
@@ -262,7 +257,7 @@ int ShardStatistic::LeaderCreateToHeights(pools::protobuf::ToTxHeights& to_heigh
         return kPoolsError;
     }
 
-    ZJC_DEBUG("sharding_id: %u, leader success create to heights: %s", sharding_id, heights.c_str());
+    ZJC_DEBUG("leader success create to heights: %s", heights.c_str());
     return kPoolsSuccess;
 }
 

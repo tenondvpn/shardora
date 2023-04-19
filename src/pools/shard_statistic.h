@@ -50,6 +50,7 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleStatistic(const block::protobuf::Block& block);
+    void LoadLatestHeights();
 
     static const uint32_t kLofRation = 5;
     static const uint32_t kLofMaxNodes = 8;
