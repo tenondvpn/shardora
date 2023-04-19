@@ -27,7 +27,9 @@ ToTxsPools::ToTxsPools(
         network_txs_pools_[i] = pool_map;
     }
 
-    LoadLatestHeights();
+    if (pools_mgr_ != nullptr) {
+        LoadLatestHeights();
+    }
 }
 
 ToTxsPools::~ToTxsPools() {}

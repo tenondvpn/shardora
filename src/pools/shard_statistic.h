@@ -30,7 +30,9 @@ public:
             std::shared_ptr<pools::TxPoolManager>& pools_mgr)
             : elect_mgr_(elect_mgr), pools_mgr_(pools_mgr) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
-        LoadLatestHeights();
+        if (pools_mgr_ != nullptr) {
+            LoadLatestHeights();
+        }
     }
 
     ~ShardStatistic() {}
