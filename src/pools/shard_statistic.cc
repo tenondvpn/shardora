@@ -303,7 +303,7 @@ void ShardStatistic::LoadLatestHeights() {
         ZJC_FATAL("load init statistic heights failed!");
     }
 
-    uint32_t max_pool_index = kImmutablePoolSize;
+    uint32_t max_pool_index = common::kImmutablePoolSize;
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         ++max_pool_index;
     }

@@ -379,7 +379,7 @@ void ToTxsPools::LoadLatestHeights() {
         handled_map_[i] = heights_ptr;
     }
 
-    uint32_t max_pool_index = kImmutablePoolSize;
+    uint32_t max_pool_index = common::kImmutablePoolSize;
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         ++max_pool_index;
     }
