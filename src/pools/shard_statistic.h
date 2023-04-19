@@ -11,6 +11,7 @@
 #include "common/tick.h"
 #include "pools/tx_utils.h"
 #include "protos/block.pb.h"
+#include "protos/prefix_db.h"
 
 namespace zjchain {
 
