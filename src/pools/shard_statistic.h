@@ -23,8 +23,9 @@ namespace pools {
 
 class ShardStatistic {
 public:
-    ShardStatistic(std::shared_ptr<elect::ElectManager>& elect_mgr)
+    ShardStatistic(std::shared_ptr<elect::ElectManager>& elect_mgr, std::shared_ptr<db::Db>& db)
             : elect_mgr_(elect_mgr) {
+        prefix_db_ = std::make_shared<protos::PrefixDb>(db);
         LoadLatestHeights();
     }
 
