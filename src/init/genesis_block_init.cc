@@ -125,7 +125,7 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         std::string(std::string("./bls_pri_") + std::to_string(sharding_id)).c_str(),
         "w");
     auto common_public_key = libff::alt_bn128_G2::zero();
-    for (int32_t idx = 0; idx < prikeys.size(); ++idx) {
+    for (uint32_t idx = 0; idx < prikeys.size(); ++idx) {
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
         secptr->SetPrivateKey(prikeys[idx]);
         libBLS::Dkg tmpdkg(valid_t, valid_n);
