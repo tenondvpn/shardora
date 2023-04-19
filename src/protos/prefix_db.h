@@ -989,7 +989,7 @@ public:
         key.append(kConsensusedStatisticPrefix);
         key.append((char*)&sharding_id, sizeof(sharding_id));
         std::string val;
-        auto st = db_->Get(key, val);
+        auto st = db_->Get(key, &val);
         if (!st.ok()) {
             ZJC_ERROR("write db failed!");
             return false;
