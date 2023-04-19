@@ -961,6 +961,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::BlockMessage, acc_shard_req_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::BlockMessage, acc_shard_res_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::BlockMessage, to_txs_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::BlockMessage, shard_statistic_tx_),
   0,
   1,
   2,
@@ -978,6 +979,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   14,
   15,
   ~0u,
+  16,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 8, sizeof(::zjchain::block::protobuf::StorageItem)},
@@ -1006,7 +1008,7 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 291, 297, sizeof(::zjchain::block::protobuf::GetAccountShardRequest)},
   { 298, 305, sizeof(::zjchain::block::protobuf::GetAccountShardReponse)},
   { 307, 313, sizeof(::zjchain::block::protobuf::CrossShardingTosMessage)},
-  { 314, 336, sizeof(::zjchain::block::protobuf::BlockMessage)},
+  { 314, 337, sizeof(::zjchain::block::protobuf::BlockMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -1124,7 +1126,7 @@ void AddDescriptorsImpl() {
       "tShardRequest\022\n\n\002id\030\001 \001(\014\"6\n\026GetAccountS"
       "hardReponse\022\n\n\002id\030\001 \001(\014\022\020\n\010shard_id\030\002 \001("
       "\r\"G\n\027CrossShardingTosMessage\022,\n\005block\030\001 "
-      "\001(\0132\035.zjchain.block.protobuf.Block\"\231\t\n\014B"
+      "\001(\0132\035.zjchain.block.protobuf.Block\"\332\t\n\014B"
       "lockMessage\022<\n\tblock_req\030\001 \001(\0132).zjchain"
       ".block.protobuf.GetTxBlockRequest\022=\n\tblo"
       "ck_res\030\002 \001(\0132*.zjchain.block.protobuf.Ge"
@@ -1154,10 +1156,11 @@ void AddDescriptorsImpl() {
       "ardRequest\022E\n\racc_shard_res\030\020 \001(\0132..zjch"
       "ain.block.protobuf.GetAccountShardRepons"
       "e\0223\n\006to_txs\030\021 \003(\0132#.zjchain.pools.protob"
-      "uf.ToTxHeights"
+      "uf.ToTxHeights\022\?\n\022shard_statistic_tx\030\022 \001"
+      "(\0132#.zjchain.pools.protobuf.ToTxHeights"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 3774);
+      descriptor, 3839);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/block.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fpools_2eproto::AddDescriptors();
@@ -10301,9 +10304,15 @@ void BlockMessage::InitAsDefaultInstance() {
       ::zjchain::block::protobuf::GetAccountShardRequest::internal_default_instance());
   ::zjchain::block::protobuf::_BlockMessage_default_instance_._instance.get_mutable()->acc_shard_res_ = const_cast< ::zjchain::block::protobuf::GetAccountShardReponse*>(
       ::zjchain::block::protobuf::GetAccountShardReponse::internal_default_instance());
+  ::zjchain::block::protobuf::_BlockMessage_default_instance_._instance.get_mutable()->shard_statistic_tx_ = const_cast< ::zjchain::pools::protobuf::ToTxHeights*>(
+      ::zjchain::pools::protobuf::ToTxHeights::internal_default_instance());
 }
 void BlockMessage::clear_to_txs() {
   to_txs_.Clear();
+}
+void BlockMessage::clear_shard_statistic_tx() {
+  if (shard_statistic_tx_ != NULL) shard_statistic_tx_->Clear();
+  clear_has_shard_statistic_tx();
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int BlockMessage::kBlockReqFieldNumber;
@@ -10323,6 +10332,7 @@ const int BlockMessage::kRefHeightsResFieldNumber;
 const int BlockMessage::kAccShardReqFieldNumber;
 const int BlockMessage::kAccShardResFieldNumber;
 const int BlockMessage::kToTxsFieldNumber;
+const int BlockMessage::kShardStatisticTxFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 BlockMessage::BlockMessage()
@@ -10418,13 +10428,18 @@ BlockMessage::BlockMessage(const BlockMessage& from)
   } else {
     acc_shard_res_ = NULL;
   }
+  if (from.has_shard_statistic_tx()) {
+    shard_statistic_tx_ = new ::zjchain::pools::protobuf::ToTxHeights(*from.shard_statistic_tx_);
+  } else {
+    shard_statistic_tx_ = NULL;
+  }
   // @@protoc_insertion_point(copy_constructor:zjchain.block.protobuf.BlockMessage)
 }
 
 void BlockMessage::SharedCtor() {
   ::memset(&block_req_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&acc_shard_res_) -
-      reinterpret_cast<char*>(&block_req_)) + sizeof(acc_shard_res_));
+      reinterpret_cast<char*>(&shard_statistic_tx_) -
+      reinterpret_cast<char*>(&block_req_)) + sizeof(shard_statistic_tx_));
 }
 
 BlockMessage::~BlockMessage() {
@@ -10449,6 +10464,7 @@ void BlockMessage::SharedDtor() {
   if (this != internal_default_instance()) delete ref_heights_res_;
   if (this != internal_default_instance()) delete acc_shard_req_;
   if (this != internal_default_instance()) delete acc_shard_res_;
+  if (this != internal_default_instance()) delete shard_statistic_tx_;
 }
 
 void BlockMessage::SetCachedSize(int size) const {
@@ -10540,6 +10556,10 @@ void BlockMessage::Clear() {
       GOOGLE_DCHECK(acc_shard_res_ != NULL);
       acc_shard_res_->Clear();
     }
+  }
+  if (cached_has_bits & 0x00010000u) {
+    GOOGLE_DCHECK(shard_statistic_tx_ != NULL);
+    shard_statistic_tx_->Clear();
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -10759,6 +10779,18 @@ bool BlockMessage::MergePartialFromCodedStream(
         break;
       }
 
+      // optional .zjchain.pools.protobuf.ToTxHeights shard_statistic_tx = 18;
+      case 18: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(146u /* 146 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_shard_statistic_tx()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -10889,6 +10921,12 @@ void BlockMessage::SerializeWithCachedSizes(
       17,
       this->to_txs(static_cast<int>(i)),
       output);
+  }
+
+  // optional .zjchain.pools.protobuf.ToTxHeights shard_statistic_tx = 18;
+  if (cached_has_bits & 0x00010000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      18, this->_internal_shard_statistic_tx(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -11024,6 +11062,13 @@ void BlockMessage::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         17, this->to_txs(static_cast<int>(i)), deterministic, target);
+  }
+
+  // optional .zjchain.pools.protobuf.ToTxHeights shard_statistic_tx = 18;
+  if (cached_has_bits & 0x00010000u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        18, this->_internal_shard_statistic_tx(), deterministic, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -11170,6 +11215,13 @@ size_t BlockMessage::ByteSizeLong() const {
     }
 
   }
+  // optional .zjchain.pools.protobuf.ToTxHeights shard_statistic_tx = 18;
+  if (has_shard_statistic_tx()) {
+    total_size += 2 +
+      ::google::protobuf::internal::WireFormatLite::MessageSize(
+        *shard_statistic_tx_);
+  }
+
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
@@ -11251,6 +11303,9 @@ void BlockMessage::MergeFrom(const BlockMessage& from) {
       mutable_acc_shard_res()->::zjchain::block::protobuf::GetAccountShardReponse::MergeFrom(from.acc_shard_res());
     }
   }
+  if (cached_has_bits & 0x00010000u) {
+    mutable_shard_statistic_tx()->::zjchain::pools::protobuf::ToTxHeights::MergeFrom(from.shard_statistic_tx());
+  }
 }
 
 void BlockMessage::CopyFrom(const ::google::protobuf::Message& from) {
@@ -11294,6 +11349,7 @@ void BlockMessage::InternalSwap(BlockMessage* other) {
   swap(ref_heights_res_, other->ref_heights_res_);
   swap(acc_shard_req_, other->acc_shard_req_);
   swap(acc_shard_res_, other->acc_shard_res_);
+  swap(shard_statistic_tx_, other->shard_statistic_tx_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }

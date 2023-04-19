@@ -883,24 +883,17 @@ class PoolStatisticInfo : public ::google::protobuf::Message /* @@protoc_inserti
   ::std::string* release_id();
   void set_allocated_id(::std::string* id);
 
-  // optional uint32 member_idx = 2;
-  bool has_member_idx() const;
-  void clear_member_idx();
-  static const int kMemberIdxFieldNumber = 2;
-  ::google::protobuf::uint32 member_idx() const;
-  void set_member_idx(::google::protobuf::uint32 value);
+  // optional int32 pool_index_mod_num = 2;
+  bool has_pool_index_mod_num() const;
+  void clear_pool_index_mod_num();
+  static const int kPoolIndexModNumFieldNumber = 2;
+  ::google::protobuf::int32 pool_index_mod_num() const;
+  void set_pool_index_mod_num(::google::protobuf::int32 value);
 
-  // optional bool is_leader = 3;
-  bool has_is_leader() const;
-  void clear_is_leader();
-  static const int kIsLeaderFieldNumber = 3;
-  bool is_leader() const;
-  void set_is_leader(bool value);
-
-  // optional uint32 tx_count = 4;
+  // optional uint32 tx_count = 3;
   bool has_tx_count() const;
   void clear_tx_count();
-  static const int kTxCountFieldNumber = 4;
+  static const int kTxCountFieldNumber = 3;
   ::google::protobuf::uint32 tx_count() const;
   void set_tx_count(::google::protobuf::uint32 value);
 
@@ -908,10 +901,8 @@ class PoolStatisticInfo : public ::google::protobuf::Message /* @@protoc_inserti
  private:
   void set_has_id();
   void clear_has_id();
-  void set_has_member_idx();
-  void clear_has_member_idx();
-  void set_has_is_leader();
-  void clear_has_is_leader();
+  void set_has_pool_index_mod_num();
+  void clear_has_pool_index_mod_num();
   void set_has_tx_count();
   void clear_has_tx_count();
 
@@ -919,8 +910,7 @@ class PoolStatisticInfo : public ::google::protobuf::Message /* @@protoc_inserti
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr id_;
-  ::google::protobuf::uint32 member_idx_;
-  bool is_leader_;
+  ::google::protobuf::int32 pool_index_mod_num_;
   ::google::protobuf::uint32 tx_count_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
@@ -2239,63 +2229,39 @@ inline void PoolStatisticInfo::set_allocated_id(::std::string* id) {
   // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.PoolStatisticInfo.id)
 }
 
-// optional uint32 member_idx = 2;
-inline bool PoolStatisticInfo::has_member_idx() const {
+// optional int32 pool_index_mod_num = 2;
+inline bool PoolStatisticInfo::has_pool_index_mod_num() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void PoolStatisticInfo::set_has_member_idx() {
+inline void PoolStatisticInfo::set_has_pool_index_mod_num() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void PoolStatisticInfo::clear_has_member_idx() {
+inline void PoolStatisticInfo::clear_has_pool_index_mod_num() {
   _has_bits_[0] &= ~0x00000002u;
 }
-inline void PoolStatisticInfo::clear_member_idx() {
-  member_idx_ = 0u;
-  clear_has_member_idx();
+inline void PoolStatisticInfo::clear_pool_index_mod_num() {
+  pool_index_mod_num_ = 0;
+  clear_has_pool_index_mod_num();
 }
-inline ::google::protobuf::uint32 PoolStatisticInfo::member_idx() const {
-  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.PoolStatisticInfo.member_idx)
-  return member_idx_;
+inline ::google::protobuf::int32 PoolStatisticInfo::pool_index_mod_num() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.PoolStatisticInfo.pool_index_mod_num)
+  return pool_index_mod_num_;
 }
-inline void PoolStatisticInfo::set_member_idx(::google::protobuf::uint32 value) {
-  set_has_member_idx();
-  member_idx_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.PoolStatisticInfo.member_idx)
+inline void PoolStatisticInfo::set_pool_index_mod_num(::google::protobuf::int32 value) {
+  set_has_pool_index_mod_num();
+  pool_index_mod_num_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.PoolStatisticInfo.pool_index_mod_num)
 }
 
-// optional bool is_leader = 3;
-inline bool PoolStatisticInfo::has_is_leader() const {
+// optional uint32 tx_count = 3;
+inline bool PoolStatisticInfo::has_tx_count() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void PoolStatisticInfo::set_has_is_leader() {
+inline void PoolStatisticInfo::set_has_tx_count() {
   _has_bits_[0] |= 0x00000004u;
 }
-inline void PoolStatisticInfo::clear_has_is_leader() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void PoolStatisticInfo::clear_is_leader() {
-  is_leader_ = false;
-  clear_has_is_leader();
-}
-inline bool PoolStatisticInfo::is_leader() const {
-  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.PoolStatisticInfo.is_leader)
-  return is_leader_;
-}
-inline void PoolStatisticInfo::set_is_leader(bool value) {
-  set_has_is_leader();
-  is_leader_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.PoolStatisticInfo.is_leader)
-}
-
-// optional uint32 tx_count = 4;
-inline bool PoolStatisticInfo::has_tx_count() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void PoolStatisticInfo::set_has_tx_count() {
-  _has_bits_[0] |= 0x00000008u;
-}
 inline void PoolStatisticInfo::clear_has_tx_count() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void PoolStatisticInfo::clear_tx_count() {
   tx_count_ = 0u;

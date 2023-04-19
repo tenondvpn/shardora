@@ -4448,6 +4448,18 @@ class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::zjchain::block::protobuf::GetAccountShardReponse* mutable_acc_shard_res();
   void set_allocated_acc_shard_res(::zjchain::block::protobuf::GetAccountShardReponse* acc_shard_res);
 
+  // optional .zjchain.pools.protobuf.ToTxHeights shard_statistic_tx = 18;
+  bool has_shard_statistic_tx() const;
+  void clear_shard_statistic_tx();
+  static const int kShardStatisticTxFieldNumber = 18;
+  private:
+  const ::zjchain::pools::protobuf::ToTxHeights& _internal_shard_statistic_tx() const;
+  public:
+  const ::zjchain::pools::protobuf::ToTxHeights& shard_statistic_tx() const;
+  ::zjchain::pools::protobuf::ToTxHeights* release_shard_statistic_tx();
+  ::zjchain::pools::protobuf::ToTxHeights* mutable_shard_statistic_tx();
+  void set_allocated_shard_statistic_tx(::zjchain::pools::protobuf::ToTxHeights* shard_statistic_tx);
+
   // @@protoc_insertion_point(class_scope:zjchain.block.protobuf.BlockMessage)
  private:
   void set_has_block_req();
@@ -4482,6 +4494,8 @@ class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   void clear_has_acc_shard_req();
   void set_has_acc_shard_res();
   void clear_has_acc_shard_res();
+  void set_has_shard_statistic_tx();
+  void clear_has_shard_statistic_tx();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -4503,6 +4517,7 @@ class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::zjchain::block::protobuf::RefreshPoolHeightResponse* ref_heights_res_;
   ::zjchain::block::protobuf::GetAccountShardRequest* acc_shard_req_;
   ::zjchain::block::protobuf::GetAccountShardReponse* acc_shard_res_;
+  ::zjchain::pools::protobuf::ToTxHeights* shard_statistic_tx_;
   friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
 };
 // ===================================================================
@@ -9532,6 +9547,60 @@ inline const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::T
 BlockMessage::to_txs() const {
   // @@protoc_insertion_point(field_list:zjchain.block.protobuf.BlockMessage.to_txs)
   return to_txs_;
+}
+
+// optional .zjchain.pools.protobuf.ToTxHeights shard_statistic_tx = 18;
+inline bool BlockMessage::has_shard_statistic_tx() const {
+  return (_has_bits_[0] & 0x00010000u) != 0;
+}
+inline void BlockMessage::set_has_shard_statistic_tx() {
+  _has_bits_[0] |= 0x00010000u;
+}
+inline void BlockMessage::clear_has_shard_statistic_tx() {
+  _has_bits_[0] &= ~0x00010000u;
+}
+inline const ::zjchain::pools::protobuf::ToTxHeights& BlockMessage::_internal_shard_statistic_tx() const {
+  return *shard_statistic_tx_;
+}
+inline const ::zjchain::pools::protobuf::ToTxHeights& BlockMessage::shard_statistic_tx() const {
+  const ::zjchain::pools::protobuf::ToTxHeights* p = shard_statistic_tx_;
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.BlockMessage.shard_statistic_tx)
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::pools::protobuf::ToTxHeights*>(
+      &::zjchain::pools::protobuf::_ToTxHeights_default_instance_);
+}
+inline ::zjchain::pools::protobuf::ToTxHeights* BlockMessage::release_shard_statistic_tx() {
+  // @@protoc_insertion_point(field_release:zjchain.block.protobuf.BlockMessage.shard_statistic_tx)
+  clear_has_shard_statistic_tx();
+  ::zjchain::pools::protobuf::ToTxHeights* temp = shard_statistic_tx_;
+  shard_statistic_tx_ = NULL;
+  return temp;
+}
+inline ::zjchain::pools::protobuf::ToTxHeights* BlockMessage::mutable_shard_statistic_tx() {
+  set_has_shard_statistic_tx();
+  if (shard_statistic_tx_ == NULL) {
+    auto* p = CreateMaybeMessage<::zjchain::pools::protobuf::ToTxHeights>(GetArenaNoVirtual());
+    shard_statistic_tx_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.BlockMessage.shard_statistic_tx)
+  return shard_statistic_tx_;
+}
+inline void BlockMessage::set_allocated_shard_statistic_tx(::zjchain::pools::protobuf::ToTxHeights* shard_statistic_tx) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete reinterpret_cast< ::google::protobuf::MessageLite*>(shard_statistic_tx_);
+  }
+  if (shard_statistic_tx) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      shard_statistic_tx = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, shard_statistic_tx, submessage_arena);
+    }
+    set_has_shard_statistic_tx();
+  } else {
+    clear_has_shard_statistic_tx();
+  }
+  shard_statistic_tx_ = shard_statistic_tx;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.BlockMessage.shard_statistic_tx)
 }
 
 #ifdef __GNUC__
