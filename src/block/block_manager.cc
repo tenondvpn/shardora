@@ -395,6 +395,14 @@ void BlockManager::AddNewBlock(
             break;
         case pools::protobuf::kConsensusRootTimeBlock:
             prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
+            break;
+        case pools::protobuf::kStatistic:
+            consensused_timeblock_height_ = block_item->timeblock_height();
+            prefix_db_->SaveConsensusedStatisticTimeBlockHeight(
+                block_item->network_id(),
+                block_item->timeblock_height(),
+                db_batch);
+            break;
         default:
             break;
         }
@@ -580,6 +588,20 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     if (all_valid) {
         to_txs_msg_ = nullptr;
     }
+}
+
+pools::TxItemPtr BlockManager::GetStatisticTx(bool leader) {
+    auto now_tm = common::TimeUtils::TimestampUs();
+    if (shard_statistic_tx_ != nullptr && !shard_statistic_tx_->tx_ptr->in_consensus) {
+        if (leader && shard_statistic_tx_->tx_ptr->time_valid > now_tm) {
+            continue;
+        }
+
+        shard_statistic_tx_->tx_ptr->in_consensus = true;
+        return shard_statistic_tx_->tx_ptr;
+    }
+
+    return nullptr;
 }
 
 pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {

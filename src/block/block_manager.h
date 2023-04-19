@@ -71,6 +71,7 @@ public:
     void CreateStatisticTx(uint8_t thread_idx);
     void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
     pools::TxItemPtr GetToTx(uint32_t pool_index, bool leader);
+    pools::TxItemPtr GetStatisticTx(bool leader);
     void LoadLatestBlocks(uint8_t thread_idx);
 
 private:

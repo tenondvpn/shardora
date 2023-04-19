@@ -53,6 +53,10 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
     }
 
     if (txs_item == nullptr) {
+        txs_item = GetStatisticTxs(pool_index, true);
+    }
+
+    if (txs_item == nullptr) {
         txs_item = GetToTxs(pool_index, true);
     }
 
@@ -73,6 +77,34 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
         txs_item->tx_type = pools::protobuf::kConsensusRootTimeBlock;
         ZJC_DEBUG("success to get timeblock tx: tx hash: %s",
             common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
+        return txs_item;
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTxs(uint32_t pool_index, bool leader) {
+    if (pool_index != 0) {
+        return;
+    }
+
+    auto tx_ptr = block_mgr_->GetStatisticTx(leader);
+    if (tx_ptr != nullptr) {
+        if (leader) {
+            auto now_tm = common::TimeUtils::TimestampUs();
+            if (tx_ptr->prev_consensus_tm_us + 3000000lu > now_tm) {
+                tx_ptr->in_consensus = false;
+                return nullptr;
+            }
+
+            tx_ptr->prev_consensus_tm_us = now_tm;
+        }
+
+        auto txs_item = std::make_shared<WaitingTxsItem>();
+        txs_item->pool_index = pool_index;
+        txs_item->txs[tx_ptr->tx_hash] = tx_ptr;
+        txs_item->tx_type = pools::protobuf::kStatistic;
+        ZJC_DEBUG("1 success get statistic tx %u, %d", pool_index, leader);
         return txs_item;
     }
 
