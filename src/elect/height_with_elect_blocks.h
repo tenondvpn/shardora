@@ -210,20 +210,13 @@ public:
             }
         }
 
-        // get block from db and cache it
-        std::string height_db_key = "";
-//             common::GetHeightDbKey(
-//             network::kRootCongressNetworkId,
-//             common::kRootChainPoolIndex,
-//             height);
-        std::string block_str;
-        auto st = db_->Get(height_db_key, &block_str);
-        if (!st.ok()) {
-            return nullptr;
-        }
-
         block::protobuf::Block block;
-        if (!block.ParseFromString(block_str)) {
+        if (!prefix_db_->GetBlockWithHeight(
+                network::kRootCongressNetworkId,
+                common::kRootChainPoolIndex,
+                height,
+                &block)) {
+            assert(false);
             return nullptr;
         }
 
