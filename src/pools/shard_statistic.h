@@ -25,9 +25,7 @@ class ShardStatistic {
 public:
     ShardStatistic(std::shared_ptr<elect::ElectManager>& elect_mgr)
             : elect_mgr_(elect_mgr) {
-        for (uint32_t i = 0; i < kStatisticMaxCount; ++i) {
-            statistic_items_[i] = std::make_shared<StatisticItem>();
-        }
+        LoadLatestHeights();
     }
 
     ~ShardStatistic() {}
@@ -56,7 +54,6 @@ private:
     static const uint32_t kLofRation = 5;
     static const uint32_t kLofMaxNodes = 8;
 
-    std::shared_ptr<StatisticItem> statistic_items_[kStatisticMaxCount];
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
     uint64_t latest_timeblock_tm_ = 0;
     std::set<uint64_t> pool_heights_[common::kInvalidPoolIndex];
