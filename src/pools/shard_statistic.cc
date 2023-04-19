@@ -1,5 +1,6 @@
 #include "pools/shard_statistic.h"
 
+#include "consensus/consensus_utils.h"
 #include "common/global_info.h"
 #include "common/encode.h"
 #include "elect/elect_manager.h"
@@ -57,9 +58,6 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
 
         if (tx_list[i].step() == pools::protobuf::kStatistic) {
             HandleStatisticBlock(block, tx_list[i]);
-            break;
-        default:
-            break;
         }
     }
 //     if (block_item->network_id() == network::kRootCongressNetworkId) {
