@@ -66,6 +66,7 @@ private:
     std::unordered_map<uint32_t, std::shared_ptr<common::Point>> point_ptr_map_;
     std::shared_ptr<pools::protobuf::ToTxHeights> tx_heights_ptr_ = nullptr;
     std::unordered_set<uint64_t> added_heights_[common::kInvalidPoolIndex];
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };

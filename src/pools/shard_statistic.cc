@@ -232,7 +232,6 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
 }
 
 int ShardStatistic::LeaderCreateToHeights(pools::protobuf::ToTxHeights& to_heights) {
-    to_heights.set_sharding_id(sharding_id);
     bool valid = false;
     std::string heights;
     uint32_t max_pool = common::kImmutablePoolSize;
@@ -358,11 +357,11 @@ int ShardStatistic::StatisticWithHeights(const pools::protobuf::ToTxHeights& lea
 void ShardStatistic::LoadLatestHeights() {
         auto heights_ptr = std::make_shared<pools::protobuf::ToTxHeights>();
         pools::protobuf::ToTxHeights& to_heights = *heights_ptr;
-        if (!prefix_db_->GetLatestToTxsHeights(i, &to_heights)) {
-            continue;
-        }
+//         if (!prefix_db_->GetLatestToTxsHeights(i, &to_heights)) {
+//             continue;
+//         }
 
-        handled_map_[i] = heights_ptr;
+//         handled_map_[i] = heights_ptr;
 }
 
 void ShardStatistic::NormalizePoints(
