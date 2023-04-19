@@ -253,9 +253,9 @@ public:
                 in[i].pool_idx_mod_num()));
         }
 
-        libff::alt_bn128_G2 tmp_common_pk = libff::alt_bn128_G2::zero();
-        elect::protobuf::PrevMembers& prev_members = elect_block.prev_members();
-        if (prev_members.ParseFromString(val)) {
+        if (common_pk == nullptr) {
+            libff::alt_bn128_G2 tmp_common_pk = libff::alt_bn128_G2::zero();
+            elect::protobuf::PrevMembers& prev_members = elect_block.prev_members();
             std::vector<std::string> pkey_str = {
                 prev_members.common_pubkey().x_c0(),
                 prev_members.common_pubkey().x_c1(),
@@ -271,9 +271,6 @@ public:
 
             BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
             tmp_common_pk = *pkey.getPublicKey();
-        }
-
-        if (common_pk == nullptr) {
             if (tmp_common_pk == libff::alt_bn128_G2::zero()) {
                 return nullptr;
             }
