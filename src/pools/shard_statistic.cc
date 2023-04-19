@@ -48,7 +48,6 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
     }
 
     HandleStatistic(block);
-
     // one block must be one consensus pool
     uint32_t consistent_pool_index = common::kInvalidPoolIndex;
     for (int32_t i = 0; i < tx_list.size(); ++i) {
@@ -69,6 +68,10 @@ void ShardStatistic::HandleStatisticBlock(
 }
 
 void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
+    if (block.electblock_height() == 0) {
+        return;
+    }
+
     auto hiter = node_height_count_map_.find(block.height());
     if (hiter != node_height_count_map_.end()) {
         return;
@@ -154,6 +157,7 @@ void ShardStatistic::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height
 
     prev_elect_height_ = now_elect_height_;
     now_elect_height_ = elect_height;
+    ZJC_INFO("new elect block: %lu, %lu", prev_elect_height_, now_elect_height_);
 }
 
 void ShardStatistic::OnTimeBlock(
