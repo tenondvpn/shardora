@@ -785,7 +785,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(uint32_t net_id) {
     InitGenesisAccount();
     uint64_t genesis_account_balance = common::kGenesisFoundationMaxZjc / pool_index_map_.size();
     uint64_t all_balance = 0llu;
-    pools::protobuf::ToTxHeights to_heights;
+    pools::protobuf::ToTxHeights init_heights;
     for (auto iter = pool_index_map_.begin(); iter != pool_index_map_.end(); ++iter) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
