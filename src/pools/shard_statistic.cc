@@ -280,9 +280,9 @@ int ShardStatistic::StatisticWithHeights(
     statistic_item.set_elect_height(now_elect_height_);
     auto& all_statistic_item = *elect_statistic.add_statistics();
     for (auto iter = node_count_map.begin(); iter != node_count_map.end(); ++iter) {
-        auto& statistic_info = *statistic_item.add_node_statistic();
-        all_statistic_item.set_tx_count(iter->second);
-        all_statistic_item.set_id(iter->first);
+        auto& statistic_info = *all_statistic_item.add_node_statistic();
+        statistic_info.set_tx_count(iter->second);
+        statistic_info.set_id(iter->first);
         str_for_hash.append(iter->first);
         str_for_hash.append((char*)&iter->second, sizeof(iter->second));
     }
