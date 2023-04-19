@@ -53,7 +53,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
     }
 
     if (txs_item == nullptr) {
-        txs_item = GetStatisticTxs(pool_index, true);
+        txs_item = GetStatisticTx(pool_index, true);
     }
 
     if (txs_item == nullptr) {
@@ -83,7 +83,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
     return nullptr;
 }
 
-std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTxs(uint32_t pool_index, bool leader) {
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(uint32_t pool_index, bool leader) {
     if (pool_index != 0) {
         return nullptr;
     }
