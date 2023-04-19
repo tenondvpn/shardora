@@ -594,7 +594,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(bool leader) {
     auto now_tm = common::TimeUtils::TimestampUs();
     if (shard_statistic_tx_ != nullptr && !shard_statistic_tx_->tx_ptr->in_consensus) {
         if (leader && shard_statistic_tx_->tx_ptr->time_valid > now_tm) {
-            continue;
+            return nullptr;
         }
 
         shard_statistic_tx_->tx_ptr->in_consensus = true;
