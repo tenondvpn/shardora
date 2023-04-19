@@ -146,7 +146,7 @@ int ShardStatistic::LeaderCreateStatisticHeights(pools::protobuf::ToTxHeights& t
         return kPoolsError;
     }
 
-    ZJC_DEBUG("leader success create to heights: %s", heights.c_str());
+    ZJC_DEBUG("leader success create statistic heights: %s", heights.c_str());
     return kPoolsSuccess;
 }
 
@@ -289,6 +289,7 @@ int ShardStatistic::StatisticWithHeights(
 
     all_statistic_item.set_elect_height(0);
     *statistic_hash = common::Hash::keccak256(str_for_hash);
+    ZJC_DEBUG("success create statistic message.");
     return kPoolsSuccess;
 }
 
