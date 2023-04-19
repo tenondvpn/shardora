@@ -91,6 +91,8 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
         &common_pk,
         &sec_key);
     if (members == nullptr) {
+        ZJC_WARN("get members failed, elect height: %lu, net: %u",
+            block.electblock_height(), common::GlobalInfo::Instance()->network_id());
         assert(false);
         return;
     }

@@ -169,8 +169,8 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
-    shard_statistic_->Init();
     block_mgr_->LoadLatestBlocks(common::GlobalInfo::Instance()->message_handler_thread_count());
+    shard_statistic_->Init();
     transport::TcpTransport::Instance()->Start(false);
     if (InitHttpServer() != kInitSuccess) {
         INIT_ERROR("InitHttpServer failed!");
