@@ -21,6 +21,7 @@ namespace zjchain {
 
 namespace pools{
     class TxPoolManager;
+    class ShardStatistic;
 }
 
 namespace block {
@@ -34,6 +35,7 @@ public:
         std::shared_ptr<AccountManager>& account_mgr,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<pools::TxPoolManager>& pools_mgr,
+        std::shared_ptr<pools::ShardStatistic>& statistic_mgr,
         const std::string& local_id,
         DbBlockCallback new_block_callback);
     void NetworkNewBlock(
@@ -113,6 +115,7 @@ private:
     transport::MessagePtr to_txs_msg_ = nullptr;
     uint64_t prev_to_txs_tm_us_ = 0;
     DbBlockCallback new_block_callback_ = nullptr;
+    std::shared_ptr<pools::ShardStatistic> statistic_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

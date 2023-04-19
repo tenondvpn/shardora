@@ -38,12 +38,18 @@ public:
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random);
+    void StatisticWithHeights(const pools::protobuf::ToTxHeights& leader_to_heights);
+    int LeaderCreateToHeights(pools::protobuf::ToTxHeights& to_heights);
 
 private:
     void CreateStatisticTransaction(uint64_t timeblock_height);
     void NormalizePoints(
         uint64_t elect_height,
         std::unordered_map<int32_t, std::shared_ptr<common::Point>>& leader_lof_map);
+    void HandleStatisticBlock(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx);
+    void HandleStatistic(const block::protobuf::Block& block);
 
     static const uint32_t kLofRation = 5;
     static const uint32_t kLofMaxNodes = 8;
@@ -51,6 +57,13 @@ private:
     std::shared_ptr<StatisticItem> statistic_items_[kStatisticMaxCount];
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
     uint64_t latest_timeblock_tm_ = 0;
+    std::set<uint64_t> pool_heights_[common::kInvalidPoolIndex];
+    uint64_t latest_heights_[common::kInvalidPoolIndex] = { 0 };
+    uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
+    uint64_t pool_consensus_heihgts_[common::kInvalidPoolIndex] = { 0 };
+    std::unordered_map<uint64_t, static::shared_ptr<HeightStatisticInfo>> node_height_count_map_;
+    std::unordered_map<uint32_t, std::shared_ptr<common::Point>> point_ptr_map_;
+    static::shared_ptr<pools::protobuf::ToTxHeights> tx_heights_ptr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };

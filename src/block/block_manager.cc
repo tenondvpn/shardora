@@ -29,6 +29,7 @@ int BlockManager::Init(
         std::shared_ptr<AccountManager>& account_mgr,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<pools::TxPoolManager>& pools_mgr,
+        std::shared_ptr<pools::ShardStatistic>& statistic_mgr,
         const std::string& local_id,
         DbBlockCallback new_block_callback) {
     account_mgr_ = account_mgr;
@@ -36,6 +37,7 @@ int BlockManager::Init(
     pools_mgr_ = pools_mgr;
     local_id_ = local_id;
     new_block_callback_ = new_block_callback;
+    statistic_mgr_ = statistic_mgr;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(db_, local_id, max_consensus_sharding_id_);
     if (common::GlobalInfo::Instance()->for_ck_server()) {

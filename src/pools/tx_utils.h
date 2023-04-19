@@ -134,6 +134,11 @@ struct ElectItem {
     common::MembersPtr members;
 };
 
+struct HeightStatisticInfo {
+    std::unordered_map<std::string, uint32_t> node_tx_count_map;
+    uint64_t elect_height;
+};
+
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {
     std::string message;
     message.reserve(tx_info.ByteSizeLong());

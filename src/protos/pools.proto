@@ -18,6 +18,7 @@ enum StepType {
     kRootCreateAddress = 11;
     kRootCreateAddressCrossSharding = 12;
     kContractGasPrepayment = 13;
+    kStatistic = 14;
 }
 
 message ToTxHeights {
@@ -48,6 +49,22 @@ message PoolLatestInfo {
     optional uint64 height = 1;
     optional bytes hash = 2;
     optional uint64 synced_height = 3;
+}
+
+message PoolStatisticInfo {
+    optional bytes id = 1;
+    optional uint32 member_idx = 2;
+    optional bool is_leader = 3;
+    optional uint32 tx_count = 4;
+}
+
+message PoolStatisticItem {
+    repeated PoolStatisticInfo node_statistic = 1;
+    optional uint64 elect_height = 2;
+}
+
+message ElectStatistic {
+    repeated PoolStatisticItem statistics = 1;
 }
 
 message TxMessage {
