@@ -258,6 +258,11 @@ public:
 
         libff::alt_bn128_G2 tmp_common_pk = libff::alt_bn128_G2::zero();
         auto& prev_members = elect_block.prev_members();
+        if (!prev_members.has_common_pubkey()) {
+            assert(false);
+            return nullptr;
+        }
+
         std::vector<std::string> pkey_str = {
             prev_members.common_pubkey().x_c0(),
             prev_members.common_pubkey().x_c1(),
