@@ -52,6 +52,7 @@ static const std::string kBlsVerifyValuePrefix = "s\x01";
 static const std::string kTemporaryKeyPrefix = "t\x01";
 static const std::string kPresetPolynomialPrefix = "u\x01";
 static const std::string kPresetVerifyValuePrefix = "v\x01";
+static const std::string kStatisticHeightsPrefix = "w\x01";
 
 class PrefixDb {
 public:
@@ -928,6 +929,37 @@ public:
         }
 
         if (!verify_val->ParseFromString(val)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    void SaveStatisticLatestHeihgts(uint32_t sharding_id, const pools::protobuf::ToTxHeights& to_heights) {
+        std::string key;
+        key.reserve(64);
+        key.append(kPresetPolynomialPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        std::string val = to_heights.SerializeAsString();
+        auto st = db_->Put(key, val);
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+    }
+
+    bool GetStatisticLatestHeihgts(uint32_t sharding_id, pools::protobuf::ToTxHeights* to_heights) {
+        std::string key;
+        key.reserve(64);
+        key.append(kPresetPolynomialPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            ZJC_WARN("get data from db failed!");
+            return false;
+        }
+
+        if (!to_heights->ParseFromString(val)) {
             return false;
         }
 

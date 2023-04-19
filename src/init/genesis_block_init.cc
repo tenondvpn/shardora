@@ -334,7 +334,8 @@ int GenesisBlockInit::CreateElectBlock(
 
 int GenesisBlockInit::GenerateRootSingleBlock(
         const std::vector<dht::NodePtr>& root_genesis_nodes,
-        const std::vector<dht::NodePtr>& cons_genesis_nodes) {
+        const std::vector<dht::NodePtr>& cons_genesis_nodes,
+        uint64_t* root_pool_height) {
     FILE* root_gens_init_block_file = fopen("./root_blocks", "w");
     if (root_gens_init_block_file == nullptr) {
         return kInitError;
@@ -534,6 +535,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
     }
 
     fclose(root_gens_init_block_file);
+    *root_pool_height = root_single_block_height;
     return kInitSuccess;
 }
 
@@ -649,6 +651,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     InitGenesisAccount();
     uint64_t genesis_account_balance = 0llu;
     uint64_t all_balance = 0llu;
+    pools::protobuf::ToTxHeights init_heights;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
@@ -720,6 +723,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         AddBlockItemToCache(tenon_block, db_batch);
         db_->Put(db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
+        init_heights.add_heights(0);
         //         std::string pool_hash;
 //         uint64_t pool_height = 0;
 //         uint64_t tm_height;
@@ -756,7 +760,14 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         return kInitError;
     }
 
-    return GenerateRootSingleBlock(root_genesis_nodes, cons_genesis_nodes);
+    uint64_t root_pool_height = 0;
+    int res = GenerateRootSingleBlock(root_genesis_nodes, cons_genesis_nodes, &root_pool_height);
+    if (res == kInitSuccess) {
+        init_heights.add_heights(root_pool_height);
+        prefix_db_->SaveStatisticLatestHeihgts(network::kRootCongressNetworkId, init_heights);
+    }
+
+    return res;
 }
 
 void GenesisBlockInit::AddBlockItemToCache(
@@ -774,6 +785,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(uint32_t net_id) {
     InitGenesisAccount();
     uint64_t genesis_account_balance = common::kGenesisFoundationMaxZjc / pool_index_map_.size();
     uint64_t all_balance = 0llu;
+    pools::protobuf::ToTxHeights to_heights;
     for (auto iter = pool_index_map_.begin(); iter != pool_index_map_.end(); ++iter) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
@@ -848,6 +860,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(uint32_t net_id) {
         }
 
         all_balance += account_ptr->balance();
+        init_heights.add_heights(0);
     }
 
     if (all_balance != common::kGenesisFoundationMaxZjc) {
@@ -856,6 +869,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(uint32_t net_id) {
         return kInitError;
     }
 
+    prefix_db_->SaveStatisticLatestHeihgts(net_id, init_heights);
     return GenerateShardSingleBlock(net_id);
 }
 

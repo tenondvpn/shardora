@@ -177,8 +177,13 @@ void ShardStatistic::OnNewBlock(const std::shared_ptr<block::protobuf::Block>& b
 void ShardStatistic::HandleStatisticBlock(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx) {
-    
-
+    tx_heights_ptr_ = std::make_shared<pools::protobuf::ToTxHeights>();
+    auto& to_heights = *tx_heights_ptr_;
+    if (!prefix_db_->GetStatisticLatestHeihgts(
+            common::GlobalInfo::Instance()->network_id(),
+            &to_heights)) {
+        ZJC_FATAL("load init statistic heights failed!");
+    }
 }
 
 void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
