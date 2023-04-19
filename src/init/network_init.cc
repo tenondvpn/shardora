@@ -133,7 +133,14 @@ int NetworkInit::Init(int argc, char** argv) {
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3);
-    block_mgr_->Init(account_mgr_, db_, pools_mgr_, security_->GetAddress(), new_db_cb);
+    shard_statistic_ = std::make_shared<pools::ShardStatistic>(elect_mgr_);
+    block_mgr_->Init(
+        account_mgr_,
+        db_,
+        pools_mgr_,
+        shard_statistic_,
+        security_->GetAddress(),
+        new_db_cb);
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     bft_mgr_ = std::make_shared<consensus::BftManager>();
     auto bft_init_res = bft_mgr_->Init(
@@ -162,7 +169,6 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
-    shard_statistic_ = std::make_shared<pools::ShardStatistic>(elect_mgr_);
     block_mgr_->LoadLatestBlocks(common::GlobalInfo::Instance()->message_handler_thread_count());
     transport::TcpTransport::Instance()->Start(false);
     if (InitHttpServer() != kInitSuccess) {
