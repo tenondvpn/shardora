@@ -57,8 +57,8 @@ void RootZbft::RootStatistic(block::protobuf::Block& zjc_block) {
     }
 
     auto iter = tx_map.begin();
-    if (iter->second->msg_ptr->header.tx_proto().step() != pools::protobuf::kRootCreateAddressCrossSharding) {
-        ZJC_ERROR("tx is not timeblock tx");
+    if (iter->second->msg_ptr->header.tx_proto().step() != pools::protobuf::kStatistic) {
+        ZJC_ERROR("tx is not statistic tx");
         return;
     }
 
