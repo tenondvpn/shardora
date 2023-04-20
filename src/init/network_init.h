@@ -15,6 +15,7 @@
 #include "http/http_server.h"
 #include "init/command.h"
 #include "init/http_handler.h"
+#include "pools/root_statistic.h"
 #include "pools/shard_statistic.h"
 #include "pools/tx_pool_manager.h"
 #include "protos/elect.pb.h"
@@ -82,6 +83,7 @@ private:
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
     std::shared_ptr<pools::ShardStatistic> shard_statistic_ = nullptr;
+    std::shared_ptr<pools::RootStatistic> root_statistic_ = nullptr;
     http::HttpServer http_server_;
     HttpHandler http_handler_;
     uint8_t main_thread_idx_ = 255;

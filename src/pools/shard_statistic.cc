@@ -21,7 +21,11 @@ void ShardStatistic::Init() {
     }
 }
 
-void ShardStatistic::OnNewBlock(const block::protobuf::Block& block) {
+void ShardStatistic::OnNewBlock(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block_ptr,
+        db::DbWriteBatch& db_batch) {
+    auto& block = *block_ptr;
     if (block.network_id() != common::GlobalInfo::Instance()->network_id()) {
         ZJC_DEBUG("network invalid %u, %u",
             block.network_id(), common::GlobalInfo::Instance()->network_id());

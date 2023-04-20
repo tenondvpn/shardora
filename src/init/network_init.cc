@@ -134,11 +134,13 @@ int NetworkInit::Init(int argc, char** argv) {
         std::placeholders::_2,
         std::placeholders::_3);
     shard_statistic_ = std::make_shared<pools::ShardStatistic>(elect_mgr_, db_, pools_mgr_);
+    root_statistic_ = std::make_shared<pools::RootStatistic>(elect_mgr_, db_, pools_mgr_);
     block_mgr_->Init(
         account_mgr_,
         db_,
         pools_mgr_,
         shard_statistic_,
+        root_statistic_,
         security_->GetAddress(),
         new_db_cb);
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
@@ -171,6 +173,7 @@ int NetworkInit::Init(int argc, char** argv) {
 
     block_mgr_->LoadLatestBlocks(common::GlobalInfo::Instance()->message_handler_thread_count());
     shard_statistic_->Init();
+    root_statistic_->Init();
     transport::TcpTransport::Instance()->Start(false);
     if (InitHttpServer() != kInitSuccess) {
         INIT_ERROR("InitHttpServer failed!");
@@ -695,7 +698,7 @@ void NetworkInit::DbNewBlockCallback(
         }
     }
 
-    shard_statistic_->OnNewBlock(*block);
+    shard_statistic_->OnNewBlock(thread_idx, *block, db_batch);
     ZJC_DEBUG("DbNewBlockCallback new block height: %lu, tx size: %u, step: %d, %d",
         block->height(), block->tx_list_size(),
         block->tx_list(0).step(), pools::protobuf::kConsensusRootElectShard);
@@ -717,6 +720,7 @@ void NetworkInit::HandleTimeBlock(
             tm_block_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             bls_mgr_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             shard_statistic_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
+            root_statistic_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             block_mgr_->OnTimeBlock(thread_idx, data_arr[0], block->height(), data_arr[1]);
             ZJC_DEBUG("new time block called height: %lu, tm: %lu", block->height(), data_arr[1]);
             break;
@@ -755,6 +759,7 @@ void NetworkInit::HandleElectionBlock(
     vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     bls_mgr_->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
     shard_statistic_->OnNewElectBlock(sharding_id, elect_height);
+    root_statistic_->OnNewElectBlock(sharding_id, elect_height);
     network::UniversalManager::Instance()->OnNewElectBlock(sharding_id, elect_height, members);
 }
 

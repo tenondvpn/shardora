@@ -35,7 +35,10 @@ public:
     ~ShardStatistic() {}
     void Init();
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height);
-    void OnNewBlock(const block::protobuf::Block& block);
+    void OnNewBlock(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block,
+        db::DbWriteBatch& db_batch);
     void GetStatisticInfo(
         uint64_t timeblock_height,
         block::protobuf::StatisticInfo* statistic_info);

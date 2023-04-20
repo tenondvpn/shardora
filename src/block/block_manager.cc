@@ -7,8 +7,9 @@
 #include "common/time_utils.h"
 #include "db/db.h"
 #include "network/route.h"
-#include "pools/tx_pool_manager.h"
+#include "pools/root_statistic.h"
 #include "pools/shard_statistic.h"
+#include "pools/tx_pool_manager.h"
 #include "protos/block.pb.h"
 #include "protos/elect.pb.h"
 #include "transport/processor.h"
@@ -31,6 +32,7 @@ int BlockManager::Init(
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<pools::TxPoolManager>& pools_mgr,
         std::shared_ptr<pools::ShardStatistic>& statistic_mgr,
+        std::shared_ptr<pools::RootStatistic>& root_statistic_mgr,
         const std::string& local_id,
         DbBlockCallback new_block_callback) {
     account_mgr_ = account_mgr;
@@ -42,7 +44,7 @@ int BlockManager::Init(
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(
         db_, local_id, max_consensus_sharding_id_, pools_mgr_);
-    statistic_mgr_ = statistic_mgr;
+    root_statistic_mgr_ = root_statistic_mgr;
     if (common::GlobalInfo::Instance()->for_ck_server()) {
         ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "");
         ZJC_DEBUG("support ck");
@@ -186,7 +188,7 @@ void BlockManager::HandleStatisticTx(
         return;
     }
 
-
+    root_statistic_mgr_->OnNewBlock(thread_idx, block, tx, db_batch);
 }
 
 void BlockManager::HandleNormalToTx(

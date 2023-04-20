@@ -21,7 +21,11 @@ void RootStatistic::Init() {
     }
 }
 
-void RootStatistic::OnNewBlock(const block::protobuf::Block& block) {
+void RootStatistic::OnNewBlock(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
     uint32_t consistent_pool_index = common::kInvalidPoolIndex;
     for (int32_t i = 0; i < block.tx_list_size(); ++i) {
         if (block.tx_list(i).status() != consensus::kConsensusSuccess) {
@@ -49,7 +53,6 @@ void RootStatistic::HandleStatisticBlock(
         return;
     }
 
-    // members
     pools::protobuf::ElectStatistic elect_statistic;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kShardStatistic) {
@@ -70,6 +73,13 @@ void RootStatistic::HandleStatisticBlock(
         return;
     }
 
+    auto iter = latest_elect_height_map_.find(block.network_id());
+    if (iter == latest_elect_height_map_.end()) {
+        assert(false);
+        return;
+    }
+
+    uint32_t latest_elect_heihgt = iter->second;
     for (int32_t i = 0; i < elect_statistic.statistics_size(); ++i) {
         auto members = elect_mgr_->GetNetworkMembersWithHeight(
             elect_statistic.statistics(i).elect_height(),
@@ -94,10 +104,15 @@ void RootStatistic::HandleStatisticBlock(
             }
 
             iter->second.tmp_tx_count += elect_statistic.statistics(i).tx_count(member_idx);
+            if (elect_statistic.statistics(i).elect_height() == latest_elect_heihgt) {
+                iter->second.epoch_tx_count += elect_statistic.statistics(i).tx_count(member_idx);
+            }
         }
     }
 
     shard_iter->second.insert(block.height());
+    ZJC_DEBUG("success handle statistic block sharding: %u, pool: %u, height: %lu",
+        block.network_id(), block.pool_index(), block.height());
 }
 
 void RootStatistic::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height) {
