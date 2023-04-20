@@ -21,11 +21,7 @@ void ShardStatistic::Init() {
     }
 }
 
-void ShardStatistic::OnNewBlock(
-        uint8_t thread_idx,
-        const std::shared_ptr<block::protobuf::Block>& block_ptr,
-        db::DbWriteBatch& db_batch) {
-    auto& block = *block_ptr;
+void ShardStatistic::OnNewBlock(const block::protobuf::Block& block_ptr) {
     if (block.network_id() != common::GlobalInfo::Instance()->network_id()) {
         ZJC_DEBUG("network invalid %u, %u",
             block.network_id(), common::GlobalInfo::Instance()->network_id());
@@ -340,7 +336,6 @@ void ShardStatistic::LoadLatestHeights() {
         pool_consensus_heihgts_[i] = this_net_heights[i];
     }
 
-    db::DbWriteBatch db_batch;
     for (uint32_t i = 0; i < max_pool_index; ++i) {
         uint64_t pool_latest_height = pools_mgr_->latest_height(i);
         bool consensus_stop = false;
