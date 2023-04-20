@@ -39,6 +39,10 @@ void RootStatistic::OnNewBlock(
     }
 }
 
+void RootStatistic::LoadLatestHeights() {
+
+}
+
 void RootStatistic::HandleStatisticBlock(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx) {
