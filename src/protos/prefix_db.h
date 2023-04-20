@@ -1042,6 +1042,17 @@ public:
         return true;
     }
 
+    bool ExistsStatisticedShardingHeight(
+            uint32_t sharding_id,
+            uint64_t tm_height) {
+        std::string key;
+        key.reserve(64);
+        key.append(kRootStatisticedPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        key.append((char*)&tm_height, sizeof(tm_height));
+        return db_->Exist(key);
+    }
+
 private:
     void DumpGidToDb(uint8_t thread_idx) {
         if (!dumped_gid_) {

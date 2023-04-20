@@ -115,6 +115,8 @@ void BftManager::RegisterCreateTxCallbacks() {
         std::bind(&BftManager::CreateToTx, this, std::placeholders::_1));
     block_mgr_->SetCreateStatisticTxFunction(
         std::bind(&BftManager::CreateStatisticTx, this, std::placeholders::_1));
+    block_mgr_->SetCreateElectTxFunction(
+        std::bind(&BftManager::CreateElectTx, this, std::placeholders::_1));
     tm_block_mgr_->SetCreateTmTxFunction(
         std::bind(&BftManager::CreateTimeblockTx, this, std::placeholders::_1));
 }

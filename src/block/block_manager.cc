@@ -560,27 +560,10 @@ void BlockManager::HandleStatisticBlock(
     if (create_elect_tx_cb_ == nullptr) {
         return;
     }
-
-    assert(block.pool_index() == 0);
-    auto shard_iter = shard_timeblock_statistic_.find(block.network_id());
-    if (shard_iter == shard_timeblock_statistic_.end()) {
-        shard_timeblock_statistic_[block.network_id()] =
-            std::map<uint64_t, std::shared_ptr<pools::protobuf::ElectStatistic>>();
-        shard_iter = shard_timeblock_statistic_.find(block.network_id());
-    }
-
-    auto timeblock_iter = shard_iter->second.find(block.timeblock_height());
-    if (timeblock_iter != shard_iter->second.end()) {
-        return;
-    }
-
-    auto elect_statistic_ptr = std::make_shared<pools::protobuf::ElectStatistic>();
-    auto& elect_statistic = *elect_statistic_ptr;
-    if (prefix_db_->GetStatisticedShardingHeight(
+   
+    if (prefix_db_->ExistsStatisticedShardingHeight(
             block.network_id(),
-            block.timeblock_height(),
-            &elect_statistic)) {
-        shard_iter->second[block.timeblock_height()] = elect_statistic_ptr;
+            block.timeblock_height())) {
         return;
     }
 
@@ -603,7 +586,6 @@ void BlockManager::HandleStatisticBlock(
         return;
     }
 
-    shard_iter->second[block.timeblock_height()] = elect_statistic_ptr;
     prefix_db_->SaveStatisticedShardingHeight(
         block.network_id(),
         block.timeblock_height(),

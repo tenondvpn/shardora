@@ -13,6 +13,7 @@
 #include "consensus/zbft/contract_gas_prepayment.h"
 #include "consensus/zbft/contract_user_call.h"
 #include "consensus/zbft/contract_user_create_call.h"
+#include "consensus/zbft/elect_tx_item.h"
 #include "consensus/zbft/from_tx_item.h"
 #include "consensus/zbft/root_to_tx_item.h"
 #include "consensus/zbft/statistic_tx_item.h"
@@ -157,6 +158,10 @@ private:
             vss_mgr_,
             account_mgr_,
             security_ptr_);
+    }
+
+    pools::TxItemPtr CreateElectTx(const transport::MessagePtr& msg_ptr) {
+        return std::make_shared<ElectTxItem>(msg_ptr, account_mgr_, security_ptr_);
     }
 
     pools::TxItemPtr CreateContractUserCreateCallTx(const transport::MessagePtr& msg_ptr) {
