@@ -50,11 +50,6 @@ public:
     int Join(uint8_t thread_idx, uint32_t network_id);
     int Quit(uint32_t network_id);
     uint64_t latest_height(uint32_t network_id);
-    int CreateElectTransaction(
-        uint32_t shard_netid,
-        uint64_t final_statistic_block_height,
-        const block::protobuf::BlockTx& src_tx_info,
-        pools::protobuf::TxMessage& tx_info);
     int BackupCheckElectionBlockTx(
         const block::protobuf::BlockTx& local_tx_info,
         const block::protobuf::BlockTx& tx_info);
