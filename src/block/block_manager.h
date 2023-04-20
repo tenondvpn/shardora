@@ -22,7 +22,6 @@ namespace zjchain {
 namespace pools{
     class TxPoolManager;
     class ShardStatistic;
-    class RootStatistic;
 }
 
 namespace block {
@@ -37,7 +36,6 @@ public:
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<pools::TxPoolManager>& pools_mgr,
         std::shared_ptr<pools::ShardStatistic>& statistic_mgr,
-        std::shared_ptr<pools::RootStatistic>& root_statistic_mgr,
         const std::string& local_id,
         DbBlockCallback new_block_callback);
     void NetworkNewBlock(
@@ -73,11 +71,16 @@ public:
         create_statistic_tx_cb_ = func;
     }
 
+    void SetCreateElectTxFunction(pools::CreateConsensusItemFunction func) {
+        create_elect_tx_cb_ = func;
+    }
+
     void CreateToTx(uint8_t thread_idx);
     void CreateStatisticTx(uint8_t thread_idx);
     void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
     pools::TxItemPtr GetToTx(uint32_t pool_index, bool leader);
     pools::TxItemPtr GetStatisticTx(bool leader);
+    pools::TxItemPtr GetElectTx(bool leader);
     void LoadLatestBlocks(uint8_t thread_idx);
 
 private:
@@ -113,6 +116,10 @@ private:
         uint64_t height,
         pools::protobuf::ToTxMessage& to_txs);
     void CreateNewAddress();
+    void HandleStatisticBlock(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
 
     static const uint64_t kCreateToTxPeriodMs = 10000u;
 
@@ -129,17 +136,21 @@ private:
     std::string local_id_;
     std::shared_ptr<ToTxsItem> to_txs_[network::kConsensusShardEndNetworkId] = { nullptr };
     std::shared_ptr<ToTxsItem> shard_statistic_tx_ = nullptr;
+    std::unordered_map<uint32_t, std::shared_ptr<ToTxsItem>> shard_elect_tx_ = nullptr;
     pools::CreateConsensusItemFunction create_to_tx_cb_ = nullptr;
     pools::CreateConsensusItemFunction create_statistic_tx_cb_ = nullptr;
+    pools::CreateConsensusItemFunction create_elect_tx_cb_ = nullptr;
     uint32_t prev_pool_index_ = network::kRootCongressNetworkId;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
     transport::MessagePtr to_txs_msg_ = nullptr;
     uint64_t prev_to_txs_tm_us_ = 0;
     DbBlockCallback new_block_callback_ = nullptr;
     std::shared_ptr<pools::ShardStatistic> statistic_mgr_ = nullptr;
-    std::shared_ptr<pools::RootStatistic> root_statistic_mgr_ = nullptr;
     uint64_t latest_timeblock_height_ = 0;
     uint64_t consensused_timeblock_height_ = 0;
+    std::unordered_map<uint32_t, std::map<
+        uint64_t,
+        std::shared_ptr<pools::protobuf::ElectStatistic>>> shard_timeblock_statistic_;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

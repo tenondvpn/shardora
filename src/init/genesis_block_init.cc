@@ -13,7 +13,6 @@
 #include "elect/elect_utils.h"
 #include "network/network_utils.h"
 #include "init/init_utils.h"
-#include "pools/root_statistic.h"
 #include "pools/shard_statistic.h"
 #include "pools/tx_pool_manager.h"
 #include "protos/zbft.pb.h"
@@ -49,9 +48,8 @@ int GenesisBlockInit::CreateGenesisBlocks(
     int res = kInitSuccess;
     std::shared_ptr<pools::TxPoolManager> pools_mgr = nullptr;
     std::shared_ptr<pools::ShardStatistic> statistic_mgr = nullptr;
-    std::shared_ptr<pools::RootStatistic> root_statistic_mgr = nullptr;
     account_mgr_->Init(1, db_, pools_mgr);
-    block_mgr_->Init(account_mgr_, db_, pools_mgr, statistic_mgr, root_statistic_mgr, "", nullptr);
+    block_mgr_->Init(account_mgr_, db_, pools_mgr, statistic_mgr, "", nullptr);
     if (net_id == network::kRootCongressNetworkId) {
         common::GlobalInfo::Instance()->set_network_id(network::kRootCongressNetworkId);
         res = CreateRootGenesisBlocks(root_genesis_nodes, cons_genesis_nodes);

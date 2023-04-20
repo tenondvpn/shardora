@@ -18,6 +18,9 @@ namespace zjchain {
 
 namespace block {
 
+static const std::string kShardElectPrefix = common::Encode::HexDecode(
+    "227a252b30589b8ed984cf437c475b069d0597fc6d51ec6570e95a681ffa9fe2");
+
 BlockManager::BlockManager() {
 }
 
@@ -32,7 +35,6 @@ int BlockManager::Init(
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<pools::TxPoolManager>& pools_mgr,
         std::shared_ptr<pools::ShardStatistic>& statistic_mgr,
-        std::shared_ptr<pools::RootStatistic>& root_statistic_mgr,
         const std::string& local_id,
         DbBlockCallback new_block_callback) {
     account_mgr_ = account_mgr;
@@ -44,7 +46,6 @@ int BlockManager::Init(
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(
         db_, local_id, max_consensus_sharding_id_, pools_mgr_);
-    root_statistic_mgr_ = root_statistic_mgr;
     if (common::GlobalInfo::Instance()->for_ck_server()) {
         ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "");
         ZJC_DEBUG("support ck");
@@ -192,7 +193,7 @@ void BlockManager::HandleStatisticTx(
         return;
     }
 
-    root_statistic_mgr_->OnNewBlock(thread_idx, block, tx, db_batch);
+    HandleStatisticBlock(thread_idx, block, tx, db_batch);
 }
 
 void BlockManager::HandleNormalToTx(
@@ -553,6 +554,91 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
     ZJC_DEBUG("success add statistic tx: %s", common::Encode::HexEncode(statistic_hash).c_str());
 }
 
+void BlockManager::HandleStatisticBlock(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
+    if (create_elect_tx_cb_ == nullptr) {
+        return;
+    }
+
+    assert(block.pool_index() == 0);
+    auto shard_iter = shard_timeblock_statistic_.find(block.network_id());
+    if (shard_iter == shard_timeblock_statistic_.end()) {
+        shard_timeblock_statistic_[block.network_id()] =
+            std::unordered_map<uint64_t, std::shared_ptr<pools::protobuf::ElectStatistic>>();
+        shard_iter = shard_timeblock_statistic_.find(block.network_id());
+    }
+
+    auto timeblock_iter = shard_iter->second.find(block.timeblock_height());
+    if (timeblock_iter != shard_iter->second.end()) {
+        return;
+    }
+
+    auto elect_statistic_ptr = std::make_shared<pools::protobuf::ElectStatistic>();
+    auto& elect_statistic = *elect_statistic_ptr;
+    if (prefix_db_->GetStatisticedShardingHeight(
+            block.network_id(),
+            block.timeblock_height(),
+            &elect_statistic)) {
+        shard_iter->second[block.timeblock_height()] = elect_statistic_ptr;
+        return;
+    }
+
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        if (tx.storages(i).key() == protos::kShardStatistic) {
+            std::string val;
+            if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+                return;
+            }
+
+            if (!elect_statistic.ParseFromString(val)) {
+                return;
+            }
+
+            break;
+        }
+    }
+
+    if (elect_statistic.statistics_size() <= 0) {
+        return;
+    }
+
+    shard_iter->second[block.timeblock_height()] = elect_statistic_ptr;
+    prefix_db_->SaveStatisticedShardingHeight(
+        block.network_id(),
+        block.timeblock_height(),
+        elect_statistic,
+        db_batch);
+    ZJC_DEBUG("success handle statistic block sharding: %u, pool: %u, height: %lu",
+        block.network_id(), block.pool_index(), block.timeblock_height());
+    // create elect transaction now for block.network_id
+    auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto* tx = new_msg_ptr->header.mutable_tx_proto();
+    tx->set_key(protos::kShardElection);
+    char data[16];
+    uint64_t* tmp = (uint64_t*)data;
+    tmp[0] = block.network_id();
+    tmp[1] = block.timeblock_height();
+    tx->set_value(std::string(data, sizeof(data)));
+    tx->set_pubkey("");
+    tx->set_to(common::kRootChainElectionBlockTxAddress);
+    tx->set_step(pools::protobuf::kConsensusRootElectShard);
+    auto gid = common::Hash::keccak256(kShardElectPrefix + tx->value());
+    tx->set_gas_limit(0);
+    tx->set_amount(0);
+    tx->set_gas_price(common::kBuildinTransactionGasPrice);
+    tx->set_gid(gid);
+    auto shard_elect_tx = std::make_shared<ToTxsItem>();
+    new_msg_ptr->address_info = account_mgr_->GetStatisticAddressInfo(0);
+    shard_elect_tx->tx_ptr = create_elect_tx_cb_(new_msg_ptr);
+    shard_elect_tx->tx_ptr->time_valid += 3000000lu;
+    shard_elect_tx->tx_hash = statistic_hash;
+    shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + 20000lu;
+    shard_elect_tx_[block.network_id()] = shard_elect_tx;
+    ZJC_DEBUG("success add elect tx: %u, %lu", block.network_id(), block.timeblock_height());
+}
+
 void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool recreate) {
     if (create_to_tx_cb_ == nullptr || msg_ptr == nullptr) {
         return;
@@ -629,6 +715,24 @@ pools::TxItemPtr BlockManager::GetStatisticTx(bool leader) {
 
     return nullptr;
 }
+
+pools::TxItemPtr BlockManager::GetElectTx(bool leader) {
+    for (auto iter = shard_elect_tx_.begin(); iter != shard_elect_tx_.end(); ++iter) {
+        auto shard_elect_tx = iter->second;
+        if (shard_elect_tx != nullptr && !shard_elect_tx->tx_ptr->in_consensus) {
+            auto now_tm = common::TimeUtils::TimestampUs();
+            if (leader && shard_elect_tx->tx_ptr->time_valid > now_tm) {
+                continue;
+            }
+
+            shard_elect_tx->tx_ptr->in_consensus = true;
+            return shard_elect_tx->tx_ptr;
+        }
+    }
+
+    return nullptr;
+}
+
 
 pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
     auto now_tm = common::TimeUtils::TimestampUs();
