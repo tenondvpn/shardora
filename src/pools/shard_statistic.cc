@@ -104,7 +104,12 @@ void ShardStatistic::HandleStatisticBlock(
                 common::GlobalInfo::Instance()->network_id(),
                 elect_statistic.heights());
             tx_heights_ptr_ = std::make_shared<pools::protobuf::ToTxHeights>(elect_statistic.heights());
-            ZJC_DEBUG("success change min elect statistic heights.");
+            std::string init_consensus_height;
+            for (uint32_t i = 0; i < max_pool_index; ++i) {
+                init_consensus_height += std::to_string(tx_heights_ptr_->heights(i)) + " ";
+            }
+
+            ZJC_DEBUG("success change min elect statistic heights: %s", init_consensus_height.c_str());
             break;
         }
     }
