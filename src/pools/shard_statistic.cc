@@ -23,7 +23,8 @@ void ShardStatistic::Init() {
 
 void ShardStatistic::OnNewBlock(const block::protobuf::Block& block) {
     if (block.network_id() != common::GlobalInfo::Instance()->network_id()) {
-        ZJC_DEBUG("network invalid!");
+        ZJC_DEBUG("network invalid %u, %u",
+            block.network_id(), common::GlobalInfo::Instance()->network_id());
         return;
     }
 
@@ -75,11 +76,18 @@ void ShardStatistic::HandleStatisticBlock(
 
 void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
     if (block.electblock_height() == 0) {
+        ZJC_DEBUG("block elect height zero error");
         return;
     }
 
-    auto hiter = node_height_count_map_.find(block.height());
-    if (hiter != node_height_count_map_.end()) {
+    if (block.pool_index() >= common::kInvalidPoolIndex) {
+        ZJC_ERROR("block po0l index error: %u", block.pool_index());
+        assert(false);
+        return;
+    }
+
+    auto hiter = node_height_count_map_[block.pool_index()].find(block.height());
+    if (hiter != node_height_count_map_[block.pool_index()].end()) {
         return;
     }
 
@@ -132,7 +140,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
         statistic_info_ptr->node_tx_count_map[id] += block.tx_list_size();
     }
 
-    node_height_count_map_[block.height()] = statistic_info_ptr;
+    node_height_count_map_[block.pool_index()][block.height()] = statistic_info_ptr;
     ZJC_DEBUG("success add statistic block: net; %u, pool: %u, height: %lu",
         block.network_id(), block.pool_index(), block.height());
 }

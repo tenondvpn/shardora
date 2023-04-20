@@ -68,7 +68,7 @@ private:
     uint64_t latest_heights_[common::kInvalidPoolIndex] = { 0 };
     uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
     uint64_t pool_consensus_heihgts_[common::kInvalidPoolIndex] = { 0 };
-    std::map<uint64_t, std::shared_ptr<HeightStatisticInfo>> node_height_count_map_;
+    std::map<uint64_t, std::shared_ptr<HeightStatisticInfo>> node_height_count_map_[common::kInvalidPoolIndex];
     std::unordered_map<uint32_t, std::shared_ptr<common::Point>> point_ptr_map_;
     std::shared_ptr<pools::protobuf::ToTxHeights> tx_heights_ptr_ = nullptr;
     std::unordered_set<uint64_t> added_heights_[common::kInvalidPoolIndex];
