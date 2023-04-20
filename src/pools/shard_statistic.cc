@@ -89,10 +89,12 @@ void ShardStatistic::HandleStatisticBlock(
 
             for (int32_t height_idx = 0;
                     height_idx < elect_statistic.heights().heights_size(); ++height_idx) {
-                for (auto iter = node_height_count_map_[i].begin();
-                        iter != node_height_count_map_[i].end();) {
+                for (auto iter = node_height_count_map_[height_idx].begin();
+                        iter != node_height_count_map_[height_idx].end();) {
                     if (iter->first <= elect_statistic.heights().heights(height_idx)) {
-                        node_height_count_map_[i].erase(iter++);
+                        node_height_count_map_[height_idx].erase(iter++);
+                        ZJC_DEBUG("erase handled height pool: %u, height: %lu, handled_height: %lu",
+                            height_idx, iter->first, elect_statistic.heights().heights(height_idx));
                         continue;
                     }
 
