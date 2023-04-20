@@ -96,6 +96,10 @@ void ShardStatistic::HandleStatisticBlock(
                 }
             }
 
+            prefix_db_->SaveStatisticLatestHeihgts(
+                common::GlobalInfo::Instance()->network_id(),
+                elect_statistic.heights());
+            tx_heights_ptr_ = std::make_shared<pools::protobuf::ToTxHeights>(elect_statistic.heights());
             break;
         }
     }
