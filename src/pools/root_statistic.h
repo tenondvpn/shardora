@@ -56,7 +56,7 @@ private:
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::unordered_map<uint32_t, std::set<uint64_t>> handled_sharding_statistic_map_;
-    std::unordered_map<uint32_t, uint64_t> latest_elect_height_map_ = 0;
+    std::unordered_map<uint32_t, uint64_t> latest_elect_height_map_;
     std::unordered_map<std::string, RootStatisticItem> node_tx_count_map_;
 
     DISALLOW_COPY_AND_ASSIGN(RootStatistic);

@@ -89,11 +89,11 @@ void RootStatistic::HandleStatisticBlock(
             auto& id = (*members)[member_idx]->id;
             auto iter = node_tx_count_map_.find(id);
             if (iter == node_tx_count_map_.end()) {
-                node_tx_count_map_[id] = 0;
+                node_tx_count_map_[id] = { 0, 0, 0 };
                 iter = node_tx_count_map_.find(id);
             }
 
-            iter->second += elect_statistic.statistics(i).tx_count(member_idx);
+            iter->second.tmp_tx_count += elect_statistic.statistics(i).tx_count(member_idx);
         }
     }
 
