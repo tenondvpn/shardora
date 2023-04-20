@@ -1904,10 +1904,33 @@ void BftManager::LeaderBroadcastBlock(
         BroadcastLocalTosBlock(thread_index, block);
         break;
     case pools::protobuf::kStatistic:
+        BroadcastStatisticBlock(thread_index, block);
         break;
     default:
         break;
     }
+}
+
+void BftManager::BroadcastStatisticBlock(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block_item) {
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+        return;
+    }
+
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->thread_idx = thread_idx;
+    auto& msg = msg_ptr->header;
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    msg.set_type(common::kPoolsMessage);
+    dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
+    msg.set_des_dht_key(dht_key.StrKey());
+    auto& cross_statistic = *msg.mutable_cross_statistic();
+    *cross_statistic.mutable_block() = *block_item;
+    auto* brdcast = msg.mutable_broadcast();
+    network::Route::Instance()->Send(msg_ptr);
+    ZJC_DEBUG("success broadcast cross statistic height: %lu, sharding id: %u",
+        block_item->height(), network::kRootCongressNetworkId);
 }
 
 void BftManager::BroadcastLocalTosBlock(

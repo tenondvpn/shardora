@@ -52,4 +52,5 @@ message Header {
     optional sync.protobuf.SyncMessage sync_proto = 20;
     optional vss.protobuf.VssMessage vss_proto = 21;
     optional block.protobuf.CrossShardingTosMessage cross_tos = 22;
+    optional block.protobuf.CrossShardingStatisticMessage cross_statistic = 23;
 }

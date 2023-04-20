@@ -173,6 +173,10 @@ message CrossShardingTosMessage {
     optional Block block = 1;
 }
 
+message CrossShardingStatisticMessage {
+    optional Block block = 1;
+}
+
 message BlockMessage {
     optional GetTxBlockRequest block_req = 1;
     optional GetTxBlockResponse block_res = 2;

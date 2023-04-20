@@ -124,6 +124,9 @@ private:
     void BroadcastLocalTosBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block);
+    void BroadcastStatisticBlock(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block);
     void RegisterCreateTxCallbacks();
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
