@@ -136,7 +136,7 @@ private:
     std::string local_id_;
     std::shared_ptr<ToTxsItem> to_txs_[network::kConsensusShardEndNetworkId] = { nullptr };
     std::shared_ptr<ToTxsItem> shard_statistic_tx_ = nullptr;
-    std::unordered_map<uint32_t, std::shared_ptr<ToTxsItem>> shard_elect_tx_ = nullptr;
+    std::unordered_map<uint32_t, std::shared_ptr<ToTxsItem>> shard_elect_tx_;
     pools::CreateConsensusItemFunction create_to_tx_cb_ = nullptr;
     pools::CreateConsensusItemFunction create_statistic_tx_cb_ = nullptr;
     pools::CreateConsensusItemFunction create_elect_tx_cb_ = nullptr;
