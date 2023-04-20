@@ -297,7 +297,7 @@ void ElectPoolManager::UpdateWaitingNodes(
 
 void ElectPoolManager::GetInvalidLeaders(
         uint32_t network_id,
-        const elect::protobuf::ElectStatistic& statistic_info,
+        const pools::protobuf::ElectStatistic& statistic_info,
         std::map<int32_t, uint32_t>* nodes) {
 //     for (int32_t i = 0; i < statistic_info.elect_statistic_size(); ++i) {
 //         if (elect_mgr_->latest_height(network_id) !=
@@ -330,7 +330,7 @@ struct CompareItem {
 
 void ElectPoolManager::GetMiniTopNInvalidNodes(
         uint32_t network_id,
-        const elect::protobuf::ElectStatistic& statistic_info,
+        const pools::protobuf::ElectStatistic& statistic_info,
         uint32_t count,
         std::map<int32_t, uint32_t>* nodes) {
 //     std::priority_queue<KItemType, std::vector<KItemType>, CompareItem> kqueue;
@@ -371,7 +371,7 @@ void ElectPoolManager::GetMiniTopNInvalidNodes(
 }
 
 int ElectPoolManager::GetAllBloomFilerAndNodes(
-        const elect::protobuf::ElectStatistic& statistic_info,
+        const pools::protobuf::ElectStatistic& statistic_info,
         uint32_t shard_netid,
         common::BloomFilter* cons_all,
         common::BloomFilter* cons_weed_out,

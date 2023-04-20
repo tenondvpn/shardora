@@ -10,6 +10,7 @@
 #include "elect/node_history_credit.h"
 #include "protos/block.pb.h"
 #include "protos/elect.pb.h"
+#include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
 #include "security/security.h"
 
@@ -62,7 +63,7 @@ private:
         common::BloomFilter* pick_in,
         elect::protobuf::ElectBlock* ec_block);
     int GetAllBloomFilerAndNodes(
-        const elect::protobuf::ElectStatistic& statistic_info,
+        const pools::protobuf::ElectStatistic& statistic_info,
         uint32_t shard_netid,
         common::BloomFilter* cons_all,
         common::BloomFilter* cons_weed_out,
@@ -84,12 +85,12 @@ private:
         std::vector<NodeDetailPtr>& src_nodes);
     void GetMiniTopNInvalidNodes(
         uint32_t network_id,
-        const elect::protobuf::ElectStatistic& statistic_info,
+        const pools::protobuf::ElectStatistic& statistic_info,
         uint32_t count,
         std::map<int32_t, uint32_t>* nodes);
     void GetInvalidLeaders(
         uint32_t network_id,
-        const elect::protobuf::ElectStatistic& statistic_info,
+        const pools::protobuf::ElectStatistic& statistic_info,
         std::map<int32_t, uint32_t>* nodes);
     int SelectLeader(
         uint32_t network_id,
