@@ -75,11 +75,15 @@ void ShardStatistic::HandleStatisticBlock(
         if (tx.storages(i).key() == protos::kShardStatistic) {
             std::string val;
             if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+                ZJC_ERROR("get statistic val failed: %s",
+                    common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
                 return;
             }
 
             pools::protobuf::ElectStatistic elect_statistic;
             if (!elect_statistic.ParseFromString(val)) {
+                ZJC_ERROR("get statistic val failed: %s",
+                    common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
                 return;
             }
 
@@ -100,6 +104,7 @@ void ShardStatistic::HandleStatisticBlock(
                 common::GlobalInfo::Instance()->network_id(),
                 elect_statistic.heights());
             tx_heights_ptr_ = std::make_shared<pools::protobuf::ToTxHeights>(elect_statistic.heights());
+            ZJC_DEBUG("success change min elect statistic heights.");
             break;
         }
     }
