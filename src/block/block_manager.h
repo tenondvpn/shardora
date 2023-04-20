@@ -67,6 +67,10 @@ public:
         create_to_tx_cb_ = func;
     }
 
+    void SetCreateStatisticTxFunction(pools::CreateConsensusItemFunction func) {
+        create_statistic_tx_cb_ = func;
+    }
+
     void CreateToTx(uint8_t thread_idx);
     void CreateStatisticTx(uint8_t thread_idx);
     void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
@@ -119,6 +123,7 @@ private:
     std::shared_ptr<ToTxsItem> to_txs_[network::kConsensusShardEndNetworkId] = { nullptr };
     std::shared_ptr<ToTxsItem> shard_statistic_tx_ = nullptr;
     pools::CreateConsensusItemFunction create_to_tx_cb_ = nullptr;
+    pools::CreateConsensusItemFunction create_statistic_tx_cb_ = nullptr;
     uint32_t prev_pool_index_ = network::kRootCongressNetworkId;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
     transport::MessagePtr to_txs_msg_ = nullptr;

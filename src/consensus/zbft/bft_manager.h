@@ -15,6 +15,7 @@
 #include "consensus/zbft/contract_user_create_call.h"
 #include "consensus/zbft/from_tx_item.h"
 #include "consensus/zbft/root_to_tx_item.h"
+#include "consensus/zbft/statistic_tx_item.h"
 #include "consensus/zbft/time_block_tx.h"
 #include "consensus/zbft/to_tx_item.h"
 #include "consensus/zbft/to_tx_local_item.h"
@@ -131,6 +132,10 @@ private:
 
     pools::TxItemPtr CreateToTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ToTxItem>(msg_ptr, account_mgr_, security_ptr_);
+    }
+
+    pools::TxItemPtr CreateStatisticTx(const transport::MessagePtr& msg_ptr) {
+        return std::make_shared<StatisticTxItem>(msg_ptr, account_mgr_, security_ptr_);
     }
 
     pools::TxItemPtr CreateToTxLocal(const transport::MessagePtr& msg_ptr) {

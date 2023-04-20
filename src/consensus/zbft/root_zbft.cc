@@ -38,6 +38,9 @@ void RootZbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) 
         case pools::protobuf::kRootCreateAddressCrossSharding:
             RootCreateAddressCrossSharding(zjc_block);
             break;
+        case pools::protobuf::kStatistic:
+            RootStatistic(zjc_block);
+            break;
         default:
             RootCreateAccountAddressBlock(zjc_block);
             break;
@@ -45,6 +48,23 @@ void RootZbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) 
     } else {
         RootCreateAccountAddressBlock(zjc_block);
     }
+}
+
+void RootZbft::RootStatistic(block::protobuf::Block& zjc_block) {
+    auto& tx_map = txs_ptr_->txs;
+    if (tx_map.size() != 1) {
+        return;
+    }
+
+    auto iter = tx_map.begin();
+    if (iter->second->msg_ptr->header.tx_proto().step() != pools::protobuf::kRootCreateAddressCrossSharding) {
+        ZJC_ERROR("tx is not timeblock tx");
+        return;
+    }
+
+    auto tx_list = zjc_block.mutable_tx_list();
+    auto& tx = *tx_list->Add();
+    iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), db_batch_, &tx);
 }
 
 void RootZbft::RootCreateAddressCrossSharding(block::protobuf::Block& zjc_block) {

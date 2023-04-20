@@ -491,6 +491,10 @@ int BlockManager::GetBlockWithHeight(
 }
 
 void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) {
+    if (create_statistic_tx_cb_ == nullptr || msg_ptr == nullptr) {
+        return;
+    }
+
     auto& heights = msg_ptr->header.block_proto().shard_statistic_tx();
     if (shard_statistic_tx_ != nullptr) {
         ZJC_DEBUG("statistic tx sharding not consensus yet");
@@ -519,9 +523,8 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
     tx->set_gid(gid);
     auto shard_statistic_tx = std::make_shared<ToTxsItem>();
-    new_msg_ptr->address_info = account_mgr_->single_to_address_info(
-        heights.sharding_id() % common::kImmutablePoolSize);
-    shard_statistic_tx->tx_ptr = create_to_tx_cb_(new_msg_ptr);
+    new_msg_ptr->address_info = account_mgr_->GetStatisticAddressInfo(0);
+    shard_statistic_tx->tx_ptr = create_statistic_tx_cb_(new_msg_ptr);
     shard_statistic_tx->tx_ptr->time_valid += 3000000lu;
     shard_statistic_tx->tx_hash = statistic_hash;
     shard_statistic_tx->timeout = common::TimeUtils::TimestampMs() + 20000lu;
@@ -593,8 +596,8 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
 }
 
 pools::TxItemPtr BlockManager::GetStatisticTx(bool leader) {
-    auto now_tm = common::TimeUtils::TimestampUs();
     if (shard_statistic_tx_ != nullptr && !shard_statistic_tx_->tx_ptr->in_consensus) {
+        auto now_tm = common::TimeUtils::TimestampUs();
         if (leader && shard_statistic_tx_->tx_ptr->time_valid > now_tm) {
             return nullptr;
         }

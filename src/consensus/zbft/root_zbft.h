@@ -22,6 +22,7 @@ public:
         std::shared_ptr<elect::ElectManager>& elect_mgr);
     virtual ~RootZbft();
     virtual void DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block);
+    void RootStatistic(block::protobuf::Block& zjc_block);
     void RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block);
     void RootCreateAddressCrossSharding(block::protobuf::Block& zjc_block);
     void RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_block);
