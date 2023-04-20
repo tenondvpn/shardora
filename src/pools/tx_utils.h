@@ -139,6 +139,12 @@ struct HeightStatisticInfo {
     uint64_t elect_height;
 };
 
+struct RootStatisticItem {
+    uint32_t history_tx_count;
+    uint32_t tmp_tx_count;
+    uint32_t epoch_tx_count;
+};
+
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {
     std::string message;
     message.reserve(tx_info.ByteSizeLong());

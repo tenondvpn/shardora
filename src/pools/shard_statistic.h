@@ -64,8 +64,6 @@ private:
 
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
     uint64_t latest_timeblock_tm_ = 0;
-    std::set<uint64_t> pool_heights_[common::kInvalidPoolIndex];
-    uint64_t latest_heights_[common::kInvalidPoolIndex] = { 0 };
     uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
     uint64_t pool_consensus_heihgts_[common::kInvalidPoolIndex] = { 0 };
     std::map<uint64_t, std::shared_ptr<HeightStatisticInfo>> node_height_count_map_[common::kInvalidPoolIndex];

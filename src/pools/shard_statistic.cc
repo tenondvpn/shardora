@@ -83,6 +83,17 @@ void ShardStatistic::HandleStatisticBlock(
                 return;
             }
 
+            for (int32_t i = 0; i < elect_statistic.heights.heights_size(); ++i) {
+                for (auto iter = node_height_count_map_[i].begin();
+                        iter != node_height_count_map_[i].end();) {
+                    if (iter->first <= elect_statistic.heights.heights(i)) {
+                        node_height_count_map_[i].erase(iter++);
+                        continue;
+                    }
+
+                    break;
+                }
+            }
 
             break;
         }
@@ -285,18 +296,13 @@ int ShardStatistic::StatisticWithHeights(
         for (uint32_t midx = 0; midx < members->size(); ++midx) {
             auto& id = (*members)[midx]->id;
             auto iter = node_count_map.find(id);
-            auto& statistic_info = *statistic_item.add_node_statistic();
             uint32_t tx_count = 0;
             if (iter != node_count_map.end()) {
                 tx_count = iter->second;
             }
 
-            statistic_info.set_tx_count(tx_count);
-            statistic_info.set_pool_index_mod_num((*members)[midx]->pool_index_mod_num);
+            statistic_item.add_tx_count(tx_count);
             str_for_hash.append((char*)&tx_count, sizeof(tx_count));
-            str_for_hash.append(
-                (char*)&(*members)[midx]->pool_index_mod_num,
-                sizeof((*members)[midx]->pool_index_mod_num));
         }
 
         statistic_item.set_elect_height(hiter->first);
@@ -304,6 +310,7 @@ int ShardStatistic::StatisticWithHeights(
     }
 
     *statistic_hash = common::Hash::keccak256(str_for_hash);
+    *elect_statistic.mutable_heights() = leader_to_heights;
     prefix_db_->SaveTemporaryKv(*statistic_hash, elect_statistic.SerializeAsString());
     ZJC_DEBUG("success create statistic message.");
     return kPoolsSuccess;

@@ -51,19 +51,14 @@ message PoolLatestInfo {
     optional uint64 synced_height = 3;
 }
 
-message PoolStatisticInfo {
-    optional bytes id = 1;
-    optional int32 pool_index_mod_num = 2;
-    optional uint32 tx_count = 3;
-}
-
 message PoolStatisticItem {
-    repeated PoolStatisticInfo node_statistic = 1;
+    repeated uint32 tx_count = 1;
     optional uint64 elect_height = 2;
 }
 
 message ElectStatistic {
     repeated PoolStatisticItem statistics = 1;
+    optional ToTxHeights heights = 2;
 }
 
 message TxMessage {

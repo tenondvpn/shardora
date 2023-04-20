@@ -30,9 +30,8 @@ void RootStatistic::OnNewBlock(const block::protobuf::Block& block) {
 
         if (block.tx_list(i).step() == pools::protobuf::kStatistic) {
             HandleStatisticBlock(block, block.tx_list(i));
+            break;
         }
-
-        break;
     }
 }
 
@@ -50,11 +49,64 @@ void RootStatistic::HandleStatisticBlock(
         return;
     }
 
+    // members
+    pools::protobuf::ElectStatistic elect_statistic;
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        if (tx.storages(i).key() == protos::kShardStatistic) {
+            std::string val;
+            if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+                return;
+            }
+
+            if (!elect_statistic.ParseFromString(val)) {
+                return;
+            }
+
+            break;
+        }
+    }
+
+    if (elect_statistic.statistics_size() <= 0) {
+        return;
+    }
+
+    for (int32_t i = 0; i < elect_statistic.statistics_size(); ++i) {
+        auto members = elect_mgr_->GetNetworkMembersWithHeight(
+            elect_statistic.statistics(i).elect_height(),
+            block.network_id(),
+            nullptr,
+            nullptr);
+        if (members == nullptr) {
+            return;
+        }
+
+        if (members->size() != elect_statistic.statistics(i).tx_count_size()) {
+            assert(false);
+            return;
+        }
+
+        for (int32_t member_idx = 0; member_idx < members->size(); ++member_idx) {
+            auto& id = (*members)[member_idx]->id;
+            auto iter = node_tx_count_map_.find(id);
+            if (iter == node_tx_count_map_.end()) {
+                node_tx_count_map_[id] = 0;
+                iter = node_tx_count_map_.find(id);
+            }
+
+            iter->second += elect_statistic.statistics(i).tx_count(member_idx);
+        }
+    }
 
     shard_iter->second.insert(block.height());
 }
 
 void RootStatistic::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height) {
+    auto iter = latest_elect_height_map_.find(sharding_id);
+    if (iter != latest_elect_height_map_.end() && iter->second >= elect_height) {
+        return;
+    }
+
+    latest_elect_height_map_[sharding_id] = elect_height;
 }
 
 void RootStatistic::OnTimeBlock(
