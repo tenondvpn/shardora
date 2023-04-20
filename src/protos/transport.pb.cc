@@ -21,6 +21,7 @@
 
 namespace protobuf_protos_2fblock_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<17> scc_info_BlockMessage;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_CrossShardingStatisticMessage;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_CrossShardingTosMessage;
 }  // namespace protobuf_protos_2fblock_2eproto
 namespace protobuf_protos_2fbls_2eproto {
@@ -97,8 +98,8 @@ static void InitDefaultsHeader() {
   ::zjchain::transport::protobuf::Header::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<14> scc_info_Header =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 14, InitDefaultsHeader}, {
+::google::protobuf::internal::SCCInfo<15> scc_info_Header =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 15, InitDefaultsHeader}, {
       &protobuf_protos_2ftransport_2eproto::scc_info_BroadcastParam.base,
       &protobuf_protos_2fnetwork_2eproto::scc_info_NetworkMessage.base,
       &protobuf_protos_2fdht_2eproto::scc_info_DhtMessage.base,
@@ -112,7 +113,8 @@ static void InitDefaultsHeader() {
       &protobuf_protos_2fsync_2eproto::scc_info_SyncInfo.base,
       &protobuf_protos_2fsync_2eproto::scc_info_SyncMessage.base,
       &protobuf_protos_2fvss_2eproto::scc_info_VssMessage.base,
-      &protobuf_protos_2fblock_2eproto::scc_info_CrossShardingTosMessage.base,}};
+      &protobuf_protos_2fblock_2eproto::scc_info_CrossShardingTosMessage.base,
+      &protobuf_protos_2fblock_2eproto::scc_info_CrossShardingStatisticMessage.base,}};
 
 void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_BroadcastParam.base);
@@ -182,15 +184,16 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, sync_proto_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, vss_proto_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, cross_tos_),
-  17,
-  0,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, cross_statistic_),
   18,
-  1,
+  0,
   19,
+  1,
   20,
+  21,
   3,
   2,
-  21,
+  22,
   4,
   5,
   6,
@@ -204,10 +207,11 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   14,
   15,
   16,
+  17,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 19, sizeof(::zjchain::transport::protobuf::BroadcastParam)},
-  { 33, 60, sizeof(::zjchain::transport::protobuf::Header)},
+  { 33, 61, sizeof(::zjchain::transport::protobuf::Header)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -250,7 +254,7 @@ void AddDescriptorsImpl() {
       "eader\030\t \001(\014\022\014\n\004body\030\n \001(\014\022\023\n\013net_crossed"
       "\030\013 \001(\010\022\023\n\013bloomfilter\030\014 \003(\004\022\024\n\tevil_rate"
       "\030\r \001(\002:\0010\022\036\n\023ign_bloomfilter_hop\030\016 \001(\r:\001"
-      "1\"\302\007\n\006Header\022\027\n\017src_sharding_id\030\001 \001(\005\022\023\n"
+      "1\"\222\010\n\006Header\022\027\n\017src_sharding_id\030\001 \001(\005\022\023\n"
       "\013des_dht_key\030\002 \001(\014\022\024\n\thop_count\030\003 \001(\r:\0010"
       "\022\r\n\005debug\030\004 \001(\014\022\016\n\006hash64\030\005 \001(\004\022\014\n\004type\030"
       "\006 \001(\r\022=\n\tbroadcast\030\007 \001(\0132*.zjchain.trans"
@@ -274,10 +278,12 @@ void AddDescriptorsImpl() {
       "ssage\0223\n\tvss_proto\030\025 \001(\0132 .zjchain.vss.p"
       "rotobuf.VssMessage\022B\n\tcross_tos\030\026 \001(\0132/."
       "zjchain.block.protobuf.CrossShardingTosM"
+      "essage\022N\n\017cross_statistic\030\027 \001(\01325.zjchai"
+      "n.block.protobuf.CrossShardingStatisticM"
       "essage"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1526);
+      descriptor, 1606);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/transport.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fnetwork_2eproto::AddDescriptors();
@@ -1092,6 +1098,8 @@ void Header::InitAsDefaultInstance() {
       ::zjchain::vss::protobuf::VssMessage::internal_default_instance());
   ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->cross_tos_ = const_cast< ::zjchain::block::protobuf::CrossShardingTosMessage*>(
       ::zjchain::block::protobuf::CrossShardingTosMessage::internal_default_instance());
+  ::zjchain::transport::protobuf::_Header_default_instance_._instance.get_mutable()->cross_statistic_ = const_cast< ::zjchain::block::protobuf::CrossShardingStatisticMessage*>(
+      ::zjchain::block::protobuf::CrossShardingStatisticMessage::internal_default_instance());
 }
 void Header::clear_network_proto() {
   if (network_proto_ != NULL) network_proto_->Clear();
@@ -1145,6 +1153,10 @@ void Header::clear_cross_tos() {
   if (cross_tos_ != NULL) cross_tos_->Clear();
   clear_has_cross_tos();
 }
+void Header::clear_cross_statistic() {
+  if (cross_statistic_ != NULL) cross_statistic_->Clear();
+  clear_has_cross_statistic();
+}
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int Header::kSrcShardingIdFieldNumber;
 const int Header::kDesDhtKeyFieldNumber;
@@ -1168,6 +1180,7 @@ const int Header::kSyncFieldNumber;
 const int Header::kSyncProtoFieldNumber;
 const int Header::kVssProtoFieldNumber;
 const int Header::kCrossTosFieldNumber;
+const int Header::kCrossStatisticFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Header::Header()
@@ -1264,6 +1277,11 @@ Header::Header(const Header& from)
   } else {
     cross_tos_ = NULL;
   }
+  if (from.has_cross_statistic()) {
+    cross_statistic_ = new ::zjchain::block::protobuf::CrossShardingStatisticMessage(*from.cross_statistic_);
+  } else {
+    cross_statistic_ = NULL;
+  }
   ::memcpy(&src_sharding_id_, &from.src_sharding_id_,
     static_cast<size_t>(reinterpret_cast<char*>(&version_) -
     reinterpret_cast<char*>(&src_sharding_id_)) + sizeof(version_));
@@ -1302,6 +1320,7 @@ void Header::SharedDtor() {
   if (this != internal_default_instance()) delete sync_proto_;
   if (this != internal_default_instance()) delete vss_proto_;
   if (this != internal_default_instance()) delete cross_tos_;
+  if (this != internal_default_instance()) delete cross_statistic_;
 }
 
 void Header::SetCachedSize(int size) const {
@@ -1390,11 +1409,17 @@ void Header::Clear() {
       vss_proto_->Clear();
     }
   }
-  if (cached_has_bits & 0x00010000u) {
-    GOOGLE_DCHECK(cross_tos_ != NULL);
-    cross_tos_->Clear();
+  if (cached_has_bits & 196608u) {
+    if (cached_has_bits & 0x00010000u) {
+      GOOGLE_DCHECK(cross_tos_ != NULL);
+      cross_tos_->Clear();
+    }
+    if (cached_has_bits & 0x00020000u) {
+      GOOGLE_DCHECK(cross_statistic_ != NULL);
+      cross_statistic_->Clear();
+    }
   }
-  if (cached_has_bits & 4063232u) {
+  if (cached_has_bits & 8126464u) {
     ::memset(&src_sharding_id_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&version_) -
         reinterpret_cast<char*>(&src_sharding_id_)) + sizeof(version_));
@@ -1687,6 +1712,18 @@ bool Header::MergePartialFromCodedStream(
         break;
       }
 
+      // optional .zjchain.block.protobuf.CrossShardingStatisticMessage cross_statistic = 23;
+      case 23: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(186u /* 186 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_cross_statistic()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -1715,7 +1752,7 @@ void Header::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional int32 src_sharding_id = 1;
-  if (cached_has_bits & 0x00020000u) {
+  if (cached_has_bits & 0x00040000u) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->src_sharding_id(), output);
   }
 
@@ -1726,7 +1763,7 @@ void Header::SerializeWithCachedSizes(
   }
 
   // optional uint32 hop_count = 3 [default = 0];
-  if (cached_has_bits & 0x00040000u) {
+  if (cached_has_bits & 0x00080000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->hop_count(), output);
   }
 
@@ -1737,12 +1774,12 @@ void Header::SerializeWithCachedSizes(
   }
 
   // optional uint64 hash64 = 5;
-  if (cached_has_bits & 0x00080000u) {
+  if (cached_has_bits & 0x00100000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(5, this->hash64(), output);
   }
 
   // optional uint32 type = 6;
-  if (cached_has_bits & 0x00100000u) {
+  if (cached_has_bits & 0x00200000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->type(), output);
   }
 
@@ -1759,7 +1796,7 @@ void Header::SerializeWithCachedSizes(
   }
 
   // optional int32 version = 9 [default = 0];
-  if (cached_has_bits & 0x00200000u) {
+  if (cached_has_bits & 0x00400000u) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(9, this->version(), output);
   }
 
@@ -1841,6 +1878,12 @@ void Header::SerializeWithCachedSizes(
       22, this->_internal_cross_tos(), output);
   }
 
+  // optional .zjchain.block.protobuf.CrossShardingStatisticMessage cross_statistic = 23;
+  if (cached_has_bits & 0x00020000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      23, this->_internal_cross_statistic(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -1857,7 +1900,7 @@ void Header::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional int32 src_sharding_id = 1;
-  if (cached_has_bits & 0x00020000u) {
+  if (cached_has_bits & 0x00040000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->src_sharding_id(), target);
   }
 
@@ -1869,7 +1912,7 @@ void Header::SerializeWithCachedSizes(
   }
 
   // optional uint32 hop_count = 3 [default = 0];
-  if (cached_has_bits & 0x00040000u) {
+  if (cached_has_bits & 0x00080000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->hop_count(), target);
   }
 
@@ -1881,12 +1924,12 @@ void Header::SerializeWithCachedSizes(
   }
 
   // optional uint64 hash64 = 5;
-  if (cached_has_bits & 0x00080000u) {
+  if (cached_has_bits & 0x00100000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(5, this->hash64(), target);
   }
 
   // optional uint32 type = 6;
-  if (cached_has_bits & 0x00100000u) {
+  if (cached_has_bits & 0x00200000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(6, this->type(), target);
   }
 
@@ -1905,7 +1948,7 @@ void Header::SerializeWithCachedSizes(
   }
 
   // optional int32 version = 9 [default = 0];
-  if (cached_has_bits & 0x00200000u) {
+  if (cached_has_bits & 0x00400000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(9, this->version(), target);
   }
 
@@ -1998,6 +2041,13 @@ void Header::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         22, this->_internal_cross_tos(), deterministic, target);
+  }
+
+  // optional .zjchain.block.protobuf.CrossShardingStatisticMessage cross_statistic = 23;
+  if (cached_has_bits & 0x00020000u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        23, this->_internal_cross_statistic(), deterministic, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2133,12 +2183,19 @@ size_t Header::ByteSizeLong() const {
     }
 
   }
-  if (_has_bits_[16 / 32] & 4128768u) {
+  if (_has_bits_[16 / 32] & 8323072u) {
     // optional .zjchain.block.protobuf.CrossShardingTosMessage cross_tos = 22;
     if (has_cross_tos()) {
       total_size += 2 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *cross_tos_);
+    }
+
+    // optional .zjchain.block.protobuf.CrossShardingStatisticMessage cross_statistic = 23;
+    if (has_cross_statistic()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *cross_statistic_);
     }
 
     // optional int32 src_sharding_id = 1;
@@ -2260,23 +2317,26 @@ void Header::MergeFrom(const Header& from) {
       mutable_vss_proto()->::zjchain::vss::protobuf::VssMessage::MergeFrom(from.vss_proto());
     }
   }
-  if (cached_has_bits & 4128768u) {
+  if (cached_has_bits & 8323072u) {
     if (cached_has_bits & 0x00010000u) {
       mutable_cross_tos()->::zjchain::block::protobuf::CrossShardingTosMessage::MergeFrom(from.cross_tos());
     }
     if (cached_has_bits & 0x00020000u) {
-      src_sharding_id_ = from.src_sharding_id_;
+      mutable_cross_statistic()->::zjchain::block::protobuf::CrossShardingStatisticMessage::MergeFrom(from.cross_statistic());
     }
     if (cached_has_bits & 0x00040000u) {
-      hop_count_ = from.hop_count_;
+      src_sharding_id_ = from.src_sharding_id_;
     }
     if (cached_has_bits & 0x00080000u) {
-      hash64_ = from.hash64_;
+      hop_count_ = from.hop_count_;
     }
     if (cached_has_bits & 0x00100000u) {
-      type_ = from.type_;
+      hash64_ = from.hash64_;
     }
     if (cached_has_bits & 0x00200000u) {
+      type_ = from.type_;
+    }
+    if (cached_has_bits & 0x00400000u) {
       version_ = from.version_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -2327,6 +2387,7 @@ void Header::InternalSwap(Header* other) {
   swap(sync_proto_, other->sync_proto_);
   swap(vss_proto_, other->vss_proto_);
   swap(cross_tos_, other->cross_tos_);
+  swap(cross_statistic_, other->cross_statistic_);
   swap(src_sharding_id_, other->src_sharding_id_);
   swap(hop_count_, other->hop_count_);
   swap(hash64_, other->hash64_);

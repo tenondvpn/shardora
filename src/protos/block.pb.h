@@ -39,7 +39,7 @@ namespace protobuf_protos_2fblock_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[27];
+  static const ::google::protobuf::internal::ParseTable schema[28];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -79,6 +79,9 @@ extern ConsensusToTxsDefaultTypeInternal _ConsensusToTxs_default_instance_;
 class ConsensusToTxsItem;
 class ConsensusToTxsItemDefaultTypeInternal;
 extern ConsensusToTxsItemDefaultTypeInternal _ConsensusToTxsItem_default_instance_;
+class CrossShardingStatisticMessage;
+class CrossShardingStatisticMessageDefaultTypeInternal;
+extern CrossShardingStatisticMessageDefaultTypeInternal _CrossShardingStatisticMessage_default_instance_;
 class CrossShardingTosMessage;
 class CrossShardingTosMessageDefaultTypeInternal;
 extern CrossShardingTosMessageDefaultTypeInternal _CrossShardingTosMessage_default_instance_;
@@ -145,6 +148,7 @@ template<> ::zjchain::block::protobuf::BlockMessage* Arena::CreateMaybeMessage<:
 template<> ::zjchain::block::protobuf::BlockTx* Arena::CreateMaybeMessage<::zjchain::block::protobuf::BlockTx>(Arena*);
 template<> ::zjchain::block::protobuf::ConsensusToTxs* Arena::CreateMaybeMessage<::zjchain::block::protobuf::ConsensusToTxs>(Arena*);
 template<> ::zjchain::block::protobuf::ConsensusToTxsItem* Arena::CreateMaybeMessage<::zjchain::block::protobuf::ConsensusToTxsItem>(Arena*);
+template<> ::zjchain::block::protobuf::CrossShardingStatisticMessage* Arena::CreateMaybeMessage<::zjchain::block::protobuf::CrossShardingStatisticMessage>(Arena*);
 template<> ::zjchain::block::protobuf::CrossShardingTosMessage* Arena::CreateMaybeMessage<::zjchain::block::protobuf::CrossShardingTosMessage>(Arena*);
 template<> ::zjchain::block::protobuf::ElectStatisticInfo* Arena::CreateMaybeMessage<::zjchain::block::protobuf::ElectStatisticInfo>(Arena*);
 template<> ::zjchain::block::protobuf::GetAccountInitInfoRequest* Arena::CreateMaybeMessage<::zjchain::block::protobuf::GetAccountInitInfoRequest>(Arena*);
@@ -4150,6 +4154,125 @@ class CrossShardingTosMessage : public ::google::protobuf::Message /* @@protoc_i
 };
 // -------------------------------------------------------------------
 
+class CrossShardingStatisticMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.block.protobuf.CrossShardingStatisticMessage) */ {
+ public:
+  CrossShardingStatisticMessage();
+  virtual ~CrossShardingStatisticMessage();
+
+  CrossShardingStatisticMessage(const CrossShardingStatisticMessage& from);
+
+  inline CrossShardingStatisticMessage& operator=(const CrossShardingStatisticMessage& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  CrossShardingStatisticMessage(CrossShardingStatisticMessage&& from) noexcept
+    : CrossShardingStatisticMessage() {
+    *this = ::std::move(from);
+  }
+
+  inline CrossShardingStatisticMessage& operator=(CrossShardingStatisticMessage&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const CrossShardingStatisticMessage& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const CrossShardingStatisticMessage* internal_default_instance() {
+    return reinterpret_cast<const CrossShardingStatisticMessage*>(
+               &_CrossShardingStatisticMessage_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    26;
+
+  void Swap(CrossShardingStatisticMessage* other);
+  friend void swap(CrossShardingStatisticMessage& a, CrossShardingStatisticMessage& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline CrossShardingStatisticMessage* New() const final {
+    return CreateMaybeMessage<CrossShardingStatisticMessage>(NULL);
+  }
+
+  CrossShardingStatisticMessage* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<CrossShardingStatisticMessage>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const CrossShardingStatisticMessage& from);
+  void MergeFrom(const CrossShardingStatisticMessage& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(CrossShardingStatisticMessage* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional .zjchain.block.protobuf.Block block = 1;
+  bool has_block() const;
+  void clear_block();
+  static const int kBlockFieldNumber = 1;
+  private:
+  const ::zjchain::block::protobuf::Block& _internal_block() const;
+  public:
+  const ::zjchain::block::protobuf::Block& block() const;
+  ::zjchain::block::protobuf::Block* release_block();
+  ::zjchain::block::protobuf::Block* mutable_block();
+  void set_allocated_block(::zjchain::block::protobuf::Block* block);
+
+  // @@protoc_insertion_point(class_scope:zjchain.block.protobuf.CrossShardingStatisticMessage)
+ private:
+  void set_has_block();
+  void clear_has_block();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::zjchain::block::protobuf::Block* block_;
+  friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.block.protobuf.BlockMessage) */ {
  public:
   BlockMessage();
@@ -4192,7 +4315,7 @@ class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_BlockMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    26;
+    27;
 
   void Swap(BlockMessage* other);
   friend void swap(BlockMessage& a, BlockMessage& b) {
@@ -8592,6 +8715,68 @@ inline void CrossShardingTosMessage::set_allocated_block(::zjchain::block::proto
 
 // -------------------------------------------------------------------
 
+// CrossShardingStatisticMessage
+
+// optional .zjchain.block.protobuf.Block block = 1;
+inline bool CrossShardingStatisticMessage::has_block() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void CrossShardingStatisticMessage::set_has_block() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void CrossShardingStatisticMessage::clear_has_block() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void CrossShardingStatisticMessage::clear_block() {
+  if (block_ != NULL) block_->Clear();
+  clear_has_block();
+}
+inline const ::zjchain::block::protobuf::Block& CrossShardingStatisticMessage::_internal_block() const {
+  return *block_;
+}
+inline const ::zjchain::block::protobuf::Block& CrossShardingStatisticMessage::block() const {
+  const ::zjchain::block::protobuf::Block* p = block_;
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.CrossShardingStatisticMessage.block)
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::block::protobuf::Block*>(
+      &::zjchain::block::protobuf::_Block_default_instance_);
+}
+inline ::zjchain::block::protobuf::Block* CrossShardingStatisticMessage::release_block() {
+  // @@protoc_insertion_point(field_release:zjchain.block.protobuf.CrossShardingStatisticMessage.block)
+  clear_has_block();
+  ::zjchain::block::protobuf::Block* temp = block_;
+  block_ = NULL;
+  return temp;
+}
+inline ::zjchain::block::protobuf::Block* CrossShardingStatisticMessage::mutable_block() {
+  set_has_block();
+  if (block_ == NULL) {
+    auto* p = CreateMaybeMessage<::zjchain::block::protobuf::Block>(GetArenaNoVirtual());
+    block_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.CrossShardingStatisticMessage.block)
+  return block_;
+}
+inline void CrossShardingStatisticMessage::set_allocated_block(::zjchain::block::protobuf::Block* block) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete block_;
+  }
+  if (block) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      block = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, block, submessage_arena);
+    }
+    set_has_block();
+  } else {
+    clear_has_block();
+  }
+  block_ = block;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.CrossShardingStatisticMessage.block)
+}
+
+// -------------------------------------------------------------------
+
 // BlockMessage
 
 // optional .zjchain.block.protobuf.GetTxBlockRequest block_req = 1;
@@ -9606,6 +9791,8 @@ inline void BlockMessage::set_allocated_shard_statistic_tx(::zjchain::pools::pro
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
