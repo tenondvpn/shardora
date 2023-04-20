@@ -133,7 +133,7 @@ void RootStatistic::OnTimeBlock(
     }
 
     latest_timeblock_tm_ = lastest_time_block_tm;
-    CreateStatisticTransaction(latest_time_block_height);
+//     CreateStatisticTransaction(latest_time_block_height);
 }
 
 void RootStatistic::GetStatisticInfo(
