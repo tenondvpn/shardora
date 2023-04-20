@@ -71,7 +71,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(uint32_t pool_index,
         return nullptr;
     }
 
-    auto tx_ptr = timeblock_mgr_->GetElectTx(pool_index, leader);
+    auto tx_ptr = block_mgr_->GetElectTx(pool_index, leader);
     if (tx_ptr != nullptr) {
         auto txs_item = std::make_shared<WaitingTxsItem>();
         txs_item->pool_index = pool_index;
