@@ -24,12 +24,12 @@ void RootStatistic::Init() {
 void RootStatistic::OnNewBlock(const block::protobuf::Block& block) {
     uint32_t consistent_pool_index = common::kInvalidPoolIndex;
     for (int32_t i = 0; i < block.tx_list_size(); ++i) {
-        if (block.tx_list[i].status() != consensus::kConsensusSuccess) {
+        if (block.tx_list(i).status() != consensus::kConsensusSuccess) {
             continue;
         }
 
-        if (block.tx_list[i].step() == pools::protobuf::kStatistic) {
-            HandleStatisticBlock(block, block.tx_list[i]);
+        if (block.tx_list(i).step() == pools::protobuf::kStatistic) {
+            HandleStatisticBlock(block, block.tx_list(i));
         }
 
         break;
@@ -55,13 +55,6 @@ void RootStatistic::HandleStatisticBlock(
 }
 
 void RootStatistic::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height) {
-    if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
-        return;
-    }
-
-    prev_elect_height_ = now_elect_height_;
-    now_elect_height_ = elect_height;
-    ZJC_INFO("new elect block: %lu, %lu", prev_elect_height_, now_elect_height_);
 }
 
 void RootStatistic::OnTimeBlock(
