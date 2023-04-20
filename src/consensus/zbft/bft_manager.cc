@@ -1925,6 +1925,17 @@ void BftManager::BroadcastStatisticBlock(
     msg.set_type(common::kPoolsMessage);
     dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
     msg.set_des_dht_key(dht_key.StrKey());
+
+    auto& tx = block_item->tx_list(0);
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        std::string val;
+        if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+            auto kv = msg.mutable_sync()->add_items();
+            kv->set_key(tx.storages(i).val_hash());
+            kv->set_value(val);
+        }
+    }
+
     auto& cross_statistic = *msg.mutable_cross_statistic();
     *cross_statistic.mutable_block() = *block_item;
     auto* brdcast = msg.mutable_broadcast();

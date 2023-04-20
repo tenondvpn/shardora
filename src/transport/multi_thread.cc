@@ -176,6 +176,14 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
         return;
     }
 
+    // all key value must temp kv
+    db::DbWriteBatch db_batch;
+    SaveKeyValue(msg_ptr->header, db_batch);
+    if (!db_->Put(db_batch).ok()) {
+        ZJC_FATAL("save db failed!");
+        return;
+    }
+
     if (msg_ptr->header.type() == common::kSyncMessage) {
         HandleSyncBlockResponse(msg_ptr);
     }
@@ -211,13 +219,6 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
 void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
     auto& sync_msg = msg_ptr->header.sync_proto();
     if (!sync_msg.has_sync_value_res()) {
-        return;
-    }
-
-    db::DbWriteBatch db_batch;
-    SaveKeyValue(msg_ptr->header, db_batch);
-    if (!db_->Put(db_batch).ok()) {
-        ZJC_FATAL("save db failed!");
         return;
     }
 
