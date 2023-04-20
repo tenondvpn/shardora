@@ -404,6 +404,8 @@ void BlockManager::AddNewBlock(
                 block_item->network_id(),
                 block_item->timeblock_height(),
                 db_batch);
+            ZJC_DEBUG("success handled statistic block time block height: %lu",
+                consensused_timeblock_height_);
             break;
         default:
             break;
