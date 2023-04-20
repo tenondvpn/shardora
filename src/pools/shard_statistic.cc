@@ -154,9 +154,9 @@ int ShardStatistic::LeaderCreateStatisticHeights(pools::protobuf::ToTxHeights& t
     }
 
     for (uint32_t i = 0; i < max_pool; ++i) {
-        auto pool_iter = node_height_count_map_.find(i);
-        auto r_height_iter = node_height_count_map_.rbegin();
-        if (r_height_iter == node_height_count_map_.rend()) {
+        auto pool_iter = node_height_count_map_[i].find(i);
+        auto r_height_iter = node_height_count_map_[i].rbegin();
+        if (r_height_iter == node_height_count_map_[i].rend()) {
             heights += std::to_string(0) + " ";
             to_heights.add_heights(0);
         } else {
@@ -233,8 +233,8 @@ int ShardStatistic::StatisticWithHeights(
         common::MembersPtr members = nullptr;
         uint64_t prev_height = 0;
         for (auto height = min_height; height <= max_height; ++height) {
-            auto hiter = node_height_count_map_.find(height);
-            if (hiter == node_height_count_map_.end()) {
+            auto hiter = node_height_count_map_[pool_idx].find(height);
+            if (hiter == node_height_count_map_[pool_idx].end()) {
                 ZJC_WARN("statistic get height failed, pool: %u, height: %lu", pool_idx, height);
                 return kPoolsError;
             }
