@@ -21,7 +21,7 @@ void ShardStatistic::Init() {
     }
 }
 
-void ShardStatistic::OnNewBlock(const block::protobuf::Block& block_ptr) {
+void ShardStatistic::OnNewBlock(const block::protobuf::Block& block) {
     if (block.network_id() != common::GlobalInfo::Instance()->network_id()) {
         ZJC_DEBUG("network invalid %u, %u",
             block.network_id(), common::GlobalInfo::Instance()->network_id());
