@@ -567,6 +567,7 @@ void BlockManager::HandleStatisticBlock(
         return;
     }
 
+    pools::protobuf::ElectStatistic elect_statistic;
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kShardStatistic) {
             std::string val;
