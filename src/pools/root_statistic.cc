@@ -53,7 +53,7 @@ void RootStatistic::HandleStatisticBlock(
         shard_iter = handled_sharding_statistic_map_.find(block.network_id());
     }
 
-    if (shard_iter->second.find(block.height()) != shard_iter->second.end()) {
+    if (shard_iter->second.find(block.timeblock_height()) != shard_iter->second.end()) {
         return;
     }
 
@@ -114,9 +114,9 @@ void RootStatistic::HandleStatisticBlock(
         }
     }
 
-    shard_iter->second.insert(block.height());
+    shard_iter->second.insert(block.timeblock_height());
     ZJC_DEBUG("success handle statistic block sharding: %u, pool: %u, height: %lu",
-        block.network_id(), block.pool_index(), block.height());
+        block.network_id(), block.pool_index(), block.timeblock_height());
 }
 
 void RootStatistic::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height) {
