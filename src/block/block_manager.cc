@@ -170,6 +170,25 @@ void BlockManager::AddAllAccount(
     }
 }
 
+void BlockManager::HandleStatisticTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
+    consensused_timeblock_height_ = block.timeblock_height();
+    prefix_db_->SaveConsensusedStatisticTimeBlockHeight(
+        block.network_id(),
+        block.timeblock_height(),
+        db_batch);
+    ZJC_DEBUG("success handled statistic block time block height: %lu",
+        consensused_timeblock_height_);
+    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
+        return;
+    }
+
+
+}
+
 void BlockManager::HandleNormalToTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
@@ -399,13 +418,7 @@ void BlockManager::AddNewBlock(
             prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
             break;
         case pools::protobuf::kStatistic:
-            consensused_timeblock_height_ = block_item->timeblock_height();
-            prefix_db_->SaveConsensusedStatisticTimeBlockHeight(
-                block_item->network_id(),
-                block_item->timeblock_height(),
-                db_batch);
-            ZJC_DEBUG("success handled statistic block time block height: %lu",
-                consensused_timeblock_height_);
+            HandleStatisticTx(thread_idx, *block_item, tx_list[i], db_batch);
             break;
         default:
             break;

@@ -1903,6 +1903,8 @@ void BftManager::LeaderBroadcastBlock(
     case pools::protobuf::kNormalTo:
         BroadcastLocalTosBlock(thread_index, block);
         break;
+    case pools::protobuf::kStatistic:
+        break;
     default:
         break;
     }
