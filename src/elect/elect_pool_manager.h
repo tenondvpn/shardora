@@ -8,8 +8,9 @@
 #include "elect/elect_pool.h"
 #include "elect/elect_waiting_nodes.h"
 #include "elect/node_history_credit.h"
-#include "protos/elect.pb.h"
 #include "protos/block.pb.h"
+#include "protos/elect.pb.h"
+#include "protos/prefix_db.h"
 #include "security/security.h"
 
 namespace zjchain {
@@ -45,11 +46,6 @@ public:
         const protobuf::WaitingNodesMessage& waiting_nodes,
         const std::string& root_node_id,
         const common::BloomFilter& nodes_filter);
-    int CreateElectTransaction(
-        uint32_t shard_netid,
-        uint64_t final_statistic_block_height,
-        const block::protobuf::BlockTx& src_tx_info,
-        pools::protobuf::TxMessage& tx_info);
     void OnTimeBlock(uint64_t tm_block_tm);
     int GetElectionTxInfo(block::protobuf::BlockTx& tx_info);
     void OnNewElectBlock(
@@ -66,7 +62,7 @@ private:
         common::BloomFilter* pick_in,
         elect::protobuf::ElectBlock* ec_block);
     int GetAllBloomFilerAndNodes(
-        const elect::protobuf::StatisticInfo& statistic_info,
+        const elect::protobuf::ElectStatistic& statistic_info,
         uint32_t shard_netid,
         common::BloomFilter* cons_all,
         common::BloomFilter* cons_weed_out,
@@ -88,12 +84,12 @@ private:
         std::vector<NodeDetailPtr>& src_nodes);
     void GetMiniTopNInvalidNodes(
         uint32_t network_id,
-        const elect::protobuf::StatisticInfo& statistic_info,
+        const elect::protobuf::ElectStatistic& statistic_info,
         uint32_t count,
         std::map<int32_t, uint32_t>* nodes);
     void GetInvalidLeaders(
         uint32_t network_id,
-        const elect::protobuf::StatisticInfo& statistic_info,
+        const elect::protobuf::ElectStatistic& statistic_info,
         std::map<int32_t, uint32_t>* nodes);
     int SelectLeader(
         uint32_t network_id,
@@ -118,6 +114,8 @@ private:
     uint32_t updated_net_id_{ common::kInvalidUint32 };
     common::Tick update_stoke_tick_;
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    uint64_t latest_elect_height_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(ElectPoolManager);
 };

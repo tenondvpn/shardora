@@ -50,18 +50,6 @@ message ElectBlock {
     optional uint64 elect_height = 7;
 }
 
-message ElectStatisticInfo {
-    optional uint64 elect_height = 1;
-    repeated uint32 succ_tx_count = 2;
-    repeated uint32 lof_leaders = 3;
-}
-
-message StatisticInfo {
-    optional uint64 timeblock_height = 1;
-    optional uint32 all_tx_count = 2;
-    repeated ElectStatisticInfo elect_statistic = 3;
-}
-
 message WaitingNodesMessage {
     repeated uint64 nodes_filter = 1;
     optional uint32 waiting_shard_id = 2;

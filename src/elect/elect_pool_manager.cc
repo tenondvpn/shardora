@@ -29,81 +29,38 @@ ElectPoolManager::ElectPoolManager(
         security_ptr_(security_ptr),
         stoke_mgr_(stoke_mgr),
         bls_mgr_(bls_mgr) {
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     update_stoke_tick_.CutOff(30000000l, std::bind(&ElectPoolManager::UpdateNodesStoke, this));
 }
 
 ElectPoolManager::~ElectPoolManager() {}
 
-int ElectPoolManager::CreateElectTransaction(
-        uint32_t shard_netid,
-        uint64_t final_statistic_block_height,
-        const block::protobuf::BlockTx& src_tx_info,
-        pools::protobuf::TxMessage& tx_info) {
-    bool statistic_valid = false;
-    std::string tm_str;
-    for (int32_t i = 0; i < src_tx_info.storages_size(); ++i) {
-        if (src_tx_info.storages(i).key() == protos::kAttrTimerBlockHeight) {
-            tx_info.set_gid(common::Hash::Hash256(
-                kElectGidPrefix +
-                "_" +
-                std::to_string(shard_netid) +
-                "_" +
-                std::to_string(final_statistic_block_height) +
-                "_" +
-                src_tx_info.storages(i).val_hash()));
-            tm_str = src_tx_info.storages(i).val_hash();
-        }
-    }
-
-    if (tx_info.gid().empty()) {
-        ELECT_ERROR("CreateElectTransaction gid error shard id: %u", shard_netid);
-        return kElectError;
-    }
-
-    if (src_tx_info.storages_size() != 1) {
-        ELECT_ERROR("tx info storage error[%d]", src_tx_info.storages_size());
-        return kElectError;
-    }
-
-    if (src_tx_info.storages(0).key() != protos::kStatisticAttr) {
-        ELECT_ERROR("tx info storage key error[%s]", protos::kStatisticAttr.c_str());
-        return kElectError;
-    }
-
-    elect::protobuf::StatisticInfo statistic_info;
-    if (!statistic_info.ParseFromString(src_tx_info.storages(0).val_hash())) {
-        return kElectError;
-    }
-
-    tx_info.set_key(protos::kStatisticAttr);
-    tx_info.set_value(src_tx_info.storages(0).val_hash());
-    tx_info.set_pubkey("");
-    tx_info.set_to(common::kRootChainElectionBlockTxAddress);
-    tx_info.set_gas_limit(0llu);
-    tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
-    ELECT_INFO("CreateElectTransaction success gid: %s, shard id: %u, "
-        "final_statistic_block_height: %lu, attr_tm: %s",
-        common::Encode::HexEncode(tx_info.gid()).c_str(),
-        shard_netid, final_statistic_block_height, tm_str.c_str());
-    return kElectSuccess;
-}
-
 void ElectPoolManager::OnNewElectBlock(
         uint64_t height,
         protobuf::ElectBlock& elect_block) {
+    if (latest_elect_height_ >= height) {
+        return;
+    }
+
+    latest_elect_height_ = height;
     node_credit_.OnNewElectBlock(security_ptr_, height, elect_block);
 }
 
 int ElectPoolManager::GetElectionTxInfo(block::protobuf::BlockTx& tx_info) {
-    elect::protobuf::StatisticInfo statistic_info;
+    pools::protobuf::ElectStatistic elect_statistic;
     bool statistic_valid = false;
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
-        if (tx_info.storages(i).key() == "bft::kStatisticAttr") {
-            if (!statistic_info.ParseFromString(tx_info.storages(i).val_hash())) {
+        if (tx_info.storages(i).key() == protos::kShardElection) {
+            uint64_t* tmp = (uint64_t*)tx_info.storages(i).val_hash().c_str();
+            if (!prefix_db_->GetStatisticedShardingHeight(
+                    static_cast<uint32_t>(tmp[0]),
+                    tmp[1],
+                    &elect_statistic)) {
                 return kElectError;
             }
 
             statistic_valid = true;
+            break;
         }
     }
 
@@ -119,7 +76,7 @@ int ElectPoolManager::GetElectionTxInfo(block::protobuf::BlockTx& tx_info) {
     std::vector<NodeDetailPtr> elected_nodes;
     std::set<std::string> weed_out_ids;
     if (GetAllBloomFilerAndNodes(
-            statistic_info,
+            elect_statistic,
             0,
             &cons_all,
             &cons_weed_out,
@@ -340,28 +297,28 @@ void ElectPoolManager::UpdateWaitingNodes(
 
 void ElectPoolManager::GetInvalidLeaders(
         uint32_t network_id,
-        const elect::protobuf::StatisticInfo& statistic_info,
+        const elect::protobuf::ElectStatistic& statistic_info,
         std::map<int32_t, uint32_t>* nodes) {
-    for (int32_t i = 0; i < statistic_info.elect_statistic_size(); ++i) {
-        if (elect_mgr_->latest_height(network_id) !=
-                statistic_info.elect_statistic(i).elect_height()) {
-            continue;
-        }
-
-        auto members = elect_mgr_->GetNetworkMembersWithHeight(
-            statistic_info.elect_statistic(i).elect_height(),
-            network_id,
-            nullptr,
-            nullptr);
-        for (int32_t lof_idx = 0;
-                lof_idx < statistic_info.elect_statistic(i).lof_leaders_size(); ++lof_idx) {
-            if (statistic_info.elect_statistic(i).lof_leaders(lof_idx) >= members->size()) {
-                continue;
-            }
-
-            (*nodes)[statistic_info.elect_statistic(i).lof_leaders(lof_idx)] = 0;
-        }
-    }
+//     for (int32_t i = 0; i < statistic_info.elect_statistic_size(); ++i) {
+//         if (elect_mgr_->latest_height(network_id) !=
+//                 statistic_info.elect_statistic(i).elect_height()) {
+//             continue;
+//         }
+// 
+//         auto members = elect_mgr_->GetNetworkMembersWithHeight(
+//             statistic_info.elect_statistic(i).elect_height(),
+//             network_id,
+//             nullptr,
+//             nullptr);
+//         for (int32_t lof_idx = 0;
+//                 lof_idx < statistic_info.elect_statistic(i).lof_leaders_size(); ++lof_idx) {
+//             if (statistic_info.elect_statistic(i).lof_leaders(lof_idx) >= members->size()) {
+//                 continue;
+//             }
+// 
+//             (*nodes)[statistic_info.elect_statistic(i).lof_leaders(lof_idx)] = 0;
+//         }
+//     }
 }
 
 using KItemType = std::pair<int32_t, uint32_t>;
@@ -373,48 +330,48 @@ struct CompareItem {
 
 void ElectPoolManager::GetMiniTopNInvalidNodes(
         uint32_t network_id,
-        const elect::protobuf::StatisticInfo& statistic_info,
+        const elect::protobuf::ElectStatistic& statistic_info,
         uint32_t count,
         std::map<int32_t, uint32_t>* nodes) {
-    std::priority_queue<KItemType, std::vector<KItemType>, CompareItem> kqueue;
-    for (int32_t i = 0; i < statistic_info.elect_statistic_size(); ++i) {
-        if (elect_mgr_->latest_height(network_id) !=
-                statistic_info.elect_statistic(i).elect_height()) {
-            continue;
-        }
-
-        auto members = elect_mgr_->GetNetworkMembersWithHeight(
-            statistic_info.elect_statistic(i).elect_height(),
-            network_id,
-            nullptr,
-            nullptr);
-        uint32_t all_tx_count = 0;
-        if (members->size() == (uint32_t)statistic_info.elect_statistic(i).succ_tx_count_size()) {
-            for (uint32_t cound_idx = 0; cound_idx < members->size(); ++cound_idx) {
-                kqueue.push(std::pair<int32_t, uint32_t>(
-                    cound_idx,
-                    statistic_info.elect_statistic(i).succ_tx_count(cound_idx)));
-                all_tx_count += statistic_info.elect_statistic(i).succ_tx_count(cound_idx);
-                if (kqueue.size() > count) {
-                    kqueue.pop();
-                }
-            }
-
-            auto avg_tx_count = all_tx_count / members->size();
-            while (!kqueue.empty()) {
-                auto item = kqueue.top();
-                if (item.second < avg_tx_count) {
-                    (*nodes)[item.first] = item.second;
-                }
-
-                kqueue.pop();
-            }
-        }
-    }
+//     std::priority_queue<KItemType, std::vector<KItemType>, CompareItem> kqueue;
+//     for (int32_t i = 0; i < statistic_info.elect_statistic_size(); ++i) {
+//         if (elect_mgr_->latest_height(network_id) !=
+//                 statistic_info.elect_statistic(i).elect_height()) {
+//             continue;
+//         }
+// 
+//         auto members = elect_mgr_->GetNetworkMembersWithHeight(
+//             statistic_info.elect_statistic(i).elect_height(),
+//             network_id,
+//             nullptr,
+//             nullptr);
+//         uint32_t all_tx_count = 0;
+//         if (members->size() == (uint32_t)statistic_info.elect_statistic(i).succ_tx_count_size()) {
+//             for (uint32_t cound_idx = 0; cound_idx < members->size(); ++cound_idx) {
+//                 kqueue.push(std::pair<int32_t, uint32_t>(
+//                     cound_idx,
+//                     statistic_info.elect_statistic(i).succ_tx_count(cound_idx)));
+//                 all_tx_count += statistic_info.elect_statistic(i).succ_tx_count(cound_idx);
+//                 if (kqueue.size() > count) {
+//                     kqueue.pop();
+//                 }
+//             }
+// 
+//             auto avg_tx_count = all_tx_count / members->size();
+//             while (!kqueue.empty()) {
+//                 auto item = kqueue.top();
+//                 if (item.second < avg_tx_count) {
+//                     (*nodes)[item.first] = item.second;
+//                 }
+// 
+//                 kqueue.pop();
+//             }
+//         }
+//     }
 }
 
 int ElectPoolManager::GetAllBloomFilerAndNodes(
-        const elect::protobuf::StatisticInfo& statistic_info,
+        const elect::protobuf::ElectStatistic& statistic_info,
         uint32_t shard_netid,
         common::BloomFilter* cons_all,
         common::BloomFilter* cons_weed_out,
@@ -459,9 +416,9 @@ int ElectPoolManager::GetAllBloomFilerAndNodes(
                 (*iter)->init_pool_index_mod_num = -1;
             }
 
-            if (statistic_info.all_tx_count() / 2 * 3 >= kEachShardMaxTps) {
-                // TODO: statistic to add new consensus shard
-            }
+//             if (statistic_info.all_tx_count() / 2 * 3 >= kEachShardMaxTps) {
+//                 // TODO: statistic to add new consensus shard
+//             }
 
             uint32_t pick_in_count = weed_out_count;
             if (elect_mgr_->GetMemberCount(shard_netid) <
