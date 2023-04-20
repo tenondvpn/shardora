@@ -94,6 +94,17 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (header.has_cross_tos()) {
         HandleCrossShardingToTxs(msg_ptr);
     }
+
+    if (header.has_cross_statistic()) {
+        HandleCrossShardingStatisticTxs(msg_ptr);
+    }
+}
+
+void TxPoolManager::HandleCrossShardingStatisticTxs(const transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
+    auto block_ptr = std::make_shared<block::protobuf::Block>(header.cross_statistic().block());
+    block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_ptr);
+
 }
 
 void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
@@ -222,22 +233,6 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
 
 void TxPoolManager::HandleCrossShardingToTxs(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
-    if (header.has_sync() && header.sync().items_size() > 0) {
-        db::DbWriteBatch db_batch;
-        for (int32_t i = 0; i < header.sync().items_size(); ++i) {
-            prefix_db_->SaveTemporaryKv(
-                header.sync().items(i).key(),
-                header.sync().items(i).value(),
-                db_batch);
-            ZJC_DEBUG("save key: %s",
-                common::Encode::HexEncode(header.sync().items(i).key()).c_str());
-        }
-
-        if (!db_->Put(db_batch).ok()) {
-            ZJC_FATAL("write db failed!");
-        }
-    }
-
     auto block_ptr = std::make_shared<block::protobuf::Block>(header.cross_tos().block());
     block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_ptr);
 }

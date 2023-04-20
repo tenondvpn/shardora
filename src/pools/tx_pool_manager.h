@@ -126,6 +126,7 @@ private:
     void HandleUserCallContractTx(const transport::MessagePtr& msg_ptr);
     void HandleNormalFromTx(const transport::MessagePtr& msg_ptr);
     void HandleCrossShardingToTxs(const transport::MessagePtr& msg_ptr);
+    void HandleCrossShardingStatisticTxs(const transport::MessagePtr& msg_ptr);
     void HandleContractExcute(const transport::MessagePtr& msg_ptr);
     bool UserTxValid(const transport::MessagePtr& msg_ptr);
 
