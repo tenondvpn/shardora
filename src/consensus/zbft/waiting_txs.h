@@ -19,11 +19,7 @@ public:
         pools_mgr_ = pools_mgr;
     }
 
-    std::shared_ptr<WaitingTxsItem> LeaderGetValidTxs(bool direct) {
-        if (direct) {
-            return DirectGetValidTxs();
-        }
-
+    std::shared_ptr<WaitingTxsItem> LeaderGetValidTxs() {
         return LeaderGetTxs();
     }
 
@@ -49,17 +45,6 @@ public:
     }
 
 private:
-    std::shared_ptr<WaitingTxsItem> DirectGetValidTxs() {
-        auto tx_items_ptr = std::make_shared<WaitingTxsItem>();
-        auto& tx_vec = tx_items_ptr->txs;
-        pools_mgr_->GetTx(pool_index_, kMaxTxCount, tx_vec);
-        if (tx_vec.empty()) {
-            return nullptr;
-        }
-
-        return tx_items_ptr;
-    }
-
     std::shared_ptr<WaitingTxsItem> LeaderGetTxs() {
         txs_items_ = std::make_shared<WaitingTxsItem>();
         auto& tx_vec = txs_items_->txs;

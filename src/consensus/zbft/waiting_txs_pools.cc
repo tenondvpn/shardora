@@ -31,12 +31,10 @@ std::string WaitingTxsPools::latest_hash(uint32_t pool_index) const {
     return pool_mgr_->latest_hash(pool_index);
 }
 
-std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(
-        bool direct,
-        uint32_t pool_index) {
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool_index) {
     std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(pool_index);
     if (txs_item == nullptr) {
-        txs_item = wtxs[pool_index].LeaderGetValidTxs(direct);
+        txs_item = wtxs[pool_index].LeaderGetValidTxs();
     }
 
     if (txs_item != nullptr) {

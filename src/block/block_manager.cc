@@ -697,6 +697,7 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
     pools::protobuf::ToTxHeights& to_heights = *block_msg.mutable_shard_statistic_tx();
     int res = statistic_mgr_->LeaderCreateStatisticHeights(to_heights);
     if (res != pools::kPoolsSuccess || to_heights.heights_size() <= 0) {
+        ZJC_WARN("leader create statistic heights failed!");
         return;
     }
 
@@ -705,6 +706,7 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
     msg_ptr->thread_idx = thread_idx;
     network::Route::Instance()->Send(msg_ptr);
     HandleStatisticMessage(msg_ptr);
+    ZJC_DEBUG("leader success broadcast statistic heights.");
 }
 
 void BlockManager::CreateToTx(uint8_t thread_idx) {
@@ -736,8 +738,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kBlockMessage);
     auto& block_msg = *msg.mutable_block_proto();
-    for (uint32_t i = network::kRootCongressNetworkId;
-            i <= max_consensus_sharding_id_; ++i) {
+    for (uint32_t i = network::kRootCongressNetworkId; i <= max_consensus_sharding_id_; ++i) {
         auto tmp_to_txs = to_txs_[i];
         if (tmp_to_txs != nullptr && tmp_to_txs->tx_ptr->in_consensus) {
             continue;

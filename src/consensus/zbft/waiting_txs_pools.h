@@ -33,7 +33,7 @@ public:
 
     uint64_t latest_height(uint32_t pool_index) const;
     std::string latest_hash(uint32_t pool_index) const;
-    std::shared_ptr<WaitingTxsItem> LeaderGetValidTxs(bool direct, uint32_t pool_index);
+    std::shared_ptr<WaitingTxsItem> LeaderGetValidTxs(uint32_t pool_index);
     std::shared_ptr<WaitingTxsItem> GetToTxs(uint32_t pool_index, bool leader);
     std::shared_ptr<WaitingTxsItem> GetStatisticTx(uint32_t pool_index, bool leader);
     std::shared_ptr<WaitingTxsItem> GetTimeblockTx(uint32_t pool_index, bool leader);

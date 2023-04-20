@@ -253,7 +253,7 @@ ZbftPtr BftManager::Start(
             continue;
         }
 
-        txs_ptr = txs_pools_->LeaderGetValidTxs(false, pool_idx);
+        txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
         if (txs_ptr != nullptr) {
             // now leader create zbft ptr and start consensus
             break;
@@ -273,7 +273,7 @@ ZbftPtr BftManager::Start(
                 continue;
             }
 
-            txs_ptr = txs_pools_->LeaderGetValidTxs(false, pool_idx);
+            txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
             if (txs_ptr != nullptr) {
                 // now leader create zbft ptr and start consensus
                 break;
