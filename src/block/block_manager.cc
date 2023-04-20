@@ -192,7 +192,7 @@ void BlockManager::HandleStatisticTx(
         return;
     }
 
-    HandleStatisticBlock(thread_idx, block, tx, db_batch);
+    HandleStatisticBlock(block, tx, db_batch);
 }
 
 void BlockManager::HandleNormalToTx(
@@ -555,7 +555,7 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
 
 void BlockManager::HandleStatisticBlock(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
+        const block::protobuf::BlockTx& block_tx,
         db::DbWriteBatch& db_batch) {
     if (create_elect_tx_cb_ == nullptr) {
         return;
@@ -565,7 +565,7 @@ void BlockManager::HandleStatisticBlock(
     auto shard_iter = shard_timeblock_statistic_.find(block.network_id());
     if (shard_iter == shard_timeblock_statistic_.end()) {
         shard_timeblock_statistic_[block.network_id()] =
-            std::unordered_map<uint64_t, std::shared_ptr<pools::protobuf::ElectStatistic>>();
+            std::map<uint64_t, std::shared_ptr<pools::protobuf::ElectStatistic>>();
         shard_iter = shard_timeblock_statistic_.find(block.network_id());
     }
 
@@ -584,10 +584,10 @@ void BlockManager::HandleStatisticBlock(
         return;
     }
 
-    for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).key() == protos::kShardStatistic) {
+    for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
+        if (block_tx.storages(i).key() == protos::kShardStatistic) {
             std::string val;
-            if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+            if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
                 return;
             }
 
@@ -632,7 +632,6 @@ void BlockManager::HandleStatisticBlock(
     new_msg_ptr->address_info = account_mgr_->GetStatisticAddressInfo(0);
     shard_elect_tx->tx_ptr = create_elect_tx_cb_(new_msg_ptr);
     shard_elect_tx->tx_ptr->time_valid += 3000000lu;
-    shard_elect_tx->tx_hash = statistic_hash;
     shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + 20000lu;
     shard_elect_tx_[block.network_id()] = shard_elect_tx;
     ZJC_DEBUG("success add elect tx: %u, %lu", block.network_id(), block.timeblock_height());
