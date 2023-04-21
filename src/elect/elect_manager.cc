@@ -67,9 +67,6 @@ ElectManager::ElectManager(
         elect_net_heights_map_[i] = common::kInvalidUint64;
     }
 
-    waiting_hb_tick_.CutOff(
-        kWaitingHeartbeatPeriod,
-        std::bind(&ElectManager::WaitingNodeSendHeartbeat, this));
     ELECT_DEBUG("TTTTTTTTT ElectManager RegisterMessage called!");
 }
 
@@ -733,33 +730,6 @@ uint32_t ElectManager::GetMemberCount(uint32_t network_id) {
 
 int32_t ElectManager::GetNetworkLeaderCount(uint32_t network_id) {
     return latest_leader_count_[network_id];
-}
-
-void ElectManager::WaitingNodeSendHeartbeat() {
-    uint32_t net_id = common::GlobalInfo::Instance()->network_id();
-    if (net_id >= network::kRootCongressWaitingNetworkId &&
-            net_id < network::kConsensusWaitingShardEndNetworkId) {
-        net_id -= network::kConsensusWaitingShardOffset;
-    }
-
-    bool joined = IsIdExistsInAnyShard(security_->GetAddress());
-    if (!joined) {
-        auto dht = network::DhtManager::Instance()->GetDht(
-            common::GlobalInfo::Instance()->network_id());
-        if (dht) {
-            transport::protobuf::Header msg;
-            elect::ElectProto::CreateWaitingHeartbeat(
-                security_,
-                dht->local_node(),
-                net_id + network::kConsensusWaitingShardOffset,
-                msg);
-            network::Route::Instance()->Send(nullptr);
-        }
-    }
-
-    waiting_hb_tick_.CutOff(
-        kWaitingHeartbeatPeriod,
-        std::bind(&ElectManager::WaitingNodeSendHeartbeat, this));
 }
 
 bool ElectManager::IsIdExistsInAnyShard(const std::string& id) {

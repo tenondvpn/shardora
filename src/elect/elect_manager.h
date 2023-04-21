@@ -140,7 +140,6 @@ public:
 
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
-    void WaitingNodeSendHeartbeat();
     void AddNewNodeWithIdAndIp(uint32_t network_id, const std::string& id, uint32_t ip);
     void ClearExistsNetwork(uint32_t network_id);
     void UpdatePrevElectMembers(
