@@ -195,69 +195,7 @@ int ElectPoolManager::BackupCheckElectionBlockTx(
 }
 
 void ElectPoolManager::OnTimeBlock(uint64_t tm_block_tm) {
-    std::unordered_map<uint32_t, ElectWaitingNodesPtr> waiting_pool_map;
-    {
-        std::lock_guard<std::mutex> guard(waiting_pool_map_mutex_);
-        waiting_pool_map = waiting_pool_map_;
-    }
-
-    for (auto iter = waiting_pool_map.begin(); iter != waiting_pool_map.end(); ++iter) {
-        iter->second->OnTimeBlock(tm_block_tm);
-    }
-}
-
-void ElectPoolManager::AddWaitingPoolNode(uint32_t network_id, NodeDetailPtr& node_ptr) {
-    if (network_id < network::kRootCongressWaitingNetworkId ||
-            network_id >= network::kConsensusWaitingShardEndNetworkId) {
-        return;
-    }
-
-    ElectWaitingNodesPtr waiting_pool_ptr = nullptr;
-    {
-        std::lock_guard<std::mutex> guard(waiting_pool_map_mutex_);
-        auto iter = waiting_pool_map_.find(network_id);
-        if (iter == waiting_pool_map_.end()) {
-            waiting_pool_ptr = std::make_shared<ElectWaitingNodes>(
-                elect_mgr_,
-                security_ptr_,
-                stoke_mgr_,
-                network_id,
-                this);
-            waiting_pool_map_[network_id] = waiting_pool_ptr;
-        } else {
-            waiting_pool_ptr = iter->second;
-        }
-    }
-
-    waiting_pool_ptr->AddNewNode(node_ptr);
-}
-
-void ElectPoolManager::UpdateNodesStoke() {
-    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-        std::unordered_map<uint32_t, ElectWaitingNodesPtr> waiting_pool_map;
-        {
-            std::lock_guard<std::mutex> guard(waiting_pool_map_mutex_);
-            waiting_pool_map = waiting_pool_map_;
-        }
-
-        for (auto iter = waiting_pool_map.begin(); iter != waiting_pool_map.end(); ++iter) {
-            iter->second->UpdateWaitingNodeStoke();
-            usleep(100000);
-        }
-
-        std::unordered_map<uint32_t, ElectPoolPtr> elect_pool_map;
-        {
-            std::lock_guard<std::mutex> guard(elect_pool_map_mutex_);
-            elect_pool_map = elect_pool_map_;
-        }
-
-        for (auto iter = elect_pool_map.begin(); iter != elect_pool_map.end(); ++iter) {
-            iter->second->UpdateNodesStoke();
-            usleep(100000);
-        }
-    }
-
-    update_stoke_tick_.CutOff(30000000l, std::bind(&ElectPoolManager::UpdateNodesStoke, this));
+    
 }
 
 void ElectPoolManager::GetInvalidLeaders(
