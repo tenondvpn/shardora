@@ -294,27 +294,32 @@ public:
         auto sharding_id = elect_block.shard_network_id();
         key.append((char*)&sharding_id, sizeof(sharding_id));
         db_batch.Put(key, elect_block.SerializeAsString());
-        auto iter = latest_elect_heights_.find(sharding_id);
-        if (iter == latest_elect_heights_.end()) {
-            latest_elect_heights_[sharding_id] = std::set<uint64_t>();
-            iter = latest_elect_heights_.find(sharding_id);
-        }
-
-        auto height = elect_block.elect_height();
-        iter->second.insert(height);
-        auto biter = iter->second.begin();
-        while (iter->second.size() > kSaveElectHeightCount) {
-            iter->second.erase(biter++);
-        }
 
         key.clear();
         key.reserve(64);
         key.append(kSaveLatestElectHeightPrefix);
         key.append((char*)&sharding_id, sizeof(sharding_id));
+        auto st = db_->Get(key, &val);
+        std::set<uint64_t> height_set;
+        if (st.ok()) {
+            uint64_t* tmp = (uint64_t*)val.c_str();
+            uint32_t len = val.size() / 8;
+            for (uint32_t i = 0; i < len; ++i) {
+                height_set.insert(tmp[i]);
+            }
+        }
+
+        auto height = elect_block.elect_height();
+        height_set.insert(height);
+        auto biter = height_set.begin();
+        while (height_set.size() > kSaveElectHeightCount) {
+            height_set.erase(biter++);
+        }
+
         char data[8 * kSaveElectHeightCount];
         uint64_t* tmp = (uint64_t*)data;
         uint32_t idx = 0;
-        for (auto hiter = iter->second.begin(); hiter != iter->second.end(); ++hiter) {
+        for (auto hiter = height_set.begin(); hiter != height_set.end(); ++hiter) {
             tmp[idx++] = *hiter;
         }
 
@@ -1121,12 +1126,21 @@ public:
     }
 
     void GetElectNodeMinStoke(uint32_t sharding_id, const std::string& id, uint64_t* stoke) {
-        auto iter = latest_elect_heights_.find(sharding_id);
-        if (iter == latest_elect_heights_.end()) {
-            return;
+        std::string key;
+        key.reserve(64);
+        key.append(kSaveLatestElectHeightPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        auto st = db_->Get(key, &val);
+        std::set<uint64_t> height_set;
+        if (st.ok()) {
+            uint64_t* tmp = (uint64_t*)val.c_str();
+            uint32_t len = val.size() / 8;
+            for (uint32_t i = 0; i < len; ++i) {
+                height_set.insert(tmp[i]);
+            }
         }
 
-        for (auto hiter = iter->second.begin(); hiter != iter->second.end(); ++hiter) {
+        for (auto hiter = height_set.begin(); hiter != height_set.end(); ++hiter) {
             std::string key;
             key.reserve(64);
             key.append(kElectNodesStokePrefix);

@@ -125,6 +125,10 @@ void BftManager::RegisterCreateTxCallbacks() {
 }
 
 void BftManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members) {
+    if (sharding_id > max_consensus_sharding_id_) {
+        max_consensus_sharding_id_ = sharding_id;
+    }
+
     if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
         return;
     }

@@ -152,7 +152,6 @@ private:
     volatile uint64_t now_gas_price_{ 100llu };
     volatile uint64_t gas_price_{ 1 };
     bool missing_node_{ false };
-    uint32_t consensus_shard_net_id_{ common::kInvalidUint32 };
     int32_t tcp_server_thread_count_ = 4;
     std::string ip_db_path_;
     std::unordered_map<uint64_t, uint16_t> thread_with_index_;
