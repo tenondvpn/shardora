@@ -57,7 +57,8 @@ public:
     common::MembersPtr OnNewElectBlock(
         uint8_t thread_idx,
         uint64_t height,
-        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block);
+        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block,
+        db::DbWriteBatch& db_batch);
     int GetElectionTxInfo(block::protobuf::BlockTx& tx_info);
     std::shared_ptr<elect::protobuf::ElectBlock> GetLatestElectBlock(uint32_t sharding_id) {
         return elect_block_mgr_.GetLatestElectBlock(sharding_id);

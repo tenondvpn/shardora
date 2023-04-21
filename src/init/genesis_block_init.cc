@@ -282,10 +282,10 @@ int GenesisBlockInit::CreateElectBlock(
 
     tenon_block->set_network_id(network::kRootCongressNetworkId);
     tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+    db::DbWriteBatch db_batch;
     prefix_db_->SaveLatestElectBlock(ec_block, db_batch);
     fputs((common::Encode::HexEncode(tenon_block->SerializeAsString()) + "\n").c_str(),
         root_gens_init_block_file);
-    db::DbWriteBatch db_batch;
     AddBlockItemToCache(tenon_block, db_batch);
     db_->Put(db_batch);
     block_mgr_->NetworkNewBlock(0, tenon_block);
@@ -569,7 +569,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
                         assert(false);
                     }
 
-                    prefix_db_->SaveLatestElectBlock(ec_block);
+                    prefix_db_->SaveLatestElectBlock(ec_block, db_batch);
                 }
 
                 if (tenon_block->tx_list(i).storages(j).key() == protos::kAttrTimerBlock) {
