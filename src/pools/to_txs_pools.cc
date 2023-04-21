@@ -93,8 +93,25 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
         case pools::protobuf::kContractExcute:
             HandleContractExecute(block, tx_list[i], db_batch);
             break;
+        case pools::protobuf::kJoinElect:
+            HandleJoinElect(block, tx_list[i], db_batch);
+            break;
         default:
             break;
+        }
+    }
+}
+
+void ToTxsPools::HandleJoinElect(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        if (tx.storages(i).key() == protos::kElectNodeStoke) {
+            uint64_t* tmp = (uint64_t*)tx.storages(i).val_hash().c_str();
+            // distinct with transfer transaction
+            std::string elect_to = tx.from() + common::Encode::HexEncode("0e");
+            AddTxToMap(block, elect_to, tx.step(), tmp[0], network::kRootCongressNetworkId, -1);
         }
     }
 }
@@ -277,7 +294,11 @@ void ToTxsPools::AddTxToMap(
         ZJC_DEBUG("add to %s step: %u", common::Encode::HexEncode(to).c_str(), type);
     }
 
-    height_iter->second[to].amount += amount;
+    if (step == pools::protobuf::kJoinElect) {
+        height_iter->second[to].amount = amount;
+    } else {
+        height_iter->second[to].amount += amount;
+    }
 }
 
 void ToTxsPools::HandleNormalToTx(
@@ -508,7 +529,8 @@ int ToTxsPools::CreateToTxWithHeights(
         }
 
         if (max_height > 0) {
-            ZJC_DEBUG("sharding_id: %u, pool: %d, min_height: %lu, max_height: %lu", sharding_id, pool_idx, min_height, max_height);
+            ZJC_DEBUG("sharding_id: %u, pool: %d, min_height: %lu, max_height: %lu",
+                sharding_id, pool_idx, min_height, max_height);
         }
 
         for (auto height = min_height; height <= max_height; ++height) {
@@ -525,7 +547,11 @@ int ToTxsPools::CreateToTxWithHeights(
                         to_iter->first.size(), common::Encode::HexEncode(to_iter->first).c_str());
                     acc_amount_map[to_iter->first] = to_iter->second;
                 } else {
-                    amount_iter->second.amount += to_iter->second.amount;
+                    if (amount_iter->second.type == pools::protobuf::kJoinElect) {
+                        amount_iter->second.amount = to_iter->second.amount;
+                    } else {
+                        amount_iter->second.amount += to_iter->second.amount;
+                    }
                 }
             }
         }
