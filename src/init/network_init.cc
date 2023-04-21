@@ -755,6 +755,8 @@ void NetworkInit::HandleTimeBlock(
             break;
         }
     }
+
+    SendJoinElectTransaction();
 }
 
 void NetworkInit::HandleElectionBlock(
