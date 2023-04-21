@@ -299,6 +299,7 @@ public:
         key.reserve(64);
         key.append(kSaveLatestElectHeightPrefix);
         key.append((char*)&sharding_id, sizeof(sharding_id));
+        std::string val;
         auto st = db_->Get(key, &val);
         std::set<uint64_t> height_set;
         if (st.ok()) {
@@ -1130,6 +1131,7 @@ public:
         key.reserve(64);
         key.append(kSaveLatestElectHeightPrefix);
         key.append((char*)&sharding_id, sizeof(sharding_id));
+        std::string val;
         auto st = db_->Get(key, &val);
         std::set<uint64_t> height_set;
         if (st.ok()) {
