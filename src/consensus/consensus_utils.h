@@ -65,6 +65,7 @@ enum ConsensusErrorCode {
     kConsensusRejected = 47,
     kConsensusOutOfMemory = 48,
     kConsensusOutOfPrepayment = 49,
+    kConsensusElectNodeExists = 50,
 };
 
 enum BftStatus {

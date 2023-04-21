@@ -75,7 +75,9 @@ int ToTxLocalItem::HandleTx(
     auto storage = block_tx.add_storages();
     storage->set_key(protos::kConsensusLocalNormalTos);
     storage->set_val_hash(tos_hash);
-    prefix_db_->SaveTemporaryKv(tos_hash, block_to_txs.SerializeAsString());
+    std::string val = block_to_txs.SerializeAsString();
+    storage->set_val_size(val.size());
+    prefix_db_->SaveTemporaryKv(tos_hash, val);
     ZJC_DEBUG("success consensus local transfer to");
     return consensus::kConsensusSuccess;
 }
@@ -93,7 +95,6 @@ int ToTxLocalItem::TxToBlockTx(
     auto storage = block_tx->add_storages();
     storage->set_key(tx_info.key());
     storage->set_val_hash(tx_info.value());
-    storage->set_val_size(0);
     return consensus::kConsensusSuccess;
 }
 

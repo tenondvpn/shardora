@@ -1185,7 +1185,6 @@ private:
     uint64_t prev_gid_tm_us_ = 0;
     common::Tick db_batch_tick_;
     volatile bool dumped_gid_ = false;
-    std::unordered_map<uint32_t, std::set<uint64_t>> latest_elect_heights_;
 
     DISALLOW_COPY_AND_ASSIGN(PrefixDb);
 };

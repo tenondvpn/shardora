@@ -63,6 +63,19 @@ int JoinElectTxItem::HandleTx(
         }
     }
 
+    if (elect_mgr_->IsIdExistsInAnyShard(from)) {
+        block_tx.set_status(kConsensusElectNodeExists);
+    } else {
+        uint64_t stoke = 0;
+        prefix_db_->GetElectNodeMinStoke(common::GlobalInfo::Instance()->network_id(), from, &stoke);
+        auto stoke_storage = block_tx.add_storages();
+        stoke_storage->set_key(protos::kElectNodeStoke);
+        char data[8];
+        uint64_t* tmp = (uint64_t*)data;
+        tmp[0] = stoke;
+        stoke_storage->set_val_hash(std::string(data, sizeof(data)));
+    }
+
     acc_balance_map[from] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);

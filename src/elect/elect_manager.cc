@@ -220,9 +220,7 @@ void ElectManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 (now_tm_sec <= ec_msg.waiting_heartbeat().timestamp_sec() &&
                     ec_msg.waiting_heartbeat().timestamp_sec() - now_tm_sec < 10)) {
                 auto id = security_->GetAddress(ec_msg.pubkey());
-                if (IsIdExistsInAnyShard(
-                        ec_msg.waiting_heartbeat().network_id() - network::kConsensusWaitingShardOffset,
-                        id)) {
+                if (IsIdExistsInAnyShard(id)) {
                     return;
                 }
 
@@ -265,6 +263,10 @@ common::MembersPtr ElectManager::OnNewElectBlock(
     if (elect_block.shard_network_id() >= network::kConsensusShardEndNetworkId ||
             elect_block.shard_network_id() < network::kRootCongressNetworkId) {
         return nullptr;
+    }
+
+    if (max_sharding_id_ < elect_block.shard_network_id()) {
+        max_sharding_id_ = elect_block.shard_network_id();
     }
 
     bool elected = false;
@@ -810,7 +812,7 @@ void ElectManager::WaitingNodeSendHeartbeat() {
         net_id -= network::kConsensusWaitingShardOffset;
     }
 
-    bool joined = IsIdExistsInAnyShard(net_id, security_->GetAddress());
+    bool joined = IsIdExistsInAnyShard(security_->GetAddress());
     if (!joined) {
         auto dht = network::DhtManager::Instance()->GetDht(
             common::GlobalInfo::Instance()->network_id());
@@ -830,12 +832,14 @@ void ElectManager::WaitingNodeSendHeartbeat() {
         std::bind(&ElectManager::WaitingNodeSendHeartbeat, this));
 }
 
-bool ElectManager::IsIdExistsInAnyShard(uint32_t network_id, const std::string& id) {
-    std::lock_guard<std::mutex> guard(added_net_id_set_mutex_);
-    auto iter = added_net_id_set_.find(network_id);
-    if (iter != added_net_id_set_.end()) {
-        return iter->second.find(id) != iter->second.end();
+bool ElectManager::IsIdExistsInAnyShard(const std::string& id) {
+    for (uint32_t i = network::kRootCongressNetworkId; i <= max_sharding_id_; ++i) {
+        auto iter = added_net_id_set_.find(i);
+        if (iter != added_net_id_set_.end()) {
+            return iter->second.find(id) != iter->second.end();
+        }
     }
+    
 
     return false;
 }

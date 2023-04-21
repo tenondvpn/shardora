@@ -78,7 +78,7 @@ public:
     int32_t GetNetworkLeaderCount(uint32_t network_id);
     std::shared_ptr<MemberManager> GetMemberManager(uint32_t network_id);
     common::MembersPtr GetWaitingNetworkMembers(uint32_t network_id);
-    bool IsIdExistsInAnyShard(uint32_t network_id, const std::string& id);
+    bool IsIdExistsInAnyShard(const std::string& id);
 //     bool IsIpExistsInAnyShard(uint32_t network_id, const std::string& ip);
 
     // ip::IpWeight GetIpWeight(uint64_t height, uint32_t network_id) {
@@ -204,6 +204,7 @@ private:
     ElectBlockManager elect_block_mgr_;
     std::shared_ptr<db::Db> db_ = nullptr;
     NewElectBlockCallback new_elect_cb_ = nullptr;
+    uint32_t max_sharding_id_ = 3;
 
     DISALLOW_COPY_AND_ASSIGN(ElectManager);
 };

@@ -89,18 +89,6 @@ int ElectPoolManager::GetElectionTxInfo(block::protobuf::BlockTx& tx_info) {
         return kElectError;
     }
 
-    auto all_exits_attr = tx_info.add_storages();
-    all_exits_attr->set_key(protos::kElectNodeAttrKeyAllBloomfilter);
-    all_exits_attr->set_val_hash(cons_all.Serialize());
-    auto weed_out_attr = tx_info.add_storages();
-    weed_out_attr->set_key(protos::kElectNodeAttrKeyWeedoutBloomfilter);
-    weed_out_attr->set_val_hash(cons_weed_out.Serialize());
-    auto all_pick_attr = tx_info.add_storages();
-    all_pick_attr->set_key(protos::kElectNodeAttrKeyAllPickBloomfilter);
-    all_pick_attr->set_val_hash(pick_all.Serialize());
-    auto pick_in_attr = tx_info.add_storages();
-    pick_in_attr->set_key(protos::kElectNodeAttrKeyPickInBloomfilter);
-    pick_in_attr->set_val_hash(pick_in.Serialize());
     elect::protobuf::ElectBlock ec_block;
     int32_t idx = 0;
     for (auto iter = elected_nodes.begin(); iter != elected_nodes.end(); ++iter) {
