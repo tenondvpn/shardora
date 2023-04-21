@@ -454,7 +454,7 @@ void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {
     if (!prefix_db_->GetConsensusedStatisticTimeBlockHeight(
             common::GlobalInfo::Instance()->network_id(),
             &consensused_timeblock_height_)) {
-        ZJC_FATAL("init latest consensused statistic time block height failed!");
+        ZJC_ERROR("init latest consensused statistic time block height failed!");
         return;
     }
 
