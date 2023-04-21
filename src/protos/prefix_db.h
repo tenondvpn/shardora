@@ -324,8 +324,8 @@ public:
             tmp[idx++] = *hiter;
         }
 
-        std::string val(data, sizeof(data));
-        db_batch.Put(key, val);
+        std::string db_val(data, sizeof(data));
+        db_batch.Put(key, db_val);
         ZJC_DEBUG("save elect block sharding id: %u, height: %lu",
             sharding_id, elect_block.elect_height());
     }
