@@ -307,7 +307,7 @@ public:
             iter->second.erase(biter++);
         }
 
-        std::string key;
+        key.clear();
         key.reserve(64);
         key.append(kSaveLatestElectHeightPrefix);
         key.append((char*)&sharding_id, sizeof(sharding_id));
@@ -1099,7 +1099,7 @@ public:
         uint64_t* tmp = (uint64_t*)val.c_str();
         uint32_t len = val.size() / 8;
         for (uint32_t i = 0; i < len; ++i) {
-            height_set->insert(tmp[i]);
+            height_set.insert(tmp[i]);
         }
     }
 
@@ -1130,9 +1130,10 @@ public:
             std::string key;
             key.reserve(64);
             key.append(kElectNodesStokePrefix);
-            key.append(id, id);
+            key.append(id);
             uint64_t elect_height = *hiter;
             key.append((char*)&elect_height, sizeof(elect_height));
+            std::string val;
             auto st = db_->Get(key, &val);
             if (!st.ok()) {
                 continue;
