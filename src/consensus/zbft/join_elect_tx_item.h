@@ -2,6 +2,7 @@
 
 #include "block/account_manager.h"
 #include "consensus/zbft/tx_item_base.h"
+#include "elect/elect_manager.h"
 #include "security/security.h"
 
 namespace zjchain {
