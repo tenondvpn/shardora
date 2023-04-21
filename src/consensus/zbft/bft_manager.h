@@ -15,6 +15,7 @@
 #include "consensus/zbft/contract_user_create_call.h"
 #include "consensus/zbft/elect_tx_item.h"
 #include "consensus/zbft/from_tx_item.h"
+#include "consensus/zbft/join_elect_tx_item.h"
 #include "consensus/zbft/root_to_tx_item.h"
 #include "consensus/zbft/statistic_tx_item.h"
 #include "consensus/zbft/time_block_tx.h"
@@ -162,6 +163,10 @@ private:
 
     pools::TxItemPtr CreateElectTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ElectTxItem>(msg_ptr, account_mgr_, security_ptr_);
+    }
+
+    pools::TxItemPtr CreateJoinElectTx(const transport::MessagePtr& msg_ptr) {
+        return std::make_shared<JoinElectTxItem>(msg_ptr, account_mgr_, security_ptr_);
     }
 
     pools::TxItemPtr CreateContractUserCreateCallTx(const transport::MessagePtr& msg_ptr) {

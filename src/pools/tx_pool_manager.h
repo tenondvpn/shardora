@@ -128,6 +128,7 @@ private:
     void HandleCrossShardingToTxs(const transport::MessagePtr& msg_ptr);
     void HandleCrossShardingStatisticTxs(const transport::MessagePtr& msg_ptr);
     void HandleContractExcute(const transport::MessagePtr& msg_ptr);
+    void HandleElectTx(const transport::MessagePtr& msg_ptr);
     bool UserTxValid(const transport::MessagePtr& msg_ptr);
 
     static const uint32_t kPopMessageCountEachTime = 320u;

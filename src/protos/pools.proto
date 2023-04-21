@@ -19,6 +19,7 @@ enum StepType {
     kRootCreateAddressCrossSharding = 12;
     kContractGasPrepayment = 13;
     kStatistic = 14;
+    kJoinElect = 15;
 }
 
 message ToTxHeights {

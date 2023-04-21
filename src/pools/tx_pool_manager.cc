@@ -24,6 +24,7 @@ TxPoolManager::TxPoolManager(
     security_ = security;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    prefix_db_->InitGidManager()
     tx_pool_ = new TxPool[common::kInvalidPoolIndex];
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         tx_pool_[i].Init(i, db, kv_sync);
@@ -64,6 +65,9 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (header.has_tx_proto()) {
         auto& tx_msg = header.tx_proto();
         switch (tx_msg.step()) {
+        case pools::protobuf::kJoinElect:
+            HandleElectTx(msg_ptr);
+            break;
         case pools::protobuf::kNormalFrom:
             HandleNormalFromTx(msg_ptr);
             break;
@@ -100,11 +104,52 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 }
 
+void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
+    auto& tx_msg = header.tx_proto();
+    msg_ptr->address_info = GetAddressInfo(security_->GetAddress(tx_msg.pubkey()));
+    if (msg_ptr->address_info == nullptr) {
+        ZJC_WARN("no address info.");
+        return;
+    }
+
+    if (msg_ptr->address_info->balance() < kJoinElectGas) {
+        return;
+    }
+
+    if (msg_ptr->address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+        ZJC_WARN("sharding error: %d, %d",
+            msg_ptr->address_info->sharding_id(),
+            common::GlobalInfo::Instance()->network_id());
+        return;
+    }
+
+    if (tx_msg.has_key() && tx_msg.key().size() > kTxStorageKeyMaxSize) {
+        ZJC_DEBUG("key size error now: %d, max: %d.",
+            tx_msg.key().size(), kTxStorageKeyMaxSize);
+        return;
+    }
+
+    msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
+    if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
+        // avoid save gid different tx
+        ZJC_DEBUG("tx msg hash exists: %s failed!",
+            common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+        return;
+    }
+
+    if (prefix_db_->GidExists(tx_msg.gid())) {
+        ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+        return;
+    }
+
+    msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
+}
+
 void TxPoolManager::HandleCrossShardingStatisticTxs(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto block_ptr = std::make_shared<block::protobuf::Block>(header.cross_statistic().block());
     block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_ptr);
-
 }
 
 void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
@@ -269,7 +314,8 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
         transport::MessagePtr msg_ptr = nullptr;
         msg_queues_[pool_index].pop(&msg_ptr);
         auto& tx_msg = msg_ptr->header.tx_proto();
-        if (tx_msg.step() == pools::protobuf::kNormalFrom) {
+        if (tx_msg.step() == pools::protobuf::kNormalFrom ||
+                tx_msg.step() == pools::protobuf::kJoinElect) {
             if (security_->Verify(
                     msg_ptr->msg_hash,
                     tx_msg.pubkey(),

@@ -59,14 +59,17 @@ static const std::string kRootStatisticedPrefix = "y\x01";
 class PrefixDb {
 public:
     PrefixDb(const std::shared_ptr<db::Db>& db_ptr) : db_(db_ptr) {
-//         gid_set_[0].reserve(30240);
-//         gid_set_[1].reserve(30240);
-//         db_batch_tick_.CutOff(
-//             5000000lu,
-//             std::bind(&PrefixDb::DumpGidToDb, this, std::placeholders::_1));
     }
 
     ~PrefixDb() {}
+
+    void InitGidManager() {
+        gid_set_[0].reserve(30240);
+        gid_set_[1].reserve(30240);
+        db_batch_tick_.CutOff(
+            5000000lu,
+            std::bind(&PrefixDb::DumpGidToDb, this, std::placeholders::_1));
+    }
 
     void Destroy() {
         for (int32_t i = 0; i < 2; ++i) {

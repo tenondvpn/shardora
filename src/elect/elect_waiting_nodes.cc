@@ -39,8 +39,6 @@ void ElectWaitingNodes::UpdateWaitingNodes(
         const common::BloomFilter& nodes_filter) {
     std::lock_guard<std::mutex> guard(all_nodes_waiting_map_mutex_);
     std::string coming_id = root_node_id;
-    //  + std::to_string(
-    //     tmblock::TimeBlockManager::Instance()->LatestTimestamp());
     if (coming_root_nodes_.find(coming_id) != coming_root_nodes_.end()) {
         return;
     }

@@ -56,6 +56,7 @@ int ElectPoolManager::GetElectionTxInfo(block::protobuf::BlockTx& tx_info) {
                     static_cast<uint32_t>(tmp[0]),
                     tmp[1],
                     &elect_statistic)) {
+                assert(false);
                 return kElectError;
             }
 
@@ -379,34 +380,51 @@ int ElectPoolManager::GetAllBloomFilerAndNodes(
         common::BloomFilter* pick_in,
         std::vector<NodeDetailPtr>& elected_nodes,
         std::set<std::string>& weed_out_ids) {
-    uint64_t etime0 = common::TimeUtils::TimestampMs();
-    ElectPoolPtr consensus_pool_ptr = nullptr;
-    {
-        std::lock_guard<std::mutex> guard(elect_pool_map_mutex_);
-        auto iter = elect_pool_map_.find(shard_netid);
-        if (iter == elect_pool_map_.end()) {
-            ELECT_ERROR("find shard network failed [%u]!", shard_netid);
-            return kElectError;
-        }
-
-        consensus_pool_ptr = iter->second;
+    std::set<uint32_t> invalid_nodes;
+    typedef std::pair<uint32_t, uint32_t> TxItem;
+    std::vector<TxItem> member_tx_count;
+    auto members = elect_mgr_->GetNetworkMembersWithHeight(
+        latest_elect_height_,
+        shard_netid,
+        nullptr,
+        nullptr);
+    if (members == nullptr) {
+        ZJC_WARN("get members failed, elect height: %lu, net: %u",
+            latest_elect_height_, shard_netid);
+        assert(false);
+        return kElectError;
     }
 
-    // get consensus shard nodes and weed out nodes
-    uint64_t min_balance = 0;
-    uint64_t max_balance = 0;
-    std::vector<NodeDetailPtr> exists_shard_nodes;
-    consensus_pool_ptr->GetAllValidNodes(*cons_all, exists_shard_nodes);
-    uint32_t weed_out_count = exists_shard_nodes.size() * kFtsWeedoutDividRate / 100;
-    ElectWaitingNodesPtr waiting_pool_ptr = nullptr;
-    {
-        std::lock_guard<std::mutex> guard(waiting_pool_map_mutex_);
-        auto iter = waiting_pool_map_.find(shard_netid + network::kConsensusWaitingShardOffset);
-        if (iter != waiting_pool_map_.end()) {
-            waiting_pool_ptr = iter->second;
+    uint32_t weed_out_count = members->size() * kFtsWeedoutDividRate / 100;
+    uint32_t direct_weed_out_count = weed_out_count / 2;
+    for (int32_t i = 0; i < statistic_info.statistics_size(); ++i) {
+        if (statistic_info.statistics(i).elect_height() == latest_elect_height_) {
+            uint32_t max_tx_count = 0;
+            for (int32_t member_idx = 0;
+                    member_idx < statistic_info.statistics(i).tx_count_size(); ++member_idx) {
+                if (statistic_info.statistics(i).tx_count(member_idx) > max_tx_count) {
+                    max_tx_count = statistic_info.statistics(i).tx_count(member_idx);
+                }
+
+                member_tx_count.push_back(std::make_pair(
+                    member_idx,
+                    statistic_info.statistics(i).tx_count(member_idx)));
+            }
+
+            uint32_t direct_weedout_tx_count = max_tx_count / 2;
+            std::sort(
+                member_tx_count.begin(),
+                member_tx_count.end(), [](const TxItem& l, const TxItem& r) {
+                return l.second > r.second;});
+            for (int32_t i = 0; i < direct_weed_out_count; ++i) {
+                if (member_tx_count[i].second < direct_weedout_tx_count) {
+                    invalid_nodes.insert(member_tx_count[i].first);
+                }
+            }
         }
     }
 
+    weed_out_count -= invalid_nodes.size();
     std::set<int32_t> pick_in_vec;
     std::vector<NodeDetailPtr> pick_all_vec;
     if (waiting_pool_ptr != nullptr) {
