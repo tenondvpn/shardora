@@ -427,122 +427,122 @@ int ElectPoolManager::GetAllBloomFilerAndNodes(
     weed_out_count -= invalid_nodes.size();
     std::set<int32_t> pick_in_vec;
     std::vector<NodeDetailPtr> pick_all_vec;
-    if (waiting_pool_ptr != nullptr) {
-        waiting_pool_ptr->GetAllValidNodes(*pick_all, pick_all_vec);
-        if (!pick_all_vec.empty()) {
-            for (auto iter = pick_all_vec.begin(); iter != pick_all_vec.end(); ++iter) {
-                (*iter)->init_pool_index_mod_num = -1;
-            }
-
-//             if (statistic_info.all_tx_count() / 2 * 3 >= kEachShardMaxTps) {
-//                 // TODO: statistic to add new consensus shard
+//     if (waiting_pool_ptr != nullptr) {
+//         waiting_pool_ptr->GetAllValidNodes(*pick_all, pick_all_vec);
+//         if (!pick_all_vec.empty()) {
+//             for (auto iter = pick_all_vec.begin(); iter != pick_all_vec.end(); ++iter) {
+//                 (*iter)->init_pool_index_mod_num = -1;
 //             }
+// 
+// //             if (statistic_info.all_tx_count() / 2 * 3 >= kEachShardMaxTps) {
+// //                 // TODO: statistic to add new consensus shard
+// //             }
+// 
+//             uint32_t pick_in_count = weed_out_count;
+//             if (elect_mgr_->GetMemberCount(shard_netid) <
+//                     (int32_t)common::kEachShardMaxNodeCount) {
+//                 pick_in_count += weed_out_count / 2;
+//                 if (pick_in_count <= 0) {
+//                     pick_in_count = 1;
+//                 }
+// 
+//                 if (pick_in_count + elect_mgr_->GetMemberCount(shard_netid) >
+//                         (int32_t)common::kEachShardMaxNodeCount) {
+//                     pick_in_count = common::kEachShardMaxNodeCount -
+//                         elect_mgr_->GetMemberCount(shard_netid);
+//                 }
+// 
+//                 if (pick_in_count <= weed_out_count) {
+//                     pick_in_count = weed_out_count + 1;
+//                 }
+//             }
+// 
+//             FtsGetNodes(
+//                 shard_netid,
+//                 false,
+//                 pick_in_count,
+//                 pick_in,
+//                 pick_all_vec,
+//                 pick_in_vec);
+//         }
+//     }
 
-            uint32_t pick_in_count = weed_out_count;
-            if (elect_mgr_->GetMemberCount(shard_netid) <
-                    (int32_t)common::kEachShardMaxNodeCount) {
-                pick_in_count += weed_out_count / 2;
-                if (pick_in_count <= 0) {
-                    pick_in_count = 1;
-                }
-
-                if (pick_in_count + elect_mgr_->GetMemberCount(shard_netid) >
-                        (int32_t)common::kEachShardMaxNodeCount) {
-                    pick_in_count = common::kEachShardMaxNodeCount -
-                        elect_mgr_->GetMemberCount(shard_netid);
-                }
-
-                if (pick_in_count <= weed_out_count) {
-                    pick_in_count = weed_out_count + 1;
-                }
-            }
-
-            FtsGetNodes(
-                shard_netid,
-                false,
-                pick_in_count,
-                pick_in,
-                pick_all_vec,
-                pick_in_vec);
-        }
-    }
-
-    // Optimize a certain ratio of nodes with the smallest amount of sharing
-    std::map<int32_t, uint32_t> direct_weed_out;
-    GetMiniTopNInvalidNodes(
-        shard_netid,
-        statistic_info,
-        exists_shard_nodes.size() * kInvalidShardNodesRate / 100,
-        &direct_weed_out);
-    GetInvalidLeaders(shard_netid, statistic_info, &direct_weed_out);
-    std::set<int32_t> weed_out_set;
-    for (auto iter = direct_weed_out.begin(); iter != direct_weed_out.end(); ++iter) {
-        if ((uint32_t)iter->first >= exists_shard_nodes.size()) {
-            return kElectError;
-        }
-
-        if (pick_in_vec.size() >= weed_out_count || iter->second == 0) {
-            weed_out_set.insert(iter->first);
-        }
-    }
-
-    if (weed_out_count >= weed_out_set.size()) {
-        weed_out_count -= weed_out_set.size();
-    } else {
-        weed_out_count = 0;
-    }
-
-    if (pick_in_vec.size() < weed_out_count + weed_out_set.size()) {
-        if (pick_in_vec.size() < weed_out_set.size()) {
-            weed_out_count = 0;
-        } else {
-            weed_out_count = pick_in_vec.size() - weed_out_set.size();
-        }
-    }
-
-    if (weed_out_count > 0) {
-        FtsGetNodes(
-            shard_netid,
-            true,
-            weed_out_count,
-            cons_weed_out,
-            exists_shard_nodes,
-            weed_out_set);
-    }
-    std::set<std::string> elected_ids;
-    int32_t idx = 0;
-    for (auto iter = exists_shard_nodes.begin(); iter != exists_shard_nodes.end(); ++iter) {
-        cons_all->Add(common::Hash::Hash64((*iter)->id));
-        if (weed_out_set.find(idx++) != weed_out_set.end()) {
-            weed_out_ids.insert((*iter)->id);
-            continue;
-        }
-
-        if (elected_ids.find((*iter)->id) != elected_ids.end()) {
-            continue;
-        }
-
-        elected_ids.insert((*iter)->id);
-        elected_nodes.push_back(*iter);
-    }
-
-    for (auto iter = pick_in_vec.begin(); iter != pick_in_vec.end(); ++iter) {
-        if (elected_ids.find(pick_all_vec[*iter]->id) != elected_ids.end()) {
-            continue;
-        }
-
-        elected_ids.insert(pick_all_vec[*iter]->id);
-        elected_nodes.push_back(pick_all_vec[*iter]);
-    }
-
-    struct RangGen {
-        int operator() (int n) {
-            return std::rand() / (1.0 + RAND_MAX) * n;
-        }
-    };
-
-    // std::srand(static_cast<uint32_t>(vss::VssManager::Instance()->EpochRandom() % RAND_MAX));
-    std::random_shuffle(elected_nodes.begin(), elected_nodes.end(), RangGen());
+//     // Optimize a certain ratio of nodes with the smallest amount of sharing
+//     std::map<int32_t, uint32_t> direct_weed_out;
+//     GetMiniTopNInvalidNodes(
+//         shard_netid,
+//         statistic_info,
+//         exists_shard_nodes.size() * kInvalidShardNodesRate / 100,
+//         &direct_weed_out);
+//     GetInvalidLeaders(shard_netid, statistic_info, &direct_weed_out);
+//     std::set<int32_t> weed_out_set;
+//     for (auto iter = direct_weed_out.begin(); iter != direct_weed_out.end(); ++iter) {
+//         if ((uint32_t)iter->first >= exists_shard_nodes.size()) {
+//             return kElectError;
+//         }
+// 
+//         if (pick_in_vec.size() >= weed_out_count || iter->second == 0) {
+//             weed_out_set.insert(iter->first);
+//         }
+//     }
+// 
+//     if (weed_out_count >= weed_out_set.size()) {
+//         weed_out_count -= weed_out_set.size();
+//     } else {
+//         weed_out_count = 0;
+//     }
+// 
+//     if (pick_in_vec.size() < weed_out_count + weed_out_set.size()) {
+//         if (pick_in_vec.size() < weed_out_set.size()) {
+//             weed_out_count = 0;
+//         } else {
+//             weed_out_count = pick_in_vec.size() - weed_out_set.size();
+//         }
+//     }
+// 
+//     if (weed_out_count > 0) {
+//         FtsGetNodes(
+//             shard_netid,
+//             true,
+//             weed_out_count,
+//             cons_weed_out,
+//             exists_shard_nodes,
+//             weed_out_set);
+//     }
+//     std::set<std::string> elected_ids;
+//     int32_t idx = 0;
+//     for (auto iter = exists_shard_nodes.begin(); iter != exists_shard_nodes.end(); ++iter) {
+//         cons_all->Add(common::Hash::Hash64((*iter)->id));
+//         if (weed_out_set.find(idx++) != weed_out_set.end()) {
+//             weed_out_ids.insert((*iter)->id);
+//             continue;
+//         }
+// 
+//         if (elected_ids.find((*iter)->id) != elected_ids.end()) {
+//             continue;
+//         }
+// 
+//         elected_ids.insert((*iter)->id);
+//         elected_nodes.push_back(*iter);
+//     }
+// 
+//     for (auto iter = pick_in_vec.begin(); iter != pick_in_vec.end(); ++iter) {
+//         if (elected_ids.find(pick_all_vec[*iter]->id) != elected_ids.end()) {
+//             continue;
+//         }
+// 
+//         elected_ids.insert(pick_all_vec[*iter]->id);
+//         elected_nodes.push_back(pick_all_vec[*iter]);
+//     }
+// 
+//     struct RangGen {
+//         int operator() (int n) {
+//             return std::rand() / (1.0 + RAND_MAX) * n;
+//         }
+//     };
+// 
+//     // std::srand(static_cast<uint32_t>(vss::VssManager::Instance()->EpochRandom() % RAND_MAX));
+//     std::random_shuffle(elected_nodes.begin(), elected_nodes.end(), RangGen());
     return kElectSuccess;
 }
 
