@@ -6,7 +6,6 @@
 #include "common/bitmap.h"
 #include "common/tick.h"
 #include "elect/elect_pool.h"
-#include "elect/elect_waiting_nodes.h"
 #include "elect/node_history_credit.h"
 #include "protos/block.pb.h"
 #include "protos/elect.pb.h"
@@ -43,10 +42,6 @@ public:
     int BackupCheckElectionBlockTx(
         const block::protobuf::BlockTx& local_tx_info,
         const block::protobuf::BlockTx& tx_info);
-    void UpdateWaitingNodes(
-        const protobuf::WaitingNodesMessage& waiting_nodes,
-        const std::string& root_node_id,
-        const common::BloomFilter& nodes_filter);
     void OnTimeBlock(uint64_t tm_block_tm);
     int GetElectionTxInfo(block::protobuf::BlockTx& tx_info);
     void OnNewElectBlock(
@@ -110,7 +105,6 @@ private:
     std::mutex node_ip_set_mutex_;
     std::unordered_map<std::string, NodeDetailPtr> all_node_map_;
     std::mutex all_node_map_mutex_;
-    std::unordered_map<uint32_t, ElectWaitingNodesPtr> waiting_pool_map_;
     std::mutex waiting_pool_map_mutex_;
     uint32_t updated_net_id_{ common::kInvalidUint32 };
     common::Tick update_stoke_tick_;

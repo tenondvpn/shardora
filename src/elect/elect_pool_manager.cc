@@ -260,30 +260,6 @@ void ElectPoolManager::UpdateNodesStoke() {
     update_stoke_tick_.CutOff(30000000l, std::bind(&ElectPoolManager::UpdateNodesStoke, this));
 }
 
-void ElectPoolManager::UpdateWaitingNodes(
-        const protobuf::WaitingNodesMessage& waiting_nodes,
-        const std::string& root_node_id,
-        const common::BloomFilter& nodes_filter) {
-    auto waiting_shard_id = waiting_nodes.waiting_shard_id();
-    if (waiting_shard_id < network::kRootCongressWaitingNetworkId ||
-        waiting_shard_id >= network::kConsensusWaitingShardEndNetworkId) {
-        return;
-    }
-
-    ElectWaitingNodesPtr waiting_pool_ptr = nullptr;
-    {
-        std::lock_guard<std::mutex> guard(waiting_pool_map_mutex_);
-        auto iter = waiting_pool_map_.find(waiting_shard_id);
-        if (iter == waiting_pool_map_.end()) {
-            return;
-        }
-
-        waiting_pool_ptr = iter->second;
-    }
-
-    waiting_pool_ptr->UpdateWaitingNodes(root_node_id, waiting_nodes.stoke_hash(), nodes_filter);
-}
-
 void ElectPoolManager::GetInvalidLeaders(
         uint32_t network_id,
         const pools::protobuf::ElectStatistic& statistic_info,
@@ -875,15 +851,6 @@ void ElectPoolManager::NetworkMemberChange(uint32_t network_id, common::MembersP
         }
     }
 
-    ElectWaitingNodesPtr waiting_pool_ptr = nullptr;
-    {
-        std::lock_guard<std::mutex> guard(waiting_pool_map_mutex_);
-        auto iter = waiting_pool_map_.find(network_id + network::kConsensusWaitingShardOffset);
-        if (iter != waiting_pool_map_.end()) {
-            waiting_pool_ptr = iter->second;
-        }
-    }
-
     std::vector<NodeDetailPtr> node_vec;
     for (auto iter = members_ptr->begin(); iter != members_ptr->end(); ++iter) {
         auto elect_node = std::make_shared<ElectNodeDetail>();
@@ -899,9 +866,6 @@ void ElectPoolManager::NetworkMemberChange(uint32_t network_id, common::MembersP
     }
 
     pool_ptr->ReplaceWithElectNodes(node_vec);
-    if (waiting_pool_ptr != nullptr) {
-        waiting_pool_ptr->RemoveNodes(node_vec);
-    }
 }
 
 // leader get all node balance block and broadcast to all root and waiting root
