@@ -1111,7 +1111,7 @@ public:
         std::string key;
         key.reserve(64);
         key.append(kElectNodesStokePrefix);
-        key.append(id, id);
+        key.append(id);
         key.append((char*)&elect_height, sizeof(elect_height));
         char data[8];
         uint64_t* tmp = (uint64_t*)data;
