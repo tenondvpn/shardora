@@ -56,6 +56,10 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
+    void HandleJoinElect(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
     void AddTxToMap(
         const block::protobuf::Block& block,
         const std::string& to,
