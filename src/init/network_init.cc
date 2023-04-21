@@ -178,6 +178,7 @@ int NetworkInit::Init(int argc, char** argv) {
     }
 
     net_handler_.Start();
+    SendJoinElectTransaction();
     if (InitCommand() != kInitSuccess) {
         INIT_ERROR("InitCommand failed!");
         return kInitError;
@@ -241,7 +242,42 @@ int NetworkInit::CheckJoinWaitingPool() {
     prefix_db.SaveWaitingId(waiting_network_id);
     common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
     INIT_INFO("init with network id: %u", waiting_network_id);
+    // send join elect request transaction
     return kInitSuccess;
+}
+
+void NetworkInit::SendJoinElectTransaction() {
+    if (common::GlobalInfo::Instance()->network_id() < network::kConsensusShardEndNetworkId) {
+        return;
+    }
+
+    auto des_net_id = common::GlobalInfo::Instance()->network_id() -
+        network::kConsensusWaitingShardOffset;
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    transport::protobuf::Header& msg = msg_ptr->header;
+    dht::DhtKeyManager dht_key(des_net_id);
+    msg.set_src_sharding_id(des_net_id);
+    msg.set_des_dht_key(dht_key.StrKey());
+    msg.set_type(common::kPoolsMessage);
+    msg.set_hop_count(0);
+    auto broadcast = msg.mutable_broadcast();
+    auto new_tx = msg.mutable_tx_proto();
+    std::string gid = common::Hash::keccak256(
+        std::to_string(tm_block_mgr_->LatestTimestamp()) + security_->GetAddress());
+    new_tx->set_gid(gid);
+    new_tx->set_pubkey(security->GetPublicKeyUnCompressed());
+    new_tx->set_step(pools::protobuf::kJoinElect);
+    new_tx->set_gas_limit(consensus::kJoinElectGas + 100000);
+    new_tx->set_gas_price(10);
+    auto tx_hash = pools::GetTxMessageHash(*new_tx);
+    std::string sign;
+    if (security->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
+        assert(false);
+        return;
+    }
+
+    msg.set_sign(sign);
+    network::Route::Instance()->Send(msg_ptr);
 }
 
 int NetworkInit::InitSecurity() {
