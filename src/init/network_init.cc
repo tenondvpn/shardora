@@ -224,16 +224,10 @@ int NetworkInit::CheckJoinWaitingPool() {
     uint32_t waiting_network_id = prefix_db.GetWaitingId();
     if ((waiting_network_id < network::kRootCongressWaitingNetworkId ||
             waiting_network_id >= network::kConsensusWaitingShardEndNetworkId)) {
-        auto valid_network_ids = elect_mgr_->valid_shard_networks();
-        valid_network_ids.insert(network::kRootCongressNetworkId);
-        valid_network_ids.insert(network::kConsensusShardBeginNetworkId);
-        std::vector<uint32_t> valid_ids(valid_network_ids.begin(), valid_network_ids.end());
-        auto rand_idx = common::Random::RandomUint32() % valid_ids.size();
-        waiting_network_id = valid_ids[rand_idx] + network::kConsensusWaitingShardOffset;
+        return kInitSuccess;
     }
 
     // TODO(): for test
-    waiting_network_id = network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset;
     if (elect_mgr_->Join(0, waiting_network_id) != elect::kElectSuccess) {
         INIT_ERROR("join waiting pool network[%u] failed!", waiting_network_id);
         return kInitError;
