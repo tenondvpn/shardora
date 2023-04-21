@@ -48,13 +48,7 @@ int JoinElectTxItem::HandleTx(
     if (block_tx.status() == kConsensusSuccess) {
         uint64_t dec_amount = gas_used * block_tx.gas_price();
         if (from_balance >= gas_used * block_tx.gas_price()) {
-            if (from_balance >= dec_amount) {
-                from_balance -= dec_amount;
-            } else {
-                from_balance -= gas_used * block_tx.gas_price();
-                block_tx.set_status(consensus::kConsensusAccountBalanceError);
-                ZJC_ERROR("leader balance error: %llu, %llu", from_balance, dec_amount);
-            }
+            from_balance -= gas_used * block_tx.gas_price();
         } else {
             from_balance = 0;
             block_tx.set_status(consensus::kConsensusAccountBalanceError);

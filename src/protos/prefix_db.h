@@ -55,6 +55,8 @@ static const std::string kPresetVerifyValuePrefix = "v\x01";
 static const std::string kStatisticHeightsPrefix = "w\x01";
 static const std::string kConsensusedStatisticPrefix = "x\x01";
 static const std::string kRootStatisticedPrefix = "y\x01";
+static const std::string kElectNodesStokePrefix = "z\x01";
+static const std::string kSaveLatestElectHeightPrefix = "aa\x01";
 
 class PrefixDb {
 public:
@@ -283,17 +285,41 @@ public:
         }
     }
 
-    void SaveLatestElectBlock(const elect::protobuf::ElectBlock& elect_block) {
+    void SaveLatestElectBlock(
+            const elect::protobuf::ElectBlock& elect_block,
+            db::DbWriteBatch& db_batch) {
         std::string key;
         key.reserve(48);
         key.append(kLatestElectBlockPrefix);
         auto sharding_id = elect_block.shard_network_id();
         key.append((char*)&sharding_id, sizeof(sharding_id));
-        auto st = db_->Put(key, elect_block.SerializeAsString());
-        if (!st.ok()) {
-            ZJC_FATAL("write db failed!");
+        db_batch.Put(key, elect_block.SerializeAsString());
+        auto iter = latest_elect_heights_.find(sharding_id);
+        if (iter == latest_elect_heights_.end()) {
+            latest_elect_heights_[sharding_id] = std::set<uint64_t>();
+            iter = latest_elect_heights_.find(sharding_id);
         }
 
+        auto height = elect_block.elect_height();
+        iter->second.insert(height);
+        auto biter = iter->second.begin();
+        while (iter->second.size() > kSaveElectHeightCount) {
+            iter->second.erase(biter++);
+        }
+
+        std::string key;
+        key.reserve(64);
+        key.append(kSaveLatestElectHeightPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        char data[8 * kSaveElectHeightCount];
+        uint64_t* tmp = (uint64_t*)data;
+        uint32_t idx = 0;
+        for (auto hiter = iter->second.begin(); hiter != iter->second.end(); ++hiter) {
+            tmp[idx++] = *hiter;
+        }
+
+        std::string val(data, sizeof(data));
+        db_batch.Put(key, val);
         ZJC_DEBUG("save elect block sharding id: %u, height: %lu",
             sharding_id, elect_block.elect_height());
     }
@@ -1056,6 +1082,69 @@ public:
         return db_->Exist(key);
     }
 
+    void InitGetLatestElectHeight(uint32_t sharding_id) {
+        std::string key;
+        key.reserve(64);
+        key.append(kSaveLatestElectHeightPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            ZJC_WARN("get data from db failed!");
+            return;
+        }
+
+        latest_elect_heights_[sharding_id] = std::set<uint64_t>();
+        auto& height_set = latest_elect_heights_[sharding_id];
+        uint64_t* tmp = (uint64_t*)val.c_str();
+        uint32_t len = val.size() / 8;
+        for (uint32_t i = 0; i < len; ++i) {
+            height_set->insert(tmp[i]);
+        }
+    }
+
+    void SaveElectNodeStoke(
+            const std::string& id,
+            uint64_t elect_height,
+            uint64_t balance,
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(64);
+        key.append(kElectNodesStokePrefix);
+        key.append(id, id);
+        key.append((char*)&elect_height, sizeof(elect_height));
+        char data[8];
+        uint64_t* tmp = (uint64_t*)data;
+        tmp[0] = balance;
+        std::string val(data, sizeof(data));
+        db_batch.Put(key, val);
+    }
+
+    void GetElectNodeMinStoke(uint32_t sharding_id, const std::string& id, uint64_t* stoke) {
+        auto iter = latest_elect_heights_.find(sharding_id);
+        if (iter == latest_elect_heights_.end()) {
+            return;
+        }
+
+        for (auto hiter = iter->second.begin(); hiter != iter->second.end(); ++hiter) {
+            std::string key;
+            key.reserve(64);
+            key.append(kElectNodesStokePrefix);
+            key.append(id, id);
+            uint64_t elect_height = *hiter;
+            key.append((char*)&elect_height, sizeof(elect_height));
+            auto st = db_->Get(key, &val);
+            if (!st.ok()) {
+                continue;
+            }
+
+            uint64_t* balance = (uint64_t*)val.c_str();
+            if (balance[0] < *stoke || *stoke == 0) {
+                *stoke = balance[0];
+            }
+        }
+    }
+
 private:
     void DumpGidToDb(uint8_t thread_idx) {
         if (!dumped_gid_) {
@@ -1070,6 +1159,8 @@ private:
             std::bind(&PrefixDb::DumpGidToDb, this, std::placeholders::_1));
     }
 
+    static const uint32_t kSaveElectHeightCount = 4u;
+
     std::shared_ptr<db::Db> db_ = nullptr;
     std::unordered_set<std::string> gid_set_[2];
     db::DbWriteBatch db_batch[2];
@@ -1077,6 +1168,7 @@ private:
     uint64_t prev_gid_tm_us_ = 0;
     common::Tick db_batch_tick_;
     volatile bool dumped_gid_ = false;
+    std::unordered_map<uint32_t, std::set<uint64_t>> latest_elect_heights_;
 
     DISALLOW_COPY_AND_ASSIGN(PrefixDb);
 };

@@ -10,6 +10,7 @@ enum AddressType {
     kStatistic = 4;
     kToTxAddress = 5;
     kLocalToTxAddress = 6;
+    kElectAddress = 7;
 }
 
 message AddressInfo {

@@ -282,7 +282,7 @@ int GenesisBlockInit::CreateElectBlock(
 
     tenon_block->set_network_id(network::kRootCongressNetworkId);
     tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-    prefix_db_->SaveLatestElectBlock(ec_block);
+    prefix_db_->SaveLatestElectBlock(ec_block, db_batch);
     fputs((common::Encode::HexEncode(tenon_block->SerializeAsString()) + "\n").c_str(),
         root_gens_init_block_file);
     db::DbWriteBatch db_batch;
