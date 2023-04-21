@@ -38,7 +38,7 @@ namespace protobuf_protos_2felect_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[15];
+  static const ::google::protobuf::internal::ParseTable schema[13];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -57,18 +57,12 @@ extern ElectBlockDefaultTypeInternal _ElectBlock_default_instance_;
 class ElectMessage;
 class ElectMessageDefaultTypeInternal;
 extern ElectMessageDefaultTypeInternal _ElectMessage_default_instance_;
-class ElectStatisticInfo;
-class ElectStatisticInfoDefaultTypeInternal;
-extern ElectStatisticInfoDefaultTypeInternal _ElectStatisticInfo_default_instance_;
 class LeaderRotationMessage;
 class LeaderRotationMessageDefaultTypeInternal;
 extern LeaderRotationMessageDefaultTypeInternal _LeaderRotationMessage_default_instance_;
 class PrevMembers;
 class PrevMembersDefaultTypeInternal;
 extern PrevMembersDefaultTypeInternal _PrevMembers_default_instance_;
-class StatisticInfo;
-class StatisticInfoDefaultTypeInternal;
-extern StatisticInfoDefaultTypeInternal _StatisticInfo_default_instance_;
 class SyncNodeStokeItem;
 class SyncNodeStokeItemDefaultTypeInternal;
 extern SyncNodeStokeItemDefaultTypeInternal _SyncNodeStokeItem_default_instance_;
@@ -101,10 +95,8 @@ namespace protobuf {
 template<> ::zjchain::elect::protobuf::BlsPublicKey* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::BlsPublicKey>(Arena*);
 template<> ::zjchain::elect::protobuf::ElectBlock* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::ElectBlock>(Arena*);
 template<> ::zjchain::elect::protobuf::ElectMessage* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::ElectMessage>(Arena*);
-template<> ::zjchain::elect::protobuf::ElectStatisticInfo* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::ElectStatisticInfo>(Arena*);
 template<> ::zjchain::elect::protobuf::LeaderRotationMessage* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::LeaderRotationMessage>(Arena*);
 template<> ::zjchain::elect::protobuf::PrevMembers* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::PrevMembers>(Arena*);
-template<> ::zjchain::elect::protobuf::StatisticInfo* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::StatisticInfo>(Arena*);
 template<> ::zjchain::elect::protobuf::SyncNodeStokeItem* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::SyncNodeStokeItem>(Arena*);
 template<> ::zjchain::elect::protobuf::SyncNodeStokeRequest* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::SyncNodeStokeRequest>(Arena*);
 template<> ::zjchain::elect::protobuf::SyncNodeStokeResItem* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::SyncNodeStokeResItem>(Arena*);
@@ -1136,283 +1128,6 @@ class ElectBlock : public ::google::protobuf::Message /* @@protoc_insertion_poin
 };
 // -------------------------------------------------------------------
 
-class ElectStatisticInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.elect.protobuf.ElectStatisticInfo) */ {
- public:
-  ElectStatisticInfo();
-  virtual ~ElectStatisticInfo();
-
-  ElectStatisticInfo(const ElectStatisticInfo& from);
-
-  inline ElectStatisticInfo& operator=(const ElectStatisticInfo& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  #if LANG_CXX11
-  ElectStatisticInfo(ElectStatisticInfo&& from) noexcept
-    : ElectStatisticInfo() {
-    *this = ::std::move(from);
-  }
-
-  inline ElectStatisticInfo& operator=(ElectStatisticInfo&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-  #endif
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const ElectStatisticInfo& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const ElectStatisticInfo* internal_default_instance() {
-    return reinterpret_cast<const ElectStatisticInfo*>(
-               &_ElectStatisticInfo_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    5;
-
-  void Swap(ElectStatisticInfo* other);
-  friend void swap(ElectStatisticInfo& a, ElectStatisticInfo& b) {
-    a.Swap(&b);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline ElectStatisticInfo* New() const final {
-    return CreateMaybeMessage<ElectStatisticInfo>(NULL);
-  }
-
-  ElectStatisticInfo* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<ElectStatisticInfo>(arena);
-  }
-  void CopyFrom(const ::google::protobuf::Message& from) final;
-  void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const ElectStatisticInfo& from);
-  void MergeFrom(const ElectStatisticInfo& from);
-  void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input) final;
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const final;
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(ElectStatisticInfo* other);
-  private:
-  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
-  }
-  inline void* MaybeArenaPtr() const {
-    return NULL;
-  }
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // repeated uint32 succ_tx_count = 2;
-  int succ_tx_count_size() const;
-  void clear_succ_tx_count();
-  static const int kSuccTxCountFieldNumber = 2;
-  ::google::protobuf::uint32 succ_tx_count(int index) const;
-  void set_succ_tx_count(int index, ::google::protobuf::uint32 value);
-  void add_succ_tx_count(::google::protobuf::uint32 value);
-  const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
-      succ_tx_count() const;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
-      mutable_succ_tx_count();
-
-  // repeated uint32 lof_leaders = 3;
-  int lof_leaders_size() const;
-  void clear_lof_leaders();
-  static const int kLofLeadersFieldNumber = 3;
-  ::google::protobuf::uint32 lof_leaders(int index) const;
-  void set_lof_leaders(int index, ::google::protobuf::uint32 value);
-  void add_lof_leaders(::google::protobuf::uint32 value);
-  const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
-      lof_leaders() const;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
-      mutable_lof_leaders();
-
-  // optional uint64 elect_height = 1;
-  bool has_elect_height() const;
-  void clear_elect_height();
-  static const int kElectHeightFieldNumber = 1;
-  ::google::protobuf::uint64 elect_height() const;
-  void set_elect_height(::google::protobuf::uint64 value);
-
-  // @@protoc_insertion_point(class_scope:zjchain.elect.protobuf.ElectStatisticInfo)
- private:
-  void set_has_elect_height();
-  void clear_has_elect_height();
-
-  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::HasBits<1> _has_bits_;
-  mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > succ_tx_count_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > lof_leaders_;
-  ::google::protobuf::uint64 elect_height_;
-  friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
-};
-// -------------------------------------------------------------------
-
-class StatisticInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.elect.protobuf.StatisticInfo) */ {
- public:
-  StatisticInfo();
-  virtual ~StatisticInfo();
-
-  StatisticInfo(const StatisticInfo& from);
-
-  inline StatisticInfo& operator=(const StatisticInfo& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  #if LANG_CXX11
-  StatisticInfo(StatisticInfo&& from) noexcept
-    : StatisticInfo() {
-    *this = ::std::move(from);
-  }
-
-  inline StatisticInfo& operator=(StatisticInfo&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-  #endif
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const StatisticInfo& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const StatisticInfo* internal_default_instance() {
-    return reinterpret_cast<const StatisticInfo*>(
-               &_StatisticInfo_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    6;
-
-  void Swap(StatisticInfo* other);
-  friend void swap(StatisticInfo& a, StatisticInfo& b) {
-    a.Swap(&b);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline StatisticInfo* New() const final {
-    return CreateMaybeMessage<StatisticInfo>(NULL);
-  }
-
-  StatisticInfo* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<StatisticInfo>(arena);
-  }
-  void CopyFrom(const ::google::protobuf::Message& from) final;
-  void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const StatisticInfo& from);
-  void MergeFrom(const StatisticInfo& from);
-  void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input) final;
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const final;
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(StatisticInfo* other);
-  private:
-  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
-  }
-  inline void* MaybeArenaPtr() const {
-    return NULL;
-  }
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // repeated .zjchain.elect.protobuf.ElectStatisticInfo elect_statistic = 3;
-  int elect_statistic_size() const;
-  void clear_elect_statistic();
-  static const int kElectStatisticFieldNumber = 3;
-  ::zjchain::elect::protobuf::ElectStatisticInfo* mutable_elect_statistic(int index);
-  ::google::protobuf::RepeatedPtrField< ::zjchain::elect::protobuf::ElectStatisticInfo >*
-      mutable_elect_statistic();
-  const ::zjchain::elect::protobuf::ElectStatisticInfo& elect_statistic(int index) const;
-  ::zjchain::elect::protobuf::ElectStatisticInfo* add_elect_statistic();
-  const ::google::protobuf::RepeatedPtrField< ::zjchain::elect::protobuf::ElectStatisticInfo >&
-      elect_statistic() const;
-
-  // optional uint64 timeblock_height = 1;
-  bool has_timeblock_height() const;
-  void clear_timeblock_height();
-  static const int kTimeblockHeightFieldNumber = 1;
-  ::google::protobuf::uint64 timeblock_height() const;
-  void set_timeblock_height(::google::protobuf::uint64 value);
-
-  // optional uint32 all_tx_count = 2;
-  bool has_all_tx_count() const;
-  void clear_all_tx_count();
-  static const int kAllTxCountFieldNumber = 2;
-  ::google::protobuf::uint32 all_tx_count() const;
-  void set_all_tx_count(::google::protobuf::uint32 value);
-
-  // @@protoc_insertion_point(class_scope:zjchain.elect.protobuf.StatisticInfo)
- private:
-  void set_has_timeblock_height();
-  void clear_has_timeblock_height();
-  void set_has_all_tx_count();
-  void clear_has_all_tx_count();
-
-  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::HasBits<1> _has_bits_;
-  mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::RepeatedPtrField< ::zjchain::elect::protobuf::ElectStatisticInfo > elect_statistic_;
-  ::google::protobuf::uint64 timeblock_height_;
-  ::google::protobuf::uint32 all_tx_count_;
-  friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
-};
-// -------------------------------------------------------------------
-
 class WaitingNodesMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.elect.protobuf.WaitingNodesMessage) */ {
  public:
   WaitingNodesMessage();
@@ -1455,7 +1170,7 @@ class WaitingNodesMessage : public ::google::protobuf::Message /* @@protoc_inser
                &_WaitingNodesMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    5;
 
   void Swap(WaitingNodesMessage* other);
   friend void swap(WaitingNodesMessage& a, WaitingNodesMessage& b) {
@@ -1600,7 +1315,7 @@ class WaitingNodeHeartbeat : public ::google::protobuf::Message /* @@protoc_inse
                &_WaitingNodeHeartbeat_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    6;
 
   void Swap(WaitingNodeHeartbeat* other);
   friend void swap(WaitingNodeHeartbeat& a, WaitingNodeHeartbeat& b) {
@@ -1752,7 +1467,7 @@ class LeaderRotationMessage : public ::google::protobuf::Message /* @@protoc_ins
                &_LeaderRotationMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    7;
 
   void Swap(LeaderRotationMessage* other);
   friend void swap(LeaderRotationMessage& a, LeaderRotationMessage& b) {
@@ -1884,7 +1599,7 @@ class SyncNodeStokeItem : public ::google::protobuf::Message /* @@protoc_inserti
                &_SyncNodeStokeItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    8;
 
   void Swap(SyncNodeStokeItem* other);
   friend void swap(SyncNodeStokeItem& a, SyncNodeStokeItem& b) {
@@ -2016,7 +1731,7 @@ class SyncNodeStokeRequest : public ::google::protobuf::Message /* @@protoc_inse
                &_SyncNodeStokeRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    9;
 
   void Swap(SyncNodeStokeRequest* other);
   friend void swap(SyncNodeStokeRequest& a, SyncNodeStokeRequest& b) {
@@ -2143,7 +1858,7 @@ class SyncNodeStokeResItem : public ::google::protobuf::Message /* @@protoc_inse
                &_SyncNodeStokeResItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    10;
 
   void Swap(SyncNodeStokeResItem* other);
   friend void swap(SyncNodeStokeResItem& a, SyncNodeStokeResItem& b) {
@@ -2275,7 +1990,7 @@ class SyncNodeStokeResponse : public ::google::protobuf::Message /* @@protoc_ins
                &_SyncNodeStokeResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    11;
 
   void Swap(SyncNodeStokeResponse* other);
   friend void swap(SyncNodeStokeResponse& a, SyncNodeStokeResponse& b) {
@@ -2402,7 +2117,7 @@ class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_ElectMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    12;
 
   void Swap(ElectMessage* other);
   friend void swap(ElectMessage& a, ElectMessage& b) {
@@ -4281,176 +3996,6 @@ inline void ElectBlock::set_elect_height(::google::protobuf::uint64 value) {
 
 // -------------------------------------------------------------------
 
-// ElectStatisticInfo
-
-// optional uint64 elect_height = 1;
-inline bool ElectStatisticInfo::has_elect_height() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void ElectStatisticInfo::set_has_elect_height() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void ElectStatisticInfo::clear_has_elect_height() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void ElectStatisticInfo::clear_elect_height() {
-  elect_height_ = GOOGLE_ULONGLONG(0);
-  clear_has_elect_height();
-}
-inline ::google::protobuf::uint64 ElectStatisticInfo::elect_height() const {
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.ElectStatisticInfo.elect_height)
-  return elect_height_;
-}
-inline void ElectStatisticInfo::set_elect_height(::google::protobuf::uint64 value) {
-  set_has_elect_height();
-  elect_height_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.ElectStatisticInfo.elect_height)
-}
-
-// repeated uint32 succ_tx_count = 2;
-inline int ElectStatisticInfo::succ_tx_count_size() const {
-  return succ_tx_count_.size();
-}
-inline void ElectStatisticInfo::clear_succ_tx_count() {
-  succ_tx_count_.Clear();
-}
-inline ::google::protobuf::uint32 ElectStatisticInfo::succ_tx_count(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.ElectStatisticInfo.succ_tx_count)
-  return succ_tx_count_.Get(index);
-}
-inline void ElectStatisticInfo::set_succ_tx_count(int index, ::google::protobuf::uint32 value) {
-  succ_tx_count_.Set(index, value);
-  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.ElectStatisticInfo.succ_tx_count)
-}
-inline void ElectStatisticInfo::add_succ_tx_count(::google::protobuf::uint32 value) {
-  succ_tx_count_.Add(value);
-  // @@protoc_insertion_point(field_add:zjchain.elect.protobuf.ElectStatisticInfo.succ_tx_count)
-}
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
-ElectStatisticInfo::succ_tx_count() const {
-  // @@protoc_insertion_point(field_list:zjchain.elect.protobuf.ElectStatisticInfo.succ_tx_count)
-  return succ_tx_count_;
-}
-inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
-ElectStatisticInfo::mutable_succ_tx_count() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.elect.protobuf.ElectStatisticInfo.succ_tx_count)
-  return &succ_tx_count_;
-}
-
-// repeated uint32 lof_leaders = 3;
-inline int ElectStatisticInfo::lof_leaders_size() const {
-  return lof_leaders_.size();
-}
-inline void ElectStatisticInfo::clear_lof_leaders() {
-  lof_leaders_.Clear();
-}
-inline ::google::protobuf::uint32 ElectStatisticInfo::lof_leaders(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.ElectStatisticInfo.lof_leaders)
-  return lof_leaders_.Get(index);
-}
-inline void ElectStatisticInfo::set_lof_leaders(int index, ::google::protobuf::uint32 value) {
-  lof_leaders_.Set(index, value);
-  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.ElectStatisticInfo.lof_leaders)
-}
-inline void ElectStatisticInfo::add_lof_leaders(::google::protobuf::uint32 value) {
-  lof_leaders_.Add(value);
-  // @@protoc_insertion_point(field_add:zjchain.elect.protobuf.ElectStatisticInfo.lof_leaders)
-}
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
-ElectStatisticInfo::lof_leaders() const {
-  // @@protoc_insertion_point(field_list:zjchain.elect.protobuf.ElectStatisticInfo.lof_leaders)
-  return lof_leaders_;
-}
-inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
-ElectStatisticInfo::mutable_lof_leaders() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.elect.protobuf.ElectStatisticInfo.lof_leaders)
-  return &lof_leaders_;
-}
-
-// -------------------------------------------------------------------
-
-// StatisticInfo
-
-// optional uint64 timeblock_height = 1;
-inline bool StatisticInfo::has_timeblock_height() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void StatisticInfo::set_has_timeblock_height() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void StatisticInfo::clear_has_timeblock_height() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void StatisticInfo::clear_timeblock_height() {
-  timeblock_height_ = GOOGLE_ULONGLONG(0);
-  clear_has_timeblock_height();
-}
-inline ::google::protobuf::uint64 StatisticInfo::timeblock_height() const {
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.StatisticInfo.timeblock_height)
-  return timeblock_height_;
-}
-inline void StatisticInfo::set_timeblock_height(::google::protobuf::uint64 value) {
-  set_has_timeblock_height();
-  timeblock_height_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.StatisticInfo.timeblock_height)
-}
-
-// optional uint32 all_tx_count = 2;
-inline bool StatisticInfo::has_all_tx_count() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void StatisticInfo::set_has_all_tx_count() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void StatisticInfo::clear_has_all_tx_count() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void StatisticInfo::clear_all_tx_count() {
-  all_tx_count_ = 0u;
-  clear_has_all_tx_count();
-}
-inline ::google::protobuf::uint32 StatisticInfo::all_tx_count() const {
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.StatisticInfo.all_tx_count)
-  return all_tx_count_;
-}
-inline void StatisticInfo::set_all_tx_count(::google::protobuf::uint32 value) {
-  set_has_all_tx_count();
-  all_tx_count_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.StatisticInfo.all_tx_count)
-}
-
-// repeated .zjchain.elect.protobuf.ElectStatisticInfo elect_statistic = 3;
-inline int StatisticInfo::elect_statistic_size() const {
-  return elect_statistic_.size();
-}
-inline void StatisticInfo::clear_elect_statistic() {
-  elect_statistic_.Clear();
-}
-inline ::zjchain::elect::protobuf::ElectStatisticInfo* StatisticInfo::mutable_elect_statistic(int index) {
-  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.StatisticInfo.elect_statistic)
-  return elect_statistic_.Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField< ::zjchain::elect::protobuf::ElectStatisticInfo >*
-StatisticInfo::mutable_elect_statistic() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.elect.protobuf.StatisticInfo.elect_statistic)
-  return &elect_statistic_;
-}
-inline const ::zjchain::elect::protobuf::ElectStatisticInfo& StatisticInfo::elect_statistic(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.StatisticInfo.elect_statistic)
-  return elect_statistic_.Get(index);
-}
-inline ::zjchain::elect::protobuf::ElectStatisticInfo* StatisticInfo::add_elect_statistic() {
-  // @@protoc_insertion_point(field_add:zjchain.elect.protobuf.StatisticInfo.elect_statistic)
-  return elect_statistic_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::zjchain::elect::protobuf::ElectStatisticInfo >&
-StatisticInfo::elect_statistic() const {
-  // @@protoc_insertion_point(field_list:zjchain.elect.protobuf.StatisticInfo.elect_statistic)
-  return elect_statistic_;
-}
-
-// -------------------------------------------------------------------
-
 // WaitingNodesMessage
 
 // repeated uint64 nodes_filter = 1;
@@ -5724,10 +5269,6 @@ inline void ElectMessage::set_allocated_sync_stoke_res(::zjchain::elect::protobu
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
-// -------------------------------------------------------------------
-
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

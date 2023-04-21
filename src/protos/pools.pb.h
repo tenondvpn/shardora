@@ -104,11 +104,12 @@ enum StepType {
   kRootCreateAddress = 11,
   kRootCreateAddressCrossSharding = 12,
   kContractGasPrepayment = 13,
-  kStatistic = 14
+  kStatistic = 14,
+  kJoinElect = 15
 };
 bool StepType_IsValid(int value);
 const StepType StepType_MIN = kNormalFrom;
-const StepType StepType_MAX = kStatistic;
+const StepType StepType_MAX = kJoinElect;
 const int StepType_ARRAYSIZE = StepType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* StepType_descriptor();
