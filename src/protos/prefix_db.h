@@ -1088,27 +1088,6 @@ public:
         return db_->Exist(key);
     }
 
-    void InitGetLatestElectHeight(uint32_t sharding_id) {
-        std::string key;
-        key.reserve(64);
-        key.append(kSaveLatestElectHeightPrefix);
-        key.append((char*)&sharding_id, sizeof(sharding_id));
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            ZJC_WARN("get data from db failed!");
-            return;
-        }
-
-        latest_elect_heights_[sharding_id] = std::set<uint64_t>();
-        auto& height_set = latest_elect_heights_[sharding_id];
-        uint64_t* tmp = (uint64_t*)val.c_str();
-        uint32_t len = val.size() / 8;
-        for (uint32_t i = 0; i < len; ++i) {
-            height_set.insert(tmp[i]);
-        }
-    }
-
     void SaveElectNodeStoke(
             const std::string& id,
             uint64_t elect_height,
