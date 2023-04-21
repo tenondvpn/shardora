@@ -339,7 +339,8 @@ void ShardStatistic::LoadLatestHeights() {
     if (!prefix_db_->GetStatisticLatestHeihgts(
             common::GlobalInfo::Instance()->network_id(),
             &to_heights)) {
-        ZJC_FATAL("load init statistic heights failed!");
+        ZJC_ERROR("load init statistic heights failed!");
+        return;
     }
 
     uint32_t max_pool_index = common::kImmutablePoolSize;
