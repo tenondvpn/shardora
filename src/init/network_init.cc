@@ -741,7 +741,7 @@ void NetworkInit::HandleElectionBlock(
         }
     }
 
-    auto members = elect_mgr_->OnNewElectBlock(thread_idx, block->height(), elect_block);
+    auto members = elect_mgr_->OnNewElectBlock(thread_idx, block->height(), elect_block, db_batch);
     if (members == nullptr) {
         ZJC_FATAL("parse elect block failed!");
         return;
