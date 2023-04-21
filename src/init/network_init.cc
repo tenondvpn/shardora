@@ -265,13 +265,13 @@ void NetworkInit::SendJoinElectTransaction() {
     std::string gid = common::Hash::keccak256(
         std::to_string(tm_block_mgr_->LatestTimestamp()) + security_->GetAddress());
     new_tx->set_gid(gid);
-    new_tx->set_pubkey(security->GetPublicKeyUnCompressed());
+    new_tx->set_pubkey(security_->GetPublicKeyUnCompressed());
     new_tx->set_step(pools::protobuf::kJoinElect);
     new_tx->set_gas_limit(consensus::kJoinElectGas + 100000);
     new_tx->set_gas_price(10);
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign;
-    if (security->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
+    if (security_->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
         assert(false);
         return;
     }
