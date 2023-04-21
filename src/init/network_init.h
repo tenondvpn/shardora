@@ -62,7 +62,7 @@ private:
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);
-    void SendJoinElectTransaction();
+    void SendJoinElectTransaction(uint8_t thread_idx);
 
     common::Config conf_;
     bool inited_{ false };

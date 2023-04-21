@@ -178,7 +178,7 @@ int NetworkInit::Init(int argc, char** argv) {
     }
 
     net_handler_.Start();
-    SendJoinElectTransaction();
+    SendJoinElectTransaction(main_thread_idx_);
     if (InitCommand() != kInitSuccess) {
         INIT_ERROR("InitCommand failed!");
         return kInitError;
@@ -241,8 +241,12 @@ int NetworkInit::CheckJoinWaitingPool() {
     return kInitSuccess;
 }
 
-void NetworkInit::SendJoinElectTransaction() {
+void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     if (common::GlobalInfo::Instance()->network_id() < network::kConsensusShardEndNetworkId) {
+        return;
+    }
+
+    if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusWaitingShardEndNetworkId) {
         return;
     }
 
@@ -751,7 +755,7 @@ void NetworkInit::HandleTimeBlock(
         }
     }
 
-    SendJoinElectTransaction();
+    SendJoinElectTransaction(thread_idx);
 }
 
 void NetworkInit::HandleElectionBlock(
