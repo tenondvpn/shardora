@@ -35,7 +35,10 @@ public:
         }
     }
 
-    void OnNewElectBlock(uint64_t height, const elect::protobuf::ElectBlock& block) {
+    void OnNewElectBlock(
+            uint64_t height,
+            const elect::protobuf::ElectBlock& block,
+            db::DbWriteBatch& db_batch) {
         if (block.shard_network_id() >= network::kConsensusShardEndNetworkId) {
             return;
         }
@@ -49,7 +52,7 @@ public:
         auto* w_block = const_cast<elect::protobuf::ElectBlock*>(&block);
         w_block->set_elect_height(height);
         AddElectBlockToCache(block);
-        prefix_db_->SaveLatestElectBlock(block);
+        prefix_db_->SaveLatestElectBlock(block, db_batch);
     }
 
     std::shared_ptr<elect::protobuf::ElectBlock> GetLatestElectBlock(uint32_t sharding_id) {
