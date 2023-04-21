@@ -391,6 +391,10 @@ void ToTxsPools::HandleNormalToTx(
 }
 
 void ToTxsPools::LoadLatestHeights() {
+    if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
+        return;
+    }
+
     for (uint32_t i = network::kRootCongressNetworkId;
             i < network::kConsensusShardEndNetworkId; ++i) {
         auto heights_ptr = std::make_shared<pools::protobuf::ToTxHeights>();
