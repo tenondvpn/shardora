@@ -30,7 +30,6 @@ ElectPoolManager::ElectPoolManager(
         stoke_mgr_(stoke_mgr),
         bls_mgr_(bls_mgr) {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-    update_stoke_tick_.CutOff(30000000l, std::bind(&ElectPoolManager::UpdateNodesStoke, this));
 }
 
 ElectPoolManager::~ElectPoolManager() {}

@@ -47,7 +47,6 @@ public:
     void OnNewElectBlock(
         uint64_t height,
         protobuf::ElectBlock& elect_block);
-    void UpdateNodesStoke();
 
 private:
     int GetAllTxInfoBloomFiler(
