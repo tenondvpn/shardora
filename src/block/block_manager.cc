@@ -258,6 +258,15 @@ void BlockManager::RootHandleNormalToTx(
             continue;
         }
 
+        if (tos_item.step() == pools::protobuf::kJoinElect) {
+            ZJC_DEBUG("create add node stoke direct: %s, amount: %lu, sharding: %u, pool index: %u",
+                common::Encode::HexEncode(tos_item.des()).c_str(),
+                tos_item.amount(),
+                tos_item.sharding_id(),
+                tos_item.pool_index());
+            continue;
+        }
+
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_pubkey("");
