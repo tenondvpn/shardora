@@ -224,6 +224,7 @@ int NetworkInit::CheckJoinWaitingPool() {
     uint32_t waiting_network_id = prefix_db.GetWaitingId();
     if ((waiting_network_id < network::kRootCongressWaitingNetworkId ||
             waiting_network_id >= network::kConsensusWaitingShardEndNetworkId)) {
+        // sync block first
         return kInitSuccess;
     }
 
