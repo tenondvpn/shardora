@@ -24,7 +24,7 @@ TxPoolManager::TxPoolManager(
     security_ = security;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-    prefix_db_->InitGidManager()
+    prefix_db_->InitGidManager();
     tx_pool_ = new TxPool[common::kInvalidPoolIndex];
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         tx_pool_[i].Init(i, db, kv_sync);
@@ -113,7 +113,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    if (msg_ptr->address_info->balance() < kJoinElectGas) {
+    if (msg_ptr->address_info->balance() < consensus::kJoinElectGas) {
         return;
     }
 
