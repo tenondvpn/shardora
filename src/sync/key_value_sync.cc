@@ -316,10 +316,10 @@ bool KeyValueSync::AddSyncKeyValue(transport::protobuf::Header* msg, const block
         for (int32_t j = 0; j < block.tx_list(i).storages_size(); ++j) {
             auto& storage = block.tx_list(i).storages(j);
 //             ZJC_DEBUG("add storage %s, %s, %d", storage.key().c_str(), common::Encode::HexEncode(storage.val_hash()).c_str(), storage.val_size());
-            if (storage.val_size() == 0) {  // 0 just save value hash else direct value
+            if (storage.val_hash().size() == 32) {
                 std::string val;
                 if (!prefix_db_->GetTemporaryKv(storage.val_hash(), &val)) {
-                    return false;
+                    continue;
                 }
 
                 auto* sync_item = sync_info->add_items();
