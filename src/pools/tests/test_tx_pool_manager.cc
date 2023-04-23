@@ -105,6 +105,50 @@ std::shared_ptr<address::protobuf::AddressInfo> CreateAddressInfo(
     return single_to_address_info_;
 }
 
+class FromTxItem : public pools::TxItem {
+protected:
+    FromTxItem(
+        const transport::MessagePtr& msg,
+        std::shared_ptr<block::AccountManager>& account_mgr,
+        std::shared_ptr<security::Security>& sec_ptr)
+        : pools::TxItem(msg), account_mgr_(account_mgr), sec_ptr_(sec_ptr) {}
+    virtual ~FromTxItem() {}
+
+    virtual int HandleTx(
+            uint8_t thread_idx,
+            const block::protobuf::Block& block,
+            std::shared_ptr<db::DbWriteBatch>& db_batch,
+            std::unordered_map<std::string, int64_t>& acc_balance_map,
+            block::protobuf::BlockTx& block_tx) {
+        return consensus::kConsensusSuccess;
+    }
+
+    virtual int TxToBlockTx(
+            const pools::protobuf::TxMessage& tx_info,
+            std::shared_ptr<db::DbWriteBatch>& db_batch,
+            block::protobuf::BlockTx* block_tx) {
+        return consensus::kConsensusSuccess;
+    }
+
+    int GetTempAccountBalance(
+        uint8_t thread_idx,
+        const std::string& id,
+        std::unordered_map<std::string, int64_t>& acc_balance_map,
+        uint64_t* balance) {
+     
+        return kConsensusSuccess;
+    }
+
+    std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
+    std::shared_ptr<security::Security> sec_ptr_ = nullptr;
+};
+
+pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
+    std::shared_ptr<block::AccountManager> account_mgr = nullptr;
+    std::shared_ptr<security::Security> sec_ptr = nullptr;
+    return std::make_shared<FromTxItem>(msg_ptr, account_mgr, sec_ptr);
+}
+
 TEST_F(TestTxPoolManager, All) {
     std::shared_ptr<security::Security> security_ptr = std::make_shared<security::Ecdsa>();
     security_ptr->SetPrivateKey(common::Encode::HexDecode(
@@ -141,6 +185,7 @@ TEST_F(TestTxPoolManager, All) {
     uint8_t thread_idx = GetTxThreadIndex(msg_ptr, 4, 4);
     ASSERT_TRUE(thread_idx != 255);
     msg_ptr->thread_idx = thread_idx;
+    tx_pool_mgr.RegisterCreateTxFunction(0, tx_pool_mgr);
     tx_pool_mgr.HandleMessage(msg_ptr);
     ASSERT_EQ(tx_pool_mgr.msg_queues_[msg_ptr->address_info->pool_index()].size(), 1);
     tx_pool_mgr.PopTxs(msg_ptr->address_info->pool_index());
@@ -156,6 +201,7 @@ static void TestMultiThread(int32_t thread_count, int32_t leader_count, uint32_t
     CreateAddressInfo(security_ptr);
     std::shared_ptr<sync::KeyValueSync> kv_sync_ptr = nullptr;
     TxPoolManager tx_pool_mgr(security_ptr, db_ptr, kv_sync_ptr);
+    tx_pool_mgr.RegisterCreateTxFunction(0, tx_pool_mgr);
     srand(time(NULL));
     std::condition_variable con[thread_count];
     std::mutex mu[thread_count];
