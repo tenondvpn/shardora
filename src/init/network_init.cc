@@ -953,7 +953,7 @@ void NetworkInit::HandleElectionBlock(
     if (sharding_id + network::kConsensusWaitingShardOffset ==
             common::GlobalInfo::Instance()->network_id()) {
         join_elect_tick_.CutOff(
-            uint64_t(rand()) % (kTimeBlockCreatePeriodSeconds / 4 * 3 * 1000000lu),
+            uint64_t(rand()) % (common::kTimeBlockCreatePeriodSeconds / 4 * 3 * 1000000lu),
             std::bind(&NetworkInit::SendJoinElectTransaction, this, std::placeholders::_1));
     }
 }
