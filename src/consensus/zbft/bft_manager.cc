@@ -2009,23 +2009,26 @@ void BftManager::BroadcastLocalTosBlock(
     pools::protobuf::ToTxMessage to_tx;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         std::string val;
-        if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
-            if (tx.storages(i).key() == protos::kNormalTos) {
-                if (!to_tx.ParseFromString(val)) {
-                    assert(false);
-                    return;
+        if (tx.storages(i).val_hash().size() == 32) {
+            if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+                if (tx.storages(i).key() == protos::kNormalTos) {
+                    if (!to_tx.ParseFromString(val)) {
+                        assert(false);
+                        return;
+                    }
+
+                    if (to_tx.to_heights().sharding_id() == common::GlobalInfo::Instance()->network_id()) {
+                        assert(false);
+                        return;
+                    }
                 }
 
-                if (to_tx.to_heights().sharding_id() == common::GlobalInfo::Instance()->network_id()) {
-                    assert(false);
-                    return;
-                }
+                auto kv = msg.mutable_sync()->add_items();
+                kv->set_key(tx.storages(i).val_hash());
+                kv->set_value(val);
             }
-
-            auto kv = msg.mutable_sync()->add_items();
-            kv->set_key(tx.storages(i).val_hash());
-            kv->set_value(val);
         }
+       
     }
 
     if (!to_tx.has_to_heights()) {
