@@ -54,7 +54,8 @@ message PoolLatestInfo {
 
 message PoolStatisticItem {
     repeated uint32 tx_count = 1;
-    optional uint64 elect_height = 2;
+    repeated uint64 stokes = 2;
+    optional uint64 elect_height = 3;
 }
 
 message JoinElectNode {

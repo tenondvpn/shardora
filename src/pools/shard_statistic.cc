@@ -360,6 +360,10 @@ int ShardStatistic::StatisticWithHeights(
 
             statistic_item.add_tx_count(tx_count);
             str_for_hash.append((char*)&tx_count, sizeof(tx_count));
+
+            uint64_t stoke = 0;
+            prefix_db_->GetElectNodeMinStoke(common::GlobalInfo::Instance()->network_id(), from, &stoke);
+            statistic_item.add_stokes(stoke);
         }
 
         statistic_item.set_elect_height(hiter->first);
