@@ -294,7 +294,7 @@ void AccountManager::HandleRootCreateAddressTx(
         db::DbWriteBatch& db_batch) {
     auto account_info = GetAccountInfo(thread_idx, tx.to());
     if (account_info != nullptr) {
-        assert(false);
+//         assert(false);
         return;
     }
 

@@ -209,7 +209,7 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
         transport::protobuf::Header msg;
         msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
         msg.set_type(common::kInitMessage);
-        dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
+        dht::DhtKeyManager dht_key(network::kUniversalNetworkId);
         msg.set_des_dht_key(dht_key.StrKey());
         auto& init_msg = *msg.mutable_init_proto()->mutable_addr_res();
         if (!prefix_db_->GetBlockWithHeight(
