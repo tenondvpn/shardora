@@ -57,6 +57,11 @@ void ThreadHandler::HandleMessage() {
 
                 ZJC_DEBUG("over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
             }
+
+            if (msg_ptr->header.type() == common::kPoolsMessage) {
+                ZJC_DEBUG("thread pools message coming.");
+            }
+
         }
 
         if (thread_idx_ + 1 < common::GlobalInfo::Instance()->message_handler_thread_count()) {

@@ -123,6 +123,11 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.has_cross_statistic()) {
         HandleCrossShardingStatisticTxs(msg_ptr);
     }
+
+    if (msg_ptr->header.type() == common::kPoolsMessage) {
+        ZJC_DEBUG("block pools message coming.");
+    }
+
 }
 
 void BlockManager::HandleCrossShardingStatisticTxs(const transport::MessagePtr& msg_ptr) {
