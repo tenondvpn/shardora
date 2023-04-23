@@ -216,6 +216,7 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
     case common::kVssMessage:
     case common::kBlsMessage:
     case common::kPoolsMessage:
+    case common::kInitMessage:
         return consensus_thread_count_;
     case common::kConsensusMessage:
         return msg_ptr->header.zbft().pool_index() % consensus_thread_count_;
