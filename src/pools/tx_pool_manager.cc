@@ -9,6 +9,7 @@
 #include "network/route.h"
 #include "protos/prefix_db.h"
 #include "security/ecdsa/secp256k1.h"
+#include "transport/processor.h"
 #include "transport/tcp_transport.h"
 
 namespace zjchain {
