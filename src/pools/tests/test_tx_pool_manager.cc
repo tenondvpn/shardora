@@ -108,10 +108,7 @@ std::shared_ptr<address::protobuf::AddressInfo> CreateAddressInfo(
 class FromTxItem : public pools::TxItem {
 protected:
     FromTxItem(
-        const transport::MessagePtr& msg,
-        std::shared_ptr<block::AccountManager>& account_mgr,
-        std::shared_ptr<security::Security>& sec_ptr)
-        : pools::TxItem(msg), account_mgr_(account_mgr), sec_ptr_(sec_ptr) {}
+        const transport::MessagePtr& msg) : pools::TxItem(msg) {}
     virtual ~FromTxItem() {}
 
     virtual int HandleTx(
@@ -131,22 +128,16 @@ protected:
     }
 
     int GetTempAccountBalance(
-        uint8_t thread_idx,
-        const std::string& id,
-        std::unordered_map<std::string, int64_t>& acc_balance_map,
-        uint64_t* balance) {
-     
+            uint8_t thread_idx,
+            const std::string& id,
+            std::unordered_map<std::string, int64_t>& acc_balance_map,
+            uint64_t* balance) {
         return kConsensusSuccess;
     }
-
-    std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
-    std::shared_ptr<security::Security> sec_ptr_ = nullptr;
 };
 
 pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
-    std::shared_ptr<block::AccountManager> account_mgr = nullptr;
-    std::shared_ptr<security::Security> sec_ptr = nullptr;
-    return std::make_shared<FromTxItem>(msg_ptr, account_mgr, sec_ptr);
+    return std::make_shared<FromTxItem>(msg_ptr);
 }
 
 TEST_F(TestTxPoolManager, All) {
