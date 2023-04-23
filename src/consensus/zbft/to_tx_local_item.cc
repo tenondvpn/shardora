@@ -76,7 +76,6 @@ int ToTxLocalItem::HandleTx(
     storage->set_key(protos::kConsensusLocalNormalTos);
     storage->set_val_hash(tos_hash);
     std::string val = block_to_txs.SerializeAsString();
-    storage->set_val_size(val.size());
     prefix_db_->SaveTemporaryKv(tos_hash, val);
     ZJC_DEBUG("success consensus local transfer to");
     return consensus::kConsensusSuccess;
