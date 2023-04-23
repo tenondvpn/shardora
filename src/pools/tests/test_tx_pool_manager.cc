@@ -132,7 +132,7 @@ protected:
             const std::string& id,
             std::unordered_map<std::string, int64_t>& acc_balance_map,
             uint64_t* balance) {
-        return kConsensusSuccess;
+        return consensus::kConsensusSuccess;
     }
 };
 
@@ -176,7 +176,7 @@ TEST_F(TestTxPoolManager, All) {
     uint8_t thread_idx = GetTxThreadIndex(msg_ptr, 4, 4);
     ASSERT_TRUE(thread_idx != 255);
     msg_ptr->thread_idx = thread_idx;
-    tx_pool_mgr.RegisterCreateTxFunction(0, tx_pool_mgr);
+    tx_pool_mgr.RegisterCreateTxFunction(0, CreateFromTx);
     tx_pool_mgr.HandleMessage(msg_ptr);
     ASSERT_EQ(tx_pool_mgr.msg_queues_[msg_ptr->address_info->pool_index()].size(), 1);
     tx_pool_mgr.PopTxs(msg_ptr->address_info->pool_index());
@@ -192,7 +192,7 @@ static void TestMultiThread(int32_t thread_count, int32_t leader_count, uint32_t
     CreateAddressInfo(security_ptr);
     std::shared_ptr<sync::KeyValueSync> kv_sync_ptr = nullptr;
     TxPoolManager tx_pool_mgr(security_ptr, db_ptr, kv_sync_ptr);
-    tx_pool_mgr.RegisterCreateTxFunction(0, tx_pool_mgr);
+    tx_pool_mgr.RegisterCreateTxFunction(0, CreateFromTx);
     srand(time(NULL));
     std::condition_variable con[thread_count];
     std::mutex mu[thread_count];
