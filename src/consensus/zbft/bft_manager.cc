@@ -2018,7 +2018,6 @@ void BftManager::BroadcastLocalTosBlock(
                     }
 
                     if (to_tx.to_heights().sharding_id() == common::GlobalInfo::Instance()->network_id()) {
-                        assert(false);
                         return;
                     }
                 }
