@@ -97,9 +97,7 @@ inline static uint32_t GetBasePoolIndex(const std::string& acc_addr) {
         return kRootChainPoolIndex;
     }
 
-    uint32_t pool_index = common::Hash::Hash32(acc_addr);
-    pool_index %= kImmutablePoolSize;
-    return pool_index;
+    return GetAddressPoolIndex(acc_addr);
 }
 
 }  // namespace  common
