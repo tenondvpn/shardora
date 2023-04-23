@@ -298,28 +298,18 @@ class StorageItem : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::std::string* release_val_hash();
   void set_allocated_val_hash(::std::string* val_hash);
 
-  // optional uint32 val_size = 3 [default = 0];
-  bool has_val_size() const;
-  void clear_val_size();
-  static const int kValSizeFieldNumber = 3;
-  ::google::protobuf::uint32 val_size() const;
-  void set_val_size(::google::protobuf::uint32 value);
-
   // @@protoc_insertion_point(class_scope:zjchain.block.protobuf.StorageItem)
  private:
   void set_has_key();
   void clear_has_key();
   void set_has_val_hash();
   void clear_has_val_hash();
-  void set_has_val_size();
-  void clear_has_val_size();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr key_;
   ::google::protobuf::internal::ArenaStringPtr val_hash_;
-  ::google::protobuf::uint32 val_size_;
   friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -4784,30 +4774,6 @@ inline void StorageItem::set_allocated_val_hash(::std::string* val_hash) {
   }
   val_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), val_hash);
   // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.StorageItem.val_hash)
-}
-
-// optional uint32 val_size = 3 [default = 0];
-inline bool StorageItem::has_val_size() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void StorageItem::set_has_val_size() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void StorageItem::clear_has_val_size() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void StorageItem::clear_val_size() {
-  val_size_ = 0u;
-  clear_has_val_size();
-}
-inline ::google::protobuf::uint32 StorageItem::val_size() const {
-  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.StorageItem.val_size)
-  return val_size_;
-}
-inline void StorageItem::set_val_size(::google::protobuf::uint32 value) {
-  set_has_val_size();
-  val_size_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.StorageItem.val_size)
 }
 
 // -------------------------------------------------------------------
