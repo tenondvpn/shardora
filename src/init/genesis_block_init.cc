@@ -55,7 +55,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
         res = CreateRootGenesisBlocks(root_genesis_nodes, cons_genesis_nodes);
     } else {
         common::GlobalInfo::Instance()->set_network_id(net_id);
-        res = CreateShardGenesisBlocks(net_id);
+        res = CreateShardGenesisBlocks(root_genesis_nodes, cons_genesis_nodes, net_id);
     }
 
     InitBlsVerificationValue();
@@ -786,11 +786,106 @@ void GenesisBlockInit::AddBlockItemToCache(
     ZJC_DEBUG("success add pool latest info: %u, %u, %lu", block->network_id(), block->pool_index(), block->height());
 }
 
-int GenesisBlockInit::CreateShardGenesisBlocks(uint32_t net_id) {
+int GenesisBlockInit::CreateShardNodesBlocks(
+        std::unordered_map<uint32_t, std::string>& pool_prev_hash_map,
+        const std::vector<dht::NodePtr>& root_genesis_nodes,
+        const std::vector<dht::NodePtr>& cons_genesis_nodes,
+        uint32_t net_id,
+        pools::protobuf::ToTxHeights& init_heights) {
+    std::set<std::string> valid_ids;
+    for (auto iter = root_genesis_nodes->begin(); iter != root_genesis_nodes->end(); ++iter) {
+        if (valid_ids.find((*iter)->id) != valid_ids.end()) {
+            ZJC_FATAL("invalid id: %s", common::Encode::HexEncode((*iter)->id).c_str());
+            return kInitError;
+        }
+
+        valid_ids.insert((*iter)->id);
+    }
+
+    for (auto iter = cons_genesis_nodes->begin(); iter != cons_genesis_nodes->end(); ++iter) {
+        if (valid_ids.find((*iter)->id) != valid_ids.end()) {
+            ZJC_FATAL("invalid id: %s", common::Encode::HexEncode((*iter)->id).c_str());
+            return kInitError;
+        }
+
+        valid_ids.insert((*iter)->id);
+    }
+
+    uint64_t all_balance = 0llu;
+    std::map<uint32_t uint64_t> pool_height;
+    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
+        pool_height[i] = 0;
+    }
+
+    uint64_t genesis_account_balance += common::kGenesisShardingNodesMaxZjc % valid_ids.size();
+    for (auto iter = valid_ids.begin(); iter != valid_ids.end(); ++iter) {
+        auto tenon_block = std::make_shared<block::protobuf::Block>();
+        auto tx_list = tenon_block->mutable_tx_list();
+        std::string address = *iter;
+        auto pool_index = common::GetAddressPoolIndex(address);
+        {
+            auto tx_info = tx_list->Add();
+            tx_info->set_gid(common::CreateGID(""));
+            tx_info->set_from("");
+            tx_info->set_to(address);
+            tx_info->set_amount(genesis_account_balance);
+            tx_info->set_balance(genesis_account_balance);
+            tx_info->set_gas_limit(0);
+            tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
+        }
+
+        tenon_block->set_prehash(pool_prev_hash_map[pool_index]);
+        tenon_block->set_version(common::kTransactionVersion);
+        tenon_block->set_pool_index(iter->first);
+        tenon_block->set_height(pool_height[i] + 1);
+        pool_height[i] = pool_height[i] + 1;
+        const auto& bitmap_data = root_bitmap_.data();
+        for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
+            tenon_block->add_precommit_bitmap(bitmap_data[i]);
+        }
+
+        tenon_block->set_timeblock_height(0);
+        tenon_block->set_electblock_height(0);
+        tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
+        tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+        pool_prev_hash_map[pool_index] = tenon_block->hash();
+        //         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
+        db::DbWriteBatch db_batch;
+        AddBlockItemToCache(tenon_block, db_batch);
+        db_->Put(db_batch);
+        block_mgr_->NetworkNewBlock(0, tenon_block);
+        auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
+        if (account_ptr == nullptr) {
+            INIT_ERROR("get address failed! [%s]", common::Encode::HexEncode(address).c_str());
+            return kInitError;
+        }
+
+        if (account_ptr->balance() != genesis_account_balance) {
+            INIT_ERROR("get address balance failed! [%s]", common::Encode::HexEncode(address).c_str());
+            return kInitError;
+        }
+
+        all_balance += account_ptr->balance();
+        *init_heights.mutable_heights(pool_index) = tenon_block->height();
+    }
+
+    if (all_balance != common::kGenesisFoundationMaxZjc) {
+        INIT_ERROR("all_balance != common::kGenesisFoundationMaxTenon failed! [%lu][%llu]",
+            all_balance, common::kGenesisFoundationMaxZjc);
+        return kInitError;
+    }
+    return kInitSuccess;
+}
+
+int GenesisBlockInit::CreateShardGenesisBlocks(
+        const std::vector<dht::NodePtr>& root_genesis_nodes,
+        const std::vector<dht::NodePtr>& cons_genesis_nodes,
+        uint32_t net_id) {
     InitGenesisAccount();
     uint64_t genesis_account_balance = common::kGenesisFoundationMaxZjc / pool_index_map_.size();
     uint64_t all_balance = 0llu;
     pools::protobuf::ToTxHeights init_heights;
+    std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     for (auto iter = pool_index_map_.begin(); iter != pool_index_map_.end(); ++iter) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
@@ -848,6 +943,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(uint32_t net_id) {
         tenon_block->set_electblock_height(0);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+        pool_prev_hash_map[iter->first] = tenon_block->hash();
 //         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
         db::DbWriteBatch db_batch;
         AddBlockItemToCache(tenon_block, db_batch);
@@ -874,6 +970,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(uint32_t net_id) {
         return kInitError;
     }
 
+    CreateShardNodesBlocks(pool_prev_hash_map, root_genesis_nodes, cons_genesis_nodes, net_id, init_heights);
     prefix_db_->SaveStatisticLatestHeihgts(net_id, init_heights);
     return GenerateShardSingleBlock(net_id);
 }

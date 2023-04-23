@@ -72,7 +72,8 @@ static const uint64_t kZjcMiniTransportUnit = 100000000llu;
 static const uint64_t kZjcMaxAmount = 210llu * 100000000llu * kZjcMiniTransportUnit;
 static const uint32_t kTransactionNoVersion = 0u;
 static const uint32_t kTransactionVersion = 1u;
-static const uint64_t kGenesisFoundationMaxZjc = kZjcMaxAmount / 100llu * 35llu;
+static const uint64_t kGenesisFoundationMaxZjc = kZjcMaxAmount / 100llu * 14llu;
+static const uint64_t kGenesisShardingNodesMaxZjc = kZjcMaxAmount / 100llu * 1llu;
 
 static const uint64_t kVpnVipMinPayfor = 66llu * kZjcMiniTransportUnit;
 static const uint64_t kVpnVipMaxPayfor = 2000u * kZjcMiniTransportUnit;

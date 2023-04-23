@@ -65,7 +65,7 @@ int RootToTxItem::HandleTx(
             des_info[0] = (g2() % (max_sharding_id_ - network::kConsensusShardBeginNetworkId + 1)) +
                 network::kConsensusShardBeginNetworkId;
             // pool index just binding with address
-            des_info[1] = common::Hash::Hash32(block_tx.to()) % common::kImmutablePoolSize;
+            des_info[1] = common::GetAddressPoolIndex(block_tx.to());
         }
     }
 

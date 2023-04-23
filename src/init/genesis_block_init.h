@@ -37,7 +37,16 @@ private:
     int CreateRootGenesisBlocks(
         const std::vector<dht::NodePtr>& root_genesis_nodes,
         const std::vector<dht::NodePtr>& cons_genesis_nodes);
-    int CreateShardGenesisBlocks(uint32_t net_id);
+    int CreateShardGenesisBlocks(
+        const std::vector<dht::NodePtr>& root_genesis_nodes,
+        const std::vector<dht::NodePtr>& cons_genesis_nodes,
+        uint32_t net_id);
+    int CreateShardNodesBlocks(
+        std::unordered_map<uint32_t, std::string>& pool_prev_hash_map,
+        const std::vector<dht::NodePtr>& root_genesis_nodes,
+        const std::vector<dht::NodePtr>& cons_genesis_nodes,
+        uint32_t net_id,
+        pools::protobuf::ToTxHeights& init_heights);
     void InitGenesisAccount();
     void GenerateRootAccounts();
     int GenerateRootSingleBlock(
