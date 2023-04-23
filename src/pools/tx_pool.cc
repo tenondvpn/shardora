@@ -48,7 +48,7 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
 
     if (latest_height_ == common::kInvalidUint64) {
         // sync latest height from neighbors
-        return;
+        return 0;
     }
 
     prev_synced_time_ms_ = now_tm_ms + kSyncBlockPeriodMs;
