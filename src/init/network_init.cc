@@ -646,7 +646,57 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         block_mgr_ = std::make_shared<block::BlockManager>();
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db_);
         std::vector<dht::NodePtr> root_genesis_nodes;
+        if (parser_arg.Has("1")) {
+            std::string value;
+            if (parser_arg.Get("1", value) != common::kParseSuccess) {
+                return kInitError;
+            }
+
+            common::Split<2048> nodes_split(value.c_str(), ',', value.size());
+            for (uint32_t i = 0; i < nodes_split.Count(); ++i) {
+                common::Split<> node_info(nodes_split[i], ':', nodes_split.SubLen(i));
+                if (node_info.Count() != 3) {
+                    continue;
+                }
+
+                auto node_ptr = std::make_shared<dht::Node>();
+                node_ptr->pubkey_str = common::Encode::HexDecode(node_info[0]);
+                node_ptr->public_ip = node_info[1];
+                node_ptr->id = security_->GetAddress(node_ptr->pubkey_str);
+                if (!common::StringUtil::ToUint16(node_info[2], &node_ptr->public_port)) {
+                    continue;
+                }
+
+                root_genesis_nodes.push_back(node_ptr);
+            }
+        }
+
         std::vector<dht::NodePtr> cons_genesis_nodes;
+        if (parser_arg.Has("2")) {
+            std::string value;
+            if (parser_arg.Get("2", value) != common::kParseSuccess) {
+                return kInitError;
+            }
+
+            common::Split<2048> nodes_split(value.c_str(), ',', value.size());
+            for (uint32_t i = 0; i < nodes_split.Count(); ++i) {
+                common::Split<> node_info(nodes_split[i], ':', nodes_split.SubLen(i));
+                if (node_info.Count() != 3) {
+                    continue;
+                }
+
+                auto node_ptr = std::make_shared<dht::Node>();
+                node_ptr->pubkey_str = common::Encode::HexDecode(node_info[0]);
+                node_ptr->public_ip = node_info[1];
+                node_ptr->id = security_->GetAddress(node_ptr->pubkey_str);
+                if (!common::StringUtil::ToUint16(node_info[2], &node_ptr->public_port)) {
+                    continue;
+                }
+
+                cons_genesis_nodes.push_back(node_ptr);
+            }
+        }
+
         if (genesis_block.CreateGenesisBlocks(
             network::kConsensusShardBeginNetworkId,
             root_genesis_nodes,
