@@ -46,11 +46,19 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
         return 0;
     }
 
+    if (latest_height_ == common::kInvalidUint64) {
+        // sync latest height from neighbors
+        return;
+    }
+
     prev_synced_time_ms_ = now_tm_ms + kSyncBlockPeriodMs;
     std::vector<uint64_t> invalid_heights;
     height_tree_ptr_->GetMissingHeights(&invalid_heights, latest_height_);
-    ZJC_DEBUG("sync missing blocks latest height: %lu, invaid heights size: %u",
-        latest_height_, invalid_heights.size());
+    if (invalid_heights.size() > 0) {
+        ZJC_DEBUG("pool: %u, sync missing blocks latest height: %lu, invaid heights size: %u",
+            pool_index_, latest_height_, invalid_heights.size());
+    }
+
     return invalid_heights.size();
 }
 
