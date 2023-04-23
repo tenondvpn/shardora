@@ -27,7 +27,8 @@ public:
     ShardNetwork(
         uint32_t network_id,
         NetworkMemberCallback member_callback,
-        std::shared_ptr<security::Security>& security);
+        std::shared_ptr<security::Security>& security,
+        std::shared_ptr<protos::PrefixDb>& prefix_db);
     ~ShardNetwork();
     int Init(uint8_t thread_idx);
     void Destroy();
@@ -52,6 +53,7 @@ private:
     uint32_t sharding_id_{ network::kConsensusShardEndNetworkId };
     NetworkMemberCallback member_callback_{ nullptr };
     std::shared_ptr<security::Security> security_ = nullptr;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ShardNetwork);
 };
@@ -60,10 +62,12 @@ template<class DhtType>
 ShardNetwork<DhtType>::ShardNetwork(
         uint32_t network_id,
         NetworkMemberCallback member_callback,
-        std::shared_ptr<security::Security>& security)
+        std::shared_ptr<security::Security>& security,
+        std::shared_ptr<protos::PrefixDb>& prefix_db)
         : sharding_id_(network_id),
           member_callback_(member_callback),
-          security_(security) {
+          security_(security),
+          prefix_db_(prefix_db) {
     common::GlobalInfo::Instance()->networks().push_back(sharding_id_);
 }
 
@@ -116,6 +120,15 @@ template<class DhtType>
 int ShardNetwork<DhtType>::JoinNewNodeValid(dht::NodePtr& node) {
     if (!(sharding_id_ >= network::kRootCongressNetworkId &&
             sharding_id_ < network::kConsensusShardEndNetworkId)) {
+        auto account_info = prefix_db_->GetAddressInfo(node->id);
+        if (account_info->sharding_id() == sharding_id_ - network::kConsensusWaitingShardOffset) {
+            if (IsThisNetworkNode(account_info->sharding_id(), node->id)) {
+                return dht::kDhtError;
+            }
+
+            return dht::kDhtSuccess;
+        }
+
         return dht::kDhtError;
     }
 
