@@ -64,7 +64,7 @@ private:
         db::DbWriteBatch& db_batch);
     void SendJoinElectTransaction(uint8_t thread_idx);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
-    void GetAddressShardingId();
+    void GetAddressShardingId(uint8_t thread_idx);
 
     common::Config conf_;
     bool inited_{ false };

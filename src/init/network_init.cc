@@ -185,6 +185,7 @@ int NetworkInit::Init(int argc, char** argv) {
     }
 
     net_handler_.Start();
+    GetAddressShardingId(main_thread_idx_);
     SendJoinElectTransaction(main_thread_idx_);
     if (InitCommand() != kInitSuccess) {
         INIT_ERROR("InitCommand failed!");
@@ -199,7 +200,7 @@ int NetworkInit::Init(int argc, char** argv) {
 void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.init_proto().has_addr_req()) {
         auto account_info = prefix_db_->GetAddressInfo(
-                msg_ptr->header.init_proto().addr_req()p->id());
+                msg_ptr->header.init_proto().addr_req()->id());
         if (account_info == nullptr) {
             return;
         }
@@ -248,7 +249,7 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
             if (block.tx_list(i).to() == security_->GetAddress()) {
                 for (int32_t j = 0; j < block.tx_list(i).storages_size(); ++j) {
                     if (block.tx_list(i).storages(j).key() == protos::kRootCreateAddressKey) {
-                        uint32_t* tmp = (uint32_t*)block.tx_list(i).storages(j).val().c_str();
+                        uint32_t* tmp = (uint32_t*)block.tx_list(i).storages(j).val_hash().c_str();
                         sharding_id = tmp[0];
                         break;
                     }
