@@ -92,12 +92,6 @@ int ElectManager::Join(uint8_t thread_idx, uint32_t network_id) {
         return kElectError;
     }
 
-    auto iter = elect_network_map_.find(network_id);
-    if (iter != elect_network_map_.end()) {
-        ELECT_INFO("this node has join network[%u]", network_id);
-        return kElectNetworkJoined;
-    }
-
     elect_network_map_[network_id] = elect_node_ptr_;
     return kElectSuccess;
 }

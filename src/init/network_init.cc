@@ -85,6 +85,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     vss_mgr_ = std::make_shared<vss::VssManager>(security_);
     kv_sync_ = std::make_shared<sync::KeyValueSync>();
     kv_sync_->Init(db_);
@@ -195,9 +196,10 @@ int NetworkInit::Init(int argc, char** argv) {
     return kInitSuccess;
 }
 
-void NetworkInit::HanldeMessage(const transport::MessagePtr& msg_ptr) {
-    if (msg_ptr->header.init_proto().has_init_req()) {
-        auto account_info = prefix_db_->GetAddressInfo(msg_ptr->header.init_proto().init_req()p->id());
+void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    if (msg_ptr->header.init_proto().has_addr_req()) {
+        auto account_info = prefix_db_->GetAddressInfo(
+                msg_ptr->header.init_proto().addr_req()p->id());
         if (account_info == nullptr) {
             return;
         }
@@ -207,8 +209,7 @@ void NetworkInit::HanldeMessage(const transport::MessagePtr& msg_ptr) {
         msg.set_type(common::kInitMessage);
         dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
         msg.set_des_dht_key(dht_key.StrKey());
-        auto& init_msg = *msg.mutable_init_proto();
-        auto prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+        auto& init_msg = *msg.mutable_init_proto()->mutable_addr_res();
         if (!prefix_db_->GetBlockWithHeight(
                 network::kRootCongressNetworkId,
                 account_info->pool_index(),
@@ -232,7 +233,7 @@ void NetworkInit::HanldeMessage(const transport::MessagePtr& msg_ptr) {
         transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
     }
 
-    if (msg_ptr->header.init_proto().has_init_res()) {
+    if (msg_ptr->header.init_proto().has_addr_res()) {
         if (common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32) {
             return;
         }
@@ -291,7 +292,6 @@ void NetworkInit::GetAddressShardingId(uint32_t thread_idx) {
 }
 
 void NetworkInit::InitLocalNetworkId() {
-    auto prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     auto local_node_account_info = prefix_db_->GetAddressInfo(security_->GetAddress());
     if (local_node_account_info == nullptr) {
         return;

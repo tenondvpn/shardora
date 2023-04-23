@@ -63,7 +63,7 @@ private:
         const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);
     void SendJoinElectTransaction(uint8_t thread_idx);
-    void HanldeMessage(const transport::MessagePtr& msg_ptr);
+    void HandleMessage(const transport::MessagePtr& msg_ptr);
     void GetAddressShardingId();
 
     common::Config conf_;
@@ -89,6 +89,7 @@ private:
     HttpHandler http_handler_;
     uint8_t main_thread_idx_ = 255;
     common::Tick init_tick_;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(NetworkInit);
 };
