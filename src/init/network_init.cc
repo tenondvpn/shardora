@@ -191,6 +191,7 @@ int NetworkInit::Init(int argc, char** argv) {
 }
 
 void NetworkInit::InitLocalNetworkId() {
+    auto prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     auto local_node_account_info = prefix_db_->GetAddressInfo(security_->GetAddress());
     if (local_node_account_info == nullptr) {
         return;
