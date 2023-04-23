@@ -43,7 +43,7 @@ void TxPool::Init(
 
 uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
     if (prev_synced_time_ms_ >= now_tm_ms) {
-        return;
+        return 0;
     }
 
     prev_synced_time_ms_ = now_tm_ms + kSyncBlockPeriodMs;

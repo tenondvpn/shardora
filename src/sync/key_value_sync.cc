@@ -131,7 +131,7 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
                 sync_req->add_keys(item->key);
             }
 
-            if (sync_req->keys_size() + sync_req->heights_size() > (int32_t)kMaxSyncKeyCount) {
+            if (sync_req->keys_size() + sync_req->heights_size() > (int32_t)kEachRequestMaxSyncKeyCount) {
                 uint64_t choose_node = SendSyncRequest(
                     thread_idx,
                     item->network_id,
