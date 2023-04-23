@@ -9,7 +9,6 @@
 #include <libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp>
 
 #include "common/utils.h"
-#include "common/user_property_key_define.h"
 
 namespace zjchain {
 

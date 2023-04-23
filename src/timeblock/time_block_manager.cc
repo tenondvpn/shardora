@@ -5,7 +5,6 @@
 #include "common/global_info.h"
 #include "common/split.h"
 #include "common/string_utils.h"
-#include "common/user_property_key_define.h"
 #include "dht/dht_key.h"
 #include "network/network_utils.h"
 #include "network/route.h"

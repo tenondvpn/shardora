@@ -12,7 +12,6 @@
 #include "common/bloom_filter.h"
 #include "common/country_code.h"
 #include "common/time_utils.h"
-#include "common/user_property_key_define.h"
 #include "transport/processor.h"
 #include "transport/transport_utils.h"
 #include "transport/multi_thread.h"

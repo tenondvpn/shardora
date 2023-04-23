@@ -11,7 +11,6 @@
 #include <functional>
 
 #include "common/log.h"
-#include "common/user_property_key_define.h"
 #include "tnet/tcp_interface.h"
 #include "protos/address.pb.h"
 #include "protos/transport.pb.h"

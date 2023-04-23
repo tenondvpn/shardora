@@ -13,7 +13,6 @@
 #include "block/block_manager.h"
 #include "common/bitmap.h"
 #include "common/utils.h"
-#include "common/user_property_key_define.h"
 #include "dht/dht_utils.h"
 
 namespace zjchain {

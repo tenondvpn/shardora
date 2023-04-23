@@ -4,7 +4,6 @@
 
 #include "common/country_code.h"
 #include "common/global_info.h"
-#include "common/user_property_key_define.h"
 #include "common/time_utils.h"
 #include "dht/dht_key.h"
 #include "dht/base_dht.h"

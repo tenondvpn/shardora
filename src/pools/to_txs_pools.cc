@@ -2,7 +2,6 @@
 
 #include "consensus/consensus_utils.h"
 #include "common/global_info.h"
-#include "common/user_property_key_define.h"
 #include "network/network_utils.h"
 #include "network/route.h"
 #include "pools/tx_pool_manager.h"

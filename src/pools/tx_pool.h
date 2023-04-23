@@ -17,7 +17,6 @@
 #include "common/spin_mutex.h"
 #include "common/time_utils.h"
 #include "common/limit_hash_set.h"
-#include "common/user_property_key_define.h"
 #include "common/utils.h"
 #include "consensus/consensus_utils.h"
 #include "network/network_utils.h"

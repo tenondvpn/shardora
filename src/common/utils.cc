@@ -40,7 +40,6 @@
 #include "common/split.h"
 #include "common/string_utils.h"
 #include "common/unique_set.h"
-#include "common/user_property_key_define.h"
 
 namespace zjchain {
 

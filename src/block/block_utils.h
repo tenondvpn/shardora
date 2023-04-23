@@ -14,7 +14,6 @@
 #include "common/lof.h"
 #include "common/log.h"
 #include "common/string_utils.h"
-#include "common/user_property_key_define.h"
 #include "common/utils.h"
 #include "db/db.h"
 #include "pools/tx_utils.h"
