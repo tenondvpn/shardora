@@ -122,8 +122,11 @@ int ShardNetwork<DhtType>::JoinNewNodeValid(dht::NodePtr& node) {
             sharding_id_ < network::kConsensusShardEndNetworkId)) {
         auto account_info = prefix_db_->GetAddressInfo(node->id);
         if (account_info->sharding_id() == sharding_id_ - network::kConsensusWaitingShardOffset) {
-            if (member_callback_ != nullptr && member_callback_(account_info->sharding_id(), node->id)) {
-                return dht::kDhtError;
+            if (member_callback_ != nullptr) {
+                if (member_callback_(account_info->sharding_id(), node->id) ||
+                        member_callback_(network::kRootCongressNetworkId, node->id)) {
+                    return dht::kDhtError;
+                }
             }
 
             ZJC_DEBUG("JoinNewNodeValid valid node sharding_id_: %u, id: %s",
