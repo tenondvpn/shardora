@@ -73,6 +73,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint64_t prev_elect_height_ = 0;
     uint64_t now_elect_height_ = 0;
+    uint64_t now_vss_random_ = 0;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);

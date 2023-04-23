@@ -89,6 +89,7 @@ private:
     HttpHandler http_handler_;
     uint8_t main_thread_idx_ = 255;
     common::Tick init_tick_;
+    common::Tick join_elect_tick_;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(NetworkInit);

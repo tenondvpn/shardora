@@ -92,9 +92,9 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
         case pools::protobuf::kContractExcute:
             HandleContractExecute(block, tx_list[i], db_batch);
             break;
-        case pools::protobuf::kJoinElect:
-            HandleJoinElect(block, tx_list[i], db_batch);
-            break;
+//         case pools::protobuf::kJoinElect:
+//             HandleJoinElect(block, tx_list[i], db_batch);
+//             break;
         default:
             break;
         }
@@ -293,11 +293,11 @@ void ToTxsPools::AddTxToMap(
         ZJC_DEBUG("add to %s step: %u", common::Encode::HexEncode(to).c_str(), type);
     }
 
-    if (type == pools::protobuf::kJoinElect) {
-        height_iter->second[to].amount = amount;
-    } else {
+//     if (type == pools::protobuf::kJoinElect) {
+//         height_iter->second[to].amount = amount;
+//     } else {
         height_iter->second[to].amount += amount;
-    }
+//     }
 }
 
 void ToTxsPools::HandleNormalToTx(
@@ -550,11 +550,11 @@ int ToTxsPools::CreateToTxWithHeights(
                         to_iter->first.size(), common::Encode::HexEncode(to_iter->first).c_str());
                     acc_amount_map[to_iter->first] = to_iter->second;
                 } else {
-                    if (amount_iter->second.type == pools::protobuf::kJoinElect) {
-                        amount_iter->second.amount = to_iter->second.amount;
-                    } else {
+//                     if (amount_iter->second.type == pools::protobuf::kJoinElect) {
+//                         amount_iter->second.amount = to_iter->second.amount;
+//                     } else {
                         amount_iter->second.amount += to_iter->second.amount;
-                    }
+//                     }
                 }
             }
         }

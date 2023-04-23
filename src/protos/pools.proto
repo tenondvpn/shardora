@@ -57,9 +57,15 @@ message PoolStatisticItem {
     optional uint64 elect_height = 2;
 }
 
+message JoinElectNode {
+    optional bytes id = 1;
+    optional uint64 stoke = 2;
+}
+
 message ElectStatistic {
     repeated PoolStatisticItem statistics = 1;
     optional ToTxHeights heights = 2;
+    repeated JoinElectNode join_elect_nodes = 2;
 }
 
 message TxMessage {

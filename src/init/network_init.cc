@@ -186,7 +186,6 @@ int NetworkInit::Init(int argc, char** argv) {
 
     net_handler_.Start();
     GetAddressShardingId(main_thread_idx_);
-    SendJoinElectTransaction(main_thread_idx_);
     if (InitCommand() != kInitSuccess) {
         INIT_ERROR("InitCommand failed!");
         return kInitError;
@@ -917,8 +916,6 @@ void NetworkInit::HandleTimeBlock(
             break;
         }
     }
-
-    SendJoinElectTransaction(thread_idx);
 }
 
 void NetworkInit::HandleElectionBlock(
@@ -953,6 +950,12 @@ void NetworkInit::HandleElectionBlock(
     bls_mgr_->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
     shard_statistic_->OnNewElectBlock(sharding_id, elect_height);
     network::UniversalManager::Instance()->OnNewElectBlock(sharding_id, elect_height, members);
+    if (sharding_id + network::kConsensusWaitingShardOffset ==
+            common::GlobalInfo::Instance()->network_id()) {
+        join_elect_tick_.CutOff(
+            uint64_t(rand()) % (kTimeBlockCreatePeriodSeconds / 4 * 3 * 1000000lu),
+            std::bind(&NetworkInit::SendJoinElectTransaction, this, std::placeholders::_1));
+    }
 }
 
 }  // namespace init

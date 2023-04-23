@@ -183,6 +183,18 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
         statistic_info_ptr->node_tx_count_map[id] += block.tx_list_size();
     }
 
+    for (int32_t i = 0; i < block.tx_list_size(); ++i) {
+        if (block.tx_list(i).step() == pools::protobuf::kJoinElect) {
+            for (int32_t storage_idx = 0; storage_idx < block.tx_list(i).storages_size(); ++storage_idx) {
+                if (block.tx_list(i).storages(storage_idx).key() == protos::kElectNodeStoke) {
+                    uint64_t* stoke = (uint64_t*)block.tx_list(i).storages(storage_idx).val_hash().c_str();
+                    statistic_info_ptr->node_stoke_map[block.tx_list(i).from()] = stoke[0];
+                    break;
+                }
+            }
+        }
+    }
+
     node_height_count_map_[block.pool_index()][block.height()] = statistic_info_ptr;
     ZJC_DEBUG("success add statistic block: net; %u, pool: %u, height: %lu",
         block.network_id(), block.pool_index(), block.height());
@@ -236,6 +248,7 @@ void ShardStatistic::OnTimeBlock(
     }
 
     latest_timeblock_tm_ = lastest_time_block_tm;
+    now_vss_random_ = vss_random;
     CreateStatisticTransaction(latest_time_block_height);
 }
 
@@ -258,6 +271,7 @@ int ShardStatistic::StatisticWithHeights(
     }
 
     std::unordered_map<uint64_t, std::unordered_map<std::string, uint32_t>> height_node_count_map;
+    std::unordered_map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
     for (uint32_t pool_idx = 0; pool_idx < max_pool; ++pool_idx) {
         uint64_t min_height = 1;
         if (tx_heights_ptr_ != nullptr) {
@@ -296,7 +310,33 @@ int ShardStatistic::StatisticWithHeights(
                     tmp_iter->second += niter->second;
                 }
             }
+
+            auto eiter = join_elect_stoke_map.find(elect_height);
+            if (eiter == join_elect_stoke_map.end()) {
+                join_elect_stoke_map[elect_height] = std::unordered_map<std::string, uint64_t>();
+            }
+
+            auto& elect_stoke_map = join_elect_stoke_map[elect_height];
+            for (auto elect_iter = hiter->second->node_stoke_map.begin();
+                    elect_iter != hiter->second->node_stoke_map.end(); ++elect_iter) {
+                elect_stoke_map[elect_iter->first] = elect_iter->second;
+            }
         }
+    }
+
+    auto eiter = join_elect_stoke_map.find(now_elect_height_);
+    std::vector<std::string> elect_nodes;
+    if (eiter != join_elect_stoke_map.end()) {
+        for (auto iter = eiter->second.begin(); iter != eiter->second.end(); ++iter) {
+            elect_nodes.push_back(iter->first);
+        }
+
+        std::mt19937_64 g2(now_vss_random_);
+        auto RandFunc = [&g2](int i) -> int {
+            return g2() % i;
+        };
+
+        std::random_shuffle(elect_nodes.begin(), elect_nodes.end(), RandFunc);
     }
 
     std::string str_for_hash;
@@ -324,6 +364,15 @@ int ShardStatistic::StatisticWithHeights(
 
         statistic_item.set_elect_height(hiter->first);
         str_for_hash.append((char*)&hiter->first, sizeof(hiter->first));
+    }
+
+    for (int32_t i = 0; i < elect_nodes.size() && i < 256; ++i) {
+        auto join_elect_node = elect_statistic.add_join_elect_nodes();
+        join_elect_node->set_id(elect_nodes[i]);
+        auto iter = eiter->second.find(elect_nodes[i]);
+        join_elect_node->set_stoke(iter->second);
+        str_for_hash.append(elect_nodes[i]);
+        str_for_hash.append((char*)&iter->second, sizeof(iter->second));
     }
 
     *statistic_hash = common::Hash::keccak256(str_for_hash);

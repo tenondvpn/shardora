@@ -137,6 +137,7 @@ struct ElectItem {
 
 struct HeightStatisticInfo {
     std::unordered_map<std::string, uint32_t> node_tx_count_map;
+    std::unordered_map<std::string, uint64_t> node_stoke_map;
     uint64_t elect_height;
 };
 
