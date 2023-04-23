@@ -287,6 +287,32 @@ void AccountManager::HandleContractExecuteTx(
         common::Encode::HexEncode(account_id).c_str(), tx.amount());
 }
 
+void AccountManager::HandleRootCreateAddressTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
+    auto account_info = GetAccountInfo(thread_idx, tx.to());
+    if (account_info != nullptr) {
+        assert(false);
+        return;
+    }
+
+    account_info = std::make_shared<address::protobuf::AddressInfo>();
+    account_info->set_pool_index(block.pool_index());
+    account_info->set_addr(tx.to());
+    account_info->set_type(address::protobuf::kNormal);
+    account_info->set_sharding_id(block.network_id());
+    account_info->set_latest_height(block.height());
+    account_info->set_balance(0);  // root address balance invalid
+    address_map_[thread_idx].add(tx.to(), account_info);
+    prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
+    ZJC_DEBUG("create root address direct: %s, sharding: %u, pool index: %u",
+        common::Encode::HexEncode(tx.to()).c_str(),
+        block.network_id(),
+        block.pool_index());
+}
+
 void AccountManager::NewBlockWithTx(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
@@ -298,6 +324,9 @@ void AccountManager::NewBlockWithTx(
     }
 
     switch (tx.step()) {
+    case pools::protobuf::kRootCreateAddress:
+        HandleRootCreateAddressTx(thread_idx, *block_item, tx, db_batch);
+        break;
     case pools::protobuf::kNormalFrom:
         HandleNormalFromTx(thread_idx, *block_item, tx, db_batch);
         break;
