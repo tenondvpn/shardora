@@ -226,7 +226,7 @@ int GenesisBlockInit::CreateElectBlock(
     auto tx_info = tx_list->Add();
     tx_info->set_step(pools::protobuf::kConsensusRootElectShard);
     tx_info->set_from("");
-    tx_info->set_to(common::kRootChainElectionBlockTxAddress);
+    tx_info->set_to(block::kRootChainElectionBlockTxAddress);
     tx_info->set_amount(0);
     tx_info->set_gas_limit(0);
     tx_info->set_gas_used(0);
@@ -305,16 +305,16 @@ int GenesisBlockInit::CreateElectBlock(
 //     }
 
     auto account_ptr = account_mgr_->GetAcountInfoFromDb(
-        common::kRootChainElectionBlockTxAddress);
+        block::kRootChainElectionBlockTxAddress);
     if (account_ptr == nullptr) {
         INIT_ERROR("get address failed! [%s]",
-            common::Encode::HexEncode(common::kRootChainElectionBlockTxAddress).c_str());
+            common::Encode::HexEncode(block::kRootChainElectionBlockTxAddress).c_str());
         return kInitError;
     }
 
     if (account_ptr->balance() != 0) {
         INIT_ERROR("get address balance failed! [%s]",
-            common::Encode::HexEncode(common::kRootChainElectionBlockTxAddress).c_str());
+            common::Encode::HexEncode(block::kRootChainElectionBlockTxAddress).c_str());
         return kInitError;
     }
 
@@ -352,7 +352,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto tx_info = tx_list->Add();
         tx_info->set_gid(common::CreateGID(""));
         tx_info->set_from("");
-        tx_info->set_to(common::kRootChainSingleBlockTxAddress);
+        tx_info->set_to(block::kRootChainSingleBlockTxAddress);
         tx_info->set_amount(0);
         tx_info->set_balance(0);
         tx_info->set_gas_limit(0);
@@ -390,16 +390,16 @@ int GenesisBlockInit::GenerateRootSingleBlock(
 //         }
 
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(
-            common::kRootChainSingleBlockTxAddress);
+            block::kRootChainSingleBlockTxAddress);
         if (account_ptr == nullptr) {
             INIT_ERROR("get address failed! [%s]",
-                common::Encode::HexEncode(common::kRootChainSingleBlockTxAddress).c_str());
+                common::Encode::HexEncode(block::kRootChainSingleBlockTxAddress).c_str());
             return kInitError;
         }
 
         if (account_ptr->balance() != 0) {
             INIT_ERROR("get address balance failed! [%s]",
-                common::Encode::HexEncode(common::kRootChainSingleBlockTxAddress).c_str());
+                common::Encode::HexEncode(block::kRootChainSingleBlockTxAddress).c_str());
             return kInitError;
         }
 
@@ -412,7 +412,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto tx_info = tx_list->Add();
         tx_info->set_gid(common::CreateGID(""));
         tx_info->set_from("");
-        tx_info->set_to(common::kRootChainTimeBlockTxAddress);
+        tx_info->set_to(block::kRootChainTimeBlockTxAddress);
         tx_info->set_amount(0);
         tx_info->set_balance(0);
         tx_info->set_gas_limit(0);
@@ -473,17 +473,17 @@ int GenesisBlockInit::GenerateRootSingleBlock(
 //         }
 
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(
-            common::kRootChainTimeBlockTxAddress);
+            block::kRootChainTimeBlockTxAddress);
         if (account_ptr == nullptr) {
             INIT_ERROR("get address balance failed! [%s]",
-                common::Encode::HexEncode(common::kRootChainTimeBlockTxAddress).c_str());
+                common::Encode::HexEncode(block::kRootChainTimeBlockTxAddress).c_str());
             assert(false);
             return kInitError;
         }
 
         if (account_ptr->balance() != 0) {
             INIT_ERROR("get address balance failed! [%s]",
-                common::Encode::HexEncode(common::kRootChainTimeBlockTxAddress).c_str());
+                common::Encode::HexEncode(block::kRootChainTimeBlockTxAddress).c_str());
             assert(false);
             return kInitError;
         }
@@ -583,7 +583,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
 
     db_->Put(db_batch);
     {
-        auto address = common::kRootChainSingleBlockTxAddress;
+        auto address = block::kRootChainSingleBlockTxAddress;
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
             INIT_ERROR("get address info failed! [%s]",
@@ -599,7 +599,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
     }
         
     {
-        auto address = common::kRootChainTimeBlockTxAddress;
+        auto address = block::kRootChainTimeBlockTxAddress;
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
             INIT_ERROR("get address info failed! [%s]",
@@ -615,7 +615,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
     }
         
     {
-        auto address = common::kRootChainElectionBlockTxAddress;
+        auto address = block::kRootChainElectionBlockTxAddress;
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
             INIT_ERROR("get address info failed! [%s]",
@@ -640,7 +640,7 @@ std::string GenesisBlockInit::GetValidPoolBaseAddr(uint32_t network_id, uint32_t
         std::string addr = common::Encode::HexDecode(common::StringUtil::Format(
             "%04d%s%04d",
             network_id,
-            common::kStatisticFromAddressMidllefix.c_str(),
+            block::kStatisticFromAddressMidllefix.c_str(),
             id_idx++));
         uint32_t pool_idx = common::GetAddressPoolIndex(addr);
         if (pool_idx == pool_index) {
@@ -793,7 +793,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         uint32_t net_id,
         pools::protobuf::ToTxHeights& init_heights) {
     std::set<std::string> valid_ids;
-    for (auto iter = root_genesis_nodes->begin(); iter != root_genesis_nodes->end(); ++iter) {
+    for (auto iter = root_genesis_nodes.begin(); iter != root_genesis_nodes.end(); ++iter) {
         if (valid_ids.find((*iter)->id) != valid_ids.end()) {
             ZJC_FATAL("invalid id: %s", common::Encode::HexEncode((*iter)->id).c_str());
             return kInitError;
@@ -802,7 +802,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         valid_ids.insert((*iter)->id);
     }
 
-    for (auto iter = cons_genesis_nodes->begin(); iter != cons_genesis_nodes->end(); ++iter) {
+    for (auto iter = cons_genesis_nodes.begin(); iter != cons_genesis_nodes.end(); ++iter) {
         if (valid_ids.find((*iter)->id) != valid_ids.end()) {
             ZJC_FATAL("invalid id: %s", common::Encode::HexEncode((*iter)->id).c_str());
             return kInitError;
@@ -812,12 +812,12 @@ int GenesisBlockInit::CreateShardNodesBlocks(
     }
 
     uint64_t all_balance = 0llu;
-    std::map<uint32_t uint64_t> pool_height;
+    std::map<uint32_t, uint64_t> pool_height;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         pool_height[i] = 0;
     }
 
-    uint64_t genesis_account_balance += common::kGenesisShardingNodesMaxZjc % valid_ids.size();
+    uint64_t genesis_account_balance = common::kGenesisShardingNodesMaxZjc % valid_ids.size();
     for (auto iter = valid_ids.begin(); iter != valid_ids.end(); ++iter) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
@@ -836,7 +836,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
 
         tenon_block->set_prehash(pool_prev_hash_map[pool_index]);
         tenon_block->set_version(common::kTransactionVersion);
-        tenon_block->set_pool_index(iter->first);
+        tenon_block->set_pool_index(pool_index);
         tenon_block->set_height(pool_height[i] + 1);
         pool_height[i] = pool_height[i] + 1;
         const auto& bitmap_data = root_bitmap_.data();
