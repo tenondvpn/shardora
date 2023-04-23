@@ -2008,25 +2008,23 @@ void BftManager::BroadcastLocalTosBlock(
     auto& tx = block_item->tx_list(0);
     pools::protobuf::ToTxMessage to_tx;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).val_size() > 0) {
-            std::string val;
-            if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
-                if (tx.storages(i).key() == protos::kNormalTos) {
-                    if (!to_tx.ParseFromString(val)) {
-                        assert(false);
-                        return;
-                    }
-
-                    if (to_tx.to_heights().sharding_id() == common::GlobalInfo::Instance()->network_id()) {
-                        assert(false);
-                        return;
-                    }
+        std::string val;
+        if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+            if (tx.storages(i).key() == protos::kNormalTos) {
+                if (!to_tx.ParseFromString(val)) {
+                    assert(false);
+                    return;
                 }
 
-                auto kv = msg.mutable_sync()->add_items();
-                kv->set_key(tx.storages(i).val_hash());
-                kv->set_value(val);
+                if (to_tx.to_heights().sharding_id() == common::GlobalInfo::Instance()->network_id()) {
+                    assert(false);
+                    return;
+                }
             }
+
+            auto kv = msg.mutable_sync()->add_items();
+            kv->set_key(tx.storages(i).val_hash());
+            kv->set_value(val);
         }
     }
 
