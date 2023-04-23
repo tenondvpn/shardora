@@ -203,7 +203,13 @@ static void TestMultiThread(int32_t thread_count, int32_t leader_count, uint32_t
                 std::map<std::string, pools::TxItemPtr> res_vec;
                 tx_pool_mgr.GetTx(10, pool_idxs[i], res_vec);
                 if (!res_vec.empty()) {
-                    tx_pool_mgr.TxOver(pool_idxs[i], res_vec);
+                    block::protobuf::Block block;
+                    for (auto iter = res_vec.begin(); iter != res_vec.end(); ++iter) {
+                        auto tmp_tx = block.add_tx_list();
+                        tmp_tx->set_gid(iter->second->gid);
+                    }
+
+                    tx_pool_mgr.TxOver(pool_idxs[i], block.tx_list());
                     tmp_count += res_vec.size();
                 }
             }
