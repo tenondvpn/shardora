@@ -1937,7 +1937,7 @@ void BftManager::BroadcastStatisticBlock(
     msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    msg.set_type(common::kPoolsMessage);
+    msg.set_type(common::kBlockMessage);
     dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
     msg.set_des_dht_key(dht_key.StrKey());
 
@@ -1997,7 +1997,7 @@ void BftManager::BroadcastLocalTosBlock(
     }
 
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    msg.set_type(common::kPoolsMessage);
+    msg.set_type(common::kBlockMessage);
     dht::DhtKeyManager dht_key(to_tx.to_heights().sharding_id());
     msg.set_des_dht_key(dht_key.StrKey());
     auto& cross_msg = *msg.mutable_cross_tos();

@@ -58,9 +58,6 @@ int BlockManager::Init(
     transport::Processor::Instance()->RegisterProcessor(
         common::kPoolTimerMessage,
         std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
-    network::Route::Instance()->RegisterMessage(
-        common::kPoolsMessage,
-        std::bind(&BlockManager::HandleMessage, this, std::placeholders::_1));
     bool genesis = false;
     return kBlockSuccess;
 }

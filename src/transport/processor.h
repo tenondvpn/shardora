@@ -11,7 +11,6 @@ class Processor {
 public:
     static Processor* Instance();
     void RegisterProcessor(uint32_t type, MessageProcessor processor);
-    void UnRegisterProcessor(uint32_t type);
     void HandleMessage(MessagePtr& message);
 
 private:

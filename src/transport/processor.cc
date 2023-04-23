@@ -14,11 +14,6 @@ void Processor::RegisterProcessor(uint32_t type, MessageProcessor processor) {
     message_processor_[type].push_back(processor);
 }
 
-void Processor::UnRegisterProcessor(uint32_t type) {
-    assert(type < common::kLegoMaxMessageTypeCount);
-    message_processor_[type].clear();
-}
-
 void Processor::HandleMessage(MessagePtr& msg_ptr) {
     auto& message = msg_ptr->header;
     assert(message.type() < common::kLegoMaxMessageTypeCount);
