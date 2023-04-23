@@ -113,7 +113,10 @@ int BaseDht::Join(NodePtr& node) {
     });
         
     readonly_hash_sort_dht_ = std::make_shared<Dht>(dht_);
-    DHT_DEBUG("join new node: %s:%d", node->public_ip.c_str(), node->public_port);
+    DHT_DEBUG("sharding: %u, join new node: %s:%d",
+        local_node_->sharding_id,
+        node->public_ip.c_str(),
+        node->public_port);
     valid_count_ = dht_.size() + 1;
     return kDhtSuccess;
 }

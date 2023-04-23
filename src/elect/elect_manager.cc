@@ -666,6 +666,8 @@ bool ElectManager::NodeHasElected(uint32_t network_id, const std::string& node_i
     if (valid_members != nullptr) {
         for (auto iter = valid_members->begin(); iter != valid_members->end(); ++iter) {
             if ((*iter)->id == node_id) {
+                ZJC_DEBUG("sharding id: %u, has elected: %s",
+                    network_id, common::Encode::HexEncode(node_id).c_str());
                 return true;
             }
         }
@@ -675,6 +677,8 @@ bool ElectManager::NodeHasElected(uint32_t network_id, const std::string& node_i
     if (waiting_members != nullptr) {
         for (auto iter = waiting_members->begin(); iter != waiting_members->end(); ++iter) {
             if ((*iter)->id == node_id) {
+                ZJC_DEBUG("waiting sharding id: %u, has elected: %s",
+                    network_id, common::Encode::HexEncode(node_id).c_str());
                 return true;
             }
         }
