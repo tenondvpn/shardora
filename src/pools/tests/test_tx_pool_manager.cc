@@ -106,7 +106,7 @@ std::shared_ptr<address::protobuf::AddressInfo> CreateAddressInfo(
 }
 
 class FromTxItem : public pools::TxItem {
-protected:
+public:
     FromTxItem(
         const transport::MessagePtr& msg) : pools::TxItem(msg) {}
     virtual ~FromTxItem() {}
