@@ -35,7 +35,7 @@ static const std::string kBlsVerifyPrefex = "b\x01";
 static const std::string kBlsSwapKeyPrefex = "c\x01";
 static const std::string kAddressStorageKeyPrefex = "d\x01";
 static const std::string kBlsSecKeyPrefex = "e\x01";
-static const std::string kShardingIdPrefex = "f\x01";
+
 static const std::string kBlsPrivateKeyPrefix = "g\x01";
 static const std::string kLatestElectBlockPrefix = "h\x01";
 static const std::string kLatestTimeBlockPrefix = "i\x01";
@@ -233,56 +233,6 @@ public:
         }
 
         return true;
-    }
-
-    uint32_t GetShardingId() {
-        std::string key(kShardingIdPrefex + "sharding");
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            return common::kInvalidUint32;
-        }
-
-        uint32_t sharding_id = common::kInvalidUint32;
-        if (!common::StringUtil::ToUint32(val, &sharding_id)) {
-            return common::kInvalidUint32;
-        }
-
-        return sharding_id;
-    }
-
-    void SaveShardingId(uint32_t sharding_id) {
-        std::string key(kShardingIdPrefex + "sharding");
-        std::string val = std::to_string(sharding_id);
-        auto st = db_->Put(key, val);
-        if (!st.ok()) {
-            ZJC_FATAL("write db failed!");
-        }
-    }
-
-    uint32_t GetWaitingId() {
-        std::string key(kShardingIdPrefex + "waiting");
-        std::string val;
-        auto st = db_->Get(key, &val);
-        if (!st.ok()) {
-            return common::kInvalidUint32;
-        }
-
-        uint32_t sharding_id = common::kInvalidUint32;
-        if (!common::StringUtil::ToUint32(val, &sharding_id)) {
-            return common::kInvalidUint32;
-        }
-
-        return sharding_id;
-    }
-
-    void SaveWaitingId(uint32_t sharding_id) {
-        std::string key(kShardingIdPrefex + "waiting");
-        std::string val = std::to_string(sharding_id);
-        auto st = db_->Put(key, val);
-        if (!st.ok()) {
-            ZJC_FATAL("write db failed!");
-        }
     }
 
     void SaveLatestElectBlock(

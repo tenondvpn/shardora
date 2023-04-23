@@ -93,6 +93,7 @@ int NetworkInit::Init(int argc, char** argv) {
         db_);
     zjcvm::Execution::Instance()->Init(db_);
     InitLocalNetworkId();
+    ZJC_DEBUG("init sharding id: %u", common::GlobalInfo::Instance()->network_id());
     if (net_handler_.Init(db_) != transport::kTransportSuccess) {
         return kInitError;
     }
@@ -190,6 +191,11 @@ int NetworkInit::Init(int argc, char** argv) {
 }
 
 void NetworkInit::InitLocalNetworkId() {
+    auto local_node_account_info = account_mgr_->GetAcountInfoFromDb(security_->GetAddress());
+    if (local_node_account_info == nullptr) {
+        return;
+    }
+
     elect::ElectBlockManager elect_block_mgr;
     elect_block_mgr.Init(db_);
     for (uint32_t sharding_id = network::kRootCongressNetworkId;
@@ -204,41 +210,27 @@ void NetworkInit::InitLocalNetworkId() {
             auto id = security_->GetAddress(in[member_idx].pubkey());
             if (id == security_->GetAddress()) {
                 ZJC_DEBUG("should join network: %u", sharding_id);
+                if (local_node_account_info->sharding_id() != sharding_id) {
+                    break;
+                }
+
                 common::GlobalInfo::Instance()->set_network_id(sharding_id);
-                return;
+                break;
             }
         }
     }
 
-    CheckJoinWaitingPool();
-}
-
-int NetworkInit::CheckJoinWaitingPool() {
     if (common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32) {
-        INIT_INFO("init with network id: %u", common::GlobalInfo::Instance()->network_id());
-        return kInitSuccess;
+        return;
     }
 
-    protos::PrefixDb prefix_db(db_);
-    std::string waiting_netid_str;
-    uint32_t waiting_network_id = prefix_db.GetWaitingId();
-    if ((waiting_network_id < network::kRootCongressWaitingNetworkId ||
-            waiting_network_id >= network::kConsensusWaitingShardEndNetworkId)) {
-        // sync block first
-        return kInitSuccess;
-    }
-
-    // TODO(): for test
+    auto waiting_network_id = local_node_account_info->sharding_id() + network::kConsensusWaitingShardOffset;
     if (elect_mgr_->Join(0, waiting_network_id) != elect::kElectSuccess) {
         INIT_ERROR("join waiting pool network[%u] failed!", waiting_network_id);
         return kInitError;
     }
 
-    prefix_db.SaveWaitingId(waiting_network_id);
     common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
-    INIT_INFO("init with network id: %u", waiting_network_id);
-    // send join elect request transaction
-    return kInitSuccess;
 }
 
 void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
