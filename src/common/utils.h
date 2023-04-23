@@ -316,21 +316,6 @@ inline static uint32_t GetAddressPoolIndex(const std::string& addr) {
     return common::Hash::Hash32(addr) % common::kImmutablePoolSize;
 }
 
-static inline bool IsBaseAddress(const std::string& address) {
-    return (address.substr(2, kStatisticFromAddressMidllefixDecode.size()) ==
-        kStatisticFromAddressMidllefixDecode);
-}
-
-inline static uint32_t GetBasePoolIndex(const std::string& acc_addr) {
-    if (acc_addr == common::kRootChainSingleBlockTxAddress ||
-        acc_addr == common::kRootChainTimeBlockTxAddress ||
-        acc_addr == common::kRootChainElectionBlockTxAddress) {
-        return kRootChainPoolIndex;
-    }
-
-    return GetAddressPoolIndex(acc_addr);
-}
-
 inline static uint64_t GetNodeConnectInt(const std::string& ip, uint16_t port) {
     uint32_t int_ip = IpToUint32(ip.c_str());
     uint64_t res = ((uint64_t)int_ip) << 32 | ((uint64_t)port & 0x000000000000FFFFllu);
