@@ -257,7 +257,9 @@ int Universal::AddNodeToUniversal(dht::NodePtr& node) {
         }
     }
 
-    if (!elected) {
+    if (!elected &&
+            common::GlobalInfo::Instance()->network_id() >= network::kRootCongressNetworkId &&
+            common::GlobalInfo::Instance()->network_id() < network::kConsensusShardEndNetworkId) {
         auto account_info = prefix_db_->GetAddressInfo(node->id);
         if (account_info != nullptr) {
             auto new_node = std::make_shared<dht::Node>(
