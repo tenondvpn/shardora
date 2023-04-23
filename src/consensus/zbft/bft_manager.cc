@@ -1906,7 +1906,7 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
 void BftManager::LeaderBroadcastBlock(
         uint8_t thread_index,
         const std::shared_ptr<block::protobuf::Block>& block) {
-    BroadcastWaitingBlock(thread_index, block);
+//     BroadcastWaitingBlock(thread_index, block);
     if (block->tx_list_size() != 1) {
         return;
     }
@@ -1966,14 +1966,16 @@ void BftManager::BroadcastWaitingBlock(
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
-    auto& tx = block_item->tx_list(0);
-    for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).val_size() > 0) {
-            std::string val;
-            if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
-                auto kv = msg.mutable_sync()->add_items();
-                kv->set_key(tx.storages(i).val_hash());
-                kv->set_value(val);
+    for (int32_t tx_idx = 0; tx_idx < block_item->tx_list_size(); ++tx_idx) {
+        auto& tx = block_item->tx_list(tx_idx);
+        for (int32_t i = 0; i < tx.storages_size(); ++i) {
+            if (tx.storages(i).val_size() > 0) {
+                std::string val;
+                if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+                    auto kv = msg.mutable_sync()->add_items();
+                    kv->set_key(tx.storages(i).val_hash());
+                    kv->set_value(val);
+                }
             }
         }
     }
