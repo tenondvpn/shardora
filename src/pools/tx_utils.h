@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/encode.h"
 #include "common/hash.h"
 #include "common/lof.h"
 #include "common/node_members.h"
