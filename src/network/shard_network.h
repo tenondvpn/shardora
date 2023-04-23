@@ -116,7 +116,7 @@ template<class DhtType>
 int ShardNetwork<DhtType>::JoinNewNodeValid(dht::NodePtr& node) {
     if (!(sharding_id_ >= network::kRootCongressNetworkId &&
             sharding_id_ < network::kConsensusShardEndNetworkId)) {
-        return dht::kDhtSuccess;
+        return dht::kDhtError;
     }
 
     auto network_id = dht::DhtKeyManager::DhtKeyGetNetId(node->dht_key);
