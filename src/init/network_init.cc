@@ -227,7 +227,7 @@ void NetworkInit::InitLocalNetworkId() {
     auto waiting_network_id = local_node_account_info->sharding_id() + network::kConsensusWaitingShardOffset;
     if (elect_mgr_->Join(0, waiting_network_id) != elect::kElectSuccess) {
         INIT_ERROR("join waiting pool network[%u] failed!", waiting_network_id);
-        return kInitError;
+        return;
     }
 
     common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
