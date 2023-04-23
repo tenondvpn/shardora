@@ -1906,7 +1906,7 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
 void BftManager::LeaderBroadcastBlock(
         uint8_t thread_index,
         const std::shared_ptr<block::protobuf::Block>& block) {
-//     BroadcastWaitingBlock(thread_index, block);
+    BroadcastWaitingBlock(thread_index, block);
     if (block->tx_list_size() != 1) {
         return;
     }
@@ -1998,6 +1998,7 @@ void BftManager::BroadcastLocalTosBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item) {
     if (block_item->tx_list_size() != 1) {
+        assert(false);
         return;
     }
 
@@ -2012,10 +2013,12 @@ void BftManager::BroadcastLocalTosBlock(
             if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
                 if (tx.storages(i).key() == protos::kNormalTos) {
                     if (!to_tx.ParseFromString(val)) {
+                        assert(false);
                         return;
                     }
 
                     if (to_tx.to_heights().sharding_id() == common::GlobalInfo::Instance()->network_id()) {
+                        assert(false);
                         return;
                     }
                 }
@@ -2028,6 +2031,7 @@ void BftManager::BroadcastLocalTosBlock(
     }
 
     if (!to_tx.has_to_heights()) {
+        assert(false);
         return;
     }
 
