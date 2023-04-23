@@ -22,8 +22,11 @@ UniversalManager* UniversalManager::Instance() {
     return &ins;
 }
 
-void UniversalManager::Init(std::shared_ptr<security::Security>& security) {
+void UniversalManager::Init(
+        std::shared_ptr<security::Security>& security,
+        std::shared_ptr<db::Db>& db) {
     security_ = security;
+    db_ = db;
 }
 
 void UniversalManager::Destroy() {
@@ -112,7 +115,7 @@ int UniversalManager::CreateNetwork(
         security_->GetPublicKey(),
         security_->GetAddress());
     local_node->first_node = common::GlobalInfo::Instance()->config_first_node();
-    dht::BaseDhtPtr dht_ptr = std::make_shared<network::Universal>(local_node);
+    dht::BaseDhtPtr dht_ptr = std::make_shared<network::Universal>(local_node, db_);
     dht_ptr->Init(
         security_,
         std::bind(

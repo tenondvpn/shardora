@@ -21,7 +21,7 @@ public:
     dht::BaseDhtPtr GetUniversal(uint32_t network_id);
     int CreateUniversalNetwork(uint8_t thread_idx, const common::Config& config);
     int CreateNodeNetwork(uint8_t thread_idx, const common::Config& config);
-    void Init(std::shared_ptr<security::Security>& security);
+    void Init(std::shared_ptr<security::Security>& security, std::shared_ptr<db::Db>& db);
     void Destroy();
     void DropNode(const std::string& ip, uint16_t port);
     void Join(const dht::NodePtr& node);
@@ -42,6 +42,7 @@ private:
 
     dht::BaseDhtPtr dhts_[kUniversalNetworkCount];  // just universal and node network
     std::shared_ptr<security::Security> security_ = nullptr;
+    std::shared_ptr<db::Db> db_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(UniversalManager);
 };
