@@ -30,6 +30,9 @@ TxPoolManager::TxPoolManager(
         tx_pool_[i].Init(i, db, kv_sync);
     }
 
+    transport::Processor::Instance()->RegisterProcessor(
+        common::kPoolTimerMessage,
+        std::bind(&TxPoolManager::ConsensusTimerMessage, this, std::placeholders::_1));
     network::Route::Instance()->RegisterMessage(
         common::kPoolsMessage,
         std::bind(&TxPoolManager::HandleMessage, this, std::placeholders::_1));
@@ -39,6 +42,12 @@ TxPoolManager::~TxPoolManager() {
     prefix_db_->Destroy();
     if (tx_pool_ != nullptr) {
         delete []tx_pool_;
+    }
+}
+
+void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        tx_pool_[i].SyncMissingBlocks();
     }
 }
 

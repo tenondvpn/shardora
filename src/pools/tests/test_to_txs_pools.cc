@@ -106,13 +106,14 @@ public:
 };
 
 TEST_F(TestToTxsPools, All) {
+    std::shared_ptr<pools::TxPoolManager> pools_mgr = nullptr;
     ToTxsPools to_txs_pool(db_ptr, "local_id");
     CreateBlock(to_txs_pool);
     for (uint32_t i = 0; i < kMaxShardingId; ++i) {
         pools::protobuf::ToTxHeights lhs;
-        ASSERT_EQ(to_txs_pool.LeaderCreateToTx(i, lhs), kPoolsSuccess);
+        ASSERT_EQ(to_txs_pool.LeaderCreateToHeights(i, lhs), kPoolsSuccess);
         pools::protobuf::ToTxHeights bhs;
-        ASSERT_EQ(to_txs_pool.BackupCreateToTx(i, lhs, &bhs), kPoolsSuccess);
+        ASSERT_EQ(to_txs_pool.CreateToTxWithHeights(i, lhs, &bhs), kPoolsSuccess);
     }
 }
 

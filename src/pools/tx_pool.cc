@@ -41,6 +41,10 @@ void TxPool::Init(
 //     added_tx_map_.reserve(10240);
 }
 
+void TxPool::SyncMissingBlocks() {
+
+}
+
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
 //     common::AutoSpinLock auto_lock(mutex_);
     if (removed_gid_.DataExists(tx_ptr->gid)) {

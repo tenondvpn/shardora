@@ -128,6 +128,7 @@ public:
     }
 
     void CheckTimeoutTx();
+    void SyncMissingBlocks();
 
 private:
     void InitLatestInfo() {
