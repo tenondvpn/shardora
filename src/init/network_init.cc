@@ -231,6 +231,7 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
             return;
         }
 
+        transport::TcpTransport::Instance()->SetMessageHash(msg, msg_ptr->thread_idx);
         transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
     }
 
@@ -288,6 +289,7 @@ void NetworkInit::GetAddressShardingId(uint8_t thread_idx) {
     auto& init_msg = *msg.mutable_init_proto();
     auto& init_req = *init_msg.mutable_addr_req();
     init_req.set_id(security_->GetAddress());
+    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     network::Route::Instance()->Send(msg_ptr);
     init_tick_.CutOff(10000000lu, std::bind(&NetworkInit::GetAddressShardingId, this, std::placeholders::_1));
 }
