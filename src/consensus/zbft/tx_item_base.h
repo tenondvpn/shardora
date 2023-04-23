@@ -41,6 +41,7 @@ protected:
         if (tx_info.value().size() > 32) {
             auto hash = common::Hash::keccak256(tx_info.value());
             storage->set_val_hash(hash);
+            storage->set_val_size(tx_info.value().size());
             db_batch->Put(hash, tx_info.value());
         } else {
             storage->set_val_hash(tx_info.value());
