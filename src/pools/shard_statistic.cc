@@ -362,7 +362,7 @@ int ShardStatistic::StatisticWithHeights(
             str_for_hash.append((char*)&tx_count, sizeof(tx_count));
 
             uint64_t stoke = 0;
-            prefix_db_->GetElectNodeMinStoke(common::GlobalInfo::Instance()->network_id(), from, &stoke);
+            prefix_db_->GetElectNodeMinStoke(common::GlobalInfo::Instance()->network_id(), id, &stoke);
             statistic_item.add_stokes(stoke);
         }
 
