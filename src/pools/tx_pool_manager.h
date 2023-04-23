@@ -17,16 +17,11 @@
 
 namespace zjchain {
 
-namespace block {
-    class BlockManager;
-}
-
 namespace pools {
 
 class TxPoolManager {
 public:
     TxPoolManager(
-        std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync);
@@ -135,7 +130,6 @@ private:
     static const uint32_t kPopMessageCountEachTime = 320u;
 
     TxPool* tx_pool_{ nullptr };
-    std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;

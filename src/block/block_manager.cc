@@ -58,6 +58,9 @@ int BlockManager::Init(
     transport::Processor::Instance()->RegisterProcessor(
         common::kPoolTimerMessage,
         std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
+    network::Route::Instance()->RegisterMessage(
+        common::kPoolsMessage,
+        std::bind(&BlockManager::HandleMessage, this, std::placeholders::_1));
     bool genesis = false;
     return kBlockSuccess;
 }
@@ -112,6 +115,26 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.block_proto().has_shard_statistic_tx()) {
         HandleStatisticMessage(msg_ptr);
     }
+
+    if (header.has_cross_tos()) {
+        HandleCrossShardingToTxs(msg_ptr);
+    }
+
+    if (header.has_cross_statistic()) {
+        HandleCrossShardingStatisticTxs(msg_ptr);
+    }
+}
+
+void TxPoolManager::HandleCrossShardingStatisticTxs(const transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
+    auto block_ptr = std::make_shared<block::protobuf::Block>(header.cross_statistic().block());
+    NetworkNewBlock(msg_ptr->thread_idx, block_ptr);
+}
+
+void BlockManager::HandleCrossShardingToTxs(const transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
+    auto block_ptr = std::make_shared<block::protobuf::Block>(header.cross_tos().block());
+    NetworkNewBlock(msg_ptr->thread_idx, block_ptr);
 }
 
 void BlockManager::NetworkNewBlock(

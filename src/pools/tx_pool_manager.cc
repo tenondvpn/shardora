@@ -1,6 +1,5 @@
 #include "pools/tx_pool_manager.h"
 
-#include "block/block_manager.h"
 #include "common/log.h"
 #include "common/global_info.h"
 #include "common/hash.h"
@@ -17,11 +16,9 @@ namespace zjchain {
 namespace pools {
 
 TxPoolManager::TxPoolManager(
-        std::shared_ptr<block::BlockManager>& block_mgr,
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<sync::KeyValueSync>& kv_sync) {
-    block_mgr_ = block_mgr;
     security_ = security;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
@@ -104,14 +101,6 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             break;
         }
     }
-
-    if (header.has_cross_tos()) {
-        HandleCrossShardingToTxs(msg_ptr);
-    }
-
-    if (header.has_cross_statistic()) {
-        HandleCrossShardingStatisticTxs(msg_ptr);
-    }
 }
 
 void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
@@ -154,12 +143,6 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-}
-
-void TxPoolManager::HandleCrossShardingStatisticTxs(const transport::MessagePtr& msg_ptr) {
-    auto& header = msg_ptr->header;
-    auto block_ptr = std::make_shared<block::protobuf::Block>(header.cross_statistic().block());
-    block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_ptr);
 }
 
 void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
@@ -284,12 +267,6 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     }
 
     return true;
-}
-
-void TxPoolManager::HandleCrossShardingToTxs(const transport::MessagePtr& msg_ptr) {
-    auto& header = msg_ptr->header;
-    auto block_ptr = std::make_shared<block::protobuf::Block>(header.cross_tos().block());
-    block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_ptr);
 }
 
 void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {

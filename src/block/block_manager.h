@@ -85,6 +85,8 @@ public:
 
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
+    void HandleCrossShardingToTxs(const transport::MessagePtr& msg_ptr);
+    void HandleCrossShardingStatisticTxs(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
     void HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool recreate);
     void HandleStatisticMessage(const transport::MessagePtr& msg_ptr);
