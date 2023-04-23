@@ -315,7 +315,7 @@ int one_tx_main(int argc, char** argv) {
         ++prikey_pos;
         from_prikey = prikeys[prikey_pos % prikeys.size()];
         security->SetPrivateKey(from_prikey);
-        continue;
+        return 1;
     }
 
     auto tx_msg_ptr = CreateTransactionWithAttr(
