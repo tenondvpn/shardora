@@ -42,7 +42,10 @@ void TxPool::Init(
 }
 
 void TxPool::SyncMissingBlocks() {
-
+    std::vector<uint64_t> invalid_heights;
+    height_tree_ptr_->GetMissingHeights(&invalid_heights, latest_height_);
+    ZJC_DEBUG("sync missing blocks latest height: %lu, invaid heights size: %u",
+        latest_height_, invalid_heights.size());
 }
 
 int TxPool::AddTx(TxItemPtr& tx_ptr) {
