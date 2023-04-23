@@ -657,6 +657,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     uint64_t genesis_account_balance = 0llu;
     uint64_t all_balance = 0llu;
     pools::protobuf::ToTxHeights init_heights;
+    std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
@@ -724,6 +725,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         tenon_block->set_electblock_height(0);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+        pool_prev_hash_map[iter->first] = tenon_block->hash();
         db::DbWriteBatch db_batch;
         AddBlockItemToCache(tenon_block, db_batch);
         db_->Put(db_batch);
@@ -769,6 +771,12 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     int res = GenerateRootSingleBlock(root_genesis_nodes, cons_genesis_nodes, &root_pool_height);
     if (res == kInitSuccess) {
         init_heights.add_heights(root_pool_height);
+        CreateShardNodesBlocks(
+            pool_prev_hash_map,
+            root_genesis_nodes,
+            cons_genesis_nodes,
+            network::kRootCongressNetworkId,
+            init_heights);
         prefix_db_->SaveStatisticLatestHeihgts(network::kRootCongressNetworkId, init_heights);
     }
 
