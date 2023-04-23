@@ -84,6 +84,7 @@ std::shared_ptr<address::protobuf::AddressInfo> TxPoolManager::GetAddressInfo(
 
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // just one thread
+    ZJC_DEBUG("handle from message 11");
     auto& header = msg_ptr->header;
     if (header.has_tx_proto()) {
         auto& tx_msg = header.tx_proto();
@@ -287,10 +288,12 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
 }
 
 void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
+    ZJC_DEBUG("handle from message 0");
     if (!UserTxValid(msg_ptr)) {
         return;
     }
 
+    ZJC_DEBUG("handle from message 1");
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 }
 
