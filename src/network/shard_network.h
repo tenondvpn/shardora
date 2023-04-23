@@ -140,7 +140,9 @@ int ShardNetwork<DhtType>::JoinNewNodeValid(dht::NodePtr& node) {
         return dht::kDhtError;
     }
 
-    return dht::kDhtError;
+    ZJC_DEBUG("JoinNewNodeValid valid node sharding_id_: %u, id: %s",
+        sharding_id_, common::Encode::HexEncode(node->id).c_str());
+    return dht::kDhtSuccess;
 }
 
 template<class DhtType>
