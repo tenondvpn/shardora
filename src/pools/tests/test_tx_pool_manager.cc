@@ -81,9 +81,8 @@ TEST_F(TestTxPoolManager, All) {
     security_ptr->SetPrivateKey(common::Encode::HexDecode(
         "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"));
     CreateAddressInfo(security_ptr);
-    std::shared_ptr<block::BlockManager> block_ptr = nullptr;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ptr = nullptr;
-    TxPoolManager tx_pool_mgr(block_ptr, security_ptr, db_ptr, kv_sync_ptr);
+    TxPoolManager tx_pool_mgr(security_ptr, db_ptr, kv_sync_ptr);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     header.set_src_sharding_id(2);
@@ -126,9 +125,8 @@ static void TestMultiThread(int32_t thread_count, int32_t leader_count, uint32_t
     security_ptr->SetPrivateKey(common::Encode::HexDecode(
         "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971"));
     CreateAddressInfo(security_ptr);
-    std::shared_ptr<block::BlockManager> block_ptr = nullptr;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ptr = nullptr;
-    TxPoolManager tx_pool_mgr(block_ptr, security_ptr, db_ptr, kv_sync_ptr);
+    TxPoolManager tx_pool_mgr(security_ptr, db_ptr, kv_sync_ptr);
     srand(time(NULL));
     std::condition_variable con[thread_count];
     std::mutex mu[thread_count];
