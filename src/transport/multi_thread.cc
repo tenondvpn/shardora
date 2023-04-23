@@ -197,6 +197,9 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
 
     threads_message_queues_[queue_idx][priority].push(msg_ptr);
     wait_con_[queue_idx % all_thread_count_].notify_one();
+    if (msg_ptr->header.type() == common::kPoolsMessage) {
+        ZJC_DEBUG("pools message coming.");
+    }
 }
 
 uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
