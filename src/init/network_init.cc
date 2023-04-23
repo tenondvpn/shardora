@@ -117,7 +117,7 @@ int NetworkInit::Init(int argc, char** argv) {
     network::Route::Instance()->RegisterMessage(
         common::kInitMessage,
         std::bind(&NetworkInit::HandleMessage, this, std::placeholders::_1));
-    network::UniversalManager::Instance()->Init(security_);
+    network::UniversalManager::Instance()->Init(security_, db_);
     if (InitNetworkSingleton() != kInitSuccess) {
         INIT_ERROR("InitNetworkSingleton failed!");
         return kInitError;

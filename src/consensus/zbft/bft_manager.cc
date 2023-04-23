@@ -1962,7 +1962,7 @@ void BftManager::BroadcastStatisticBlock(
 
 void BftManager::BroadcastWaitingBlock(
         uint8_t thread_idx,
-        const std::shared_ptr<block::protobuf::Block>& block) {
+        const std::shared_ptr<block::protobuf::Block>& block_item) {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
