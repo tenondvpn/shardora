@@ -167,23 +167,6 @@ static const uint8_t kMaxThreadCount = 16;
 static const uint32_t kSingleBlockMaxTransactions = 256u;
 static const uint32_t kSingleBlockMaxMBytes = 1u;
 
-static const std::string kCreateGenesisNetwrokAccount = common::Encode::HexDecode(
-    "b5be6f0090e4f5d40458258ed9adf843324c0327145c48b55091f33673d2d5a4");
-static const std::string kStatisticFromAddressMidllefix = "00000000000000000000000000000000";
-static const std::string kStatisticFromAddressMidllefixDecode = common::Encode::HexDecode("00000000000000000000000000000000");
-static const std::string kRootChainSingleBlockTxAddress = common::Encode::HexDecode(
-    "1000000000000000000000000000000000000001");
-static const std::string kRootChainTimeBlockTxAddress = common::Encode::HexDecode(
-    "1000000000000000000000000000000000000002");
-static const std::string kRootChainElectionBlockTxAddress = common::Encode::HexDecode(
-    "1000000000000000000000000000000000000003");
-static const std::string kNormalToAddress = common::Encode::HexDecode(
-    "1000000000000000000000000000000000000004");
-static const std::string kNormalLocalToAddress = common::Encode::HexDecode(
-    "1000000000000000000000000000000000000005");
-static const std::string kShardStatisticAddress = common::Encode::HexDecode(
-    "1000000000000000000000000000000000000006");
-
 static const uint32_t kVpnShareStakingPrice = 1u;
 
 static const uint64_t kZjcMiniTransportUnit = 100000000llu;
