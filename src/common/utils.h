@@ -311,10 +311,7 @@ int RemoteReachable(const std::string& ip, uint16_t port, bool* reachable);
 bool IsVlanIp(const std::string& ip);
 uint32_t IpToUint32(const char* ip);
 std::string Uint32ToIp(uint32_t ip);
-
-inline static uint32_t GetAddressPoolIndex(const std::string& addr) {
-    return common::Hash::Hash32(addr) % common::kImmutablePoolSize;
-}
+uint32_t GetAddressPoolIndex(const std::string& addr);
 
 inline static uint64_t GetNodeConnectInt(const std::string& ip, uint16_t port) {
     uint32_t int_ip = IpToUint32(ip.c_str());

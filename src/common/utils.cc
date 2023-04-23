@@ -132,6 +132,10 @@ uint8_t RandomCountry() {
     return rand() % (FX + 1);
 }
 
+uint32_t GetAddressPoolIndex(const std::string& addr) {
+    return common::Hash::Hash32(addr) % common::kImmutablePoolSize;
+}
+
 void itimeofday(long *sec, long *usec) {
 #ifndef WIN32
     struct timeval time;
