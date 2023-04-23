@@ -14,10 +14,12 @@ namespace zjchain {
 
 namespace network {
 
-Universal::Universal(dht::NodePtr& local_node) : BaseDht(local_node) {
+Universal::Universal(dht::NodePtr& local_node, std::shared_ptr<db::Db>& db) : BaseDht(local_node) {
     if (local_node->sharding_id == network::kUniversalNetworkId) {
         is_universal_ = true;
     }
+
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db);
 }
 
 Universal::~Universal() {
@@ -237,6 +239,7 @@ void Universal::OnNewElectBlock(
 }
 
 int Universal::AddNodeToUniversal(dht::NodePtr& node) {
+    bool elected = false;
     for (auto sharding_iter = sharding_latest_height_map_.begin();
         sharding_iter != sharding_latest_height_map_.end(); ++sharding_iter) {
         auto id_iter = sharding_iter->second->id_set.find(node->id);
@@ -248,8 +251,22 @@ int Universal::AddNodeToUniversal(dht::NodePtr& node) {
                 node->pubkey_str,
                 node->id);
             BaseDht::Join(new_node);
+            elected = true;
             ZJC_DEBUG("universal add node: %s, sharding id: %u",
                 common::Encode::HexEncode(node->id).c_str(), sharding_iter->first);
+        }
+    }
+
+    if (!elected) {
+        auto account_info = prefix_db_->GetAddressInfo(node->id);
+        if (account_info != nullptr) {
+            auto new_node = std::make_shared<dht::Node>(
+                account_info->sharding_id() + network::kConsensusWaitingShardOffset,
+                node->public_ip,
+                node->public_port,
+                node->pubkey_str,
+                node->id);
+            BaseDht::Join(new_node);
         }
     }
 

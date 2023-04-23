@@ -16,7 +16,7 @@ namespace network {
 
 class Universal : public dht::BaseDht {
 public:
-    Universal(dht::NodePtr& local_node);
+    Universal(dht::NodePtr& local_node, std::shared_ptr<db::Db>& db);
     virtual ~Universal();
     virtual int Init(
         std::shared_ptr<security::Security>& security,
@@ -53,6 +53,7 @@ private:
     std::shared_ptr<security::Security> security_ = nullptr;
     std::vector<dht::NodePtr> wait_nodes_;
     std::unordered_map<int32_t, std::shared_ptr<ElectItem>> sharding_latest_height_map_;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(Universal);
 };

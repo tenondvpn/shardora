@@ -376,6 +376,7 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     }
 
     msg.set_sign(sign);
+    msg_ptr->thread_idx = thread_idx;
     network::Route::Instance()->Send(msg_ptr);
 }
 

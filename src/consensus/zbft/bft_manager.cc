@@ -1906,6 +1906,7 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
 void BftManager::LeaderBroadcastBlock(
         uint8_t thread_index,
         const std::shared_ptr<block::protobuf::Block>& block) {
+    BroadcastWaitingBlock(thread_index, block);
     if (block->tx_list_size() != 1) {
         return;
     }
@@ -1959,6 +1960,38 @@ void BftManager::BroadcastStatisticBlock(
         block_item->height(), network::kRootCongressNetworkId);
 }
 
+void BftManager::BroadcastWaitingBlock(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->thread_idx = thread_idx;
+    auto& msg = msg_ptr->header;
+    auto& tx = block_item->tx_list(0);
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        if (tx.storages(i).val_size() > 0) {
+            std::string val;
+            if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+                auto kv = msg.mutable_sync()->add_items();
+                kv->set_key(tx.storages(i).val_hash());
+                kv->set_value(val);
+            }
+        }
+    }
+
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    msg.set_type(common::kBlockMessage);
+    dht::DhtKeyManager dht_key(
+        common::GlobalInfo::Instance()->network_id() + network::kConsensusWaitingShardOffset);
+    msg.set_des_dht_key(dht_key.StrKey());
+    auto& cross_msg = *msg.mutable_cross_tos();
+    *cross_msg.mutable_block() = *block_item;
+    auto* brdcast = msg.mutable_broadcast();
+    network::Route::Instance()->Send(msg_ptr);
+    ZJC_DEBUG("success broadcast waiting block height: %lu, sharding id: %u",
+        block_item->height(),
+        common::GlobalInfo::Instance()->network_id() + network::kConsensusWaitingShardOffset);
+}
+
 void BftManager::BroadcastLocalTosBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item) {
@@ -1972,7 +2005,7 @@ void BftManager::BroadcastLocalTosBlock(
     auto& tx = block_item->tx_list(0);
     pools::protobuf::ToTxMessage to_tx;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).val_size() == 0) {
+        if (tx.storages(i).val_size() > 0) {
             std::string val;
             if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
                 if (tx.storages(i).key() == protos::kNormalTos) {
