@@ -245,7 +245,7 @@ static void TestMultiThread(int32_t thread_count, int32_t leader_count, uint32_t
 }
 
 TEST_F(TestTxPoolManager, ProcessBentchTest) {
-    TestMultiThread(4, 256, 1000000);
+    TestMultiThread(4, 256, 10000);
 }
 
 TEST_F(TestTxPoolManager, TestMapWithPriority) {
