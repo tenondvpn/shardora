@@ -272,7 +272,7 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
             return;
         }
 
-        std::cout << "success handle init res message." << std::endl;
+        std::cout << "success handle init res message. join waiting shard: " << waiting_network_id << std::endl;
         common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
     }
 }
