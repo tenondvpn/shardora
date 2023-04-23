@@ -236,6 +236,7 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
             "prepayment: %lu, default call contract gas: %lu",
             msg_ptr->address_info->balance(),
             tx_msg.amount(),
+            tx_msg.contract_prepayment(),
             consensus::kCallContractDefaultUseGas);
         return false;
     }
