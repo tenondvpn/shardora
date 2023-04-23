@@ -56,7 +56,7 @@ void TimeBlockManager::CreateTimeBlockTx() {
     pools::protobuf::TxMessage& tx_info = *msg_ptr->header.mutable_tx_proto();
     tx_info.set_step(pools::protobuf::kConsensusRootTimeBlock);
     tx_info.set_pubkey("");
-    tx_info.set_to(common::kRootChainTimeBlockTxAddress);
+    tx_info.set_to(block::kRootChainTimeBlockTxAddress);
     tx_info.set_gid(gid);
     tx_info.set_gas_limit(0llu);
     tx_info.set_amount(0);

@@ -837,8 +837,8 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         tenon_block->set_prehash(pool_prev_hash_map[pool_index]);
         tenon_block->set_version(common::kTransactionVersion);
         tenon_block->set_pool_index(pool_index);
-        tenon_block->set_height(pool_height[i] + 1);
-        pool_height[i] = pool_height[i] + 1;
+        tenon_block->set_height(pool_height[pool_index] + 1);
+        pool_height[pool_index] = pool_height[pool_index] + 1;
         const auto& bitmap_data = root_bitmap_.data();
         for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
             tenon_block->add_precommit_bitmap(bitmap_data[i]);
