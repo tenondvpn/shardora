@@ -133,8 +133,17 @@ public:
 private:
     void InitLatestInfo() {
         pools::protobuf::PoolLatestInfo pool_info;
+        uint32_t network_id = common::GlobalInfo::Instance()->network_id();
+        if (pool_index_ == common::kRootChainPoolIndex) {
+            network_id = network::kRootCongressNetworkId;
+        }
+
+        if (network_id == common::kInvalidUint32) {
+            return;
+        }
+
         if (prefix_db_->GetLatestPoolInfo(
-                common::GlobalInfo::Instance()->network_id(),
+                network_id,
                 pool_index_,
                 &pool_info)) {
             if (latest_height_ == common::kInvalidUint64 || latest_height_ < pool_info.height()) {
