@@ -482,7 +482,6 @@ void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {
             common::GlobalInfo::Instance()->network_id(),
             &consensused_timeblock_height_)) {
         ZJC_ERROR("init latest consensused statistic time block height failed!");
-        return;
     }
 
     timeblock::protobuf::TimeBlock tmblock;
