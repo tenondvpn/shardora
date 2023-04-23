@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 
+#include "block/block_utils.h"
 #include "common/global_info.h"
 #include "common/split.h"
 #include "common/string_utils.h"

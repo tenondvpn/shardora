@@ -866,7 +866,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         }
 
         all_balance += account_ptr->balance();
-        *init_heights.mutable_heights(pool_index) = tenon_block->height();
+        init_heights.set_heights(pool_index, tenon_block->height());
     }
 
     if (all_balance != common::kGenesisFoundationMaxZjc) {
