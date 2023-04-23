@@ -408,7 +408,7 @@ void BlockManager::HandleLocalNormalToTx(
         tx->set_key(protos::kLocalNormalTos);
         tx->set_value(tos_hash);
         tx->set_pubkey("");
-        tx->set_to(common::kNormalLocalToAddress);
+        tx->set_to(kNormalLocalToAddress);
         tx->set_step(pools::protobuf::kConsensusLocalTos);
         auto gid = common::Hash::keccak256(tos_hash + heights_hash);
         tx->set_gas_limit(0);
@@ -569,7 +569,7 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
     tx->set_key(protos::kShardStatistic);
     tx->set_value(statistic_hash);
     tx->set_pubkey("");
-    tx->set_to(common::kShardStatisticAddress);
+    tx->set_to(kShardStatisticAddress);
     tx->set_step(pools::protobuf::kStatistic);
     auto gid = common::Hash::keccak256(
         statistic_hash + std::to_string(common::GlobalInfo::Instance()->network_id()));
@@ -638,7 +638,7 @@ void BlockManager::HandleStatisticBlock(
     tmp[1] = block.timeblock_height();
     tx->set_value(std::string(data, sizeof(data)));
     tx->set_pubkey("");
-    tx->set_to(common::kRootChainElectionBlockTxAddress);
+    tx->set_to(kRootChainElectionBlockTxAddress);
     tx->set_step(pools::protobuf::kConsensusRootElectShard);
     auto gid = common::Hash::keccak256(kShardElectPrefix + tx->value());
     tx->set_gas_limit(0);
@@ -688,7 +688,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         tx->set_key(protos::kNormalTos);
         tx->set_value(tos_hash);
         tx->set_pubkey("");
-        tx->set_to(common::kNormalToAddress);
+        tx->set_to(kNormalToAddress);
         if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
             tx->set_step(pools::protobuf::kRootCreateAddressCrossSharding);
         } else {

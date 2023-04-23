@@ -50,7 +50,7 @@ void AccountManager::CreateNormalToAddressInfo() {
         single_to_address_info_[i]->set_sharding_id(-1);
         single_to_address_info_[i]->set_pool_index(i);
         single_to_address_info_[i]->set_addr(
-            common::Hash::keccak256(common::kNormalToAddress + std::to_string(i)));
+            common::Hash::keccak256(kNormalToAddress + std::to_string(i)));
         single_to_address_info_[i]->set_type(address::protobuf::kToTxAddress);
         single_to_address_info_[i]->set_latest_height(0);
     }
@@ -64,7 +64,7 @@ void AccountManager::CreateNormalLocalToAddressInfo() {
         single_local_to_address_info_[i]->set_sharding_id(-1);
         single_local_to_address_info_[i]->set_pool_index(i);
         single_local_to_address_info_[i]->set_addr(
-            common::Hash::keccak256(common::kNormalLocalToAddress + std::to_string(i)));
+            common::Hash::keccak256(kNormalLocalToAddress + std::to_string(i)));
         single_local_to_address_info_[i]->set_type(address::protobuf::kLocalToTxAddress);
         single_local_to_address_info_[i]->set_latest_height(0);
     }
@@ -78,7 +78,7 @@ void AccountManager::CreateStatisticAddressInfo() {
         statistic_address_info_[i]->set_sharding_id(-1);
         statistic_address_info_[i]->set_pool_index(i);
         statistic_address_info_[i]->set_addr(
-            common::Hash::keccak256(common::kShardStatisticAddress + std::to_string(i)));
+            common::Hash::keccak256(kShardStatisticAddress + std::to_string(i)));
         statistic_address_info_[i]->set_type(address::protobuf::kStatistic);
         statistic_address_info_[i]->set_latest_height(0);
     }
