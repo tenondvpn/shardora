@@ -191,7 +191,7 @@ int NetworkInit::Init(int argc, char** argv) {
 }
 
 void NetworkInit::InitLocalNetworkId() {
-    auto local_node_account_info = account_mgr_->GetAcountInfoFromDb(security_->GetAddress());
+    auto local_node_account_info = prefix_db_->GetAddressInfo(security_->GetAddress());
     if (local_node_account_info == nullptr) {
         return;
     }
