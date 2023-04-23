@@ -65,6 +65,9 @@ public:
         uint32_t priority);
     void Init(const std::shared_ptr<db::Db>& db);
     void HandleMessage(const transport::MessagePtr& msg);
+    uint32_t added_key_size() const {
+        return added_key_set_.size();
+    }
 
 private:
     void CheckSyncItem(uint8_t thread_idx);

@@ -128,7 +128,7 @@ public:
     }
 
     void CheckTimeoutTx();
-    void SyncMissingBlocks();
+    uint32_t SyncMissingBlocks(uint64_t now_tm_ms);
 
 private:
     void InitLatestInfo() {
@@ -167,6 +167,8 @@ private:
 
     void RemoveTx(const std::string& gid);
 
+    static const uint64_t kSyncBlockPeriodMs = 3000lu;
+
 //     common::SpinMutex mutex_;
     std::unordered_map<std::string, TxItemPtr> gid_map_;
     std::queue<std::string> timeout_txs_;
@@ -182,6 +184,7 @@ private:
     uint64_t synced_height_ = 0;
     uint64_t prev_synced_height_ = 0;
     uint64_t to_sync_max_height_ = 0;
+    uint64_t prev_synced_time_ms_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };

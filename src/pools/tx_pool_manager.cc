@@ -23,6 +23,7 @@ TxPoolManager::TxPoolManager(
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     prefix_db_->InitGidManager();
+    kv_sync_ = kv_sync;
     tx_pool_ = new TxPool[common::kInvalidPoolIndex];
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         tx_pool_[i].Init(i, db, kv_sync);
@@ -44,8 +45,23 @@ TxPoolManager::~TxPoolManager() {
 }
 
 void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        tx_pool_[i].SyncMissingBlocks();
+    if (kv_sync_->added_key_size() >= sync::kSyncMaxKeyCount) {
+        return;
+    }
+
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
+        tx_pool_[common::kRootChainPoolIndex].SyncMissingBlocks(now_tm_ms);
+        return;
+    }
+
+    prev_synced_pool_index_ %= common::kInvalidPoolIndex;
+    for (; prev_synced_pool_index_ < common::kInvalidPoolIndex; ++prev_synced_pool_index_) {
+        auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(now_tm_ms);
+        if (res > 0) {
+            ++prev_synced_pool_index_;
+            break;
+        }
     }
 }
 
