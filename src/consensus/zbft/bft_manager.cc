@@ -577,10 +577,10 @@ bool BftManager::AddSyncKeyValue(
         for (int32_t j = 0; j < block.tx_list(i).storages_size(); ++j) {
             auto& storage = block.tx_list(i).storages(j);
 //             ZJC_DEBUG("add storage %s, %s, %d", storage.key().c_str(), common::Encode::HexEncode(storage.val_hash()).c_str(), storage.val_size());
-            if (storage.val_size() == 0) {  // 0 just save value hash else direct value
+            if (storage.val_hash().size() == 32) {
                 std::string val;
                 if (!prefix_db_->GetTemporaryKv(storage.val_hash(), &val)) {
-                    return false;
+                    continue;
                 }
 
                 auto* sync_item = sync_info->add_items();
@@ -1969,7 +1969,7 @@ void BftManager::BroadcastWaitingBlock(
     for (int32_t tx_idx = 0; tx_idx < block_item->tx_list_size(); ++tx_idx) {
         auto& tx = block_item->tx_list(tx_idx);
         for (int32_t i = 0; i < tx.storages_size(); ++i) {
-            if (tx.storages(i).val_size() > 0) {
+            if (tx.storages(i).val_hash().size() == 32) {
                 std::string val;
                 if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
                     auto kv = msg.mutable_sync()->add_items();
