@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+import "protos/block.proto";
+package zjchain.init.protobuf;
+
+message GetAddressInfoRequest {
+    optional bytes id = 1;
+}
+
+message GetAddressInfoResponse {
+    optional block.protobuf.Block block = 1;
+}
+
+message InitMessage {
+    optional GetAddressInfoRequest addr_req = 1;
+    optional GetAddressInfoResponse addr_res = 2;
+}

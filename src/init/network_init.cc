@@ -113,6 +113,9 @@ int NetworkInit::Init(int argc, char** argv) {
 
     network::DhtManager::Instance();
     network::Route::Instance();
+    network::Route::Instance()->RegisterMessage(
+        common::kInitMessage,
+        std::bind(&NetworkInit::HandleMessage, this, std::placeholders::_1));
     network::UniversalManager::Instance()->Init(security_);
     if (InitNetworkSingleton() != kInitSuccess) {
         INIT_ERROR("InitNetworkSingleton failed!");
@@ -190,6 +193,101 @@ int NetworkInit::Init(int argc, char** argv) {
     inited_ = true;
     cmd_.Run();
     return kInitSuccess;
+}
+
+void NetworkInit::HanldeMessage(const transport::MessagePtr& msg_ptr) {
+    if (msg_ptr->header.init_proto().has_init_req()) {
+        auto account_info = prefix_db_->GetAddressInfo(msg_ptr->header.init_proto().init_req()p->id());
+        if (account_info == nullptr) {
+            return;
+        }
+
+        transport::protobuf::Header msg;
+        msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+        msg.set_type(common::kInitMessage);
+        dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
+        msg.set_des_dht_key(dht_key.StrKey());
+        auto& init_msg = *msg.mutable_init_proto();
+        auto prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+        if (!prefix_db_->GetBlockWithHeight(
+                network::kRootCongressNetworkId,
+                account_info->pool_index(),
+                account_info->latest_height(),
+                init_msg.mutable_block())) {
+            return;
+        }
+
+        bool tx_valid = false;
+        for (int32_t i = 0; i < init_msg.block().tx_list_size(); ++i) {
+            if (init_msg.block().tx_list(i).to() == account_info->addr()) {
+                tx_valid = true;
+                break;
+            }
+        }
+
+        if (!tx_valid) {
+            return;
+        }
+
+        transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
+    }
+
+    if (msg_ptr->header.init_proto().has_init_res()) {
+        if (common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32) {
+            return;
+        }
+
+        auto& block = msg_ptr->header.init_proto().addr_res().block();
+        if (block.tx_list_size() != 1) {
+            return;
+        }
+
+        uint32_t sharding_id = common::kInvalidUint32;
+        for (int32_t i = 0; i < block.tx_list_size(); ++i) {
+            if (block.tx_list(i).to() == security_->GetAddress()) {
+                for (int32_t j = 0; j < block.tx_list(i).storages_size(); ++j) {
+                    if (block.tx_list(i).storages(j).key() == protos::kRootCreateAddressKey) {
+                        uint32_t* tmp = (uint32_t*)block.tx_list(i).storages(j).val().c_str();
+                        sharding_id = tmp[0];
+                        break;
+                    }
+                }
+
+                break;
+            }
+        }
+
+        if (sharding_id == common::kInvalidUint32) {
+            return;
+        }
+
+        auto waiting_network_id = sharding_id + network::kConsensusWaitingShardOffset;
+        if (elect_mgr_->Join(msg_ptr->thread_idx, waiting_network_id) != elect::kElectSuccess) {
+            INIT_ERROR("join waiting pool network[%u] failed!", waiting_network_id);
+            return;
+        }
+
+        common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
+    }
+}
+
+void NetworkInit::GetAddressShardingId(uint32_t thread_idx) {
+    if (common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32) {
+        return;
+    }
+
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->thread_idx = thread_idx;
+    auto& msg = msg_ptr->header;
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    msg.set_type(common::kInitMessage);
+    dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
+    msg.set_des_dht_key(dht_key.StrKey());
+    auto& init_msg = *msg.mutable_init_proto();
+    auto& init_req = *init_msg.mutable_addr_req();
+    init_req.set_id(security_->GetAddress());
+    network::Route::Instance()->Send(msg_ptr);
+    init_tick_.CutOff(10000000lu, std::bind(&NetworkInit::GetAddressShardingId, this, std::placeholders::_1));
 }
 
 void NetworkInit::InitLocalNetworkId() {

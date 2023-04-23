@@ -10,6 +10,7 @@ import "protos/elect.proto";
 import "protos/zbft.proto";
 import "protos/sync.proto";
 import "protos/vss.proto";
+import "protos/init.proto";
 package zjchain.transport.protobuf;
 
 message BroadcastParam {
@@ -53,4 +54,5 @@ message Header {
     optional vss.protobuf.VssMessage vss_proto = 21;
     optional block.protobuf.CrossShardingTosMessage cross_tos = 22;
     optional block.protobuf.CrossShardingStatisticMessage cross_statistic = 23;
+    optional init.protobuf.InitMessage init_proto = 24;
 }

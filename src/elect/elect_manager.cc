@@ -73,13 +73,10 @@ ElectManager::ElectManager(
 ElectManager::~ElectManager() {}
 
 int ElectManager::Join(uint8_t thread_idx, uint32_t network_id) {
-    {
-        std::lock_guard<std::mutex> guard(elect_network_map_mutex_);
-        auto iter = elect_network_map_.find(network_id);
-        if (iter != elect_network_map_.end()) {
-            ELECT_INFO("this node has join network[%u]", network_id);
-            return kElectNetworkJoined;
-        }
+    auto iter = elect_network_map_.find(network_id);
+    if (iter != elect_network_map_.end()) {
+        ELECT_INFO("this node has join network[%u]", network_id);
+        return kElectNetworkJoined;
     }
 
     elect_node_ptr_ = std::make_shared<ElectNode>(
@@ -95,17 +92,13 @@ int ElectManager::Join(uint8_t thread_idx, uint32_t network_id) {
         return kElectError;
     }
 
-    {
-        std::lock_guard<std::mutex> guard(elect_network_map_mutex_);
-        auto iter = elect_network_map_.find(network_id);
-        if (iter != elect_network_map_.end()) {
-            ELECT_INFO("this node has join network[%u]", network_id);
-            return kElectNetworkJoined;
-        }
-
-        elect_network_map_[network_id] = elect_node_ptr_;
+    auto iter = elect_network_map_.find(network_id);
+    if (iter != elect_network_map_.end()) {
+        ELECT_INFO("this node has join network[%u]", network_id);
+        return kElectNetworkJoined;
     }
 
+    elect_network_map_[network_id] = elect_node_ptr_;
     return kElectSuccess;
 }
 
