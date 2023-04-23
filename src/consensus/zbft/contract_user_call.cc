@@ -30,7 +30,7 @@ int ContractUserCall::HandleTx(
         gas_used = consensus::kTransferGas;
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
-            gas_used += (block_tx.storages(i).key().size() + block_tx.storages(i).val_size()) *
+            gas_used += (block_tx.storages(i).key().size() + msg_ptr->header.tx_proto().value().size()) *
                 consensus::kKeyValueStorageEachBytes;
         }
 
