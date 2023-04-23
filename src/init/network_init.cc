@@ -200,7 +200,7 @@ int NetworkInit::Init(int argc, char** argv) {
 void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.init_proto().has_addr_req()) {
         auto account_info = prefix_db_->GetAddressInfo(
-                msg_ptr->header.init_proto().addr_req()->id());
+                msg_ptr->header.init_proto().addr_req().id());
         if (account_info == nullptr) {
             return;
         }
@@ -273,7 +273,7 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 }
 
-void NetworkInit::GetAddressShardingId(uint32_t thread_idx) {
+void NetworkInit::GetAddressShardingId(uint8_t thread_idx) {
     if (common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32) {
         return;
     }
