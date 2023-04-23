@@ -198,6 +198,7 @@ int NetworkInit::Init(int argc, char** argv) {
 }
 
 void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    std::cout << "handle init message." << std::endl;
     if (msg_ptr->header.init_proto().has_addr_req()) {
         auto account_info = prefix_db_->GetAddressInfo(
                 msg_ptr->header.init_proto().addr_req().id());
@@ -231,6 +232,7 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
             return;
         }
 
+        std::cout << "success handle init req message." << std::endl;
         transport::TcpTransport::Instance()->SetMessageHash(msg, msg_ptr->thread_idx);
         transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
     }
@@ -270,6 +272,7 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
             return;
         }
 
+        std::cout << "success handle init res message." << std::endl;
         common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
     }
 }
@@ -291,6 +294,7 @@ void NetworkInit::GetAddressShardingId(uint8_t thread_idx) {
     init_req.set_id(security_->GetAddress());
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     network::Route::Instance()->Send(msg_ptr);
+    std::cout << "sent get addresss info: " << common::Encode::HexEncode(security_->GetAddress()) << std::endl;
     init_tick_.CutOff(10000000lu, std::bind(&NetworkInit::GetAddressShardingId, this, std::placeholders::_1));
 }
 
