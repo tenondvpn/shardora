@@ -52,6 +52,7 @@ ElectManager::ElectManager(
     db_ = db;
     new_elect_cb_ = new_elect_cb;
     elect_block_mgr_.Init(db_);
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     pool_manager_ = std::make_shared<ElectPoolManager>(
         this, vss_mgr, security, stoke_mgr_, db_, bls_mgr);
     height_with_block_ = std::make_shared<HeightWithElectBlock>(security, db_);
@@ -86,7 +87,8 @@ int ElectManager::Join(uint8_t thread_idx, uint32_t network_id) {
             this,
             std::placeholders::_1,
             std::placeholders::_2),
-        security_);
+        security_,
+        prefix_db_);
     if (elect_node_ptr_->Init(thread_idx) != network::kNetworkSuccess) {
         ELECT_ERROR("node join network [%u] failed!", network_id);
         return kElectError;

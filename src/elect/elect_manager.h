@@ -204,6 +204,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     NewElectBlockCallback new_elect_cb_ = nullptr;
     uint32_t max_sharding_id_ = 3;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ElectManager);
 };
