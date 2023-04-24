@@ -32,7 +32,6 @@ public:
         ElectManager* elect_mgr,
         std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<security::Security>& security_ptr,
-        std::shared_ptr<NodesStokeManager>& stoke_mgr,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<bls::BlsManager>& bls_mgr);
     ~ElectPoolManager();
@@ -96,7 +95,6 @@ private:
     ElectManager* elect_mgr_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
-    std::shared_ptr<NodesStokeManager> stoke_mgr_ = nullptr;
     std::unordered_map<uint32_t, ElectPoolPtr> elect_pool_map_;
     std::mutex elect_pool_map_mutex_;
     // one ip just one node

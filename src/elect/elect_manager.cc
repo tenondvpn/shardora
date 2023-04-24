@@ -54,10 +54,9 @@ ElectManager::ElectManager(
     elect_block_mgr_.Init(db_);
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     pool_manager_ = std::make_shared<ElectPoolManager>(
-        this, vss_mgr, security, stoke_mgr_, db_, bls_mgr);
+        this, vss_mgr, security, db_, bls_mgr);
     height_with_block_ = std::make_shared<HeightWithElectBlock>(security, db_);
     leader_rotation_ = std::make_shared<LeaderRotation>(security_);
-    stoke_mgr_ = std::make_shared<NodesStokeManager>(security_);
     bls_mgr_ = bls_mgr;
     network::Route::Instance()->RegisterMessage(
         common::kElectMessage,
@@ -126,16 +125,6 @@ void ElectManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // TODO: verify message signature
     ELECT_DEBUG("TTTTTT received elect message.");
     auto& ec_msg = header.elect_proto();
-    if (ec_msg.has_sync_stoke_req()) {
-        stoke_mgr_->HandleSyncAddressStoke(header, ec_msg);
-        return;
-    }
-
-    if (ec_msg.has_sync_stoke_res()) {
-        stoke_mgr_->HandleSyncStokeResponse(header, ec_msg);
-        return;
-    }
-
     if (!security_->IsValidPublicKey(ec_msg.pubkey())) {
         ELECT_ERROR("invalid public key: %s!", common::Encode::HexEncode(ec_msg.pubkey()));
         return;

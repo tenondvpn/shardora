@@ -9,8 +9,7 @@ namespace zjchain {
 
 namespace elect {
 
-ElectPool::ElectPool(uint32_t netid, std::shared_ptr<NodesStokeManager>& stoke_mgr)
-    : network_id_(netid), stoke_mgr_(stoke_mgr) {}
+ElectPool::ElectPool(uint32_t netid) : network_id_(netid) {}
 
 ElectPool::~ElectPool() {}
 
@@ -50,8 +49,6 @@ void ElectPool::UpdateNodesStoke() {
     for (auto siter = nodes.begin(); siter != nodes.end(); ++siter) {
         ids.push_back((*siter)->id);
     }
-
-    stoke_mgr_->SyncAddressStoke(ids);
 }
 
 };  // namespace elect

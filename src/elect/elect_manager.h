@@ -14,7 +14,6 @@
 #include "elect/elect_utils.h"
 #include "elect/elect_pool_manager.h"
 #include "elect/member_manager.h"
-#include "elect/nodes_stoke_manager.h"
 #include "elect/height_with_elect_blocks.h"
 #include "elect/elect_node_detail.h"
 #include "elect/leader_rotation.h"
@@ -199,7 +198,6 @@ private:
     bool local_node_is_super_leader_{ false };
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
-    std::shared_ptr<NodesStokeManager> stoke_mgr_ = nullptr;
     ElectBlockManager elect_block_mgr_;
     std::shared_ptr<db::Db> db_ = nullptr;
     NewElectBlockCallback new_elect_cb_ = nullptr;
