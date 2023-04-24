@@ -150,8 +150,8 @@ private:
 
                 auto& point0 = statistic_item.area_point(member_idx);
                 auto& point1 = statistic_item.area_point(idx);
-                uint32_t dis = (point0.x - point1.x) * (point0.x - point1.x) +
-                    (point0.y - point1.y) * (point0.y - point1.y);
+                uint32_t dis = (point0.x() - point1.x()) * (point0.x() - point1.x()) +
+                    (point0.y() - point1.y()) * (point0.y() - point1.y());
                 if (min_dis > dis) {
                     min_dis = dis;
                 }
@@ -184,7 +184,7 @@ private:
         return kConsensusSuccess;
     }
 
-    void SetMinMaxInfo(const ElectNodeInfo& node_info) {
+    void SetMinMaxInfo(const std::shared_ptr<ElectNodeInfo>& node_info) {
         if (max_stoke_ < node_info->stoke) {
             max_stoke_ = node_info->stoke;
         }
