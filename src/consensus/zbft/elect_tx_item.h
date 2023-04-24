@@ -3,6 +3,7 @@
 #include "block/account_manager.h"
 #include "consensus/zbft/tx_item_base.h"
 #include "security/security.h"
+#include "vss/vss_manager.h"
 
 namespace zjchain {
 
@@ -16,11 +17,11 @@ public:
         std::shared_ptr<security::Security>& sec_ptr,
         std::shared_ptr<protos::PrefixDb>& prefix_db,
         std::shared_ptr<elect::ElectManager>& elect_mgr,
-        uint64_t vss_random)
+        std::shared_ptr<vss::VssManager>& vss_mgr)
         : TxItemBase(msg, account_mgr, sec_ptr),
         prefix_db_(prefix_db),
         elect_mgr_(elect_mgr),
-        vss_random_(vss_random) {}
+        vss_mgr_(vss_mgr) {}
     virtual ~ElectTxItem() {}
     virtual int HandleTx(
             uint8_t thread_idx,
@@ -251,7 +252,7 @@ private:
             bool weed_out,
             uint32_t count,
             std::set<int32_t>& res_nodes) {
-//         std::mt19937_64 g2(vss_random_);
+//         std::mt19937_64 g2(vss_mgr_->EpochRandom());
 //         SmoothFtsValue(
 //             shard_netid,
 //             g2,
@@ -431,7 +432,7 @@ private:
 
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
-    uint64_t vss_random_ = 0;
+    std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::vector<std::shared_ptr<ElectNodeInfo>> elect_nodes_;
     uint64_t max_stoke_ = 0;
     uint64_t min_stoke_ = common::kInvalidUint64;
