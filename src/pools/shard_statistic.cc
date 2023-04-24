@@ -457,7 +457,8 @@ void ShardStatistic::NormalizeLofMap(std::unordered_map<uint32_t, common::Point>
     uint32_t max_avg = 0;
     for (auto iter = lof_map.begin(); iter != lof_map.end(); ++iter) {
         uint32_t sum = 0;
-        for (auto miter = iter->second.begin(); miter != iter->second.end(); ++miter) {
+        for (auto miter = iter->second.coordinate().begin();
+                miter != iter->second.coordinate().end(); ++miter) {
             sum += *miter;
         }
 
@@ -475,7 +476,7 @@ void ShardStatistic::NormalizeLofMap(std::unordered_map<uint32_t, common::Point>
 
     for (auto iter = lof_map.begin(); iter != lof_map.end(); ++iter) {
         auto avg = avg_map[iter->first];
-        for (int32_t i = 0; i < iter->second->size(); ++i) {
+        for (int32_t i = 0; i < iter->second.coordinate()->size(); ++i) {
             iter->second[i] = iter->second[i] * max_avg / avg;
         }
     }
