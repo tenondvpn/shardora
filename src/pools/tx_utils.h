@@ -136,7 +136,7 @@ struct ElectItem {
     common::MembersPtr members;
 };
 
-typedef struct {
+typedef struct _StatisticMemberInfoItem {
     StatisticMemberInfoItem(uint32_t midx, uint32_t lidx)
         : tx_count(0), member_index(midx), leader_index(lidx) {}
     uint32_t tx_count;
