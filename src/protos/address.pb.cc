@@ -66,17 +66,19 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, type_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, bytes_code_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, latest_height_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, credit_),
   0,
   3,
   4,
   5,
   1,
-  7,
-  2,
   6,
+  2,
+  8,
+  7,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 13, sizeof(::zjchain::address::protobuf::AddressInfo)},
+  { 0, 14, sizeof(::zjchain::address::protobuf::AddressInfo)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -105,18 +107,19 @@ void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
       "\n\024protos/address.proto\022\030zjchain.address."
-      "protobuf\"\305\001\n\013AddressInfo\022\016\n\006pubkey\030\001 \001(\014"
+      "protobuf\"\330\001\n\013AddressInfo\022\016\n\006pubkey\030\001 \001(\014"
       "\022\017\n\007balance\030\002 \001(\004\022\023\n\013sharding_id\030\003 \001(\r\022\022"
       "\n\npool_index\030\004 \001(\r\022\014\n\004addr\030\005 \001(\014\0223\n\004type"
       "\030\006 \001(\0162%.zjchain.address.protobuf.Addres"
       "sType\022\022\n\nbytes_code\030\007 \001(\014\022\025\n\rlatest_heig"
-      "ht\030\010 \001(\004*\225\001\n\013AddressType\022\013\n\007kNormal\020\000\022\r\n"
-      "\tkContract\020\001\022\016\n\nkRootElect\020\002\022\016\n\nkRootTim"
-      "er\020\003\022\016\n\nkStatistic\020\004\022\020\n\014kToTxAddress\020\005\022\025"
-      "\n\021kLocalToTxAddress\020\006\022\021\n\rkElectAddress\020\007"
+      "ht\030\010 \001(\004\022\021\n\006credit\030\t \001(\005:\0010*\225\001\n\013AddressT"
+      "ype\022\013\n\007kNormal\020\000\022\r\n\tkContract\020\001\022\016\n\nkRoot"
+      "Elect\020\002\022\016\n\nkRootTimer\020\003\022\016\n\nkStatistic\020\004\022"
+      "\020\n\014kToTxAddress\020\005\022\025\n\021kLocalToTxAddress\020\006"
+      "\022\021\n\rkElectAddress\020\007"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 400);
+      descriptor, 419);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/address.proto", &protobuf_RegisterTypes);
 }
@@ -169,6 +172,7 @@ const int AddressInfo::kAddrFieldNumber;
 const int AddressInfo::kTypeFieldNumber;
 const int AddressInfo::kBytesCodeFieldNumber;
 const int AddressInfo::kLatestHeightFieldNumber;
+const int AddressInfo::kCreditFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 AddressInfo::AddressInfo()
@@ -196,8 +200,8 @@ AddressInfo::AddressInfo(const AddressInfo& from)
     bytes_code_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.bytes_code_);
   }
   ::memcpy(&balance_, &from.balance_,
-    static_cast<size_t>(reinterpret_cast<char*>(&type_) -
-    reinterpret_cast<char*>(&balance_)) + sizeof(type_));
+    static_cast<size_t>(reinterpret_cast<char*>(&latest_height_) -
+    reinterpret_cast<char*>(&balance_)) + sizeof(latest_height_));
   // @@protoc_insertion_point(copy_constructor:zjchain.address.protobuf.AddressInfo)
 }
 
@@ -206,8 +210,8 @@ void AddressInfo::SharedCtor() {
   addr_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   bytes_code_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&balance_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&type_) -
-      reinterpret_cast<char*>(&balance_)) + sizeof(type_));
+      reinterpret_cast<char*>(&latest_height_) -
+      reinterpret_cast<char*>(&balance_)) + sizeof(latest_height_));
 }
 
 AddressInfo::~AddressInfo() {
@@ -255,9 +259,10 @@ void AddressInfo::Clear() {
   }
   if (cached_has_bits & 248u) {
     ::memset(&balance_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&type_) -
-        reinterpret_cast<char*>(&balance_)) + sizeof(type_));
+        reinterpret_cast<char*>(&credit_) -
+        reinterpret_cast<char*>(&balance_)) + sizeof(credit_));
   }
+  latest_height_ = GOOGLE_ULONGLONG(0);
   _has_bits_.Clear();
   _internal_metadata_.Clear();
 }
@@ -384,6 +389,20 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
+      // optional int32 credit = 9 [default = 0];
+      case 9: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(72u /* 72 & 0xFF */)) {
+          set_has_credit();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &credit_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -439,7 +458,7 @@ void AddressInfo::SerializeWithCachedSizes(
   }
 
   // optional .zjchain.address.protobuf.AddressType type = 6;
-  if (cached_has_bits & 0x00000080u) {
+  if (cached_has_bits & 0x00000040u) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
       6, this->type(), output);
   }
@@ -451,8 +470,13 @@ void AddressInfo::SerializeWithCachedSizes(
   }
 
   // optional uint64 latest_height = 8;
-  if (cached_has_bits & 0x00000040u) {
+  if (cached_has_bits & 0x00000100u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(8, this->latest_height(), output);
+  }
+
+  // optional int32 credit = 9 [default = 0];
+  if (cached_has_bits & 0x00000080u) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(9, this->credit(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -500,7 +524,7 @@ void AddressInfo::SerializeWithCachedSizes(
   }
 
   // optional .zjchain.address.protobuf.AddressType type = 6;
-  if (cached_has_bits & 0x00000080u) {
+  if (cached_has_bits & 0x00000040u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       6, this->type(), target);
   }
@@ -513,8 +537,13 @@ void AddressInfo::SerializeWithCachedSizes(
   }
 
   // optional uint64 latest_height = 8;
-  if (cached_has_bits & 0x00000040u) {
+  if (cached_has_bits & 0x00000100u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(8, this->latest_height(), target);
+  }
+
+  // optional int32 credit = 9 [default = 0];
+  if (cached_has_bits & 0x00000080u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(9, this->credit(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -577,20 +606,27 @@ size_t AddressInfo::ByteSizeLong() const {
           this->pool_index());
     }
 
-    // optional uint64 latest_height = 8;
-    if (has_latest_height()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt64Size(
-          this->latest_height());
-    }
-
     // optional .zjchain.address.protobuf.AddressType type = 6;
     if (has_type()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->type());
     }
 
+    // optional int32 credit = 9 [default = 0];
+    if (has_credit()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->credit());
+    }
+
   }
+  // optional uint64 latest_height = 8;
+  if (has_latest_height()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->latest_height());
+  }
+
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
@@ -642,12 +678,15 @@ void AddressInfo::MergeFrom(const AddressInfo& from) {
       pool_index_ = from.pool_index_;
     }
     if (cached_has_bits & 0x00000040u) {
-      latest_height_ = from.latest_height_;
-    }
-    if (cached_has_bits & 0x00000080u) {
       type_ = from.type_;
     }
+    if (cached_has_bits & 0x00000080u) {
+      credit_ = from.credit_;
+    }
     _has_bits_[0] |= cached_has_bits;
+  }
+  if (cached_has_bits & 0x00000100u) {
+    set_latest_height(from.latest_height());
   }
 }
 
@@ -684,8 +723,9 @@ void AddressInfo::InternalSwap(AddressInfo* other) {
   swap(balance_, other->balance_);
   swap(sharding_id_, other->sharding_id_);
   swap(pool_index_, other->pool_index_);
-  swap(latest_height_, other->latest_height_);
   swap(type_, other->type_);
+  swap(credit_, other->credit_);
+  swap(latest_height_, other->latest_height_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }

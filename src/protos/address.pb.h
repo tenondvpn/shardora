@@ -251,19 +251,26 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::uint32 pool_index() const;
   void set_pool_index(::google::protobuf::uint32 value);
 
-  // optional uint64 latest_height = 8;
-  bool has_latest_height() const;
-  void clear_latest_height();
-  static const int kLatestHeightFieldNumber = 8;
-  ::google::protobuf::uint64 latest_height() const;
-  void set_latest_height(::google::protobuf::uint64 value);
-
   // optional .zjchain.address.protobuf.AddressType type = 6;
   bool has_type() const;
   void clear_type();
   static const int kTypeFieldNumber = 6;
   ::zjchain::address::protobuf::AddressType type() const;
   void set_type(::zjchain::address::protobuf::AddressType value);
+
+  // optional int32 credit = 9 [default = 0];
+  bool has_credit() const;
+  void clear_credit();
+  static const int kCreditFieldNumber = 9;
+  ::google::protobuf::int32 credit() const;
+  void set_credit(::google::protobuf::int32 value);
+
+  // optional uint64 latest_height = 8;
+  bool has_latest_height() const;
+  void clear_latest_height();
+  static const int kLatestHeightFieldNumber = 8;
+  ::google::protobuf::uint64 latest_height() const;
+  void set_latest_height(::google::protobuf::uint64 value);
 
   // @@protoc_insertion_point(class_scope:zjchain.address.protobuf.AddressInfo)
  private:
@@ -283,6 +290,8 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   void clear_has_bytes_code();
   void set_has_latest_height();
   void clear_has_latest_height();
+  void set_has_credit();
+  void clear_has_credit();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -293,8 +302,9 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::uint64 balance_;
   ::google::protobuf::uint32 sharding_id_;
   ::google::protobuf::uint32 pool_index_;
-  ::google::protobuf::uint64 latest_height_;
   int type_;
+  ::google::protobuf::int32 credit_;
+  ::google::protobuf::uint64 latest_height_;
   friend struct ::protobuf_protos_2faddress_2eproto::TableStruct;
 };
 // ===================================================================
@@ -514,13 +524,13 @@ inline void AddressInfo::set_allocated_addr(::std::string* addr) {
 
 // optional .zjchain.address.protobuf.AddressType type = 6;
 inline bool AddressInfo::has_type() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void AddressInfo::set_has_type() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void AddressInfo::clear_has_type() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void AddressInfo::clear_type() {
   type_ = 0;
@@ -605,13 +615,13 @@ inline void AddressInfo::set_allocated_bytes_code(::std::string* bytes_code) {
 
 // optional uint64 latest_height = 8;
 inline bool AddressInfo::has_latest_height() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void AddressInfo::set_has_latest_height() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void AddressInfo::clear_has_latest_height() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void AddressInfo::clear_latest_height() {
   latest_height_ = GOOGLE_ULONGLONG(0);
@@ -625,6 +635,30 @@ inline void AddressInfo::set_latest_height(::google::protobuf::uint64 value) {
   set_has_latest_height();
   latest_height_ = value;
   // @@protoc_insertion_point(field_set:zjchain.address.protobuf.AddressInfo.latest_height)
+}
+
+// optional int32 credit = 9 [default = 0];
+inline bool AddressInfo::has_credit() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void AddressInfo::set_has_credit() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void AddressInfo::clear_has_credit() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void AddressInfo::clear_credit() {
+  credit_ = 0;
+  clear_has_credit();
+}
+inline ::google::protobuf::int32 AddressInfo::credit() const {
+  // @@protoc_insertion_point(field_get:zjchain.address.protobuf.AddressInfo.credit)
+  return credit_;
+}
+inline void AddressInfo::set_credit(::google::protobuf::int32 value) {
+  set_has_credit();
+  credit_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.address.protobuf.AddressInfo.credit)
 }
 
 #ifdef __GNUC__

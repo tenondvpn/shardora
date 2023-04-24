@@ -40,7 +40,7 @@ namespace protobuf_protos_2fpools_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[8];
+  static const ::google::protobuf::internal::ParseTable schema[9];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -50,6 +50,9 @@ void AddDescriptors();
 namespace zjchain {
 namespace pools {
 namespace protobuf {
+class AreaInfo;
+class AreaInfoDefaultTypeInternal;
+extern AreaInfoDefaultTypeInternal _AreaInfo_default_instance_;
 class ElectStatistic;
 class ElectStatisticDefaultTypeInternal;
 extern ElectStatisticDefaultTypeInternal _ElectStatistic_default_instance_;
@@ -79,6 +82,7 @@ extern TxMessageDefaultTypeInternal _TxMessage_default_instance_;
 }  // namespace zjchain
 namespace google {
 namespace protobuf {
+template<> ::zjchain::pools::protobuf::AreaInfo* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::AreaInfo>(Arena*);
 template<> ::zjchain::pools::protobuf::ElectStatistic* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::ElectStatistic>(Arena*);
 template<> ::zjchain::pools::protobuf::JoinElectNode* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::JoinElectNode>(Arena*);
 template<> ::zjchain::pools::protobuf::PoolLatestInfo* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::PoolLatestInfo>(Arena*);
@@ -775,6 +779,130 @@ class PoolLatestInfo : public ::google::protobuf::Message /* @@protoc_insertion_
 };
 // -------------------------------------------------------------------
 
+class AreaInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.pools.protobuf.AreaInfo) */ {
+ public:
+  AreaInfo();
+  virtual ~AreaInfo();
+
+  AreaInfo(const AreaInfo& from);
+
+  inline AreaInfo& operator=(const AreaInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  AreaInfo(AreaInfo&& from) noexcept
+    : AreaInfo() {
+    *this = ::std::move(from);
+  }
+
+  inline AreaInfo& operator=(AreaInfo&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const AreaInfo& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const AreaInfo* internal_default_instance() {
+    return reinterpret_cast<const AreaInfo*>(
+               &_AreaInfo_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    4;
+
+  void Swap(AreaInfo* other);
+  friend void swap(AreaInfo& a, AreaInfo& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline AreaInfo* New() const final {
+    return CreateMaybeMessage<AreaInfo>(NULL);
+  }
+
+  AreaInfo* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<AreaInfo>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const AreaInfo& from);
+  void MergeFrom(const AreaInfo& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(AreaInfo* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional uint32 x = 1;
+  bool has_x() const;
+  void clear_x();
+  static const int kXFieldNumber = 1;
+  ::google::protobuf::uint32 x() const;
+  void set_x(::google::protobuf::uint32 value);
+
+  // optional uint32 y = 2;
+  bool has_y() const;
+  void clear_y();
+  static const int kYFieldNumber = 2;
+  ::google::protobuf::uint32 y() const;
+  void set_y(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.AreaInfo)
+ private:
+  void set_has_x();
+  void clear_has_x();
+  void set_has_y();
+  void clear_has_y();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::uint32 x_;
+  ::google::protobuf::uint32 y_;
+  friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class PoolStatisticItem : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.pools.protobuf.PoolStatisticItem) */ {
  public:
   PoolStatisticItem();
@@ -817,7 +945,7 @@ class PoolStatisticItem : public ::google::protobuf::Message /* @@protoc_inserti
                &_PoolStatisticItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    5;
 
   void Swap(PoolStatisticItem* other);
   friend void swap(PoolStatisticItem& a, PoolStatisticItem& b) {
@@ -893,6 +1021,18 @@ class PoolStatisticItem : public ::google::protobuf::Message /* @@protoc_inserti
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
       mutable_stokes();
 
+  // repeated .zjchain.pools.protobuf.AreaInfo area_point = 4;
+  int area_point_size() const;
+  void clear_area_point();
+  static const int kAreaPointFieldNumber = 4;
+  ::zjchain::pools::protobuf::AreaInfo* mutable_area_point(int index);
+  ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::AreaInfo >*
+      mutable_area_point();
+  const ::zjchain::pools::protobuf::AreaInfo& area_point(int index) const;
+  ::zjchain::pools::protobuf::AreaInfo* add_area_point();
+  const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::AreaInfo >&
+      area_point() const;
+
   // optional uint64 elect_height = 3;
   bool has_elect_height() const;
   void clear_elect_height();
@@ -910,6 +1050,7 @@ class PoolStatisticItem : public ::google::protobuf::Message /* @@protoc_inserti
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > tx_count_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > stokes_;
+  ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::AreaInfo > area_point_;
   ::google::protobuf::uint64 elect_height_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
@@ -957,7 +1098,7 @@ class JoinElectNode : public ::google::protobuf::Message /* @@protoc_insertion_p
                &_JoinElectNode_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    6;
 
   void Swap(JoinElectNode* other);
   friend void swap(JoinElectNode& a, JoinElectNode& b) {
@@ -1089,7 +1230,7 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
                &_ElectStatistic_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    7;
 
   void Swap(ElectStatistic* other);
   friend void swap(ElectStatistic& a, ElectStatistic& b) {
@@ -1165,6 +1306,18 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::JoinElectNode >&
       join_elect_nodes() const;
 
+  // repeated uint32 lof_leaders = 6;
+  int lof_leaders_size() const;
+  void clear_lof_leaders();
+  static const int kLofLeadersFieldNumber = 6;
+  ::google::protobuf::uint32 lof_leaders(int index) const;
+  void set_lof_leaders(int index, ::google::protobuf::uint32 value);
+  void add_lof_leaders(::google::protobuf::uint32 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+      lof_leaders() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+      mutable_lof_leaders();
+
   // optional .zjchain.pools.protobuf.ToTxHeights heights = 2;
   bool has_heights() const;
   void clear_heights();
@@ -1177,17 +1330,38 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   ::zjchain::pools::protobuf::ToTxHeights* mutable_heights();
   void set_allocated_heights(::zjchain::pools::protobuf::ToTxHeights* heights);
 
+  // optional uint64 gas_amount = 5;
+  bool has_gas_amount() const;
+  void clear_gas_amount();
+  static const int kGasAmountFieldNumber = 5;
+  ::google::protobuf::uint64 gas_amount() const;
+  void set_gas_amount(::google::protobuf::uint64 value);
+
+  // optional uint32 sharding_id = 4;
+  bool has_sharding_id() const;
+  void clear_sharding_id();
+  static const int kShardingIdFieldNumber = 4;
+  ::google::protobuf::uint32 sharding_id() const;
+  void set_sharding_id(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.ElectStatistic)
  private:
   void set_has_heights();
   void clear_has_heights();
+  void set_has_sharding_id();
+  void clear_has_sharding_id();
+  void set_has_gas_amount();
+  void clear_has_gas_amount();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::PoolStatisticItem > statistics_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::JoinElectNode > join_elect_nodes_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > lof_leaders_;
   ::zjchain::pools::protobuf::ToTxHeights* heights_;
+  ::google::protobuf::uint64 gas_amount_;
+  ::google::protobuf::uint32 sharding_id_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -1234,7 +1408,7 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
                &_TxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    8;
 
   void Swap(TxMessage* other);
   friend void swap(TxMessage& a, TxMessage& b) {
@@ -2193,6 +2367,58 @@ inline void PoolLatestInfo::set_synced_height(::google::protobuf::uint64 value) 
 
 // -------------------------------------------------------------------
 
+// AreaInfo
+
+// optional uint32 x = 1;
+inline bool AreaInfo::has_x() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void AreaInfo::set_has_x() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void AreaInfo::clear_has_x() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void AreaInfo::clear_x() {
+  x_ = 0u;
+  clear_has_x();
+}
+inline ::google::protobuf::uint32 AreaInfo::x() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.AreaInfo.x)
+  return x_;
+}
+inline void AreaInfo::set_x(::google::protobuf::uint32 value) {
+  set_has_x();
+  x_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.AreaInfo.x)
+}
+
+// optional uint32 y = 2;
+inline bool AreaInfo::has_y() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void AreaInfo::set_has_y() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void AreaInfo::clear_has_y() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void AreaInfo::clear_y() {
+  y_ = 0u;
+  clear_has_y();
+}
+inline ::google::protobuf::uint32 AreaInfo::y() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.AreaInfo.y)
+  return y_;
+}
+inline void AreaInfo::set_y(::google::protobuf::uint32 value) {
+  set_has_y();
+  y_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.AreaInfo.y)
+}
+
+// -------------------------------------------------------------------
+
 // PoolStatisticItem
 
 // repeated uint32 tx_count = 1;
@@ -2277,6 +2503,36 @@ inline void PoolStatisticItem::set_elect_height(::google::protobuf::uint64 value
   set_has_elect_height();
   elect_height_ = value;
   // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.PoolStatisticItem.elect_height)
+}
+
+// repeated .zjchain.pools.protobuf.AreaInfo area_point = 4;
+inline int PoolStatisticItem::area_point_size() const {
+  return area_point_.size();
+}
+inline void PoolStatisticItem::clear_area_point() {
+  area_point_.Clear();
+}
+inline ::zjchain::pools::protobuf::AreaInfo* PoolStatisticItem::mutable_area_point(int index) {
+  // @@protoc_insertion_point(field_mutable:zjchain.pools.protobuf.PoolStatisticItem.area_point)
+  return area_point_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::AreaInfo >*
+PoolStatisticItem::mutable_area_point() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.pools.protobuf.PoolStatisticItem.area_point)
+  return &area_point_;
+}
+inline const ::zjchain::pools::protobuf::AreaInfo& PoolStatisticItem::area_point(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.PoolStatisticItem.area_point)
+  return area_point_.Get(index);
+}
+inline ::zjchain::pools::protobuf::AreaInfo* PoolStatisticItem::add_area_point() {
+  // @@protoc_insertion_point(field_add:zjchain.pools.protobuf.PoolStatisticItem.area_point)
+  return area_point_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::AreaInfo >&
+PoolStatisticItem::area_point() const {
+  // @@protoc_insertion_point(field_list:zjchain.pools.protobuf.PoolStatisticItem.area_point)
+  return area_point_;
 }
 
 // -------------------------------------------------------------------
@@ -2493,6 +2749,84 @@ inline const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::J
 ElectStatistic::join_elect_nodes() const {
   // @@protoc_insertion_point(field_list:zjchain.pools.protobuf.ElectStatistic.join_elect_nodes)
   return join_elect_nodes_;
+}
+
+// optional uint32 sharding_id = 4;
+inline bool ElectStatistic::has_sharding_id() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void ElectStatistic::set_has_sharding_id() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void ElectStatistic::clear_has_sharding_id() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void ElectStatistic::clear_sharding_id() {
+  sharding_id_ = 0u;
+  clear_has_sharding_id();
+}
+inline ::google::protobuf::uint32 ElectStatistic::sharding_id() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ElectStatistic.sharding_id)
+  return sharding_id_;
+}
+inline void ElectStatistic::set_sharding_id(::google::protobuf::uint32 value) {
+  set_has_sharding_id();
+  sharding_id_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ElectStatistic.sharding_id)
+}
+
+// optional uint64 gas_amount = 5;
+inline bool ElectStatistic::has_gas_amount() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ElectStatistic::set_has_gas_amount() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ElectStatistic::clear_has_gas_amount() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ElectStatistic::clear_gas_amount() {
+  gas_amount_ = GOOGLE_ULONGLONG(0);
+  clear_has_gas_amount();
+}
+inline ::google::protobuf::uint64 ElectStatistic::gas_amount() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ElectStatistic.gas_amount)
+  return gas_amount_;
+}
+inline void ElectStatistic::set_gas_amount(::google::protobuf::uint64 value) {
+  set_has_gas_amount();
+  gas_amount_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ElectStatistic.gas_amount)
+}
+
+// repeated uint32 lof_leaders = 6;
+inline int ElectStatistic::lof_leaders_size() const {
+  return lof_leaders_.size();
+}
+inline void ElectStatistic::clear_lof_leaders() {
+  lof_leaders_.Clear();
+}
+inline ::google::protobuf::uint32 ElectStatistic::lof_leaders(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ElectStatistic.lof_leaders)
+  return lof_leaders_.Get(index);
+}
+inline void ElectStatistic::set_lof_leaders(int index, ::google::protobuf::uint32 value) {
+  lof_leaders_.Set(index, value);
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ElectStatistic.lof_leaders)
+}
+inline void ElectStatistic::add_lof_leaders(::google::protobuf::uint32 value) {
+  lof_leaders_.Add(value);
+  // @@protoc_insertion_point(field_add:zjchain.pools.protobuf.ElectStatistic.lof_leaders)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+ElectStatistic::lof_leaders() const {
+  // @@protoc_insertion_point(field_list:zjchain.pools.protobuf.ElectStatistic.lof_leaders)
+  return lof_leaders_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+ElectStatistic::mutable_lof_leaders() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.pools.protobuf.ElectStatistic.lof_leaders)
+  return &lof_leaders_;
 }
 
 // -------------------------------------------------------------------
@@ -3109,6 +3443,8 @@ inline void TxMessage::set_allocated_contract_input(::std::string* contract_inpu
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
