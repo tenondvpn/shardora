@@ -43,7 +43,7 @@ public:
                 }
 
                 uint64_t now_elect_height = elect_mgr_->latest_height(elect_statistic.sharding_id());
-                pools::protobuf::PoolStatisticItem* statistic = nullptr;
+                const pools::protobuf::PoolStatisticItem* statistic = nullptr;
                 for (int32_t i = 0; i < elect_statistic.statistics_size(); ++i) {
                     if (elect_statistic.statistics(i).elect_height() == now_elect_height) {
                         statistic = &elect_statistic.statistics(i);
@@ -62,7 +62,7 @@ public:
                     nullptr);
                 if (members == nullptr) {
                     ZJC_WARN("get members failed, elect height: %lu, net: %u",
-                        latest_elect_height_, shard_netid);
+                        now_elect_height, shard_netid);
                     assert(false);
                     return kConsensusError;
                 }
@@ -426,6 +426,8 @@ private:
 //                 << blance_weight[i] << std::endl;
 //         }
     }
+
+    static const uint32_t kFtsWeedoutDividRate = 10u;
 
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;

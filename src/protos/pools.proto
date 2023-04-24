@@ -53,8 +53,8 @@ message PoolLatestInfo {
 }
 
 message AreaInfo {
-    repeated uint32 x = 1;
-    repeated uint32 y = 2;
+    optional uint32 x = 1;
+    optional uint32 y = 2;
 }
 
 message PoolStatisticItem {

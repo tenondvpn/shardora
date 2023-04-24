@@ -8,7 +8,6 @@
 #include "common/fts_tree.h"
 #include "common/random.h"
 #include "elect/elect_manager.h"
-#include "elect/nodes_stoke_manager.h"
 #include "network/network_utils.h"
 #include "vss/vss_manager.h"
 
