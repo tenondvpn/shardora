@@ -245,10 +245,6 @@ void ShardStatistic::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height
 
     prev_elect_height_ = now_elect_height_;
     now_elect_height_ = elect_height;
-    if (height_leader_members_tx_count_.size() > 4) {
-        height_leader_members_tx_count_.erase(height_leader_members_tx_count_.begin());
-    }
-
     ZJC_INFO("new elect block: %lu, %lu", prev_elect_height_, now_elect_height_);
 }
 
@@ -444,8 +440,7 @@ int ShardStatistic::StatisticWithHeights(
     return kPoolsSuccess;
 }
 
-void ShardStatistic::NormalizeLofMap(
-        std::unordered_map<uint32_t, std::vector<uint32_t>>& lof_map) {
+void ShardStatistic::NormalizeLofMap(std::unordered_map<uint32_t, common::Point>& lof_map) {
     if (lof_map.size() < kLofMaxNodes) {
         lof_map.clear();
         return;

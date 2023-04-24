@@ -5,10 +5,11 @@
 #include <random>
 #include <memory>
 
-#include "common/utils.h"
 #include "common/bitmap.h"
+#include "common/lof.h"
 #include "common/thread_safe_queue.h"
 #include "common/tick.h"
+#include "common/utils.h"
 #include "pools/tx_utils.h"
 #include "protos/block.pb.h"
 #include "protos/prefix_db.h"
@@ -58,7 +59,7 @@ private:
         const block::protobuf::BlockTx& tx);
     void HandleStatistic(const block::protobuf::Block& block);
     void LoadLatestHeights();
-    void NormalizeLofMap(const std::unordered_map<uint32_t, std::vector<uint32_t>>& lof_map);
+    void NormalizeLofMap(const std::unordered_map<uint32_t, common::Point>& lof_map);
 
     static const uint32_t kLofRation = 5;
     static const uint32_t kLofMaxNodes = 8;
