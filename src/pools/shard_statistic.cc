@@ -396,7 +396,7 @@ int ShardStatistic::StatisticWithHeights(
             prefix_db_->GetElectNodeMinStoke(
                 common::GlobalInfo::Instance()->network_id(), id, &stoke);
             statistic_item.add_stokes(stoke);
-            auto area_point = statistic_item->add_area_point();
+            auto area_point = statistic_item.add_area_point();
             area_point->set_x(rand() % 100000);
             area_point->set_y(rand() % 100000);
         }
