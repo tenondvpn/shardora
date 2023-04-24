@@ -258,7 +258,6 @@ void ShardStatistic::OnTimeBlock(
 
     latest_timeblock_tm_ = lastest_time_block_tm;
     now_vss_random_ = vss_random;
-    CreateStatisticTransaction(latest_time_block_height);
 }
 
 int ShardStatistic::StatisticWithHeights(
