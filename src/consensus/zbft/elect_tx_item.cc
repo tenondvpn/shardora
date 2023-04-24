@@ -1,5 +1,7 @@
 #include "consensus/zbft/elect_tx_item.h"
 
+#include "common/fts_tree.h"
+
 namespace zjchain {
 
 namespace consensus {
@@ -69,7 +71,7 @@ int ElectTxItem::HandleTx(
 
             uint32_t min_area_weight = common::kInvalidUint32;
             uint32_t min_tx_count = common::kInvalidUint32;
-            std::vector<std::shared_ptr<ElectNodeInfo>> elect_nodes;
+            std::vector<NodeDetailPtr> elect_nodes;
             int res = CheckWeedout(
                 thread_idx,
                 members,
@@ -84,7 +86,7 @@ int ElectTxItem::HandleTx(
 
             min_area_weight += 1;
             min_tx_count += 1;
-            std::vector<std::shared_ptr<ElectNodeInfo>> join_elect_nodes;
+            std::vector<NodeDetailPtr> join_elect_nodes;
             res = GetJoinElectNodesCredit(
                 elect_statistic,
                 thread_idx,
@@ -106,7 +108,7 @@ int ElectTxItem::CheckWeedout(
         const pools::protobuf::PoolStatisticItem& statistic_item,
         uint32_t* min_area_weight,
         uint32_t* min_tx_count,
-        std::vector<std::shared_ptr<ElectNodeInfo>>& elect_nodes) {
+        std::vector<NodeDetailPtr>& elect_nodes) {
     uint32_t weed_out_count = statistic_item.tx_count_size() * kFtsWeedoutDividRate / 100;
     uint32_t direct_weed_out_count = weed_out_count / 2;
     uint32_t max_tx_count = 0;
@@ -134,7 +136,7 @@ int ElectTxItem::CheckWeedout(
         }
     }
 
-    std::vector<std::shared_ptr<ElectNodeInfo>> elect_nodes_to_choose;
+    std::vector<NodeDetailPtr> elect_nodes_to_choose;
     for (int32_t member_idx = 0; member_idx < statistic_item.tx_count_size(); ++member_idx) {
         if (invalid_nodes.find(member_idx) != invalid_nodes.end()) {
             continue;
@@ -197,8 +199,8 @@ int ElectTxItem::GetJoinElectNodesCredit(
         uint8_t thread_idx,
         uint32_t min_area_weight,
         uint32_t min_tx_count,
-        std::set<std::shared_ptr<ElectNodeInfo>>& elect_nodes) {
-    std::vector<std::shared_ptr<ElectNodeInfo>> elect_nodes_to_choose;
+        std::vector<NodeDetailPtr>& elect_nodes) {
+    std::vector<NodeDetailPtr> elect_nodes_to_choose;
     for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
         auto account_info = account_mgr_->GetAccountInfo(
             thread_idx,
@@ -232,7 +234,7 @@ int ElectTxItem::GetJoinElectNodesCredit(
 }
 
 void ElectTxItem::FtsGetNodes(
-        std::vector<std::shared_ptr<ElectNodeInfo>>& elect_nodes,
+        std::vector<NodeDetailPtr>& elect_nodes,
         bool weed_out,
         uint32_t count,
         std::set<uint32_t>& res_nodes) {
@@ -272,7 +274,7 @@ void ElectTxItem::FtsGetNodes(
         tmp_res_nodes.insert(data);
     }
 
-    for (auto iter = tmp_res_nodes.begin(); iter !+ tmp_res_nodes.end(); ++iter) {
+    for (auto iter = tmp_res_nodes.begin(); iter != tmp_res_nodes.end(); ++iter) {
         res_nodes.insert(elect_nodes[*iter]->index);
     }
 }
