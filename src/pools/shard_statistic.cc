@@ -449,7 +449,7 @@ void ShardStatistic::NormalizeLofMap(std::unordered_map<uint32_t, common::Point>
     }
 
     auto members = elect_mgr_->GetNetworkMembersWithHeight(
-        now_elect_height_
+        now_elect_height_,
         common::GlobalInfo::Instance()->network_id(),
         nullptr,
         nullptr);
