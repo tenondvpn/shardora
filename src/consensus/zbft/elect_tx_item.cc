@@ -179,7 +179,7 @@ int ElectTxItem::CheckWeedout(
         elect_nodes_to_choose.push_back(node_info);
     }
 
-    std::vector<uint32_t> weedout_nodes;
+    std::set<uint32_t> weedout_nodes;
     FtsGetNodes(elect_nodes_to_choose, true, weed_out_count - invalid_nodes.size(), weedout_nodes);
     for (auto iter = elect_nodes_to_choose.begin(); iter != elect_nodes_to_choose.end(); ++iter) {
         if (weedout_nodes.find((*iter)->index) != weedout_nodes.end()) {
@@ -235,7 +235,7 @@ void ElectTxItem::FtsGetNodes(
         std::vector<std::shared_ptr<ElectNodeInfo>>& elect_nodes,
         bool weed_out,
         uint32_t count,
-        std::vector<uint32_t>& res_nodes) {
+        std::set<uint32_t>& res_nodes) {
     uint64_t max_fts_val = 0;
     SmoothFtsValue(elect_nodes, &max_fts_val);
     uint32_t try_times = 0;
@@ -273,7 +273,7 @@ void ElectTxItem::FtsGetNodes(
     }
 
     for (auto iter = tmp_res_nodes.begin(); iter !+ tmp_res_nodes.end(); ++iter) {
-        res_nodes.push_back(elect_nodes[*iter]->index);
+        res_nodes.insert(elect_nodes[*iter]->index);
     }
 }
 

@@ -62,7 +62,7 @@ private:
         std::vector<NodeDetailPtr>& elect_nodes,
         bool weed_out,
         uint32_t count,
-        std::vector<uint32_t>& tmp_res_nodes);
+        std::set<uint32_t>& tmp_res_nodes);
     void SmoothFtsValue(
         std::vector<NodeDetailPtr>& elect_nodes,
         uint64_t* max_fts_val);
