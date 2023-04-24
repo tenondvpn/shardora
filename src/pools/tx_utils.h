@@ -136,13 +136,13 @@ struct ElectItem {
     common::MembersPtr members;
 };
 
-struct StatisticMemberInfoItem {
+typedef struct {
     StatisticMemberInfoItem(uint32_t midx, uint32_t lidx)
         : tx_count(0), member_index(midx), leader_index(lidx) {}
     uint32_t tx_count;
     uint32_t member_index;
     uint32_t leader_index;
-};
+} StatisticMemberInfoItem;
 
 struct HeightStatisticInfo {
     std::unordered_map<std::string, StatisticMemberInfoItem> node_tx_count_map;
