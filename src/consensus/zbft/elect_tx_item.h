@@ -251,44 +251,43 @@ private:
             bool weed_out,
             uint32_t count,
             std::set<int32_t>& res_nodes) {
-        std::mt19937_64 g2(vss_random_);
-        SmoothFtsValue(
-            shard_netid,
-            g2,
-            sort_vec);
-        std::set<int32_t> tmp_res_nodes;
-        uint32_t try_times = 0;
-        while (tmp_res_nodes.size() < count) {
-            common::FtsTree fts_tree;
-            int32_t idx = 0;
-            for (auto iter = src_nodes.begin(); iter != src_nodes.end(); ++iter, ++idx) {
-                if (tmp_res_nodes.find(idx) != tmp_res_nodes.end()) {
-                    continue;
-                }
-
-                uint64_t fts_value = (*iter)->fts_value;
-                if (weed_out) {
-                    fts_value = common::kZjcCoinMaxAmount - fts_value;
-                }
-
-                fts_tree.AppendFtsNode(fts_value, idx);
-            }
-
-            fts_tree.CreateFtsTree();
-            int32_t data = fts_tree.GetOneNode(g2);
-            if (data == -1) {
-                ++try_times;
-                if (try_times > 5) {
-                    ELECT_ERROR("fts get elect nodes failed! tmp_res_nodes size: %d", tmp_res_nodes.size());
-                    return;
-                }
-                continue;
-            }
-
-            try_times = 0;
-            tmp_res_nodes.insert(data);
-    //         NodeDetailPtr node_ptr = *((NodeDetailPtr*)data);
-            res_nodes.insert(data);
+//         std::mt19937_64 g2(vss_random_);
+//         SmoothFtsValue(
+//             shard_netid,
+//             g2,
+//             sort_vec);
+//         std::set<int32_t> tmp_res_nodes;
+//         uint32_t try_times = 0;
+//         while (tmp_res_nodes.size() < count) {
+//             common::FtsTree fts_tree;
+//             int32_t idx = 0;
+//             for (auto iter = src_nodes.begin(); iter != src_nodes.end(); ++iter, ++idx) {
+//                 if (tmp_res_nodes.find(idx) != tmp_res_nodes.end()) {
+//                     continue;
+//                 }
+// 
+//                 uint64_t fts_value = (*iter)->fts_value;
+//                 if (weed_out) {
+//                     fts_value = common::kZjcCoinMaxAmount - fts_value;
+//                 }
+// 
+//                 fts_tree.AppendFtsNode(fts_value, idx);
+//             }
+// 
+//             fts_tree.CreateFtsTree();
+//             int32_t data = fts_tree.GetOneNode(g2);
+//             if (data == -1) {
+//                 ++try_times;
+//                 if (try_times > 5) {
+//                     ELECT_ERROR("fts get elect nodes failed! tmp_res_nodes size: %d", tmp_res_nodes.size());
+//                     return;
+//                 }
+//                 continue;
+//             }
+// 
+//             try_times = 0;
+//             tmp_res_nodes.insert(data);
+//             res_nodes.insert(data);
         }
     }
 
@@ -301,131 +300,131 @@ private:
     }
 
     void SmoothFtsValue(std::mt19937_64& g2) {
-        std::sort(sort_vec.begin(), sort_vec.end(), ElectNodeBalanceCompare);
-        sort_vec[0]->stoke = stoke_mgr_->GetAddressStoke(sort_vec[0]->id);
-        ELECT_DEBUG("TTTTTTTTT smooth get blance: %s, %lu",
-            common::Encode::HexEncode(sort_vec[0]->id).c_str(),
-            (uint64_t)sort_vec[0]->stoke);
-        for (uint32_t i = 1; i < sort_vec.size(); ++i) {
-            sort_vec[i]->stoke = stoke_mgr_->GetAddressStoke(sort_vec[i]->id);
-            ELECT_DEBUG("TTTTTTTTT smooth get blance: %s, %lu",
-                common::Encode::HexEncode(sort_vec[i]->id).c_str(),
-                (uint64_t)sort_vec[i]->stoke);
-            sort_vec[i]->stoke_diff = sort_vec[i]->stoke - sort_vec[i - 1]->stoke;
-        }
-
-        std::sort(sort_vec.begin(), sort_vec.end(), ElectNodeBalanceDiffCompare);
-        uint64_t diff_2b3 = sort_vec[sort_vec.size() * 2 / 3]->stoke_diff;
-        std::sort(sort_vec.begin(), sort_vec.end(), ElectNodeBalanceCompare);
-        std::vector<int32_t> blance_weight;
-        blance_weight.resize(sort_vec.size());
-        blance_weight[0] = 100;
-        int32_t min_balance = (std::numeric_limits<int32_t>::max)();
-        int32_t max_balance = 0;
-        for (uint32_t i = 1; i < sort_vec.size(); ++i) {
-            uint64_t fts_val_diff = sort_vec[i]->stoke - sort_vec[i - 1]->stoke;
-            if (fts_val_diff == 0) {
-                blance_weight[i] = blance_weight[i - 1];
-            } else {
-                if (fts_val_diff < diff_2b3) {
-                    auto rand_val = fts_val_diff + g2() % (diff_2b3 - fts_val_diff);
-                    blance_weight[i] = blance_weight[i - 1] + (20 * rand_val) / diff_2b3;
-                } else {
-                    auto rand_val = diff_2b3 + g2() % (fts_val_diff + 1 - diff_2b3);
-                    blance_weight[i] = blance_weight[i - 1] + (20 * rand_val) / fts_val_diff;
-                }
-            }
-
-            if (min_balance > blance_weight[i]) {
-                min_balance = blance_weight[i];
-            }
-
-            if (max_balance < blance_weight[i]) {
-                max_balance = blance_weight[i];
-            }
-        }
-
-        // at least [100, 1000] for fts
-        int32_t blance_diff = max_balance - min_balance;
-        if (max_balance - min_balance < 1000) {
-            auto old_balance_diff = max_balance - min_balance;
-            max_balance = min_balance + 1000;
-            blance_diff = max_balance - min_balance;
-            if (old_balance_diff > 0) {
-                int32_t balance_index = blance_diff / old_balance_diff;
-                for (uint32_t i = 0; i < sort_vec.size(); ++i) {
-                    blance_weight[i] = min_balance + balance_index * (blance_weight[i] - min_balance);
-                }
-            }
-        }
-
-        std::vector<int32_t> credit_weight;
-        credit_weight.resize(sort_vec.size());
-        int32_t min_credit = (std::numeric_limits<int32_t>::max)();
-        int32_t max_credit = (std::numeric_limits<int32_t>::min)();
-        for (uint32_t i = 0; i < sort_vec.size(); ++i) {
-            int32_t credit = common::kInitNodeCredit;
-            node_credit_.GetNodeHistoryCredit(sort_vec[i]->id, &credit);
-            credit_weight[i] = credit;
-            if (min_credit > credit) {
-                min_credit = credit;
-            }
-
-            if (max_credit < credit) {
-                max_credit = credit;
-            }
-        }
-
-        int32_t credit_diff = max_credit - min_credit;
-        if (credit_diff > 0) {
-            int32_t credit_index = blance_diff / credit_diff;
-            for (uint32_t i = 0; i < sort_vec.size(); ++i) {
-                credit_weight[i] = min_balance + credit_index * (credit_weight[i] - min_credit);
-            }
-        }
-
-        std::vector<int32_t> ip_weight;
-        ip_weight.resize(sort_vec.size());
-        auto choosed_ip_weight = 0;
-        int32_t min_ip_weight = (std::numeric_limits<int32_t>::max)();
-        int32_t max_ip_weight = (std::numeric_limits<int32_t>::min)();
-        for (uint32_t i = 0; i < sort_vec.size(); ++i) {
-            int32_t prefix_len = 0;
-            auto count = 0;
-            // choosed_ip_weight.GetIpCount(sort_vec[i]->public_ip, &prefix_len);
-            ip_weight[i] = prefix_len;
-            if (ip_weight[i] > max_ip_weight) {
-                max_ip_weight = ip_weight[i];
-            }
-
-            if (ip_weight[i] < min_ip_weight) {
-                min_ip_weight = ip_weight[i];
-            }
-        }
-
-        for (uint32_t i = 0; i < sort_vec.size(); ++i) {
-            ip_weight[i] = max_ip_weight - ip_weight[i];
-        }
-
-        int32_t weight_diff = max_ip_weight - min_ip_weight;
-        if (weight_diff > 0) {
-            int32_t weight_index = blance_diff / weight_diff;
-            for (uint32_t i = 0; i < sort_vec.size(); ++i) {
-                ip_weight[i] = min_balance + weight_index * (ip_weight[i] - min_ip_weight);
-            }
-        }
-
-        for (uint32_t i = 0; i < sort_vec.size(); ++i) {
-            sort_vec[i]->fts_value = (3 * ip_weight[i] + 4 * credit_weight[i] + 3 * blance_weight[i]) / 10;
-            ELECT_DEBUG("fts smooth %s: %d, %d, %d, %d",
-                common::Encode::HexEncode(sort_vec[i]->id).c_str(),
-                sort_vec[i]->fts_value, ip_weight[i], credit_weight[i], blance_weight[i]);
-            std::cout << common::Encode::HexEncode(sort_vec[i]->id) << " : "
-                << sort_vec[i]->fts_value << ", "
-                << ip_weight[i] << ", "
-                << credit_weight[i] << ", "
-                << blance_weight[i] << std::endl;
-        }
+//         std::sort(sort_vec.begin(), sort_vec.end(), ElectNodeBalanceCompare);
+//         sort_vec[0]->stoke = stoke_mgr_->GetAddressStoke(sort_vec[0]->id);
+//         ELECT_DEBUG("TTTTTTTTT smooth get blance: %s, %lu",
+//             common::Encode::HexEncode(sort_vec[0]->id).c_str(),
+//             (uint64_t)sort_vec[0]->stoke);
+//         for (uint32_t i = 1; i < sort_vec.size(); ++i) {
+//             sort_vec[i]->stoke = stoke_mgr_->GetAddressStoke(sort_vec[i]->id);
+//             ELECT_DEBUG("TTTTTTTTT smooth get blance: %s, %lu",
+//                 common::Encode::HexEncode(sort_vec[i]->id).c_str(),
+//                 (uint64_t)sort_vec[i]->stoke);
+//             sort_vec[i]->stoke_diff = sort_vec[i]->stoke - sort_vec[i - 1]->stoke;
+//         }
+// 
+//         std::sort(sort_vec.begin(), sort_vec.end(), ElectNodeBalanceDiffCompare);
+//         uint64_t diff_2b3 = sort_vec[sort_vec.size() * 2 / 3]->stoke_diff;
+//         std::sort(sort_vec.begin(), sort_vec.end(), ElectNodeBalanceCompare);
+//         std::vector<int32_t> blance_weight;
+//         blance_weight.resize(sort_vec.size());
+//         blance_weight[0] = 100;
+//         int32_t min_balance = (std::numeric_limits<int32_t>::max)();
+//         int32_t max_balance = 0;
+//         for (uint32_t i = 1; i < sort_vec.size(); ++i) {
+//             uint64_t fts_val_diff = sort_vec[i]->stoke - sort_vec[i - 1]->stoke;
+//             if (fts_val_diff == 0) {
+//                 blance_weight[i] = blance_weight[i - 1];
+//             } else {
+//                 if (fts_val_diff < diff_2b3) {
+//                     auto rand_val = fts_val_diff + g2() % (diff_2b3 - fts_val_diff);
+//                     blance_weight[i] = blance_weight[i - 1] + (20 * rand_val) / diff_2b3;
+//                 } else {
+//                     auto rand_val = diff_2b3 + g2() % (fts_val_diff + 1 - diff_2b3);
+//                     blance_weight[i] = blance_weight[i - 1] + (20 * rand_val) / fts_val_diff;
+//                 }
+//             }
+// 
+//             if (min_balance > blance_weight[i]) {
+//                 min_balance = blance_weight[i];
+//             }
+// 
+//             if (max_balance < blance_weight[i]) {
+//                 max_balance = blance_weight[i];
+//             }
+//         }
+// 
+//         // at least [100, 1000] for fts
+//         int32_t blance_diff = max_balance - min_balance;
+//         if (max_balance - min_balance < 1000) {
+//             auto old_balance_diff = max_balance - min_balance;
+//             max_balance = min_balance + 1000;
+//             blance_diff = max_balance - min_balance;
+//             if (old_balance_diff > 0) {
+//                 int32_t balance_index = blance_diff / old_balance_diff;
+//                 for (uint32_t i = 0; i < sort_vec.size(); ++i) {
+//                     blance_weight[i] = min_balance + balance_index * (blance_weight[i] - min_balance);
+//                 }
+//             }
+//         }
+// 
+//         std::vector<int32_t> credit_weight;
+//         credit_weight.resize(sort_vec.size());
+//         int32_t min_credit = (std::numeric_limits<int32_t>::max)();
+//         int32_t max_credit = (std::numeric_limits<int32_t>::min)();
+//         for (uint32_t i = 0; i < sort_vec.size(); ++i) {
+//             int32_t credit = common::kInitNodeCredit;
+//             node_credit_.GetNodeHistoryCredit(sort_vec[i]->id, &credit);
+//             credit_weight[i] = credit;
+//             if (min_credit > credit) {
+//                 min_credit = credit;
+//             }
+// 
+//             if (max_credit < credit) {
+//                 max_credit = credit;
+//             }
+//         }
+// 
+//         int32_t credit_diff = max_credit - min_credit;
+//         if (credit_diff > 0) {
+//             int32_t credit_index = blance_diff / credit_diff;
+//             for (uint32_t i = 0; i < sort_vec.size(); ++i) {
+//                 credit_weight[i] = min_balance + credit_index * (credit_weight[i] - min_credit);
+//             }
+//         }
+// 
+//         std::vector<int32_t> ip_weight;
+//         ip_weight.resize(sort_vec.size());
+//         auto choosed_ip_weight = 0;
+//         int32_t min_ip_weight = (std::numeric_limits<int32_t>::max)();
+//         int32_t max_ip_weight = (std::numeric_limits<int32_t>::min)();
+//         for (uint32_t i = 0; i < sort_vec.size(); ++i) {
+//             int32_t prefix_len = 0;
+//             auto count = 0;
+//             // choosed_ip_weight.GetIpCount(sort_vec[i]->public_ip, &prefix_len);
+//             ip_weight[i] = prefix_len;
+//             if (ip_weight[i] > max_ip_weight) {
+//                 max_ip_weight = ip_weight[i];
+//             }
+// 
+//             if (ip_weight[i] < min_ip_weight) {
+//                 min_ip_weight = ip_weight[i];
+//             }
+//         }
+// 
+//         for (uint32_t i = 0; i < sort_vec.size(); ++i) {
+//             ip_weight[i] = max_ip_weight - ip_weight[i];
+//         }
+// 
+//         int32_t weight_diff = max_ip_weight - min_ip_weight;
+//         if (weight_diff > 0) {
+//             int32_t weight_index = blance_diff / weight_diff;
+//             for (uint32_t i = 0; i < sort_vec.size(); ++i) {
+//                 ip_weight[i] = min_balance + weight_index * (ip_weight[i] - min_ip_weight);
+//             }
+//         }
+// 
+//         for (uint32_t i = 0; i < sort_vec.size(); ++i) {
+//             sort_vec[i]->fts_value = (3 * ip_weight[i] + 4 * credit_weight[i] + 3 * blance_weight[i]) / 10;
+//             ELECT_DEBUG("fts smooth %s: %d, %d, %d, %d",
+//                 common::Encode::HexEncode(sort_vec[i]->id).c_str(),
+//                 sort_vec[i]->fts_value, ip_weight[i], credit_weight[i], blance_weight[i]);
+//             std::cout << common::Encode::HexEncode(sort_vec[i]->id) << " : "
+//                 << sort_vec[i]->fts_value << ", "
+//                 << ip_weight[i] << ", "
+//                 << credit_weight[i] << ", "
+//                 << blance_weight[i] << std::endl;
+//         }
     }
 
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;

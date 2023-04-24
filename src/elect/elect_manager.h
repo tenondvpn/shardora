@@ -10,7 +10,6 @@
 #include "common/utils.h"
 #include "common/tick.h"
 #include "dht/base_dht.h"
-#include "elect/elect_block_manager.h"
 #include "elect/elect_utils.h"
 #include "elect/elect_pool_manager.h"
 #include "elect/member_manager.h"
