@@ -59,7 +59,7 @@ private:
         const block::protobuf::BlockTx& tx);
     void HandleStatistic(const block::protobuf::Block& block);
     void LoadLatestHeights();
-    void NormalizeLofMap(const std::unordered_map<uint32_t, common::Point>& lof_map);
+    void NormalizeLofMap(std::unordered_map<uint32_t, common::Point>& lof_map);
 
     static const uint32_t kLofRation = 5;
     static const uint32_t kLofMaxNodes = 8;

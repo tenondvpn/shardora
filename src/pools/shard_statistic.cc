@@ -419,7 +419,7 @@ int ShardStatistic::StatisticWithHeights(
             points.push_back(iter->second);
         }
 
-        leader_count = elect_mgr_->GetNetworkLeaderCount(
+        auto leader_count = elect_mgr_->GetNetworkLeaderCount(
             common::GlobalInfo::Instance()->network_id());
         common::Lof lof(points);
         auto out = lof.GetOutliers(kLofRation);
