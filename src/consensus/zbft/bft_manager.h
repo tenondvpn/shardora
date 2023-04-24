@@ -165,7 +165,8 @@ private:
     }
 
     pools::TxItemPtr CreateElectTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ElectTxItem>(msg_ptr, account_mgr_, security_ptr_);
+        return std::make_shared<ElectTxItem>(
+            msg_ptr, account_mgr_, security_ptr_, prefix_db_, elect_mgr_);
     }
 
     pools::TxItemPtr CreateJoinElectTx(const transport::MessagePtr& msg_ptr) {
