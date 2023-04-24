@@ -174,7 +174,8 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
         auto& id = (*members)[i]->id;
         auto node_iter = statistic_info_ptr->node_tx_count_map.find(id);
         if (node_iter == statistic_info_ptr->node_tx_count_map.end()) {
-            statistic_info_ptr->node_tx_count_map[id] = StatisticMemberInfoItem(i, block.leader_index());
+            auto item = StatisticMemberInfoItem(i, block.leader_index());
+            statistic_info_ptr->node_tx_count_map[id] = item;
         }
 
         if (!final_bitmap.Valid(i)) {
@@ -476,7 +477,7 @@ void ShardStatistic::NormalizeLofMap(std::unordered_map<uint32_t, common::Point>
 
     for (auto iter = lof_map.begin(); iter != lof_map.end(); ++iter) {
         auto avg = avg_map[iter->first];
-        for (int32_t i = 0; i < iter->second.coordinate()->size(); ++i) {
+        for (int32_t i = 0; i < iter->second.coordinate().size(); ++i) {
             iter->second[i] = iter->second[i] * max_avg / avg;
         }
     }
