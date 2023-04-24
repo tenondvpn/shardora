@@ -287,6 +287,7 @@ int ShardStatistic::StatisticWithHeights(
         nullptr,
         nullptr);
     std::unordered_map<uint32_t, common::Point> lof_map;
+    uint64_t all_gas_amount = 0;
     for (uint32_t pool_idx = 0; pool_idx < max_pool; ++pool_idx) {
         uint64_t min_height = 1;
         if (tx_heights_ptr_ != nullptr) {
@@ -301,7 +302,6 @@ int ShardStatistic::StatisticWithHeights(
         }
 
         uint64_t prev_height = 0;
-        uint64_t all_gas_amount = 0;
         for (auto height = min_height; height <= max_height; ++height) {
             auto hiter = node_height_count_map_[pool_idx].find(height);
             if (hiter == node_height_count_map_[pool_idx].end()) {
@@ -419,6 +419,8 @@ int ShardStatistic::StatisticWithHeights(
             points.push_back(iter->second);
         }
 
+        leader_count = elect_mgr_->GetNetworkLeaderCount(
+            common::GlobalInfo::Instance()->network_id());
         common::Lof lof(points);
         auto out = lof.GetOutliers(kLofRation);
         int32_t weedout_count = leader_count / 10 + 1;
