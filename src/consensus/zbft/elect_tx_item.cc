@@ -1,0 +1,421 @@
+#include "consensus/zbft/elect_tx_item.h"
+
+namespace zjchain {
+
+namespace consensus {
+
+int ElectTxItem::HandleTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        std::shared_ptr<db::DbWriteBatch>& db_batch,
+        std::unordered_map<std::string, int64_t>& acc_balance_map,
+        block::protobuf::BlockTx& block_tx) {
+    for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
+        if (block_tx.storages(i).key() == protos::kShardStatistic) {
+            pools::protobuf::ElectStatistic elect_statistic;
+            std::string val;
+            if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
+                assert(false);
+                return kConsensusError;
+            }
+
+            if (!elect_statistic.ParseFromString(val)) {
+                assert(false);
+                return kConsensusError;
+            }
+
+            uint64_t now_elect_height = elect_mgr_->latest_height(elect_statistic.sharding_id());
+            const pools::protobuf::PoolStatisticItem* statistic = nullptr;
+            for (int32_t i = 0; i < elect_statistic.statistics_size(); ++i) {
+                if (elect_statistic.statistics(i).elect_height() == now_elect_height) {
+                    statistic = &elect_statistic.statistics(i);
+                    break;
+                }
+            }
+
+            if (statistic == nullptr) {
+                return kConsensusError;
+            }
+
+            auto members = elect_mgr_->GetNetworkMembersWithHeight(
+                now_elect_height,
+                elect_statistic.sharding_id(),
+                nullptr,
+                nullptr);
+            if (members == nullptr) {
+                ZJC_WARN("get members failed, elect height: %lu, net: %u",
+                    now_elect_height, elect_statistic.sharding_id());
+                assert(false);
+                return kConsensusError;
+            }
+
+            if (members->size() != statistic->tx_count_size() ||
+                    members->size() != statistic->stokes_size() ||
+                    members->size() != statistic->area_point_size()) {
+                assert(false);
+                return kConsensusError;
+            }
+
+            uint32_t min_area_weight = common::kInvalidUint32;
+            uint32_t min_tx_count = common::kInvalidUint32;
+            std::vector<std::shared_ptr<ElectNodeInfo>> elect_nodes;
+            int res = CheckWeedout(
+                thread_idx,
+                members,
+                *statistic,
+                &min_area_weight,
+                &min_tx_count,
+                elect_nodes);
+            if (res != kConsensusSuccess) {
+                assert(false);
+                return res;
+            }
+
+            min_area_weight += 1;
+            min_tx_count += 1;
+            std::vector<std::shared_ptr<ElectNodeInfo>> join_elect_nodes;
+            res = GetJoinElectNodesCredit(
+                elect_statistic,
+                thread_idx,
+                min_area_weight,
+                min_tx_count,
+                join_elect_nodes);
+            if (res != kConsensusSuccess) {
+                assert(false);
+                return res;
+            }
+        }
+    }
+    return kConsensusSuccess;
+}
+
+int ElectTxItem::CheckWeedout(
+        uint8_t thread_idx,
+        common::MembersPtr& members,
+        const pools::protobuf::PoolStatisticItem& statistic_item,
+        uint32_t* min_area_weight,
+        uint32_t* min_tx_count,
+        std::vector<std::shared_ptr<ElectNodeInfo>>& elect_nodes) {
+    uint32_t weed_out_count = statistic_item.tx_count_size() * kFtsWeedoutDividRate / 100;
+    uint32_t direct_weed_out_count = weed_out_count / 2;
+    uint32_t max_tx_count = 0;
+    typedef std::pair<uint32_t, uint32_t> TxItem;
+    std::vector<TxItem> member_tx_count;
+    for (int32_t member_idx = 0; member_idx < statistic_item.tx_count_size(); ++member_idx) {
+        if (statistic_item.tx_count(member_idx) > max_tx_count) {
+            max_tx_count = statistic_item.tx_count(member_idx);
+        }
+
+        member_tx_count.push_back(std::make_pair(
+            member_idx,
+            statistic_item.tx_count(member_idx)));
+    }
+
+    uint32_t direct_weedout_tx_count = max_tx_count / 2;
+    std::sort(
+        member_tx_count.begin(),
+        member_tx_count.end(), [](const TxItem& l, const TxItem& r) {
+        return l.second > r.second; });
+    std::set<uint32_t> invalid_nodes;
+    for (int32_t i = 0; i < direct_weed_out_count; ++i) {
+        if (member_tx_count[i].second < direct_weedout_tx_count) {
+            invalid_nodes.insert(member_tx_count[i].first);
+        }
+    }
+
+    std::vector<std::shared_ptr<ElectNodeInfo>> elect_nodes_to_choose;
+    for (int32_t member_idx = 0; member_idx < statistic_item.tx_count_size(); ++member_idx) {
+        if (invalid_nodes.find(member_idx) != invalid_nodes.end()) {
+            continue;
+        }
+
+        uint32_t min_dis = common::kInvalidUint32;
+        for (int32_t idx = 0; idx < statistic_item.tx_count_size(); ++idx) {
+            if (member_idx == idx) {
+                continue;
+            }
+
+            auto& point0 = statistic_item.area_point(member_idx);
+            auto& point1 = statistic_item.area_point(idx);
+            uint32_t dis = (point0.x() - point1.x()) * (point0.x() - point1.x()) +
+                (point0.y() - point1.y()) * (point0.y() - point1.y());
+            if (min_dis > dis) {
+                min_dis = dis;
+            }
+        }
+
+        auto account_info = account_mgr_->GetAccountInfo(thread_idx, (*members)[member_idx]->id);
+        if (account_info == nullptr) {
+            assert(false);
+            return kConsensusError;
+        }
+
+        auto node_info = std::make_shared<ElectNodeInfo>();
+        node_info->area_weight = min_dis;
+        node_info->tx_count = statistic_item.tx_count(member_idx);
+        node_info->stoke = statistic_item.stokes(member_idx);
+        node_info->credit = account_info->credit();
+        node_info->index = member_idx;
+        node_info->id = (*members)[member_idx]->id;
+        if (*min_tx_count > node_info->tx_count) {
+            *min_tx_count = node_info->tx_count;
+        }
+
+        if (*min_area_weight > min_dis) {
+            *min_area_weight = min_dis;
+        }
+
+        elect_nodes_to_choose.push_back(node_info);
+    }
+
+    std::set<uint32_t> weedout_nodes;
+    FtsGetNodes(elect_nodes_to_choose, true, weed_out_count - invalid_nodes.size(), weedout_nodes);
+    for (auto iter = elect_nodes_to_choose.begin(); iter != elect_nodes_to_choose.end(); ++iter) {
+        if (weedout_nodes.find((*iter)->index) != weedout_nodes.end()) {
+            continue;
+        }
+
+        elect_nodes.push_back(*iter);
+    }
+
+    return kConsensusSuccess;
+}
+
+int ElectTxItem::GetJoinElectNodesCredit(
+        const pools::protobuf::ElectStatistic& elect_statistic,
+        uint8_t thread_idx,
+        uint32_t min_area_weight,
+        uint32_t min_tx_count,
+        std::set<std::shared_ptr<ElectNodeInfo>>& elect_nodes) {
+    std::vector<std::shared_ptr<ElectNodeInfo>> elect_nodes_to_choose;
+    for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
+        auto account_info = account_mgr_->GetAccountInfo(
+            thread_idx,
+            elect_statistic.join_elect_nodes(i).id());
+        if (account_info == nullptr) {
+            assert(false);
+            return kConsensusError;
+        }
+
+        auto node_info = std::make_shared<ElectNodeInfo>();
+        node_info->area_weight = min_area_weight;
+        node_info->stoke = elect_statistic.join_elect_nodes(i).stoke();
+        node_info->tx_count = min_tx_count;
+        node_info->credit = account_info->credit();
+        node_info->id = account_info->addr();
+        node_info->index = i;
+        elect_nodes_to_choose.push_back(node_info);
+    }
+
+    std::set<uint32_t> weedout_nodes;
+    FtsGetNodes(elect_nodes_to_choose, true, weed_out_count - invalid_nodes.size(), weedout_nodes);
+    for (auto iter = elect_nodes_to_choose.begin(); iter != elect_nodes_to_choose.end(); ++iter) {
+        if (weedout_nodes.find((*iter)->index) != weedout_nodes.end()) {
+            continue;
+        }
+
+        elect_nodes.push_back(*iter);
+    }
+
+    return kConsensusSuccess;
+}
+
+void ElectTxItem::FtsGetNodes(
+        std::vector<std::shared_ptr<ElectNodeInfo>>& elect_nodes,
+        bool weed_out,
+        uint32_t count,
+        std::vector<uint32_t>& res_nodes) {
+    uint64_t max_fts_val = 0;
+    SmoothFtsValue(elect_nodes, &max_fts_val);
+    uint32_t try_times = 0;
+    std::mt19937_64 g2(vss_mgr_->EpochRandom());
+    std::set<int32_t> tmp_res_nodes;
+    while (tmp_res_nodes.size() < count) {
+        common::FtsTree fts_tree;
+        int32_t idx = 0;
+        for (auto iter = elect_nodes.begin(); iter != elect_nodes.end(); ++iter, ++idx) {
+            if (tmp_res_nodes.find(idx) != tmp_res_nodes.end()) {
+                continue;
+            }
+
+            auto fts_val = (*iter)->fts_value;
+            if (weed_out) {
+                fts_val = max_fts_val - fts_val;
+            }
+
+            fts_tree.AppendFtsNode((*iter)->fts_value, idx);
+        }
+
+        fts_tree.CreateFtsTree();
+        int32_t data = fts_tree.GetOneNode(g2);
+        if (data == -1) {
+            ++try_times;
+            if (try_times > 5) {
+                ELECT_ERROR("fts get elect nodes failed! tmp_res_nodes size: %d", tmp_res_nodes.size());
+                return;
+            }
+            continue;
+        }
+
+        try_times = 0;
+        tmp_res_nodes.insert(data);
+    }
+
+    for (auto iter = tmp_res_nodes.begin(); iter !+ tmp_res_nodes.end(); ++iter) {
+        res_nodes->push_back(elect_nodes[*iter]->index);
+    }
+}
+
+void ElectTxItem::SmoothFtsValue(
+        std::vector<std::shared_ptr<ElectNodeInfo>>& elect_nodes,
+        uint64_t* max_fts_val) {
+    std::sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceCompare);
+    for (uint32_t i = 1; i < elect_nodes.size(); ++i) {
+        elect_nodes[i]->stoke_diff = elect_nodes[i]->stoke - elect_nodes[i - 1]->stoke;
+    }
+
+    std::sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceDiffCompare);
+    uint64_t diff_2b3 = elect_nodes[elect_nodes.size() * 2 / 3]->stoke_diff;
+    std::sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceCompare);
+    std::mt19937_64 g2(vss_mgr_->EpochRandom());
+    int32_t min_balance = (std::numeric_limits<int32_t>::max)();
+    std::vector<int32_t> blance_weight;
+    {
+        blance_weight.resize(elect_nodes.size());
+        blance_weight[0] = 100;
+        int32_t max_balance = 0;
+        for (uint32_t i = 1; i < elect_nodes.size(); ++i) {
+            uint64_t fts_val_diff = elect_nodes[i]->stoke - elect_nodes[i - 1]->stoke;
+            if (fts_val_diff == 0) {
+                blance_weight[i] = blance_weight[i - 1];
+            }
+            else {
+                if (fts_val_diff < diff_2b3) {
+                    auto rand_val = fts_val_diff + g2() % (diff_2b3 - fts_val_diff);
+                    blance_weight[i] = blance_weight[i - 1] + (20 * rand_val) / diff_2b3;
+                }
+                else {
+                    auto rand_val = diff_2b3 + g2() % (fts_val_diff + 1 - diff_2b3);
+                    blance_weight[i] = blance_weight[i - 1] + (20 * rand_val) / fts_val_diff;
+                }
+            }
+
+            if (min_balance > blance_weight[i]) {
+                min_balance = blance_weight[i];
+            }
+
+            if (max_balance < blance_weight[i]) {
+                max_balance = blance_weight[i];
+            }
+        }
+
+        // at least [100, 1000] for fts
+        int32_t blance_diff = max_balance - min_balance;
+        if (max_balance - min_balance < 1000) {
+            auto old_balance_diff = max_balance - min_balance;
+            max_balance = min_balance + 1000;
+            blance_diff = max_balance - min_balance;
+            if (old_balance_diff > 0) {
+                int32_t balance_index = blance_diff / old_balance_diff;
+                for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+                    blance_weight[i] = min_balance + balance_index * (blance_weight[i] - min_balance);
+                }
+            }
+        }
+    }
+
+    std::vector<int32_t> credit_weight;
+    {
+        credit_weight.resize(elect_nodes.size());
+        int32_t min_credit = (std::numeric_limits<int32_t>::max)();
+        int32_t max_credit = (std::numeric_limits<int32_t>::min)();
+        for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+            credit_weight[i] = elect_nodes[i]->credit;
+            if (min_credit > credit_weight[i]) {
+                min_credit = credit_weight[i];
+            }
+
+            if (max_credit < credit_weight[i]) {
+                max_credit = credit_weight[i];
+            }
+        }
+
+        int32_t credit_diff = max_credit - min_credit;
+        if (credit_diff > 0) {
+            int32_t credit_index = blance_diff / credit_diff;
+            for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+                credit_weight[i] = min_balance + credit_index * (credit_weight[i] - min_credit);
+            }
+        }
+    }
+    
+
+    std::vector<int32_t> ip_weight;
+    {
+        ip_weight.resize(elect_nodes.size());
+        int32_t min_ip_weight = (std::numeric_limits<int32_t>::max)();
+        int32_t max_ip_weight = (std::numeric_limits<int32_t>::min)();
+        for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+            int32_t prefix_len = 0;
+            auto count = 0;
+            ip_weight[i] = elect_nodes[i]->area_weight;
+            if (ip_weight[i] > max_ip_weight) {
+                max_ip_weight = ip_weight[i];
+            }
+
+            if (ip_weight[i] < min_ip_weight) {
+                min_ip_weight = ip_weight[i];
+            }
+        }
+
+        int32_t weight_diff = max_ip_weight - min_ip_weight;
+        if (weight_diff > 0) {
+            int32_t weight_index = blance_diff / weight_diff;
+            for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+                ip_weight[i] = min_balance + weight_index * (ip_weight[i] - min_ip_weight);
+            }
+        }
+    }
+    
+    std::vector<int32_t> epoch_weight;
+    {
+        epoch_weight.resize(elect_nodes.size());
+        int32_t min_epoch_weight = (std::numeric_limits<int32_t>::max)();
+        int32_t max_epoch_weight = (std::numeric_limits<int32_t>::min)();
+        for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+            int32_t prefix_len = 0;
+            auto count = 0;
+            epoch_weight[i] = elect_nodes[i]->tx_count;
+            if (epoch_weight[i] > max_epoch_weight) {
+                max_epoch_weight = epoch_weight[i];
+            }
+
+            if (epoch_weight[i] < min_epoch_weight) {
+                min_epoch_weight = epoch_weight[i];
+            }
+        }
+
+        int32_t weight_diff = max_epoch_weight - min_epoch_weight;
+        if (weight_diff > 0) {
+            int32_t weight_index = blance_diff / weight_diff;
+            for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+                epoch_weight[i] = min_balance + weight_index * (epoch_weight[i] - min_epoch_weight);
+            }
+        }
+    }
+
+    for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+        elect_nodes[i]->fts_value = (
+            2 * ip_weight[i] +
+            4 * credit_weight[i] +
+            2 * blance_weight[i] +
+            2 * epoch_weight[i]) / 10;
+        if (*max_fts_val < elect_nodes[i]->fts_value) {
+            *max_fts_val = elect_nodes[i]->fts_value;
+        }
+    }
+}
+
+};  // namespace consensus
+
+};  // namespace zjchain
