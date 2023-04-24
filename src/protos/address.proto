@@ -22,4 +22,5 @@ message AddressInfo {
     optional AddressType type = 6;
     optional bytes bytes_code = 7;
     optional uint64 latest_height = 8;
+    optional int32 credit = 9 [default=0];
 }

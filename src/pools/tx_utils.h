@@ -26,6 +26,7 @@ static const uint32_t kBranchMaxCount = kLeafMaxHeightCount / 64u;
 static const uint32_t kHeightLevelItemMaxCount = 2 * kBranchMaxCount - 1;
 static const uint64_t kLevelNodeValidHeights = 0xFFFFFFFFFFFFFFFFlu;
 static const uint32_t kStatisticMaxCount = 3u;
+static const uint32_t kWaitingElectNodesMaxCount = 256u;
 
 enum PoolsErrorCode {
     kPoolsSuccess = 0,
@@ -135,10 +136,19 @@ struct ElectItem {
     common::MembersPtr members;
 };
 
+struct StatisticMemberInfoItem {
+    StatisticMemberInfoItem(uint32_t midx, uint32_t lidx)
+        : tx_count(0), member_index(midx), leader_index(lidx) {}
+    uint32_t tx_count;
+    uint32_t member_index;
+    uint32_t leader_index;
+};
+
 struct HeightStatisticInfo {
-    std::unordered_map<std::string, uint32_t> node_tx_count_map;
+    std::unordered_map<std::string, StatisticMemberInfoItem> node_tx_count_map;
     std::unordered_map<std::string, uint64_t> node_stoke_map;
     uint64_t elect_height;
+    uint64_t all_gas_amount;
 };
 
 struct RootStatisticItem {

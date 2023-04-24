@@ -52,10 +52,16 @@ message PoolLatestInfo {
     optional uint64 synced_height = 3;
 }
 
+message AreaInfo {
+    repeated uint32 x = 1;
+    repeated uint32 y = 2;
+}
+
 message PoolStatisticItem {
     repeated uint32 tx_count = 1;
     repeated uint64 stokes = 2;
     optional uint64 elect_height = 3;
+    repeated AreaInfo area_point = 4;
 }
 
 message JoinElectNode {
@@ -67,6 +73,9 @@ message ElectStatistic {
     repeated PoolStatisticItem statistics = 1;
     optional ToTxHeights heights = 2;
     repeated JoinElectNode join_elect_nodes = 3;
+    optional uint32 sharding_id = 4;
+    optional uint64 gas_amount = 5;
+    repeated uint32 lof_leaders = 6;
 }
 
 message TxMessage {

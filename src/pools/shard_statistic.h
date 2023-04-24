@@ -58,9 +58,11 @@ private:
         const block::protobuf::BlockTx& tx);
     void HandleStatistic(const block::protobuf::Block& block);
     void LoadLatestHeights();
+    void NormalizeLofMap(const std::unordered_map<uint32_t, std::vector<uint32_t>>& lof_map);
 
     static const uint32_t kLofRation = 5;
     static const uint32_t kLofMaxNodes = 8;
+    static const uint32_t kLofValidMaxAvgTxCount = 1024u;
 
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
     uint64_t latest_timeblock_tm_ = 0;

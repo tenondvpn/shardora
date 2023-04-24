@@ -169,21 +169,30 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
 
     auto statistic_info_ptr = std::make_shared<HeightStatisticInfo>();
     statistic_info_ptr->elect_height = block.electblock_height();
+    statistic_info_ptr->all_gas_amount = 0;
     for (uint32_t i = 0; i < member_count; ++i) {
+        auto& id = (*members)[i]->id;
+        auto node_iter = statistic_info_ptr->node_tx_count_map.find(id);
+        if (node_iter == statistic_info_ptr->node_tx_count_map.end()) {
+            statistic_info_ptr->node_tx_count_map[id] = StatisticMemberInfoItem(i, block.leader_index());
+        }
+
         if (!final_bitmap.Valid(i)) {
             continue;
         }
 
-        auto& id = (*members)[i]->id;
-        auto node_iter = statistic_info_ptr->node_tx_count_map.find(id);
-        if (node_iter == statistic_info_ptr->node_tx_count_map.end()) {
-            statistic_info_ptr->node_tx_count_map[id] = 0;
-        }
-
-        statistic_info_ptr->node_tx_count_map[id] += block.tx_list_size();
+        statistic_info_ptr->node_tx_count_map[id].tx_count += block.tx_list_size();
     }
 
     for (int32_t i = 0; i < block.tx_list_size(); ++i) {
+        if (block.tx_list(i).step() == pools::protobuf::kNormalFrom ||
+                block.tx_list(i).step() == pools::protobuf::kContractUserCreateCall ||
+                block.tx_list(i).step() == pools::protobuf::kContractExcute ||
+                block.tx_list(i).step() == pools::protobuf::kContractGasPrepayment ||
+                block.tx_list(i).step() == pools::protobuf::kContractUserCall) {
+            statistic_info_ptr->all_gas_amount += block.tx_list(i).gas_price() * block.tx_list(i).gas_used();
+        }
+
         if (block.tx_list(i).step() == pools::protobuf::kJoinElect) {
             for (int32_t storage_idx = 0; storage_idx < block.tx_list(i).storages_size(); ++storage_idx) {
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kElectNodeStoke) {
@@ -236,6 +245,10 @@ void ShardStatistic::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height
 
     prev_elect_height_ = now_elect_height_;
     now_elect_height_ = elect_height;
+    if (height_leader_members_tx_count_.size() > 4) {
+        height_leader_members_tx_count_.erase(height_leader_members_tx_count_.begin());
+    }
+
     ZJC_INFO("new elect block: %lu, %lu", prev_elect_height_, now_elect_height_);
 }
 
@@ -272,6 +285,12 @@ int ShardStatistic::StatisticWithHeights(
 
     std::unordered_map<uint64_t, std::unordered_map<std::string, uint32_t>> height_node_count_map;
     std::unordered_map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
+    auto now_elect_members = elect_mgr_->GetNetworkMembersWithHeight(
+        now_elect_height_,
+        common::GlobalInfo::Instance()->network_id(),
+        nullptr,
+        nullptr);
+    std::unordered_map<uint32_t, common::Point> lof_map;
     for (uint32_t pool_idx = 0; pool_idx < max_pool; ++pool_idx) {
         uint64_t min_height = 1;
         if (tx_heights_ptr_ != nullptr) {
@@ -286,6 +305,7 @@ int ShardStatistic::StatisticWithHeights(
         }
 
         uint64_t prev_height = 0;
+        uint64_t all_gas_amount = 0;
         for (auto height = min_height; height <= max_height; ++height) {
             auto hiter = node_height_count_map_[pool_idx].find(height);
             if (hiter == node_height_count_map_[pool_idx].end()) {
@@ -305,9 +325,22 @@ int ShardStatistic::StatisticWithHeights(
                     niter != hiter->second->node_tx_count_map.end(); ++niter) {
                 auto tmp_iter = node_count_map.find(niter->first);
                 if (tmp_iter == node_count_map.end()) {
-                    node_count_map[niter->first] = niter->second;
+                    node_count_map[niter->first] = niter->second.tx_count;
                 } else {
-                    tmp_iter->second += niter->second;
+                    tmp_iter->second += niter->second.tx_count;
+                }
+
+                if (elect_height == now_elect_height_) {
+                    auto liter = lof_map.find(niter->second.leader_index);
+                    if (liter == lof_map.end()) {
+                        lof_map[niter->second.leader_index] = common::Point(
+                            now_elect_members->size(),
+                            (*now_elect_members)[niter->second.leader_index]->pool_index_mod_num,
+                            niter->second.leader_index);
+                    }
+
+                    lof_map[niter->second.leader_index][niter->second.member_index] +=
+                        niter->second.tx_count;
                 }
             }
 
@@ -321,6 +354,8 @@ int ShardStatistic::StatisticWithHeights(
                     elect_iter != hiter->second->node_stoke_map.end(); ++elect_iter) {
                 elect_stoke_map[elect_iter->first] = elect_iter->second;
             }
+
+            all_gas_amount += hiter->second->all_gas_amount;
         }
     }
 
@@ -341,7 +376,8 @@ int ShardStatistic::StatisticWithHeights(
 
     std::string str_for_hash;
     pools::protobuf::ElectStatistic elect_statistic;
-    for (auto hiter = height_node_count_map.begin(); hiter != height_node_count_map.end(); ++hiter) {
+    for (auto hiter = height_node_count_map.begin();
+            hiter != height_node_count_map.end(); ++hiter) {
         auto& node_count_map = hiter->second;
         auto& statistic_item = *elect_statistic.add_statistics();
         auto members = elect_mgr_->GetNetworkMembersWithHeight(
@@ -362,7 +398,8 @@ int ShardStatistic::StatisticWithHeights(
             str_for_hash.append((char*)&tx_count, sizeof(tx_count));
 
             uint64_t stoke = 0;
-            prefix_db_->GetElectNodeMinStoke(common::GlobalInfo::Instance()->network_id(), id, &stoke);
+            prefix_db_->GetElectNodeMinStoke(
+                common::GlobalInfo::Instance()->network_id(), id, &stoke);
             statistic_item.add_stokes(stoke);
         }
 
@@ -370,7 +407,7 @@ int ShardStatistic::StatisticWithHeights(
         str_for_hash.append((char*)&hiter->first, sizeof(hiter->first));
     }
 
-    for (int32_t i = 0; i < elect_nodes.size() && i < 256; ++i) {
+    for (int32_t i = 0; i < elect_nodes.size() && i < kWaitingElectNodesMaxCount; ++i) {
         auto join_elect_node = elect_statistic.add_join_elect_nodes();
         join_elect_node->set_id(elect_nodes[i]);
         auto iter = eiter->second.find(elect_nodes[i]);
@@ -379,11 +416,72 @@ int ShardStatistic::StatisticWithHeights(
         str_for_hash.append((char*)&iter->second, sizeof(iter->second));
     }
 
+    NormalizeLofMap(lof_map);
+    if (!lof_map.empty()) {
+        std::vector<common::Point> points;
+        for (auto iter = lof_map.begin(); iter != lof_map.end(); ++iter) {
+            points.push_back(iter->second);
+        }
+
+        common::Lof lof(points);
+        auto out = lof.GetOutliers(kLofRation);
+        int32_t weedout_count = leader_count / 10 + 1;
+        for (auto iter = out.begin(); iter != out.end(); ++iter) {
+            if (elect_statistic.lof_leaders_size() >= weedout_count || (*iter).second <= 2.0) {
+                break;
+            }
+
+            elect_statistic.add_lof_leaders((*iter).first);
+        }
+    }
+
+    elect_statistic.set_gas_amount(all_gas_amount);
+    str_for_hash.append((char*)&all_gas_amount, sizeof(all_gas_amount));
     *statistic_hash = common::Hash::keccak256(str_for_hash);
     *elect_statistic.mutable_heights() = leader_to_heights;
     prefix_db_->SaveTemporaryKv(*statistic_hash, elect_statistic.SerializeAsString());
     ZJC_DEBUG("success create statistic message.");
     return kPoolsSuccess;
+}
+
+void ShardStatistic::NormalizeLofMap(
+        std::unordered_map<uint32_t, std::vector<uint32_t>>& lof_map) {
+    if (lof_map.size() < kLofMaxNodes) {
+        lof_map.clear();
+        return;
+    }
+
+    auto members = elect_mgr_->GetNetworkMembersWithHeight(
+        now_elect_height_
+        common::GlobalInfo::Instance()->network_id(),
+        nullptr,
+        nullptr);
+    std::unordered_map<uint32_t, uint32_t> avg_map;
+    uint32_t max_avg = 0;
+    for (auto iter = lof_map.begin(); iter != lof_map.end(); ++iter) {
+        uint32_t sum = 0;
+        for (auto miter = iter->second.begin(); miter != iter->second.end(); ++miter) {
+            sum += *miter;
+        }
+
+        uint32_t avg = sum / members->size();
+        avg_map[iter->first] = avg;
+        if (max_avg < avg) {
+            max_avg = avg;
+        }
+    }
+
+    if (max_avg < kLofValidMaxAvgTxCount) {
+        lof_map.clear();
+        return;
+    }
+
+    for (auto iter = lof_map.begin(); iter != lof_map.end(); ++iter) {
+        auto avg = avg_map[iter->first];
+        for (int32_t i = 0; i < iter->second->size(); ++i) {
+            iter->second[i] = iter->second[i] * max_avg / avg;
+        }
+    }
 }
 
 void ShardStatistic::LoadLatestHeights() {
@@ -431,157 +529,6 @@ void ShardStatistic::LoadLatestHeights() {
     }
 
     ZJC_DEBUG("init success change min elect statistic heights: %s", init_consensus_height.c_str());
-}
-
-void ShardStatistic::NormalizePoints(
-        uint64_t elect_height,
-        std::unordered_map<int32_t, std::shared_ptr<common::Point>>& leader_lof_map) {
-    libff::alt_bn128_G2 common_pk;
-    libff::alt_bn128_Fr sec_key;
-    auto members = elect_mgr_->GetNetworkMembersWithHeight(
-        elect_height,
-        common::GlobalInfo::Instance()->network_id(),
-        &common_pk,
-        &sec_key);
-    if (members == nullptr) {
-        return;
-    }
-
-    auto leader_count = elect_mgr_->GetNetworkLeaderCount(
-        common::GlobalInfo::Instance()->network_id());
-    if (leader_count <= 0) {
-        ZJC_ERROR("leader_count invalid[%d] net: %d.",
-            leader_count, common::GlobalInfo::Instance()->network_id());
-        return;
-    }
-
-    for (auto iter = leader_lof_map.begin(); iter != leader_lof_map.end(); ++iter) {
-        if ((*members)[iter->first]->pool_index_mod_num < 0) {
-            continue;
-        }
-
-        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-            auto need_mod_index = i % leader_count;
-            if ((int32_t)need_mod_index == (*members)[iter->first]->pool_index_mod_num) {
-//                 iter->second->AddPoolTxCount(tx_counts->pool_tx_counts[i]);
-            }
-        }
-    }
-
-    int32_t max_count = 0;
-    for (auto iter = leader_lof_map.begin(); iter != leader_lof_map.end(); ++iter) {
-        if (max_count < iter->second->GetPooTxCount()) {
-            max_count = iter->second->GetPooTxCount();
-        }
-    }
-
-    for (auto iter = leader_lof_map.begin(); iter != leader_lof_map.end();) {
-        if (iter->second->GetPooTxCount() <= 0) {
-            leader_lof_map.erase(iter++);
-            continue;
-        }
-
-        for (int32_t i = 0; i < iter->second->GetDimension(); ++i) {
-            (*iter->second)[i] = (*iter->second)[i] * max_count / iter->second->GetPooTxCount();
-        }
-
-        ++iter;
-    }
-}
-
-void ShardStatistic::GetStatisticInfo(
-        uint64_t timeblock_height,
-        block::protobuf::StatisticInfo* statistic_info) {
-//     std::shared_ptr<StatisticItem> statistic_ptr = nullptr;
-//     for (uint32_t i = 0; i < kStatisticMaxCount; ++i) {
-//         if (statistic_items_[i]->tmblock_height == timeblock_height) {
-//             statistic_ptr = statistic_items_[i];
-//             break;
-//         }
-//     }
-// 
-//     if (statistic_ptr == nullptr) {
-//         return;
-//     }
-// 
-//     statistic_info->set_timeblock_height(statistic_ptr->tmblock_height);
-//     statistic_info->set_all_tx_count(statistic_ptr->all_tx_count);
-//     StatisticElectItemPtr elect_item_ptr = nullptr;
-//     for (uint32_t elect_idx = 0; elect_idx < kStatisticMaxCount; ++elect_idx) {
-//         auto elect_height = statistic_ptr->elect_items[elect_idx]->elect_height;
-//         if (elect_height == 0) {
-//             continue;
-//         }
-// 
-//         elect_item_ptr = statistic_ptr->elect_items[elect_idx];
-//         auto elect_st = statistic_info->add_elect_statistic();
-//         auto leader_count = elect_item_ptr->leader_lof_map.size();
-//         if (leader_count >= kLofMaxNodes) {
-//             std::unordered_map<int32_t, std::shared_ptr<common::Point>> leader_lof_map;
-//             {
-//                 std::lock_guard<std::mutex> g(elect_item_ptr->leader_lof_map_mutex);
-//                 leader_lof_map = elect_item_ptr->leader_lof_map;
-//             }
-// 
-//             NormalizePoints(elect_item_ptr->elect_height, leader_lof_map);
-//             if (leader_lof_map.size() >= kLofMaxNodes) {
-//                 std::vector<common::Point> points;
-//                 for (auto iter = leader_lof_map.begin();
-//                         iter != leader_lof_map.end(); ++iter) {
-//                     points.push_back(*iter->second);
-//                 }
-// 
-//                 common::Lof lof(points);
-//                 auto out = lof.GetOutliers(kLofRation);
-//                 int32_t weedout_count = leader_count / 10 + 1;
-//                 for (auto iter = out.begin(); iter != out.end(); ++iter) {
-//                     if (elect_st->lof_leaders_size() >= weedout_count || (*iter).second <= 2.0) {
-//                         break;
-//                     }
-// 
-//                     elect_st->add_lof_leaders((*iter).first);
-//                 }
-//             }
-//         }
-// 
-//         elect_st->set_elect_height(elect_item_ptr->elect_height);
-//         auto member_count = elect_mgr_->GetMemberCountWithHeight(
-//             elect_st->elect_height(),
-//             common::GlobalInfo::Instance()->network_id());
-//         for (uint32_t m = 0; m < member_count; ++m) {
-//             elect_st->add_succ_tx_count(elect_item_ptr->succ_tx_count[m]);
-//         }
-//     }
-}
-
-void ShardStatistic::CreateStatisticTransaction(uint64_t timeblock_height) {
-    if (common::GlobalInfo::Instance()->network_id() < network::kRootCongressNetworkId ||
-            common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
-        return;
-    }
-
-    int32_t pool_idx = 0;
-    pools::protobuf::TxMessage tx_info;
-    tx_info.set_step(pools::protobuf::kConsensusFinalStatistic);
-//     tx_info.set_from(account_mgr_->GetPoolBaseAddr(pool_idx));
-//     if (tx_info.from().empty()) {
-//         return;
-//     }
-
-    tx_info.set_gid(common::Hash::Hash256(
-        kShardFinalStaticPrefix + "_" +
-        std::to_string(common::GlobalInfo::Instance()->network_id()) + "_" +
-        std::to_string(latest_timeblock_tm_)));
-//     BLOCK_INFO("create new final statistic time stamp: %lu",
-//         tmblock::TimeBlockManager::Instance()->LatestTimestamp());
-    tx_info.set_gas_limit(0llu);
-    tx_info.set_amount(0);
-    tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
-    tx_info.set_key(protos::kAttrTimerBlockHeight);
-    tx_info.set_value(std::to_string(timeblock_height));
-//     if (bft::DispatchPool::Instance()->Dispatch(tx_info) != bft::kBftSuccess) {
-//         ZJC_ERROR("CreateStatisticTransaction dispatch pool failed!");
-//     }
 }
 
 }  // namespace pools

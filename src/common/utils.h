@@ -162,6 +162,7 @@ static const uint32_t kBroadcastIgnBloomfilter = 1u;
 static const int64_t kInvalidInt64 = (std::numeric_limits<int64_t>::max)();
 static const uint64_t kInvalidUint64 = (std::numeric_limits<uint64_t>::max)();
 static const uint32_t kInvalidUint32 = (std::numeric_limits<uint32_t>::max)();
+static const uint32_t kInvalidInt32 = (std::numeric_limits<int32_t>::max)();
 static const uint32_t kInvalidFloat = (std::numeric_limits<float>::max)();
 static const uint8_t kMaxThreadCount = 16;
 

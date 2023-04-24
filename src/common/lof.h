@@ -46,22 +46,6 @@ public:
         return idx_;
     }
 
-    void IncAllCount(int32_t size) {
-        all_count_ += size;
-    }
-
-    int32_t GetAllCount() const {
-        return all_count_;
-    }
-
-    void AddPoolTxCount(int32_t size) {
-        pool_tx_count_ += size;
-    }
-
-    int32_t GetPooTxCount() const {
-        return pool_tx_count_;
-    }
-
     const std::vector<double>& coordinate() const {
         return coordinate_;
     }
