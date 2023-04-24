@@ -2,12 +2,26 @@
 
 #include "block/account_manager.h"
 #include "consensus/zbft/tx_item_base.h"
+#include "elect/elect_manager.h"
 #include "security/security.h"
 #include "vss/vss_manager.h"
 
 namespace zjchain {
 
 namespace consensus {
+
+struct ElectNodeInfo {
+    uint64_t fts_value;
+    uint64_t stoke;
+    uint64_t stoke_diff;
+    uint64_t tx_count;
+    int32_t credit;
+    int32_t area_weight;
+    std::string id;
+    uint32_t index;
+};
+
+typedef std::shared_ptr<ElectNodeInfo> NodeDetailPtr;
 
 class ElectTxItem : public TxItemBase {
 public:
@@ -31,46 +45,33 @@ public:
         block::protobuf::BlockTx& block_tx);
 
 private:
-    struct ElectNodeInfo {
-        uint64_t fts_value;
-        uint64_t stoke;
-        uint64_t stoke_diff;
-        uint64_t tx_count;
-        int32_t credit;
-        int32_t area_weight;
-        std::string id;
-        uint32_t index;
-    };
-
-    typedef std::shared_ptr<ElectNodeInfo> NodeDetailPtr;
-
     int CheckWeedout(
         uint8_t thread_idx,
         common::MembersPtr& members,
         const pools::protobuf::PoolStatisticItem& statistic_item,
         uint32_t* min_area_weight,
         uint32_t* min_tx_count,
-        std::set<uint32_t>& elect_nodes);
+        std::vector<NodeDetailPtr>& elect_nodes);
     int GetJoinElectNodesCredit(
         const pools::protobuf::ElectStatistic& elect_statistic,
         uint8_t thread_idx,
         uint32_t min_area_weight,
         uint32_t min_tx_count,
-        std::vector<std::shared_ptr<ElectNodeInfo>>& elect_nodes);
+        std::vector<NodeDetailPtr>& elect_nodes);
     void FtsGetNodes(
-        std::vector<std::shared_ptr<ElectNodeInfo>>& elect_nodes,
+        std::vector<NodeDetailPtr>& elect_nodes,
         bool weed_out,
         uint32_t count,
-        std::vector<std::shared_ptr<ElectNodeInfo>>& tmp_res_nodes);
+        std::vector<NodeDetailPtr>& tmp_res_nodes);
     void SmoothFtsValue(
-        std::vector<std::shared_ptr<ElectNodeInfo>>& elect_nodes,
+        std::vector<NodeDetailPtr>& elect_nodes,
         uint64_t* max_fts_val);
 
     inline bool ElectNodeBalanceCompare(const NodeDetailPtr& left, const NodeDetailPtr& right) {
         return left->stoke < right->stoke;
     }
 
-    inline static bool ElectNodeBalanceDiffCompare(
+    inline bool ElectNodeBalanceDiffCompare(
             const NodeDetailPtr& left,
             const NodeDetailPtr& right) {
         return left->stoke_diff < right->stoke_diff;

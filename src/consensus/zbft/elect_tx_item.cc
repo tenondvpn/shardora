@@ -267,7 +267,7 @@ void ElectTxItem::FtsGetNodes(
 }
 
 void ElectTxItem::SmoothFtsValue(
-        std::vector<std::shared_ptr<ElectNodeInfo>>& elect_nodes,
+        std::vector<NodeDetailPtr>& elect_nodes,
         uint64_t* max_fts_val) {
     std::sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceCompare);
     for (uint32_t i = 1; i < elect_nodes.size(); ++i) {
@@ -279,6 +279,7 @@ void ElectTxItem::SmoothFtsValue(
     std::sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceCompare);
     std::mt19937_64 g2(vss_mgr_->EpochRandom());
     int32_t min_balance = (std::numeric_limits<int32_t>::max)();
+    int32_t blance_diff = 0;
     std::vector<int32_t> blance_weight;
     {
         blance_weight.resize(elect_nodes.size());
@@ -310,7 +311,7 @@ void ElectTxItem::SmoothFtsValue(
         }
 
         // at least [100, 1000] for fts
-        int32_t blance_diff = max_balance - min_balance;
+        blance_diff = max_balance - min_balance;
         if (max_balance - min_balance < 1000) {
             auto old_balance_diff = max_balance - min_balance;
             max_balance = min_balance + 1000;
