@@ -86,8 +86,18 @@ int ElectTxItem::HandleTx(
 
             min_area_weight += 1;
             min_tx_count += 1;
+            uint32_t join_count = members->size() - elect_nodes.size();
+            if (members->size() < common::kEachShardMaxNodeCount) {
+                join_count += members->size() * kFtsNewElectJoinRate / 100;
+            }
+
+            if (join_count + elect_nodes.size() > common::kEachShardMaxNodeCount) {
+                join_count = common::kEachShardMaxNodeCount - elect_nodes.size();
+            }
+
             std::vector<NodeDetailPtr> join_elect_nodes;
             res = GetJoinElectNodesCredit(
+                join_count,
                 elect_statistic,
                 thread_idx,
                 min_area_weight,
@@ -97,8 +107,11 @@ int ElectTxItem::HandleTx(
                 assert(false);
                 return res;
             }
+
+            break;
         }
     }
+
     return kConsensusSuccess;
 }
 
@@ -195,6 +208,7 @@ int ElectTxItem::CheckWeedout(
 }
 
 int ElectTxItem::GetJoinElectNodesCredit(
+        uint32_t count,
         const pools::protobuf::ElectStatistic& elect_statistic,
         uint8_t thread_idx,
         uint32_t min_area_weight,
@@ -221,7 +235,7 @@ int ElectTxItem::GetJoinElectNodesCredit(
     }
 
     std::set<uint32_t> weedout_nodes;
-    FtsGetNodes(elect_nodes_to_choose, false, 10, weedout_nodes);
+    FtsGetNodes(elect_nodes_to_choose, false, count, weedout_nodes);
     for (auto iter = elect_nodes_to_choose.begin(); iter != elect_nodes_to_choose.end(); ++iter) {
         if (weedout_nodes.find((*iter)->index) != weedout_nodes.end()) {
             continue;

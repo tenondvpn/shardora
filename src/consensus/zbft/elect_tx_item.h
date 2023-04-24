@@ -53,6 +53,7 @@ private:
         uint32_t* min_tx_count,
         std::vector<NodeDetailPtr>& elect_nodes);
     int GetJoinElectNodesCredit(
+        uint32_t count,
         const pools::protobuf::ElectStatistic& elect_statistic,
         uint8_t thread_idx,
         uint32_t min_area_weight,
@@ -68,6 +69,7 @@ private:
         uint64_t* max_fts_val);
 
     static const uint32_t kFtsWeedoutDividRate = 10u;
+    static const uint32_t kFtsNewElectJoinRate = 5u;
 
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
