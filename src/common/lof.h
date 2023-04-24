@@ -17,6 +17,7 @@ namespace common {
 
 class Point {
 public:
+    Point() {}
     Point(int32_t node_count, int32_t idx, int32_t member_idx) {
         dimension_ = node_count;
         idx_ = idx;
