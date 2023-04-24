@@ -3,7 +3,6 @@
 #include "common/fts_tree.h"
 #include "common/global_info.h"
 #include "network/network_utils.h"
-#include "elect/nodes_stoke_manager.h"
 
 namespace zjchain {
 

@@ -288,7 +288,7 @@ private:
 //             try_times = 0;
 //             tmp_res_nodes.insert(data);
 //             res_nodes.insert(data);
-        }
+//         }
     }
 
     inline bool ElectNodeBalanceCompare(const NodeDetailPtr& left, const NodeDetailPtr& right) {
