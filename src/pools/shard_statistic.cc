@@ -174,8 +174,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
         auto& id = (*members)[i]->id;
         auto node_iter = statistic_info_ptr->node_tx_count_map.find(id);
         if (node_iter == statistic_info_ptr->node_tx_count_map.end()) {
-            auto item = StatisticMemberInfoItem(i, block.leader_index());
-            statistic_info_ptr->node_tx_count_map[id] = item;
+            statistic_info_ptr->node_tx_count_map[id] = { 0, i, block.leader_index() };
         }
 
         if (!final_bitmap.Valid(i)) {
