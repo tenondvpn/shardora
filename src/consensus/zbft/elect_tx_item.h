@@ -62,20 +62,10 @@ private:
         std::vector<NodeDetailPtr>& elect_nodes,
         bool weed_out,
         uint32_t count,
-        std::vector<NodeDetailPtr>& tmp_res_nodes);
+        std::vector<uint32_t>& tmp_res_nodes);
     void SmoothFtsValue(
         std::vector<NodeDetailPtr>& elect_nodes,
         uint64_t* max_fts_val);
-
-    inline bool ElectNodeBalanceCompare(const NodeDetailPtr& left, const NodeDetailPtr& right) {
-        return left->stoke < right->stoke;
-    }
-
-    inline bool ElectNodeBalanceDiffCompare(
-            const NodeDetailPtr& left,
-            const NodeDetailPtr& right) {
-        return left->stoke_diff < right->stoke_diff;
-    }
 
     static const uint32_t kFtsWeedoutDividRate = 10u;
 
