@@ -62,7 +62,7 @@ public:
                     nullptr);
                 if (members == nullptr) {
                     ZJC_WARN("get members failed, elect height: %lu, net: %u",
-                        now_elect_height, shard_netid);
+                        now_elect_height, elect_statistic.sharding_id());
                     assert(false);
                     return kConsensusError;
                 }
@@ -76,7 +76,7 @@ public:
 
                 uint32_t min_area_weight = common::kInvalidUint32;
                 uint32_t min_tx_count = common::kInvalidUint32;
-                int res = CheckWeedout(members, *statistic, &min_area_weight, &min_tx_count);
+                int res = CheckWeedout(thread_idx, members, *statistic, &min_area_weight, &min_tx_count);
                 if (res != kConsensusSuccess) {
                     return res;
                 }
@@ -106,6 +106,7 @@ private:
     typedef std::shared_ptr<ElectNodeInfo> NodeDetailPtr;
 
     int CheckWeedout(
+            uint8_t thread_idx,
             common::MembersPtr& members,
             const pools::protobuf::PoolStatisticItem& statistic_item,
             uint32_t* min_area_weight,
@@ -223,7 +224,6 @@ private:
             uint8_t thread_idx,
             uint32_t min_area_weight,
             uint32_t min_tx_count) {
-        credit.resize(elect_statistic.join_elect_nodes_size());
         for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
             auto account_info = account_mgr_->GetAccountInfo(
                 thread_idx,
@@ -234,7 +234,7 @@ private:
             }
 
             auto node_info = std::make_shared<ElectNodeInfo>();
-            node_info->area_weight = min_dis;
+            node_info->area_weight = min_area_weight;
             node_info->stoke = elect_statistic.join_elect_nodes(i).stoke();
             node_info->tx_count = min_tx_count;
             node_info->credit = account_info->credit();
