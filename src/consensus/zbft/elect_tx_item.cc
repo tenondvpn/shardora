@@ -4,6 +4,17 @@ namespace zjchain {
 
 namespace consensus {
 
+inline bool ElectNodeBalanceCompare(const NodeDetailPtr& left, const NodeDetailPtr& right) {
+    return left->stoke < right->stoke;
+}
+
+inline bool ElectNodeBalanceDiffCompare(
+    const NodeDetailPtr& left,
+    const NodeDetailPtr& right) {
+    return left->stoke_diff < right->stoke_diff;
+}
+
+
 int ElectTxItem::HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
@@ -208,7 +219,7 @@ int ElectTxItem::GetJoinElectNodesCredit(
     }
 
     std::set<uint32_t> weedout_nodes;
-    FtsGetNodes(elect_nodes_to_choose, true, weed_out_count - invalid_nodes.size(), weedout_nodes);
+    FtsGetNodes(elect_nodes_to_choose, false, 10, weedout_nodes);
     for (auto iter = elect_nodes_to_choose.begin(); iter != elect_nodes_to_choose.end(); ++iter) {
         if (weedout_nodes.find((*iter)->index) != weedout_nodes.end()) {
             continue;
