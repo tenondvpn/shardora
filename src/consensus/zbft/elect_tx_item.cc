@@ -179,7 +179,7 @@ int ElectTxItem::CheckWeedout(
         elect_nodes_to_choose.push_back(node_info);
     }
 
-    std::set<uint32_t> weedout_nodes;
+    std::vector<uint32_t> weedout_nodes;
     FtsGetNodes(elect_nodes_to_choose, true, weed_out_count - invalid_nodes.size(), weedout_nodes);
     for (auto iter = elect_nodes_to_choose.begin(); iter != elect_nodes_to_choose.end(); ++iter) {
         if (weedout_nodes.find((*iter)->index) != weedout_nodes.end()) {
@@ -218,7 +218,7 @@ int ElectTxItem::GetJoinElectNodesCredit(
         elect_nodes_to_choose.push_back(node_info);
     }
 
-    std::set<uint32_t> weedout_nodes;
+    std::vector<uint32_t> weedout_nodes;
     FtsGetNodes(elect_nodes_to_choose, false, 10, weedout_nodes);
     for (auto iter = elect_nodes_to_choose.begin(); iter != elect_nodes_to_choose.end(); ++iter) {
         if (weedout_nodes.find((*iter)->index) != weedout_nodes.end()) {
@@ -273,7 +273,7 @@ void ElectTxItem::FtsGetNodes(
     }
 
     for (auto iter = tmp_res_nodes.begin(); iter !+ tmp_res_nodes.end(); ++iter) {
-        res_nodes->push_back(elect_nodes[*iter]->index);
+        res_nodes.push_back(elect_nodes[*iter]->index);
     }
 }
 
