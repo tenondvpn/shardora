@@ -265,7 +265,10 @@ int GenesisBlockInit::CreateElectBlock(
     ec_block.set_elect_height(tenon_block->height());
     auto storage = tx_info->add_storages();
     storage->set_key(protos::kElectNodeAttrElectBlock);
-    storage->set_val_hash(ec_block.SerializeAsString());
+    std::string val = ec_block.SerializeAsString();
+    std::string val_hash = common::Hash::keccak256(val);
+    storage.set_val_hash(val_hash);
+    prefix_db_->SaveTemporaryKv(val_hash, val);
     tenon_block->set_prehash(root_pre_hash);
     tenon_block->set_version(common::kTransactionVersion);
     tenon_block->set_pool_index(common::kRootChainPoolIndex);
