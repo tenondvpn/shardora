@@ -63,7 +63,6 @@ void BlsManager::TimerMessage(const transport::MessagePtr& msg_ptr) {
 void BlsManager::OnNewElectBlock(
         uint32_t sharding_id,
         uint64_t elect_height,
-        common::MembersPtr& members,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
     auto iter = finish_networks_map_.find(sharding_id);
     if (iter != finish_networks_map_.end()) {
@@ -79,6 +78,18 @@ void BlsManager::OnNewElectBlock(
 
     auto elect_item = std::make_shared<ElectItem>();
     elect_item->height = elect_height;
+    auto members = std::make_shared<common::Members>();
+    auto& in = elect_block->in();
+    for (int32_t i = 0; i < in.size(); ++i) {
+        auto id = security_->GetAddress(in[i].pubkey());
+        members->push_back(std::make_shared<common::BftMember>(
+            elect_block.shard_network_id(),
+            id,
+            in[i].pubkey(),
+            member_index++,
+            in[i].pool_idx_mod_num()));
+    }
+
     elect_item->members = members;
     elect_members_[sharding_id] = elect_item;
     if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
