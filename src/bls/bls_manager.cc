@@ -405,7 +405,11 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
     auto max_iter = finish_item->max_bls_members.find(cpk_hash);
     if (max_iter != finish_item->max_bls_members.end()) {
         ++max_iter->second->count;
-        ZJC_DEBUG("handle finish success count: %d.", max_iter->second->count);
+        ZJC_DEBUG("handle finish success count: %d sharding: %u, member index: %u, cpk_hash: %s.",
+            max_iter->second->count,
+            bls_msg.finish_req().network_id(),
+            bls_msg.index(),
+            common::Encode::HexEncode(cpk_hash).c_str());
         if (max_iter->second->count > finish_item->max_finish_count) {
             finish_item->max_finish_count = max_iter->second->count;
             finish_item->max_finish_hash = cpk_hash;
