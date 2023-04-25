@@ -250,6 +250,11 @@ int ElectTxItem::CheckWeedout(
         elect_nodes_to_choose.push_back(node_info);
     }
 
+    if (elect_nodes_to_choose.empty()) {
+        ZJC_WARN("elect sharding nodes empty.");
+        return kConsensusError;
+    }
+
     std::set<uint32_t> weedout_nodes;
     FtsGetNodes(elect_nodes_to_choose, true, weed_out_count - invalid_nodes.size(), weedout_nodes);
     for (auto iter = elect_nodes_to_choose.begin(); iter != elect_nodes_to_choose.end(); ++iter) {
@@ -288,6 +293,10 @@ int ElectTxItem::GetJoinElectNodesCredit(
         node_info->pubkey = account_info->pubkey();
         node_info->index = i;
         elect_nodes_to_choose.push_back(node_info);
+    }
+
+    if (elect_nodes_to_choose.empty()) {
+        return kConsensusSuccess;
     }
 
     std::set<uint32_t> weedout_nodes;
