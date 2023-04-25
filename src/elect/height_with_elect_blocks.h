@@ -15,6 +15,7 @@
 #include "elect/elect_utils.h"
 #include "network/network_utils.h"
 #include "protos/elect.pb.h"
+#include "protos/get_proto_hash.h"
 #include "protos/prefix_db.h"
 #include "security/security.h"
 
