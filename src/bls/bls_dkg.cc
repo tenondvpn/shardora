@@ -755,7 +755,7 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
         min_aggree_member_count_, member_count_,
         common::Encode::HexEncode(sign_hash).c_str(), pk.c_str());
     network::Route::Instance()->Send(msg_ptr);
-    bls_mgr_->HandleFinish(msg_ptr);
+    bls_mgr_->HandleMessage(msg_ptr);
 #endif
 }
 

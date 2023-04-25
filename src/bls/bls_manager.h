@@ -64,9 +64,9 @@ public:
         std::string* verify_hash);
     static int GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g1_hash);
     int AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block);
+    void HandleMessage(const transport::MessagePtr& msg_ptr);
 
 private:
-    void HandleMessage(const transport::MessagePtr& msg_ptr);
     void HandleFinish(const transport::MessagePtr& msg_ptr);
     void CheckAggSignValid(
         uint32_t t,
