@@ -324,7 +324,7 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
             in[i].pubkey(),
             member_index,
             in[i].public_ip(),
-            -1));
+            in[i].pool_idx_mod_num()));
         if (in[i].pool_idx_mod_num() >= 0) {
             ++leader_count;
         }
