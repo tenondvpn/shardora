@@ -165,8 +165,8 @@ void BftManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& membe
         elect_item.thread_set[i] = nullptr;
     }
 
-    ZJC_INFO("new elect block local leader index: %d, leader_count: %d, thread_count_: %d",
-        elect_item.local_node_pool_mod_num, elect_item.leader_count, thread_count_);
+    ZJC_INFO("new elect block local leader index: %d, leader_count: %d, thread_count_: %d, elect height: %lu",
+        elect_item.local_node_pool_mod_num, elect_item.leader_count, thread_count_, elect_item.elect_height);
     if (elect_item.local_node_pool_mod_num < 0 ||
             elect_item.local_node_pool_mod_num >= elect_item.leader_count) {
         elect_item_idx_ = (elect_item_idx_ + 1) % 2;
