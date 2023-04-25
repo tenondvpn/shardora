@@ -242,7 +242,7 @@ void GetProtoHash(const transport::protobuf::Header& msg, std::string* msg_for_h
     }
 }
 
-void GetElectBlockHash(const elect::protobuf::ElectBlock& elect_block, std::string* hash) {
+std::string GetElectBlockHash(const elect::protobuf::ElectBlock& elect_block) {
     std::string string_for_hash;
     string_for_hash.reserve(1024 * 1024);
     for (int32_t i = 0; i < elect_block.in_size(); ++i) {
@@ -273,7 +273,7 @@ void GetElectBlockHash(const elect::protobuf::ElectBlock& elect_block, std::stri
     string_for_hash.append((char*)&shard_network_id, sizeof(shard_network_id));
     uint64_t elect_height = elect_block.elect_height();
     string_for_hash.append((char*)&elect_height, sizeof(elect_height));
-    *hash = common::Hash::keccak256(string_for_hash);
+    return common::Hash::keccak256(string_for_hash);
 }
 
 };  // namespace protos

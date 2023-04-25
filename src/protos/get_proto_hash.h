@@ -7,7 +7,7 @@ namespace zjchain {
 namespace protos {
 
 void GetProtoHash(const transport::protobuf::Header& msg, std::string* msg_for_hash);
-void GetElectBlockHash(const elect::protobuf::ElectBlock& msg, std::string* msg_for_hash);
+std::string GetElectBlockHash(const elect::protobuf::ElectBlock& msg);
 
 };  // namespace protos
 
