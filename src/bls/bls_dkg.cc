@@ -672,6 +672,7 @@ void BlsDkg::FinishNoLock(uint8_t thread_idx) try {
     DumpLocalPrivateKey();
     BroadcastFinish(thread_idx, bitmap);
     finished_ = true;
+    ZJC_DEBUG("success finish local member: %d", local_member_index_);
 } catch (std::exception& e) {
     local_sec_key_ = libff::alt_bn128_Fr::zero();
     BLS_ERROR("catch error: %s", e.what());
