@@ -265,7 +265,7 @@ int GenesisBlockInit::CreateElectBlock(
     auto storage = tx_info->add_storages();
     storage->set_key(protos::kElectNodeAttrElectBlock);
     std::string val = ec_block.SerializeAsString();
-    std::string val_hash = common::Hash::keccak256(val);
+    std::string val_hash = protos::GetElectBlockHash(ec_block);
     storage->set_val_hash(val_hash);
     prefix_db_->SaveTemporaryKv(val_hash, val);
     tenon_block->set_prehash(root_pre_hash);
@@ -280,8 +280,9 @@ int GenesisBlockInit::CreateElectBlock(
     tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
     db::DbWriteBatch db_batch;
     prefix_db_->SaveLatestElectBlock(ec_block, db_batch);
-    fputs((common::Encode::HexEncode(tenon_block->SerializeAsString()) + "\n").c_str(),
-        root_gens_init_block_file);
+    std::string ec_val = common::Encode::HexEncode(tenon_block->SerializeAsString()) +
+        "-" + common::Encode::HexEncode(ec_block.SerializeAsString()) + "\n";
+    fputs(ec_val.c_str(), root_gens_init_block_file);
     AddBlockItemToCache(tenon_block, db_batch);
     db_->Put(db_batch);
     block_mgr_->NetworkNewBlock(0, tenon_block);
@@ -550,7 +551,10 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
     while (fgets(data, 20480, root_gens_init_block_file) != nullptr) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         std::string tmp_data(data, strlen(data) - 1);
-        if (!tenon_block->ParseFromString(common::Encode::HexDecode(tmp_data))) {
+        common::Split<> tmp_split(tmp_data.c_str(), '-', tmp_data.size());
+        std::string block_str = tmp_split[0];
+        std::string ec_block_str = tmp_split[1];
+        if (!tenon_block->ParseFromString(common::Encode::HexDecode(block_str))) {
             assert(false);
             return kInitError;
         }
@@ -560,17 +564,13 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
         for (int32_t i = 0; i < tenon_block->tx_list_size(); ++i) {
             for (int32_t j = 0; j < tenon_block->tx_list(i).storages_size(); ++j) {
                 if (tenon_block->tx_list(i).storages(j).key() == protos::kElectNodeAttrElectBlock) {
-                    std::string val;
-                    if (!prefix_db_->GetTemporaryKv(tenon_block->tx_list(i).storages(j).val_hash(), &val)) {
-                        ZJC_FATAL("elect block get temp kv from db failed!");
-                        return kInitError;
-                    }
-
                     elect::protobuf::ElectBlock ec_block;
-                    if (!ec_block.ParseFromString(val)) {
+                    if (!ec_block.ParseFromString(ec_block_str)) {
                         assert(false);
                     }
 
+                    std::string val_hash = protos::GetElectBlockHash(ec_block);
+                    prefix_db_->SaveTemporaryKv(val_hash, ec_block_str);
                     prefix_db_->SaveLatestElectBlock(ec_block, db_batch);
                 }
 

@@ -164,7 +164,7 @@ int ElectTxItem::CreateNewElect(
     elect_block.set_shard_network_id(elect_statistic.sharding_id());
     elect_block.set_elect_height(block.height());
     std::string val = elect_block.SerializeAsString();
-    std::string val_hash = common::Hash::keccak256(val);
+    std::string val_hash = protos::GetElectBlockHash(elect_block);
     storage.set_val_hash(val_hash);
     prefix_db_->SaveTemporaryKv(val_hash, val);
     ZJC_DEBUG("create elect success: %u", elect_statistic.sharding_id());

@@ -242,8 +242,38 @@ void GetProtoHash(const transport::protobuf::Header& msg, std::string* msg_for_h
     }
 }
 
-void GetElectBlockHash(const elect::protobuf::ElectBlock& msg, std::string* msg_for_hash) {
+void GetElectBlockHash(const elect::protobuf::ElectBlock& elect_block, std::string* hash) {
+    std::string string_for_hash;
+    string_for_hash.reserve(1024 * 1024);
+    for (int32_t i = 0; i < elect_block.in_size(); ++i) {
+        string_for_hash.append(elect_block.in(i).pubkey());
+        uint32_t mod_num = elect_block.in(i).pool_idx_mod_num();
+        string_for_hash.append((char*)&mod_num, sizeof(mod_num));
+    }
 
+    if (elect_block.has_prev_members()) {
+        for (int32_t i = 0; i < elect_block.prev_members().bls_pubkey_size(); ++i) {
+            auto& pk = elect_block.prev_members().bls_pubkey(i);
+            string_for_hash.append(pk.x_c0());
+            string_for_hash.append(pk.x_c1());
+            string_for_hash.append(pk.y_c0());
+            string_for_hash.append(pk.y_c1());
+        }
+
+        auto& pk = elect_block.prev_members().common_pubkey(i);
+        string_for_hash.append(pk.x_c0());
+        string_for_hash.append(pk.x_c1());
+        string_for_hash.append(pk.y_c0());
+        string_for_hash.append(pk.y_c1());
+        uint64_t prev_elect_height = elect_block.prev_members().prev_elect_height();
+        string_for_hash.append((char*)&prev_elect_height, sizeof(prev_elect_height));
+    }
+
+    uint64_t shard_network_id = elect_block.shard_network_id();
+    string_for_hash.append((char*)&shard_network_id, sizeof(shard_network_id));
+    uint64_t elect_height = elect_block.elect_height();
+    string_for_hash.append((char*)&elect_height, sizeof(elect_height));
+    *hash = common::Hash::keccak256(msg_for_hash);
 }
 
 };  // namespace protos

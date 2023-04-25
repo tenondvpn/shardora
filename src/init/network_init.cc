@@ -938,6 +938,12 @@ void NetworkInit::HandleElectionBlock(
                 return;
             }
 
+            std::string hash = protos::GetElectBlockHash(elect_block);
+            if (hash != block->tx_list(0).storages(i).val_hash()) {
+                ZJC_FATAL("parse elect block failed!");
+                return;
+            }
+
             break;
         }
     }
