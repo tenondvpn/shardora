@@ -47,6 +47,7 @@ int ElectTxItem::HandleTx(
             }
 
             if (statistic == nullptr) {
+                assert(false);
                 return kConsensusError;
             }
 
@@ -108,11 +109,13 @@ int ElectTxItem::HandleTx(
             }
 
             CreateNewElect(thread_idx, block, elect_nodes, elect_statistic, db_batch, block_tx);
-            break;
+            ZJC_DEBUG("consensus elect tx success.");
+            return kConsensusSuccess;
         }
     }
 
-    return kConsensusSuccess;
+    ZJC_DEBUG("consensus elect tx error.");
+    return kConsensusError;
 }
 
 int ElectTxItem::CreateNewElect(
