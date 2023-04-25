@@ -114,7 +114,7 @@ void BlsDkg::OnNewElectionBlock(
         finish_offset_ = ver_offset_ + kDkgPeriodUs * 7;
     }
 
-    ver_offset_ += rand() % kDkgPeriodUs;
+    ver_offset_ += rand() % kDkgPeriodUs + kDkgPeriodUs * 2;
     swap_offset_ += rand() % kDkgPeriodUs;
     finish_offset_ += rand() % kDkgPeriodUs;
     has_broadcast_verify_ = false;
@@ -150,7 +150,7 @@ void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-    if (bls_msg.elect_height() == 0 || bls_msg.elect_height() < elect_hegiht_) {
+    if (bls_msg.elect_height() == 0 || bls_msg.elect_height() != elect_hegiht_) {
         BLS_ERROR("bls_msg.elect_height() != elect_height: %lu, %lu",
             bls_msg.elect_height(), elect_hegiht_);
         return;
