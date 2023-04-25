@@ -108,11 +108,25 @@ int ElectTxItem::HandleTx(
                 return res;
             }
 
+            CreateNewElect(elect_nodes, join_elect_nodes, block_tx);
             break;
         }
     }
 
     return kConsensusSuccess;
+}
+
+void ElectTxItem::CreateNewElect(
+        const std::vector<NodeDetailPtr>& elect_nodes,
+        const std::vector<NodeDetailPtr>& new_elect_nodes,
+        block::protobuf::BlockTx& block_tx) {
+    auto& storage = *block_tx.add_storages();
+    storage.set_key(protos::kElectNodeAttrElectBlock);
+    elect::protobuf::ElectBlock elect_block;
+    std::string val = elect_block.SerializeAsString();
+    std::string val_hash = common::Hash::keccak256(val);
+    storage.set_val_hash(val_hash);
+    prefix_db_->SaveTemporaryKv(val_hash, val);
 }
 
 int ElectTxItem::CheckWeedout(

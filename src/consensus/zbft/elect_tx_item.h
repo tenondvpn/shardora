@@ -67,6 +67,10 @@ private:
     void SmoothFtsValue(
         std::vector<NodeDetailPtr>& elect_nodes,
         uint64_t* max_fts_val);
+    void CreateNewElect(
+        const std::vector<NodeDetailPtr>& elect_nodes,
+        const std::vector<NodeDetailPtr>& new_elect_nodes,
+        block::protobuf::BlockTx& block_tx);
 
     static const uint32_t kFtsWeedoutDividRate = 10u;
     static const uint32_t kFtsNewElectJoinRate = 5u;
