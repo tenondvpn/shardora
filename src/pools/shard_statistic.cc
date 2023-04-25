@@ -205,8 +205,8 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
     }
 
     node_height_count_map_[block.pool_index()][block.height()] = statistic_info_ptr;
-    ZJC_DEBUG("success add statistic block: net; %u, pool: %u, height: %lu",
-        block.network_id(), block.pool_index(), block.height());
+    ZJC_DEBUG("success add statistic block: net; %u, pool: %u, height: %lu, elect height: %lu",
+        block.network_id(), block.pool_index(), block.height(), block.electblock_height());
 }
 
 int ShardStatistic::LeaderCreateStatisticHeights(pools::protobuf::ToTxHeights& to_heights) {
