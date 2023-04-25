@@ -19,6 +19,7 @@
 #include "network/universal_manager.h"
 #include "network/bootstrap.h"
 #include "network/route.h"
+#include "protos/get_proto_hash.h"
 #include "protos/prefix_db.h"
 #include "security/ecdsa/ecdsa.h"
 #include "timeblock/time_block_manager.h"
