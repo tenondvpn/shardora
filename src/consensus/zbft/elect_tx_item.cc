@@ -43,6 +43,10 @@ int ElectTxItem::HandleTx(
             uint64_t now_elect_height = elect_mgr_->latest_height(elect_statistic.sharding_id());
             const pools::protobuf::PoolStatisticItem* statistic = nullptr;
             for (int32_t i = 0; i < elect_statistic.statistics_size(); ++i) {
+                ZJC_DEBUG("sharding: %u, get statistic elect height: %lu, now_elect_height: %lu",
+                    elect_statistic.sharding_id(),
+                    elect_statistic.statistics(i).elect_height(),
+                    now_elect_height);
                 if (elect_statistic.statistics(i).elect_height() == now_elect_height) {
                     statistic = &elect_statistic.statistics(i);
                     break;
