@@ -935,6 +935,13 @@ void NetworkInit::HandleElectionBlock(
         }
     }
 
+    if (!elect_block->has_shard_network_id() ||
+            elect_block.shard_network_id() >= network::kConsensusShardEndNetworkId ||
+            elect_block.shard_network_id() < network::kRootCongressNetworkId) {
+        ZJC_FATAL("parse elect block failed!");
+        return;
+    }
+
     auto members = elect_mgr_->OnNewElectBlock(thread_idx, block->height(), elect_block, db_batch);
     if (members == nullptr) {
         ZJC_FATAL("elect manager handle elect block failed!");
