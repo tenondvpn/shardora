@@ -167,7 +167,7 @@ int ElectTxItem::CreateNewElect(
     std::string val_hash = common::Hash::keccak256(val);
     storage.set_val_hash(val_hash);
     prefix_db_->SaveTemporaryKv(val_hash, val);
-    ZJC_DEBUG("create elect success: %s", elect_statistic.sharding_id());
+    ZJC_DEBUG("create elect success: %u", elect_statistic.sharding_id());
     return kConsensusSuccess;
 }
 
