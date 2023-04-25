@@ -258,6 +258,7 @@ int BlsManager::GetVerifyHash(
 }
 
 void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    ZJC_DEBUG("bls message coming msg hash: %lu", msg_ptr->header.hash64());
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
     if (bls_msg.has_finish_req()) {

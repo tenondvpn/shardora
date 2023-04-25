@@ -48,6 +48,7 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->thread_idx = thread_idx_;
             auto btime = common::TimeUtils::TimestampUs();
             Processor::Instance()->HandleMessage(msg_ptr);
+            ZJC_DEBUG("message handled msg hash: %lu", msg_ptr->header.hash64());
             auto etime = common::TimeUtils::TimestampUs();
             if (etime - btime >= 100000lu) {
                 std::string t;
