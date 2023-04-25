@@ -130,10 +130,16 @@ void RootZbft::RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_bl
     auto tx_list = zjc_block.mutable_tx_list();
     auto& tx = *tx_list->Add();
     iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), db_batch_, &tx);
-    // use new node status
-    if (elect_mgr_->GetElectionTxInfo(tx) != elect::kElectSuccess) {
+    int do_tx_res = iter->second->HandleTx(
+        txs_ptr_->thread_index,
+        zjc_block,
+        db_batch_,
+        acc_balance_map,
+        tx);
+    if (do_tx_res != kConsensusSuccess) {
+        tx_list->RemoveLast();
         assert(false);
-        tx_list->RemoveLast();  
+        ZJC_WARN("consensus elect tx failed!");
         return;
     }
 

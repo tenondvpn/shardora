@@ -16,7 +16,6 @@ inline bool ElectNodeBalanceDiffCompare(
     return left->stoke_diff < right->stoke_diff;
 }
 
-
 int ElectTxItem::HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
