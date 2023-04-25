@@ -766,7 +766,6 @@ int BlsManager::AddBlsConsensusInfo(
             libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c0));
         mem_bls_pk->set_y_c1(
             libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c1));
-        mem_bls_pk->set_pool_idx_mod_num(-1);
         bitmap->Set(i);
     }
 
