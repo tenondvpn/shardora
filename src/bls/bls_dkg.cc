@@ -204,10 +204,10 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-    if (prefix_db_->ExistsBlsVerifyG2((*members_)[bls_msg.index()]->id)) {
-        assert(false);
-        return;
-    }
+//     if (prefix_db_->ExistsBlsVerifyG2((*members_)[bls_msg.index()]->id)) {
+//         assert(false);
+//         return;
+//     }
 
     if (!IsVerifyBrdPeriod()) {
         assert(false);
