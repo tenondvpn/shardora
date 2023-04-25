@@ -281,7 +281,7 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
             std::string val;
             if (!prefix_db_->GetTemporaryKv(block_item.tx_list(0).storages(i).val_hash(), &val)) {
                 ZJC_FATAL("elect block get temp kv from db failed!");
-                return;
+                return false;
             }
 
             prev_elect_block.ParseFromString(val);
