@@ -252,7 +252,7 @@ public:
                 id,
                 in[i].pubkey(),
                 member_index++,
-                in[i].public_ip(),
+                "",
                 in[i].pool_idx_mod_num()));
         }
 
