@@ -23,7 +23,7 @@ ElectPoolManager::ElectPoolManager(
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<bls::BlsManager>& bls_mgr)
-        : vss_mgr_(vss_mgr), db_(db), node_credit_(db), elect_mgr_(elect_mgr),
+        : vss_mgr_(vss_mgr), db_(db), elect_mgr_(elect_mgr),
         security_ptr_(security_ptr),
         bls_mgr_(bls_mgr) {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
@@ -39,7 +39,6 @@ void ElectPoolManager::OnNewElectBlock(
     }
 
     latest_elect_height_ = height;
-    node_credit_.OnNewElectBlock(security_ptr_, height, elect_block);
 }
 
 int ElectPoolManager::GetElectionTxInfo(block::protobuf::BlockTx& tx_info) {

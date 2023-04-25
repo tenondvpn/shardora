@@ -6,7 +6,6 @@
 #include "common/bitmap.h"
 #include "common/tick.h"
 #include "elect/elect_pool.h"
-#include "elect/node_history_credit.h"
 #include "protos/block.pb.h"
 #include "protos/elect.pb.h"
 #include "protos/pools.pb.h"
@@ -91,7 +90,6 @@ private:
         elect::protobuf::ElectBlock* ec_block);
 
     std::shared_ptr<db::Db> db_ = nullptr;
-    NodeHistoryCredit node_credit_;
     ElectManager* elect_mgr_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
