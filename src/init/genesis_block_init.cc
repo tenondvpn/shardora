@@ -267,7 +267,7 @@ int GenesisBlockInit::CreateElectBlock(
     storage->set_key(protos::kElectNodeAttrElectBlock);
     std::string val = ec_block.SerializeAsString();
     std::string val_hash = common::Hash::keccak256(val);
-    storage.set_val_hash(val_hash);
+    storage->set_val_hash(val_hash);
     prefix_db_->SaveTemporaryKv(val_hash, val);
     tenon_block->set_prehash(root_pre_hash);
     tenon_block->set_version(common::kTransactionVersion);
