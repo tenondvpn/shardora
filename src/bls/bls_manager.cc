@@ -86,7 +86,7 @@ void BlsManager::OnNewElectBlock(
             elect_block->shard_network_id(),
             id,
             in[i].pubkey(),
-            member_index++,
+            i,
             in[i].pool_idx_mod_num()));
     }
 
