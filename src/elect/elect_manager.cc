@@ -163,9 +163,9 @@ common::MembersPtr ElectManager::OnNewElectBlock(
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block_ptr,
         db::DbWriteBatch& db_batch) {
     auto& elect_block = *elect_block_ptr;
-    std::lock_guard<std::mutex> guard(elect_members_mutex_);
     if (elect_block.shard_network_id() >= network::kConsensusShardEndNetworkId ||
             elect_block.shard_network_id() < network::kRootCongressNetworkId) {
+        ZJC_DEBUG("elect block sharding id invalid: %u", elect_block.shard_network_id());
         return nullptr;
     }
 
