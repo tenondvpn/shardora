@@ -242,6 +242,10 @@ void GetProtoHash(const transport::protobuf::Header& msg, std::string* msg_for_h
     }
 }
 
+void GetElectBlockHash(const elect::protobuf::ElectBlock& msg, std::string* msg_for_hash) {
+
+}
+
 };  // namespace protos
 
 };  // namespace zjchain

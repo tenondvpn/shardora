@@ -561,8 +561,14 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
         for (int32_t i = 0; i < tenon_block->tx_list_size(); ++i) {
             for (int32_t j = 0; j < tenon_block->tx_list(i).storages_size(); ++j) {
                 if (tenon_block->tx_list(i).storages(j).key() == protos::kElectNodeAttrElectBlock) {
+                    std::string val;
+                    if (!prefix_db_->GetTemporaryKv(tenon_block->tx_list(i).storages(j).val_hash(), &val)) {
+                        ZJC_FATAL("elect block get temp kv from db failed!");
+                        return;
+                    }
+
                     elect::protobuf::ElectBlock ec_block;
-                    if (!ec_block.ParseFromString(tenon_block->tx_list(i).storages(j).val_hash())) {
+                    if (!ec_block.ParseFromString(val)) {
                         assert(false);
                     }
 
