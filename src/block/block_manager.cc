@@ -647,7 +647,7 @@ void BlockManager::HandleStatisticBlock(
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
     tx->set_gid(gid);
     auto shard_elect_tx = std::make_shared<ToTxsItem>();
-    new_msg_ptr->address_info = account_mgr_->GetStatisticAddressInfo(0);
+    new_msg_ptr->address_info = account_mgr_->GetStatisticAddressInfo(common::kRootChainPoolIndex);
     shard_elect_tx->tx_ptr = create_elect_tx_cb_(new_msg_ptr);
     shard_elect_tx->tx_ptr->time_valid += 3000000lu;
     shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + 20000lu;

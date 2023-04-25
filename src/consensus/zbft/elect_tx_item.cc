@@ -24,15 +24,18 @@ int ElectTxItem::HandleTx(
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-        if (block_tx.storages(i).key() == protos::kShardStatistic) {
+        if (block_tx.storages(i).key() == protos::kShardElection) {
+            uint64_t* tmp = (uint64_t*)block_tx.storages(i).val_hash().c_str();
+            tmp[0] = block.network_id();
+            tmp[1] = block.timeblock_height();
             pools::protobuf::ElectStatistic elect_statistic;
-            std::string val;
-            if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
-                assert(false);
-                return kConsensusError;
-            }
-
-            if (!elect_statistic.ParseFromString(val)) {
+            if (!prefix_db_->GetStatisticedShardingHeight(
+                    tmp[0],
+                    tmp[1],
+                    elect_statistic)) {
+                ZJC_WARN("get statistic elect statistic failed! net: %u, height: %lu",
+                    tmp[0],
+                    tmp[1]);
                 assert(false);
                 return kConsensusError;
             }
