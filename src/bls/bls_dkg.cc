@@ -150,7 +150,7 @@ void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-    if (bls_msg.elect_height() == 0 || bls_msg.elect_height() != elect_hegiht_) {
+    if (bls_msg.elect_height() == 0 || bls_msg.elect_height() < elect_hegiht_) {
         BLS_ERROR("bls_msg.elect_height() != elect_height: %lu, %lu",
             bls_msg.elect_height(), elect_hegiht_);
         return;
