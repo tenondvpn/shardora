@@ -398,8 +398,10 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
             bls_msg.elect_height());
     }
 
-    ZJC_DEBUG("handle finish success. sharding: %u, member index: %u",
-        bls_msg.finish_req().network_id(), bls_msg.index());
+    ZJC_DEBUG("handle finish success. sharding: %u, member index: %u, cpk_hash: %s",
+        bls_msg.finish_req().network_id(),
+        bls_msg.index(),
+        common::Encode::HexEncode(cpk_hash).c_str());
     auto max_iter = finish_item->max_bls_members.find(cpk_hash);
     if (max_iter != finish_item->max_bls_members.end()) {
         ++max_iter->second->count;
