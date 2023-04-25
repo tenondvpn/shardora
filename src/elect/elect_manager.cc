@@ -323,13 +323,12 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
             id,
             in[i].pubkey(),
             member_index,
-            in[i].public_ip(),
             in[i].pool_idx_mod_num()));
         if (in[i].pool_idx_mod_num() >= 0) {
             ++leader_count;
         }
 
-        AddNewNodeWithIdAndIp(prev_elect_block.shard_network_id(), id, in[i].public_ip());
+        AddNewNodeWithIdAndIp(prev_elect_block.shard_network_id(), id);
         (*shard_members_index_ptr)[id] = member_index;
         ++member_index;
     }
@@ -468,7 +467,7 @@ void ElectManager::ProcessNewElectBlock(
             member_index,
             in[i].public_ip(),
             in[i].pool_idx_mod_num()));
-        AddNewNodeWithIdAndIp(elect_block.shard_network_id(), id, in[i].public_ip());
+        AddNewNodeWithIdAndIp(elect_block.shard_network_id(), id);
         if (id == security_->GetAddress()) {
             *elected = true;
             local_waiting_node_member_index_ = i;
@@ -748,17 +747,9 @@ void ElectManager::ClearExistsNetwork(uint32_t network_id) {
 
 void ElectManager::AddNewNodeWithIdAndIp(
         uint32_t network_id,
-        const std::string& id,
-        uint32_t ip) {
-    {
-        std::lock_guard<std::mutex> guard(added_net_id_set_mutex_);
-        added_net_id_set_[network_id].insert(id);
-    }
-
-    {
-        std::lock_guard<std::mutex> guard(added_net_ip_set_mutex_);
-        added_net_ip_set_[network_id].insert(ip);
-    }
+        const std::string& id) {
+    std::lock_guard<std::mutex> guard(added_net_id_set_mutex_);
+    added_net_id_set_[network_id].insert(id);
 }
 
 }  // namespace elect

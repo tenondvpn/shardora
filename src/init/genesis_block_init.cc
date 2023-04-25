@@ -231,7 +231,6 @@ int GenesisBlockInit::CreateElectBlock(
     int32_t node_idx = 0;
     for (auto iter = genesis_nodes.begin(); iter != genesis_nodes.end(); ++iter) {
         auto in = ec_block.add_in();
-        in->set_public_ip(common::IpToUint32("127.0.0.1"));
         in->set_pubkey((*iter)->pubkey_str);
         in->set_pool_idx_mod_num(node_idx < expect_leader_count ? node_idx : -1);
         ++node_idx;
@@ -564,7 +563,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
                     std::string val;
                     if (!prefix_db_->GetTemporaryKv(tenon_block->tx_list(i).storages(j).val_hash(), &val)) {
                         ZJC_FATAL("elect block get temp kv from db failed!");
-                        return;
+                        return kInitError;
                     }
 
                     elect::protobuf::ElectBlock ec_block;
