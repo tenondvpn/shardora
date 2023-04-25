@@ -553,8 +553,13 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         std::string tmp_data(data, strlen(data) - 1);
         common::Split<> tmp_split(tmp_data.c_str(), '-', tmp_data.size());
-        std::string block_str = tmp_split[0];
-        std::string ec_block_str = tmp_split[1];
+        std::string block_str = tmp_data;
+        std::string ec_block_str;
+        if (tmp_split.Count() == 2) {
+            block_str = tmp_split[0];
+            ec_block_str = common::Encode::HexDecode(tmp_split[1]);
+        }
+
         if (!tenon_block->ParseFromString(common::Encode::HexDecode(block_str))) {
             assert(false);
             return kInitError;
