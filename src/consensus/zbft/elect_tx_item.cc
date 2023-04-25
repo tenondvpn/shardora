@@ -131,9 +131,6 @@ int ElectTxItem::CreateNewElect(
     auto& storage = *block_tx.add_storages();
     storage.set_key(protos::kElectNodeAttrElectBlock);
     elect::protobuf::ElectBlock elect_block;
-    if (bls_mgr_->AddBlsConsensusInfo(elect_block) != bls::kBlsSuccess) {
-        ZJC_WARN("add prev elect bls consensus info failed!");
-    }
 
     int32_t expect_leader_count = (int32_t)pow(
         2.0,
@@ -164,6 +161,10 @@ int ElectTxItem::CreateNewElect(
 
     elect_block.set_shard_network_id(elect_statistic.sharding_id());
     elect_block.set_elect_height(block.height());
+    if (bls_mgr_->AddBlsConsensusInfo(elect_block) != bls::kBlsSuccess) {
+        ZJC_WARN("add prev elect bls consensus info failed!");
+    }
+
     std::string val = elect_block.SerializeAsString();
     std::string val_hash = protos::GetElectBlockHash(elect_block);
     storage.set_val_hash(val_hash);

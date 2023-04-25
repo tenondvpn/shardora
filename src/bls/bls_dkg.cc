@@ -734,6 +734,7 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
     libff::alt_bn128_G1 g1_hash;
     CreateDkgMessage(msg_ptr);
     std::string sign_hash = common::Hash::keccak256(pk);
+    std::string sign_hash = common::Hash::keccak256(pk);
     bls_mgr_->GetLibffHash(sign_hash, &g1_hash);
     if (bls_mgr_->Sign(
             min_aggree_member_count_,
