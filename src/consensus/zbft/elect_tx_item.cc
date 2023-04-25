@@ -107,7 +107,7 @@ int ElectTxItem::HandleTx(
                 return res;
             }
 
-            CreateNewElect(thread_idx, block, elect_nodes, block_tx, db_batch);
+            CreateNewElect(thread_idx, block, elect_nodes, elect_statistic, block_tx, db_batch);
             break;
         }
     }
