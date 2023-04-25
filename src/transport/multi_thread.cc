@@ -168,6 +168,7 @@ int32_t MultiThreadHandler::GetPriority(int32_t msg_type) {
 }
 
 void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
+    ZJC_DEBUG("message coming msg hash: %lu", msg_ptr->header.hash64());
     uint32_t priority = GetPriority(msg_ptr->header.type());
     if (thread_vec_.empty()) {
         return;
