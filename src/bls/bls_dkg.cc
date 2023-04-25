@@ -793,6 +793,10 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         libBLS::ThresholdUtils::fieldElementToString(first_g2_val.Z.c1)));
     auto str = bls_verify_req.SerializeAsString();
     prefix_db_->AddBlsVerifyG2(security_->GetAddress(), bls_verify_req);
+    ZJC_DEBUG("save verify g2 success local: %d, %lu, %u, %u, %s, %s",
+        local_member_index_, elect_hegiht_, local_member_index_, 0,
+        common::Encode::HexEncode((*members_)[local_member_index_]->id).c_str(),
+        common::Encode::HexEncode(verify_item.x_c0()).c_str());
 }
 
 void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
