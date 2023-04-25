@@ -103,9 +103,9 @@ int ElectPoolManager::GetElectionTxInfo(block::protobuf::BlockTx& tx_info) {
         }
     }
     
-    for (auto iter = weed_out_ids.begin(); iter != weed_out_ids.end(); ++iter) {
-        ec_block.add_weedout_ids(*iter);
-    }
+//     for (auto iter = weed_out_ids.begin(); iter != weed_out_ids.end(); ++iter) {
+//         ec_block.add_weedout_ids(*iter);
+//     }
 
     auto ec_block_attr = tx_info.add_storages();
     ec_block_attr->set_key(protos::kElectNodeAttrElectBlock);
@@ -448,76 +448,76 @@ int ElectPoolManager::SelectLeader(
         uint32_t network_id,
         const common::Bitmap& bitmap,
         elect::protobuf::ElectBlock* ec_block) {
-    auto members = elect_mgr_->GetWaitingNetworkMembers(network_id);
-    if (members == nullptr) {
-        BLS_ERROR("get waiting members failed![%u]", network_id);
-        return kElectError;
-    }
-
-    int32_t expect_leader_count = (int32_t)pow(
-        2.0,
-        (double)((int32_t)log2(double(members->size() / 3))));
-    if (expect_leader_count > (int32_t)common::kImmutablePoolSize) {
-        expect_leader_count = (int32_t)common::kImmutablePoolSize;
-    }
-
-    assert(expect_leader_count > 0);
-    common::BloomFilter tmp_filter(kBloomfilterSize, kBloomfilterHashCount);
-    std::vector<NodeDetailPtr> elected_nodes;
-    uint32_t mem_idx = 0;
-    for (auto iter = members->begin(); iter != members->end(); ++iter, ++mem_idx) {
-        if (!bitmap.Valid(mem_idx)) {
-            continue;
-        }
-
-        auto elect_node = std::make_shared<ElectNodeDetail>();
-        elect_node->index = mem_idx;
-        elect_node->id = (*iter)->id;
-        elect_node->public_ip = (*iter)->public_ip;
-        elect_node->public_port = (*iter)->public_port;
-        elect_node->dht_key = (*iter)->dht_key;
-        std::string pubkey_str;
-        (*iter)->pubkey = pubkey_str;
-        elect_node->public_key = pubkey_str;
-        elected_nodes.push_back(elect_node);
-    }
-
-    std::set<int32_t> leader_nodes;
-    FtsGetNodes(
-        network_id,
-        false,
-        expect_leader_count,
-        &tmp_filter,
-        elected_nodes,
-        leader_nodes);
-    if (leader_nodes.empty()) {
-        ELECT_ERROR("fts get leader nodes failed! elected_nodes size: %u", elected_nodes.size());
-        return kElectError;
-    }
-
-    int32_t mode_idx = 0;
-    std::unordered_map<std::string, int32_t> leader_mode_idx_map;
-//     ELECT_ERROR("SelectLeader expect_leader_count: %u, leader_nodes: size: %d, all size: %d, random: %lu",
-//         expect_leader_count, leader_nodes.size(), members->size(), vss::VssManager::Instance()->EpochRandom());
-    for (int32_t i = 0; i < ec_block->prev_members().bls_pubkey_size(); ++i) {
-        ec_block->mutable_prev_members()->mutable_bls_pubkey(i)->set_pool_idx_mod_num(-1);
-    }
-
-    for (auto iter = leader_nodes.begin(); iter != leader_nodes.end(); ++iter) {
-        if (ec_block->prev_members().bls_pubkey_size() <= elected_nodes[*iter]->index) {
-            return kElectError;
-        }
-
-        auto* bls_key = ec_block->mutable_prev_members()->mutable_bls_pubkey(elected_nodes[*iter]->index);
-        bls_key->set_pool_idx_mod_num(mode_idx++);
-//         ELECT_ERROR("SelectLeader expect_leader_count: %u, leader_nodes: size: %d, all size: %d, index: %d",
-//             expect_leader_count, leader_nodes.size(), members->size(), (*iter)->index);
-    }
-
-    if (mode_idx != expect_leader_count) {
-        assert(false);
-        return kElectError;
-    }
+//     auto members = elect_mgr_->GetWaitingNetworkMembers(network_id);
+//     if (members == nullptr) {
+//         BLS_ERROR("get waiting members failed![%u]", network_id);
+//         return kElectError;
+//     }
+// 
+//     int32_t expect_leader_count = (int32_t)pow(
+//         2.0,
+//         (double)((int32_t)log2(double(members->size() / 3))));
+//     if (expect_leader_count > (int32_t)common::kImmutablePoolSize) {
+//         expect_leader_count = (int32_t)common::kImmutablePoolSize;
+//     }
+// 
+//     assert(expect_leader_count > 0);
+//     common::BloomFilter tmp_filter(kBloomfilterSize, kBloomfilterHashCount);
+//     std::vector<NodeDetailPtr> elected_nodes;
+//     uint32_t mem_idx = 0;
+//     for (auto iter = members->begin(); iter != members->end(); ++iter, ++mem_idx) {
+//         if (!bitmap.Valid(mem_idx)) {
+//             continue;
+//         }
+// 
+//         auto elect_node = std::make_shared<ElectNodeDetail>();
+//         elect_node->index = mem_idx;
+//         elect_node->id = (*iter)->id;
+//         elect_node->public_ip = (*iter)->public_ip;
+//         elect_node->public_port = (*iter)->public_port;
+//         elect_node->dht_key = (*iter)->dht_key;
+//         std::string pubkey_str;
+//         (*iter)->pubkey = pubkey_str;
+//         elect_node->public_key = pubkey_str;
+//         elected_nodes.push_back(elect_node);
+//     }
+// 
+//     std::set<int32_t> leader_nodes;
+//     FtsGetNodes(
+//         network_id,
+//         false,
+//         expect_leader_count,
+//         &tmp_filter,
+//         elected_nodes,
+//         leader_nodes);
+//     if (leader_nodes.empty()) {
+//         ELECT_ERROR("fts get leader nodes failed! elected_nodes size: %u", elected_nodes.size());
+//         return kElectError;
+//     }
+// 
+//     int32_t mode_idx = 0;
+//     std::unordered_map<std::string, int32_t> leader_mode_idx_map;
+// //     ELECT_ERROR("SelectLeader expect_leader_count: %u, leader_nodes: size: %d, all size: %d, random: %lu",
+// //         expect_leader_count, leader_nodes.size(), members->size(), vss::VssManager::Instance()->EpochRandom());
+//     for (int32_t i = 0; i < ec_block->prev_members().bls_pubkey_size(); ++i) {
+//         ec_block->mutable_prev_members()->mutable_bls_pubkey(i)->set_pool_idx_mod_num(-1);
+//     }
+// 
+//     for (auto iter = leader_nodes.begin(); iter != leader_nodes.end(); ++iter) {
+//         if (ec_block->prev_members().bls_pubkey_size() <= elected_nodes[*iter]->index) {
+//             return kElectError;
+//         }
+// 
+//         auto* bls_key = ec_block->mutable_prev_members()->mutable_bls_pubkey(elected_nodes[*iter]->index);
+//         bls_key->set_pool_idx_mod_num(mode_idx++);
+// //         ELECT_ERROR("SelectLeader expect_leader_count: %u, leader_nodes: size: %d, all size: %d, index: %d",
+// //             expect_leader_count, leader_nodes.size(), members->size(), (*iter)->index);
+//     }
+// 
+//     if (mode_idx != expect_leader_count) {
+//         assert(false);
+//         return kElectError;
+//     }
 
     return kElectSuccess;
 }

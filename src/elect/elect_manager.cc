@@ -324,10 +324,10 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
             in[i].pubkey(),
             member_index,
             in[i].public_ip(),
-            prev_members_bls[i].pool_idx_mod_num()));
-        if (prev_members_bls[i].pool_idx_mod_num() >= 0) {
-            ++leader_count;
-        }
+            -1));
+//         if (prev_members_bls[i].pool_idx_mod_num() >= 0) {
+//             ++leader_count;
+//         }
 
         AddNewNodeWithIdAndIp(prev_elect_block.shard_network_id(), id, in[i].public_ip());
         (*shard_members_index_ptr)[id] = member_index;
