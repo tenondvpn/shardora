@@ -32,7 +32,7 @@ int ElectTxItem::HandleTx(
             if (!prefix_db_->GetStatisticedShardingHeight(
                     tmp[0],
                     tmp[1],
-                    elect_statistic)) {
+                    &elect_statistic)) {
                 ZJC_WARN("get statistic elect statistic failed! net: %u, height: %lu",
                     tmp[0],
                     tmp[1]);
