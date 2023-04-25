@@ -567,6 +567,7 @@ void BlsDkg::SwapSecKey(uint8_t thread_idx) try {
     }
 
     CreateDkgMessage(msg_ptr);
+    ZJC_DEBUG("success send swap seckey request local member index: %d", local_member_index_);
 #ifdef ZJC_UNITTEST
     sec_swap_msgs_ = msg_ptr;
     ZJC_DEBUG("success add swap msg");
