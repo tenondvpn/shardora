@@ -125,9 +125,7 @@ int ElectTxItem::CreateNewElect(
     auto& storage = *block_tx.add_storages();
     storage.set_key(protos::kElectNodeAttrElectBlock);
     elect::protobuf::ElectBlock elect_block;
-    if (bls::BlsManager::Instance()->AddBlsConsensusInfo(
-            elect_block,
-            &bitmap) != bls::kBlsSuccess) {
+    if (bls_mgr_->AddBlsConsensusInfo(elect_block) != bls::kBlsSuccess) {
         ZJC_WARN("add prev elect bls consensus info failed!");
     }
 

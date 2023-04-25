@@ -658,9 +658,7 @@ bool BlsManager::VerifyAggSignValid(
     return false;
 }
 
-int BlsManager::AddBlsConsensusInfo(
-        elect::protobuf::ElectBlock& ec_block,
-        common::Bitmap* bitmap) {
+int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
     auto iter = finish_networks_map_.find(ec_block.shard_network_id());
     if (iter == finish_networks_map_.end()) {
         BLS_ERROR("find finish_networks_map_ failed![%u]", ec_block.shard_network_id());
@@ -726,7 +724,6 @@ int BlsManager::AddBlsConsensusInfo(
         return kBlsError;
     }
 
-    *bitmap = common::Bitmap(item_iter->second->bitmap.data().size() * 64);
     auto pre_ec_members = ec_block.mutable_prev_members();
     for (size_t i = 0; i < members->size(); ++i) {
         auto mem_bls_pk = pre_ec_members->add_bls_pubkey();
@@ -766,17 +763,6 @@ int BlsManager::AddBlsConsensusInfo(
             libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c0));
         mem_bls_pk->set_y_c1(
             libBLS::ThresholdUtils::fieldElementToString(finish_item->all_public_keys[i].Y.c1));
-        bitmap->Set(i);
-    }
-
-    if (bitmap->valid_count() < exchange_member_count) {
-        ec_block.clear_prev_members();
-        BLS_ERROR("all_valid_count < t[%u][%u][%f][%u]",
-            bitmap->valid_count(),
-            members->size(),
-            kBlsMaxExchangeMembersRatio,
-            exchange_member_count);
-        return kBlsError;
     }
 
     common_pk_iter->second.to_affine_coordinates();
@@ -793,7 +779,7 @@ int BlsManager::AddBlsConsensusInfo(
     BLS_DEBUG("network: %u, AddBlsConsensusInfo success max_finish_count_: %d,"
         "member count: %d, x_c0: %s, x_c1: %s, y_c0: %s, y_c1: %s.",
         ec_block.shard_network_id(),
-        bitmap->valid_count(), members->size(),
+        item_iter->second->bitmap.valid_count(), members->size(),
         common_pk->x_c0().c_str(), common_pk->x_c1().c_str(),
         common_pk->y_c0().c_str(), common_pk->y_c1().c_str());
     return kBlsSuccess;
