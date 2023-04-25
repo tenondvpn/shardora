@@ -157,10 +157,12 @@ void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) try {
     }
 
     if (bls_msg.has_verify_brd()) {
+        ZJC_DEBUG("verify g2 coming member index: %d.", bls_msg.index());
         HandleVerifyBroadcast(msg_ptr);
     }
 
     if (bls_msg.has_swap_req()) {
+        ZJC_DEBUG("swap seckey coming member index: %d.", bls_msg.index());
         HandleSwapSecKey(msg_ptr);
     }
 
@@ -203,10 +205,12 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
     }
 
     if (prefix_db_->ExistsBlsVerifyG2((*members_)[bls_msg.index()]->id)) {
+        assert(false);
         return;
     }
 
     if (!IsVerifyBrdPeriod()) {
+        assert(false);
         return;
     }
 

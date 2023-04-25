@@ -134,8 +134,6 @@ private:
         return false;
     }
 
-    static const int64_t kSwapkeyPeriod = 20000000l;
-
     BlsManager* bls_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ = nullptr;
     int64_t kDkgPeriodUs = common::kTimeBlockCreatePeriodSeconds / 10 * 1000u * 1000u;
