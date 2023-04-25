@@ -325,16 +325,15 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
             member_index,
             in[i].public_ip(),
             -1));
-//         if (prev_members_bls[i].pool_idx_mod_num() >= 0) {
-//             ++leader_count;
-//         }
+        if (in[i].pool_idx_mod_num() >= 0) {
+            ++leader_count;
+        }
 
         AddNewNodeWithIdAndIp(prev_elect_block.shard_network_id(), id, in[i].public_ip());
         (*shard_members_index_ptr)[id] = member_index;
         ++member_index;
     }
 
-    assert(leader_count > 0);
     latest_leader_count_[prev_elect_block.shard_network_id()] = leader_count;
     std::vector<std::string> pk_vec;
     UpdatePrevElectMembers(shard_members_ptr, elect_block, elected, &pk_vec);
