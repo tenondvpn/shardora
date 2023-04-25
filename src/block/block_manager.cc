@@ -734,10 +734,6 @@ pools::TxItemPtr BlockManager::GetStatisticTx(bool leader) {
 
 pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, bool leader) {
     for (auto iter = shard_elect_tx_.begin(); iter != shard_elect_tx_.end(); ++iter) {
-        if (iter->first % common::kImmutablePoolSize != pool_index) {
-            continue;
-        }
-
         auto shard_elect_tx = iter->second;
         if (shard_elect_tx != nullptr && !shard_elect_tx->tx_ptr->in_consensus) {
             auto now_tm = common::TimeUtils::TimestampUs();
