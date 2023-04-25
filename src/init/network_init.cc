@@ -924,7 +924,8 @@ void NetworkInit::HandleElectionBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
-    ZJC_DEBUG("election block coming: %lu", block->height());
+    ZJC_DEBUG("election block coming: %lu, net: %u, pool: %u",
+        block->height(), block->network_id(), block->pool_index());
     auto elect_block = std::make_shared<elect::protobuf::ElectBlock>();
     for (int32_t i = 0; i < block->tx_list(0).storages_size(); ++i) {
         if (block->tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {

@@ -2029,7 +2029,6 @@ void BftManager::BroadcastLocalTosBlock(
                 kv->set_value(val);
             }
         }
-       
     }
 
     if (!to_tx.has_to_heights()) {
