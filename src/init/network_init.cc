@@ -936,8 +936,8 @@ void NetworkInit::HandleElectionBlock(
     }
 
     if (!elect_block->has_shard_network_id() ||
-            elect_block.shard_network_id() >= network::kConsensusShardEndNetworkId ||
-            elect_block.shard_network_id() < network::kRootCongressNetworkId) {
+            elect_block->shard_network_id() >= network::kConsensusShardEndNetworkId ||
+            elect_block->shard_network_id() < network::kRootCongressNetworkId) {
         ZJC_FATAL("parse elect block failed!");
         return;
     }
