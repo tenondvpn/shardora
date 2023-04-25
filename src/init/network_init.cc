@@ -160,6 +160,7 @@ int NetworkInit::Init(int argc, char** argv) {
         pools_mgr_,
         security_,
         tm_block_mgr_,
+        bls_mgr_,
         db_,
         nullptr,
         common::GlobalInfo::Instance()->message_handler_thread_count() - 1,

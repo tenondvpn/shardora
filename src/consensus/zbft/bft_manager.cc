@@ -49,6 +49,7 @@ int BftManager::Init(
         std::shared_ptr<pools::TxPoolManager>& pool_mgr,
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
+        std::shared_ptr<bls::BlsManager>& bls_mgr,
         std::shared_ptr<db::Db>& db,
         BlockCallback block_cb,
         uint8_t thread_count,
@@ -61,6 +62,7 @@ int BftManager::Init(
     elect_mgr_ = elect_mgr;
     pools_mgr_ = pool_mgr;
     tm_block_mgr_ = tm_block_mgr;
+    bls_mgr_ = bls_mgr;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     new_block_cache_callback_ = new_block_cache_callback;
