@@ -1,6 +1,7 @@
 #include "consensus/zbft/elect_tx_item.h"
 
 #include "common/fts_tree.h"
+#include "protos/get_proto_hash.h"
 
 namespace zjchain {
 
