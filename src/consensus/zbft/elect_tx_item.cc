@@ -95,20 +95,19 @@ int ElectTxItem::HandleTx(
                 join_count = common::kEachShardMaxNodeCount - elect_nodes.size();
             }
 
-            std::vector<NodeDetailPtr> join_elect_nodes;
             res = GetJoinElectNodesCredit(
                 join_count,
                 elect_statistic,
                 thread_idx,
                 min_area_weight,
                 min_tx_count,
-                join_elect_nodes);
+                elect_nodes);
             if (res != kConsensusSuccess) {
                 assert(false);
                 return res;
             }
 
-            CreateNewElect(elect_nodes, join_elect_nodes, block_tx);
+            CreateNewElect(thread_idx, block, elect_nodes, block_tx, db_batch);
             break;
         }
     }
@@ -116,18 +115,57 @@ int ElectTxItem::HandleTx(
     return kConsensusSuccess;
 }
 
-void ElectTxItem::CreateNewElect(
+int ElectTxItem::CreateNewElect(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
         const std::vector<NodeDetailPtr>& elect_nodes,
-        const std::vector<NodeDetailPtr>& new_elect_nodes,
+        const pools::protobuf::ElectStatistic& elect_statistic,
+        std::shared_ptr<db::DbWriteBatch>& db_batch,
         block::protobuf::BlockTx& block_tx) {
     auto& storage = *block_tx.add_storages();
     storage.set_key(protos::kElectNodeAttrElectBlock);
     elect::protobuf::ElectBlock elect_block;
+    if (bls::BlsManager::Instance()->AddBlsConsensusInfo(
+            elect_block,
+            &bitmap) != bls::kBlsSuccess) {
+        ZJC_WARN("add prev elect bls consensus info failed!");
+    }
+
+    int32_t expect_leader_count = (int32_t)pow(
+        2.0,
+        (double)((int32_t)log2(double(elect_nodes.size() / 3))));
+    if (expect_leader_count > (int32_t)common::kImmutablePoolSize) {
+        expect_leader_count = (int32_t)common::kImmutablePoolSize;
+    }
+
+    assert(expect_leader_count > 0);
+    std::vector<NodeDetailPtr> elect_nodes_to_choose = elect_nodes;
+    std::set<uint32_t> leader_nodes;
+    FtsGetNodes(elect_nodes_to_choose, false, expect_leader_count, leader_nodes);
+    if (leader_nodes.size() != expect_leader_count) {
+        ZJC_ERROR("choose leader failed: %u", elect_statistic.sharding_id());
+        return kConsensusError;
+    }
+
+    int32_t mode_idx = 0;
+    for (auto iter = elect_nodes.begin(); iter != elect_nodes.end(); ++iter) {
+        auto in = elect_block.add_in();
+        in->set_pubkey((*iter)->pubkey);
+        if (leader_nodes.find((*iter)->index) != leader_nodes.end()) {
+            in->set_pool_idx_mod_num(mode_idx++);
+        } else {
+            in->set_pool_idx_mod_num(-1);
+        }
+    }
+
+    elect_block.set_shard_network_id(elect_statistic.sharding_id());
+    elect_block.set_elect_height(block.height());
     std::string val = elect_block.SerializeAsString();
     std::string val_hash = common::Hash::keccak256(val);
     storage.set_val_hash(val_hash);
     prefix_db_->SaveTemporaryKv(val_hash, val);
     ZJC_DEBUG("create elect success.");
+    return kConsensusSuccess;
 }
 
 int ElectTxItem::CheckWeedout(
@@ -197,7 +235,7 @@ int ElectTxItem::CheckWeedout(
         node_info->stoke = statistic_item.stokes(member_idx);
         node_info->credit = account_info->credit();
         node_info->index = member_idx;
-        node_info->id = (*members)[member_idx]->id;
+        node_info->pubkey = (*members)[member_idx]->pubkey;
         if (*min_tx_count > node_info->tx_count) {
             *min_tx_count = node_info->tx_count;
         }
@@ -244,7 +282,7 @@ int ElectTxItem::GetJoinElectNodesCredit(
         node_info->stoke = elect_statistic.join_elect_nodes(i).stoke();
         node_info->tx_count = min_tx_count;
         node_info->credit = account_info->credit();
-        node_info->id = account_info->addr();
+        node_info->pubkey = account_info->pubkey();
         node_info->index = i;
         elect_nodes_to_choose.push_back(node_info);
     }

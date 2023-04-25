@@ -436,6 +436,7 @@ int ShardStatistic::StatisticWithHeights(
     }
 
     elect_statistic.set_gas_amount(all_gas_amount);
+    elect_statistic.set_sharding_id(common::GlobalInfo::Instance()->network_id());
     str_for_hash.append((char*)&all_gas_amount, sizeof(all_gas_amount));
     *statistic_hash = common::Hash::keccak256(str_for_hash);
     *elect_statistic.mutable_heights() = leader_to_heights;

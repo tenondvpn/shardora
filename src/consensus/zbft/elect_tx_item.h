@@ -17,7 +17,7 @@ struct ElectNodeInfo {
     uint64_t tx_count;
     int32_t credit;
     int32_t area_weight;
-    std::string id;
+    std::string pubkey;
     uint32_t index;
 };
 
@@ -31,11 +31,13 @@ public:
         std::shared_ptr<security::Security>& sec_ptr,
         std::shared_ptr<protos::PrefixDb>& prefix_db,
         std::shared_ptr<elect::ElectManager>& elect_mgr,
-        std::shared_ptr<vss::VssManager>& vss_mgr)
+        std::shared_ptr<vss::VssManager>& vss_mgr,
+        std::shared_ptr<bls::BlsManager>& bls_mgr)
         : TxItemBase(msg, account_mgr, sec_ptr),
         prefix_db_(prefix_db),
         elect_mgr_(elect_mgr),
-        vss_mgr_(vss_mgr) {}
+        vss_mgr_(vss_mgr),
+        bls_mgr_(bls_mgr) {}
     virtual ~ElectTxItem() {}
     virtual int HandleTx(
         uint8_t thread_idx,
@@ -67,9 +69,12 @@ private:
     void SmoothFtsValue(
         std::vector<NodeDetailPtr>& elect_nodes,
         uint64_t* max_fts_val);
-    void CreateNewElect(
+    int CreateNewElect(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
         const std::vector<NodeDetailPtr>& elect_nodes,
-        const std::vector<NodeDetailPtr>& new_elect_nodes,
+        const pools::protobuf::ElectStatistic& elect_statistic,
+        std::shared_ptr<db::DbWriteBatch>& db_batch,
         block::protobuf::BlockTx& block_tx);
 
     static const uint32_t kFtsWeedoutDividRate = 10u;
@@ -78,6 +83,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
+    std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
     std::vector<std::shared_ptr<ElectNodeInfo>> elect_nodes_;
     uint64_t max_stoke_ = 0;
     uint64_t min_stoke_ = common::kInvalidUint64;

@@ -31,7 +31,6 @@ message BlsPublicKey {
     optional bytes x_c1 = 2;
     optional bytes y_c0 = 3;
     optional bytes y_c1 = 4;
-    optional int32 pool_idx_mod_num = 5;
 }
 
 message PrevMembers {
@@ -42,12 +41,9 @@ message PrevMembers {
 
 message ElectBlock {
     repeated member in = 1;
-    optional bytes acc_pubkey = 2;
-    optional bytes acc_sign = 3;
-    optional uint32 shard_network_id = 4;
-    optional PrevMembers prev_members = 5;
-    repeated bytes weedout_ids = 6;
-    optional uint64 elect_height = 7;
+    optional uint32 shard_network_id = 2;
+    optional PrevMembers prev_members = 3;
+    optional uint64 elect_height = 4;
 }
 
 message WaitingNodesMessage {
