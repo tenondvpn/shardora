@@ -278,7 +278,13 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
     bool ec_block_loaded = false;
     for (int32_t i = 0; i < block_item.tx_list(0).storages_size(); ++i) {
         if (block_item.tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
-            prev_elect_block.ParseFromString(block_item.tx_list(0).storages(i).val_hash());
+            std::string val;
+            if (!prefix_db_->GetTemporaryKv(block_item.tx_list(0).storages(i).val_hash(), &val)) {
+                ZJC_FATAL("elect block get temp kv from db failed!");
+                return;
+            }
+
+            prev_elect_block.ParseFromString(val);
             ec_block_loaded = true;
             break;
         }
