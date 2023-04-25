@@ -14,14 +14,11 @@ struct BftMember {
         const std::string& in_id,
         const std::string& pkey,
         uint32_t idx,
-        uint32_t pubip,
         int32_t pool_mode_num)
         : net_id(nid),
         id(in_id),
         pubkey(pkey),
         index(idx),
-        public_ip(pubip),
-        public_port(0),
         pool_index_mod_num(pool_mode_num) {
         pool_index_mod_num = pool_mode_num;
     }
