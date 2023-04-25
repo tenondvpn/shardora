@@ -66,7 +66,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(uint32_t pool_index, bool leader) {
-    if (pool_index == common::kRootChainPoolIndex ||
+    if (pool_index != common::kRootChainPoolIndex ||
             common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         return nullptr;
     }
