@@ -73,6 +73,16 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(uint32_t pool_index,
 
     auto tx_ptr = block_mgr_->GetElectTx(pool_index, leader);
     if (tx_ptr != nullptr) {
+        if (leader) {
+            auto now_tm = common::TimeUtils::TimestampUs();
+            if (tx_ptr->prev_consensus_tm_us + 300000lu > now_tm) {
+                tx_ptr->in_consensus = false;
+                return nullptr;
+            }
+
+            tx_ptr->prev_consensus_tm_us = now_tm;
+        }
+
         auto txs_item = std::make_shared<WaitingTxsItem>();
         txs_item->pool_index = pool_index;
         txs_item->txs[tx_ptr->tx_hash] = tx_ptr;

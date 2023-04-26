@@ -119,7 +119,7 @@ int ElectTxItem::HandleTx(
             }
 
             CreateNewElect(thread_idx, block, elect_nodes, elect_statistic, db_batch, block_tx);
-            ZJC_DEBUG("consensus elect tx success.");
+            ZJC_DEBUG("consensus elect tx success: %u", elect_statistic.sharding_id());
             return kConsensusSuccess;
         }
     }
