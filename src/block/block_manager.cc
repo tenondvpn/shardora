@@ -834,12 +834,23 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
         return;
     }
 
+    ZJC_DEBUG("succcess leader local_id_: %s, to tx leader: %s",
+        common::Encode::HexEncode(local_id_).c_str(),
+        common::Encode::HexEncode(to_tx_leader_->id).c_str());
+
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (prev_create_statistic_tx_ms_ >= now_tm_ms) {
+        ZJC_DEBUG("prev_create_statistic_tx_ms_ >= now_tm_ms leader local_id_: %s, to tx leader: %s",
+            common::Encode::HexEncode(local_id_).c_str(),
+            common::Encode::HexEncode(to_tx_leader_->id).c_str());
+
         return;
     }
 
     if (shard_statistic_tx_ != nullptr && shard_statistic_tx_->tx_ptr->in_consensus) {
+        ZJC_DEBUG("shard_statistic_tx_->tx_ptr->in_consensus local_id_: %s, to tx leader: %s",
+            common::Encode::HexEncode(local_id_).c_str(),
+            common::Encode::HexEncode(to_tx_leader_->id).c_str());
         return;
     }
 
