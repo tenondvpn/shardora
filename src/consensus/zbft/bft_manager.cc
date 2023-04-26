@@ -448,7 +448,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto btime = msg_ptr->times_idx;
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     int res = kConsensusSuccess;
-    if (!header.zbft().leader()) {
+    if (header.zbft().leader() >= 0) {
         BackupHandleZbftMessage(msg_ptr->thread_idx, msg_ptr);
     } else {
         LeaderHandleZbftMessage(msg_ptr);
@@ -463,7 +463,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 //         assert(false);
 //     }
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    CreateResponseMessage(!header.zbft().leader(), zbft_vec, msg_ptr, mem_ptr);
+    CreateResponseMessage(header.zbft().leader() >= 0, zbft_vec, msg_ptr, mem_ptr);
     ClearBft(msg_ptr);
     //     ZJC_DEBUG("create response over.");
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -641,7 +641,7 @@ void BftManager::ClearBft(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    bool is_leader = msg_ptr->header.zbft().leader();
+    bool is_leader = msg_ptr->header.zbft().leader() >= 0;
     if (!is_leader) {
         return;
     }
@@ -710,6 +710,7 @@ void BftManager::CreateResponseMessage(
         const std::vector<ZbftPtr>& zbft_vec,
         const transport::MessagePtr& msg_ptr,
         common::BftMemberPtr& mem_ptr) {
+    auto& elect_item = elect_items_[elect_item_idx_];
     if (response_to_leader) {
         // pre-commit reuse prepare's bls sign
         if (zbft_vec[0] != nullptr) {
@@ -755,6 +756,7 @@ void BftManager::CreateResponseMessage(
             }
 
             auto msg_res = BftProto::LeaderCreatePrepare(
+                elect_item.local_node_member_index,
                 zbft_vec[0],
                 precommit_gid,
                 commit_gid,
@@ -770,6 +772,7 @@ void BftManager::CreateResponseMessage(
             }
 
             auto res = BftProto::LeaderCreatePreCommit(
+                elect_item.local_node_member_index,
                 zbft_vec[1],
                 true,
                 commit_gid,
@@ -782,17 +785,16 @@ void BftManager::CreateResponseMessage(
         
     if (msg_ptr->response->header.has_zbft()) {
         assert(msg_ptr->response->header.zbft().has_pool_index());
-        auto& elect_item = elect_items_[elect_item_idx_];
         msg_ptr->response->header.mutable_zbft()->set_member_index(
             elect_item.local_node_member_index);
         if (response_to_leader) {
             //assert(msg_ptr->response->header.mutable_zbft()->member_index() != 0);
-            msg_ptr->response->header.mutable_zbft()->set_leader(true);
+            msg_ptr->response->header.mutable_zbft()->set_leader_idx(-1);
             if (!SetBackupEcdhData(msg_ptr->response, mem_ptr)) {
                 return;
             }
         } else {
-            msg_ptr->response->header.mutable_zbft()->set_leader(false);
+            msg_ptr->response->header.mutable_zbft()->set_leader_idx(elect_item.local_node_member_index);
             if (!LeaderSignMessage(msg_ptr->response)) {
                 return;
             }
@@ -1152,6 +1154,7 @@ int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& pre
 
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
+    auto& elect_item = elect_items_[elect_item_idx_];
     if (prepare_msg_ptr == nullptr) {
         header.set_src_sharding_id(bft_ptr->network_id());
         dht::DhtKeyManager dht_key(bft_ptr->network_id());
@@ -1161,6 +1164,7 @@ int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& pre
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
         auto msg_res = BftProto::LeaderCreatePrepare(
+            elect_item->local_node_member_index,
             bft_ptr,
             "",
             "",
@@ -1173,7 +1177,6 @@ int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& pre
         }
     }
 
-    auto& elect_item = elect_items_[elect_item_idx_];
     new_bft_msg->set_member_index(elect_item.local_node_member_index);
     bft_ptr->init_prepare_timeout();
     bft_ptr->set_consensus_status(kConsensusPreCommit);
@@ -1841,8 +1844,12 @@ int BftManager::LeaderCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
 int BftManager::LeaderCallCommitOppose(
         const transport::MessagePtr& msg_ptr,
         ZbftPtr& bft_ptr) {
+    auto& elect_item = elect_items_[elect_item_idx_];
     auto res = BftProto::LeaderCreateCommit(
-        bft_ptr, false, msg_ptr->response->header);
+        elect_item->local_node_member_index,
+        bft_ptr,
+        false,
+        msg_ptr->response->header);
     if (!res) {
         ZJC_ERROR("leader create commit message failed!");
         return kConsensusError;
@@ -2089,7 +2096,9 @@ int BftManager::LeaderCallCommit(
         const transport::MessagePtr& msg_ptr,
         ZbftPtr& bft_ptr) {
     // check pre-commit multi sign and leader commit
+    auto& elect_item = elect_items_[elect_item_idx_];
     auto res = BftProto::LeaderCreateCommit(
+        elect_item->local_node_member_index,
         bft_ptr,
         true,
         msg_ptr->response->header);

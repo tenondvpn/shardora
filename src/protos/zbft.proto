@@ -17,7 +17,7 @@ message ZbftMessage {
     optional bytes prepare_gid = 1;
     optional bytes precommit_gid = 2;
     optional bytes commit_gid = 3;
-    optional bool leader = 4;
+    optional int32 leader_idx = 4 [default=-1];
     optional uint32 net_id = 5;
     repeated uint64 bitmap = 6;
     optional bool agree_precommit = 7 [default=false];

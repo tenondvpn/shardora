@@ -16,6 +16,7 @@ namespace zjchain {
 namespace consensus {
 
 bool BftProto::LeaderCreatePrepare(
+        int32_t leader_idx,
         const ZbftPtr& bft_ptr,
         const std::string& precommit_gid,
         const std::string& commit_gid,
@@ -23,7 +24,7 @@ bool BftProto::LeaderCreatePrepare(
         zbft::protobuf::ZbftMessage* pipeline_msg) {
     auto broad_param = msg.mutable_broadcast();
     auto& bft_msg = *pipeline_msg;
-    bft_msg.set_leader(false);
+    bft_msg.set_leader_idx(leader_idx);
     bft_msg.set_prepare_gid(bft_ptr->gid());
     bft_msg.set_precommit_gid(precommit_gid);
     bft_msg.set_commit_gid(commit_gid);
@@ -58,7 +59,7 @@ bool BftProto::BackupCreatePrepare(
         const std::string& precommit_gid,
         zbft::protobuf::ZbftMessage* pipeline_msg) {
     auto& bft_msg = *pipeline_msg;
-    bft_msg.set_leader(true);
+    bft_msg.set_leader_idx(-1);
     bft_msg.set_prepare_gid(bft_ptr->gid());
     bft_msg.set_precommit_gid(precommit_gid);
     bft_msg.set_prepare_hash(bft_ptr->local_prepare_hash());
@@ -80,6 +81,7 @@ bool BftProto::BackupCreatePrepare(
 }
 
 bool BftProto::LeaderCreatePreCommit(
+        int32_t leader_idx,
         const ZbftPtr& bft_ptr,
         bool agree,
         const std::string& commit_gid,
@@ -90,7 +92,7 @@ bool BftProto::LeaderCreatePreCommit(
     msg.set_type(common::kConsensusMessage);
     auto broad_param = msg.mutable_broadcast();
     auto& bft_msg = *msg.mutable_zbft();
-    bft_msg.set_leader(false);
+    bft_msg.set_leader_idx(leader_idx);
     bft_msg.set_precommit_gid(bft_ptr->gid());
     bft_msg.set_commit_gid(commit_gid);
 //     ZJC_DEBUG("leader precommit: %s, precommit: %s, commit: %s",
@@ -127,7 +129,7 @@ bool BftProto::BackupCreatePreCommit(
         bool agree,
         transport::protobuf::Header& msg) {
     auto& bft_msg = *msg.mutable_zbft();
-    bft_msg.set_leader(true);
+    bft_msg.set_leader_idx(-1);
     bft_msg.set_precommit_gid(bft_ptr->gid());
     std::string bls_sign_x;
     std::string bls_sign_y;
@@ -147,6 +149,7 @@ bool BftProto::BackupCreatePreCommit(
 }
 
 bool BftProto::LeaderCreateCommit(
+        int32_t leader_idx,
         const ZbftPtr& bft_ptr,
         bool agree,
         transport::protobuf::Header& msg) {
@@ -157,7 +160,7 @@ bool BftProto::LeaderCreateCommit(
     auto broad_param = msg.mutable_broadcast();
     auto& bft_msg = *msg.mutable_zbft();
     zbft::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
-    bft_msg.set_leader(false);
+    bft_msg.set_leader_idx(leader_idx);
     bft_msg.set_commit_gid(bft_ptr->gid());
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_agree_commit(agree);
