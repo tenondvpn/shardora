@@ -105,6 +105,15 @@ void BlsDkg::OnNewElectionBlock(
     ver_offset_ = kDkgPeriodUs;
     swap_offset_ = kDkgPeriodUs * 3;
     finish_offset_ = kDkgPeriodUs * 7;
+    ZJC_DEBUG("0 bls time point now: %u, time block tm: %u, begin_time_sec_: %u, "
+        "kDkgPeriodUs: %u, ver_offset_: %u, swap_offset_: %u, finish_offset_: %u",
+        common::TimeUtils::TimestampSeconds(),
+        latest_timeblock_info->lastest_time_block_tm,
+        begin_time_us_ / 1000000,
+        kDkgPeriodUs / 1000000,
+        ver_offset_ / 1000000,
+        swap_offset_ / 1000000,
+        finish_offset_ / 1000000);
     auto bls_period = kTimeBlsPeriodSeconds * 1000l * 1000l;
     uint64_t offset_period = 0;
     if (begin_time_us_ < tmblock_tm + offset_period) {
@@ -115,6 +124,15 @@ void BlsDkg::OnNewElectionBlock(
         finish_offset_ = ver_offset_ + kDkgPeriodUs * 7;
     }
 
+    ZJC_DEBUG("1 bls time point now: %u, time block tm: %u, begin_time_sec_: %u, "
+        "kDkgPeriodUs: %u, ver_offset_: %u, swap_offset_: %u, finish_offset_: %u",
+        common::TimeUtils::TimestampSeconds(),
+        latest_timeblock_info->lastest_time_block_tm,
+        begin_time_us_ / 1000000,
+        kDkgPeriodUs / 1000000,
+        ver_offset_ / 1000000,
+        swap_offset_ / 1000000,
+        finish_offset_ / 1000000);
     srand(time(NULL));
     ver_offset_ += (rand() % (kDkgPeriodUs * 3 / 1000000lu)) * 1000000lu;
     swap_offset_ += (rand() % (kDkgPeriodUs * 3 / 1000000lu)) * 1000000lu;
