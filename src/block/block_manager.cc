@@ -803,7 +803,6 @@ void BlockManager::OnTimeBlock(
 
 void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
     if (latest_timeblock_height_ <= consensused_timeblock_height_) {
-        assert(false);
         return;
     }
 
