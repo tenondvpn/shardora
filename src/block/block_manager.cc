@@ -219,8 +219,9 @@ void BlockManager::HandleStatisticTx(
         block.network_id(),
         block.timeblock_height(),
         db_batch);
-    ZJC_DEBUG("success handled statistic block time block height: %lu",
-        consensused_timeblock_height_);
+    ZJC_DEBUG("success handled statistic block time block height: %lu, net: %u",
+        consensused_timeblock_height_,
+        block.network_id());
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         return;
     }
@@ -588,6 +589,7 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
     new_msg_ptr->address_info = account_mgr_->GetStatisticAddressInfo(0);
     shard_statistic_tx->tx_ptr = create_statistic_tx_cb_(new_msg_ptr);
     shard_statistic_tx->tx_ptr->time_valid += 3000000lu;
+    shard_statistic_tx->tx_ptr->in_consensus = false;
     shard_statistic_tx->tx_hash = statistic_hash;
     shard_statistic_tx->timeout = common::TimeUtils::TimestampMs() + 20000lu;
     shard_statistic_tx_ = shard_statistic_tx;

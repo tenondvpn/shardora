@@ -120,6 +120,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(uint32_t pool_in
         return nullptr;
     }
 
+    if (!leader)
+        ZJC_DEBUG("0 success get statistic tx %u, %d", pool_index, leader);
     auto tx_ptr = block_mgr_->GetStatisticTx(leader);
     if (tx_ptr != nullptr) {
         if (leader) {
