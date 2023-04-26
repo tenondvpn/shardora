@@ -448,7 +448,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto btime = msg_ptr->times_idx;
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     int res = kConsensusSuccess;
-    if (header.zbft().leader() >= 0) {
+    if (header.zbft().leader_idx() >= 0) {
         BackupHandleZbftMessage(msg_ptr->thread_idx, msg_ptr);
     } else {
         LeaderHandleZbftMessage(msg_ptr);
@@ -463,7 +463,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 //         assert(false);
 //     }
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    CreateResponseMessage(header.zbft().leader() >= 0, zbft_vec, msg_ptr, mem_ptr);
+    CreateResponseMessage(header.zbft().leader_idx() < 0, zbft_vec, msg_ptr, mem_ptr);
     ClearBft(msg_ptr);
     //     ZJC_DEBUG("create response over.");
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -1164,7 +1164,7 @@ int BftManager::LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& pre
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
         auto msg_res = BftProto::LeaderCreatePrepare(
-            elect_item->local_node_member_index,
+            elect_item.local_node_member_index,
             bft_ptr,
             "",
             "",
@@ -1846,7 +1846,7 @@ int BftManager::LeaderCallCommitOppose(
         ZbftPtr& bft_ptr) {
     auto& elect_item = elect_items_[elect_item_idx_];
     auto res = BftProto::LeaderCreateCommit(
-        elect_item->local_node_member_index,
+        elect_item.local_node_member_index,
         bft_ptr,
         false,
         msg_ptr->response->header);
@@ -2098,7 +2098,7 @@ int BftManager::LeaderCallCommit(
     // check pre-commit multi sign and leader commit
     auto& elect_item = elect_items_[elect_item_idx_];
     auto res = BftProto::LeaderCreateCommit(
-        elect_item->local_node_member_index,
+        elect_item.local_node_member_index,
         bft_ptr,
         true,
         msg_ptr->response->header);

@@ -16,6 +16,7 @@ namespace consensus {
 class BftProto {
 public:
     static bool LeaderCreatePrepare(
+        int32_t leader_idx,
         const ZbftPtr& bft_ptr,
         const std::string& precommit_gid,
         const std::string& commit_gid,
@@ -28,6 +29,7 @@ public:
         const std::string& pre_commit_gid,
         zbft::protobuf::ZbftMessage* pipeline_msg);
     static bool LeaderCreatePreCommit(
+        int32_t leader_idx,
         const ZbftPtr& bft_ptr,
         bool oppose,
         const std::string& commit_gid,
@@ -38,6 +40,7 @@ public:
         bool agree,
         transport::protobuf::Header& msg);
     static bool LeaderCreateCommit(
+        int32_t leader_idx,
         const ZbftPtr& bft_ptr,
         bool agree,
         transport::protobuf::Header& msg);
