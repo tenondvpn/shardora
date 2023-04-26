@@ -52,17 +52,24 @@ void BlsDkg::Destroy() {
 }
 
 void BlsDkg::TimerMessage(const transport::MessagePtr& msg_ptr) {
-    if (!has_broadcast_verify_ && IsVerifyBrdPeriod()) {
+    auto now_tm_us = common::TimeUtils::TimestampUs();
+    if (!has_broadcast_verify_ &&
+            now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4) &&
+            now_tm_us > (begin_time_us_ + ver_offset_)) {
         BroadcastVerfify(msg_ptr->thread_idx);
         has_broadcast_verify_ = true;
     }
 
-    if (has_broadcast_verify_ && !has_broadcast_swapkey_ && IsSwapKeyPeriod()) {
+    if (has_broadcast_verify_ && !has_broadcast_swapkey_ && 
+            now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7) &&
+            now_tm_us >(begin_time_us_ + swap_offset_)) {
         SwapSecKey(msg_ptr->thread_idx);
         has_broadcast_swapkey_ = true;
     }
 
-    if (has_broadcast_swapkey_ && !has_finished_ && IsFinishPeriod()) {
+    if (has_broadcast_swapkey_ && !has_finished_ &&
+            now_tm_us < (begin_time_us_ + kDkgPeriodUs * 10) &&
+            now_tm_us >(begin_time_us_ + finish_offset_)) {
         FinishNoLock(msg_ptr->thread_idx);
         has_finished_ = true;
     }
