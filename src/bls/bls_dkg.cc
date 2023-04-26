@@ -115,6 +115,7 @@ void BlsDkg::OnNewElectionBlock(
         finish_offset_ = ver_offset_ + kDkgPeriodUs * 7;
     }
 
+    srand(time(NULL));
     ver_offset_ += (rand() % (kDkgPeriodUs / 1000000)) * 1000000;
     swap_offset_ += (rand() % (kDkgPeriodUs / 1000000)) * 1000000;
     finish_offset_ += (rand() % (kDkgPeriodUs / 1000000)) * 1000000;
