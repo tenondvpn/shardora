@@ -252,7 +252,9 @@ void ElectManager::ElectedToConsensusShard(
 
 bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bool* elected) {
     if (!elect_block.has_prev_members() || elect_block.prev_members().prev_elect_height() <= 0) {
-        ELECT_DEBUG("not has prev members.");
+        ELECT_DEBUG("not has prev members. has: %d. pre elect height: %lu",
+            elect_block.has_prev_members(),
+            elect_block.prev_members().prev_elect_height());
         return false;
     }
 
