@@ -622,8 +622,10 @@ void BlockManager::HandleStatisticBlock(
                 return;
             }
 
-            if (block_tx.storages(i).val_hash() == shard_statistic_tx_->tx_hash) {
-                shard_statistic_tx_ = nullptr;
+            if (shard_statistic_tx_ != nullptr) {
+                if (block_tx.storages(i).val_hash() == shard_statistic_tx_->tx_hash) {
+                    shard_statistic_tx_ = nullptr;
+                }
             }
 
             break;
