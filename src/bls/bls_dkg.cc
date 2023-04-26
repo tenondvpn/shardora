@@ -117,7 +117,7 @@ void BlsDkg::OnNewElectionBlock(
     auto bls_period = kTimeBlsPeriodSeconds * 1000l * 1000l;
     uint64_t end_tm_point = latest_timeblock_info->lastest_time_block_tm + common::kTimeBlockCreatePeriodSeconds;
     if (begin_time_us_ < tmblock_tm) {
-        kDkgPeriodUs = (end_tm_point - tmblock_tm) / 10l;
+        kDkgPeriodUs = (end_tm_point - tmblock_tm / 1000000lu) / 10l;
         ver_offset_ = tmblock_tm - begin_time_us_;
         begin_time_us_ = tmblock_tm - kDkgPeriodUs;
         swap_offset_ = ver_offset_ + kDkgPeriodUs * 4;
