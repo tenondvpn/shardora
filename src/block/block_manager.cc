@@ -554,7 +554,6 @@ int BlockManager::GetBlockWithHeight(
 }
 
 void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) {
-    ZJC_DEBUG("statistic message coming.")
     if (create_statistic_tx_cb_ == nullptr || msg_ptr == nullptr) {
         return;
     }
