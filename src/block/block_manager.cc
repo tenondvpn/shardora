@@ -828,7 +828,9 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
     }
 
     if (local_id_ != to_tx_leader_->id) {
-        ZJC_DEBUG("not leader");
+        ZJC_DEBUG("not leader local_id_: %s, to tx leader: %s",
+            common::Encode::HexEncode(local_id_).c_str(),
+            common::Encode::HexEncode(to_tx_leader_->id).c_str());
         return;
     }
 
