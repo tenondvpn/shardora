@@ -103,7 +103,7 @@ void BlsDkg::OnNewElectionBlock(
         common::kTimeBlockCreatePeriodSeconds - kTimeBlsPeriodSeconds) * 1000l * 1000l;
     begin_time_us_ = common::TimeUtils::TimestampUs();
     ver_offset_ = kDkgPeriodUs;
-    swap_offset_ = kDkgPeriodUs * 3;
+    swap_offset_ = kDkgPeriodUs * 4;
     finish_offset_ = kDkgPeriodUs * 7;
     ZJC_DEBUG("0 bls time point now: %u, time block tm: %u, begin_time_sec_: %u, "
         "kDkgPeriodUs: %u, ver_offset_: %u, swap_offset_: %u, finish_offset_: %u",
@@ -115,12 +115,12 @@ void BlsDkg::OnNewElectionBlock(
         swap_offset_ / 1000000,
         finish_offset_ / 1000000);
     auto bls_period = kTimeBlsPeriodSeconds * 1000l * 1000l;
-    uint64_t offset_period = 0;
-    if (begin_time_us_ < tmblock_tm + offset_period) {
-        kDkgPeriodUs = (bls_period - offset_period) / 10l;
-        ver_offset_ = tmblock_tm + offset_period - begin_time_us_;
-        begin_time_us_ = tmblock_tm + offset_period - kDkgPeriodUs;
-        swap_offset_ = ver_offset_ + kDkgPeriodUs * 3;
+    uint64_t end_tm_point = latest_timeblock_info->lastest_time_block_tm + common::kTimeBlockCreatePeriodSeconds;
+    if (begin_time_us_ < tmblock_tm) {
+        kDkgPeriodUs = (end_tm_point - tmblock_tm) / 10l;
+        ver_offset_ = tmblock_tm - begin_time_us_;
+        begin_time_us_ = tmblock_tm - kDkgPeriodUs;
+        swap_offset_ = ver_offset_ + kDkgPeriodUs * 4;
         finish_offset_ = ver_offset_ + kDkgPeriodUs * 7;
     }
 
