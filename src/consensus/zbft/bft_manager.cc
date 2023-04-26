@@ -641,7 +641,7 @@ void BftManager::ClearBft(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    bool is_leader = msg_ptr->header.zbft().leader() >= 0;
+    bool is_leader = msg_ptr->header.zbft().leader_idx() >= 0;
     if (!is_leader) {
         return;
     }
