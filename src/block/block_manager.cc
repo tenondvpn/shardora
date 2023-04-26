@@ -636,8 +636,9 @@ void BlockManager::HandleStatisticBlock(
         block.timeblock_height(),
         elect_statistic,
         db_batch);
-    ZJC_DEBUG("success handle statistic block sharding: %u, pool: %u, height: %lu",
-        elect_statistic.sharding_id(), block.pool_index(), block.timeblock_height());
+    assert(block.network_id() == elect_statistic.sharding_id());
+    ZJC_DEBUG("success handle statistic block net: %u, sharding: %u, pool: %u, height: %lu",
+        block.network_id(), elect_statistic.sharding_id(), block.pool_index(), block.timeblock_height());
     // create elect transaction now for block.network_id
     auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
     auto* tx = new_msg_ptr->header.mutable_tx_proto();

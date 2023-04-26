@@ -38,6 +38,8 @@ int ElectTxItem::HandleTx(
                 return kConsensusError;
             }
 
+            ZJC_DEBUG("get sharding statistic sharding id: %u, tm height: %lu, info sharding: %u",
+                tmp[0], tmp[1], elect_statistic.sharding_id());
             uint64_t now_elect_height = elect_mgr_->latest_height(elect_statistic.sharding_id());
             const pools::protobuf::PoolStatisticItem* statistic = nullptr;
             uint64_t max_elect_height = 0;
