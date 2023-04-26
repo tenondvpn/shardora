@@ -98,7 +98,7 @@ private:
     void BackupPrepare(const transport::MessagePtr& msg_ptr);
     bool IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info);
     void HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr);
-    int InitZbftPtr(bool leader, ZbftPtr& bft_ptr);
+    int InitZbftPtr(int32_t leader_idx, ZbftPtr& bft_ptr);
     bool VerifyBackupIdValid(
         const transport::MessagePtr& msg_ptr,
         common::BftMemberPtr& mem_ptr);

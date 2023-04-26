@@ -308,16 +308,12 @@ ZbftPtr BftManager::Start(
     return StartBft(txs_ptr, prev_bft, prepare_msg_ptr);
 }
 
-int BftManager::InitZbftPtr(bool leader, ZbftPtr& bft_ptr) {
+int BftManager::InitZbftPtr(int32_t leader_idx, ZbftPtr& bft_ptr) {
     auto& elect_item = elect_items_[elect_item_idx_];
-    common::BftMemberPtr leader_mem_ptr = nullptr;
-    if (leader) {
-        leader_mem_ptr = elect_item.leader_member;
-    }
-
     if (bft_ptr->Init(
+            leader_idx,
+            elect_item.leader_count,
             elect_item.elect_height,
-            leader_mem_ptr,
             elect_item.members,
             elect_item.common_pk,
             elect_item.sec_key) != kConsensusSuccess) {
@@ -363,7 +359,8 @@ ZbftPtr BftManager::StartBft(
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     }
 
-    if (InitZbftPtr(true, bft_ptr) != kConsensusSuccess) {
+    auto& elect_item = elect_items_[elect_item_idx_];
+    if (InitZbftPtr(elect_item->local_node_member_index, bft_ptr) != kConsensusSuccess) {
         ZJC_ERROR("InitZbftPtr failed!");
         return nullptr;
     }
@@ -1055,7 +1052,7 @@ ZbftPtr BftManager::CreateBftPtr(const transport::MessagePtr& msg_ptr) {
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
-    if (InitZbftPtr(false, bft_ptr) != kConsensusSuccess) {
+    if (InitZbftPtr(bft_msg.leader_idx(), bft_ptr) != kConsensusSuccess) {
         return nullptr;
     }
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();

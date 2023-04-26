@@ -29,8 +29,9 @@ Zbft::Zbft(
 }
 
 int Zbft::Init(
+        int32_t leader_idx,
+        int32_t leader_count,
         uint64_t elect_height,
-        common::BftMemberPtr& leader_mem_ptr,
         common::MembersPtr& members_ptr,
         libff::alt_bn128_G2& common_pk,
         libff::alt_bn128_Fr& local_sec_key) {
@@ -39,19 +40,18 @@ int Zbft::Init(
         return kConsensusError;
     }
 
-    elect_height_ = elect_height;
-    if (leader_mem_ptr != nullptr) {
-        leader_mem_ptr_ = leader_mem_ptr;
-        if (leader_mem_ptr_->pool_index_mod_num < 0) {
-            ZJC_ERROR("leader: %s mem ptr pool_index_mod_num: %d, error",
-                common::Encode::HexEncode(leader_mem_ptr_->id).c_str(),
-                leader_mem_ptr_->pool_index_mod_num);
-            return kConsensusError;
-        }
-
-        leader_index_ = leader_mem_ptr_->index;
+    if (leader_idx >= members_ptr->size()) {
+        return kConsensusError;
     }
 
+    elect_height_ = elect_height;
+    leader_mem_ptr_ = (*members_ptr)[leader_idx];
+    if (pool_index() % leader_count != leader_mem_ptr_->pool_index_mod_num) {
+        assert(false);
+        return kConsensusError;
+    }
+
+    leader_index_ = leader_idx;
     members_ptr_ = members_ptr;
     common_pk_ = common_pk;
     local_sec_key_ = local_sec_key;

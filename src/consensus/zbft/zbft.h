@@ -37,8 +37,9 @@ public:
     virtual ~Zbft();
     virtual void DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block);
     int Init(
+        int32_t leader_idx,
+        int32_t leader_count,
         uint64_t elect_height,
-        common::BftMemberPtr& leader_mem_ptr,
         common::MembersPtr& members_ptr,
         libff::alt_bn128_G2& common_pk,
         libff::alt_bn128_Fr& local_sec_key);
