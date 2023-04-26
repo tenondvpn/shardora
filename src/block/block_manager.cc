@@ -803,26 +803,31 @@ void BlockManager::OnTimeBlock(
 
 void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
     if (latest_timeblock_height_ <= consensused_timeblock_height_) {
+        assert(false);
         return;
     }
 
     // check this node is leader
     if (to_tx_leader_ == nullptr) {
         ZJC_DEBUG("leader null");
+        assert(false);
         return;
     }
 
     if (local_id_ != to_tx_leader_->id) {
         ZJC_DEBUG("not leader");
+        assert(false);
         return;
     }
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (prev_create_statistic_tx_ms_ >= now_tm_ms) {
+        assert(false);
         return;
     }
 
     if (shard_statistic_tx_ != nullptr && shard_statistic_tx_->tx_ptr->in_consensus) {
+        assert(false);
         return;
     }
 
