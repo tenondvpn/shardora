@@ -924,8 +924,6 @@ void NetworkInit::HandleElectionBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
-    ZJC_DEBUG("election block coming: %lu, net: %u, pool: %u",
-        block->height(), block->network_id(), block->pool_index());
     auto elect_block = std::make_shared<elect::protobuf::ElectBlock>();
     for (int32_t i = 0; i < block->tx_list(0).storages_size(); ++i) {
         if (block->tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
@@ -950,6 +948,8 @@ void NetworkInit::HandleElectionBlock(
         }
     }
 
+    ZJC_DEBUG("election block coming: %lu, net: %u, pool: %u, sharding id: %",
+        block->height(), block->network_id(), block->pool_index(), elect_block->shard_network_id());
     if (!elect_block->has_shard_network_id() ||
             elect_block->shard_network_id() >= network::kConsensusShardEndNetworkId ||
             elect_block->shard_network_id() < network::kRootCongressNetworkId) {
@@ -965,7 +965,8 @@ void NetworkInit::HandleElectionBlock(
 
     auto sharding_id = elect_block->shard_network_id();
     auto elect_height = elect_mgr_->latest_height(sharding_id);
-    ZJC_DEBUG("success called election block. elect height: %lu", elect_height);
+    ZJC_DEBUG("success called election block. elect height: %lu, net: %u",
+        elect_height, elect_block->shard_network_id());
     bft_mgr_->OnNewElectBlock(sharding_id, members);
     block_mgr_->OnNewElectBlock(sharding_id, members);
     vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
