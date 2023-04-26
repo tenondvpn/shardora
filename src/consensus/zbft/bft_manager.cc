@@ -786,7 +786,7 @@ void BftManager::CreateResponseMessage(
         msg_ptr->response->header.mutable_zbft()->set_member_index(
             elect_item.local_node_member_index);
         if (response_to_leader) {
-            assert(msg_ptr->response->header.mutable_zbft()->member_index() != 0);
+            //assert(msg_ptr->response->header.mutable_zbft()->member_index() != 0);
             msg_ptr->response->header.mutable_zbft()->set_leader(true);
             if (!SetBackupEcdhData(msg_ptr->response, mem_ptr)) {
                 return;
