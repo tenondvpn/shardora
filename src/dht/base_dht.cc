@@ -268,14 +268,10 @@ int BaseDht::Bootstrap(
 
 void BaseDht::SendToDesNetworkNodes(const transport::MessagePtr& msg_ptr) {
     auto& message = msg_ptr->header;
-    std::vector<NodePtr> closest_nodes;
-    closest_nodes = DhtFunction::GetClosestNodes(
-        dht_,
-        message.des_dht_key(),
-        common::kDefaultBroadcastNeighborCount);
     uint32_t send_count = 0;
+    auto dht_ptr = readonly_hash_sort_dht_;
     uint32_t des_net_id = DhtKeyManager::DhtKeyGetNetId(message.des_dht_key());
-    for (auto iter = closest_nodes.begin(); iter != closest_nodes.end(); ++iter) {
+    for (auto iter = dht_ptr->begin(); iter != dht_ptr->end() && send_count++ < 3; ++iter) {
         uint32_t net_id = DhtKeyManager::DhtKeyGetNetId((*iter)->dht_key);
         if (net_id != des_net_id) {
             continue;
@@ -286,7 +282,6 @@ void BaseDht::SendToDesNetworkNodes(const transport::MessagePtr& msg_ptr) {
             (*iter)->public_ip,
             (*iter)->public_port,
             message);
-        ++send_count;
     }
 
     if (send_count == 0) {
@@ -317,7 +312,7 @@ void BaseDht::SendToClosestNode(const transport::MessagePtr& msg_ptr) {
     }
 
     auto dht_ptr = readonly_hash_sort_dht_;
-    auto closest_node = GetClosestNode(*dht_ptr, message.des_dht_key());
+    auto closest_node = DhtFunction::GetClosestNode(*dht_ptr, message.des_dht_key());
     transport::TcpTransport::Instance()->Send(
         msg_ptr->thread_idx,
         closest_node->public_ip,
