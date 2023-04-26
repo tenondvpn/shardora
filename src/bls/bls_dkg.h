@@ -101,7 +101,7 @@ private:
         return true;
 #endif
         auto now_tm_us = common::TimeUtils::TimestampUs();
-        if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4)) {
+        if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 3)) {
             return true;
         }
 
@@ -113,8 +113,8 @@ private:
         return true;
 #endif
         auto now_tm_us = common::TimeUtils::TimestampUs();
-        if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 8) &&
-                now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 4)) {
+        if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7) &&
+                now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 3)) {
             return true;
         }
 
@@ -126,8 +126,8 @@ private:
         return true;
 #endif
         auto now_tm_us = common::TimeUtils::TimestampUs();
-        if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 9) &&
-            now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 8)) {
+        if (now_tm_us < (begin_time_us_ + kDkgPeriodUs * 10) &&
+            now_tm_us >= (begin_time_us_ + kDkgPeriodUs * 7)) {
             return true;
         }
 
