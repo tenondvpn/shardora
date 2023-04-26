@@ -459,7 +459,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 //         assert(false);
 //     }
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    CreateResponseMessage(header.zbft().leader_idx() < 0, zbft_vec, msg_ptr, mem_ptr);
+    CreateResponseMessage(header.zbft().leader_idx() >= 0, zbft_vec, msg_ptr, mem_ptr);
     ClearBft(msg_ptr);
     //     ZJC_DEBUG("create response over.");
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
