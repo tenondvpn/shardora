@@ -48,7 +48,7 @@ static void GetZbftHash(
         msg_for_hash.append(zbft_msg.commit_gid());
     }
 
-    bool leader = zbft_msg.leader();
+    int32_t leader = zbft_msg.leader_idx();
     msg_for_hash.append((char*)&leader, sizeof(leader));
     if (zbft_msg.has_net_id()) {
         uint32_t net_id = zbft_msg.net_id();
