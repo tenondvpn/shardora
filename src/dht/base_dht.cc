@@ -316,25 +316,13 @@ void BaseDht::SendToClosestNode(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    std::vector<NodePtr> closest_nodes;
-    closest_nodes = DhtFunction::GetClosestNodes(
-        dht_,
-        message.des_dht_key(),
-        kSendToClosestNodeCount);
-    for (uint32_t i = 0; i < closest_nodes.size(); ++i) {
-        if (closest_nodes[i]->public_ip == local_node_->public_ip &&
-            closest_nodes[i]->public_port == local_node_->public_port) {
-            Drop(closest_nodes[i]);
-            continue;
-        }
-
-        transport::TcpTransport::Instance()->Send(
-            msg_ptr->thread_idx,
-            closest_nodes[i]->public_ip,
-            closest_nodes[i]->public_port,
-            message);
-        break;
-    }
+    auto dht_ptr = readonly_hash_sort_dht_;
+    auto closest_node = GetClosestNode(*dht_ptr, message.des_dht_key());
+    transport::TcpTransport::Instance()->Send(
+        msg_ptr->thread_idx,
+        closest_node->public_ip,
+        closest_node->public_port,
+        message);
 }
 
 NodePtr BaseDht::FindNodeDirect(transport::protobuf::Header& message) {

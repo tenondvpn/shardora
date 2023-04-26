@@ -41,6 +41,7 @@ public:
             Dht& dht,
             const std::string& target,
             uint32_t number_to_get);
+    static NodePtr GetClosestNode(const Dht& dht, const std::string& target);
 
 private:
     DhtFunction() {}

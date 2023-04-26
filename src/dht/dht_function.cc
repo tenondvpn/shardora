@@ -148,6 +148,31 @@ int DhtFunction::IsClosest(
     return kDhtSuccess;
 }
 
+NodePtr DhtFunction::GetClosestNode(const Dht& dht, const std::string& target) {
+    if (dht.size() == 0) {
+        return nullptr;
+    }
+
+    if (dht.size() == 1) {
+        return dht[0];
+    }
+
+    uint32_t min_pos = 0;
+    if (CloserToTarget(dht[0]->dht_key, dht[1]->dht_key, target)) {
+        min_pos = 0;
+    } else {
+        min_pos = 1;
+    }
+
+    for (uint32_t i = 2; i < dht.size(); ++i) {
+        if (!CloserToTarget(dht[min_pos]->dht_key, dht[i]->dht_key, target)) {
+            min_pos = i;
+        }
+    }
+
+    return dht[min_pos];
+}
+
 NodePtr DhtFunction::GetClosestNode(
         Dht& dht,
         const std::string& target,
