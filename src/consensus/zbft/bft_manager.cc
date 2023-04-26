@@ -1968,6 +1968,7 @@ void BftManager::BroadcastElectBlock(
 void BftManager::BroadcastStatisticBlock(
         uint8_t thread_idx,
     const std::shared_ptr<block::protobuf::Block>& block_item) {
+    ZJC_DEBUG("success boradcast statistic block: %u", common::GlobalInfo::Instance()->network_id());
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         return;
     }

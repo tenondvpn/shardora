@@ -116,8 +116,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(uint32_t pool_index, bool leader) {
-    if (!leader)
-    ZJC_DEBUG("0 success get statistic tx %u, %d", pool_index, leader);
     if (pool_index != 0) {
         return nullptr;
     }
