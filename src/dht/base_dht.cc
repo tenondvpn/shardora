@@ -271,7 +271,7 @@ void BaseDht::SendToDesNetworkNodes(const transport::MessagePtr& msg_ptr) {
     uint32_t send_count = 0;
     auto dht_ptr = readonly_hash_sort_dht_;
     uint32_t des_net_id = DhtKeyManager::DhtKeyGetNetId(message.des_dht_key());
-    for (auto iter = dht_ptr->begin(); iter != dht_ptr->end() && send_count++ < 3; ++iter) {
+    for (auto iter = dht_ptr->begin(); iter != dht_ptr->end() && ; ++iter) {
         uint32_t net_id = DhtKeyManager::DhtKeyGetNetId((*iter)->dht_key);
         if (net_id != des_net_id) {
             continue;
@@ -282,6 +282,9 @@ void BaseDht::SendToDesNetworkNodes(const transport::MessagePtr& msg_ptr) {
             (*iter)->public_ip,
             (*iter)->public_port,
             message);
+        if (++send_count > 3) {
+            break;
+        }
     }
 
     if (send_count == 0) {

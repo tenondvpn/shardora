@@ -168,7 +168,8 @@ int ElectTxItem::CreateNewElect(
     elect_block.set_shard_network_id(elect_statistic.sharding_id());
     elect_block.set_elect_height(block.height());
     if (bls_mgr_->AddBlsConsensusInfo(elect_block) != bls::kBlsSuccess) {
-        ZJC_WARN("add prev elect bls consensus info failed!");
+        ZJC_WARN("add prev elect bls consensus info failed sharding id: %u",
+            elect_statistic.sharding_id());
     }
 
     std::string val = elect_block.SerializeAsString();
