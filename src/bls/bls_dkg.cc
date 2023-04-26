@@ -119,8 +119,9 @@ void BlsDkg::OnNewElectionBlock(
     swap_offset_ += rand() % kDkgPeriodUs;
     finish_offset_ += rand() % kDkgPeriodUs;
 
-    ZJC_DEBUG("bls time point time block tm: %u, begin_time_sec_: %u, "
+    ZJC_DEBUG("bls time point now: %u, time block tm: %u, begin_time_sec_: %u, "
         "kDkgPeriodUs: %u, ver_offset_: %u, swap_offset_: %u, finish_offset_: %u",
+        common::TimeUtils::TimestampSeconds(),
         latest_timeblock_info->lastest_time_block_tm,
         begin_time_us_ / 1000000,
         kDkgPeriodUs / 1000000,
