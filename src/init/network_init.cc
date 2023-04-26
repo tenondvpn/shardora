@@ -948,7 +948,7 @@ void NetworkInit::HandleElectionBlock(
         }
     }
 
-    ZJC_DEBUG("election block coming: %lu, net: %u, pool: %u, sharding id: %",
+    ZJC_DEBUG("election block coming: %lu, net: %u, pool: %u, sharding id: %u",
         block->height(), block->network_id(), block->pool_index(), elect_block->shard_network_id());
     if (!elect_block->has_shard_network_id() ||
             elect_block->shard_network_id() >= network::kConsensusShardEndNetworkId ||
