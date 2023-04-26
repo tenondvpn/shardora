@@ -360,7 +360,7 @@ ZbftPtr BftManager::StartBft(
     }
 
     auto& elect_item = elect_items_[elect_item_idx_];
-    if (InitZbftPtr(elect_item->local_node_member_index, bft_ptr) != kConsensusSuccess) {
+    if (InitZbftPtr(elect_item.local_node_member_index, bft_ptr) != kConsensusSuccess) {
         ZJC_ERROR("InitZbftPtr failed!");
         return nullptr;
     }
@@ -376,7 +376,6 @@ ZbftPtr BftManager::StartBft(
     bft_ptr->set_gid(gid);
     bft_ptr->set_network_id(common::GlobalInfo::Instance()->network_id());
     // bft_ptr->set_randm_num(vss::VssManager::Instance()->EpochRandom());
-    auto& elect_item = elect_items_[elect_item_idx_];
     bft_ptr->set_member_count(elect_item.member_size);
     if (msg_ptr != nullptr) {
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
