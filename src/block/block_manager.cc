@@ -559,11 +559,6 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
     }
 
     auto& heights = msg_ptr->header.block_proto().shard_statistic_tx();
-    if (shard_statistic_tx_ != nullptr) {
-        ZJC_DEBUG("statistic tx sharding not consensus yet");
-        return;
-    }
-
     std::string statistic_hash;
     if (statistic_mgr_->StatisticWithHeights(
             heights,
