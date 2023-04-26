@@ -134,7 +134,7 @@ private:
         return false;
     }
 
-    static const uint64_t kTimeBlsPeriodSeconds = kTimeBlockCreatePeriodSeconds / 3;
+    static const uint64_t kTimeBlsPeriodSeconds = common::kTimeBlockCreatePeriodSeconds / 3;
 
     BlsManager* bls_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ = nullptr;

@@ -100,12 +100,12 @@ void BlsDkg::OnNewElectionBlock(
     }
 
     auto tmblock_tm = (latest_timeblock_info->lastest_time_block_tm +
-        kTimeBlockCreatePeriodSeconds - kTimeBlsPeriodSeconds) * 1000l * 1000l;
+        common::kTimeBlockCreatePeriodSeconds - kTimeBlsPeriodSeconds) * 1000l * 1000l;
     begin_time_us_ = common::TimeUtils::TimestampUs();
     ver_offset_ = kDkgPeriodUs;
     swap_offset_ = kDkgPeriodUs * 4;
     finish_offset_ = kDkgPeriodUs * 8;
-    auto timeblock_period = common::kTimeBlockCreatePeriodSeconds * 1000l * 1000l;
+    auto timeblock_period = kTimeBlsPeriodSeconds * 1000l * 1000l;
     auto offset_period = timeblock_period / 3l;
     if (begin_time_us_ < tmblock_tm + offset_period) {
         kDkgPeriodUs = (timeblock_period - offset_period) / 10l;
