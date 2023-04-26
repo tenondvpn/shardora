@@ -121,10 +121,16 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         HandleCrossShardingStatisticTxs(msg_ptr);
     }
 
-    if (msg_ptr->header.type() == common::kPoolsMessage) {
-        ZJC_DEBUG("block pools message coming.");
+    if (msg_ptr->header.has_elect_block()) {
+        HandleElectBlock(msg_ptr);
     }
+}
 
+void BlockManager::HandleElectBlock(const transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
+    auto block_ptr = std::make_shared<block::protobuf::Block>(header.elect_block().block());
+    // (TODO): check block agg sign
+    NetworkNewBlock(msg_ptr->thread_idx, block_ptr);
 }
 
 void BlockManager::HandleCrossShardingStatisticTxs(const transport::MessagePtr& msg_ptr) {

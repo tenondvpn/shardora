@@ -54,5 +54,6 @@ message Header {
     optional vss.protobuf.VssMessage vss_proto = 21;
     optional block.protobuf.CrossShardingTosMessage cross_tos = 22;
     optional block.protobuf.CrossShardingStatisticMessage cross_statistic = 23;
-    optional init.protobuf.InitMessage init_proto = 24;
+    optional block.protobuf.ElectBlockMessage elect_block = 24;
+    optional init.protobuf.InitMessage init_proto = 25;
 }
