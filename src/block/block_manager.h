@@ -122,6 +122,7 @@ private:
     void HandleStatisticBlock(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
+        const pools::protobuf::ElectStatistic& elect_statistic,
         db::DbWriteBatch& db_batch);
 
     static const uint64_t kCreateToTxPeriodMs = 10000u;

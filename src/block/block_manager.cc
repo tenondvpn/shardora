@@ -222,11 +222,34 @@ void BlockManager::HandleStatisticTx(
     ZJC_DEBUG("success handled statistic block time block height: %lu, net: %u",
         consensused_timeblock_height_,
         block.network_id());
+
+    pools::protobuf::ElectStatistic elect_statistic;
+    for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
+        if (block_tx.storages(i).key() == protos::kShardStatistic) {
+            std::string val;
+            if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
+                return;
+            }
+
+            if (!elect_statistic.ParseFromString(val)) {
+                return;
+            }
+
+            if (shard_statistic_tx_ != nullptr) {
+                if (block_tx.storages(i).val_hash() == shard_statistic_tx_->tx_hash) {
+                    shard_statistic_tx_ = nullptr;
+                }
+            }
+
+            break;
+        }
+    }
+
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         return;
     }
 
-    HandleStatisticBlock(block, tx, db_batch);
+    HandleStatisticBlock(block, tx, elect_statistic, db_batch);
 }
 
 void BlockManager::HandleNormalToTx(
@@ -594,6 +617,7 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
 void BlockManager::HandleStatisticBlock(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& block_tx,
+        const pools::protobuf::ElectStatistic& elect_statistic,
         db::DbWriteBatch& db_batch) {
     if (create_elect_tx_cb_ == nullptr) {
         return;
@@ -603,28 +627,6 @@ void BlockManager::HandleStatisticBlock(
             block.network_id(),
             block.timeblock_height())) {
         return;
-    }
-
-    pools::protobuf::ElectStatistic elect_statistic;
-    for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-        if (block_tx.storages(i).key() == protos::kShardStatistic) {
-            std::string val;
-            if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
-                return;
-            }
-
-            if (!elect_statistic.ParseFromString(val)) {
-                return;
-            }
-
-            if (shard_statistic_tx_ != nullptr) {
-                if (block_tx.storages(i).val_hash() == shard_statistic_tx_->tx_hash) {
-                    shard_statistic_tx_ = nullptr;
-                }
-            }
-
-            break;
-        }
     }
 
     if (elect_statistic.statistics_size() <= 0) {
