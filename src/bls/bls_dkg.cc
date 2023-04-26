@@ -99,7 +99,8 @@ void BlsDkg::OnNewElectionBlock(
         }
     }
 
-    auto tmblock_tm = latest_timeblock_info->lastest_time_block_tm * 1000l * 1000l;
+    auto tmblock_tm = (latest_timeblock_info->lastest_time_block_tm +
+        kTimeBlockCreatePeriodSeconds - kTimeBlsPeriodSeconds) * 1000l * 1000l;
     begin_time_us_ = common::TimeUtils::TimestampUs();
     ver_offset_ = kDkgPeriodUs;
     swap_offset_ = kDkgPeriodUs * 4;
@@ -114,9 +115,18 @@ void BlsDkg::OnNewElectionBlock(
         finish_offset_ = ver_offset_ + kDkgPeriodUs * 7;
     }
 
-    ver_offset_ += rand() % kDkgPeriodUs + kDkgPeriodUs * 2;
+    ver_offset_ += rand() % kDkgPeriodUs;
     swap_offset_ += rand() % kDkgPeriodUs;
     finish_offset_ += rand() % kDkgPeriodUs;
+
+    ZJC_DEBUG("bls time point time block tm: %u, begin_time_sec_: %u, "
+        "kDkgPeriodUs: %u, ver_offset_: %u, swap_offset_: %u, finish_offset_: %u",
+        latest_timeblock_info->lastest_time_block_tm,
+        begin_time_us_ / 1000000,
+        kDkgPeriodUs / 1000000,
+        ver_offset_ / 1000000,
+        swap_offset_ / 1000000,
+        finish_offset_ / 1000000);
     has_broadcast_verify_ = false;
     has_broadcast_swapkey_ = false;
     has_finished_ = false;

@@ -134,9 +134,12 @@ private:
         return false;
     }
 
+    static const uint64_t kTimeBlsPeriodSeconds = kTimeBlockCreatePeriodSeconds / 3;
+
     BlsManager* bls_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ = nullptr;
-    int64_t kDkgPeriodUs = common::kTimeBlockCreatePeriodSeconds / 10 * 1000u * 1000u;
+
+    int64_t kDkgPeriodUs = kTimeBlsPeriodSeconds / 10 * 1000u * 1000u;
     common::MembersPtr members_{ nullptr };
     uint64_t elect_hegiht_{ 0 };
     std::vector<libff::alt_bn128_Fr> local_src_secret_key_contribution_;
