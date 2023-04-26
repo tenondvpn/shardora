@@ -118,10 +118,10 @@ void BlsDkg::OnNewElectionBlock(
     uint64_t end_tm_point = (latest_timeblock_info->lastest_time_block_tm + common::kTimeBlockCreatePeriodSeconds) * 1000000lu;
     if (begin_time_us_ < tmblock_tm && end_tm_point > tmblock_tm) {
         kDkgPeriodUs = (end_tm_point - tmblock_tm) / 10l;
-        ver_offset_ = tmblock_tm - begin_time_us_;
-        begin_time_us_ = tmblock_tm - kDkgPeriodUs;
-        swap_offset_ = ver_offset_ + kDkgPeriodUs * 4;
-        finish_offset_ = ver_offset_ + kDkgPeriodUs * 7;
+        begin_time_us_ = tmblock_tm;
+        ver_offset_ = kDkgPeriodUs;
+        swap_offset_ = kDkgPeriodUs * 4;
+        finish_offset_ = kDkgPeriodUs * 7;
     }
 
     ZJC_DEBUG("1 bls time point now: %u, time block tm: %u, offset tmblock_tm: %u, begin_time_sec_: %u, "
