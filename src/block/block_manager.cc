@@ -817,7 +817,6 @@ void BlockManager::OnTimeBlock(
     }
 
     latest_timeblock_height_ = latest_time_block_height;
-    shard_statistic_tx_ = nullptr;
     CreateStatisticTx(thread_idx);
 }
 
