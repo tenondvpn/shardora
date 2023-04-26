@@ -1949,14 +1949,15 @@ void BftManager::BroadcastElectBlock(
     msg.set_type(common::kBlockMessage);
     dht::DhtKeyManager dht_key(network::kNodeNetworkId);
     msg.set_des_dht_key(dht_key.StrKey());
-
     auto& tx = block_item->tx_list(0);
+    elect::protobuf::ElectBlock elect_block;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         std::string val;
         if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
             auto kv = msg.mutable_sync()->add_items();
             kv->set_key(tx.storages(i).val_hash());
             kv->set_value(val);
+            elect_block.ParseFromString(val);
         }
     }
 
@@ -1965,7 +1966,7 @@ void BftManager::BroadcastElectBlock(
     auto* brdcast = msg.mutable_broadcast();
     network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("success broadcast elect block height: %lu, sharding id: %u",
-        block_item->height(), network::kRootCongressNetworkId);
+        block_item->height(), elect_block.shard_network_id());
 }
 
 void BftManager::BroadcastStatisticBlock(

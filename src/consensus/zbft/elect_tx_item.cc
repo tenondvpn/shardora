@@ -138,7 +138,6 @@ int ElectTxItem::CreateNewElect(
     auto& storage = *block_tx.add_storages();
     storage.set_key(protos::kElectNodeAttrElectBlock);
     elect::protobuf::ElectBlock elect_block;
-
     int32_t expect_leader_count = (int32_t)pow(
         2.0,
         (double)((int32_t)log2(double(elect_nodes.size() / 3))));
