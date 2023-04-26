@@ -1934,7 +1934,7 @@ void BftManager::LeaderBroadcastBlock(
 
 void BftManager::BroadcastElectBlock(
         uint8_t thread_idx,
-        const std::shared_ptr<block::protobuf::Block>& block) {
+        const std::shared_ptr<block::protobuf::Block>& block_item) {
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         return;
     }
