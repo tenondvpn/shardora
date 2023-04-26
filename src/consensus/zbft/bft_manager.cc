@@ -1963,6 +1963,7 @@ void BftManager::BroadcastElectBlock(
 
     auto& elect_block = *msg.mutable_elect_block();
     *elect_block.mutable_block() = *block_item;
+    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     auto* brdcast = msg.mutable_broadcast();
     network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("success broadcast elect block height: %lu, sharding id: %u",
@@ -1997,6 +1998,7 @@ void BftManager::BroadcastStatisticBlock(
 
     auto& cross_statistic = *msg.mutable_cross_statistic();
     *cross_statistic.mutable_block() = *block_item;
+    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     auto* brdcast = msg.mutable_broadcast();
     network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("success broadcast cross statistic height: %lu, sharding id: %u",
@@ -2030,6 +2032,7 @@ void BftManager::BroadcastWaitingBlock(
     msg.set_des_dht_key(dht_key.StrKey());
     auto& cross_msg = *msg.mutable_cross_tos();
     *cross_msg.mutable_block() = *block_item;
+    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     auto* brdcast = msg.mutable_broadcast();
     network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("success broadcast waiting block height: %lu, sharding id: %u",
@@ -2082,6 +2085,7 @@ void BftManager::BroadcastLocalTosBlock(
     dht::DhtKeyManager dht_key(to_tx.to_heights().sharding_id());
     msg.set_des_dht_key(dht_key.StrKey());
     auto& cross_msg = *msg.mutable_cross_tos();
+    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     *cross_msg.mutable_block() = *block_item;
     auto* brdcast = msg.mutable_broadcast();
     network::Route::Instance()->Send(msg_ptr);
