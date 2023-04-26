@@ -47,7 +47,6 @@ int Zbft::Init(
     elect_height_ = elect_height;
     leader_mem_ptr_ = (*members_ptr)[leader_idx];
     if (pool_index() % leader_count != leader_mem_ptr_->pool_index_mod_num) {
-        assert(false);
         return kConsensusError;
     }
 
