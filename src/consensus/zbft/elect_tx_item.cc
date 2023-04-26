@@ -26,8 +26,6 @@ int ElectTxItem::HandleTx(
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kShardElection) {
             uint64_t* tmp = (uint64_t*)block_tx.storages(i).val_hash().c_str();
-            tmp[0] = block.network_id();
-            tmp[1] = block.timeblock_height();
             pools::protobuf::ElectStatistic elect_statistic;
             if (!prefix_db_->GetStatisticedShardingHeight(
                     tmp[0],
