@@ -212,7 +212,7 @@ void BlockManager::AddAllAccount(
 void BlockManager::HandleStatisticTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
+        const block::protobuf::BlockTx& block_tx,
         db::DbWriteBatch& db_batch) {
     consensused_timeblock_height_ = block.timeblock_height();
     prefix_db_->SaveConsensusedStatisticTimeBlockHeight(
@@ -249,7 +249,7 @@ void BlockManager::HandleStatisticTx(
         return;
     }
 
-    HandleStatisticBlock(block, tx, elect_statistic, db_batch);
+    HandleStatisticBlock(block, block_tx, elect_statistic, db_batch);
 }
 
 void BlockManager::HandleNormalToTx(
