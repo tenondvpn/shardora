@@ -257,6 +257,8 @@ ZbftPtr BftManager::Start(
         return nullptr;
     }
 
+    ZJC_DEBUG("leader now get tx to consensus thread_index: %d, index: %d",
+        thread_index, elect_items_[elect_item_idx_].local_node_member_index);
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
     auto begin_index = thread_item->prev_index;
     auto can_new_bft = bft_hash_map_[thread_index].empty();
