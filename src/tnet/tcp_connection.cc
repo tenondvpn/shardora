@@ -240,6 +240,7 @@ bool TcpConnection::OnRead() {
             }
 
             spin_mutex_.unlock();
+            create_timestamp_ms_ = common::TimeUtils::TimestampMs();
             if (!packet_handler_(this, *packet)) {
                 userBreak = true;
             }
