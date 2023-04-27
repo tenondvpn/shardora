@@ -227,7 +227,7 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
 //     }
 
     if (!IsVerifyBrdPeriod()) {
-        assert(false);
+//         assert(false);
         return;
     }
 
