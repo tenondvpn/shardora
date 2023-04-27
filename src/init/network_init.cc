@@ -180,9 +180,12 @@ int NetworkInit::Init(int argc, char** argv) {
 
     if (common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32 &&
             common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
-        if (elect_mgr_->Join(0, common::GlobalInfo::Instance()->network_id()) != elect::kElectSuccess) {
-            INIT_ERROR("join waiting pool network[%u] failed!", waiting_network_id);
-            return;
+        if (elect_mgr_->Join(
+                0,
+                common::GlobalInfo::Instance()->network_id()) != elect::kElectSuccess) {
+            INIT_ERROR("join waiting pool network[%u] failed!",
+                common::GlobalInfo::Instance()->network_id());
+            return kInitError;
         }
     }
 
