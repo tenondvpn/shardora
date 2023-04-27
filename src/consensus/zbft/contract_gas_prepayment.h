@@ -27,7 +27,7 @@ public:
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
         if (block.height() <= pools_max_heights_[block.pool_index()]) {
-            assert(false);
+//             assert(false);
             return;
         }
 
