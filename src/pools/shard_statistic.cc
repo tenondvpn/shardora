@@ -278,6 +278,14 @@ int ShardStatistic::StatisticWithHeights(
         ++max_pool;
     }
 
+    if (tx_heights_ptr_ == nullptr) {
+        return kPoolsError;
+    }
+
+    if (tx_heights_ptr_->heights_size() < max_pool) {
+        return kPoolsError;
+    }
+
     std::unordered_map<uint64_t, std::unordered_map<std::string, uint32_t>> height_node_count_map;
     std::unordered_map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
     auto now_elect_members = elect_mgr_->GetNetworkMembersWithHeight(
