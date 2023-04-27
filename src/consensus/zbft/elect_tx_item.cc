@@ -121,6 +121,12 @@ int ElectTxItem::HandleTx(
                 return res;
             }
 
+            std::mt19937_64 g2(vss_mgr_->EpochRandom());
+            auto RandFunc = [&g2](int i) -> int {
+                return g2() % i;
+            };
+
+            std::random_shuffle(elect_nodes.begin(), elect_nodes.end(), RandFunc);
             CreateNewElect(thread_idx, block, elect_nodes, elect_statistic, db_batch, block_tx);
             ZJC_DEBUG("consensus elect tx success: %u", elect_statistic.sharding_id());
             return kConsensusSuccess;
