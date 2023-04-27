@@ -286,7 +286,7 @@ tnet::TcpConnection* TcpTransport::GetConnection(
     std::string peer_spec = ip + ":" + std::to_string(port);
     auto iter = conn_map_[thread_idx].find(peer_spec);
     if (iter != conn_map_[thread_idx].end()) {
-        if (iter->second->GetTcpState() == tnet::TcpConnection::kTcpClosed) {
+        if (iter->second->ShouldReconnect()) {
             common::AutoSpinLock guard(erase_conns_mutex_);
             erase_conns_.push_back(iter->second);
             conn_map_[thread_idx].erase(iter);

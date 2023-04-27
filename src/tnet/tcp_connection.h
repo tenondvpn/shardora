@@ -4,6 +4,7 @@
 
 #include "common/spin_mutex.h"
 #include "common/tick.h"
+#include "common/time_utils.h"
 #include "tnet/tcp_interface.h"
 #include "tnet/tnet_utils.h"
 #include "tnet/socket/socket.h"
@@ -112,6 +113,19 @@ public:
     uint64_t free_timeout_ms() {
         return free_timeout_ms_;
     }
+    
+    bool ShouldReconnect() {
+        auto now_tm_ms = common::TimeUtils::TimestampMs();
+        if (now_tm_ms >= create_timestamp_ms_ + kConnectTimeoutMs) {
+            return true;
+        }
+
+        if (GetTcpState() == tnet::TcpConnection::kTcpClosed) {
+            return true;
+        }
+
+        return false;
+    }
 
 private:
     typedef std::deque<ByteBufferPtr> BufferList;
@@ -130,6 +144,8 @@ private:
     void OnConnectTimeout();
     void NotifyCmdPacketAndClose(int type);
     void ReleaseByIOThread();
+
+    static const uint64_t kConnectTimeoutMs = 3000lu;
 
     common::SpinMutex spin_mutex_;
     BufferList out_buffer_list_;
@@ -150,6 +166,7 @@ private:
     uint32_t id_{ 0 };
     uint64_t free_timeout_ms_{ 0 };
     uint32_t max_count_{ 0 };
+    uint64_t create_timestamp_ms_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TcpConnection);
 };

@@ -388,6 +388,7 @@ bool TcpConnection::ConnectWithoutLock(uint32_t timeout) {
 //         }
     }
 
+    create_timestamp_ms_ = common::TimeUtils::TimestampMs();
     return true;
 }
 
