@@ -109,6 +109,7 @@ int ElectTxItem::HandleTx(
             }
 
             res = GetJoinElectNodesCredit(
+                members->size(),
                 join_count,
                 elect_statistic,
                 thread_idx,
@@ -143,7 +144,6 @@ int ElectTxItem::CreateNewElect(
     int32_t expect_leader_count = (int32_t)pow(
         2.0,
         (double)((int32_t)log2(double(elect_nodes.size() / 3))));
-    ZJC_DEBUG("leader size: %d, nodes count: %u", expect_leader_count, elect_nodes.size());
     if (expect_leader_count > (int32_t)common::kImmutablePoolSize) {
         expect_leader_count = (int32_t)common::kImmutablePoolSize;
     }
@@ -152,6 +152,8 @@ int ElectTxItem::CreateNewElect(
     std::vector<NodeDetailPtr> elect_nodes_to_choose = elect_nodes;
     std::set<uint32_t> leader_nodes;
     FtsGetNodes(elect_nodes_to_choose, false, expect_leader_count, leader_nodes);
+    ZJC_DEBUG("leader size: %d, nodes count: %u, leader size: %d",
+        expect_leader_count, elect_nodes.size(), leader_nodes.size());
     if (leader_nodes.size() != expect_leader_count) {
         ZJC_ERROR("choose leader failed: %u", elect_statistic.sharding_id());
         return kConsensusError;
@@ -281,6 +283,7 @@ int ElectTxItem::CheckWeedout(
 }
 
 int ElectTxItem::GetJoinElectNodesCredit(
+        uint32_t begin_index,
         uint32_t count,
         const pools::protobuf::ElectStatistic& elect_statistic,
         uint8_t thread_idx,
@@ -304,7 +307,7 @@ int ElectTxItem::GetJoinElectNodesCredit(
         node_info->tx_count = min_tx_count;
         node_info->credit = account_info->credit();
         node_info->pubkey = elect_statistic.join_elect_nodes(i).id();
-        node_info->index = i;
+        node_info->index = begin_index++;
         elect_nodes_to_choose.push_back(node_info);
     }
 

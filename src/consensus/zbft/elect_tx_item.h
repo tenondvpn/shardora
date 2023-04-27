@@ -55,6 +55,7 @@ private:
         uint32_t* min_tx_count,
         std::vector<NodeDetailPtr>& elect_nodes);
     int GetJoinElectNodesCredit(
+        uint32_t begin_index,
         uint32_t count,
         const pools::protobuf::ElectStatistic& elect_statistic,
         uint8_t thread_idx,
