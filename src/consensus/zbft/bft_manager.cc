@@ -420,7 +420,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         header.zbft().member_index(),
         header.zbft().pool_index(),
         header.zbft().elect_height());
-    assert(header.zbft().elect_height() > 0);
     if (elect_item.local_node_member_index == header.zbft().member_index()) {
         //assert(false);
         return;
@@ -430,6 +429,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return HandleSyncConsensusBlock(elect_item, msg_ptr);
     }
 
+    assert(header.zbft().elect_height() > 0);
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     assert(header.zbft().has_member_index());
     SetDefaultResponse(msg_ptr);

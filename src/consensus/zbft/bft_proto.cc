@@ -164,6 +164,7 @@ bool BftProto::LeaderCreateCommit(
     bft_msg.set_commit_gid(bft_ptr->gid());
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_agree_commit(agree);
+    bft_msg.set_elect_height(bft_ptr->elect_height());
     const auto& bitmap_data = bft_ptr->prepare_bitmap().data();
     for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
         bft_msg.add_bitmap(bitmap_data[i]);
