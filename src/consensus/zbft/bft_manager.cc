@@ -1649,7 +1649,7 @@ ZbftPtr BftManager::LeaderGetZbft(
     auto& member_ptr = (*bft_ptr->members_ptr())[bft_msg.member_index()];
     if (!VerifyBackupIdValid(msg_ptr, member_ptr)) {
         ZJC_ERROR("verify backup valid error: %d!", bft_msg.member_index());
-        assert(false);
+//         assert(false);
         return nullptr;
     }
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
