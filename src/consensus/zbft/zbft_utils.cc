@@ -48,7 +48,7 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
     ZJC_DEBUG("amount: %lu, gas_limit: %lu, gas_price: %lu, step: %u, key: %s, val: %s, block tx hash: %s",
         amount, gas_limit, gas_price, step,
         tx_info.storages(0).key().c_str(),
-        common::Encode::HexEncode(tx_info.storages(0).val_hash()).c_str()
+        common::Encode::HexEncode(tx_info.storages(0).val_hash()).c_str(),
         common::Encode::HexEncode(message).c_str());
     return common::Hash::keccak256(message);
 }
