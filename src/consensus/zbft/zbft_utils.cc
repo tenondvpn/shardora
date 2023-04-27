@@ -37,14 +37,19 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
     message.append(std::string((char*)&gas_limit, sizeof(gas_limit)));
     uint64_t gas_price = tx_info.gas_price();
     message.append(std::string((char*)&gas_price, sizeof(gas_price)));
-    uint64_t step = tx_info.step();
+    uint32_t step = tx_info.step();
     message.append(std::string((char*)&step, sizeof(step)));
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
         message.append(tx_info.storages(i).key());
         message.append(tx_info.storages(i).val_hash());
     }
 
-    ZJC_DEBUG("block tx hash: %s", common::Encode::HexEncode(message).c_str());
+    if (tx_info.storages_size() > 0)
+    ZJC_DEBUG("amount: %lu, gas_limit: %lu, gas_price: %lu, step: %u, key: %s, val: %s, block tx hash: %s",
+        amount, gas_limit, gas_price, step,
+        tx_info.storages(0).key().c_str(),
+        common::Encode::HexEncode(tx_info.storages(0).val_hash()).c_str()
+        common::Encode::HexEncode(message).c_str());
     return common::Hash::keccak256(message);
 }
 
