@@ -318,6 +318,9 @@ int ElectTxItem::GetJoinElectNodesCredit(
         }
 
         elect_nodes.push_back(*iter);
+        ZJC_DEBUG("success add join elect node: %s",
+            common::Encode::HexEncode((*iter)->pubkey).c_str());
+        assert(!(*iter)->pubkey.empty());
     }
 
     return kConsensusSuccess;
