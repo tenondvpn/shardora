@@ -463,7 +463,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     int res = kConsensusSuccess;
     if (header.zbft().leader_idx() >= 0) {
-        BackupHandleZbftMessage(elect_item, msg_ptr->thread_idx, msg_ptr);
+        BackupHandleZbftMessage(msg_ptr->thread_idx, elect_item, msg_ptr);
     } else {
         LeaderHandleZbftMessage(elect_item, msg_ptr);
     }
