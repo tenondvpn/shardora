@@ -523,7 +523,7 @@ void ShardStatistic::LoadLatestHeights() {
         init_consensus_height += std::to_string(tx_heights_ptr_->heights(i)) + " ";
     }
 
-    ZJC_DEBUG("success load min elect statistic heights: %s", init_consensus_height.c_str());
+    ZJC_DEBUG("init success change min elect statistic heights: %s", init_consensus_height.c_str());
     for (uint32_t i = 0; i < max_pool_index; ++i) {
         uint64_t pool_latest_height = pools_mgr_->latest_height(i);
         bool consensus_stop = false;
@@ -542,13 +542,6 @@ void ShardStatistic::LoadLatestHeights() {
             }
         }
     }
-
-    std::string init_consensus_height;
-    for (uint32_t i = 0; i < tx_heights_ptr_->heights_size(); ++i) {
-        init_consensus_height += std::to_string(tx_heights_ptr_->heights(i)) + " ";
-    }
-
-    ZJC_DEBUG("init success change min elect statistic heights: %s", init_consensus_height.c_str());
 }
 
 }  // namespace pools
