@@ -72,8 +72,8 @@ int BftManager::Init(
     thread_count_ = thread_count;
     bft_hash_map_ = new std::unordered_map<std::string, ZbftPtr>[thread_count];
     bft_queue_ = new std::queue<ZbftPtr>[thread_count];
-    elect_items_[0] = new std::make_shared<ElectItem>();
-    elect_items_[1] = new std::make_shared<ElectItem>();
+    elect_items_[0] = std::make_shared<ElectItem>();
+    elect_items_[1] = std::make_shared<ElectItem>();
 
 #ifdef ZJC_UNITTEST
     now_msg_ = new transport::MessagePtr[thread_count_];
