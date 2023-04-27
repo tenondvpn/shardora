@@ -463,7 +463,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     int res = kConsensusSuccess;
     if (header.zbft().leader_idx() >= 0) {
-        BackupHandleZbftMessage(msg_ptr->thread_idx, msg_ptr);
+        BackupHandleZbftMessage(elect_item, msg_ptr->thread_idx, msg_ptr);
     } else {
         LeaderHandleZbftMessage(elect_item, msg_ptr);
     }
@@ -1078,7 +1078,7 @@ ZbftPtr BftManager::CreateBftPtr(
 
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-    if (InitZbftPtr(bft_msg.leader_idx(), bft_msg.elect_height(), bft_ptr) != kConsensusSuccess) {
+    if (InitZbftPtr(bft_msg.leader_idx(), elect_item, bft_ptr) != kConsensusSuccess) {
         return nullptr;
     }
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
