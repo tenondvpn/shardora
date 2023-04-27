@@ -40,9 +40,9 @@ public:
         int32_t leader_idx,
         int32_t leader_count,
         uint64_t elect_height,
-        common::MembersPtr& members_ptr,
-        libff::alt_bn128_G2& common_pk,
-        libff::alt_bn128_Fr& local_sec_key);
+        const common::MembersPtr& members_ptr,
+        const libff::alt_bn128_G2& common_pk,
+        const libff::alt_bn128_Fr& local_sec_key);
     int Prepare(bool leader, zbft::protobuf::ZbftMessage* bft_msg);
     int LeaderCreatePrepare(zbft::protobuf::ZbftMessage* bft_msg);
     int BackupCheckPrepare(
