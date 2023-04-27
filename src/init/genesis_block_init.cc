@@ -578,6 +578,11 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
                     std::string val_hash = protos::GetElectBlockHash(ec_block);
                     prefix_db_->SaveTemporaryKv(val_hash, ec_block_str);
                     prefix_db_->SaveLatestElectBlock(ec_block, db_batch);
+                    ZJC_DEBUG("save elect block sharding: %u, height: %u, has prev: %d, has common_pk: %d",
+                        ec_block.shard_network_id(),
+                        ec_block.elect_height(),
+                        ec_block.has_prev_members(),
+                        ec_block.prev_members().has_common_pubkey());
                 }
 
                 if (tenon_block->tx_list(i).storages(j).key() == protos::kAttrTimerBlock) {

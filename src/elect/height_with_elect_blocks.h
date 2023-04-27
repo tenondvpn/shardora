@@ -270,6 +270,11 @@ public:
         libff::alt_bn128_G2 tmp_common_pk = libff::alt_bn128_G2::zero();
         auto& prev_members = elect_block.prev_members();
         if (!prev_members.has_common_pubkey()) {
+            ZJC_DEBUG("error get elect block sharding: %u, height: %u, has prev: %d, has common_pk: %d",
+                elect_block.shard_network_id(),
+                elect_block.elect_height(),
+                elect_block.has_prev_members(),
+                elect_block.prev_members().has_common_pubkey());
             assert(false);
             return nullptr;
         }
