@@ -515,6 +515,10 @@ void BlockManager::HandleElectTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
+    if (shard_elect_tx_.empty()) {
+        return;
+    }
+
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         return;
     }
@@ -531,8 +535,14 @@ void BlockManager::HandleElectTx(
                 return;
             }
 
-            if (shard_elect_tx_[elect_block.shard_network_id()]->tx_hash == tx.gid()) {
-                shard_elect_tx_.erase(elect_block.shard_network_id());
+            auto iter = shard_elect_tx_.find(elect_block.shard_network_id()) {
+                if (iter == shard_elect_tx_.end()) {
+                    return;
+                }
+            }
+
+            if (iter->second->tx_hash == tx.gid()) {
+                shard_elect_tx_.erase(iter);
                 ZJC_DEBUG("success erase elect tx: %u", elect_block.shard_network_id());
             }
         }
