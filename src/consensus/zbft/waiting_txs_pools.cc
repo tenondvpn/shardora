@@ -75,7 +75,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(
 
     auto tx_ptr = block_mgr_->GetElectTx(pool_index, tx_hash);
     if (tx_ptr != nullptr) {
-        if (leader) {
+        if (tx_hash.empty()) {
             auto now_tm = common::TimeUtils::TimestampUs();
             if (tx_ptr->prev_consensus_tm_us + 300000lu > now_tm) {
                 tx_ptr->in_consensus = false;
