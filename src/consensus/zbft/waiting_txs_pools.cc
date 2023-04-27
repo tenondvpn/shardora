@@ -59,19 +59,21 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
     }
 
     if (txs_item == nullptr) {
-        txs_item = GetElectTx(pool_index, true);
+        txs_item = GetElectTx(pool_index, "");
     }
 
     return txs_item;
 }
 
-std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(uint32_t pool_index, bool leader) {
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetElectTx(
+        uint32_t pool_index,
+        const std::string& tx_hash) {
     if (pool_index != common::kRootChainPoolIndex ||
             common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         return nullptr;
     }
 
-    auto tx_ptr = block_mgr_->GetElectTx(pool_index, leader);
+    auto tx_ptr = block_mgr_->GetElectTx(pool_index, tx_hash);
     if (tx_ptr != nullptr) {
         if (leader) {
             auto now_tm = common::TimeUtils::TimestampUs();

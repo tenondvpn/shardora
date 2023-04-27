@@ -37,7 +37,7 @@ public:
     std::shared_ptr<WaitingTxsItem> GetToTxs(uint32_t pool_index, bool leader);
     std::shared_ptr<WaitingTxsItem> GetStatisticTx(uint32_t pool_index, bool leader);
     std::shared_ptr<WaitingTxsItem> GetTimeblockTx(uint32_t pool_index, bool leader);
-    std::shared_ptr<WaitingTxsItem> GetElectTx(uint32_t pool_index, bool leader);
+    std::shared_ptr<WaitingTxsItem> GetElectTx(uint32_t pool_index, const std::string& tx_hash);
     std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
         uint32_t pool_index,
         const common::BloomFilter& bloom_filter,

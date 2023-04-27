@@ -706,7 +706,7 @@ void BlockManager::HandleStatisticBlock(
 //     shard_elect_tx->tx_hash = gid;
     shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + 20000lu;
     shard_elect_tx_[block.network_id()] = shard_elect_tx;
-    ZJC_DEBUG("success add elect tx: %u, %lu", block.network_id(), block.timeblock_height());
+    ZJC_DEBUG("success add elect tx: %u, %lu, gid: %s", block.network_id(), block.timeblock_height(), common::Encode::HexEncode(gid).c_str());
 }
 
 void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool recreate) {
@@ -792,12 +792,21 @@ pools::TxItemPtr BlockManager::GetStatisticTx(bool leader) {
     return nullptr;
 }
 
-pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, bool leader) {
+pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string& tx_hash) {
     for (auto iter = shard_elect_tx_.begin(); iter != shard_elect_tx_.end(); ++iter) {
-        auto shard_elect_tx = iter->second;
         if (shard_elect_tx != nullptr && !shard_elect_tx->tx_ptr->in_consensus) {
+            auto shard_elect_tx = iter->second;
+            if (!tx_hash.empty()) {
+                if (shard_elect_tx->tx_ptr->tx_hash == tx_hash) {
+                    shard_elect_tx->tx_ptr->in_consensus = true;
+                    return shard_elect_tx->tx_ptr;
+                }
+
+                continue;
+            }
+
             auto now_tm = common::TimeUtils::TimestampUs();
-            if (leader && shard_elect_tx->tx_ptr->time_valid > now_tm) {
+            if (shard_elect_tx->tx_ptr->time_valid > now_tm) {
                 continue;
             }
 
