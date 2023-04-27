@@ -315,6 +315,10 @@ void BaseDht::SendToClosestNode(const transport::MessagePtr& msg_ptr) {
     }
 
     auto dht_ptr = readonly_hash_sort_dht_;
+    if (dht_ptr->empty()) {
+        return;
+    }
+
     auto closest_node = DhtFunction::GetClosestNode(*dht_ptr, message.des_dht_key());
     transport::TcpTransport::Instance()->Send(
         msg_ptr->thread_idx,
