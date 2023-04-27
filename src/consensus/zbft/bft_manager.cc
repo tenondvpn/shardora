@@ -172,42 +172,37 @@ void BftManager::OnNewElectBlock(
 
     auto new_idx = (elect_item_idx_ + 1) % 2;
     elect_items_[new_idx] = elect_item_ptr;
-    elect_item_idx_ = new_idx;
     ZJC_INFO("new elect block local leader index: %d, leader_count: %d, thread_count_: %d, elect height: %lu",
         elect_item.local_node_pool_mod_num, elect_item.leader_count, thread_count_, elect_item.elect_height);
-    if (elect_item.local_node_pool_mod_num < 0 ||
-            elect_item.local_node_pool_mod_num >= elect_item.leader_count) {
-        elect_item_idx_ = (elect_item_idx_ + 1) % 2;
-        return;
-    }
-
-
-    auto& thread_set = elect_item.thread_set;
-    std::set<uint32_t> leader_pool_set;
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        if (i % elect_item.leader_count == elect_item.local_node_pool_mod_num) {
-            leader_pool_set.insert(i);
-        }
-    }
-
-    for (uint8_t j = 0; j < thread_count_; ++j) {
-        auto thread_item = std::make_shared<PoolTxIndexItem>();
+    if (!(elect_item.local_node_pool_mod_num < 0 ||
+            elect_item.local_node_pool_mod_num >= elect_item.leader_count)) {
+        auto& thread_set = elect_item.thread_set;
+        std::set<uint32_t> leader_pool_set;
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-            if (i % thread_count_ == j && leader_pool_set.find(i) != leader_pool_set.end()) {
-                thread_item->pools.push_back(i);
+            if (i % elect_item.leader_count == elect_item.local_node_pool_mod_num) {
+                leader_pool_set.insert(i);
             }
         }
 
-        thread_item->prev_index = 0;
-        thread_set[j] = thread_item;  // ptr change, multi-thread safe
+        for (uint8_t j = 0; j < thread_count_; ++j) {
+            auto thread_item = std::make_shared<PoolTxIndexItem>();
+            for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+                if (i % thread_count_ == j && leader_pool_set.find(i) != leader_pool_set.end()) {
+                    thread_item->pools.push_back(i);
+                }
+            }
+
+            thread_item->prev_index = 0;
+            thread_set[j] = thread_item;  // ptr change, multi-thread safe
+        }
+
+        minimal_node_count_to_consensus_ = members->size() * 2 / 3;
+        if (minimal_node_count_to_consensus_ + 1 < members->size()) {
+            ++minimal_node_count_to_consensus_;
+        }
     }
 
-    minimal_node_count_to_consensus_ = members->size() * 2 / 3;
-    if (minimal_node_count_to_consensus_ + 1 < members->size()) {
-        ++minimal_node_count_to_consensus_;
-    }
-
-    elect_item_idx_ = (elect_item_idx_ + 1) % 2;
+    elect_item_idx_ = new_idx;
 }
 
 void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
@@ -254,11 +249,6 @@ ZbftPtr BftManager::Start(
     }
 #endif
 
-    auto msg_ptr = prepare_msg_ptr;
-    if (msg_ptr != nullptr) {
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    }
-
     auto& elect_item = *elect_items_[elect_item_idx_];
     auto& thread_set = elect_item.thread_set;
     auto thread_item = thread_set[thread_index];
@@ -282,11 +272,6 @@ ZbftPtr BftManager::Start(
         }
     }
 
-    if (msg_ptr != nullptr) {
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-    }
-
     if (txs_ptr == nullptr) {
         for (thread_item->prev_index = 0;
                 thread_item->prev_index < begin_index; ++thread_item->prev_index) {
@@ -301,10 +286,6 @@ ZbftPtr BftManager::Start(
                 break;
             }
         }
-    }
-    if (msg_ptr != nullptr) {
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     }
 
     if (txs_ptr == nullptr) {
