@@ -121,6 +121,11 @@ int ShardNetwork<DhtType>::JoinNewNodeValid(dht::NodePtr& node) {
     if (!(sharding_id_ >= network::kRootCongressNetworkId &&
             sharding_id_ < network::kConsensusShardEndNetworkId)) {
         auto account_info = prefix_db_->GetAddressInfo(node->id);
+        if (account_info == nullptr) {
+            ZJC_INFO("get address: %s failed!", common::Encode::HexEncode(node->id).c_str());
+            return dht::kDhtError;
+        }
+
         if (account_info->sharding_id() == sharding_id_ - network::kConsensusWaitingShardOffset) {
             if (member_callback_ != nullptr) {
                 if (member_callback_(account_info->sharding_id(), node->id) ||
