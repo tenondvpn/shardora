@@ -172,8 +172,8 @@ void BftManager::OnNewElectBlock(
 
     auto new_idx = (elect_item_idx_ + 1) % 2;
     elect_items_[new_idx] = elect_item_ptr;
-    ZJC_INFO("new elect block local leader index: %d, leader_count: %d, thread_count_: %d, elect height: %lu",
-        elect_item.local_node_pool_mod_num, elect_item.leader_count, thread_count_, elect_item.elect_height);
+    ZJC_INFO("new elect block local leader index: %d, leader_count: %d, thread_count_: %d, elect height: %lu, member size: %d",
+        elect_item.local_node_pool_mod_num, elect_item.leader_count, thread_count_, elect_item.elect_height, members->size());
     if (!(elect_item.local_node_pool_mod_num < 0 ||
             elect_item.local_node_pool_mod_num >= elect_item.leader_count)) {
         auto& thread_set = elect_item.thread_set;
@@ -409,7 +409,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& elect_item = *elect_item_ptr;
     ZJC_INFO("consensus message coming prepare gid: %s, precommit gid: %s, "
         "commit gid: %s thread idx: %d, has sync: %d, txhash: %lu, "
-        "member index: %d, other member index: %d, pool index: %d",
+        "member index: %d, other member index: %d, pool index: %d, elect height: %lu",
         common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
         common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
@@ -418,7 +418,9 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         header.hash64(),
         elect_item.local_node_member_index,
         header.zbft().member_index(),
-        header.zbft().pool_index());
+        header.zbft().pool_index(),
+        header.zbft().elect_height());
+    assert(header.zbft().elect_height() > 0);
     if (elect_item.local_node_member_index == header.zbft().member_index()) {
         //assert(false);
         return;
