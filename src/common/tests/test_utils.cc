@@ -29,6 +29,13 @@ public:
 };
 
 TEST_F(TestUtils, All) {
+    for (int32_t nodes_count = 3; nodes_count < 1024; ++i) {
+        int32_t expect_leader_count = (int32_t)pow(
+            2.0,
+            (double)((int32_t)log2(double(nodes_count / 3))));
+        std::cout << nodes_count << " " << expect_leader_count << std::endl;
+    }
+
 }
 
 }  // namespace test
