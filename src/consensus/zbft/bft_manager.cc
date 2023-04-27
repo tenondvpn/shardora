@@ -551,6 +551,7 @@ void BftManager::HandleSyncConsensusBlock(
         bft_msg.set_pool_index(bft_ptr->pool_index());
         bft_msg.set_member_index(elect_item.local_node_member_index);
         bft_msg.set_elect_height(elect_item.elect_height);
+        assert(elect_item.elect_height > 0);
         *bft_msg.mutable_block() = *bft_ptr->prepare_block();
         assert(bft_msg.block().height() > 0);
         transport::TcpTransport::Instance()->Send(
@@ -628,6 +629,7 @@ void BftManager::SyncConsensusBlock(
     bft_msg.set_pool_index(pool_index);
     bft_msg.set_member_index(elect_item.local_node_member_index);
     bft_msg.set_elect_height(elect_item.elect_height);
+    assert(elect_item.elect_height > 0);
     for (uint32_t i = 0; i < pos_vec.size() && i < kSyncFromOtherCount; ++i) {
         transport::TcpTransport::Instance()->Send(
             thread_idx,
@@ -794,6 +796,7 @@ void BftManager::CreateResponseMessage(
             elect_item.local_node_member_index);
         msg_ptr->response->header.mutable_zbft()->set_elect_height(
             elect_item.elect_height);
+        assert(elect_item.elect_height > 0);
         if (response_to_leader) {
             //assert(msg_ptr->response->header.mutable_zbft()->member_index() != 0);
             msg_ptr->response->header.mutable_zbft()->set_leader_idx(-1);
@@ -1190,6 +1193,7 @@ int BftManager::LeaderPrepare(
 
     new_bft_msg->set_member_index(elect_item.local_node_member_index);
     new_bft_msg->set_elect_height(elect_item.elect_height);
+    assert(elect_item.elect_height > 0);
     bft_ptr->init_prepare_timeout();
     bft_ptr->set_consensus_status(kConsensusPreCommit);
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
