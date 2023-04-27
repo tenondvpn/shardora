@@ -178,6 +178,14 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    if (common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32 &&
+            common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
+        if (elect_mgr_->Join(0, common::GlobalInfo::Instance()->network_id()) != elect::kElectSuccess) {
+            INIT_ERROR("join waiting pool network[%u] failed!", waiting_network_id);
+            return;
+        }
+    }
+
     block_mgr_->LoadLatestBlocks(common::GlobalInfo::Instance()->message_handler_thread_count());
     shard_statistic_->Init();
     transport::TcpTransport::Instance()->Start(false);
@@ -334,11 +342,6 @@ void NetworkInit::InitLocalNetworkId() {
     }
 
     auto waiting_network_id = local_node_account_info->sharding_id() + network::kConsensusWaitingShardOffset;
-    if (elect_mgr_->Join(0, waiting_network_id) != elect::kElectSuccess) {
-        INIT_ERROR("join waiting pool network[%u] failed!", waiting_network_id);
-        return;
-    }
-
     common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
 }
 
