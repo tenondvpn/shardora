@@ -115,10 +115,10 @@ public:
     }
     
     bool ShouldReconnect() {
-        auto now_tm_ms = common::TimeUtils::TimestampMs();
-        if (now_tm_ms >= create_timestamp_ms_ + kConnectTimeoutMs) {
-            return true;
-        }
+//         auto now_tm_ms = common::TimeUtils::TimestampMs();
+//         if (now_tm_ms >= create_timestamp_ms_ + kConnectTimeoutMs) {
+//             return true;
+//         }
 
         if (GetTcpState() == tnet::TcpConnection::kTcpClosed) {
             return true;
