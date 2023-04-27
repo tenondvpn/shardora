@@ -57,6 +57,7 @@ protected:
         block_tx->set_step(tx_info.step());
         block_tx->set_to(tx_info.to());
         block_tx->set_amount(tx_info.amount());
+        block_tx->set_pubkey(tx_info.pubkey());
         if (tx_info.step() == pools::protobuf::kContractUserCreateCall ||
                 tx_info.step() == pools::protobuf::kContractUserCall) {
             if (tx_info.has_contract_prepayment()) {

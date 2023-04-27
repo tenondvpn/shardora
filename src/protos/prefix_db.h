@@ -35,7 +35,7 @@ static const std::string kBlsVerifyPrefex = "b\x01";
 static const std::string kBlsSwapKeyPrefex = "c\x01";
 static const std::string kAddressStorageKeyPrefex = "d\x01";
 static const std::string kBlsSecKeyPrefex = "e\x01";
-
+static const std::string kAddressPubkeyPrefex = "f\x01";
 static const std::string kBlsPrivateKeyPrefix = "g\x01";
 static const std::string kLatestElectBlockPrefix = "h\x01";
 static const std::string kLatestTimeBlockPrefix = "i\x01";
@@ -1089,6 +1089,31 @@ public:
                 *stoke = balance[0];
             }
         }
+    }
+
+    void SaveAddressPubkey(const std::string& id, const std::string& pubkey) {
+        std::string key;
+        key.reserve(64);
+        key.append(kAddressPubkeyPrefex);
+        key.append(id);
+        auto st = db_->Put(key, pubkey);
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+    }
+
+    bool GetAddressPubkey(const std::string& id, std::string* pubkey) {
+        std::string key;
+        key.reserve(64);
+        key.append(kAddressPubkeyPrefex);
+        key.append(id);
+        auto st = db_->Get(key, pubkey);
+        if (!st.ok()) {
+            ZJC_ERROR("write db failed!");
+            return false;
+        }
+
+        return true;
     }
 
 private:

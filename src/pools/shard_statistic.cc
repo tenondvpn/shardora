@@ -407,7 +407,12 @@ int ShardStatistic::StatisticWithHeights(
 
     for (int32_t i = 0; i < elect_nodes.size() && i < kWaitingElectNodesMaxCount; ++i) {
         auto join_elect_node = elect_statistic.add_join_elect_nodes();
-        join_elect_node->set_id(elect_nodes[i]);
+        std::string pubkey;
+        if (!prefix_db_->GetAddressPubkey(elect_nodes[i], &pubkey)) {
+            continue;
+        }
+
+        join_elect_node->set_id(pubkey);
         auto iter = eiter->second.find(elect_nodes[i]);
         join_elect_node->set_stoke(iter->second);
         str_for_hash.append(elect_nodes[i]);

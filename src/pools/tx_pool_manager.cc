@@ -159,6 +159,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    prefix_db_->SaveAddressPubkey(msg_ptr->address_info->addr(), tx_msg.pubkey());
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 }
 
