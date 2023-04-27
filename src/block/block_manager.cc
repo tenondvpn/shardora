@@ -540,7 +540,7 @@ void BlockManager::HandleElectTx(
                 return;
             }
 
-            if (iter->second->tx_hash == tx.gid()) {
+            if (iter->second->tx_ptr->gid == tx.gid()) {
                 shard_elect_tx_.erase(iter);
                 ZJC_DEBUG("success erase elect tx: %u", elect_block.shard_network_id());
             }
@@ -703,7 +703,7 @@ void BlockManager::HandleStatisticBlock(
     new_msg_ptr->address_info = account_mgr_->GetStatisticAddressInfo(common::kRootChainPoolIndex);
     shard_elect_tx->tx_ptr = create_elect_tx_cb_(new_msg_ptr);
     shard_elect_tx->tx_ptr->time_valid += 3000000lu;
-    shard_elect_tx->tx_hash = gid;
+//     shard_elect_tx->tx_hash = gid;
     shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + 20000lu;
     shard_elect_tx_[block.network_id()] = shard_elect_tx;
     ZJC_DEBUG("success add elect tx: %u, %lu", block.network_id(), block.timeblock_height());
