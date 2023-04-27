@@ -790,6 +790,8 @@ void BftManager::CreateResponseMessage(
         assert(msg_ptr->response->header.zbft().has_pool_index());
         msg_ptr->response->header.mutable_zbft()->set_member_index(
             elect_item.local_node_member_index);
+        msg_ptr->response->header.mutable_zbft()->set_elect_height(
+            elect_item.elect_height);
         if (response_to_leader) {
             //assert(msg_ptr->response->header.mutable_zbft()->member_index() != 0);
             msg_ptr->response->header.mutable_zbft()->set_leader_idx(-1);
