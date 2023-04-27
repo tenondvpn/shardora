@@ -787,8 +787,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             init_heights);
         prefix_db_->SaveStatisticLatestHeihgts(network::kRootCongressNetworkId, init_heights);
         std::string init_consensus_height;
-        for (uint32_t i = 0; i < init_heights->heights_size(); ++i) {
-            init_consensus_height += std::to_string(init_heights->heights(i)) + " ";
+        for (uint32_t i = 0; i < init_heights.heights_size(); ++i) {
+            init_consensus_height += std::to_string(init_heights.heights(i)) + " ";
         }
 
         ZJC_DEBUG("0 success change min elect statistic heights: %s", init_consensus_height.c_str());
@@ -995,8 +995,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     CreateShardNodesBlocks(pool_prev_hash_map, root_genesis_nodes, cons_genesis_nodes, net_id, init_heights);
     prefix_db_->SaveStatisticLatestHeihgts(net_id, init_heights);
     std::string init_consensus_height;
-    for (uint32_t i = 0; i < init_heights->heights_size(); ++i) {
-        init_consensus_height += std::to_string(init_heights->heights(i)) + " ";
+    for (uint32_t i = 0; i < init_heights.heights_size(); ++i) {
+        init_consensus_height += std::to_string(init_heights.heights(i)) + " ";
     }
 
     ZJC_DEBUG("0 success change min elect statistic heights: %s", init_consensus_height.c_str());
