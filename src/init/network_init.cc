@@ -973,7 +973,7 @@ void NetworkInit::HandleElectionBlock(
     auto elect_height = elect_mgr_->latest_height(sharding_id);
     ZJC_DEBUG("success called election block. elect height: %lu, net: %u",
         elect_height, elect_block->shard_network_id());
-    bft_mgr_->OnNewElectBlock(sharding_id, members);
+    bft_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     block_mgr_->OnNewElectBlock(sharding_id, members);
     vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     bls_mgr_->OnNewElectBlock(sharding_id, block->height(), elect_block);

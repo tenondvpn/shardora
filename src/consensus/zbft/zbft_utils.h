@@ -68,6 +68,12 @@ struct PoolTxIndexItem {
 };
 
 struct ElectItem {
+    ElectItem() : members(nullptr), leader_member(nullptr), local_member(nullptr), elect_height(0) {
+        for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+            thread_set[i] = nullptr;
+        }
+    }
+
     common::MembersPtr members;
     common::BftMemberPtr leader_member;
     common::BftMemberPtr local_member;

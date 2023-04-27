@@ -64,7 +64,7 @@ public:
         BlockCallback block_cb,
         uint8_t thread_count,
         BlockCacheCallback new_block_cache_callback);
-    void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
+    void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members);
     BftManager();
     virtual ~BftManager();
     int AddBft(ZbftPtr& bft_ptr);
@@ -78,37 +78,51 @@ private:
         ZbftPtr& prev_bft,
         const transport::MessagePtr& prepare_msg_ptr);
     ZbftPtr StartBft(
+        const ElectItem& elect_item,
         std::shared_ptr<WaitingTxsItem>& txs_ptr,
         ZbftPtr& prev_bft,
         const transport::MessagePtr& prepare_msg_ptr);
     void RemoveBft(uint8_t thread_idx, const std::string& gid, bool is_leader);
-    int LeaderPrepare(ZbftPtr& bft_ptr, const transport::MessagePtr& prepare_msg_ptr);
-    int LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr);
+    int LeaderPrepare(
+        const ElectItem& elect_item,
+        ZbftPtr& bft_ptr,
+        const transport::MessagePtr& prepare_msg_ptr);
+    int LeaderHandleZbftMessage(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
     int BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
-    int LeaderCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
+    int LeaderCommit(
+        const ElectItem& elect_item,
+        ZbftPtr& bft_ptr,
+        const transport::MessagePtr& msg_ptr);
     int BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     void CheckTimeout(uint8_t thread_index);
-    int LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
-    int LeaderCallCommit(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
-    ZbftPtr CreateBftPtr(const transport::MessagePtr& msg_ptr);
-    int LeaderCallCommitOppose(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
+    int LeaderCallPrecommit(
+        const ElectItem& elect_item,
+        ZbftPtr& bft_ptr,
+        const transport::MessagePtr& msg_ptr);
+    int LeaderCallCommit(
+        const ElectItem& elect_item,
+        const transport::MessagePtr& msg_ptr,
+        ZbftPtr& bft_ptr);
+    ZbftPtr CreateBftPtr(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
     void BackupHandleZbftMessage(
         uint8_t thread_index,
+        const ElectItem& elect_item,
         const transport::MessagePtr& msg_ptr);
-    void BackupPrepare(const transport::MessagePtr& msg_ptr);
+    void BackupPrepare(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
     bool IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info);
     void HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr);
-    int InitZbftPtr(int32_t leader_idx, ZbftPtr& bft_ptr);
+    int InitZbftPtr(int32_t leader_idx, const ElectItem& elect_item, ZbftPtr& bft_ptr);
     bool VerifyBackupIdValid(
         const transport::MessagePtr& msg_ptr,
         common::BftMemberPtr& mem_ptr);
-    bool VerifyLeaderIdValid(const transport::MessagePtr& msg_ptr);
+    bool VerifyLeaderIdValid(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
     void CreateResponseMessage(
+        const ElectItem& elect_item,
         bool response_to_leader,
         const std::vector<ZbftPtr>& zbft_vec,
         const transport::MessagePtr& msg_ptr,
         common::BftMemberPtr& mem_ptr);
-    int CheckPrecommit(const transport::MessagePtr& msg_ptr);
+    int CheckPrecommit(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
     int CheckCommit(const transport::MessagePtr& msg_ptr, bool backup_agree_commit);
     bool CheckAggSignValid(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
     void SetDefaultResponse(const transport::MessagePtr& msg_ptr);
@@ -116,8 +130,14 @@ private:
     bool LeaderSignMessage(transport::MessagePtr& msg_ptr);
     void ClearBft(const transport::MessagePtr& msg_ptr);
     ZbftPtr LeaderGetZbft(const transport::MessagePtr& msg_ptr, const std::string& gid);
-    void SyncConsensusBlock(uint8_t thread_idx, uint32_t pool_index, const std::string& bft_gid);
-    void HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr);
+    void SyncConsensusBlock(
+        const ElectItem& elect_item,
+        uint8_t thread_idx,
+        uint32_t pool_index,
+        const std::string& bft_gid);
+    void HandleSyncConsensusBlock(
+        const ElectItem& elect_item,
+        const transport::MessagePtr& msg_ptr);
     bool AddSyncKeyValue(transport::protobuf::Header* msg, const block::protobuf::Block& block);
     void SaveKeyValue(const transport::protobuf::Header& msg);
     void PopAllPoolTxs(uint8_t thread_index);
@@ -222,7 +242,7 @@ private:
     uint32_t prev_checktime_out_milli_ = 0;
     uint32_t minimal_node_count_to_consensus_ = common::kInvalidUint32;
     BlockCacheCallback new_block_cache_callback_ = nullptr;
-    ElectItem elect_items_[2];
+    std::shared_ptr<ElectItem> elect_items_[2] = { nullptr };
     uint32_t elect_item_idx_ = 0;
     uint64_t prev_tps_tm_us_ = 0;
     uint32_t prev_count_ = 0;
