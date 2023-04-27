@@ -44,8 +44,8 @@ void KeyValueSync::AddSyncHeight(
     assert(priority <= kSyncHighest);
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority);
     item_queues_[thread_idx].push(item);
-//     ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
-//         item->key.c_str(), item->priority);
+    ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
+        item->key.c_str(), item->priority);
 }
 
 void KeyValueSync::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
