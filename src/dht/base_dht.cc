@@ -282,6 +282,11 @@ void BaseDht::SendToDesNetworkNodes(const transport::MessagePtr& msg_ptr) {
             (*iter)->public_ip,
             (*iter)->public_port,
             message);
+        ZJC_DEBUG("send to des network: %u, %s:%d, type: %d",
+            des_net_id,
+            (*iter)->public_ip.c_str(),
+            (*iter)->public_port,
+            msg_ptr->header.type());
         if (++send_count > 3) {
             break;
         }
