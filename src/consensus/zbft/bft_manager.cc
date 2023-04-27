@@ -72,8 +72,8 @@ int BftManager::Init(
     thread_count_ = thread_count;
     bft_hash_map_ = new std::unordered_map<std::string, ZbftPtr>[thread_count];
     bft_queue_ = new std::queue<ZbftPtr>[thread_count];
-    elect_items_[0] = new std::shared_ptr<ElectItem>();
-    elect_items_[1] = new std::shared_ptr<ElectItem>();
+    elect_items_[0] = new std::make_shared<ElectItem>();
+    elect_items_[1] = new std::make_shared<ElectItem>();
 
 #ifdef ZJC_UNITTEST
     now_msg_ = new transport::MessagePtr[thread_count_];
@@ -1691,7 +1691,8 @@ ZbftPtr BftManager::LeaderGetZbft(
 
 int BftManager::LeaderCallPrecommit(
         const ElectItem& elect_item,
-        ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr) {
+        ZbftPtr& bft_ptr,
+        const transport::MessagePtr& msg_ptr) {
     std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
