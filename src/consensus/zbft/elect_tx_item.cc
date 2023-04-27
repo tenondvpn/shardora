@@ -143,6 +143,7 @@ int ElectTxItem::CreateNewElect(
     int32_t expect_leader_count = (int32_t)pow(
         2.0,
         (double)((int32_t)log2(double(elect_nodes.size() / 3))));
+    ZJC_DEBUG("leader size: %d, nodes count: %u", expect_leader_count, elect_nodes.size());
     if (expect_leader_count > (int32_t)common::kImmutablePoolSize) {
         expect_leader_count = (int32_t)common::kImmutablePoolSize;
     }
