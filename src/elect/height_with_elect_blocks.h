@@ -275,7 +275,7 @@ public:
                 elect_block.elect_height(),
                 elect_block.has_prev_members(),
                 elect_block.prev_members().has_common_pubkey());
-            assert(false);
+//             assert(false);
             return nullptr;
         }
 

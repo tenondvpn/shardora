@@ -134,13 +134,11 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
         return;
     }
 
-    libff::alt_bn128_G2 common_pk;
-    libff::alt_bn128_Fr sec_key;
     auto members = elect_mgr_->GetNetworkMembersWithHeight(
         block.electblock_height(),
         common::GlobalInfo::Instance()->network_id(),
-        &common_pk,
-        &sec_key);
+        nullptr,
+        nullptr);
     if (members == nullptr) {
         ZJC_WARN("get members failed, elect height: %lu, net: %u",
             block.electblock_height(), common::GlobalInfo::Instance()->network_id());
