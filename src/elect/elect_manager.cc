@@ -370,25 +370,6 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
 //                 << ", leader count: " << prev_elect_block.leader_count()
 //                 << std::endl;
         }
-
-        std::mt19937_64 g2(0);
-        // vss::VssManager::Instance()->EpochRandom());
-        auto RandFunc = [&g2](int i) -> int {
-            return g2() % i;
-        };
-        std::random_shuffle(node_index_vec.begin(), node_index_vec.end(), RandFunc);
-        std::lock_guard<std::mutex> guard(network_leaders_mutex_);
-        std::unordered_set<std::string> leaders;
-        for (auto iter = node_index_vec.begin();
-                iter != node_index_vec.end() &&
-                leaders.size() < common::kEatchShardMaxSupperLeaderCount; ++iter) {
-            leaders.insert(tmp_leaders[*iter]->id);
-            if (tmp_leaders[*iter]->id == security_->GetAddress()) {
-                local_node_is_super_leader = true;
-            }
-        }
-
-        network_leaders_[prev_elect_block.shard_network_id()] = leaders;
     }
 
     if (*elected) {

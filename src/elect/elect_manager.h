@@ -88,26 +88,6 @@ public:
         return height_with_block_->GetCommonPublicKey(height, network_id);
     }
 
-    std::unordered_set<std::string> leaders(uint32_t network_id) {
-        std::lock_guard<std::mutex> guard(network_leaders_mutex_);
-        auto iter = network_leaders_.find(network_id);
-        if (iter != network_leaders_.end()) {
-            return iter->second;
-        }
-
-        return {};
-    }
-    
-    bool IsSuperLeader(uint32_t network_id, const std::string& id) {
-        std::lock_guard<std::mutex> guard(network_leaders_mutex_);
-        auto iter = network_leaders_.find(network_id);
-        if (iter != network_leaders_.end()) {
-            return iter->second.find(id) != iter->second.end();
-        }
-
-        return false;
-    }
-
     int32_t local_node_pool_mod_num() {
         return leader_rotation_->GetThisNodeValidPoolModNum();
     }
@@ -172,7 +152,6 @@ private:
     std::unordered_set<uint64_t> added_height_;
     uint64_t elect_net_heights_map_[network::kConsensusShardEndNetworkId];
     std::mutex elect_members_mutex_;
-    std::unordered_map<uint32_t, std::unordered_set<std::string>> network_leaders_;
     std::mutex network_leaders_mutex_;
     std::unordered_set<uint32_t> valid_shard_networks_;
     std::mutex valid_shard_networks_mutex_;
