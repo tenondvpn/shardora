@@ -422,7 +422,8 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         header.zbft().member_index(),
         header.zbft().pool_index());
     if (elect_item.local_node_member_index == header.zbft().member_index()) {
-        assert(false);
+        //assert(false);
+        return;
     }
 
     if (header.zbft().has_sync_block() && header.zbft().sync_block()) {
