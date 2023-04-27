@@ -46,6 +46,7 @@ TxPoolManager::~TxPoolManager() {
 
 void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     if (kv_sync_->added_key_size() >= sync::kSyncMaxKeyCount) {
+        assert(false);
         return;
     }
 
@@ -56,11 +57,20 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
     }
 
     prev_synced_pool_index_ %= common::kInvalidPoolIndex;
+    auto begin_pool = prev_synced_pool_index_;
     for (; prev_synced_pool_index_ < common::kInvalidPoolIndex; ++prev_synced_pool_index_) {
         auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(now_tm_ms);
         if (res > 0) {
             ++prev_synced_pool_index_;
-            break;
+            return;
+        }
+    }
+
+    for (prev_synced_pool_index_ = 0; prev_synced_pool_index_ < begin_pool; ++prev_synced_pool_index_) {
+        auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(now_tm_ms);
+        if (res > 0) {
+            ++prev_synced_pool_index_;
+            return;
         }
     }
 }
