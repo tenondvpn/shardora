@@ -401,7 +401,14 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (elect_item_ptr->elect_height != header.zbft().elect_height()) {
         elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
         if (elect_item_ptr->elect_height != header.zbft().elect_height()) {
-            assert(false);
+            ZJC_DEBUG("elect height error: %lu, %lu, %lu",
+                header.zbft().elect_height(),
+                elect_items_[elect_item_idx_]->elect_height,
+                elect_items_[(elect_item_idx_ + 1) % 2]->elect_height)
+            if (!header.zbft().sync_block()) {
+                assert(false);
+            }
+
             return;
         }
     }
