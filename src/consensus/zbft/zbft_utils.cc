@@ -44,6 +44,7 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
         message.append(tx_info.storages(i).val_hash());
     }
 
+    ZJC_DEBUG("block tx hash: %s", common::Encode::HexEncode(message).c_str());
     return common::Hash::keccak256(message);
 }
 
