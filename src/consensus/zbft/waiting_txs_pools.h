@@ -20,17 +20,6 @@ public:
     ~WaitingTxsPools();
     void TxOver(std::shared_ptr<Zbft>& zbft_ptr) {}
     void TxRecover(std::shared_ptr<Zbft>& zbft_ptr);
-    void UpdateLatestInfo(
-            uint8_t thread_idx,
-            uint32_t sharding_id,
-            uint32_t pool_index,
-            uint64_t height,
-            const std::string& hash,
-            db::DbWriteBatch& db_batch) {
-        assert(height > 0);
-        pool_mgr_->UpdateLatestInfo(thread_idx, sharding_id, pool_index, height, hash, db_batch);
-    }
-
     uint64_t latest_height(uint32_t pool_index) const;
     std::string latest_hash(uint32_t pool_index) const;
     std::shared_ptr<WaitingTxsItem> LeaderGetValidTxs(uint32_t pool_index);
