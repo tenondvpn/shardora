@@ -39,7 +39,7 @@ namespace protobuf_protos_2fblock_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[28];
+  static const ::google::protobuf::internal::ParseTable schema[29];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -85,6 +85,9 @@ extern CrossShardingStatisticMessageDefaultTypeInternal _CrossShardingStatisticM
 class CrossShardingTosMessage;
 class CrossShardingTosMessageDefaultTypeInternal;
 extern CrossShardingTosMessageDefaultTypeInternal _CrossShardingTosMessage_default_instance_;
+class ElectBlockMessage;
+class ElectBlockMessageDefaultTypeInternal;
+extern ElectBlockMessageDefaultTypeInternal _ElectBlockMessage_default_instance_;
 class ElectStatisticInfo;
 class ElectStatisticInfoDefaultTypeInternal;
 extern ElectStatisticInfoDefaultTypeInternal _ElectStatisticInfo_default_instance_;
@@ -150,6 +153,7 @@ template<> ::zjchain::block::protobuf::ConsensusToTxs* Arena::CreateMaybeMessage
 template<> ::zjchain::block::protobuf::ConsensusToTxsItem* Arena::CreateMaybeMessage<::zjchain::block::protobuf::ConsensusToTxsItem>(Arena*);
 template<> ::zjchain::block::protobuf::CrossShardingStatisticMessage* Arena::CreateMaybeMessage<::zjchain::block::protobuf::CrossShardingStatisticMessage>(Arena*);
 template<> ::zjchain::block::protobuf::CrossShardingTosMessage* Arena::CreateMaybeMessage<::zjchain::block::protobuf::CrossShardingTosMessage>(Arena*);
+template<> ::zjchain::block::protobuf::ElectBlockMessage* Arena::CreateMaybeMessage<::zjchain::block::protobuf::ElectBlockMessage>(Arena*);
 template<> ::zjchain::block::protobuf::ElectStatisticInfo* Arena::CreateMaybeMessage<::zjchain::block::protobuf::ElectStatisticInfo>(Arena*);
 template<> ::zjchain::block::protobuf::GetAccountInitInfoRequest* Arena::CreateMaybeMessage<::zjchain::block::protobuf::GetAccountInitInfoRequest>(Arena*);
 template<> ::zjchain::block::protobuf::GetAccountInitInfoResponse* Arena::CreateMaybeMessage<::zjchain::block::protobuf::GetAccountInitInfoResponse>(Arena*);
@@ -4263,6 +4267,125 @@ class CrossShardingStatisticMessage : public ::google::protobuf::Message /* @@pr
 };
 // -------------------------------------------------------------------
 
+class ElectBlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.block.protobuf.ElectBlockMessage) */ {
+ public:
+  ElectBlockMessage();
+  virtual ~ElectBlockMessage();
+
+  ElectBlockMessage(const ElectBlockMessage& from);
+
+  inline ElectBlockMessage& operator=(const ElectBlockMessage& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  ElectBlockMessage(ElectBlockMessage&& from) noexcept
+    : ElectBlockMessage() {
+    *this = ::std::move(from);
+  }
+
+  inline ElectBlockMessage& operator=(ElectBlockMessage&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ElectBlockMessage& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ElectBlockMessage* internal_default_instance() {
+    return reinterpret_cast<const ElectBlockMessage*>(
+               &_ElectBlockMessage_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    27;
+
+  void Swap(ElectBlockMessage* other);
+  friend void swap(ElectBlockMessage& a, ElectBlockMessage& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ElectBlockMessage* New() const final {
+    return CreateMaybeMessage<ElectBlockMessage>(NULL);
+  }
+
+  ElectBlockMessage* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<ElectBlockMessage>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const ElectBlockMessage& from);
+  void MergeFrom(const ElectBlockMessage& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ElectBlockMessage* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional .zjchain.block.protobuf.Block block = 1;
+  bool has_block() const;
+  void clear_block();
+  static const int kBlockFieldNumber = 1;
+  private:
+  const ::zjchain::block::protobuf::Block& _internal_block() const;
+  public:
+  const ::zjchain::block::protobuf::Block& block() const;
+  ::zjchain::block::protobuf::Block* release_block();
+  ::zjchain::block::protobuf::Block* mutable_block();
+  void set_allocated_block(::zjchain::block::protobuf::Block* block);
+
+  // @@protoc_insertion_point(class_scope:zjchain.block.protobuf.ElectBlockMessage)
+ private:
+  void set_has_block();
+  void clear_has_block();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::zjchain::block::protobuf::Block* block_;
+  friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.block.protobuf.BlockMessage) */ {
  public:
   BlockMessage();
@@ -4305,7 +4428,7 @@ class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_BlockMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    27;
+    28;
 
   void Swap(BlockMessage* other);
   friend void swap(BlockMessage& a, BlockMessage& b) {
@@ -8743,6 +8866,68 @@ inline void CrossShardingStatisticMessage::set_allocated_block(::zjchain::block:
 
 // -------------------------------------------------------------------
 
+// ElectBlockMessage
+
+// optional .zjchain.block.protobuf.Block block = 1;
+inline bool ElectBlockMessage::has_block() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ElectBlockMessage::set_has_block() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ElectBlockMessage::clear_has_block() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ElectBlockMessage::clear_block() {
+  if (block_ != NULL) block_->Clear();
+  clear_has_block();
+}
+inline const ::zjchain::block::protobuf::Block& ElectBlockMessage::_internal_block() const {
+  return *block_;
+}
+inline const ::zjchain::block::protobuf::Block& ElectBlockMessage::block() const {
+  const ::zjchain::block::protobuf::Block* p = block_;
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.ElectBlockMessage.block)
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::block::protobuf::Block*>(
+      &::zjchain::block::protobuf::_Block_default_instance_);
+}
+inline ::zjchain::block::protobuf::Block* ElectBlockMessage::release_block() {
+  // @@protoc_insertion_point(field_release:zjchain.block.protobuf.ElectBlockMessage.block)
+  clear_has_block();
+  ::zjchain::block::protobuf::Block* temp = block_;
+  block_ = NULL;
+  return temp;
+}
+inline ::zjchain::block::protobuf::Block* ElectBlockMessage::mutable_block() {
+  set_has_block();
+  if (block_ == NULL) {
+    auto* p = CreateMaybeMessage<::zjchain::block::protobuf::Block>(GetArenaNoVirtual());
+    block_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.ElectBlockMessage.block)
+  return block_;
+}
+inline void ElectBlockMessage::set_allocated_block(::zjchain::block::protobuf::Block* block) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete block_;
+  }
+  if (block) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      block = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, block, submessage_arena);
+    }
+    set_has_block();
+  } else {
+    clear_has_block();
+  }
+  block_ = block;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.ElectBlockMessage.block)
+}
+
+// -------------------------------------------------------------------
+
 // BlockMessage
 
 // optional .zjchain.block.protobuf.GetTxBlockRequest block_req = 1;
@@ -9757,6 +9942,8 @@ inline void BlockMessage::set_allocated_shard_statistic_tx(::zjchain::pools::pro
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
