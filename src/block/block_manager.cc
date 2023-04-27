@@ -535,10 +535,9 @@ void BlockManager::HandleElectTx(
                 return;
             }
 
-            auto iter = shard_elect_tx_.find(elect_block.shard_network_id()) {
-                if (iter == shard_elect_tx_.end()) {
-                    return;
-                }
+            auto iter = shard_elect_tx_.find(elect_block.shard_network_id());
+            if (iter == shard_elect_tx_.end()) {
+                return;
             }
 
             if (iter->second->tx_hash == tx.gid()) {
