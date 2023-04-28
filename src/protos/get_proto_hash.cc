@@ -1,5 +1,6 @@
 #include "protos/get_proto_hash.h"
 
+#include "common/encode.h"
 #include "common/hash.h"
 #include "common/unique_map.h"
 #include "protos/address.pb.h"
