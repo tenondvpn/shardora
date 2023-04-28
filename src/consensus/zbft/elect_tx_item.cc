@@ -271,7 +271,7 @@ int ElectTxItem::CheckWeedout(
     }
 
     uint32_t direct_weedout_tx_count = max_tx_count / 2;
-    std::sort(
+    std::stable_sort(
         member_tx_count.begin(),
         member_tx_count.end(), [](const TxItem& l, const TxItem& r) {
         return l.second > r.second; });
@@ -459,7 +459,7 @@ void ElectTxItem::SmoothFtsValue(
 
         ZJC_DEBUG("before sort: %s", ids.c_str());
     }
-    std::sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceCompare);
+    std::stable_sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceCompare);
     {
         std::string ids;
         for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
@@ -472,7 +472,7 @@ void ElectTxItem::SmoothFtsValue(
         elect_nodes[i]->stoke_diff = elect_nodes[i]->stoke - elect_nodes[i - 1]->stoke;
     }
 
-    std::sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceDiffCompare);
+    std::stable_sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceDiffCompare);
     {
         std::string ids;
         for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
@@ -482,7 +482,7 @@ void ElectTxItem::SmoothFtsValue(
         ZJC_DEBUG("after sort 1: %s", ids.c_str());
     }
     uint64_t diff_2b3 = elect_nodes[elect_nodes.size() * 2 / 3]->stoke_diff;
-    std::sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceCompare);
+    std::stable_sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceCompare);
     {
         std::string ids;
         for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
