@@ -397,6 +397,16 @@ ZbftPtr BftManager::StartBft(
 void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kConsensusMessage);
+    if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusWaitingShardBeginNetworkId &&
+            common::GlobalInfo::Instance()->network_id() < network::kConsensusWaitingShardEndNetworkId) {
+        if (!msg_ptr->header.zbft().sync_block() || !msg_ptr->header.zbft().has_block()) {
+            return;
+        }
+
+        ElectItem elect_item;
+        return HandleSyncConsensusBlock(elect_item, msg_ptr);
+    }
+
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (elect_item_ptr->elect_height != header.zbft().elect_height()) {
         elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
@@ -2076,12 +2086,14 @@ void BftManager::BroadcastWaitingBlock(
     }
 
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    msg.set_type(common::kBlockMessage);
+    msg.set_type(common::kConsensusMessage);
     dht::DhtKeyManager dht_key(
         common::GlobalInfo::Instance()->network_id() + network::kConsensusWaitingShardOffset);
     msg.set_des_dht_key(dht_key.StrKey());
-    auto& cross_msg = *msg.mutable_cross_tos();
-    *cross_msg.mutable_block() = *block_item;
+    auto& zbft_msg = *msg.mutable_zbft();
+    *zbft_msg.mutable_block() = *block_item;
+    zbft_msg.set_pool_index(block_item->pool_index());
+    zbft_msg.set_sync_block(true);
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     auto* brdcast = msg.mutable_broadcast();
     network::Route::Instance()->Send(msg_ptr);
