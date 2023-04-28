@@ -460,7 +460,15 @@ void ElectTxItem::SmoothFtsValue(
         ZJC_DEBUG("before sort: %s", ids.c_str());
     }
     std::stable_sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceCompare);
-    
+    {
+        std::string ids;
+        for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stoke) + ",";
+        }
+
+        ZJC_DEBUG("before sort 0: %s", ids.c_str());
+    }
+    elect_nodes[0]->stoke_diff = 0;
     for (uint32_t i = 1; i < elect_nodes.size(); ++i) {
         elect_nodes[i]->stoke_diff = elect_nodes[i]->stoke - elect_nodes[i - 1]->stoke;
     }
