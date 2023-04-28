@@ -214,7 +214,6 @@ public:
                 common::kRootChainPoolIndex,
                 height,
                 &block)) {
-            assert(false);
             return nullptr;
         }
 
