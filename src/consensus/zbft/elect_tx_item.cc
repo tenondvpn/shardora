@@ -98,6 +98,15 @@ int ElectTxItem::HandleTx(
                 return res;
             }
 
+            {
+                std::string ids;
+                for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+                    ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ",";
+                }
+
+                ZJC_DEBUG("weedout: %s", ids.c_str());
+            }
+           
             min_area_weight += 1;
             min_tx_count += 1;
             uint32_t join_count = members->size() - elect_nodes.size();
@@ -123,6 +132,14 @@ int ElectTxItem::HandleTx(
                 return res;
             }
 
+            {
+                std::string ids;
+                for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+                    ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ",";
+                }
+
+                ZJC_DEBUG("join elect: %s", ids.c_str());
+            }
             std::string random_str;
             auto& g2 = *g2_;
             auto RandFunc = [&g2, &random_str](int i) -> int {
@@ -133,6 +150,14 @@ int ElectTxItem::HandleTx(
 //             srand(static_cast<uint32_t>(vss_mgr_->EpochRandom()));
 //             std::random_shuffle(elect_nodes.begin(), elect_nodes.end());
             std::random_shuffle(elect_nodes.begin(), elect_nodes.end(), RandFunc);
+            {
+                std::string ids;
+                for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+                    ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ",";
+                }
+
+                ZJC_DEBUG("shuffle: %s", ids.c_str());
+            }
             int32_t expect_leader_count = (int32_t)pow(
                 2.0,
                 (double)((int32_t)log2(double(elect_nodes.size() / 3))));
@@ -157,7 +182,24 @@ int ElectTxItem::HandleTx(
                 }
             }
 
+            {
+                std::string ids;
+                for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+                    ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ",";
+                }
+
+                ZJC_DEBUG("before: %s", ids.c_str());
+            }
             CreateNewElect(thread_idx, block, elect_nodes, elect_statistic, db_batch, block_tx);
+
+            {
+                std::string ids;
+                for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+                    ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ",";
+                }
+
+                ZJC_DEBUG("after: %s", ids.c_str());
+            }
             ZJC_DEBUG("consensus elect tx success: %u", elect_statistic.sharding_id());
             return kConsensusSuccess;
         }
