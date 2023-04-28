@@ -23,7 +23,7 @@ int ElectTxItem::HandleTx(
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
-    g2_ = std::make_shared<std::mt19937_64>(block.height());
+    g2_ = std::make_shared<std::mt19937_64>(vss_mgr_->EpochRandom());
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kShardElection) {
             uint64_t* tmp = (uint64_t*)block_tx.storages(i).val_hash().c_str();
