@@ -249,6 +249,7 @@ std::string GetElectBlockHash(const elect::protobuf::ElectBlock& elect_block) {
         string_for_hash.append(elect_block.in(i).pubkey());
         uint32_t mod_num = elect_block.in(i).pool_idx_mod_num();
         string_for_hash.append((char*)&mod_num, sizeof(mod_num));
+        ZJC_DEBUG("in: %s, %d", common::Encode::HexEncode(elect_block.in(i).pubkey()).c_str(), mod_num);
     }
 
     if (elect_block.has_prev_members()) {
@@ -258,6 +259,7 @@ std::string GetElectBlockHash(const elect::protobuf::ElectBlock& elect_block) {
             string_for_hash.append(pk.x_c1());
             string_for_hash.append(pk.y_c0());
             string_for_hash.append(pk.y_c1());
+            ZJC_DEBUG("pk: %s", common::Encode::HexEncode(pk.x_c0()).c_str());
         }
 
         auto& pk = elect_block.prev_members().common_pubkey();
@@ -267,12 +269,14 @@ std::string GetElectBlockHash(const elect::protobuf::ElectBlock& elect_block) {
         string_for_hash.append(pk.y_c1());
         uint64_t prev_elect_height = elect_block.prev_members().prev_elect_height();
         string_for_hash.append((char*)&prev_elect_height, sizeof(prev_elect_height));
+        ZJC_DEBUG("cpk: %s, prev_elect_height: %lu", common::Encode::HexEncode(pk.x_c0()).c_str(), prev_elect_height);
     }
 
-    uint64_t shard_network_id = elect_block.shard_network_id();
+    uint32_t shard_network_id = elect_block.shard_network_id();
     string_for_hash.append((char*)&shard_network_id, sizeof(shard_network_id));
     uint64_t elect_height = elect_block.elect_height();
     string_for_hash.append((char*)&elect_height, sizeof(elect_height));
+    ZJC_DEBUG("shard_network_id: %u, elect_height: %lu", shard_network_id, elect_height);
     return common::Hash::keccak256(string_for_hash);
 }
 
