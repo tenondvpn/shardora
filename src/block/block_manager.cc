@@ -870,10 +870,6 @@ void BlockManager::OnTimeBlock(
 }
 
 void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
-    if (latest_timeblock_height_ <= consensused_timeblock_height_) {
-        return;
-    }
-
     // check this node is leader
     if (to_tx_leader_ == nullptr) {
         ZJC_DEBUG("leader null");
@@ -887,10 +883,6 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
         return;
     }
 
-    ZJC_DEBUG("succcess leader local_id_: %s, to tx leader: %s",
-        common::Encode::HexEncode(local_id_).c_str(),
-        common::Encode::HexEncode(to_tx_leader_->id).c_str());
-
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (prev_create_statistic_tx_ms_ >= now_tm_ms) {
         ZJC_DEBUG("prev_create_statistic_tx_ms_ >= now_tm_ms leader local_id_: %s, to tx leader: %s",
@@ -899,6 +891,16 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
 
         return;
     }
+
+    if (latest_timeblock_height_ <= consensused_timeblock_height_) {
+        ZJC_DEBUG("latest_timeblock_height_ <= consensused_timeblock_height_: %lu, %lu",
+            latest_timeblock_height_, consensused_timeblock_height_);
+        return;
+    }
+
+    ZJC_DEBUG("succcess leader local_id_: %s, to tx leader: %s",
+        common::Encode::HexEncode(local_id_).c_str(),
+        common::Encode::HexEncode(to_tx_leader_->id).c_str());
 
     if (shard_statistic_tx_ != nullptr && shard_statistic_tx_->tx_ptr->in_consensus) {
         ZJC_DEBUG("shard_statistic_tx_->tx_ptr->in_consensus local_id_: %s, to tx leader: %s",

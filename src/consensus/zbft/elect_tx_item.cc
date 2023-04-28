@@ -145,7 +145,6 @@ int ElectTxItem::CreateNewElect(
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         block::protobuf::BlockTx& block_tx) {
     auto& storage = *block_tx.add_storages();
-    storage.set_key(protos::kElectNodeAttrElectBlock);
     elect::protobuf::ElectBlock elect_block;
     int32_t expect_leader_count = (int32_t)pow(
         2.0,
@@ -185,6 +184,7 @@ int ElectTxItem::CreateNewElect(
 
     std::string val = elect_block.SerializeAsString();
     std::string val_hash = protos::GetElectBlockHash(elect_block);
+    storage.set_key(protos::kElectNodeAttrElectBlock);
     storage.set_val_hash(val_hash);
     prefix_db_->SaveTemporaryKv(val_hash, val);
     ZJC_DEBUG("create elect success: %u", elect_statistic.sharding_id());
