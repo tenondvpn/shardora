@@ -126,7 +126,7 @@ int ElectTxItem::HandleTx(
             std::string random_str;
             auto& g2 = *g2_;
             auto RandFunc = [&g2, &random_str](int i) -> int {
-                int val = static_cast<int>(g2()) % i;
+                int val = abs(static_cast<int>(g2())) % i;
                 random_str += std::to_string(val) + ",";
                 return val;
             };

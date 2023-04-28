@@ -368,7 +368,8 @@ int ShardStatistic::StatisticWithHeights(
 
         std::mt19937_64 g2(now_vss_random_);
         auto RandFunc = [&g2](int i) -> int {
-            return g2() % i;
+            int val = abs(static_cast<int>(g2())) % i;
+            return val;
         };
 
         std::random_shuffle(elect_nodes.begin(), elect_nodes.end(), RandFunc);
