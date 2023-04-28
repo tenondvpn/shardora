@@ -575,6 +575,11 @@ int Zbft::LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg) {
 int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     std::string pool_hash = pools_mgr_->latest_hash(txs_ptr_->pool_index);
     uint64_t pool_height = pools_mgr_->latest_height(txs_ptr_->pool_index);
+    if (pool_hash.empty() || pool_height == common::kInvalidUint64) {
+        ZJC_DEBUG("pool index not inited: %u", txs_ptr_->pool_index);
+        return kConsensusError;
+    }
+
     auto prepare_block = std::make_shared<block::protobuf::Block>(*(tx_bft.mutable_block()));
     block::protobuf::Block& zjc_block = *prepare_block;
     zjc_block.set_pool_index(txs_ptr_->pool_index);

@@ -141,6 +141,11 @@ private:
             return;
         }
 
+        if (network_id >= network::kConsensusWaitingShardBeginNetworkId &&
+                network_id < network::kConsensusWaitingShardEndNetworkId) {
+            network_id -= network::kConsensusWaitingShardOffset;
+        }
+
         if (prefix_db_->GetLatestPoolInfo(
                 network_id,
                 pool_index_,
