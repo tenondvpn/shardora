@@ -965,7 +965,7 @@ void NetworkInit::HandleElectionBlock(
 
     auto members = elect_mgr_->OnNewElectBlock(thread_idx, block->height(), elect_block, db_batch);
     if (members == nullptr) {
-        ZJC_FATAL("elect manager handle elect block failed!");
+        ZJC_ERROR("elect manager handle elect block failed!");
         return;
     }
 
