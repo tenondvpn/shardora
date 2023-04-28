@@ -451,14 +451,46 @@ void ElectTxItem::FtsGetNodes(
 void ElectTxItem::SmoothFtsValue(
         std::vector<NodeDetailPtr>& elect_nodes,
         uint64_t* max_fts_val) {
+    {
+        std::string ids;
+        for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stoke) + ",";
+        }
+
+        ZJC_DEBUG("before sort: %s", ids.c_str());
+    }
     std::sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceCompare);
+    {
+        std::string ids;
+        for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stoke) + ",";
+        }
+
+        ZJC_DEBUG("after sort: %s", ids.c_str());
+    }
     for (uint32_t i = 1; i < elect_nodes.size(); ++i) {
         elect_nodes[i]->stoke_diff = elect_nodes[i]->stoke - elect_nodes[i - 1]->stoke;
     }
 
     std::sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceDiffCompare);
+    {
+        std::string ids;
+        for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stoke) + ",";
+        }
+
+        ZJC_DEBUG("after sort 1: %s", ids.c_str());
+    }
     uint64_t diff_2b3 = elect_nodes[elect_nodes.size() * 2 / 3]->stoke_diff;
     std::sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceCompare);
+    {
+        std::string ids;
+        for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stoke) + ",";
+        }
+
+        ZJC_DEBUG("after sort 2: %s", ids.c_str());
+    }
     int32_t min_balance = (std::numeric_limits<int32_t>::max)();
     int32_t blance_diff = 0;
     std::vector<int32_t> blance_weight;
