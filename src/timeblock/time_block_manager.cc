@@ -95,33 +95,6 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader) {
     return tmblock_tx_ptr_;
 }
 
-void TimeBlockManager::BroadcastTimeblock(
-        uint8_t thread_idx,
-        const std::shared_ptr<block::protobuf::Block>& block_item) {
-    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
-        return;
-    }
-
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->thread_idx = thread_idx;
-    auto& msg = msg_ptr->header;
-    msg.set_src_sharding_id(network::kRootCongressNetworkId);
-    msg.set_type(common::kConsensusMessage);
-    dht::DhtKeyManager dht_key(network::kNodeNetworkId);
-    msg.set_des_dht_key(dht_key.StrKey());
-    auto& bft_msg = *msg.mutable_zbft();
-    *bft_msg.mutable_block() = *block_item;
-    bft_msg.set_pool_index(common::kRootChainPoolIndex);
-    bft_msg.set_member_index(-1);
-    bft_msg.set_sync_block(true);
-    auto* brdcast = msg.mutable_broadcast();
-    std::string msg_hash;
-    protos::GetProtoHash(msg, &msg_hash);
-    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
-    network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("success broadcast timeblock: %lu", block_item->height());
-}
-
 void TimeBlockManager::OnTimeBlock(
         uint64_t latest_time_block_tm,
         uint64_t latest_time_block_height,

@@ -1953,6 +1953,38 @@ void BftManager::LeaderBroadcastBlock(
     }
 }
 
+void BftManager::BroadcastTimeblock(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block_item) {
+    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
+        return;
+    }
+
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->thread_idx = thread_idx;
+    auto& msg = msg_ptr->header;
+    msg.set_src_sharding_id(network::kRootCongressNetworkId);
+    msg.set_type(common::kBlockMessage);
+    dht::DhtKeyManager dht_key(network::kNodeNetworkId);
+    msg.set_des_dht_key(dht_key.StrKey());
+    auto& tx = block_item->tx_list(0);
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        std::string val;
+        if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+            auto kv = msg.mutable_sync()->add_items();
+            kv->set_key(tx.storages(i).val_hash());
+            kv->set_value(val);
+        }
+    }
+
+    auto& elect_block = *msg.mutable_elect_block();
+    *elect_block.mutable_block() = *block_item;
+    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
+    auto* brdcast = msg.mutable_broadcast();
+    network::Route::Instance()->Send(msg_ptr);
+    ZJC_DEBUG("success broadcast timeblock: %lu", block_item->height());
+}
+
 void BftManager::BroadcastElectBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item) {

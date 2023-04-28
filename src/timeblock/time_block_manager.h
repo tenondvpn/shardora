@@ -28,9 +28,6 @@ public:
     TimeBlockManager();
     ~TimeBlockManager();
     void Init(std::shared_ptr<vss::VssManager>& vss_mgr);
-    void BroadcastTimeblock(
-        uint8_t thread_idx,
-        const std::shared_ptr<block::protobuf::Block>& block_item);
     uint64_t LatestTimestamp();
     uint64_t LatestTimestampHeight();
     void OnTimeBlock(
