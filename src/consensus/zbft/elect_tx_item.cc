@@ -12,8 +12,8 @@ inline bool ElectNodeBalanceCompare(const NodeDetailPtr& left, const NodeDetailP
 }
 
 inline bool ElectNodeBalanceDiffCompare(
-    const NodeDetailPtr& left,
-    const NodeDetailPtr& right) {
+        const NodeDetailPtr& left,
+        const NodeDetailPtr& right) {
     return left->stoke_diff < right->stoke_diff;
 }
 
@@ -460,23 +460,23 @@ void ElectTxItem::SmoothFtsValue(
         ZJC_DEBUG("before sort: %s", ids.c_str());
     }
     std::stable_sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceCompare);
+    
+    for (uint32_t i = 1; i < elect_nodes.size(); ++i) {
+        elect_nodes[i]->stoke_diff = elect_nodes[i]->stoke - elect_nodes[i - 1]->stoke;
+    }
     {
         std::string ids;
         for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
-            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stoke) + ",";
+            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stoke_diff) + ",";
         }
 
         ZJC_DEBUG("after sort: %s", ids.c_str());
     }
-    for (uint32_t i = 1; i < elect_nodes.size(); ++i) {
-        elect_nodes[i]->stoke_diff = elect_nodes[i]->stoke - elect_nodes[i - 1]->stoke;
-    }
-
     std::stable_sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceDiffCompare);
     {
         std::string ids;
         for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
-            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stoke) + ",";
+            ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ":" + std::to_string(elect_nodes[i]->stoke_diff) + ",";
         }
 
         ZJC_DEBUG("after sort 1: %s", ids.c_str());
