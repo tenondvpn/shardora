@@ -523,6 +523,10 @@ void ShardStatistic::LoadLatestHeights() {
     ZJC_DEBUG("init success change min elect statistic heights: %s", init_consensus_height.c_str());
     for (uint32_t i = 0; i < max_pool_index; ++i) {
         uint64_t pool_latest_height = pools_mgr_->latest_height(i);
+        if (pool_latest_height == common::kInvalidUint64) {
+            continue;
+        }
+
         bool consensus_stop = false;
         for (uint64_t height = pool_consensus_heihgts_[i];
                 height <= pool_latest_height; ++height) {
