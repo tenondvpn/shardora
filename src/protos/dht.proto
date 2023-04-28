@@ -26,6 +26,7 @@ message RefreshNeighborsRequest {
     optional bytes pubkey = 3;
     optional string public_ip = 4;
     optional int32 public_port = 5;
+    repeated bytes ids = 6;
 }
 
 message RefreshNeighborsResponse {
