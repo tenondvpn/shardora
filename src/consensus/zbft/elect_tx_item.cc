@@ -175,9 +175,18 @@ int ElectTxItem::HandleTx(
 
             assert(expect_leader_count > 0);
             std::set<uint32_t> leader_nodes;
+            {
+                std::string ids;
+                for (uint32_t i = 0; i < src_elect_nodes_to_choose.size(); ++i) {
+                    ids += common::Encode::HexEncode(src_elect_nodes_to_choose[i]->pubkey) + ":" + std::to_string(src_elect_nodes_to_choose[i]->index) + ",";
+                }
+
+                ZJC_DEBUG("befor get leader: %s", ids.c_str());
+            }
+
             FtsGetNodes(src_elect_nodes_to_choose, false, expect_leader_count, leader_nodes);
-            ZJC_DEBUG("net: %u, elect use height to random order: %lu, leader size: %d, nodes count: %u, leader size: %d, random_str: %s",
-                elect_statistic.sharding_id(), vss_mgr_->EpochRandom(), expect_leader_count, elect_nodes.size(), leader_nodes.size(), random_str.c_str());
+            ZJC_DEBUG("net: %u, elect use height to random order: %lu, leader size: %d, nodes count: %u, leader size: %d, random_str: %s, leader index: %d",
+                elect_statistic.sharding_id(), vss_mgr_->EpochRandom(), expect_leader_count, elect_nodes.size(), leader_nodes.size(), random_str.c_str(), leader_nodes[0]);
             if (leader_nodes.size() != expect_leader_count) {
                 ZJC_ERROR("choose leader failed: %u", elect_statistic.sharding_id());
                 return kConsensusError;
@@ -196,7 +205,7 @@ int ElectTxItem::HandleTx(
                     ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ",";
                 }
 
-                ZJC_DEBUG("before: %s", ids.c_str());
+                ZJC_DEBUG("before CreateNewElect: %s", ids.c_str());
             }
             CreateNewElect(thread_idx, block, elect_nodes, elect_statistic, db_batch, block_tx);
 
@@ -206,7 +215,7 @@ int ElectTxItem::HandleTx(
                     ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ",";
                 }
 
-                ZJC_DEBUG("after: %s", ids.c_str());
+                ZJC_DEBUG("after CreateNewElect: %s", ids.c_str());
             }
             ZJC_DEBUG("consensus elect tx success: %u", elect_statistic.sharding_id());
             return kConsensusSuccess;
