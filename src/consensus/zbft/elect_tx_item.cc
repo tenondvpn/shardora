@@ -186,7 +186,7 @@ int ElectTxItem::HandleTx(
 
             FtsGetNodes(src_elect_nodes_to_choose, false, expect_leader_count, leader_nodes);
             ZJC_DEBUG("net: %u, elect use height to random order: %lu, leader size: %d, nodes count: %u, leader size: %d, random_str: %s, leader index: %d",
-                elect_statistic.sharding_id(), vss_mgr_->EpochRandom(), expect_leader_count, elect_nodes.size(), leader_nodes.size(), random_str.c_str(), leader_nodes[0]);
+                elect_statistic.sharding_id(), vss_mgr_->EpochRandom(), expect_leader_count, elect_nodes.size(), leader_nodes.size(), random_str.c_str(), *leader_nodes.begin());
             if (leader_nodes.size() != expect_leader_count) {
                 ZJC_ERROR("choose leader failed: %u", elect_statistic.sharding_id());
                 return kConsensusError;
