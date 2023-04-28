@@ -122,12 +122,13 @@ int ElectTxItem::HandleTx(
                 return res;
             }
 
-            std::mt19937_64 g2(block.height());
-            auto RandFunc = [&g2](int i) -> int {
-                return g2() % i;
-            };
-
-            std::random_shuffle(elect_nodes.begin(), elect_nodes.end(), RandFunc);
+//             std::mt19937_64 g2(vss_mgr_->EpochRandom());
+//             auto RandFunc = [&g2](int i) -> int {
+//                 return g2() % i;
+//             };
+            srand(static_cast<uint32_t>(vss_mgr_->EpochRandom()));
+            std::random_shuffle(elect_nodes.begin(), elect_nodes.end());
+//             std::random_shuffle(elect_nodes.begin(), elect_nodes.end(), RandFunc);
             int32_t expect_leader_count = (int32_t)pow(
                 2.0,
                 (double)((int32_t)log2(double(elect_nodes.size() / 3))));
@@ -139,7 +140,7 @@ int ElectTxItem::HandleTx(
             std::set<uint32_t> leader_nodes;
             FtsGetNodes(src_elect_nodes_to_choose, false, expect_leader_count, leader_nodes);
             ZJC_DEBUG("elect use height to random order: %lu, leader size: %d, nodes count: %u, leader size: %d",
-                block.height(), expect_leader_count, elect_nodes.size(), leader_nodes.size());
+                vss_mgr_->EpochRandom(), expect_leader_count, elect_nodes.size(), leader_nodes.size());
             if (leader_nodes.size() != expect_leader_count) {
                 ZJC_ERROR("choose leader failed: %u", elect_statistic.sharding_id());
                 return kConsensusError;
