@@ -397,12 +397,7 @@ ZbftPtr BftManager::StartBft(
 void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kConsensusMessage);
-    if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusWaitingShardBeginNetworkId &&
-            common::GlobalInfo::Instance()->network_id() < network::kConsensusWaitingShardEndNetworkId) {
-        if (!msg_ptr->header.zbft().sync_block() || !msg_ptr->header.zbft().has_block()) {
-            return;
-        }
-
+    if (msg_ptr->header.zbft().sync_block() && msg_ptr->header.zbft().has_block()) {
         ElectItem elect_item;
         return HandleSyncConsensusBlock(elect_item, msg_ptr);
     }
