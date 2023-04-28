@@ -86,6 +86,14 @@ int ElectTxItem::HandleTx(
             uint32_t min_area_weight = common::kInvalidUint32;
             uint32_t min_tx_count = common::kInvalidUint32;
             std::vector<NodeDetailPtr> elect_nodes;
+            {
+                std::string ids;
+                for (uint32_t i = 0; i < members->size(); ++i) {
+                    ids += common::Encode::HexEncode((*members)[i]->pubkey) + ",";
+                }
+
+                ZJC_DEBUG("init: %s", ids.c_str());
+            }
             int res = CheckWeedout(
                 thread_idx,
                 members,
@@ -324,6 +332,14 @@ int ElectTxItem::CheckWeedout(
         return kConsensusError;
     }
 
+    {
+        std::string ids;
+        for (uint32_t i = 0; i < elect_nodes_to_choose.size(); ++i) {
+            ids += common::Encode::HexEncode(elect_nodes_to_choose[i]->pubkey) + ",";
+        }
+
+        ZJC_DEBUG("before weedout: %s", ids.c_str());
+    }
     std::set<uint32_t> weedout_nodes;
     FtsGetNodes(elect_nodes_to_choose, true, weed_out_count - invalid_nodes.size(), weedout_nodes);
     for (auto iter = elect_nodes_to_choose.begin(); iter != elect_nodes_to_choose.end(); ++iter) {
