@@ -277,7 +277,10 @@ std::string GetElectBlockHash(const elect::protobuf::ElectBlock& elect_block) {
     string_for_hash.append((char*)&shard_network_id, sizeof(shard_network_id));
     uint64_t elect_height = elect_block.elect_height();
     string_for_hash.append((char*)&elect_height, sizeof(elect_height));
-    ZJC_DEBUG("shard_network_id: %u, elect_height: %lu", shard_network_id, elect_height);
+    ZJC_DEBUG("shard_network_id: %u, elect_height: %lu, hash: %s, string: %s",
+        shard_network_id, elect_height,
+        common::Encode::HexEncode(common::Hash::keccak256(string_for_hash)).c_str(),
+        common::Encode::HexEncode(string_for_hash).c_str());
     return common::Hash::keccak256(string_for_hash);
 }
 

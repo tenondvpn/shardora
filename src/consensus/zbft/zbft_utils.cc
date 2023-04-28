@@ -77,11 +77,18 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
     msg.append((char*)&timeblock_height, sizeof(timeblock_height));
     uint64_t elect_height = block.electblock_height();
     msg.append((char*)&elect_height, sizeof(elect_height));
-    uint64_t leader_idx = block.leader_index();
+    uint32_t leader_idx = block.leader_index();
     msg.append((char*)&leader_idx, sizeof(leader_idx));
-    ZJC_DEBUG("block.prehash(): %s, height: %lu, get block hash: %s, %s",
+    ZJC_DEBUG("block.prehash(): %s, height: %lu,pool_idx: %u, sharding_id: %u, vss_random: %lu, "
+        "timeblock_height: %lu, elect_height: %lu, leader_idx: %u, get block hash: %s, %s",
         common::Encode::HexEncode(block.prehash()).c_str(),
         height,
+        pool_idx,
+        sharding_id,
+        vss_random,
+        timeblock_height,
+        elect_height,
+        leader_idx,
         common::Encode::HexEncode(common::Hash::keccak256(msg)).c_str(),
         common::Encode::HexEncode(msg).c_str());
     return common::Hash::keccak256(msg);
