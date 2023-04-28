@@ -121,7 +121,7 @@ int ElectTxItem::HandleTx(
                 return res;
             }
 
-            std::mt19937_64 g2(vss_mgr_->EpochRandom());
+            std::mt19937_64 g2(block.height());
             auto RandFunc = [&g2](int i) -> int {
                 return g2() % i;
             };
