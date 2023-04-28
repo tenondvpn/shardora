@@ -108,6 +108,7 @@ int ElectTxItem::HandleTx(
                 join_count = common::kEachShardMaxNodeCount - elect_nodes.size();
             }
 
+            std::vector<NodeDetailPtr> src_elect_nodes_to_choose = elect_nodes;
             res = GetJoinElectNodesCredit(
                 members->size(),
                 join_count,
@@ -127,6 +128,30 @@ int ElectTxItem::HandleTx(
             };
 
             std::random_shuffle(elect_nodes.begin(), elect_nodes.end(), RandFunc);
+            int32_t expect_leader_count = (int32_t)pow(
+                2.0,
+                (double)((int32_t)log2(double(elect_nodes.size() / 3))));
+            if (expect_leader_count > (int32_t)common::kImmutablePoolSize) {
+                expect_leader_count = (int32_t)common::kImmutablePoolSize;
+            }
+
+            assert(expect_leader_count > 0);
+            std::set<uint32_t> leader_nodes;
+            FtsGetNodes(src_elect_nodes_to_choose, false, expect_leader_count, leader_nodes);
+            ZJC_DEBUG("leader size: %d, nodes count: %u, leader size: %d",
+                expect_leader_count, elect_nodes.size(), leader_nodes.size());
+            if (leader_nodes.size() != expect_leader_count) {
+                ZJC_ERROR("choose leader failed: %u", elect_statistic.sharding_id());
+                return kConsensusError;
+            }
+
+            int32_t mode_idx = 0;
+            for (auto iter = src_elect_nodes_to_choose.begin(); iter != src_elect_nodes_to_choose.end(); ++iter) {
+                if (leader_nodes.find((*iter)->index) != leader_nodes.end()) {
+                    (*iter)->leader_mod_index = mode_idx++;
+                }
+            }
+
             CreateNewElect(thread_idx, block, elect_nodes, elect_statistic, db_batch, block_tx);
             ZJC_DEBUG("consensus elect tx success: %u", elect_statistic.sharding_id());
             return kConsensusSuccess;
@@ -146,33 +171,10 @@ int ElectTxItem::CreateNewElect(
         block::protobuf::BlockTx& block_tx) {
     auto& storage = *block_tx.add_storages();
     elect::protobuf::ElectBlock elect_block;
-    int32_t expect_leader_count = (int32_t)pow(
-        2.0,
-        (double)((int32_t)log2(double(elect_nodes.size() / 3))));
-    if (expect_leader_count > (int32_t)common::kImmutablePoolSize) {
-        expect_leader_count = (int32_t)common::kImmutablePoolSize;
-    }
-
-    assert(expect_leader_count > 0);
-    std::vector<NodeDetailPtr> elect_nodes_to_choose = elect_nodes;
-    std::set<uint32_t> leader_nodes;
-    FtsGetNodes(elect_nodes_to_choose, false, expect_leader_count, leader_nodes);
-    ZJC_DEBUG("leader size: %d, nodes count: %u, leader size: %d",
-        expect_leader_count, elect_nodes.size(), leader_nodes.size());
-    if (leader_nodes.size() != expect_leader_count) {
-        ZJC_ERROR("choose leader failed: %u", elect_statistic.sharding_id());
-        return kConsensusError;
-    }
-
-    int32_t mode_idx = 0;
     for (auto iter = elect_nodes.begin(); iter != elect_nodes.end(); ++iter) {
         auto in = elect_block.add_in();
         in->set_pubkey((*iter)->pubkey);
-        if (leader_nodes.find((*iter)->index) != leader_nodes.end()) {
-            in->set_pool_idx_mod_num(mode_idx++);
-        } else {
-            in->set_pool_idx_mod_num(-1);
-        }
+        in->set_pool_idx_mod_num((*iter)->leader_mod_index);
     }
 
     elect_block.set_shard_network_id(elect_statistic.sharding_id());
