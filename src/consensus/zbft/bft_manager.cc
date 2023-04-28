@@ -1936,7 +1936,7 @@ void BftManager::LeaderBroadcastBlock(
 
     switch (block->tx_list(0).step()) {
     case pools::protobuf::kConsensusRootTimeBlock:
-        tm_block_mgr_->BroadcastTimeblock(thread_index, block);
+        BroadcastTimeblock(thread_index, block);
         break;
     case pools::protobuf::kRootCreateAddressCrossSharding:
     case pools::protobuf::kNormalTo:
