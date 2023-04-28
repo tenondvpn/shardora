@@ -96,6 +96,7 @@ private:
     uint32_t min_tx_count_ = common::kInvalidUint32;
     int32_t max_credit_ = 0;
     int32_t min_credit_ = common::kInvalidInt32;
+    std::shared_ptr<std::mt19937_64> g2_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ElectTxItem);
 };

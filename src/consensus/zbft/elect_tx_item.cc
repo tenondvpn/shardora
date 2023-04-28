@@ -23,6 +23,7 @@ int ElectTxItem::HandleTx(
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
+    g2_ = std::make_shared<std::mt19937_64>(block.height());
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kShardElection) {
             uint64_t* tmp = (uint64_t*)block_tx.storages(i).val_hash().c_str();
@@ -122,13 +123,16 @@ int ElectTxItem::HandleTx(
                 return res;
             }
 
-//             std::mt19937_64 g2(vss_mgr_->EpochRandom());
-//             auto RandFunc = [&g2](int i) -> int {
-//                 return g2() % i;
-//             };
-            srand(static_cast<uint32_t>(vss_mgr_->EpochRandom()));
-            std::random_shuffle(elect_nodes.begin(), elect_nodes.end());
-//             std::random_shuffle(elect_nodes.begin(), elect_nodes.end(), RandFunc);
+            std::string random_str;
+            auto& g2 = *g2_;
+            auto RandFunc = [&g2, &random_str](int i) -> int {
+                int val = static_cast<int>(g2()) % i;
+                random_str += std::to_string(val) + ",";
+                return val;
+            };
+//             srand(static_cast<uint32_t>(vss_mgr_->EpochRandom()));
+//             std::random_shuffle(elect_nodes.begin(), elect_nodes.end());
+            std::random_shuffle(elect_nodes.begin(), elect_nodes.end(), RandFunc);
             int32_t expect_leader_count = (int32_t)pow(
                 2.0,
                 (double)((int32_t)log2(double(elect_nodes.size() / 3))));
@@ -139,8 +143,8 @@ int ElectTxItem::HandleTx(
             assert(expect_leader_count > 0);
             std::set<uint32_t> leader_nodes;
             FtsGetNodes(src_elect_nodes_to_choose, false, expect_leader_count, leader_nodes);
-            ZJC_DEBUG("elect use height to random order: %lu, leader size: %d, nodes count: %u, leader size: %d",
-                vss_mgr_->EpochRandom(), expect_leader_count, elect_nodes.size(), leader_nodes.size());
+            ZJC_DEBUG("elect use height to random order: %lu, leader size: %d, nodes count: %u, leader size: %d, random_str: %s",
+                vss_mgr_->EpochRandom(), expect_leader_count, elect_nodes.size(), leader_nodes.size(), random_str.c_str());
             if (leader_nodes.size() != expect_leader_count) {
                 ZJC_ERROR("choose leader failed: %u", elect_statistic.sharding_id());
                 return kConsensusError;
@@ -348,7 +352,6 @@ void ElectTxItem::FtsGetNodes(
     uint64_t max_fts_val = 0;
     SmoothFtsValue(elect_nodes, &max_fts_val);
     uint32_t try_times = 0;
-    std::mt19937_64 g2(vss_mgr_->EpochRandom());
     std::set<int32_t> tmp_res_nodes;
     while (tmp_res_nodes.size() < count) {
         common::FtsTree fts_tree;
@@ -367,6 +370,7 @@ void ElectTxItem::FtsGetNodes(
         }
 
         fts_tree.CreateFtsTree();
+        auto& g2 = *g2_;
         int32_t data = fts_tree.GetOneNode(g2);
         if (data == -1) {
             ++try_times;
@@ -397,7 +401,6 @@ void ElectTxItem::SmoothFtsValue(
     std::sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceDiffCompare);
     uint64_t diff_2b3 = elect_nodes[elect_nodes.size() * 2 / 3]->stoke_diff;
     std::sort(elect_nodes.begin(), elect_nodes.end(), ElectNodeBalanceCompare);
-    std::mt19937_64 g2(vss_mgr_->EpochRandom());
     int32_t min_balance = (std::numeric_limits<int32_t>::max)();
     int32_t blance_diff = 0;
     std::vector<int32_t> blance_weight;
@@ -405,6 +408,7 @@ void ElectTxItem::SmoothFtsValue(
         blance_weight.resize(elect_nodes.size());
         blance_weight[0] = 100;
         int32_t max_balance = 0;
+        auto& g2 = *g2_;
         for (uint32_t i = 1; i < elect_nodes.size(); ++i) {
             uint64_t fts_val_diff = elect_nodes[i]->stoke - elect_nodes[i - 1]->stoke;
             if (fts_val_diff == 0) {
