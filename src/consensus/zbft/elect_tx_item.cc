@@ -360,6 +360,10 @@ int ElectTxItem::CheckWeedout(
     FtsGetNodes(elect_nodes_to_choose, true, weed_out_count - invalid_nodes.size(), weedout_nodes);
     for (auto iter = elect_nodes_to_choose.begin(); iter != elect_nodes_to_choose.end(); ++iter) {
         if (weedout_nodes.find((*iter)->index) != weedout_nodes.end()) {
+            ZJC_DEBUG("fts weedout: %s, tx count: %u, max_tx_count: %u",
+                common::Encode::HexEncode(sec_ptr_->GetAddress((*members)[(*iter)->index]->pubkey)).c_str(),
+                statistic_item.tx_count((*iter)->index), max_tx_count);
+
             continue;
         }
 
