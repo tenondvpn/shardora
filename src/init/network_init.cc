@@ -75,6 +75,7 @@ int NetworkInit::Init(int argc, char** argv) {
 
     int genesis_check = GenesisCmd(parser_arg);
     if (genesis_check != -1) {
+        std::cout << "genesis cmd over, exit." << std::endl;
         return genesis_check;
     }
 
@@ -679,15 +680,15 @@ int NetworkInit::ParseParams(int argc, char** argv, common::ParserArgs& parser_a
 
 int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
     if (parser_arg.Has("U")) {
-        db_ = std::make_shared<db::Db>();
-        if (!db_->Init("./root_db")) {
+        auto db = std::make_shared<db::Db>();
+        if (!db->Init("./root_db")) {
             INIT_ERROR("init db failed!");
             return kInitError;
         }
 
         account_mgr_ = std::make_shared<block::AccountManager>();
         block_mgr_ = std::make_shared<block::BlockManager>();
-        init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db_);
+        init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         std::vector<dht::NodePtr> root_genesis_nodes;
         if (parser_arg.Has("1")) {
             std::string value;
@@ -752,15 +753,15 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
 
     if (parser_arg.Has("S")) {
         ZJC_DEBUG("save shard db: shard_db");
-        db_ = std::make_shared<db::Db>();
-        if (!db_->Init("./shard_db")) {
+        auto db = std::make_shared<db::Db>();
+        if (!db->Init("./shard_db")) {
             INIT_ERROR("init db failed!");
             return kInitError;
         }
 
         account_mgr_ = std::make_shared<block::AccountManager>();
         block_mgr_ = std::make_shared<block::BlockManager>();
-        init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db_);
+        init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         std::vector<dht::NodePtr> root_genesis_nodes;
         if (parser_arg.Has("1")) {
             std::string value;
