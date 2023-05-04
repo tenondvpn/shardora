@@ -972,14 +972,16 @@ void NetworkInit::HandleElectionBlock(
 
     auto sharding_id = elect_block->shard_network_id();
     auto elect_height = elect_mgr_->latest_height(sharding_id);
-    ZJC_DEBUG("success called election block. elect height: %lu, net: %u",
-        elect_height, elect_block->shard_network_id());
+    ZJC_DEBUG("success called election block. elect height: %lu, net: %u, local net id: %u",
+        elect_height, elect_block->shard_network_id(), common::GlobalInfo::Instance()->network_id());
     bft_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     block_mgr_->OnNewElectBlock(sharding_id, members);
     vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     bls_mgr_->OnNewElectBlock(sharding_id, block->height(), elect_block);
     shard_statistic_->OnNewElectBlock(sharding_id, elect_height);
     network::UniversalManager::Instance()->OnNewElectBlock(sharding_id, elect_height, members);
+    ZJC_DEBUG("1 success called election block. elect height: %lu, net: %u, local net id: %u",
+        elect_height, elect_block->shard_network_id(), common::GlobalInfo::Instance()->network_id());
     if (sharding_id + network::kConsensusWaitingShardOffset ==
             common::GlobalInfo::Instance()->network_id()) {
         join_elect_tick_.CutOff(
