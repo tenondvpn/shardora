@@ -623,7 +623,7 @@ void ElectTxItem::SmoothFtsValue(
         if (weight_diff > 0) {
             int32_t weight_index = blance_diff / weight_diff;
             for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
-                ip_weight[i] = min_balance + weight_index * (ip_weight[i] - min_ip_weight);
+                ip_weight[i] = 0;// min_balance + weight_index * (ip_weight[i] - min_ip_weight);
             }
         }
     }
