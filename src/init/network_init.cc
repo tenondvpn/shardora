@@ -385,6 +385,7 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     msg.set_sign(sign);
     msg_ptr->thread_idx = thread_idx;
     network::Route::Instance()->Send(msg_ptr);
+    ZJC_DEBUG("success send join elect request transaction.");
 }
 
 int NetworkInit::InitSecurity() {
@@ -984,6 +985,7 @@ void NetworkInit::HandleElectionBlock(
         join_elect_tick_.CutOff(
             uint64_t(rand()) % (common::kTimeBlockCreatePeriodSeconds / 4 * 3 * 1000000lu),
             std::bind(&NetworkInit::SendJoinElectTransaction, this, std::placeholders::_1));
+        ZJC_DEBUG("now send join elect request transaction.");
     }
 }
 

@@ -495,6 +495,13 @@ void BlockManager::AddNewBlock(
         case pools::protobuf::kConsensusRootElectShard:
             HandleElectTx(thread_idx, *block_item, tx_list[i], db_batch);
             break;
+        case pools::protobuf::kJoinElect:
+            prefix_db_->SaveElectNodeStoke(
+                tx_list[i].from(),
+                block_item->electblock_height(),
+                tx_list[i].balance(),
+                db_batch);
+            break;
         default:
             break;
         }
