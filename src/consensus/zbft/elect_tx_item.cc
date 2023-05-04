@@ -655,16 +655,24 @@ void ElectTxItem::SmoothFtsValue(
         }
     }
 
+    std::string fts_val_str;
     for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
         elect_nodes[i]->fts_value = (
             2 * ip_weight[i] +
             4 * credit_weight[i] +
             2 * blance_weight[i] +
             2 * epoch_weight[i]) / 10;
+        fts_val_str += std::to_string(ip_weight[i]) + "," +
+            std::to_string(credit_weight[i]) + "," +
+            std::to_string(blance_weight[i]) + "," +
+            std::to_string(epoch_weight[i]) + ","
+            std::to_string(elect_nodes[i]->fts_value) + " --- ";
         if (*max_fts_val < elect_nodes[i]->fts_value) {
             *max_fts_val = elect_nodes[i]->fts_value;
         }
     }
+
+    ZJC_DEBUG("fts value final: %s", fts_val_str.c_str());
 }
 
 };  // namespace consensus
