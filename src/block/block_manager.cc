@@ -773,12 +773,11 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
 }
 
 pools::TxItemPtr BlockManager::GetStatisticTx(bool leader) {
-    if (!leader) {
-        ZJC_DEBUG("get statistic coming: %d", (shard_statistic_tx_ != nullptr));
-        if (shard_statistic_tx_ != nullptr) {
-            ZJC_DEBUG("get statistic coming shard_statistic_tx_->tx_ptr->in_consensus: %d", shard_statistic_tx_->tx_ptr->in_consensus);
-        }
+    ZJC_DEBUG("get statistic coming: %d", (shard_statistic_tx_ != nullptr));
+    if (shard_statistic_tx_ != nullptr) {
+        ZJC_DEBUG("get statistic coming shard_statistic_tx_->tx_ptr->in_consensus: %d", shard_statistic_tx_->tx_ptr->in_consensus);
     }
+
     if (shard_statistic_tx_ != nullptr && !shard_statistic_tx_->tx_ptr->in_consensus) {
         auto now_tm = common::TimeUtils::TimestampUs();
         if (leader && shard_statistic_tx_->tx_ptr->time_valid > now_tm) {

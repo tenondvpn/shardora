@@ -354,7 +354,7 @@ int ElectTxItem::CheckWeedout(
             ids += common::Encode::HexEncode(elect_nodes_to_choose[i]->pubkey) + ",";
         }
 
-        ZJC_DEBUG("before weedout: %s", ids.c_str());
+        ZJC_DEBUG("before weedout: %s, weed_out_count: %u", ids.c_str(), weed_out_count);
     }
     std::set<uint32_t> weedout_nodes;
     FtsGetNodes(elect_nodes_to_choose, true, weed_out_count - invalid_nodes.size(), weedout_nodes);

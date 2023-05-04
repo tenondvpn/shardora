@@ -196,6 +196,8 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kElectNodeStoke) {
                     uint64_t* stoke = (uint64_t*)block.tx_list(i).storages(storage_idx).val_hash().c_str();
                     statistic_info_ptr->node_stoke_map[block.tx_list(i).from()] = stoke[0];
+                    ZJC_DEBUG("kJoinElect add new elect node: %s, stoke: %lu",
+                        common::Encode::HexEncode(block.tx_list(i).from()).c_str(), stoke[0]);
                     break;
                 }
             }
@@ -424,6 +426,7 @@ int ShardStatistic::StatisticWithHeights(
         join_elect_node->set_stoke(iter->second);
         str_for_hash.append(elect_nodes[i]);
         str_for_hash.append((char*)&iter->second, sizeof(iter->second));
+        ZJC_DEBUG("add new elect node: %s, stoke: %lu", common::Encode::HexEncode(iter->second).c_str(), iter->second);
     }
 
     NormalizeLofMap(lof_map);
