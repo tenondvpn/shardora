@@ -38,6 +38,10 @@ TxPoolManager::TxPoolManager(
 }
 
 TxPoolManager::~TxPoolManager() {
+    if (db_ == nullptr) {
+        return;
+    }
+
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         tx_pool_[i].FlushHeightTree();
     }
