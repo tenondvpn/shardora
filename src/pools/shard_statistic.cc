@@ -93,6 +93,16 @@ void ShardStatistic::HandleStatisticBlock(
                     height_idx < elect_statistic.heights().heights_size(); ++height_idx) {
                 if (elect_statistic.heights().heights(height_idx) > pool_consensus_heihgts_[height_idx]) {
                     pool_consensus_heihgts_[height_idx] = elect_statistic.heights().heights(height_idx);
+                    for (; pool_consensus_heihgts_[block.pool_index()] <= pool_max_heihgts_[block.pool_index()];
+                            ++pool_consensus_heihgts_[block.pool_index()]) {
+                        auto iter = added_heights_[block.pool_index()].find(
+                            pool_consensus_heihgts_[block.pool_index()] + 1);
+                        if (iter == added_heights_[block.pool_index()].end()) {
+                            break;
+                        }
+
+                        added_heights_[block.pool_index()].erase(iter);
+                    }
                 }
 
                 for (auto iter = node_height_count_map_[height_idx].begin();
