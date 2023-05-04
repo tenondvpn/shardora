@@ -51,7 +51,7 @@ void TxPool::InitHeightTree() {
         net_id,
         pool_index_,
         latest_height_,
-        db);
+        db_);
     for (; synced_height_ <= latest_height_; ++synced_height_) {
         if (!height_tree_ptr_->Valid(synced_height_ + 1)) {
             break;
