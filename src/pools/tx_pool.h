@@ -123,13 +123,28 @@ public:
             return;
         }
 
+        auto net_id = common::GlobalInfo::Instance()->network_id();
+            if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
+            return;
+        }
+
+        auto net_id = common::GlobalInfo::Instance()->network_id();
+        if (net_id >= network::kConsensusWaitingShardBeginNetworkId &&
+                net_id < network::kConsensusWaitingShardEndNetworkId) {
+            net_id -= network::kConsensusWaitingShardOffset;
+        }
+
+        if (net_id < network::kRootCongressNetworkId || net_id >= network::kConsensusShardEndNetworkId) {
+            return;
+        }
+
         for (; prev_synced_height_ < to_sync_max_height_ &&
                 (prev_synced_height_ < synced_height_ + 64);
                 ++prev_synced_height_) {
             if (!height_tree_ptr_->Valid(prev_synced_height_ + 1)) {
                 kv_sync_->AddSyncHeight(
                     thread_idx,
-                    common::GlobalInfo::Instance()->network_id(),
+                    net_id,
                     pool_index_,
                     prev_synced_height_ + 1,
                     sync::kSyncHighest);
