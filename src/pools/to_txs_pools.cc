@@ -415,6 +415,7 @@ void ToTxsPools::LoadLatestHeights() {
         auto& this_net_heights = iter->second->heights();
         for (int32_t i = 0; i < this_net_heights.size(); ++i) {
             pool_consensus_heihgts_[i] = this_net_heights[i];
+            ZJC_DEBUG("set consensus height: %u, height: %lu", i, this_net_heights[i]);
         }
     }
 
