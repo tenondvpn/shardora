@@ -25,8 +25,30 @@ void TxPool::Init(
     auto tmp_db = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(tmp_db);
     InitLatestInfo();
+    InitHeightTree();
+
+//     ZJC_DEBUG("pool_idx: %d, synced_height_: %lu, latest height: %lu",
+//         pool_idx, synced_height_, latest_height_);
+//     added_tx_map_.reserve(10240);
+}
+
+void TxPool::InitHeightTree() {
+    if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
+        return;
+    }
+
+    auto net_id = common::GlobalInfo::Instance()->network_id();
+    if (net_id >= network::kConsensusWaitingShardBeginNetworkId &&
+            net_id < network::kConsensusWaitingShardEndNetworkId) {
+        net_id -= network::kConsensusWaitingShardOffset;
+    }
+
+    if (net_id < network::kRootCongressNetworkId || net_id >= network::kConsensusShardEndNetworkId) {
+        return;
+    }
+
     height_tree_ptr_ = std::make_shared<HeightTreeLevel>(
-        common::GlobalInfo::Instance()->network_id(),
+        net_id,
         pool_index_,
         latest_height_,
         db);
@@ -35,13 +57,13 @@ void TxPool::Init(
             break;
         }
     }
-
-//     ZJC_DEBUG("pool_idx: %d, synced_height_: %lu, latest height: %lu",
-//         pool_idx, synced_height_, latest_height_);
-//     added_tx_map_.reserve(10240);
 }
 
 uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
+    if (height_tree_ptr_ == nullptr) {
+        return 0;
+    }
+
     if (prev_synced_time_ms_ >= now_tm_ms) {
         return 0;
     }

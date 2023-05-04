@@ -85,7 +85,14 @@ public:
     }
 
     uint64_t UpdateLatestInfo(uint8_t thread_idx, uint64_t height, const std::string& hash) {
-        height_tree_ptr_->Set(height);
+        if (height_tree_ptr_ == nullptr) {
+            InitHeightTree();
+        }
+
+        if (height_tree_ptr_ != nullptr) {
+            height_tree_ptr_->Set(height);
+        }
+
         if (latest_height_ == common::kInvalidUint64 || latest_height_ < height) {
             latest_height_ = height;
             latest_hash_ = hash;
@@ -112,6 +119,10 @@ public:
     }
 
     void SyncBlock(uint8_t thread_idx) {
+        if (height_tree_ptr_ == nullptr) {
+            return;
+        }
+
         for (; prev_synced_height_ < to_sync_max_height_ &&
                 (prev_synced_height_ < synced_height_ + 64);
                 ++prev_synced_height_) {
@@ -130,6 +141,7 @@ public:
     uint32_t SyncMissingBlocks(uint64_t now_tm_ms);
 
 private:
+    void InitHeightTree();
     void InitLatestInfo() {
         pools::protobuf::PoolLatestInfo pool_info;
         uint32_t network_id = common::GlobalInfo::Instance()->network_id();
@@ -168,6 +180,10 @@ private:
     }
 
     void UpdateSyncedHeight() {
+        if (height_tree_ptr_ == nullptr) {
+            return;
+        }
+
         for (; synced_height_ <= latest_height_; ++synced_height_) {
             if (!height_tree_ptr_->Valid(synced_height_ + 1)) {
                 break;
