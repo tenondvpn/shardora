@@ -38,19 +38,32 @@ TxPoolManager::TxPoolManager(
 }
 
 TxPoolManager::~TxPoolManager() {
-    prefix_db_->Destroy();
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        tx_pool_[i].FlushHeightTree();
+    }
+
     if (tx_pool_ != nullptr) {
         delete []tx_pool_;
     }
+
+    prefix_db_->Destroy();
 }
 
 void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    if (prev_sync_height_tree_tm_ms_ > now_tm_ms) {
+        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            tx_pool_[i].FlushHeightTree();
+        }
+
+        prev_sync_height_tree_tm_ms_ = now_tm_ms + kFlushHeightTreePeriod;
+    }
+
     if (kv_sync_->added_key_size() >= sync::kSyncMaxKeyCount) {
         assert(false);
         return;
     }
 
-    auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
         tx_pool_[common::kRootChainPoolIndex].SyncMissingBlocks(now_tm_ms);
         return;

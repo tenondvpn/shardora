@@ -128,6 +128,7 @@ private:
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
 
     static const uint32_t kPopMessageCountEachTime = 320u;
+    static const uint64_t kFlushHeightTreePeriod = 60000lu;
 
     TxPool* tx_pool_{ nullptr };
     std::shared_ptr<security::Security> security_ = nullptr;
@@ -141,6 +142,7 @@ private:
     uint64_t prev_sync_check_us_ = 0;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     uint32_t prev_synced_pool_index_ = 0;
+    uint32_t prev_sync_height_tree_tm_ms_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

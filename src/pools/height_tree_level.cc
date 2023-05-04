@@ -20,7 +20,8 @@ HeightTreeLevel::HeightTreeLevel(
     LoadFromDb();
 }
 
-HeightTreeLevel::~HeightTreeLevel() {}
+HeightTreeLevel::~HeightTreeLevel() {
+}
 
 int HeightTreeLevel::Set(uint64_t height) {
     if (max_height_ == common::kInvalidUint64) {

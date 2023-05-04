@@ -45,6 +45,13 @@ public:
         std::shared_ptr<sync::KeyValueSync>& kv_sync);
     int AddTx(TxItemPtr& tx_ptr);
     void GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count);
+
+    void FlushHeightTree() {
+        if (height_tree_ptr_ != nullptr) {
+            height_tree_ptr_->FlushToDb();
+        }
+    }
+
     std::shared_ptr<consensus::WaitingTxsItem> GetTx(
             const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list) {
         auto txs_items = std::make_shared<consensus::WaitingTxsItem>();
