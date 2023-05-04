@@ -292,6 +292,9 @@ int ElectTxItem::CheckWeedout(
     for (int32_t i = 0; i < direct_weed_out_count; ++i) {
         if (member_tx_count[i].second < direct_weedout_tx_count) {
             invalid_nodes.insert(member_tx_count[i].first);
+            ZJC_DEBUG("direct weedout: %s, tx count: %u, max_tx_count: %u",
+                common::Encode::HexEncode(sec_ptr_->GetAddress((*members)[member_tx_count[i].first]->pubkey)).c_str(),
+                statistic_item.tx_count(member_tx_count[i].first), max_tx_count);
         }
     }
 
