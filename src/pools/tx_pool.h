@@ -91,6 +91,8 @@ public:
 
         if (height_tree_ptr_ != nullptr) {
             height_tree_ptr_->Set(height);
+            ZJC_DEBUG("success set height, net: %u, pool: %u, height: %lu",
+                common::GlobalInfo::Instance()->network_id(), pool_index_, height);
         }
 
         if (latest_height_ == common::kInvalidUint64 || latest_height_ < height) {
