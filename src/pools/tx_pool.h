@@ -86,13 +86,13 @@ public:
 
     uint64_t UpdateLatestInfo(uint8_t thread_idx, uint64_t height, const std::string& hash) {
         height_tree_ptr_->Set(height);
-        if (latest_height_ < height) {
+        if (latest_height_ == common::kInvalidUint64 || latest_height_ < height) {
             latest_height_ = height;
             latest_hash_ = hash;
             
         }
 
-        if (to_sync_max_height_ < latest_height_) {
+        if (to_sync_max_height_ == common::kInvalidUint64 || to_sync_max_height_ < latest_height_) {
             to_sync_max_height_ = latest_height_;
         }
 
