@@ -124,11 +124,6 @@ public:
         }
 
         auto net_id = common::GlobalInfo::Instance()->network_id();
-            if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
-            return;
-        }
-
-        auto net_id = common::GlobalInfo::Instance()->network_id();
         if (net_id >= network::kConsensusWaitingShardBeginNetworkId &&
                 net_id < network::kConsensusWaitingShardEndNetworkId) {
             net_id -= network::kConsensusWaitingShardOffset;
