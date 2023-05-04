@@ -90,7 +90,10 @@ void ShardStatistic::HandleStatisticBlock(
 
             for (int32_t height_idx = 0;
                     height_idx < elect_statistic.heights().heights_size(); ++height_idx) {
-                pool_consensus_heihgts_[height_idx] = elect_statistic.heights().heights(height_idx);
+                if (elect_statistic.heights().heights(height_idx) > pool_consensus_heihgts_[height_idx]) {
+                    pool_consensus_heihgts_[height_idx] = elect_statistic.heights().heights(height_idx);
+                }
+
                 for (auto iter = node_height_count_map_[height_idx].begin();
                         iter != node_height_count_map_[height_idx].end();) {
                     if (iter->first <= elect_statistic.heights().heights(height_idx)) {
