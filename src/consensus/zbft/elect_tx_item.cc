@@ -604,28 +604,28 @@ void ElectTxItem::SmoothFtsValue(
     std::vector<int32_t> ip_weight;
     {
         ip_weight.resize(elect_nodes.size(), 0);
-        int32_t min_ip_weight = (std::numeric_limits<int32_t>::max)();
-        int32_t max_ip_weight = (std::numeric_limits<int32_t>::min)();
-        for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
-            int32_t prefix_len = 0;
-            auto count = 0;
-            ip_weight[i] = elect_nodes[i]->area_weight;
-            if (ip_weight[i] > max_ip_weight) {
-                max_ip_weight = ip_weight[i];
-            }
-
-            if (ip_weight[i] < min_ip_weight) {
-                min_ip_weight = ip_weight[i];
-            }
-        }
-
-        int32_t weight_diff = max_ip_weight - min_ip_weight;
-        if (weight_diff > 0) {
-            int32_t weight_index = blance_diff / weight_diff;
-            for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
-                ip_weight[i] = 0;// min_balance + weight_index * (ip_weight[i] - min_ip_weight);
-            }
-        }
+//         int32_t min_ip_weight = (std::numeric_limits<int32_t>::max)();
+//         int32_t max_ip_weight = (std::numeric_limits<int32_t>::min)();
+//         for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+//             int32_t prefix_len = 0;
+//             auto count = 0;
+//             ip_weight[i] = elect_nodes[i]->area_weight;
+//             if (ip_weight[i] > max_ip_weight) {
+//                 max_ip_weight = ip_weight[i];
+//             }
+// 
+//             if (ip_weight[i] < min_ip_weight) {
+//                 min_ip_weight = ip_weight[i];
+//             }
+//         }
+// 
+//         int32_t weight_diff = max_ip_weight - min_ip_weight;
+//         if (weight_diff > 0) {
+//             int32_t weight_index = blance_diff / weight_diff;
+//             for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+//                 ip_weight[i] = 0;// min_balance + weight_index * (ip_weight[i] - min_ip_weight);
+//             }
+//         }
     }
     
     std::vector<int32_t> epoch_weight;
