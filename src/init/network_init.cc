@@ -426,7 +426,9 @@ int NetworkInit::InitHttpServer() {
 void NetworkInit::Destroy() {
     cmd_.Destroy();
     net_handler_.Destroy();
-    db_->Destroy();
+//     if (db_ != nullptr) {
+//         db_->Destroy();
+//     }
 }
 
 int NetworkInit::InitCommand() {
