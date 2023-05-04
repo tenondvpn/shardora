@@ -2,6 +2,7 @@
 
 #include "common/encode.h"
 #include "common/global_info.h"
+#include "dht/dht_key.h"
 
 namespace zjchain {
 
