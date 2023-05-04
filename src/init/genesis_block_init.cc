@@ -285,15 +285,15 @@ int GenesisBlockInit::CreateElectBlock(
 
     tenon_block->set_network_id(network::kRootCongressNetworkId);
     tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+    db::DbWriteBatch db_batch;
     pools_mgr_->UpdateLatestInfo(
         0,
         tenon_block->network_id(),
         tenon_block->pool_index(),
         tenon_block->height(),
         tenon_block->hash(),
-        db_);
+        db_batch);
 
-    db::DbWriteBatch db_batch;
     prefix_db_->SaveLatestElectBlock(ec_block, db_batch);
     std::string ec_val = common::Encode::HexEncode(tenon_block->SerializeAsString()) +
         "-" + common::Encode::HexEncode(ec_block.SerializeAsString()) + "\n";
@@ -380,17 +380,18 @@ int GenesisBlockInit::GenerateRootSingleBlock(
 
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+
+        fputs((common::Encode::HexEncode(tenon_block->SerializeAsString()) + "\n").c_str(),
+            root_gens_init_block_file);
+        db::DbWriteBatch db_batch;
         pools_mgr_->UpdateLatestInfo(
             0,
             tenon_block->network_id(),
             tenon_block->pool_index(),
             tenon_block->height(),
             tenon_block->hash(),
-            db_);
+            db_batch);
 
-        fputs((common::Encode::HexEncode(tenon_block->SerializeAsString()) + "\n").c_str(),
-            root_gens_init_block_file);
-        db::DbWriteBatch db_batch;
         AddBlockItemToCache(tenon_block, db_batch);
         db_->Put(db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
@@ -464,19 +465,19 @@ int GenesisBlockInit::GenerateRootSingleBlock(
 
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+        auto tmp_str = tenon_block->SerializeAsString();
+        block::protobuf::Block tenon_block2;
+        tenon_block2.ParseFromString(tmp_str);
+        assert(tenon_block2.tx_list_size() > 0);
+        db::DbWriteBatch db_batch;
         pools_mgr_->UpdateLatestInfo(
             0,
             tenon_block->network_id(),
             tenon_block->pool_index(),
             tenon_block->height(),
             tenon_block->hash(),
-            db_);
+            db_batch);
 
-        auto tmp_str = tenon_block->SerializeAsString();
-        block::protobuf::Block tenon_block2;
-        tenon_block2.ParseFromString(tmp_str);
-        assert(tenon_block2.tx_list_size() > 0);
-        db::DbWriteBatch db_batch;
         prefix_db_->SaveLatestTimeBlock(tenon_block->height(), db_batch);
         prefix_db_->SaveConsensusedStatisticTimeBlockHeight(
             network::kRootCongressNetworkId, tenon_block->height(), db_batch);
@@ -768,15 +769,16 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         tenon_block->set_electblock_height(0);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+        pool_prev_hash_map[iter->first] = tenon_block->hash();
+        db::DbWriteBatch db_batch;
         pools_mgr_->UpdateLatestInfo(
             0,
             tenon_block->network_id(),
             tenon_block->pool_index(),
             tenon_block->height(),
             tenon_block->hash(),
-            db_);
-        pool_prev_hash_map[iter->first] = tenon_block->hash();
-        db::DbWriteBatch db_batch;
+            db_batch);
+
         AddBlockItemToCache(tenon_block, db_batch);
         db_->Put(db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
@@ -912,17 +914,18 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         tenon_block->set_electblock_height(0);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+       
+
+        pool_prev_hash_map[pool_index] = tenon_block->hash();
+        //         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
+        db::DbWriteBatch db_batch;
         pools_mgr_->UpdateLatestInfo(
             0,
             tenon_block->network_id(),
             tenon_block->pool_index(),
             tenon_block->height(),
             tenon_block->hash(),
-            db_);
-
-        pool_prev_hash_map[pool_index] = tenon_block->hash();
-        //         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
-        db::DbWriteBatch db_batch;
+            db_batch);
         AddBlockItemToCache(tenon_block, db_batch);
         db_->Put(db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
@@ -1015,17 +1018,18 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         tenon_block->set_electblock_height(0);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+        
+        pool_prev_hash_map[iter->first] = tenon_block->hash();
+//         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
+        db::DbWriteBatch db_batch;
         pools_mgr_->UpdateLatestInfo(
             0,
             tenon_block->network_id(),
             tenon_block->pool_index(),
             tenon_block->height(),
             tenon_block->hash(),
-            db_);
+            db_batch);
 
-        pool_prev_hash_map[iter->first] = tenon_block->hash();
-//         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
-        db::DbWriteBatch db_batch;
         AddBlockItemToCache(tenon_block, db_batch);
         db_->Put(db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
