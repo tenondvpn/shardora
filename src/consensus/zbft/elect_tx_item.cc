@@ -665,7 +665,7 @@ void ElectTxItem::SmoothFtsValue(
         fts_val_str += std::to_string(ip_weight[i]) + "," +
             std::to_string(credit_weight[i]) + "," +
             std::to_string(blance_weight[i]) + "," +
-            std::to_string(epoch_weight[i]) + ","
+            std::to_string(epoch_weight[i]) + "," +
             std::to_string(elect_nodes[i]->fts_value) + " --- ";
         if (*max_fts_val < elect_nodes[i]->fts_value) {
             *max_fts_val = elect_nodes[i]->fts_value;
