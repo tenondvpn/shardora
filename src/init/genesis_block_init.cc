@@ -46,16 +46,22 @@ int GenesisBlockInit::CreateGenesisBlocks(
         shard_bitmap_.Set(i);
     }
 
-    int res = kInitSuccess;
-    std::shared_ptr<pools::TxPoolManager> pools_mgr = nullptr;
-    std::shared_ptr<pools::ShardStatistic> statistic_mgr = nullptr;
-    account_mgr_->Init(1, db_, pools_mgr);
-    block_mgr_->Init(account_mgr_, db_, pools_mgr, statistic_mgr, "", nullptr);
     if (net_id == network::kRootCongressNetworkId) {
         common::GlobalInfo::Instance()->set_network_id(network::kRootCongressNetworkId);
-        res = CreateRootGenesisBlocks(root_genesis_nodes, cons_genesis_nodes);
     } else {
         common::GlobalInfo::Instance()->set_network_id(net_id);
+    }
+
+    int res = kInitSuccess;
+    std::shared_ptr<security::Security> security = nullptr;
+    std::shared_ptr<sync::KeyValueSync> kv_sync = nullptr;
+    pools_mgr_ = std::make_shared<pools::TxPoolManager>(security, db_, kv_sync);
+    std::shared_ptr<pools::ShardStatistic> statistic_mgr = nullptr;
+    account_mgr_->Init(1, db_, pools_mgr_);
+    block_mgr_->Init(account_mgr_, db_, pools_mgr_, statistic_mgr, "", nullptr);
+    if (net_id == network::kRootCongressNetworkId) {
+        res = CreateRootGenesisBlocks(root_genesis_nodes, cons_genesis_nodes);
+    } else {
         res = CreateShardGenesisBlocks(root_genesis_nodes, cons_genesis_nodes, net_id);
     }
 
@@ -279,6 +285,14 @@ int GenesisBlockInit::CreateElectBlock(
 
     tenon_block->set_network_id(network::kRootCongressNetworkId);
     tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+    pools_mgr_->UpdateLatestInfo(
+        0,
+        tenon_block->network_id(),
+        tenon_block->pool_index(),
+        tenon_block->height(),
+        tenon_block->hash(),
+        db_);
+
     db::DbWriteBatch db_batch;
     prefix_db_->SaveLatestElectBlock(ec_block, db_batch);
     std::string ec_val = common::Encode::HexEncode(tenon_block->SerializeAsString()) +
@@ -366,6 +380,14 @@ int GenesisBlockInit::GenerateRootSingleBlock(
 
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+        pools_mgr_->UpdateLatestInfo(
+            0,
+            tenon_block->network_id(),
+            tenon_block->pool_index(),
+            tenon_block->height(),
+            tenon_block->hash(),
+            db_);
+
         fputs((common::Encode::HexEncode(tenon_block->SerializeAsString()) + "\n").c_str(),
             root_gens_init_block_file);
         db::DbWriteBatch db_batch;
@@ -442,6 +464,14 @@ int GenesisBlockInit::GenerateRootSingleBlock(
 
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+        pools_mgr_->UpdateLatestInfo(
+            0,
+            tenon_block->network_id(),
+            tenon_block->pool_index(),
+            tenon_block->height(),
+            tenon_block->hash(),
+            db_);
+
         auto tmp_str = tenon_block->SerializeAsString();
         block::protobuf::Block tenon_block2;
         tenon_block2.ParseFromString(tmp_str);
@@ -730,14 +760,21 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         tenon_block->set_pool_index(iter->first);
         tenon_block->set_height(0);
         const auto& bitmap_data = root_bitmap_.data();
-        for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
-            tenon_block->add_precommit_bitmap(bitmap_data[i]);
+        for (uint32_t tmp_i = 0; tmp_i < bitmap_data.size(); ++tmp_i) {
+            tenon_block->add_precommit_bitmap(bitmap_data[tmp_i]);
         }
 
         tenon_block->set_timeblock_height(0);
         tenon_block->set_electblock_height(0);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+        pools_mgr_->UpdateLatestInfo(
+            0,
+            tenon_block->network_id(),
+            tenon_block->pool_index(),
+            tenon_block->height(),
+            tenon_block->hash(),
+            db_);
         pool_prev_hash_map[iter->first] = tenon_block->hash();
         db::DbWriteBatch db_batch;
         AddBlockItemToCache(tenon_block, db_batch);
@@ -867,14 +904,22 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         tenon_block->set_height(pool_height[pool_index] + 1);
         pool_height[pool_index] = pool_height[pool_index] + 1;
         const auto& bitmap_data = root_bitmap_.data();
-        for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
-            tenon_block->add_precommit_bitmap(bitmap_data[i]);
+        for (uint32_t tmp_i = 0; tmp_i < bitmap_data.size(); ++tmp_i) {
+            tenon_block->add_precommit_bitmap(bitmap_data[tmp_i]);
         }
 
         tenon_block->set_timeblock_height(0);
         tenon_block->set_electblock_height(0);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+        pools_mgr_->UpdateLatestInfo(
+            0,
+            tenon_block->network_id(),
+            tenon_block->pool_index(),
+            tenon_block->height(),
+            tenon_block->hash(),
+            db_);
+
         pool_prev_hash_map[pool_index] = tenon_block->hash();
         //         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
         db::DbWriteBatch db_batch;
@@ -970,6 +1015,14 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         tenon_block->set_electblock_height(0);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+        pools_mgr_->UpdateLatestInfo(
+            0,
+            tenon_block->network_id(),
+            tenon_block->pool_index(),
+            tenon_block->height(),
+            tenon_block->hash(),
+            db_);
+
         pool_prev_hash_map[iter->first] = tenon_block->hash();
 //         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
         db::DbWriteBatch db_batch;

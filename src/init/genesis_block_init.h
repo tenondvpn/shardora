@@ -87,6 +87,7 @@ private:
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(GenesisBlockInit);
 };
