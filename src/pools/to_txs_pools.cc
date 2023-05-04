@@ -420,7 +420,7 @@ void ToTxsPools::LoadLatestHeights() {
     }
 
     for (int32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        ZJC_DEBUG("has set consensus height: %u, height: %lu", i, this_net_heights[i]);
+        ZJC_DEBUG("has set consensus height: %u, height: %lu", i, pool_consensus_heihgts_[i]);
     }
 
     db::DbWriteBatch db_batch;
