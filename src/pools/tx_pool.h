@@ -211,6 +211,7 @@ private:
     uint64_t prev_synced_height_ = 0;
     uint64_t to_sync_max_height_ = 0;
     uint64_t prev_synced_time_ms_ = 0;
+    std::shared_ptr<db::Db> db_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };

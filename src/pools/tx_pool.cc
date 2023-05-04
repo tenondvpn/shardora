@@ -22,8 +22,8 @@ void TxPool::Init(
         std::shared_ptr<sync::KeyValueSync>& kv_sync) {
     kv_sync_ = kv_sync;
     pool_index_ = pool_idx;
-    auto tmp_db = db;
-    prefix_db_ = std::make_shared<protos::PrefixDb>(tmp_db);
+    db_ = db;
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     InitLatestInfo();
     InitHeightTree();
 
