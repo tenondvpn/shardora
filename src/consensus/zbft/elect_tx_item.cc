@@ -429,6 +429,14 @@ void ElectTxItem::FtsGetNodes(
         std::set<uint32_t>& res_nodes) {
     uint64_t max_fts_val = 0;
     SmoothFtsValue(elect_nodes, &max_fts_val);
+    {
+        std::string ids;
+        for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+            ids += common::Encode::HexEncode(sec_ptr_->GetAddress(elect_nodes[i]->pubkey)) + ":" + std::to_string(elect_nodes[i]->fts_value) + ",";
+        }
+
+        ZJC_DEBUG("fts value: %s", ids.c_str());
+    }
     uint32_t try_times = 0;
     std::set<int32_t> tmp_res_nodes;
     while (tmp_res_nodes.size() < count) {
