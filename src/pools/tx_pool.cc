@@ -77,8 +77,8 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
     std::vector<uint64_t> invalid_heights;
     height_tree_ptr_->GetMissingHeights(&invalid_heights, latest_height_);
     if (invalid_heights.size() > 0) {
-        ZJC_DEBUG("pool: %u, sync missing blocks latest height: %lu, invaid heights size: %u",
-            pool_index_, latest_height_, invalid_heights.size());
+        ZJC_DEBUG("pool: %u, sync missing blocks latest height: %lu, invaid heights size: %u, height: %lu",
+            pool_index_, latest_height_, invalid_heights.size(), invalid_heights[0]);
     }
 
     return invalid_heights.size();
