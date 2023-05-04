@@ -419,7 +419,7 @@ void ToTxsPools::LoadLatestHeights() {
         }
     }
 
-    for (int32_t i = 0; i < this_net_heights.size(); ++i) {
+    for (int32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         ZJC_DEBUG("has set consensus height: %u, height: %lu", i, this_net_heights[i]);
     }
 
