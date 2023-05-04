@@ -173,6 +173,19 @@ NodePtr DhtFunction::GetClosestNode(const Dht& dht, const std::string& target) {
     return dht[min_pos];
 }
 
+void DhtFunction::GetNetworkNodes(
+        const Dht& dht,
+        uint32_t sharding_id,
+        std::vector<NodePtr>& nodes) {
+    for (uint32_t i = 0; i < dht.size(); ++i) {
+        uint32_t tmp_id = DhtKeyManager::DhtKeyGetNetId(dht[i]->dht_key);
+        if (tmp_id == sharding_id) {
+            nodes.push_back(dht[i]);
+        }
+    }
+}
+
+
 NodePtr DhtFunction::GetClosestNode(
         Dht& dht,
         const std::string& target,

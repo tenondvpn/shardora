@@ -42,6 +42,10 @@ public:
             const std::string& target,
             uint32_t number_to_get);
     static NodePtr GetClosestNode(const Dht& dht, const std::string& target);
+    static void GetNetworkNodes(
+        const Dht& dht,
+        uint32_t sharding_id,
+        std::vector<NodePtr>& nodes);
 
 private:
     DhtFunction() {}

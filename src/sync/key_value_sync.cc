@@ -184,14 +184,17 @@ uint64_t KeyValueSync::SendSyncRequest(
         const sync::protobuf::SyncMessage& sync_msg,
         const std::set<uint64_t>& sended_neigbors) {
     std::vector<dht::NodePtr> nodes;
-    dht::DhtKeyManager dht_key(network_id);
-    auto dht = network::DhtManager::Instance()->GetDht(network_id);
-    if (dht == nullptr) {
-        ZJC_ERROR("network id[%d] not exists.", network_id);
-        return 0;
+    auto dht = network::UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
+    auto dht = *dht->readonly_hash_sort_dht;
+    dht::DhtFunction::GetNetworkNodes(dht, network_id, nodes);
+    if (network_id >= network::kConsensusShardBeginNetworkId &&
+            network_id <= network::kConsensusShardEndNetworkId) {
+        dht::DhtFunction::GetNetworkNodes(dht, network_id + network::kConsensusWaitingShardOffset, nodes);
+    } else if (network_id >= network::kConsensusWaitingShardBeginNetworkId &&
+            network_id <= network::kConsensusWaitingShardEndNetworkId) {
+        dht::DhtFunction::GetNetworkNodes(dht, network_id - network::kConsensusWaitingShardOffset, nodes);
     }
 
-    nodes = *dht->readonly_hash_sort_dht();
     if (nodes.empty()) {
         ZJC_ERROR("network id[%d] not exists.", network_id);
         return 0;
@@ -225,12 +228,13 @@ uint64_t KeyValueSync::SendSyncRequest(
 
     transport::protobuf::Header msg;
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    dht::DhtKeyManager dht_key(network_id);
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kSyncMessage);
     *msg.mutable_sync_proto() = sync_msg;
     transport::TcpTransport::Instance()->Send(
         thread_idx, node->public_ip, node->public_port, msg);
-//     ZJC_DEBUG("sync new from %s:%d", node->public_ip.c_str(), node->public_port);
+    ZJC_DEBUG("sync new from %s:%d", node->public_ip.c_str(), node->public_port);
     return node->id_hash;
 }
 
