@@ -33,6 +33,18 @@ void ShardStatistic::OnNewBlock(const block::protobuf::Block& block) {
         pool_max_heihgts_[block.pool_index()] = block.height();
     }
 
+    // one block must be one consensus pool
+    uint32_t consistent_pool_index = common::kInvalidPoolIndex;
+    for (int32_t i = 0; i < tx_list.size(); ++i) {
+        if (tx_list[i].status() != consensus::kConsensusSuccess) {
+            continue;
+        }
+
+        if (tx_list[i].step() == pools::protobuf::kStatistic) {
+            HandleStatisticBlock(block, tx_list[i]);
+        }
+    }
+
     if (pool_consensus_heihgts_[block.pool_index()] + 1 == block.height()) {
         ++pool_consensus_heihgts_[block.pool_index()];
         for (; pool_consensus_heihgts_[block.pool_index()] <= pool_max_heihgts_[block.pool_index()];
@@ -56,17 +68,6 @@ void ShardStatistic::OnNewBlock(const block::protobuf::Block& block) {
     }
 
     HandleStatistic(block);
-    // one block must be one consensus pool
-    uint32_t consistent_pool_index = common::kInvalidPoolIndex;
-    for (int32_t i = 0; i < tx_list.size(); ++i) {
-        if (tx_list[i].status() != consensus::kConsensusSuccess) {
-            continue;
-        }
-
-        if (tx_list[i].step() == pools::protobuf::kStatistic) {
-            HandleStatisticBlock(block, tx_list[i]);
-        }
-    }
 }
 
 void ShardStatistic::HandleStatisticBlock(
@@ -209,8 +210,10 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
     }
 
     node_height_count_map_[block.pool_index()][block.height()] = statistic_info_ptr;
-    ZJC_DEBUG("success add statistic block: net; %u, pool: %u, height: %lu, elect height: %lu",
-        block.network_id(), block.pool_index(), block.height(), block.electblock_height());
+    ZJC_DEBUG("success add statistic block: net; %u, pool: %u, height: %lu,"
+        "cons height: %lu, elect height: %lu",
+        block.network_id(), block.pool_index(), block.height(),
+        pool_consensus_heihgts_[block.pool_index()], block.electblock_height());
 }
 
 int ShardStatistic::LeaderCreateStatisticHeights(pools::protobuf::ToTxHeights& to_heights) {
