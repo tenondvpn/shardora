@@ -33,6 +33,7 @@ void ShardStatistic::OnNewBlock(const block::protobuf::Block& block) {
         pool_max_heihgts_[block.pool_index()] = block.height();
     }
 
+    const auto& tx_list = block.tx_list();
     // one block must be one consensus pool
     uint32_t consistent_pool_index = common::kInvalidPoolIndex;
     for (int32_t i = 0; i < tx_list.size(); ++i) {
@@ -61,7 +62,6 @@ void ShardStatistic::OnNewBlock(const block::protobuf::Block& block) {
         added_heights_[block.pool_index()].insert(block.height());
     }
 
-    const auto& tx_list = block.tx_list();
     if (tx_list.empty()) {
         ZJC_DEBUG("tx list empty!");
         return;
