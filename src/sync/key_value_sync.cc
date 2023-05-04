@@ -185,7 +185,7 @@ uint64_t KeyValueSync::SendSyncRequest(
         const std::set<uint64_t>& sended_neigbors) {
     std::vector<dht::NodePtr> nodes;
     auto dht_ptr = network::UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
-    auto dht = *dht_ptr->readonly_hash_sort_dht;
+    auto dht = *dht_ptr->readonly_hash_sort_dht();
     dht::DhtFunction::GetNetworkNodes(dht, network_id, nodes);
     if (network_id >= network::kConsensusShardBeginNetworkId &&
             network_id <= network::kConsensusShardEndNetworkId) {
