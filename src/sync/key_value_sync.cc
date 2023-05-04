@@ -354,8 +354,8 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             synced_map_.erase(tmp_iter);
         }
 
-//         ZJC_DEBUG("block response coming: %s, sync map size: %u",
-//             key.c_str(), synced_map_.size());
+        ZJC_DEBUG("block response coming: %s, sync map size: %u",
+            key.c_str(), synced_map_.size());
     }
 }
 
