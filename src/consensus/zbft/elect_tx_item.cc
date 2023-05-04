@@ -531,7 +531,7 @@ void ElectTxItem::SmoothFtsValue(
     int32_t blance_diff = 0;
     std::vector<int32_t> blance_weight;
     {
-        blance_weight.resize(elect_nodes.size());
+        blance_weight.resize(elect_nodes.size(), 0);
         blance_weight[0] = 100;
         int32_t max_balance = 0;
         auto& g2 = *g2_;
@@ -577,7 +577,7 @@ void ElectTxItem::SmoothFtsValue(
 
     std::vector<int32_t> credit_weight;
     {
-        credit_weight.resize(elect_nodes.size());
+        credit_weight.resize(elect_nodes.size(), 0);
         int32_t min_credit = (std::numeric_limits<int32_t>::max)();
         int32_t max_credit = (std::numeric_limits<int32_t>::min)();
         for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
@@ -603,7 +603,7 @@ void ElectTxItem::SmoothFtsValue(
 
     std::vector<int32_t> ip_weight;
     {
-        ip_weight.resize(elect_nodes.size());
+        ip_weight.resize(elect_nodes.size(), 0);
         int32_t min_ip_weight = (std::numeric_limits<int32_t>::max)();
         int32_t max_ip_weight = (std::numeric_limits<int32_t>::min)();
         for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
@@ -630,7 +630,7 @@ void ElectTxItem::SmoothFtsValue(
     
     std::vector<int32_t> epoch_weight;
     {
-        epoch_weight.resize(elect_nodes.size());
+        epoch_weight.resize(elect_nodes.size(), 0);
         int32_t min_epoch_weight = (std::numeric_limits<int32_t>::max)();
         int32_t max_epoch_weight = (std::numeric_limits<int32_t>::min)();
         for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
