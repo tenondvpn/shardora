@@ -83,6 +83,19 @@ int ElectTxItem::HandleTx(
                 return kConsensusError;
             }
 
+            {
+                std::string ids;
+                for (uint32_t i = 0; i < statistic.tx_count_size(); ++i) {
+                    ids += common::Encode::HexEncode(sec_ptr_->GetAddress((*members)[i]->pubkey)) +
+                        ":" + std::to_string(statistic->area_point(i).x()) +
+                        ":" + std::to_string(statistic->area_point(i).y()) +
+                        ":" + std::to_string(statistic->tx_count(i)) +
+                        ":" + std::to_string(statistic->stokes(i)) + ",";
+                }
+
+                ZJC_DEBUG("elect info: %s", ids.c_str());
+            }
+
             uint32_t min_area_weight = common::kInvalidUint32;
             uint32_t min_tx_count = common::kInvalidUint32;
             std::vector<NodeDetailPtr> elect_nodes;
@@ -104,15 +117,6 @@ int ElectTxItem::HandleTx(
             if (res != kConsensusSuccess) {
                 assert(false);
                 return res;
-            }
-
-            {
-                std::string ids;
-                for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
-                    ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ",";
-                }
-
-                ZJC_DEBUG("weedout: %s", ids.c_str());
             }
            
             min_area_weight += 1;
