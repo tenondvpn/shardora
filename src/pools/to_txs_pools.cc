@@ -419,6 +419,10 @@ void ToTxsPools::LoadLatestHeights() {
         }
     }
 
+    for (int32_t i = 0; i < this_net_heights.size(); ++i) {
+        ZJC_DEBUG("has set consensus height: %u, height: %lu", i, this_net_heights[i]);
+    }
+
     db::DbWriteBatch db_batch;
     for (uint32_t i = 0; i < max_pool_index; ++i) {
         uint64_t pool_latest_height = pools_mgr_->latest_height(i);
