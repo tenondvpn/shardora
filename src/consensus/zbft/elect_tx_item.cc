@@ -85,7 +85,7 @@ int ElectTxItem::HandleTx(
 
             {
                 std::string ids;
-                for (uint32_t i = 0; i < statistic.tx_count_size(); ++i) {
+                for (uint32_t i = 0; i < statistic->tx_count_size(); ++i) {
                     ids += common::Encode::HexEncode(sec_ptr_->GetAddress((*members)[i]->pubkey)) +
                         ":" + std::to_string(statistic->area_point(i).x()) +
                         ":" + std::to_string(statistic->area_point(i).y()) +
