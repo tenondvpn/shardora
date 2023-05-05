@@ -213,8 +213,8 @@ void TxPool::RemoveTx(const std::string& gid) {
 
     gid_map_.erase(giter);
     ZJC_DEBUG("remove tx success gid: %s, tx hash: %s",
-        common::Encode::HexEncode(iter->second->gid).c_str(),
-        common::Encode::HexEncode(iter->second->tx_hash).c_str())
+        common::Encode::HexEncode(giter->second->gid).c_str(),
+        common::Encode::HexEncode(giter->second->tx_hash).c_str())
 }
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
