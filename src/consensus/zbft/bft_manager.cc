@@ -943,10 +943,10 @@ void BftManager::BackupHandleZbftMessage(
         auto thread_item = thread_set[msg_ptr->thread_idx];
         if (thread_item != nullptr) {
             for (int32_t i = 0; i < msg_ptr->header.zbft().ips_size(); ++i) {
-                auto iter = thread_item->all_members_ips[bft_msg.member_index()].find(
+                auto iter = thread_item->all_members_ips[i].find(
                     msg_ptr->header.zbft().ips(i));
-                if (iter == thread_item->all_members_ips[bft_msg.member_index()].end()) {
-                    thread_item->all_members_ips[bft_msg.member_index()][msg_ptr->header.zbft().ips(i)] = 1;
+                if (iter == thread_item->all_members_ips[i].end()) {
+                    thread_item->all_members_ips[i][msg_ptr->header.zbft().ips(i)] = 1;
                     if (elect_item.leader_count <= 8) {
                         (*elect_item.members)[i]->public_ip = msg_ptr->header.zbft().ips(i);
                     }
