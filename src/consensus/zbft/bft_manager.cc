@@ -784,28 +784,6 @@ void BftManager::CreateResponseMessage(
                 commit_gid,
                 msg_ptr->response->header,
                 new_bft_msg);
-            ZJC_DEBUG("00 count member set ip %u", msg_ptr->thread_idx);
-            if (msg_ptr->thread_idx == 0) {
-                auto& thread_set = elect_item.thread_set;
-                auto thread_item = thread_set[msg_ptr->thread_idx];
-                ZJC_DEBUG("0 count member set ip %u, %u", (thread_item != nullptr), elect_item.members->size());
-                if (thread_item != nullptr && !thread_item->synced_ip) {
-                    ZJC_DEBUG("count member set ip %u, %u", thread_item->valid_ip_count, elect_item.members->size());
-                    if (thread_item->valid_ip_count * 10 / 9 >= elect_item.members->size()) {
-                        for (int32_t i = 0; i < elect_item.members->size(); ++i) {
-                            new_bft_msg->add_ips(thread_item->member_ips[i]);
-                            thread_item->all_members_ips[i][thread_item->member_ips[i]] = 1;
-                            if (elect_item.leader_count <= 8) {
-                                (*elect_item.members)[i]->public_ip = thread_item->member_ips[i];
-                                ZJC_DEBUG("leader member set ip %d, %u", i, (*elect_item.members)[i]->public_ip);
-                            }
-                        }
-
-                        thread_item->synced_ip = true;
-                    }
-                }
-            }
-
             if (!msg_res) {
                 return;
             }
@@ -841,6 +819,29 @@ void BftManager::CreateResponseMessage(
                 return;
             }
         } else {
+            ZJC_DEBUG("00 count member set ip %u", msg_ptr->thread_idx);
+            if (msg_ptr->thread_idx == 0) {
+                auto& thread_set = elect_item.thread_set;
+                auto thread_item = thread_set[msg_ptr->thread_idx];
+                ZJC_DEBUG("0 count member set ip %u, %u", (thread_item != nullptr), elect_item.members->size());
+                if (thread_item != nullptr && !thread_item->synced_ip) {
+                    ZJC_DEBUG("count member set ip %u, %u", thread_item->valid_ip_count, elect_item.members->size());
+                    if (thread_item->valid_ip_count * 10 / 9 >= elect_item.members->size()) {
+                        auto* new_bft_msg = msg_ptr->response->header.mutable_zbft();
+                        for (int32_t i = 0; i < elect_item.members->size(); ++i) {
+                            new_bft_msg->add_ips(thread_item->member_ips[i]);
+                            thread_item->all_members_ips[i][thread_item->member_ips[i]] = 1;
+                            if (elect_item.leader_count <= 8) {
+                                (*elect_item.members)[i]->public_ip = thread_item->member_ips[i];
+                                ZJC_DEBUG("leader member set ip %d, %u", i, (*elect_item.members)[i]->public_ip);
+                            }
+                        }
+
+                        thread_item->synced_ip = true;
+                    }
+                }
+            }
+
             msg_ptr->response->header.mutable_zbft()->set_leader_idx(elect_item.local_node_member_index);
             if (!LeaderSignMessage(msg_ptr->response)) {
                 return;
