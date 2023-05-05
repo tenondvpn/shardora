@@ -788,12 +788,13 @@ void BftManager::CreateResponseMessage(
                 auto& thread_set = elect_item.thread_set;
                 auto thread_item = thread_set[msg_ptr->thread_idx];
                 if (thread_item != nullptr && !thread_item->synced_ip) {
+                    ZJC_DEBUG("count member set ip %u, %u", thread_item->valid_ip_count, elect_item.members->size());
                     if (thread_item->valid_ip_count * 10 / 9 >= elect_item.members->size()) {
                         for (int32_t i = 0; i < elect_item.members->size(); ++i) {
                             new_bft_msg->add_ips(thread_item->member_ips[i]);
-                            thread_item->all_members_ips[i][msg_ptr->header.zbft().ips(i)] = 1;
+                            thread_item->all_members_ips[i][thread_item->member_ips[i]] = 1;
                             if (elect_item.leader_count <= 8) {
-                                (*elect_item.members)[i]->public_ip = msg_ptr->header.zbft().ips(i);
+                                (*elect_item.members)[i]->public_ip = thread_item->member_ips[i];
                                 ZJC_DEBUG("member set ip %d, %u", i, (*elect_item.members)[i]->public_ip);
                             }
                         }
