@@ -163,10 +163,19 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    if (tx_msg.has_key() && tx_msg.key().size() > kTxStorageKeyMaxSize) {
+    if (!tx_msg.has_key() || tx_msg.key() != protos::kElectJoinShard) {
         ZJC_DEBUG("key size error now: %d, max: %d.",
             tx_msg.key().size(), kTxStorageKeyMaxSize);
         return;
+    }
+
+    uint32_t* tmp = (uint32_t*)tx_msg.value().c_str();
+    if (tmp[0] != network::kRootCongressNetworkId) {
+        if (tmp[0] != msg_ptr->address_info->sharding_id()) {
+            ZJC_DEBUG("join des shard error: %d,  %d.",
+                tmp[0], msg_ptr->address_info->sharding_id());
+            return;
+        }
     }
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
@@ -184,6 +193,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
 
     prefix_db_->SaveAddressPubkey(msg_ptr->address_info->addr(), tx_msg.pubkey());
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
+    ZJC_DEBUG("success add elect tx.");
 }
 
 void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {

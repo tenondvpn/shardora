@@ -413,7 +413,7 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     msg.set_sign(sign);
     msg_ptr->thread_idx = thread_idx;
     network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("success send join elect request transaction.");
+    ZJC_DEBUG("success send join elect request transaction: %u, join: %u", des_net_id, tmp[0]);
 }
 
 int NetworkInit::InitSecurity() {
