@@ -240,7 +240,13 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                     statistic_info_ptr->node_stoke_map[block.tx_list(i).from()] = stoke[0];
                     ZJC_DEBUG("kJoinElect add new elect node: %s, stoke: %lu",
                         common::Encode::HexEncode(block.tx_list(i).from()).c_str(), stoke[0]);
-                    break;
+                }
+
+                if (block.tx_list(i).storages(storage_idx).key() == protos::kElectJoinShard) {
+                    uint32_t* shard = (uint32_t*)block.tx_list(i).storages(storage_idx).val_hash().c_str();
+                    statistic_info_ptr->node_shard_map[block.tx_list(i).from()] = shard[0];
+                    ZJC_DEBUG("kJoinElect add new elect node: %s, shard: %u",
+                        common::Encode::HexEncode(block.tx_list(i).from()).c_str(), shard[0]);
                 }
             }
         }
@@ -332,6 +338,7 @@ int ShardStatistic::StatisticWithHeights(
 
     std::unordered_map<uint64_t, std::unordered_map<std::string, uint32_t>> height_node_count_map;
     std::unordered_map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
+    std::unordered_map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
     auto now_elect_members = elect_mgr_->GetNetworkMembersWithHeight(
         now_elect_height_,
         common::GlobalInfo::Instance()->network_id(),
@@ -406,24 +413,38 @@ int ShardStatistic::StatisticWithHeights(
                 elect_stoke_map[elect_iter->first] = elect_iter->second;
             }
 
+            auto shard_iter = join_elect_shard_map.find(elect_height);
+            if (shard_iter == join_elect_shard_map.end()) {
+                join_elect_stoke_map[elect_height] = std::unordered_map<std::string, uint32_t>();
+            }
+
+            auto& elect_shard_map = join_elect_shard_map[elect_height];
+            for (auto tmp_shard_iter = hiter->second->node_shard_map.begin();
+                    tmp_shard_iter != hiter->second->node_shard_map.end(); ++tmp_shard_iter) {
+                auto tmp_iter = elect_shard_map.find(tmp_shard_iter->first);
+                if (tmp_iter != elect_shard_map.end()) {
+                    elect_shard_map[tmp_shard_iter->first] = common::kInvalidUint32;
+                } else {
+                    elect_shard_map[tmp_shard_iter->first] = tmp_shard_iter->second;
+                }
+            }
+
             all_gas_amount += hiter->second->all_gas_amount;
         }
     }
 
     auto eiter = join_elect_stoke_map.find(now_elect_height_);
+    auto siter = join_elect_shard_map.find(now_elect_height_);
     std::vector<std::string> elect_nodes;
-    if (eiter != join_elect_stoke_map.end()) {
+    if (eiter != join_elect_stoke_map.end() && siter != join_elect_shard_map.end()) {
         for (auto iter = eiter->second.begin(); iter != eiter->second.end(); ++iter) {
+            auto shard_iter = siter->second.find(iter->first);
+            if (shard_iter == siter->second.end()) {
+                continue;
+            }
+                    
             elect_nodes.push_back(iter->first);
         }
-
-        std::mt19937_64 g2(now_vss_random_);
-        auto RandFunc = [&g2](int i) -> int {
-            int val = abs(static_cast<int>(g2())) % i;
-            return val;
-        };
-
-        std::random_shuffle(elect_nodes.begin(), elect_nodes.end(), RandFunc);
     }
 
     std::string str_for_hash;
@@ -493,7 +514,9 @@ int ShardStatistic::StatisticWithHeights(
 
         join_elect_node->set_id(pubkey);
         auto iter = eiter->second.find(elect_nodes[i]);
+        auto shard_iter = siter->second.find(elect_nodes[i]);
         join_elect_node->set_stoke(iter->second);
+        join_elect_node->set_shard(shard_iter->second);
         str_for_hash.append(elect_nodes[i]);
         str_for_hash.append((char*)&iter->second, sizeof(iter->second));
         debug_for_str += common::Encode::HexEncode(elect_nodes[i]) + "," + std::to_string(iter->second) + ",";

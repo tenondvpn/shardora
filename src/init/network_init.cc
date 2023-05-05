@@ -396,6 +396,12 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     new_tx->set_step(pools::protobuf::kJoinElect);
     new_tx->set_gas_limit(consensus::kJoinElectGas + 100000);
     new_tx->set_gas_price(10);
+    new_tx->set_key(protos::kElectJoinShard);
+    char data[4];
+    uint32_t* tmp = (uint32_t*)data;
+    tmp[0] = common::GlobalInfo::Instance()->network_id() - network::kConsensusWaitingShardOffset;
+    std::string val(data, sizeof(data));
+    new_tx->set_value(val);
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign;
