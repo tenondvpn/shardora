@@ -951,6 +951,7 @@ void BftManager::BackupHandleZbftMessage(
         auto& thread_set = elect_item.thread_set;
         auto thread_item = thread_set[msg_ptr->thread_idx];
         if (thread_item != nullptr) {
+            ZJC_DEBUG("get leader ips size: %u", msg_ptr->header.zbft().ips_size());
             for (int32_t i = 0; i < msg_ptr->header.zbft().ips_size(); ++i) {
                 auto iter = thread_item->all_members_ips[i].find(
                     msg_ptr->header.zbft().ips(i));
