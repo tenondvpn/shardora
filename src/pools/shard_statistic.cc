@@ -415,7 +415,7 @@ int ShardStatistic::StatisticWithHeights(
 
             auto shard_iter = join_elect_shard_map.find(elect_height);
             if (shard_iter == join_elect_shard_map.end()) {
-                join_elect_stoke_map[elect_height] = std::unordered_map<std::string, uint32_t>();
+                join_elect_shard_map[elect_height] = std::unordered_map<std::string, uint32_t>();
             }
 
             auto& elect_shard_map = join_elect_shard_map[elect_height];
