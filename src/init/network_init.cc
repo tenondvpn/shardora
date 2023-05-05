@@ -374,8 +374,12 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
         return;
     }
 
-    auto des_net_id = common::GlobalInfo::Instance()->network_id() -
-        network::kConsensusWaitingShardOffset;
+    auto local_node_account_info = prefix_db_->GetAddressInfo(security_->GetAddress());
+    if (local_node_account_info == nullptr) {
+        return;
+    }
+
+    auto des_net_id = local_node_account_info->sharding_id();
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     transport::protobuf::Header& msg = msg_ptr->header;
     dht::DhtKeyManager dht_key(des_net_id);
