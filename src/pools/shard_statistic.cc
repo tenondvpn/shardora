@@ -51,7 +51,6 @@ void ShardStatistic::OnNewBlock(const block::protobuf::Block& block) {
     }
 
     if (pool_consensus_heihgts_[block.pool_index()] + 1 == block.height()) {
-        ++pool_consensus_heihgts_[block.pool_index()];
         while (pool_consensus_heihgts_[block.pool_index()] <= pool_max_heihgts_[block.pool_index()]) {
             auto iter = added_heights_[block.pool_index()].find(
                     pool_consensus_heihgts_[block.pool_index()] + 1);
