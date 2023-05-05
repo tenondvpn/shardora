@@ -237,7 +237,6 @@ int ElectTxItem::CreateNewElect(
         const pools::protobuf::ElectStatistic& elect_statistic,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         block::protobuf::BlockTx& block_tx) {
-    auto& storage = *block_tx.add_storages();
     elect::protobuf::ElectBlock elect_block;
     for (auto iter = elect_nodes.begin(); iter != elect_nodes.end(); ++iter) {
         auto in = elect_block.add_in();
@@ -254,6 +253,7 @@ int ElectTxItem::CreateNewElect(
 
     std::string val = elect_block.SerializeAsString();
     std::string val_hash = protos::GetElectBlockHash(elect_block);
+    auto& storage = *block_tx.add_storages();
     storage.set_key(protos::kElectNodeAttrElectBlock);
     storage.set_val_hash(val_hash);
     prefix_db_->SaveTemporaryKv(val_hash, val);

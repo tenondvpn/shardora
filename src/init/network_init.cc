@@ -281,6 +281,15 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
             return;
         }
 
+        // random chance to join root shard
+        if (common::GlobalInfo::Instance()->join_root() == common::kJoinRoot) {
+            sharding_id = network::kRootCongressNetworkId;
+        } else if (common::GlobalInfo::Instance()->join_root() == common::kRandom ||
+                common::Random::RandomInt32() % 4 == 1) {
+            sharding_id = network::kRootCongressNetworkId;
+        }
+        
+        prefix_db_->SaveJoinShard(sharding_id);
         auto waiting_network_id = sharding_id + network::kConsensusWaitingShardOffset;
         if (elect_mgr_->Join(msg_ptr->thread_idx, waiting_network_id) != elect::kElectSuccess) {
             INIT_ERROR("join waiting pool network[%u] failed!", waiting_network_id);
@@ -314,9 +323,14 @@ void NetworkInit::GetAddressShardingId(uint8_t thread_idx) {
 }
 
 void NetworkInit::InitLocalNetworkId() {
-    auto local_node_account_info = prefix_db_->GetAddressInfo(security_->GetAddress());
-    if (local_node_account_info == nullptr) {
-        return;
+    uint32_t got_sharding_id = common::kInvalidUint32;
+    if (!prefix_db_->SaveJoinShard(got_sharding_id)) {
+        auto local_node_account_info = prefix_db_->GetAddressInfo(security_->GetAddress());
+        if (local_node_account_info == nullptr) {
+            return;
+        }
+
+        got_sharding_id = local_node_account_info->sharding_id();
     }
 
     elect::ElectBlockManager elect_block_mgr;
@@ -333,7 +347,7 @@ void NetworkInit::InitLocalNetworkId() {
             auto id = security_->GetAddress(in[member_idx].pubkey());
             if (id == security_->GetAddress()) {
                 ZJC_DEBUG("should join network: %u", sharding_id);
-                if (local_node_account_info->sharding_id() != sharding_id) {
+                if (got_sharding_id != sharding_id) {
                     break;
                 }
 
@@ -347,7 +361,7 @@ void NetworkInit::InitLocalNetworkId() {
         return;
     }
 
-    auto waiting_network_id = local_node_account_info->sharding_id() + network::kConsensusWaitingShardOffset;
+    auto waiting_network_id = got_sharding_id + network::kConsensusWaitingShardOffset;
     common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
 }
 

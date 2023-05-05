@@ -57,6 +57,7 @@ static const std::string kConsensusedStatisticPrefix = "x\x01";
 static const std::string kRootStatisticedPrefix = "y\x01";
 static const std::string kElectNodesStokePrefix = "z\x01";
 static const std::string kSaveLatestElectHeightPrefix = "aa\x01";
+static const std::string kSaveChoosedJoinShardPrefix = "ab\x01";
 
 class PrefixDb {
 public:
@@ -1113,6 +1114,37 @@ public:
             return false;
         }
 
+        return true;
+    }
+
+    void SaveJoinShard(uint32_t sharding_id) {
+        std::string key;
+        key.reserve(64);
+        key.append(kSaveChoosedJoinShardPrefix);
+        char data[4];
+        uint32_t* tmp = (uint32_t*)data;
+        tmp[0] = sharding_id;
+        std::string val(data, sizeof(data));
+        auto st = db_->Put(key, val);
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+    }
+
+    bool GetJoinShard(const std::sttring& local_id, uint32_t* sharding_id) {
+        std::string key;
+        key.reserve(64);
+        key.append(kSaveChoosedJoinShardPrefix);
+        key.append(local_id);
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            ZJC_ERROR("get db failed!");
+            return false;
+        }
+
+        uint32_t* tmp = (uint32_t*)val.c_str();
+        *sharding_id = tmp[0];
         return true;
     }
 
