@@ -784,6 +784,7 @@ void BftManager::CreateResponseMessage(
                 commit_gid,
                 msg_ptr->response->header,
                 new_bft_msg);
+            ZJC_DEBUG("00 count member set ip %u", msg_ptr->thread_idx);
             if (msg_ptr->thread_idx == 0) {
                 auto& thread_set = elect_item.thread_set;
                 auto thread_item = thread_set[msg_ptr->thread_idx];
