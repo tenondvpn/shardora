@@ -33,7 +33,7 @@ std::string Ip::GetIpCountryIsoCode(const std::string& ip) {
     return iter->second;
 }
 
-int Ip::GetIpLocation(const std::string& ip, float* latitude, float* longitude) {
+int Ip::GetIpLocation(const std::string& ip, float* latitude, float* longitude) try {
     const auto m = db_->get_all_fields(ip);
     auto latitude_iter = m.find("latitude");
     if (latitude_iter == m.end()) {
@@ -54,6 +54,8 @@ int Ip::GetIpLocation(const std::string& ip, float* latitude, float* longitude) 
     }
 
     return 0;
+} catch (...) {
+    return 1;
 }
 
 std::string Ip::GetIpCountry(const std::string& ip) {

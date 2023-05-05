@@ -465,15 +465,17 @@ int ShardStatistic::StatisticWithHeights(
                 ZJC_DEBUG("add ip %s, %u", ip.c_str(), ip_int);
                 float x = 0.0;
                 float y = 0.0;
-                common::Ip::Instance()->GetIpLocation(ip, &x, &y);
-                int32_t x1 = static_cast<int32_t>(x * 100);
-                int32_t y1 = static_cast<int32_t>(y * 100);
-                area_point->set_x(x1);
-                area_point->set_y(y1);
-                str_for_hash.append((char*)&x1, sizeof(x1));
-                str_for_hash.append((char*)&y1, sizeof(y1));
-                debug_for_str += "xy: " + std::to_string(x1) + ":" + std::to_string(y1) + ",";
+                if (common::Ip::Instance()->GetIpLocation(ip, &x, &y) == 0) {
+                    area_point->set_x(static_cast<int32_t>(x * 100));
+                    area_point->set_y(static_cast<int32_t>(y * 100));
+                }
             }
+
+            int32_t x1 = area_point->x();
+            int32_t y1 = area_point->y();
+            str_for_hash.append((char*)&x1, sizeof(x1));
+            str_for_hash.append((char*)&y1, sizeof(y1));
+            debug_for_str += "xy: " + std::to_string(x1) + ":" + std::to_string(y1) + ",";
         }
 
         statistic_item.set_elect_height(hiter->first);
