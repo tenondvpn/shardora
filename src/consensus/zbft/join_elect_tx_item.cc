@@ -30,6 +30,17 @@ int JoinElectTxItem::HandleTx(
             // TODO(): check key exists and reserve gas
             gas_used += (block_tx.storages(i).key().size() + msg_ptr->header.tx_proto().value().size()) *
                 consensus::kKeyValueStorageEachBytes;
+            if (block_tx.storages(i).key() == protos::kElectJoinShard) {
+                uint32_t* tmp = (uint32_t*)block_tx.storages(i).val_hash().c_str();
+                if (tmp[0] != network::kRootCongressNetworkId) {
+                    if (tmp[0] != common::GlobalInfo::Instance()->network_id() ||
+                            tmp[0] != msg_ptr->address_info->sharding_id()) {
+                        block_tx.set_status(consensus::kConsensusError);
+                        ZJC_DEBUG("shard error: %lu", tmp[0]);
+                        break;
+                    }
+                }
+            }
         }
 
         if (from_balance < block_tx.gas_limit()  * block_tx.gas_price()) {
