@@ -795,7 +795,7 @@ void BftManager::CreateResponseMessage(
                             thread_item->all_members_ips[i][thread_item->member_ips[i]] = 1;
                             if (elect_item.leader_count <= 8) {
                                 (*elect_item.members)[i]->public_ip = thread_item->member_ips[i];
-                                ZJC_DEBUG("member set ip %d, %u", i, (*elect_item.members)[i]->public_ip);
+                                ZJC_DEBUG("leader member set ip %d, %u", i, (*elect_item.members)[i]->public_ip);
                             }
                         }
 
@@ -950,6 +950,8 @@ void BftManager::BackupHandleZbftMessage(
         auto& elect_item = *elect_items_[elect_item_idx_];
         auto& thread_set = elect_item.thread_set;
         auto thread_item = thread_set[msg_ptr->thread_idx];
+        ZJC_DEBUG("0 get leader ips size: %u, thread: %d",
+            msg_ptr->header.zbft().ips_size(), msg_ptr->thread_idx);
         if (thread_item != nullptr) {
             ZJC_DEBUG("get leader ips size: %u", msg_ptr->header.zbft().ips_size());
             for (int32_t i = 0; i < msg_ptr->header.zbft().ips_size(); ++i) {
