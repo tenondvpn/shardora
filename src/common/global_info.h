@@ -66,10 +66,6 @@ public:
         return genesis_start_;
     }
 
-    std::string& tcp_spec() {
-        return tcp_spec_;
-    }
-
     std::vector<uint32_t>& networks() {
         return networks_;
     }
@@ -138,7 +134,6 @@ private:
     static const uint32_t kTickThreadPoolCount = 1U;
 
     std::string config_local_ip_;
-    std::string tcp_spec_;
     uint16_t config_local_port_{ 0 };
     bool config_first_node_{ false };
     std::string version_info_;
