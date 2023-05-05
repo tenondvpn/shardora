@@ -61,14 +61,14 @@ public:
             auto& txhash = tx_hash_list[i];
             auto iter = gid_map_.find(txhash);
             if (iter == gid_map_.end()) {
-                ZJC_DEBUG("success get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
+                ZJC_DEBUG("failed get tx %u, %s", pool_index_, common::Encode::HexEncode(txhash).c_str());
                 return nullptr;
             }
 
+            ZJC_DEBUG("success get tx %u, %s", pool_index_, common::Encode::HexEncode(txhash).c_str());
             tx_map[txhash] = iter->second;
         }
         
-        ZJC_DEBUG("failed get tx %u, %s", pool_index_, common::Encode::HexEncode(tx_hash).c_str());
         return txs_items;
     }
 
