@@ -196,6 +196,9 @@ void BftManager::OnNewElectBlock(
             thread_set[j] = thread_item;  // ptr change, multi-thread safe
         }
 
+        thread_set[0]->member_ips[elect_item.local_node_member_index] = common::IpToUint32(
+            common::GlobalInfo::Instance()->config_local_ip());
+        thread_set[0]->valid_ip_count = 1;
         minimal_node_count_to_consensus_ = members->size() * 2 / 3;
         if (minimal_node_count_to_consensus_ + 1 < members->size()) {
             ++minimal_node_count_to_consensus_;
