@@ -110,7 +110,7 @@ void ShardStatistic::HandleStatisticBlock(
                     }
                 } else {
                     ZJC_WARN("statistic heights size not equal: %u, %u",
-                        tx_heights_ptr_->heights_size(), elect_statistic.heights().heights_size())
+                        tx_heights_ptr_->heights_size(), elect_statistic.heights().heights_size());
                 }
             }
 
