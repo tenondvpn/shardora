@@ -89,6 +89,27 @@ void ShardStatistic::HandleStatisticBlock(
                 return;
             }
 
+            if (tx_heights_ptr_ != nullptr) {
+                assert(tx_heights_ptr_->heights_size() == elect_statistic.heights_size());
+                for (int32_t i = 0; i < elect_statistic.heights_size(); ++i) {
+                    if (tx_heights_ptr_->heights(i) > elect_statistic.heights(i)) {
+                        std::string init_consensus_height;
+                        for (uint32_t i = 0; i < elect_statistic.heights_size(); ++i) {
+                            init_consensus_height += std::to_string(elect_statistic.heights(i)) + " ";
+                        }
+
+                        std::string src_init_consensus_height;
+                        for (uint32_t i = 0; i < tx_heights_ptr_->heights_size(); ++i) {
+                            src_init_consensus_height += std::to_string(tx_heights_ptr_->heights(i)) + " ";
+                        }
+
+                        ZJC_INFO("latest statistic block coming, ignore it. %s, %s",
+                            src_init_consensus_height.c_str(), init_consensus_height.c_str());
+                        return;
+                    }
+                }
+            }
+
             for (int32_t height_idx = 0;
                     height_idx < elect_statistic.heights().heights_size(); ++height_idx) {
                 if (elect_statistic.heights().heights(height_idx) > pool_consensus_heihgts_[height_idx]) {
