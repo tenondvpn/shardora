@@ -483,9 +483,14 @@ int ShardStatistic::StatisticWithHeights(
     debug_for_str += std::to_string(all_gas_amount) + ",";
     debug_for_str += std::to_string(net_id) + ",";
     *statistic_hash = common::Hash::keccak256(str_for_hash);
+    std::string heights;
+    for (uint32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
+        heights += std::to_string(leader_to_heights.heights(i)) + " ";
+    }
+
     *elect_statistic.mutable_heights() = leader_to_heights;
     prefix_db_->SaveTemporaryKv(*statistic_hash, elect_statistic.SerializeAsString());
-    ZJC_DEBUG("success create statistic message: %s", debug_for_str);
+    ZJC_DEBUG("success create statistic message: %s, heights: %s", debug_for_str, heights.c_str());
     return kPoolsSuccess;
 }
 
