@@ -1,8 +1,9 @@
 #include "pools/shard_statistic.h"
 
 #include "consensus/consensus_utils.h"
-#include "common/global_info.h"
 #include "common/encode.h"
+#include "common/ip.h"
+#include "common/global_info.h"
 #include "elect/elect_manager.h"
 #include "network/network_utils.h"
 #include "protos/pools.pb.h"
