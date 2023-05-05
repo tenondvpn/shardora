@@ -657,6 +657,28 @@ class RefreshNeighborsRequest : public ::google::protobuf::Message /* @@protoc_i
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
       mutable_bloomfilter();
 
+  // repeated bytes ids = 6;
+  int ids_size() const;
+  void clear_ids();
+  static const int kIdsFieldNumber = 6;
+  const ::std::string& ids(int index) const;
+  ::std::string* mutable_ids(int index);
+  void set_ids(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_ids(int index, ::std::string&& value);
+  #endif
+  void set_ids(int index, const char* value);
+  void set_ids(int index, const void* value, size_t size);
+  ::std::string* add_ids();
+  void add_ids(const ::std::string& value);
+  #if LANG_CXX11
+  void add_ids(::std::string&& value);
+  #endif
+  void add_ids(const char* value);
+  void add_ids(const void* value, size_t size);
+  const ::google::protobuf::RepeatedPtrField< ::std::string>& ids() const;
+  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_ids();
+
   // optional bytes pubkey = 3;
   bool has_pubkey() const;
   void clear_pubkey();
@@ -716,6 +738,7 @@ class RefreshNeighborsRequest : public ::google::protobuf::Message /* @@protoc_i
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > bloomfilter_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> ids_;
   ::google::protobuf::internal::ArenaStringPtr pubkey_;
   ::google::protobuf::internal::ArenaStringPtr public_ip_;
   ::google::protobuf::uint32 count_;
@@ -2264,6 +2287,75 @@ inline void RefreshNeighborsRequest::set_public_port(::google::protobuf::int32 v
   set_has_public_port();
   public_port_ = value;
   // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.RefreshNeighborsRequest.public_port)
+}
+
+// repeated bytes ids = 6;
+inline int RefreshNeighborsRequest::ids_size() const {
+  return ids_.size();
+}
+inline void RefreshNeighborsRequest::clear_ids() {
+  ids_.Clear();
+}
+inline const ::std::string& RefreshNeighborsRequest::ids(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  return ids_.Get(index);
+}
+inline ::std::string* RefreshNeighborsRequest::mutable_ids(int index) {
+  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  return ids_.Mutable(index);
+}
+inline void RefreshNeighborsRequest::set_ids(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  ids_.Mutable(index)->assign(value);
+}
+#if LANG_CXX11
+inline void RefreshNeighborsRequest::set_ids(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  ids_.Mutable(index)->assign(std::move(value));
+}
+#endif
+inline void RefreshNeighborsRequest::set_ids(int index, const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  ids_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+}
+inline void RefreshNeighborsRequest::set_ids(int index, const void* value, size_t size) {
+  ids_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+}
+inline ::std::string* RefreshNeighborsRequest::add_ids() {
+  // @@protoc_insertion_point(field_add_mutable:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  return ids_.Add();
+}
+inline void RefreshNeighborsRequest::add_ids(const ::std::string& value) {
+  ids_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+}
+#if LANG_CXX11
+inline void RefreshNeighborsRequest::add_ids(::std::string&& value) {
+  ids_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+}
+#endif
+inline void RefreshNeighborsRequest::add_ids(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  ids_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+}
+inline void RefreshNeighborsRequest::add_ids(const void* value, size_t size) {
+  ids_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+RefreshNeighborsRequest::ids() const {
+  // @@protoc_insertion_point(field_list:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  return ids_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+RefreshNeighborsRequest::mutable_ids() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.dht.protobuf.RefreshNeighborsRequest.ids)
+  return &ids_;
 }
 
 // -------------------------------------------------------------------

@@ -311,8 +311,10 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::JoinElectNode, id_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::JoinElectNode, stoke_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::JoinElectNode, shard_),
   0,
   1,
+  2,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::ElectStatistic, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::ElectStatistic, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -369,9 +371,9 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 45, 53, sizeof(::zjchain::pools::protobuf::PoolLatestInfo)},
   { 56, 63, sizeof(::zjchain::pools::protobuf::AreaInfo)},
   { 65, 74, sizeof(::zjchain::pools::protobuf::PoolStatisticItem)},
-  { 78, 85, sizeof(::zjchain::pools::protobuf::JoinElectNode)},
-  { 87, 98, sizeof(::zjchain::pools::protobuf::ElectStatistic)},
-  { 104, 122, sizeof(::zjchain::pools::protobuf::TxMessage)},
+  { 78, 86, sizeof(::zjchain::pools::protobuf::JoinElectNode)},
+  { 89, 100, sizeof(::zjchain::pools::protobuf::ElectStatistic)},
+  { 106, 124, sizeof(::zjchain::pools::protobuf::TxMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -421,38 +423,39 @@ void AddDescriptorsImpl() {
       "chain.pools.protobuf.ToTxHeights\"E\n\016Pool"
       "LatestInfo\022\016\n\006height\030\001 \001(\004\022\014\n\004hash\030\002 \001(\014"
       "\022\025\n\rsynced_height\030\003 \001(\004\" \n\010AreaInfo\022\t\n\001x"
-      "\030\001 \001(\r\022\t\n\001y\030\002 \001(\r\"\201\001\n\021PoolStatisticItem\022"
+      "\030\001 \001(\005\022\t\n\001y\030\002 \001(\005\"\201\001\n\021PoolStatisticItem\022"
       "\020\n\010tx_count\030\001 \003(\r\022\016\n\006stokes\030\002 \003(\004\022\024\n\014ele"
       "ct_height\030\003 \001(\004\0224\n\narea_point\030\004 \003(\0132 .zj"
-      "chain.pools.protobuf.AreaInfo\"*\n\rJoinEle"
-      "ctNode\022\n\n\002id\030\001 \001(\014\022\r\n\005stoke\030\002 \001(\004\"\204\002\n\016El"
-      "ectStatistic\022=\n\nstatistics\030\001 \003(\0132).zjcha"
-      "in.pools.protobuf.PoolStatisticItem\0224\n\007h"
-      "eights\030\002 \001(\0132#.zjchain.pools.protobuf.To"
-      "TxHeights\022\?\n\020join_elect_nodes\030\003 \003(\0132%.zj"
-      "chain.pools.protobuf.JoinElectNode\022\023\n\013sh"
-      "arding_id\030\004 \001(\r\022\022\n\ngas_amount\030\005 \001(\004\022\023\n\013l"
-      "of_leaders\030\006 \003(\r\"\240\002\n\tTxMessage\022\017\n\007versio"
-      "n\030\001 \001(\r\022\013\n\003gid\030\002 \001(\014\022\016\n\006pubkey\030\003 \001(\014\022\021\n\t"
-      "gas_limit\030\004 \001(\004\022\021\n\tgas_price\030\005 \001(\004\022\013\n\003ke"
-      "y\030\006 \001(\014\022\r\n\005value\030\007 \001(\014\022\n\n\002to\030\010 \001(\014\022\016\n\006am"
-      "ount\030\t \001(\004\022;\n\004step\030\n \001(\0162 .zjchain.pools"
-      ".protobuf.StepType:\013kNormalFrom\022\033\n\023contr"
-      "act_prepayment\030\013 \001(\004\022\025\n\rcontract_code\030\014 "
-      "\001(\014\022\026\n\016contract_input\030\r \001(\014*\230\003\n\010StepType"
-      "\022\017\n\013kNormalFrom\020\000\022\r\n\tkNormalTo\020\001\022\034\n\030kCon"
-      "sensusRootElectShard\020\002\022\033\n\027kConsensusRoot"
-      "TimeBlock\020\003\022\034\n\030kConsensusFinalStatistic\020"
-      "\004\022!\n\035kConsensusCreateGenesisAcount\020\005\022\026\n\022"
-      "kConsensusLocalTos\020\006\022\033\n\027kContractUserCre"
-      "ateCall\020\007\022\025\n\021kContractUserCall\020\010\022\023\n\017kCon"
-      "tractExcute\020\t\022\026\n\022kContractBroadcast\020\n\022\026\n"
-      "\022kRootCreateAddress\020\013\022#\n\037kRootCreateAddr"
-      "essCrossSharding\020\014\022\032\n\026kContractGasPrepay"
-      "ment\020\r\022\016\n\nkStatistic\020\016\022\016\n\nkJoinElect\020\017"
+      "chain.pools.protobuf.AreaInfo\"9\n\rJoinEle"
+      "ctNode\022\n\n\002id\030\001 \001(\014\022\r\n\005stoke\030\002 \001(\004\022\r\n\005sha"
+      "rd\030\003 \001(\r\"\204\002\n\016ElectStatistic\022=\n\nstatistic"
+      "s\030\001 \003(\0132).zjchain.pools.protobuf.PoolSta"
+      "tisticItem\0224\n\007heights\030\002 \001(\0132#.zjchain.po"
+      "ols.protobuf.ToTxHeights\022\?\n\020join_elect_n"
+      "odes\030\003 \003(\0132%.zjchain.pools.protobuf.Join"
+      "ElectNode\022\023\n\013sharding_id\030\004 \001(\r\022\022\n\ngas_am"
+      "ount\030\005 \001(\004\022\023\n\013lof_leaders\030\006 \003(\r\"\240\002\n\tTxMe"
+      "ssage\022\017\n\007version\030\001 \001(\r\022\013\n\003gid\030\002 \001(\014\022\016\n\006p"
+      "ubkey\030\003 \001(\014\022\021\n\tgas_limit\030\004 \001(\004\022\021\n\tgas_pr"
+      "ice\030\005 \001(\004\022\013\n\003key\030\006 \001(\014\022\r\n\005value\030\007 \001(\014\022\n\n"
+      "\002to\030\010 \001(\014\022\016\n\006amount\030\t \001(\004\022;\n\004step\030\n \001(\0162"
+      " .zjchain.pools.protobuf.StepType:\013kNorm"
+      "alFrom\022\033\n\023contract_prepayment\030\013 \001(\004\022\025\n\rc"
+      "ontract_code\030\014 \001(\014\022\026\n\016contract_input\030\r \001"
+      "(\014*\230\003\n\010StepType\022\017\n\013kNormalFrom\020\000\022\r\n\tkNor"
+      "malTo\020\001\022\034\n\030kConsensusRootElectShard\020\002\022\033\n"
+      "\027kConsensusRootTimeBlock\020\003\022\034\n\030kConsensus"
+      "FinalStatistic\020\004\022!\n\035kConsensusCreateGene"
+      "sisAcount\020\005\022\026\n\022kConsensusLocalTos\020\006\022\033\n\027k"
+      "ContractUserCreateCall\020\007\022\025\n\021kContractUse"
+      "rCall\020\010\022\023\n\017kContractExcute\020\t\022\026\n\022kContrac"
+      "tBroadcast\020\n\022\026\n\022kRootCreateAddress\020\013\022#\n\037"
+      "kRootCreateAddressCrossSharding\020\014\022\032\n\026kCo"
+      "ntractGasPrepayment\020\r\022\016\n\nkStatistic\020\016\022\016\n"
+      "\nkJoinElect\020\017"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1718);
+      descriptor, 1733);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/pools.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2faddress_2eproto::AddDescriptors();
@@ -2140,13 +2143,13 @@ bool AreaInfo::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional uint32 x = 1;
+      // optional int32 x = 1;
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
           set_has_x();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, &x_)));
         } else {
           goto handle_unusual;
@@ -2154,13 +2157,13 @@ bool AreaInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint32 y = 2;
+      // optional int32 y = 2;
       case 2: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
           set_has_y();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, &y_)));
         } else {
           goto handle_unusual;
@@ -2195,14 +2198,14 @@ void AreaInfo::SerializeWithCachedSizes(
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  // optional uint32 x = 1;
+  // optional int32 x = 1;
   if (cached_has_bits & 0x00000001u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->x(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->x(), output);
   }
 
-  // optional uint32 y = 2;
+  // optional int32 y = 2;
   if (cached_has_bits & 0x00000002u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->y(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->y(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2220,14 +2223,14 @@ void AreaInfo::SerializeWithCachedSizes(
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  // optional uint32 x = 1;
+  // optional int32 x = 1;
   if (cached_has_bits & 0x00000001u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->x(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->x(), target);
   }
 
-  // optional uint32 y = 2;
+  // optional int32 y = 2;
   if (cached_has_bits & 0x00000002u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->y(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->y(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2248,17 +2251,17 @@ size_t AreaInfo::ByteSizeLong() const {
         _internal_metadata_.unknown_fields());
   }
   if (_has_bits_[0 / 32] & 3u) {
-    // optional uint32 x = 1;
+    // optional int32 x = 1;
     if (has_x()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
           this->x());
     }
 
-    // optional uint32 y = 2;
+    // optional int32 y = 2;
     if (has_y()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
           this->y());
     }
 
@@ -2704,6 +2707,7 @@ void JoinElectNode::InitAsDefaultInstance() {
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int JoinElectNode::kIdFieldNumber;
 const int JoinElectNode::kStokeFieldNumber;
+const int JoinElectNode::kShardFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 JoinElectNode::JoinElectNode()
@@ -2722,13 +2726,17 @@ JoinElectNode::JoinElectNode(const JoinElectNode& from)
   if (from.has_id()) {
     id_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.id_);
   }
-  stoke_ = from.stoke_;
+  ::memcpy(&stoke_, &from.stoke_,
+    static_cast<size_t>(reinterpret_cast<char*>(&shard_) -
+    reinterpret_cast<char*>(&stoke_)) + sizeof(shard_));
   // @@protoc_insertion_point(copy_constructor:zjchain.pools.protobuf.JoinElectNode)
 }
 
 void JoinElectNode::SharedCtor() {
   id_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  stoke_ = GOOGLE_ULONGLONG(0);
+  ::memset(&stoke_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&shard_) -
+      reinterpret_cast<char*>(&stoke_)) + sizeof(shard_));
 }
 
 JoinElectNode::~JoinElectNode() {
@@ -2764,7 +2772,11 @@ void JoinElectNode::Clear() {
   if (cached_has_bits & 0x00000001u) {
     id_.ClearNonDefaultToEmptyNoArena();
   }
-  stoke_ = GOOGLE_ULONGLONG(0);
+  if (cached_has_bits & 6u) {
+    ::memset(&stoke_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&shard_) -
+        reinterpret_cast<char*>(&stoke_)) + sizeof(shard_));
+  }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
 }
@@ -2799,6 +2811,20 @@ bool JoinElectNode::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
                  input, &stoke_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint32 shard = 3;
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
+          set_has_shard();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &shard_)));
         } else {
           goto handle_unusual;
         }
@@ -2843,6 +2869,11 @@ void JoinElectNode::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->stoke(), output);
   }
 
+  // optional uint32 shard = 3;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->shard(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -2870,6 +2901,11 @@ void JoinElectNode::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->stoke(), target);
   }
 
+  // optional uint32 shard = 3;
+  if (cached_has_bits & 0x00000004u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->shard(), target);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -2887,7 +2923,7 @@ size_t JoinElectNode::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 3u) {
+  if (_has_bits_[0 / 32] & 7u) {
     // optional bytes id = 1;
     if (has_id()) {
       total_size += 1 +
@@ -2900,6 +2936,13 @@ size_t JoinElectNode::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt64Size(
           this->stoke());
+    }
+
+    // optional uint32 shard = 3;
+    if (has_shard()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->shard());
     }
 
   }
@@ -2931,13 +2974,16 @@ void JoinElectNode::MergeFrom(const JoinElectNode& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 3u) {
+  if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_id();
       id_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.id_);
     }
     if (cached_has_bits & 0x00000002u) {
       stoke_ = from.stoke_;
+    }
+    if (cached_has_bits & 0x00000004u) {
+      shard_ = from.shard_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -2970,6 +3016,7 @@ void JoinElectNode::InternalSwap(JoinElectNode* other) {
   id_.Swap(&other->id_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(stoke_, other->stoke_);
+  swap(shard_, other->shard_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }

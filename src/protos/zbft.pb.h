@@ -382,6 +382,18 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
       mutable_commit_bitmap();
 
+  // repeated uint32 ips = 22;
+  int ips_size() const;
+  void clear_ips();
+  static const int kIpsFieldNumber = 22;
+  ::google::protobuf::uint32 ips(int index) const;
+  void set_ips(int index, ::google::protobuf::uint32 value);
+  void add_ips(::google::protobuf::uint32 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+      ips() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+      mutable_ips();
+
   // optional bytes prepare_gid = 1;
   bool has_prepare_gid() const;
   void clear_prepare_gid();
@@ -627,6 +639,7 @@ class ZbftMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > bitmap_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > commit_bitmap_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > ips_;
   ::google::protobuf::internal::ArenaStringPtr prepare_gid_;
   ::google::protobuf::internal::ArenaStringPtr precommit_gid_;
   ::google::protobuf::internal::ArenaStringPtr commit_gid_;
@@ -1803,6 +1816,36 @@ inline void ZbftMessage::set_sync_block(bool value) {
   set_has_sync_block();
   sync_block_ = value;
   // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.sync_block)
+}
+
+// repeated uint32 ips = 22;
+inline int ZbftMessage::ips_size() const {
+  return ips_.size();
+}
+inline void ZbftMessage::clear_ips() {
+  ips_.Clear();
+}
+inline ::google::protobuf::uint32 ZbftMessage::ips(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.ZbftMessage.ips)
+  return ips_.Get(index);
+}
+inline void ZbftMessage::set_ips(int index, ::google::protobuf::uint32 value) {
+  ips_.Set(index, value);
+  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.ZbftMessage.ips)
+}
+inline void ZbftMessage::add_ips(::google::protobuf::uint32 value) {
+  ips_.Add(value);
+  // @@protoc_insertion_point(field_add:zjchain.zbft.protobuf.ZbftMessage.ips)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+ZbftMessage::ips() const {
+  // @@protoc_insertion_point(field_list:zjchain.zbft.protobuf.ZbftMessage.ips)
+  return ips_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+ZbftMessage::mutable_ips() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.zbft.protobuf.ZbftMessage.ips)
+  return &ips_;
 }
 
 #ifdef __GNUC__

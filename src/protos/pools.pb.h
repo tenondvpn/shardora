@@ -873,19 +873,19 @@ class AreaInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
 
   // accessors -------------------------------------------------------
 
-  // optional uint32 x = 1;
+  // optional int32 x = 1;
   bool has_x() const;
   void clear_x();
   static const int kXFieldNumber = 1;
-  ::google::protobuf::uint32 x() const;
-  void set_x(::google::protobuf::uint32 value);
+  ::google::protobuf::int32 x() const;
+  void set_x(::google::protobuf::int32 value);
 
-  // optional uint32 y = 2;
+  // optional int32 y = 2;
   bool has_y() const;
   void clear_y();
   static const int kYFieldNumber = 2;
-  ::google::protobuf::uint32 y() const;
-  void set_y(::google::protobuf::uint32 value);
+  ::google::protobuf::int32 y() const;
+  void set_y(::google::protobuf::int32 value);
 
   // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.AreaInfo)
  private:
@@ -897,8 +897,8 @@ class AreaInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::uint32 x_;
-  ::google::protobuf::uint32 y_;
+  ::google::protobuf::int32 x_;
+  ::google::protobuf::int32 y_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -1172,18 +1172,28 @@ class JoinElectNode : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::google::protobuf::uint64 stoke() const;
   void set_stoke(::google::protobuf::uint64 value);
 
+  // optional uint32 shard = 3;
+  bool has_shard() const;
+  void clear_shard();
+  static const int kShardFieldNumber = 3;
+  ::google::protobuf::uint32 shard() const;
+  void set_shard(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.JoinElectNode)
  private:
   void set_has_id();
   void clear_has_id();
   void set_has_stoke();
   void clear_has_stoke();
+  void set_has_shard();
+  void clear_has_shard();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr id_;
   ::google::protobuf::uint64 stoke_;
+  ::google::protobuf::uint32 shard_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -2369,7 +2379,7 @@ inline void PoolLatestInfo::set_synced_height(::google::protobuf::uint64 value) 
 
 // AreaInfo
 
-// optional uint32 x = 1;
+// optional int32 x = 1;
 inline bool AreaInfo::has_x() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -2380,20 +2390,20 @@ inline void AreaInfo::clear_has_x() {
   _has_bits_[0] &= ~0x00000001u;
 }
 inline void AreaInfo::clear_x() {
-  x_ = 0u;
+  x_ = 0;
   clear_has_x();
 }
-inline ::google::protobuf::uint32 AreaInfo::x() const {
+inline ::google::protobuf::int32 AreaInfo::x() const {
   // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.AreaInfo.x)
   return x_;
 }
-inline void AreaInfo::set_x(::google::protobuf::uint32 value) {
+inline void AreaInfo::set_x(::google::protobuf::int32 value) {
   set_has_x();
   x_ = value;
   // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.AreaInfo.x)
 }
 
-// optional uint32 y = 2;
+// optional int32 y = 2;
 inline bool AreaInfo::has_y() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -2404,14 +2414,14 @@ inline void AreaInfo::clear_has_y() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void AreaInfo::clear_y() {
-  y_ = 0u;
+  y_ = 0;
   clear_has_y();
 }
-inline ::google::protobuf::uint32 AreaInfo::y() const {
+inline ::google::protobuf::int32 AreaInfo::y() const {
   // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.AreaInfo.y)
   return y_;
 }
-inline void AreaInfo::set_y(::google::protobuf::uint32 value) {
+inline void AreaInfo::set_y(::google::protobuf::int32 value) {
   set_has_y();
   y_ = value;
   // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.AreaInfo.y)
@@ -2627,6 +2637,30 @@ inline void JoinElectNode::set_stoke(::google::protobuf::uint64 value) {
   set_has_stoke();
   stoke_ = value;
   // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.JoinElectNode.stoke)
+}
+
+// optional uint32 shard = 3;
+inline bool JoinElectNode::has_shard() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void JoinElectNode::set_has_shard() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void JoinElectNode::clear_has_shard() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void JoinElectNode::clear_shard() {
+  shard_ = 0u;
+  clear_has_shard();
+}
+inline ::google::protobuf::uint32 JoinElectNode::shard() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.JoinElectNode.shard)
+  return shard_;
+}
+inline void JoinElectNode::set_shard(::google::protobuf::uint32 value) {
+  set_has_shard();
+  shard_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.JoinElectNode.shard)
 }
 
 // -------------------------------------------------------------------
