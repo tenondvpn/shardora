@@ -336,6 +336,10 @@ int ShardStatistic::StatisticWithHeights(
         common::GlobalInfo::Instance()->network_id(),
         nullptr,
         nullptr);
+    if (now_elect_members == nullptr) {
+        return kPoolsError;
+    }
+
     std::unordered_map<uint32_t, common::Point> lof_map;
     uint64_t all_gas_amount = 0;
     for (uint32_t pool_idx = 0; pool_idx < max_pool; ++pool_idx) {
