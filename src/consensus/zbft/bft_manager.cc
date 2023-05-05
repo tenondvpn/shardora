@@ -787,6 +787,7 @@ void BftManager::CreateResponseMessage(
             if (msg_ptr->thread_idx == 0) {
                 auto& thread_set = elect_item.thread_set;
                 auto thread_item = thread_set[msg_ptr->thread_idx];
+                ZJC_DEBUG("0 count member set ip %u, %u", (thread_item != nullptr), elect_item.members->size());
                 if (thread_item != nullptr && !thread_item->synced_ip) {
                     ZJC_DEBUG("count member set ip %u, %u", thread_item->valid_ip_count, elect_item.members->size());
                     if (thread_item->valid_ip_count * 10 / 9 >= elect_item.members->size()) {
