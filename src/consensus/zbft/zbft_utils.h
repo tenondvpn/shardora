@@ -65,6 +65,7 @@ struct PoolTxCountItem {
 struct PoolTxIndexItem {
     std::vector<uint32_t> pools;
     uint32_t prev_index;
+    std::unordered_map<uint32_t, int32_t> member_ips[common::kEachShardMaxNodeCount];
 };
 
 struct ElectItem {

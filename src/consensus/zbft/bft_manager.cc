@@ -1689,7 +1689,14 @@ ZbftPtr BftManager::LeaderGetZbft(
     }
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
+    auto& elect_item = *elect_items_[elect_item_idx_];
+    auto& thread_set = elect_item.thread_set;
+    auto thread_item = thread_set[thread_index];
+    if (thread_item == nullptr) {
+        return nullptr;
+    }
 
+    auto ip_iter = thread_item.member_ips[bft_msg.member_index()].find(msg_ptr->from_ip());
     return bft_ptr;
 }
 

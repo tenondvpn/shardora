@@ -46,20 +46,22 @@ void ShardStatistic::OnNewBlock(const block::protobuf::Block& block) {
         }
     }
 
+    if (block.height() > pool_consensus_heihgts_[block.pool_index()]) {
+        added_heights_[block.pool_index()].insert(block.height());
+    }
+
     if (pool_consensus_heihgts_[block.pool_index()] + 1 == block.height()) {
         ++pool_consensus_heihgts_[block.pool_index()];
-        for (; pool_consensus_heihgts_[block.pool_index()] <= pool_max_heihgts_[block.pool_index()];
-                ++pool_consensus_heihgts_[block.pool_index()]) {
+        while (pool_consensus_heihgts_[block.pool_index()] <= pool_max_heihgts_[block.pool_index()]) {
             auto iter = added_heights_[block.pool_index()].find(
-                    pool_consensus_heihgts_[block.pool_index()]);
+                    pool_consensus_heihgts_[block.pool_index()] + 1);
             if (iter == added_heights_[block.pool_index()].end()) {
                 break;
             }
 
+            ++pool_consensus_heihgts_[block.pool_index()];
             added_heights_[block.pool_index()].erase(iter);
         }
-    } else {
-        added_heights_[block.pool_index()].insert(block.height());
     }
 
     if (tx_list.empty()) {
@@ -118,14 +120,14 @@ void ShardStatistic::HandleStatisticBlock(
                     height_idx < elect_statistic.heights().heights_size(); ++height_idx) {
                 if (elect_statistic.heights().heights(height_idx) > pool_consensus_heihgts_[height_idx]) {
                     pool_consensus_heihgts_[height_idx] = elect_statistic.heights().heights(height_idx);
-                    for (; pool_consensus_heihgts_[block.pool_index()] <= pool_max_heihgts_[block.pool_index()];
-                            ++pool_consensus_heihgts_[block.pool_index()]) {
+                    while (pool_consensus_heihgts_[block.pool_index()] <= pool_max_heihgts_[block.pool_index()]) {
                         auto iter = added_heights_[block.pool_index()].find(
-                            pool_consensus_heihgts_[block.pool_index()]);
+                            pool_consensus_heihgts_[block.pool_index()] + 1);
                         if (iter == added_heights_[block.pool_index()].end()) {
                             break;
                         }
 
+                        ++pool_consensus_heihgts_[block.pool_index()];
                         added_heights_[block.pool_index()].erase(iter);
                     }
                 }
@@ -515,7 +517,7 @@ int ShardStatistic::StatisticWithHeights(
 
     *elect_statistic.mutable_heights() = leader_to_heights;
     prefix_db_->SaveTemporaryKv(*statistic_hash, elect_statistic.SerializeAsString());
-    ZJC_DEBUG("success create statistic message: %s, heights: %s", debug_for_str, heights.c_str());
+    ZJC_DEBUG("success create statistic message: %s, heights: %s", debug_for_str.c_str(), heights.c_str());
     return kPoolsSuccess;
 }
 
