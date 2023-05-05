@@ -1691,12 +1691,15 @@ ZbftPtr BftManager::LeaderGetZbft(
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     auto& elect_item = *elect_items_[elect_item_idx_];
     auto& thread_set = elect_item.thread_set;
-    auto thread_item = thread_set[thread_index];
+    auto thread_item = thread_set[msg_ptr->thread_idx];
     if (thread_item == nullptr) {
         return nullptr;
     }
 
-    auto ip_iter = thread_item.member_ips[bft_msg.member_index()].find(msg_ptr->from_ip());
+    if (thread_item.member_ips[bft_msg.member_index()] == 0) {
+        thread_item.member_ips[bft_msg.member_index()] = common::IpToUint32(msg_ptr->conn->PeerIp());
+    }
+    
     return bft_ptr;
 }
 
