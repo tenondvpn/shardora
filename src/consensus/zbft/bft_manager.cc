@@ -1743,6 +1743,8 @@ ZbftPtr BftManager::LeaderGetZbft(
                 thread_item->member_ips[bft_msg.member_index()] =
                     common::IpToUint32(msg_ptr->conn->PeerIp().c_str());
                 ++thread_item->valid_ip_count;
+                ZJC_DEBUG("leader member set ip %d, %s",
+                    bft_msg.member_index(), msg_ptr->conn->PeerIp().c_str());
             }
         }
     }
