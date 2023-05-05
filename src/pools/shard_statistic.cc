@@ -462,6 +462,7 @@ int ShardStatistic::StatisticWithHeights(
             area_point->set_y(0);
             if (ip_int != 0) {
                 auto ip = common::Uint32ToIp(ip_int);
+                ZJC_DEBUG("add ip %s, %u", ip.c_str(), ip_int);
                 float x = 0.0;
                 float y = 0.0;
                 common::Ip::Instance()->GetIpLocation(ip, &x, &y);

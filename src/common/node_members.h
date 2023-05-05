@@ -19,6 +19,7 @@ struct BftMember {
         id(in_id),
         pubkey(pkey),
         index(idx),
+        public_ip(0),
         pool_index_mod_num(pool_mode_num) {
         pool_index_mod_num = pool_mode_num;
     }
