@@ -267,6 +267,7 @@ void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
     auto& elect_item = elect_item_[elect_valid_index_];
     vss_msg.set_member_index(elect_item.local_index);
     vss_msg.set_type(kVssRandomHash);
+    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     std::string message_hash;
     protos::GetProtoHash(msg, &message_hash);
     std::string sign;
@@ -323,6 +324,7 @@ void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
     vss_msg.set_type(kVssRandom);
     std::string message_hash;
     protos::GetProtoHash(msg, &message_hash);
+    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     std::string sign;
     if (security_ptr_->Sign(
             message_hash,
@@ -375,6 +377,7 @@ void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
     vss_msg.set_type(kVssFinalRandom);
     auto& elect_item = elect_item_[elect_valid_index_];
     vss_msg.set_member_index(elect_item.local_index);
+    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     std::string message_hash;
     protos::GetProtoHash(msg, &message_hash);
     std::string sign;

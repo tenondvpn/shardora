@@ -937,6 +937,7 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
     // send to other nodes
     auto& broadcast = *msg.mutable_broadcast();
     msg_ptr->thread_idx = thread_idx;
+    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     network::Route::Instance()->Send(msg_ptr);
     HandleStatisticMessage(msg_ptr);
     ZJC_DEBUG("leader success broadcast statistic heights.");
@@ -995,6 +996,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     // send to other nodes
     auto& broadcast = *msg.mutable_broadcast();
     msg_ptr->thread_idx = thread_idx;
+    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     network::Route::Instance()->Send(msg_ptr);
     HandleToTxsMessage(msg_ptr, false);
 }

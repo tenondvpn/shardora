@@ -396,7 +396,9 @@ int ShardStatistic::StatisticWithHeights(
     }
 
     std::string str_for_hash;
+    std::string debug_for_str;
     pools::protobuf::ElectStatistic elect_statistic;
+    debug_for_str += "tx_count: ";
     for (auto hiter = height_node_count_map.begin();
             hiter != height_node_count_map.end(); ++hiter) {
         auto& node_count_map = hiter->second;
@@ -417,6 +419,7 @@ int ShardStatistic::StatisticWithHeights(
 
             statistic_item.add_tx_count(tx_count);
             str_for_hash.append((char*)&tx_count, sizeof(tx_count));
+            debug_for_str += std::to_string(tx_count) + ",";
 
             uint64_t stoke = 0;
             prefix_db_->GetElectNodeMinStoke(
@@ -429,8 +432,10 @@ int ShardStatistic::StatisticWithHeights(
 
         statistic_item.set_elect_height(hiter->first);
         str_for_hash.append((char*)&hiter->first, sizeof(hiter->first));
+        debug_for_str += std::to_string(hiter->first) + ",";
     }
 
+    debug_for_str += "stoke: ";
     for (int32_t i = 0; i < elect_nodes.size() && i < kWaitingElectNodesMaxCount; ++i) {
         auto join_elect_node = elect_statistic.add_join_elect_nodes();
         std::string pubkey;
@@ -443,6 +448,7 @@ int ShardStatistic::StatisticWithHeights(
         join_elect_node->set_stoke(iter->second);
         str_for_hash.append(elect_nodes[i]);
         str_for_hash.append((char*)&iter->second, sizeof(iter->second));
+        debug_for_str += common::Encode::HexEncode(elect_nodes[i]) + "," + std::to_string(iter->second) + ",";
         ZJC_DEBUG("add new elect node: %s, stoke: %lu", common::Encode::HexEncode(pubkey).c_str(), iter->second);
     }
 
@@ -464,16 +470,22 @@ int ShardStatistic::StatisticWithHeights(
             }
 
             elect_statistic.add_lof_leaders((*iter).first);
+            str_for_hash.append((char*)&(*iter).first, sizeof((*iter).first));
+            debug_for_str += std::to_string((*iter).first) + ",";
         }
     }
 
     elect_statistic.set_gas_amount(all_gas_amount);
-    elect_statistic.set_sharding_id(common::GlobalInfo::Instance()->network_id());
+    auto net_id = common::GlobalInfo::Instance()->network_id();
+    elect_statistic.set_sharding_id(net_id);
     str_for_hash.append((char*)&all_gas_amount, sizeof(all_gas_amount));
+    str_for_hash.append((char*)&net_id, sizeof(net_id));
+    debug_for_str += std::to_string(all_gas_amount) + ",";
+    debug_for_str += std::to_string(net_id) + ",";
     *statistic_hash = common::Hash::keccak256(str_for_hash);
     *elect_statistic.mutable_heights() = leader_to_heights;
     prefix_db_->SaveTemporaryKv(*statistic_hash, elect_statistic.SerializeAsString());
-    ZJC_DEBUG("success create statistic message.");
+    ZJC_DEBUG("success create statistic message: %s", debug_for_str);
     return kPoolsSuccess;
 }
 

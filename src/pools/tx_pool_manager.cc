@@ -379,8 +379,10 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
     }
 
     tx_pool_[pool_index].AddTx(tx_ptr);
-    ZJC_DEBUG("success add local transfer to tx %u, %s",
-        pool_index, common::Encode::HexEncode(tx_ptr->tx_hash).c_str());
+    ZJC_DEBUG("success add local transfer to tx %u, %s, gid: %s",
+        pool_index,
+        common::Encode::HexEncode(tx_ptr->tx_hash).c_str(),
+        common::Encode::HexEncode(tx_ptr->gid).c_str());
 }
 
 void TxPoolManager::GetTx(

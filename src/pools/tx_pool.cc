@@ -119,10 +119,8 @@ void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
         }
 
         res_map[iter->second->tx_hash] = iter->second;
-        if (iter->second->msg_ptr->header.tx_proto().step() == pools::protobuf::kConsensusLocalTos) {
-            ZJC_DEBUG("success get local transfer to tx %u, %s",
-                pool_index_, common::Encode::HexEncode(iter->second->tx_hash).c_str());
-        }
+        ZJC_DEBUG("success get local transfer to tx %u, %s",
+            pool_index_, common::Encode::HexEncode(iter->second->tx_hash).c_str());
         prio_map_.erase(iter++);
         if (res_map.size() >= count) {
 //             ZJC_INFO("1 get tx mem size: %d, get: %d", prio_map_.size(), res_map.size());
@@ -166,7 +164,9 @@ void TxPool::CheckTimeoutTx() {
 
         RemoveTx(gid);
         timeout_remove_txs_.pop();
-        ZJC_DEBUG("timeout remove gid: %s", common::Encode::HexEncode(gid).c_str());
+        ZJC_DEBUG("timeout remove gid: %s, tx hash: %s",
+            common::Encode::HexEncode(gid).c_str(),
+            common::Encode::HexEncode(iter->second->tx_hash).c_str());
     }
 }
 
@@ -212,6 +212,9 @@ void TxPool::RemoveTx(const std::string& gid) {
     }
 
     gid_map_.erase(giter);
+    ZJC_DEBUG("remove tx success gid: %s, tx hash: %s",
+        common::Encode::HexEncode(iter->second->gid).c_str(),
+        common::Encode::HexEncode(iter->second->tx_hash).c_str())
 }
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {

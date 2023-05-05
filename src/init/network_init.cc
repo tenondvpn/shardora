@@ -376,6 +376,7 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     new_tx->set_step(pools::protobuf::kJoinElect);
     new_tx->set_gas_limit(consensus::kJoinElectGas + 100000);
     new_tx->set_gas_price(10);
+    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign;
     if (security_->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
