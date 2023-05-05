@@ -456,8 +456,22 @@ int ShardStatistic::StatisticWithHeights(
                 common::GlobalInfo::Instance()->network_id(), id, &stoke);
             statistic_item.add_stokes(stoke);
             auto area_point = statistic_item.add_area_point();
-            area_point->set_x(rand() % 100000);
-            area_point->set_y(rand() % 100000);
+            auto ip_int = (*members)[midx]->public_ip;
+            area_point->set_x(0);
+            area_point->set_y(0);
+            if (ip_int != 0) {
+                auto ip = common::Uint32ToIp(ip_int);
+                float x = 0.0;
+                float y = 0.0;
+                common::Ip::Instance()->GetIpLocation(ip, &x, &y);
+                int32_t x1 = static_cast<int32_t>(x * 100);
+                int32_t y1 = static_cast<int32_t>(y * 100);
+                area_point->set_x(x1);
+                area_point->set_y(y1);
+                str_for_hash.append((char*)&x1, sizeof(x1));
+                str_for_hash.append((char*)&y1, sizeof(y1));
+                debug_for_str += "xy: " + std::to_string(x1) + ":" + std::to_string(y1) + ",";
+            }
         }
 
         statistic_item.set_elect_height(hiter->first);

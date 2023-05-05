@@ -4,6 +4,7 @@
 
 #include "block/block_manager.h"
 #include "common/global_info.h"
+#include "common/ip.h"
 #include "common/parse_args.h"
 #include "common/split.h"
 #include "common/string_utils.h"
@@ -87,6 +88,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
+    common::Ip::Instance();
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     vss_mgr_ = std::make_shared<vss::VssManager>(security_);
     kv_sync_ = std::make_shared<sync::KeyValueSync>();
