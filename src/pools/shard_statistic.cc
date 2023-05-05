@@ -90,12 +90,12 @@ void ShardStatistic::HandleStatisticBlock(
             }
 
             if (tx_heights_ptr_ != nullptr) {
-                assert(tx_heights_ptr_->heights_size() == elect_statistic.heights_size());
-                for (int32_t i = 0; i < elect_statistic.heights_size(); ++i) {
-                    if (tx_heights_ptr_->heights(i) > elect_statistic.heights(i)) {
+                assert(tx_heights_ptr_->heights_size() == elect_statistic.heights().heights_size());
+                for (int32_t i = 0; i < elect_statistic.heights().heights_size(); ++i) {
+                    if (tx_heights_ptr_->heights(i) > elect_statistic.heights().heights(i)) {
                         std::string init_consensus_height;
-                        for (uint32_t i = 0; i < elect_statistic.heights_size(); ++i) {
-                            init_consensus_height += std::to_string(elect_statistic.heights(i)) + " ";
+                        for (uint32_t i = 0; i < elect_statistic.heights().heights_size(); ++i) {
+                            init_consensus_height += std::to_string(elect_statistic.heights().heights(i)) + " ";
                         }
 
                         std::string src_init_consensus_height;
