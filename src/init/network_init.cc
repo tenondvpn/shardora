@@ -324,7 +324,7 @@ void NetworkInit::GetAddressShardingId(uint8_t thread_idx) {
 
 void NetworkInit::InitLocalNetworkId() {
     uint32_t got_sharding_id = common::kInvalidUint32;
-    if (!prefix_db_->SaveJoinShard(got_sharding_id)) {
+    if (!prefix_db_->GetJoinShard(got_sharding_id)) {
         auto local_node_account_info = prefix_db_->GetAddressInfo(security_->GetAddress());
         if (local_node_account_info == nullptr) {
             return;

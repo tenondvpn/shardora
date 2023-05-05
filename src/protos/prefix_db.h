@@ -1131,11 +1131,10 @@ public:
         }
     }
 
-    bool GetJoinShard(const std::sttring& local_id, uint32_t* sharding_id) {
+    bool GetJoinShard(uint32_t* sharding_id) {
         std::string key;
         key.reserve(64);
         key.append(kSaveChoosedJoinShardPrefix);
-        key.append(local_id);
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
