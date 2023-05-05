@@ -35,4 +35,5 @@ message ZbftMessage {
     optional bytes prepare_hash = 19;
     optional block.protobuf.Block block = 20;
     optional bool sync_block = 21;
+    repeated uint32 ips = 22;
 }

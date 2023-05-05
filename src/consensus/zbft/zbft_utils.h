@@ -63,13 +63,16 @@ struct PoolTxCountItem {
 };
 
 struct PoolTxIndexItem {
-    PoolTxIndexItem() {
+    PoolTxIndexItem() : valid_ip_count(0), synced_ip(false) {
         memset(member_ips, 0, sizeof(member_ips));
     }
 
     std::vector<uint32_t> pools;
     uint32_t prev_index;
     uint32_t member_ips[common::kEachShardMaxNodeCount];
+    std::unordered_map<uint32_t, int32_t> all_members_ips[common::kEachShardMaxNodeCount];
+    int32_t valid_ip_count;
+    bool synced_ip;
 };
 
 struct ElectItem {

@@ -781,6 +781,20 @@ void BftManager::CreateResponseMessage(
                 commit_gid,
                 msg_ptr->response->header,
                 new_bft_msg);
+            if (msg_ptr->thread_idx == 0) {
+                auto& thread_set = elect_item.thread_set;
+                auto thread_item = thread_set[msg_ptr->thread_idx];
+                if (thread_item != nullptr && !thread_item->synced_ip) {
+                    if (thread_item->valid_ip_count * 10 / 9 >= elect_item.members->size()) {
+                        for (int32_t i = 0; i < elect_item.members->size(); ++i) {
+                            new_bft_msg->add_ips(thread_item->member_ips[i]);
+                        }
+
+                        thread_item->synced_ip = true;
+                    }
+                }
+            }
+
             if (!msg_res) {
                 return;
             }
@@ -921,6 +935,29 @@ void BftManager::BackupHandleZbftMessage(
     if (!VerifyLeaderIdValid(elect_item, msg_ptr)) {
         ZJC_ERROR("leader invalid!");
         return;
+    }
+
+    if (msg_ptr->header.zbft().ips_size() > 0) {
+        auto& elect_item = *elect_items_[elect_item_idx_];
+        auto& thread_set = elect_item.thread_set;
+        auto thread_item = thread_set[msg_ptr->thread_idx];
+        if (thread_item != nullptr) {
+            for (int32_t i = 0; i < msg_ptr->header.zbft().ips_size(); ++i) {
+                auto iter = thread_item->all_members_ips[bft_msg.member_index()].find(
+                    msg_ptr->header.zbft().ips(i));
+                if (iter == thread_item->all_members_ips[bft_msg.member_index()].end()) {
+                    thread_item->all_members_ips[bft_msg.member_index()][msg_ptr->header.zbft().ips(i)] = 1;
+                    if (elect_item.leader_count <= 8) {
+                        (*elect_item.members)[i]->public_ip = msg_ptr->header.zbft().ips(i);
+                    }
+                } else {
+                    ++iter->second;
+                    if (iter->second >= (elect_item.leader_count * 3 / 2 + 1)) {
+                        (*elect_item.members)[i]->public_ip = iter->first;
+                    }
+                }
+            }
+        }
     }
 
     BackupPrepare(elect_item, msg_ptr);
@@ -1687,19 +1724,22 @@ ZbftPtr BftManager::LeaderGetZbft(
 //         assert(false);
         return nullptr;
     }
+
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-    auto& elect_item = *elect_items_[elect_item_idx_];
-    auto& thread_set = elect_item.thread_set;
-    auto thread_item = thread_set[msg_ptr->thread_idx];
-    if (thread_item == nullptr) {
-        return nullptr;
+    if (msg_ptr->thread_idx == 0) {
+        auto& elect_item = *elect_items_[elect_item_idx_];
+        auto& thread_set = elect_item.thread_set;
+        auto thread_item = thread_set[msg_ptr->thread_idx];
+        if (thread_item != nullptr && !thread_item->synced_ip) {
+            if (thread_item->member_ips[bft_msg.member_index()] == 0) {
+                thread_item->member_ips[bft_msg.member_index()] =
+                    common::IpToUint32(msg_ptr->conn->PeerIp().c_str());
+                ++thread_item->valid_ip_count;
+            }
+        }
     }
 
-    if (thread_item->member_ips[bft_msg.member_index()] == 0) {
-        thread_item->member_ips[bft_msg.member_index()] = common::IpToUint32(msg_ptr->conn->PeerIp().c_str());
-    }
-    
     return bft_ptr;
 }
 
