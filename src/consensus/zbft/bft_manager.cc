@@ -174,35 +174,35 @@ void BftManager::OnNewElectBlock(
     elect_items_[new_idx] = elect_item_ptr;
     ZJC_INFO("new elect block local leader index: %d, leader_count: %d, thread_count_: %d, elect height: %lu, member size: %d",
         elect_item.local_node_pool_mod_num, elect_item.leader_count, thread_count_, elect_item.elect_height, members->size());
+    auto& thread_set = elect_item.thread_set;
+    std::set<uint32_t> leader_pool_set;
     if (!(elect_item.local_node_pool_mod_num < 0 ||
             elect_item.local_node_pool_mod_num >= elect_item.leader_count)) {
-        auto& thread_set = elect_item.thread_set;
-        std::set<uint32_t> leader_pool_set;
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             if (i % elect_item.leader_count == elect_item.local_node_pool_mod_num) {
                 leader_pool_set.insert(i);
             }
         }
+    }
 
-        for (uint8_t j = 0; j < thread_count_; ++j) {
-            auto thread_item = std::make_shared<PoolTxIndexItem>();
-            for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-                if (i % thread_count_ == j && leader_pool_set.find(i) != leader_pool_set.end()) {
-                    thread_item->pools.push_back(i);
-                }
+    for (uint8_t j = 0; j < thread_count_; ++j) {
+        auto thread_item = std::make_shared<PoolTxIndexItem>();
+        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            if (i % thread_count_ == j && leader_pool_set.find(i) != leader_pool_set.end()) {
+                thread_item->pools.push_back(i);
             }
-
-            thread_item->prev_index = 0;
-            thread_set[j] = thread_item;  // ptr change, multi-thread safe
         }
 
-        thread_set[0]->member_ips[elect_item.local_node_member_index] = common::IpToUint32(
-            common::GlobalInfo::Instance()->config_local_ip().c_str());
-        thread_set[0]->valid_ip_count = 1;
-        minimal_node_count_to_consensus_ = members->size() * 2 / 3;
-        if (minimal_node_count_to_consensus_ + 1 < members->size()) {
-            ++minimal_node_count_to_consensus_;
-        }
+        thread_item->prev_index = 0;
+        thread_set[j] = thread_item;  // ptr change, multi-thread safe
+    }
+
+    thread_set[0]->member_ips[elect_item.local_node_member_index] = common::IpToUint32(
+        common::GlobalInfo::Instance()->config_local_ip().c_str());
+    thread_set[0]->valid_ip_count = 1;
+    minimal_node_count_to_consensus_ = members->size() * 2 / 3;
+    if (minimal_node_count_to_consensus_ + 1 < members->size()) {
+        ++minimal_node_count_to_consensus_;
     }
 
     elect_item_idx_ = new_idx;
