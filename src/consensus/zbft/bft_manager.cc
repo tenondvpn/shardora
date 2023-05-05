@@ -1696,8 +1696,8 @@ ZbftPtr BftManager::LeaderGetZbft(
         return nullptr;
     }
 
-    if (thread_item.member_ips[bft_msg.member_index()] == 0) {
-        thread_item.member_ips[bft_msg.member_index()] = common::IpToUint32(msg_ptr->conn->PeerIp());
+    if (thread_item->member_ips[bft_msg.member_index()] == 0) {
+        thread_item->member_ips[bft_msg.member_index()] = common::IpToUint32(msg_ptr->conn->PeerIp());
     }
     
     return bft_ptr;
