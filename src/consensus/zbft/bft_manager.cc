@@ -788,6 +788,11 @@ void BftManager::CreateResponseMessage(
                     if (thread_item->valid_ip_count * 10 / 9 >= elect_item.members->size()) {
                         for (int32_t i = 0; i < elect_item.members->size(); ++i) {
                             new_bft_msg->add_ips(thread_item->member_ips[i]);
+                            thread_item->all_members_ips[i][msg_ptr->header.zbft().ips(i)] = 1;
+                            if (elect_item.leader_count <= 8) {
+                                (*elect_item.members)[i]->public_ip = msg_ptr->header.zbft().ips(i);
+                                ZJC_DEBUG("member set ip %d, %u", i, (*elect_item.members)[i]->public_ip);
+                            }
                         }
 
                         thread_item->synced_ip = true;
@@ -949,11 +954,13 @@ void BftManager::BackupHandleZbftMessage(
                     thread_item->all_members_ips[i][msg_ptr->header.zbft().ips(i)] = 1;
                     if (elect_item.leader_count <= 8) {
                         (*elect_item.members)[i]->public_ip = msg_ptr->header.zbft().ips(i);
+                        ZJC_DEBUG("member set ip %d, %u", i, (*elect_item.members)[i]->public_ip);
                     }
                 } else {
                     ++iter->second;
                     if (iter->second >= (elect_item.leader_count * 3 / 2 + 1)) {
                         (*elect_item.members)[i]->public_ip = iter->first;
+                        ZJC_DEBUG("member set ip %d, %u", i, (*elect_item.members)[i]->public_ip);
                     }
                 }
             }
