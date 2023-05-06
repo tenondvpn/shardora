@@ -470,8 +470,8 @@ int ShardStatistic::StatisticWithHeights(
 
     auto r_eiter = join_elect_stoke_map.rbegin();
     auto r_siter = join_elect_shard_map.rbegin();
-    if (r_eiter != join_elect_stoke_map.end() &&
-            r_siter != join_elect_shard_map.end() &&
+    if (r_eiter != join_elect_stoke_map.rend() &&
+            r_siter != join_elect_shard_map.rend() &&
             r_eiter->first == r_siter->first) {
         std::vector<std::string> elect_nodes;
         for (auto iter = r_eiter->second.begin(); iter != r_eiter->second.end(); ++iter) {
@@ -486,8 +486,8 @@ int ShardStatistic::StatisticWithHeights(
     
     ZJC_DEBUG("kJoinElect add new elect node now elect_height: %lu, %d, %d, new nodes size: %u",
         now_elect_height_,
-        (r_eiter != join_elect_stoke_map.end()),
-        (r_siter != join_elect_shard_map.end()),
+        (r_eiter != join_elect_stoke_map.rend()),
+        (r_siter != join_elect_shard_map.rend()),
         elect_nodes.size());
     std::string str_for_hash;
     std::string debug_for_str;
