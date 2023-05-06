@@ -369,8 +369,8 @@ int ShardStatistic::StatisticWithHeights(
     }
 
     std::unordered_map<uint64_t, std::unordered_map<std::string, uint32_t>> height_node_count_map;
-    std::unordered_map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
-    std::unordered_map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
+    std::map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
+    std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
     auto now_elect_members = elect_mgr_->GetNetworkMembersWithHeight(
         now_elect_height_,
         common::GlobalInfo::Instance()->network_id(),
