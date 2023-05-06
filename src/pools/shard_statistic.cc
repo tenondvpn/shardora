@@ -381,19 +381,17 @@ int ShardStatistic::StatisticWithHeights(
     std::map<uint64_t, std::unordered_map<std::string, uint32_t>> height_node_count_map;
     std::map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
     std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
-    auto now_elect_members = elect_mgr_->GetNetworkMembersWithHeight(
-        now_elect_height_,
+    auto prepare_members = elect_mgr_->GetNetworkMembersWithHeight(
+        prepare_elect_height_,
         common::GlobalInfo::Instance()->network_id(),
         nullptr,
         nullptr);
-    if (now_elect_members == nullptr) {
-        return kPoolsError;
-    }
-
     std::unordered_set<std::string> added_id_set;
-    for (uint32_t i = 0; i < now_elect_members->size(); ++i) {
-        added_id_set.insert((*now_elect_members)[i]->id);
-        added_id_set.insert((*now_elect_members)[i]->pubkey);
+    if (prepare_members != nullptr) {
+        for (uint32_t i = 0; i < prepare_members->size(); ++i) {
+            added_id_set.insert((*prepare_members)[i]->id);
+            added_id_set.insert((*prepare_members)[i]->pubkey);
+        }
     }
 
     std::unordered_map<uint32_t, common::Point> lof_map;
@@ -598,11 +596,6 @@ int ShardStatistic::StatisticWithHeights(
         ZJC_DEBUG("add new elect node: %s, stoke: %lu, shard: %u", common::Encode::HexEncode(pubkey).c_str(), iter->second, shard_iter->second);
     }
 
-    auto prepare_members = elect_mgr_->GetNetworkMembersWithHeight(
-        prepare_elect_height_,
-        common::GlobalInfo::Instance()->network_id(),
-        nullptr,
-        nullptr);
     if (prepare_members != nullptr) {
         for (int32_t i = 0; i < prepare_members->size(); ++i) {
             auto inc_iter = added_id_set.find((*prepare_members)[i]->pubkey);
