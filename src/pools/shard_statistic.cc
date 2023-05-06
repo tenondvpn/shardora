@@ -234,12 +234,12 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
         }
 
         if (block.tx_list(i).step() == pools::protobuf::kJoinElect) {
+            uint64_t stoke = 0;
+            bool shard_valid = false;
             for (int32_t storage_idx = 0; storage_idx < block.tx_list(i).storages_size(); ++storage_idx) {
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kElectNodeStoke) {
                     uint64_t* stoke = (uint64_t*)block.tx_list(i).storages(storage_idx).val_hash().c_str();
-                    statistic_info_ptr->node_stoke_map[block.tx_list(i).from()] = stoke[0];
-                    ZJC_DEBUG("kJoinElect add new elect node: %s, stoke: %lu",
-                        common::Encode::HexEncode(block.tx_list(i).from()).c_str(), stoke[0]);
+                    stoke = stoke[0];
                 }
 
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kElectJoinShard) {
@@ -247,10 +247,15 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                     if (shard[0] == common::GlobalInfo::Instance()->network_id() ||
                             shard[0] == common::GlobalInfo::Instance()->network_id() - network::kConsensusWaitingShardOffset) {
                         statistic_info_ptr->node_shard_map[block.tx_list(i).from()] = shard[0];
+                        shard_valid = true;
                         ZJC_DEBUG("kJoinElect add new elect node: %s, shard: %u",
                             common::Encode::HexEncode(block.tx_list(i).from()).c_str(), shard[0]);
                     }
                 }
+            }
+
+            if (shard_valid) {
+                statistic_info_ptr->node_stoke_map[block.tx_list(i).from()] = stoke;
             }
         }
 
