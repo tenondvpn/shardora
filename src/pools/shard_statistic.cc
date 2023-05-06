@@ -468,10 +468,6 @@ int ShardStatistic::StatisticWithHeights(
 
     auto eiter = join_elect_stoke_map.find(now_elect_height_);
     auto siter = join_elect_shard_map.find(now_elect_height_);
-    ZJC_DEBUG("kJoinElect add new elect node now elect_height: %lu, %d, %d",
-        now_elect_height_,
-        (eiter != join_elect_stoke_map.end()),
-        (siter != join_elect_shard_map.end()));
     std::vector<std::string> elect_nodes;
     if (eiter != join_elect_stoke_map.end() && siter != join_elect_shard_map.end()) {
         for (auto iter = eiter->second.begin(); iter != eiter->second.end(); ++iter) {
@@ -484,6 +480,11 @@ int ShardStatistic::StatisticWithHeights(
         }
     }
 
+    ZJC_DEBUG("kJoinElect add new elect node now elect_height: %lu, %d, %d, new nodes size: %u",
+        now_elect_height_,
+        (eiter != join_elect_stoke_map.end()),
+        (siter != join_elect_shard_map.end()),
+        elect_nodes.size());
     std::string str_for_hash;
     std::string debug_for_str;
     pools::protobuf::ElectStatistic elect_statistic;
