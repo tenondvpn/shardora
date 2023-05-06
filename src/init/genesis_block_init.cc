@@ -284,6 +284,8 @@ int GenesisBlockInit::CreateElectBlock(
     }
 
     tenon_block->set_network_id(network::kRootCongressNetworkId);
+    tenon_block->set_bls_agg_sign_x("x");
+    tenon_block->set_bls_agg_sign_y("y");
     tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
     db::DbWriteBatch db_batch;
     pools_mgr_->UpdateLatestInfo(
@@ -379,6 +381,8 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         }
 
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
+        tenon_block->set_bls_agg_sign_x("x");
+        tenon_block->set_bls_agg_sign_y("y");
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
 
         fputs((common::Encode::HexEncode(tenon_block->SerializeAsString()) + "\n").c_str(),
@@ -464,6 +468,8 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         }
 
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
+        tenon_block->set_bls_agg_sign_x("x");
+        tenon_block->set_bls_agg_sign_y("y");
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
         auto tmp_str = tenon_block->SerializeAsString();
         block::protobuf::Block tenon_block2;
@@ -768,6 +774,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         tenon_block->set_timeblock_height(0);
         tenon_block->set_electblock_height(0);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
+        tenon_block->set_bls_agg_sign_x("x");
+        tenon_block->set_bls_agg_sign_y("y");
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
         pool_prev_hash_map[iter->first] = tenon_block->hash();
         db::DbWriteBatch db_batch;
@@ -913,6 +921,8 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         tenon_block->set_timeblock_height(0);
         tenon_block->set_electblock_height(0);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
+        tenon_block->set_bls_agg_sign_x("x");
+        tenon_block->set_bls_agg_sign_y("y");
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
        
 
@@ -1017,6 +1027,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         tenon_block->set_timeblock_height(0);
         tenon_block->set_electblock_height(0);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
+        tenon_block->set_bls_agg_sign_x("x");
+        tenon_block->set_bls_agg_sign_y("y");
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
         
         pool_prev_hash_map[iter->first] = tenon_block->hash();
