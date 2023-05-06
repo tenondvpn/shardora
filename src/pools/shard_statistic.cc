@@ -344,10 +344,12 @@ void ShardStatistic::OnTimeBlock(
 int ShardStatistic::StatisticWithHeights(
         const pools::protobuf::ToTxHeights& leader_to_heights,
         std::string* statistic_hash) {
+    bool is_root = (
+        common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
+        common::GlobalInfo::Instance()->network_id() ==
+        network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset);
     uint32_t pool_size = common::kImmutablePoolSize;
-    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
-            common::GlobalInfo::Instance()->network_id() ==
-            network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
+    if (is_root) {
         ++pool_size;
     }
 
@@ -372,7 +374,7 @@ int ShardStatistic::StatisticWithHeights(
         return kPoolsError;
     }
 
-    std::unordered_map<uint64_t, std::unordered_map<std::string, uint32_t>> height_node_count_map;
+    std::map<uint64_t, std::unordered_map<std::string, uint32_t>> height_node_count_map;
     std::map<uint64_t, std::unordered_map<std::string, uint64_t>> join_elect_stoke_map;
     std::map<uint64_t, std::unordered_map<std::string, uint32_t>> join_elect_shard_map;
     auto now_elect_members = elect_mgr_->GetNetworkMembersWithHeight(
@@ -508,6 +510,15 @@ int ShardStatistic::StatisticWithHeights(
     std::string debug_for_str;
     pools::protobuf::ElectStatistic elect_statistic;
     debug_for_str += "tx_count: ";
+    auto r_hiter = height_node_count_map.rbegin();
+    if (r_hiter == height_node_count_map.rend() || r_hiter->first < now_elect_height_) {
+        height_node_count_map[now_elect_height_] = std::unordered_map<std::string, uint32_t>();
+        auto& node_count_map = height_node_count_map[now_elect_height_];
+        for (int32_t i = 0; i < now_elect_members->size(); ++i) {
+            node_count_map[(*now_elect_members)[i]->id] = 0;
+        }
+    }
+
     for (auto hiter = height_node_count_map.begin();
             hiter != height_node_count_map.end(); ++hiter) {
         auto& node_count_map = hiter->second;
@@ -531,10 +542,12 @@ int ShardStatistic::StatisticWithHeights(
             statistic_item.add_tx_count(tx_count);
             str_for_hash.append((char*)&tx_count, sizeof(tx_count));
             debug_for_str += std::to_string(tx_count) + ",";
-
             uint64_t stoke = 0;
-            prefix_db_->GetElectNodeMinStoke(
-                common::GlobalInfo::Instance()->network_id(), id, &stoke);
+            if (!is_root) {
+                prefix_db_->GetElectNodeMinStoke(
+                    common::GlobalInfo::Instance()->network_id(), id, &stoke);
+            }
+
             statistic_item.add_stokes(stoke);
             auto area_point = statistic_item.add_area_point();
             auto ip_int = (*members)[midx]->public_ip;

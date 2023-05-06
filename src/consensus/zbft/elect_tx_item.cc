@@ -55,8 +55,6 @@ int ElectTxItem::HandleTx(
                 }
             }
 
-            
-
             auto members = elect_mgr_->GetNetworkMembersWithHeight(
                 now_elect_height,
                 elect_statistic.sharding_id(),
@@ -73,16 +71,18 @@ int ElectTxItem::HandleTx(
             if (max_elect_height != now_elect_height) {
                 ZJC_WARN("old elect coming max_elect_height: %lu, now_elect_height: %lu",
                     max_elect_height, now_elect_height);
+                assert(false);
+                return kConsensusError;
                 // use default value
-                for (uint32_t i = 0; i < members->size(); ++i) {
-                    auto area_point = tmp_statistic.add_area_point();
-                    area_point->set_x(0);
-                    area_point->set_y(0);
-                    tmp_statistic.add_stokes(0);
-                    tmp_statistic.add_tx_count(0);
-                }
-
-                statistic = &tmp_statistic;
+//                 for (uint32_t i = 0; i < members->size(); ++i) {
+//                     auto area_point = tmp_statistic.add_area_point();
+//                     area_point->set_x(0);
+//                     area_point->set_y(0);
+//                     tmp_statistic.add_stokes(0);
+//                     tmp_statistic.add_tx_count(0);
+//                 }
+// 
+//                 statistic = &tmp_statistic;
             }
 
             if (members->size() != statistic->tx_count_size() ||

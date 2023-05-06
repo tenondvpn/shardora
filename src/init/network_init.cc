@@ -367,14 +367,14 @@ void NetworkInit::InitLocalNetworkId() {
 }
 
 void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
-//     if (common::GlobalInfo::Instance()->network_id() < network::kConsensusShardEndNetworkId) {
-//         return;
-//     }
-// 
-//     if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusWaitingShardEndNetworkId) {
-//         return;
-//     }
-// 
+    if (common::GlobalInfo::Instance()->network_id() < network::kConsensusShardEndNetworkId) {
+        return;
+    }
+
+    if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusWaitingShardEndNetworkId) {
+        return;
+    }
+
     if (des_sharding_id_ == common::kInvalidUint32) {
         ZJC_DEBUG("failed get address info: %s",
             common::Encode::HexEncode(security_->GetAddress()).c_str());
@@ -415,7 +415,6 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     msg_ptr->thread_idx = thread_idx;
     network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("success send join elect request transaction: %u, join: %u", des_sharding_id_, tmp[0]);
-    ++send_join_shard_req_times_;
 }
 
 int NetworkInit::InitSecurity() {
@@ -994,7 +993,8 @@ void NetworkInit::HandleElectionBlock(
     network::UniversalManager::Instance()->OnNewElectBlock(sharding_id, elect_height, members);
     ZJC_DEBUG("1 success called election block. elect height: %lu, net: %u, local net id: %u",
         elect_height, elect_block->shard_network_id(), common::GlobalInfo::Instance()->network_id());
-    if (send_join_shard_req_times_ < 5) {
+    if (sharding_id + network::kConsensusWaitingShardOffset ==
+            common::GlobalInfo::Instance()->network_id()) {
         join_elect_tick_.CutOff(
             uint64_t(rand()) % (common::kTimeBlockCreatePeriodSeconds / 4 * 3 * 1000000lu),
             std::bind(&NetworkInit::SendJoinElectTransaction, this, std::placeholders::_1));
