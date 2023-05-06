@@ -383,6 +383,10 @@ int ElectTxItem::GetJoinElectNodesCredit(
         std::vector<NodeDetailPtr>& elect_nodes) {
     std::vector<NodeDetailPtr> elect_nodes_to_choose;
     for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
+        ZJC_DEBUG("join new node: %s, des shard: %u, statistic shrad: %u",
+            common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).id()).c_str(),
+            elect_statistic.join_elect_nodes(i).shard(),
+            elect_statistic.sharding_id());
         if (elect_statistic.join_elect_nodes(i).shard() != elect_statistic.sharding_id()) {
             continue;
         }
