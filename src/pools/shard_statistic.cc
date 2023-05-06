@@ -478,12 +478,8 @@ int ShardStatistic::StatisticWithHeights(
                 auto& elect_shard_map = join_elect_shard_map[elect_height];
                 for (auto tmp_shard_iter = hiter->second->node_shard_map.begin();
                         tmp_shard_iter != hiter->second->node_shard_map.end(); ++tmp_shard_iter) {
-                    auto tmp_iter = elect_shard_map.find(tmp_shard_iter->first);
-                    if (tmp_iter != elect_shard_map.end()) {
-                        elect_shard_map[tmp_shard_iter->first] = common::kInvalidUint32;
-                    } else {
-                        elect_shard_map[tmp_shard_iter->first] = tmp_shard_iter->second;
-                    }
+                    elect_shard_map[tmp_shard_iter->first] = tmp_shard_iter->second;
+                    ZJC_DEBUG("kJoinElect add new elect node shard: %lu", tmp_shard_iter->second);
                 }
             }
 
