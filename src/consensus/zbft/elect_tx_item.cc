@@ -24,9 +24,9 @@ int ElectTxItem::HandleTx(
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     g2_ = std::make_shared<std::mt19937_64>(vss_mgr_->EpochRandom());
-    for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-        if (block_tx.storages(i).key() == protos::kShardElection) {
-            uint64_t* tmp = (uint64_t*)block_tx.storages(i).val_hash().c_str();
+    for (int32_t storage_idx = 0; storage_idx < block_tx.storages_size(); ++storage_idx) {
+        if (block_tx.storages(storage_idx).key() == protos::kShardElection) {
+            uint64_t* tmp = (uint64_t*)block_tx.storages(storage_idx).val_hash().c_str();
             pools::protobuf::ElectStatistic elect_statistic;
             if (!prefix_db_->GetStatisticedShardingHeight(
                     tmp[0],
@@ -55,14 +55,7 @@ int ElectTxItem::HandleTx(
                 }
             }
 
-            if (max_elect_height != now_elect_height) {
-                ZJC_WARN("old elect coming.");
-            }
-
-            if (statistic == nullptr) {
-                assert(false);
-                return kConsensusError;
-            }
+            
 
             auto members = elect_mgr_->GetNetworkMembersWithHeight(
                 now_elect_height,
@@ -74,6 +67,22 @@ int ElectTxItem::HandleTx(
                     now_elect_height, elect_statistic.sharding_id());
                 assert(false);
                 return kConsensusError;
+            }
+
+            pools::protobuf::PoolStatisticItem tmp_statistic;
+            if (max_elect_height != now_elect_height) {
+                ZJC_WARN("old elect coming max_elect_height: %lu, now_elect_height: %lu",
+                    max_elect_height, now_elect_height);
+                // use default value
+                for (uint32_t i = 0; i < members->size(); ++i) {
+                    auto area_point = tmp_statistic.add_area_point();
+                    area_point->set_x(0);
+                    area_point->set_y(0);
+                    tmp_statistic.add_stokes(0);
+                    tmp_statistic.add_tx_count(0);
+                }
+
+                statistic = &tmp_statistic;
             }
 
             if (members->size() != statistic->tx_count_size() ||
@@ -157,8 +166,8 @@ int ElectTxItem::HandleTx(
             }
             std::string random_str;
             auto& g2 = *g2_;
-            auto RandFunc = [&g2, &random_str](int i) -> int {
-                int val = abs(static_cast<int>(g2())) % i;
+            auto RandFunc = [&g2, &random_str](int idx) -> int {
+                int val = abs(static_cast<int>(g2())) % idx;
                 random_str += std::to_string(val) + ",";
                 return val;
             };
