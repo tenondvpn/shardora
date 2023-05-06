@@ -624,6 +624,7 @@ int ShardStatistic::StatisticWithHeights(
         }
     }
 
+    if (prepare_members != nullptr)
     ZJC_DEBUG("kJoinElect add new elect node now elect_height: %lu, prepare elect height: %lu, %d, %d, new nodes size: %u, now members size: %u, prepare members size: %u",
         now_elect_height_,
         prepare_elect_height_,
