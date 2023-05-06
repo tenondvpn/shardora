@@ -91,6 +91,7 @@ private:
     common::Tick init_tick_;
     common::Tick join_elect_tick_;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    uint32_t des_sharding_id_ = common::kInvalidUint32;
 
     DISALLOW_COPY_AND_ASSIGN(NetworkInit);
 };

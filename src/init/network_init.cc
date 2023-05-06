@@ -282,6 +282,7 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
             return;
         }
 
+        des_sharding_id_ = sharding_id;
         // random chance to join root shard
         if (common::GlobalInfo::Instance()->join_root() == common::kJoinRoot) {
             sharding_id = network::kRootCongressNetworkId;
@@ -290,7 +291,7 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
             sharding_id = network::kRootCongressNetworkId;
         }
         
-        prefix_db_->SaveJoinShard(sharding_id);
+        prefix_db_->SaveJoinShard(sharding_id, des_sharding_id_);
         auto waiting_network_id = sharding_id + network::kConsensusWaitingShardOffset;
         if (elect_mgr_->Join(msg_ptr->thread_idx, waiting_network_id) != elect::kElectSuccess) {
             INIT_ERROR("join waiting pool network[%u] failed!", waiting_network_id);
@@ -325,13 +326,14 @@ void NetworkInit::GetAddressShardingId(uint8_t thread_idx) {
 
 void NetworkInit::InitLocalNetworkId() {
     uint32_t got_sharding_id = common::kInvalidUint32;
-    if (!prefix_db_->GetJoinShard(&got_sharding_id)) {
+    if (!prefix_db_->GetJoinShard(&got_sharding_id, &des_sharding_id_)) {
         auto local_node_account_info = prefix_db_->GetAddressInfo(security_->GetAddress());
         if (local_node_account_info == nullptr) {
             return;
         }
 
         got_sharding_id = local_node_account_info->sharding_id();
+        des_sharding_id_ = got_sharding_id;
     }
 
     elect::ElectBlockManager elect_block_mgr;
@@ -348,10 +350,7 @@ void NetworkInit::InitLocalNetworkId() {
             auto id = security_->GetAddress(in[member_idx].pubkey());
             if (id == security_->GetAddress()) {
                 ZJC_DEBUG("should join network: %u", sharding_id);
-                if (got_sharding_id != sharding_id) {
-                    break;
-                }
-
+                des_sharding_id_ = sharding_id;
                 common::GlobalInfo::Instance()->set_network_id(sharding_id);
                 break;
             }
@@ -375,18 +374,16 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
         return;
     }
 
-    auto local_node_account_info = prefix_db_->GetAddressInfo(security_->GetAddress());
-    if (local_node_account_info == nullptr) {
+    if (des_sharding_id_ == common::kInvalidUint32) {
         ZJC_DEBUG("failed get address info: %s",
             common::Encode::HexEncode(security_->GetAddress()).c_str());
         return;
     }
 
-    auto des_net_id = local_node_account_info->sharding_id();
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     transport::protobuf::Header& msg = msg_ptr->header;
-    dht::DhtKeyManager dht_key(des_net_id);
-    msg.set_src_sharding_id(des_net_id);
+    dht::DhtKeyManager dht_key(des_sharding_id_);
+    msg.set_src_sharding_id(des_sharding_id_);
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kPoolsMessage);
     msg.set_hop_count(0);
@@ -416,7 +413,7 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     msg.set_sign(sign);
     msg_ptr->thread_idx = thread_idx;
     network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("success send join elect request transaction: %u, join: %u", des_net_id, tmp[0]);
+    ZJC_DEBUG("success send join elect request transaction: %u, join: %u", des_sharding_id_, tmp[0]);
 }
 
 int NetworkInit::InitSecurity() {

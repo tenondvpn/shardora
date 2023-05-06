@@ -1117,13 +1117,14 @@ public:
         return true;
     }
 
-    void SaveJoinShard(uint32_t sharding_id) {
+    void SaveJoinShard(uint32_t sharding_id, uint32_t des_sharding_id) {
         std::string key;
         key.reserve(64);
         key.append(kSaveChoosedJoinShardPrefix);
-        char data[4];
+        char data[8];
         uint32_t* tmp = (uint32_t*)data;
         tmp[0] = sharding_id;
+        tmp[1] = des_sharding_id;
         std::string val(data, sizeof(data));
         auto st = db_->Put(key, val);
         if (!st.ok()) {
@@ -1131,7 +1132,7 @@ public:
         }
     }
 
-    bool GetJoinShard(uint32_t* sharding_id) {
+    bool GetJoinShard(uint32_t* sharding_id, uint32_t* des_sharding_id) {
         std::string key;
         key.reserve(64);
         key.append(kSaveChoosedJoinShardPrefix);
@@ -1144,6 +1145,7 @@ public:
 
         uint32_t* tmp = (uint32_t*)val.c_str();
         *sharding_id = tmp[0];
+        *des_sharding_id = tmp[1];
         return true;
     }
 
