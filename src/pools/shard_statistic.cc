@@ -386,11 +386,20 @@ int ShardStatistic::StatisticWithHeights(
         common::GlobalInfo::Instance()->network_id(),
         nullptr,
         nullptr);
+    auto now_elect_members = elect_mgr_->GetNetworkMembersWithHeight(
+        now_elect_height_,
+        common::GlobalInfo::Instance()->network_id(),
+        nullptr,
+        nullptr);
+    if (now_elect_members == nullptr) {
+        return kPoolsError;
+    }
+
     std::unordered_set<std::string> added_id_set;
     if (prepare_members != nullptr) {
-        for (uint32_t i = 0; i < prepare_members->size(); ++i) {
-            added_id_set.insert((*prepare_members)[i]->id);
-            added_id_set.insert((*prepare_members)[i]->pubkey);
+        for (uint32_t i = 0; i < now_elect_members->size(); ++i) {
+            added_id_set.insert((*now_elect_members)[i]->id);
+            added_id_set.insert((*now_elect_members)[i]->pubkey);
         }
     }
 
