@@ -377,6 +377,8 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
 
     auto local_node_account_info = prefix_db_->GetAddressInfo(security_->GetAddress());
     if (local_node_account_info == nullptr) {
+        ZJC_DEBUG("failed get address info: %s",
+            common::Encode::HexEncode(security_->GetAddress()).c_str());
         return;
     }
 
