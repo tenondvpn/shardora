@@ -250,6 +250,38 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                 }
             }
         }
+
+        if (block.tx_list(i).step() == pools::protobuf::kConsensusRootElectShard &&
+                (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
+                common::GlobalInfo::Instance()->network_id() ==
+                network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
+            for (int32_t storage_idx = 0; storage_idx < block.tx_list(i).storages_size(); ++storage_idx) {
+                if (block.tx_list(i).storages(storage_idx).key() == protos::kShardElection) {
+                    uint64_t* tmp = (uint64_t*)block_tx.storages(i).val_hash().c_str();
+                    pools::protobuf::ElectStatistic elect_statistic;
+                    if (!prefix_db_->GetStatisticedShardingHeight(
+                            tmp[0],
+                            tmp[1],
+                            &elect_statistic)) {
+                        ZJC_WARN("get statistic elect statistic failed! net: %u, height: %lu",
+                            tmp[0],
+                            tmp[1]);
+                        assert(false);
+                        return kConsensusError;
+                    }
+
+                    for (int32_t node_idx = 0; node_idx < elect_statistic.join_elect_nodes_size(); ++node_idx) {
+                        if (elect_statistic.join_elect_nodes(i).shard() == network::kRootCongressNetworkId) {
+                            statistic_info_ptr->node_stoke_map[elect_statistic.join_elect_nodes(i).id()] =
+                                elect_statistic.join_elect_nodes(i).stoke();
+                            ZJC_DEBUG("root sharding kJoinElect add new elect node: %s, stoke: %lu",
+                                common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).id()).c_str(),
+                                elect_statistic.join_elect_nodes(i).stoke());
+                        }
+                    }
+                }
+            }
+        }
     }
 
     node_height_count_map_[block.pool_index()][block.height()] = statistic_info_ptr;
