@@ -525,11 +525,14 @@ int ShardStatistic::StatisticWithHeights(
         }
     }
 
-    ZJC_DEBUG("kJoinElect add new elect node now elect_height: %lu, %d, %d, new nodes size: %u",
+    ZJC_DEBUG("kJoinElect add new elect node now elect_height: %lu, prepare elect height: %lu, %d, %d, new nodes size: %u, now members size: %u, prepare members size: %u",
         now_elect_height_,
+        prepare_elect_height_,
         (r_eiter != join_elect_stoke_map.rend()),
         (r_siter != join_elect_shard_map.rend()),
-        elect_nodes.size());
+        elect_nodes.size(),
+        now_elect_members->size(),
+        prepare_members->size());
     std::string str_for_hash;
     std::string debug_for_str;
     pools::protobuf::ElectStatistic elect_statistic;
