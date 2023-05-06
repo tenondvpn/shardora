@@ -538,9 +538,11 @@ int ShardStatistic::StatisticWithHeights(
     debug_for_str += "stoke: ";
     for (int32_t i = 0; i < elect_nodes.size() && i < kWaitingElectNodesMaxCount; ++i) {
         auto join_elect_node = elect_statistic.add_join_elect_nodes();
-        std::string pubkey;
-        if (!prefix_db_->GetAddressPubkey(elect_nodes[i], &pubkey)) {
-            continue;
+        std::string pubkey = elect_nodes[i];
+        if (pubkey.size() == security::kUnicastAddressLength) {
+            if (!prefix_db_->GetAddressPubkey(elect_nodes[i], &pubkey)) {
+                continue;
+            }
         }
 
         join_elect_node->set_id(pubkey);
