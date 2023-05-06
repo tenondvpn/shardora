@@ -238,8 +238,8 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
             bool shard_valid = false;
             for (int32_t storage_idx = 0; storage_idx < block.tx_list(i).storages_size(); ++storage_idx) {
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kElectNodeStoke) {
-                    uint64_t* stoke = (uint64_t*)block.tx_list(i).storages(storage_idx).val_hash().c_str();
-                    stoke = stoke[0];
+                    uint64_t* tmp_stoke = (uint64_t*)block.tx_list(i).storages(storage_idx).val_hash().c_str();
+                    stoke = tmp_stoke[0];
                 }
 
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kElectJoinShard) {
@@ -285,6 +285,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                             ZJC_DEBUG("root sharding kJoinElect add new elect node: %s, stoke: %lu",
                                 common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).id()).c_str(),
                                 elect_statistic.join_elect_nodes(i).stoke());
+                            statistic_info_ptr->node_shard_map[elect_statistic.join_elect_nodes(i).id()] = network::kRootCongressNetworkId;
                         }
                     }
                 }
