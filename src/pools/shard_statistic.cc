@@ -264,7 +264,6 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                         ZJC_WARN("get statistic elect statistic failed! net: %u, height: %lu",
                             tmp[0],
                             tmp[1]);
-                        assert(false);
                         break;
                     }
 
