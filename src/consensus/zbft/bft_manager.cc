@@ -506,6 +506,12 @@ void BftManager::HandleSyncConsensusBlock(
         // verify and add new block
         if (bft_ptr == nullptr) {
             if (!req_bft_msg.block().has_bls_agg_sign_x() || !req_bft_msg.block().has_bls_agg_sign_y()) {
+                ZJC_DEBUG("not has agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+                    req_bft_msg.block().network_id(),
+                    req_bft_msg.block().pool_index(),
+                    req_bft_msg.block().height(),
+                    common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
+
                 assert(false);
                 return;
             }
