@@ -345,7 +345,9 @@ int ShardStatistic::StatisticWithHeights(
         const pools::protobuf::ToTxHeights& leader_to_heights,
         std::string* statistic_hash) {
     uint32_t pool_size = common::kImmutablePoolSize;
-    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
+            common::GlobalInfo::Instance()->network_id() ==
+            network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
         ++pool_size;
     }
 
