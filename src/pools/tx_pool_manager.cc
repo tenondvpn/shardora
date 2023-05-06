@@ -65,14 +65,14 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
     }
 
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
-        tx_pool_[common::kRootChainPoolIndex].SyncMissingBlocks(now_tm_ms);
+        tx_pool_[common::kRootChainPoolIndex].SyncMissingBlocks(msg_ptr->thread_idx, now_tm_ms);
         return;
     }
 
     prev_synced_pool_index_ %= common::kInvalidPoolIndex;
     auto begin_pool = prev_synced_pool_index_;
     for (; prev_synced_pool_index_ < common::kInvalidPoolIndex; ++prev_synced_pool_index_) {
-        auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(now_tm_ms);
+        auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(msg_ptr->thread_idx, now_tm_ms);
         if (res > 0) {
             ++prev_synced_pool_index_;
             return;
@@ -80,7 +80,7 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
     }
 
     for (prev_synced_pool_index_ = 0; prev_synced_pool_index_ < begin_pool; ++prev_synced_pool_index_) {
-        auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(now_tm_ms);
+        auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(msg_ptr->thread_idx, now_tm_ms);
         if (res > 0) {
             ++prev_synced_pool_index_;
             return;
