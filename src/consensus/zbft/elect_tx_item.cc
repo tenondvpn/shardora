@@ -79,6 +79,9 @@ int ElectTxItem::HandleTx(
             if (members->size() != statistic->tx_count_size() ||
                     members->size() != statistic->stokes_size() ||
                     members->size() != statistic->area_point_size()) {
+                ZJC_DEBUG("now_elect_height: %lu, member size error: %u, %u, %u, %u",
+                    now_elect_height, members->size(), statistic->tx_count_size(),
+                    statistic->stokes_size(), statistic->area_point_size());
                 assert(false);
                 return kConsensusError;
             }
