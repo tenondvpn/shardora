@@ -61,6 +61,7 @@ void ShardStatistic::OnNewBlock(const block::protobuf::Block& block) {
             }
 
             ++pool_consensus_heihgts_[block.pool_index()];
+            ZJC_DEBUG("success find pool: %u, height: %lu, max height: %lu, cons height: %lu", block.pool_index(), pool_consensus_heihgts_[block.pool_index()] + 1, pool_max_heihgts_[block.pool_index()], pool_consensus_heihgts_[block.pool_index()]);
             added_heights_[block.pool_index()].erase(iter);
         }
     }
