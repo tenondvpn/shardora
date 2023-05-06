@@ -350,6 +350,9 @@ int ShardStatistic::StatisticWithHeights(
     }
 
     if (leader_to_heights.heights_size() != pool_size) {
+        ZJC_DEBUG("pool size error: %d, %d, local sharding: %d",
+            leader_to_heights.heights_size(), pool_size,
+            common::GlobalInfo::Instance()->network_id());
         assert(false);
         return kPoolsError;
     }
