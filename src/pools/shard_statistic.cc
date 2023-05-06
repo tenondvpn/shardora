@@ -506,25 +506,6 @@ int ShardStatistic::StatisticWithHeights(
         }
     }
     
-    auto prepare_members = elect_mgr_->GetNetworkMembersWithHeight(
-        prepare_elect_height_,
-        common::GlobalInfo::Instance()->network_id(),
-        nullptr,
-        nullptr);
-    if (prepare_members != nullptr) {
-        for (int32_t i = 0; i < prepare_members->size(); ++i) {
-            auto inc_iter = added_id_set.find((*prepare_members)[i]->pubkey);
-            if (inc_iter != added_id_set.end()) {
-                continue;
-            }
-
-            elect_nodes.push_back((*prepare_members)[i]->pubkey);
-            r_eiter->second[(*prepare_members)[i]->pubkey] = 0;
-            r_siter->second[(*prepare_members)[i]->pubkey] = common::GlobalInfo::Instance()->network_id();
-            added_id_set.insert((*prepare_members)[i]->pubkey);
-        }
-    }
-
     ZJC_DEBUG("kJoinElect add new elect node now elect_height: %lu, prepare elect height: %lu, %d, %d, new nodes size: %u, now members size: %u, prepare members size: %u",
         now_elect_height_,
         prepare_elect_height_,
@@ -620,8 +601,35 @@ int ShardStatistic::StatisticWithHeights(
         join_elect_node->set_shard(shard_iter->second);
         str_for_hash.append(elect_nodes[i]);
         str_for_hash.append((char*)&iter->second, sizeof(iter->second));
-        debug_for_str += common::Encode::HexEncode(elect_nodes[i]) + "," + std::to_string(iter->second) + ",";
-        ZJC_DEBUG("add new elect node: %s, stoke: %lu", common::Encode::HexEncode(pubkey).c_str(), iter->second);
+        str_for_hash.append((char*)&shard_iter->second, sizeof(shard_iter->second));
+        debug_for_str += common::Encode::HexEncode(elect_nodes[i]) + "," + std::to_string(iter->second) + "," + std::to_string(shard_iter->second) + ",";
+        ZJC_DEBUG("add new elect node: %s, stoke: %lu, shard: %u", common::Encode::HexEncode(pubkey).c_str(), iter->second, shard_iter->second);
+    }
+
+    auto prepare_members = elect_mgr_->GetNetworkMembersWithHeight(
+        prepare_elect_height_,
+        common::GlobalInfo::Instance()->network_id(),
+        nullptr,
+        nullptr);
+    if (prepare_members != nullptr) {
+        for (int32_t i = 0; i < prepare_members->size(); ++i) {
+            auto inc_iter = added_id_set.find((*prepare_members)[i]->pubkey);
+            if (inc_iter != added_id_set.end()) {
+                continue;
+            }
+
+            auto join_elect_node = elect_statistic.add_join_elect_nodes();
+            join_elect_node->set_id((*prepare_members)[i]->pubkey);
+            uint64_t stoke = 0;
+            join_elect_node->set_stoke(stoke);
+            uint32_t shard = common::GlobalInfo::Instance()->network_id();
+            join_elect_node->set_shard(shard);
+            str_for_hash.append((*prepare_members)[i]->pubkey);
+            str_for_hash.append((char*)&stoke, sizeof(stoke));
+            str_for_hash.append((char*)&shard, sizeof(shard));
+            debug_for_str += common::Encode::HexEncode((*prepare_members)[i]->pubkey) + "," +
+                std::to_string(stoke) + "," + std::to_string(shard) + ",";
+        }
     }
 
     NormalizeLofMap(lof_map);
