@@ -126,10 +126,10 @@ void ShardStatistic::HandleStatisticBlock(
                         height_idx,
                         pool_consensus_heihgts_[height_idx] + 1,
                         pool_max_heihgts_[height_idx], pool_consensus_heihgts_[height_idx]);
-                    while (pool_consensus_heihgts_[block.pool_index()] <= pool_max_heihgts_[block.pool_index()]) {
-                        auto iter = added_heights_[block.pool_index()].find(
-                            pool_consensus_heihgts_[block.pool_index()] + 1);
-                        if (iter == added_heights_[block.pool_index()].end()) {
+                    while (pool_consensus_heihgts_[height_idx] <= pool_max_heihgts_[height_idx]) {
+                        auto iter = added_heights_[height_idx].find(
+                            pool_consensus_heihgts_[height_idx] + 1);
+                        if (iter == added_heights_[height_idx].end()) {
                             ZJC_DEBUG("failed find pool: %u, height: %lu, max height: %lu, cons height: %lu",
                                 height_idx,
                                 pool_consensus_heihgts_[height_idx] + 1,
@@ -138,8 +138,8 @@ void ShardStatistic::HandleStatisticBlock(
                             break;
                         }
 
-                        ++pool_consensus_heihgts_[block.pool_index()];
-                        added_heights_[block.pool_index()].erase(iter);
+                        ++pool_consensus_heihgts_[height_idx];
+                        added_heights_[height_idx].erase(iter);
                     }
                 }
 
