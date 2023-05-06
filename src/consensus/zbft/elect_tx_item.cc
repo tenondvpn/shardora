@@ -383,6 +383,10 @@ int ElectTxItem::GetJoinElectNodesCredit(
         std::vector<NodeDetailPtr>& elect_nodes) {
     std::vector<NodeDetailPtr> elect_nodes_to_choose;
     for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
+        if (elect_statistic.join_elect_nodes(i).shard() != elect_statistic.sharding_id()) {
+            continue;
+        }
+
         auto id = sec_ptr_->GetAddress(elect_statistic.join_elect_nodes(i).id());
         auto account_info = account_mgr_->GetAccountInfo(
             thread_idx,
