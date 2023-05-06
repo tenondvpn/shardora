@@ -501,6 +501,8 @@ int ShardStatistic::StatisticWithHeights(
             common::GlobalInfo::Instance()->network_id(),
             nullptr,
             nullptr);
+        ZJC_DEBUG("now get network members: %u, size: %u, height: %lu",
+            common::GlobalInfo::Instance()->network_id(), members->size(), hiter->first)
         str_for_hash.reserve(1024 * 1024);
         for (uint32_t midx = 0; midx < members->size(); ++midx) {
             auto& id = (*members)[midx]->id;
