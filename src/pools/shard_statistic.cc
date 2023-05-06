@@ -379,6 +379,12 @@ int ShardStatistic::StatisticWithHeights(
         return kPoolsError;
     }
 
+    std::unordered_set<std::string> added_id_set;
+    for (uint32_t i = 0; i < now_elect_members->size(); ++i) {
+        added_id_set.insert((*now_elect_members)[i]->id);
+        added_id_set.insert((*now_elect_members)[i]->pubkey);
+    }
+
     std::unordered_map<uint32_t, common::Point> lof_map;
     uint64_t all_gas_amount = 0;
     for (uint32_t pool_idx = 0; pool_idx < max_pool; ++pool_idx) {
@@ -476,6 +482,11 @@ int ShardStatistic::StatisticWithHeights(
         for (auto iter = r_eiter->second.begin(); iter != r_eiter->second.end(); ++iter) {
             auto shard_iter = r_siter->second.find(iter->first);
             if (shard_iter == r_siter->second.end()) {
+                continue;
+            }
+
+            auto inc_iter = added_id_set.find(iter->first);
+            if (inc_iter != added_id_set.end()) {
                 continue;
             }
 
