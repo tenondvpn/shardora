@@ -269,6 +269,13 @@ int Universal::AddNodeToUniversal(dht::NodePtr& node) {
                 node->pubkey_str,
                 node->id);
             BaseDht::Join(new_node);
+            auto root_new_node = std::make_shared<dht::Node>(
+                network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset,
+                node->public_ip,
+                node->public_port,
+                node->pubkey_str,
+                node->id);
+            BaseDht::Join(root_new_node);
         }
     }
 
