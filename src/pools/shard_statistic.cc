@@ -434,31 +434,33 @@ int ShardStatistic::StatisticWithHeights(
                 }
             }
 
-            auto eiter = join_elect_stoke_map.find(elect_height);
-            if (eiter == join_elect_stoke_map.end()) {
-                join_elect_stoke_map[elect_height] = std::unordered_map<std::string, uint64_t>();
-            }
+            if (!hiter->second->node_stoke_map.empty() && !hiter->second->node_shard_map.empty()) {
+                auto eiter = join_elect_stoke_map.find(elect_height);
+                if (eiter == join_elect_stoke_map.end()) {
+                    join_elect_stoke_map[elect_height] = std::unordered_map<std::string, uint64_t>();
+                }
 
-            auto& elect_stoke_map = join_elect_stoke_map[elect_height];
-            for (auto elect_iter = hiter->second->node_stoke_map.begin();
-                    elect_iter != hiter->second->node_stoke_map.end(); ++elect_iter) {
-                elect_stoke_map[elect_iter->first] = elect_iter->second;
-                ZJC_DEBUG("kJoinElect add new elect node elect_height: %lu", elect_height);
-            }
+                auto& elect_stoke_map = join_elect_stoke_map[elect_height];
+                for (auto elect_iter = hiter->second->node_stoke_map.begin();
+                        elect_iter != hiter->second->node_stoke_map.end(); ++elect_iter) {
+                    elect_stoke_map[elect_iter->first] = elect_iter->second;
+                    ZJC_DEBUG("kJoinElect add new elect node elect_height: %lu", elect_height);
+                }
 
-            auto shard_iter = join_elect_shard_map.find(elect_height);
-            if (shard_iter == join_elect_shard_map.end()) {
-                join_elect_shard_map[elect_height] = std::unordered_map<std::string, uint32_t>();
-            }
+                auto shard_iter = join_elect_shard_map.find(elect_height);
+                if (shard_iter == join_elect_shard_map.end()) {
+                    join_elect_shard_map[elect_height] = std::unordered_map<std::string, uint32_t>();
+                }
 
-            auto& elect_shard_map = join_elect_shard_map[elect_height];
-            for (auto tmp_shard_iter = hiter->second->node_shard_map.begin();
-                    tmp_shard_iter != hiter->second->node_shard_map.end(); ++tmp_shard_iter) {
-                auto tmp_iter = elect_shard_map.find(tmp_shard_iter->first);
-                if (tmp_iter != elect_shard_map.end()) {
-                    elect_shard_map[tmp_shard_iter->first] = common::kInvalidUint32;
-                } else {
-                    elect_shard_map[tmp_shard_iter->first] = tmp_shard_iter->second;
+                auto& elect_shard_map = join_elect_shard_map[elect_height];
+                for (auto tmp_shard_iter = hiter->second->node_shard_map.begin();
+                        tmp_shard_iter != hiter->second->node_shard_map.end(); ++tmp_shard_iter) {
+                    auto tmp_iter = elect_shard_map.find(tmp_shard_iter->first);
+                    if (tmp_iter != elect_shard_map.end()) {
+                        elect_shard_map[tmp_shard_iter->first] = common::kInvalidUint32;
+                    } else {
+                        elect_shard_map[tmp_shard_iter->first] = tmp_shard_iter->second;
+                    }
                 }
             }
 
@@ -466,24 +468,26 @@ int ShardStatistic::StatisticWithHeights(
         }
     }
 
-    auto eiter = join_elect_stoke_map.find(now_elect_height_);
-    auto siter = join_elect_shard_map.find(now_elect_height_);
-    std::vector<std::string> elect_nodes;
-    if (eiter != join_elect_stoke_map.end() && siter != join_elect_shard_map.end()) {
-        for (auto iter = eiter->second.begin(); iter != eiter->second.end(); ++iter) {
-            auto shard_iter = siter->second.find(iter->first);
-            if (shard_iter == siter->second.end()) {
+    auto r_eiter = join_elect_stoke_map.rbegin();
+    auto r_siter = join_elect_shard_map.rbegin();
+    if (r_eiter != join_elect_stoke_map.end() &&
+            r_siter != join_elect_shard_map.end() &&
+            r_eiter->first == r_siter->first) {
+        std::vector<std::string> elect_nodes;
+        for (auto iter = r_eiter->second.begin(); iter != r_eiter->second.end(); ++iter) {
+            auto shard_iter = r_siter->second.find(iter->first);
+            if (shard_iter == r_siter->second.end()) {
                 continue;
             }
-                    
+
             elect_nodes.push_back(iter->first);
         }
     }
-
+    
     ZJC_DEBUG("kJoinElect add new elect node now elect_height: %lu, %d, %d, new nodes size: %u",
         now_elect_height_,
-        (eiter != join_elect_stoke_map.end()),
-        (siter != join_elect_shard_map.end()),
+        (r_eiter != join_elect_stoke_map.end()),
+        (r_siter != join_elect_shard_map.end()),
         elect_nodes.size());
     std::string str_for_hash;
     std::string debug_for_str;
