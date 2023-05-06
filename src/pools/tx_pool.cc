@@ -64,7 +64,7 @@ void TxPool::InitHeightTree() {
     }
 }
 
-uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
+uint32_t TxPool::SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms) {
     if (height_tree_ptr_ == nullptr) {
         return 0;
     }
@@ -84,6 +84,24 @@ uint32_t TxPool::SyncMissingBlocks(uint64_t now_tm_ms) {
     if (invalid_heights.size() > 0) {
         ZJC_DEBUG("pool: %u, sync missing blocks latest height: %lu, invaid heights size: %u, height: %lu",
             pool_index_, latest_height_, invalid_heights.size(), invalid_heights[0]);
+        auto net_id = common::GlobalInfo::Instance()->network_id();
+        if (net_id >= network::kConsensusWaitingShardBeginNetworkId &&
+            net_id < network::kConsensusWaitingShardEndNetworkId) {
+            net_id -= network::kConsensusWaitingShardOffset;
+        }
+
+        if (net_id < network::kRootCongressNetworkId || net_id >= network::kConsensusShardEndNetworkId) {
+            return 0;
+        }
+
+        for (uint32_t i = 0; i < invalid_heights.size(); ++i) {
+            kv_sync_->AddSyncHeight(
+                thread_idx,
+                net_id,
+                pool_index_,
+                invalid_heights[i],
+                sync::kSyncHigh);
+        }
     }
 
     return invalid_heights.size();

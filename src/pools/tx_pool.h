@@ -158,7 +158,7 @@ public:
     }
 
     void CheckTimeoutTx();
-    uint32_t SyncMissingBlocks(uint64_t now_tm_ms);
+    uint32_t SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms);
 
 private:
     void InitHeightTree();
