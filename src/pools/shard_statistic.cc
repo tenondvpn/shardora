@@ -557,8 +557,8 @@ int ShardStatistic::StatisticWithHeights(
         }
 
         join_elect_node->set_id(pubkey);
-        auto iter = eiter->second.find(elect_nodes[i]);
-        auto shard_iter = siter->second.find(elect_nodes[i]);
+        auto iter = r_eiter->second.find(elect_nodes[i]);
+        auto shard_iter = r_siter->second.find(elect_nodes[i]);
         join_elect_node->set_stoke(iter->second);
         join_elect_node->set_shard(shard_iter->second);
         str_for_hash.append(elect_nodes[i]);
