@@ -470,10 +470,10 @@ int ShardStatistic::StatisticWithHeights(
 
     auto r_eiter = join_elect_stoke_map.rbegin();
     auto r_siter = join_elect_shard_map.rbegin();
+    std::vector<std::string> elect_nodes;
     if (r_eiter != join_elect_stoke_map.rend() &&
             r_siter != join_elect_shard_map.rend() &&
             r_eiter->first == r_siter->first) {
-        std::vector<std::string> elect_nodes;
         for (auto iter = r_eiter->second.begin(); iter != r_eiter->second.end(); ++iter) {
             auto shard_iter = r_siter->second.find(iter->first);
             if (shard_iter == r_siter->second.end()) {
