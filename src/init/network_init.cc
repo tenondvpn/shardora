@@ -277,6 +277,7 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
         }
 
+        std::cout << "success handle init res message. response shard: " << sharding_id << std::endl;
         if (sharding_id == common::kInvalidUint32) {
             return;
         }

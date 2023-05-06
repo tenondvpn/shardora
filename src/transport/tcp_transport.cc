@@ -191,11 +191,13 @@ void TcpTransport::SetMessageHash(
         const transport::protobuf::Header& message,
         uint8_t thread_idx) {
     auto tmpHeader = const_cast<transport::protobuf::Header*>(&message);
-    auto hash = common::Hash::Hash64(
-        msg_random_ +
-        std::to_string(thread_idx) +
-        std::to_string(++thread_msg_count_[thread_idx]));
-    tmpHeader->set_hash64(hash);
+    std::string hash_str;
+    hash_str.reserve(1024);
+    hash_str.append(msg_random_);
+    hash_str.append((char*)&thread_idx, sizeof(thread_idx));
+    auto msg_count = ++thread_msg_count_[thread_idx];
+    hash_str.append((char*)&msg_count, sizeof(msg_count));
+    tmpHeader->set_hash64(common::Hash::Hash64(hash_str));
 }
 
 int TcpTransport::Send(
