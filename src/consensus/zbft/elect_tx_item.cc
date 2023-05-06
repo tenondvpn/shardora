@@ -333,6 +333,8 @@ int ElectTxItem::CheckWeedout(
 
         auto account_info = account_mgr_->GetAccountInfo(thread_idx, (*members)[member_idx]->id);
         if (account_info == nullptr) {
+            ZJC_DEBUG("get account info failed: %s",
+                common::Encode::HexEncode((*members)[member_idx]->id).c_str());
             assert(false);
             return kConsensusError;
         }
