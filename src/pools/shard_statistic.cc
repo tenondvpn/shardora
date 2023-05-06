@@ -272,9 +272,10 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                         if (elect_statistic.join_elect_nodes(i).shard() == network::kRootCongressNetworkId) {
                             statistic_info_ptr->node_stoke_map[elect_statistic.join_elect_nodes(i).id()] =
                                 elect_statistic.join_elect_nodes(i).stoke();
-                            ZJC_DEBUG("root sharding kJoinElect add new elect node: %s, stoke: %lu",
+                            ZJC_DEBUG("root sharding kJoinElect add new elect node: %s, stoke: %lu, elect height: %lu",
                                 common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).id()).c_str(),
-                                elect_statistic.join_elect_nodes(i).stoke());
+                                elect_statistic.join_elect_nodes(i).stoke(),
+                                block.electblock_height());
                             statistic_info_ptr->node_shard_map[elect_statistic.join_elect_nodes(i).id()] = network::kRootCongressNetworkId;
                         }
                     }
@@ -442,6 +443,7 @@ int ShardStatistic::StatisticWithHeights(
             for (auto elect_iter = hiter->second->node_stoke_map.begin();
                     elect_iter != hiter->second->node_stoke_map.end(); ++elect_iter) {
                 elect_stoke_map[elect_iter->first] = elect_iter->second;
+                ZJC_DEBUG("kJoinElect add new elect node elect_height: %lu", elect_height);
             }
 
             auto shard_iter = join_elect_shard_map.find(elect_height);
@@ -466,6 +468,10 @@ int ShardStatistic::StatisticWithHeights(
 
     auto eiter = join_elect_stoke_map.find(now_elect_height_);
     auto siter = join_elect_shard_map.find(now_elect_height_);
+    ZJC_DEBUG("kJoinElect add new elect node now elect_height: %lu, %d, %d",
+        now_elect_height_,
+        (eiter != join_elect_stoke_map.end()),
+        (siter != join_elect_shard_map.end()));
     std::vector<std::string> elect_nodes;
     if (eiter != join_elect_stoke_map.end() && siter != join_elect_shard_map.end()) {
         for (auto iter = eiter->second.begin(); iter != eiter->second.end(); ++iter) {
