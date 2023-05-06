@@ -319,13 +319,17 @@ int ShardStatistic::LeaderCreateStatisticHeights(pools::protobuf::ToTxHeights& t
     return kPoolsSuccess;
 }
 
-void ShardStatistic::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height) {
+void ShardStatistic::OnNewElectBlock(
+        uint32_t sharding_id,
+        uint64_t prepare_elect_height,
+        uint64_t elect_height) {
     if (sharding_id != common::GlobalInfo::Instance()->network_id()) {
         return;
     }
 
     prev_elect_height_ = now_elect_height_;
     now_elect_height_ = elect_height;
+    prepare_elect_height_ = prepare_elect_height;
     ZJC_INFO("new elect block: %lu, %lu", prev_elect_height_, now_elect_height_);
 }
 
@@ -498,9 +502,29 @@ int ShardStatistic::StatisticWithHeights(
             }
 
             elect_nodes.push_back(iter->first);
+            added_id_set.insert(iter->first);
         }
     }
     
+    auto prepare_members = elect_mgr_->GetNetworkMembersWithHeight(
+        prepare_elect_height_,
+        common::GlobalInfo::Instance()->network_id(),
+        nullptr,
+        nullptr);
+    if (prepare_members != nullptr) {
+        for (int32_t i = 0; i < prepare_members->size(); ++i) {
+            auto inc_iter = added_id_set.find((*prepare_members)[i]->pubkey);
+            if (inc_iter != added_id_set.end()) {
+                continue;
+            }
+
+            elect_nodes.push_back((*prepare_members)[i]->pubkey);
+            r_eiter->second[(*prepare_members)[i]->pubkey] = 0;
+            r_siter->second[(*prepare_members)[i]->pubkey] = common::GlobalInfo::Instance()->network_id();
+            added_id_set.insert((*prepare_members)[i]->pubkey);
+        }
+    }
+
     ZJC_DEBUG("kJoinElect add new elect node now elect_height: %lu, %d, %d, new nodes size: %u",
         now_elect_height_,
         (r_eiter != join_elect_stoke_map.rend()),

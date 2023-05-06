@@ -35,7 +35,7 @@ public:
 
     ~ShardStatistic() {}
     void Init();
-    void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height);
+    void OnNewElectBlock(uint32_t sharding_id, uint64_t prepare_elect_height, uint64_t elect_height);
     void OnNewBlock(const block::protobuf::Block& block);
     void GetStatisticInfo(
         uint64_t timeblock_height,
@@ -78,6 +78,7 @@ private:
     uint64_t now_elect_height_ = 0;
     uint64_t now_vss_random_ = 0;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
+    uint64_t prepare_elect_height_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };
