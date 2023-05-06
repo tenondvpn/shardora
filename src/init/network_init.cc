@@ -92,7 +92,6 @@ int NetworkInit::Init(int argc, char** argv) {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     vss_mgr_ = std::make_shared<vss::VssManager>(security_);
     kv_sync_ = std::make_shared<sync::KeyValueSync>();
-    kv_sync_->Init(db_);
     gas_prepayment_ = std::make_shared<consensus::ContractGasPrepayment>(
         common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
         db_);
@@ -133,6 +132,7 @@ int NetworkInit::Init(int argc, char** argv) {
     elect_mgr_ = std::make_shared<elect::ElectManager>(
         vss_mgr_, block_mgr_, security_, bls_mgr_, db_,
         nullptr);
+    kv_sync_->Init(block_mgr_, db_);
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(security_, db_, kv_sync_);
     account_mgr_->Init(
         common::GlobalInfo::Instance()->message_handler_thread_count(),

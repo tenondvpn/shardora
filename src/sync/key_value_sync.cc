@@ -86,7 +86,10 @@ void KeyValueSync::PopItems() {
     }
 }
 
-void KeyValueSync::Init(const std::shared_ptr<db::Db>& db) {
+void KeyValueSync::Init(
+        const std::shared_ptr<block::BlockManager>& block_mgr,
+        const std::shared_ptr<db::Db>& db) {
+    block_mgr_ = block_mgr;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     network::Route::Instance()->RegisterMessage(
@@ -346,6 +349,10 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             key = std::to_string(iter->network_id()) + "_" +
                 std::to_string(iter->pool_idx()) + "_" +
                 std::to_string(iter->height());
+            auto block_item = std::make_shared<block::protobuf::Block>();
+            if (block_item->ParseFromString(iter->value())) {
+                block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item);
+            }
         }
 
         auto tmp_iter = synced_map_.find(key);

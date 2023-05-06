@@ -24,6 +24,10 @@ namespace dht {
     typedef std::shared_ptr<BaseDht> BaseDhtPtr;
 }  // namespace dht
 
+namespace block {
+    class BlockManager;
+}
+
 namespace sync {
 
 struct SyncItem {
@@ -63,7 +67,9 @@ public:
         uint32_t pool_idx,
         uint64_t height,
         uint32_t priority);
-    void Init(const std::shared_ptr<db::Db>& db);
+    void Init(
+        const std::shared_ptr<block::BlockManager>& block_mgr,
+        const std::shared_ptr<db::Db>& db);
     void HandleMessage(const transport::MessagePtr& msg);
     uint32_t added_key_size() const {
         return added_key_set_.size();
@@ -94,6 +100,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint64_t prev_sync_tm_us_ = 0;
     uint64_t prev_sync_tmout_us_ = 0;
+    std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(KeyValueSync);
 };
