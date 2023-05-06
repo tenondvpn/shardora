@@ -506,6 +506,7 @@ void BftManager::HandleSyncConsensusBlock(
         // verify and add new block
         if (bft_ptr == nullptr) {
             if (!req_bft_msg.block().has_bls_agg_sign_x() || !req_bft_msg.block().has_bls_agg_sign_y()) {
+                assert(false);
                 return;
             }
 
@@ -519,7 +520,9 @@ void BftManager::HandleSyncConsensusBlock(
             block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
             pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
             // remove bft
-            ZJC_DEBUG("sync block message height: %lu, block hash: %s",
+            ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+                block_ptr->network_id(),
+                block_ptr->pool_index(),
                 block_ptr->height(),
                 common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str());
         } else {

@@ -254,8 +254,8 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
             auto queue_idx = GetThreadIndex(new_msg_ptr);
             threads_message_queues_[queue_idx][kTransportPriorityHighest].push(new_msg_ptr);
             wait_con_[queue_idx % all_thread_count_].notify_one();
-//             ZJC_DEBUG("create sync block message: %d, index: %d, queue_idx: %d",
-//                 queue_idx, block_item->pool_index(), queue_idx);
+            ZJC_DEBUG("create sync block message: %d, index: %d, queue_idx: %d",
+                queue_idx, block_item->pool_index(), queue_idx);
         }
     }
 }
