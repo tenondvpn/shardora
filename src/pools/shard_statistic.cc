@@ -257,7 +257,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                 network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
             for (int32_t storage_idx = 0; storage_idx < block.tx_list(i).storages_size(); ++storage_idx) {
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kShardElection) {
-                    uint64_t* tmp = (uint64_t*)block_tx.storages(i).val_hash().c_str();
+                    uint64_t* tmp = (uint64_t*)block.tx_list(i).storages(storage_idx).val_hash().c_str();
                     pools::protobuf::ElectStatistic elect_statistic;
                     if (!prefix_db_->GetStatisticedShardingHeight(
                             tmp[0],
@@ -267,7 +267,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                             tmp[0],
                             tmp[1]);
                         assert(false);
-                        return kConsensusError;
+                        break;
                     }
 
                     for (int32_t node_idx = 0; node_idx < elect_statistic.join_elect_nodes_size(); ++node_idx) {
