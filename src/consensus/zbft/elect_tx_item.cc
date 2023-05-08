@@ -251,15 +251,15 @@ void ElectTxItem::MiningToken(
     uint64_t max_tx_count = 0;
     for (int32_t i = 0; i < elect_nodes.size(); ++i) {
         auto tx_count = elect_nodes[i]->tx_count;
-        if (tx_count <= 0) {
-            tx_count = 1;
-        }
-
         if (tx_count > max_tx_count) {
             max_tx_count = tx_count;
         }
 
         all_tx_count += tx_count;
+    }
+
+    if (max_tx_count <= 0) {
+        return;
     }
 
     uint64_t gas_for_mining = all_gas_amount - all_gas_amount / network_count_;
