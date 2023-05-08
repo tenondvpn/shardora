@@ -11,7 +11,6 @@
 #include "bls/bls_manager.h"
 #include "common/utils.h"
 #include "db/db.h"
-#include "elect/elect_node_detail.h"
 #include "elect/elect_utils.h"
 #include "network/network_utils.h"
 #include "protos/elect.pb.h"
