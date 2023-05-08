@@ -197,8 +197,16 @@ private:
         }
 
         return std::make_shared<ElectTxItem>(
-            msg_ptr, account_mgr_, security_ptr_, prefix_db_, elect_mgr_,
-            vss_mgr_, bls_mgr_, first_timeblock_timestamp_);
+            msg_ptr,
+            account_mgr_,
+            security_ptr_,
+            prefix_db_,
+            elect_mgr_,
+            vss_mgr_,
+            bls_mgr_,
+            first_timeblock_timestamp_,
+            false,
+            max_consensus_sharding_id_ - 1);
     }
 
     pools::TxItemPtr CreateJoinElectTx(const transport::MessagePtr& msg_ptr) {
