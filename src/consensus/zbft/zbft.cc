@@ -523,6 +523,10 @@ int Zbft::LeaderCreateCommitAggSign() {
 bool Zbft::set_bls_precommit_agg_sign(
         const libff::alt_bn128_G1& agg_sign,
         const std::string& sign_hash) {
+    if (prepare_block_ == nullptr) {
+        return false;
+    }
+
     uint32_t t = min_aggree_member_count_;
     uint32_t n = members_ptr_->size();
     std::string sign_commit_hash;
