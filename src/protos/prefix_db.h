@@ -1164,7 +1164,7 @@ public:
         db_batch.Put(key, val);
     }
 
-    void GetGenesisTimeblock(uint64_t* block_height, uint64_t* genesis_tm) {
+    bool GetGenesisTimeblock(uint64_t* block_height, uint64_t* genesis_tm) {
         std::string key;
         key.reserve(64);
         key.append(kGenesisTimeblockPrefix);
