@@ -936,7 +936,7 @@ void NetworkInit::HandleTimeBlock(
         }
 
         if (tx.storages(i).key() == protos::kAttrGenesisTimerBlock) {
-            if (block->tx_list(i).storages(j).key() == protos::kAttrGenesisTimerBlock) {
+            if (tx.storages(i).key() == protos::kAttrGenesisTimerBlock) {
                 prefix_db_->SaveGenesisTimeblock(block->height(), block->timestamp(), db_batch);
             }
         }
