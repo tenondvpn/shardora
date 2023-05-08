@@ -155,6 +155,7 @@ static const uint32_t kEachShardMaxNodeCount = 1024u;
 static const uint32_t kNodeModIndexMaxCount = 64u;
 static const uint32_t kNodePublicIpMaskLen = 22u;  // node public ip just Mask length to protect security
 static const int32_t kInitNodeCredit = 30;
+static const uint64_t kInitMiningToken = 15lu;
 
 // broadcast default params
 static const uint32_t kBroadcastDefaultNeighborCount = 7u;

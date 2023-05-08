@@ -131,6 +131,7 @@ int ElectTxItem::HandleTx(
                 return res;
             }
            
+            MiningToken(elect_statistic.sharding_id(), elect_nodes, elect_statistic.gas_amount());
             min_area_weight += 1;
             min_tx_count += 1;
             uint32_t join_count = members->size() - elect_nodes.size();
@@ -242,8 +243,33 @@ int ElectTxItem::HandleTx(
     return kConsensusError;
 }
 
-void ElectTxItem::MinningToken(std::vector<NodeDetailPtr>& elect_nodes, uint64_t all_gas_amount) {
+void ElectTxItem::MiningToken(
+        uint32_t statistic_sharding_id,
+        std::vector<NodeDetailPtr>& elect_nodes,
+        uint64_t all_gas_amount) {
+    uint64_t all_tx_count = 0;
+    uint64_t max_tx_count = 0;
+    for (int32_t i = 0; i < elect_nodes.size(); ++i) {
+        if (elect_nodes[i].tx_count > max_tx_count) {
+            max_tx_count = elect_nodes[i].tx_count;
+        }
 
+        all_tx_count += elect_nodes[i].tx_count;
+    }
+
+    uint64_t gas_for_mining = all_gas_amount - all_gas_amount / network_count_;
+    // root shard use statistic gas amount.
+    if (statistic_sharding_id == network::kRootCongressNetworkId) {
+        gas_for_mining = all_gas_amount;
+    }
+
+    auto now_ming_count = common::kInitMiningToken;
+    if (!stop_mining_) {
+        for (int32_t i = 0; i < elect_nodes.size(); ++i) {
+            elect_nodes[i].mining_token = now_ming_count * elect_nodes[i].tx_count / max_tx_count;
+            elect_nodes[i].mining_token += elect_nodes[i].tx_count * gas_for_mining / all_tx_count;
+        }
+    }
 }
 
 int ElectTxItem::CreateNewElect(
@@ -258,10 +284,12 @@ int ElectTxItem::CreateNewElect(
         auto in = elect_block.add_in();
         in->set_pubkey((*iter)->pubkey);
         in->set_pool_idx_mod_num((*iter)->leader_mod_index);
+        in->set_mining_amount((*iter)->mining_token);
     }
 
     elect_block.set_shard_network_id(elect_statistic.sharding_id());
     elect_block.set_elect_height(block.height());
+    elect_block.set_all_gas_amount(elect_statistic.gas_amount());
     if (bls_mgr_->AddBlsConsensusInfo(elect_block) != bls::kBlsSuccess) {
         ZJC_WARN("add prev elect bls consensus info failed sharding id: %u",
             elect_statistic.sharding_id());

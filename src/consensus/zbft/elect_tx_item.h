@@ -36,13 +36,17 @@ public:
         std::shared_ptr<elect::ElectManager>& elect_mgr,
         std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
-        uint64_t first_timeblock_timestamp)
+        uint64_t first_timeblock_timestamp,
+        bool stop_mining,
+        uint32_t network_count)
         : TxItemBase(msg, account_mgr, sec_ptr),
         prefix_db_(prefix_db),
         elect_mgr_(elect_mgr),
         vss_mgr_(vss_mgr),
         bls_mgr_(bls_mgr),
-        first_timeblock_timestamp_(first_timeblock_timestamp) {}
+        first_timeblock_timestamp_(first_timeblock_timestamp),
+        stop_mining_(stop_mining),
+        network_count_(network_count) {}
     virtual ~ElectTxItem() {}
     virtual int HandleTx(
         uint8_t thread_idx,
@@ -82,7 +86,10 @@ private:
         const pools::protobuf::ElectStatistic& elect_statistic,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         block::protobuf::BlockTx& block_tx);
-    void MinningToken(std::vector<NodeDetailPtr>& elect_nodes, uint64_t all_gas_amount);
+    void MiningToken(
+        uint32_t statistic_sharding_id,
+        std::vector<NodeDetailPtr>& elect_nodes,
+        uint64_t all_gas_amount);
 
     static const uint32_t kFtsWeedoutDividRate = 10u;
     static const uint32_t kFtsNewElectJoinRate = 5u;
@@ -102,6 +109,8 @@ private:
     int32_t min_credit_ = common::kInvalidInt32;
     std::shared_ptr<std::mt19937_64> g2_ = nullptr;
     uint64_t first_timeblock_timestamp_ = 0;
+    bool stop_mining_ = false;
+    uint32_t network_count_ = 2;
 
     DISALLOW_COPY_AND_ASSIGN(ElectTxItem);
 };
