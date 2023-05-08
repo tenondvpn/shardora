@@ -67,7 +67,6 @@ public:
     common::BftMemberPtr GetMember(uint32_t network_id, uint32_t index);
     uint32_t GetMemberCount(uint32_t network_id);
     int32_t GetNetworkLeaderCount(uint32_t network_id);
-    std::shared_ptr<MemberManager> GetMemberManager(uint32_t network_id);
     common::MembersPtr GetWaitingNetworkMembers(uint32_t network_id);
     bool IsIdExistsInAnyShard(const std::string& id);
 //     bool IsIpExistsInAnyShard(uint32_t network_id, const std::string& ip);
