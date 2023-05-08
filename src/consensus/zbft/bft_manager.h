@@ -23,7 +23,6 @@
 #include "consensus/zbft/to_tx_local_item.h"
 #include "consensus/zbft/zbft.h"
 #include "db/db.h"
-#include "elect/member_manager.h"
 #include "elect/elect_manager.h"
 #include "pools/tx_pool_manager.h"
 #include "protos/elect.pb.h"

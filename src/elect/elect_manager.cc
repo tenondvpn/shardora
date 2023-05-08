@@ -294,13 +294,10 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
 
     added_height_.insert(elect_block.prev_members().prev_elect_height());
     latest_member_count_[prev_elect_block.shard_network_id()] = prev_elect_block.in_size();
-    std::map<uint32_t, NodeIndexMapPtr> in_index_members;
     std::map<uint32_t, uint32_t> begin_index_map;
     auto& in = prev_elect_block.in();
 //     std::cout << "in member count: " << in.size() << std::endl;
     auto shard_members_ptr = std::make_shared<common::Members>();
-    auto shard_members_index_ptr = std::make_shared<
-        std::unordered_map<std::string, uint32_t>>();
     uint32_t member_index = 0;
     ClearExistsNetwork(prev_elect_block.shard_network_id());
     auto& prev_members_bls = elect_block.prev_members().bls_pubkey();
@@ -327,7 +324,6 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
         }
 
         AddNewNodeWithIdAndIp(prev_elect_block.shard_network_id(), id);
-        (*shard_members_index_ptr)[id] = member_index;
         ++member_index;
     }
 
@@ -383,7 +379,6 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
     }
 
     members_ptr_[prev_elect_block.shard_network_id()] = shard_members_ptr;
-    node_index_map_[prev_elect_block.shard_network_id()] = shard_members_index_ptr;
     {
         std::lock_guard<std::mutex> guard(valid_shard_networks_mutex_);
         valid_shard_networks_.insert(prev_elect_block.shard_network_id());
