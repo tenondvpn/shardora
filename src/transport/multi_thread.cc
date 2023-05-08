@@ -250,6 +250,7 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
             bft_msg.set_sync_block(true);
             bft_msg.set_member_index(-1);
             bft_msg.set_pool_index(block_item->pool_index());
+            assert(block_item->has_bls_agg_sign_y() && block_item->has_bls_agg_sign_x());
             *bft_msg.mutable_block() = *block_item;
             auto queue_idx = GetThreadIndex(new_msg_ptr);
             threads_message_queues_[queue_idx][kTransportPriorityHighest].push(new_msg_ptr);

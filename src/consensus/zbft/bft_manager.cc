@@ -577,6 +577,7 @@ void BftManager::HandleSyncConsensusBlock(
         bft_msg.set_elect_height(elect_item.elect_height);
         assert(elect_item.elect_height > 0);
         *bft_msg.mutable_block() = *bft_ptr->prepare_block();
+        assert(bft_ptr->prepare_block()->has_bls_agg_sign_y() && bft_ptr->prepare_block()->has_bls_agg_sign_x());
         assert(bft_msg.block().height() > 0);
         transport::TcpTransport::Instance()->Send(
             msg_ptr->thread_idx,
@@ -2162,6 +2163,7 @@ void BftManager::BroadcastWaitingBlock(
     msg.set_des_dht_key(dht_key.StrKey());
     auto& zbft_msg = *msg.mutable_zbft();
     *zbft_msg.mutable_block() = *block_item;
+    assert(block_item->has_bls_agg_sign_y() && block_item->has_bls_agg_sign_x());
     zbft_msg.set_pool_index(block_item->pool_index());
     zbft_msg.set_sync_block(true);
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);

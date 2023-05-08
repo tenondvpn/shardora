@@ -242,6 +242,10 @@ int ElectTxItem::HandleTx(
     return kConsensusError;
 }
 
+void ElectTxItem::MinningToken(std::vector<NodeDetailPtr>& elect_nodes) {
+
+}
+
 int ElectTxItem::CreateNewElect(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
