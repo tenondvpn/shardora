@@ -5,7 +5,6 @@
 #include "contract/contract_manager.h"
 #include "common/encode.h"
 #include "db/db.h"
-#include "elect/member_manager.h"
 #include "elect/elect_manager.h"
 #include "network/network_utils.h"
 #include "protos/address.pb.h"
