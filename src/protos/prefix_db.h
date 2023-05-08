@@ -373,6 +373,7 @@ public:
             return false;
         }
 
+        assert(block.has_bls_agg_sign_x() && block.has_bls_agg_sign_y());
         std::string key;
         key.reserve(48);
         key.append(kBlockPrefix);
@@ -405,6 +406,7 @@ public:
             return false;
         }
 
+        assert(block.has_bls_agg_sign_x() && block.has_bls_agg_sign_y());
         return true;
     }
 
