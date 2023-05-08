@@ -5,7 +5,6 @@
 #include "common/utils.h"
 #include "common/string_utils.h"
 #include "dht/dht_key.h"
-#include "elect/elect_node_detail.h"
 #include "network/universal.h"
 #include "network/network_utils.h"
 #include "network/universal_manager.h"
