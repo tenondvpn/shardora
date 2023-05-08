@@ -150,6 +150,7 @@ int NetworkInit::Init(int argc, char** argv) {
         db_,
         pools_mgr_,
         shard_statistic_,
+        security_,
         security_->GetAddress(),
         new_db_cb);
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
