@@ -81,7 +81,7 @@ message ElectMessage {
     optional ElectBlock elect_block = 1;
     optional ElectBlock prev_elect_block = 2;
     optional WaitingNodesMessage waiting_nodes = 3;
-    optional int32_t member_index = 4;
+    optional int32 member_index = 4;
     optional bytes sign_ch = 5;
     optional bytes sign_res = 6;
     optional WaitingNodeHeartbeat waiting_heartbeat = 7;
