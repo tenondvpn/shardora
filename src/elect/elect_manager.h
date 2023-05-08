@@ -12,7 +12,6 @@
 #include "dht/base_dht.h"
 #include "elect/elect_block_manager.h"
 #include "elect/elect_utils.h"
-#include "elect/elect_pool_manager.h"
 #include "elect/member_manager.h"
 #include "elect/height_with_elect_blocks.h"
 #include "elect/elect_node_detail.h"
@@ -147,7 +146,6 @@ private:
     std::map<uint32_t, ElectNodePtr> elect_network_map_;
     std::mutex elect_network_map_mutex_;
     std::shared_ptr<ElectNode> elect_node_ptr_{ nullptr };
-    std::shared_ptr<ElectPoolManager> pool_manager_ = nullptr;
     common::Tick create_elect_block_tick_;
     std::unordered_set<uint64_t> added_height_;
     uint64_t elect_net_heights_map_[network::kConsensusShardEndNetworkId];

@@ -11,7 +11,7 @@ namespace zjchain {
 namespace consensus {
 
 struct ElectNodeInfo {
-    ElectNodeInfo() : leader_mod_index(-1) {}
+    ElectNodeInfo() : leader_mod_index(-1), mining_token(0) {}
     uint64_t fts_value;
     uint64_t stoke;
     uint64_t stoke_diff;
@@ -21,6 +21,7 @@ struct ElectNodeInfo {
     std::string pubkey;
     uint32_t index;
     int32_t leader_mod_index;
+    uint64_t mining_token;
 };
 
 typedef std::shared_ptr<ElectNodeInfo> NodeDetailPtr;

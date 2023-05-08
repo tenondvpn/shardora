@@ -242,7 +242,7 @@ int ElectTxItem::HandleTx(
     return kConsensusError;
 }
 
-void ElectTxItem::MinningToken(std::vector<NodeDetailPtr>& elect_nodes) {
+void ElectTxItem::MinningToken(std::vector<NodeDetailPtr>& elect_nodes, uint64_t all_gas_amount) {
 
 }
 

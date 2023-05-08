@@ -52,8 +52,6 @@ ElectManager::ElectManager(
     new_elect_cb_ = new_elect_cb;
     elect_block_mgr_.Init(db_);
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-    pool_manager_ = std::make_shared<ElectPoolManager>(
-        this, vss_mgr, security, db_, bls_mgr);
     height_with_block_ = std::make_shared<HeightWithElectBlock>(security, db_);
     leader_rotation_ = std::make_shared<LeaderRotation>(security_);
     bls_mgr_ = bls_mgr;
@@ -115,7 +113,6 @@ int ElectManager::Quit(uint32_t network_id) {
 }
 
 void ElectManager::OnTimeBlock(uint64_t tm_block_tm) {
-    pool_manager_->OnTimeBlock(tm_block_tm);
 }
 
 void ElectManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
@@ -184,7 +181,6 @@ common::MembersPtr ElectManager::OnNewElectBlock(
     }
 
     ElectedToConsensusShard(thread_idx, elect_block, elected);
-    pool_manager_->OnNewElectBlock(height, elect_block);
     elect_block_mgr_.OnNewElectBlock(height, elect_block, db_batch);
     return members_ptr_[elect_block.shard_network_id()];
 //     if (new_elect_cb_ != nullptr) {
@@ -479,7 +475,6 @@ void ElectManager::ProcessNewElectBlock(
         ++member_index;
     }
 
-    pool_manager_->NetworkMemberChange(elect_block.shard_network_id(), shard_members_ptr);
     waiting_members_ptr_[elect_block.shard_network_id()] = shard_members_ptr;
     waiting_elect_height_[elect_block.shard_network_id()] = height;
 }
@@ -563,16 +558,6 @@ void ElectManager::UpdatePrevElectMembers(
     if (*elected) {
         local_node_member_index_ = local_member_index;
     }
-}
-
-int ElectManager::BackupCheckElectionBlockTx(
-        const block::protobuf::BlockTx& local_tx_info,
-        const block::protobuf::BlockTx& tx_info) {
-    return pool_manager_->BackupCheckElectionBlockTx(local_tx_info, tx_info);
-}
-
-int ElectManager::GetElectionTxInfo(block::protobuf::BlockTx& tx_info) {
-    return pool_manager_->GetElectionTxInfo(tx_info);
 }
 
 uint64_t ElectManager::latest_height(uint32_t network_id) {
