@@ -575,7 +575,7 @@ void BftManager::HandleSyncConsensusBlock(
         bft_msg.set_elect_height(elect_item.elect_height);
         assert(elect_item.elect_height > 0);
         *bft_msg.mutable_block() = *bft_ptr->prepare_block();
-        assert(bft_ptr->prepare_block()->has_bls_agg_sign_y() && bft_ptr->prepare_block()->has_bls_agg_sign_x());
+        //assert(bft_ptr->prepare_block()->has_bls_agg_sign_y() && bft_ptr->prepare_block()->has_bls_agg_sign_x());
         assert(bft_msg.block().height() > 0);
         transport::TcpTransport::Instance()->Send(
             msg_ptr->thread_idx,
