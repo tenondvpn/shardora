@@ -34,6 +34,7 @@ int BlockManager::Init(
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<pools::TxPoolManager>& pools_mgr,
         std::shared_ptr<pools::ShardStatistic>& statistic_mgr,
+        std::shared_ptr<security::Security>& security,
         const std::string& local_id,
         DbBlockCallback new_block_callback) {
     account_mgr_ = account_mgr;
@@ -42,6 +43,7 @@ int BlockManager::Init(
     local_id_ = local_id;
     new_block_callback_ = new_block_callback;
     statistic_mgr_ = statistic_mgr;
+    security_ = security;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(
         db_, local_id, max_consensus_sharding_id_, pools_mgr_);
@@ -522,14 +524,6 @@ void BlockManager::HandleElectTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    if (shard_elect_tx_.empty()) {
-        return;
-    }
-
-    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
-        return;
-    }
-
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
             std::string val;
@@ -542,6 +536,7 @@ void BlockManager::HandleElectTx(
                 return;
             }
 
+            AddMiningToken(block.hash(), thread_idx, elect_block);
             auto iter = shard_elect_tx_.find(elect_block.shard_network_id());
             if (iter == shard_elect_tx_.end()) {
                 return;
@@ -552,6 +547,69 @@ void BlockManager::HandleElectTx(
                 ZJC_DEBUG("success erase elect tx: %u", elect_block.shard_network_id());
             }
         }
+    }
+}
+
+void BlockManager::AddMiningToken(
+        const std::string& block_hash
+        uint8_t thread_idx,
+        const elect::protobuf::ElectBlock& elect_block) {
+    if (elect_block.shard_network_id() != common::GlobalInfo::Instance()->network_id()) {
+        return;
+    }
+
+    std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_tx_map;
+    for (int32_t i = 0; i < elect_block.in_size(); ++i) {
+        auto id = security_->GetAddress(elect_block.in(i).pubkey());
+        auto account_info = account_mgr_->GetAccountInfo(thread_idx, id);
+        if (account_info == nullptr ||
+                account_info->sharding_id() != elect_block.shard_network_id()) {
+            continue;
+        }
+
+        auto to_iter = to_tx_map.find(id);
+        if (to_iter == to_tx_map.end()) {
+            pools::protobuf::ToTxMessage to_tx;
+            to_tx_map[id] = to_tx;
+            to_iter = to_tx_map.find(id);
+        }
+
+        auto to_item = to_iter->second.add_tos();
+        to_item->set_pool_index(iter->second.second);
+        to_item->set_des(iter->first);
+        to_item->set_amount(iter->second.first);
+        ZJC_DEBUG("mining success add local transfer to %s, %lu",
+            common::Encode::HexEncode(iter->first).c_str(), iter->second.first);
+    }
+
+    for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
+        std::string str_for_hash;
+        str_for_hash.reserve(iter->second.tos_size() * 48);
+        for (int32_t i = 0; i < iter->second.tos_size(); ++i) {
+            str_for_hash.append(iter->second.tos(i).des());
+            uint32_t pool_idx = iter->second.tos(i).pool_index();
+            str_for_hash.append((char*)&pool_idx, sizeof(pool_idx));
+            uint64_t amount = iter->second.tos(i).amount();
+            str_for_hash.append((char*)&amount, sizeof(amount));
+        }
+
+        auto val = iter->second.SerializeAsString();
+        auto tos_hash = common::Hash::keccak256(str_for_hash);
+        prefix_db_->SaveTemporaryKv(tos_hash, val);
+        auto msg_ptr = std::make_shared<transport::TransportMessage>();
+        auto tx = msg_ptr->header.mutable_tx_proto();
+        tx->set_key(protos::kLocalNormalTos);
+        tx->set_value(tos_hash);
+        tx->set_pubkey("");
+        tx->set_to(kNormalLocalToAddress);
+        tx->set_step(pools::protobuf::kConsensusLocalTos);
+        auto gid = common::Hash::keccak256(tos_hash + block_hash);
+        tx->set_gas_limit(0);
+        tx->set_amount(0);
+        tx->set_gas_price(common::kBuildinTransactionGasPrice);
+        tx->set_gid(gid);
+        msg_ptr->address_info = account_mgr_->single_local_to_address_info(iter->first);
+        pools_mgr_->HandleMessage(msg_ptr);
     }
 }
 

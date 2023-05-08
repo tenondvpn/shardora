@@ -36,6 +36,7 @@ public:
         std::shared_ptr<db::Db>& db,
         std::shared_ptr<pools::TxPoolManager>& pools_mgr,
         std::shared_ptr<pools::ShardStatistic>& statistic_mgr,
+        std::shared_ptr<security::Security>& security,
         const std::string& local_id,
         DbBlockCallback new_block_callback);
     void NetworkNewBlock(
@@ -119,6 +120,10 @@ private:
         const pools::protobuf::ToTxMessage& to_txs,
         uint32_t step,
         const std::string& heights_hash);
+    void AddMiningToken(
+        const std::string& block_hash
+        uint8_t thread_idx,
+        const elect::protobuf::ElectBlock& elect_block);
     void RootHandleNormalToTx(
         uint8_t thread_idx,
         uint64_t height,
@@ -138,6 +143,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<pools::ToTxsPools> to_txs_pool_ = nullptr;
+    std::shared_ptr<security::Security> security_ = nullptr;
     uint64_t prev_create_to_tx_ms_ = 0;
     uint64_t prev_create_statistic_tx_ms_ = 0;
     common::BftMemberPtr to_tx_leader_ = nullptr;
