@@ -560,6 +560,10 @@ void BlockManager::AddMiningToken(
 
     std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_tx_map;
     for (int32_t i = 0; i < elect_block.in_size(); ++i) {
+        if (elect_block.in(i).mining_amount() <= 0) {
+            continue;
+        }
+
         auto id = security_->GetAddress(elect_block.in(i).pubkey());
         auto account_info = account_mgr_->GetAccountInfo(thread_idx, id);
         if (account_info == nullptr ||
@@ -574,12 +578,13 @@ void BlockManager::AddMiningToken(
             to_iter = to_tx_map.find(id);
         }
 
+        auto pool_index = common::GetAddressPoolIndex(id);
         auto to_item = to_iter->second.add_tos();
-        to_item->set_pool_index(iter->second.second);
-        to_item->set_des(iter->first);
-        to_item->set_amount(iter->second.first);
+        to_item->set_pool_index(pool_index);
+        to_item->set_des(id);
+        to_item->set_amount(elect_block.in(i).mining_amount());
         ZJC_DEBUG("mining success add local transfer to %s, %lu",
-            common::Encode::HexEncode(iter->first).c_str(), iter->second.first);
+            common::Encode::HexEncode(id).c_str(), elect_block.in(i).mining_amount());
     }
 
     for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
