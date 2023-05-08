@@ -12,7 +12,6 @@
 #include "dht/base_dht.h"
 #include "elect/elect_block_manager.h"
 #include "elect/elect_utils.h"
-#include "elect/member_manager.h"
 #include "elect/height_with_elect_blocks.h"
 #include "elect/elect_node_detail.h"
 #include "elect/leader_rotation.h"
@@ -48,16 +47,12 @@ public:
     int Join(uint8_t thread_idx, uint32_t network_id);
     int Quit(uint32_t network_id);
     uint64_t latest_height(uint32_t network_id);
-    int BackupCheckElectionBlockTx(
-        const block::protobuf::BlockTx& local_tx_info,
-        const block::protobuf::BlockTx& tx_info);
     void OnTimeBlock(uint64_t tm_block_tm);
     common::MembersPtr OnNewElectBlock(
         uint8_t thread_idx,
         uint64_t height,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block,
         db::DbWriteBatch& db_batch);
-    int GetElectionTxInfo(block::protobuf::BlockTx& tx_info);
     std::shared_ptr<elect::protobuf::ElectBlock> GetLatestElectBlock(uint32_t sharding_id) {
         return elect_block_mgr_.GetLatestElectBlock(sharding_id);
     }
@@ -68,7 +63,6 @@ public:
         libff::alt_bn128_G2* common_pk,
         libff::alt_bn128_Fr* sec_key);
     uint32_t GetMemberCountWithHeight(uint64_t elect_height, uint32_t network_id);
-    uint32_t GetMemberIndex(uint32_t network_id, const std::string& node_id);
     common::MembersPtr GetNetworkMembers(uint32_t network_id);
     common::BftMemberPtr GetMemberWithId(uint32_t network_id, const std::string& node_id);
     common::BftMemberPtr GetMember(uint32_t network_id, uint32_t index);
@@ -163,10 +157,8 @@ private:
     common::MembersPtr members_ptr_[network::kConsensusShardEndNetworkId];
     common::MembersPtr waiting_members_ptr_[network::kConsensusShardEndNetworkId];
     uint64_t waiting_elect_height_[network::kConsensusShardEndNetworkId];
-    std::shared_ptr<MemberManager> mem_manager_ptr_[network::kConsensusShardEndNetworkId];
     int32_t latest_member_count_[network::kConsensusShardEndNetworkId];
     int32_t latest_leader_count_[network::kConsensusShardEndNetworkId];
-    elect::NodeIndexMapPtr node_index_map_[network::kConsensusShardEndNetworkId];
     std::shared_ptr<HeightWithElectBlock> height_with_block_ = nullptr;
     common::BftMemberPtr pool_mod_leaders_[common::kInvalidPoolIndex];
     std::set<std::string> prev_elected_ids_;

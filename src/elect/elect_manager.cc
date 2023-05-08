@@ -121,36 +121,30 @@ void ElectManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // TODO: verify message signature
     ELECT_DEBUG("TTTTTT received elect message.");
     auto& ec_msg = header.elect_proto();
-    if (!security_->IsValidPublicKey(ec_msg.pubkey())) {
-        ELECT_ERROR("invalid public key: %s!", common::Encode::HexEncode(ec_msg.pubkey()));
-        return;
-    }
-
     if (ec_msg.has_leader_rotation()) {
-        auto id = security_->GetAddress(ec_msg.pubkey());
-        auto mem_index = GetMemberIndex(
-            common::GlobalInfo::Instance()->network_id(),
-            id);
-        if (mem_index == kInvalidMemberIndex) {
-            return;
-        }
-
-        auto all_size = members_ptr_[common::GlobalInfo::Instance()->network_id()]->size();
-        auto mem_ptr = GetMemberWithId(common::GlobalInfo::Instance()->network_id(), id);
-        if (mem_ptr) {
-            std::string hash_str = ec_msg.leader_rotation().leader_id() + 
-                std::to_string(ec_msg.leader_rotation().pool_mod_num());
-            auto message_hash = common::Hash::keccak256(hash_str);
-            if (security_->Verify(
-                    message_hash,
-                    ec_msg.pubkey(),
-                    ec_msg.sign_ch()) != security::kSecuritySuccess) {
-                ELECT_ERROR("leader rotation verify signature error.");
-                return;
-            }
-
-            leader_rotation_->LeaderRotationReq(ec_msg.leader_rotation(), mem_index, all_size);
-        }
+//         auto mem_index = ec_msg.member_index();
+//         auto members = *(members_ptr_[common::GlobalInfo::Instance()->network_id()]);
+//         if (mem_index >= members->size()) {
+//             return;
+//         }
+// 
+//         auto id = (*members)[mem_index]->id;
+//         auto all_size = members_ptr_[common::GlobalInfo::Instance()->network_id()]->size();
+//         auto mem_ptr = GetMemberWithId(common::GlobalInfo::Instance()->network_id(), id);
+//         if (mem_ptr) {
+//             std::string hash_str = ec_msg.leader_rotation().leader_id() + 
+//                 std::to_string(ec_msg.leader_rotation().pool_mod_num());
+//             auto message_hash = common::Hash::keccak256(hash_str);
+//             if (security_->Verify(
+//                     message_hash,
+//                     ec_msg.pubkey(),
+//                     ec_msg.sign_ch()) != security::kSecuritySuccess) {
+//                 ELECT_ERROR("leader rotation verify signature error.");
+//                 return;
+//             }
+// 
+//             leader_rotation_->LeaderRotationReq(ec_msg.leader_rotation(), mem_index, all_size);
+//         }
     }
 }
 
@@ -396,7 +390,6 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
         shard_members_index_ptr,
         leader_count);
     node_index_map_[prev_elect_block.shard_network_id()] = shard_members_index_ptr;
-    mem_manager_ptr_[prev_elect_block.shard_network_id()] = member_ptr;
     {
         std::lock_guard<std::mutex> guard(valid_shard_networks_mutex_);
         valid_shard_networks_.insert(prev_elect_block.shard_network_id());
@@ -592,23 +585,6 @@ uint32_t ElectManager::GetMemberCountWithHeight(uint64_t elect_height, uint32_t 
     return 0;
 }
 
-std::shared_ptr<MemberManager> ElectManager::GetMemberManager(uint32_t network_id) {
-    return mem_manager_ptr_[network_id];
-}
-
-uint32_t ElectManager::GetMemberIndex(uint32_t network_id, const std::string& node_id) {
-    if (network_id >= network::kConsensusShardEndNetworkId || node_index_map_[network_id] == nullptr) {
-        return kInvalidMemberIndex;
-    }
-
-    auto iter = node_index_map_[network_id]->find(node_id);
-    if (iter != node_index_map_[network_id]->end()) {
-        return iter->second;
-    }
-
-    return kInvalidMemberIndex;
-}
-
 common::MembersPtr ElectManager::GetNetworkMembers(uint32_t network_id) {
     return members_ptr_[network_id];
 }
@@ -646,17 +622,6 @@ bool ElectManager::NodeHasElected(uint32_t network_id, const std::string& node_i
     }
 
     return false;
-}
-
-common::BftMemberPtr ElectManager::GetMemberWithId(
-        uint32_t network_id,
-        const std::string& node_id) {
-    auto mem_index = GetMemberIndex(network_id, node_id);
-    if (mem_index == kInvalidMemberIndex) {
-        return nullptr;
-    }
-
-    return GetMember(network_id, mem_index);
 }
 
 common::BftMemberPtr ElectManager::GetMember(uint32_t network_id, uint32_t index) {

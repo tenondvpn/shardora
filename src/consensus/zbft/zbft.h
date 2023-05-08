@@ -10,7 +10,6 @@
 #include "consensus/consensus_utils.h"
 #include "consensus/zbft/waiting_txs.h"
 #include "consensus/zbft/zbft_utils.h"
-#include "elect/member_manager.h"
 #include "pools/tx_pool_manager.h"
 #include "protos/zbft.pb.h"
 #include "protos/block.pb.h"
@@ -239,10 +238,6 @@ public:
         return members_ptr_;
     }
 
-    std::shared_ptr<elect::MemberManager>& mem_manager_ptr() {
-        return mem_manager_ptr_;
-    }
-
     void add_prepair_failed_node_index(uint32_t index) {
         prepare_enc_failed_nodes_.insert(index);
     }
@@ -442,7 +437,6 @@ protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     common::MembersPtr members_ptr_{ nullptr };
-    std::shared_ptr<elect::MemberManager> mem_manager_ptr_{ nullptr };
     std::string gid_;
     uint32_t network_id_{ 0 };
     uint32_t leader_index_{ 0 };
