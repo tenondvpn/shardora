@@ -58,6 +58,7 @@ static const std::string kRootStatisticedPrefix = "y\x01";
 static const std::string kElectNodesStokePrefix = "z\x01";
 static const std::string kSaveLatestElectHeightPrefix = "aa\x01";
 static const std::string kSaveChoosedJoinShardPrefix = "ab\x01";
+static const std::string kGenesisTimeblockPrefix = "ac\x01";
 
 class PrefixDb {
 public:
@@ -1148,6 +1149,39 @@ public:
         uint32_t* tmp = (uint32_t*)val.c_str();
         *sharding_id = tmp[0];
         *des_sharding_id = tmp[1];
+        return true;
+    }
+
+    void SaveGenesisTimeblock(uint64_t block_height, uint64_t genesis_tm, db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(64);
+        key.append(kGenesisTimeblockPrefix);
+        char data[8];
+        uint32_t* tmp = (uint32_t*)data;
+        tmp[0] = block_height;
+        tmp[1] = genesis_tm;
+        std::string val(data, sizeof(data));
+        db_batch.Put(key, val);
+    }
+
+    void GetGenesisTimeblock(uint64_t* block_height, uint64_t* genesis_tm) {
+        std::string key;
+        key.reserve(64);
+        key.append(kGenesisTimeblockPrefix);
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            ZJC_ERROR("get db failed!");
+            return false;
+        }
+
+        if (val.size() != 16) {
+            return false;
+        }
+
+        uint32_t* tmp = (uint32_t*)val.c_str();
+        *block_height = tmp[0];
+        *genesis_tm = tmp[1];
         return true;
     }
 

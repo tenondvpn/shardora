@@ -933,7 +933,12 @@ void NetworkInit::HandleTimeBlock(
             shard_statistic_->OnTimeBlock(data_arr[0], block->height(), data_arr[1]);
             block_mgr_->OnTimeBlock(thread_idx, data_arr[0], block->height(), data_arr[1]);
             ZJC_DEBUG("new time block called height: %lu, tm: %lu", block->height(), data_arr[1]);
-            break;
+        }
+
+        if (tx.storages(i).key() == protos::kAttrGenesisTimerBlock) {
+            if (block->tx_list(i).storages(j).key() == protos::kAttrGenesisTimerBlock) {
+                prefix_db_->SaveGenesisTimeblock(block->height(), block->timestamp(), db_batch);
+            }
         }
     }
 }

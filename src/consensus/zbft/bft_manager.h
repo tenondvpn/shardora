@@ -191,8 +191,14 @@ private:
     }
 
     pools::TxItemPtr CreateElectTx(const transport::MessagePtr& msg_ptr) {
+        if (first_timeblock_timestamp_ == 0) {
+            uint64_t height = 0;
+            prefix_db_->GetGenesisTimeblock(&height, &first_timeblock_timestamp_);
+        }
+
         return std::make_shared<ElectTxItem>(
-            msg_ptr, account_mgr_, security_ptr_, prefix_db_, elect_mgr_, vss_mgr_, bls_mgr_);
+            msg_ptr, account_mgr_, security_ptr_, prefix_db_, elect_mgr_,
+            vss_mgr_, bls_mgr_, first_timeblock_timestamp_);
     }
 
     pools::TxItemPtr CreateJoinElectTx(const transport::MessagePtr& msg_ptr) {
@@ -251,6 +257,7 @@ private:
     common::SpinMutex prev_count_mutex_;
     uint64_t prev_test_bft_size_[common::kMaxThreadCount] = { 0 };
     uint32_t max_consensus_sharding_id_ = 3;
+    uint64_t first_timeblock_timestamp_ = 0;
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {

@@ -35,12 +35,14 @@ public:
         std::shared_ptr<protos::PrefixDb>& prefix_db,
         std::shared_ptr<elect::ElectManager>& elect_mgr,
         std::shared_ptr<vss::VssManager>& vss_mgr,
-        std::shared_ptr<bls::BlsManager>& bls_mgr)
+        std::shared_ptr<bls::BlsManager>& bls_mgr,
+        uint64_t first_timeblock_timestamp)
         : TxItemBase(msg, account_mgr, sec_ptr),
         prefix_db_(prefix_db),
         elect_mgr_(elect_mgr),
         vss_mgr_(vss_mgr),
-        bls_mgr_(bls_mgr) {}
+        bls_mgr_(bls_mgr),
+        first_timeblock_timestamp_(first_timeblock_timestamp) {}
     virtual ~ElectTxItem() {}
     virtual int HandleTx(
         uint8_t thread_idx,
@@ -99,6 +101,7 @@ private:
     int32_t max_credit_ = 0;
     int32_t min_credit_ = common::kInvalidInt32;
     std::shared_ptr<std::mt19937_64> g2_ = nullptr;
+    uint64_t first_timeblock_timestamp_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(ElectTxItem);
 };

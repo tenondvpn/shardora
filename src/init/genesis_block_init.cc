@@ -456,6 +456,8 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         u64_data[0] = tm_block.timestamp();
         u64_data[1] = tm_block.vss_random();
         timeblock_storage->set_val_hash(std::string(data, sizeof(data)));
+        auto genesis_tmblock = tx_info->add_storages();
+        genesis_tmblock->set_key(protos::kAttrGenesisTimerBlock);
 //         auto vss_random_attr = tx_info->add_attr();
 //         vss_random_attr->set_key(tmblock::kVssRandomAttr);
 //         vss_random_attr->set_value(std::to_string(now_tm));
@@ -476,6 +478,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tenon_block2.ParseFromString(tmp_str);
         assert(tenon_block2.tx_list_size() > 0);
         db::DbWriteBatch db_batch;
+        prefix_db_->SaveGenesisTimeblock(tm_block.height(), tm_block.timestamp(), db_batch);
         pools_mgr_->UpdateLatestInfo(
             0,
             tenon_block->network_id(),
@@ -620,6 +623,10 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
                         ec_block.elect_height(),
                         ec_block.has_prev_members(),
                         ec_block.prev_members().has_common_pubkey());
+                }
+
+                if (tenon_block->tx_list(i).storages(j).key() == protos::kAttrGenesisTimerBlock) {
+                    prefix_db_->SaveGenesisTimeblock(tenon_block->height(), tenon_block->timestamp(), db_batch);
                 }
 
                 if (tenon_block->tx_list(i).storages(j).key() == protos::kAttrTimerBlock) {
