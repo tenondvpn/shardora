@@ -383,12 +383,6 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
     }
 
     members_ptr_[prev_elect_block.shard_network_id()] = shard_members_ptr;
-    auto member_ptr = std::make_shared<MemberManager>();
-    member_ptr->SetNetworkMember(
-        prev_elect_block.shard_network_id(),
-        shard_members_ptr,
-        shard_members_index_ptr,
-        leader_count);
     node_index_map_[prev_elect_block.shard_network_id()] = shard_members_index_ptr;
     {
         std::lock_guard<std::mutex> guard(valid_shard_networks_mutex_);
