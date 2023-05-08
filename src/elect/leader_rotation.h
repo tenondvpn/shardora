@@ -6,7 +6,6 @@
 #include "common/time_utils.h"
 #include "common/tick.h"
 #include "elect/elect_utils.h"
-#include "elect/elect_node_detail.h"
 #include "elect/elect_proto.h"
 #include "protos/elect.pb.h"
 #include "security/security.h"
