@@ -554,6 +554,10 @@ void BlockManager::AddMiningToken(
         const std::string& block_hash,
         uint8_t thread_idx,
         const elect::protobuf::ElectBlock& elect_block) {
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+        return;
+    }
+
     if (elect_block.shard_network_id() != common::GlobalInfo::Instance()->network_id()) {
         return;
     }
