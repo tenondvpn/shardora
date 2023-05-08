@@ -256,10 +256,10 @@ void ElectTxItem::MiningToken(
         }
 
         if (tx_count > max_tx_count) {
-            max_tx_count = elect_nodes[i]->tx_count;
+            max_tx_count = tx_count;
         }
 
-        all_tx_count += elect_nodes[i]->tx_count;
+        all_tx_count += tx_count;
     }
 
     uint64_t gas_for_mining = all_gas_amount - all_gas_amount / network_count_;
