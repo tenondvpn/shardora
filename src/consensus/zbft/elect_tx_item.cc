@@ -249,12 +249,12 @@ void ElectTxItem::MiningToken(
         uint64_t all_gas_amount) {
     uint64_t all_tx_count = 0;
     uint64_t max_tx_count = 0;
-    for (int32_t i = 0; i < elect_nodes.size(); ++i) {
-        if (elect_nodes[i].tx_count > max_tx_count) {
-            max_tx_count = elect_nodes[i].tx_count;
+    for (int32_t i = 0; i < elect_nodes->size(); ++i) {
+        if (elect_nodes[i]->tx_count > max_tx_count) {
+            max_tx_count = elect_nodes[i]->tx_count;
         }
 
-        all_tx_count += elect_nodes[i].tx_count;
+        all_tx_count += elect_nodes[i]->tx_count;
     }
 
     uint64_t gas_for_mining = all_gas_amount - all_gas_amount / network_count_;
@@ -265,9 +265,9 @@ void ElectTxItem::MiningToken(
 
     auto now_ming_count = common::kInitMiningToken;
     if (!stop_mining_) {
-        for (int32_t i = 0; i < elect_nodes.size(); ++i) {
-            elect_nodes[i].mining_token = now_ming_count * elect_nodes[i].tx_count / max_tx_count;
-            elect_nodes[i].mining_token += elect_nodes[i].tx_count * gas_for_mining / all_tx_count;
+        for (int32_t i = 0; i < elect_nodes->size(); ++i) {
+            elect_nodes[i]->mining_token = now_ming_count * elect_nodes[i]->tx_count / max_tx_count;
+            elect_nodes[i]->mining_token += elect_nodes[i]->tx_count * gas_for_mining / all_tx_count;
         }
     }
 }
