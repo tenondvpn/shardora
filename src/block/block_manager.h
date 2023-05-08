@@ -121,7 +121,7 @@ private:
         uint32_t step,
         const std::string& heights_hash);
     void AddMiningToken(
-        const std::string& block_hash
+        const std::string& block_hash,
         uint8_t thread_idx,
         const elect::protobuf::ElectBlock& elect_block);
     void RootHandleNormalToTx(
