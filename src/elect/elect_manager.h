@@ -13,7 +13,6 @@
 #include "elect/elect_block_manager.h"
 #include "elect/elect_utils.h"
 #include "elect/height_with_elect_blocks.h"
-#include "elect/elect_node_detail.h"
 #include "elect/leader_rotation.h"
 #include "network/shard_network.h"
 #include "protos/elect.pb.h"
