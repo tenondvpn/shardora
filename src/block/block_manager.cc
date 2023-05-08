@@ -571,14 +571,14 @@ void BlockManager::AddMiningToken(
             continue;
         }
 
-        auto to_iter = to_tx_map.find(id);
+        auto pool_index = common::GetAddressPoolIndex(id);
+        auto to_iter = to_tx_map.find(pool_index);
         if (to_iter == to_tx_map.end()) {
             pools::protobuf::ToTxMessage to_tx;
-            to_tx_map[id] = to_tx;
-            to_iter = to_tx_map.find(id);
+            to_tx_map[pool_index] = to_tx;
+            to_iter = to_tx_map.find(pool_index);
         }
 
-        auto pool_index = common::GetAddressPoolIndex(id);
         auto to_item = to_iter->second.add_tos();
         to_item->set_pool_index(pool_index);
         to_item->set_des(id);
