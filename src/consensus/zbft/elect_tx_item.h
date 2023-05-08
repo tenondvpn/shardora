@@ -80,7 +80,7 @@ private:
         const pools::protobuf::ElectStatistic& elect_statistic,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         block::protobuf::BlockTx& block_tx);
-    void MinningToken(std::vector<NodeDetailPtr>& elect_nodes);
+    void MinningToken(std::vector<NodeDetailPtr>& elect_nodes, uint64_t all_gas_amount);
 
     static const uint32_t kFtsWeedoutDividRate = 10u;
     static const uint32_t kFtsNewElectJoinRate = 5u;
