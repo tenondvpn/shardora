@@ -323,6 +323,10 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
             bls_instance.SignatureRecover(
             all_signs,
             lagrange_coeffs));
+        prepare_block_->set_bls_agg_sign_x(
+            libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X));
+        prepare_block_->set_bls_agg_sign_y(
+            libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->Y));
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
 //         if (times_[times_index_ - 1] - times_[times_index_ - 2] >= 10000) {
 //             ZJC_DEBUG("SignatureRecover use time %lu us", (times_[times_index_ - 1] - times_[times_index_ - 2]));
@@ -538,7 +542,11 @@ bool Zbft::set_bls_precommit_agg_sign(
             common::Encode::HexEncode(sign_hash).c_str());
         return false;
     }
-
+    
+    prepare_block_->set_bls_agg_sign_x(
+        libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X));
+    prepare_block_->set_bls_agg_sign_y(
+        libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->Y));
     return true;
 }
 

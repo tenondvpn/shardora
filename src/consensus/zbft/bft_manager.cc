@@ -563,6 +563,11 @@ void BftManager::HandleSyncConsensusBlock(
             return;
         }
 
+        if (!bft_ptr->prepare_block()->has_bls_agg_sign_y() ||
+                !bft_ptr->prepare_block()->has_bls_agg_sign_x()) {
+            return;
+        }
+
         msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
         dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
         msg.set_des_dht_key(dht_key.StrKey());
@@ -575,7 +580,6 @@ void BftManager::HandleSyncConsensusBlock(
         bft_msg.set_elect_height(elect_item.elect_height);
         assert(elect_item.elect_height > 0);
         *bft_msg.mutable_block() = *bft_ptr->prepare_block();
-        //assert(bft_ptr->prepare_block()->has_bls_agg_sign_y() && bft_ptr->prepare_block()->has_bls_agg_sign_x());
         assert(bft_msg.block().height() > 0);
         transport::TcpTransport::Instance()->Send(
             msg_ptr->thread_idx,
@@ -1964,11 +1968,11 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         bitmap_data.push_back(prepare_bitmap_data[i]);
     }
 
-    auto& bls_commit_sign = bft_ptr->bls_precommit_agg_sign();
-    zjc_block->set_bls_agg_sign_x(
-        libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->X));
-    zjc_block->set_bls_agg_sign_y(
-        libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->Y));
+//     auto& bls_commit_sign = bft_ptr->bls_precommit_agg_sign();
+//     zjc_block->set_bls_agg_sign_x(
+//         libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->X));
+//     zjc_block->set_bls_agg_sign_y(
+//         libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->Y));
     auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(zjc_block, bft_ptr->db_batch());
     new_block_cache_callback_(
         thread_idx,
