@@ -406,7 +406,7 @@ public:
             return false;
         }
 
-        assert(block.has_bls_agg_sign_x() && block.has_bls_agg_sign_y());
+        assert(block->has_bls_agg_sign_x() && block->has_bls_agg_sign_y());
         return true;
     }
 
