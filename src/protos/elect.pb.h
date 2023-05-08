@@ -762,6 +762,13 @@ class member : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::std::string* release_pubkey();
   void set_allocated_pubkey(::std::string* pubkey);
 
+  // optional uint64 mining_amount = 3;
+  bool has_mining_amount() const;
+  void clear_mining_amount();
+  static const int kMiningAmountFieldNumber = 3;
+  ::google::protobuf::uint64 mining_amount() const;
+  void set_mining_amount(::google::protobuf::uint64 value);
+
   // optional int32 pool_idx_mod_num = 2;
   bool has_pool_idx_mod_num() const;
   void clear_pool_idx_mod_num();
@@ -775,11 +782,14 @@ class member : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   void clear_has_pubkey();
   void set_has_pool_idx_mod_num();
   void clear_has_pool_idx_mod_num();
+  void set_has_mining_amount();
+  void clear_has_mining_amount();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr pubkey_;
+  ::google::protobuf::uint64 mining_amount_;
   ::google::protobuf::int32 pool_idx_mod_num_;
   friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
 };
@@ -910,6 +920,13 @@ class ElectBlock : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::google::protobuf::uint64 elect_height() const;
   void set_elect_height(::google::protobuf::uint64 value);
 
+  // optional uint64 all_gas_amount = 5;
+  bool has_all_gas_amount() const;
+  void clear_all_gas_amount();
+  static const int kAllGasAmountFieldNumber = 5;
+  ::google::protobuf::uint64 all_gas_amount() const;
+  void set_all_gas_amount(::google::protobuf::uint64 value);
+
   // optional uint32 shard_network_id = 3;
   bool has_shard_network_id() const;
   void clear_shard_network_id();
@@ -925,6 +942,8 @@ class ElectBlock : public ::google::protobuf::Message /* @@protoc_insertion_poin
   void clear_has_shard_network_id();
   void set_has_elect_height();
   void clear_has_elect_height();
+  void set_has_all_gas_amount();
+  void clear_has_all_gas_amount();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -932,6 +951,7 @@ class ElectBlock : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::google::protobuf::RepeatedPtrField< ::zjchain::elect::protobuf::member > in_;
   ::zjchain::elect::protobuf::PrevMembers* prev_members_;
   ::google::protobuf::uint64 elect_height_;
+  ::google::protobuf::uint64 all_gas_amount_;
   ::google::protobuf::uint32 shard_network_id_;
   friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
 };
@@ -1978,21 +1998,6 @@ class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
 
   // accessors -------------------------------------------------------
 
-  // optional bytes pubkey = 4;
-  bool has_pubkey() const;
-  void clear_pubkey();
-  static const int kPubkeyFieldNumber = 4;
-  const ::std::string& pubkey() const;
-  void set_pubkey(const ::std::string& value);
-  #if LANG_CXX11
-  void set_pubkey(::std::string&& value);
-  #endif
-  void set_pubkey(const char* value);
-  void set_pubkey(const void* value, size_t size);
-  ::std::string* mutable_pubkey();
-  ::std::string* release_pubkey();
-  void set_allocated_pubkey(::std::string* pubkey);
-
   // optional bytes sign_ch = 5;
   bool has_sign_ch() const;
   void clear_sign_ch();
@@ -2107,6 +2112,13 @@ class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::zjchain::elect::protobuf::SyncNodeStokeResponse* mutable_sync_stoke_res();
   void set_allocated_sync_stoke_res(::zjchain::elect::protobuf::SyncNodeStokeResponse* sync_stoke_res);
 
+  // optional int32 member_index = 4;
+  bool has_member_index() const;
+  void clear_member_index();
+  static const int kMemberIndexFieldNumber = 4;
+  ::google::protobuf::int32 member_index() const;
+  void set_member_index(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.elect.protobuf.ElectMessage)
  private:
   void set_has_elect_block();
@@ -2115,8 +2127,8 @@ class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   void clear_has_prev_elect_block();
   void set_has_waiting_nodes();
   void clear_has_waiting_nodes();
-  void set_has_pubkey();
-  void clear_has_pubkey();
+  void set_has_member_index();
+  void clear_has_member_index();
   void set_has_sign_ch();
   void clear_has_sign_ch();
   void set_has_sign_res();
@@ -2133,7 +2145,6 @@ class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::internal::ArenaStringPtr pubkey_;
   ::google::protobuf::internal::ArenaStringPtr sign_ch_;
   ::google::protobuf::internal::ArenaStringPtr sign_res_;
   ::zjchain::elect::protobuf::ElectBlock* elect_block_;
@@ -2143,6 +2154,7 @@ class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::zjchain::elect::protobuf::LeaderRotationMessage* leader_rotation_;
   ::zjchain::elect::protobuf::SyncNodeStokeRequest* sync_stoke_req_;
   ::zjchain::elect::protobuf::SyncNodeStokeResponse* sync_stoke_res_;
+  ::google::protobuf::int32 member_index_;
   friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
 };
 // ===================================================================
@@ -3032,13 +3044,13 @@ inline void member::set_allocated_pubkey(::std::string* pubkey) {
 
 // optional int32 pool_idx_mod_num = 2;
 inline bool member::has_pool_idx_mod_num() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void member::set_has_pool_idx_mod_num() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void member::clear_has_pool_idx_mod_num() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void member::clear_pool_idx_mod_num() {
   pool_idx_mod_num_ = 0;
@@ -3052,6 +3064,30 @@ inline void member::set_pool_idx_mod_num(::google::protobuf::int32 value) {
   set_has_pool_idx_mod_num();
   pool_idx_mod_num_ = value;
   // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.member.pool_idx_mod_num)
+}
+
+// optional uint64 mining_amount = 3;
+inline bool member::has_mining_amount() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void member::set_has_mining_amount() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void member::clear_has_mining_amount() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void member::clear_mining_amount() {
+  mining_amount_ = GOOGLE_ULONGLONG(0);
+  clear_has_mining_amount();
+}
+inline ::google::protobuf::uint64 member::mining_amount() const {
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.member.mining_amount)
+  return mining_amount_;
+}
+inline void member::set_mining_amount(::google::protobuf::uint64 value) {
+  set_has_mining_amount();
+  mining_amount_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.member.mining_amount)
 }
 
 // -------------------------------------------------------------------
@@ -3148,13 +3184,13 @@ inline void ElectBlock::set_allocated_prev_members(::zjchain::elect::protobuf::P
 
 // optional uint32 shard_network_id = 3;
 inline bool ElectBlock::has_shard_network_id() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void ElectBlock::set_has_shard_network_id() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void ElectBlock::clear_has_shard_network_id() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void ElectBlock::clear_shard_network_id() {
   shard_network_id_ = 0u;
@@ -3192,6 +3228,30 @@ inline void ElectBlock::set_elect_height(::google::protobuf::uint64 value) {
   set_has_elect_height();
   elect_height_ = value;
   // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.ElectBlock.elect_height)
+}
+
+// optional uint64 all_gas_amount = 5;
+inline bool ElectBlock::has_all_gas_amount() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void ElectBlock::set_has_all_gas_amount() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void ElectBlock::clear_has_all_gas_amount() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void ElectBlock::clear_all_gas_amount() {
+  all_gas_amount_ = GOOGLE_ULONGLONG(0);
+  clear_has_all_gas_amount();
+}
+inline ::google::protobuf::uint64 ElectBlock::all_gas_amount() const {
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.ElectBlock.all_gas_amount)
+  return all_gas_amount_;
+}
+inline void ElectBlock::set_all_gas_amount(::google::protobuf::uint64 value) {
+  set_has_all_gas_amount();
+  all_gas_amount_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.ElectBlock.all_gas_amount)
 }
 
 // -------------------------------------------------------------------
@@ -3864,13 +3924,13 @@ inline void SyncNodeStokeResponse::set_now_tm_height(::google::protobuf::uint64 
 
 // optional .zjchain.elect.protobuf.ElectBlock elect_block = 1;
 inline bool ElectMessage::has_elect_block() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void ElectMessage::set_has_elect_block() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void ElectMessage::clear_has_elect_block() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void ElectMessage::clear_elect_block() {
   if (elect_block_ != NULL) elect_block_->Clear();
@@ -3922,13 +3982,13 @@ inline void ElectMessage::set_allocated_elect_block(::zjchain::elect::protobuf::
 
 // optional .zjchain.elect.protobuf.ElectBlock prev_elect_block = 2;
 inline bool ElectMessage::has_prev_elect_block() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void ElectMessage::set_has_prev_elect_block() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void ElectMessage::clear_has_prev_elect_block() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void ElectMessage::clear_prev_elect_block() {
   if (prev_elect_block_ != NULL) prev_elect_block_->Clear();
@@ -3980,13 +4040,13 @@ inline void ElectMessage::set_allocated_prev_elect_block(::zjchain::elect::proto
 
 // optional .zjchain.elect.protobuf.WaitingNodesMessage waiting_nodes = 3;
 inline bool ElectMessage::has_waiting_nodes() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void ElectMessage::set_has_waiting_nodes() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void ElectMessage::clear_has_waiting_nodes() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void ElectMessage::clear_waiting_nodes() {
   if (waiting_nodes_ != NULL) waiting_nodes_->Clear();
@@ -4036,81 +4096,39 @@ inline void ElectMessage::set_allocated_waiting_nodes(::zjchain::elect::protobuf
   // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.ElectMessage.waiting_nodes)
 }
 
-// optional bytes pubkey = 4;
-inline bool ElectMessage::has_pubkey() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
+// optional int32 member_index = 4;
+inline bool ElectMessage::has_member_index() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
-inline void ElectMessage::set_has_pubkey() {
-  _has_bits_[0] |= 0x00000001u;
+inline void ElectMessage::set_has_member_index() {
+  _has_bits_[0] |= 0x00000200u;
 }
-inline void ElectMessage::clear_has_pubkey() {
-  _has_bits_[0] &= ~0x00000001u;
+inline void ElectMessage::clear_has_member_index() {
+  _has_bits_[0] &= ~0x00000200u;
 }
-inline void ElectMessage::clear_pubkey() {
-  pubkey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_pubkey();
+inline void ElectMessage::clear_member_index() {
+  member_index_ = 0;
+  clear_has_member_index();
 }
-inline const ::std::string& ElectMessage::pubkey() const {
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.ElectMessage.pubkey)
-  return pubkey_.GetNoArena();
+inline ::google::protobuf::int32 ElectMessage::member_index() const {
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.ElectMessage.member_index)
+  return member_index_;
 }
-inline void ElectMessage::set_pubkey(const ::std::string& value) {
-  set_has_pubkey();
-  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.ElectMessage.pubkey)
-}
-#if LANG_CXX11
-inline void ElectMessage::set_pubkey(::std::string&& value) {
-  set_has_pubkey();
-  pubkey_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.elect.protobuf.ElectMessage.pubkey)
-}
-#endif
-inline void ElectMessage::set_pubkey(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_pubkey();
-  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.elect.protobuf.ElectMessage.pubkey)
-}
-inline void ElectMessage::set_pubkey(const void* value, size_t size) {
-  set_has_pubkey();
-  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.elect.protobuf.ElectMessage.pubkey)
-}
-inline ::std::string* ElectMessage::mutable_pubkey() {
-  set_has_pubkey();
-  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.ElectMessage.pubkey)
-  return pubkey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* ElectMessage::release_pubkey() {
-  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.ElectMessage.pubkey)
-  if (!has_pubkey()) {
-    return NULL;
-  }
-  clear_has_pubkey();
-  return pubkey_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void ElectMessage::set_allocated_pubkey(::std::string* pubkey) {
-  if (pubkey != NULL) {
-    set_has_pubkey();
-  } else {
-    clear_has_pubkey();
-  }
-  pubkey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), pubkey);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.ElectMessage.pubkey)
+inline void ElectMessage::set_member_index(::google::protobuf::int32 value) {
+  set_has_member_index();
+  member_index_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.ElectMessage.member_index)
 }
 
 // optional bytes sign_ch = 5;
 inline bool ElectMessage::has_sign_ch() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
 inline void ElectMessage::set_has_sign_ch() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000001u;
 }
 inline void ElectMessage::clear_has_sign_ch() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void ElectMessage::clear_sign_ch() {
   sign_ch_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -4170,13 +4188,13 @@ inline void ElectMessage::set_allocated_sign_ch(::std::string* sign_ch) {
 
 // optional bytes sign_res = 6;
 inline bool ElectMessage::has_sign_res() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void ElectMessage::set_has_sign_res() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void ElectMessage::clear_has_sign_res() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void ElectMessage::clear_sign_res() {
   sign_res_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -4236,13 +4254,13 @@ inline void ElectMessage::set_allocated_sign_res(::std::string* sign_res) {
 
 // optional .zjchain.elect.protobuf.WaitingNodeHeartbeat waiting_heartbeat = 7;
 inline bool ElectMessage::has_waiting_heartbeat() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void ElectMessage::set_has_waiting_heartbeat() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void ElectMessage::clear_has_waiting_heartbeat() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void ElectMessage::clear_waiting_heartbeat() {
   if (waiting_heartbeat_ != NULL) waiting_heartbeat_->Clear();
@@ -4294,13 +4312,13 @@ inline void ElectMessage::set_allocated_waiting_heartbeat(::zjchain::elect::prot
 
 // optional .zjchain.elect.protobuf.LeaderRotationMessage leader_rotation = 8;
 inline bool ElectMessage::has_leader_rotation() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void ElectMessage::set_has_leader_rotation() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void ElectMessage::clear_has_leader_rotation() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void ElectMessage::clear_leader_rotation() {
   if (leader_rotation_ != NULL) leader_rotation_->Clear();
@@ -4352,13 +4370,13 @@ inline void ElectMessage::set_allocated_leader_rotation(::zjchain::elect::protob
 
 // optional .zjchain.elect.protobuf.SyncNodeStokeRequest sync_stoke_req = 9;
 inline bool ElectMessage::has_sync_stoke_req() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void ElectMessage::set_has_sync_stoke_req() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void ElectMessage::clear_has_sync_stoke_req() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void ElectMessage::clear_sync_stoke_req() {
   if (sync_stoke_req_ != NULL) sync_stoke_req_->Clear();
@@ -4410,13 +4428,13 @@ inline void ElectMessage::set_allocated_sync_stoke_req(::zjchain::elect::protobu
 
 // optional .zjchain.elect.protobuf.SyncNodeStokeResponse sync_stoke_res = 10;
 inline bool ElectMessage::has_sync_stoke_res() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void ElectMessage::set_has_sync_stoke_res() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void ElectMessage::clear_has_sync_stoke_res() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void ElectMessage::clear_sync_stoke_res() {
   if (sync_stoke_res_ != NULL) sync_stoke_res_->Clear();

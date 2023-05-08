@@ -988,6 +988,20 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::uint64 timeblock_height() const;
   void set_timeblock_height(::google::protobuf::uint64 value);
 
+  // optional uint32 version = 5;
+  bool has_version() const;
+  void clear_version();
+  static const int kVersionFieldNumber = 5;
+  ::google::protobuf::uint32 version() const;
+  void set_version(::google::protobuf::uint32 value);
+
+  // optional uint32 commit_pool_index = 16;
+  bool has_commit_pool_index() const;
+  void clear_commit_pool_index();
+  static const int kCommitPoolIndexFieldNumber = 16;
+  ::google::protobuf::uint32 commit_pool_index() const;
+  void set_commit_pool_index(::google::protobuf::uint32 value);
+
   // optional uint64 timestamp = 12;
   bool has_timestamp() const;
   void clear_timestamp();
@@ -1002,12 +1016,12 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::uint64 leader_index() const;
   void set_leader_index(::google::protobuf::uint64 value);
 
-  // optional uint32 version = 5;
-  bool has_version() const;
-  void clear_version();
-  static const int kVersionFieldNumber = 5;
-  ::google::protobuf::uint32 version() const;
-  void set_version(::google::protobuf::uint32 value);
+  // optional uint64 commit_height = 17;
+  bool has_commit_height() const;
+  void clear_commit_height();
+  static const int kCommitHeightFieldNumber = 17;
+  ::google::protobuf::uint64 commit_height() const;
+  void set_commit_height(::google::protobuf::uint64 value);
 
   // @@protoc_insertion_point(class_scope:zjchain.block.protobuf.Block)
  private:
@@ -1037,6 +1051,10 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   void clear_has_bls_agg_sign_y();
   void set_has_leader_index();
   void clear_has_leader_index();
+  void set_has_commit_pool_index();
+  void clear_has_commit_pool_index();
+  void set_has_commit_height();
+  void clear_has_commit_height();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -1053,9 +1071,11 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::uint64 consistency_random_;
   ::google::protobuf::uint64 electblock_height_;
   ::google::protobuf::uint64 timeblock_height_;
+  ::google::protobuf::uint32 version_;
+  ::google::protobuf::uint32 commit_pool_index_;
   ::google::protobuf::uint64 timestamp_;
   ::google::protobuf::uint64 leader_index_;
-  ::google::protobuf::uint32 version_;
+  ::google::protobuf::uint64 commit_height_;
   friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -5832,13 +5852,13 @@ inline void Block::set_allocated_hash(::std::string* hash) {
 
 // optional uint32 version = 5;
 inline bool Block::has_version() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void Block::set_has_version() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void Block::clear_has_version() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void Block::clear_version() {
   version_ = 0u;
@@ -6012,13 +6032,13 @@ Block::tx_list() const {
 
 // optional uint64 timestamp = 12;
 inline bool Block::has_timestamp() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void Block::set_has_timestamp() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void Block::clear_has_timestamp() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void Block::clear_timestamp() {
   timestamp_ = GOOGLE_ULONGLONG(0);
@@ -6168,13 +6188,13 @@ inline void Block::set_allocated_bls_agg_sign_y(::std::string* bls_agg_sign_y) {
 
 // optional uint64 leader_index = 15;
 inline bool Block::has_leader_index() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 inline void Block::set_has_leader_index() {
-  _has_bits_[0] |= 0x00000800u;
+  _has_bits_[0] |= 0x00002000u;
 }
 inline void Block::clear_has_leader_index() {
-  _has_bits_[0] &= ~0x00000800u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 inline void Block::clear_leader_index() {
   leader_index_ = GOOGLE_ULONGLONG(0);
@@ -6188,6 +6208,54 @@ inline void Block::set_leader_index(::google::protobuf::uint64 value) {
   set_has_leader_index();
   leader_index_ = value;
   // @@protoc_insertion_point(field_set:zjchain.block.protobuf.Block.leader_index)
+}
+
+// optional uint32 commit_pool_index = 16;
+inline bool Block::has_commit_pool_index() const {
+  return (_has_bits_[0] & 0x00000800u) != 0;
+}
+inline void Block::set_has_commit_pool_index() {
+  _has_bits_[0] |= 0x00000800u;
+}
+inline void Block::clear_has_commit_pool_index() {
+  _has_bits_[0] &= ~0x00000800u;
+}
+inline void Block::clear_commit_pool_index() {
+  commit_pool_index_ = 0u;
+  clear_has_commit_pool_index();
+}
+inline ::google::protobuf::uint32 Block::commit_pool_index() const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.Block.commit_pool_index)
+  return commit_pool_index_;
+}
+inline void Block::set_commit_pool_index(::google::protobuf::uint32 value) {
+  set_has_commit_pool_index();
+  commit_pool_index_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.Block.commit_pool_index)
+}
+
+// optional uint64 commit_height = 17;
+inline bool Block::has_commit_height() const {
+  return (_has_bits_[0] & 0x00004000u) != 0;
+}
+inline void Block::set_has_commit_height() {
+  _has_bits_[0] |= 0x00004000u;
+}
+inline void Block::clear_has_commit_height() {
+  _has_bits_[0] &= ~0x00004000u;
+}
+inline void Block::clear_commit_height() {
+  commit_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_commit_height();
+}
+inline ::google::protobuf::uint64 Block::commit_height() const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.Block.commit_height)
+  return commit_height_;
+}
+inline void Block::set_commit_height(::google::protobuf::uint64 value) {
+  set_has_commit_height();
+  commit_height_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.Block.commit_height)
 }
 
 // -------------------------------------------------------------------
