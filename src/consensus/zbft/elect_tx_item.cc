@@ -250,7 +250,12 @@ void ElectTxItem::MiningToken(
     uint64_t all_tx_count = 0;
     uint64_t max_tx_count = 0;
     for (int32_t i = 0; i < elect_nodes.size(); ++i) {
-        if (elect_nodes[i]->tx_count > max_tx_count) {
+        auto tx_count = elect_nodes[i]->tx_count;
+        if (tx_count <= 0) {
+            tx_count = 1;
+        }
+
+        if (tx_count > max_tx_count) {
             max_tx_count = elect_nodes[i]->tx_count;
         }
 
