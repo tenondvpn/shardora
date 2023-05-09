@@ -56,4 +56,5 @@ message Header {
     optional block.protobuf.CrossShardingStatisticMessage cross_statistic = 23;
     optional block.protobuf.ElectBlockMessage elect_block = 24;
     optional init.protobuf.InitMessage init_proto = 25;
+    optional pools.protobuf.SyncPoolsMaxHeight sync_heights = 26;
 }

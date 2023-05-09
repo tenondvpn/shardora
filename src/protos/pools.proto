@@ -79,6 +79,11 @@ message ElectStatistic {
     repeated uint32 lof_leaders = 6;
 }
 
+message SyncPoolsMaxHeight {
+    optional bool req = 1 [default=false];
+    repeated uint64 heights = 2;
+}
+
 message TxMessage {
     optional uint32 version = 1;
     optional bytes gid = 2;

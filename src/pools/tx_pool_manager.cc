@@ -51,7 +51,7 @@ TxPoolManager::~TxPoolManager() {
 
 void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    if (prev_sync_height_tree_tm_ms_ > now_tm_ms) {
+    if (prev_sync_height_tree_tm_ms_ < now_tm_ms) {
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             tx_pool_[i].FlushHeightTree();
         }
@@ -59,33 +59,67 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
         prev_sync_height_tree_tm_ms_ = now_tm_ms + kFlushHeightTreePeriod;
     }
 
-    if (kv_sync_->added_key_size() >= sync::kSyncMaxKeyCount) {
-        assert(false);
-        return;
+    if (kv_sync_->added_key_size() < sync::kSyncMaxKeyCount) {
+        SyncMinssingHeights()
     }
 
+
+    if (prev_sync_heights_ms_ < now_tm_ms) {
+        SyncPoolsMaxHeight(msg_ptr->thread_idx);
+        prev_sync_heights_ms_ = now_tm_ms + kSyncPoolsMaxHeightsPeriod;
+    }
+}
+
+void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx) {
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
-        tx_pool_[common::kRootChainPoolIndex].SyncMissingBlocks(msg_ptr->thread_idx, now_tm_ms);
+        tx_pool_[common::kRootChainPoolIndex].SyncMissingBlocks(thread_idx, now_tm_ms);
         return;
     }
 
     prev_synced_pool_index_ %= common::kInvalidPoolIndex;
     auto begin_pool = prev_synced_pool_index_;
     for (; prev_synced_pool_index_ < common::kInvalidPoolIndex; ++prev_synced_pool_index_) {
-        auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(msg_ptr->thread_idx, now_tm_ms);
+        auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(thread_idx, now_tm_ms);
         if (res > 0) {
             ++prev_synced_pool_index_;
             return;
+        }
+
+        if (tx_pool_[prev_synced_pool_index_]->latest_height() < synced_max_heights_[prev_synced_pool_index_]) {
+            SyncBlockWithMaxHeights(thread_idx, synced_max_heights_[prev_synced_pool_index_]);
         }
     }
 
     for (prev_synced_pool_index_ = 0; prev_synced_pool_index_ < begin_pool; ++prev_synced_pool_index_) {
-        auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(msg_ptr->thread_idx, now_tm_ms);
+        auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(thread_idx, now_tm_ms);
         if (res > 0) {
             ++prev_synced_pool_index_;
             return;
         }
+
+        if (tx_pool_[prev_synced_pool_index_]->latest_height() < synced_max_heights_[prev_synced_pool_index_]) {
+            SyncBlockWithMaxHeights(thread_idx, synced_max_heights_[prev_synced_pool_index_]);
+        }
     }
+}
+
+void TxPoolManager::SyncBlockWithMaxHeights(uint8_t thread_idx, uint64_t height) {
+    auto net_id = common::GlobalInfo::Instance()->network_id();
+    if (net_id >= network::kConsensusWaitingShardBeginNetworkId &&
+        net_id < network::kConsensusWaitingShardEndNetworkId) {
+        net_id -= network::kConsensusWaitingShardOffset;
+    }
+
+    if (net_id < network::kRootCongressNetworkId || net_id >= network::kConsensusShardEndNetworkId) {
+        return 0;
+    }
+
+    kv_sync_->AddSyncHeight(
+        thread_idx,
+        net_id,
+        pool_index_,
+        height,
+        sync::kSyncHigh);
 }
 
 std::shared_ptr<address::protobuf::AddressInfo> TxPoolManager::GetAddressInfo(
@@ -139,6 +173,69 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         default:
             msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
             break;
+        }
+    }
+}
+
+void TxPoolManager::SyncPoolsMaxHeight(uint8_t thread_idx) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->thread_idx = thread_idx;
+    auto net_id = common::GlobalInfo::Instance()->network_id();
+    msg_ptr->header.set_src_sharding_id(net_id);
+    dht::DhtKeyManager dht_key(net_id);
+    msg_ptr->header.set_des_dht_key(dht_key.StrKey());
+    msg_ptr->header.set_type(common::kPoolsMessage);
+    auto* sync_heights = msg_ptr->header.mutable_sync_heights();
+    sync_heights->set_req(true);
+    transport::TcpTransport::Instance()->SetMessageHash(
+        msg_ptr->header,
+        msg_ptr->thread_idx);
+    network::Route::Instance()->Send(msg_ptr);
+}
+
+void TxPoolManager::HandleSyncPoolsMaxHeightReq(const transport::MessagePtr& msg_ptr) {
+    if (tx_pool_ == nullptr) {
+        return;
+    }
+
+    if (!msg_ptr->header.has_sync_heights()) {
+        return;
+    }
+
+    if (msg_ptr->header.sync_heights().req()) {
+        transport::TransportMessage msg;
+        auto net_id = common::GlobalInfo::Instance()->network_id();
+        msg.set_src_sharding_id(net_id);
+        dht::DhtKeyManager dht_key(net_id);
+        msg.set_des_dht_key(dht_key.StrKey());
+        msg.set_type(common::kPoolsMessage);
+        auto* sync_heights = msg.mutable_sync_heights();
+        uint32_t pool_idx = common::kInvalidPoolIndex;
+        for (uint32_t i = 0; i < pool_idx; ++i) {
+            sync_heights->add_heights(tx_pool_[i]->latest_height());
+        }
+
+        transport::TcpTransport::Instance()->SetMessageHash(
+            msg,
+            msg_ptr->thread_idx);
+        transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
+    } else {
+        auto& heights = msg_ptr->header.sync_heights().heights();
+        if (heights.size() != common::kInvalidPoolIndex) {
+            return;
+        }
+
+        for (int32_t i = 0; i < heights.size(); ++i) {
+            if (heights[i] != common::kInvalidUint64) {
+                if (heights[i] > tx_pool_[i]->latest_height() + 64) {
+                    synced_max_heights_[i] = tx_pool_[i]->latest_height() + 64;
+                    continue;
+                }
+
+                if (heights[i] > tx_pool_[i]->latest_height()) {
+                    synced_max_heights_[i] = heights[i];
+                }
+            }
         }
     }
 }

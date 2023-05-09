@@ -98,6 +98,10 @@ public:
             return;
         }
 
+        if (height > synced_max_heights_[pool_index]) {
+            synced_max_heights_[pool_index] = height;
+        }
+
         pools::protobuf::PoolLatestInfo pool_info;
         pool_info.set_height(height);
         pool_info.set_hash(hash);
@@ -126,9 +130,15 @@ private:
     void HandleElectTx(const transport::MessagePtr& msg_ptr);
     bool UserTxValid(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
+    void SyncPoolsMaxHeight();
+    void HandleSyncPoolsMaxHeightReq(const transport::MessagePtr& msg_ptr);
+    void HandleSyncPoolsMaxHeightRes(const transport::MessagePtr& msg_ptr);
+    void SyncMinssingHeights(uint8_t thread_idx);
+    void SyncBlockWithMaxHeights(uint8_t thread_idx, uint64_t height);
 
     static const uint32_t kPopMessageCountEachTime = 320u;
     static const uint64_t kFlushHeightTreePeriod = 60000lu;
+    static const uint64_t kSyncPoolsMaxHeightsPeriod = 3000lu;
 
     TxPool* tx_pool_{ nullptr };
     std::shared_ptr<security::Security> security_ = nullptr;
@@ -140,9 +150,11 @@ private:
     uint32_t prev_count_[257] = { 0 };
     uint64_t prev_timestamp_us_ = 0;
     uint64_t prev_sync_check_us_ = 0;
+    uint64_t prev_sync_heights_ms_ = 0;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     uint32_t prev_synced_pool_index_ = 0;
     uint32_t prev_sync_height_tree_tm_ms_ = 0;
+    volatile uint64_t synced_max_heights_[common::kInvalidPoolIndex] = { 0 };
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };
