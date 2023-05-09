@@ -298,11 +298,11 @@ void ElectTxItem::MiningToken(
             tmp_all_gas_amount += gas_token;
             ZJC_DEBUG("elect mining %s, mining: %lu, gas mining: %lu, all gas: %lu, src: %lu",
                 common::Encode::HexEncode(id).c_str(),
-                mining_token, gas_token, all_gas_amount, gas_for_mining);
+                mining_token, gas_token, tmp_all_gas_amount, gas_for_mining);
         }
     }
 
-    assert(tmp_all_gas_amount == all_gas_amount);
+    assert(tmp_all_gas_amount == gas_for_mining);
 }
 
 uint64_t ElectTxItem::GetMiningMaxCount(uint64_t max_tx_count) {
