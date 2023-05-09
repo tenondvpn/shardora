@@ -202,10 +202,6 @@ void BlockManager::GenesisAddAllAccount(
 
     // one block must be one consensus pool
     for (int32_t i = 0; i < tx_list.size(); ++i) {
-        if (tx_list[i].balance() == 0) {
-            continue;
-        }
-
         auto& account_id = account_mgr_->GetTxValidAddress(tx_list[i]);
         auto account_info = std::make_shared<address::protobuf::AddressInfo>();
         account_info->set_pool_index(common::GetAddressPoolIndex(account_id));
