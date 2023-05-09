@@ -30,7 +30,7 @@ public:
 
 TEST_F(TestUtils, All) {
     for (int32_t i = 0; i < 100000000lu; ++i) {
-        if (i % 100000 == 0) {
+        if (i % 10000 == 0) {
             std::cout << i << ":" << log2(i) << std::endl;
         }
     }
