@@ -970,9 +970,9 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         init_heights.set_heights(pool_index, tenon_block->height());
     }
 
-    if (all_balance != common::kGenesisFoundationMaxZjc) {
+    if (all_balance != common::kGenesisShardingNodesMaxZjc) {
         ZJC_FATAL("all_balance != common::kGenesisFoundationMaxTenon failed! [%lu][%llu]",
-            all_balance, common::kGenesisFoundationMaxZjc);
+            all_balance, common::kGenesisShardingNodesMaxZjc);
         return kInitError;
     }
     return kInitSuccess;
