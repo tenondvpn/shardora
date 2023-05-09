@@ -287,8 +287,8 @@ void ElectTxItem::MiningToken(
             }
 
             auto mining_token = now_ming_count * elect_nodes[i]->tx_count / max_tx_count;
+            elect_nodes[i]->mining_token = mining_token;
             auto gas_token = elect_nodes[i]->tx_count * gas_for_mining / all_tx_count;
-            elect_nodes[i]->mining_token = mining_token
             if (i == elect_nodes.size() - 1) {
                 assert(gas_for_mining >= tmp_all_gas_amount);
                 gas_token = gas_for_mining - tmp_all_gas_amount;
