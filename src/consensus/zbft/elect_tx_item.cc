@@ -131,11 +131,13 @@ int ElectTxItem::HandleTx(
                 return res;
             }
            
+            uint64_t gas_for_root = 0llu;
             MiningToken(
                 thread_idx,
                 elect_statistic.sharding_id(),
                 elect_nodes,
-                elect_statistic.gas_amount());
+                elect_statistic.gas_amount(),
+                &gas_for_root);
             min_area_weight += 1;
             min_tx_count += 1;
             uint32_t join_count = members->size() - elect_nodes.size();
@@ -228,7 +230,14 @@ int ElectTxItem::HandleTx(
 
                 ZJC_DEBUG("before CreateNewElect: %s", ids.c_str());
             }
-            CreateNewElect(thread_idx, block, elect_nodes, elect_statistic, db_batch, block_tx);
+            CreateNewElect(
+                thread_idx,
+                block,
+                elect_nodes,
+                elect_statistic,
+                gas_for_root,
+                db_batch,
+                block_tx);
 
             {
                 std::string ids;
@@ -251,7 +260,8 @@ void ElectTxItem::MiningToken(
         uint8_t thread_idx,
         uint32_t statistic_sharding_id,
         std::vector<NodeDetailPtr>& elect_nodes,
-        uint64_t all_gas_amount) {
+        uint64_t all_gas_amount,
+        uint64_t* gas_for_root) {
     uint64_t all_tx_count = 0;
     uint64_t max_tx_count = 0;
     for (int32_t i = 0; i < elect_nodes.size(); ++i) {
@@ -267,10 +277,12 @@ void ElectTxItem::MiningToken(
         return;
     }
 
-    uint64_t gas_for_mining = all_gas_amount - all_gas_amount / network_count_;
+    uint64_t gas_for_mining = all_gas_amount - (all_gas_amount / network_count_);
     // root shard use statistic gas amount.
     if (statistic_sharding_id == network::kRootCongressNetworkId) {
         gas_for_mining = all_gas_amount;
+    } else {
+        *gas_for_root = all_gas_amount - gas_for_mining;
     }
 
     auto now_ming_count = GetMiningMaxCount(max_tx_count);
@@ -321,6 +333,7 @@ int ElectTxItem::CreateNewElect(
         const block::protobuf::Block& block,
         const std::vector<NodeDetailPtr>& elect_nodes,
         const pools::protobuf::ElectStatistic& elect_statistic,
+        uint64_t gas_for_root,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         block::protobuf::BlockTx& block_tx) {
     elect::protobuf::ElectBlock elect_block;
@@ -331,6 +344,7 @@ int ElectTxItem::CreateNewElect(
         in->set_mining_amount((*iter)->mining_token);
     }
 
+    elect_block.set_gas_for_root(gas_for_root);
     elect_block.set_shard_network_id(elect_statistic.sharding_id());
     elect_block.set_elect_height(block.height());
     elect_block.set_all_gas_amount(elect_statistic.gas_amount());

@@ -84,13 +84,15 @@ private:
         const block::protobuf::Block& block,
         const std::vector<NodeDetailPtr>& elect_nodes,
         const pools::protobuf::ElectStatistic& elect_statistic,
+        uint64_t gas_for_root,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         block::protobuf::BlockTx& block_tx);
     void MiningToken(
         uint8_t thread_idx,
         uint32_t statistic_sharding_id,
         std::vector<NodeDetailPtr>& elect_nodes,
-        uint64_t all_gas_amount);
+        uint64_t all_gas_amount,
+        uint64_t* gas_for_root);
     uint64_t GetMiningMaxCount(uint64_t max_tx_count);
 
     static const uint32_t kFtsWeedoutDividRate = 10u;
