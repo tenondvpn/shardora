@@ -131,7 +131,11 @@ int ElectTxItem::HandleTx(
                 return res;
             }
            
-            MiningToken(elect_statistic.sharding_id(), elect_nodes, elect_statistic.gas_amount());
+            MiningToken(
+                thread_idx,
+                elect_statistic.sharding_id(),
+                elect_nodes,
+                elect_statistic.gas_amount());
             min_area_weight += 1;
             min_tx_count += 1;
             uint32_t join_count = members->size() - elect_nodes.size();
@@ -244,6 +248,7 @@ int ElectTxItem::HandleTx(
 }
 
 void ElectTxItem::MiningToken(
+        uint8_t thread_idx,
         uint32_t statistic_sharding_id,
         std::vector<NodeDetailPtr>& elect_nodes,
         uint64_t all_gas_amount) {

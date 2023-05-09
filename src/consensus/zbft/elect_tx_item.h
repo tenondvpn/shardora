@@ -87,6 +87,7 @@ private:
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         block::protobuf::BlockTx& block_tx);
     void MiningToken(
+        uint8_t thread_idx,
         uint32_t statistic_sharding_id,
         std::vector<NodeDetailPtr>& elect_nodes,
         uint64_t all_gas_amount);
