@@ -60,10 +60,10 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
         prev_sync_height_tree_tm_ms_ = now_tm_ms + kFlushHeightTreePeriod;
     }
 
-    if (kv_sync_->added_key_size() < sync::kSyncMaxKeyCount) {
+    if (prev_sync_check_ms_ < now_tm_ms) {
         SyncMinssingHeights(msg_ptr->thread_idx, now_tm_ms);
+        prev_sync_check_ms_ = now_tm_ms + kSyncPoolsMaxHeightsPeriod;
     }
-
 
     if (prev_sync_heights_ms_ < now_tm_ms) {
         SyncPoolsMaxHeight(msg_ptr->thread_idx);

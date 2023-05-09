@@ -149,7 +149,7 @@ private:
     common::UniqueMap<std::string, protos::AddressInfoPtr, 10240, 32> address_map_;
     uint32_t prev_count_[257] = { 0 };
     uint64_t prev_timestamp_us_ = 0;
-    uint64_t prev_sync_check_us_ = 0;
+    uint64_t prev_sync_check_ms_ = 0;
     uint64_t prev_sync_heights_ms_ = 0;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     uint32_t prev_synced_pool_index_ = 0;
