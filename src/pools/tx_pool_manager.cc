@@ -181,6 +181,10 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             break;
         }
     }
+
+    if (header.has_sync_heights()) {
+        HandleSyncPoolsMaxHeight(msg_ptr);
+    }
 }
 
 void TxPoolManager::SyncPoolsMaxHeight(uint8_t thread_idx) {
@@ -199,7 +203,7 @@ void TxPoolManager::SyncPoolsMaxHeight(uint8_t thread_idx) {
     network::Route::Instance()->Send(msg_ptr);
 }
 
-void TxPoolManager::HandleSyncPoolsMaxHeightReq(const transport::MessagePtr& msg_ptr) {
+void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_ptr) {
     if (tx_pool_ == nullptr) {
         return;
     }

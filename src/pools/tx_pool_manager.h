@@ -108,15 +108,12 @@ private:
     void HandleCreateContractTx(const transport::MessagePtr& msg_ptr);
     void HandleUserCallContractTx(const transport::MessagePtr& msg_ptr);
     void HandleNormalFromTx(const transport::MessagePtr& msg_ptr);
-    void HandleCrossShardingToTxs(const transport::MessagePtr& msg_ptr);
-    void HandleCrossShardingStatisticTxs(const transport::MessagePtr& msg_ptr);
     void HandleContractExcute(const transport::MessagePtr& msg_ptr);
     void HandleElectTx(const transport::MessagePtr& msg_ptr);
     bool UserTxValid(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
     void SyncPoolsMaxHeight(uint8_t thread_idx);
-    void HandleSyncPoolsMaxHeightReq(const transport::MessagePtr& msg_ptr);
-    void HandleSyncPoolsMaxHeightRes(const transport::MessagePtr& msg_ptr);
+    void HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_ptr);
     void SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms);
     void SyncBlockWithMaxHeights(uint8_t thread_idx, uint32_t pool_idx, uint64_t height);
 
