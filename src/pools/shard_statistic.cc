@@ -266,6 +266,21 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                 common::GlobalInfo::Instance()->network_id() ==
                 network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
             for (int32_t storage_idx = 0; storage_idx < block.tx_list(i).storages_size(); ++storage_idx) {
+                if (block.tx_list(i).storages(storage_idx).key() == protos::kElectNodeAttrElectBlock) {
+                    std::string val;
+                    if (!prefix_db_->GetTemporaryKv(block.tx_list(i).storages(storage_idx).val_hash(), &val)) {
+                        break;
+                    }
+
+                    elect::protobuf::ElectBlock elect_block;
+                    if (!elect_block.ParseFromString(val)) {
+                        break;
+                    }
+
+                    if (elect_block.gas_for_root() > 0) {
+                        statistic_info_ptr->all_gas_for_root += elect_block.gas_for_root();
+                    }
+                }
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kShardElection) {
                     uint64_t* tmp = (uint64_t*)block.tx_list(i).storages(storage_idx).val_hash().c_str();
                     pools::protobuf::ElectStatistic elect_statistic;
@@ -417,6 +432,7 @@ int ShardStatistic::StatisticWithHeights(
 
     std::unordered_map<uint32_t, common::Point> lof_map;
     uint64_t all_gas_amount = 0;
+    uint64_t root_all_gas_amount = 0;
     for (uint32_t pool_idx = 0; pool_idx < max_pool; ++pool_idx) {
         uint64_t min_height = 1;
         if (tx_heights_ptr_ != nullptr) {
@@ -496,6 +512,7 @@ int ShardStatistic::StatisticWithHeights(
             }
 
             all_gas_amount += hiter->second->all_gas_amount;
+            root_all_gas_amount += hiter->second->all_gas_for_root;
         }
     }
 
@@ -667,7 +684,12 @@ int ShardStatistic::StatisticWithHeights(
         }
     }
 
-    elect_statistic.set_gas_amount(all_gas_amount);
+    if (is_root) {
+        elect_statistic.set_gas_amount(root_all_gas_amount);
+    } else {
+        elect_statistic.set_gas_amount(all_gas_amount);
+    }
+
     auto net_id = common::GlobalInfo::Instance()->network_id();
     elect_statistic.set_sharding_id(net_id);
     str_for_hash.append((char*)&all_gas_amount, sizeof(all_gas_amount));
