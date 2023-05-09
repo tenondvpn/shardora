@@ -90,6 +90,7 @@ private:
         uint32_t statistic_sharding_id,
         std::vector<NodeDetailPtr>& elect_nodes,
         uint64_t all_gas_amount);
+    uint64_t GetMiningMaxCount();
 
     static const uint32_t kFtsWeedoutDividRate = 10u;
     static const uint32_t kFtsNewElectJoinRate = 5u;

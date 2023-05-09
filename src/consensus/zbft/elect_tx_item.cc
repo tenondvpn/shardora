@@ -268,7 +268,7 @@ void ElectTxItem::MiningToken(
         gas_for_mining = all_gas_amount;
     }
 
-    auto now_ming_count = common::kInitMiningToken;
+    auto now_ming_count = GetMiningMaxCount(max_tx_count);
     if (!stop_mining_) {
         for (int32_t i = 0; i < elect_nodes.size(); ++i) {
             elect_nodes[i]->mining_token = now_ming_count * elect_nodes[i]->tx_count / max_tx_count;
@@ -276,6 +276,24 @@ void ElectTxItem::MiningToken(
         }
     }
 }
+
+uint64_t ElectTxItem::GetMiningMaxCount(uint64_t max_tx_count) {
+    auto now_ming_count = log(max_tx_count);
+    if (max_tx_count >= 1000) {
+        now_ming_count = common::kInitMiningToken / 3;
+    }
+
+    if (max_tx_count >= 10000) {
+        now_ming_count = common::kInitMiningToken / 2;
+    }
+
+    if (max_tx_count >= 100000) {
+        now_ming_count = common::kInitMiningToken;
+    }
+
+    return now_ming_count;
+}
+
 
 int ElectTxItem::CreateNewElect(
         uint8_t thread_idx,

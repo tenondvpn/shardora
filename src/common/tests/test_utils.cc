@@ -29,6 +29,10 @@ public:
 };
 
 TEST_F(TestUtils, All) {
+    for (int32_t i = 0; i < 1000000; ++i) {
+        std::cout << i << ":" << log(i) << std::endl;
+    }
+
     for (int32_t nodes_count = 3; nodes_count <= 1024; ++nodes_count) {
         int32_t expect_leader_count = (int32_t)pow(
             2.0,
