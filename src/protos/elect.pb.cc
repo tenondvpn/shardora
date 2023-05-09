@@ -380,11 +380,13 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectBlock, shard_network_id_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectBlock, elect_height_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectBlock, all_gas_amount_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectBlock, gas_for_root_),
   ~0u,
   0,
-  3,
+  4,
   1,
   2,
+  3,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::WaitingNodesMessage, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::WaitingNodesMessage, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -485,15 +487,15 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 19, 28, sizeof(::zjchain::elect::protobuf::BlsPublicKey)},
   { 32, 40, sizeof(::zjchain::elect::protobuf::PrevMembers)},
   { 43, 51, sizeof(::zjchain::elect::protobuf::member)},
-  { 54, 64, sizeof(::zjchain::elect::protobuf::ElectBlock)},
-  { 69, 77, sizeof(::zjchain::elect::protobuf::WaitingNodesMessage)},
-  { 80, 89, sizeof(::zjchain::elect::protobuf::WaitingNodeHeartbeat)},
-  { 93, 100, sizeof(::zjchain::elect::protobuf::LeaderRotationMessage)},
-  { 102, 109, sizeof(::zjchain::elect::protobuf::SyncNodeStokeItem)},
-  { 111, 118, sizeof(::zjchain::elect::protobuf::SyncNodeStokeRequest)},
-  { 120, 127, sizeof(::zjchain::elect::protobuf::SyncNodeStokeResItem)},
-  { 129, 136, sizeof(::zjchain::elect::protobuf::SyncNodeStokeResponse)},
-  { 138, 153, sizeof(::zjchain::elect::protobuf::ElectMessage)},
+  { 54, 65, sizeof(::zjchain::elect::protobuf::ElectBlock)},
+  { 71, 79, sizeof(::zjchain::elect::protobuf::WaitingNodesMessage)},
+  { 82, 91, sizeof(::zjchain::elect::protobuf::WaitingNodeHeartbeat)},
+  { 95, 102, sizeof(::zjchain::elect::protobuf::LeaderRotationMessage)},
+  { 104, 111, sizeof(::zjchain::elect::protobuf::SyncNodeStokeItem)},
+  { 113, 120, sizeof(::zjchain::elect::protobuf::SyncNodeStokeRequest)},
+  { 122, 129, sizeof(::zjchain::elect::protobuf::SyncNodeStokeResItem)},
+  { 131, 138, sizeof(::zjchain::elect::protobuf::SyncNodeStokeResponse)},
+  { 140, 155, sizeof(::zjchain::elect::protobuf::ElectMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -544,44 +546,44 @@ void AddDescriptorsImpl() {
       "ect_height\030\002 \001(\004\022;\n\rcommon_pubkey\030\003 \001(\0132"
       "$.zjchain.elect.protobuf.BlsPublicKey\"I\n"
       "\006member\022\016\n\006pubkey\030\001 \001(\014\022\030\n\020pool_idx_mod_"
-      "num\030\002 \001(\005\022\025\n\rmining_amount\030\003 \001(\004\"\273\001\n\nEle"
+      "num\030\002 \001(\005\022\025\n\rmining_amount\030\003 \001(\004\"\321\001\n\nEle"
       "ctBlock\022*\n\002in\030\001 \003(\0132\036.zjchain.elect.prot"
       "obuf.member\0229\n\014prev_members\030\002 \001(\0132#.zjch"
       "ain.elect.protobuf.PrevMembers\022\030\n\020shard_"
       "network_id\030\003 \001(\r\022\024\n\014elect_height\030\004 \001(\004\022\026"
-      "\n\016all_gas_amount\030\005 \001(\004\"Y\n\023WaitingNodesMe"
-      "ssage\022\024\n\014nodes_filter\030\001 \003(\004\022\030\n\020waiting_s"
-      "hard_id\030\002 \001(\r\022\022\n\nstoke_hash\030\003 \001(\014\"i\n\024Wai"
-      "tingNodeHeartbeat\022\021\n\tpublic_ip\030\001 \001(\014\022\023\n\013"
-      "public_port\030\002 \001(\r\022\022\n\nnetwork_id\030\003 \001(\r\022\025\n"
-      "\rtimestamp_sec\030\004 \001(\004\"@\n\025LeaderRotationMe"
-      "ssage\022\021\n\tleader_id\030\001 \001(\014\022\024\n\014pool_mod_num"
-      "\030\002 \001(\r\"9\n\021SyncNodeStokeItem\022\n\n\002id\030\001 \001(\014\022"
-      "\030\n\020synced_tm_height\030\002 \001(\004\"k\n\024SyncNodeSto"
-      "keRequest\022<\n\tsync_item\030\001 \003(\0132).zjchain.e"
-      "lect.protobuf.SyncNodeStokeItem\022\025\n\rnow_t"
-      "m_height\030\002 \001(\004\"3\n\024SyncNodeStokeResItem\022\n"
-      "\n\002id\030\001 \001(\014\022\017\n\007balance\030\002 \001(\004\"k\n\025SyncNodeS"
-      "tokeResponse\022;\n\005items\030\001 \003(\0132,.zjchain.el"
-      "ect.protobuf.SyncNodeStokeResItem\022\025\n\rnow"
-      "_tm_height\030\002 \001(\004\"\240\004\n\014ElectMessage\0227\n\013ele"
-      "ct_block\030\001 \001(\0132\".zjchain.elect.protobuf."
-      "ElectBlock\022<\n\020prev_elect_block\030\002 \001(\0132\".z"
-      "jchain.elect.protobuf.ElectBlock\022B\n\rwait"
-      "ing_nodes\030\003 \001(\0132+.zjchain.elect.protobuf"
-      ".WaitingNodesMessage\022\024\n\014member_index\030\004 \001"
-      "(\005\022\017\n\007sign_ch\030\005 \001(\014\022\020\n\010sign_res\030\006 \001(\014\022G\n"
-      "\021waiting_heartbeat\030\007 \001(\0132,.zjchain.elect"
-      ".protobuf.WaitingNodeHeartbeat\022F\n\017leader"
-      "_rotation\030\010 \001(\0132-.zjchain.elect.protobuf"
-      ".LeaderRotationMessage\022D\n\016sync_stoke_req"
-      "\030\t \001(\0132,.zjchain.elect.protobuf.SyncNode"
-      "StokeRequest\022E\n\016sync_stoke_res\030\n \001(\0132-.z"
-      "jchain.elect.protobuf.SyncNodeStokeRespo"
-      "nse"
+      "\n\016all_gas_amount\030\005 \001(\004\022\024\n\014gas_for_root\030\006"
+      " \001(\004\"Y\n\023WaitingNodesMessage\022\024\n\014nodes_fil"
+      "ter\030\001 \003(\004\022\030\n\020waiting_shard_id\030\002 \001(\r\022\022\n\ns"
+      "toke_hash\030\003 \001(\014\"i\n\024WaitingNodeHeartbeat\022"
+      "\021\n\tpublic_ip\030\001 \001(\014\022\023\n\013public_port\030\002 \001(\r\022"
+      "\022\n\nnetwork_id\030\003 \001(\r\022\025\n\rtimestamp_sec\030\004 \001"
+      "(\004\"@\n\025LeaderRotationMessage\022\021\n\tleader_id"
+      "\030\001 \001(\014\022\024\n\014pool_mod_num\030\002 \001(\r\"9\n\021SyncNode"
+      "StokeItem\022\n\n\002id\030\001 \001(\014\022\030\n\020synced_tm_heigh"
+      "t\030\002 \001(\004\"k\n\024SyncNodeStokeRequest\022<\n\tsync_"
+      "item\030\001 \003(\0132).zjchain.elect.protobuf.Sync"
+      "NodeStokeItem\022\025\n\rnow_tm_height\030\002 \001(\004\"3\n\024"
+      "SyncNodeStokeResItem\022\n\n\002id\030\001 \001(\014\022\017\n\007bala"
+      "nce\030\002 \001(\004\"k\n\025SyncNodeStokeResponse\022;\n\005it"
+      "ems\030\001 \003(\0132,.zjchain.elect.protobuf.SyncN"
+      "odeStokeResItem\022\025\n\rnow_tm_height\030\002 \001(\004\"\240"
+      "\004\n\014ElectMessage\0227\n\013elect_block\030\001 \001(\0132\".z"
+      "jchain.elect.protobuf.ElectBlock\022<\n\020prev"
+      "_elect_block\030\002 \001(\0132\".zjchain.elect.proto"
+      "buf.ElectBlock\022B\n\rwaiting_nodes\030\003 \001(\0132+."
+      "zjchain.elect.protobuf.WaitingNodesMessa"
+      "ge\022\024\n\014member_index\030\004 \001(\005\022\017\n\007sign_ch\030\005 \001("
+      "\014\022\020\n\010sign_res\030\006 \001(\014\022G\n\021waiting_heartbeat"
+      "\030\007 \001(\0132,.zjchain.elect.protobuf.WaitingN"
+      "odeHeartbeat\022F\n\017leader_rotation\030\010 \001(\0132-."
+      "zjchain.elect.protobuf.LeaderRotationMes"
+      "sage\022D\n\016sync_stoke_req\030\t \001(\0132,.zjchain.e"
+      "lect.protobuf.SyncNodeStokeRequest\022E\n\016sy"
+      "nc_stoke_res\030\n \001(\0132-.zjchain.elect.proto"
+      "buf.SyncNodeStokeResponse"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1803);
+      descriptor, 1825);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/elect.proto", &protobuf_RegisterTypes);
 }
@@ -2185,6 +2187,7 @@ const int ElectBlock::kPrevMembersFieldNumber;
 const int ElectBlock::kShardNetworkIdFieldNumber;
 const int ElectBlock::kElectHeightFieldNumber;
 const int ElectBlock::kAllGasAmountFieldNumber;
+const int ElectBlock::kGasForRootFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ElectBlock::ElectBlock()
@@ -2252,7 +2255,7 @@ void ElectBlock::Clear() {
     GOOGLE_DCHECK(prev_members_ != NULL);
     prev_members_->Clear();
   }
-  if (cached_has_bits & 14u) {
+  if (cached_has_bits & 30u) {
     ::memset(&elect_height_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&shard_network_id_) -
         reinterpret_cast<char*>(&elect_height_)) + sizeof(shard_network_id_));
@@ -2337,6 +2340,20 @@ bool ElectBlock::MergePartialFromCodedStream(
         break;
       }
 
+      // optional uint64 gas_for_root = 6;
+      case 6: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
+          set_has_gas_for_root();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &gas_for_root_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -2380,7 +2397,7 @@ void ElectBlock::SerializeWithCachedSizes(
   }
 
   // optional uint32 shard_network_id = 3;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->shard_network_id(), output);
   }
 
@@ -2392,6 +2409,11 @@ void ElectBlock::SerializeWithCachedSizes(
   // optional uint64 all_gas_amount = 5;
   if (cached_has_bits & 0x00000004u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(5, this->all_gas_amount(), output);
+  }
+
+  // optional uint64 gas_for_root = 6;
+  if (cached_has_bits & 0x00000008u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(6, this->gas_for_root(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2425,7 +2447,7 @@ void ElectBlock::SerializeWithCachedSizes(
   }
 
   // optional uint32 shard_network_id = 3;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->shard_network_id(), target);
   }
 
@@ -2437,6 +2459,11 @@ void ElectBlock::SerializeWithCachedSizes(
   // optional uint64 all_gas_amount = 5;
   if (cached_has_bits & 0x00000004u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(5, this->all_gas_amount(), target);
+  }
+
+  // optional uint64 gas_for_root = 6;
+  if (cached_has_bits & 0x00000008u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(6, this->gas_for_root(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2467,7 +2494,7 @@ size_t ElectBlock::ByteSizeLong() const {
     }
   }
 
-  if (_has_bits_[0 / 32] & 15u) {
+  if (_has_bits_[0 / 32] & 31u) {
     // optional .zjchain.elect.protobuf.PrevMembers prev_members = 2;
     if (has_prev_members()) {
       total_size += 1 +
@@ -2487,6 +2514,13 @@ size_t ElectBlock::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt64Size(
           this->all_gas_amount());
+    }
+
+    // optional uint64 gas_for_root = 6;
+    if (has_gas_for_root()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->gas_for_root());
     }
 
     // optional uint32 shard_network_id = 3;
@@ -2526,7 +2560,7 @@ void ElectBlock::MergeFrom(const ElectBlock& from) {
 
   in_.MergeFrom(from.in_);
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 15u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
       mutable_prev_members()->::zjchain::elect::protobuf::PrevMembers::MergeFrom(from.prev_members());
     }
@@ -2537,6 +2571,9 @@ void ElectBlock::MergeFrom(const ElectBlock& from) {
       all_gas_amount_ = from.all_gas_amount_;
     }
     if (cached_has_bits & 0x00000008u) {
+      gas_for_root_ = from.gas_for_root_;
+    }
+    if (cached_has_bits & 0x00000010u) {
       shard_network_id_ = from.shard_network_id_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -2571,6 +2608,7 @@ void ElectBlock::InternalSwap(ElectBlock* other) {
   swap(prev_members_, other->prev_members_);
   swap(elect_height_, other->elect_height_);
   swap(all_gas_amount_, other->all_gas_amount_);
+  swap(gas_for_root_, other->gas_for_root_);
   swap(shard_network_id_, other->shard_network_id_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);

@@ -927,6 +927,13 @@ class ElectBlock : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::google::protobuf::uint64 all_gas_amount() const;
   void set_all_gas_amount(::google::protobuf::uint64 value);
 
+  // optional uint64 gas_for_root = 6;
+  bool has_gas_for_root() const;
+  void clear_gas_for_root();
+  static const int kGasForRootFieldNumber = 6;
+  ::google::protobuf::uint64 gas_for_root() const;
+  void set_gas_for_root(::google::protobuf::uint64 value);
+
   // optional uint32 shard_network_id = 3;
   bool has_shard_network_id() const;
   void clear_shard_network_id();
@@ -944,6 +951,8 @@ class ElectBlock : public ::google::protobuf::Message /* @@protoc_insertion_poin
   void clear_has_elect_height();
   void set_has_all_gas_amount();
   void clear_has_all_gas_amount();
+  void set_has_gas_for_root();
+  void clear_has_gas_for_root();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -952,6 +961,7 @@ class ElectBlock : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::zjchain::elect::protobuf::PrevMembers* prev_members_;
   ::google::protobuf::uint64 elect_height_;
   ::google::protobuf::uint64 all_gas_amount_;
+  ::google::protobuf::uint64 gas_for_root_;
   ::google::protobuf::uint32 shard_network_id_;
   friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
 };
@@ -3184,13 +3194,13 @@ inline void ElectBlock::set_allocated_prev_members(::zjchain::elect::protobuf::P
 
 // optional uint32 shard_network_id = 3;
 inline bool ElectBlock::has_shard_network_id() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void ElectBlock::set_has_shard_network_id() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void ElectBlock::clear_has_shard_network_id() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void ElectBlock::clear_shard_network_id() {
   shard_network_id_ = 0u;
@@ -3252,6 +3262,30 @@ inline void ElectBlock::set_all_gas_amount(::google::protobuf::uint64 value) {
   set_has_all_gas_amount();
   all_gas_amount_ = value;
   // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.ElectBlock.all_gas_amount)
+}
+
+// optional uint64 gas_for_root = 6;
+inline bool ElectBlock::has_gas_for_root() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ElectBlock::set_has_gas_for_root() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ElectBlock::clear_has_gas_for_root() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void ElectBlock::clear_gas_for_root() {
+  gas_for_root_ = GOOGLE_ULONGLONG(0);
+  clear_has_gas_for_root();
+}
+inline ::google::protobuf::uint64 ElectBlock::gas_for_root() const {
+  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.ElectBlock.gas_for_root)
+  return gas_for_root_;
+}
+inline void ElectBlock::set_gas_for_root(::google::protobuf::uint64 value) {
+  set_has_gas_for_root();
+  gas_for_root_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.ElectBlock.gas_for_root)
 }
 
 // -------------------------------------------------------------------
