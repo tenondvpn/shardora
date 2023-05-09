@@ -209,7 +209,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeightReq(const transport::MessagePtr& msg
     }
 
     if (msg_ptr->header.sync_heights().req()) {
-        transport::TransportMessage msg;
+        transport::protobuf::Header msg;
         auto net_id = common::GlobalInfo::Instance()->network_id();
         msg.set_src_sharding_id(net_id);
         dht::DhtKeyManager dht_key(net_id);
@@ -231,8 +231,10 @@ void TxPoolManager::HandleSyncPoolsMaxHeightReq(const transport::MessagePtr& msg
             return;
         }
 
+        std::string res_heights_debug;
         for (int32_t i = 0; i < heights.size(); ++i) {
             if (heights[i] != common::kInvalidUint64) {
+                res_heights_debug += std::to_string(heights[i]) + " ";
                 if (heights[i] > tx_pool_[i].latest_height() + 64) {
                     synced_max_heights_[i] = tx_pool_[i].latest_height() + 64;
                     continue;
@@ -243,6 +245,8 @@ void TxPoolManager::HandleSyncPoolsMaxHeightReq(const transport::MessagePtr& msg
                 }
             }
         }
+
+        ZJC_DEBUG("synced heights: %s", res_heights_debug.c_str());
     }
 }
 
