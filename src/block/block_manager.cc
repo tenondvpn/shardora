@@ -564,10 +564,6 @@ void BlockManager::AddMiningToken(
         return;
     }
 
-    if (elect_block.shard_network_id() != common::GlobalInfo::Instance()->network_id()) {
-        return;
-    }
-
     std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_tx_map;
     for (int32_t i = 0; i < elect_block.in_size(); ++i) {
         if (elect_block.in(i).mining_amount() <= 0) {
@@ -577,7 +573,7 @@ void BlockManager::AddMiningToken(
         auto id = security_->GetAddress(elect_block.in(i).pubkey());
         auto account_info = account_mgr_->GetAccountInfo(thread_idx, id);
         if (account_info == nullptr ||
-                account_info->sharding_id() != elect_block.shard_network_id()) {
+                account_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
             continue;
         }
 
