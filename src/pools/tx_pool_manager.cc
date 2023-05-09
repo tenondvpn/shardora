@@ -78,7 +78,6 @@ void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) 
     }
 
     prev_synced_pool_index_ %= common::kInvalidPoolIndex;
-    auto begin_pool = prev_synced_pool_index_;
     for (; prev_synced_pool_index_ < common::kInvalidPoolIndex; ++prev_synced_pool_index_) {
         auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(thread_idx, now_tm_ms);
         if (res > 0) {
@@ -244,11 +243,13 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                 res_heights_debug += std::to_string(heights[i]) + " ";
                 if (heights[i] > tx_pool_[i].latest_height() + 64) {
                     synced_max_heights_[i] = tx_pool_[i].latest_height() + 64;
+                    ZJC_DEBUG("synced heights add new height: %u, %lu, local: %lu", i, synced_max_heights_[i], tx_pool_[i].latest_height());
                     continue;
                 }
 
                 if (heights[i] > tx_pool_[i].latest_height()) {
                     synced_max_heights_[i] = heights[i];
+                    ZJC_DEBUG("synced heights add new height: %u, %lu, local: %lu", i, synced_max_heights_[i], tx_pool_[i].latest_height());
                 }
             }
         }
