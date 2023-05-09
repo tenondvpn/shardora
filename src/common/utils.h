@@ -127,9 +127,6 @@ enum VipLevel {
     kVipLevel5 = 5,
 };
 
-static const uint64_t kZjcCoinMiniTransportUnit = 100000000llu;
-static const uint64_t kZjcCoinMaxAmount = 210llu * 100000000llu * kZjcCoinMiniTransportUnit;
-
 static const uint32_t kImmutablePoolSize = 256u;
 static const uint32_t kRootChainPoolIndex = kImmutablePoolSize;
 static const uint32_t kInvalidPoolIndex = kImmutablePoolSize + 1;
