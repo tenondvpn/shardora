@@ -215,7 +215,7 @@ void AccountManager::HandleLocalToTx(
         auto account_info = GetAccountInfo(thread_idx, to_txs.tos(i).to());
         if (account_info == nullptr) {
             ZJC_INFO("get address info failed create new address to this shard: %s",
-                common::Encode::HexEncode(to_txs.tos(i).to()).c_str())
+                common::Encode::HexEncode(to_txs.tos(i).to()).c_str());
             account_info = std::make_shared<address::protobuf::AddressInfo>();
             account_info->set_pool_index(block.pool_index());
             account_info->set_addr(to_txs.tos(i).to());
