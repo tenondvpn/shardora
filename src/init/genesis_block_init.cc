@@ -903,11 +903,16 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         pool_height[i] = 0;
     }
 
-    uint64_t genesis_account_balance = common::kGenesisShardingNodesMaxZjc % valid_ids.size();
-    for (auto iter = valid_ids.begin(); iter != valid_ids.end(); ++iter) {
+    uint64_t genesis_account_balance = common::kGenesisShardingNodesMaxZjc / valid_ids.size();
+    int32_t idx = 0;
+    for (auto iter = valid_ids.begin(); iter != valid_ids.end(); ++iter, ++idx) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
         std::string address = *iter;
+        if (idx == valid_ids.size() - 1) {
+            genesis_account_balance += common::kGenesisShardingNodesMaxZjc % valid_ids.size();
+        }
+
         auto pool_index = common::GetAddressPoolIndex(address);
         {
             auto tx_info = tx_list->Add();
