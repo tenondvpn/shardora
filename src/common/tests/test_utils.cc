@@ -29,8 +29,10 @@ public:
 };
 
 TEST_F(TestUtils, All) {
-    for (int32_t i = 0; i < 1000000; ++i) {
-        std::cout << i << ":" << log(i)/log(2.5) << std::endl;
+    for (int32_t i = 0; i < 100000000lu; ++i) {
+        if (i % 100000 == 0) {
+            std::cout << i << ":" << log2(i) << std::endl;
+        }
     }
 
     for (int32_t nodes_count = 3; nodes_count <= 1024; ++nodes_count) {

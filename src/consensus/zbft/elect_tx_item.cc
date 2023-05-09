@@ -278,19 +278,11 @@ void ElectTxItem::MiningToken(
 }
 
 uint64_t ElectTxItem::GetMiningMaxCount(uint64_t max_tx_count) {
-    auto now_ming_count = log(max_tx_count);
-    if (max_tx_count >= 1000) {
-        now_ming_count = common::kInitMiningToken / 3;
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+        max_tx_count += 10000lu;
     }
 
-    if (max_tx_count >= 10000) {
-        now_ming_count = common::kInitMiningToken / 2;
-    }
-
-    if (max_tx_count >= 100000) {
-        now_ming_count = common::kInitMiningToken;
-    }
-
+    auto now_ming_count = static_cast<uint64_t>(log2((double)max_tx_count));
     return now_ming_count;
 }
 
