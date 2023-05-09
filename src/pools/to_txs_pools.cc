@@ -292,12 +292,8 @@ void ToTxsPools::AddTxToMap(
         height_iter->second[to] = item;
         ZJC_DEBUG("add to %s step: %u", common::Encode::HexEncode(to).c_str(), type);
     }
-
-//     if (type == pools::protobuf::kJoinElect) {
-//         height_iter->second[to].amount = amount;
-//     } else {
-        height_iter->second[to].amount += amount;
-//     }
+    
+    height_iter->second[to].amount += amount;
 }
 
 void ToTxsPools::HandleNormalToTx(

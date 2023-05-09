@@ -214,23 +214,23 @@ void AccountManager::HandleLocalToTx(
 
         auto account_info = GetAccountInfo(thread_idx, to_txs.tos(i).to());
         if (account_info == nullptr) {
-            ZJC_DEBUG("get address info failed: %s", common::Encode::HexEncode(to_txs.tos(i).to()).c_str());
-            assert(false);
-            return;
-            //             account_info = std::make_shared<address::protobuf::AddressInfo>();
-            //             account_info->set_pool_index(block.pool_index());
-            //             account_info->set_addr(to_txs.tos(i).to());
-            //             account_info->set_type(address::protobuf::kNormal);
-            //             account_info->set_sharding_id(block.network_id());
-            //             account_info->set_latest_height(block.height());
-            //             account_info->set_balance(to_txs.tos(i).balance());
-            //             address_map_[thread_idx].add(to_txs.tos(i).to(), account_info);
-            //             prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info);
+            ZJC_INFO("get address info failed create new address to this shard: %s",
+                common::Encode::HexEncode(to_txs.tos(i).to()).c_str())
+            account_info = std::make_shared<address::protobuf::AddressInfo>();
+            account_info->set_pool_index(block.pool_index());
+            account_info->set_addr(to_txs.tos(i).to());
+            account_info->set_type(address::protobuf::kNormal);
+            account_info->set_sharding_id(block.network_id());
+            account_info->set_latest_height(block.height());
+            account_info->set_balance(to_txs.tos(i).balance());
+            address_map_[thread_idx].add(to_txs.tos(i).to(), account_info);
+            prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info);
+        } else {
+            account_info->set_latest_height(block.height());
+            account_info->set_balance(to_txs.tos(i).balance());
+            prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
         }
 
-        account_info->set_latest_height(block.height());
-        account_info->set_balance(to_txs.tos(i).balance());
-        prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
         ZJC_DEBUG("transfer to address new balance %s: %lu",
             common::Encode::HexEncode(to_txs.tos(i).to()).c_str(), to_txs.tos(i).balance());
     }

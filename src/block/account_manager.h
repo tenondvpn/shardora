@@ -57,22 +57,9 @@ public:
         return statistic_address_info_[pool_idx % common::kImmutablePoolSize];
     }
 
-    protos::AddressInfoPtr GetAccountInfo(
-            const std::shared_ptr<block::protobuf::Block>& block_item,
-            const block::protobuf::BlockTx& tx_info) {
-        auto& account_id = GetTxValidAddress(tx_info);
-        auto account_info = std::make_shared<address::protobuf::AddressInfo>();
-        account_info->set_pool_index(block_item->pool_index());
-        account_info->set_addr(account_id);
-        account_info->set_type(address::protobuf::kNormal);
-        account_info->set_sharding_id(block_item->network_id());
-        account_info->set_latest_height(block_item->height());
-        account_info->set_balance(tx_info.balance());
-        return account_info;
-    }
+    const std::string& GetTxValidAddress(const block::protobuf::BlockTx& tx_info);
 
 private:
-    const std::string& GetTxValidAddress(const block::protobuf::BlockTx& tx_info);
     void SetPool(
         uint32_t pool_index,
         const std::shared_ptr<block::protobuf::Block>& block_item,

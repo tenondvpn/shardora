@@ -154,7 +154,6 @@ void BlockManager::NetworkNewBlock(
         const std::shared_ptr<block::protobuf::Block>& block_item) {
     if (block_item != nullptr) {
         db::DbWriteBatch db_batch;
-        AddAllAccount(block_item, db_batch);
         AddNewBlock(thread_idx, block_item, db_batch);
         if (!db_->Put(db_batch).ok()) {
             ZJC_FATAL("save db failed!");
@@ -190,7 +189,8 @@ void BlockManager::HandleAllConsensusBlocks(uint8_t thread_idx) {
     }
 }
 
-void BlockManager::AddAllAccount(
+void BlockManager::GenesisAddAllAccount(
+        uint32_t des_sharding_id,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBatch& db_batch) {
     // (TODO: XX): for create contract error, check address's shard and pool index valid, fix it
@@ -203,8 +203,19 @@ void BlockManager::AddAllAccount(
     // one block must be one consensus pool
     uint32_t consistent_pool_index = common::kInvalidPoolIndex;
     for (int32_t i = 0; i < tx_list.size(); ++i) {
-        auto account_info = account_mgr_->GetAccountInfo(block_item, tx_list[i]);
-        ZJC_DEBUG("add new account %s : %lu",
+        if (tx_list[i].balance() == 0) {
+            continue;
+        }
+
+        auto& account_id = account_mgr_->GetTxValidAddress(tx_list[i]);
+        auto account_info = std::make_shared<address::protobuf::AddressInfo>();
+        account_info->set_pool_index(common::GetAddressPoolIndex(account_id));
+        account_info->set_addr(account_id);
+        account_info->set_type(address::protobuf::kNormal);
+        account_info->set_sharding_id(block_item->network_id());
+        account_info->set_latest_height(block_item->height());
+        account_info->set_balance(tx_list[i].balance());
+        ZJC_DEBUG("genesis add new account %s : %lu",
             common::Encode::HexEncode(account_info->addr()).c_str(),
             account_info->balance());
         prefix_db_->AddAddressInfo(account_info->addr(), *account_info, db_batch);

@@ -301,8 +301,9 @@ int GenesisBlockInit::CreateElectBlock(
         "-" + common::Encode::HexEncode(ec_block.SerializeAsString()) + "\n";
     fputs(ec_val.c_str(), root_gens_init_block_file);
     AddBlockItemToCache(tenon_block, db_batch);
-    db_->Put(db_batch);
+    block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
     block_mgr_->NetworkNewBlock(0, tenon_block);
+    db_->Put(db_batch);
 //     std::string pool_hash;
 //     uint64_t pool_height = 0;
 //     uint64_t tm_height;
@@ -397,8 +398,9 @@ int GenesisBlockInit::GenerateRootSingleBlock(
             db_batch);
 
         AddBlockItemToCache(tenon_block, db_batch);
-        db_->Put(db_batch);
+        block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
+        db_->Put(db_batch);
         std::string pool_hash;
         uint64_t pool_height = 0;
         uint64_t tm_height;
@@ -493,8 +495,9 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         fputs((common::Encode::HexEncode(tmp_str) + "\n").c_str(), root_gens_init_block_file);
 //         tmblock::TimeBlockManager::Instance()->UpdateTimeBlock(1, now_tm, now_tm);
         AddBlockItemToCache(tenon_block, db_batch);
-        db_->Put(db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
+        block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
+        db_->Put(db_batch);
         std::string pool_hash;
         uint64_t pool_height = 0;
         uint64_t tm_height;
@@ -606,6 +609,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
         }
 
         AddBlockItemToCache(tenon_block, db_batch);
+        block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
         for (int32_t i = 0; i < tenon_block->tx_list_size(); ++i) {
             for (int32_t j = 0; j < tenon_block->tx_list(i).storages_size(); ++j) {
@@ -795,8 +799,9 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             db_batch);
 
         AddBlockItemToCache(tenon_block, db_batch);
-        db_->Put(db_batch);
+        block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
+        db_->Put(db_batch);
         init_heights.add_heights(0);
         //         std::string pool_hash;
 //         uint64_t pool_height = 0;
@@ -931,8 +936,6 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         tenon_block->set_bls_agg_sign_x("x");
         tenon_block->set_bls_agg_sign_y("y");
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-       
-
         pool_prev_hash_map[pool_index] = tenon_block->hash();
         //         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
         db::DbWriteBatch db_batch;
@@ -944,8 +947,9 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             tenon_block->hash(),
             db_batch);
         AddBlockItemToCache(tenon_block, db_batch);
-        db_->Put(db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
+        block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
+        db_->Put(db_batch);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
             INIT_ERROR("get address failed! [%s]", common::Encode::HexEncode(address).c_str());
@@ -1050,8 +1054,9 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             db_batch);
 
         AddBlockItemToCache(tenon_block, db_batch);
-        db_->Put(db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
+        block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
+        db_->Put(db_batch);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
             INIT_ERROR("get address failed! [%s]", common::Encode::HexEncode(address).c_str());

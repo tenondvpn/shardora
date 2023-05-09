@@ -83,6 +83,11 @@ public:
     pools::TxItemPtr GetStatisticTx(bool leader);
     pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
     void LoadLatestBlocks(uint8_t thread_idx);
+    // just genesis call
+    void GenesisAddAllAccount(
+        uint32_t des_sharding_id,
+        const std::shared_ptr<block::protobuf::Block>& block_item,
+        db::DbWriteBatch& db_batch);
 
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
@@ -95,9 +100,6 @@ private:
     void HandleAllConsensusBlocks(uint8_t thread_idx);
     void AddNewBlock(
         uint8_t thread_idx,
-        const std::shared_ptr<block::protobuf::Block>& block_item,
-        db::DbWriteBatch& db_batch);
-    void AddAllAccount(
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBatch& db_batch);
     void HandleNormalToTx(

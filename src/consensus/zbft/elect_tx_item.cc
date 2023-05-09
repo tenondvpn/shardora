@@ -271,6 +271,14 @@ void ElectTxItem::MiningToken(
     auto now_ming_count = GetMiningMaxCount(max_tx_count);
     if (!stop_mining_) {
         for (int32_t i = 0; i < elect_nodes.size(); ++i) {
+            auto account_info = account_mgr_->GetAccountInfo(thread_idx, elect_nodes[i]->id);
+            if (account_info == nullptr) {
+                ZJC_DEBUG("get account info failed: %s",
+                    common::Encode::HexEncode(elect_nodes[i]->id).c_str());
+                assert(false);
+                continue;
+            }
+
             elect_nodes[i]->mining_token = now_ming_count * elect_nodes[i]->tx_count / max_tx_count;
             elect_nodes[i]->mining_token += elect_nodes[i]->tx_count * gas_for_mining / all_tx_count;
         }
@@ -285,7 +293,6 @@ uint64_t ElectTxItem::GetMiningMaxCount(uint64_t max_tx_count) {
     auto now_ming_count = static_cast<uint64_t>(common::kMiningTokenMultiplicationFactor * log2((double)max_tx_count));
     return now_ming_count;
 }
-
 
 int ElectTxItem::CreateNewElect(
         uint8_t thread_idx,
