@@ -217,7 +217,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeightReq(const transport::MessagePtr& msg
         auto* sync_heights = msg.mutable_sync_heights();
         uint32_t pool_idx = common::kInvalidPoolIndex;
         for (uint32_t i = 0; i < pool_idx; ++i) {
-            sync_heights->add_heights(tx_pool_[i]->latest_height());
+            sync_heights->add_heights(tx_pool_[i].latest_height());
         }
 
         transport::TcpTransport::Instance()->SetMessageHash(
@@ -232,12 +232,12 @@ void TxPoolManager::HandleSyncPoolsMaxHeightReq(const transport::MessagePtr& msg
 
         for (int32_t i = 0; i < heights.size(); ++i) {
             if (heights[i] != common::kInvalidUint64) {
-                if (heights[i] > tx_pool_[i]->latest_height() + 64) {
-                    synced_max_heights_[i] = tx_pool_[i]->latest_height() + 64;
+                if (heights[i] > tx_pool_[i].latest_height() + 64) {
+                    synced_max_heights_[i] = tx_pool_[i].latest_height() + 64;
                     continue;
                 }
 
-                if (heights[i] > tx_pool_[i]->latest_height()) {
+                if (heights[i] > tx_pool_[i].latest_height()) {
                     synced_max_heights_[i] = heights[i];
                 }
             }
