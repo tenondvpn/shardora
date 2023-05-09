@@ -282,7 +282,7 @@ uint64_t ElectTxItem::GetMiningMaxCount(uint64_t max_tx_count) {
         max_tx_count += 10000lu;
     }
 
-    auto now_ming_count = static_cast<uint64_t>(log2((double)max_tx_count));
+    auto now_ming_count = static_cast<uint64_t>(common::kMiningTokenMultiplicationFactor * log2((double)max_tx_count));
     return now_ming_count;
 }
 
