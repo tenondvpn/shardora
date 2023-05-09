@@ -40,7 +40,7 @@ namespace protobuf_protos_2fpools_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[9];
+  static const ::google::protobuf::internal::ParseTable schema[10];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -65,6 +65,9 @@ extern PoolLatestInfoDefaultTypeInternal _PoolLatestInfo_default_instance_;
 class PoolStatisticItem;
 class PoolStatisticItemDefaultTypeInternal;
 extern PoolStatisticItemDefaultTypeInternal _PoolStatisticItem_default_instance_;
+class SyncPoolsMaxHeight;
+class SyncPoolsMaxHeightDefaultTypeInternal;
+extern SyncPoolsMaxHeightDefaultTypeInternal _SyncPoolsMaxHeight_default_instance_;
 class ToTxHeights;
 class ToTxHeightsDefaultTypeInternal;
 extern ToTxHeightsDefaultTypeInternal _ToTxHeights_default_instance_;
@@ -87,6 +90,7 @@ template<> ::zjchain::pools::protobuf::ElectStatistic* Arena::CreateMaybeMessage
 template<> ::zjchain::pools::protobuf::JoinElectNode* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::JoinElectNode>(Arena*);
 template<> ::zjchain::pools::protobuf::PoolLatestInfo* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::PoolLatestInfo>(Arena*);
 template<> ::zjchain::pools::protobuf::PoolStatisticItem* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::PoolStatisticItem>(Arena*);
+template<> ::zjchain::pools::protobuf::SyncPoolsMaxHeight* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::SyncPoolsMaxHeight>(Arena*);
 template<> ::zjchain::pools::protobuf::ToTxHeights* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::ToTxHeights>(Arena*);
 template<> ::zjchain::pools::protobuf::ToTxMessage* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::ToTxMessage>(Arena*);
 template<> ::zjchain::pools::protobuf::ToTxMessageItem* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::ToTxMessageItem>(Arena*);
@@ -1376,6 +1380,133 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
 };
 // -------------------------------------------------------------------
 
+class SyncPoolsMaxHeight : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.pools.protobuf.SyncPoolsMaxHeight) */ {
+ public:
+  SyncPoolsMaxHeight();
+  virtual ~SyncPoolsMaxHeight();
+
+  SyncPoolsMaxHeight(const SyncPoolsMaxHeight& from);
+
+  inline SyncPoolsMaxHeight& operator=(const SyncPoolsMaxHeight& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  SyncPoolsMaxHeight(SyncPoolsMaxHeight&& from) noexcept
+    : SyncPoolsMaxHeight() {
+    *this = ::std::move(from);
+  }
+
+  inline SyncPoolsMaxHeight& operator=(SyncPoolsMaxHeight&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const SyncPoolsMaxHeight& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const SyncPoolsMaxHeight* internal_default_instance() {
+    return reinterpret_cast<const SyncPoolsMaxHeight*>(
+               &_SyncPoolsMaxHeight_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    8;
+
+  void Swap(SyncPoolsMaxHeight* other);
+  friend void swap(SyncPoolsMaxHeight& a, SyncPoolsMaxHeight& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline SyncPoolsMaxHeight* New() const final {
+    return CreateMaybeMessage<SyncPoolsMaxHeight>(NULL);
+  }
+
+  SyncPoolsMaxHeight* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<SyncPoolsMaxHeight>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const SyncPoolsMaxHeight& from);
+  void MergeFrom(const SyncPoolsMaxHeight& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(SyncPoolsMaxHeight* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated uint64 heights = 2;
+  int heights_size() const;
+  void clear_heights();
+  static const int kHeightsFieldNumber = 2;
+  ::google::protobuf::uint64 heights(int index) const;
+  void set_heights(int index, ::google::protobuf::uint64 value);
+  void add_heights(::google::protobuf::uint64 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+      heights() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+      mutable_heights();
+
+  // optional bool req = 1 [default = false];
+  bool has_req() const;
+  void clear_req();
+  static const int kReqFieldNumber = 1;
+  bool req() const;
+  void set_req(bool value);
+
+  // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.SyncPoolsMaxHeight)
+ private:
+  void set_has_req();
+  void clear_has_req();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > heights_;
+  bool req_;
+  friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.pools.protobuf.TxMessage) */ {
  public:
   TxMessage();
@@ -1418,7 +1549,7 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
                &_TxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    9;
 
   void Swap(TxMessage* other);
   friend void swap(TxMessage& a, TxMessage& b) {
@@ -2865,6 +2996,64 @@ ElectStatistic::mutable_lof_leaders() {
 
 // -------------------------------------------------------------------
 
+// SyncPoolsMaxHeight
+
+// optional bool req = 1 [default = false];
+inline bool SyncPoolsMaxHeight::has_req() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void SyncPoolsMaxHeight::set_has_req() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void SyncPoolsMaxHeight::clear_has_req() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void SyncPoolsMaxHeight::clear_req() {
+  req_ = false;
+  clear_has_req();
+}
+inline bool SyncPoolsMaxHeight::req() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.SyncPoolsMaxHeight.req)
+  return req_;
+}
+inline void SyncPoolsMaxHeight::set_req(bool value) {
+  set_has_req();
+  req_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.SyncPoolsMaxHeight.req)
+}
+
+// repeated uint64 heights = 2;
+inline int SyncPoolsMaxHeight::heights_size() const {
+  return heights_.size();
+}
+inline void SyncPoolsMaxHeight::clear_heights() {
+  heights_.Clear();
+}
+inline ::google::protobuf::uint64 SyncPoolsMaxHeight::heights(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.SyncPoolsMaxHeight.heights)
+  return heights_.Get(index);
+}
+inline void SyncPoolsMaxHeight::set_heights(int index, ::google::protobuf::uint64 value) {
+  heights_.Set(index, value);
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.SyncPoolsMaxHeight.heights)
+}
+inline void SyncPoolsMaxHeight::add_heights(::google::protobuf::uint64 value) {
+  heights_.Add(value);
+  // @@protoc_insertion_point(field_add:zjchain.pools.protobuf.SyncPoolsMaxHeight.heights)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+SyncPoolsMaxHeight::heights() const {
+  // @@protoc_insertion_point(field_list:zjchain.pools.protobuf.SyncPoolsMaxHeight.heights)
+  return heights_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+SyncPoolsMaxHeight::mutable_heights() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.pools.protobuf.SyncPoolsMaxHeight.heights)
+  return &heights_;
+}
+
+// -------------------------------------------------------------------
+
 // TxMessage
 
 // optional uint32 version = 1;
@@ -3477,6 +3666,8 @@ inline void TxMessage::set_allocated_contract_input(::std::string* contract_inpu
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
