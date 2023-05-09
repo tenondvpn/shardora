@@ -190,8 +190,12 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 void TxPoolManager::SyncPoolsMaxHeight(uint8_t thread_idx) {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
+    msg_ptr->header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     auto net_id = common::GlobalInfo::Instance()->network_id();
-    msg_ptr->header.set_src_sharding_id(net_id);
+    if (net_id >= network::kConsensusWaitingShardBeginNetworkId) {
+        net_id -= network::kConsensusWaitingShardOffset;
+    }
+
     dht::DhtKeyManager dht_key(net_id);
     msg_ptr->header.set_des_dht_key(dht_key.StrKey());
     msg_ptr->header.set_type(common::kPoolsMessage);
@@ -214,9 +218,8 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
 
     if (msg_ptr->header.sync_heights().req()) {
         transport::protobuf::Header msg;
-        auto net_id = common::GlobalInfo::Instance()->network_id();
-        msg.set_src_sharding_id(net_id);
-        dht::DhtKeyManager dht_key(net_id);
+        msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+        dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
         msg.set_des_dht_key(dht_key.StrKey());
         msg.set_type(common::kPoolsMessage);
         auto* sync_heights = msg.mutable_sync_heights();
