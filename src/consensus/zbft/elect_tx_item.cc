@@ -274,7 +274,7 @@ void ElectTxItem::MiningToken(
     }
 
     auto now_ming_count = GetMiningMaxCount(max_tx_count);
-    uint64_t all_gas_amount = 0;
+    uint64_t tmp_all_gas_amount = 0;
     if (!stop_mining_) {
         for (int32_t i = 0; i < elect_nodes.size(); ++i) {
             auto id = sec_ptr_->GetAddress(elect_nodes[i]->pubkey);
@@ -290,17 +290,19 @@ void ElectTxItem::MiningToken(
             auto gas_token = elect_nodes[i]->tx_count * gas_for_mining / all_tx_count;
             elect_nodes[i]->mining_token = mining_token
             if (i == elect_nodes.size() - 1) {
-                assert(gas_for_mining >= all_gas_amount);
-                gas_token = gas_for_mining - all_gas_amount;
+                assert(gas_for_mining >= tmp_all_gas_amount);
+                gas_token = gas_for_mining - tmp_all_gas_amount;
             }
 
-            elect_nodes[i]->mining_token += gas_token
-            all_gas_amount += gas_token;
+            elect_nodes[i]->mining_token += gas_token;
+            tmp_all_gas_amount += gas_token;
             ZJC_DEBUG("elect mining %s, mining: %lu, gas mining: %lu, all gas: %lu, src: %lu",
                 common::Encode::HexEncode(id).c_str(),
                 mining_token, gas_token, all_gas_amount, gas_for_mining);
         }
     }
+
+    assert(tmp_all_gas_amount == all_gas_amount);
 }
 
 uint64_t ElectTxItem::GetMiningMaxCount(uint64_t max_tx_count) {
