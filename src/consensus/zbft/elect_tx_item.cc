@@ -276,10 +276,11 @@ void ElectTxItem::MiningToken(
     auto now_ming_count = GetMiningMaxCount(max_tx_count);
     if (!stop_mining_) {
         for (int32_t i = 0; i < elect_nodes.size(); ++i) {
-            auto account_info = account_mgr_->GetAccountInfo(thread_idx, elect_nodes[i]->id);
+            auto id = sec_ptr_->GetAddress(elect_nodes[i]->pubkey);
+            auto account_info = account_mgr_->GetAccountInfo(thread_idx, id);
             if (account_info == nullptr) {
                 ZJC_DEBUG("get account info failed: %s",
-                    common::Encode::HexEncode(elect_nodes[i]->id).c_str());
+                    common::Encode::HexEncode(id).c_str());
                 assert(false);
                 continue;
             }
