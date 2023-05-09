@@ -60,7 +60,7 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
     }
 
     if (kv_sync_->added_key_size() < sync::kSyncMaxKeyCount) {
-        SyncMinssingHeights()
+        SyncMinssingHeights(msg_ptr->thread_idx)
     }
 
 
@@ -70,7 +70,7 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
     }
 }
 
-void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx) {
+void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) {
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
         tx_pool_[common::kRootChainPoolIndex].SyncMissingBlocks(thread_idx, now_tm_ms);
         return;
@@ -85,25 +85,30 @@ void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx) {
             return;
         }
 
-        if (tx_pool_[prev_synced_pool_index_]->latest_height() < synced_max_heights_[prev_synced_pool_index_]) {
-            SyncBlockWithMaxHeights(thread_idx, synced_max_heights_[prev_synced_pool_index_]);
+        if (tx_pool_[prev_synced_pool_index_].latest_height() <
+                synced_max_heights_[prev_synced_pool_index_]) {
+            SyncBlockWithMaxHeights(
+                thread_idx, prev_synced_pool_index_, synced_max_heights_[prev_synced_pool_index_]);
         }
     }
 
-    for (prev_synced_pool_index_ = 0; prev_synced_pool_index_ < begin_pool; ++prev_synced_pool_index_) {
+    for (prev_synced_pool_index_ = 0;
+            prev_synced_pool_index_ < begin_pool; ++prev_synced_pool_index_) {
         auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(thread_idx, now_tm_ms);
         if (res > 0) {
             ++prev_synced_pool_index_;
             return;
         }
 
-        if (tx_pool_[prev_synced_pool_index_]->latest_height() < synced_max_heights_[prev_synced_pool_index_]) {
-            SyncBlockWithMaxHeights(thread_idx, synced_max_heights_[prev_synced_pool_index_]);
+        if (tx_pool_[prev_synced_pool_index_].latest_height() <
+                synced_max_heights_[prev_synced_pool_index_]) {
+            SyncBlockWithMaxHeights(
+                thread_idx, prev_synced_pool_index_, synced_max_heights_[prev_synced_pool_index_]);
         }
     }
 }
 
-void TxPoolManager::SyncBlockWithMaxHeights(uint8_t thread_idx, uint64_t height) {
+void TxPoolManager::SyncBlockWithMaxHeights(uint8_t thread_idx, uint32_t pool_idx, uint64_t height) {
     auto net_id = common::GlobalInfo::Instance()->network_id();
     if (net_id >= network::kConsensusWaitingShardBeginNetworkId &&
         net_id < network::kConsensusWaitingShardEndNetworkId) {
@@ -111,13 +116,13 @@ void TxPoolManager::SyncBlockWithMaxHeights(uint8_t thread_idx, uint64_t height)
     }
 
     if (net_id < network::kRootCongressNetworkId || net_id >= network::kConsensusShardEndNetworkId) {
-        return 0;
+        return;
     }
 
     kv_sync_->AddSyncHeight(
         thread_idx,
         net_id,
-        pool_index_,
+        pool_idx,
         height,
         sync::kSyncHigh);
 }

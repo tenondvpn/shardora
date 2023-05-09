@@ -130,11 +130,11 @@ private:
     void HandleElectTx(const transport::MessagePtr& msg_ptr);
     bool UserTxValid(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
-    void SyncPoolsMaxHeight();
+    void SyncPoolsMaxHeight(uint8_t thread_idx);
     void HandleSyncPoolsMaxHeightReq(const transport::MessagePtr& msg_ptr);
     void HandleSyncPoolsMaxHeightRes(const transport::MessagePtr& msg_ptr);
-    void SyncMinssingHeights(uint8_t thread_idx);
-    void SyncBlockWithMaxHeights(uint8_t thread_idx, uint64_t height);
+    void SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms);
+    void SyncBlockWithMaxHeights(uint8_t thread_idx, uint32_t pool_idx, uint64_t height);
 
     static const uint32_t kPopMessageCountEachTime = 320u;
     static const uint64_t kFlushHeightTreePeriod = 60000lu;
