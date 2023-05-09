@@ -62,7 +62,7 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
 
     if (prev_sync_check_ms_ < now_tm_ms) {
         SyncMinssingHeights(msg_ptr->thread_idx, now_tm_ms);
-        prev_sync_check_ms_ = now_tm_ms + kSyncPoolsMaxHeightsPeriod;
+        prev_sync_check_ms_ = now_tm_ms + kSyncMissingBlockPeriod;
     }
 
     if (prev_sync_heights_ms_ < now_tm_ms) {
@@ -112,7 +112,7 @@ void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) 
 void TxPoolManager::SyncBlockWithMaxHeights(uint8_t thread_idx, uint32_t pool_idx, uint64_t height) {
     auto net_id = common::GlobalInfo::Instance()->network_id();
     if (net_id >= network::kConsensusWaitingShardBeginNetworkId &&
-        net_id < network::kConsensusWaitingShardEndNetworkId) {
+            net_id < network::kConsensusWaitingShardEndNetworkId) {
         net_id -= network::kConsensusWaitingShardOffset;
     }
 

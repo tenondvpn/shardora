@@ -92,6 +92,9 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
         case pools::protobuf::kContractExcute:
             HandleContractExecute(block, tx_list[i], db_batch);
             break;
+        case pools::protobuf::kConsensusRootElectShard:
+            HandleRootElectShard(block, tx_list[i], db_batch);
+            break;
 //         case pools::protobuf::kJoinElect:
 //             HandleJoinElect(block, tx_list[i], db_batch);
 //             break;
@@ -99,6 +102,12 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
             break;
         }
     }
+}
+
+void ToTxsPools::HandleRootElectShard(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx_info,
+        db::DbWriteBatch& db_batch) {
 }
 
 void ToTxsPools::HandleJoinElect(
