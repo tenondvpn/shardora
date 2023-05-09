@@ -315,20 +315,20 @@ int GenesisBlockInit::CreateElectBlock(
 //         &tm_height,
 //         &tm_with_block_height);
 //     if (res != block::kBlockSuccess) {
-//         INIT_ERROR("GetBlockInfo error.");
+//         ZJC_FATAL("GetBlockInfo error.");
 //         return kInitError;
 //     }
 
     auto account_ptr = account_mgr_->GetAcountInfoFromDb(
         block::kRootChainElectionBlockTxAddress);
     if (account_ptr == nullptr) {
-        INIT_ERROR("get address failed! [%s]",
+        ZJC_FATAL("get address failed! [%s]",
             common::Encode::HexEncode(block::kRootChainElectionBlockTxAddress).c_str());
         return kInitError;
     }
 
     if (account_ptr->balance() != 0) {
-        INIT_ERROR("get address balance failed! [%s]",
+        ZJC_FATAL("get address balance failed! [%s]",
             common::Encode::HexEncode(block::kRootChainElectionBlockTxAddress).c_str());
         return kInitError;
     }
@@ -339,7 +339,7 @@ int GenesisBlockInit::CreateElectBlock(
 //             shard_netid,
 //             &elect_height,
 //             &elect_block_str) != block::kBlockSuccess) {
-//         INIT_ERROR("get address elect block failed! [%s]",
+//         ZJC_FATAL("get address elect block failed! [%s]",
 //             common::Encode::HexEncode(common::kRootChainElectionBlockTxAddress).c_str());
 //         return kInitError;
 //     }
@@ -412,20 +412,20 @@ int GenesisBlockInit::GenerateRootSingleBlock(
 //             &tm_height,
 //             &tm_with_block_height);
 //         if (res != block::kBlockSuccess) {
-//             INIT_ERROR("GetBlockInfo error.");
+//             ZJC_FATAL("GetBlockInfo error.");
 //             return kInitError;
 //         }
 
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(
             block::kRootChainSingleBlockTxAddress);
         if (account_ptr == nullptr) {
-            INIT_ERROR("get address failed! [%s]",
+            ZJC_FATAL("get address failed! [%s]",
                 common::Encode::HexEncode(block::kRootChainSingleBlockTxAddress).c_str());
             return kInitError;
         }
 
         if (account_ptr->balance() != 0) {
-            INIT_ERROR("get address balance failed! [%s]",
+            ZJC_FATAL("get address balance failed! [%s]",
                 common::Encode::HexEncode(block::kRootChainSingleBlockTxAddress).c_str());
             return kInitError;
         }
@@ -509,21 +509,21 @@ int GenesisBlockInit::GenerateRootSingleBlock(
 //             &tm_height,
 //             &tm_with_block_height);
 //         if (res != block::kBlockSuccess) {
-//             INIT_ERROR("GetBlockInfo error");
+//             ZJC_FATAL("GetBlockInfo error");
 //             return kInitError;
 //         }
 
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(
             block::kRootChainTimeBlockTxAddress);
         if (account_ptr == nullptr) {
-            INIT_ERROR("get address balance failed! [%s]",
+            ZJC_FATAL("get address balance failed! [%s]",
                 common::Encode::HexEncode(block::kRootChainTimeBlockTxAddress).c_str());
             assert(false);
             return kInitError;
         }
 
         if (account_ptr->balance() != 0) {
-            INIT_ERROR("get address balance failed! [%s]",
+            ZJC_FATAL("get address balance failed! [%s]",
                 common::Encode::HexEncode(block::kRootChainTimeBlockTxAddress).c_str());
             assert(false);
             return kInitError;
@@ -540,7 +540,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
             common::kInvalidUint64,
             root_gens_init_block_file,
             root_genesis_nodes) != kInitSuccess) {
-        INIT_ERROR("CreateElectBlock kRootCongressNetworkId failed!");
+        ZJC_FATAL("CreateElectBlock kRootCongressNetworkId failed!");
         return kInitError;
     }
 
@@ -551,7 +551,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
             root_prev_elect_height,
             root_gens_init_block_file,
             root_genesis_nodes) != kInitSuccess) {
-        INIT_ERROR("CreateElectBlock kRootCongressNetworkId failed!");
+        ZJC_FATAL("CreateElectBlock kRootCongressNetworkId failed!");
         return kInitError;
     }
 
@@ -563,7 +563,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
             common::kInvalidUint64,
             root_gens_init_block_file,
             cons_genesis_nodes) != kInitSuccess) {
-        INIT_ERROR("CreateElectBlock kConsensusShardBeginNetworkId failed!");
+        ZJC_FATAL("CreateElectBlock kConsensusShardBeginNetworkId failed!");
         return kInitError;
     }
 
@@ -574,7 +574,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
             shard_prev_elect_height,
             root_gens_init_block_file,
             cons_genesis_nodes) != kInitSuccess) {
-        INIT_ERROR("CreateElectBlock kConsensusShardBeginNetworkId failed!");
+        ZJC_FATAL("CreateElectBlock kConsensusShardBeginNetworkId failed!");
         return kInitError;
     }
 
@@ -647,13 +647,13 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
         auto address = block::kRootChainSingleBlockTxAddress;
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
-            INIT_ERROR("get address info failed! [%s]",
+            ZJC_FATAL("get address info failed! [%s]",
                 common::Encode::HexEncode(address).c_str());
             return kInitError;
         }
 
         if (account_ptr->balance() != 0) {
-            INIT_ERROR("get address balance failed! [%s]",
+            ZJC_FATAL("get address balance failed! [%s]",
                 common::Encode::HexEncode(address).c_str());
             return kInitError;
         }
@@ -663,13 +663,13 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
         auto address = block::kRootChainTimeBlockTxAddress;
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
-            INIT_ERROR("get address info failed! [%s]",
+            ZJC_FATAL("get address info failed! [%s]",
                 common::Encode::HexEncode(address).c_str());
             return kInitError;
         }
 
         if (account_ptr->balance() != 0) {
-            INIT_ERROR("get address balance failed! [%s]",
+            ZJC_FATAL("get address balance failed! [%s]",
                 common::Encode::HexEncode(address).c_str());
             return kInitError;
         }
@@ -679,13 +679,13 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
         auto address = block::kRootChainElectionBlockTxAddress;
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
-            INIT_ERROR("get address info failed! [%s]",
+            ZJC_FATAL("get address info failed! [%s]",
                 common::Encode::HexEncode(address).c_str());
             return kInitError;
         }
 
         if (account_ptr->balance() != 0) {
-            INIT_ERROR("get address balance failed! [%s]",
+            ZJC_FATAL("get address balance failed! [%s]",
                 common::Encode::HexEncode(address).c_str());
             return kInitError;
         }
@@ -814,19 +814,19 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
 //             &tm_height,
 //             &tm_with_block_height);
 //         if (res != block::kBlockSuccess) {
-//             INIT_ERROR("get pool block info failed! [%u]", iter->first);
+//             ZJC_FATAL("get pool block info failed! [%u]", iter->first);
 //             return kInitError;
 //         }
 // 
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
-            INIT_ERROR("get address info failed! [%s]",
+            ZJC_FATAL("get address info failed! [%s]",
                 common::Encode::HexEncode(address).c_str());
             return kInitError;
         }
 
         if (account_ptr->balance() != genesis_account_balance) {
-            INIT_ERROR("get address balance failed! [%s]",
+            ZJC_FATAL("get address balance failed! [%s]",
                 common::Encode::HexEncode(address).c_str());
             return kInitError;
         }
@@ -835,7 +835,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     }
 
     if (all_balance != 0) {
-        INIT_ERROR("balance all error[%llu][%llu]", all_balance, common::kGenesisFoundationMaxZjc);
+        ZJC_FATAL("balance all error[%llu][%llu]", all_balance, common::kGenesisFoundationMaxZjc);
         return kInitError;
     }
 
@@ -952,12 +952,12 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         db_->Put(db_batch);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
-            INIT_ERROR("get address failed! [%s]", common::Encode::HexEncode(address).c_str());
+            ZJC_FATAL("get address failed! [%s]", common::Encode::HexEncode(address).c_str());
             return kInitError;
         }
 
         if (account_ptr->balance() != genesis_account_balance) {
-            INIT_ERROR("get address balance failed! [%s]", common::Encode::HexEncode(address).c_str());
+            ZJC_FATAL("get address balance failed! [%s]", common::Encode::HexEncode(address).c_str());
             return kInitError;
         }
 
@@ -966,7 +966,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
     }
 
     if (all_balance != common::kGenesisFoundationMaxZjc) {
-        INIT_ERROR("all_balance != common::kGenesisFoundationMaxTenon failed! [%lu][%llu]",
+        ZJC_FATAL("all_balance != common::kGenesisFoundationMaxTenon failed! [%lu][%llu]",
             all_balance, common::kGenesisFoundationMaxZjc);
         return kInitError;
     }
@@ -1059,12 +1059,12 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         db_->Put(db_batch);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
-            INIT_ERROR("get address failed! [%s]", common::Encode::HexEncode(address).c_str());
+            ZJC_FATAL("get address failed! [%s]", common::Encode::HexEncode(address).c_str());
             return kInitError;
         }
 
         if (account_ptr->balance() != genesis_account_balance) {
-            INIT_ERROR("get address balance failed! [%s]", common::Encode::HexEncode(address).c_str());
+            ZJC_FATAL("get address balance failed! [%s]", common::Encode::HexEncode(address).c_str());
             return kInitError;
         }
 
@@ -1073,7 +1073,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     }
 
     if (all_balance != common::kGenesisFoundationMaxZjc) {
-        INIT_ERROR("all_balance != common::kGenesisFoundationMaxTenon failed! [%lu][%llu]",
+        ZJC_FATAL("all_balance != common::kGenesisFoundationMaxTenon failed! [%lu][%llu]",
             all_balance, common::kGenesisFoundationMaxZjc);
         return kInitError;
     }

@@ -201,7 +201,6 @@ void BlockManager::GenesisAddAllAccount(
     }
 
     // one block must be one consensus pool
-    uint32_t consistent_pool_index = common::kInvalidPoolIndex;
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         if (tx_list[i].balance() == 0) {
             continue;
