@@ -153,6 +153,9 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
         if (!Execution::Instance()->GetStorage(
                 thread_idx_, msg.recipient, protos::kFieldBytesCode, &bytes_code)) {
             evmc_res.status_code = EVMC_REVERT;
+            ZJC_WARN("get call bytes code failed: %s, field: %s",
+                common::Encode::HexEncode(msg.recipient).c_str(),
+                protos::kFieldBytesCode.c_str());
             return evmc_res;
         }
 
