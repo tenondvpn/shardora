@@ -23,8 +23,11 @@ contract Pkeet {
         bytes32 v1_hash = ripemd160(params);
         uint256 b = 3;
         uint256 d = 1;
-        balances[msg.sender] = balances[msg.sender] + b;
-        balances[msg.sender] = balances[msg.sender].mul(b).add(d);
+        if (balances[msg.sender] == 0) {
+            balances[msg.sender] = 1;
+        } else {
+            balances[msg.sender] = balances[msg.sender].mul(b).add(d);
+        }
         verifications[v1_hash].push(payable(msg.sender));
         if (verifications[v1_hash].length >= verification_valid_count) {
             for (uint i = 0; i < verification_valid_count; i++) {
