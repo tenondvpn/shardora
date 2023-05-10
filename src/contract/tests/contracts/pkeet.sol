@@ -26,7 +26,7 @@ contract Pkeet {
         if (balances[msg.sender] == 0) {
             balances[msg.sender] = 1;
         } else {
-            balances[msg.sender] = balances[msg.sender].mul(b).add(d);
+            balances[msg.sender]++;
         }
         verifications[v1_hash].push(payable(msg.sender));
         if (verifications[v1_hash].length >= verification_valid_count) {
