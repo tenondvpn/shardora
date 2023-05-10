@@ -235,7 +235,9 @@ int ContractCall::SaveContractCreateInfo(
 //                 storage_iter->second.value,
 //                 *db_batch);
             auto kv = block_tx.add_storages();
-            kv->set_key(account_iter->first + storage_iter->first);
+            auto str_key = std::string((char*)account_iter->first.bytes, sizeof(account_iter->first.bytes)) +
+                std::string((char*)storage_iter->first.bytes, sizeof(storage_iter->first.bytes));
+            kv->set_key(str_key);
             kv->set_val_hash(std::string(
                 (char*)storage_iter->second.value.bytes,
                 sizeof(storage_iter->second.value.bytes)));
@@ -253,7 +255,9 @@ int ContractCall::SaveContractCreateInfo(
 //                 storage_iter->second.str_val,
 //                 *db_batch);
             auto kv = block_tx.add_storages();
-            kv->set_key(account_iter->first + storage_iter->first);
+            auto str_key = std::string((char*)account_iter->first.bytes, sizeof(account_iter->first.bytes)) +
+                std::string((char*)storage_iter->first.bytes, sizeof(storage_iter->first.bytes));
+            kv->set_key(str_key);
             if (storage_iter->second.str_val.size() > 32) {
                 kv->set_val_hash(common::Hash::keccak256(storage_iter->second.str_val));
                 kv->set_val_size(storage_iter->second.str_val.size());
