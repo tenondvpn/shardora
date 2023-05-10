@@ -6,6 +6,7 @@ import "protos/pools.proto";
 message StorageItem {
     optional bytes key = 1;
     optional bytes val_hash = 2;
+    optional uint32 val_size = 3 [default=0];
 }
 
 message TransferItem {

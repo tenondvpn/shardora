@@ -66,35 +66,73 @@ public:
             std::string((char*)key.bytes, sizeof(key.bytes));
         return storage_map_[thread_idx].exists(str_key);
     }
+
+    void NewBlockWithTx(
+            uint8_t thread_idx,
+            const std::shared_ptr<block::protobuf::Block>& block_item,
+            const block::protobuf::BlockTx& tx,
+            db::DbWriteBatch& db_batch) {
+        if (tx.step() != pools::protobuf::kContractUserCreateCall &&
+                tx.step() != pools::protobuf::kContractExcute) {
+            return;
+        }
+
+        for (int32_t i = 0; i < tx.storages_size(); ++i) {
+            if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
+                continue;
+            }
+
+
+            if (tx.storages(i).val_size() > 32) {
+                std::string val;
+                if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+                    continue;
+                }
+
+                UpdateStorage(thread_idx, tx.storages(i).key(), val, db_batch);
+            } else {
+                UpdateStorage(thread_idx, tx.storages(i).key(), tx.storages(i).val_hash(), db_batch);
+            }
+        }
+    }
+
+    void UpdateStorage(
+            uint8_t thread_idx,
+            const std::string& key,
+            const std::string& val,
+            db::DbWriteBatch& db_batch) {
+        storage_map_[thread_idx].add(str_key, val);
+        prefix_db_->SaveTemporaryKv(key, val, db_batch);
+    }
+
     evmc::bytes32 GetStorage(
             uint8_t thread_idx,
             const evmc::address& addr,
             const evmc::bytes32& key) {
         auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
-         std::string((char*)key.bytes, sizeof(key.bytes));
+            std::string((char*)key.bytes, sizeof(key.bytes));
         std::string val;
-        if (storage_map_[thread_idx].get(str_key, &val)) {
-            evmc::bytes32 tmp_val{};
-            uint32_t offset = 0;
-            uint32_t length = sizeof(tmp_val.bytes);
-            if (val.size() < sizeof(tmp_val.bytes)) {
-                offset = sizeof(tmp_val.bytes) - val.size();
-                length = val.size();
+        if (!storage_map_[thread_idx].get(str_key, &val)) {
+            // get from db and add to memory cache
+            if (prefix_db_->GetTemporaryKv(str_key, &val)) {
+                storage_map_[thread_idx].add(str_key, val);
             }
-
-            memcpy(tmp_val.bytes + offset, val.c_str(), length);
-            return tmp_val;
         }
 
-        // get from db and add to memory cache
-        auto byte32 = prefix_db_->GetAddressStorage(addr, key);
-        if (byte32) {
-            storage_map_[thread_idx].add(
-                str_key,
-                std::string((char*)byte32.bytes, sizeof(byte32.bytes)));
+        if (val.empty()) {
+            return evmc::bytes32{};
         }
-        
-        return byte32;
+
+        evmc::bytes32 tmp_val{};
+        uint32_t offset = 0;
+        uint32_t length = sizeof(tmp_val.bytes);
+        if (val.size() < sizeof(tmp_val.bytes)) {
+            offset = sizeof(tmp_val.bytes) - val.size();
+            length = val.size();
+        }
+
+        memcpy(tmp_val.bytes + offset, val.c_str(), length);
+        return tmp_val;
     }
 
     bool GetStorage(
@@ -108,7 +146,7 @@ public:
         }
 
         // get from db and add to memory cache
-        auto res = prefix_db_->GetAddressStorage(addr, key, val);
+        auto res = prefix_db_->GetTemporaryKv(str_key, val);
         if (res) {
             storage_map_[thread_idx].add(str_key, *val);
         }

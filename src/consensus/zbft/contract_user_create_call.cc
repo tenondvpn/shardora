@@ -191,11 +191,16 @@ int ContractUserCreateCall::SaveContractCreateInfo(
             account_iter != zjc_host.accounts_.end(); ++account_iter) {
         for (auto storage_iter = account_iter->second.storage.begin();
             storage_iter != account_iter->second.storage.end(); ++storage_iter) {
-            prefix_db_->SaveAddressStorage(
-                account_iter->first,
-                storage_iter->first,
-                storage_iter->second.value,
-                *db_batch);
+//             prefix_db_->SaveAddressStorage(
+//                 account_iter->first,
+//                 storage_iter->first,
+//                 storage_iter->second.value,
+//                 *db_batch);
+            auto kv = block_tx.add_storages();
+            kv->set_key(account_iter->first + storage_iter->first);
+            kv->set_val_hash(std::string(
+                (char*)storage_iter->second.value.bytes,
+                sizeof(storage_iter->second.value.bytes)));
             gas_more += (sizeof(account_iter->first.bytes) +
                 sizeof(storage_iter->first.bytes) +
                 sizeof(storage_iter->second.value.bytes)) *
@@ -204,11 +209,21 @@ int ContractUserCreateCall::SaveContractCreateInfo(
 
         for (auto storage_iter = account_iter->second.str_storage.begin();
                 storage_iter != account_iter->second.str_storage.end(); ++storage_iter) {
-            prefix_db_->SaveAddressStringStorage(
-                account_iter->first,
-                storage_iter->first,
-                storage_iter->second.str_val,
-                *db_batch);
+//             prefix_db_->SaveAddressStringStorage(
+//                 account_iter->first,
+//                 storage_iter->first,
+//                 storage_iter->second.str_val,
+//                 *db_batch);
+            auto kv = block_tx.add_storages();
+            kv->set_key(account_iter->first + storage_iter->first);
+            if (storage_iter->second.str_val.size() > 32) {
+                kv->set_val_hash(common::Hash::keccak256(storage_iter->second.str_val));
+                kv->set_val_size(storage_iter->second.str_val.size());
+                prefix_db_->SaveTemporaryKv(kv->val_hash(), storage_iter->second.str_val);
+            } else {
+                kv->set_val_hash(storage_iter->second.str_val);
+            }
+
             gas_more += (sizeof(account_iter->first.bytes) +
                 storage_iter->first.size() +
                 storage_iter->second.str_val.size()) *
