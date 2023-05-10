@@ -411,8 +411,8 @@ int create_library(int argc, char** argv) {
         to,
         "create_contract",
         bytescode,
+        0,
         100000,
-        10000000,
         10,
         3);
     if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {

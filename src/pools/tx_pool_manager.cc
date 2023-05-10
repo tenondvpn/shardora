@@ -459,14 +459,20 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
 
 void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr) {
     auto& tx_msg = msg_ptr->header.tx_proto();
-// || memcmp(
-//     tx_msg.contract_code().c_str(),
-//         protos::kContractBytesStartCode.c_str(),
-//         protos::kContractBytesStartCode.size()) != 0
     if (!tx_msg.has_contract_code()) {
         ZJC_DEBUG("create contract not has valid contract code: %s",
             common::Encode::HexEncode(tx_msg.contract_code()).c_str());
         return;
+    }
+
+    if (memcmp(
+            tx_msg.contract_code().c_str(),
+            protos::kContractBytesStartCode.c_str(),
+            protos::kContractBytesStartCode.size()) != 0) {
+        if (tx_msg.amount() > 0) {
+            ZJC_DEBUG("create library not has valid amount: %lu", tx_msg.amount());
+            return;
+        }
     }
 
     if (!UserTxValid(msg_ptr)) {
