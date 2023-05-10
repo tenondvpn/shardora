@@ -1,8 +1,17 @@
-// SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0  <0.9.0;
+// SPDX-License-Identifier:MIT
 
-library MyLibrary {
-    function add(uint256 a, uint256 b) public pure returns(uint256) {
-        return a + b;
+pragma solidity ^0.8.7;
+
+library LibraryDemo{
+    struct structData{
+        mapping(string=>uint32) map;
+    }
+
+    function insertData(structData storage self,string memory _name,uint32 _age)public {
+        self.map[_name]=_age;
+    }
+
+    function get(structData storage self,string memory _name)view public returns(uint32){
+        return self.map[_name];
     }
 }

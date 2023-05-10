@@ -1,15 +1,17 @@
-// SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.7.0  <0.9.0;
+// SPDX-License-Identifier:MIT
 
-import "./library_example.sol";  //导入库
+pragma solidity ^0.8.7;
 
-contract UseLibraryExample {
+import "./LibraryDemo.sol";
 
-    using MyLibrary for uint256;
+contract CallLib{
+    LibraryDemo.structData private libObj;
 
-    function getSum(uint256 firstNumber, uint256 secondNumber) public pure returns(uint256) {
-        return firstNumber.add(secondNumber); //您对这句可能产生了困惑
+    function insertName(string memory _name,uint32 _age)public{
+        LibraryDemo.insertData(libObj,_name,_age);
     }
 
+    function get(string memory _name)view public returns(uint32){
+        return LibraryDemo.get(libObj,_name);
+    }
 }
-
