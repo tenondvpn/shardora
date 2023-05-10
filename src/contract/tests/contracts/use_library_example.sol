@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.7;
 
-import "./LibraryDemo.sol";
+import "./library_example.sol";
 
 contract CallLib{
     LibraryDemo.structData private libObj;
