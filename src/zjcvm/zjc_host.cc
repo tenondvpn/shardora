@@ -2,6 +2,7 @@
 
 #include <evmc/hex.hpp>
 
+#include "block/account_manager.h"
 #include "common/encode.h"
 #include "common/log.h"
 #include "contract/call_parameters.h"

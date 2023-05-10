@@ -8,13 +8,15 @@
 
 #include <evmc/evmc.hpp>
 
-#include "block/account_manager.h"
-
 namespace zjchain {
 
 namespace contract {
     class ContractManager;
 };
+
+namespace block {
+    class AccountManager;
+}
 
 namespace zjcvm {
 
