@@ -149,22 +149,22 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
             origin_address_,
             raw_result) != contract::kContractNotExists) {
     } else {
-        std::string bytes_code;
-        if (!Execution::Instance()->GetStorage(
-                thread_idx_, msg.code_address, protos::kFieldBytesCode, &bytes_code)) {
+        std::string id = std::string((char*)msg.code_address.bytes, sizeof(msg.code_address.bytes));
+        auto acc_info = acc_mgr_->GetAccountInfo(thread_idx_, acc_info);
+        if (acc_info == nullptr || acc_info->bytes_code().empty()) {
             evmc_res.status_code = EVMC_REVERT;
             ZJC_WARN("get call bytes code failed: %s, field: %s",
-                common::Encode::HexEncode(std::string((char*)msg.code_address.bytes, sizeof(msg.code_address.bytes))).c_str(),
+                common::Encode::HexEncode(id).c_str(),
                 protos::kFieldBytesCode.c_str());
             return evmc_res;
         }
 
         ZJC_DEBUG("get call bytes code success: %s, field: %s",
-            common::Encode::HexEncode(std::string((char*)msg.code_address.bytes, sizeof(msg.code_address.bytes))).c_str(),
+            common::Encode::HexEncode(id).c_str(),
             protos::kFieldBytesCode.c_str());
         ++depth_;
         int res_status = zjcvm::Execution::Instance()->execute(
-            bytes_code,
+            acc_info->bytes_code(),
             params.data,
             params.from,
             params.to,

@@ -69,6 +69,7 @@ int ContractCall::HandleTx(
     block::protobuf::BlockTx contract_tx;
     zjcvm::ZjchainHost zjc_host;
     zjc_host.contract_mgr_ = contract_mgr_;
+    zjc_host.acc_mgr_ = account_mgr_;
     zjc_host.tx_context_.tx_origin = evmc::address{};
     zjc_host.tx_context_.block_coinbase = evmc::address{};
     zjc_host.tx_context_.block_number = block.height();

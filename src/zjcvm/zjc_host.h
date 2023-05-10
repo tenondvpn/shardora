@@ -8,6 +8,8 @@
 
 #include <evmc/evmc.hpp>
 
+#include "block/account_manager.h"
+
 namespace zjchain {
 
 namespace contract {
@@ -115,6 +117,8 @@ public:
     std::string create_bytes_code_;
     uint8_t thread_idx_;
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
+    std::shared_ptr<block::AccountManager> acc_mgr_ = nullptr;
+
 };
 
 }  // namespace zjcvm
