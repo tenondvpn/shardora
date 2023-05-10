@@ -21,6 +21,7 @@ contract Pkeet {
 
     function callAbe(bytes memory params) public payable {
         bytes32 v1_hash = ripemd160(params);
+        uint256 b = 3;
         balances[msg.sender] = balances[msg.sender].add(b);
         verifications[v1_hash].push(payable(msg.sender));
         if (verifications[v1_hash].length >= verification_valid_count) {
