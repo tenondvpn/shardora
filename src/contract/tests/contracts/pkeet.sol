@@ -11,6 +11,10 @@ contract Pkeet {
     uint award_each;
     address payable public creator;
     constructor(uint valid_count, uint award) payable {
+        uint256 a = 2;
+        uint256 b = 3;
+        test_res = a.add(b);
+
         verification_valid_count = valid_count;
         award_each = award;
         creator = payable(msg.sender);
