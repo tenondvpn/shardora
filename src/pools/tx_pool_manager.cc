@@ -242,6 +242,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
         for (int32_t i = 0; i < heights.size(); ++i) {
             if (heights[i] != common::kInvalidUint64) {
                 res_heights_debug += std::to_string(heights[i]) + " ";
+                ZJC_DEBUG("synced heights check new height: %u, %lu, local: %lu", i, tx_pool_[i].latest_height(), heights[i]);
                 if (heights[i] > tx_pool_[i].latest_height() + 64) {
                     synced_max_heights_[i] = tx_pool_[i].latest_height() + 64;
                     ZJC_DEBUG("synced heights add new height: %u, %lu, local: %lu", i, synced_max_heights_[i], tx_pool_[i].latest_height());
