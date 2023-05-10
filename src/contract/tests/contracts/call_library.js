@@ -45,7 +45,7 @@ var web3 = new Web3(new Web3.providers.IpcProvider('/Users/myuser/Library/Ethere
 // on windows the path is: "\\\\.\\pipe\\geth.ipc"
 // on linux the path is: "/users/myuser/.ethereum/geth.ipc"
 
-var call_claimPaiment_func_code = web3.eth.abi.encodeFunctionSignature('insertName(string memory,uint32)');
-var call_claimPaiment_param_codes = web3.eth.abi.encodeParameters(['string memory', 'uint32'], ['2643000000', '1']);
+var call_claimPaiment_func_code = web3.eth.abi.encodeFunctionSignature('insertName(string,uint32)');
+var call_claimPaiment_param_codes = web3.eth.abi.encodeParameters(['string', 'uint32'], ['2643000000', '1']);
 console.log("call: " + call_claimPaiment_func_code.substring(2) + call_claimPaiment_param_codes.substring(2));
 
