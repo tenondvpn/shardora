@@ -348,7 +348,9 @@ int ContractCall::ContractExcute(
         zjc_host,
         out_res);
     if (exec_res != zjcvm::kZjcvmSuccess) {
-        ZJC_ERROR("ContractExcute failed: %d", exec_res);
+        ZJC_ERROR("ContractExcute failed: %d, bytes: %s, input: %s",
+            exec_res, common::Encode::HexEncode(contract_info->bytes_code()).c_str(),
+            common::Encode::HexEncode(tx.contract_input()).c_str());
         assert(false);
         return kConsensusError;
     }
