@@ -225,7 +225,11 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
         auto* sync_heights = msg.mutable_sync_heights();
         uint32_t pool_idx = common::kInvalidPoolIndex;
         for (uint32_t i = 0; i < pool_idx; ++i) {
-            sync_heights->add_heights(tx_pool_[i].latest_height());
+            if (tx_pool_[i].latest_height() == common::kInvalidUint64) {
+                sync_heights->add_heights(0);
+            } else {
+                sync_heights->add_heights(tx_pool_[i].latest_height());
+            }
         }
 
         transport::TcpTransport::Instance()->SetMessageHash(
@@ -240,9 +244,9 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
 
         std::string res_heights_debug;
         for (int32_t i = 0; i < heights.size(); ++i) {
+            res_heights_debug += std::to_string(heights[i]) + " ";
             if (heights[i] != common::kInvalidUint64) {
-                res_heights_debug += std::to_string(heights[i]) + " ";
-                ZJC_DEBUG("synced heights check new height: %u, %lu, local: %lu", i, tx_pool_[i].latest_height(), heights[i]);
+                ZJC_DEBUG("synced heights check new height: %u, %lu, local: %lu, invalid: %lu", i, tx_pool_[i].latest_height(), heights[i], common::kInvalidUint64);
                 if (tx_pool_[i].latest_height() == common::kInvalidUint64) {
                     synced_max_heights_[i] = heights[i];
                     continue;
