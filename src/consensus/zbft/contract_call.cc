@@ -95,8 +95,9 @@ int ContractCall::HandleTx(
     int call_res = ContractExcute(msg_ptr->address_info, to_balance, zjc_host, block_tx, &res);
     if (call_res != kConsensusSuccess || res.status_code != EVMC_SUCCESS) {
         block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
-        ZJC_DEBUG("create contract failed, call_res: %d, evmc res: %d!",
-            call_res, res.status_code);
+        ZJC_DEBUG("call contract failed, call_res: %d, evmc res: %d, bytes: %s, input: %s!",
+            call_res, res.status_code, common::Encode::HexEncode(msg_ptr->address_info->bytes_code()).c_str(),
+            common::Encode::HexEncode(block_tx.contract_input()).c_str());
     }
 
     gas_used += block_tx.gas_limit() - res.gas_left;
