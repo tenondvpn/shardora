@@ -151,7 +151,7 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
             raw_result) != contract::kContractNotExists) {
     } else {
         std::string id = std::string((char*)msg.code_address.bytes, sizeof(msg.code_address.bytes));
-        auto acc_info = acc_mgr_->GetAccountInfo(thread_idx_, acc_info);
+        auto acc_info = acc_mgr_->GetAccountInfo(thread_idx_, id);
         if (acc_info == nullptr || acc_info->bytes_code().empty()) {
             evmc_res.status_code = EVMC_REVERT;
             ZJC_WARN("get call bytes code failed: %s, field: %s",
