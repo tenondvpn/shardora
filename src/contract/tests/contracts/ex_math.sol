@@ -1,6 +1,6 @@
 pragma solidity >=0.7.0 <0.9.0;
 
-import "./SafeMath.sol";
+import "./ex_math_lib.sol";
 
 contract ERC20 {
 
