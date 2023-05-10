@@ -672,6 +672,10 @@ int contract_call(int argc, char** argv) {
     gid_int[0] = pos;
     std::string to = common::Encode::HexDecode(argv[2]);
     std::string input = common::Encode::HexDecode("4162d68f00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000006706b656574310000000000000000000000000000000000000000000000000000");
+    if (argc > 3) {
+        input = common::Encode::HexDecode(argv[3]);
+    }
+
     auto tx_msg_ptr = CreateTransactionWithAttr(
         security,
         gid,
