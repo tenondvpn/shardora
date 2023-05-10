@@ -352,6 +352,93 @@ int one_tx_main(int argc, char** argv) {
     return 0;
 }
 
+int create_library(int argc, char** argv) {
+    LoadAllAccounts();
+    SignalRegister();
+    WriteDefaultLogConf();
+    log4cpp::PropertyConfigurator::configure("./log4cpp.properties");
+    transport::MultiThreadHandler net_handler;
+    std::shared_ptr<security::Security> security = std::make_shared<security::Ecdsa>();
+    auto db_ptr = std::make_shared<db::Db>();
+    if (!db_ptr->Init("./txclidb")) {
+        std::cout << "init db failed!" << std::endl;
+        return 1;
+    }
+
+    std::string val;
+    uint64_t pos = 0;
+    if (db_ptr->Get("contract_pos", &val).ok()) {
+        if (!common::StringUtil::ToUint64(val, &pos)) {
+            std::cout << "get pos failed!" << std::endl;
+            return 1;
+        }
+    }
+
+    if (net_handler.Init(db_ptr) != 0) {
+        std::cout << "init net handler failed!" << std::endl;
+        return 1;
+    }
+
+    if (transport::TcpTransport::Instance()->Init(
+        "127.0.0.1:13791",
+        128,
+        false,
+        &net_handler) != 0) {
+        std::cout << "init tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    if (transport::TcpTransport::Instance()->Start(false) != 0) {
+        std::cout << "start tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    std::string gid = common::Random::RandomString(32);
+    std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
+    uint32_t prikey_pos = 0;
+    auto from_prikey = prikeys[254];
+    security->SetPrivateKey(from_prikey);
+    uint64_t now_tm_us = common::TimeUtils::TimestampUs();
+    uint32_t count = 0;
+    uint64_t* gid_int = (uint64_t*)gid.data();
+    gid_int[0] = pos;
+    std::string bytescode = common::Encode::HexDecode("6101be610053600b82828239805160001a607314610046577f4e487b7100000000000000000000000000000000000000000000000000000000600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600436106100355760003560e01c8063771602f71461003a575b600080fd5b610054600480360381019061004f91906100bb565b61006a565b604051610061919061010a565b60405180910390f35b600081836100789190610154565b905092915050565b600080fd5b6000819050919050565b61009881610085565b81146100a357600080fd5b50565b6000813590506100b58161008f565b92915050565b600080604083850312156100d2576100d1610080565b5b60006100e0858286016100a6565b92505060206100f1858286016100a6565b9150509250929050565b61010481610085565b82525050565b600060208201905061011f60008301846100fb565b92915050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b600061015f82610085565b915061016a83610085565b925082820190508082111561018257610181610125565b5b9291505056fea26469706673582212209a306fb9cc8dd120671cd2a85a5321b243260137113c947729c018ae009993da64736f6c63430008110033");
+    std::string to = security::GetContractAddress(security->GetAddress(), gid, common::Hash::keccak256(bytescode));
+    auto tx_msg_ptr = CreateTransactionWithAttr(
+        security,
+        gid,
+        from_prikey,
+        to,
+        "create_contract",
+        bytescode,
+        100000,
+        10000000,
+        10,
+        3);
+    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
+        std::cout << "send tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 22001, tx_msg_ptr->header) != 0) {
+        std::cout << "send tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 21001, tx_msg_ptr->header) != 0) {
+        std::cout << "send tcp client failed!" << std::endl;
+        return 1;
+    }
+
+    std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << std::endl;
+    if (!db_ptr->Put("contract_pos", std::to_string(pos)).ok()) {
+        std::cout << "save pos failed!" << std::endl;
+        return 1;
+    }
+
+    return 0;
+}
+
 int contract_main(int argc, char** argv) {
     LoadAllAccounts();
     SignalRegister();
@@ -629,6 +716,8 @@ int main(int argc, char** argv) {
         if (argc > 2) {
             contract_call(argc, argv);
         }
+    } else if (argv[1][0] == '4') {
+        create_library(argc, argv);
     } else {
         one_tx_main(argc, argv);
     }
