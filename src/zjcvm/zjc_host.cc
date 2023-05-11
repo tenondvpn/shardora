@@ -33,7 +33,7 @@ evmc::bytes32 ZjchainHost::get_storage(
             ZJC_DEBUG("zjcvm temp get storage called, id: %s, key: %s, value: %s",
                 common::Encode::HexEncode(id).c_str(),
                 common::Encode::HexEncode(key_str).c_str(),
-                common::Encode::HexEncode(std::string((char*)storage_iter->second.value, 32)).c_str());
+                common::Encode::HexEncode(std::string((char*)storage_iter->second.value.bytes, 32)).c_str());
             return storage_iter->second.value;
         }
     }
