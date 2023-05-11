@@ -115,6 +115,7 @@ int Execution::execute(
         exec_code_size = bytes_code.size();
     }
 
+    ZJC_DEBUG("now call contract, msg sender: %s", common::Encode::HexEncode(std::string((char*)msg.sender.bytes, 20)).c_str());
     *out_res = evm_.execute(host, rev, msg, exec_code_data, exec_code_size);
     return kZjcvmSuccess;
 }
