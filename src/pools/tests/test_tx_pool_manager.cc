@@ -98,7 +98,7 @@ std::shared_ptr<address::protobuf::AddressInfo> CreateAddressInfo(
     single_to_address_info_->set_balance(1000000000lu);
     single_to_address_info_->set_sharding_id(2);
     single_to_address_info_->set_pool_index(0);
-    single_to_address_info_->set_addr(common::kNormalToAddress);
+    single_to_address_info_->set_addr(block::kNormalToAddress);
     single_to_address_info_->set_type(address::protobuf::kNormal);
     single_to_address_info_->set_latest_height(0);
     prefix_db->AddAddressInfo(security_ptr->GetAddress(), *single_to_address_info_);
@@ -115,6 +115,7 @@ public:
             uint8_t thread_idx,
             const block::protobuf::Block& block,
             std::shared_ptr<db::DbWriteBatch>& db_batch,
+            zjcvm::ZjchainHost& zjc_host,
             std::unordered_map<std::string, int64_t>& acc_balance_map,
             block::protobuf::BlockTx& block_tx) {
         return consensus::kConsensusSuccess;
