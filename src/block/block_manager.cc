@@ -959,8 +959,6 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
     }
 
     if (latest_timeblock_height_ <= consensused_timeblock_height_) {
-        ZJC_DEBUG("latest_timeblock_height_ <= consensused_timeblock_height_: %lu, %lu",
-            latest_timeblock_height_, consensused_timeblock_height_);
         return;
     }
 
