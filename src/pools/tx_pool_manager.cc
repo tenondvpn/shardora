@@ -249,18 +249,19 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             if (heights[i] != common::kInvalidUint64) {
                 if (tx_pool_[i].latest_height() == common::kInvalidUint64) {
                     synced_max_heights_[i] = heights[i];
+                    changed_heights_debug += std::to_string(i) + ":" + std::to_string(heights[i]) + ",";
                     continue;
                 }
 
                 if (heights[i] > tx_pool_[i].latest_height() + 64) {
                     synced_max_heights_[i] = tx_pool_[i].latest_height() + 64;
-                    changed_heights_debug += std::to_string(i) + ":" + std::to_string(tx_pool_[i].latest_height()) + ",";
+                    changed_heights_debug += std::to_string(i) + ":" + std::to_string(heights[i]) + ",";
                     continue;
                 }
 
                 if (heights[i] > tx_pool_[i].latest_height()) {
                     synced_max_heights_[i] = heights[i];
-                    changed_heights_debug += std::to_string(i) + ":" + std::to_string(tx_pool_[i].latest_height()) + ",";
+                    changed_heights_debug += std::to_string(i) + ":" + std::to_string(heights[i]) + ",";
                 }
             }
         }
