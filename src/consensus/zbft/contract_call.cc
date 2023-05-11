@@ -30,6 +30,7 @@ int ContractCall::HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
+        zjcvm::ZjchainHost& zjc_host;
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     // gas just consume from 's prepayment
@@ -67,18 +68,6 @@ int ContractCall::HandleTx(
 
     to_balance += block_tx.amount();
     block::protobuf::BlockTx contract_tx;
-    zjcvm::ZjchainHost zjc_host;
-    zjc_host.contract_mgr_ = contract_mgr_;
-    zjc_host.acc_mgr_ = account_mgr_;
-    zjc_host.tx_context_.tx_origin = evmc::address{};
-    zjc_host.tx_context_.block_coinbase = evmc::address{};
-    zjc_host.tx_context_.block_number = block.height();
-    zjc_host.tx_context_.block_timestamp = block.timestamp() / 1000;
-    uint64_t chanin_id = (((uint64_t)block.network_id()) << 32 | (uint64_t)block.pool_index());
-    zjcvm::Uint64ToEvmcBytes32(
-        zjc_host.tx_context_.chain_id,
-        chanin_id);
-    zjc_host.thread_idx_ = thread_idx;
     zjcvm::Uint64ToEvmcBytes32(
         zjc_host.tx_context_.tx_gas_price,
         block_tx.gas_price());

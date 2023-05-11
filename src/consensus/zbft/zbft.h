@@ -494,6 +494,7 @@ protected:
     uint64_t timeout_ = 0;
     uint64_t leader_pre_height_ = 0;
     std::string leader_pre_hash_;
+    zjcvm::ZjchainHost zjc_host;
 
     DISALLOW_COPY_AND_ASSIGN(Zbft);
 public:

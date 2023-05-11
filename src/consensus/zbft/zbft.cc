@@ -647,6 +647,17 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
     auto& tx_map = txs_ptr_->txs;
     tx_list->Reserve(tx_map.size());
     std::unordered_map<std::string, int64_t> acc_balance_map;
+    zjc_host.contract_mgr_ = contract_mgr_;
+    zjc_host.acc_mgr_ = account_mgr_;
+    zjc_host.tx_context_.tx_origin = evmc::address{};
+    zjc_host.tx_context_.block_coinbase = evmc::address{};
+    zjc_host.tx_context_.block_number = zjc_block.height();
+    zjc_host.tx_context_.block_timestamp = zjc_block.timestamp() / 1000;
+    uint64_t chanin_id = (((uint64_t)zjc_block.network_id()) << 32 | (uint64_t)zjc_block.pool_index());
+    zjcvm::Uint64ToEvmcBytes32(
+        zjc_host.tx_context_.chain_id,
+        chanin_id);
+    zjc_host.thread_idx_ = txs_ptr_->thread_index;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) { 
         auto& tx_info = iter->second->msg_ptr->header.tx_proto();
         auto& block_tx = *tx_list->Add();
@@ -669,6 +680,7 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
             txs_ptr_->thread_index,
             zjc_block,
             db_batch_,
+            zjc_host,
             acc_balance_map,
             block_tx);
         if (do_tx_res != kConsensusSuccess) {

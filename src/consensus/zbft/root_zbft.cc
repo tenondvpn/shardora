@@ -105,6 +105,7 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
             txs_ptr_->thread_index,
             zjc_block,
             db_batch_,
+            zjc_host,
             acc_balance_map,
             tx);
         if (do_tx_res != kConsensusSuccess) {
@@ -135,6 +136,7 @@ void RootZbft::RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_bl
         txs_ptr_->thread_index,
         zjc_block,
         db_batch_,
+        zjc_host,
         acc_balance_map,
         tx);
     if (do_tx_res != kConsensusSuccess) {
