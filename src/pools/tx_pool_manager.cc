@@ -86,7 +86,8 @@ void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) 
             return;
         }
 
-        if (tx_pool_[prev_synced_pool_index_].latest_height() <
+        if (tx_pool_[prev_synced_pool_index_].latest_height() == common::kInvalidUint64 ||
+                tx_pool_[prev_synced_pool_index_].latest_height() <
                 synced_max_heights_[prev_synced_pool_index_]) {
             SyncBlockWithMaxHeights(
                 thread_idx, prev_synced_pool_index_, synced_max_heights_[prev_synced_pool_index_]);
@@ -101,7 +102,8 @@ void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) 
             return;
         }
 
-        if (tx_pool_[prev_synced_pool_index_].latest_height() <
+        if (tx_pool_[prev_synced_pool_index_].latest_height() == common::kInvalidUint64 || 
+                tx_pool_[prev_synced_pool_index_].latest_height() <
                 synced_max_heights_[prev_synced_pool_index_]) {
             SyncBlockWithMaxHeights(
                 thread_idx, prev_synced_pool_index_, synced_max_heights_[prev_synced_pool_index_]);
