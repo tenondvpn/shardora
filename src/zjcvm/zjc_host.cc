@@ -59,9 +59,12 @@ evmc_storage_status ZjchainHost::set_storage(
         it = accounts_.find(addr);
     }
 
-    auto& old = it->second.storage[key];
-    if (old.value == value)
-        return EVMC_STORAGE_MODIFIED_RESTORED;
+    auto storage_iter = it->second.storage.find(key);
+    if (storage_iter != it->second.storage.end()) {
+        if (storage_iter->second.value == value) {
+            return EVMC_STORAGE_MODIFIED_RESTORED;
+        }
+    }
 
     evmc_storage_status status{};
     if (!old.dirty) {
@@ -76,7 +79,12 @@ evmc_storage_status ZjchainHost::set_storage(
         status = EVMC_STORAGE_MODIFIED_RESTORED;
     }
 
-    old.value = value;
+    if (storage_iter != it->second.storage.end()) {
+        storage_iter->second.value = value;
+    } else {
+        it->second.storage[key] = value;
+    }
+
     return status;
 }
 

@@ -37,8 +37,8 @@ struct MockedAccount {
     bytes code;
     evmc::bytes32 codehash;
     evmc::uint256be balance;
-    std::unordered_map<evmc::bytes32, storage_value> storage;
-    std::unordered_map<std::string, storage_value> str_storage;
+    std::map<evmc::bytes32, storage_value> storage;
+    std::map<std::string, storage_value> str_storage;
     void set_balance(uint64_t x) noexcept {
         balance = evmc::uint256be{};
         for (std::size_t i = 0; i < sizeof(x); ++i)
@@ -104,7 +104,7 @@ public:
     int SaveKeyValue(const std::string& id, const std::string& key, const std::string& val);
     int GetKeyValue(const std::string& id, const std::string& key, std::string* val);
 
-    std::unordered_map<evmc::address, MockedAccount> accounts_;
+    std::map<evmc::address, MockedAccount> accounts_;
     evmc_tx_context tx_context_ = {};
     evmc::bytes32 block_hash_ = {};
     std::vector<log_record> recorded_logs_;
