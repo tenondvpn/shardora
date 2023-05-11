@@ -26,15 +26,15 @@ evmc::bytes32 ZjchainHost::get_storage(
         const evmc::bytes32& key) const noexcept {
     std::string id((char*)addr.bytes, sizeof(addr.bytes));
     std::string key_str((char*)key.bytes, sizeof(key.bytes));
-    ZJC_DEBUG("zjcvm set storage called, id: %s, key: %s, value: %s",
-        common::Encode::HexEncode(id).c_str(),
-        common::Encode::HexEncode(key_str).c_str(),
-        common::Encode::HexEncode(val_str).c_str());
     auto it = accounts_.find(addr);
     if (it != accounts_.end()) {
         auto storage_iter = it->second.storage.find(key);
         if (storage_iter != it->second.storage.end()) {
-            return storage_iter->second;
+            ZJC_DEBUG("zjcvm temp get storage called, id: %s, key: %s, value: %s",
+                common::Encode::HexEncode(id).c_str(),
+                common::Encode::HexEncode(key_str).c_str(),
+                common::Encode::HexEncode(std::string((char*)storage_iter->second.value, 32)).c_str());
+            return storage_iter->second.value;
         }
     }
 
