@@ -242,11 +242,8 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             return;
         }
 
-        std::string res_heights_debug;
         for (int32_t i = 0; i < heights.size(); ++i) {
-            res_heights_debug += std::to_string(heights[i]) + " ";
             if (heights[i] != common::kInvalidUint64) {
-                ZJC_DEBUG("synced heights check new height: %u, %lu, local: %lu, invalid: %lu", i, tx_pool_[i].latest_height(), heights[i], common::kInvalidUint64);
                 if (tx_pool_[i].latest_height() == common::kInvalidUint64) {
                     synced_max_heights_[i] = heights[i];
                     continue;
@@ -254,18 +251,14 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
 
                 if (heights[i] > tx_pool_[i].latest_height() + 64) {
                     synced_max_heights_[i] = tx_pool_[i].latest_height() + 64;
-                    ZJC_DEBUG("synced heights add new height: %u, %lu, local: %lu", i, synced_max_heights_[i], tx_pool_[i].latest_height());
                     continue;
                 }
 
                 if (heights[i] > tx_pool_[i].latest_height()) {
                     synced_max_heights_[i] = heights[i];
-                    ZJC_DEBUG("synced heights add new height: %u, %lu, local: %lu", i, synced_max_heights_[i], tx_pool_[i].latest_height());
                 }
             }
         }
-
-        ZJC_DEBUG("synced heights: %s", res_heights_debug.c_str());
     }
 }
 
@@ -448,12 +441,10 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
 }
 
 void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
-    ZJC_DEBUG("handle from message 0");
     if (!UserTxValid(msg_ptr)) {
         return;
     }
 
-    ZJC_DEBUG("handle from message 1");
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 }
 
