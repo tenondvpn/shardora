@@ -82,7 +82,7 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
 
             std::vector<uint32_t> invalid_pools;
             invalid_pools.reserve(64);
-            CheckLeaderValid(factors, invalid_pools);
+            CheckLeaderValid(factors, &invalid_pools);
         }
 
         prev_check_leader_valid_ms_ = now_tm_ms + kCheckLeaderLofPeriod;

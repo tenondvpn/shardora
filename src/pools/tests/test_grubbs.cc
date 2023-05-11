@@ -52,7 +52,7 @@ TEST_F(TestGrubbs, All) {
     }
 
     std::vector<uint32_t> invalid_pools;
-    pool_mgr.CheckLeaderValid(factors, invalid_pools);
+    pool_mgr.CheckLeaderValid(factors, &invalid_pools);
     for (int32_t i = 0; i < invalid_pools.size(); ++i) {
         std::cout << "check invalid: " << invalid_pools[i] << std::endl;
     }
