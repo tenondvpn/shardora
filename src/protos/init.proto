@@ -12,7 +12,7 @@ message GetAddressInfoResponse {
 }
 
 message InvalidLeaderPools {
-    repeated uint32_t pools = 1;
+    repeated uint32 pools = 1;
 }
 
 message InitMessage {
