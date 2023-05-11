@@ -46,7 +46,7 @@ int Ripemd160::call(
 
     std::string ripemd160 = common::Hash::ripemd160(param.data);
     res->output_data = new uint8_t[32];
-    memset(res->output_data, 0, 32);
+    memset((void*)res->output_data, 0, 32);
     memcpy((void*)res->output_data, ripemd160.c_str(), ripemd160.size());
     res->output_size = 32;
     memcpy(res->create_address.bytes,
