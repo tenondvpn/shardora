@@ -10,12 +10,12 @@ contract Pkeet {
     mapping(bytes32 => address payable[]) public verifications;
     uint verification_valid_count;
     uint award_each;
-    address payable public creator;
+    address payable public owner;
     constructor(uint valid_count, uint award) payable {
         uint256 b = 3;
         verification_valid_count = valid_count;
         award_each = award;
-        creator = payable(msg.sender);
+        owner = payable(msg.sender);
         balances[msg.sender] = 111;
     }
 
@@ -34,7 +34,7 @@ contract Pkeet {
                 verifications[v1_hash][i].transfer(award_each);
             }
 
-            selfdestruct(creator);
+            selfdestruct(owner);
         }
     }
 }
