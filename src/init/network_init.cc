@@ -228,12 +228,12 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
-    for (int32_t i = 0; i < msg_ptr->header.init_proto().pools.pools_size(); ++i) {
-        if (msg_ptr->header.init_proto().pools.pools(i) > common::kInvalidPoolIndex) {
+    for (int32_t i = 0; i < msg_ptr->header.init_proto().pools().pools_size(); ++i) {
+        if (msg_ptr->header.init_proto().pools().pools(i) > common::kInvalidPoolIndex) {
             return;
         }
 
-        ++invalid_pools_[msg_ptr->header.init_proto().pools.pools(i)];
+        ++invalid_pools_[msg_ptr->header.init_proto().pools().pools(i)];
     }
 }
 
