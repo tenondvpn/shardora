@@ -194,7 +194,6 @@ void BlockManager::GenesisAddAllAccount(
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBatch& db_batch) {
     // (TODO: XX): for create contract error, check address's shard and pool index valid, fix it
-//     assert(false);
     const auto& tx_list = block_item->tx_list();
     if (tx_list.empty()) {
         return;

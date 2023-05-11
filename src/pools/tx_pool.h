@@ -45,6 +45,13 @@ public:
         std::shared_ptr<sync::KeyValueSync>& kv_sync);
     int AddTx(TxItemPtr& tx_ptr);
     void GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count);
+    void GetTx(
+        const common::BloomFilter& bloom_filter,
+        std::map<std::string, TxItemPtr>& res_map);
+    void TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
+    void TxRecover(std::map<std::string, TxItemPtr>& txs);
+    void CheckTimeoutTx();
+    uint32_t SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms);
 
     void FlushHeightTree() {
         if (height_tree_ptr_ != nullptr) {
@@ -56,7 +63,6 @@ public:
             const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list) {
         auto txs_items = std::make_shared<consensus::WaitingTxsItem>();
         auto& tx_map = txs_items->txs;
-//         common::AutoSpinLock auto_lock(mutex_);
         for (int32_t i = 0; i < tx_hash_list.size(); ++i) {
             auto& txhash = tx_hash_list[i];
             auto iter = gid_map_.find(txhash);
@@ -72,11 +78,6 @@ public:
         return txs_items;
     }
 
-    void GetTx(
-        const common::BloomFilter& bloom_filter,
-        std::map<std::string, TxItemPtr>& res_map);
-    void TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
-    void TxRecover(std::map<std::string, TxItemPtr>& txs);
     uint64_t latest_height() const {
         return latest_height_;
     }
@@ -157,11 +158,32 @@ public:
         }
     }
 
-    void CheckTimeoutTx();
-    uint32_t SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms);
+    double CheckLeaderValid(bool get_factor) {
+        all_finish_tx_count += finish_tx_count;
+        double factor = 0.0;
+        if (get_factor) {
+            if (all_tx_count > 0) {
+                factor = (double)all_finish_tx_count / (double)all_tx_count;
+            } else {
+                factor = 1.0;
+            }
+            if (checked_count < kLeaderLofFactorCount) {
+                factor = 1.0;
+            }
+
+            checked_count = 0;
+            all_tx_count = 0;
+            all_finish_tx_count = 0;
+        }
+
+        ++checked_count;
+        all_tx_count += gid_map_.size();
+        finish_tx_count = 0;
+    }
 
 private:
     void InitHeightTree();
+    void RemoveTx(const std::string& gid);
     void InitLatestInfo() {
         pools::protobuf::PoolLatestInfo pool_info;
         uint32_t network_id = common::GlobalInfo::Instance()->network_id();
@@ -188,14 +210,8 @@ private:
                 synced_height_ = pool_info.synced_height();
                 prev_synced_height_ = synced_height_;
                 to_sync_max_height_ = latest_height_;
-
                 ZJC_DEBUG("pool %lu, init height: %lu", pool_index_, latest_height_);
             }
-        }
-
-        if (latest_height_ == common::kInvalidUint64) {
-            ZJC_ERROR("init pool failed sharding: %u, pool index: %u!",
-                common::GlobalInfo::Instance()->network_id(), pool_index_);
         }
     }
 
@@ -211,11 +227,8 @@ private:
         }
     }
 
-    void RemoveTx(const std::string& gid);
-
     static const uint64_t kSyncBlockPeriodMs = 3000lu;
 
-//     common::SpinMutex mutex_;
     std::unordered_map<std::string, TxItemPtr> gid_map_;
     std::queue<std::string> timeout_txs_;
     std::queue<std::string> timeout_remove_txs_;
@@ -232,6 +245,10 @@ private:
     uint64_t to_sync_max_height_ = 0;
     uint64_t prev_synced_time_ms_ = 0;
     std::shared_ptr<db::Db> db_ = nullptr;
+    uint32_t all_finish_tx_count = 0;
+    uint32_t all_tx_count = 0;
+    uint32_t checked_count = 0;
+    volatile uint32_t finish_tx_count = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };

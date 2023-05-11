@@ -60,6 +60,28 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
         prev_sync_height_tree_tm_ms_ = now_tm_ms + kFlushHeightTreePeriod;
     }
 
+    if (prev_check_leader_valid_ms_ < now_tm_ms) {
+        bool get_factor = false;
+        if (prev_cacultate_leader_valid_ms_ < now_tm_ms) {
+            get_factor = true;
+            prev_cacultate_leader_valid_ms_ = now_tm_ms + kCaculateLeaderLofPeriod;
+        }
+
+        std::vector<double> factors(common::kInvalidPoolIndex);
+        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            double res = tx_pool_[i].CheckLeaderValid(get_factor);
+            if (get_factor) {
+                factors[i] = res;
+            }
+        }
+
+        if (get_factor) {
+            CheckLeaderValid(factors);
+        }
+
+        prev_check_leader_valid_ms_ = now_tm_ms + kCheckLeaderLofPeriod;
+    }
+
     if (prev_sync_check_ms_ < now_tm_ms) {
         SyncMinssingHeights(msg_ptr->thread_idx, now_tm_ms);
         prev_sync_check_ms_ = now_tm_ms + kSyncMissingBlockPeriod;
@@ -68,6 +90,32 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
     if (prev_sync_heights_ms_ < now_tm_ms) {
         SyncPoolsMaxHeight(msg_ptr->thread_idx);
         prev_sync_heights_ms_ = now_tm_ms + kSyncPoolsMaxHeightsPeriod;
+    }
+}
+
+void TxPoolManager::CheckLeaderValid(const std::vector<double>& factors) {
+    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
+        factors.pop_back();
+    }
+
+    double average = 0.0;
+    for (uint32_t i = 0; i < factors.size(); ++i) {
+        average += factors[i];
+    }
+
+    average /= factors.size();
+    double variance = 0.0;
+    for (uint32_t i = 0; i < factors.size(); ++i) {
+        variance += (factors[i] - average) * (factors[i] - average);
+    }
+
+    variance = sqrt(variance / (factors.size() - 1));
+    for (uint32_t i = 0; i < factors.size(); ++i) {
+        double grubbs = abs(factors[i] - average) / variance;
+        if (grubbs > kGrubbsValidFactor) {
+            // invalid leader
+            ZJC_DEBUG("invalid pool found grubbs: %f, %d", grubbs, i);
+        }
     }
 }
 
@@ -149,7 +197,6 @@ std::shared_ptr<address::protobuf::AddressInfo> TxPoolManager::GetAddressInfo(
 
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // just one thread
-    ZJC_DEBUG("handle from message 11");
     auto& header = msg_ptr->header;
     if (header.has_tx_proto()) {
         auto& tx_msg = header.tx_proto();
@@ -244,31 +291,23 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             return;
         }
 
-        std::string res_heights_debug;
-        std::string changed_heights_debug;
         for (int32_t i = 0; i < heights.size(); ++i) {
-            res_heights_debug += std::to_string(heights[i]) + " ";
             if (heights[i] != common::kInvalidUint64) {
                 if (tx_pool_[i].latest_height() == common::kInvalidUint64 && synced_max_heights_[i] < heights[i]) {
                     synced_max_heights_[i] = heights[i];
-                    changed_heights_debug += std::to_string(i) + ":" + std::to_string(heights[i]) + ",";
                     continue;
                 }
 
                 if (heights[i] > tx_pool_[i].latest_height() + 64) {
                     synced_max_heights_[i] = tx_pool_[i].latest_height() + 64;
-                    changed_heights_debug += std::to_string(i) + ":" + std::to_string(heights[i]) + ",";
                     continue;
                 }
 
                 if (heights[i] > tx_pool_[i].latest_height()) {
                     synced_max_heights_[i] = heights[i];
-                    changed_heights_debug += std::to_string(i) + ":" + std::to_string(heights[i]) + ",";
                 }
             }
         }
-
-        ZJC_DEBUG("synced heights: %s, changed: %s", res_heights_debug.c_str(), changed_heights_debug.c_str());
     }
 }
 

@@ -116,11 +116,15 @@ private:
     void HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_ptr);
     void SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms);
     void SyncBlockWithMaxHeights(uint8_t thread_idx, uint32_t pool_idx, uint64_t height);
+    void CheckLeaderValid(const std::vector<double>& factors);
 
     static const uint32_t kPopMessageCountEachTime = 320u;
     static const uint64_t kFlushHeightTreePeriod = 60000lu;
     static const uint64_t kSyncPoolsMaxHeightsPeriod = 30000lu;
     static const uint64_t kSyncMissingBlockPeriod = 3000lu;
+    static const uint64_t kCheckLeaderLofPeriod = 3000lu;
+    static const uint64_t kCaculateLeaderLofPeriod = 30000lu;
+    static const double kGrubbsValidFactor = 3.017;  // 90%
 
     TxPool* tx_pool_{ nullptr };
     std::shared_ptr<security::Security> security_ = nullptr;
@@ -133,6 +137,8 @@ private:
     uint64_t prev_timestamp_us_ = 0;
     uint64_t prev_sync_check_ms_ = 0;
     uint64_t prev_sync_heights_ms_ = 0;
+    uint64_t prev_check_leader_valid_ms_ = 0;
+    uint64_t prev_cacultate_leader_valid_ms_ = 0;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     uint32_t prev_synced_pool_index_ = 0;
     uint32_t prev_sync_height_tree_tm_ms_ = 0;

@@ -26,10 +26,6 @@ void TxPool::Init(
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     InitLatestInfo();
     InitHeightTree();
-
-//     ZJC_DEBUG("pool_idx: %d, synced_height_: %lu, latest height: %lu",
-//         pool_idx, synced_height_, latest_height_);
-//     added_tx_map_.reserve(10240);
 }
 
 void TxPool::InitHeightTree() {
@@ -245,6 +241,7 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
         RemoveTx(tx_list[i].gid());
     }
 
+    finish_tx_count += tx_list.size();
 //     ZJC_INFO("pool index: %u, tx over %u, map: %u, prio_map: %u, gid map: %u, timeout_txs_: %u, timeout_remove_txs_: %u",
 //         pool_index_, tx_list.size(), added_tx_map_.size(), prio_map_.size(), gid_map_.size(), timeout_txs_.size(), timeout_remove_txs_.size());
 }
