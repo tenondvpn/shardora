@@ -30,7 +30,7 @@ int ContractCall::HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         std::shared_ptr<db::DbWriteBatch>& db_batch,
-        zjcvm::ZjchainHost& zjc_host;
+        zjcvm::ZjchainHost& zjc_host,
         std::unordered_map<std::string, int64_t>& acc_balance_map,
         block::protobuf::BlockTx& block_tx) {
     // gas just consume from 's prepayment
