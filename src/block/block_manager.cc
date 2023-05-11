@@ -849,11 +849,6 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
 }
 
 pools::TxItemPtr BlockManager::GetStatisticTx(bool leader) {
-    ZJC_DEBUG("get statistic coming: %d", (shard_statistic_tx_ != nullptr));
-    if (shard_statistic_tx_ != nullptr) {
-        ZJC_DEBUG("get statistic coming shard_statistic_tx_->tx_ptr->in_consensus: %d", shard_statistic_tx_->tx_ptr->in_consensus);
-    }
-
     if (shard_statistic_tx_ != nullptr && !shard_statistic_tx_->tx_ptr->in_consensus) {
         auto now_tm = common::TimeUtils::TimestampUs();
         if (leader && shard_statistic_tx_->tx_ptr->time_valid > now_tm) {
@@ -960,10 +955,6 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (prev_create_statistic_tx_ms_ >= now_tm_ms) {
-        ZJC_DEBUG("prev_create_statistic_tx_ms_ >= now_tm_ms leader local_id_: %s, to tx leader: %s",
-            common::Encode::HexEncode(local_id_).c_str(),
-            common::Encode::HexEncode(to_tx_leader_->id).c_str());
-
         return;
     }
 
@@ -973,14 +964,7 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
         return;
     }
 
-    ZJC_DEBUG("succcess leader local_id_: %s, to tx leader: %s",
-        common::Encode::HexEncode(local_id_).c_str(),
-        common::Encode::HexEncode(to_tx_leader_->id).c_str());
-
     if (shard_statistic_tx_ != nullptr && shard_statistic_tx_->tx_ptr->in_consensus) {
-        ZJC_DEBUG("shard_statistic_tx_->tx_ptr->in_consensus local_id_: %s, to tx leader: %s",
-            common::Encode::HexEncode(local_id_).c_str(),
-            common::Encode::HexEncode(to_tx_leader_->id).c_str());
         return;
     }
 
