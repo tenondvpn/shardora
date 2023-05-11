@@ -21,23 +21,23 @@ int Ripemd160::call(
         uint64_t gas,
         const std::string& origin_address,
         evmc_result* res) {
-    CONTRACT_ERROR("abe contract called decode: %s, src: %s",
-        common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
-    if (param.data.empty()) {
-        return kContractError;
-    }
-
-    if (param.data.substr(0, 3) == "add") {
-        return AddParams(param, gas, origin_address, res);
-    }
-
-    if (param.data.substr(0, 5) == "check") {
-        return CheckDecrytParamsValid(param, gas, origin_address, res);
-    }
-
-    if (param.data.substr(0, 7) == "decrypt") {
-        return Decrypt(param, gas, origin_address, res);
-    }
+//     CONTRACT_ERROR("abe contract called decode: %s, src: %s",
+//         common::Encode::HexDecode(param.data).c_str(), param.data.c_str());
+//     if (param.data.empty()) {
+//         return kContractError;
+//     }
+// 
+//     if (param.data.substr(0, 3) == "add") {
+//         return AddParams(param, gas, origin_address, res);
+//     }
+// 
+//     if (param.data.substr(0, 5) == "check") {
+//         return CheckDecrytParamsValid(param, gas, origin_address, res);
+//     }
+// 
+//     if (param.data.substr(0, 7) == "decrypt") {
+//         return Decrypt(param, gas, origin_address, res);
+//     }
 
     int64_t gas_used = ComputeGasUsed(600, 120, param.data.size());
     if (res->gas_left < gas_used) {
@@ -46,12 +46,14 @@ int Ripemd160::call(
 
     std::string ripemd160 = common::Hash::ripemd160(param.data);
     res->output_data = new uint8_t[32];
+    memset(res->output_data, 0, 32);
     memcpy((void*)res->output_data, ripemd160.c_str(), ripemd160.size());
     res->output_size = 32;
     memcpy(res->create_address.bytes,
         create_address_.c_str(),
         sizeof(res->create_address.bytes));
     res->gas_left -= gas_used;
+    ZJC_DEBUG("ripemd160: %s", common::Encode::HexEncode(std::string((char*)res->output_data, 32)).c_str());
     return kContractSuccess;
 }
 

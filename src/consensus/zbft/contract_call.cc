@@ -245,6 +245,7 @@ int ContractCall::SaveContractCreateInfo(
 //                 storage_iter->first,
 //                 storage_iter->second.str_val,
 //                 *db_batch);
+            assert(false);
             auto kv = block_tx.add_storages();
             auto str_key = std::string(
                 (char*)account_iter->first.bytes,
