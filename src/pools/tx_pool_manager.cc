@@ -80,7 +80,9 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
                 factors.pop_back();
             }
 
-            CheckLeaderValid(factors);
+            std::vector<uint32_t> invalid_pools;
+            invalid_pools.reserve(64);
+            CheckLeaderValid(factors, invalid_pools);
         }
 
         prev_check_leader_valid_ms_ = now_tm_ms + kCheckLeaderLofPeriod;
@@ -97,7 +99,9 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
     }
 }
 
-void TxPoolManager::CheckLeaderValid(const std::vector<double>& factors) {
+void TxPoolManager::CheckLeaderValid(
+        const std::vector<double>& factors,
+        std::vector<uint32_t>* invalid_pools) {
     double average = 0.0;
     for (uint32_t i = 0; i < factors.size(); ++i) {
         average += factors[i];
@@ -115,6 +119,7 @@ void TxPoolManager::CheckLeaderValid(const std::vector<double>& factors) {
         if (grubbs > kGrubbsValidFactor) {
             // invalid leader
             ZJC_DEBUG("invalid pool found grubbs: %f, %d", grubbs, i);
+            invalid_pools->push_back(i);
         }
     }
 }
