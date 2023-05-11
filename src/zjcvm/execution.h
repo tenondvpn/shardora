@@ -101,7 +101,7 @@ public:
             const std::string& key,
             const std::string& val,
             db::DbWriteBatch& db_batch) {
-        storage_map_[thread_idx].add(key, val);
+        storage_map_[thread_idx].update(key, val);
         prefix_db_->SaveTemporaryKv(key, val, db_batch);
     }
 
