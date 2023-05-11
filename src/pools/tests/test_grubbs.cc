@@ -37,9 +37,11 @@ private:
 
 TEST_F(TestGrubbs, All) {
     std::shared_ptr<security::Security> security = nullptr;
-    std::shared_ptr<db::Db> db = nullptr;
+    system("rm -rf ./test_height_tree_db");
+    std::shared_ptr<db::Db> db_ptr = std::make_shared<db::Db>();
+    db_ptr->Init("./test_grubbs");
     std::shared_ptr<sync::KeyValueSync> kv_sync = nullptr;
-    pools::TxPoolManager pool_mgr(security, db, kv_sync);
+    pools::TxPoolManager pool_mgr(security, db_ptr, kv_sync);
 }
 
 }  // namespace test
