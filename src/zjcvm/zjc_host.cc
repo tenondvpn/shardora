@@ -24,6 +24,20 @@ bool ZjchainHost::account_exists(const evmc::address& addr) const noexcept {
 evmc::bytes32 ZjchainHost::get_storage(
         const evmc::address& addr,
         const evmc::bytes32& key) const noexcept {
+    std::string id((char*)addr.bytes, sizeof(addr.bytes));
+    std::string key_str((char*)key.bytes, sizeof(key.bytes));
+    ZJC_DEBUG("zjcvm set storage called, id: %s, key: %s, value: %s",
+        common::Encode::HexEncode(id).c_str(),
+        common::Encode::HexEncode(key_str).c_str(),
+        common::Encode::HexEncode(val_str).c_str());
+    auto it = accounts_.find(addr);
+    if (it != accounts_.end()) {
+        auto storage_iter = it->second.storage.find(key);
+        if (storage_iter != it->second.storage.end()) {
+            return storage_iter->second;
+        }
+    }
+
     return Execution::Instance()->GetStorage(thread_idx_, addr, key);
 }
 
@@ -77,12 +91,13 @@ evmc::uint256be ZjchainHost::get_balance(const evmc::address& addr) const noexce
 }
 
 size_t ZjchainHost::get_code_size(const evmc::address& addr) const noexcept {
-    std::string code;
-    if (Execution::Instance()->GetStorage(thread_idx_, addr, protos::kFieldBytesCode, &code)) {
-        return code.size();
+    std::string id = std::string((char*)addr.bytes, sizeof(addr.bytes));
+    auto acc_info = acc_mgr_->GetAccountInfo(thread_idx_, id);
+    if (acc_info == nullptr) {
+        return 0;
     }
 
-    return 0;
+    return acc_info->bytes_code().size();
 }
 
 evmc::bytes32 ZjchainHost::get_code_hash(const evmc::address& addr) const noexcept {
@@ -100,11 +115,13 @@ size_t ZjchainHost::copy_code(
         size_t code_offset,
         uint8_t* buffer_data,
         size_t buffer_size) const noexcept {
-    std::string code;
-    if (!Execution::Instance()->GetStorage(thread_idx_, addr, protos::kFieldBytesCode, &code)) {
+    std::string id = std::string((char*)addr.bytes, sizeof(addr.bytes));
+    auto acc_info = acc_mgr_->GetAccountInfo(thread_idx_, id);
+    if (acc_info == nullptr) {
         return 0;
     }
 
+    auto& code = acc_info->bytes_code();
     if (code_offset >= code.size()) {
         return 0;
     }
