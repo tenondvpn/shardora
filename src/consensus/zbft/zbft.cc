@@ -647,7 +647,6 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
     auto& tx_map = txs_ptr_->txs;
     tx_list->Reserve(tx_map.size());
     std::unordered_map<std::string, int64_t> acc_balance_map;
-    zjc_host.contract_mgr_ = contract_mgr_;
     zjc_host.tx_context_.tx_origin = evmc::address{};
     zjc_host.tx_context_.block_coinbase = evmc::address{};
     zjc_host.tx_context_.block_number = zjc_block.height();
