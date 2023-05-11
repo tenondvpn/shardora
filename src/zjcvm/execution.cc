@@ -83,29 +83,29 @@ int Execution::execute(
     const uint8_t* exec_code_data = nullptr;
     size_t exec_code_size = 0;
     if (call_mode == kJustCreate || call_mode == kCreateAndCall) {
-        evmc_message create_msg{};
-        create_msg.kind = EVMC_CREATE;
-        create_msg.recipient = msg.recipient;
-        create_msg.gas = create_gas;
+//         evmc_message create_msg{};
+        msg.kind = EVMC_CREATE;
+//         create_msg.recipient = msg.recipient;
+//         create_msg.gas = create_gas;
         *out_res = evm_.execute(
             host,
             rev,
-            create_msg,
+            msg,
             (uint8_t*)bytes_code.c_str(),
             bytes_code.size());
         if (out_res->status_code != EVMC_SUCCESS) {
-            const auto gas_used = create_msg.gas - out_res->gas_left;
+            const auto gas_used = msg.gas - out_res->gas_left;
             ZJC_ERROR("out_res->status_code != EVMC_SUCCESS.nResult: %d, gas_used: %lu, gas limit: %lu, codes: %s",
                 out_res->status_code, gas_used, create_gas, common::Encode::HexEncode(bytes_code).c_str());
             return out_res->status_code;
         }
 
         host.create_bytes_code_ = std::string((char*)out_res->output_data, out_res->output_size);
-        const auto gas_used = create_msg.gas - out_res->gas_left;
         if (call_mode == kJustCreate) {
             return kZjcvmSuccess;
         }
 
+        msg.gas = out_res->gas_left;
         auto& created_account = host.accounts_[msg.recipient];
         created_account.code = evmc::bytes(out_res->output_data, out_res->output_size);
         exec_code_data = created_account.code.data();
