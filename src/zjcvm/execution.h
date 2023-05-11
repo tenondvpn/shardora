@@ -103,6 +103,7 @@ public:
             db::DbWriteBatch& db_batch) {
         storage_map_[thread_idx].update(key, val);
         prefix_db_->SaveTemporaryKv(key, val, db_batch);
+        ZJC_DEBUG("update storage: %s, %s", common::Encode::HexEncode(key).c_str(), common::Encode::HexEncode(val).c_str());
     }
 
     evmc::bytes32 GetStorage(
@@ -118,6 +119,8 @@ public:
                 storage_map_[thread_idx].add(str_key, val);
             }
         }
+
+        ZJC_DEBUG("get storage: %s, %s", common::Encode::HexEncode(str_key).c_str(), common::Encode::HexEncode(val).c_str());
 
         if (val.empty()) {
             return evmc::bytes32{};
@@ -141,16 +144,16 @@ public:
             const std::string& key,
             std::string* val) {
         auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) + key;
-        if (storage_map_[thread_idx].get(str_key, val)) {
-            return true;
+        auto res = true;
+        if (!storage_map_[thread_idx].get(str_key, val)) {
+            // get from db and add to memory cache
+            res = prefix_db_->GetTemporaryKv(str_key, val);
+            if (res) {
+                storage_map_[thread_idx].add(str_key, *val);
+            }
         }
 
-        // get from db and add to memory cache
-        auto res = prefix_db_->GetTemporaryKv(str_key, val);
-        if (res) {
-            storage_map_[thread_idx].add(str_key, *val);
-        }
-        
+        ZJC_DEBUG("get storage: %s, %s", common::Encode::HexEncode(str_key).c_str(), common::Encode::HexEncode(*val).c_str());
         return res;
     }
 
