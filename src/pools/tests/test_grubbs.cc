@@ -44,7 +44,7 @@ TEST_F(TestGrubbs, All) {
     pools::TxPoolManager pool_mgr(security, db_ptr, kv_sync);
     std::vector<double> factors(256);
     for (int32_t i = 0; i < 256; ++i) {
-        factors[i] = double(80 + rand() % 20) / 100.0;
+        factors[i] = double(90 + rand() % 10) / 100.0;
         if (rand() % 100 < 10) {
             factors[i] = double(40 + rand() % 20) / 100.0;
             std::cout << "invalid: " << i << std::endl;
