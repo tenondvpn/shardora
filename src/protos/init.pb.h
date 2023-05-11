@@ -39,7 +39,7 @@ namespace protobuf_protos_2finit_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[3];
+  static const ::google::protobuf::internal::ParseTable schema[4];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -58,6 +58,9 @@ extern GetAddressInfoResponseDefaultTypeInternal _GetAddressInfoResponse_default
 class InitMessage;
 class InitMessageDefaultTypeInternal;
 extern InitMessageDefaultTypeInternal _InitMessage_default_instance_;
+class InvalidLeaderPools;
+class InvalidLeaderPoolsDefaultTypeInternal;
+extern InvalidLeaderPoolsDefaultTypeInternal _InvalidLeaderPools_default_instance_;
 }  // namespace protobuf
 }  // namespace init
 }  // namespace zjchain
@@ -66,6 +69,7 @@ namespace protobuf {
 template<> ::zjchain::init::protobuf::GetAddressInfoRequest* Arena::CreateMaybeMessage<::zjchain::init::protobuf::GetAddressInfoRequest>(Arena*);
 template<> ::zjchain::init::protobuf::GetAddressInfoResponse* Arena::CreateMaybeMessage<::zjchain::init::protobuf::GetAddressInfoResponse>(Arena*);
 template<> ::zjchain::init::protobuf::InitMessage* Arena::CreateMaybeMessage<::zjchain::init::protobuf::InitMessage>(Arena*);
+template<> ::zjchain::init::protobuf::InvalidLeaderPools* Arena::CreateMaybeMessage<::zjchain::init::protobuf::InvalidLeaderPools>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 namespace zjchain {
@@ -315,6 +319,123 @@ class GetAddressInfoResponse : public ::google::protobuf::Message /* @@protoc_in
 };
 // -------------------------------------------------------------------
 
+class InvalidLeaderPools : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.init.protobuf.InvalidLeaderPools) */ {
+ public:
+  InvalidLeaderPools();
+  virtual ~InvalidLeaderPools();
+
+  InvalidLeaderPools(const InvalidLeaderPools& from);
+
+  inline InvalidLeaderPools& operator=(const InvalidLeaderPools& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  InvalidLeaderPools(InvalidLeaderPools&& from) noexcept
+    : InvalidLeaderPools() {
+    *this = ::std::move(from);
+  }
+
+  inline InvalidLeaderPools& operator=(InvalidLeaderPools&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const InvalidLeaderPools& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const InvalidLeaderPools* internal_default_instance() {
+    return reinterpret_cast<const InvalidLeaderPools*>(
+               &_InvalidLeaderPools_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    2;
+
+  void Swap(InvalidLeaderPools* other);
+  friend void swap(InvalidLeaderPools& a, InvalidLeaderPools& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline InvalidLeaderPools* New() const final {
+    return CreateMaybeMessage<InvalidLeaderPools>(NULL);
+  }
+
+  InvalidLeaderPools* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<InvalidLeaderPools>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const InvalidLeaderPools& from);
+  void MergeFrom(const InvalidLeaderPools& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(InvalidLeaderPools* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated uint32 pools = 1;
+  int pools_size() const;
+  void clear_pools();
+  static const int kPoolsFieldNumber = 1;
+  ::google::protobuf::uint32 pools(int index) const;
+  void set_pools(int index, ::google::protobuf::uint32 value);
+  void add_pools(::google::protobuf::uint32 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+      pools() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+      mutable_pools();
+
+  // @@protoc_insertion_point(class_scope:zjchain.init.protobuf.InvalidLeaderPools)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > pools_;
+  friend struct ::protobuf_protos_2finit_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class InitMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.init.protobuf.InitMessage) */ {
  public:
   InitMessage();
@@ -357,7 +478,7 @@ class InitMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_InitMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    3;
 
   void Swap(InitMessage* other);
   friend void swap(InitMessage& a, InitMessage& b) {
@@ -433,18 +554,33 @@ class InitMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::zjchain::init::protobuf::GetAddressInfoResponse* mutable_addr_res();
   void set_allocated_addr_res(::zjchain::init::protobuf::GetAddressInfoResponse* addr_res);
 
+  // optional .zjchain.init.protobuf.InvalidLeaderPools pools = 3;
+  bool has_pools() const;
+  void clear_pools();
+  static const int kPoolsFieldNumber = 3;
+  private:
+  const ::zjchain::init::protobuf::InvalidLeaderPools& _internal_pools() const;
+  public:
+  const ::zjchain::init::protobuf::InvalidLeaderPools& pools() const;
+  ::zjchain::init::protobuf::InvalidLeaderPools* release_pools();
+  ::zjchain::init::protobuf::InvalidLeaderPools* mutable_pools();
+  void set_allocated_pools(::zjchain::init::protobuf::InvalidLeaderPools* pools);
+
   // @@protoc_insertion_point(class_scope:zjchain.init.protobuf.InitMessage)
  private:
   void set_has_addr_req();
   void clear_has_addr_req();
   void set_has_addr_res();
   void clear_has_addr_res();
+  void set_has_pools();
+  void clear_has_pools();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::zjchain::init::protobuf::GetAddressInfoRequest* addr_req_;
   ::zjchain::init::protobuf::GetAddressInfoResponse* addr_res_;
+  ::zjchain::init::protobuf::InvalidLeaderPools* pools_;
   friend struct ::protobuf_protos_2finit_2eproto::TableStruct;
 };
 // ===================================================================
@@ -584,6 +720,40 @@ inline void GetAddressInfoResponse::set_allocated_block(::zjchain::block::protob
 
 // -------------------------------------------------------------------
 
+// InvalidLeaderPools
+
+// repeated uint32 pools = 1;
+inline int InvalidLeaderPools::pools_size() const {
+  return pools_.size();
+}
+inline void InvalidLeaderPools::clear_pools() {
+  pools_.Clear();
+}
+inline ::google::protobuf::uint32 InvalidLeaderPools::pools(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.InvalidLeaderPools.pools)
+  return pools_.Get(index);
+}
+inline void InvalidLeaderPools::set_pools(int index, ::google::protobuf::uint32 value) {
+  pools_.Set(index, value);
+  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.InvalidLeaderPools.pools)
+}
+inline void InvalidLeaderPools::add_pools(::google::protobuf::uint32 value) {
+  pools_.Add(value);
+  // @@protoc_insertion_point(field_add:zjchain.init.protobuf.InvalidLeaderPools.pools)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+InvalidLeaderPools::pools() const {
+  // @@protoc_insertion_point(field_list:zjchain.init.protobuf.InvalidLeaderPools.pools)
+  return pools_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+InvalidLeaderPools::mutable_pools() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.init.protobuf.InvalidLeaderPools.pools)
+  return &pools_;
+}
+
+// -------------------------------------------------------------------
+
 // InitMessage
 
 // optional .zjchain.init.protobuf.GetAddressInfoRequest addr_req = 1;
@@ -702,9 +872,69 @@ inline void InitMessage::set_allocated_addr_res(::zjchain::init::protobuf::GetAd
   // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.InitMessage.addr_res)
 }
 
+// optional .zjchain.init.protobuf.InvalidLeaderPools pools = 3;
+inline bool InitMessage::has_pools() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void InitMessage::set_has_pools() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void InitMessage::clear_has_pools() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void InitMessage::clear_pools() {
+  if (pools_ != NULL) pools_->Clear();
+  clear_has_pools();
+}
+inline const ::zjchain::init::protobuf::InvalidLeaderPools& InitMessage::_internal_pools() const {
+  return *pools_;
+}
+inline const ::zjchain::init::protobuf::InvalidLeaderPools& InitMessage::pools() const {
+  const ::zjchain::init::protobuf::InvalidLeaderPools* p = pools_;
+  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.InitMessage.pools)
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::init::protobuf::InvalidLeaderPools*>(
+      &::zjchain::init::protobuf::_InvalidLeaderPools_default_instance_);
+}
+inline ::zjchain::init::protobuf::InvalidLeaderPools* InitMessage::release_pools() {
+  // @@protoc_insertion_point(field_release:zjchain.init.protobuf.InitMessage.pools)
+  clear_has_pools();
+  ::zjchain::init::protobuf::InvalidLeaderPools* temp = pools_;
+  pools_ = NULL;
+  return temp;
+}
+inline ::zjchain::init::protobuf::InvalidLeaderPools* InitMessage::mutable_pools() {
+  set_has_pools();
+  if (pools_ == NULL) {
+    auto* p = CreateMaybeMessage<::zjchain::init::protobuf::InvalidLeaderPools>(GetArenaNoVirtual());
+    pools_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.InitMessage.pools)
+  return pools_;
+}
+inline void InitMessage::set_allocated_pools(::zjchain::init::protobuf::InvalidLeaderPools* pools) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete pools_;
+  }
+  if (pools) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      pools = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, pools, submessage_arena);
+    }
+    set_has_pools();
+  } else {
+    clear_has_pools();
+  }
+  pools_ = pools;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.InitMessage.pools)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

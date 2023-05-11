@@ -24,6 +24,7 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protob
 }  // namespace protobuf_protos_2fblock_2eproto
 namespace protobuf_protos_2finit_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2finit_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_GetAddressInfoRequest;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2finit_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_InvalidLeaderPools;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2finit_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_GetAddressInfoResponse;
 }  // namespace protobuf_protos_2finit_2eproto
 namespace zjchain {
@@ -39,6 +40,11 @@ class GetAddressInfoResponseDefaultTypeInternal {
   ::google::protobuf::internal::ExplicitlyConstructed<GetAddressInfoResponse>
       _instance;
 } _GetAddressInfoResponse_default_instance_;
+class InvalidLeaderPoolsDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<InvalidLeaderPools>
+      _instance;
+} _InvalidLeaderPools_default_instance_;
 class InitMessageDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<InitMessage>
@@ -77,6 +83,20 @@ static void InitDefaultsGetAddressInfoResponse() {
     {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsGetAddressInfoResponse}, {
       &protobuf_protos_2fblock_2eproto::scc_info_Block.base,}};
 
+static void InitDefaultsInvalidLeaderPools() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::zjchain::init::protobuf::_InvalidLeaderPools_default_instance_;
+    new (ptr) ::zjchain::init::protobuf::InvalidLeaderPools();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::zjchain::init::protobuf::InvalidLeaderPools::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_InvalidLeaderPools =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsInvalidLeaderPools}, {}};
+
 static void InitDefaultsInitMessage() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -88,18 +108,20 @@ static void InitDefaultsInitMessage() {
   ::zjchain::init::protobuf::InitMessage::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<2> scc_info_InitMessage =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 2, InitDefaultsInitMessage}, {
+::google::protobuf::internal::SCCInfo<3> scc_info_InitMessage =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 3, InitDefaultsInitMessage}, {
       &protobuf_protos_2finit_2eproto::scc_info_GetAddressInfoRequest.base,
-      &protobuf_protos_2finit_2eproto::scc_info_GetAddressInfoResponse.base,}};
+      &protobuf_protos_2finit_2eproto::scc_info_GetAddressInfoResponse.base,
+      &protobuf_protos_2finit_2eproto::scc_info_InvalidLeaderPools.base,}};
 
 void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_GetAddressInfoRequest.base);
   ::google::protobuf::internal::InitSCC(&scc_info_GetAddressInfoResponse.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_InvalidLeaderPools.base);
   ::google::protobuf::internal::InitSCC(&scc_info_InitMessage.base);
 }
 
-::google::protobuf::Metadata file_level_metadata[3];
+::google::protobuf::Metadata file_level_metadata[4];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::GetAddressInfoRequest, _has_bits_),
@@ -116,6 +138,13 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::GetAddressInfoResponse, block_),
   0,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InvalidLeaderPools, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InvalidLeaderPools, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InvalidLeaderPools, pools_),
+  ~0u,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InitMessage, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InitMessage, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -123,18 +152,22 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InitMessage, addr_req_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InitMessage, addr_res_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InitMessage, pools_),
   0,
   1,
+  2,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 6, sizeof(::zjchain::init::protobuf::GetAddressInfoRequest)},
   { 7, 13, sizeof(::zjchain::init::protobuf::GetAddressInfoResponse)},
-  { 14, 21, sizeof(::zjchain::init::protobuf::InitMessage)},
+  { 14, 20, sizeof(::zjchain::init::protobuf::InvalidLeaderPools)},
+  { 21, 29, sizeof(::zjchain::init::protobuf::InitMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::init::protobuf::_GetAddressInfoRequest_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::init::protobuf::_GetAddressInfoResponse_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::init::protobuf::_InvalidLeaderPools_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::init::protobuf::_InitMessage_default_instance_),
 };
 
@@ -153,7 +186,7 @@ void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 3);
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 4);
 }
 
 void AddDescriptorsImpl() {
@@ -163,13 +196,16 @@ void AddDescriptorsImpl() {
       "uf\032\022protos/block.proto\"#\n\025GetAddressInfo"
       "Request\022\n\n\002id\030\001 \001(\014\"F\n\026GetAddressInfoRes"
       "ponse\022,\n\005block\030\001 \001(\0132\035.zjchain.block.pro"
-      "tobuf.Block\"\216\001\n\013InitMessage\022>\n\010addr_req\030"
-      "\001 \001(\0132,.zjchain.init.protobuf.GetAddress"
-      "InfoRequest\022\?\n\010addr_res\030\002 \001(\0132-.zjchain."
-      "init.protobuf.GetAddressInfoResponse"
+      "tobuf.Block\"#\n\022InvalidLeaderPools\022\r\n\005poo"
+      "ls\030\001 \003(\r\"\310\001\n\013InitMessage\022>\n\010addr_req\030\001 \001"
+      "(\0132,.zjchain.init.protobuf.GetAddressInf"
+      "oRequest\022\?\n\010addr_res\030\002 \001(\0132-.zjchain.ini"
+      "t.protobuf.GetAddressInfoResponse\0228\n\005poo"
+      "ls\030\003 \001(\0132).zjchain.init.protobuf.Invalid"
+      "LeaderPools"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 316);
+      descriptor, 411);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/init.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fblock_2eproto::AddDescriptors();
@@ -674,15 +710,248 @@ void GetAddressInfoResponse::InternalSwap(GetAddressInfoResponse* other) {
 
 // ===================================================================
 
+void InvalidLeaderPools::InitAsDefaultInstance() {
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int InvalidLeaderPools::kPoolsFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+InvalidLeaderPools::InvalidLeaderPools()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2finit_2eproto::scc_info_InvalidLeaderPools.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:zjchain.init.protobuf.InvalidLeaderPools)
+}
+InvalidLeaderPools::InvalidLeaderPools(const InvalidLeaderPools& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_),
+      pools_(from.pools_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:zjchain.init.protobuf.InvalidLeaderPools)
+}
+
+void InvalidLeaderPools::SharedCtor() {
+}
+
+InvalidLeaderPools::~InvalidLeaderPools() {
+  // @@protoc_insertion_point(destructor:zjchain.init.protobuf.InvalidLeaderPools)
+  SharedDtor();
+}
+
+void InvalidLeaderPools::SharedDtor() {
+}
+
+void InvalidLeaderPools::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* InvalidLeaderPools::descriptor() {
+  ::protobuf_protos_2finit_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2finit_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const InvalidLeaderPools& InvalidLeaderPools::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2finit_2eproto::scc_info_InvalidLeaderPools.base);
+  return *internal_default_instance();
+}
+
+
+void InvalidLeaderPools::Clear() {
+// @@protoc_insertion_point(message_clear_start:zjchain.init.protobuf.InvalidLeaderPools)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  pools_.Clear();
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool InvalidLeaderPools::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:zjchain.init.protobuf.InvalidLeaderPools)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // repeated uint32 pools = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 1, 8u, input, this->mutable_pools())));
+        } else if (
+            static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, this->mutable_pools())));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:zjchain.init.protobuf.InvalidLeaderPools)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:zjchain.init.protobuf.InvalidLeaderPools)
+  return false;
+#undef DO_
+}
+
+void InvalidLeaderPools::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:zjchain.init.protobuf.InvalidLeaderPools)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // repeated uint32 pools = 1;
+  for (int i = 0, n = this->pools_size(); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(
+      1, this->pools(i), output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:zjchain.init.protobuf.InvalidLeaderPools)
+}
+
+::google::protobuf::uint8* InvalidLeaderPools::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.init.protobuf.InvalidLeaderPools)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // repeated uint32 pools = 1;
+  target = ::google::protobuf::internal::WireFormatLite::
+    WriteUInt32ToArray(1, this->pools_, target);
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:zjchain.init.protobuf.InvalidLeaderPools)
+  return target;
+}
+
+size_t InvalidLeaderPools::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:zjchain.init.protobuf.InvalidLeaderPools)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  // repeated uint32 pools = 1;
+  {
+    size_t data_size = ::google::protobuf::internal::WireFormatLite::
+      UInt32Size(this->pools_);
+    total_size += 1 *
+                  ::google::protobuf::internal::FromIntSize(this->pools_size());
+    total_size += data_size;
+  }
+
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void InvalidLeaderPools::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.init.protobuf.InvalidLeaderPools)
+  GOOGLE_DCHECK_NE(&from, this);
+  const InvalidLeaderPools* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const InvalidLeaderPools>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.init.protobuf.InvalidLeaderPools)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.init.protobuf.InvalidLeaderPools)
+    MergeFrom(*source);
+  }
+}
+
+void InvalidLeaderPools::MergeFrom(const InvalidLeaderPools& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.init.protobuf.InvalidLeaderPools)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  pools_.MergeFrom(from.pools_);
+}
+
+void InvalidLeaderPools::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.init.protobuf.InvalidLeaderPools)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void InvalidLeaderPools::CopyFrom(const InvalidLeaderPools& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.init.protobuf.InvalidLeaderPools)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool InvalidLeaderPools::IsInitialized() const {
+  return true;
+}
+
+void InvalidLeaderPools::Swap(InvalidLeaderPools* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void InvalidLeaderPools::InternalSwap(InvalidLeaderPools* other) {
+  using std::swap;
+  pools_.InternalSwap(&other->pools_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+::google::protobuf::Metadata InvalidLeaderPools::GetMetadata() const {
+  protobuf_protos_2finit_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2finit_2eproto::file_level_metadata[kIndexInFileMessages];
+}
+
+
+// ===================================================================
+
 void InitMessage::InitAsDefaultInstance() {
   ::zjchain::init::protobuf::_InitMessage_default_instance_._instance.get_mutable()->addr_req_ = const_cast< ::zjchain::init::protobuf::GetAddressInfoRequest*>(
       ::zjchain::init::protobuf::GetAddressInfoRequest::internal_default_instance());
   ::zjchain::init::protobuf::_InitMessage_default_instance_._instance.get_mutable()->addr_res_ = const_cast< ::zjchain::init::protobuf::GetAddressInfoResponse*>(
       ::zjchain::init::protobuf::GetAddressInfoResponse::internal_default_instance());
+  ::zjchain::init::protobuf::_InitMessage_default_instance_._instance.get_mutable()->pools_ = const_cast< ::zjchain::init::protobuf::InvalidLeaderPools*>(
+      ::zjchain::init::protobuf::InvalidLeaderPools::internal_default_instance());
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int InitMessage::kAddrReqFieldNumber;
 const int InitMessage::kAddrResFieldNumber;
+const int InitMessage::kPoolsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 InitMessage::InitMessage()
@@ -707,13 +976,18 @@ InitMessage::InitMessage(const InitMessage& from)
   } else {
     addr_res_ = NULL;
   }
+  if (from.has_pools()) {
+    pools_ = new ::zjchain::init::protobuf::InvalidLeaderPools(*from.pools_);
+  } else {
+    pools_ = NULL;
+  }
   // @@protoc_insertion_point(copy_constructor:zjchain.init.protobuf.InitMessage)
 }
 
 void InitMessage::SharedCtor() {
   ::memset(&addr_req_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&addr_res_) -
-      reinterpret_cast<char*>(&addr_req_)) + sizeof(addr_res_));
+      reinterpret_cast<char*>(&pools_) -
+      reinterpret_cast<char*>(&addr_req_)) + sizeof(pools_));
 }
 
 InitMessage::~InitMessage() {
@@ -724,6 +998,7 @@ InitMessage::~InitMessage() {
 void InitMessage::SharedDtor() {
   if (this != internal_default_instance()) delete addr_req_;
   if (this != internal_default_instance()) delete addr_res_;
+  if (this != internal_default_instance()) delete pools_;
 }
 
 void InitMessage::SetCachedSize(int size) const {
@@ -747,7 +1022,7 @@ void InitMessage::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 3u) {
+  if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
       GOOGLE_DCHECK(addr_req_ != NULL);
       addr_req_->Clear();
@@ -755,6 +1030,10 @@ void InitMessage::Clear() {
     if (cached_has_bits & 0x00000002u) {
       GOOGLE_DCHECK(addr_res_ != NULL);
       addr_res_->Clear();
+    }
+    if (cached_has_bits & 0x00000004u) {
+      GOOGLE_DCHECK(pools_ != NULL);
+      pools_->Clear();
     }
   }
   _has_bits_.Clear();
@@ -789,6 +1068,18 @@ bool InitMessage::MergePartialFromCodedStream(
             static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
                input, mutable_addr_res()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.init.protobuf.InvalidLeaderPools pools = 3;
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_pools()));
         } else {
           goto handle_unusual;
         }
@@ -834,6 +1125,12 @@ void InitMessage::SerializeWithCachedSizes(
       2, this->_internal_addr_res(), output);
   }
 
+  // optional .zjchain.init.protobuf.InvalidLeaderPools pools = 3;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      3, this->_internal_pools(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -863,6 +1160,13 @@ void InitMessage::SerializeWithCachedSizes(
         2, this->_internal_addr_res(), deterministic, target);
   }
 
+  // optional .zjchain.init.protobuf.InvalidLeaderPools pools = 3;
+  if (cached_has_bits & 0x00000004u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        3, this->_internal_pools(), deterministic, target);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -880,7 +1184,7 @@ size_t InitMessage::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 3u) {
+  if (_has_bits_[0 / 32] & 7u) {
     // optional .zjchain.init.protobuf.GetAddressInfoRequest addr_req = 1;
     if (has_addr_req()) {
       total_size += 1 +
@@ -893,6 +1197,13 @@ size_t InitMessage::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *addr_res_);
+    }
+
+    // optional .zjchain.init.protobuf.InvalidLeaderPools pools = 3;
+    if (has_pools()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *pools_);
     }
 
   }
@@ -924,12 +1235,15 @@ void InitMessage::MergeFrom(const InitMessage& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 3u) {
+  if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
       mutable_addr_req()->::zjchain::init::protobuf::GetAddressInfoRequest::MergeFrom(from.addr_req());
     }
     if (cached_has_bits & 0x00000002u) {
       mutable_addr_res()->::zjchain::init::protobuf::GetAddressInfoResponse::MergeFrom(from.addr_res());
+    }
+    if (cached_has_bits & 0x00000004u) {
+      mutable_pools()->::zjchain::init::protobuf::InvalidLeaderPools::MergeFrom(from.pools());
     }
   }
 }
@@ -960,6 +1274,7 @@ void InitMessage::InternalSwap(InitMessage* other) {
   using std::swap;
   swap(addr_req_, other->addr_req_);
   swap(addr_res_, other->addr_res_);
+  swap(pools_, other->pools_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
@@ -981,6 +1296,9 @@ template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::init::protobuf::GetAddr
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::init::protobuf::GetAddressInfoResponse* Arena::CreateMaybeMessage< ::zjchain::init::protobuf::GetAddressInfoResponse >(Arena* arena) {
   return Arena::CreateInternal< ::zjchain::init::protobuf::GetAddressInfoResponse >(arena);
+}
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::init::protobuf::InvalidLeaderPools* Arena::CreateMaybeMessage< ::zjchain::init::protobuf::InvalidLeaderPools >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::init::protobuf::InvalidLeaderPools >(arena);
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::init::protobuf::InitMessage* Arena::CreateMaybeMessage< ::zjchain::init::protobuf::InitMessage >(Arena* arena) {
   return Arena::CreateInternal< ::zjchain::init::protobuf::InitMessage >(arena);
