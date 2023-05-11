@@ -16,7 +16,7 @@ contract Pkeet {
         verification_valid_count = valid_count;
         award_each = award;
         creator = payable(msg.sender);
-        balances[msg.sender] = award.add(b);
+        balances[msg.sender] = 111;
     }
 
     function callAbe(bytes memory params) public payable {
@@ -24,7 +24,7 @@ contract Pkeet {
         uint256 b = 3;
         uint256 d = 1;
         if (balances[msg.sender] == 0) {
-            balances[msg.sender] = 1;
+            balances[msg.sender] = 99;
         } else {
             balances[msg.sender]++;
         }
