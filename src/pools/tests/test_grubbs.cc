@@ -41,12 +41,12 @@ TEST_F(TestGrubbs, All) {
     std::shared_ptr<db::Db> db_ptr = std::make_shared<db::Db>();
     db_ptr->Init("./test_grubbs");
     std::shared_ptr<sync::KeyValueSync> kv_sync = nullptr;
-    for (int32_t factor = 0; factor < 4; ++factor) {
+    for (int32_t factor = 100; factor < 500; ++factor) {
         for (int32_t valid_fac = 70; valid_fac < 100; valid_fac += 10) {
             for (int32_t invalid_fac = 0; invalid_fac < 90; invalid_fac += 10) {
                 std::string res;
                 pools::TxPoolManager pool_mgr(security, db_ptr, kv_sync);
-                pool_mgr.kGrubbsValidFactor = 3.017 - factor;
+                pool_mgr.kGrubbsValidFactor = double(factor) / 100.0;
                 std::vector<double> factors(256);
                 for (int32_t i = 0; i < 256; ++i) {
                     factors[i] = double(90 + rand() % 10) / 100.0;
