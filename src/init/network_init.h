@@ -64,6 +64,9 @@ private:
         db::DbWriteBatch& db_batch);
     void SendJoinElectTransaction(uint8_t thread_idx);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
+    void HandleAddrReq(const transport::MessagePtr& msg_ptr);
+    void HandleAddrRes(const transport::MessagePtr& msg_ptr);
+    void HandleLeaderPools(const transport::MessagePtr& msg_ptr);
     void GetAddressShardingId(uint8_t thread_idx);
 
     common::Config conf_;
@@ -92,6 +95,8 @@ private:
     common::Tick join_elect_tick_;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint32_t des_sharding_id_ = common::kInvalidUint32;
+    uint32_t invalid_pools_[common::kInvalidPoolIndex] = { 0 };
+    uint64_t latest_elect_height_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(NetworkInit);
 };

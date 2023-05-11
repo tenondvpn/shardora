@@ -214,95 +214,112 @@ int NetworkInit::Init(int argc, char** argv) {
 }
 
 void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    std::cout << "handle init message." << std::endl;
     if (msg_ptr->header.init_proto().has_addr_req()) {
-        auto account_info = prefix_db_->GetAddressInfo(
-                msg_ptr->header.init_proto().addr_req().id());
-        if (account_info == nullptr) {
-            return;
-        }
-
-        transport::protobuf::Header msg;
-        msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-        msg.set_type(common::kInitMessage);
-        dht::DhtKeyManager dht_key(network::kUniversalNetworkId);
-        msg.set_des_dht_key(dht_key.StrKey());
-        auto& init_msg = *msg.mutable_init_proto()->mutable_addr_res();
-        if (!prefix_db_->GetBlockWithHeight(
-                network::kRootCongressNetworkId,
-                account_info->pool_index(),
-                account_info->latest_height(),
-                init_msg.mutable_block())) {
-            return;
-        }
-
-        bool tx_valid = false;
-        for (int32_t i = 0; i < init_msg.block().tx_list_size(); ++i) {
-            if (init_msg.block().tx_list(i).to() == account_info->addr()) {
-                tx_valid = true;
-                break;
-            }
-        }
-
-        if (!tx_valid) {
-            return;
-        }
-
-        std::cout << "success handle init req message." << std::endl;
-        transport::TcpTransport::Instance()->SetMessageHash(msg, msg_ptr->thread_idx);
-        transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
+        HandleAddrReq(msg_ptr);
     }
 
     if (msg_ptr->header.init_proto().has_addr_res()) {
-        if (common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32) {
-            return;
-        }
-
-        auto& block = msg_ptr->header.init_proto().addr_res().block();
-        if (block.tx_list_size() != 1) {
-            return;
-        }
-
-        uint32_t sharding_id = common::kInvalidUint32;
-        for (int32_t i = 0; i < block.tx_list_size(); ++i) {
-            if (block.tx_list(i).to() == security_->GetAddress()) {
-                for (int32_t j = 0; j < block.tx_list(i).storages_size(); ++j) {
-                    if (block.tx_list(i).storages(j).key() == protos::kRootCreateAddressKey) {
-                        uint32_t* tmp = (uint32_t*)block.tx_list(i).storages(j).val_hash().c_str();
-                        sharding_id = tmp[0];
-                        break;
-                    }
-                }
-
-                break;
-            }
-        }
-
-        std::cout << "success handle init res message. response shard: " << sharding_id << std::endl;
-        if (sharding_id == common::kInvalidUint32) {
-            return;
-        }
-
-        des_sharding_id_ = sharding_id;
-        // random chance to join root shard
-        if (common::GlobalInfo::Instance()->join_root() == common::kJoinRoot) {
-            sharding_id = network::kRootCongressNetworkId;
-        } else if (common::GlobalInfo::Instance()->join_root() == common::kRandom ||
-                common::Random::RandomInt32() % 4 == 1) {
-            sharding_id = network::kRootCongressNetworkId;
-        }
-        
-        prefix_db_->SaveJoinShard(sharding_id, des_sharding_id_);
-        auto waiting_network_id = sharding_id + network::kConsensusWaitingShardOffset;
-        if (elect_mgr_->Join(msg_ptr->thread_idx, waiting_network_id) != elect::kElectSuccess) {
-            INIT_ERROR("join waiting pool network[%u] failed!", waiting_network_id);
-            return;
-        }
-
-        std::cout << "success handle init res message. join waiting shard: " << waiting_network_id
-            << ", des_sharding_id_: " << des_sharding_id_ <<std::endl;
-        common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
+        HandleAddrRes(msg_ptr);
     }
+
+    if (msg_ptr->header.init_proto().has_pools()) {
+        HandleLeaderPools(msg_ptr);
+    }
+}
+
+void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
+    for (int32_t i = 0; i < msg_ptr->header.init_proto().pools_size(); ++i) {
+        ++invalid_pools_[msg_ptr->header.init_proto().pools[i]];
+    }
+}
+
+void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
+    auto account_info = prefix_db_->GetAddressInfo(
+            msg_ptr->header.init_proto().addr_req().id());
+    if (account_info == nullptr) {
+        return;
+    }
+
+    transport::protobuf::Header msg;
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    msg.set_type(common::kInitMessage);
+    dht::DhtKeyManager dht_key(network::kUniversalNetworkId);
+    msg.set_des_dht_key(dht_key.StrKey());
+    auto& init_msg = *msg.mutable_init_proto()->mutable_addr_res();
+    if (!prefix_db_->GetBlockWithHeight(
+            network::kRootCongressNetworkId,
+            account_info->pool_index(),
+            account_info->latest_height(),
+            init_msg.mutable_block())) {
+        return;
+    }
+
+    bool tx_valid = false;
+    for (int32_t i = 0; i < init_msg.block().tx_list_size(); ++i) {
+        if (init_msg.block().tx_list(i).to() == account_info->addr()) {
+            tx_valid = true;
+            break;
+        }
+    }
+
+    if (!tx_valid) {
+        return;
+    }
+
+    std::cout << "success handle init req message." << std::endl;
+    transport::TcpTransport::Instance()->SetMessageHash(msg, msg_ptr->thread_idx);
+    transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
+}
+
+void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
+    if (common::GlobalInfo::Instance()->network_id() != common::kInvalidUint32) {
+        return;
+    }
+
+    auto& block = msg_ptr->header.init_proto().addr_res().block();
+    if (block.tx_list_size() != 1) {
+        return;
+    }
+
+    uint32_t sharding_id = common::kInvalidUint32;
+    for (int32_t i = 0; i < block.tx_list_size(); ++i) {
+        if (block.tx_list(i).to() == security_->GetAddress()) {
+            for (int32_t j = 0; j < block.tx_list(i).storages_size(); ++j) {
+                if (block.tx_list(i).storages(j).key() == protos::kRootCreateAddressKey) {
+                    uint32_t* tmp = (uint32_t*)block.tx_list(i).storages(j).val_hash().c_str();
+                    sharding_id = tmp[0];
+                    break;
+                }
+            }
+
+            break;
+        }
+    }
+
+    std::cout << "success handle init res message. response shard: " << sharding_id << std::endl;
+    if (sharding_id == common::kInvalidUint32) {
+        return;
+    }
+
+    des_sharding_id_ = sharding_id;
+    // random chance to join root shard
+    if (common::GlobalInfo::Instance()->join_root() == common::kJoinRoot) {
+        sharding_id = network::kRootCongressNetworkId;
+    } else if (common::GlobalInfo::Instance()->join_root() == common::kRandom ||
+            common::Random::RandomInt32() % 4 == 1) {
+        sharding_id = network::kRootCongressNetworkId;
+    }
+        
+    prefix_db_->SaveJoinShard(sharding_id, des_sharding_id_);
+    auto waiting_network_id = sharding_id + network::kConsensusWaitingShardOffset;
+    if (elect_mgr_->Join(msg_ptr->thread_idx, waiting_network_id) != elect::kElectSuccess) {
+        INIT_ERROR("join waiting pool network[%u] failed!", waiting_network_id);
+        return;
+    }
+
+    std::cout << "success handle init res message. join waiting shard: " << waiting_network_id
+        << ", des_sharding_id_: " << des_sharding_id_ <<std::endl;
+    common::GlobalInfo::Instance()->set_network_id(waiting_network_id);
 }
 
 void NetworkInit::GetAddressShardingId(uint8_t thread_idx) {
@@ -990,6 +1007,12 @@ void NetworkInit::HandleElectionBlock(
 
     auto sharding_id = elect_block->shard_network_id();
     auto elect_height = elect_mgr_->latest_height(sharding_id);
+    if (sharding_id == common::GlobalInfo::Instance()->network_id()) {
+        if (latest_elect_height_ < elect_height) {
+            latest_elect_height_ = elect_height;
+            memset(invalid_pools_, 0, sizeof(invalid_pools_));
+        }
+    }
     ZJC_DEBUG("success called election block. elect height: %lu, net: %u, local net id: %u",
         elect_height, elect_block->shard_network_id(), common::GlobalInfo::Instance()->network_id());
     bft_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
