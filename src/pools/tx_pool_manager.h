@@ -124,7 +124,7 @@ private:
     static const uint64_t kSyncMissingBlockPeriod = 3000lu;
     static const uint64_t kCheckLeaderLofPeriod = 3000lu;
     static const uint64_t kCaculateLeaderLofPeriod = 30000lu;
-    const double kGrubbsValidFactor = 3.017;  // 90%
+    double kGrubbsValidFactor = 3.017;  // 90%
 
     TxPool* tx_pool_{ nullptr };
     std::shared_ptr<security::Security> security_ = nullptr;
