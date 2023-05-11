@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include "bzlib.h"
+#include "block/block_utils.h"
 #include "common/random.h"
 #include "dht/dht_key.h"
 
