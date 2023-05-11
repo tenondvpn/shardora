@@ -83,6 +83,7 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
             std::vector<uint32_t> invalid_pools;
             invalid_pools.reserve(64);
             CheckLeaderValid(factors, &invalid_pools);
+            BroadcastInvalidPools(msg_ptr->thread_idx, invalid_pools);
         }
 
         prev_check_leader_valid_ms_ = now_tm_ms + kCheckLeaderLofPeriod;
@@ -97,6 +98,37 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
         SyncPoolsMaxHeight(msg_ptr->thread_idx);
         prev_sync_heights_ms_ = now_tm_ms + kSyncPoolsMaxHeightsPeriod;
     }
+}
+
+void TxPoolManager::BroadcastInvalidPools(
+        uint8_t thread_idx,
+        const std::vector<uint32_t>& invalid_pools) {
+    if (invalid_pools.empty()) {
+        return;
+    }
+
+    auto net_id = common::GlobalInfo::Instance()->network_id();
+    if (net_id < network::kRootCongressNetworkId || net_id >= network::kConsensusShardEndNetworkId) {
+        return;
+    }
+
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->thread_idx = thread_idx;
+    msg_ptr->header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    dht::DhtKeyManager dht_key(net_id);
+    msg_ptr->header.set_des_dht_key(dht_key.StrKey());
+    msg_ptr->header.set_type(common::kInitMessage);
+    auto* init_msg = msg_ptr->header.mutable_init_proto();
+    auto* pools = init_msg->mutable_pools();
+    for (uint32_t i = 0; i < invalid_pools.size(); ++i) {
+        pools->add_pools(invalid_pools[i]);
+    }
+
+    msg_ptr->header.mutable_broadcast();
+    transport::TcpTransport::Instance()->SetMessageHash(
+        msg_ptr->header,
+        msg_ptr->thread_idx);
+    network::Route::Instance()->Send(msg_ptr);
 }
 
 void TxPoolManager::CheckLeaderValid(
@@ -116,7 +148,7 @@ void TxPoolManager::CheckLeaderValid(
     variance = sqrt(variance / (factors.size() - 1));
     for (uint32_t i = 0; i < factors.size(); ++i) {
         double grubbs = abs(factors[i] - average) / variance;
-        if (grubbs > kGrubbsValidFactor) {
+        if (grubbs > kGrubbsValidFactor && factors[i] < 0.85) {
             // invalid leader
             ZJC_DEBUG("invalid pool found grubbs: %f, %d", grubbs, i);
             invalid_pools->push_back(i);

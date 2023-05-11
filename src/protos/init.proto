@@ -11,7 +11,12 @@ message GetAddressInfoResponse {
     optional block.protobuf.Block block = 1;
 }
 
+message InvalidLeaderPools {
+    repeated uint32_t pools = 1;
+}
+
 message InitMessage {
     optional GetAddressInfoRequest addr_req = 1;
     optional GetAddressInfoResponse addr_res = 2;
+    optional InvalidLeaderPools pools = 3;
 }
