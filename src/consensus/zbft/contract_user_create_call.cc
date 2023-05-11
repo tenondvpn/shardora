@@ -42,6 +42,7 @@ int ContractUserCreateCall::HandleTx(
     zjcvm::Uint64ToEvmcBytes32(
         zjc_host.tx_context_.tx_gas_price,
         block_tx.gas_price());
+    zjc_host.acc_mgr_ = account_mgr_;
     zjc_host.my_address_ = block_tx.to();
     zjc_host.tx_context_.block_gas_limit = block_tx.gas_limit();
     // get caller prepaid gas
