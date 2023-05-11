@@ -76,6 +76,10 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
         }
 
         if (get_factor) {
+            if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
+                factors.pop_back();
+            }
+
             CheckLeaderValid(factors);
         }
 
@@ -94,10 +98,6 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
 }
 
 void TxPoolManager::CheckLeaderValid(const std::vector<double>& factors) {
-    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
-        factors.pop_back();
-    }
-
     double average = 0.0;
     for (uint32_t i = 0; i < factors.size(); ++i) {
         average += factors[i];
