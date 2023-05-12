@@ -23,7 +23,6 @@
 #include "consensus/zbft/to_tx_local_item.h"
 #include "consensus/zbft/zbft.h"
 #include "db/db.h"
-#include "elect/elect_manager.h"
 #include "pools/tx_pool_manager.h"
 #include "protos/elect.pb.h"
 #include "protos/prefix_db.h"
@@ -54,7 +53,6 @@ public:
         std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<block::BlockManager>& block_mgr,
-        std::shared_ptr<elect::ElectManager>& elect_mgr,
         std::shared_ptr<pools::TxPoolManager>& pool_mgr,
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
@@ -64,6 +62,11 @@ public:
         uint8_t thread_count,
         BlockCacheCallback new_block_cache_callback);
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members);
+    void NotifyRotationLeader(
+        uint64_t elect_height,
+        uint32_t pool_mod_index,
+        uint32_t old_leader_idx,
+        uint32_t new_leader_idx);
     BftManager();
     virtual ~BftManager();
     int AddBft(ZbftPtr& bft_ptr);
@@ -235,7 +238,6 @@ private:
     std::shared_ptr<vss::VssManager> vss_mgr_ = nullptr;
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
-    std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
     std::unordered_map<std::string, ZbftPtr>* bft_hash_map_ = nullptr;
     std::queue<ZbftPtr>* bft_queue_ = nullptr;
     std::atomic<uint32_t> tps_{ 0 };

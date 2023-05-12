@@ -45,7 +45,6 @@ int BftManager::Init(
         std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<block::BlockManager>& block_mgr,
-        std::shared_ptr<elect::ElectManager>& elect_mgr,
         std::shared_ptr<pools::TxPoolManager>& pool_mgr,
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
@@ -59,7 +58,6 @@ int BftManager::Init(
     vss_mgr_ = vss_mgr;
     account_mgr_ = account_mgr;
     block_mgr_ = block_mgr;
-    elect_mgr_ = elect_mgr;
     pools_mgr_ = pool_mgr;
     tm_block_mgr_ = tm_block_mgr;
     bls_mgr_ = bls_mgr;
@@ -127,10 +125,20 @@ void BftManager::RegisterCreateTxCallbacks() {
         std::bind(&BftManager::CreateTimeblockTx, this, std::placeholders::_1));
 }
 
+void BftManager::NotifyRotationLeader(
+        uint64_t elect_height,
+        uint32_t pool_mod_index,
+        uint32_t old_leader_idx,
+        uint32_t new_leader_idx) {
+
+}
+
 void BftManager::OnNewElectBlock(
         uint32_t sharding_id,
         uint64_t elect_height,
-        common::MembersPtr& members) {
+        common::MembersPtr& members,
+        const libff::alt_bn128_G2& common_pk,
+        const libff::alt_bn128_Fr& sec_key) {
     if (sharding_id > max_consensus_sharding_id_) {
         max_consensus_sharding_id_ = sharding_id;
     }
@@ -146,40 +154,33 @@ void BftManager::OnNewElectBlock(
     auto elect_item_ptr = std::make_shared<ElectItem>();
     auto& elect_item = *elect_item_ptr;
     elect_item.members = members;
-    elect_item.leader_member = elect_mgr_->local_mem_ptr(sharding_id);;
+    uint32_t local_node_pool_mod_num = -1;
+    elect_item.leader_count = 0;
     for (uint32_t i = 0; i < members->size(); ++i) {
         if ((*members)[i]->id == security_ptr_->GetAddress()) {
             elect_item.local_member = (*members)[i];
             elect_item.local_node_member_index = i;
-            break;
+            local_node_pool_mod_num = (*members)[i]->pool_index_mod_num
+        }
+
+        if ((*members)[i]->pool_index_mod_num >= 0) {
+            ++elect_item.leader_count;
         }
     }
 
-    elect_item.local_node_pool_mod_num = elect_mgr_->local_node_pool_mod_num();
-    elect_item.leader_count = elect_mgr_->GetNetworkLeaderCount(sharding_id);
-    elect_item.elect_height = elect_mgr_->latest_height(sharding_id);
+    elect_item.elect_height = elect_height;
     elect_item.member_size = members->size();
-    auto members_ptr = elect_mgr_->GetNetworkMembersWithHeight(
-        elect_item.elect_height,
-        sharding_id,
-        &elect_item.common_pk,
-        &elect_item.sec_key);
-    if (members_ptr == nullptr) {
-        ZJC_ERROR("bft init failed elect_height: %lu, network_id: %u",
-            elect_item.elect_height, sharding_id);
-        return;
-    }
-
+    elect_item.common_pk = common_pk;
+    elect_item.sec_key = sec_key;
     auto new_idx = (elect_item_idx_ + 1) % 2;
     elect_items_[new_idx] = elect_item_ptr;
     ZJC_INFO("new elect block local leader index: %d, leader_count: %d, thread_count_: %d, elect height: %lu, member size: %d",
-        elect_item.local_node_pool_mod_num, elect_item.leader_count, thread_count_, elect_item.elect_height, members->size());
+        local_node_pool_mod_num, elect_item.leader_count, thread_count_, elect_item.elect_height, members->size());
     auto& thread_set = elect_item.thread_set;
     std::set<uint32_t> leader_pool_set;
-    if (!(elect_item.local_node_pool_mod_num < 0 ||
-            elect_item.local_node_pool_mod_num >= elect_item.leader_count)) {
+    if (!(local_node_pool_mod_num < 0 || local_node_pool_mod_num >= elect_item.leader_count)) {
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-            if (i % elect_item.leader_count == elect_item.local_node_pool_mod_num) {
+            if (i % elect_item.leader_count == local_node_pool_mod_num) {
                 leader_pool_set.insert(i);
             }
         }
@@ -335,8 +336,7 @@ ZbftPtr BftManager::StartBft(
             bls_mgr_,
             txs_ptr,
             txs_pools_,
-            tm_block_mgr_,
-            elect_mgr_);
+            tm_block_mgr_);
     } else {
         bft_ptr = std::make_shared<Zbft>(
             account_mgr_,
@@ -1110,8 +1110,7 @@ ZbftPtr BftManager::CreateBftPtr(
             bls_mgr_,
             txs_ptr,
             txs_pools_,
-            tm_block_mgr_,
-            elect_mgr_);
+            tm_block_mgr_);
     } else {
         bft_ptr = std::make_shared<Zbft>(
             account_mgr_,

@@ -27,11 +27,12 @@ struct RotatitionLeaders {
 };
 
 struct LeaderRotationInfo {
-    LeaderRotationInfo() : elect_height(0) {}
+    LeaderRotationInfo() : elect_height(0), members(nullptr) {}
     uint64_t elect_height;
     uint32_t member_count;
     std::vector<RotatitionLeaders> rotations;
     std::set<uint32_t> invalid_leaders;
+    common::MembersPtr members;
 };
 
 }  // namespace init

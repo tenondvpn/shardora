@@ -238,10 +238,12 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    auto invalid_member_count = common::GetSignerCount(rotation->member_count);
+    auto invalid_member_count = common::GetSignerCount(rotation->members->size());
     auto invalid_pool_count = common::kInvalidPoolIndex * kInvalidPoolFactor / 100;
-    if (pools.pools_size() == 1 && pools.pools(0) == common::kInvalidUint32 && rotation->rotations.size() <= 2) {
-        // change all leader
+    if (pools.pools_size() == 1 &&
+            pools.pools(0) == common::kInvalidUint32 &&
+            rotation->rotations.size() <= 2) {
+        // rotation all leader
         for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
             auto& r_leader = rotation->rotations[i];
             RotationLeader(rotation, i, r_leader);
@@ -285,6 +287,8 @@ void NetworkInit::RotationLeader(
             continue;
         }
 
+        (*rotation->members)[r_leader.now_leader_idx]->pool_index_mod_num = -1;
+        (*rotation->members)[new_leader_idx]->pool_index_mod_num = leader_mod_idx;
         NotifyRotationLeader(
             rotation->elect_height,
             leader_mod_idx,
@@ -301,7 +305,6 @@ void NetworkInit::NotifyRotationLeader(
         uint32_t pool_mod_index,
         uint32_t old_leader_idx,
         uint32_t new_leader_idx) {
-
 }
 
 void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
@@ -1061,8 +1064,6 @@ void NetworkInit::HandleElectionBlock(
         }
     }
 
-    ZJC_DEBUG("election block coming: %lu, net: %u, pool: %u, sharding id: %u",
-        block->height(), block->network_id(), block->pool_index(), elect_block->shard_network_id());
     if (!elect_block->has_shard_network_id() ||
             elect_block->shard_network_id() >= network::kConsensusShardEndNetworkId ||
             elect_block->shard_network_id() < network::kRootCongressNetworkId) {
@@ -1078,6 +1079,17 @@ void NetworkInit::HandleElectionBlock(
 
     auto sharding_id = elect_block->shard_network_id();
     auto elect_height = elect_mgr_->latest_height(sharding_id);
+    libff::alt_bn128_G2 common_pk;
+    libff::alt_bn128_Fr sec_key;
+    auto tmp_members = elect_mgr_->GetNetworkMembersWithHeight(
+        elect_height,
+        sharding_id,
+        &common_pk,
+        &sec_key);
+    if (tmp_members == nullptr) {
+        return;
+    }
+
     if (sharding_id == common::GlobalInfo::Instance()->network_id()) {
         if (latest_elect_height_ < elect_height) {
             latest_elect_height_ = elect_height;
@@ -1098,7 +1110,7 @@ void NetworkInit::HandleElectionBlock(
             }
 
             rotation_leaders->rotations.resize(leader_count);
-            rotation_leaders->member_count = members->size();
+            rotation_leaders->member = members;
             uint32_t for_leader_idx = 0;
             bool valid = false;
             while (!valid) {
@@ -1124,9 +1136,7 @@ void NetworkInit::HandleElectionBlock(
         }
     }
 
-    ZJC_DEBUG("success called election block. elect height: %lu, net: %u, local net id: %u",
-        elect_height, elect_block->shard_network_id(), common::GlobalInfo::Instance()->network_id());
-    bft_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
+    bft_mgr_->OnNewElectBlock(sharding_id, elect_height, members, common_pk, sec_key);
     block_mgr_->OnNewElectBlock(sharding_id, members);
     vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     bls_mgr_->OnNewElectBlock(sharding_id, block->height(), elect_block);
