@@ -69,7 +69,10 @@ private:
     void HandleAddrRes(const transport::MessagePtr& msg_ptr);
     void HandleLeaderPools(const transport::MessagePtr& msg_ptr);
     void GetAddressShardingId(uint8_t thread_idx);
-    void RotationLeader(uint32_t leader_mod_idx, RotatitionLeaders& r_leader);
+    void RotationLeader(
+        std::shared_ptr<LeaderRotationInfo>& rotation,
+        uint32_t leader_mod_idx,
+        RotatitionLeaders& r_leader);
     void NotifyRotationLeader(
         uint64_t elect_height,
         uint32_t pool_mod_index,

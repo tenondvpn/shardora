@@ -244,7 +244,7 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
         // change all leader
         for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
             auto& r_leader = rotation->rotations[i];
-            RotationLeader(i, r_leader);
+            RotationLeader(rotation, i, r_leader);
         }
 
         return;
@@ -261,13 +261,16 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
             auto& r_leader = rotation->rotations[leader_mod_idx];
             ++r_leader.invalid_pool_count;
             if (r_leader.invalid_pool_count >= invalid_pool_count) {
-                RotationLeader(leader_mod_idx, r_leader);
+                RotationLeader(rotation, leader_mod_idx, r_leader);
             }
         }
     }
 }
 
-void NetworkInit::RotationLeader(uint32_t leader_mod_idx, RotatitionLeaders& r_leader) {
+void NetworkInit::RotationLeader(
+        std::shared_ptr<LeaderRotationInfo>& rotation,
+        uint32_t leader_mod_idx,
+        RotatitionLeaders& r_leader) {
     // now leader rotation
     rotation->invalid_leaders.insert(r_leader.now_leader_idx);
     uint32_t try_times = 0;
