@@ -45,6 +45,7 @@ int BftManager::Init(
         std::shared_ptr<vss::VssManager>& vss_mgr,
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<block::BlockManager>& block_mgr,
+        std::shared_ptr<elect::ElectManager>& elect_mgr,
         std::shared_ptr<pools::TxPoolManager>& pool_mgr,
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
@@ -58,6 +59,7 @@ int BftManager::Init(
     vss_mgr_ = vss_mgr;
     account_mgr_ = account_mgr;
     block_mgr_ = block_mgr;
+    elect_mgr_ = elect_mgr;
     pools_mgr_ = pool_mgr;
     tm_block_mgr_ = tm_block_mgr;
     bls_mgr_ = bls_mgr;
