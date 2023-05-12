@@ -42,12 +42,18 @@ public:
     void PopTxs(uint32_t pool_index);
     void SetTimeout(uint32_t pool_index) {}
 
-    void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height) {
+    void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, const common::MembersPtr& members) {
         if (sharding_id == common::GlobalInfo::Instance()->network_id() ||
                 sharding_id + network::kConsensusWaitingShardOffset ==
                 common::GlobalInfo::Instance()->network_id()) {
             if (latest_elect_height_ > elect_height) {
                 latest_elect_height_ = elect_height;
+                latest_leader_count_ = 0;
+                for (uint32_t i = 0; i < members->size(); ++i) {
+                    if ((*members)[i]->pool_index_mod_num >= 0) {
+                        ++latest_leader_count_;
+                    }
+                }
             }
         }
     }
@@ -139,6 +145,7 @@ private:
     static const uint64_t kCheckLeaderLofPeriod = 3000lu;
     static const uint64_t kCaculateLeaderLofPeriod = 30000lu;
     double kGrubbsValidFactor = 3.217;  // 90%
+    const double kInvalidLeaderRatio = 0.85;
 
     TxPool* tx_pool_{ nullptr };
     std::shared_ptr<security::Security> security_ = nullptr;
@@ -158,6 +165,7 @@ private:
     uint32_t prev_sync_height_tree_tm_ms_ = 0;
     volatile uint64_t synced_max_heights_[common::kInvalidPoolIndex] = { 0 };
     uint64_t latest_elect_height_ = 0;
+    uint32_t latest_leader_count_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

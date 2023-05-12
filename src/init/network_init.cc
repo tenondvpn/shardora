@@ -240,6 +240,16 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
 
     auto invalid_member_count = common::GetSignerCount(rotation->member_count);
     auto invalid_pool_count = common::kInvalidPoolIndex * kInvalidPoolFactor / 100;
+    if (pools.pools_size() == 1 && pools.pools(0) == common::kInvalidUint32 && rotation->rotations.size() <= 2) {
+        // change all leader
+        for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
+            auto& r_leader = rotation->rotations[i];
+            RotationLeader(i, r_leader);
+        }
+
+        return;
+    }
+
     for (int32_t i = 0; i < pools.pools_size(); ++i) {
         if (pools.pools(i) > common::kInvalidPoolIndex) {
             return;
@@ -251,35 +261,39 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
             auto& r_leader = rotation->rotations[leader_mod_idx];
             ++r_leader.invalid_pool_count;
             if (r_leader.invalid_pool_count >= invalid_pool_count) {
-                // now leader rotation
-                rotation->invalid_leaders.insert(r_leader.now_leader_idx);
-                uint32_t try_times = 0;
-                while (try_times++ < r_leader.rotation_leaders.size()) {
-                    if (r_leader.now_rotation_idx >= r_leader.rotation_leaders.size()) {
-                        r_leader.now_rotation_idx = 0;
-                    }
-
-                    auto new_leader_idx = r_leader.rotation_leaders[r_leader.now_rotation_idx++];
-                    auto iter = rotation->invalid_leaders.find(new_leader_idx);
-                    if (iter != rotation->invalid_leaders.end()) {
-                        continue;
-                    }
-
-                    RotationLeader(
-                        rotation->elect_height,
-                        leader_mod_idx,
-                        r_leader.now_leader_idx,
-                        new_leader_idx);
-                    r_leader.now_leader_idx = new_leader_idx;
-                    r_leader.invalid_pool_count = 0;
-                    break;
-                }
+                RotationLeader(leader_mod_idx, r_leader);
             }
         }
     }
 }
 
-void NetworkInit::RotationLeader(
+void NetworkInit::RotationLeader(uint32_t leader_mod_idx, RotatitionLeaders& r_leader) {
+    // now leader rotation
+    rotation->invalid_leaders.insert(r_leader.now_leader_idx);
+    uint32_t try_times = 0;
+    while (try_times++ < r_leader.rotation_leaders.size()) {
+        if (r_leader.now_rotation_idx >= r_leader.rotation_leaders.size()) {
+            r_leader.now_rotation_idx = 0;
+        }
+
+        auto new_leader_idx = r_leader.rotation_leaders[r_leader.now_rotation_idx++];
+        auto iter = rotation->invalid_leaders.find(new_leader_idx);
+        if (iter != rotation->invalid_leaders.end()) {
+            continue;
+        }
+
+        NotifyRotationLeader(
+            rotation->elect_height,
+            leader_mod_idx,
+            r_leader.now_leader_idx,
+            new_leader_idx);
+        r_leader.now_leader_idx = new_leader_idx;
+        r_leader.invalid_pool_count = 0;
+        break;
+    }
+}
+
+void NetworkInit::NotifyRotationLeader(
         uint64_t elect_height,
         uint32_t pool_mod_index,
         uint32_t old_leader_idx,
