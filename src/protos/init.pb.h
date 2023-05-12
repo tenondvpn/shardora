@@ -413,16 +413,16 @@ class InvalidLeaderPools : public ::google::protobuf::Message /* @@protoc_insert
 
   // accessors -------------------------------------------------------
 
-  // repeated uint32 pools = 1;
+  // repeated int32 pools = 1;
   int pools_size() const;
   void clear_pools();
   static const int kPoolsFieldNumber = 1;
-  ::google::protobuf::uint32 pools(int index) const;
-  void set_pools(int index, ::google::protobuf::uint32 value);
-  void add_pools(::google::protobuf::uint32 value);
-  const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+  ::google::protobuf::int32 pools(int index) const;
+  void set_pools(int index, ::google::protobuf::int32 value);
+  void add_pools(::google::protobuf::int32 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
       pools() const;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_pools();
 
   // optional uint64 elect_height = 2;
@@ -440,7 +440,7 @@ class InvalidLeaderPools : public ::google::protobuf::Message /* @@protoc_insert
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > pools_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > pools_;
   ::google::protobuf::uint64 elect_height_;
   friend struct ::protobuf_protos_2finit_2eproto::TableStruct;
 };
@@ -732,31 +732,31 @@ inline void GetAddressInfoResponse::set_allocated_block(::zjchain::block::protob
 
 // InvalidLeaderPools
 
-// repeated uint32 pools = 1;
+// repeated int32 pools = 1;
 inline int InvalidLeaderPools::pools_size() const {
   return pools_.size();
 }
 inline void InvalidLeaderPools::clear_pools() {
   pools_.Clear();
 }
-inline ::google::protobuf::uint32 InvalidLeaderPools::pools(int index) const {
+inline ::google::protobuf::int32 InvalidLeaderPools::pools(int index) const {
   // @@protoc_insertion_point(field_get:zjchain.init.protobuf.InvalidLeaderPools.pools)
   return pools_.Get(index);
 }
-inline void InvalidLeaderPools::set_pools(int index, ::google::protobuf::uint32 value) {
+inline void InvalidLeaderPools::set_pools(int index, ::google::protobuf::int32 value) {
   pools_.Set(index, value);
   // @@protoc_insertion_point(field_set:zjchain.init.protobuf.InvalidLeaderPools.pools)
 }
-inline void InvalidLeaderPools::add_pools(::google::protobuf::uint32 value) {
+inline void InvalidLeaderPools::add_pools(::google::protobuf::int32 value) {
   pools_.Add(value);
   // @@protoc_insertion_point(field_add:zjchain.init.protobuf.InvalidLeaderPools.pools)
 }
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >&
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
 InvalidLeaderPools::pools() const {
   // @@protoc_insertion_point(field_list:zjchain.init.protobuf.InvalidLeaderPools.pools)
   return pools_;
 }
-inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
 InvalidLeaderPools::mutable_pools() {
   // @@protoc_insertion_point(field_mutable_list:zjchain.init.protobuf.InvalidLeaderPools.pools)
   return &pools_;

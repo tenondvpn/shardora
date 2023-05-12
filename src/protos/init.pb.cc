@@ -199,7 +199,7 @@ void AddDescriptorsImpl() {
       "Request\022\n\n\002id\030\001 \001(\014\"F\n\026GetAddressInfoRes"
       "ponse\022,\n\005block\030\001 \001(\0132\035.zjchain.block.pro"
       "tobuf.Block\"9\n\022InvalidLeaderPools\022\r\n\005poo"
-      "ls\030\001 \003(\r\022\024\n\014elect_height\030\002 \001(\004\"\310\001\n\013InitM"
+      "ls\030\001 \003(\005\022\024\n\014elect_height\030\002 \001(\004\"\310\001\n\013InitM"
       "essage\022>\n\010addr_req\030\001 \001(\0132,.zjchain.init."
       "protobuf.GetAddressInfoRequest\022\?\n\010addr_r"
       "es\030\002 \001(\0132-.zjchain.init.protobuf.GetAddr"
@@ -784,18 +784,18 @@ bool InvalidLeaderPools::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // repeated uint32 pools = 1;
+      // repeated int32 pools = 1;
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  1, 8u, input, this->mutable_pools())));
         } else if (
             static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_pools())));
         } else {
           goto handle_unusual;
@@ -843,9 +843,9 @@ void InvalidLeaderPools::SerializeWithCachedSizes(
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // repeated uint32 pools = 1;
+  // repeated int32 pools = 1;
   for (int i = 0, n = this->pools_size(); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(
       1, this->pools(i), output);
   }
 
@@ -869,9 +869,9 @@ void InvalidLeaderPools::SerializeWithCachedSizes(
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // repeated uint32 pools = 1;
+  // repeated int32 pools = 1;
   target = ::google::protobuf::internal::WireFormatLite::
-    WriteUInt32ToArray(1, this->pools_, target);
+    WriteInt32ToArray(1, this->pools_, target);
 
   cached_has_bits = _has_bits_[0];
   // optional uint64 elect_height = 2;
@@ -896,10 +896,10 @@ size_t InvalidLeaderPools::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  // repeated uint32 pools = 1;
+  // repeated int32 pools = 1;
   {
     size_t data_size = ::google::protobuf::internal::WireFormatLite::
-      UInt32Size(this->pools_);
+      Int32Size(this->pools_);
     total_size += 1 *
                   ::google::protobuf::internal::FromIntSize(this->pools_size());
     total_size += data_size;
