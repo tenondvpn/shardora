@@ -1110,7 +1110,7 @@ void NetworkInit::HandleElectionBlock(
             }
 
             rotation_leaders->rotations.resize(leader_count);
-            rotation_leaders->member = members;
+            rotation_leaders->members = members;
             uint32_t for_leader_idx = 0;
             bool valid = false;
             while (!valid) {

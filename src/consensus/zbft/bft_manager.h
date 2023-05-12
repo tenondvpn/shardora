@@ -63,7 +63,12 @@ public:
         BlockCallback block_cb,
         uint8_t thread_count,
         BlockCacheCallback new_block_cache_callback);
-    void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members);
+    void OnNewElectBlock(
+        uint32_t sharding_id,
+        uint64_t elect_height,
+        common::MembersPtr& members,
+        const libff::alt_bn128_G2& common_pk,
+        const libff::alt_bn128_Fr& sec_key);
     void NotifyRotationLeader(
         uint64_t elect_height,
         uint32_t pool_mod_index,
