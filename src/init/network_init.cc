@@ -252,7 +252,7 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
             ++r_leader.invalid_pool_count;
             if (r_leader.invalid_pool_count >= invalid_pool_count) {
                 // now leader rotation
-                rotation->invalid_leaders.insert(.now_leader_idx);
+                rotation->invalid_leaders.insert(r_leader.now_leader_idx);
                 uint32_t try_times = 0;
                 while (try_times++ < r_leader.rotation_leaders.size()) {
                     if (r_leader.now_rotation_idx >= r_leader.rotation_leaders.size()) {
@@ -1086,14 +1086,13 @@ void NetworkInit::HandleElectionBlock(
             bool valid = false;
             while (!valid) {
                 for (int32_t i = 0; i < leader_count; ++i) {
-                    rotation_leaders->rotations[i].push_back(for_leaders_index[for_leader_idx]);
-                    ++for_leader_idx;
+                    rotation_leaders->rotations[i].rotation_leaders.push_back(for_leaders_index[for_leader_idx++]);
                     if (for_leader_idx >= for_leaders_index.size()) {
                         for_leader_idx = 0;
                     }
 
                     if (i == leader_count - 1 &&
-                            rotation_leaders->rotations[i].size() >= kRotationLeaderCount) {
+                            rotation_leaders->rotations[i].rotation_leaders.size() >= kRotationLeaderCount) {
                         valid = true;
                         break;
                     }
