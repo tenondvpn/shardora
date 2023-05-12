@@ -162,7 +162,7 @@ void BftManager::OnNewElectBlock(
         if ((*members)[i]->id == security_ptr_->GetAddress()) {
             elect_item.local_member = (*members)[i];
             elect_item.local_node_member_index = i;
-            local_node_pool_mod_num = (*members)[i]->pool_index_mod_num
+            local_node_pool_mod_num = (*members)[i]->pool_index_mod_num;
         }
 
         if ((*members)[i]->pool_index_mod_num >= 0) {
