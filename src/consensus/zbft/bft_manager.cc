@@ -238,7 +238,7 @@ void BftManager::OnNewElectBlock(
 void BftManager::SetThreadItem(
         uint32_t leader_count,
         int32_t local_node_pool_mod_num,
-        std::shared_ptr<PoolTxIndexItem>& thread_set) {
+        std::shared_ptr<PoolTxIndexItem>* thread_set) {
     std::set<uint32_t> leader_pool_set;
     if (local_node_pool_mod_num >= 0) {
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
