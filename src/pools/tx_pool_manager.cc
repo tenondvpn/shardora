@@ -80,7 +80,7 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
                 factors.pop_back();
             }
 
-            std::vector<uint32_t> invalid_pools;
+            std::vector<int32_t> invalid_pools;
             invalid_pools.reserve(64);
             CheckLeaderValid(factors, &invalid_pools);
             if (invalid_pools.size() < 32) {
@@ -104,7 +104,7 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
 
 void TxPoolManager::BroadcastInvalidPools(
         uint8_t thread_idx,
-        const std::vector<uint32_t>& invalid_pools) {
+        const std::vector<int32_t>& invalid_pools) {
     if (invalid_pools.empty()) {
         return;
     }
@@ -136,7 +136,7 @@ void TxPoolManager::BroadcastInvalidPools(
 
 void TxPoolManager::CheckLeaderValid(
         const std::vector<double>& factors,
-        std::vector<uint32_t>* invalid_pools) {
+        std::vector<int32_t>* invalid_pools) {
     double average = 0.0;
     for (uint32_t i = 0; i < factors.size(); ++i) {
         average += factors[i];
@@ -145,7 +145,7 @@ void TxPoolManager::CheckLeaderValid(
     if (average <= 0.000001) {
         // all leader invalid
         if (latest_leader_count_ <= 2) {
-            invalid_pools->push_back(common::kInvalidUint32);
+            invalid_pools->push_back(-1);
         }
 
         return;

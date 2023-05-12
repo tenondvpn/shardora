@@ -71,7 +71,7 @@ public:
         const libff::alt_bn128_Fr& sec_key);
     void NotifyRotationLeader(
         uint64_t elect_height,
-        uint32_t pool_mod_index,
+        int32_t pool_mod_index,
         uint32_t old_leader_idx,
         uint32_t new_leader_idx);
     BftManager();
@@ -171,7 +171,7 @@ private:
     void RegisterCreateTxCallbacks();
     void SetThreadItem(
         uint32_t leader_count,
-        uint32_t local_node_pool_mod_num,
+        int32_t local_node_pool_mod_num,
         std::shared_ptr<PoolTxIndexItem>& thread_set);
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {

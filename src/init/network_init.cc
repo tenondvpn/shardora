@@ -241,7 +241,7 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
     auto invalid_member_count = common::GetSignerCount(rotation->members->size());
     auto invalid_pool_count = common::kInvalidPoolIndex * kInvalidPoolFactor / 100;
     if (pools.pools_size() == 1 &&
-            pools.pools(0) == common::kInvalidUint32 &&
+            pools.pools(0) == -1 &&
             rotation->rotations.size() <= 2) {
         // rotation all leader
         for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
@@ -271,7 +271,7 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
 
 void NetworkInit::RotationLeader(
         std::shared_ptr<LeaderRotationInfo>& rotation,
-        uint32_t leader_mod_idx,
+        int32_t leader_mod_idx,
         RotatitionLeaders& r_leader) {
     // now leader rotation
     rotation->invalid_leaders.insert(r_leader.now_leader_idx);

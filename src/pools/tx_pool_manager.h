@@ -133,10 +133,10 @@ private:
     void HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_ptr);
     void SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms);
     void SyncBlockWithMaxHeights(uint8_t thread_idx, uint32_t pool_idx, uint64_t height);
-    void CheckLeaderValid(const std::vector<double>& factors, std::vector<uint32_t>* invalid_pools);
+    void CheckLeaderValid(const std::vector<double>& factors, std::vector<int32_t>* invalid_pools);
     void BroadcastInvalidPools(
         uint8_t thread_idx,
-        const std::vector<uint32_t>& invalid_pools);
+        const std::vector<int32_t>& invalid_pools);
 
     static const uint32_t kPopMessageCountEachTime = 320u;
     static const uint64_t kFlushHeightTreePeriod = 60000lu;

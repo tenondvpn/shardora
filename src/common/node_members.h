@@ -31,7 +31,7 @@ struct BftMember {
     uint32_t public_ip;
     uint16_t public_port;
     std::string dht_key;
-    int32_t pool_index_mod_num;
+    volatile int32_t pool_index_mod_num;
     std::string backup_ecdh_key;
     std::string leader_ecdh_key;
     libff::alt_bn128_G2 bls_publick_key;

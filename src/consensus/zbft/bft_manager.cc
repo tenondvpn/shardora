@@ -129,7 +129,7 @@ void BftManager::RegisterCreateTxCallbacks() {
 
 void BftManager::NotifyRotationLeader(
         uint64_t elect_height,
-        uint32_t pool_mod_index,
+        int32_t pool_mod_index,
         uint32_t old_leader_idx,
         uint32_t new_leader_idx) {
     auto new_idx = elect_item_idx_;
@@ -179,7 +179,7 @@ void BftManager::OnNewElectBlock(
     auto elect_item_ptr = std::make_shared<ElectItem>();
     auto& elect_item = *elect_item_ptr;
     elect_item.members = members;
-    uint32_t local_node_pool_mod_num = -1;
+    int32_t local_node_pool_mod_num = -1;
     elect_item.leader_count = 0;
     for (uint32_t i = 0; i < members->size(); ++i) {
         if ((*members)[i]->id == security_ptr_->GetAddress()) {
@@ -237,7 +237,7 @@ void BftManager::OnNewElectBlock(
 
 void BftManager::SetThreadItem(
         uint32_t leader_count,
-        uint32_t local_node_pool_mod_num,
+        int32_t local_node_pool_mod_num,
         std::shared_ptr<PoolTxIndexItem>& thread_set) {
     std::set<uint32_t> leader_pool_set;
     if (local_node_pool_mod_num >= 0) {
