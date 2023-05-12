@@ -145,7 +145,7 @@ void TxPoolManager::CheckLeaderValid(
     if (average <= 0.000001) {
         // all leader invalid
         if (latest_leader_count_ <= 2) {
-            invalid_pools->insert(common::kInvalidUint32);
+            invalid_pools->push_back(common::kInvalidUint32);
         }
 
         return;
