@@ -144,7 +144,9 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InvalidLeaderPools, pools_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InvalidLeaderPools, elect_height_),
   ~0u,
+  0,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InitMessage, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InitMessage, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -160,8 +162,8 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 6, sizeof(::zjchain::init::protobuf::GetAddressInfoRequest)},
   { 7, 13, sizeof(::zjchain::init::protobuf::GetAddressInfoResponse)},
-  { 14, 20, sizeof(::zjchain::init::protobuf::InvalidLeaderPools)},
-  { 21, 29, sizeof(::zjchain::init::protobuf::InitMessage)},
+  { 14, 21, sizeof(::zjchain::init::protobuf::InvalidLeaderPools)},
+  { 23, 31, sizeof(::zjchain::init::protobuf::InitMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -196,16 +198,16 @@ void AddDescriptorsImpl() {
       "uf\032\022protos/block.proto\"#\n\025GetAddressInfo"
       "Request\022\n\n\002id\030\001 \001(\014\"F\n\026GetAddressInfoRes"
       "ponse\022,\n\005block\030\001 \001(\0132\035.zjchain.block.pro"
-      "tobuf.Block\"#\n\022InvalidLeaderPools\022\r\n\005poo"
-      "ls\030\001 \003(\r\"\310\001\n\013InitMessage\022>\n\010addr_req\030\001 \001"
-      "(\0132,.zjchain.init.protobuf.GetAddressInf"
-      "oRequest\022\?\n\010addr_res\030\002 \001(\0132-.zjchain.ini"
-      "t.protobuf.GetAddressInfoResponse\0228\n\005poo"
-      "ls\030\003 \001(\0132).zjchain.init.protobuf.Invalid"
-      "LeaderPools"
+      "tobuf.Block\"9\n\022InvalidLeaderPools\022\r\n\005poo"
+      "ls\030\001 \003(\r\022\024\n\014elect_height\030\002 \001(\004\"\310\001\n\013InitM"
+      "essage\022>\n\010addr_req\030\001 \001(\0132,.zjchain.init."
+      "protobuf.GetAddressInfoRequest\022\?\n\010addr_r"
+      "es\030\002 \001(\0132-.zjchain.init.protobuf.GetAddr"
+      "essInfoResponse\0228\n\005pools\030\003 \001(\0132).zjchain"
+      ".init.protobuf.InvalidLeaderPools"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 411);
+      descriptor, 433);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/init.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fblock_2eproto::AddDescriptors();
@@ -714,6 +716,7 @@ void InvalidLeaderPools::InitAsDefaultInstance() {
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int InvalidLeaderPools::kPoolsFieldNumber;
+const int InvalidLeaderPools::kElectHeightFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 InvalidLeaderPools::InvalidLeaderPools()
@@ -729,10 +732,12 @@ InvalidLeaderPools::InvalidLeaderPools(const InvalidLeaderPools& from)
       _has_bits_(from._has_bits_),
       pools_(from.pools_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  elect_height_ = from.elect_height_;
   // @@protoc_insertion_point(copy_constructor:zjchain.init.protobuf.InvalidLeaderPools)
 }
 
 void InvalidLeaderPools::SharedCtor() {
+  elect_height_ = GOOGLE_ULONGLONG(0);
 }
 
 InvalidLeaderPools::~InvalidLeaderPools() {
@@ -764,6 +769,7 @@ void InvalidLeaderPools::Clear() {
   (void) cached_has_bits;
 
   pools_.Clear();
+  elect_height_ = GOOGLE_ULONGLONG(0);
   _has_bits_.Clear();
   _internal_metadata_.Clear();
 }
@@ -791,6 +797,20 @@ bool InvalidLeaderPools::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
                  input, this->mutable_pools())));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint64 elect_height = 2;
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
+          set_has_elect_height();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &elect_height_)));
         } else {
           goto handle_unusual;
         }
@@ -829,6 +849,12 @@ void InvalidLeaderPools::SerializeWithCachedSizes(
       1, this->pools(i), output);
   }
 
+  cached_has_bits = _has_bits_[0];
+  // optional uint64 elect_height = 2;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->elect_height(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -846,6 +872,12 @@ void InvalidLeaderPools::SerializeWithCachedSizes(
   // repeated uint32 pools = 1;
   target = ::google::protobuf::internal::WireFormatLite::
     WriteUInt32ToArray(1, this->pools_, target);
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint64 elect_height = 2;
+  if (cached_has_bits & 0x00000001u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->elect_height(), target);
+  }
 
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
@@ -871,6 +903,13 @@ size_t InvalidLeaderPools::ByteSizeLong() const {
     total_size += 1 *
                   ::google::protobuf::internal::FromIntSize(this->pools_size());
     total_size += data_size;
+  }
+
+  // optional uint64 elect_height = 2;
+  if (has_elect_height()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->elect_height());
   }
 
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
@@ -901,6 +940,9 @@ void InvalidLeaderPools::MergeFrom(const InvalidLeaderPools& from) {
   (void) cached_has_bits;
 
   pools_.MergeFrom(from.pools_);
+  if (from.has_elect_height()) {
+    set_elect_height(from.elect_height());
+  }
 }
 
 void InvalidLeaderPools::CopyFrom(const ::google::protobuf::Message& from) {
@@ -928,6 +970,7 @@ void InvalidLeaderPools::Swap(InvalidLeaderPools* other) {
 void InvalidLeaderPools::InternalSwap(InvalidLeaderPools* other) {
   using std::swap;
   pools_.InternalSwap(&other->pools_);
+  swap(elect_height_, other->elect_height_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }

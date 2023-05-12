@@ -425,13 +425,23 @@ class InvalidLeaderPools : public ::google::protobuf::Message /* @@protoc_insert
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
       mutable_pools();
 
+  // optional uint64 elect_height = 2;
+  bool has_elect_height() const;
+  void clear_elect_height();
+  static const int kElectHeightFieldNumber = 2;
+  ::google::protobuf::uint64 elect_height() const;
+  void set_elect_height(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.init.protobuf.InvalidLeaderPools)
  private:
+  void set_has_elect_height();
+  void clear_has_elect_height();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > pools_;
+  ::google::protobuf::uint64 elect_height_;
   friend struct ::protobuf_protos_2finit_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -750,6 +760,30 @@ inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
 InvalidLeaderPools::mutable_pools() {
   // @@protoc_insertion_point(field_mutable_list:zjchain.init.protobuf.InvalidLeaderPools.pools)
   return &pools_;
+}
+
+// optional uint64 elect_height = 2;
+inline bool InvalidLeaderPools::has_elect_height() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void InvalidLeaderPools::set_has_elect_height() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void InvalidLeaderPools::clear_has_elect_height() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void InvalidLeaderPools::clear_elect_height() {
+  elect_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_elect_height();
+}
+inline ::google::protobuf::uint64 InvalidLeaderPools::elect_height() const {
+  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.InvalidLeaderPools.elect_height)
+  return elect_height_;
+}
+inline void InvalidLeaderPools::set_elect_height(::google::protobuf::uint64 value) {
+  set_has_elect_height();
+  elect_height_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.InvalidLeaderPools.elect_height)
 }
 
 // -------------------------------------------------------------------
