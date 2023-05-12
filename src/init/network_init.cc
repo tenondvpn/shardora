@@ -228,13 +228,63 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
-    for (int32_t i = 0; i < msg_ptr->header.init_proto().pools().pools_size(); ++i) {
-        if (msg_ptr->header.init_proto().pools().pools(i) > common::kInvalidPoolIndex) {
+    auto rotation = rotation_leaders_;
+    if (rotation == nullptr) {
+        return;
+    }
+
+    auto& pools = msg_ptr->header.init_proto().pools();
+    if (pools.elect_height() != rotation->elect_height) {
+        return;
+    }
+
+    auto invalid_member_count = common::GetSignerCount(rotation->member_count);
+    auto invalid_pool_count = common::kInvalidPoolIndex * kInvalidPoolFactor / 100;
+    for (int32_t i = 0; i < pools.pools_size(); ++i) {
+        if (pools.pools(i) > common::kInvalidPoolIndex) {
             return;
         }
 
-        ++invalid_pools_[msg_ptr->header.init_proto().pools().pools(i)];
+        ++invalid_pools_[pools.pools(i)];
+        if (invalid_pools_[pools.pools(i)] >= invalid_member_count) {
+            auto leader_mod_idx = pools.pools(i) % rotation->rotations.size();
+            auto& r_leader = rotation->rotations[leader_mod_idx];
+            ++r_leader.invalid_pool_count;
+            if (r_leader.invalid_pool_count >= invalid_pool_count) {
+                // now leader rotation
+                rotation->invalid_leaders.insert(.now_leader_idx);
+                uint32_t try_times = 0;
+                while (try_times++ < r_leader.rotation_leaders.size()) {
+                    if (r_leader.now_rotation_idx >= r_leader.rotation_leaders.size()) {
+                        r_leader.now_rotation_idx = 0;
+                    }
+
+                    auto new_leader_idx = r_leader.rotation_leaders[r_leader.now_rotation_idx++];
+                    auto iter = rotation->invalid_leaders.find(new_leader_idx);
+                    if (iter != rotation->invalid_leaders.end()) {
+                        continue;
+                    }
+
+                    RotationLeader(
+                        rotation->elect_height,
+                        leader_mod_idx,
+                        r_leader.now_leader_idx,
+                        new_leader_idx);
+                    r_leader.now_leader_idx = new_leader_idx;
+                    r_leader.invalid_pool_count = 0;
+                    break;
+                }
+            }
+        }
     }
+}
+
+void NetworkInit::RotationLeader(
+        uint64_t elect_height,
+        uint32_t pool_mod_index,
+        uint32_t old_leader_idx,
+        uint32_t new_leader_idx) {
+
 }
 
 void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
@@ -1015,8 +1065,49 @@ void NetworkInit::HandleElectionBlock(
         if (latest_elect_height_ < elect_height) {
             latest_elect_height_ = elect_height;
             memset(invalid_pools_, 0, sizeof(invalid_pools_));
+            auto rotation_leaders = std::make_shared<LeaderRotationInfo>();
+            rotation_leaders->elect_height = elect_height;
+            uint32_t leader_count = 0;
+            std::deque<uint32_t> for_leaders_index;
+            std::map<uint32_t, uint32_t> leader_idx_map;
+            for (uint32_t i = 0; i < members->size(); ++i) {
+                if ((*members)[i]->pool_index_mod_num >= 0) {
+                    ++leader_count;
+                    for_leaders_index.push_back(i);
+                    leader_idx_map[(*members)[i]->pool_index_mod_num] = i;
+                } else {
+                    for_leaders_index.push_front(i);
+                }
+            }
+
+            rotation_leaders->rotations.resize(leader_count);
+            rotation_leaders->member_count = members->size();
+            uint32_t for_leader_idx = 0;
+            bool valid = false;
+            while (!valid) {
+                for (int32_t i = 0; i < leader_count; ++i) {
+                    rotation_leaders->rotations[i].push_back(for_leaders_index[for_leader_idx]);
+                    ++for_leader_idx;
+                    if (for_leader_idx >= for_leaders_index.size()) {
+                        for_leader_idx = 0;
+                    }
+
+                    if (i == leader_count - 1 &&
+                            rotation_leaders->rotations[i].size() >= kRotationLeaderCount) {
+                        valid = true;
+                        break;
+                    }
+                }
+            }
+            
+            for (auto iter = leader_idx_map.begin(); iter != leader_idx_map.end(); ++iter) {
+                rotation_leaders->rotations[iter->first].now_leader_idx = iter->second;
+            }
+
+            rotation_leaders_ = rotation_leaders;
         }
     }
+
     ZJC_DEBUG("success called election block. elect height: %lu, net: %u, local net id: %u",
         elect_height, elect_block->shard_network_id(), common::GlobalInfo::Instance()->network_id());
     bft_mgr_->OnNewElectBlock(sharding_id, elect_height, members);

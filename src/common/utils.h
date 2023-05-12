@@ -146,6 +146,7 @@ static const uint16_t kRouteUdpPortRangeMax = 65100u;
 static const uint16_t kVpnUdpPortRangeMin = 65100u;
 static const uint16_t kVpnUdpPortRangeMax = 65200u;
 static const uint64_t kTimeBlockCreatePeriodSeconds = 60llu;
+static const uint64_t kLeaderRotationPeriodSeconds = 10llu;
 static const uint32_t kEatchShardMaxSupperLeaderCount = 7u;
 static const uint32_t kEachShardMinNodeCount = 3u;
 static const uint32_t kEachShardMaxNodeCount = 1024u;

@@ -18,6 +18,22 @@ enum InitErrorCode {
     kInitError = 1,
 };
 
+struct RotatitionLeaders {
+    RotatitionLeaders() : now_idx(0), invalid_pool_count(0) {}
+    std::vector<uint32_t> rotation_leaders;
+    uint32_t now_rotation_idx;
+    uint32_t invalid_pool_count;
+    uint32_t now_leader_idx;
+};
+
+struct LeaderRotationInfo {
+    LeaderRotationInfo() : elect_height(0) {}
+    uint64_t elect_height;
+    uint32_t member_count;
+    std::vector<RotatitionLeaders> rotations;
+    std::set<uint32_t> invalid_leaders;
+};
+
 }  // namespace init
 
 }  // namespace zjchain

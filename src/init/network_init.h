@@ -68,6 +68,15 @@ private:
     void HandleAddrRes(const transport::MessagePtr& msg_ptr);
     void HandleLeaderPools(const transport::MessagePtr& msg_ptr);
     void GetAddressShardingId(uint8_t thread_idx);
+    void RotationLeader(
+        uint64_t elect_height,
+        uint32_t pool_mod_index,
+        uint32_t old_leader_idx,
+        uint32_t new_leader_idx);
+
+    static const uint32_t kInvalidPoolFactor = 50u;  // 50%
+    static const uint32_t kMinValodPoolCount = 4u;  // 64 must finish all
+    static const uint32_t kRotationLeaderCount = common::kTimeBlockCreatePeriodSeconds / common::kLeaderRotationPeriodSeconds + 1;
 
     common::Config conf_;
     bool inited_{ false };
@@ -97,6 +106,7 @@ private:
     uint32_t des_sharding_id_ = common::kInvalidUint32;
     uint32_t invalid_pools_[common::kInvalidPoolIndex] = { 0 };
     uint64_t latest_elect_height_ = 0;
+    std::shared_ptr<LeaderRotationInfo> rotation_leaders_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(NetworkInit);
 };
