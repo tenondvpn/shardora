@@ -167,6 +167,7 @@ public:
             } else {
                 factor = 1.0;
             }
+
             if (checked_count < kLeaderLofFactorCount) {
                 factor = 1.0;
             }
