@@ -121,11 +121,11 @@ inline static const char *inet_ntop(int af, const void *src, char *dst, socklen_
 
 std::string CreateGID(const std::string& pubkey) {
     std::string str = (pubkey + Random::RandomString(32u));
-    return common::Hash::Hash256(str);
+    return common::Hash::keccak256(str);
 }
 
 std::string FixedCreateGID(const std::string& str) {
-    return common::Hash::Hash256(str);
+    return common::Hash::keccak256(str);
 }
 
 uint8_t RandomCountry() {

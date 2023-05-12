@@ -70,6 +70,10 @@ std::string Hash::Hash128(const std::string& str) {
     return std::string(hash.str, sizeof(hash.str));
 }
 
+std::string Hash::Hash256(const std::string& str) {
+    return Sha256(str);
+}
+
 std::string Hash::Hash192(const std::string& str) {
     Hash192Union hash;
     hash.u192.a = XXH64(str.c_str(), str.size(), kHashSeed1);

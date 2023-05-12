@@ -494,7 +494,7 @@ int Zbft::LeaderCreateCommitAggSign() {
             msg_hash_src.append((char*)&data, sizeof(data));// precommit_bitmap_.data()[i]);
         }
 
-        commit_hash_ = common::Hash::Hash256(msg_hash_src);
+        commit_hash_ = common::Hash::keccak256(msg_hash_src);
 //         ZJC_INFO("commit verify start,");
         std::string sign_commit_hash;
         if (bls_mgr_->GetVerifyHash(
