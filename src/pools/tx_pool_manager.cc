@@ -120,6 +120,7 @@ void TxPoolManager::BroadcastInvalidPools(
     msg_ptr->header.set_type(common::kInitMessage);
     auto* init_msg = msg_ptr->header.mutable_init_proto();
     auto* pools = init_msg->mutable_pools();
+    pools->set_elect_height(latest_elect_height_);
     for (uint32_t i = 0; i < invalid_pools.size(); ++i) {
         pools->add_pools(invalid_pools[i]);
     }

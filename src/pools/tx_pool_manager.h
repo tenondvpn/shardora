@@ -35,18 +35,29 @@ public:
         const common::BloomFilter& bloom_filter,
         uint32_t pool_index,
         std::map<std::string, TxItemPtr>& res_map);
-    std::shared_ptr<consensus::WaitingTxsItem> GetTx(
-            uint32_t pool_index,
-            const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list) {
-        return tx_pool_[pool_index].GetTx(tx_hash_list);
-    }
-
     void TxOver(
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
     void TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs);
     void PopTxs(uint32_t pool_index);
     void SetTimeout(uint32_t pool_index) {}
+
+    void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height) {
+        if (sharding_id == common::GlobalInfo::Instance()->network_id() ||
+                sharding_id + network::kConsensusWaitingShardOffset ==
+                common::GlobalInfo::Instance()->network_id()) {
+            if (latest_elect_height_ > elect_height) {
+                latest_elect_height_ = elect_height;
+            }
+        }
+    }
+
+    std::shared_ptr<consensus::WaitingTxsItem> GetTx(
+            uint32_t pool_index,
+            const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list) {
+        return tx_pool_[pool_index].GetTx(tx_hash_list);
+    }
+
     void RegisterCreateTxFunction(uint32_t type, CreateConsensusItemFunction func) {
         assert(type < pools::protobuf::StepType_ARRAYSIZE);
         item_functions_[type] = func;
@@ -146,6 +157,7 @@ private:
     uint32_t prev_synced_pool_index_ = 0;
     uint32_t prev_sync_height_tree_tm_ms_ = 0;
     volatile uint64_t synced_max_heights_[common::kInvalidPoolIndex] = { 0 };
+    uint64_t latest_elect_height_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };
