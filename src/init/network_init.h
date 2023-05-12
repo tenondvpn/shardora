@@ -15,6 +15,7 @@
 #include "http/http_server.h"
 #include "init/command.h"
 #include "init/http_handler.h"
+#include "init/init_utils.h"
 #include "pools/shard_statistic.h"
 #include "pools/tx_pool_manager.h"
 #include "protos/elect.pb.h"
