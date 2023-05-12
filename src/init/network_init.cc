@@ -302,7 +302,7 @@ void NetworkInit::RotationLeader(
 
 void NetworkInit::NotifyRotationLeader(
         uint64_t elect_height,
-        uint32_t pool_mod_index,
+        int32_t pool_mod_index,
         uint32_t old_leader_idx,
         uint32_t new_leader_idx) {
 }
