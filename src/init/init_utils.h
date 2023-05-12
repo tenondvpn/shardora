@@ -19,7 +19,7 @@ enum InitErrorCode {
 };
 
 struct RotatitionLeaders {
-    RotatitionLeaders() : now_idx(0), invalid_pool_count(0) {}
+    RotatitionLeaders() : now_rotation_idx(0), invalid_pool_count(0), now_leader_idx(0) {}
     std::vector<uint32_t> rotation_leaders;
     uint32_t now_rotation_idx;
     uint32_t invalid_pool_count;
