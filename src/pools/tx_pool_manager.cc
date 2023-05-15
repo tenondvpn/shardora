@@ -501,7 +501,7 @@ void TxPoolManager::HandleUserCallContractTx(const transport::MessagePtr& msg_pt
             tx_msg.amount(),
             tx_msg.contract_prepayment(),
             consensus::kCallContractDefaultUseGas);
-        return false;
+        return;
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
@@ -550,6 +550,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    auto& tx_msg = msg_ptr->header.tx_proto();
     if (msg_ptr->address_info->balance() <
             tx_msg.amount() + tx_msg.contract_prepayment() +
             consensus::kTransferGas * tx_msg.gas_price()) {
