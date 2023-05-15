@@ -6,7 +6,7 @@ console.log("test smart contract signature: ");
 var account1 = web3.eth.accounts.privateKeyToAccount('0x348ce564d427a3311b6536bbcff9390d69395b06ed6c486954e971d960fe8709'); 
 console.log("from :");
 console.log(account1);
-var param_codes = web3.eth.abi.encodeParameters(['address', 'uint256', 'address'], ['0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01', '10000000', '0x22c27146d7d240a92f29283407609ce6e00fe1d5']);
+var param_codes = web3.eth.abi.encodeParameters(['address', 'uint256', 'address'], ['0xb8ce9ab6943e0eced004cde8e3bbed6568b2fa01', '10000000', '0x22c27146d7d240a92f29283407609ce6e00fe1d5']);
 console.log("param_codes: " + param_codes);
 var kek256 = web3.utils.keccak256(param_codes);
 console.log("kek256: " + kek256);

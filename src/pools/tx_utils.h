@@ -182,6 +182,19 @@ static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_
         message.append(std::string((char*)&step, sizeof(step)));
     }
 
+    if (tx_info.has_contract_code()) {
+        message.append(tx_info.contract_code());
+    }
+
+    if (tx_info.has_contract_input()) {
+        message.append(tx_info.contract_input());
+    }
+
+    if (tx_info.has_contract_prepayment()) {
+        uint64_t prepay = tx_info.contract_prepayment();
+        message.append(std::string((char*)&prepay, sizeof(prepay)));
+    }
+
     if (tx_info.has_key()) {
         message.append(tx_info.key());
         if (tx_info.has_value()) {
