@@ -35,7 +35,7 @@ var sig3 = web3.eth.accounts.sign(test_attr_hash, '0xb546fd36d57b4c9adda29967cf6
 var AttrReg_param_codes = web3.eth.abi.encodeParameters(['bytes', 'bytes32', 'bytes[]'], ['0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', test_attr_hash, [sig1.signature, sig2.signature, sig3.signature]]);
 console.log("AttrReg: " + AttrReg.substring(2) + AttrReg_param_codes.substring(2));
 
-var param_code_hash = web3.eth.accounts.hashMessage(kek256)
+var param_code_hash = web3.eth.accounts.hashMessage(test_attr_hash)
 var recover1 = web3.eth.accounts.recover({
     messageHash: param_code_hash,
     v: sig1.v,
