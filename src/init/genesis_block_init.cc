@@ -222,12 +222,13 @@ int GenesisBlockInit::CreateElectBlock(
         uint64_t prev_height,
         FILE* root_gens_init_block_file,
         const std::vector<dht::NodePtr>& genesis_nodes) {
+    auto account_info = account_mgr_->pools_address_info(shard_netid);
     auto tenon_block = std::make_shared<block::protobuf::Block>();
     auto tx_list = tenon_block->mutable_tx_list();
     auto tx_info = tx_list->Add();
     tx_info->set_step(pools::protobuf::kConsensusRootElectShard);
     tx_info->set_from("");
-    tx_info->set_to(block::kRootChainElectionBlockTxAddress);
+    tx_info->set_to(account_info->addr());
     tx_info->set_amount(0);
     tx_info->set_gas_limit(0);
     tx_info->set_gas_used(0);
@@ -319,17 +320,16 @@ int GenesisBlockInit::CreateElectBlock(
 //         return kInitError;
 //     }
 
-    auto account_ptr = account_mgr_->GetAcountInfoFromDb(
-        block::kRootChainElectionBlockTxAddress);
+    auto account_ptr = account_mgr_->GetAcountInfoFromDb(account_info->addr());
     if (account_ptr == nullptr) {
         ZJC_FATAL("get address failed! [%s]",
-            common::Encode::HexEncode(block::kRootChainElectionBlockTxAddress).c_str());
+            common::Encode::HexEncode(account_info->addr()).c_str());
         return kInitError;
     }
 
     if (account_ptr->balance() != 0) {
         ZJC_FATAL("get address balance failed! [%s]",
-            common::Encode::HexEncode(block::kRootChainElectionBlockTxAddress).c_str());
+            common::Encode::HexEncode(account_info->addr()).c_str());
         return kInitError;
     }
 
@@ -340,7 +340,7 @@ int GenesisBlockInit::CreateElectBlock(
 //             &elect_height,
 //             &elect_block_str) != block::kBlockSuccess) {
 //         ZJC_FATAL("get address elect block failed! [%s]",
-//             common::Encode::HexEncode(common::kRootChainElectionBlockTxAddress).c_str());
+//             common::Encode::HexEncode(account_info->addr()).c_str());
 //         return kInitError;
 //     }
 
@@ -360,6 +360,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
     GenerateRootAccounts();
     uint64_t root_single_block_height = 0llu;
     // for root single block chain
+    auto addr_info = account_mgr_->pools_address_info(0);
     std::string root_pre_hash;
     {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
@@ -367,7 +368,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto tx_info = tx_list->Add();
         tx_info->set_gid(common::CreateGID(""));
         tx_info->set_from("");
-        tx_info->set_to(block::kRootChainSingleBlockTxAddress);
+        tx_info->set_to(addr_info->addr());
         tx_info->set_amount(0);
         tx_info->set_balance(0);
         tx_info->set_gas_limit(0);
@@ -416,20 +417,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
 //             return kInitError;
 //         }
 
-        auto account_ptr = account_mgr_->GetAcountInfoFromDb(
-            block::kRootChainSingleBlockTxAddress);
-        if (account_ptr == nullptr) {
-            ZJC_FATAL("get address failed! [%s]",
-                common::Encode::HexEncode(block::kRootChainSingleBlockTxAddress).c_str());
-            return kInitError;
-        }
-
-        if (account_ptr->balance() != 0) {
-            ZJC_FATAL("get address balance failed! [%s]",
-                common::Encode::HexEncode(block::kRootChainSingleBlockTxAddress).c_str());
-            return kInitError;
-        }
-
         root_pre_hash = consensus::GetBlockHash(*tenon_block);
     }
 
@@ -439,7 +426,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto tx_info = tx_list->Add();
         tx_info->set_gid(common::CreateGID(""));
         tx_info->set_from("");
-        tx_info->set_to(block::kRootChainTimeBlockTxAddress);
+        tx_info->set_to(addr_info->addr());
         tx_info->set_amount(0);
         tx_info->set_balance(0);
         tx_info->set_gas_limit(0);
@@ -512,22 +499,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
 //             ZJC_FATAL("GetBlockInfo error");
 //             return kInitError;
 //         }
-
-        auto account_ptr = account_mgr_->GetAcountInfoFromDb(
-            block::kRootChainTimeBlockTxAddress);
-        if (account_ptr == nullptr) {
-            ZJC_FATAL("get address balance failed! [%s]",
-                common::Encode::HexEncode(block::kRootChainTimeBlockTxAddress).c_str());
-            assert(false);
-            return kInitError;
-        }
-
-        if (account_ptr->balance() != 0) {
-            ZJC_FATAL("get address balance failed! [%s]",
-                common::Encode::HexEncode(block::kRootChainTimeBlockTxAddress).c_str());
-            assert(false);
-            return kInitError;
-        }
 
         root_pre_hash = consensus::GetBlockHash(*tenon_block);
     }
@@ -644,40 +615,8 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
 
     db_->Put(db_batch);
     {
-        auto address = block::kRootChainSingleBlockTxAddress;
-        auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
-        if (account_ptr == nullptr) {
-            ZJC_FATAL("get address info failed! [%s]",
-                common::Encode::HexEncode(address).c_str());
-            return kInitError;
-        }
-
-        if (account_ptr->balance() != 0) {
-            ZJC_FATAL("get address balance failed! [%s]",
-                common::Encode::HexEncode(address).c_str());
-            return kInitError;
-        }
-    }
-        
-    {
-        auto address = block::kRootChainTimeBlockTxAddress;
-        auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
-        if (account_ptr == nullptr) {
-            ZJC_FATAL("get address info failed! [%s]",
-                common::Encode::HexEncode(address).c_str());
-            return kInitError;
-        }
-
-        if (account_ptr->balance() != 0) {
-            ZJC_FATAL("get address balance failed! [%s]",
-                common::Encode::HexEncode(address).c_str());
-            return kInitError;
-        }
-    }
-        
-    {
-        auto address = block::kRootChainElectionBlockTxAddress;
-        auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
+        auto addr_info = account_mgr_->pools_address_info(0);
+        auto account_ptr = account_mgr_->GetAcountInfoFromDb(addr_info->addr());
         if (account_ptr == nullptr) {
             ZJC_FATAL("get address info failed! [%s]",
                 common::Encode::HexEncode(address).c_str());
@@ -695,19 +634,8 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
     return kInitSuccess;
 }
 
-std::string GenesisBlockInit::GetValidPoolBaseAddr(uint32_t network_id, uint32_t pool_index) {
-    uint32_t id_idx = 0;
-    while (true) {
-        std::string addr = common::Encode::HexDecode(common::StringUtil::Format(
-            "%04d%s%04d",
-            network_id,
-            block::kStatisticFromAddressMidllefix.c_str(),
-            id_idx++));
-        uint32_t pool_idx = common::GetAddressPoolIndex(addr);
-        if (pool_idx == pool_index) {
-            return addr;
-        }
-    }
+std::string GenesisBlockInit::GetValidPoolBaseAddr(uint32_t pool_index) {
+    return account_mgr_->pools_address_info(pool_index)->addr();
 }
 
 int GenesisBlockInit::CreateRootGenesisBlocks(
@@ -729,9 +657,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
             tx_info->set_from("");
-            tx_info->set_to(GetValidPoolBaseAddr(
-                network::kConsensusShardBeginNetworkId,
-                common::GetAddressPoolIndex(address)));
+            tx_info->set_to(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
             tx_info->set_amount(0);
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
@@ -742,9 +668,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
             tx_info->set_from("");
-            tx_info->set_to(GetValidPoolBaseAddr(
-                network::kRootCongressNetworkId,
-                common::GetAddressPoolIndex(address)));
+            tx_info->set_to(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
             tx_info->set_amount(0);
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
@@ -995,9 +919,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
             tx_info->set_from("");
-            tx_info->set_to(GetValidPoolBaseAddr(
-                network::kConsensusShardBeginNetworkId,
-                common::GetAddressPoolIndex(address)));
+            tx_info->set_to(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
             tx_info->set_amount(0);
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
@@ -1006,9 +928,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
-            tx_info->set_from(GetValidPoolBaseAddr(
-                network::kRootCongressNetworkId,
-                common::GetAddressPoolIndex(address)));
+            tx_info->set_from(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
             tx_info->set_to("");
             tx_info->set_amount(0);
             tx_info->set_balance(0);

@@ -60,7 +60,7 @@ private:
         uint64_t prev_height,
         FILE* root_gens_init_block_file,
         const std::vector<dht::NodePtr>& genesis_nodes);
-    std::string GetValidPoolBaseAddr(uint32_t network_id, uint32_t pool_index);
+    std::string GetValidPoolBaseAddr(uint32_t pool_index);
     int CreateBlsGenesisKeys(
         uint64_t elect_height,
         uint32_t sharding_id,
