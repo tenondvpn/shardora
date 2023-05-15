@@ -20,6 +20,7 @@ enum StepType {
     kContractGasPrepayment = 13;
     kStatistic = 14;
     kJoinElect = 15;
+    kRootCreateLibrary = 16;
 }
 
 message ToTxHeights {
@@ -38,6 +39,7 @@ message ToTxMessageItem {
     optional uint32 sharding_id = 3;  // for root to diplacement shard and pool
     optional uint32 pool_index = 4;
     optional int32 step = 5;
+    optional bytes library_bytes = 6;
 }
 
 message ToTxMessage {

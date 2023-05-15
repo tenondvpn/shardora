@@ -117,6 +117,9 @@ void BftManager::RegisterCreateTxCallbacks() {
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kJoinElect,
         std::bind(&BftManager::CreateJoinElectTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kRootCreateLibrary,
+        std::bind(&BftManager::CreateLibraryTx, this, std::placeholders::_1));
     block_mgr_->SetCreateToTxFunction(
         std::bind(&BftManager::CreateToTx, this, std::placeholders::_1));
     block_mgr_->SetCreateStatisticTxFunction(

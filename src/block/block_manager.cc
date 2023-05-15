@@ -304,6 +304,9 @@ void BlockManager::RootHandleNormalToTx(
         pools::protobuf::ToTxMessage& to_txs) {
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         auto tos_item = to_txs.tos(i);
+        auto msg_ptr = std::make_shared<transport::TransportMessage>();
+        auto tx = msg_ptr->header.mutable_tx_proto();
+        tx->set_step(pools::protobuf::kRootCreateAddress);
         if (tos_item.step() == pools::protobuf::kContractUserCreateCall) {
             // that's contract address, just add address
             auto account_info = std::make_shared<address::protobuf::AddressInfo>();
@@ -319,7 +322,13 @@ void BlockManager::RootHandleNormalToTx(
                 tos_item.amount(),
                 tos_item.sharding_id(),
                 tos_item.pool_index());
-            continue;
+            if (!tos_item.has_library_bytes()) {
+                continue;
+            }
+
+            tx->set_key(protos::kLibrary);
+            tx->set_value(tos_item.library_bytes());
+            tx->set_step(pools::protobuf::kRootCreateLibrary);
         }
 
         if (tos_item.step() == pools::protobuf::kJoinElect) {
@@ -331,11 +340,8 @@ void BlockManager::RootHandleNormalToTx(
             continue;
         }
 
-        auto msg_ptr = std::make_shared<transport::TransportMessage>();
-        auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_pubkey("");
         tx->set_to(tos_item.des());
-        tx->set_step(pools::protobuf::kRootCreateAddress);
         auto gid = common::Hash::keccak256(
             tos_item.des() + "_" +
             std::to_string(height) + "_" +

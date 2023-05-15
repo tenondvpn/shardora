@@ -204,6 +204,10 @@ private:
             security_ptr_);
     }
 
+    pools::TxItemPtr CreateLibraryTx(const transport::MessagePtr& msg_ptr) {
+        return std::make_shared<TxItemBase>(msg_ptr);
+    }
+
     pools::TxItemPtr CreateElectTx(const transport::MessagePtr& msg_ptr) {
         if (first_timeblock_timestamp_ == 0) {
             uint64_t height = 0;

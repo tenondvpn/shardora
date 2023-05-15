@@ -592,8 +592,6 @@ int ToTxsPools::CreateToTxWithHeights(
     for (auto iter = acc_amount_map.begin(); iter != acc_amount_map.end(); ++iter) {
         str_for_hash.append(iter->first);
         str_for_hash.append((char*)&iter->second.amount, sizeof(iter->second.amount));
-        str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
-        str_for_hash.append((char*)&iter->second.pool_index, sizeof(iter->second.pool_index));
         str_for_hash.append((char*)&iter->second.type, sizeof(iter->second.type));
         auto to_item = to_tx.add_tos();
         to_item->set_des(iter->first);
@@ -603,8 +601,23 @@ int ToTxsPools::CreateToTxWithHeights(
         // create contract just in caller sharding
         if (iter->second.type == pools::protobuf::kContractUserCreateCall) {
             assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
-            to_item->set_sharding_id(common::GlobalInfo::Instance()->network_id());
-            to_item->set_pool_index(iter->second.pool_index);
+            auto account_info = GetAddressInfo(iter->first);
+            if (account_info == nullptr) {
+                to_tx.mutable_tos()->ReleaseLast();
+                continue;
+            }
+
+            if (memcmp(
+                    account_info->bytes_code().c_str(),
+                    protos::kContractBytesStartCode.c_str(),
+                    protos::kContractBytesStartCode.size()) == 0) {
+                to_item->set_library_bytes(account_info->bytes_code());
+                str_for_hash.append(account_info->bytes_code());
+            }
+
+            auto net_id = common::GlobalInfo::Instance()->network_id();
+            to_item->set_sharding_id(net_id);
+            str_for_hash.append((char*)&net_id, sizeof(net_id));
             ZJC_DEBUG("create contract use caller sharding address: %s, %u",
                 common::Encode::HexEncode(iter->first).c_str(),
                 common::GlobalInfo::Instance()->network_id());
@@ -615,9 +628,12 @@ int ToTxsPools::CreateToTxWithHeights(
                 sharding_id,
                 iter->second.pool_index);
         } else {
-            to_item->set_sharding_id(common::kInvalidUint32);
+            auto net_id = common::kInvalidUint32;
+            to_item->set_sharding_id(net_id);
+            str_for_hash.append((char*)&net_id, sizeof(net_id));
         }
 
+        str_for_hash.append((char*)&iter->second.pool_index, sizeof(iter->second.pool_index));
         ZJC_DEBUG("set to %s amount %lu, sharding id: %u, pool index: %d",
             common::Encode::HexEncode(iter->first).c_str(),
             iter->second.amount, to_item->sharding_id(), iter->second.pool_index);

@@ -267,7 +267,26 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 return;
             }
 
-            auto pool_index = common::Hash::Hash32(tx_msg.to()) % common::kImmutablePoolSize;
+            // must not coming from network
+            if (msg_ptr->conn != nullptr) {
+                return;
+            }
+
+            auto pool_index = common::GetAddressPoolIndex(tx_msg.to()) % common::kImmutablePoolSize;
+            msg_queues_[pool_index].push(msg_ptr);
+            break;
+        }
+        case pools::protobuf::kRootCreateLibrary: {
+            if (tx_msg.to().size() != security::kUnicastAddressLength) {
+                return;
+            }
+
+            // must not coming from network
+            if (msg_ptr->conn != nullptr) {
+                return;
+            }
+
+            auto pool_index = common::kRootChainPoolIndex;
             msg_queues_[pool_index].push(msg_ptr);
             break;
         }
@@ -275,7 +294,8 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             HandleContractExcute(msg_ptr);
             break;
         default:
-            msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
+            ZJC_DEBUG("invalid tx step: %d", tx_msg.step());
+            assert(false);
             break;
         }
     }
