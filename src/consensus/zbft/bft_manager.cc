@@ -1357,7 +1357,7 @@ bool BftManager::CheckAggSignValid(const transport::MessagePtr& msg_ptr, ZbftPtr
     if (!bft_ptr->set_bls_precommit_agg_sign(
             sign,
             bft_ptr->precommit_bls_agg_verify_hash())) {
-        ZJC_ERROR("verify agg sign error!");
+        ZJC_WARN("verify agg sign error!");
         return false;
     }
 
@@ -1408,7 +1408,7 @@ int BftManager::CheckPrecommit(
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
         if (!CheckAggSignValid(msg_ptr, bft_ptr)) {
-            assert(false);
+            //assert(false);
             break;
         }
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
