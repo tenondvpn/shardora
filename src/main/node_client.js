@@ -352,7 +352,7 @@ if (args[0] == 4) {
 }
 
 if (args[0] == 5) {
-    for (var i = 0; i < 10000; i++) {
+    for (var i = 0; i < 1; i++) {
         do_transaction(args[1], 100000, 100000, 1);
     }
 }
