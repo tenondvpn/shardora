@@ -27,52 +27,23 @@ void RootZbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) 
             RootCreateElectConsensusShardBlock(zjc_block);
             break;
         case pools::protobuf::kConsensusRootTimeBlock:
-            RootCreateTimerBlock(zjc_block);
-            break;
         case pools::protobuf::kRootCreateAddressCrossSharding:
-            RootCreateAddressCrossSharding(zjc_block);
-            break;
         case pools::protobuf::kStatistic:
-            RootStatistic(zjc_block);
+        case pools::protobuf::kCross:
+            RootDefaultTx(zjc_block);
             break;
         default:
-            RootCreateAccountAddressBlock(zjc_block);
+            ZJC_WARN("invalid root tx step: %d", tx.msg_ptr->header.tx_proto().step());
+            assert(false);
             break;
         }
     } else {
-        RootCreateAccountAddressBlock(zjc_block);
+        ZJC_WARN("invalid root tx step: %d", tx.msg_ptr->header.tx_proto().step());
+        assert(false);
     }
 }
 
-void RootZbft::RootStatistic(block::protobuf::Block& zjc_block) {
-    auto& tx_map = txs_ptr_->txs;
-    if (tx_map.size() != 1) {
-        return;
-    }
-
-    auto iter = tx_map.begin();
-    if (iter->second->msg_ptr->header.tx_proto().step() != pools::protobuf::kStatistic) {
-        ZJC_ERROR("tx is not statistic tx");
-        return;
-    }
-
-    auto tx_list = zjc_block.mutable_tx_list();
-    auto& tx = *tx_list->Add();
-    iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), db_batch_, &tx);
-}
-
-void RootZbft::RootCreateAddressCrossSharding(block::protobuf::Block& zjc_block) {
-    auto& tx_map = txs_ptr_->txs;
-    if (tx_map.size() != 1) {
-        return;
-    }
-
-    auto iter = tx_map.begin();
-    if (iter->second->msg_ptr->header.tx_proto().step() != pools::protobuf::kRootCreateAddressCrossSharding) {
-        ZJC_ERROR("tx is not timeblock tx");
-        return;
-    }
-
+void RootZbft::RootDefaultTx(block::protobuf::Block& zjc_block) {
     auto tx_list = zjc_block.mutable_tx_list();
     auto& tx = *tx_list->Add();
     iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), db_batch_, &tx);
@@ -139,28 +110,6 @@ void RootZbft::RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_bl
         ZJC_WARN("consensus elect tx failed!");
         return;
     }
-
-    // (TODO): check elect is valid in the time block period,
-    // one time block, one elect block
-    // check after this shard statistic block coming
-}
-
-void RootZbft::RootCreateTimerBlock(block::protobuf::Block& zjc_block) {
-    // create address must to and have transfer amount
-    auto& tx_map = txs_ptr_->txs;
-    if (tx_map.size() != 1) {
-        return;
-    }
-
-    auto iter = tx_map.begin();
-    if (iter->second->msg_ptr->header.tx_proto().step() != pools::protobuf::kConsensusRootTimeBlock) {
-        ZJC_ERROR("tx is not timeblock tx");
-        return;
-    }
-
-    auto tx_list = zjc_block.mutable_tx_list();
-    auto& tx = *tx_list->Add();
-    iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), db_batch_, &tx);
 
     // (TODO): check elect is valid in the time block period,
     // one time block, one elect block
