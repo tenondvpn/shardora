@@ -697,7 +697,7 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
         return;
     }
 
-    auto& heights = msg_ptr->header.block_proto().tx_ptr();
+    auto& heights = msg_ptr->header.to_tx_heights();
     std::string statistic_hash;
     std::string cross_hash;
     if (statistic_mgr_->StatisticWithHeights(
