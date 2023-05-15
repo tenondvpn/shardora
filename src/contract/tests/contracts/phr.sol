@@ -3,28 +3,28 @@ pragma solidity >=0.7.0 <0.9.0;
 
 
 contract Phr {
-    address [] valid_aas;
+    address[] public valid_aas;
 
     struct RidInfo {
         bytes pk;
         bytes ci;
     }
 
-    mapping(uint256 => RidInfo) rids;
-    mapping(bytes => bytes32[]) attrs;
+    mapping(uint256 => RidInfo) public rids;
+    mapping(bytes => bytes32[]) public attrs;
 
-    constructor(address[] aas) payable {
+    constructor(address[] aas) public {
         valid_aas = aas;
     }
 
-    function ResAdd(uint256 rid, bytes memory pkDo, bytes memory ci) {
+    function ResAdd(uint256 rid, bytes memory pkDo, bytes memory ci) public {
         rids[rid] = RidInfo({
             pk: pkDo,
             ci: ci
         });
     }
 
-    function AttrReg(bytes memory pk, bytes32 attr_hash, bytes[] memory sigs) returns (bool) {
+    function AttrReg(bytes memory pk, bytes32 attr_hash, bytes[] memory sigs) public returns (bool) {
         if (valid_aas.length != sigs.length) {
             return false;
         }
