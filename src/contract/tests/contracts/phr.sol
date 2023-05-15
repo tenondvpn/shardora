@@ -25,7 +25,7 @@ contract Phr {
     }
 
     function AttrReg(bytes memory pk, bytes32 attr_hash, bytes[] memory sigs) public {
-        require (valid_aas.length == sigs.length);
+        require(valid_aas.length == sigs.length);
         for (uint i = 0; i < sigs.length; i++) {
             require(recoverSigner(attr_hash, sigs[i]) == valid_aas[i]);
         }
