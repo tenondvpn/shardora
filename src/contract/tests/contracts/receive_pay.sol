@@ -4,15 +4,10 @@ pragma solidity >=0.7.0 <0.9.0;
 contract ReceiverPays {
     address owner = msg.sender;
 
-    mapping(uint256 => bool) usedNonces;
-
     constructor() payable {}
 
     // 收款方认领付款
-    function claimPayment(uint256 amount, uint256 nonce, bytes memory signature) public {
-        require(!usedNonces[nonce]);
-        usedNonces[nonce] = true;
-
+    function claimPayment(uint256 amount, bytes memory signature) public {
         // 重建在客户端签名的信息
         bytes32 message = prefixed(keccak256(abi.encode(msg.sender, amount, nonce, this)));
 
