@@ -13,7 +13,6 @@
 #include "elect/elect_block_manager.h"
 #include "elect/elect_utils.h"
 #include "elect/height_with_elect_blocks.h"
-#include "elect/leader_rotation.h"
 #include "network/shard_network.h"
 #include "protos/elect.pb.h"
 #include "protos/pools.pb.h"
@@ -161,7 +160,6 @@ private:
     common::BftMemberPtr pool_mod_leaders_[common::kInvalidPoolIndex];
     std::set<std::string> prev_elected_ids_;
     std::set<std::string> now_elected_ids_;
-    std::shared_ptr<LeaderRotation> leader_rotation_ = nullptr;
     bool local_node_is_super_leader_{ false };
     std::shared_ptr<security::Security> security_ = nullptr;
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;

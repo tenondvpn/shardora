@@ -53,7 +53,6 @@ ElectManager::ElectManager(
     elect_block_mgr_.Init(db_);
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     height_with_block_ = std::make_shared<HeightWithElectBlock>(security, db_);
-    leader_rotation_ = std::make_shared<LeaderRotation>(security_);
     bls_mgr_ = bls_mgr;
     network::Route::Instance()->RegisterMessage(
         common::kElectMessage,
@@ -143,7 +142,6 @@ void ElectManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 //                 return;
 //             }
 // 
-//             leader_rotation_->LeaderRotationReq(ec_msg.leader_rotation(), mem_index, all_size);
 //         }
     }
 }
@@ -402,7 +400,6 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
     if (prev_elect_block.shard_network_id() == common::GlobalInfo::Instance()->network_id() ||
             (prev_elect_block.shard_network_id() + network::kConsensusWaitingShardOffset) ==
             common::GlobalInfo::Instance()->network_id() || *elected) {
-        leader_rotation_->OnElectBlock(shard_members_ptr);
         ELECT_DEBUG("set netid: %d, elect height: %lu, now net: %d, elected: %d",
             prev_elect_block.shard_network_id(),
             elect_block.prev_members().prev_elect_height(),
