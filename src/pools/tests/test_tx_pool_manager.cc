@@ -99,7 +99,7 @@ std::shared_ptr<address::protobuf::AddressInfo> CreateAddressInfo(
     single_to_address_info_->set_balance(1000000000lu);
     single_to_address_info_->set_sharding_id(2);
     single_to_address_info_->set_pool_index(0);
-    single_to_address_info_->set_addr(block::kNormalToAddress);
+    single_to_address_info_->set_addr(block::kPoolsAddress);
     single_to_address_info_->set_type(address::protobuf::kNormal);
     single_to_address_info_->set_latest_height(0);
     prefix_db->AddAddressInfo(security_ptr->GetAddress(), *single_to_address_info_);

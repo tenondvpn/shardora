@@ -183,22 +183,28 @@ void ShardStatistic::HandleCrossShard(
         const block::protobuf::BlockTx& tx) {
     switch (tx.step()) {
     case pools::protobuf::kNormalTo: {
-        if (is_root) {
-            return;
+        if (!is_root) {
+            cross_shard_map_[block.pool_index()][block.height()] = network::kRootCongressNetworkId;
         }
 
-
-    }
-    case pools::protobuf::kStatistic:
-    case pools::protobuf::kCreateLibrary: {
-        if (is_root) {
-            return;
-        }
-
-        cross_shard_map_[block.pool_index()][block.height()] = network::kRootCongressNetworkId;
         break;
     }
-    case pools::protobuf::kCreateLibrary:
+    case pools::protobuf::kStatistic: {
+        if (!is_root) {
+            cross_shard_map_[block.pool_index()][block.height()] = network::kRootCongressNetworkId;
+        }
+        
+        break;
+    }
+    case pools::protobuf::kCreateLibrary: {
+        if (is_root) {
+            cross_shard_map_[block.pool_index()][block.height()] = network::kNodeNetworkId;
+        } else {
+            cross_shard_map_[block.pool_index()][block.height()] = network::kRootCongressNetworkId;
+        }
+
+        break;
+    }
     case pools::protobuf::kRootCreateAddressCrossSharding:
     case pools::protobuf::kConsensusRootElectShard:
     case pools::protobuf::kConsensusRootTimeBlock: {

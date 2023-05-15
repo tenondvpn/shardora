@@ -43,7 +43,9 @@ void AccountManager::CreatePoolsAddressInfo() {
     uint32_t i = 0;
     uint32_t valid_idx = 0;
     for (uint32_t i = 0; i < common::kInvalidUint32; ++i) {
-        auto addr = common::Hash::keccak256(kNormalToAddress + std::to_string(i));
+        std::string addr = kPoolsAddress;
+        uint32_t* tmp_data = (uint32_t*)addr.data();
+        tmp_data[0] = i;
         auto pool_idx = common::GetAddressPoolIndex(addr);
         if (pool_address_info_[pool_idx] != nullptr) {
             continue;
