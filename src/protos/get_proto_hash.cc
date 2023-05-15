@@ -93,13 +93,6 @@ static void GetZbftHash(
             msg_for_hash.append((char*)&height, sizeof(height));
         }
 
-        if (zbft_msg.tx_bft().bloom_filter_size() > 0) {
-            for (int32_t i = 0; i < zbft_msg.tx_bft().bloom_filter_size(); ++i) {
-                uint64_t data = zbft_msg.tx_bft().bloom_filter(i);
-                msg_for_hash.append((char*)&data, sizeof(data));
-            }
-        }
-
         if (zbft_msg.tx_bft().tx_hash_list_size() > 0) {
             for (int32_t i = 0; i < zbft_msg.tx_bft().tx_hash_list_size(); ++i) {
                 msg_for_hash.append(zbft_msg.tx_bft().tx_hash_list(i));
