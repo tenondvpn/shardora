@@ -59,5 +59,5 @@ contract Phr {
     /// 加入一个前缀，因为在eth_sign签名的时候会加上。
     function prefixed(bytes32 hash) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
-    
+    }
 }
