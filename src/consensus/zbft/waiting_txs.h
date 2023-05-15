@@ -23,17 +23,6 @@ public:
         return LeaderGetTxs();
     }
 
-    std::shared_ptr<WaitingTxsItem> FollowerGetTxs(const common::BloomFilter& bloom_filter) {
-        assert(false);
-        txs_items_ = std::make_shared<WaitingTxsItem>();
-        pools_mgr_->GetTx(bloom_filter, pool_index_, txs_items_->txs);
-        if (txs_items_ != nullptr && txs_items_->txs.empty()) {
-            txs_items_ = nullptr;
-        }
-
-        return txs_items_;
-    }
-
     std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
             const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list) {
         txs_items_ = pools_mgr_->GetTx(pool_index_, tx_hash_list);
