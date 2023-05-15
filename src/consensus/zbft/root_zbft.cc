@@ -44,6 +44,7 @@ void RootZbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) 
 void RootZbft::RootDefaultTx(block::protobuf::Block& zjc_block) {
     auto tx_list = zjc_block.mutable_tx_list();
     auto& tx = *tx_list->Add();
+    auto iter = txs_ptr_->txs.begin();
     iter->second->TxToBlockTx(iter->second->msg_ptr->header.tx_proto(), db_batch_, &tx);
 }
 
