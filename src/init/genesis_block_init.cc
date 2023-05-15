@@ -360,7 +360,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
     GenerateRootAccounts();
     uint64_t root_single_block_height = 0llu;
     // for root single block chain
-    auto addr_info = account_mgr_->pools_address_info(0);
+    auto addr_info = account_mgr_->pools_address_info(common::kRootChainPoolIndex);
     std::string root_pre_hash;
     {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
@@ -615,17 +615,17 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
 
     db_->Put(db_batch);
     {
-        auto addr_info = account_mgr_->pools_address_info(0);
+        auto addr_info = account_mgr_->pools_address_info(common::kRootChainPoolIndex);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(addr_info->addr());
         if (account_ptr == nullptr) {
             ZJC_FATAL("get address info failed! [%s]",
-                common::Encode::HexEncode(address).c_str());
+                common::Encode::HexEncode(addr_info->addr()).c_str());
             return kInitError;
         }
 
         if (account_ptr->balance() != 0) {
             ZJC_FATAL("get address balance failed! [%s]",
-                common::Encode::HexEncode(address).c_str());
+                common::Encode::HexEncode(addr_info->addr()).c_str());
             return kInitError;
         }
     }

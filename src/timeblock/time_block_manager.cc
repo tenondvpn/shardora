@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 
+#include "block/account_manager.h"
 #include "block/block_utils.h"
 #include "common/global_info.h"
 #include "common/split.h"
@@ -24,8 +25,11 @@ namespace timeblock {
 static const std::string kTimeBlockGidPrefix = common::Encode::HexDecode(
     "c575ff0d3eea61205e3433495431e312056d0d51a64c6badfd4ad8cc092b7daa");
 
-void TimeBlockManager::Init(std::shared_ptr<vss::VssManager>& vss_mgr) {
+void TimeBlockManager::Init(
+        std::shared_ptr<vss::VssManager>& vss_mgr,
+        std::shared_ptr<block::AccountManager>& account_mgr) {
     vss_mgr_ = vss_mgr;
+    account_mgr_ = account_mgr;
 }
 
 uint64_t TimeBlockManager::LatestTimestamp() {
@@ -57,7 +61,6 @@ void TimeBlockManager::CreateTimeBlockTx() {
     pools::protobuf::TxMessage& tx_info = *msg_ptr->header.mutable_tx_proto();
     tx_info.set_step(pools::protobuf::kConsensusRootTimeBlock);
     tx_info.set_pubkey("");
-    tx_info.set_to(block::kRootChainTimeBlockTxAddress);
     tx_info.set_gid(gid);
     tx_info.set_gas_limit(0llu);
     tx_info.set_amount(0);
@@ -66,7 +69,7 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tmblock_tx_ptr_ = create_tm_tx_cb_(msg_ptr);
 }
 
-pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader) {
+pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader, uint32_t pool_index) {
     if (tmblock_tx_ptr_ != nullptr) {
         auto now_tm_us = common::TimeUtils::TimestampUs();
         if (tmblock_tx_ptr_->prev_consensus_tm_us + 3000000lu > now_tm_us) {
@@ -88,6 +91,8 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader) {
         u64_data[0] = new_time_block_tm;
         u64_data[1] = vss_mgr_->GetConsensusFinalRandom();
         tx_info.set_value(std::string(data, sizeof(data)));
+        auto account_info = account_mgr_->pools_address_info(pool_index);
+        tx_info.set_to(account_info->addr());
         tmblock_tx_ptr_->prev_consensus_tm_us = now_tm_us;
         ZJC_DEBUG("success create timeblock tx tm: %lu, vss: %lu", u64_data[0], u64_data[1]);
     }

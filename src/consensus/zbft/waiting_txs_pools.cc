@@ -103,7 +103,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
         return nullptr;
     }
 
-    auto tx_ptr = timeblock_mgr_->tmblock_tx_ptr(leader);
+    auto tx_ptr = timeblock_mgr_->tmblock_tx_ptr(leader, pool_index);
     if (tx_ptr != nullptr) {
         auto txs_item = std::make_shared<WaitingTxsItem>();
         txs_item->pool_index = pool_index;
