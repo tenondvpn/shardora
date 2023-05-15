@@ -281,8 +281,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             HandleContractExcute(msg_ptr);
             break;
         case pools::protobuf::kConsensusLocalTos:
-            auto pool_index = common::GetAddressPoolIndex(tx_msg.to()) % common::kImmutablePoolSize;
-            msg_queues_[pool_index].push(msg_ptr);
+            msg_queues_[common::GetAddressPoolIndex(tx_msg.to())].push(msg_ptr);
             break;
         default:
             ZJC_DEBUG("invalid tx step: %d", tx_msg.step());
