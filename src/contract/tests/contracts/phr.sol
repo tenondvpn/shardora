@@ -24,15 +24,13 @@ contract Phr {
         });
     }
 
-    function AttrReg(bytes memory pk, bytes32 attr_hash, bytes[] memory sigs) public returns (bool) {
+    function AttrReg(bytes memory pk, bytes32 attr_hash, bytes[] memory sigs) public {
         if (valid_aas.length != sigs.length) {
             return false;
         }
 
         for (uint i = 0; i < sigs.length; i++) {
-            if (valid_aas[i] != recoverSigner(attr_hash, sigs[i])) {
-                return false;
-            }
+            require(recoverSigner(attr_hash, sigs[i]) == valid_aas[i]);
         }
 
         attrs[pk].push(attr_hash);
