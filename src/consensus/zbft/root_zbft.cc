@@ -33,13 +33,11 @@ void RootZbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) 
             RootDefaultTx(zjc_block);
             break;
         default:
-            ZJC_WARN("invalid root tx step: %d", tx.msg_ptr->header.tx_proto().step());
-            assert(false);
+            RootCreateAccountAddressBlock(zjc_block);
             break;
         }
     } else {
-        ZJC_WARN("invalid root tx step: %d", tx.msg_ptr->header.tx_proto().step());
-        assert(false);
+        RootCreateAccountAddressBlock(zjc_block);
     }
 }
 
