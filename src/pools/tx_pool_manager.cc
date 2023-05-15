@@ -560,7 +560,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
             tx_msg.amount(),
             tx_msg.contract_prepayment(),
             consensus::kCallContractDefaultUseGas);
-        return false;
+        return;
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
@@ -605,7 +605,7 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
             tx_msg.contract_prepayment(),
             default_gas,
             tx_msg.gas_price());
-        return false;
+        return;
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
