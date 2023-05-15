@@ -165,22 +165,10 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
 
   // accessors -------------------------------------------------------
 
-  // repeated uint64 bloom_filter = 4;
-  int bloom_filter_size() const;
-  void clear_bloom_filter();
-  static const int kBloomFilterFieldNumber = 4;
-  ::google::protobuf::uint64 bloom_filter(int index) const;
-  void set_bloom_filter(int index, ::google::protobuf::uint64 value);
-  void add_bloom_filter(::google::protobuf::uint64 value);
-  const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
-      bloom_filter() const;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
-      mutable_bloom_filter();
-
-  // repeated bytes tx_hash_list = 5;
+  // repeated bytes tx_hash_list = 4;
   int tx_hash_list_size() const;
   void clear_tx_hash_list();
-  static const int kTxHashListFieldNumber = 5;
+  static const int kTxHashListFieldNumber = 4;
   const ::std::string& tx_hash_list(int index) const;
   ::std::string* mutable_tx_hash_list(int index);
   void set_tx_hash_list(int index, const ::std::string& value);
@@ -233,10 +221,10 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::uint64 height() const;
   void set_height(::google::protobuf::uint64 value);
 
-  // optional .zjchain.pools.protobuf.StepType tx_type = 6 [default = kNormalFrom];
+  // optional .zjchain.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
   bool has_tx_type() const;
   void clear_tx_type();
-  static const int kTxTypeFieldNumber = 6;
+  static const int kTxTypeFieldNumber = 5;
   ::zjchain::pools::protobuf::StepType tx_type() const;
   void set_tx_type(::zjchain::pools::protobuf::StepType value);
 
@@ -254,7 +242,6 @@ class TxBft : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > bloom_filter_;
   ::google::protobuf::RepeatedPtrField< ::std::string> tx_hash_list_;
   ::google::protobuf::internal::ArenaStringPtr prepare_final_hash_;
   ::zjchain::block::protobuf::Block* block_;
@@ -816,37 +803,7 @@ inline void TxBft::set_height(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.TxBft.height)
 }
 
-// repeated uint64 bloom_filter = 4;
-inline int TxBft::bloom_filter_size() const {
-  return bloom_filter_.size();
-}
-inline void TxBft::clear_bloom_filter() {
-  bloom_filter_.Clear();
-}
-inline ::google::protobuf::uint64 TxBft::bloom_filter(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.zbft.protobuf.TxBft.bloom_filter)
-  return bloom_filter_.Get(index);
-}
-inline void TxBft::set_bloom_filter(int index, ::google::protobuf::uint64 value) {
-  bloom_filter_.Set(index, value);
-  // @@protoc_insertion_point(field_set:zjchain.zbft.protobuf.TxBft.bloom_filter)
-}
-inline void TxBft::add_bloom_filter(::google::protobuf::uint64 value) {
-  bloom_filter_.Add(value);
-  // @@protoc_insertion_point(field_add:zjchain.zbft.protobuf.TxBft.bloom_filter)
-}
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
-TxBft::bloom_filter() const {
-  // @@protoc_insertion_point(field_list:zjchain.zbft.protobuf.TxBft.bloom_filter)
-  return bloom_filter_;
-}
-inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
-TxBft::mutable_bloom_filter() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.zbft.protobuf.TxBft.bloom_filter)
-  return &bloom_filter_;
-}
-
-// repeated bytes tx_hash_list = 5;
+// repeated bytes tx_hash_list = 4;
 inline int TxBft::tx_hash_list_size() const {
   return tx_hash_list_.size();
 }
@@ -915,7 +872,7 @@ TxBft::mutable_tx_hash_list() {
   return &tx_hash_list_;
 }
 
-// optional .zjchain.pools.protobuf.StepType tx_type = 6 [default = kNormalFrom];
+// optional .zjchain.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
 inline bool TxBft::has_tx_type() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }

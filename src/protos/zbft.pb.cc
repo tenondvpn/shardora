@@ -89,13 +89,11 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::zbft::protobuf::TxBft, block_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::zbft::protobuf::TxBft, prepare_final_hash_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::zbft::protobuf::TxBft, height_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::zbft::protobuf::TxBft, bloom_filter_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::zbft::protobuf::TxBft, tx_hash_list_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::zbft::protobuf::TxBft, tx_type_),
   1,
   0,
   2,
-  ~0u,
   ~0u,
   3,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::zbft::protobuf::ZbftMessage, _has_bits_),
@@ -149,8 +147,8 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 11, sizeof(::zjchain::zbft::protobuf::TxBft)},
-  { 17, 44, sizeof(::zjchain::zbft::protobuf::ZbftMessage)},
+  { 0, 10, sizeof(::zjchain::zbft::protobuf::TxBft)},
+  { 15, 42, sizeof(::zjchain::zbft::protobuf::ZbftMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -181,28 +179,28 @@ void AddDescriptorsImpl() {
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
       "\n\021protos/zbft.proto\022\025zjchain.zbft.protob"
       "uf\032\022protos/block.proto\032\022protos/pools.pro"
-      "to\"\315\001\n\005TxBft\022,\n\005block\030\001 \001(\0132\035.zjchain.bl"
+      "to\"\267\001\n\005TxBft\022,\n\005block\030\001 \001(\0132\035.zjchain.bl"
       "ock.protobuf.Block\022\032\n\022prepare_final_hash"
-      "\030\002 \001(\014\022\016\n\006height\030\003 \001(\004\022\024\n\014bloom_filter\030\004"
-      " \003(\004\022\024\n\014tx_hash_list\030\005 \003(\014\022>\n\007tx_type\030\006 "
-      "\001(\0162 .zjchain.pools.protobuf.StepType:\013k"
-      "NormalFrom\"\224\004\n\013ZbftMessage\022\023\n\013prepare_gi"
-      "d\030\001 \001(\014\022\025\n\rprecommit_gid\030\002 \001(\014\022\022\n\ncommit"
-      "_gid\030\003 \001(\014\022\026\n\nleader_idx\030\004 \001(\005:\002-1\022\016\n\006ne"
-      "t_id\030\005 \001(\r\022\016\n\006bitmap\030\006 \003(\004\022\036\n\017agree_prec"
-      "ommit\030\007 \001(\010:\005false\022\033\n\014agree_commit\030\010 \001(\010"
-      ":\005false\022\022\n\npool_index\030\t \001(\r\022\r\n\005error\030\n \001"
-      "(\005\022,\n\006tx_bft\030\013 \001(\0132\034.zjchain.zbft.protob"
-      "uf.TxBft\022\024\n\014member_index\030\014 \001(\r\022\027\n\017backup"
-      "_enc_data\030\r \001(\014\022\024\n\014elect_height\030\016 \001(\004\022\022\n"
-      "\nbls_sign_x\030\017 \001(\014\022\022\n\nbls_sign_y\030\020 \001(\014\022\025\n"
-      "\rcommit_bitmap\030\021 \003(\004\022\026\n\016prepare_height\030\022"
-      " \001(\004\022\024\n\014prepare_hash\030\023 \001(\014\022,\n\005block\030\024 \001("
-      "\0132\035.zjchain.block.protobuf.Block\022\022\n\nsync"
-      "_block\030\025 \001(\010\022\013\n\003ips\030\026 \003(\r"
+      "\030\002 \001(\014\022\016\n\006height\030\003 \001(\004\022\024\n\014tx_hash_list\030\004"
+      " \003(\014\022>\n\007tx_type\030\005 \001(\0162 .zjchain.pools.pr"
+      "otobuf.StepType:\013kNormalFrom\"\224\004\n\013ZbftMes"
+      "sage\022\023\n\013prepare_gid\030\001 \001(\014\022\025\n\rprecommit_g"
+      "id\030\002 \001(\014\022\022\n\ncommit_gid\030\003 \001(\014\022\026\n\nleader_i"
+      "dx\030\004 \001(\005:\002-1\022\016\n\006net_id\030\005 \001(\r\022\016\n\006bitmap\030\006"
+      " \003(\004\022\036\n\017agree_precommit\030\007 \001(\010:\005false\022\033\n\014"
+      "agree_commit\030\010 \001(\010:\005false\022\022\n\npool_index\030"
+      "\t \001(\r\022\r\n\005error\030\n \001(\005\022,\n\006tx_bft\030\013 \001(\0132\034.z"
+      "jchain.zbft.protobuf.TxBft\022\024\n\014member_ind"
+      "ex\030\014 \001(\r\022\027\n\017backup_enc_data\030\r \001(\014\022\024\n\014ele"
+      "ct_height\030\016 \001(\004\022\022\n\nbls_sign_x\030\017 \001(\014\022\022\n\nb"
+      "ls_sign_y\030\020 \001(\014\022\025\n\rcommit_bitmap\030\021 \003(\004\022\026"
+      "\n\016prepare_height\030\022 \001(\004\022\024\n\014prepare_hash\030\023"
+      " \001(\014\022,\n\005block\030\024 \001(\0132\035.zjchain.block.prot"
+      "obuf.Block\022\022\n\nsync_block\030\025 \001(\010\022\013\n\003ips\030\026 "
+      "\003(\r"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 825);
+      descriptor, 803);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/zbft.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fblock_2eproto::AddDescriptors();
@@ -238,7 +236,6 @@ void TxBft::clear_block() {
 const int TxBft::kBlockFieldNumber;
 const int TxBft::kPrepareFinalHashFieldNumber;
 const int TxBft::kHeightFieldNumber;
-const int TxBft::kBloomFilterFieldNumber;
 const int TxBft::kTxHashListFieldNumber;
 const int TxBft::kTxTypeFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
@@ -254,7 +251,6 @@ TxBft::TxBft(const TxBft& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_),
-      bloom_filter_(from.bloom_filter_),
       tx_hash_list_(from.tx_hash_list_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   prepare_final_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -309,7 +305,6 @@ void TxBft::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  bloom_filter_.Clear();
   tx_hash_list_.Clear();
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 3u) {
@@ -378,29 +373,10 @@ bool TxBft::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated uint64 bloom_filter = 4;
+      // repeated bytes tx_hash_list = 4;
       case 4: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(32u /* 32 & 0xFF */)) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
-                 1, 32u, input, this->mutable_bloom_filter())));
-        } else if (
-            static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(34u /* 34 & 0xFF */)) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
-                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
-                 input, this->mutable_bloom_filter())));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // repeated bytes tx_hash_list = 5;
-      case 5: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
                 input, this->add_tx_hash_list()));
         } else {
@@ -409,10 +385,10 @@ bool TxBft::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .zjchain.pools.protobuf.StepType tx_type = 6 [default = kNormalFrom];
-      case 6: {
+      // optional .zjchain.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
+      case 5: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
+            static_cast< ::google::protobuf::uint8>(40u /* 40 & 0xFF */)) {
           int value;
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
@@ -421,7 +397,7 @@ bool TxBft::MergePartialFromCodedStream(
             set_tx_type(static_cast< ::zjchain::pools::protobuf::StepType >(value));
           } else {
             mutable_unknown_fields()->AddVarint(
-                6, static_cast< ::google::protobuf::uint64>(value));
+                5, static_cast< ::google::protobuf::uint64>(value));
           }
         } else {
           goto handle_unusual;
@@ -473,22 +449,16 @@ void TxBft::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->height(), output);
   }
 
-  // repeated uint64 bloom_filter = 4;
-  for (int i = 0, n = this->bloom_filter_size(); i < n; i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt64(
-      4, this->bloom_filter(i), output);
-  }
-
-  // repeated bytes tx_hash_list = 5;
+  // repeated bytes tx_hash_list = 4;
   for (int i = 0, n = this->tx_hash_list_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteBytes(
-      5, this->tx_hash_list(i), output);
+      4, this->tx_hash_list(i), output);
   }
 
-  // optional .zjchain.pools.protobuf.StepType tx_type = 6 [default = kNormalFrom];
+  // optional .zjchain.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
   if (cached_has_bits & 0x00000008u) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
-      6, this->tx_type(), output);
+      5, this->tx_type(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -525,20 +495,16 @@ void TxBft::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(3, this->height(), target);
   }
 
-  // repeated uint64 bloom_filter = 4;
-  target = ::google::protobuf::internal::WireFormatLite::
-    WriteUInt64ToArray(4, this->bloom_filter_, target);
-
-  // repeated bytes tx_hash_list = 5;
+  // repeated bytes tx_hash_list = 4;
   for (int i = 0, n = this->tx_hash_list_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteBytesToArray(5, this->tx_hash_list(i), target);
+      WriteBytesToArray(4, this->tx_hash_list(i), target);
   }
 
-  // optional .zjchain.pools.protobuf.StepType tx_type = 6 [default = kNormalFrom];
+  // optional .zjchain.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
   if (cached_has_bits & 0x00000008u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      6, this->tx_type(), target);
+      5, this->tx_type(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -558,16 +524,7 @@ size_t TxBft::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  // repeated uint64 bloom_filter = 4;
-  {
-    size_t data_size = ::google::protobuf::internal::WireFormatLite::
-      UInt64Size(this->bloom_filter_);
-    total_size += 1 *
-                  ::google::protobuf::internal::FromIntSize(this->bloom_filter_size());
-    total_size += data_size;
-  }
-
-  // repeated bytes tx_hash_list = 5;
+  // repeated bytes tx_hash_list = 4;
   total_size += 1 *
       ::google::protobuf::internal::FromIntSize(this->tx_hash_list_size());
   for (int i = 0, n = this->tx_hash_list_size(); i < n; i++) {
@@ -597,7 +554,7 @@ size_t TxBft::ByteSizeLong() const {
           this->height());
     }
 
-    // optional .zjchain.pools.protobuf.StepType tx_type = 6 [default = kNormalFrom];
+    // optional .zjchain.pools.protobuf.StepType tx_type = 5 [default = kNormalFrom];
     if (has_tx_type()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->tx_type());
@@ -631,7 +588,6 @@ void TxBft::MergeFrom(const TxBft& from) {
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  bloom_filter_.MergeFrom(from.bloom_filter_);
   tx_hash_list_.MergeFrom(from.tx_hash_list_);
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 15u) {
@@ -676,7 +632,6 @@ void TxBft::Swap(TxBft* other) {
 }
 void TxBft::InternalSwap(TxBft* other) {
   using std::swap;
-  bloom_filter_.InternalSwap(&other->bloom_filter_);
   tx_hash_list_.InternalSwap(CastToBase(&other->tx_hash_list_));
   prepare_final_hash_.Swap(&other->prepare_final_hash_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());

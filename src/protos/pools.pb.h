@@ -106,22 +106,21 @@ enum StepType {
   kNormalTo = 1,
   kConsensusRootElectShard = 2,
   kConsensusRootTimeBlock = 3,
-  kConsensusFinalStatistic = 4,
-  kConsensusCreateGenesisAcount = 5,
-  kConsensusLocalTos = 6,
-  kContractUserCreateCall = 7,
-  kContractUserCall = 8,
-  kContractExcute = 9,
-  kContractBroadcast = 10,
-  kRootCreateAddress = 11,
-  kRootCreateAddressCrossSharding = 12,
-  kContractGasPrepayment = 13,
-  kStatistic = 14,
-  kJoinElect = 15
+  kConsensusCreateGenesisAcount = 4,
+  kConsensusLocalTos = 5,
+  kContractUserCreateCall = 6,
+  kContractUserCall = 7,
+  kContractExcute = 8,
+  kRootCreateAddress = 10,
+  kRootCreateAddressCrossSharding = 11,
+  kContractGasPrepayment = 12,
+  kStatistic = 13,
+  kJoinElect = 14,
+  kCreateLibrary = 15
 };
 bool StepType_IsValid(int value);
 const StepType StepType_MIN = kNormalFrom;
-const StepType StepType_MAX = kJoinElect;
+const StepType StepType_MAX = kCreateLibrary;
 const int StepType_ARRAYSIZE = StepType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* StepType_descriptor();
@@ -438,6 +437,21 @@ class ToTxMessageItem : public ::google::protobuf::Message /* @@protoc_insertion
   ::std::string* release_des();
   void set_allocated_des(::std::string* des);
 
+  // optional bytes library_bytes = 6;
+  bool has_library_bytes() const;
+  void clear_library_bytes();
+  static const int kLibraryBytesFieldNumber = 6;
+  const ::std::string& library_bytes() const;
+  void set_library_bytes(const ::std::string& value);
+  #if LANG_CXX11
+  void set_library_bytes(::std::string&& value);
+  #endif
+  void set_library_bytes(const char* value);
+  void set_library_bytes(const void* value, size_t size);
+  ::std::string* mutable_library_bytes();
+  ::std::string* release_library_bytes();
+  void set_allocated_library_bytes(::std::string* library_bytes);
+
   // optional uint64 amount = 2;
   bool has_amount() const;
   void clear_amount();
@@ -478,11 +492,14 @@ class ToTxMessageItem : public ::google::protobuf::Message /* @@protoc_insertion
   void clear_has_pool_index();
   void set_has_step();
   void clear_has_step();
+  void set_has_library_bytes();
+  void clear_has_library_bytes();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr des_;
+  ::google::protobuf::internal::ArenaStringPtr library_bytes_;
   ::google::protobuf::uint64 amount_;
   ::google::protobuf::uint32 sharding_id_;
   ::google::protobuf::uint32 pool_index_;
@@ -2136,13 +2153,13 @@ inline void ToTxMessageItem::set_allocated_des(::std::string* des) {
 
 // optional uint64 amount = 2;
 inline bool ToTxMessageItem::has_amount() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void ToTxMessageItem::set_has_amount() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void ToTxMessageItem::clear_has_amount() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void ToTxMessageItem::clear_amount() {
   amount_ = GOOGLE_ULONGLONG(0);
@@ -2160,13 +2177,13 @@ inline void ToTxMessageItem::set_amount(::google::protobuf::uint64 value) {
 
 // optional uint32 sharding_id = 3;
 inline bool ToTxMessageItem::has_sharding_id() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void ToTxMessageItem::set_has_sharding_id() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void ToTxMessageItem::clear_has_sharding_id() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void ToTxMessageItem::clear_sharding_id() {
   sharding_id_ = 0u;
@@ -2184,13 +2201,13 @@ inline void ToTxMessageItem::set_sharding_id(::google::protobuf::uint32 value) {
 
 // optional uint32 pool_index = 4;
 inline bool ToTxMessageItem::has_pool_index() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void ToTxMessageItem::set_has_pool_index() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void ToTxMessageItem::clear_has_pool_index() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void ToTxMessageItem::clear_pool_index() {
   pool_index_ = 0u;
@@ -2208,13 +2225,13 @@ inline void ToTxMessageItem::set_pool_index(::google::protobuf::uint32 value) {
 
 // optional int32 step = 5;
 inline bool ToTxMessageItem::has_step() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void ToTxMessageItem::set_has_step() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void ToTxMessageItem::clear_has_step() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void ToTxMessageItem::clear_step() {
   step_ = 0;
@@ -2228,6 +2245,72 @@ inline void ToTxMessageItem::set_step(::google::protobuf::int32 value) {
   set_has_step();
   step_ = value;
   // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ToTxMessageItem.step)
+}
+
+// optional bytes library_bytes = 6;
+inline bool ToTxMessageItem::has_library_bytes() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ToTxMessageItem::set_has_library_bytes() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ToTxMessageItem::clear_has_library_bytes() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ToTxMessageItem::clear_library_bytes() {
+  library_bytes_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_library_bytes();
+}
+inline const ::std::string& ToTxMessageItem::library_bytes() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ToTxMessageItem.library_bytes)
+  return library_bytes_.GetNoArena();
+}
+inline void ToTxMessageItem::set_library_bytes(const ::std::string& value) {
+  set_has_library_bytes();
+  library_bytes_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ToTxMessageItem.library_bytes)
+}
+#if LANG_CXX11
+inline void ToTxMessageItem::set_library_bytes(::std::string&& value) {
+  set_has_library_bytes();
+  library_bytes_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.pools.protobuf.ToTxMessageItem.library_bytes)
+}
+#endif
+inline void ToTxMessageItem::set_library_bytes(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_library_bytes();
+  library_bytes_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.pools.protobuf.ToTxMessageItem.library_bytes)
+}
+inline void ToTxMessageItem::set_library_bytes(const void* value, size_t size) {
+  set_has_library_bytes();
+  library_bytes_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.pools.protobuf.ToTxMessageItem.library_bytes)
+}
+inline ::std::string* ToTxMessageItem::mutable_library_bytes() {
+  set_has_library_bytes();
+  // @@protoc_insertion_point(field_mutable:zjchain.pools.protobuf.ToTxMessageItem.library_bytes)
+  return library_bytes_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ToTxMessageItem::release_library_bytes() {
+  // @@protoc_insertion_point(field_release:zjchain.pools.protobuf.ToTxMessageItem.library_bytes)
+  if (!has_library_bytes()) {
+    return NULL;
+  }
+  clear_has_library_bytes();
+  return library_bytes_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ToTxMessageItem::set_allocated_library_bytes(::std::string* library_bytes) {
+  if (library_bytes != NULL) {
+    set_has_library_bytes();
+  } else {
+    clear_has_library_bytes();
+  }
+  library_bytes_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), library_bytes);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.ToTxMessageItem.library_bytes)
 }
 
 // -------------------------------------------------------------------
