@@ -29,10 +29,6 @@ public:
     std::shared_ptr<WaitingTxsItem> GetElectTx(uint32_t pool_index, const std::string& tx_hash);
     std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
         uint32_t pool_index,
-        const common::BloomFilter& bloom_filter,
-        uint8_t thread_idx);
-    std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
-        uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
         uint8_t thread_idx);
 
