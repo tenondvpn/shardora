@@ -68,26 +68,9 @@ public:
     int32_t GetNetworkLeaderCount(uint32_t network_id);
     common::MembersPtr GetWaitingNetworkMembers(uint32_t network_id);
     bool IsIdExistsInAnyShard(const std::string& id);
-//     bool IsIpExistsInAnyShard(uint32_t network_id, const std::string& ip);
-
-    // ip::IpWeight GetIpWeight(uint64_t height, uint32_t network_id) {
-    //     return height_with_block_.GetIpWeight(height, network_id);
-    // }
 
     libff::alt_bn128_G2 GetCommonPublicKey(uint64_t height, uint32_t network_id) {
         return height_with_block_->GetCommonPublicKey(height, network_id);
-    }
-
-    int32_t local_node_pool_mod_num() {
-        return leader_rotation_->GetThisNodeValidPoolModNum();
-    }
-
-    int32_t local_node_member_index() {
-        return local_node_member_index_;
-    }
-
-    common::BftMemberPtr local_mem_ptr(uint32_t network_id) {
-        return leader_rotation_->local_member();
     }
 
     std::unordered_set<uint32_t> valid_shard_networks() {
