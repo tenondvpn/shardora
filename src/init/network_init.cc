@@ -176,7 +176,7 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
-    tm_block_mgr_->Init(vss_mgr_);
+    tm_block_mgr_->Init(vss_mgr_,account_mgr_);
     if (elect_mgr_->Init() != elect::kElectSuccess) {
         INIT_ERROR("init elect manager failed!");
         return kInitError;
