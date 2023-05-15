@@ -25,16 +25,12 @@ contract Phr {
     }
 
     function AttrReg(bytes memory pk, bytes32 attr_hash, bytes[] memory sigs) public {
-        if (valid_aas.length != sigs.length) {
-            return false;
-        }
-
+        require (valid_aas.length == sigs.length);
         for (uint i = 0; i < sigs.length; i++) {
             require(recoverSigner(attr_hash, sigs[i]) == valid_aas[i]);
         }
 
         attrs[pk].push(attr_hash);
-        return true;
     }
 
     function splitSignature(bytes memory sig)
