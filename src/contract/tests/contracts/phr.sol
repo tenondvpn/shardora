@@ -10,14 +10,14 @@ contract Phr {
         bytes ci;
     }
 
-    mapping(uint256 => RidInfo) public rids;
+    mapping(bytes32 => RidInfo) public rids;
     mapping(bytes => bytes32[]) public attrs;
 
     constructor(address[] memory aas) {
         valid_aas = aas;
     }
 
-    function ResAdd(uint256 rid, bytes memory pkDo, bytes memory ci) public {
+    function ResAdd(bytes32 rid, bytes memory pkDo, bytes memory ci) public {
         rids[rid] = RidInfo({
             pk: pkDo,
             ci: ci
