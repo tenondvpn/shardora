@@ -2,12 +2,12 @@
 pragma solidity >=0.7.0 <0.9.0;
 
 
-contract Pkeet {
+contract Phr {
     address [] valid_aas;
 
     struct RidInfo {
-        bytes memory pk;
-        bytes memory ci;
+        bytes pk;
+        bytes ci;
     }
 
     mapping(uint256 => RidInfo) rids;
