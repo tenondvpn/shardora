@@ -181,7 +181,7 @@ public:
 
 private:
     void GetTx(
-        const std::map<std::string, TxItemPtr>& src_prio_map,
+        std::map<std::string, TxItemPtr>& src_prio_map,
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count);
     void InitHeightTree();
