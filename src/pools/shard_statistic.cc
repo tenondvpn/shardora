@@ -197,7 +197,7 @@ void ShardStatistic::HandleCrossShard(
                     }
 
                     cross_shard_map_[block.pool_index()][block.height()] =
-                        to_tx..to_heights().sharding_id();
+                        to_tx.to_heights().sharding_id();
                     break;
                 }
             }
