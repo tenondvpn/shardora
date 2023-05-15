@@ -13,7 +13,7 @@ enum StepType {
     kContractUserCreateCall = 6;
     kContractUserCall = 7;
     kContractExcute = 8;
-    kRootCreateAddress = 10;
+    kRootCreateAddress = 9;
     kRootCreateAddressCrossSharding = 11;
     kContractGasPrepayment = 12;
     kStatistic = 13;

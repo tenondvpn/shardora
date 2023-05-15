@@ -58,7 +58,10 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleStatistic(const block::protobuf::Block& block);
-    void HandleCrossShard(const block::protobuf::Block& block, const block::protobuf::BlockTx& tx);
+    void HandleCrossShard(
+        bool is_root,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx);
     void LoadLatestHeights();
     void NormalizeLofMap(std::unordered_map<uint32_t, common::Point>& lof_map);
 
@@ -71,7 +74,7 @@ private:
     uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
     uint64_t pool_consensus_heihgts_[common::kInvalidPoolIndex] = { 0 };
     std::map<uint64_t, std::shared_ptr<HeightStatisticInfo>> node_height_count_map_[common::kInvalidPoolIndex];
-    std::map<uint64_t, std::shared_ptr<CrossShardItem>> cross_shard_map_[common::kImmutablePoolSize];
+    std::map<uint64_t, uint32_t> cross_shard_map_[common::kImmutablePoolSize];
     std::unordered_map<uint32_t, std::shared_ptr<common::Point>> point_ptr_map_;
     std::shared_ptr<pools::protobuf::ToTxHeights> tx_heights_ptr_ = nullptr;
     std::unordered_set<uint64_t> added_heights_[common::kInvalidPoolIndex];

@@ -818,7 +818,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         tx->set_key(protos::kNormalTos);
         tx->set_value(tos_hash);
         tx->set_pubkey("");
-        tx->set_to(kNormalToAddress);
+        tx->set_to(account_mgr_->single_to_address_info(heights.sharding_id()));
         if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
             tx->set_step(pools::protobuf::kRootCreateAddressCrossSharding);
         } else {

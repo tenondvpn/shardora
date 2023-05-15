@@ -45,16 +45,8 @@ public:
     void SetMaxHeight(uint32_t pool_idx, uint64_t height);
     int HandleRefreshHeightsReq(const transport::MessagePtr& msg_ptr);
     int HandleRefreshHeightsRes(const transport::MessagePtr& msg_ptr);
-    std::shared_ptr<address::protobuf::AddressInfo>& single_to_address_info(uint32_t pool_idx) {
-        return single_to_address_info_[pool_idx % common::kImmutablePoolSize];
-    }
-
-    std::shared_ptr<address::protobuf::AddressInfo>& single_local_to_address_info(uint32_t pool_idx) {
-        return single_local_to_address_info_[pool_idx % common::kImmutablePoolSize];
-    }
-
-    std::shared_ptr<address::protobuf::AddressInfo>& GetStatisticAddressInfo(uint32_t pool_idx) {
-        return statistic_address_info_[pool_idx % common::kImmutablePoolSize];
+    std::shared_ptr<address::protobuf::AddressInfo>& pools_address_info(uint32_t pool_idx) {
+        return pool_address_info_[pool_idx % common::kImmutablePoolSize];
     }
 
     const std::string& GetTxValidAddress(const block::protobuf::BlockTx& tx_info);
@@ -91,9 +83,7 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
-    void CreateNormalToAddressInfo();
-    void CreateNormalLocalToAddressInfo();
-    void CreateStatisticAddressInfo();
+    void CreatePoolsAddressInfo();
 
     static const uint64_t kCheckMissingHeightPeriod = 3000000llu;
     static const uint64_t kFushTreeToDbPeriod = 6000000llu;
@@ -109,9 +99,7 @@ private:
     bool inited_{ false };
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    std::shared_ptr<address::protobuf::AddressInfo> single_to_address_info_[common::kImmutablePoolSize] = { nullptr };
-    std::shared_ptr<address::protobuf::AddressInfo> single_local_to_address_info_[common::kImmutablePoolSize] = { nullptr };
-    std::shared_ptr<address::protobuf::AddressInfo> statistic_address_info_[common::kImmutablePoolSize] = { nullptr };
+    std::shared_ptr<address::protobuf::AddressInfo> pool_address_info_[common::kImmutablePoolSize] = { nullptr };
 
     DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };

@@ -34,52 +34,33 @@ int AccountManager::Init(
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     pools_mgr_ = pools_mgr;
     address_map_ = new common::UniqueMap<std::string, protos::AddressInfoPtr, 1024, 16>[thread_count];
-    CreateNormalToAddressInfo();
-    CreateNormalLocalToAddressInfo();
-    CreateStatisticAddressInfo();
+    CreatePoolsAddressInfo();
     inited_ = true;
     return kBlockSuccess;
 }
 
-void AccountManager::CreateNormalToAddressInfo() {
-    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
-        single_to_address_info_[i] = std::make_shared<address::protobuf::AddressInfo>();
-        single_to_address_info_[i]->set_pubkey("");
-        single_to_address_info_[i]->set_balance(0);
-        single_to_address_info_[i]->set_sharding_id(-1);
-        single_to_address_info_[i]->set_pool_index(i);
-        single_to_address_info_[i]->set_addr(
-            common::Hash::keccak256(kNormalToAddress + std::to_string(i)));
-        single_to_address_info_[i]->set_type(address::protobuf::kToTxAddress);
-        single_to_address_info_[i]->set_latest_height(0);
-    }
-}
+void AccountManager::CreatePoolsAddressInfo() {
+    uint32_t i = 0;
+    uint32_t valid_idx = 0;
+    for (uint32_t i = 0; i < common::kInvalidUint32; ++i) {
+        auto addr = common::Hash::keccak256(kNormalToAddress + std::to_string(i));
+        auto pool_idx = common::GetAddressPoolIndex(addr);
+        if (pool_address_info_[pool_idx] != nullptr) {
+            continue;
+        }
 
-void AccountManager::CreateNormalLocalToAddressInfo() {
-    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
-        single_local_to_address_info_[i] = std::make_shared<address::protobuf::AddressInfo>();
-        single_local_to_address_info_[i]->set_pubkey("");
-        single_local_to_address_info_[i]->set_balance(0);
-        single_local_to_address_info_[i]->set_sharding_id(-1);
-        single_local_to_address_info_[i]->set_pool_index(i);
-        single_local_to_address_info_[i]->set_addr(
-            common::Hash::keccak256(kNormalLocalToAddress + std::to_string(i)));
-        single_local_to_address_info_[i]->set_type(address::protobuf::kLocalToTxAddress);
-        single_local_to_address_info_[i]->set_latest_height(0);
-    }
-}
-
-void AccountManager::CreateStatisticAddressInfo() {
-    for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
-        statistic_address_info_[i] = std::make_shared<address::protobuf::AddressInfo>();
-        statistic_address_info_[i]->set_pubkey("");
-        statistic_address_info_[i]->set_balance(0);
-        statistic_address_info_[i]->set_sharding_id(-1);
-        statistic_address_info_[i]->set_pool_index(i);
-        statistic_address_info_[i]->set_addr(
-            common::Hash::keccak256(kShardStatisticAddress + std::to_string(i)));
-        statistic_address_info_[i]->set_type(address::protobuf::kStatistic);
-        statistic_address_info_[i]->set_latest_height(0);
+        pool_address_info_[pool_idx] = std::make_shared<address::protobuf::AddressInfo>();
+        pool_address_info_[pool_idx]->set_pubkey("");
+        pool_address_info_[pool_idx]->set_balance(0);
+        pool_address_info_[pool_idx]->set_sharding_id(-1);
+        pool_address_info_[pool_idx]->set_pool_index(pool_idx);
+        pool_address_info_[pool_idx]->set_addr(addr);
+        pool_address_info_[pool_idx]->set_type(address::protobuf::kToTxAddress);
+        pool_address_info_[pool_idx]->set_latest_height(0);
+        ++valid_idx;
+        if (valid_idx >= common::kImmutablePoolSize) {
+            break;
+        }
     }
 }
 

@@ -147,6 +147,11 @@ void ShardStatistic::HandleStatisticBlock(
                 for (auto iter = node_height_count_map_[height_idx].begin();
                         iter != node_height_count_map_[height_idx].end();) {
                     if (iter->first <= elect_statistic.heights().heights(height_idx)) {
+                        auto cross_iter = cross_shard_map_[height_idx].find(iter->first);
+                        if (cross_iter != cross_shard_map_[height_idx].end()) {
+                            cross_shard_map_[height_idx].erase(cross_iter);
+                        }
+
                         node_height_count_map_[height_idx].erase(iter++);
                         ZJC_DEBUG("erase handled height pool: %u, height: %lu, handled_height: %lu",
                             height_idx, iter->first, elect_statistic.heights().heights(height_idx));
@@ -173,23 +178,48 @@ void ShardStatistic::HandleStatisticBlock(
 }
 
 void ShardStatistic::HandleCrossShard(
+        bool is_root,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx) {
     switch (tx.step()) {
-    case pools::protobuf::kConsensusRootElectShard:
-    case pools::protobuf::kConsensusRootTimeBlock:
-    case pools::protobuf::kNormalTo:
-    case pools::protobuf::kRootCreateAddress:
-    case pools::protobuf::kRootCreateAddressCrossSharding:
+    case pools::protobuf::kNormalTo: {
+        if (is_root) {
+            return;
+        }
+
+
+    }
     case pools::protobuf::kStatistic:
-    case pools::protobuf::kCreateLibrary:
-        break;
-    default:
+    case pools::protobuf::kCreateLibrary: {
+        if (is_root) {
+            return;
+        }
+
+        cross_shard_map_[block.pool_index()][block.height()] = network::kRootCongressNetworkId;
         break;
     }
+    case pools::protobuf::kCreateLibrary:
+    case pools::protobuf::kRootCreateAddressCrossSharding:
+    case pools::protobuf::kConsensusRootElectShard:
+    case pools::protobuf::kConsensusRootTimeBlock: {
+        if (!is_root) {
+            return;
+        }
+
+        cross_shard_map_[block.pool_index()][block.height()] = network::kNodeNetworkId;
+        break;
+    }
+    default:
+        return;
+    }
+
 }
 
 void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
+    bool is_root = (
+        common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
+        common::GlobalInfo::Instance()->network_id() ==
+        network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset);
     if (block.electblock_height() == 0) {
         ZJC_DEBUG("block elect height zero error");
         return;
@@ -254,7 +284,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
     }
 
     for (int32_t i = 0; i < block.tx_list_size(); ++i) {
-        HandleCrossShard(block, block.tx_list(i));
+        HandleCrossShard(is_root, block, block.tx_list(i));
         if (block.tx_list(i).step() == pools::protobuf::kNormalFrom ||
                 block.tx_list(i).step() == pools::protobuf::kContractUserCreateCall ||
                 block.tx_list(i).step() == pools::protobuf::kContractExcute ||
@@ -280,10 +310,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
             }
         }
 
-        if (block.tx_list(i).step() == pools::protobuf::kConsensusRootElectShard &&
-                (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
-                common::GlobalInfo::Instance()->network_id() ==
-                network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
+        if (block.tx_list(i).step() == pools::protobuf::kConsensusRootElectShard && is_root) {
             for (int32_t storage_idx = 0; storage_idx < block.tx_list(i).storages_size(); ++storage_idx) {
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kElectNodeAttrElectBlock) {
                     std::string val;
