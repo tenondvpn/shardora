@@ -13,7 +13,7 @@ contract Phr {
     mapping(uint256 => RidInfo) public rids;
     mapping(bytes => bytes32[]) public attrs;
 
-    constructor(address[] aas) public {
+    constructor(address[] memory aas) public {
         valid_aas = aas;
     }
 
