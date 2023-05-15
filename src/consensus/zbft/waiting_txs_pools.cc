@@ -173,19 +173,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(uint32_t pool_index, b
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::FollowerGetTxs(
         uint32_t pool_index,
-        const common::BloomFilter& bloom_filter,
-        uint8_t thread_idx) {
-    auto txs_item = wtxs[pool_index].FollowerGetTxs(bloom_filter);
-    if (txs_item != nullptr) {
-        txs_item->pool_index = pool_index;
-        return txs_item;
-    }
-
-    return nullptr;
-}
-
-std::shared_ptr<WaitingTxsItem> WaitingTxsPools::FollowerGetTxs(
-        uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
         uint8_t thread_idx) {
     auto txs_item = wtxs[pool_index].FollowerGetTxs(tx_hash_list);
