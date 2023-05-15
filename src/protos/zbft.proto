@@ -8,9 +8,8 @@ message TxBft {
     optional block.protobuf.Block block = 1;
     optional bytes prepare_final_hash = 2;
     optional uint64 height = 3;
-    repeated uint64 bloom_filter = 4;
-    repeated bytes tx_hash_list = 5;
-    optional pools.protobuf.StepType tx_type = 6 [default=kNormalFrom];
+    repeated bytes tx_hash_list = 4;
+    optional pools.protobuf.StepType tx_type = 5 [default=kNormalFrom];
 }
 
 message ZbftMessage {

@@ -1083,20 +1083,7 @@ ZbftPtr BftManager::CreateBftPtr(
     auto& bft_msg = msg_ptr->header.zbft();
     std::vector<uint64_t> bloom_data;
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
-    auto& bloom_filter = bft_msg.tx_bft().bloom_filter();
-    if (!bloom_filter.empty()) {
-        for (int32_t i = 0; i < bloom_filter.size(); ++i) {
-            bloom_data.push_back(bloom_filter[i]);
-        }
-
-        common::BloomFilter bf(bloom_data, kHashCount);
-        txs_ptr = txs_pools_->FollowerGetTxs(bft_msg.pool_index(), bf, msg_ptr->thread_idx);
-        assert(false);
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
-//         ZJC_DEBUG("get tx count: %u, pool: %d", bloom_data.size(), bft_msg.pool_index());
-    } else if (bft_msg.tx_bft().tx_hash_list_size() > 0) {
+    if (bft_msg.tx_bft().tx_hash_list_size() > 0) {
         // get txs direct
         if (bft_msg.tx_bft().tx_type() == pools::protobuf::kNormalTo) {
             txs_ptr = txs_pools_->GetToTxs(bft_msg.pool_index(), false);
