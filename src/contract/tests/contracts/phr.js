@@ -20,42 +20,43 @@ var cons_codes = web3.eth.abi.encodeParameters(['address[]'],
 console.log("cons_codes: " + cons_codes);
 
 
-var param_codes = web3.eth.abi.encodeParameters(['address', 'uint256', 'address'], ['0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01', '10000000', '0x22c27146d7d240a92f29283407609ce6e00fe1d5']);
-console.log("param_codes: " + param_codes);
-var kek256 = web3.utils.keccak256(param_codes);
-console.log("kek256: " + kek256);
-var param_code_hash = web3.eth.accounts.hashMessage(kek256)
-console.log("param_code_hash: " + param_code_hash)
-var sig_param = web3.eth.accounts.sign(kek256, '0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5');
-console.log("sig params: ");
-console.log(sig_param);
-var recover = web3.eth.accounts.recover({
-    messageHash: param_code_hash,
-    v: sig_param.v,
-    r: sig_param.r,
-    s: sig_param.s
-});
-console.log('recover: ' + recover);
-
-
 // func code
-var closeFunc = web3.eth.abi.encodeFunctionSignature('close(uint256,bytes)');
-console.log("closeFunc function code: " + closeFunc);
+var ResAddFunc = web3.eth.abi.encodeFunctionSignature('ResAdd(bytes32,bytes,bytes)');
+var ResAddFunc_param_codes = web3.eth.abi.encodeParameters(['bytes32', 'bytes', 'bytes'], ['0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', 'pkdo', 'ci']);
+console.log("ResAddFunc: " + ResAddFunc.substring(2) + ResAddFunc_param_codes.substring(2));
 
-var extendFunc = web3.eth.abi.encodeFunctionSignature('extend(uint256)');
-console.log("extendFunc function code: " + extendFunc);
+var AttrReg = web3.eth.abi.encodeFunctionSignature('AttrReg(bytes,bytes32,bytes[])');
+var test_attr = "test_attr";
+var test_attr_hash = web3.utils.keccak256(test_attr);
+var sig1 = web3.eth.accounts.sign(test_attr_hash, '0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5');
+var sig2 = web3.eth.accounts.sign(test_attr_hash, '0x748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05');
+var sig3 = web3.eth.accounts.sign(test_attr_hash, '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5');
+var AttrReg_param_codes = web3.eth.abi.encodeParameters(['bytes', 'bytes32', 'bytes[]'], ['pk1', test_attr_hash, [sig1.signature, sig2.signature, sig3.signature]]);
+console.log("AttrReg: " + AttrReg.substring(2) + AttrReg_param_codes.substring(2));
 
-var claimTimeoutFunc = web3.eth.abi.encodeFunctionSignature('claimTimeout()');
-console.log("claimTimeoutFunc function code: " + claimTimeoutFunc);
+var recover1 = web3.eth.accounts.recover({
+    messageHash: test_attr_hash,
+    v: sig1.v,
+    r: sig1.r,
+    s: sig1.s
+});
+console.log('recover1: ' + recover1);
 
-// params code
-var constructerCode = web3.eth.abi.encodeParameters(['address', 'uint256'], ['0xdc09e1166271813aac21ff255960dcf39ccc000b', '100']);
-console.log("constructerCode: " + constructerCode);
 
-var closeCode = web3.eth.abi.encodeParameters(['uint256', 'bytes'], ['10000000', sig_param.signature]);
-console.log("closeCode: " + closeCode);
+var recover2 = web3.eth.accounts.recover({
+    messageHash: test_attr_hash,
+    v: sig2.v,
+    r: sig2.r,
+    s: sig2.s
+});
+console.log('recover2: ' + recover2);
 
-var extendCode = web3.eth.abi.encodeParameters(['uint256'], ['100']);
-console.log("extendCode: " + extendCode);
+var recover3 = web3.eth.accounts.recover({
+    messageHash: test_attr_hash,
+    v: sig3.v,
+    r: sig3.r,
+    s: sig3.s
+});
+console.log('recover3: ' + recover3);
 
 
