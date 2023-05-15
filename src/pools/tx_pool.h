@@ -45,9 +45,6 @@ public:
         std::shared_ptr<sync::KeyValueSync>& kv_sync);
     int AddTx(TxItemPtr& tx_ptr);
     void GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count);
-    void GetTx(
-        const common::BloomFilter& bloom_filter,
-        std::map<std::string, TxItemPtr>& res_map);
     void TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
     void TxRecover(std::map<std::string, TxItemPtr>& txs);
     void CheckTimeoutTx();
@@ -183,6 +180,10 @@ public:
     }
 
 private:
+    void GetTx(
+        const std::map<std::string, TxItemPtr>& src_prio_map,
+        std::map<std::string, TxItemPtr>& res_map,
+        uint32_t count);
     void InitHeightTree();
     void RemoveTx(const std::string& gid);
     void InitLatestInfo() {
@@ -235,6 +236,7 @@ private:
     std::queue<std::string> timeout_remove_txs_;
     common::LimitHashSet<std::string> removed_gid_{ 10240 };
     std::map<std::string, TxItemPtr> prio_map_;
+    std::map<std::string, TxItemPtr> universal_prio_map_;
     uint64_t latest_height_ = common::kInvalidUint64;
     std::string latest_hash_;
     std::shared_ptr<HeightTreeLevel> height_tree_ptr_ = nullptr;

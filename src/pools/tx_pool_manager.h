@@ -31,10 +31,6 @@ public:
         uint32_t pool_index,
         uint32_t count,
         std::map<std::string, TxItemPtr>& res_map);
-    void GetTx(
-        const common::BloomFilter& bloom_filter,
-        uint32_t pool_index,
-        std::map<std::string, TxItemPtr>& res_map);
     void TxOver(
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);

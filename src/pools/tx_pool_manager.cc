@@ -668,13 +668,6 @@ void TxPoolManager::GetTx(
     tx_pool_[pool_index].GetTx(res_map, count);
 }
 
-void TxPoolManager::GetTx(
-        const common::BloomFilter& bloom_filter,
-        uint32_t pool_index,
-        std::map<std::string, TxItemPtr>& res_map) {
-    tx_pool_[pool_index].GetTx(bloom_filter, res_map);
-}
-
 void TxPoolManager::TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs) {
     assert(pool_index < common::kInvalidPoolIndex);
     return tx_pool_[pool_index].TxRecover(recover_txs);

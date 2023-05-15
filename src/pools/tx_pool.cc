@@ -115,23 +115,34 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
         return kPoolsTxAdded;
     }
 
-    prio_map_[tx_ptr->prio_key] = tx_ptr;
+    if (tx_ptr->step == pools::protobuf::kCreateLibrary) {
+        universal_prio_map_[tx_ptr->prio_key] = tx_ptr;
+    } else {
+        prio_map_[tx_ptr->prio_key] = tx_ptr;
+    }
+
     gid_map_[tx_ptr->gid] = tx_ptr;
     timeout_txs_.push(tx_ptr->gid);
-//     ZJC_DEBUG("success add tx %u, %u, %u", pool_index_, added_tx_map_.size(), prio_map_.size());
     return kPoolsSuccess;
 }
 
 void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
+    GetTx(universal_prio_map_, res_map, count);
+    if (!res_map.empty()) {
+        return;
+    }
+
+    GetTx(prio_map_, res_map, count);
+}
+
+void TxPool::GetTx(
+        const std::map<std::string, TxItemPtr>& src_prio_map,
+        std::map<std::string, TxItemPtr>& res_map,
+        uint32_t count) {
     auto timestamp_now = common::TimeUtils::TimestampUs();
     std::vector<TxItemPtr> recover_txs;
-//     if (prio_map_.size() < 2 * count) {
-//         return;
-//     }
-
-//     common::AutoSpinLock auto_lock(mutex_);
-    auto iter = prio_map_.begin();
-    while (iter != prio_map_.end()) {
+    auto iter = src_prio_map.begin();
+    while (iter != src_prio_map.end()) {
         if (iter->second->time_valid >= timestamp_now) {
             break;
         }
@@ -139,9 +150,8 @@ void TxPool::GetTx(std::map<std::string, TxItemPtr>& res_map, uint32_t count) {
         res_map[iter->second->tx_hash] = iter->second;
         ZJC_DEBUG("success get local transfer to tx %u, %s",
             pool_index_, common::Encode::HexEncode(iter->second->tx_hash).c_str());
-        prio_map_.erase(iter++);
+        src_prio_map.erase(iter++);
         if (res_map.size() >= count) {
-//             ZJC_INFO("1 get tx mem size: %d, get: %d", prio_map_.size(), res_map.size());
             return;
         }
     }
@@ -188,30 +198,16 @@ void TxPool::CheckTimeoutTx() {
     }
 }
 
-void TxPool::GetTx(
-        const common::BloomFilter& bloom_filter,
-        std::map<std::string, TxItemPtr>& res_map) {
-//     common::AutoSpinLock auto_lock(mutex_);
-    for (auto iter = gid_map_.begin(); iter != gid_map_.end(); ++iter) {
-        if (bloom_filter.Contain(common::Hash::Hash64(iter->second->tx_hash))) {
-            res_map[iter->second->tx_hash] = iter->second;
-//             ZJC_DEBUG("bloom filter success get tx %u, %s",
-//                 pool_index_, common::Encode::HexEncode(iter->second->tx_hash).c_str());
-        }
-    }
-}
-
 void TxPool::TxRecover(std::map<std::string, TxItemPtr>& txs) {
-//     common::AutoSpinLock auto_lock(mutex_);
     for (auto iter = txs.begin(); iter != txs.end(); ++iter) {
         iter->second->in_consensus = false;
-//         if (iter->second->step == pools::protobuf::kNormalTo) {
-//             ZJC_DEBUG("pools::protobuf::kNormalTo recover and can get.");
-//         }
-
         auto miter = gid_map_.find(iter->first);
         if (miter != gid_map_.end()) {
-            prio_map_[miter->second->prio_key] = miter->second;
+            if (iter->second->step == pools::protobuf::kCreateLibrary) {
+                universal_prio_map_[miter->second->prio_key] = miter->second;
+            } else {
+                prio_map_[miter->second->prio_key] = miter->second;
+            }
         }
     }
 }
@@ -229,6 +225,11 @@ void TxPool::RemoveTx(const std::string& gid) {
         prio_map_.erase(prio_iter);
     }
 
+    auto universal_prio_iter = universal_prio_map_.find(giter->second->prio_key);
+    if (universal_prio_iter != universal_prio_map_.end()) {
+        universal_prio_map_.erase(universal_prio_iter);
+    }
+
     gid_map_.erase(giter);
     ZJC_DEBUG("remove tx success gid: %s, tx hash: %s",
         common::Encode::HexEncode(giter->second->gid).c_str(),
@@ -236,14 +237,11 @@ void TxPool::RemoveTx(const std::string& gid) {
 }
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
-//     common::AutoSpinLock auto_lock(mutex_);
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         RemoveTx(tx_list[i].gid());
     }
 
     finish_tx_count += tx_list.size();
-//     ZJC_INFO("pool index: %u, tx over %u, map: %u, prio_map: %u, gid map: %u, timeout_txs_: %u, timeout_remove_txs_: %u",
-//         pool_index_, tx_list.size(), added_tx_map_.size(), prio_map_.size(), gid_map_.size(), timeout_txs_.size(), timeout_remove_txs_.size());
 }
 
 }  // namespace pools
