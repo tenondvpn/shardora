@@ -35,7 +35,10 @@ public:
 
     ~ShardStatistic() {}
     void Init();
-    void OnNewElectBlock(uint32_t sharding_id, uint64_t prepare_elect_height, uint64_t elect_height);
+    void OnNewElectBlock(
+        uint32_t sharding_id,
+        uint64_t prepare_elect_height,
+        uint64_t elect_height);
     void OnNewBlock(const block::protobuf::Block& block);
     void GetStatisticInfo(
         uint64_t timeblock_height,
@@ -46,7 +49,8 @@ public:
         uint64_t vss_random);
     int StatisticWithHeights(
         const pools::protobuf::ToTxHeights& leader_to_heights,
-        std::string* statistic_hash);
+        std::string* statistic_hash,
+        std::string* cross_hash);
     int LeaderCreateStatisticHeights(pools::protobuf::ToTxHeights& to_heights);
 
 private:

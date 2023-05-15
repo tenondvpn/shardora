@@ -14,6 +14,7 @@
 #include "consensus/zbft/contract_user_call.h"
 #include "consensus/zbft/contract_user_create_call.h"
 #include "consensus/zbft/create_library.h"
+#include "consensus/zbft/cross_tx_item.h"
 #include "consensus/zbft/elect_tx_item.h"
 #include "consensus/zbft/from_tx_item.h"
 #include "consensus/zbft/join_elect_tx_item.h"
@@ -231,6 +232,10 @@ private:
     pools::TxItemPtr CreateJoinElectTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<JoinElectTxItem>(
             msg_ptr, account_mgr_, security_ptr_, prefix_db_, elect_mgr_);
+    }
+
+    pools::TxItemPtr CreateCrossTx(const transport::MessagePtr& msg_ptr) {
+        return std::make_shared<CrossTxItem>(msg_ptr, account_mgr_, security_ptr_);
     }
 
     pools::TxItemPtr CreateContractUserCreateCallTx(const transport::MessagePtr& msg_ptr) {

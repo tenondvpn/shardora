@@ -62,6 +62,10 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
         txs_item = GetElectTx(pool_index, "");
     }
 
+    if (txs_item == nullptr) {
+        txs_item = GetCrossTx(pool_index, "");
+    }
+
     return txs_item;
 }
 
@@ -117,6 +121,34 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
     return nullptr;
 }
 
+std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetCrossTx(uint32_t pool_index, bool leader) {
+    if (pool_index != common::kRootChainPoolIndex) {
+        return nullptr;
+    }
+
+    auto tx_ptr = block_mgr_->GetCrossTx(pool_index, leader);
+    if (tx_ptr != nullptr) {
+        if (leader) {
+            auto now_tm = common::TimeUtils::TimestampUs();
+            if (tx_ptr->prev_consensus_tm_us + 300000lu > now_tm) {
+                tx_ptr->in_consensus = false;
+                return nullptr;
+            }
+
+            tx_ptr->prev_consensus_tm_us = now_tm;
+        }
+
+        auto txs_item = std::make_shared<WaitingTxsItem>();
+        txs_item->pool_index = pool_index;
+        txs_item->txs[tx_ptr->tx_hash] = tx_ptr;
+        txs_item->tx_type = pools::protobuf::kCross;
+        ZJC_DEBUG("1 success get cross tx %u, %d", pool_index, leader);
+        return txs_item;
+    }
+
+    return nullptr;
+}
+
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(uint32_t pool_index, bool leader) {
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         if (pool_index != common::kRootChainPoolIndex) {
@@ -130,7 +162,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(uint32_t pool_in
 
     if (!leader)
         ZJC_DEBUG("0 success get statistic tx %u, %d", pool_index, leader);
-    auto tx_ptr = block_mgr_->GetStatisticTx(leader);
+    auto tx_ptr = block_mgr_->GetStatisticTx(pool_index, leader);
     if (tx_ptr != nullptr) {
         if (leader) {
             auto now_tm = common::TimeUtils::TimestampUs();

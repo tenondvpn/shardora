@@ -76,12 +76,17 @@ public:
         create_elect_tx_cb_ = func;
     }
 
+    void SetCreateCrossTxFunction(pools::CreateConsensusItemFunction func) {
+        cross_tx_cb_ = func;
+    }
+
     void CreateToTx(uint8_t thread_idx);
     void CreateStatisticTx(uint8_t thread_idx);
     void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
     pools::TxItemPtr GetToTx(uint32_t pool_index, bool leader);
-    pools::TxItemPtr GetStatisticTx(bool leader);
+    pools::TxItemPtr GetStatisticTx(uint32_t pool_index, bool leader);
     pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
+    pools::TxItemPtr GetCrossTx(uint32_t pool_index, const std::string& tx_hash);
     void LoadLatestBlocks(uint8_t thread_idx);
     // just genesis call
     void GenesisAddAllAccount(
@@ -151,12 +156,14 @@ private:
     common::BftMemberPtr to_tx_leader_ = nullptr;
     uint32_t max_consensus_sharding_id_ = 3;
     std::string local_id_;
-    std::shared_ptr<ToTxsItem> to_txs_[network::kConsensusShardEndNetworkId] = { nullptr };
-    std::shared_ptr<ToTxsItem> shard_statistic_tx_ = nullptr;
-    std::unordered_map<uint32_t, std::shared_ptr<ToTxsItem>> shard_elect_tx_;
+    std::shared_ptr<BlockTxsItem> to_txs_[network::kConsensusShardEndNetworkId] = { nullptr };
+    std::shared_ptr<BlockTxsItem> shard_statistic_tx_ = nullptr;
+    std::shared_ptr<BlockTxsItem> cross_statistic_tx_ = nullptr;
+    std::unordered_map<uint32_t, std::shared_ptr<BlockTxsItem>> shard_elect_tx_;
     pools::CreateConsensusItemFunction create_to_tx_cb_ = nullptr;
     pools::CreateConsensusItemFunction create_statistic_tx_cb_ = nullptr;
     pools::CreateConsensusItemFunction create_elect_tx_cb_ = nullptr;
+    pools::CreateConsensusItemFunction cross_tx_cb_ = nullptr;
     uint32_t prev_pool_index_ = network::kRootCongressNetworkId;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
     transport::MessagePtr to_txs_msg_ = nullptr;

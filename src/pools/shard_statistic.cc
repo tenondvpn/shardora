@@ -184,7 +184,23 @@ void ShardStatistic::HandleCrossShard(
     switch (tx.step()) {
     case pools::protobuf::kNormalTo: {
         if (!is_root) {
-            cross_shard_map_[block.pool_index()][block.height()] = network::kRootCongressNetworkId;
+            for (int32_t i = 0; i < tx.storages_size(); ++i) {
+                if (tx.storages(i).key() == protos::kNormalTos) {
+                    std::string val;
+                    if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+                        return;
+                    }
+
+                    pools::protobuf::ToTxMessage to_tx;
+                    if (!to_tx.ParseFromString(val)) {
+                        return;
+                    }
+
+                    cross_shard_map_[block.pool_index()][block.height()] =
+                        to_tx..to_heights().sharding_id();
+                    break;
+                }
+            }
         }
 
         break;
@@ -216,9 +232,8 @@ void ShardStatistic::HandleCrossShard(
         break;
     }
     default:
-        return;
+        break;
     }
-
 }
 
 void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
@@ -426,7 +441,8 @@ void ShardStatistic::OnTimeBlock(
 
 int ShardStatistic::StatisticWithHeights(
         const pools::protobuf::ToTxHeights& leader_to_heights,
-        std::string* statistic_hash) {
+        std::string* statistic_hash,
+        std::string* cross_hash) {
     bool is_root = (
         common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
         common::GlobalInfo::Instance()->network_id() ==
@@ -485,6 +501,8 @@ int ShardStatistic::StatisticWithHeights(
     std::unordered_map<uint32_t, common::Point> lof_map;
     uint64_t all_gas_amount = 0;
     uint64_t root_all_gas_amount = 0;
+    std::string cross_string_for_hash;
+    pools::protobuf::CrossShardStatistic cross_statistic;
     for (uint32_t pool_idx = 0; pool_idx < max_pool; ++pool_idx) {
         uint64_t min_height = 1;
         if (tx_heights_ptr_ != nullptr) {
@@ -504,6 +522,25 @@ int ShardStatistic::StatisticWithHeights(
             if (hiter == node_height_count_map_[pool_idx].end()) {
                 ZJC_WARN("statistic get height failed, pool: %u, height: %lu", pool_idx, height);
                 return kPoolsError;
+            }
+
+            auto cross_iter = cross_shard_map_[pool_idx].find(height);
+            if (cross_iter != cross_shard_map_[pool_idx].end()) {
+                auto cross_item = cross_statistic.add_crosses();
+                uint32_t src_shard = common::GlobalInfo::Instance()->network_id();
+                if (common::GlobalInfo::Instance()->network_id() >=
+                        network::kConsensusShardEndNetworkId) {
+                    src_shard -= network::kConsensusWaitingShardOffset;
+                }
+
+                cross_item->set_src_shard(src_shard);
+                cross_item->set_src_pool(pool_idx);
+                cross_item->set_height(height);
+                cross_item->set_des_shard(cross_iter->second);
+                cross_string_for_hash.append((char*)&src_shard, sizeof(src_shard));
+                cross_string_for_hash.append((char*)&pool_idx, sizeof(pool_idx));
+                cross_string_for_hash.append((char*)&height, sizeof(height));
+                cross_string_for_hash.append((char*)&cross_iter->second, sizeof(cross_iter->second));
             }
 
             auto elect_height = hiter->second->elect_height;
@@ -756,7 +793,13 @@ int ShardStatistic::StatisticWithHeights(
 
     *elect_statistic.mutable_heights() = leader_to_heights;
     prefix_db_->SaveTemporaryKv(*statistic_hash, elect_statistic.SerializeAsString());
-    ZJC_DEBUG("success create statistic message: %s, heights: %s", debug_for_str.c_str(), heights.c_str());
+    if (!cross_string_for_hash.empty()) {
+        *cross_hash = common::Hash::keccak256(cross_string_for_hash);
+        prefix_db_->SaveTemporaryKv(*cross_hash, cross_statistic.SerializeAsString());
+    }
+
+    ZJC_DEBUG("success create statistic message: %s, heights: %s",
+        debug_for_str.c_str(), heights.c_str());
     return kPoolsSuccess;
 }
 

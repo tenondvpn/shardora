@@ -697,36 +697,61 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
         return;
     }
 
-    auto& heights = msg_ptr->header.block_proto().shard_statistic_tx();
+    auto& heights = msg_ptr->header.block_proto().tx_ptr();
     std::string statistic_hash;
+    std::string cross_hash;
     if (statistic_mgr_->StatisticWithHeights(
             heights,
-            &statistic_hash) != pools::kPoolsSuccess) {
+            &statistic_hash,
+            &cross_hash) != pools::kPoolsSuccess) {
         ZJC_DEBUG("error to txs sharding create statistic tx");
         return;
     }
 
-    auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-    new_msg_ptr->address_info = account_mgr_->pools_address_info(0);
-    auto* tx = new_msg_ptr->header.mutable_tx_proto();
-    tx->set_key(protos::kShardStatistic);
-    tx->set_value(statistic_hash);
-    tx->set_pubkey("");
-    tx->set_to(new_msg_ptr->address_info->addr());
-    tx->set_step(pools::protobuf::kStatistic);
-    auto gid = common::Hash::keccak256(
-        statistic_hash + std::to_string(common::GlobalInfo::Instance()->network_id()));
-    tx->set_gas_limit(0);
-    tx->set_amount(0);
-    tx->set_gas_price(common::kBuildinTransactionGasPrice);
-    tx->set_gid(gid);
-    auto shard_statistic_tx = std::make_shared<ToTxsItem>();
-    shard_statistic_tx->tx_ptr = create_statistic_tx_cb_(new_msg_ptr);
-    shard_statistic_tx->tx_ptr->time_valid += 3000000lu;
-    shard_statistic_tx->tx_ptr->in_consensus = false;
-    shard_statistic_tx->tx_hash = statistic_hash;
-    shard_statistic_tx->timeout = common::TimeUtils::TimestampMs() + 20000lu;
-    shard_statistic_tx_ = shard_statistic_tx;
+    if (!statistic_hash.empty()) {
+        auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+        auto* tx = new_msg_ptr->header.mutable_tx_proto();
+        tx->set_key(protos::kShardStatistic);
+        tx->set_value(statistic_hash);
+        tx->set_pubkey("");
+        tx->set_step(pools::protobuf::kStatistic);
+        auto gid = common::Hash::keccak256(
+            statistic_hash + std::to_string(common::GlobalInfo::Instance()->network_id()));
+        tx->set_gas_limit(0);
+        tx->set_amount(0);
+        tx->set_gas_price(common::kBuildinTransactionGasPrice);
+        tx->set_gid(gid);
+        auto tx_ptr = std::make_shared<BlockTxsItem>();
+        tx_ptr->tx_ptr = create_statistic_tx_cb_(new_msg_ptr);
+        tx_ptr->tx_ptr->time_valid += 3000000lu;
+        tx_ptr->tx_ptr->in_consensus = false;
+        tx_ptr->tx_hash = statistic_hash;
+        tx_ptr->timeout = common::TimeUtils::TimestampMs() + 20000lu;
+        shard_statistic_tx_ = tx_ptr;
+    }
+
+    if (!cross_hash.empty()) {
+        auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+        auto* tx = new_msg_ptr->header.mutable_tx_proto();
+        tx->set_key(protos::kShardCross);
+        tx->set_value(cross_hash);
+        tx->set_pubkey("");
+        tx->set_step(pools::protobuf::kCross);
+        auto gid = common::Hash::keccak256(
+            cross_hash + std::to_string(common::GlobalInfo::Instance()->network_id()));
+        tx->set_gas_limit(0);
+        tx->set_amount(0);
+        tx->set_gas_price(common::kBuildinTransactionGasPrice);
+        tx->set_gid(gid);
+        auto tx_ptr = std::make_shared<BlockTxsItem>();
+        tx_ptr->tx_ptr = cross_tx_cb_(new_msg_ptr);
+        tx_ptr->tx_ptr->time_valid += 3000000lu;
+        tx_ptr->tx_ptr->in_consensus = false;
+        tx_ptr->tx_hash = cross_hash;
+        tx_ptr->timeout = common::TimeUtils::TimestampMs() + 20000lu;
+        cross_statistic_tx_ = tx_ptr;
+    }
+    
     ZJC_DEBUG("success add statistic tx: %s", common::Encode::HexEncode(statistic_hash).c_str());
 }
 
@@ -775,7 +800,7 @@ void BlockManager::HandleStatisticBlock(
     tx->set_amount(0);
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
     tx->set_gid(gid);
-    auto shard_elect_tx = std::make_shared<ToTxsItem>();
+    auto shard_elect_tx = std::make_shared<BlockTxsItem>();
     shard_elect_tx->tx_ptr = create_elect_tx_cb_(new_msg_ptr);
     shard_elect_tx->tx_ptr->time_valid += 3000000lu;
 //     shard_elect_tx->tx_hash = gid;
@@ -833,7 +858,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
-        auto to_txs_ptr = std::make_shared<ToTxsItem>();
+        auto to_txs_ptr = std::make_shared<BlockTxsItem>();
         to_txs_ptr->tx_ptr = create_to_tx_cb_(new_msg_ptr);
         to_txs_ptr->tx_ptr->time_valid += 3000000lu;
         to_txs_ptr->tx_hash = tos_hash;
@@ -847,13 +872,17 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     }
 }
 
-pools::TxItemPtr BlockManager::GetStatisticTx(bool leader) {
+pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) {
     if (shard_statistic_tx_ != nullptr && !shard_statistic_tx_->tx_ptr->in_consensus) {
         auto now_tm = common::TimeUtils::TimestampUs();
         if (leader && shard_statistic_tx_->tx_ptr->time_valid > now_tm) {
             return nullptr;
         }
 
+        shard_statistic_tx_->tx_ptr->msg_ptr->address_info =
+            account_mgr_->pools_address_info(pool_index);
+        auto* tx = shard_statistic_tx_->tx_ptr->msg_ptr->header.mutable_tx_proto();
+        tx->set_to(shard_statistic_tx_->tx_ptr->msg_ptr->address_info->addr());
         shard_statistic_tx_->tx_ptr->in_consensus = true;
         return shard_statistic_tx_->tx_ptr;
     }

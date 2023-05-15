@@ -379,6 +379,11 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    if (msg_ptr->address_info->addr() == tx_msg.to()) {
+        assert(false);
+        return;
+    }
+
     if (msg_ptr->address_info->balance() < consensus::kJoinElectGas) {
         return;
     }
@@ -440,6 +445,11 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     msg_ptr->address_info = GetAddressInfo(tx_msg.to());
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no contract address info.");
+        return;
+    }
+
+    if (msg_ptr->address_info->addr() == tx_msg.to()) {
+        assert(false);
         return;
     }
 
@@ -516,6 +526,11 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     msg_ptr->address_info = GetAddressInfo(security_->GetAddress(tx_msg.pubkey()));
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no address info.");
+        return false;
+    }
+
+    if (msg_ptr->address_info->addr() == tx_msg.to()) {
+        assert(false);
         return false;
     }
 

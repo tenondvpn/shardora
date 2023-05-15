@@ -51,8 +51,8 @@ static const std::string kCreateGenesisNetwrokAccount = common::Encode::HexDecod
 static const std::string kPoolsAddress = common::Encode::HexDecode(
     "0000000000000000000000000000000000000000");
 
-struct ToTxsItem {
-    ToTxsItem() : tx_ptr(nullptr), tx_count(0) {}
+struct BlockTxsItem {
+    BlockTxsItem() : tx_ptr(nullptr), tx_count(0) {}
     pools::TxItemPtr tx_ptr;
     std::string tx_hash;
     uint32_t tx_count;

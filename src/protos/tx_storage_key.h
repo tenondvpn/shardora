@@ -20,6 +20,7 @@ static const std::string kShardStatistic = "__shard_statistic";
 static const std::string kShardElection = "__shard_election";
 static const std::string kElectNodeStoke = "__elect_node_stoke";
 static const std::string kElectJoinShard = "__elect_join_shard";
+static const std::string kShardCross = "__shard_cross";
 
 static const std::string kElectNodeAttrKeyAllBloomfilter = "__elect_allbloomfilter";
 static const std::string kElectNodeAttrKeyWeedoutBloomfilter = "__elect_weedoutbloomfilter";

@@ -19,6 +19,7 @@ enum StepType {
     kStatistic = 13;
     kJoinElect = 14;
     kCreateLibrary = 15;
+    kCross = 16;
 }
 
 message ToTxHeights {
@@ -68,6 +69,17 @@ message JoinElectNode {
     optional bytes id = 1;
     optional uint64 stoke = 2;
     optional uint32 shard = 3;
+}
+
+message CrossShardStatisticItem {
+    optional uint32 src_shard = 1;
+    optional uint32 src_pool = 2;
+    optional uint64 height = 3;
+    optional uint32 des_shard = 4;
+}
+
+message CrossShardStatistic {
+    repeated CrossShardStatisticItem crosses = 1;
 }
 
 message ElectStatistic {
