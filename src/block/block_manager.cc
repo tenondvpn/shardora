@@ -345,7 +345,7 @@ void BlockManager::RootHandleNormalToTx(
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
         auto pool_index = common::Hash::Hash32(tos_item.des()) % common::kImmutablePoolSize;
-        msg_ptr->address_info = account_mgr_->single_local_to_address_info(pool_index);
+        msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
         pools_mgr_->HandleMessage(msg_ptr);
         ZJC_DEBUG("create new address %s, amount: %lu",
             common::Encode::HexEncode(tos_item.des()).c_str(), tos_item.amount());
@@ -443,18 +443,18 @@ void BlockManager::HandleLocalNormalToTx(
         auto tos_hash = common::Hash::keccak256(str_for_hash);
         prefix_db_->SaveTemporaryKv(tos_hash, val);
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
+        msg_ptr->address_info = account_mgr_->pools_address_info(iter->first);
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_key(protos::kLocalNormalTos);
         tx->set_value(tos_hash);
         tx->set_pubkey("");
-        tx->set_to(kNormalLocalToAddress);
+        tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kConsensusLocalTos);
         auto gid = common::Hash::keccak256(tos_hash + heights_hash);
         tx->set_gas_limit(0);
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
-        msg_ptr->address_info = account_mgr_->single_local_to_address_info(iter->first);
         pools_mgr_->HandleMessage(msg_ptr);
     }
 }
@@ -607,18 +607,18 @@ void BlockManager::AddMiningToken(
         auto tos_hash = common::Hash::keccak256(str_for_hash);
         prefix_db_->SaveTemporaryKv(tos_hash, val);
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
+        msg_ptr->address_info = account_mgr_->pools_address_info(iter->first);
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_key(protos::kLocalNormalTos);
         tx->set_value(tos_hash);
         tx->set_pubkey("");
-        tx->set_to(kNormalLocalToAddress);
+        tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kConsensusLocalTos);
         auto gid = common::Hash::keccak256(tos_hash + block_hash);
         tx->set_gas_limit(0);
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
-        msg_ptr->address_info = account_mgr_->single_local_to_address_info(iter->first);
         pools_mgr_->HandleMessage(msg_ptr);
     }
 }
@@ -707,11 +707,12 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
     }
 
     auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+    new_msg_ptr->address_info = account_mgr_->pools_address_info(0);
     auto* tx = new_msg_ptr->header.mutable_tx_proto();
     tx->set_key(protos::kShardStatistic);
     tx->set_value(statistic_hash);
     tx->set_pubkey("");
-    tx->set_to(kShardStatisticAddress);
+    tx->set_to(new_msg_ptr->address_info->addr());
     tx->set_step(pools::protobuf::kStatistic);
     auto gid = common::Hash::keccak256(
         statistic_hash + std::to_string(common::GlobalInfo::Instance()->network_id()));
@@ -720,7 +721,6 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
     tx->set_gid(gid);
     auto shard_statistic_tx = std::make_shared<ToTxsItem>();
-    new_msg_ptr->address_info = account_mgr_->GetStatisticAddressInfo(0);
     shard_statistic_tx->tx_ptr = create_statistic_tx_cb_(new_msg_ptr);
     shard_statistic_tx->tx_ptr->time_valid += 3000000lu;
     shard_statistic_tx->tx_ptr->in_consensus = false;
@@ -759,6 +759,7 @@ void BlockManager::HandleStatisticBlock(
         block.network_id(), elect_statistic.sharding_id(), block.pool_index(), block.timeblock_height());
     // create elect transaction now for block.network_id
     auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+    new_msg_ptr->address_info = account_mgr_->pools_address_info(elect_statistic.sharding_id());
     auto* tx = new_msg_ptr->header.mutable_tx_proto();
     tx->set_key(protos::kShardElection);
     char data[16];
@@ -767,7 +768,7 @@ void BlockManager::HandleStatisticBlock(
     tmp[1] = block.timeblock_height();
     tx->set_value(std::string(data, sizeof(data)));
     tx->set_pubkey("");
-    tx->set_to(kRootChainElectionBlockTxAddress);
+    tx->set_to(new_msg_ptr->address_info->addr());
     tx->set_step(pools::protobuf::kConsensusRootElectShard);
     auto gid = common::Hash::keccak256(kShardElectPrefix + tx->value());
     tx->set_gas_limit(0);
@@ -775,7 +776,6 @@ void BlockManager::HandleStatisticBlock(
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
     tx->set_gid(gid);
     auto shard_elect_tx = std::make_shared<ToTxsItem>();
-    new_msg_ptr->address_info = account_mgr_->GetStatisticAddressInfo(common::kRootChainPoolIndex);
     shard_elect_tx->tx_ptr = create_elect_tx_cb_(new_msg_ptr);
     shard_elect_tx->tx_ptr->time_valid += 3000000lu;
 //     shard_elect_tx->tx_hash = gid;
@@ -814,11 +814,13 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         }
 
         auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+        new_msg_ptr->address_info = account_mgr_->pools_address_info(
+            heights.sharding_id() % common::kImmutablePoolSize);
         auto* tx = new_msg_ptr->header.mutable_tx_proto();
         tx->set_key(protos::kNormalTos);
         tx->set_value(tos_hash);
         tx->set_pubkey("");
-        tx->set_to(account_mgr_->single_to_address_info(heights.sharding_id()));
+        tx->set_to(new_msg_ptr->address_info->addr());
         if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
             tx->set_step(pools::protobuf::kRootCreateAddressCrossSharding);
         } else {
@@ -832,8 +834,6 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
         auto to_txs_ptr = std::make_shared<ToTxsItem>();
-        new_msg_ptr->address_info = account_mgr_->single_to_address_info(
-            heights.sharding_id() % common::kImmutablePoolSize);
         to_txs_ptr->tx_ptr = create_to_tx_cb_(new_msg_ptr);
         to_txs_ptr->tx_ptr->time_valid += 3000000lu;
         to_txs_ptr->tx_hash = tos_hash;
