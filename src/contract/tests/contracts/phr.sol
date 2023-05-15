@@ -13,7 +13,7 @@ contract Phr {
     mapping(uint256 => RidInfo) public rids;
     mapping(bytes => bytes32[]) public attrs;
 
-    constructor(address[] memory aas) public {
+    constructor(address[] memory aas) {
         valid_aas = aas;
     }
 
@@ -29,7 +29,7 @@ contract Phr {
             return false;
         }
 
-        for (uint i = 0; i < sigs.lenght; i++) {
+        for (uint i = 0; i < sigs.length; i++) {
             if (valid_aas[i] != recoverSigner(attr_hash, sigs[i])) {
                 return false;
             }
