@@ -27,7 +27,7 @@ contract Phr {
     function AttrReg(bytes memory pk, bytes32 attr_hash, bytes[] memory sigs) public {
         require(valid_aas.length == sigs.length);
         for (uint i = 0; i < sigs.length; i++) {
-            require(recoverSigner(attr_hash, sigs[i]) == valid_aas[i]);
+            require(recoverSigner(prefixed(attr_hash), sigs[i]) == valid_aas[i]);
         }
 
         attrs[pk].push(attr_hash);
@@ -55,4 +55,9 @@ contract Phr {
         (uint8 v, bytes32 r, bytes32 s) = splitSignature(sig);
         return ecrecover(message, v, r, s);
     }
+
+    /// 加入一个前缀，因为在eth_sign签名的时候会加上。
+    function prefixed(bytes32 hash) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
+    
 }
