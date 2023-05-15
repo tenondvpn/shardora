@@ -5,18 +5,18 @@ var web3 = new Web3(new Web3.providers.IpcProvider('/Users/myuser/Library/Ethere
 console.log("test smart contract signature: ");
 var account1 = web3.eth.accounts.privateKeyToAccount('0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5');
 console.log("account1 :");
-console.log(account2);
+console.log(account1.address);
 var account2 = web3.eth.accounts.privateKeyToAccount('0x748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05');
 console.log("account2 :");
-console.log(account2);
+console.log(account2.address);
 var account3 = web3.eth.accounts.privateKeyToAccount('0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5');
 console.log("account3 :");
-console.log(account3);
+console.log(account3.address);
 
 var cons_codes = web3.eth.abi.encodeParameters(['address[]'],
-    [['0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01',
-        '0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa02',
-        '0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa03']]);
+    [[account1.address,
+        account2.address,
+        account3.address]]);
 console.log("cons_codes: " + cons_codes);
 
 
