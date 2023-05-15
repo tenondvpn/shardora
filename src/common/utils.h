@@ -98,7 +98,6 @@ enum ConsensusType {
     kConsensusCallContract = 6,
     kConsensusRootElectShard = 7,  // shard consensus network election
     kConsensusRootTimeBlock = 8,  // create time block
-    kConsensusFinalStatistic = 9,  // create shard time block's final statistic block
 };
 
 enum ClientStatus {

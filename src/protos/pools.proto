@@ -8,19 +8,17 @@ enum StepType {
     kNormalTo = 1;
     kConsensusRootElectShard = 2;  // shard consensus network election
     kConsensusRootTimeBlock = 3;  // create time block
-    kConsensusFinalStatistic = 4;  // create shard time block's final statistic block
-    kConsensusCreateGenesisAcount = 5;
-    kConsensusLocalTos = 6;
-    kContractUserCreateCall = 7;
-    kContractUserCall = 8;
-    kContractExcute = 9;
-    kContractBroadcast = 10;
-    kRootCreateAddress = 11;
-    kRootCreateAddressCrossSharding = 12;
-    kContractGasPrepayment = 13;
-    kStatistic = 14;
-    kJoinElect = 15;
-    kCreateLibrary = 16;
+    kConsensusCreateGenesisAcount = 4;
+    kConsensusLocalTos = 5;
+    kContractUserCreateCall = 6;
+    kContractUserCall = 7;
+    kContractExcute = 8;
+    kRootCreateAddress = 10;
+    kRootCreateAddressCrossSharding = 11;
+    kContractGasPrepayment = 12;
+    kStatistic = 13;
+    kJoinElect = 14;
+    kCreateLibrary = 15;
 }
 
 message ToTxHeights {

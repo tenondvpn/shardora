@@ -118,8 +118,14 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetTimeblockTx(uint32_t pool_in
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(uint32_t pool_index, bool leader) {
-    if (pool_index != 0) {
-        return nullptr;
+    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
+        if (pool_index != common::kRootChainPoolIndex) {
+            return nullptr;
+        }
+    } else {
+        if (pool_index != 0) {
+            return nullptr;
+        }
     }
 
     if (!leader)

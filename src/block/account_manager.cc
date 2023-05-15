@@ -146,7 +146,6 @@ const std::string& AccountManager::GetTxValidAddress(const block::protobuf::Bloc
     case pools::protobuf::kConsensusLocalTos:
     case pools::protobuf::kConsensusRootElectShard:
     case pools::protobuf::kConsensusRootTimeBlock:
-    case pools::protobuf::kConsensusFinalStatistic:
     case pools::protobuf::kConsensusCreateGenesisAcount:
     case pools::protobuf::kContractExcute:
     case pools::protobuf::kStatistic:

@@ -52,7 +52,8 @@ void ShardStatistic::OnNewBlock(const block::protobuf::Block& block) {
     }
 
     if (pool_consensus_heihgts_[block.pool_index()] + 1 == block.height()) {
-        while (pool_consensus_heihgts_[block.pool_index()] <= pool_max_heihgts_[block.pool_index()]) {
+        while (pool_consensus_heihgts_[block.pool_index()] <=
+                pool_max_heihgts_[block.pool_index()]) {
             auto iter = added_heights_[block.pool_index()].find(
                     pool_consensus_heihgts_[block.pool_index()] + 1);
             if (iter == added_heights_[block.pool_index()].end()) {
@@ -171,6 +172,23 @@ void ShardStatistic::HandleStatisticBlock(
     }
 }
 
+void ShardStatistic::HandleCrossShard(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx) {
+    switch (tx.step()) {
+    case pools::protobuf::kConsensusRootElectShard:
+    case pools::protobuf::kConsensusRootTimeBlock:
+    case pools::protobuf::kNormalTo:
+    case pools::protobuf::kRootCreateAddress:
+    case pools::protobuf::kRootCreateAddressCrossSharding:
+    case pools::protobuf::kStatistic:
+    case pools::protobuf::kCreateLibrary:
+        break;
+    default:
+        break;
+    }
+}
+
 void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
     if (block.electblock_height() == 0) {
         ZJC_DEBUG("block elect height zero error");
@@ -236,6 +254,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
     }
 
     for (int32_t i = 0; i < block.tx_list_size(); ++i) {
+        HandleCrossShard(block, block.tx_list(i));
         if (block.tx_list(i).step() == pools::protobuf::kNormalFrom ||
                 block.tx_list(i).step() == pools::protobuf::kContractUserCreateCall ||
                 block.tx_list(i).step() == pools::protobuf::kContractExcute ||
