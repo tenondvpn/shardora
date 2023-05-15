@@ -13,6 +13,7 @@
 #include "consensus/zbft/contract_gas_prepayment.h"
 #include "consensus/zbft/contract_user_call.h"
 #include "consensus/zbft/contract_user_create_call.h"
+#include "consensus/zbft/create_library.h"
 #include "consensus/zbft/elect_tx_item.h"
 #include "consensus/zbft/from_tx_item.h"
 #include "consensus/zbft/join_elect_tx_item.h"
@@ -205,7 +206,7 @@ private:
     }
 
     pools::TxItemPtr CreateLibraryTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<TxItemBase>(msg_ptr);
+        return std::make_shared<CreateLibrary>(msg_ptr);
     }
 
     pools::TxItemPtr CreateElectTx(const transport::MessagePtr& msg_ptr) {

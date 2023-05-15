@@ -322,13 +322,7 @@ void BlockManager::RootHandleNormalToTx(
                 tos_item.amount(),
                 tos_item.sharding_id(),
                 tos_item.pool_index());
-            if (!tos_item.has_library_bytes()) {
-                continue;
-            }
-
-            tx->set_key(protos::kLibrary);
-            tx->set_value(tos_item.library_bytes());
-            tx->set_step(pools::protobuf::kRootCreateLibrary);
+           continue;
         }
 
         if (tos_item.step() == pools::protobuf::kJoinElect) {

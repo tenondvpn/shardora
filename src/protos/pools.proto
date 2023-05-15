@@ -20,7 +20,7 @@ enum StepType {
     kContractGasPrepayment = 13;
     kStatistic = 14;
     kJoinElect = 15;
-    kRootCreateLibrary = 16;
+    kCreateLibrary = 16;
 }
 
 message ToTxHeights {

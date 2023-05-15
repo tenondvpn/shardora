@@ -256,6 +256,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         case pools::protobuf::kNormalFrom:
             HandleNormalFromTx(msg_ptr);
             break;
+        case pools::protobuf::kCreateLibrary:
         case pools::protobuf::kContractUserCreateCall:
             HandleCreateContractTx(msg_ptr);
             break;
@@ -273,20 +274,6 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             auto pool_index = common::GetAddressPoolIndex(tx_msg.to()) % common::kImmutablePoolSize;
-            msg_queues_[pool_index].push(msg_ptr);
-            break;
-        }
-        case pools::protobuf::kRootCreateLibrary: {
-            if (tx_msg.to().size() != security::kUnicastAddressLength) {
-                return;
-            }
-
-            // must not coming from network
-            if (msg_ptr->conn != nullptr) {
-                return;
-            }
-
-            auto pool_index = common::kRootChainPoolIndex;
             msg_queues_[pool_index].push(msg_ptr);
             break;
         }
@@ -505,6 +492,18 @@ void TxPoolManager::HandleUserCallContractTx(const transport::MessagePtr& msg_pt
         return;
     }
 
+    if (msg_ptr->address_info->balance() <
+            tx_msg.amount() + tx_msg.contract_prepayment() +
+            consensus::kCallContractDefaultUseGas * tx_msg.gas_price()) {
+        ZJC_DEBUG("address balance invalid: %lu, transfer amount: %lu, "
+            "prepayment: %lu, default call contract gas: %lu",
+            msg_ptr->address_info->balance(),
+            tx_msg.amount(),
+            tx_msg.contract_prepayment(),
+            consensus::kCallContractDefaultUseGas);
+        return false;
+    }
+
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 }
 
@@ -514,18 +513,6 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     msg_ptr->address_info = GetAddressInfo(security_->GetAddress(tx_msg.pubkey()));
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no address info.");
-        return false;
-    }
-
-    if (msg_ptr->address_info->balance() <
-            tx_msg.amount() + tx_msg.contract_prepayment() +
-            consensus::kCallContractDefaultUseGas) {
-        ZJC_DEBUG("address balance invalid: %lu, transfer amount: %lu, "
-            "prepayment: %lu, default call contract gas: %lu",
-            msg_ptr->address_info->balance(),
-            tx_msg.amount(),
-            tx_msg.contract_prepayment(),
-            consensus::kCallContractDefaultUseGas);
         return false;
     }
 
@@ -563,6 +550,18 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    if (msg_ptr->address_info->balance() <
+            tx_msg.amount() + tx_msg.contract_prepayment() +
+            consensus::kTransferGas * tx_msg.gas_price()) {
+        ZJC_DEBUG("address balance invalid: %lu, transfer amount: %lu, "
+            "prepayment: %lu, default call contract gas: %lu",
+            msg_ptr->address_info->balance(),
+            tx_msg.amount(),
+            tx_msg.contract_prepayment(),
+            consensus::kCallContractDefaultUseGas);
+        return false;
+    }
+
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 }
 
@@ -574,18 +573,38 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
         return;
     }
 
-    if (memcmp(
-            tx_msg.contract_code().c_str(),
-            protos::kContractBytesStartCode.c_str(),
-            protos::kContractBytesStartCode.size()) != 0) {
-        if (tx_msg.amount() > 0) {
-            ZJC_DEBUG("create library not has valid amount: %lu", tx_msg.amount());
+    uint64_t default_gas = consensus::kCallContractDefaultUseGas +
+        tx_msg.value().size() * consensus::kKeyValueStorageEachBytes;
+    if (tx_msg.step() == pools::protobuf::kContractUserCreateCall) {
+        if (memcmp(
+                tx_msg.contract_code().c_str(),
+                protos::kContractBytesStartCode.c_str(),
+                protos::kContractBytesStartCode.size()) != 0) {
             return;
         }
+    } else {
+        // all shards will save the library
+        default_gas = consensus::kCreateLibraryDefaultUseGas +
+            network::kConsensusWaitingShardOffset *
+            (tx_msg.value().size() + tx_msg.key().size()) *
+            consensus::kKeyValueStorageEachBytes;
     }
 
     if (!UserTxValid(msg_ptr)) {
         return;
+    }
+
+    if (msg_ptr->address_info->balance() <
+            tx_msg.amount() + tx_msg.contract_prepayment() +
+            default_gas * tx_msg.gas_price()) {
+        ZJC_DEBUG("address balance invalid: %lu, transfer amount: %lu, "
+            "prepayment: %lu, default call contract gas: %lu, gas price: %lu",
+            msg_ptr->address_info->balance(),
+            tx_msg.amount(),
+            tx_msg.contract_prepayment(),
+            default_gas,
+            tx_msg.gas_price());
+        return false;
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
