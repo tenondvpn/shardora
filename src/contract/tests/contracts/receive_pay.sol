@@ -9,7 +9,7 @@ contract ReceiverPays {
     // 收款方认领付款
     function claimPayment(uint256 amount, bytes memory signature) public {
         // 重建在客户端签名的信息
-        bytes32 message = prefixed(keccak256(abi.encode(msg.sender, amount, nonce, this)));
+        bytes32 message = prefixed(keccak256(abi.encode(msg.sender, amount, this)));
 
         require(recoverSigner(message, signature) == owner);
 
