@@ -11,7 +11,7 @@ contract Phr {
     }
 
     mapping(uint256 => RidInfo) rids;
-    mapping(bytes memory => bytes32[]) attrs;
+    mapping(bytes => bytes32[]) attrs;
 
     constructor(address[] aas) payable {
         valid_aas = aas;
