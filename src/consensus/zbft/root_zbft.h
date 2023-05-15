@@ -26,7 +26,6 @@ public:
     void RootCreateAddressCrossSharding(block::protobuf::Block& zjc_block);
     void RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_block);
     void RootCreateTimerBlock(block::protobuf::Block& zjc_block);
-    void RootCreateFinalStatistic(block::protobuf::Block& zjc_block);
     int RootBackupCheckPrepare(
         const transport::MessagePtr& msg_ptr,
         int32_t* invalid_tx_idx,

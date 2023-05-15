@@ -29,9 +29,6 @@ void RootZbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) 
         case pools::protobuf::kConsensusRootTimeBlock:
             RootCreateTimerBlock(zjc_block);
             break;
-        case pools::protobuf::kConsensusFinalStatistic:
-            RootCreateFinalStatistic(zjc_block);
-            break;
         case pools::protobuf::kRootCreateAddressCrossSharding:
             RootCreateAddressCrossSharding(zjc_block);
             break;
@@ -168,41 +165,6 @@ void RootZbft::RootCreateTimerBlock(block::protobuf::Block& zjc_block) {
     // (TODO): check elect is valid in the time block period,
     // one time block, one elect block
     // check after this shard statistic block coming
-}
-
-void RootZbft::RootCreateFinalStatistic(block::protobuf::Block& zjc_block) {
-    auto tx_list = zjc_block.mutable_tx_list();
-    auto& tx = *tx_list->Add();
-    auto& tx_map = txs_ptr_->txs;
-    if (tx_map.size() != 1) {
-        return;
-    }
-
-    auto iter = tx_map.begin();
-    auto& src_tx = iter->second->msg_ptr->header.tx_proto();
-    iter->second->TxToBlockTx(src_tx, db_batch_, &tx);
-    tx.set_amount(0);
-    tx.set_gas_limit(0);
-    tx.set_gas_used(0);
-    tx.set_balance(0);
-    tx.set_status(kConsensusSuccess);
-    // if (src_tx.key() == tmblock::kAttrTimerBlockHeight) {
-    //     block::protobuf::StatisticInfo statistic_info;
-    //     uint64_t timeblock_height = 0;
-    //     if (common::StringUtil::ToUint64(tx.attr(i).value(), &timeblock_height)) {
-    //         block::ShardStatistic::Instance()->GetStatisticInfo(
-    //             timeblock_height,
-    //             &statistic_info);
-    //         auto statistic_attr = tx.add_storages();
-    //         statistic_attr->set_key(bft::kStatisticAttr);
-    //         statistic_attr->set_value(statistic_info.SerializeAsString());
-    //     }
-    // }
-
-    // (TODO): check elect is valid in the time block period,
-    // one time block, one elect block
-    // check after this shard statistic block coming
-    
 }
 
 int RootZbft::RootBackupCheckPrepare(
