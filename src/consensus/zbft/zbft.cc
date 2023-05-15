@@ -122,17 +122,11 @@ int Zbft::LeaderCreatePrepare(zbft::protobuf::ZbftMessage* bft_msg) {
     //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
 
     zbft::protobuf::TxBft& tx_bft = *bft_msg->mutable_tx_bft();
-    if (txs_ptr_->bloom_filter == nullptr) {
-        auto& tx_map = txs_ptr_->txs;
-        for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
-            tx_bft.add_tx_hash_list(iter->first);
-        }
-    } else {
-        auto bloom_datas = txs_ptr_->bloom_filter->data();
-        for (auto iter = bloom_datas.begin(); iter != bloom_datas.end(); ++iter) {
-            tx_bft.add_bloom_filter(*iter);
-        }
+    auto& tx_map = txs_ptr_->txs;
+    for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
+        tx_bft.add_tx_hash_list(iter->first);
     }
+    
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
     bft_msg->mutable_tx_bft()->release_block();
