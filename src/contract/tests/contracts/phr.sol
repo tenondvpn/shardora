@@ -21,7 +21,7 @@ contract Phr {
         rids[rid] = RidInfo({
             pk: pkDo,
             ci: ci
-        })
+        });
     }
 
     function AttrReg(bytes memory pk, bytes32 attr_hash, bytes[] memory sigs) returns (bool) {
