@@ -206,7 +206,7 @@ private:
     }
 
     pools::TxItemPtr CreateLibraryTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<CreateLibrary>(msg_ptr);
+        return std::make_shared<CreateLibrary>(msg_ptr, account_mgr_, security_ptr_);
     }
 
     pools::TxItemPtr CreateElectTx(const transport::MessagePtr& msg_ptr) {
