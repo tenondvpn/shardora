@@ -872,6 +872,24 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     }
 }
 
+pools::TxItemPtr BlockManager::GetCrossTx(uint32_t pool_index, bool leader) {
+    if (cross_statistic_tx_ != nullptr && !cross_statistic_tx_->tx_ptr->in_consensus) {
+        auto now_tm = common::TimeUtils::TimestampUs();
+        if (leader && cross_statistic_tx_->tx_ptr->time_valid > now_tm) {
+            return nullptr;
+        }
+
+        cross_statistic_tx_->tx_ptr->msg_ptr->address_info =
+            account_mgr_->pools_address_info(pool_index);
+        auto* tx = cross_statistic_tx_->tx_ptr->msg_ptr->header.mutable_tx_proto();
+        tx->set_to(cross_statistic_tx_->tx_ptr->msg_ptr->address_info->addr());
+        cross_statistic_tx_->tx_ptr->in_consensus = true;
+        return cross_statistic_tx_->tx_ptr;
+    }
+
+    return nullptr;
+}
+
 pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) {
     if (shard_statistic_tx_ != nullptr && !shard_statistic_tx_->tx_ptr->in_consensus) {
         auto now_tm = common::TimeUtils::TimestampUs();

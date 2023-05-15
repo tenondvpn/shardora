@@ -86,7 +86,7 @@ public:
     pools::TxItemPtr GetToTx(uint32_t pool_index, bool leader);
     pools::TxItemPtr GetStatisticTx(uint32_t pool_index, bool leader);
     pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);
-    pools::TxItemPtr GetCrossTx(uint32_t pool_index, const std::string& tx_hash);
+    pools::TxItemPtr GetCrossTx(uint32_t pool_index, bool leader);
     void LoadLatestBlocks(uint8_t thread_idx);
     // just genesis call
     void GenesisAddAllAccount(
