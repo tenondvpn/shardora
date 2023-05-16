@@ -465,35 +465,41 @@ bool BlsDkg::VerifySekkeyValid(
         const libff::alt_bn128_Fr& seckey) {
     bls::protobuf::BlsVerifyValue verify_val;
     uint32_t changed_idx = 0;
+    ZJC_DEBUG("a");
     libff::alt_bn128_G2 new_val = GetVerifyG2FromDb(peer_index, &changed_idx);
     if (new_val == libff::alt_bn128_G2::zero()) {
         assert(false);
         return false;
     }
 
+    ZJC_DEBUG("b");
     bls::protobuf::JoinElectBlsInfo verfy_final_vals;
     if (!prefix_db_->GetVerifiedG2s((*members_)[peer_index]->id, &verfy_final_vals)) {
         assert(false);
         return false;
     }
 
+    ZJC_DEBUG("c");
     std::string val;
     if (!prefix_db_->GetTemporaryKv(verfy_final_vals.src_hash(), &val)) {
         assert(false);
         return false;
     }
 
+    ZJC_DEBUG("d");
     init::protobuf::JoinElectInfo join_info;
     if (!join_info.ParseFromString(val)) {
         assert(false);
         return false;
     }
 
+    ZJC_DEBUG("e");
     if (join_info.g2_req().verify_vec_size() <= changed_idx) {
         assert(false);
         return false;
     }
 
+    ZJC_DEBUG("f");
     libff::alt_bn128_G2 old_val;
     {
         auto& item = join_info.g2_req().verify_vec(changed_idx);
@@ -509,12 +515,14 @@ bool BlsDkg::VerifySekkeyValid(
         old_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
     }
 
+    ZJC_DEBUG("g");
     auto midx = idx / common::kElectNodeMinMemberIndex;
-    if (verfy_final_vals.verify_req().verify_vec_size() < midx) {
+    if (verfy_final_vals.verify_req().verify_vec_size() <= midx) {
         assert(false);
         return false;
     }
 
+    ZJC_DEBUG("h");
     auto& item = verfy_final_vals.verify_req().verify_vec(midx);
     auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
     auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
@@ -529,6 +537,7 @@ bool BlsDkg::VerifySekkeyValid(
     auto old_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx) * old_val;
     auto new_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx) * new_val;
     all_verified_val = all_verified_val - old_g2_val + new_g2_val;
+    ZJC_DEBUG("i");
     return all_verified_val == seckey * libff::alt_bn128_G2::one();
 }
 
