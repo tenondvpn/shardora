@@ -20,6 +20,7 @@ message BlsPublicKey {
 
 message VerifyVecBrdReq {
     repeated VerifyVecItem verify_vec = 1;
+    optional uint32 change_idx = 2;
 }
 
 message JoinElectBlsInfo {
@@ -29,6 +30,7 @@ message JoinElectBlsInfo {
 
 message LocalPolynomial {
     repeated bytes polynomial = 1;
+    optional uint32 change_idx = 2 [default=0];
 }
 
 message LocalBlsItem {

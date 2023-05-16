@@ -783,37 +783,57 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
 }
 
 void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
-    valid_swapkey_set_.insert(local_member_index_);
-    ++valid_sec_key_count_;
-    std::vector<libff::alt_bn128_Fr> polynomial = dkg_instance_->GeneratePolynomial();
+    bls::protobuf::LocalPolynomial local_poly;
+    if (!prefix_db_->GetLocalPolynomial(security_, security_->GetAddress(), &local_poly)) {
+        assert(false);
+        return;
+    }
+
+    if (local_poly.polynomial_size() != valid_t) {
+        assert(false);
+        return;
+    }
+
+    std::vector<libff::alt_bn128_Fr> polynomial(valid_t);
+    int32_t change_idx = local_poly.change_idx();
+    for (int32_t i = 0; i < valid_t; ++i) {
+        polynomial[i] = libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)));
+        if (change_idx == i) {
+            polynomial[i] = libff::alt_bn128_Fr::random_element();
+            while (polynomial[i] == libff::alt_bn128_Fr::zero()) {
+                polynomial[i] = libff::alt_bn128_Fr::random_element();
+            }
+        }
+    }
+
+    auto new_g2 = polynomial[change_idx] * libff::alt_bn128_G2::one();
     local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(
         polynomial, valid_n, valid_t);
     auto val = libBLS::ThresholdUtils::fieldElementToString(
         local_src_secret_key_contribution_[local_member_index_]);
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, local_member_index_, val);
-    auto g2_vec = dkg_instance_->VerificationVector(polynomial);
 
 #ifdef ZJC_UNITTEST
-    g2_vec_ = g2_vec;
+    g2_vec_.clear();
+    g2_vec_.push_back(polynomial[0] * libff::alt_bn128_G2::one());
 #endif // ZJC_UNITTEST
 
     bls::protobuf::VerifyVecBrdReq bls_verify_req;
-    for (uint32_t i = 0; i < valid_t; ++i) {
-        bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req.add_verify_vec();
-        verify_item.set_x_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
-        verify_item.set_x_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c1)));
-        verify_item.set_y_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
-        verify_item.set_y_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
+    bls_verify_req.set_change_idx(change_idx);
+    bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req.add_verify_vec();
+    verify_item.set_x_c0(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(new_g2.X.c0)));
+    verify_item.set_x_c1(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(new_g2.X.c1)));
+    verify_item.set_y_c0(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(new_g2.Y.c0)));
+    verify_item.set_y_c1(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(new_g2.Y.c1)));
 //         verify_item.set_z_c0(common::Encode::HexDecode(
 //             libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
 //         verify_item.set_z_c1(common::Encode::HexDecode(
 //             libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
-    }
     
     auto str = bls_verify_req.SerializeAsString();
     prefix_db_->AddBlsVerifyG2(security_->GetAddress(), bls_verify_req);
@@ -822,6 +842,11 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
 //         local_member_index_, elect_hegiht_, local_member_index_, 0,
 //         common::Encode::HexEncode((*members_)[local_member_index_]->id).c_str(),
 //         common::Encode::HexEncode(verify_item.x_c0()).c_str());
+    valid_swapkey_set_.insert(local_member_index_);
+    ++valid_sec_key_count_;
+    change_idx = (change_idx + 1) % valid_t;
+    local_poly.set_change_idx(change_idx);
+    prefix_db_->SaveLocalPolynomial(security_, security_->GetAddress(), local_poly);
 }
 
 void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
