@@ -108,7 +108,7 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
     libBLS::Dkg dkg_instance = libBLS::Dkg(valid_t, valid_n);
     std::vector<std::vector<libff::alt_bn128_Fr>> polynomial(prikeys.size());
     for (auto& pol : polynomial) {
-        pol = dkg_instance->GeneratePolynomial();
+        pol = dkg_instance.GeneratePolynomial();
     }
 
     std::vector<std::vector<libff::alt_bn128_Fr>> secret_key_contribution(valid_n);
@@ -136,9 +136,9 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
         secptr->SetPrivateKey(prikeys[idx]);
         bls::protobuf::LocalPolynomial local_poly;
-        for (uint32_t j = 0; j < polynomial[i].size(); ++j) {
+        for (uint32_t j = 0; j < polynomial[idx].size(); ++j) {
             local_poly.add_polynomial(common::Encode::HexDecode(
-                libBLS::ThresholdUtils::fieldElementToString(polynomial[i][j])));
+                libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j])));
         }
 
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
