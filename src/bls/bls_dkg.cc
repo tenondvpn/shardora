@@ -469,6 +469,7 @@ bool BlsDkg::VerifySekkeyValid(
         return false;
     }
 
+    std::cout << "get change idx: " << changed_idx << std::endl;
     changed_idx = 0;
     ZJC_DEBUG("b");
     bls::protobuf::JoinElectBlsInfo verfy_final_vals;
