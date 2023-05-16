@@ -504,12 +504,12 @@ bool BlsDkg::VerifySekkeyValid(
     }
 
     init::protobuf::JoinElectInfo join_info;
-    if (!join_info.ParseFromStrimg(val)) {
+    if (!join_info.ParseFromString(val)) {
         assert(false);
         return false;
     }
 
-    if (join_info.g2_req.verify_vec_size() <= changed_idx) {
+    if (join_info.g2_req().verify_vec_size() <= changed_idx) {
         assert(false);
         return false;
     }
@@ -571,7 +571,7 @@ libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t peer_mem_index, uint32_t*
     auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
     auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
     auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
-    *changed_idx = req.changed_idx();
+    *changed_idx = req.change_idx();
     return libff::alt_bn128_G2(x_coord, y_coord, z_coord);
 }
 
