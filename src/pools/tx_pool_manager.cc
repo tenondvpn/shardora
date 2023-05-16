@@ -475,7 +475,8 @@ bool TxPoolManager::SaveNodeVerfiyVec(
         auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
         auto g2 = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
         for (int32_t j = 0; j < all_pos_count; ++j) {
-            verify_g2s[j] = verify_g2s[j] + power(libff::alt_bn128_Fr(local_member_idx + 1), i) * g2;
+            auto midx = local_member_idx + j * common::kElectNodeMinMemberIndex;
+            verify_g2s[j] = verify_g2s[j] + power(libff::alt_bn128_Fr(midx + 1), i) * g2;
         }
 
         str_for_hash.append(item.x_c0());
