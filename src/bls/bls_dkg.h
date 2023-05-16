@@ -91,7 +91,7 @@ private:
     void SendGetVerifyInfo(uint8_t thread_idx, int32_t index);
     void CheckSwapKeyAllValid(uint8_t thread_idx);
     void SendGetSwapKey(uint8_t thread_idx, int32_t index);
-    libff::alt_bn128_G2 GetVerifyG2FromDb(uint32_t first_index);
+    libff::alt_bn128_G2 GetVerifyG2FromDb(uint32_t first_index, uint32_t* changed_idx);
     void DumpLocalPrivateKey();
     bool VerifySekkeyValid(uint32_t idx, uint32_t peer_index, const libff::alt_bn128_Fr& seckey);
     void LoadAllVerifyValues();

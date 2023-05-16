@@ -710,7 +710,8 @@ void BlsDkg::FinishNoLock(uint8_t thread_idx) try {
             continue;
         }
 
-        auto g2_val = GetVerifyG2FromDb(i);
+        uint32_t changed_idx = 0;
+        auto g2_val = GetVerifyG2FromDb(i, &changed_idx);
         if (g2_val == libff::alt_bn128_G2::zero()) {
             valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
             common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
