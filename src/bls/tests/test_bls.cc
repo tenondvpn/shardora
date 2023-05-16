@@ -578,7 +578,7 @@ TEST_F(TestBls, AllSuccess) {
         auto* req = join_info.mutable_g2_req();
         auto g2_vec = dkg_instance.VerificationVector(polynomial[idx]);
 
-        auto all_pos_count = pri_vec.size() / common::kElectNodeMinMemberIndex;
+        auto all_pos_count = pri_vec.size() / common::kElectNodeMinMemberIndex + 1;
         std::vector<libff::alt_bn128_G2> verify_g2s(all_pos_count, libff::alt_bn128_G2::zero());
         auto local_member_idx = common::GlobalInfo::Instance()->config_local_member_idx();
         bls::protobuf::JoinElectBlsInfo verfy_final_vals;
