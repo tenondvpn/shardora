@@ -44,8 +44,6 @@ void BlsDkg::Init(
     common_public_key_ = common_public_key;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-    max_member_count_ = common::GlobalInfo::Instance()->each_shard_max_members();
-    max_agree_count_ = common::GetSignerCount(max_member_count_);
 }
 
 void BlsDkg::Destroy() {
@@ -96,7 +94,7 @@ void BlsDkg::OnNewElectionBlock(
 //     memset(invalid_node_map_, 0, sizeof(invalid_node_map_));
     min_aggree_member_count_ = common::GetSignerCount(members_->size());
     member_count_ = members_->size();
-    dkg_instance_ = std::make_shared<libBLS::Dkg>(max_agree_count_, max_member_count_);
+    dkg_instance_ = std::make_shared<libBLS::Dkg>(members_->size(), min_aggree_member_count_);
     elect_hegiht_ = elect_height;
     for (uint32_t i = 0; i < members_->size(); ++i) {
         if ((*members_)[i]->id == security_->GetAddress()) {

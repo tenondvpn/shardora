@@ -163,8 +163,6 @@ private:
     std::unordered_map<int32_t, std::string> swap_key_map_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    int32_t max_member_count_ = 1024;
-    int32_t max_agree_count_ = 1024 * 2 / 3 + 1;
     uint64_t ver_offset_ = 0;
     uint64_t swap_offset_ = 0;
     uint64_t finish_offset_ = 0;
