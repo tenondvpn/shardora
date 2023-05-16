@@ -39,6 +39,7 @@ void BlsDkg::Init(
     security_ = security;
     min_aggree_member_count_ = common::GetSignerCount(n);
     member_count_ = n;
+    dkg_instance_ = std::make_shared<libBLS::Dkg>(member_count_, min_aggree_member_count_);
     local_sec_key_ = local_sec_key;
     local_publick_key_ = local_publick_key;
     common_public_key_ = common_public_key;
@@ -90,11 +91,10 @@ void BlsDkg::OnNewElectionBlock(
     max_finish_hash_ = "";
     valid_sec_key_count_ = 0;
     members_ = members;
+    assert(members_->size() == member_count_);
     valid_swapkey_set_.clear();
 //     memset(invalid_node_map_, 0, sizeof(invalid_node_map_));
     min_aggree_member_count_ = common::GetSignerCount(members_->size());
-    member_count_ = members_->size();
-    dkg_instance_ = std::make_shared<libBLS::Dkg>(members_->size(), min_aggree_member_count_);
     elect_hegiht_ = elect_height;
     for (uint32_t i = 0; i < members_->size(); ++i) {
         if ((*members_)[i]->id == security_->GetAddress()) {
