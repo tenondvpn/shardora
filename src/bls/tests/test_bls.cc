@@ -649,6 +649,7 @@ TEST_F(TestBls, AllSuccess) {
     latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
     latest_timeblock_info->latest_time_block_height = 1;
     latest_timeblock_info->vss_random = common::Random::RandomUint64();
+    std::cout << "now create contribution." << std::endl;
     CreateContribution(members, dkg, pri_vec, latest_timeblock_info, verify_brd_msgs);
     auto time1 = common::TimeUtils::TimestampUs();
     std::cout << "0: " << (time1 - time0) << std::endl;
