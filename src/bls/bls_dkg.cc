@@ -140,7 +140,7 @@ void BlsDkg::OnNewElectionBlock(
     BLS_ERROR("catch error: %s", e.what());
 }
 
-void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) /*try*/ {
+void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) try {
     if (members_ == nullptr) {
         BLS_ERROR("members_ == nullptr");
         return;
@@ -189,8 +189,8 @@ void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) /*try*/ {
     if (bls_msg.has_check_swapkey_req()) {
         HandleCheckSwapKeyReq(msg_ptr);
     }
-// } catch (std::exception& e) {
-//     BLS_ERROR("catch error: %s", e.what());
+} catch (std::exception& e) {
+    BLS_ERROR("catch error: %s", e.what());
 }
 
 bool BlsDkg::IsSignValid(const transport::MessagePtr& msg_ptr, std::string* content_to_hash) {
@@ -374,7 +374,7 @@ void BlsDkg::HandleCheckSwapKeyReq(const transport::MessagePtr& msg_ptr) {
     msg_ptr->conn->Send(msg.SerializeAsString());
 }
 
-void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) /*try*/ {
+void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
     if (!IsSwapKeyPeriod()) {
@@ -447,8 +447,8 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) /*try*/ {
     valid_swapkey_set_.insert(bls_msg.index());
     ++valid_sec_key_count_;
     has_swaped_keys_[bls_msg.index()] = true;
-// } catch (std::exception& e) {
-//     BLS_ERROR("catch error: %s", e.what());
+} catch (std::exception& e) {
+    BLS_ERROR("catch error: %s", e.what());
 }
 
 bool BlsDkg::VerifySekkeyValid(
