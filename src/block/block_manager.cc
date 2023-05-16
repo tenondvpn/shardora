@@ -604,7 +604,7 @@ void BlockManager::HandleJoinElectTx(
 
             verfy_final_vals.set_src_hash(check_hash);
             auto verified_val = verfy_final_vals.SerializeAsString();
-            prefix_db_->SaveVerifiedG2s(tx.from(), verfy_final_vals, db_batch);
+            prefix_db_->SaveVerifiedG2s(local_member_idx, tx.from(), verfy_final_vals, db_batch);
             break;
         }
     }

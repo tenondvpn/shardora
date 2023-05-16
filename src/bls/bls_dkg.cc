@@ -472,7 +472,10 @@ bool BlsDkg::VerifySekkeyValid(
     std::cout << "get change idx: " << changed_idx << std::endl;
     ZJC_DEBUG("b");
     bls::protobuf::JoinElectBlsInfo verfy_final_vals;
-    if (!prefix_db_->GetVerifiedG2s((*members_)[peer_index]->id, &verfy_final_vals)) {
+    if (!prefix_db_->GetVerifiedG2s(
+            local_member_index_,
+            (*members_)[peer_index]->id,
+            &verfy_final_vals)) {
         assert(false);
         return false;
     }
@@ -860,6 +863,80 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, local_member_index_, val);
 
+    for (uint32_t mem_idx = 0; mem_idx < member_count_; ++mem_idx) {
+        if (mem_idx == local_member_index_) {
+            continue;
+        }
+
+        bls::protobuf::JoinElectBlsInfo verfy_final_vals;
+        if (!prefix_db_->GetVerifiedG2s(
+                mem_idx,
+                (*members_)[local_member_index_]->id,
+                &verfy_final_vals)) {
+            assert(false);
+            return false;
+        }
+
+        ZJC_DEBUG("c");
+        std::string val;
+        if (!prefix_db_->GetTemporaryKv(verfy_final_vals.src_hash(), &val)) {
+            assert(false);
+            return false;
+        }
+
+        ZJC_DEBUG("d");
+        init::protobuf::JoinElectInfo join_info;
+        if (!join_info.ParseFromString(val)) {
+            assert(false);
+            return false;
+        }
+
+        ZJC_DEBUG("e");
+        if (join_info.g2_req().verify_vec_size() <= change_idx) {
+            assert(false);
+            return false;
+        }
+
+        ZJC_DEBUG("f");
+        libff::alt_bn128_G2 old_val;
+        {
+            auto& item = join_info.g2_req().verify_vec(change_idx);
+            auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+            auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+            auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+            auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+            auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+            auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+            auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+            auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+            auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+            old_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+        }
+
+        ZJC_DEBUG("g");
+        auto midx = idx / common::kElectNodeMinMemberIndex;
+        if (verfy_final_vals.verify_req().verify_vec_size() <= midx) {
+            assert(false);
+            return false;
+        }
+
+        ZJC_DEBUG("h");
+        auto& item = verfy_final_vals.verify_req().verify_vec(midx);
+        auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+        auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+        auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+        auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+        auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+        auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+        auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+        auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+        auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+        auto all_verified_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+        auto old_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx) * old_val;
+        auto new_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx) * new_g2;
+        all_verified_val = all_verified_val - old_g2_val + new_g2_val;
+        assert(all_verified_val == local_src_secret_key_contribution_)
+    }
 #ifdef ZJC_UNITTEST
     g2_vec_.clear();
     g2_vec_.push_back(polynomial[0] * libff::alt_bn128_G2::one());
