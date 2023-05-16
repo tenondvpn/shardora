@@ -431,7 +431,6 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     }
 
     ZJC_DEBUG("6");
-    libff::alt_bn128_G2 first_g2 = libff::alt_bn128_G2::zero();
     auto tmp_swap_key = libff::alt_bn128_Fr(sec_key.c_str());
     if (!VerifySekkeyValid(local_member_index_, bls_msg.index(), tmp_swap_key)) {
         ZJC_ERROR("verify error member: %d, index: %d, %s , min_aggree_member_count_: %d",
@@ -532,8 +531,8 @@ bool BlsDkg::VerifySekkeyValid(
     auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
     auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
     auto all_verified_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-    auto old_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx) * old_val;
-    auto new_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx) * new_val;
+    auto old_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx - 1) * old_val;
+    auto new_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx - 1) * new_val;
     all_verified_val = all_verified_val - old_g2_val + new_g2_val;
     ZJC_DEBUG("i");
     return all_verified_val == seckey * libff::alt_bn128_G2::one();
@@ -882,11 +881,6 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     
     auto str = bls_verify_req.SerializeAsString();
     prefix_db_->AddBlsVerifyG2(security_->GetAddress(), bls_verify_req);
-    std::cout << "verify vec size: " << str.size() << std::endl;
-//     ZJC_DEBUG("save verify g2 success local: %d, %lu, %u, %u, %s, %s",
-//         local_member_index_, elect_hegiht_, local_member_index_, 0,
-//         common::Encode::HexEncode((*members_)[local_member_index_]->id).c_str(),
-//         common::Encode::HexEncode(verify_item.x_c0()).c_str());
     valid_swapkey_set_.insert(local_member_index_);
     ++valid_sec_key_count_;
     change_idx = (change_idx + 1) % valid_t;
