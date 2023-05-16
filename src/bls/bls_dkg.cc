@@ -382,12 +382,14 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
+    ZJC_DEBUG("0");
     if (bls_msg.swap_req().keys_size() <= (int32_t)local_member_index_) {
         ZJC_WARN("swap key size error: %d, %d",
             bls_msg.swap_req().keys_size(), local_member_index_);
         return;
     }
 
+    ZJC_DEBUG("1");
     std::string msg_hash;
     if (!IsSignValid(msg_ptr, &msg_hash)) {
         BLS_ERROR("sign verify failed!");
@@ -396,6 +398,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
 
     std::string dec_msg;
     std::string encrypt_key;
+    ZJC_DEBUG("2");
     if (security_->GetEcdhKey(
             (*members_)[bls_msg.index()]->pubkey,
             &encrypt_key) != security::kSecuritySuccess) {
@@ -403,6 +406,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
+    ZJC_DEBUG("3");
     int res = security_->Decrypt(
         bls_msg.swap_req().keys(local_member_index_).sec_key(),
         encrypt_key,
@@ -412,6 +416,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
+    ZJC_DEBUG("4");
     std::string sec_key(dec_msg.substr(
         0,
         bls_msg.swap_req().keys(local_member_index_).sec_key_len()));
@@ -421,11 +426,13 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
+    ZJC_DEBUG("5");
     if (has_swaped_keys_[bls_msg.index()]) {
         BLS_WARN("has_swaped_keys_  %d.", bls_msg.index());
         return;
     }
 
+    ZJC_DEBUG("65");
     libff::alt_bn128_G2 first_g2 = libff::alt_bn128_G2::zero();
     auto tmp_swap_key = libff::alt_bn128_Fr(sec_key.c_str());
     if (!VerifySekkeyValid(local_member_index_, bls_msg.index(), tmp_swap_key)) {
