@@ -527,7 +527,7 @@ void BlockManager::HandleJoinElectTx(
         db::DbWriteBatch& db_batch) {
     prefix_db_->SaveElectNodeStoke(
         tx.from(),
-        block->electblock_height(),
+        block.electblock_height(),
         tx.balance(),
         db_batch);
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
@@ -550,7 +550,11 @@ void BlockManager::HandleJoinElectTx(
             auto local_member_idx = common::GlobalInfo::Instance()->config_local_member_idx();
             bls::protobuf::JoinElectBlsInfo verfy_final_vals;
             std::string str_for_hash;
-            str_for_hash.reserve(verify_g2s.size() * 4 * 64);
+            str_for_hash.reserve(verify_g2s.size() * 4 * 64 + 8);
+            uint32_t shard_id = join_info.shard_id();
+            uint32_t mem_idx = join_info.member_idx();
+            str_for_hash.append((char*)&shard_id, sizeof(shard_id));
+            str_for_hash.append((char*)&mem_idx, sizeof(mem_idx));
             for (int32_t i = 0; i < join_info.g2_req().verify_vec_size(); ++i) {
                 auto& item = join_info.g2_req().verify_vec(i);
                 auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
@@ -598,7 +602,7 @@ void BlockManager::HandleJoinElectTx(
 
             verfy_final_vals.set_src_hash(check_hash);
             auto verified_val = verfy_final_vals.SerializeAsString();
-            prefix_db_->SaveVerifiedG2s(tx.from(), verfy_final_vals);
+            prefix_db_->SaveVerifiedG2s(tx.from(), verfy_final_vals, db_batch);
             break;
         }
     }

@@ -1179,6 +1179,18 @@ public:
 
     void SaveVerifiedG2s(
             const std::string& id,
+            const bls::protobuf::JoinElectBlsInfo& verfy_final_vals,
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(128);
+        key.append(kLocalVerifiedG2Prefix);
+        key.append(id);
+        std::string val = verfy_final_vals.SerializeAsString();
+        db_batch.Put(key, val);
+    }
+
+    void SaveVerifiedG2s(
+            const std::string& id,
             const bls::protobuf::JoinElectBlsInfo& verfy_final_vals) {
         std::string key;
         key.reserve(128);
