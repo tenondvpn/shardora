@@ -788,11 +788,13 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     std::vector<libff::alt_bn128_Fr> polynomial(valid_t);// = dkg_instance_->GeneratePolynomial();
     for (uint32_t i = 0; i < valid_t; ++i) {
         polynomial[i].mont_repr = rand() % 3 + 1;
-        std::cout << "pol " << i << " ";
-        polynomial[i].print();
-        auto tmp_mul = polynomial[i] * libff::alt_bn128_Fr::one();
-        std::cout << "mul " << i << " ";
-        polynomial[i].print();
+        if (i == 0) {
+            std::cout << "pol " << i << " ";
+            polynomial[i].print();
+            auto tmp_mul = polynomial[i] * libff::alt_bn128_Fr::one();
+            std::cout << "mul " << i << " ";
+            polynomial[i].print();
+        }
     }
 
     local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(
@@ -822,10 +824,12 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
 //             libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
 //         verify_item.set_z_c1(common::Encode::HexDecode(
 //             libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
-        std::cout << "g2 " << i << " ";
-        g2_vec[i].print();
-        std::cout << "contri " << i << " ";
-        local_src_secret_key_contribution_[i].print();
+        if (i == 0) {
+            std::cout << "g2 " << i << " ";
+            g2_vec[i].print();
+            std::cout << "contri " << i << " ";
+            local_src_secret_key_contribution_[i].print();
+        }
     }
     
     auto str = bls_verify_req.SerializeAsString();
