@@ -595,6 +595,10 @@ TEST_F(TestBls, AllSuccess) {
                 libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
             verify_item.set_y_c1(common::Encode::HexDecode(
                 libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
+            verify_item.set_z_c0(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
+            verify_item.set_z_c1(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
 
             auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(verify_item.x_c0()).c_str());
             auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(verify_item.x_c1()).c_str());
@@ -615,6 +619,8 @@ TEST_F(TestBls, AllSuccess) {
             str_for_hash.append(verify_item.x_c1());
             str_for_hash.append(verify_item.y_c0());
             str_for_hash.append(verify_item.y_c1());
+            str_for_hash.append(verify_item.z_c0());
+            str_for_hash.append(verify_item.z_c1());
         }
 
         auto check_hash = common::Hash::keccak256(str_for_hash);
