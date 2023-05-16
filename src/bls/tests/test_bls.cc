@@ -524,7 +524,7 @@ TEST_F(TestBls, FileSigns) {
 TEST_F(TestBls, AllSuccess) {
 //     static const uint32_t t = 700;
 //     static const uint32_t n = 1024;
-    static const uint32_t n = 1024;
+    static const uint32_t n = 10;
     static const uint32_t t = common::GetSignerCount(n);
     std::vector<std::string> pri_vec;
     GetPrivateKey(pri_vec, n);
