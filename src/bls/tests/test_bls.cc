@@ -584,7 +584,6 @@ TEST_F(TestBls, AllSuccess) {
 
         auto all_pos_count = pri_vec.size() / common::kElectNodeMinMemberIndex + 1;
         std::vector<libff::alt_bn128_G2> verify_g2s(all_pos_count, libff::alt_bn128_G2::zero());
-        auto local_member_idx = common::GlobalInfo::Instance()->config_local_member_idx();
         bls::protobuf::JoinElectBlsInfo verfy_final_vals;
         std::string str_for_hash;
         str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
@@ -615,7 +614,7 @@ TEST_F(TestBls, AllSuccess) {
             auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
             auto g2 = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
             for (int32_t j = 0; j < all_pos_count; ++j) {
-                auto midx = local_member_idx + j * common::kElectNodeMinMemberIndex;
+                auto midx = idx + j * common::kElectNodeMinMemberIndex;
                 verify_g2s[j] = verify_g2s[j] + power(libff::alt_bn128_Fr(midx + 1), i) * g2;
             }
 
@@ -633,7 +632,7 @@ TEST_F(TestBls, AllSuccess) {
         prefix_db->AddBlsVerifyG2(tmp_security_ptr->GetAddress(), *req);
 
         for (uint32_t i = 0; i < verify_g2s.size(); ++i) {
-            auto midx = local_member_idx + i * common::kElectNodeMinMemberIndex;
+            auto midx = idx + i * common::kElectNodeMinMemberIndex;
             ASSERT_TRUE(verify_g2s[i] == contributions[midx] * libff::alt_bn128_G2::one());
 
             bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verify_req()->add_verify_vec();
