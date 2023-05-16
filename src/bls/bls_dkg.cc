@@ -790,6 +790,9 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         polynomial[i].mont_repr = rand() % 3 + 1;
         std::cout << "pol " << i << " ";
         polynomial[i].print();
+        auto tmp_mul = polynomial[i] * libff::alt_bn128_Fr::one();
+        std::cout << "mul " << i << " ";
+        polynomial[i].print();
     }
 
     local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(
