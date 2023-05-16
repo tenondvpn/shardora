@@ -851,6 +851,8 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             while (polynomial[i] == libff::alt_bn128_Fr::zero()) {
                 polynomial[i] = libff::alt_bn128_Fr::random_element();
             }
+
+            std::cout << "success change: " << change_idx << std::endl;
         }
     }
 
