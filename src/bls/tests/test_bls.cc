@@ -552,9 +552,10 @@ TEST_F(TestBls, AllSuccess) {
         pol = dkg_instance.GeneratePolynomial();
     }
 
+    auto prefix_db = std::make_shared<protos::PrefixDb>(db_ptr);
     common::MembersPtr members = std::make_shared<common::Members>();
     for (uint32_t idx = 0; idx < pri_vec.size(); ++idx) {
-        auto tmp_security_ptr = dkg[i].security_;
+        auto tmp_security_ptr = dkg[idx].security_;
         std::string pubkey_str = tmp_security_ptr->GetPublicKey();
         std::string id = tmp_security_ptr->GetAddress();
         auto member = std::make_shared<common::BftMember>(
@@ -569,9 +570,10 @@ TEST_F(TestBls, AllSuccess) {
                 libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j])));
         }
 
-        prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
+        prefix_db->SaveLocalPolynomial(tmp_security_ptr, tmp_security_ptr->GetAddress(), local_poly);
         init::protobuf::JoinElectInfo join_info;
         join_info.set_member_idx(idx);
+        uint32_t sharding_id = 3;
         join_info.set_shard_id(sharding_id);
         auto* req = join_info.mutable_g2_req();
         auto g2_vec = dkg_instance.VerificationVector(polynomial[idx]);
@@ -617,8 +619,8 @@ TEST_F(TestBls, AllSuccess) {
 
         auto check_hash = common::Hash::keccak256(str_for_hash);
         auto str = join_info.SerializeAsString();
-        prefix_db_->SaveTemporaryKv(check_hash, str);
-        prefix_db_->AddBlsVerifyG2(secptr->GetAddress(), *req);
+        prefix_db->SaveTemporaryKv(check_hash, str);
+        prefix_db->AddBlsVerifyG2(tmp_security_ptr->GetAddress(), *req);
 
         for (uint32_t i = 0; i < verify_g2s.size(); ++i) {
             bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verify_req()->add_verify_vec();
@@ -638,7 +640,7 @@ TEST_F(TestBls, AllSuccess) {
 
         verfy_final_vals.set_src_hash(check_hash);
         auto verified_val = verfy_final_vals.SerializeAsString();
-        prefix_db_->SaveVerifiedG2s(id, verfy_final_vals);
+        prefix_db->SaveVerifiedG2s(id, verfy_final_vals);
     }
 
     auto time0 = common::TimeUtils::TimestampUs();
