@@ -650,6 +650,7 @@ TEST_F(TestBls, AllSuccess) {
         verfy_final_vals.set_src_hash(check_hash);
         auto verified_val = verfy_final_vals.SerializeAsString();
         prefix_db->SaveVerifiedG2s(idx, id, verfy_final_vals);
+        std::cout << "save " << idx << " " << common::Encode::HexEncode(id) << std::endl;
         prefix_db->SaveTemporaryKv(check_hash, str);
         prefix_db->AddBlsVerifyG2(tmp_security_ptr->GetAddress(), *req);
         prefix_db->SaveLocalPolynomial(tmp_security_ptr, tmp_security_ptr->GetAddress(), local_poly);

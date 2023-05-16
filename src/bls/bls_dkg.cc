@@ -873,6 +873,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
                 mem_idx,
                 (*members_)[local_member_index_]->id,
                 &verfy_final_vals)) {
+            std::cout << "get " << mem_idx << " " << common::Encode::HexEncode((*members_)[local_member_index_]->id) << std::endl;
             assert(false);
             return;
         }
