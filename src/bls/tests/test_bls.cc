@@ -577,6 +577,10 @@ TEST_F(TestBls, AllSuccess) {
         join_info.set_shard_id(sharding_id);
         auto* req = join_info.mutable_g2_req();
         auto g2_vec = dkg_instance.VerificationVector(polynomial[idx]);
+        auto contributions = dkg_instance.SecretKeyContribution(polynomial[idx]);
+        for (uint32_t i = 0; i < contributions.size(); ++i) {
+            ASSERT_TRUE(dkg_instance.Verification(i, contributions[i], g2_vec));
+        }
 
         auto all_pos_count = pri_vec.size() / common::kElectNodeMinMemberIndex + 1;
         std::vector<libff::alt_bn128_G2> verify_g2s(all_pos_count, libff::alt_bn128_G2::zero());
