@@ -527,8 +527,8 @@ void NetworkInit::CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_
     }
 
     auto local_member_index = common::GetAddressMemberIndex(security_->GetAddress());
-    auto g2_vec = dkg_instance_->VerificationVector(polynomial);
-    for (uint32_t i = 0; i < valid_t; ++i) {
+    auto g2_vec = dkg_instance.VerificationVector(polynomial);
+    for (uint32_t i = 0; i < t; ++i) {
         bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req->add_verify_vec();
         verify_item.set_x_c0(common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
