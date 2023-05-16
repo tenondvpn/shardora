@@ -160,10 +160,10 @@ TEST_F(TestBls, TestPolynomial) {
 }
 
 TEST_F(TestBls, ContributionSignAndVerify) {
-    static const uint32_t t = 684;
-    static const uint32_t n = 1024;
-    static const uint32_t valid_t = 68;
-    static const uint32_t valid_count = 100;
+    static const uint32_t t = 68;
+    static const uint32_t n = 100;
+    static const uint32_t valid_t = t;
+    static const uint32_t valid_count = n;
 
     SetGloableInfo(common::Random::RandomString(32), network::kConsensusShardBeginNetworkId);
     BlsDkg* dkg = new BlsDkg[n];
@@ -181,6 +181,12 @@ TEST_F(TestBls, ContributionSignAndVerify) {
         dkg[i].dkg_instance_ = std::make_shared<libBLS::Dkg>(t, n);
         dkg[i].local_member_index_ = i;
         dkg[i].CreateContribution(n, valid_t);
+        for (uint32_t j = 0; j < valid_count; ++j) {
+            ASSERT_TRUE(dkg[i].dkg_instance_->Verification(
+                j,
+                dkg[i].local_src_secret_key_contribution_[j],
+                dkg[i].g2_vec_));
+        }
     }
 
     std::cout << "CreateContribution time us: " << (common::TimeUtils::TimestampUs() - btime0) << std::endl;
