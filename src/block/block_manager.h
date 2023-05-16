@@ -127,6 +127,11 @@ private:
         const pools::protobuf::ToTxMessage& to_txs,
         uint32_t step,
         const std::string& heights_hash);
+    void HandleJoinElectTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
     void AddMiningToken(
         const std::string& block_hash,
         uint8_t thread_idx,

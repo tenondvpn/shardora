@@ -62,6 +62,7 @@ private:
         const std::vector<dht::NodePtr>& genesis_nodes);
     std::string GetValidPoolBaseAddr(uint32_t pool_index);
     int CreateBlsGenesisKeys(
+        protobuf::RepeatedPtrField< ::zjchain::block::protobuf::BlockTx >* tx_list,
         uint64_t elect_height,
         uint32_t sharding_id,
         const std::vector<std::string>& prikeys,

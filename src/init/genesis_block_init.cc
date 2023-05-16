@@ -99,6 +99,7 @@ void GenesisBlockInit::InitBlsVerificationValue() {
 }
 
 int GenesisBlockInit::CreateBlsGenesisKeys(
+        protobuf::RepeatedPtrField< ::zjchain::block::protobuf::BlockTx >* tx_list,
         uint64_t elect_height,
         uint32_t sharding_id,
         const std::vector<std::string>& prikeys,
@@ -142,6 +143,49 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         }
 
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
+        init::protobuf::JoinElectInfo join_info;
+        join_info.set_member_idx(idx);
+        join_info.set_shard_id(sharding_id);
+        auto* req = join_info.mutable_g2_req();
+        auto g2_vec = dkg_instance.VerificationVector(polynomial[idx]);
+
+        std::string str_for_hash;
+        str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
+        str_for_hash.append((char*)&idx, sizeof(idx));
+        for (uint32_t i = 0; i < valid_t; ++i) {
+            bls::protobuf::VerifyVecItem& verify_item = *req->add_verify_vec();
+            verify_item.set_x_c0(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
+            verify_item.set_x_c1(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c1)));
+            verify_item.set_y_c0(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
+            verify_item.set_y_c1(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
+            str_for_hash.append(verify_item.x_c0());
+            str_for_hash.append(verify_item.x_c1());
+            str_for_hash.append(verify_item.y_c0());
+            str_for_hash.append(verify_item.y_c1());
+        }
+
+        auto check_hash = common::Hash::keccak256(str_for_hash);
+        auto str = join_info.SerializeAsString();
+        prefix_db_->SaveTemporaryKv(*new_hash, str);
+        auto str = req->SerializeAsString();
+        prefix_db_->AddBlsVerifyG2(secptr->GetAddress(), *req);
+
+        auto join_elect_tx_info = tx_list->Add();
+        join_elect_tx_info->set_step(pools::protobuf::kJoinElect);
+        join_elect_tx_info->set_from(secptr->GetAddress());
+        join_elect_tx_info->set_to("");
+        join_elect_tx_info->set_amount(0);
+        join_elect_tx_info->set_gas_limit(0);
+        join_elect_tx_info->set_gas_used(0);
+        join_elect_tx_info->set_balance(0);
+        join_elect_tx_info->set_status(0);
+        join_elect_tx_info->set_key(protos::kJoinElectVerifyG2);
+        join_elect_tx_info->set_value(check_hash);
+
         libBLS::Dkg tmpdkg(valid_t, valid_n);
         auto local_sec_key = tmpdkg.SecretKeyShareCreate(secret_key_contribution[idx]);
         auto local_publick_key = tmpdkg.GetPublicKeyFromSecretKey(local_sec_key);

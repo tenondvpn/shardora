@@ -526,7 +526,6 @@ void NetworkInit::CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_
             libBLS::ThresholdUtils::fieldElementToString(polynomial[i])));
     }
 
-    auto local_member_index = common::GetAddressMemberIndex(security_->GetAddress());
     auto g2_vec = dkg_instance.VerificationVector(polynomial);
     for (uint32_t i = 0; i < t; ++i) {
         bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req->add_verify_vec();

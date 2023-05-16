@@ -503,11 +503,7 @@ void BlockManager::AddNewBlock(
             HandleElectTx(thread_idx, *block_item, tx_list[i], db_batch);
             break;
         case pools::protobuf::kJoinElect:
-            prefix_db_->SaveElectNodeStoke(
-                tx_list[i].from(),
-                block_item->electblock_height(),
-                tx_list[i].balance(),
-                db_batch);
+            HandleJoinElectTx(thread_idx, *block_item, tx_list[i], db_batch);
             break;
         default:
             break;
@@ -521,6 +517,90 @@ void BlockManager::AddNewBlock(
     auto st = db_->Put(db_batch);
     if (!st.ok()) {
         ZJC_FATAL("write block to db failed!");
+    }
+}
+
+void BlockManager::HandleJoinElectTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
+    prefix_db_->SaveElectNodeStoke(
+        tx.from(),
+        block->electblock_height(),
+        tx.balance(),
+        db_batch);
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
+            std::string val;
+            if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+                assert(false);
+                break;
+            }
+
+            init::protobuf::JoinElectInfo join_info;
+            if (!join_info.ParseFromString(val)) {
+                assert(false);
+                break;
+            }
+
+            auto all_pos_count = common::GlobalInfo::Instance()->each_shard_max_members() /
+                common::kElectNodeMinMemberIndex;
+            std::vector<libff::alt_bn128_G2> verify_g2s(all_pos_count, libff::alt_bn128_G2::zero());
+            auto local_member_idx = common::GlobalInfo::Instance()->config_local_member_idx();
+            bls::protobuf::JoinElectBlsInfo verfy_final_vals;
+            std::string str_for_hash;
+            str_for_hash.reserve(verify_g2s.size() * 4 * 64);
+            for (int32_t i = 0; i < join_info.g2_req().verify_vec_size(); ++i) {
+                auto& item = join_info.g2_req().verify_vec(i);
+                auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+                auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+                auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+                auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+                auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+                auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+                auto z_c0 = libff::alt_bn128_Fq::zero();
+                auto z_c1 = libff::alt_bn128_Fq::zero();
+                auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+                auto g2 = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+                for (int32_t j = 0; j < all_pos_count; ++j) {
+                    auto midx = local_member_idx + j * common::kElectNodeMinMemberIndex;
+                    verify_g2s[j] = verify_g2s[j] + power(libff::alt_bn128_Fr(midx + 1), i) * g2;
+                }
+
+                str_for_hash.append(item.x_c0());
+                str_for_hash.append(item.x_c1());
+                str_for_hash.append(item.y_c0());
+                str_for_hash.append(item.y_c1());
+            }
+
+            auto check_hash = common::Hash::keccak256(str_for_hash);
+            if (check_hash != tx.storages(i).val_hash()) {
+                assert(false);
+                break;
+            }
+
+            for (uint32_t i = 0; i < verify_g2s.size(); ++i) {
+                bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verify_req()->add_verify_vec();
+                verify_item.set_x_c0(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c0)));
+                verify_item.set_x_c1(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c1)));
+                verify_item.set_y_c0(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c0)));
+                verify_item.set_y_c1(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c1)));
+                verify_item.set_z_c0(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c0)));
+                verify_item.set_z_c1(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c1)));
+            }
+
+            verfy_final_vals.set_src_hash(check_hash);
+            auto verified_val = verfy_final_vals.SerializeAsString();
+            prefix_db_->SaveVerifiedG2s(tx.from(), verfy_final_vals);
+            break;
+        }
     }
 }
 

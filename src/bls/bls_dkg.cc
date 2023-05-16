@@ -480,9 +480,9 @@ void BlsDkg::LoadAllVerifyValues() {
 }
 
 bool BlsDkg::VerifySekkeyValid(
-    uint32_t idx,
-    uint32_t peer_index,
-    const libff::alt_bn128_Fr& seckey) {
+        uint32_t idx,
+        uint32_t peer_index,
+        const libff::alt_bn128_Fr& seckey) {
     bls::protobuf::BlsVerifyValue verify_val;
     uint32_t changed_idx = 0;
     libff::alt_bn128_G2 new_val = GetVerifyG2FromDb(peer_index, &changed_idx);
