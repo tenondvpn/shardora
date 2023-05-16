@@ -476,6 +476,7 @@ bool BlsDkg::VerifySekkeyValid(
             local_member_index_,
             (*members_)[peer_index]->id,
             &verfy_final_vals)) {
+        std::cout << "get " << local_member_index_ << " " << common::Encode::HexEncode((*members_)[peer_index]->id) << std::endl;
         assert(false);
         return false;
     }
