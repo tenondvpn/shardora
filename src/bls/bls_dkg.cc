@@ -786,9 +786,11 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     valid_swapkey_set_.insert(local_member_index_);
     ++valid_sec_key_count_;
     std::vector<libff::alt_bn128_Fr> polynomial(valid_n, libff::alt_bn128_Fr::one());
-    while (polynomial[0] == libff::alt_bn128_Fr::one() ||
-            polynomial[0] == libff::alt_bn128_Fr::zero()) {
-        polynomial[0] = libff::alt_bn128_Fr::random_element();
+    for (size_t i = 0; i < this->t_; ++i) {
+        polynomial[i] = libff::alt_bn128_Fr::random_element();
+        while (i == this->t_ - 1 && polynomial[i] == libff::alt_bn128_Fr::zero()) {
+            polynomial[i] = libff::alt_bn128_Fr::random_element();
+        }
     }
 
     local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(
