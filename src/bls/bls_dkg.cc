@@ -935,7 +935,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         auto old_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * old_val;
         auto new_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * new_g2;
         all_verified_val = all_verified_val - old_g2_val + new_g2_val;
-        assert(all_verified_val == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::zero())
+        assert(all_verified_val == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::zero());
     }
 #ifdef ZJC_UNITTEST
     g2_vec_.clear();
