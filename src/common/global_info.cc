@@ -41,10 +41,12 @@ int GlobalInfo::Init(const common::Config& config) {
         http_port_ = 0;
     }
        
+    config_local_member_idx_ = common::Random::RandomUint32() % common::kElectNodeMinMemberIndex;
     config.Get("zjchain", "sharding_min_nodes_count", sharding_min_nodes_count_);
     config.Get("zjchain", "for_ck", for_ck_server_);
     config.Get("zjchain", "each_shard_max_members", each_shard_max_members_);
     config.Get("zjchain", "join_root", join_root_);
+    config.Get("zjchain", "local_member_idx", config_local_member_idx_);
     std::string str_contry;
     if (!config.Get("zjchain", "country", str_contry) || str_contry.empty()) {
         ZJC_ERROR("get zjchain country from config failed.");

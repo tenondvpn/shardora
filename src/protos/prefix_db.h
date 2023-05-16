@@ -59,6 +59,8 @@ static const std::string kElectNodesStokePrefix = "z\x01";
 static const std::string kSaveLatestElectHeightPrefix = "aa\x01";
 static const std::string kSaveChoosedJoinShardPrefix = "ab\x01";
 static const std::string kGenesisTimeblockPrefix = "ac\x01";
+static const std::string kLocalPolynomialPrefix = "ad\x01";
+static const std::string kLocalVerifiedG2Prefix = "ae\x01";
 
 class PrefixDb {
 public:
@@ -1113,6 +1115,99 @@ public:
         *block_height = tmp[0];
         *genesis_tm = tmp[1];
         return true;
+    }
+
+    void SaveLocalPolynomial(
+            std::shared_ptr<security::Security>& security_ptr,
+            const std::string& id,
+            const bls::protobuf::LocalPolynomial& local_poly) {
+        std::string key;
+        key.reserve(128);
+        key.append(kLocalPolynomialPrefix);
+        key.append(id);
+        char tmp_data[4];
+        uint32_t* tmp = (uint32_t*)tmp_data;
+        tmp[0] = val.size();
+        std::string val = std::string(tmp_data, sizeof(tmp_data)) + local_poly.SerializeAsString();
+        std::string enc_data;
+        if (security_->Encrypt(
+                val,
+                security_ptr->GetPrikey(),
+                &enc_data) != security::kSecuritySuccess) {
+            return;
+        }
+
+        auto st = db_->Put(key, enc_data);
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+    }
+
+    bool GetLocalPolynomial(
+            std::shared_ptr<security::Security>& security_ptr,
+            const std::string& id,
+            bls::protobuf::LocalPolynomial* local_poly) {
+        std::string key;
+        key.reserve(128);
+        key.append(kLocalPolynomialPrefix);
+        key.append(id);
+        std::string val;
+        auto st = db_->Get(key, val);
+        if (!st.ok()) {
+            ZJC_ERROR("write db failed!");
+            return false;
+        }
+
+        std::string dec_data;
+        if (security_ptr->Decrypt(
+                val,
+                security_ptr->GetPrikey(),
+                &dec_data) != security::kSecuritySuccess) {
+            ZJC_ERROR("decrypt db failed!");
+            return false;
+        }
+
+        uint32_t* tmp = (uint32_t*)dec_data.c_str();
+        if (!local_poly->ParseFromArray(val.c_str() + 4, tmp[0])) {
+            ZJC_ERROR("parse db failed!");
+            return false;
+        }
+
+        return true;
+    }
+
+    void SaveVerifiedG2s(
+            const std::string& id,
+            const bls::protobuf::VerifyVecBrdReq& verfy_final_vals) {
+        std::string key;
+        key.reserve(128);
+        key.append(kLocalVerifiedG2Prefix);
+        key.append(id);
+        std::string val = verfy_final_vals.SerializeAsString();
+        auto st = db_->Put(key, val);
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+    }
+
+    bool GetVerifiedG2s(const std::string& id, bls::protobuf::VerifyVecBrdReq* verfy_final_vals) {
+        std::string key;
+        key.reserve(128);
+        key.append(kLocalVerifiedG2Prefix);
+        key.append(id);
+        std::string val;
+        auto st = db_->Get(key, val);
+        if (!st.ok()) {
+            ZJC_ERROR("write db failed!");
+            return false;
+        }
+
+        if (!verfy_final_vals->ParseFromString(val)) {
+            return false;
+        }
+
+        return true;
+
     }
 
 private:

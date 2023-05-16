@@ -1,6 +1,5 @@
 syntax = "proto2";
 
-import "protos/address.proto";
 package zjchain.pools.protobuf;
 
 enum StepType {

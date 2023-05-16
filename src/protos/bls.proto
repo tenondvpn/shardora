@@ -22,6 +22,15 @@ message VerifyVecBrdReq {
     repeated VerifyVecItem verify_vec = 1;
 }
 
+message JoinElectBlsInfo {
+    optional bytes src_hash = 1;
+    repeated VerifyVecBrdReq verify_req = 2;
+}
+
+message LocalPolynomial {
+    repeated bytes polynomial = 1;
+}
+
 message LocalBlsItem {
     repeated bytes polynomial = 1;
     repeated VerifyVecItem verify_vec = 2;

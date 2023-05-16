@@ -1,5 +1,6 @@
 syntax = "proto2";
 
+import "protos/bls.proto";
 package zjchain.address.protobuf;
 
 enum AddressType {
@@ -23,4 +24,5 @@ message AddressInfo {
     optional bytes bytes_code = 7;
     optional uint64 latest_height = 8;
     optional int32 credit = 9 [default=0];
+    repeated bls.protobuf.BlsPublicKey g2s = 10;
 }

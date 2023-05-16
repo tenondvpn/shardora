@@ -472,8 +472,8 @@ void BlsDkg::LoadAllVerifyValues() {
         auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
         auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
         auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
-        auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
-        auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+        auto z_c0 = libff::alt_bn128_Fq::zero();
+        auto z_c1 = libff::alt_bn128_Fq::zero();
         auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
         verify_value_vec_.push_back(libff::alt_bn128_G2(x_coord, y_coord, z_coord));
     }
@@ -781,8 +781,7 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
     }
 #endif
 }
-// 9915499612839321149637521777990102151350674507940716049588462388200839649614
-// 0000000000000000000000000000000000000000000000000000000000000000000000000001
+
 void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     valid_swapkey_set_.insert(local_member_index_);
     ++valid_sec_key_count_;

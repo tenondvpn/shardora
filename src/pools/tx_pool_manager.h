@@ -133,6 +133,10 @@ private:
     void BroadcastInvalidPools(
         uint8_t thread_idx,
         const std::vector<int32_t>& invalid_pools);
+    bool SaveNodeVerfiyVec(
+        const std::string& id,
+        const init::protobuf::JoinElectInfo& join_info,
+        std::string* new_hash);
 
     static const uint32_t kPopMessageCountEachTime = 320u;
     static const uint64_t kFlushHeightTreePeriod = 60000lu;

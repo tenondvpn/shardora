@@ -180,6 +180,7 @@ static const uint32_t kTransactionNoVersion = 0u;
 static const uint32_t kTransactionVersion = 1u;
 static const uint64_t kGenesisFoundationMaxZjc = kZjcMaxAmount / 100llu * 14llu;
 static const uint64_t kGenesisShardingNodesMaxZjc = kZjcMaxAmount / 100llu * 1llu;
+static const uint32_t kElectNodeMinMemberIndex = 64u;
 
 static const uint64_t kVpnVipMinPayfor = 66llu * kZjcMiniTransportUnit;
 static const uint64_t kVpnVipMaxPayfor = 2000u * kZjcMiniTransportUnit;
@@ -317,6 +318,7 @@ bool IsVlanIp(const std::string& ip);
 uint32_t IpToUint32(const char* ip);
 std::string Uint32ToIp(uint32_t ip);
 uint32_t GetAddressPoolIndex(const std::string& addr);
+uint32_t GetAddressMemberIndex(const std::string& addr);
 
 inline static uint64_t GetNodeConnectInt(const std::string& ip, uint16_t port) {
     uint32_t int_ip = IpToUint32(ip.c_str());

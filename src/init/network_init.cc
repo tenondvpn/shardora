@@ -490,11 +490,16 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     new_tx->set_gas_limit(consensus::kJoinElectGas + 100000);
     new_tx->set_gas_price(10);
     new_tx->set_key(protos::kElectJoinShard);
-    char data[4];
-    uint32_t* tmp = (uint32_t*)data;
-    tmp[0] = common::GlobalInfo::Instance()->network_id() - network::kConsensusWaitingShardOffset;
-    std::string val(data, sizeof(data));
-    new_tx->set_value(val);
+    init::protobuf::JoinElectInfo join_info;
+    join_info.set_member_idx(common::GlobalInfo::Instance()->config_local_member_idx());
+    join_info.set_shard_id(common::GlobalInfo::Instance()->network_id() - network::kConsensusWaitingShardOffset);
+    auto* req = join_info.mutable_g2_req();
+    auto res = prefix_db_->GetBlsVerifyG2((*members_)[peer_mem_index]->id, req);
+    if (!res) {
+        CreateContribution(req);
+    }
+
+    new_tx->set_value(join_info.SerializeAsString());
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign;
@@ -507,6 +512,42 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     msg_ptr->thread_idx = thread_idx;
     network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("success send join elect request transaction: %u, join: %u", des_sharding_id_, tmp[0]);
+}
+
+void BlsDkg::CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req) {
+    auto n = common::GlobalInfo::Instance()->each_shard_max_members();
+    auto t = common::GetSignerCount(n);
+    libBLS::Dkg dkg_instance(t, n);
+    std::vector<libff::alt_bn128_Fr> polynomial = dkg_instance.GeneratePolynomial();
+    bls::protobuf::LocalPolynomial local_poly;
+    for (uint32_t i = 0; i < polynomial.size(); ++i) {
+        local_poly.add_polynomial(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(polynomial[i])));
+    }
+
+    local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(
+        polynomial, valid_n, valid_t);
+    auto local_member_index = common::GetAddressMemberIndex(security_->GetAddress());
+    auto val = libBLS::ThresholdUtils::fieldElementToString(
+        local_src_secret_key_contribution_[local_member_index]);
+    prefix_db_->SaveSwapKey(
+        local_member_index, elect_hegiht_, local_member_index, local_member_index, val);
+    auto g2_vec = dkg_instance_->VerificationVector(polynomial);
+    for (uint32_t i = 0; i < valid_t; ++i) {
+        bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req->add_verify_vec();
+        verify_item.set_x_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
+        verify_item.set_x_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c1)));
+        verify_item.set_y_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
+        verify_item.set_y_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
+    }
+    
+    auto str = bls_verify_req->SerializeAsString();
+    prefix_db_->AddBlsVerifyG2(security_->GetAddress(), *bls_verify_req);
+    prefix_db_->SaveLocalPolynomial(security_, security_->GetAddress(), local_poly);
 }
 
 int NetworkInit::InitSecurity() {
