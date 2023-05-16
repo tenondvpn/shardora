@@ -809,10 +809,10 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
         verify_item.set_y_c1(common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
-        verify_item.set_z_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
-        verify_item.set_z_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
+//         verify_item.set_z_c0(common::Encode::HexDecode(
+//             libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
+//         verify_item.set_z_c1(common::Encode::HexDecode(
+//             libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
     }
     
     auto str = bls_verify_req.SerializeAsString();
