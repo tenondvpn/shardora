@@ -817,6 +817,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     
     auto str = bls_verify_req.SerializeAsString();
     prefix_db_->AddBlsVerifyG2(security_->GetAddress(), bls_verify_req);
+    std::cout << "verify vec size: " << str.size() << std::endl;
 //     ZJC_DEBUG("save verify g2 success local: %d, %lu, %u, %u, %s, %s",
 //         local_member_index_, elect_hegiht_, local_member_index_, 0,
 //         common::Encode::HexEncode((*members_)[local_member_index_]->id).c_str(),
@@ -854,3 +855,4 @@ void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
 };  // namespace bls
 
 };  // namespace zjchain
+ 
