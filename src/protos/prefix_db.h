@@ -1125,12 +1125,13 @@ public:
         key.reserve(128);
         key.append(kLocalPolynomialPrefix);
         key.append(id);
+        std::string tmp_val = local_poly.SerializeAsString();
         char tmp_data[4];
         uint32_t* tmp = (uint32_t*)tmp_data;
-        tmp[0] = val.size();
-        std::string val = std::string(tmp_data, sizeof(tmp_data)) + local_poly.SerializeAsString();
+        tmp[0] = tmp_val.size();
+        std::string val = std::string(tmp_data, sizeof(tmp_data)) + tmp_val;
         std::string enc_data;
-        if (security_->Encrypt(
+        if (security_ptr->Encrypt(
                 val,
                 security_ptr->GetPrikey(),
                 &enc_data) != security::kSecuritySuccess) {
@@ -1152,7 +1153,7 @@ public:
         key.append(kLocalPolynomialPrefix);
         key.append(id);
         std::string val;
-        auto st = db_->Get(key, val);
+        auto st = db_->Get(key, &val);
         if (!st.ok()) {
             ZJC_ERROR("write db failed!");
             return false;
