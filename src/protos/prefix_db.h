@@ -1135,6 +1135,7 @@ public:
                 val,
                 security_ptr->GetPrikey(),
                 &enc_data) != security::kSecuritySuccess) {
+            ZJC_FATAL("encrypt data failed!");
             return;
         }
 
@@ -1155,6 +1156,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
+            assert(false);
             ZJC_ERROR("write db failed!");
             return false;
         }
@@ -1164,12 +1166,14 @@ public:
                 val,
                 security_ptr->GetPrikey(),
                 &dec_data) != security::kSecuritySuccess) {
+            assert(false);
             ZJC_ERROR("decrypt db failed!");
             return false;
         }
 
         uint32_t* tmp = (uint32_t*)dec_data.c_str();
         if (!local_poly->ParseFromArray(val.c_str() + 4, tmp[0])) {
+            assert(false);
             ZJC_ERROR("parse db failed!");
             return false;
         }
