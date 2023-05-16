@@ -878,10 +878,10 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         libBLS::ThresholdUtils::fieldElementToString(new_g2.Y.c0)));
     verify_item.set_y_c1(common::Encode::HexDecode(
         libBLS::ThresholdUtils::fieldElementToString(new_g2.Y.c1)));
-//         verify_item.set_z_c0(common::Encode::HexDecode(
-//             libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
-//         verify_item.set_z_c1(common::Encode::HexDecode(
-//             libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
+    verify_item.set_z_c0(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(new_g2.Z.c0)));
+    verify_item.set_z_c1(common::Encode::HexDecode(
+        libBLS::ThresholdUtils::fieldElementToString(new_g2.Z.c1)));
     
     auto str = bls_verify_req.SerializeAsString();
     prefix_db_->AddBlsVerifyG2(security_->GetAddress(), bls_verify_req);
