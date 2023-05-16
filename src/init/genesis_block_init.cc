@@ -170,8 +170,7 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
 
         auto check_hash = common::Hash::keccak256(str_for_hash);
         auto str = join_info.SerializeAsString();
-        prefix_db_->SaveTemporaryKv(*new_hash, str);
-        auto str = req->SerializeAsString();
+        prefix_db_->SaveTemporaryKv(check_hash, str);
         prefix_db_->AddBlsVerifyG2(secptr->GetAddress(), *req);
 
         auto join_elect_tx_info = tx_list->Add();
@@ -183,8 +182,10 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         join_elect_tx_info->set_gas_used(0);
         join_elect_tx_info->set_balance(0);
         join_elect_tx_info->set_status(0);
-        join_elect_tx_info->set_key(protos::kJoinElectVerifyG2);
-        join_elect_tx_info->set_value(check_hash);
+        auto storage = join_elect_tx_info->add_storages();
+        storage->set_key(protos::kJoinElectVerifyG2);
+        storage->set_val_hash(check_hash);
+        storage->set_val_size(str.size());
 
         libBLS::Dkg tmpdkg(valid_t, valid_n);
         auto local_sec_key = tmpdkg.SecretKeyShareCreate(secret_key_contribution[idx]);
@@ -196,8 +197,8 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         mem_pk->set_x_c1(pkeys_str->at(1));
         mem_pk->set_y_c0(pkeys_str->at(2));
         mem_pk->set_y_c1(pkeys_str->at(3));
-        auto& g2_vec = verification_vector[idx];
-        common_public_key = common_public_key + g2_vec[0];
+        auto& common_g2_vec = verification_vector[idx];
+        common_public_key = common_public_key + common_g2_vec[0];
         DumpLocalPrivateKey(
             sharding_id,
             elect_height,
@@ -314,7 +315,7 @@ int GenesisBlockInit::CreateElectBlock(
 
     if (!prikeys.empty() && prev_height != common::kInvalidUint64) {
         auto prev_members = ec_block.mutable_prev_members();
-        CreateBlsGenesisKeys(prev_height, shard_netid, prikeys, prev_members);
+        CreateBlsGenesisKeys(tx_list, prev_height, shard_netid, prikeys, prev_members);
         prev_members->set_prev_elect_height(prev_height);
     }
 
