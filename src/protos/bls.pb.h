@@ -619,13 +619,23 @@ class VerifyVecBrdReq : public ::google::protobuf::Message /* @@protoc_insertion
   const ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::VerifyVecItem >&
       verify_vec() const;
 
+  // optional uint32 change_idx = 2;
+  bool has_change_idx() const;
+  void clear_change_idx();
+  static const int kChangeIdxFieldNumber = 2;
+  ::google::protobuf::uint32 change_idx() const;
+  void set_change_idx(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.bls.protobuf.VerifyVecBrdReq)
  private:
+  void set_has_change_idx();
+  void clear_has_change_idx();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::VerifyVecItem > verify_vec_;
+  ::google::protobuf::uint32 change_idx_;
   friend struct ::protobuf_protos_2fbls_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -883,13 +893,23 @@ class LocalPolynomial : public ::google::protobuf::Message /* @@protoc_insertion
   const ::google::protobuf::RepeatedPtrField< ::std::string>& polynomial() const;
   ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_polynomial();
 
+  // optional uint32 change_idx = 2 [default = 0];
+  bool has_change_idx() const;
+  void clear_change_idx();
+  static const int kChangeIdxFieldNumber = 2;
+  ::google::protobuf::uint32 change_idx() const;
+  void set_change_idx(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.bls.protobuf.LocalPolynomial)
  private:
+  void set_has_change_idx();
+  void clear_has_change_idx();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::std::string> polynomial_;
+  ::google::protobuf::uint32 change_idx_;
   friend struct ::protobuf_protos_2fbls_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -3135,6 +3155,30 @@ VerifyVecBrdReq::verify_vec() const {
   return verify_vec_;
 }
 
+// optional uint32 change_idx = 2;
+inline bool VerifyVecBrdReq::has_change_idx() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void VerifyVecBrdReq::set_has_change_idx() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void VerifyVecBrdReq::clear_has_change_idx() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void VerifyVecBrdReq::clear_change_idx() {
+  change_idx_ = 0u;
+  clear_has_change_idx();
+}
+inline ::google::protobuf::uint32 VerifyVecBrdReq::change_idx() const {
+  // @@protoc_insertion_point(field_get:zjchain.bls.protobuf.VerifyVecBrdReq.change_idx)
+  return change_idx_;
+}
+inline void VerifyVecBrdReq::set_change_idx(::google::protobuf::uint32 value) {
+  set_has_change_idx();
+  change_idx_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.bls.protobuf.VerifyVecBrdReq.change_idx)
+}
+
 // -------------------------------------------------------------------
 
 // JoinElectBlsInfo
@@ -3334,6 +3378,30 @@ inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 LocalPolynomial::mutable_polynomial() {
   // @@protoc_insertion_point(field_mutable_list:zjchain.bls.protobuf.LocalPolynomial.polynomial)
   return &polynomial_;
+}
+
+// optional uint32 change_idx = 2 [default = 0];
+inline bool LocalPolynomial::has_change_idx() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void LocalPolynomial::set_has_change_idx() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void LocalPolynomial::clear_has_change_idx() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void LocalPolynomial::clear_change_idx() {
+  change_idx_ = 0u;
+  clear_has_change_idx();
+}
+inline ::google::protobuf::uint32 LocalPolynomial::change_idx() const {
+  // @@protoc_insertion_point(field_get:zjchain.bls.protobuf.LocalPolynomial.change_idx)
+  return change_idx_;
+}
+inline void LocalPolynomial::set_change_idx(::google::protobuf::uint32 value) {
+  set_has_change_idx();
+  change_idx_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.bls.protobuf.LocalPolynomial.change_idx)
 }
 
 // -------------------------------------------------------------------
