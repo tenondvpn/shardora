@@ -570,7 +570,6 @@ TEST_F(TestBls, AllSuccess) {
                 libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j])));
         }
 
-        prefix_db->SaveLocalPolynomial(tmp_security_ptr, tmp_security_ptr->GetAddress(), local_poly);
         init::protobuf::JoinElectInfo join_info;
         join_info.set_member_idx(idx);
         uint32_t sharding_id = 3;
@@ -628,10 +627,7 @@ TEST_F(TestBls, AllSuccess) {
 
         auto check_hash = common::Hash::keccak256(str_for_hash);
         auto str = join_info.SerializeAsString();
-        prefix_db->SaveTemporaryKv(check_hash, str);
-        prefix_db->AddBlsVerifyG2(tmp_security_ptr->GetAddress(), *req);
 
-        std::cout << "verify_g2s.size(): " << verify_g2s.size() << std::endl;
         for (uint32_t i = 0; i < verify_g2s.size(); ++i) {
             auto midx = idx + i * common::kElectNodeMinMemberIndex;
             ASSERT_TRUE(verify_g2s[i] == contributions[midx] * libff::alt_bn128_G2::one());
@@ -654,6 +650,24 @@ TEST_F(TestBls, AllSuccess) {
         verfy_final_vals.set_src_hash(check_hash);
         auto verified_val = verfy_final_vals.SerializeAsString();
         prefix_db->SaveVerifiedG2s(id, verfy_final_vals);
+        prefix_db->SaveTemporaryKv(check_hash, str);
+        prefix_db->AddBlsVerifyG2(tmp_security_ptr->GetAddress(), *req);
+        prefix_db->SaveLocalPolynomial(tmp_security_ptr, tmp_security_ptr->GetAddress(), local_poly);
+
+        auto old_g2 = polynomial[idx][0] * libff::alt_bn128_G2::one();
+        polynomial[idx][0] = libff::alt_bn128_Fr::random_element();
+        g2_vec = dkg_instance.VerificationVector(polynomial[idx]);
+        contributions = dkg_instance.SecretKeyContribution(polynomial[idx]);
+        for (uint32_t i = 0; i < contributions.size(); ++i) {
+            ASSERT_TRUE(dkg_instance.Verification(i, contributions[i], g2_vec));
+        }
+
+        auto new_g2 = polynomial[idx][0] * libff::alt_bn128_G2::one();
+        auto old1 = power(libff::alt_bn128_Fr(idx + 1), i) * old_g2;
+        auto new1 = power(libff::alt_bn128_Fr(idx + 1), i) * new_g2;
+        verify_g2s[0] = verify_g2s[0] - old1 + new1;
+        ASSERT_TRUE(verify_g2s[0] == contributions[idx] * libff::alt_bn128_G2::one());
+
     }
 
     auto time0 = common::TimeUtils::TimestampUs();
