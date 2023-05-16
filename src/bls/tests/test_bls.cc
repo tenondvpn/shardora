@@ -166,6 +166,8 @@ TEST_F(TestBls, ContributionSignAndVerify) {
     static const uint32_t valid_count = 3;
 
     SetGloableInfo(common::Random::RandomString(32), network::kConsensusShardBeginNetworkId);
+    std::vector<std::string> pri_vec;
+    GetPrivateKey(pri_vec, n);
     common::MembersPtr members = std::make_shared<common::Members>();
     for (uint32_t i = 0; i < pri_vec.size(); ++i) {
         auto tmp_security_ptr = dkg[i].security_;
