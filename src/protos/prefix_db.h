@@ -1172,7 +1172,7 @@ public:
         }
 
         uint32_t* tmp = (uint32_t*)dec_data.c_str();
-        if (!local_poly->ParseFromArray(val.c_str() + 4, tmp[0])) {
+        if (!local_poly->ParseFromArray(dec_data.c_str() + 4, tmp[0])) {
             assert(false);
             ZJC_ERROR("parse db failed!");
             return false;
