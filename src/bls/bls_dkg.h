@@ -94,8 +94,6 @@ private:
     libff::alt_bn128_G2 GetVerifyG2FromDb(uint32_t first_index, uint32_t* changed_idx);
     void DumpLocalPrivateKey();
     bool VerifySekkeyValid(uint32_t idx, uint32_t peer_index, const libff::alt_bn128_Fr& seckey);
-    void LoadAllVerifyValues();
-
     bool IsVerifyBrdPeriod() {
 #ifdef ZJC_UNITTEST
         return true;
@@ -170,7 +168,6 @@ private:
     uint64_t ver_offset_ = 0;
     uint64_t swap_offset_ = 0;
     uint64_t finish_offset_ = 0;
-    std::vector<libff::alt_bn128_G2> verify_value_vec_;
     bool has_broadcast_verify_ = false;
     bool has_broadcast_swapkey_ = false;
     bool has_finished_ = false;
