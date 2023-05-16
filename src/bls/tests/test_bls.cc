@@ -631,6 +631,7 @@ TEST_F(TestBls, AllSuccess) {
         prefix_db->SaveTemporaryKv(check_hash, str);
         prefix_db->AddBlsVerifyG2(tmp_security_ptr->GetAddress(), *req);
 
+        std::cout << "verify_g2s.size(): " << verify_g2s.size() << std::endl;
         for (uint32_t i = 0; i < verify_g2s.size(); ++i) {
             auto midx = idx + i * common::kElectNodeMinMemberIndex;
             ASSERT_TRUE(verify_g2s[i] == contributions[midx] * libff::alt_bn128_G2::one());
