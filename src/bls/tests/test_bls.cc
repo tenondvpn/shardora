@@ -602,8 +602,8 @@ TEST_F(TestBls, AllSuccess) {
             auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(verify_item.y_c0()).c_str());
             auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(verify_item.y_c1()).c_str());
             auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
-            auto z_c0 = libff::alt_bn128_Fq::zero();
-            auto z_c1 = libff::alt_bn128_Fq::zero();
+            auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(verify_item.z_c0()).c_str());
+            auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(verify_item.z_c1()).c_str());
             auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
             auto g2 = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
             for (int32_t j = 0; j < all_pos_count; ++j) {

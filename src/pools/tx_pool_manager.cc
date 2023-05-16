@@ -468,6 +468,8 @@ bool TxPoolManager::SaveNodeVerfiyVec(
         str_for_hash.append(item.x_c1());
         str_for_hash.append(item.y_c0());
         str_for_hash.append(item.y_c1());
+        str_for_hash.append(item.z_c0());
+        str_for_hash.append(item.z_c1());
     }
 
     *new_hash = common::Hash::keccak256(str_for_hash);
