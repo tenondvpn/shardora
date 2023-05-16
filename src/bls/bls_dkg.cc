@@ -787,7 +787,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     ++valid_sec_key_count_;
     std::vector<libff::alt_bn128_Fr> polynomial(valid_t);// = dkg_instance_->GeneratePolynomial();
     for (uint32_t i = 0; i < valid_t; ++i) {
-        polynomial[i].mont_repr = rand() % 64 + 1;
+        polynomial[i].mont_repr = rand() % 3 + 1;
         std::cout << "pol " << i << " ";
         polynomial[i].print();
     }
