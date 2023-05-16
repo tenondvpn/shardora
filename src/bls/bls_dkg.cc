@@ -140,7 +140,7 @@ void BlsDkg::OnNewElectionBlock(
     BLS_ERROR("catch error: %s", e.what());
 }
 
-void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) try {
+void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) /*try*/ {
     if (members_ == nullptr) {
         BLS_ERROR("members_ == nullptr");
         return;
@@ -189,8 +189,8 @@ void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) try {
     if (bls_msg.has_check_swapkey_req()) {
         HandleCheckSwapKeyReq(msg_ptr);
     }
-} catch (std::exception& e) {
-    BLS_ERROR("catch error: %s", e.what());
+// } catch (std::exception& e) {
+//     BLS_ERROR("catch error: %s", e.what());
 }
 
 bool BlsDkg::IsSignValid(const transport::MessagePtr& msg_ptr, std::string* content_to_hash) {
