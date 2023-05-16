@@ -667,7 +667,7 @@ TEST_F(TestBls, AllSuccess) {
         auto new1 = power(libff::alt_bn128_Fr(idx + 1), 0) * new_g2;
         verify_g2s[0] = verify_g2s[0] - old1 + new1;
         ASSERT_TRUE(verify_g2s[0] == contributions[idx] * libff::alt_bn128_G2::one());
-
+        std::cout << "change idx verify success." << std::endl;
     }
 
     auto time0 = common::TimeUtils::TimestampUs();
