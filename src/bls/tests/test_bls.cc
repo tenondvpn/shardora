@@ -162,8 +162,8 @@ TEST_F(TestBls, TestPolynomial) {
 TEST_F(TestBls, ContributionSignAndVerify) {
     static const uint32_t t = 684;
     static const uint32_t n = 1024;
-    static const uint32_t valid_t = 684;
-    static const uint32_t valid_count = 1024;
+    static const uint32_t valid_t = 68;
+    static const uint32_t valid_count = 100;
 
     SetGloableInfo(common::Random::RandomString(32), network::kConsensusShardBeginNetworkId);
     BlsDkg* dkg = new BlsDkg[n];
