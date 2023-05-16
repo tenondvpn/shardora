@@ -851,14 +851,11 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             while (polynomial[i] == libff::alt_bn128_Fr::zero()) {
                 polynomial[i] = libff::alt_bn128_Fr::random_element();
             }
-
-            std::cout << "success change: " << change_idx << std::endl;
         }
     }
 
     auto new_g2 = polynomial[change_idx] * libff::alt_bn128_G2::one();
-    local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(
-        polynomial, valid_n, valid_t);
+    local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(polynomial);
     auto val = libBLS::ThresholdUtils::fieldElementToString(
         local_src_secret_key_contribution_[local_member_index_]);
     prefix_db_->SaveSwapKey(
