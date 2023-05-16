@@ -1432,6 +1432,18 @@ class SwapSecKeyItem : public ::google::protobuf::Message /* @@protoc_insertion_
   ::std::string* release_sec_key();
   void set_allocated_sec_key(::std::string* sec_key);
 
+  // optional .zjchain.bls.protobuf.BlsPublicKey old_g2 = 3;
+  bool has_old_g2() const;
+  void clear_old_g2();
+  static const int kOldG2FieldNumber = 3;
+  private:
+  const ::zjchain::bls::protobuf::BlsPublicKey& _internal_old_g2() const;
+  public:
+  const ::zjchain::bls::protobuf::BlsPublicKey& old_g2() const;
+  ::zjchain::bls::protobuf::BlsPublicKey* release_old_g2();
+  ::zjchain::bls::protobuf::BlsPublicKey* mutable_old_g2();
+  void set_allocated_old_g2(::zjchain::bls::protobuf::BlsPublicKey* old_g2);
+
   // optional uint32 sec_key_len = 2;
   bool has_sec_key_len() const;
   void clear_sec_key_len();
@@ -1445,11 +1457,14 @@ class SwapSecKeyItem : public ::google::protobuf::Message /* @@protoc_insertion_
   void clear_has_sec_key();
   void set_has_sec_key_len();
   void clear_has_sec_key_len();
+  void set_has_old_g2();
+  void clear_has_old_g2();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr sec_key_;
+  ::zjchain::bls::protobuf::BlsPublicKey* old_g2_;
   ::google::protobuf::uint32 sec_key_len_;
   friend struct ::protobuf_protos_2fbls_2eproto::TableStruct;
 };
@@ -3755,13 +3770,13 @@ inline void SwapSecKeyItem::set_allocated_sec_key(::std::string* sec_key) {
 
 // optional uint32 sec_key_len = 2;
 inline bool SwapSecKeyItem::has_sec_key_len() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void SwapSecKeyItem::set_has_sec_key_len() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void SwapSecKeyItem::clear_has_sec_key_len() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void SwapSecKeyItem::clear_sec_key_len() {
   sec_key_len_ = 0u;
@@ -3775,6 +3790,64 @@ inline void SwapSecKeyItem::set_sec_key_len(::google::protobuf::uint32 value) {
   set_has_sec_key_len();
   sec_key_len_ = value;
   // @@protoc_insertion_point(field_set:zjchain.bls.protobuf.SwapSecKeyItem.sec_key_len)
+}
+
+// optional .zjchain.bls.protobuf.BlsPublicKey old_g2 = 3;
+inline bool SwapSecKeyItem::has_old_g2() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void SwapSecKeyItem::set_has_old_g2() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void SwapSecKeyItem::clear_has_old_g2() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void SwapSecKeyItem::clear_old_g2() {
+  if (old_g2_ != NULL) old_g2_->Clear();
+  clear_has_old_g2();
+}
+inline const ::zjchain::bls::protobuf::BlsPublicKey& SwapSecKeyItem::_internal_old_g2() const {
+  return *old_g2_;
+}
+inline const ::zjchain::bls::protobuf::BlsPublicKey& SwapSecKeyItem::old_g2() const {
+  const ::zjchain::bls::protobuf::BlsPublicKey* p = old_g2_;
+  // @@protoc_insertion_point(field_get:zjchain.bls.protobuf.SwapSecKeyItem.old_g2)
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::bls::protobuf::BlsPublicKey*>(
+      &::zjchain::bls::protobuf::_BlsPublicKey_default_instance_);
+}
+inline ::zjchain::bls::protobuf::BlsPublicKey* SwapSecKeyItem::release_old_g2() {
+  // @@protoc_insertion_point(field_release:zjchain.bls.protobuf.SwapSecKeyItem.old_g2)
+  clear_has_old_g2();
+  ::zjchain::bls::protobuf::BlsPublicKey* temp = old_g2_;
+  old_g2_ = NULL;
+  return temp;
+}
+inline ::zjchain::bls::protobuf::BlsPublicKey* SwapSecKeyItem::mutable_old_g2() {
+  set_has_old_g2();
+  if (old_g2_ == NULL) {
+    auto* p = CreateMaybeMessage<::zjchain::bls::protobuf::BlsPublicKey>(GetArenaNoVirtual());
+    old_g2_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:zjchain.bls.protobuf.SwapSecKeyItem.old_g2)
+  return old_g2_;
+}
+inline void SwapSecKeyItem::set_allocated_old_g2(::zjchain::bls::protobuf::BlsPublicKey* old_g2) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete old_g2_;
+  }
+  if (old_g2) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      old_g2 = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, old_g2, submessage_arena);
+    }
+    set_has_old_g2();
+  } else {
+    clear_has_old_g2();
+  }
+  old_g2_ = old_g2;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.bls.protobuf.SwapSecKeyItem.old_g2)
 }
 
 // -------------------------------------------------------------------

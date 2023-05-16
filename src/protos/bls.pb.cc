@@ -23,9 +23,9 @@ namespace protobuf_protos_2fbls_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_BlsPublicKey;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_CheckSwapKeyReq;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_CheckVerfiyReq;
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_SwapSecKeyItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_VerifyVecItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_FinishBroadcast;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_SwapSecKeyItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_SwapSecKeyReq;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_VerifyVecBrdReq;
 }  // namespace protobuf_protos_2fbls_2eproto
@@ -243,8 +243,9 @@ static void InitDefaultsSwapSecKeyItem() {
   ::zjchain::bls::protobuf::SwapSecKeyItem::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<0> scc_info_SwapSecKeyItem =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsSwapSecKeyItem}, {}};
+::google::protobuf::internal::SCCInfo<1> scc_info_SwapSecKeyItem =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsSwapSecKeyItem}, {
+      &protobuf_protos_2fbls_2eproto::scc_info_BlsPublicKey.base,}};
 
 static void InitDefaultsSwapSecKeyReq() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -466,7 +467,9 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::SwapSecKeyItem, sec_key_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::SwapSecKeyItem, sec_key_len_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::SwapSecKeyItem, old_g2_),
   0,
+  2,
   1,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::SwapSecKeyReq, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::SwapSecKeyReq, _internal_metadata_),
@@ -553,14 +556,14 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 57, 66, sizeof(::zjchain::bls::protobuf::LocalBlsItem)},
   { 70, 76, sizeof(::zjchain::bls::protobuf::BlsVerifyValue)},
   { 77, 84, sizeof(::zjchain::bls::protobuf::VerifyVecBrdRes)},
-  { 86, 93, sizeof(::zjchain::bls::protobuf::SwapSecKeyItem)},
-  { 95, 101, sizeof(::zjchain::bls::protobuf::SwapSecKeyReq)},
-  { 102, 110, sizeof(::zjchain::bls::protobuf::SwapSecKeyRes)},
-  { 113, 119, sizeof(::zjchain::bls::protobuf::AgainstParticipant)},
-  { 120, 131, sizeof(::zjchain::bls::protobuf::FinishBroadcast)},
-  { 137, 143, sizeof(::zjchain::bls::protobuf::CheckVerfiyReq)},
-  { 144, 150, sizeof(::zjchain::bls::protobuf::CheckSwapKeyReq)},
-  { 151, 163, sizeof(::zjchain::bls::protobuf::BlsMessage)},
+  { 86, 94, sizeof(::zjchain::bls::protobuf::SwapSecKeyItem)},
+  { 97, 103, sizeof(::zjchain::bls::protobuf::SwapSecKeyReq)},
+  { 104, 112, sizeof(::zjchain::bls::protobuf::SwapSecKeyRes)},
+  { 115, 121, sizeof(::zjchain::bls::protobuf::AgainstParticipant)},
+  { 122, 133, sizeof(::zjchain::bls::protobuf::FinishBroadcast)},
+  { 139, 145, sizeof(::zjchain::bls::protobuf::CheckVerfiyReq)},
+  { 146, 152, sizeof(::zjchain::bls::protobuf::CheckSwapKeyReq)},
+  { 153, 165, sizeof(::zjchain::bls::protobuf::BlsMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -621,31 +624,33 @@ void AddDescriptorsImpl() {
       "lsVerifyValue\0227\n\nverify_vec\030\001 \003(\0132#.zjch"
       "ain.bls.protobuf.VerifyVecItem\"9\n\017Verify"
       "VecBrdRes\022\021\n\tpublic_ip\030\001 \001(\014\022\023\n\013public_p"
-      "ort\030\002 \001(\r\"6\n\016SwapSecKeyItem\022\017\n\007sec_key\030\001"
-      " \001(\014\022\023\n\013sec_key_len\030\002 \001(\r\"C\n\rSwapSecKeyR"
-      "eq\0222\n\004keys\030\001 \003(\0132$.zjchain.bls.protobuf."
-      "SwapSecKeyItem\"D\n\rSwapSecKeyRes\022\r\n\005index"
-      "\030\001 \001(\r\022\017\n\007sec_key\030\002 \001(\014\022\023\n\013sec_key_len\030\003"
-      " \001(\r\"+\n\022AgainstParticipant\022\025\n\ragainst_in"
-      "dex\030\001 \001(\r\"\314\001\n\017FinishBroadcast\022\016\n\006bitmap\030"
-      "\001 \003(\004\0222\n\006pubkey\030\002 \001(\0132\".zjchain.bls.prot"
-      "obuf.BlsPublicKey\0229\n\rcommon_pubkey\030\003 \001(\013"
-      "2\".zjchain.bls.protobuf.BlsPublicKey\022\022\n\n"
-      "network_id\030\004 \001(\r\022\022\n\nbls_sign_x\030\005 \001(\014\022\022\n\n"
-      "bls_sign_y\030\006 \001(\014\"\037\n\016CheckVerfiyReq\022\r\n\005in"
-      "dex\030\001 \001(\r\" \n\017CheckSwapKeyReq\022\r\n\005index\030\001 "
-      "\001(\r\"\340\002\n\nBlsMessage\0229\n\nverify_brd\030\001 \001(\0132%"
-      ".zjchain.bls.protobuf.VerifyVecBrdReq\0225\n"
-      "\010swap_req\030\002 \001(\0132#.zjchain.bls.protobuf.S"
-      "wapSecKeyReq\0229\n\nfinish_req\030\003 \001(\0132%.zjcha"
-      "in.bls.protobuf.FinishBroadcast\022>\n\020check"
-      "_verify_req\030\004 \001(\0132$.zjchain.bls.protobuf"
-      ".CheckVerfiyReq\022@\n\021check_swapkey_req\030\005 \001"
-      "(\0132%.zjchain.bls.protobuf.CheckSwapKeyRe"
-      "q\022\r\n\005index\030\006 \001(\r\022\024\n\014elect_height\030\007 \001(\004"
+      "ort\030\002 \001(\r\"j\n\016SwapSecKeyItem\022\017\n\007sec_key\030\001"
+      " \001(\014\022\023\n\013sec_key_len\030\002 \001(\r\0222\n\006old_g2\030\003 \001("
+      "\0132\".zjchain.bls.protobuf.BlsPublicKey\"C\n"
+      "\rSwapSecKeyReq\0222\n\004keys\030\001 \003(\0132$.zjchain.b"
+      "ls.protobuf.SwapSecKeyItem\"D\n\rSwapSecKey"
+      "Res\022\r\n\005index\030\001 \001(\r\022\017\n\007sec_key\030\002 \001(\014\022\023\n\013s"
+      "ec_key_len\030\003 \001(\r\"+\n\022AgainstParticipant\022\025"
+      "\n\ragainst_index\030\001 \001(\r\"\314\001\n\017FinishBroadcas"
+      "t\022\016\n\006bitmap\030\001 \003(\004\0222\n\006pubkey\030\002 \001(\0132\".zjch"
+      "ain.bls.protobuf.BlsPublicKey\0229\n\rcommon_"
+      "pubkey\030\003 \001(\0132\".zjchain.bls.protobuf.BlsP"
+      "ublicKey\022\022\n\nnetwork_id\030\004 \001(\r\022\022\n\nbls_sign"
+      "_x\030\005 \001(\014\022\022\n\nbls_sign_y\030\006 \001(\014\"\037\n\016CheckVer"
+      "fiyReq\022\r\n\005index\030\001 \001(\r\" \n\017CheckSwapKeyReq"
+      "\022\r\n\005index\030\001 \001(\r\"\340\002\n\nBlsMessage\0229\n\nverify"
+      "_brd\030\001 \001(\0132%.zjchain.bls.protobuf.Verify"
+      "VecBrdReq\0225\n\010swap_req\030\002 \001(\0132#.zjchain.bl"
+      "s.protobuf.SwapSecKeyReq\0229\n\nfinish_req\030\003"
+      " \001(\0132%.zjchain.bls.protobuf.FinishBroadc"
+      "ast\022>\n\020check_verify_req\030\004 \001(\0132$.zjchain."
+      "bls.protobuf.CheckVerfiyReq\022@\n\021check_swa"
+      "pkey_req\030\005 \001(\0132%.zjchain.bls.protobuf.Ch"
+      "eckSwapKeyReq\022\r\n\005index\030\006 \001(\r\022\024\n\014elect_he"
+      "ight\030\007 \001(\004"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1598);
+      descriptor, 1650);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/bls.proto", &protobuf_RegisterTypes);
 }
@@ -3251,10 +3256,13 @@ void VerifyVecBrdRes::InternalSwap(VerifyVecBrdRes* other) {
 // ===================================================================
 
 void SwapSecKeyItem::InitAsDefaultInstance() {
+  ::zjchain::bls::protobuf::_SwapSecKeyItem_default_instance_._instance.get_mutable()->old_g2_ = const_cast< ::zjchain::bls::protobuf::BlsPublicKey*>(
+      ::zjchain::bls::protobuf::BlsPublicKey::internal_default_instance());
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int SwapSecKeyItem::kSecKeyFieldNumber;
 const int SwapSecKeyItem::kSecKeyLenFieldNumber;
+const int SwapSecKeyItem::kOldG2FieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 SwapSecKeyItem::SwapSecKeyItem()
@@ -3273,13 +3281,20 @@ SwapSecKeyItem::SwapSecKeyItem(const SwapSecKeyItem& from)
   if (from.has_sec_key()) {
     sec_key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sec_key_);
   }
+  if (from.has_old_g2()) {
+    old_g2_ = new ::zjchain::bls::protobuf::BlsPublicKey(*from.old_g2_);
+  } else {
+    old_g2_ = NULL;
+  }
   sec_key_len_ = from.sec_key_len_;
   // @@protoc_insertion_point(copy_constructor:zjchain.bls.protobuf.SwapSecKeyItem)
 }
 
 void SwapSecKeyItem::SharedCtor() {
   sec_key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  sec_key_len_ = 0u;
+  ::memset(&old_g2_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&sec_key_len_) -
+      reinterpret_cast<char*>(&old_g2_)) + sizeof(sec_key_len_));
 }
 
 SwapSecKeyItem::~SwapSecKeyItem() {
@@ -3289,6 +3304,7 @@ SwapSecKeyItem::~SwapSecKeyItem() {
 
 void SwapSecKeyItem::SharedDtor() {
   sec_key_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (this != internal_default_instance()) delete old_g2_;
 }
 
 void SwapSecKeyItem::SetCachedSize(int size) const {
@@ -3312,8 +3328,14 @@ void SwapSecKeyItem::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    sec_key_.ClearNonDefaultToEmptyNoArena();
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
+      sec_key_.ClearNonDefaultToEmptyNoArena();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      GOOGLE_DCHECK(old_g2_ != NULL);
+      old_g2_->Clear();
+    }
   }
   sec_key_len_ = 0u;
   _has_bits_.Clear();
@@ -3356,6 +3378,18 @@ bool SwapSecKeyItem::MergePartialFromCodedStream(
         break;
       }
 
+      // optional .zjchain.bls.protobuf.BlsPublicKey old_g2 = 3;
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_old_g2()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -3390,8 +3424,14 @@ void SwapSecKeyItem::SerializeWithCachedSizes(
   }
 
   // optional uint32 sec_key_len = 2;
-  if (cached_has_bits & 0x00000002u) {
+  if (cached_has_bits & 0x00000004u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->sec_key_len(), output);
+  }
+
+  // optional .zjchain.bls.protobuf.BlsPublicKey old_g2 = 3;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      3, this->_internal_old_g2(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3417,8 +3457,15 @@ void SwapSecKeyItem::SerializeWithCachedSizes(
   }
 
   // optional uint32 sec_key_len = 2;
-  if (cached_has_bits & 0x00000002u) {
+  if (cached_has_bits & 0x00000004u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->sec_key_len(), target);
+  }
+
+  // optional .zjchain.bls.protobuf.BlsPublicKey old_g2 = 3;
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        3, this->_internal_old_g2(), deterministic, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3438,12 +3485,19 @@ size_t SwapSecKeyItem::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 3u) {
+  if (_has_bits_[0 / 32] & 7u) {
     // optional bytes sec_key = 1;
     if (has_sec_key()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::BytesSize(
           this->sec_key());
+    }
+
+    // optional .zjchain.bls.protobuf.BlsPublicKey old_g2 = 3;
+    if (has_old_g2()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *old_g2_);
     }
 
     // optional uint32 sec_key_len = 2;
@@ -3482,12 +3536,15 @@ void SwapSecKeyItem::MergeFrom(const SwapSecKeyItem& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 3u) {
+  if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_sec_key();
       sec_key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.sec_key_);
     }
     if (cached_has_bits & 0x00000002u) {
+      mutable_old_g2()->::zjchain::bls::protobuf::BlsPublicKey::MergeFrom(from.old_g2());
+    }
+    if (cached_has_bits & 0x00000004u) {
       sec_key_len_ = from.sec_key_len_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -3520,6 +3577,7 @@ void SwapSecKeyItem::InternalSwap(SwapSecKeyItem* other) {
   using std::swap;
   sec_key_.Swap(&other->sec_key_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
+  swap(old_g2_, other->old_g2_);
   swap(sec_key_len_, other->sec_key_len_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
