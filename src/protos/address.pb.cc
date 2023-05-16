@@ -19,6 +19,9 @@
 #endif
 // @@protoc_insertion_point(includes)
 
+namespace protobuf_protos_2fbls_2eproto {
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_BlsPublicKey;
+}  // namespace protobuf_protos_2fbls_2eproto
 namespace zjchain {
 namespace address {
 namespace protobuf {
@@ -42,8 +45,9 @@ static void InitDefaultsAddressInfo() {
   ::zjchain::address::protobuf::AddressInfo::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<0> scc_info_AddressInfo =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsAddressInfo}, {}};
+::google::protobuf::internal::SCCInfo<1> scc_info_AddressInfo =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsAddressInfo}, {
+      &protobuf_protos_2fbls_2eproto::scc_info_BlsPublicKey.base,}};
 
 void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_AddressInfo.base);
@@ -67,6 +71,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, bytes_code_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, latest_height_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, credit_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, g2s_),
   0,
   3,
   4,
@@ -76,9 +81,10 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   2,
   8,
   7,
+  ~0u,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 14, sizeof(::zjchain::address::protobuf::AddressInfo)},
+  { 0, 15, sizeof(::zjchain::address::protobuf::AddressInfo)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -107,21 +113,24 @@ void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
       "\n\024protos/address.proto\022\030zjchain.address."
-      "protobuf\"\330\001\n\013AddressInfo\022\016\n\006pubkey\030\001 \001(\014"
-      "\022\017\n\007balance\030\002 \001(\004\022\023\n\013sharding_id\030\003 \001(\r\022\022"
-      "\n\npool_index\030\004 \001(\r\022\014\n\004addr\030\005 \001(\014\0223\n\004type"
-      "\030\006 \001(\0162%.zjchain.address.protobuf.Addres"
-      "sType\022\022\n\nbytes_code\030\007 \001(\014\022\025\n\rlatest_heig"
-      "ht\030\010 \001(\004\022\021\n\006credit\030\t \001(\005:\0010*\225\001\n\013AddressT"
-      "ype\022\013\n\007kNormal\020\000\022\r\n\tkContract\020\001\022\016\n\nkRoot"
-      "Elect\020\002\022\016\n\nkRootTimer\020\003\022\016\n\nkStatistic\020\004\022"
-      "\020\n\014kToTxAddress\020\005\022\025\n\021kLocalToTxAddress\020\006"
-      "\022\021\n\rkElectAddress\020\007"
+      "protobuf\032\020protos/bls.proto\"\211\002\n\013AddressIn"
+      "fo\022\016\n\006pubkey\030\001 \001(\014\022\017\n\007balance\030\002 \001(\004\022\023\n\013s"
+      "harding_id\030\003 \001(\r\022\022\n\npool_index\030\004 \001(\r\022\014\n\004"
+      "addr\030\005 \001(\014\0223\n\004type\030\006 \001(\0162%.zjchain.addre"
+      "ss.protobuf.AddressType\022\022\n\nbytes_code\030\007 "
+      "\001(\014\022\025\n\rlatest_height\030\010 \001(\004\022\021\n\006credit\030\t \001"
+      "(\005:\0010\022/\n\003g2s\030\n \003(\0132\".zjchain.bls.protobu"
+      "f.BlsPublicKey*\225\001\n\013AddressType\022\013\n\007kNorma"
+      "l\020\000\022\r\n\tkContract\020\001\022\016\n\nkRootElect\020\002\022\016\n\nkR"
+      "ootTimer\020\003\022\016\n\nkStatistic\020\004\022\020\n\014kToTxAddre"
+      "ss\020\005\022\025\n\021kLocalToTxAddress\020\006\022\021\n\rkElectAdd"
+      "ress\020\007"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 419);
+      descriptor, 486);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/address.proto", &protobuf_RegisterTypes);
+  ::protobuf_protos_2fbls_2eproto::AddDescriptors();
 }
 
 void AddDescriptors() {
@@ -163,6 +172,9 @@ bool AddressType_IsValid(int value) {
 
 void AddressInfo::InitAsDefaultInstance() {
 }
+void AddressInfo::clear_g2s() {
+  g2s_.Clear();
+}
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int AddressInfo::kPubkeyFieldNumber;
 const int AddressInfo::kBalanceFieldNumber;
@@ -173,6 +185,7 @@ const int AddressInfo::kTypeFieldNumber;
 const int AddressInfo::kBytesCodeFieldNumber;
 const int AddressInfo::kLatestHeightFieldNumber;
 const int AddressInfo::kCreditFieldNumber;
+const int AddressInfo::kG2SFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 AddressInfo::AddressInfo()
@@ -185,7 +198,8 @@ AddressInfo::AddressInfo()
 AddressInfo::AddressInfo(const AddressInfo& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
-      _has_bits_(from._has_bits_) {
+      _has_bits_(from._has_bits_),
+      g2s_(from.g2s_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   pubkey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.has_pubkey()) {
@@ -245,6 +259,7 @@ void AddressInfo::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  g2s_.Clear();
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
@@ -403,6 +418,18 @@ bool AddressInfo::MergePartialFromCodedStream(
         break;
       }
 
+      // repeated .zjchain.bls.protobuf.BlsPublicKey g2s = 10;
+      case 10: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(82u /* 82 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+                input, add_g2s()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -479,6 +506,15 @@ void AddressInfo::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(9, this->credit(), output);
   }
 
+  // repeated .zjchain.bls.protobuf.BlsPublicKey g2s = 10;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->g2s_size()); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      10,
+      this->g2s(static_cast<int>(i)),
+      output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -546,6 +582,14 @@ void AddressInfo::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(9, this->credit(), target);
   }
 
+  // repeated .zjchain.bls.protobuf.BlsPublicKey g2s = 10;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->g2s_size()); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        10, this->g2s(static_cast<int>(i)), deterministic, target);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -563,6 +607,17 @@ size_t AddressInfo::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
+  // repeated .zjchain.bls.protobuf.BlsPublicKey g2s = 10;
+  {
+    unsigned int count = static_cast<unsigned int>(this->g2s_size());
+    total_size += 1UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          this->g2s(static_cast<int>(i)));
+    }
+  }
+
   if (_has_bits_[0 / 32] & 255u) {
     // optional bytes pubkey = 1;
     if (has_pubkey()) {
@@ -654,6 +709,7 @@ void AddressInfo::MergeFrom(const AddressInfo& from) {
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
+  g2s_.MergeFrom(from.g2s_);
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
@@ -714,6 +770,7 @@ void AddressInfo::Swap(AddressInfo* other) {
 }
 void AddressInfo::InternalSwap(AddressInfo* other) {
   using std::swap;
+  CastToBase(&g2s_)->InternalSwap(CastToBase(&other->g2s_));
   pubkey_.Swap(&other->pubkey_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   addr_.Swap(&other->addr_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),

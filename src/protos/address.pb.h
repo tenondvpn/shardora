@@ -31,6 +31,7 @@
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
+#include "protos/bls.pb.h"
 // @@protoc_insertion_point(includes)
 #define PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2faddress_2eproto 
 
@@ -185,6 +186,18 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
 
   // accessors -------------------------------------------------------
 
+  // repeated .zjchain.bls.protobuf.BlsPublicKey g2s = 10;
+  int g2s_size() const;
+  void clear_g2s();
+  static const int kG2SFieldNumber = 10;
+  ::zjchain::bls::protobuf::BlsPublicKey* mutable_g2s(int index);
+  ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::BlsPublicKey >*
+      mutable_g2s();
+  const ::zjchain::bls::protobuf::BlsPublicKey& g2s(int index) const;
+  ::zjchain::bls::protobuf::BlsPublicKey* add_g2s();
+  const ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::BlsPublicKey >&
+      g2s() const;
+
   // optional bytes pubkey = 1;
   bool has_pubkey() const;
   void clear_pubkey();
@@ -296,6 +309,7 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::BlsPublicKey > g2s_;
   ::google::protobuf::internal::ArenaStringPtr pubkey_;
   ::google::protobuf::internal::ArenaStringPtr addr_;
   ::google::protobuf::internal::ArenaStringPtr bytes_code_;
@@ -659,6 +673,33 @@ inline void AddressInfo::set_credit(::google::protobuf::int32 value) {
   set_has_credit();
   credit_ = value;
   // @@protoc_insertion_point(field_set:zjchain.address.protobuf.AddressInfo.credit)
+}
+
+// repeated .zjchain.bls.protobuf.BlsPublicKey g2s = 10;
+inline int AddressInfo::g2s_size() const {
+  return g2s_.size();
+}
+inline ::zjchain::bls::protobuf::BlsPublicKey* AddressInfo::mutable_g2s(int index) {
+  // @@protoc_insertion_point(field_mutable:zjchain.address.protobuf.AddressInfo.g2s)
+  return g2s_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::BlsPublicKey >*
+AddressInfo::mutable_g2s() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.address.protobuf.AddressInfo.g2s)
+  return &g2s_;
+}
+inline const ::zjchain::bls::protobuf::BlsPublicKey& AddressInfo::g2s(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.address.protobuf.AddressInfo.g2s)
+  return g2s_.Get(index);
+}
+inline ::zjchain::bls::protobuf::BlsPublicKey* AddressInfo::add_g2s() {
+  // @@protoc_insertion_point(field_add:zjchain.address.protobuf.AddressInfo.g2s)
+  return g2s_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::BlsPublicKey >&
+AddressInfo::g2s() const {
+  // @@protoc_insertion_point(field_list:zjchain.address.protobuf.AddressInfo.g2s)
+  return g2s_;
 }
 
 #ifdef __GNUC__
