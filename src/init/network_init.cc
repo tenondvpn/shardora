@@ -494,7 +494,7 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     join_info.set_member_idx(common::GlobalInfo::Instance()->config_local_member_idx());
     join_info.set_shard_id(common::GlobalInfo::Instance()->network_id() - network::kConsensusWaitingShardOffset);
     auto* req = join_info.mutable_g2_req();
-    auto res = prefix_db_->GetBlsVerifyG2((*members_)[peer_mem_index]->id, req);
+    auto res = prefix_db_->GetBlsVerifyG2(security_->GetAddress(), req);
     if (!res) {
         CreateContribution(req);
     }
@@ -511,10 +511,11 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     msg.set_sign(sign);
     msg_ptr->thread_idx = thread_idx;
     network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("success send join elect request transaction: %u, join: %u", des_sharding_id_, tmp[0]);
+    ZJC_DEBUG("success send join elect request transaction: %u, join: %u",
+        des_sharding_id_, join_info.shard_id());
 }
 
-void BlsDkg::CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req) {
+void NetworkInit::CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req) {
     auto n = common::GlobalInfo::Instance()->each_shard_max_members();
     auto t = common::GetSignerCount(n);
     libBLS::Dkg dkg_instance(t, n);
@@ -525,13 +526,7 @@ void BlsDkg::CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req) 
             libBLS::ThresholdUtils::fieldElementToString(polynomial[i])));
     }
 
-    local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(
-        polynomial, valid_n, valid_t);
     auto local_member_index = common::GetAddressMemberIndex(security_->GetAddress());
-    auto val = libBLS::ThresholdUtils::fieldElementToString(
-        local_src_secret_key_contribution_[local_member_index]);
-    prefix_db_->SaveSwapKey(
-        local_member_index, elect_hegiht_, local_member_index, local_member_index, val);
     auto g2_vec = dkg_instance_->VerificationVector(polynomial);
     for (uint32_t i = 0; i < valid_t; ++i) {
         bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req->add_verify_vec();
