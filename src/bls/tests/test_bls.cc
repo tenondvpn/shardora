@@ -633,6 +633,9 @@ TEST_F(TestBls, AllSuccess) {
         prefix_db->AddBlsVerifyG2(tmp_security_ptr->GetAddress(), *req);
 
         for (uint32_t i = 0; i < verify_g2s.size(); ++i) {
+            auto midx = local_member_idx + i * common::kElectNodeMinMemberIndex;
+            ASSERT_TRUE(verify_g2s[i] == contributions[midx] * libff::alt_bn128_G2::one());
+
             bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verify_req()->add_verify_vec();
             verify_item.set_x_c0(common::Encode::HexDecode(
                 libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c0)));
