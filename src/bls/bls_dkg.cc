@@ -785,46 +785,42 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
 void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     valid_swapkey_set_.insert(local_member_index_);
     ++valid_sec_key_count_;
-    std::vector<libff::alt_bn128_Fr> polynomial(valid_n, libff::alt_bn128_Fr::one());
-    for (size_t i = 0; i < this->t_; ++i) {
-        polynomial[i] = libff::alt_bn128_Fr::random_element();
-        while (i == this->t_ - 1 && polynomial[i] == libff::alt_bn128_Fr::zero()) {
-            polynomial[i] = libff::alt_bn128_Fr::random_element();
-        }
-    }
-
+    std::vector<libff::alt_bn128_Fr> polynomial = dkg_instance_->GeneratePolynomial();
     local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(
         polynomial, valid_n, valid_t);
     auto val = libBLS::ThresholdUtils::fieldElementToString(
         local_src_secret_key_contribution_[local_member_index_]);
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, local_member_index_, val);
-    libff::alt_bn128_G2 first_g2_val = polynomial[0] * libff::alt_bn128_G2::one();
+    auto g2_vec = dkg_instance_->VerificationVector(polynomial);
 
 #ifdef ZJC_UNITTEST
-    g2_vec_ = first_g2_val;
+    g2_vec_ = g2_vec;
 #endif // ZJC_UNITTEST
 
     bls::protobuf::VerifyVecBrdReq bls_verify_req;
-    bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req.add_verify_vec();
-    verify_item.set_x_c0(common::Encode::HexDecode(
-        libBLS::ThresholdUtils::fieldElementToString(first_g2_val.X.c0)));
-    verify_item.set_x_c1(common::Encode::HexDecode(
-        libBLS::ThresholdUtils::fieldElementToString(first_g2_val.X.c1)));
-    verify_item.set_y_c0(common::Encode::HexDecode(
-        libBLS::ThresholdUtils::fieldElementToString(first_g2_val.Y.c0)));
-    verify_item.set_y_c1(common::Encode::HexDecode(
-        libBLS::ThresholdUtils::fieldElementToString(first_g2_val.Y.c1)));
-    verify_item.set_z_c0(common::Encode::HexDecode(
-        libBLS::ThresholdUtils::fieldElementToString(first_g2_val.Z.c0)));
-    verify_item.set_z_c1(common::Encode::HexDecode(
-        libBLS::ThresholdUtils::fieldElementToString(first_g2_val.Z.c1)));
+    for (uint32_t i = 0; i < valid_t; ++i) {
+        bls::protobuf::VerifyVecItem& verify_item = *bls_verify_req.add_verify_vec();
+        verify_item.set_x_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
+        verify_item.set_x_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c1)));
+        verify_item.set_y_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
+        verify_item.set_y_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
+        verify_item.set_z_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
+        verify_item.set_z_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
+    }
+    
     auto str = bls_verify_req.SerializeAsString();
     prefix_db_->AddBlsVerifyG2(security_->GetAddress(), bls_verify_req);
-    ZJC_DEBUG("save verify g2 success local: %d, %lu, %u, %u, %s, %s",
-        local_member_index_, elect_hegiht_, local_member_index_, 0,
-        common::Encode::HexEncode((*members_)[local_member_index_]->id).c_str(),
-        common::Encode::HexEncode(verify_item.x_c0()).c_str());
+//     ZJC_DEBUG("save verify g2 success local: %d, %lu, %u, %u, %s, %s",
+//         local_member_index_, elect_hegiht_, local_member_index_, 0,
+//         common::Encode::HexEncode((*members_)[local_member_index_]->id).c_str(),
+//         common::Encode::HexEncode(verify_item.x_c0()).c_str());
 }
 
 void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {

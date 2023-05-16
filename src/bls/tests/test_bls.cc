@@ -166,26 +166,8 @@ TEST_F(TestBls, ContributionSignAndVerify) {
     static const uint32_t valid_count = 3;
 
     SetGloableInfo(common::Random::RandomString(32), network::kConsensusShardBeginNetworkId);
-    std::vector<std::string> pri_vec;
-    GetPrivateKey(pri_vec, n);
-    common::MembersPtr members = std::make_shared<common::Members>();
-    for (uint32_t i = 0; i < pri_vec.size(); ++i) {
-        auto tmp_security_ptr = dkg[i].security_;
-        std::string pubkey_str = tmp_security_ptr->GetPublicKey();
-        std::string id = tmp_security_ptr->GetAddress();
-        auto member = std::make_shared<common::BftMember>(
-            network::kConsensusShardBeginNetworkId, id, pubkey_str, i, i == 0 ? 0 : -1);
-        member->public_ip = common::IpToUint32("127.0.0.1");
-        member->public_port = 123;
-        members->push_back(member);
-    }
-
     BlsDkg* dkg = new BlsDkg[n];
     auto btime0 = common::TimeUtils::TimestampUs();
-    auto latest_timeblock_info = std::make_shared<TimeBlockItem>();
-    latest_timeblock_info->lastest_time_block_tm = common::TimeUtils::TimestampSeconds() - 10;
-    latest_timeblock_info->latest_time_block_height = 1;
-    latest_timeblock_info->vss_random = common::Random::RandomUint64();
     for (uint32_t i = 0; i < valid_count; i++) {
         dkg[i].Init(
             bls_manager,
@@ -198,7 +180,6 @@ TEST_F(TestBls, ContributionSignAndVerify) {
             db_ptr);
         dkg[i].dkg_instance_ = std::make_shared<libBLS::Dkg>(t, n);
         dkg[i].local_member_index_ = i;
-        dkg[i].OnNewElectionBlock(1, members, latest_timeblock_info);
         dkg[i].CreateContribution(n, valid_t);
     }
 

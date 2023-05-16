@@ -178,7 +178,7 @@ private:
 #ifdef ZJC_UNITTEST
     transport::MessagePtr ver_brd_msg_;
     transport::MessagePtr sec_swap_msgs_;
-    libff::alt_bn128_G2 g2_vec_;
+    std::vector<libff::alt_bn128_G2> g2_vec_;
 #endif
     DISALLOW_COPY_AND_ASSIGN(BlsDkg);
 };
