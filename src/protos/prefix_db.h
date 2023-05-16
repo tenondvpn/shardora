@@ -1179,7 +1179,7 @@ public:
 
     void SaveVerifiedG2s(
             const std::string& id,
-            const bls::protobuf::VerifyVecBrdReq& verfy_final_vals) {
+            const bls::protobuf::JoinElectBlsInfo& verfy_final_vals) {
         std::string key;
         key.reserve(128);
         key.append(kLocalVerifiedG2Prefix);
@@ -1191,7 +1191,7 @@ public:
         }
     }
 
-    bool GetVerifiedG2s(const std::string& id, bls::protobuf::VerifyVecBrdReq* verfy_final_vals) {
+    bool GetVerifiedG2s(const std::string& id, bls::protobuf::JoinElectBlsInfo* verfy_final_vals) {
         std::string key;
         key.reserve(128);
         key.append(kLocalVerifiedG2Prefix);
