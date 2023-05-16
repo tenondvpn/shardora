@@ -469,6 +469,7 @@ bool BlsDkg::VerifySekkeyValid(
         return false;
     }
 
+    changed_idx = 0;
     ZJC_DEBUG("b");
     bls::protobuf::JoinElectBlsInfo verfy_final_vals;
     if (!prefix_db_->GetVerifiedG2s((*members_)[peer_index]->id, &verfy_final_vals)) {
@@ -531,8 +532,8 @@ bool BlsDkg::VerifySekkeyValid(
     auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
     auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
     auto all_verified_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-    auto old_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx - 1) * old_val;
-    auto new_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx - 1) * new_val;
+    auto old_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx) * old_val;
+    auto new_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx) * new_val;
     all_verified_val = all_verified_val - old_g2_val + new_g2_val;
     ZJC_DEBUG("i");
     return all_verified_val == seckey * libff::alt_bn128_G2::one();
