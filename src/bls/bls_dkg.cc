@@ -785,7 +785,11 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
 void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     valid_swapkey_set_.insert(local_member_index_);
     ++valid_sec_key_count_;
-    std::vector<libff::alt_bn128_Fr> polynomial = dkg_instance_->GeneratePolynomial();
+    std::vector<libff::alt_bn128_Fr> polynomial(valid_t);// = dkg_instance_->GeneratePolynomial();
+    for (uint32_t i = 0; i < valid_t; ++i) {
+        polynomial[i].mont_repr = rand() % 64;
+    }
+
     local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(
         polynomial, valid_n, valid_t);
     auto val = libBLS::ThresholdUtils::fieldElementToString(
