@@ -432,7 +432,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-    ZJC_DEBUG("65");
+    ZJC_DEBUG("6");
     libff::alt_bn128_G2 first_g2 = libff::alt_bn128_G2::zero();
     auto tmp_swap_key = libff::alt_bn128_Fr(sec_key.c_str());
     if (!VerifySekkeyValid(local_member_index_, bls_msg.index(), tmp_swap_key)) {
@@ -444,6 +444,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
+    ZJC_DEBUG("7");
     ZJC_DEBUG("swap verify success member: %d, index: %d, %s, min_aggree_member_count_: %u",
         local_member_index_, bls_msg.index(),
         libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
