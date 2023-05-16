@@ -99,7 +99,7 @@ void GenesisBlockInit::InitBlsVerificationValue() {
 }
 
 int GenesisBlockInit::CreateBlsGenesisKeys(
-        protobuf::RepeatedPtrField< ::zjchain::block::protobuf::BlockTx >* tx_list,
+        google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>* tx_list,
         uint64_t elect_height,
         uint32_t sharding_id,
         const std::vector<std::string>& prikeys,
