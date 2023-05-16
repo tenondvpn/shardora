@@ -874,10 +874,10 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
                 mem_idx,
                 (*members_)[local_member_index_]->id,
                 &verfy_final_vals)) {
-            std::cout << "get " << mem_idx << " " << common::Encode::HexEncode((*members_)[local_member_index_]->id) << std::endl;
             continue;
         }
 
+        std::cout << "success get " << mem_idx << " " << common::Encode::HexEncode((*members_)[local_member_index_]->id) << std::endl;
         ZJC_DEBUG("c");
         std::string val;
         if (!prefix_db_->GetTemporaryKv(verfy_final_vals.src_hash(), &val)) {
