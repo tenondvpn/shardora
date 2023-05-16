@@ -650,7 +650,7 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
 
     auto msg = libBLS::ThresholdUtils::fieldElementToString(
         local_src_secret_key_contribution_[member_idx]);
-    ZJC_DEBUG("member_idx: %d, swap key: %s", member_idx, msg.c_str());
+    ZJC_DEBUG("des member_idx: %d, local: %d, swap key: %s", member_idx, local_member_index_, msg.c_str());
     std::string encrypt_key;
     if (security_->GetEcdhKey(
             (*members_)[member_idx]->pubkey,
