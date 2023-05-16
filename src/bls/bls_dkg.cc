@@ -874,27 +874,27 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
                 (*members_)[local_member_index_]->id,
                 &verfy_final_vals)) {
             assert(false);
-            return false;
+            return;
         }
 
         ZJC_DEBUG("c");
         std::string val;
         if (!prefix_db_->GetTemporaryKv(verfy_final_vals.src_hash(), &val)) {
             assert(false);
-            return false;
+            return;
         }
 
         ZJC_DEBUG("d");
         init::protobuf::JoinElectInfo join_info;
         if (!join_info.ParseFromString(val)) {
             assert(false);
-            return false;
+            return;
         }
 
         ZJC_DEBUG("e");
         if (join_info.g2_req().verify_vec_size() <= change_idx) {
             assert(false);
-            return false;
+            return;
         }
 
         ZJC_DEBUG("f");
@@ -914,10 +914,10 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         }
 
         ZJC_DEBUG("g");
-        auto midx = idx / common::kElectNodeMinMemberIndex;
+        auto midx = mem_idx / common::kElectNodeMinMemberIndex;
         if (verfy_final_vals.verify_req().verify_vec_size() <= midx) {
             assert(false);
-            return false;
+            return;
         }
 
         ZJC_DEBUG("h");
@@ -932,8 +932,8 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
         auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
         auto all_verified_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-        auto old_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx) * old_val;
-        auto new_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx) * new_g2;
+        auto old_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), changed_idx) * old_val;
+        auto new_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), changed_idx) * new_g2;
         all_verified_val = all_verified_val - old_g2_val + new_g2_val;
         assert(all_verified_val == local_src_secret_key_contribution_)
     }
