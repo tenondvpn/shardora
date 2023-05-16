@@ -470,7 +470,6 @@ bool BlsDkg::VerifySekkeyValid(
     }
 
     std::cout << "get change idx: " << changed_idx << std::endl;
-    changed_idx = 0;
     ZJC_DEBUG("b");
     bls::protobuf::JoinElectBlsInfo verfy_final_vals;
     if (!prefix_db_->GetVerifiedG2s((*members_)[peer_index]->id, &verfy_final_vals)) {
@@ -651,6 +650,7 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
 
     auto msg = libBLS::ThresholdUtils::fieldElementToString(
         local_src_secret_key_contribution_[member_idx]);
+    ZJC_DEBUG("member_idx: %d, swap key: %s", member_idx, msg.c_str());
     std::string encrypt_key;
     if (security_->GetEcdhKey(
             (*members_)[member_idx]->pubkey,
