@@ -103,28 +103,27 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         uint32_t sharding_id,
         const std::vector<std::string>& prikeys,
         elect::protobuf::PrevMembers* prev_members) {
-    static const uint32_t valid_n = 3;
+    static const uint32_t valid_n = common::GlobalInfo::Instance()->each_shard_max_members();
     static const uint32_t valid_t = common::GetSignerCount(valid_n);
     libBLS::Dkg dkg_instance = libBLS::Dkg(valid_t, valid_n);
-    std::vector<std::vector<libff::alt_bn128_Fr>> polynomial(valid_n);
+    std::vector<std::vector<libff::alt_bn128_Fr>> polynomial(prikeys.size());
     for (auto& pol : polynomial) {
-        pol = std::vector<libff::alt_bn128_Fr>(valid_n, libff::alt_bn128_Fr::one());
-        pol[0] = libff::alt_bn128_Fr::random_element();
+        pol = dkg_instance->GeneratePolynomial();
     }
 
     std::vector<std::vector<libff::alt_bn128_Fr>> secret_key_contribution(valid_n);
-    for (size_t i = 0; i < valid_n; ++i) {
+    for (size_t i = 0; i < prikeys.size(); ++i) {
         secret_key_contribution[i] = dkg_instance.SecretKeyContribution(
             polynomial[i], valid_n, valid_t);
     }
 
-    std::vector<std::vector<libff::alt_bn128_G2>> verification_vector(valid_n);
-    for (size_t i = 0; i < valid_n; ++i) {
+    std::vector<std::vector<libff::alt_bn128_G2>> verification_vector(prikeys.size());
+    for (size_t i = 0; i < prikeys.size(); ++i) {
         verification_vector[i] = dkg_instance.VerificationVector(polynomial[i]);
     }
 
-    for (size_t i = 0; i < valid_n; ++i) {
-        for (size_t j = i; j < valid_n; ++j) {
+    for (size_t i = 0; i < prikeys.size(); ++i) {
+        for (size_t j = i; j < prikeys.size(); ++j) {
             std::swap(secret_key_contribution[j][i], secret_key_contribution[i][j]);
         }
     }
@@ -136,6 +135,13 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
     for (uint32_t idx = 0; idx < prikeys.size(); ++idx) {
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
         secptr->SetPrivateKey(prikeys[idx]);
+        bls::protobuf::LocalPolynomial local_poly;
+        for (uint32_t j = 0; j < polynomial[i].size(); ++j) {
+            local_poly.add_polynomial(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(polynomial[i][j])));
+        }
+
+        prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
         libBLS::Dkg tmpdkg(valid_t, valid_n);
         auto local_sec_key = tmpdkg.SecretKeyShareCreate(secret_key_contribution[idx]);
         auto local_publick_key = tmpdkg.GetPublicKeyFromSecretKey(local_sec_key);
