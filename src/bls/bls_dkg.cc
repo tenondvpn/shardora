@@ -781,13 +781,14 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
     }
 #endif
 }
-
+// 9915499612839321149637521777990102151350674507940716049588462388200839649614
+// 0000000000000000000000000000000000000000000000000000000000000000000000000001
 void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     valid_swapkey_set_.insert(local_member_index_);
     ++valid_sec_key_count_;
     std::vector<libff::alt_bn128_Fr> polynomial(valid_t);// = dkg_instance_->GeneratePolynomial();
     for (uint32_t i = 0; i < valid_t; ++i) {
-        polynomial[i].mont_repr = rand() % 3 + 1;
+        polynomial[i].mont_repr = "0000000000000000000000000000000000000000000000000000000000000000000000000001";
         if (i == 0) {
             std::cout << "pol " << i << " ";
             polynomial[i].print();
