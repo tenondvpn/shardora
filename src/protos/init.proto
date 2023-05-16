@@ -20,7 +20,7 @@ message InvalidLeaderPools {
 message JoinElectInfo {
     optional uint32 shard_id = 1;
     optional uint32 member_idx = 2;
-    repeated bls.protobuf.VerifyVecBrdReq g2_req = 3;
+    optional bls.protobuf.VerifyVecBrdReq g2_req = 3;
 }
 
 message InitMessage {

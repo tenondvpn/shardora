@@ -372,7 +372,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
 
 void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
-    auto& tx_msg = header.tx_proto();
+    auto& tx_msg = *header.mutable_tx_proto();
     msg_ptr->address_info = GetAddressInfo(security_->GetAddress(tx_msg.pubkey()));
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no address info.");
