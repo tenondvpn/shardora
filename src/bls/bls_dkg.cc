@@ -849,12 +849,17 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     libff::alt_bn128_G2 old_g2 = libff::alt_bn128_G2::zero();
     for (int32_t i = 0; i < valid_t; ++i) {
         polynomial[i] = libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)).c_str());
+        if (i == 0) {
+            std::cout << "now handle member: " << local_member_index_ << " : " << common::Encode::HexEncode(local_poly.polynomial(i)) << std::endl;
+        }
+
         if (change_idx == i) {
             polynomial[i] = libff::alt_bn128_Fr::random_element();
             while (polynomial[i] == libff::alt_bn128_Fr::zero()) {
                 polynomial[i] = libff::alt_bn128_Fr::random_element();
             }
         }
+
     }
 
     auto new_g2 = polynomial[change_idx] * libff::alt_bn128_G2::one();

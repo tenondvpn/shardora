@@ -568,6 +568,9 @@ TEST_F(TestBls, AllSuccess) {
         for (uint32_t j = 0; j < polynomial[idx].size(); ++j) {
             local_poly.add_polynomial(common::Encode::HexDecode(
                 libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j])));
+            if (j == 0) {
+                std::cout << "init member: " << idx << " : " << libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j]) << std::endl;
+            }
         }
 
         init::protobuf::JoinElectInfo join_info;
@@ -658,21 +661,21 @@ TEST_F(TestBls, AllSuccess) {
             auto verified_val = verfy_final_vals.SerializeAsString();
             prefix_db->SaveVerifiedG2s(tmp_idx, id, verfy_final_vals);
             std::cout << "save " << tmp_idx << " " << common::Encode::HexEncode(id) << std::endl;
-
-//             auto old_g2 = polynomial[idx][0] * libff::alt_bn128_G2::one();
-//             polynomial[idx][0] = libff::alt_bn128_Fr::random_element();
-//             g2_vec = dkg_instance.VerificationVector(polynomial[idx]);
-//             contributions = dkg_instance.SecretKeyContribution(polynomial[idx]);
+// 
+//             auto old_g2 = polynomial[tmp_idx][0] * libff::alt_bn128_G2::one();
+//             polynomial[tmp_idx][0] = libff::alt_bn128_Fr::random_element();
+//             g2_vec = dkg_instance.VerificationVector(polynomial[tmp_idx]);
+//             contributions = dkg_instance.SecretKeyContribution(polynomial[tmp_idx]);
 //             for (uint32_t i = 0; i < contributions.size(); ++i) {
 //                 ASSERT_TRUE(dkg_instance.Verification(i, contributions[i], g2_vec));
 //             }
 // 
-//             auto new_g2 = polynomial[idx][0] * libff::alt_bn128_G2::one();
-//             auto old1 = power(libff::alt_bn128_Fr(idx + 1), 0) * old_g2;
-//             auto new1 = power(libff::alt_bn128_Fr(idx + 1), 0) * new_g2;
+//             auto new_g2 = polynomial[tmp_idx][0] * libff::alt_bn128_G2::one();
+//             auto old1 = power(libff::alt_bn128_Fr(tmp_idx + 1), 0) * old_g2;
+//             auto new1 = power(libff::alt_bn128_Fr(tmp_idx + 1), 0) * new_g2;
 //             verify_g2s[0] = verify_g2s[0] - old1 + new1;
-//             ASSERT_TRUE(verify_g2s[0] == contributions[idx] * libff::alt_bn128_G2::one());
-//             std::cout << "change idx verify success." << std::endl;
+//             ASSERT_TRUE(verify_g2s[0] == contributions[tmp_idx] * libff::alt_bn128_G2::one());
+//             std::cout << "change tmp_idx verify success." << std::endl;
         }
 
         auto str = join_info.SerializeAsString();
