@@ -853,13 +853,13 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             std::cout << "now handle member: " << local_member_index_ << " : " << common::Encode::HexEncode(local_poly.polynomial(i)) << std::endl;
         }
 
-        if (change_idx == i) {
-            old_g2 = polynomial[i] * libff::alt_bn128_G2::one();
-            polynomial[i] = libff::alt_bn128_Fr::random_element();
-            while (polynomial[i] == libff::alt_bn128_Fr::zero()) {
-                polynomial[i] = libff::alt_bn128_Fr::random_element();
-            }
-        }
+//         if (change_idx == i) {
+//             old_g2 = polynomial[i] * libff::alt_bn128_G2::one();
+//             polynomial[i] = libff::alt_bn128_Fr::random_element();
+//             while (polynomial[i] == libff::alt_bn128_Fr::zero()) {
+//                 polynomial[i] = libff::alt_bn128_Fr::random_element();
+//             }
+//         }
 
     }
 
@@ -933,10 +933,12 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
         auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
         auto all_verified_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-        auto old_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * old_val;
-        auto new_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * new_g2;
+//         auto old_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * old_val;
+//         auto new_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * new_g2;
         std::cout << "success get " << mem_idx << " " << common::Encode::HexEncode((*members_)[local_member_index_]->id)
-            << ", verified: " << common::Encode::HexEncode(item.x_c0()) << std::endl;
+            << ", verified: " << common::Encode::HexEncode(item.x_c0())
+            << ", contribution: " << libBLS::ThresholdUtils::fieldElementToString(
+                local_src_secret_key_contribution_[mem_idx]) << std::endl;
         all_verified_val = all_verified_val - old_g2_val + new_g2_val;
         assert(all_verified_val == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::zero());
     }
