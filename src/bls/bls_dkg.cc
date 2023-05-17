@@ -51,6 +51,7 @@ void BlsDkg::Destroy() {
 }
 
 void BlsDkg::TimerMessage(const transport::MessagePtr& msg_ptr) {
+    return;
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (!has_broadcast_verify_ &&
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4) &&
