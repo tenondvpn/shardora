@@ -238,7 +238,7 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
             "bls_msg.verify_brd().verify_vec_size()[%d: %d]",
             1,
             bls_msg.verify_brd().verify_vec_size());
-        assert(false);
+//         assert(false);
         return;
     }
 
@@ -823,7 +823,7 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
 void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     bls::protobuf::LocalPolynomial local_poly;
     if (!prefix_db_->GetLocalPolynomial(security_, security_->GetAddress(), &local_poly)) {
-        assert(false);
+//         assert(false);
         return;
     }
 
