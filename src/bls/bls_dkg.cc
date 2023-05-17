@@ -828,7 +828,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     }
 
     if (local_poly.polynomial_size() != valid_t) {
-        assert(false);
+//         assert(false);
         return;
     }
 
