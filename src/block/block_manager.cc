@@ -533,6 +533,7 @@ void BlockManager::HandleJoinElectTx(
     auto local_member_idx = common::GlobalInfo::Instance()->config_local_member_idx();
     std::cout << "elect height: " << block.electblock_height() << std::endl;
     if (block.electblock_height() == 0) {
+        // genesis block
         local_member_idx = 0;
     }
 
@@ -614,6 +615,11 @@ void BlockManager::HandleJoinElectTx(
             ZJC_DEBUG("success save verified g2: %u, %s",
                 local_member_idx,
                 common::Encode::HexEncode(tx.from()).c_str());
+            if (block.electblock_height() == 0) {
+                // genesis block
+                ++local_member_idx;
+            }
+
             break;
         }
     }
