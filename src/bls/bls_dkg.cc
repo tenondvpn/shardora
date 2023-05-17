@@ -935,7 +935,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         auto all_verified_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
 //         auto old_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * old_val;
 //         auto new_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * new_g2;
-        std::cout << "success get " << mem_idx << " " << common::Encode::HexEncode((*members_)[local_member_index_]->id)
+        std::cout << "node " << local_member_index_ << " success get " << mem_idx << " " << common::Encode::HexEncode((*members_)[local_member_index_]->id)
             << ", verified: " << common::Encode::HexEncode(item.x_c0())
             << ", contribution: " << libBLS::ThresholdUtils::fieldElementToString(
                 local_src_secret_key_contribution_[local_member_index_]) << std::endl;
