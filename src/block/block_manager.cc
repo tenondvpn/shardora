@@ -530,6 +530,9 @@ void BlockManager::HandleJoinElectTx(
         block.electblock_height(),
         tx.balance(),
         db_batch);
+    auto local_member_idx = common::GlobalInfo::Instance()->config_local_member_idx();
+    std::cout << "elect height: " << block.electblock_height() << std::endl;
+    if (block.electblock_height() == )
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
             std::string val;
@@ -548,7 +551,6 @@ void BlockManager::HandleJoinElectTx(
             auto all_pos_count = 1;// common::GlobalInfo::Instance()->each_shard_max_members() /
              //   common::kElectNodeMinMemberIndex + 1;
             std::vector<libff::alt_bn128_G2> verify_g2s(all_pos_count, libff::alt_bn128_G2::zero());
-            auto local_member_idx = common::GlobalInfo::Instance()->config_local_member_idx();
             bls::protobuf::JoinElectBlsInfo verfy_final_vals;
             std::string str_for_hash;
             str_for_hash.reserve(verify_g2s.size() * 4 * 64 + 8);
