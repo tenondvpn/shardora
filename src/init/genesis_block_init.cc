@@ -636,6 +636,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
     char data[20480];
     uint32_t block_count = 0;
     db::DbWriteBatch db_batch;
+    ReloadBlsPri(network::kRootCongressNetworkId);
     ReloadBlsPri(sharding_id);
     while (fgets(data, 20480, root_gens_init_block_file) != nullptr) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
