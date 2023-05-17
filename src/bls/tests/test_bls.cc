@@ -657,12 +657,12 @@ TEST_F(TestBls, AllSuccess) {
 
             verfy_final_vals.set_src_hash(check_hash);
             auto verified_val = verfy_final_vals.SerializeAsString();
-            prefix_db->SaveVerifiedG2s(idx, id, verfy_final_vals);
+            prefix_db->SaveVerifiedG2s(tmp_idx, id, verfy_final_vals);
             std::cout << "node: " << tmp_idx << " save " << idx << " " << common::Encode::HexEncode(id)
                 << ", verified: " << common::Encode::HexEncode(verfy_final_vals.verify_req().verify_vec(0).x_c0())
                 << ", polynomial: " << common::Encode::HexEncode(local_poly.polynomial(0))
-                << ", contribution: " << libBLS::ThresholdUtils::fieldElementToString(
-                    contributions[tmp_idx]) << std::endl;
+                << ", contribution: " << libBLS::ThresholdUtils::fieldElementToString(contributions[tmp_idx])
+                << std::endl;
 // 
 //             auto old_g2 = polynomial[tmp_idx][0] * libff::alt_bn128_G2::one();
 //             polynomial[tmp_idx][0] = libff::alt_bn128_Fr::random_element();
