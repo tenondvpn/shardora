@@ -231,6 +231,8 @@ void GenesisBlockInit::DumpLocalPrivateKey(
         const std::string& id,
         const std::string& prikey,
         const std::string& sec_key,
+        const std::string& check_hash,
+        const init::protobuf::JoinElectInfo& join_info
         FILE* fd) {
     // encrypt by private key and save to db
     std::string enc_data;
@@ -243,11 +245,14 @@ void GenesisBlockInit::DumpLocalPrivateKey(
     }
 
     prefix_db_->SaveBlsPrikey(height, shard_netid, id, enc_data);
-    char data[16];
-    uint64_t* tmp = (uint64_t*)data;
-    tmp[0] = height;
-    tmp[1] = shard_netid;
-    std::string val = common::Encode::HexEncode(std::string(data, sizeof(data)) + id + enc_data) + "\n";
+    init::protobuf::GenesisInitBlsInfo init_bls_info;
+    *init_bls_info.mutable_join_info() = join_info;
+    init_bls_info.set_height(height);
+    init_bls_info.set_shard_id(shard_netid);
+    init_bls_info.set_id(id);
+    init_bls_info.set_bls_enc_data(enc_data);
+    init_bls_info.set_bls_hash(check_hash);
+    std::string val = common::Encode::HexEncode(init_bls_info.SerializeAsString()) + "\n";
     fputs(val.c_str(), fd);
 }
 
@@ -260,11 +265,19 @@ void GenesisBlockInit::ReloadBlsPri(uint32_t sharding_id) {
     while (fgets(data, 20480, bls_fd) != nullptr) {
         std::string tmp_data(data, strlen(data) - 1);
         std::string val = common::Encode::HexDecode(tmp_data);
-        uint64_t* tmp = (uint64_t*)val.c_str();
-        uint64_t height = tmp[0];
-        std::string id = val.substr(16, 20);
-        std::string bls_prikey = val.substr(36, val.size() - 36);
+        init::protobuf::GenesisInitBlsInfo init_info;
+        if (!init_info.ParseFromString(val)) {
+            ZJC_FATAL("load bls init info failed!");
+        }
+
+        uint64_t height = init_info.height();
+        std::string id = init_info.id();
+        std::string bls_prikey = init_info.bls_enc_data();
         prefix_db_->SaveBlsPrikey(height, sharding_id, id, bls_prikey);
+        auto check_hash = init_info.bls_hash();
+        auto str = init_info.join_info.SerializeAsString();
+        prefix_db_->SaveTemporaryKv(check_hash, str);
+
         ZJC_DEBUG("success add bls prikey: %lu, %u, %s",
             height, sharding_id, common::Encode::HexEncode(id).c_str());
     }

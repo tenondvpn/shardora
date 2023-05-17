@@ -23,6 +23,15 @@ message JoinElectInfo {
     optional bls.protobuf.VerifyVecBrdReq g2_req = 3;
 }
 
+message GenesisInitBlsInfo {
+    optional uint64 height = 1;
+    optional uint32 shard_id = 2;
+    optional bytes id = 3;
+    optional bytes bls_enc_data = 4;
+    optional bytes bls_hash = 5;
+    optional JoinElectInfo join_info = 6;
+}
+
 message InitMessage {
     optional GetAddressInfoRequest addr_req = 1;
     optional GetAddressInfoResponse addr_res = 2;

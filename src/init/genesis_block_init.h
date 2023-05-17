@@ -74,6 +74,8 @@ private:
         const std::string& id,
         const std::string& prikey,
         const std::string& sec_key,
+        const std::string& check_hash,
+        const init::protobuf::JoinElectInfo& join_info
         FILE* fd);
     void ReloadBlsPri(uint32_t sharding_id);
     void CreateDefaultAccount();
