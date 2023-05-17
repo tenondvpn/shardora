@@ -532,7 +532,10 @@ void BlockManager::HandleJoinElectTx(
         db_batch);
     auto local_member_idx = common::GlobalInfo::Instance()->config_local_member_idx();
     std::cout << "elect height: " << block.electblock_height() << std::endl;
-    if (block.electblock_height() == )
+    if (block.electblock_height() == 0) {
+        local_member_idx = 0;
+    }
+
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
             std::string val;
