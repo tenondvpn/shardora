@@ -862,6 +862,13 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
 
     auto new_g2 = polynomial[change_idx] * libff::alt_bn128_G2::one();
     local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(polynomial);
+    for (uint32_t i = 0; i < contributions.size(); ++i) {
+        ASSERT_TRUE(dkg_instance.Verification(i, contributions[i], g2_vec));
+        ASSERT_TRUE(dkg_instance.Verification(i, contributions1[i], g2_vec));
+        ASSERT_TRUE(contributions[i] == contributions1[i]);
+        std::cout << "init member c: " << idx << " : " << libBLS::ThresholdUtils::fieldElementToString(contributions1[i]) << std::endl;
+    }
+
     auto val = libBLS::ThresholdUtils::fieldElementToString(
         local_src_secret_key_contribution_[local_member_index_]);
     prefix_db_->SaveSwapKey(

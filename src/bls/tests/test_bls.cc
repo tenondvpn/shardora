@@ -524,9 +524,10 @@ TEST_F(TestBls, FileSigns) {
 TEST_F(TestBls, AllSuccess) {
 //     static const uint32_t t = 700;
 //     static const uint32_t n = 1024;
-    static const uint32_t n = 10;
-    static const uint32_t t = common::GetSignerCount(n);
     std::vector<std::string> pri_vec;
+    static const uint32_t n = pri_vec.size();
+    static const uint32_t t = common::GetSignerCount(n);
+
     GetPrivateKey(pri_vec, n);
     BlsDkg* dkg = new BlsDkg[n];
     system("sudo rm -rf ./db_*");
@@ -568,7 +569,7 @@ TEST_F(TestBls, AllSuccess) {
         for (uint32_t j = 0; j < polynomial[idx].size(); ++j) {
             local_poly.add_polynomial(common::Encode::HexDecode(
                 libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j])));
-            std::cout << "init member: " << idx << " : " << libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j]) << std::endl;
+            std::cout << "init member: " << idx << " : " << libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][i]) << std::endl;
         }
 
         init::protobuf::JoinElectInfo join_info;
@@ -583,6 +584,7 @@ TEST_F(TestBls, AllSuccess) {
             ASSERT_TRUE(dkg_instance.Verification(i, contributions[i], g2_vec));
             ASSERT_TRUE(dkg_instance.Verification(i, contributions1[i], g2_vec));
             ASSERT_TRUE(contributions[i] == contributions1[i]);
+            std::cout << "init member c: " << idx << " : " << libBLS::ThresholdUtils::fieldElementToString(contributions1[i]) << std::endl;
         }
 
         std::vector<libff::alt_bn128_G2> verify_g2_vec;
