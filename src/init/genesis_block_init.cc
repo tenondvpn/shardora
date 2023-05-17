@@ -705,6 +705,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
         }
     }
 
+    ReloadBlsPri(sharding_id);
     return kInitSuccess;
 }
 
