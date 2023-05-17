@@ -947,13 +947,13 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             << ", " << libBLS::ThresholdUtils::fieldElementToString(all_verified_val.Z.c0)
             << ", " << libBLS::ThresholdUtils::fieldElementToString(all_verified_val.Z.c1)
             << ", polynomial: " << common::Encode::HexEncode(local_poly.polynomial(0))
-            << ", contribution0: " << (all_verified_val == local_src_secret_key_contribution_[local_member_index_] * libff::alt_bn128_G2::zero())
-            << ", contribution1: " << (all_verified_val == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::zero())
+            << ", contribution0: " << (all_verified_val == local_src_secret_key_contribution_[local_member_index_] * libff::alt_bn128_G2::one())
+            << ", contribution1: " << (all_verified_val == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::one())
             << ", contribution0: " << libBLS::ThresholdUtils::fieldElementToString(local_src_secret_key_contribution_[local_member_index_])
             << ", contribution1: " << libBLS::ThresholdUtils::fieldElementToString(local_src_secret_key_contribution_[mem_idx])
             << std::endl;
 //         all_verified_val = all_verified_val - old_g2_val + new_g2_val;
-        assert(all_verified_val == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::zero());
+        assert(all_verified_val == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::one());
     }
 
 #ifdef ZJC_UNITTEST
