@@ -534,6 +534,7 @@ void BlockManager::HandleJoinElectTx(
         if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
             std::string val;
             if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+                std::cout << "get temp data failed: " << common::Encode::HexEncode(tx.storages(i).val_hash()) << std::endl;
                 assert(false);
                 break;
             }
