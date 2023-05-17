@@ -175,14 +175,14 @@ int BlsManager::Sign(
     BlsSign::Sign(t, n, local_sec_key, g1_hash, bn_sign);
 
     bn_sign->to_affine_coordinates();
-    *sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign->X);
-    *sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign->Y);
+    std::string sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign->X);
+    std::string sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign->Y);
     std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
     BLSPublicKeyShare pkey(local_sec_key, t, n);
     std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
     BLS_DEBUG("sign t: %u, , n: %u, , pk: %s,%s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
         t, n, strs->at(0).c_str(), strs->at(1).c_str(),
-        strs->at(2).c_str(), strs->at(3).c_str(), (*sign_x).c_str(), (*sign_y).c_str(),
+        strs->at(2).c_str(), strs->at(3).c_str(), (sign_x).c_str(), (sign_y).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
