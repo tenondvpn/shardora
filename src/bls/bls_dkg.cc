@@ -849,10 +849,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     libff::alt_bn128_G2 old_g2 = libff::alt_bn128_G2::zero();
     for (int32_t i = 0; i < valid_t; ++i) {
         polynomial[i] = libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)).c_str());
-        if (i == 0) {
-            std::cout << "now handle member: " << local_member_index_ << " : " << common::Encode::HexEncode(local_poly.polynomial(i)) << std::endl;
-        }
-
+        std::cout << "now handle member: " << local_member_index_ << " : " << common::Encode::HexEncode(local_poly.polynomial(i)) << std::endl;
         if (change_idx == i) {
             old_g2 = polynomial[i] * libff::alt_bn128_G2::one();
 //             polynomial[i] = libff::alt_bn128_Fr::random_element();
@@ -913,9 +910,9 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
             auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
             old_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+            assert(old_val == old_g2);
         }
 
-        assert(old_val != old_g2);
         auto midx = local_member_index_ / common::kElectNodeMinMemberIndex;
         if (verfy_final_vals.verify_req().verify_vec_size() <= midx) {
             assert(false);

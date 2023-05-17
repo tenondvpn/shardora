@@ -568,9 +568,7 @@ TEST_F(TestBls, AllSuccess) {
         for (uint32_t j = 0; j < polynomial[idx].size(); ++j) {
             local_poly.add_polynomial(common::Encode::HexDecode(
                 libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j])));
-            if (j == 0) {
-                std::cout << "init member: " << idx << " : " << libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j]) << std::endl;
-            }
+            std::cout << "init member: " << idx << " : " << libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j]) << std::endl;
         }
 
         init::protobuf::JoinElectInfo join_info;
