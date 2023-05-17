@@ -545,8 +545,8 @@ void BlockManager::HandleJoinElectTx(
                 break;
             }
 
-            auto all_pos_count = common::GlobalInfo::Instance()->each_shard_max_members() /
-                common::kElectNodeMinMemberIndex + 1;
+            auto all_pos_count = 1;// common::GlobalInfo::Instance()->each_shard_max_members() /
+             //   common::kElectNodeMinMemberIndex + 1;
             std::vector<libff::alt_bn128_G2> verify_g2s(all_pos_count, libff::alt_bn128_G2::zero());
             auto local_member_idx = common::GlobalInfo::Instance()->config_local_member_idx();
             bls::protobuf::JoinElectBlsInfo verfy_final_vals;
