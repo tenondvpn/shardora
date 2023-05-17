@@ -374,18 +374,16 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
     if (!IsSwapKeyPeriod()) {
-//         assert(false);
+        assert(false);
         return;
     }
 
-    ZJC_DEBUG("0");
     if (bls_msg.swap_req().keys_size() <= (int32_t)local_member_index_) {
         ZJC_WARN("swap key size error: %d, %d",
             bls_msg.swap_req().keys_size(), local_member_index_);
         return;
     }
 
-    ZJC_DEBUG("1");
     std::string msg_hash;
     if (!IsSignValid(msg_ptr, &msg_hash)) {
         BLS_ERROR("sign verify failed!");
@@ -402,7 +400,6 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-    ZJC_DEBUG("3");
     int res = security_->Decrypt(
         bls_msg.swap_req().keys(local_member_index_).sec_key(),
         encrypt_key,
@@ -412,7 +409,6 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-    ZJC_DEBUG("4");
     std::string sec_key(dec_msg.substr(
         0,
         bls_msg.swap_req().keys(local_member_index_).sec_key_len()));
@@ -422,13 +418,11 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-    ZJC_DEBUG("5");
     if (has_swaped_keys_[bls_msg.index()]) {
         BLS_WARN("has_swaped_keys_  %d.", bls_msg.index());
         return;
     }
 
-    ZJC_DEBUG("6");
     auto tmp_swap_key = libff::alt_bn128_Fr(sec_key.c_str());
     if (!VerifySekkeyValid(local_member_index_, bls_msg.index(), tmp_swap_key)) {
         ZJC_ERROR("verify error member: %d, index: %d, %s , min_aggree_member_count_: %d",
@@ -439,7 +433,6 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-    ZJC_DEBUG("7");
     ZJC_DEBUG("swap verify success member: %d, index: %d, %s, min_aggree_member_count_: %u",
         local_member_index_, bls_msg.index(),
         libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
@@ -471,6 +464,9 @@ bool BlsDkg::VerifySekkeyValid(
             local_member_index_,
             (*members_)[peer_index]->id,
             &verfy_final_vals)) {
+        ZJC_WARN("failed get verified g2: %u, %s",
+            local_member_index_,
+            common::Encode::HexEncode((*members_)[peer_index]->id).c_str());
         assert(false);
         return false;
     }
