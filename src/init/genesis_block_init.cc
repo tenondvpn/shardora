@@ -104,14 +104,16 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         uint32_t sharding_id,
         const std::vector<std::string>& prikeys,
         elect::protobuf::PrevMembers* prev_members) {
-    static const uint32_t valid_n = common::GlobalInfo::Instance()->each_shard_max_members();
-    static const uint32_t valid_t = common::GetSignerCount(valid_n);
-    libBLS::Dkg dkg_instance = libBLS::Dkg(valid_t, valid_n);
+    static const uint32_t n = common::GlobalInfo::Instance()->each_shard_max_members();
+    static const uint32_t t = common::GetSignerCount(n);
+    libBLS::Dkg dkg_instance = libBLS::Dkg(t, n);
     std::vector<std::vector<libff::alt_bn128_Fr>> polynomial(prikeys.size());
     for (auto& pol : polynomial) {
         pol = dkg_instance.GeneratePolynomial();
     }
 
+    uint32_t valid_n = prikeys.size();
+    uint32_t valid_t = common::GetSignerCount(valid_n);
     std::vector<std::vector<libff::alt_bn128_Fr>> secret_key_contribution(valid_n);
     for (size_t i = 0; i < prikeys.size(); ++i) {
         secret_key_contribution[i] = dkg_instance.SecretKeyContribution(
@@ -152,7 +154,7 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         std::string str_for_hash;
         str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
         str_for_hash.append((char*)&idx, sizeof(idx));
-        for (uint32_t i = 0; i < valid_t; ++i) {
+        for (uint32_t i = 0; i < t; ++i) {
             bls::protobuf::VerifyVecItem& verify_item = *req->add_verify_vec();
             verify_item.set_x_c0(common::Encode::HexDecode(
                 libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
