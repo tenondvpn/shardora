@@ -916,7 +916,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         }
 
 //         assert(old_val == old_g2);
-        auto midx = mem_idx / common::kElectNodeMinMemberIndex;
+        auto midx = local_member_index_ / common::kElectNodeMinMemberIndex;
         if (verfy_final_vals.verify_req().verify_vec_size() <= midx) {
             assert(false);
             return;
@@ -935,7 +935,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         auto all_verified_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
 //         auto old_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * old_val;
 //         auto new_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * new_g2;
-        std::cout << "node " << local_member_index_ << " success get " << mem_idx << " " << common::Encode::HexEncode((*members_)[local_member_index_]->id)
+        std::cout << "node " << mem_idx << " success get " << local_member_index_ << " " << common::Encode::HexEncode((*members_)[local_member_index_]->id)
             << ", verified: " << common::Encode::HexEncode(item.x_c0())
             << ", contribution: " << libBLS::ThresholdUtils::fieldElementToString(
                 local_src_secret_key_contribution_[mem_idx]) << std::endl;
