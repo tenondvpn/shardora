@@ -648,7 +648,7 @@ TEST_F(TestBls, AllSuccess) {
                 ASSERT_TRUE(verify_g2s[i] == contributions[midx] * libff::alt_bn128_G2::one());
                 std::cout << "verify success: " <<
                     libBLS::ThresholdUtils::fieldElementToString(contributions[midx]) << ", " <<
-                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i]) << std::endl;
+                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c0) << std::endl;
                 bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verify_req()->add_verify_vec();
                 verify_item.set_x_c0(common::Encode::HexDecode(
                     libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c0)));
