@@ -853,13 +853,13 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             std::cout << "now handle member: " << local_member_index_ << " : " << common::Encode::HexEncode(local_poly.polynomial(i)) << std::endl;
         }
 
-//         if (change_idx == i) {
+        if (change_idx == i) {
 //             old_g2 = polynomial[i] * libff::alt_bn128_G2::one();
 //             polynomial[i] = libff::alt_bn128_Fr::random_element();
 //             while (polynomial[i] == libff::alt_bn128_Fr::zero()) {
 //                 polynomial[i] = libff::alt_bn128_Fr::random_element();
 //             }
-//         }
+        }
 
     }
 
