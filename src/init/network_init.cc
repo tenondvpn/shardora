@@ -1021,7 +1021,7 @@ void NetworkInit::DbNewBlockCallback(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
-    for (uint32_t i = 0 i < block->tx_list_size(); ++i) {
+    for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
         switch (block->tx_list(i).step()) {
         case pools::protobuf::kConsensusRootTimeBlock:
             HandleTimeBlock(thread_idx, block, block->tx_list(i), db_batch);
