@@ -142,7 +142,6 @@ private:
     uint64_t elect_hegiht_{ 0 };
     std::vector<libff::alt_bn128_Fr> local_src_secret_key_contribution_;
     uint32_t local_member_index_{ common::kInvalidUint32 };
-    std::shared_ptr<libBLS::Dkg> dkg_instance_;
     std::set<uint32_t> invalid_node_map_[common::kEachShardMaxNodeCount];
     uint32_t min_aggree_member_count_{ 0 };
     uint32_t member_count_{ 0 };

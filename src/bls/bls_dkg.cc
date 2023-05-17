@@ -39,7 +39,6 @@ void BlsDkg::Init(
     security_ = security;
     min_aggree_member_count_ = common::GetSignerCount(n);
     member_count_ = n;
-    dkg_instance_ = std::make_shared<libBLS::Dkg>(min_aggree_member_count_, member_count_);
     local_sec_key_ = local_sec_key;
     local_publick_key_ = local_publick_key;
     common_public_key_ = common_public_key;
@@ -561,7 +560,7 @@ void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
         return;
     }
 
-    CreateContribution(members_->size(), min_aggree_member_count_);
+    CreateContribution(members_->size(), GetSignerCount(members_->size()));
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
@@ -847,7 +846,9 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     }
 
     auto new_g2 = polynomial[change_idx] * libff::alt_bn128_G2::one();
-    local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(polynomial);
+    auto dkg_instance = std::make_shared<libBLS::Dkg>(valid_t, valid_n);
+    local_src_secret_key_contribution_ = dkg_instance->SecretKeyContribution(
+        polynomial, valid_n, valid_t);
     auto val = libBLS::ThresholdUtils::fieldElementToString(
         local_src_secret_key_contribution_[local_member_index_]);
     prefix_db_->SaveSwapKey(
