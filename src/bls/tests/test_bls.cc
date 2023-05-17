@@ -582,8 +582,7 @@ TEST_F(TestBls, AllSuccess) {
         }
 
         auto all_pos_count = pri_vec.size() / common::kElectNodeMinMemberIndex + 1;
-        std::vector<libff::alt_bn128_G2> verify_g2s(all_pos_count, libff::alt_bn128_G2::zero());
-        bls::protobuf::JoinElectBlsInfo verfy_final_vals;
+        std::vector<libff::alt_bn128_G2> g2_vec;
         std::string str_for_hash;
         str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
         str_for_hash.append((char*)&idx, sizeof(idx));
@@ -612,10 +611,7 @@ TEST_F(TestBls, AllSuccess) {
             auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(verify_item.z_c1()).c_str());
             auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
             auto g2 = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-            for (int32_t j = 0; j < all_pos_count; ++j) {
-                auto midx = idx + j * common::kElectNodeMinMemberIndex;
-                verify_g2s[j] = verify_g2s[j] + power(libff::alt_bn128_Fr(midx + 1), i) * g2;
-            }
+            g2_vec.push_back(g2);
 
             str_for_hash.append(verify_item.x_c0());
             str_for_hash.append(verify_item.x_c1());
@@ -626,49 +622,61 @@ TEST_F(TestBls, AllSuccess) {
         }
 
         auto check_hash = common::Hash::keccak256(str_for_hash);
-        auto str = join_info.SerializeAsString();
+        for (uint32_t tmp_idx = 0; tmp_idx < pri_vec.size(); ++tmp_idx) {
+            if (tmp_idx == idx) {
+                continue;
+            }
 
-        for (uint32_t i = 0; i < verify_g2s.size(); ++i) {
-            auto midx = idx + i * common::kElectNodeMinMemberIndex;
-            ASSERT_TRUE(verify_g2s[i] == contributions[midx] * libff::alt_bn128_G2::one());
+            for (int32_t j = 0; j < all_pos_count; ++j) {
+                auto midx = tmp_idx + j * common::kElectNodeMinMemberIndex;
+                verify_g2s[j] = verify_g2s[j] + power(libff::alt_bn128_Fr(midx + 1), i) * g2;
+            }
 
-            bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verify_req()->add_verify_vec();
-            verify_item.set_x_c0(common::Encode::HexDecode(
-                libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c0)));
-            verify_item.set_x_c1(common::Encode::HexDecode(
-                libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c1)));
-            verify_item.set_y_c0(common::Encode::HexDecode(
-                libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c0)));
-            verify_item.set_y_c1(common::Encode::HexDecode(
-                libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c1)));
-            verify_item.set_z_c0(common::Encode::HexDecode(
-                libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c0)));
-            verify_item.set_z_c1(common::Encode::HexDecode(
-                libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c1)));
+            bls::protobuf::JoinElectBlsInfo verfy_final_vals;
+            for (uint32_t i = 0; i < verify_g2s.size(); ++i) {
+                auto midx = idx + i * common::kElectNodeMinMemberIndex;
+                ASSERT_TRUE(verify_g2s[i] == contributions[midx] * libff::alt_bn128_G2::one());
+                bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verify_req()->add_verify_vec();
+                verify_item.set_x_c0(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c0)));
+                verify_item.set_x_c1(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c1)));
+                verify_item.set_y_c0(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c0)));
+                verify_item.set_y_c1(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c1)));
+                verify_item.set_z_c0(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c0)));
+                verify_item.set_z_c1(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c1)));
+            }
+
+            verfy_final_vals.set_src_hash(check_hash);
+            auto verified_val = verfy_final_vals.SerializeAsString();
+            std::vector<libff::alt_bn128_G2> verify_g2s(all_pos_count, libff::alt_bn128_G2::zero());
+            prefix_db->SaveVerifiedG2s(tmp_idx, id, verfy_final_vals);
+            std::cout << "save " << tmp_idx << " " << common::Encode::HexEncode(id) << std::endl;
+
+//             auto old_g2 = polynomial[idx][0] * libff::alt_bn128_G2::one();
+//             polynomial[idx][0] = libff::alt_bn128_Fr::random_element();
+//             g2_vec = dkg_instance.VerificationVector(polynomial[idx]);
+//             contributions = dkg_instance.SecretKeyContribution(polynomial[idx]);
+//             for (uint32_t i = 0; i < contributions.size(); ++i) {
+//                 ASSERT_TRUE(dkg_instance.Verification(i, contributions[i], g2_vec));
+//             }
+// 
+//             auto new_g2 = polynomial[idx][0] * libff::alt_bn128_G2::one();
+//             auto old1 = power(libff::alt_bn128_Fr(idx + 1), 0) * old_g2;
+//             auto new1 = power(libff::alt_bn128_Fr(idx + 1), 0) * new_g2;
+//             verify_g2s[0] = verify_g2s[0] - old1 + new1;
+//             ASSERT_TRUE(verify_g2s[0] == contributions[idx] * libff::alt_bn128_G2::one());
+//             std::cout << "change idx verify success." << std::endl;
         }
 
-        verfy_final_vals.set_src_hash(check_hash);
-        auto verified_val = verfy_final_vals.SerializeAsString();
-        prefix_db->SaveVerifiedG2s(idx, id, verfy_final_vals);
-        std::cout << "save " << idx << " " << common::Encode::HexEncode(id) << std::endl;
+        auto str = join_info.SerializeAsString();
         prefix_db->SaveTemporaryKv(check_hash, str);
         prefix_db->AddBlsVerifyG2(tmp_security_ptr->GetAddress(), *req);
         prefix_db->SaveLocalPolynomial(tmp_security_ptr, tmp_security_ptr->GetAddress(), local_poly);
-
-        auto old_g2 = polynomial[idx][0] * libff::alt_bn128_G2::one();
-        polynomial[idx][0] = libff::alt_bn128_Fr::random_element();
-        g2_vec = dkg_instance.VerificationVector(polynomial[idx]);
-        contributions = dkg_instance.SecretKeyContribution(polynomial[idx]);
-        for (uint32_t i = 0; i < contributions.size(); ++i) {
-            ASSERT_TRUE(dkg_instance.Verification(i, contributions[i], g2_vec));
-        }
-
-        auto new_g2 = polynomial[idx][0] * libff::alt_bn128_G2::one();
-        auto old1 = power(libff::alt_bn128_Fr(idx + 1), 0) * old_g2;
-        auto new1 = power(libff::alt_bn128_Fr(idx + 1), 0) * new_g2;
-        verify_g2s[0] = verify_g2s[0] - old1 + new1;
-        ASSERT_TRUE(verify_g2s[0] == contributions[idx] * libff::alt_bn128_G2::one());
-        std::cout << "change idx verify success." << std::endl;
     }
 
     auto time0 = common::TimeUtils::TimestampUs();
