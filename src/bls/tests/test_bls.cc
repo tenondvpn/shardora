@@ -581,8 +581,7 @@ TEST_F(TestBls, AllSuccess) {
             ASSERT_TRUE(dkg_instance.Verification(i, contributions[i], g2_vec));
         }
 
-        auto all_pos_count = pri_vec.size() / common::kElectNodeMinMemberIndex + 1;
-        std::vector<libff::alt_bn128_G2> g2_vec;
+        std::vector<libff::alt_bn128_G2> verify_g2_vec;
         std::string str_for_hash;
         str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
         str_for_hash.append((char*)&idx, sizeof(idx));
@@ -611,7 +610,7 @@ TEST_F(TestBls, AllSuccess) {
             auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(verify_item.z_c1()).c_str());
             auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
             auto g2 = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-            g2_vec.push_back(g2);
+            verify_g2_vec.push_back(g2);
 
             str_for_hash.append(verify_item.x_c0());
             str_for_hash.append(verify_item.x_c1());
@@ -627,9 +626,13 @@ TEST_F(TestBls, AllSuccess) {
                 continue;
             }
 
-            for (int32_t j = 0; j < all_pos_count; ++j) {
-                auto midx = tmp_idx + j * common::kElectNodeMinMemberIndex;
-                verify_g2s[j] = verify_g2s[j] + power(libff::alt_bn128_Fr(midx + 1), i) * g2;
+            auto all_pos_count = pri_vec.size() / common::kElectNodeMinMemberIndex + 1;
+            std::vector<libff::alt_bn128_G2> verify_g2s(all_pos_count, libff::alt_bn128_G2::zero());
+            for (int32_t vidx = 0; vidx < verify_g2_vec.size(); ++vidx) {
+                for (int32_t j = 0; j < all_pos_count; ++j) {
+                    auto midx = tmp_idx + j * common::kElectNodeMinMemberIndex;
+                    verify_g2s[j] = verify_g2s[j] + power(libff::alt_bn128_Fr(midx + 1), vidx) * verify_g2_vec[vidx];
+                }
             }
 
             bls::protobuf::JoinElectBlsInfo verfy_final_vals;
@@ -653,7 +656,6 @@ TEST_F(TestBls, AllSuccess) {
 
             verfy_final_vals.set_src_hash(check_hash);
             auto verified_val = verfy_final_vals.SerializeAsString();
-            std::vector<libff::alt_bn128_G2> verify_g2s(all_pos_count, libff::alt_bn128_G2::zero());
             prefix_db->SaveVerifiedG2s(tmp_idx, id, verfy_final_vals);
             std::cout << "save " << tmp_idx << " " << common::Encode::HexEncode(id) << std::endl;
 
