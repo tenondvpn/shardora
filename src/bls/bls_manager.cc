@@ -174,9 +174,9 @@ int BlsManager::Sign(
         libff::alt_bn128_G1* bn_sign) {
     BlsSign::Sign(t, n, local_sec_key, g1_hash, bn_sign);
 
-    bn_sign.to_affine_coordinates();
-    *sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
-    *sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
+    bn_sign->to_affine_coordinates();
+    *sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign->X);
+    *sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign->Y);
     std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
     BLSPublicKeyShare pkey(local_sec_key, t, n);
     std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
