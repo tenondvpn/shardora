@@ -569,7 +569,7 @@ void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
     auto verfiy_brd = bls_msg.mutable_verify_brd();
     auto res = prefix_db_->GetBlsVerifyG2((*members_)[local_member_index_]->id, verfiy_brd);
     if (!res) {
-        assert(false);
+//         assert(false);
         return;
     }
 
