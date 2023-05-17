@@ -232,7 +232,7 @@ void GenesisBlockInit::DumpLocalPrivateKey(
         const std::string& prikey,
         const std::string& sec_key,
         const std::string& check_hash,
-        const init::protobuf::JoinElectInfo& join_info
+        const init::protobuf::JoinElectInfo& join_info,
         FILE* fd) {
     // encrypt by private key and save to db
     std::string enc_data;
