@@ -189,13 +189,17 @@ int BlsManager::Sign(
     bn_sign.to_affine_coordinates();
     *sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
     *sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
-//     std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
-//     BLSPublicKeyShare pkey(local_sec_key, t, n);
-//     std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
-//     BLS_DEBUG("sign t: %u, , n: %u, , pk: %s,%s,%s,%s, sign x: %s, sign y: %s, sign msg: %s",
-//         t, n, strs->at(0).c_str(), strs->at(1).c_str(),
-//         strs->at(2).c_str(), strs->at(3).c_str(), (*sign_x).c_str(), (*sign_y).c_str(),
-//         common::Encode::HexEncode(sign_msg).c_str());
+    std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
+    BLSPublicKeyShare pkey(local_sec_key, t, n);
+    std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
+    BLS_DEBUG("sign t: %u, , n: %u, , pk: %s,%s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
+        t, n, strs->at(0).c_str(), strs->at(1).c_str(),
+        strs->at(2).c_str(), strs->at(3).c_str(), (*sign_x).c_str(), (*sign_y).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
+    std::string verify_hash;
+    assert(Verify(t, n, pkey.getPublicKey(), bn_sign, g1_hash, &verify_hash) == kBlsSuccess);
     return kBlsSuccess;
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
