@@ -660,7 +660,7 @@ TEST_F(TestBls, AllSuccess) {
             verfy_final_vals.set_src_hash(check_hash);
             auto verified_val = verfy_final_vals.SerializeAsString();
             prefix_db->SaveVerifiedG2s(tmp_idx, id, verfy_final_vals);
-            std::cout << "node: " << local_member_index_ << " save " << tmp_idx << " " << common::Encode::HexEncode(id)
+            std::cout << "node: " << idx << " save " << tmp_idx << " " << common::Encode::HexEncode(id)
                 << ", verified: " << common::Encode::HexEncode(verfy_final_vals.verify_req().verify_vec(0).x_c0())
                 << ", contribution: " << libBLS::ThresholdUtils::fieldElementToString(
                     contributions[tmp_idx]) << std::endl;
