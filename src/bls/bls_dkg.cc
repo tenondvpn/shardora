@@ -462,46 +462,38 @@ bool BlsDkg::VerifySekkeyValid(
         const libff::alt_bn128_Fr& seckey) {
     bls::protobuf::BlsVerifyValue verify_val;
     uint32_t changed_idx = 0;
-    ZJC_DEBUG("a");
     libff::alt_bn128_G2 new_val = GetVerifyG2FromDb(peer_index, &changed_idx);
     if (new_val == libff::alt_bn128_G2::zero()) {
         assert(false);
         return false;
     }
 
-    std::cout << "get change idx: " << changed_idx << std::endl;
-    ZJC_DEBUG("b");
     bls::protobuf::JoinElectBlsInfo verfy_final_vals;
     if (!prefix_db_->GetVerifiedG2s(
             local_member_index_,
             (*members_)[peer_index]->id,
             &verfy_final_vals)) {
-        std::cout << "get " << local_member_index_ << " " << common::Encode::HexEncode((*members_)[peer_index]->id) << std::endl;
         assert(false);
         return false;
     }
 
-    ZJC_DEBUG("c");
     std::string val;
     if (!prefix_db_->GetTemporaryKv(verfy_final_vals.src_hash(), &val)) {
         assert(false);
         return false;
     }
 
-    ZJC_DEBUG("d");
     init::protobuf::JoinElectInfo join_info;
     if (!join_info.ParseFromString(val)) {
         assert(false);
         return false;
     }
 
-    ZJC_DEBUG("e");
     if (join_info.g2_req().verify_vec_size() <= changed_idx) {
         assert(false);
         return false;
     }
 
-    ZJC_DEBUG("f");
     libff::alt_bn128_G2 old_val;
     {
         auto& item = join_info.g2_req().verify_vec(changed_idx);
@@ -517,14 +509,12 @@ bool BlsDkg::VerifySekkeyValid(
         old_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
     }
 
-    ZJC_DEBUG("g");
     auto midx = idx / common::kElectNodeMinMemberIndex;
     if (verfy_final_vals.verify_req().verify_vec_size() <= midx) {
         assert(false);
         return false;
     }
 
-    ZJC_DEBUG("h");
     auto& item = verfy_final_vals.verify_req().verify_vec(midx);
     auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
     auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
@@ -539,7 +529,6 @@ bool BlsDkg::VerifySekkeyValid(
     auto old_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx) * old_val;
     auto new_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx) * new_val;
     all_verified_val = all_verified_val - old_g2_val + new_g2_val;
-    ZJC_DEBUG("i");
     return all_verified_val == seckey * libff::alt_bn128_G2::one();
 }
 
@@ -849,7 +838,6 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     libff::alt_bn128_G2 old_g2 = libff::alt_bn128_G2::zero();
     for (int32_t i = 0; i < valid_t; ++i) {
         polynomial[i] = libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)).c_str());
-        std::cout << "now handle member: " << local_member_index_ << " : " << common::Encode::HexEncode(local_poly.polynomial(i)) << std::endl;
         if (change_idx == i) {
             old_g2 = polynomial[i] * libff::alt_bn128_G2::one();
 //             polynomial[i] = libff::alt_bn128_Fr::random_element();
@@ -862,10 +850,6 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
 
     auto new_g2 = polynomial[change_idx] * libff::alt_bn128_G2::one();
     local_src_secret_key_contribution_ = dkg_instance_->SecretKeyContribution(polynomial);
-    for (uint32_t i = 0; i < local_src_secret_key_contribution_.size(); ++i) {
-        std::cout << "now handle member c: " << local_member_index_ << " : " << libBLS::ThresholdUtils::fieldElementToString(local_src_secret_key_contribution_[i]) << std::endl;
-    }
-
     auto val = libBLS::ThresholdUtils::fieldElementToString(
         local_src_secret_key_contribution_[local_member_index_]);
     prefix_db_->SaveSwapKey(
@@ -938,20 +922,6 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
 //         auto old_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * old_val;
 //         auto new_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * new_g2;
         assert(security_->GetAddress() == (*members_)[local_member_index_]->id);
-        std::cout << "node " << mem_idx << " success get " << local_member_index_ << " " << common::Encode::HexEncode((*members_)[local_member_index_]->id)
-            << ", verified0: " << common::Encode::HexEncode(item.x_c0())
-            << ", verified: " << libBLS::ThresholdUtils::fieldElementToString(all_verified_val.X.c0)
-            << ", " << libBLS::ThresholdUtils::fieldElementToString(all_verified_val.X.c1)
-            << ", " << libBLS::ThresholdUtils::fieldElementToString(all_verified_val.Y.c0)
-            << ", " << libBLS::ThresholdUtils::fieldElementToString(all_verified_val.Y.c1)
-            << ", " << libBLS::ThresholdUtils::fieldElementToString(all_verified_val.Z.c0)
-            << ", " << libBLS::ThresholdUtils::fieldElementToString(all_verified_val.Z.c1)
-            << ", polynomial: " << common::Encode::HexEncode(local_poly.polynomial(0))
-            << ", contribution0: " << (all_verified_val == local_src_secret_key_contribution_[local_member_index_] * libff::alt_bn128_G2::one())
-            << ", contribution1: " << (all_verified_val == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::one())
-            << ", contribution0: " << libBLS::ThresholdUtils::fieldElementToString(local_src_secret_key_contribution_[local_member_index_])
-            << ", contribution1: " << libBLS::ThresholdUtils::fieldElementToString(local_src_secret_key_contribution_[mem_idx])
-            << std::endl;
 //         all_verified_val = all_verified_val - old_g2_val + new_g2_val;
         assert(all_verified_val == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::one());
     }

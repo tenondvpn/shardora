@@ -570,7 +570,6 @@ TEST_F(TestBls, AllSuccess) {
         for (uint32_t j = 0; j < polynomial[idx].size(); ++j) {
             local_poly.add_polynomial(common::Encode::HexDecode(
                 libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j])));
-            std::cout << "init member: " << idx << " : " << libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j]) << std::endl;
         }
 
         init::protobuf::JoinElectInfo join_info;
@@ -585,7 +584,6 @@ TEST_F(TestBls, AllSuccess) {
             ASSERT_TRUE(dkg_instance.Verification(i, contributions[i], g2_vec));
             ASSERT_TRUE(dkg_instance.Verification(i, contributions1[i], g2_vec));
             ASSERT_TRUE(contributions[i] == contributions1[i]);
-            std::cout << "init member c: " << idx << " : " << libBLS::ThresholdUtils::fieldElementToString(contributions1[i]) << std::endl;
         }
 
         std::vector<libff::alt_bn128_G2> verify_g2_vec;
@@ -660,25 +658,11 @@ TEST_F(TestBls, AllSuccess) {
                     libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c0)));
                 verify_item.set_z_c1(common::Encode::HexDecode(
                     libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c1)));
-                std::cout << "verify success: " <<
-                    libBLS::ThresholdUtils::fieldElementToString(contributions[midx])
-                    << ", " << common::Encode::HexEncode(verify_item.x_c0())
-                    << ", " << common::Encode::HexEncode(verify_item.x_c1())
-                    << ", " << common::Encode::HexEncode(verify_item.y_c0())
-                    << ", " << common::Encode::HexEncode(verify_item.y_c1())
-                    << ", " << common::Encode::HexEncode(verify_item.z_c0())
-                    << ", " << common::Encode::HexEncode(verify_item.z_c1())
-                    << std::endl;
             }
 
             verfy_final_vals.set_src_hash(check_hash);
             auto verified_val = verfy_final_vals.SerializeAsString();
             prefix_db->SaveVerifiedG2s(tmp_idx, id, verfy_final_vals);
-            std::cout << "node: " << tmp_idx << " save " << idx << " " << common::Encode::HexEncode(id)
-                << ", verified: " << common::Encode::HexEncode(verfy_final_vals.verify_req().verify_vec(0).x_c0())
-                << ", polynomial: " << common::Encode::HexEncode(local_poly.polynomial(0))
-                << ", contribution: " << libBLS::ThresholdUtils::fieldElementToString(contributions[tmp_idx])
-                << std::endl;
 // 
 //             auto old_g2 = polynomial[tmp_idx][0] * libff::alt_bn128_G2::one();
 //             polynomial[tmp_idx][0] = libff::alt_bn128_Fr::random_element();
