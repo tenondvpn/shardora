@@ -939,7 +939,13 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
 //         auto new_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * new_g2;
         assert(security_->GetAddress() == (*members_)[local_member_index_]->id);
         std::cout << "node " << mem_idx << " success get " << local_member_index_ << " " << common::Encode::HexEncode((*members_)[local_member_index_]->id)
-            << ", verified: " << common::Encode::HexEncode(item.x_c0())
+            << ", verified0: " << common::Encode::HexEncode(item.x_c0())
+            << ", verified: " << libBLS::ThresholdUtils::fieldElementToString(all_verified_val.X.c0)
+            << ", " << libBLS::ThresholdUtils::fieldElementToString(all_verified_val.X.c1)
+            << ", " << libBLS::ThresholdUtils::fieldElementToString(all_verified_val.Y.c0)
+            << ", " << libBLS::ThresholdUtils::fieldElementToString(all_verified_val.Y.c1)
+            << ", " << libBLS::ThresholdUtils::fieldElementToString(all_verified_val.Z.c0)
+            << ", " << libBLS::ThresholdUtils::fieldElementToString(all_verified_val.Z.c1)
             << ", polynomial: " << common::Encode::HexEncode(local_poly.polynomial(0))
             << ", contribution0: " << (all_verified_val == local_src_secret_key_contribution_[local_member_index_] * libff::alt_bn128_G2::zero())
             << ", contribution1: " << (all_verified_val == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::zero())

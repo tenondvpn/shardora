@@ -646,9 +646,7 @@ TEST_F(TestBls, AllSuccess) {
             for (uint32_t i = 0; i < verify_g2s.size(); ++i) {
                 auto midx = tmp_idx + i * common::kElectNodeMinMemberIndex;
                 ASSERT_TRUE(verify_g2s[i] == contributions[midx] * libff::alt_bn128_G2::one());
-                std::cout << "verify success: " <<
-                    libBLS::ThresholdUtils::fieldElementToString(contributions[midx]) << ", " <<
-                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c0) << std::endl;
+                
                 bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verify_req()->add_verify_vec();
                 verify_item.set_x_c0(common::Encode::HexDecode(
                     libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c0)));
@@ -662,6 +660,15 @@ TEST_F(TestBls, AllSuccess) {
                     libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c0)));
                 verify_item.set_z_c1(common::Encode::HexDecode(
                     libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c1)));
+                std::cout << "verify success: " <<
+                    libBLS::ThresholdUtils::fieldElementToString(contributions[midx])
+                    << ", " << common::Encode::HexEncode(verify_item.x_c0())
+                    << ", " << common::Encode::HexEncode(verify_item.x_c1())
+                    << ", " << common::Encode::HexEncode(verify_item.y_c0())
+                    << ", " << common::Encode::HexEncode(verify_item.y_c1())
+                    << ", " << common::Encode::HexEncode(verify_item.z_c0())
+                    << ", " << common::Encode::HexEncode(verify_item.z_c1())
+                    << std::endl;
             }
 
             verfy_final_vals.set_src_hash(check_hash);
