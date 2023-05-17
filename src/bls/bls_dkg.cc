@@ -877,8 +877,8 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
 
         bls::protobuf::JoinElectBlsInfo verfy_final_vals;
         if (!prefix_db_->GetVerifiedG2s(
-                local_member_index_,
-                (*members_)[mem_idx]->id,
+                mem_idx,
+                (*members_)[local_member_index_]->id,
                 &verfy_final_vals)) {
             continue;
         }
@@ -915,7 +915,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             old_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
         }
 
-//         assert(old_val == old_g2);
+        assert(old_val == old_g2);
         auto midx = local_member_index_ / common::kElectNodeMinMemberIndex;
         if (verfy_final_vals.verify_req().verify_vec_size() <= midx) {
             assert(false);
