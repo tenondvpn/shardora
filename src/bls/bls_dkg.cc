@@ -883,7 +883,6 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             continue;
         }
 
-        std::cout << "success get " << mem_idx << " " << common::Encode::HexEncode((*members_)[local_member_index_]->id) << std::endl;
         std::string val;
         if (!prefix_db_->GetTemporaryKv(verfy_final_vals.src_hash(), &val)) {
             assert(false);
@@ -936,6 +935,8 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         auto all_verified_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
         auto old_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * old_val;
         auto new_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * new_g2;
+        std::cout << "success get " << mem_idx << " " << common::Encode::HexEncode((*members_)[local_member_index_]->id)
+            << ", verified: " << common::Encode::HexEncode(item.x_c0()) << std::endl;
         all_verified_val = all_verified_val - old_g2_val + new_g2_val;
         assert(all_verified_val == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::zero());
     }
