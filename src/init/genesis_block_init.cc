@@ -263,8 +263,8 @@ void GenesisBlockInit::ReloadBlsPri(uint32_t sharding_id) {
         std::string(std::string("./bls_pri_") + std::to_string(sharding_id)).c_str(),
         "r");
     assert(bls_fd != nullptr);
-    char data[20480];
-    while (fgets(data, 20480, bls_fd) != nullptr) {
+    char* data = new char[1024 * 1024 * 10];
+    while (fgets(data, 1024 * 1024 * 10, bls_fd) != nullptr) {
         std::string tmp_data(data, strlen(data) - 1);
         std::string val = common::Encode::HexDecode(tmp_data);
         init::protobuf::GenesisInitBlsInfo init_info;
@@ -284,6 +284,7 @@ void GenesisBlockInit::ReloadBlsPri(uint32_t sharding_id) {
             height, sharding_id, common::Encode::HexEncode(id).c_str());
     }
 
+    delete[] data;
     fclose(bls_fd);
 }
 
