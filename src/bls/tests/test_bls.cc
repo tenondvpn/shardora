@@ -637,8 +637,8 @@ TEST_F(TestBls, AllSuccess) {
 
             bls::protobuf::JoinElectBlsInfo verfy_final_vals;
             for (uint32_t i = 0; i < verify_g2s.size(); ++i) {
-                auto midx = idx + i * common::kElectNodeMinMemberIndex;
-                ASSERT_TRUE(verify_g2s[i] == contributions[tmp_idx] * libff::alt_bn128_G2::one());
+                auto midx = tmp_idx + i * common::kElectNodeMinMemberIndex;
+                ASSERT_TRUE(verify_g2s[i] == contributions[midx] * libff::alt_bn128_G2::one());
                 bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verify_req()->add_verify_vec();
                 verify_item.set_x_c0(common::Encode::HexDecode(
                     libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c0)));
