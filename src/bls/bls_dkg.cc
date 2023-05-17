@@ -854,7 +854,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         }
 
         if (change_idx == i) {
-//             old_g2 = polynomial[i] * libff::alt_bn128_G2::one();
+            old_g2 = polynomial[i] * libff::alt_bn128_G2::one();
 //             polynomial[i] = libff::alt_bn128_Fr::random_element();
 //             while (polynomial[i] == libff::alt_bn128_Fr::zero()) {
 //                 polynomial[i] = libff::alt_bn128_Fr::random_element();
