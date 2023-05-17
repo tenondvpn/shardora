@@ -211,6 +211,8 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
             secptr->GetAddress(),
             prikeys[idx],
             libBLS::ThresholdUtils::fieldElementToString(local_sec_key),
+            check_hash,
+            join_info,
             fd);
     }
 
