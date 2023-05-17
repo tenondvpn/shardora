@@ -20,6 +20,11 @@ void BlsSign::Sign(
     try {
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
         *sign = bls_instance.Signing(g1_hash, secret_key);
+        ZJC_DEBUG("sign message success sec: %s, hash: %s, %s, %s",
+            libBLS::ThresholdUtils::fieldElementToString(secret_key).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
     } catch (std::exception& e) {
         BLS_ERROR("sign message failed: %s", e.what());
         *sign = libff::alt_bn128_G1::zero();
