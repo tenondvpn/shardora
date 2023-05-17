@@ -562,7 +562,7 @@ void BlockManager::HandleJoinElectTx(
             uint32_t mem_idx = join_info.member_idx();
             str_for_hash.append((char*)&shard_id, sizeof(shard_id));
             str_for_hash.append((char*)&mem_idx, sizeof(mem_idx));
-            for (int32_t i = 0; i < join_info.g2_req().verify_vec_size(); ++i) {
+            for (int32_t i = 0; i < join_info.g2_req().verify_vec_size() && i < 3; ++i) {
                 auto& item = join_info.g2_req().verify_vec(i);
                 auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
                 auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
