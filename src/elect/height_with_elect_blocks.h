@@ -216,34 +216,35 @@ public:
             return nullptr;
         }
 
-        if (block.tx_list_size() != 1) {
-            assert(false);
-            return nullptr;
-        }
-
         bool eb_valid = false;
         elect::protobuf::ElectBlock elect_block;
-        for (int32_t i = 0; i < block.tx_list(0).storages_size(); ++i) {
-            if (block.tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
-                std::string val;
-                if (!prefix_db_->GetTemporaryKv(block.tx_list(0).storages(i).val_hash(), &val)) {
-                    ZJC_FATAL("elect block get temp kv from db failed!");
-                    return nullptr;
-                }
+        for (int32_t tx_idx = 0; tx_idx < block.tx_list_size(); ++tx_idx) {
+            if (block.tx_list(tx_idx).step() != pools::protobuf::kConsensusRootElectShard) {
+                continue;
+            }
 
-                if (!elect_block.ParseFromString(val)) {
-                    assert(false);
-                    return nullptr;
-                }
+            for (int32_t i = 0; i < block.tx_list(tx_idx).storages_size(); ++i) {
+                if (block.tx_list(tx_idx).storages(i).key() == protos::kElectNodeAttrElectBlock) {
+                    std::string val;
+                    if (!prefix_db_->GetTemporaryKv(block.tx_list(0).storages(i).val_hash(), &val)) {
+                        ZJC_FATAL("elect block get temp kv from db failed!");
+                        return nullptr;
+                    }
 
-                std::string ec_hash = protos::GetElectBlockHash(elect_block);
-                if (ec_hash != block.tx_list(0).storages(i).val_hash()) {
-                    ZJC_FATAL("elect block get temp kv from db failed!");
-                    return nullptr;
-                }
+                    if (!elect_block.ParseFromString(val)) {
+                        assert(false);
+                        return nullptr;
+                    }
 
-                eb_valid = true;
-                break;
+                    std::string ec_hash = protos::GetElectBlockHash(elect_block);
+                    if (ec_hash != block.tx_list(tx_idx).storages(i).val_hash()) {
+                        ZJC_FATAL("elect block get temp kv from db failed!");
+                        return nullptr;
+                    }
+
+                    eb_valid = true;
+                    break;
+                }
             }
         }
 
