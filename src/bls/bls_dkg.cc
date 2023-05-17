@@ -845,7 +845,6 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
                 polynomial[i] = libff::alt_bn128_Fr::random_element();
             }
         }
-
     }
 
     auto new_g2 = polynomial[change_idx] * libff::alt_bn128_G2::one();
@@ -854,7 +853,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         local_src_secret_key_contribution_[local_member_index_]);
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, local_member_index_, val);
-
+#ifdef ZJC_UNITEST
     for (uint32_t mem_idx = 0; mem_idx < member_count_; ++mem_idx) {
         if (mem_idx == local_member_index_) {
             continue;
@@ -924,7 +923,6 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         assert(all_verified_val == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::one());
     }
 
-#ifdef ZJC_UNITTEST
     g2_vec_.clear();
     g2_vec_.push_back(polynomial[0] * libff::alt_bn128_G2::one());
 #endif // ZJC_UNITTEST
@@ -951,7 +949,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     ++valid_sec_key_count_;
     change_idx = (change_idx + 1) % valid_t;
     local_poly.set_change_idx(change_idx);
-    prefix_db_->SaveLocalPolynomial(security_, security_->GetAddress(), local_poly);
+    prefix_db_->SaveLocalPolynomial(security_, security_->GetAddress(), local_poly, true);
     std::cout << "success handle member: " << local_member_index_ << std::endl;
 }
 

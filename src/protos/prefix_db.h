@@ -61,6 +61,7 @@ static const std::string kSaveChoosedJoinShardPrefix = "ab\x01";
 static const std::string kGenesisTimeblockPrefix = "ac\x01";
 static const std::string kLocalPolynomialPrefix = "ad\x01";
 static const std::string kLocalVerifiedG2Prefix = "ae\x01";
+static const std::string kLocalTempPolynomialPrefix = "af\x01";
 
 class PrefixDb {
 public:
@@ -1120,11 +1121,15 @@ public:
     void SaveLocalPolynomial(
             std::shared_ptr<security::Security>& security_ptr,
             const std::string& id,
-            const bls::protobuf::LocalPolynomial& local_poly) {
+            const bls::protobuf::LocalPolynomial& local_poly,
+            bool for_temp = false) {
         std::string key;
         key.reserve(128);
-        key.append(kLocalPolynomialPrefix);
-        key.append(id);
+        if (for_temp) {
+            key.append(kLocalTempPolynomialPrefix);
+        } else {
+            key.append(kLocalPolynomialPrefix);
+        }        key.append(id);
         std::string tmp_val = local_poly.SerializeAsString();
         char tmp_data[4];
         uint32_t* tmp = (uint32_t*)tmp_data;
@@ -1148,10 +1153,15 @@ public:
     bool GetLocalPolynomial(
             std::shared_ptr<security::Security>& security_ptr,
             const std::string& id,
-            bls::protobuf::LocalPolynomial* local_poly) {
+            bls::protobuf::LocalPolynomial* local_poly,
+            bool for_temp = false) {
         std::string key;
         key.reserve(128);
-        key.append(kLocalPolynomialPrefix);
+        if (for_temp) {
+            key.append(kLocalTempPolynomialPrefix);
+        } else {
+            key.append(kLocalPolynomialPrefix);
+        }
         key.append(id);
         std::string val;
         auto st = db_->Get(key, &val);
