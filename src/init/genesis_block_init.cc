@@ -277,7 +277,7 @@ void GenesisBlockInit::ReloadBlsPri(uint32_t sharding_id) {
         std::string bls_prikey = init_info.bls_enc_data();
         prefix_db_->SaveBlsPrikey(height, sharding_id, id, bls_prikey);
         auto check_hash = init_info.bls_hash();
-        auto str = init_info.join_info.SerializeAsString();
+        auto str = init_info.join_info().SerializeAsString();
         prefix_db_->SaveTemporaryKv(check_hash, str);
 
         ZJC_DEBUG("success add bls prikey: %lu, %u, %s",
