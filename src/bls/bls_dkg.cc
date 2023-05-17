@@ -965,6 +965,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     change_idx = (change_idx + 1) % valid_t;
     local_poly.set_change_idx(change_idx);
     prefix_db_->SaveLocalPolynomial(security_, security_->GetAddress(), local_poly);
+    std::cout << "success handle member: " << local_member_index_ << std::endl;
 }
 
 void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
