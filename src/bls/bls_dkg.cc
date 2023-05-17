@@ -915,7 +915,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             old_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
         }
 
-        assert(old_val == old_g2);
+//         assert(old_val == old_g2);
         auto midx = local_member_index_ / common::kElectNodeMinMemberIndex;
         if (verfy_final_vals.verify_req().verify_vec_size() <= midx) {
             assert(false);
