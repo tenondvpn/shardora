@@ -194,7 +194,7 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         storage->set_val_size(str.size());
 
         libBLS::Dkg tmpdkg(valid_t, valid_n);
-        std::vector<std::vector<libff::alt_bn128_Fr>> tmp_secret_key_contribution;
+        std::vector<libff::alt_bn128_Fr> tmp_secret_key_contribution;
         for (int32_t i = 0; i < prikeys.size(); ++i) {
             tmp_secret_key_contribution.push_back(secret_key_contribution[idx][i]);
         }
