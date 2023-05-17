@@ -51,7 +51,6 @@ void BlsDkg::Destroy() {
 }
 
 void BlsDkg::TimerMessage(const transport::MessagePtr& msg_ptr) {
-    return;
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (!has_broadcast_verify_ &&
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4) &&
@@ -570,7 +569,7 @@ void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
     auto verfiy_brd = bls_msg.mutable_verify_brd();
     auto res = prefix_db_->GetBlsVerifyG2((*members_)[local_member_index_]->id, verfiy_brd);
     if (!res) {
-//         assert(false);
+        assert(false);
         return;
     }
 
@@ -824,12 +823,12 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
 void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     bls::protobuf::LocalPolynomial local_poly;
     if (!prefix_db_->GetLocalPolynomial(security_, security_->GetAddress(), &local_poly)) {
-//         assert(false);
+        assert(false);
         return;
     }
 
-    if (local_poly.polynomial_size() != valid_t) {
-//         assert(false);
+    if (local_poly.polynomial_size() < valid_t) {
+        assert(false);
         return;
     }
 

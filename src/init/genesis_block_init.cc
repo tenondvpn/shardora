@@ -219,6 +219,7 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         init_bls_info.set_shard_id(sharding_id);
         init_bls_info.set_id(secptr->GetAddress());
         DumpLocalPrivateKey(
+            init_bls_info,
             prikeys[idx],
             libBLS::ThresholdUtils::fieldElementToString(local_sec_key),
             init_bls_info,
@@ -251,7 +252,11 @@ void GenesisBlockInit::DumpLocalPrivateKey(
         return;
     }
 
-    prefix_db_->SaveBlsPrikey(height, shard_netid, id, enc_data);
+    prefix_db_->SaveBlsPrikey(
+        init_bls_info.height(),
+        init_bls_info.shard_id(),
+        init_bls_info.id(),
+        enc_data);
     init_bls_info.set_bls_enc_data(enc_data);
     std::string val = common::Encode::HexEncode(init_bls_info.SerializeAsString()) + "\n";
     fputs(val.c_str(), fd);
