@@ -58,10 +58,12 @@ private:
     void HandleTimeBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
+        const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void HandleElectionBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
+        const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void SendJoinElectTransaction(uint8_t thread_idx);
     void HandleMessage(const transport::MessagePtr& msg_ptr);

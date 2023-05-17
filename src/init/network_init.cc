@@ -1021,13 +1021,13 @@ void NetworkInit::DbNewBlockCallback(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
-    if (block->tx_list_size() == 1) {
-        switch (block->tx_list(0).step()) {
+    for (uint32_t i = 0 i < block->tx_list_size(); ++i) {
+        switch (block->tx_list(i).step()) {
         case pools::protobuf::kConsensusRootTimeBlock:
-            HandleTimeBlock(thread_idx, block, db_batch);
+            HandleTimeBlock(thread_idx, block, block->tx_list(i), db_batch);
             break;
         case pools::protobuf::kConsensusRootElectShard:
-            HandleElectionBlock(thread_idx, block, db_batch);
+            HandleElectionBlock(thread_idx, block, block->tx_list(i), db_batch);
             break;
         default:
             break;
@@ -1051,8 +1051,8 @@ void NetworkInit::DbNewBlockCallback(
 void NetworkInit::HandleTimeBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
+        const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    auto& tx = block->tx_list(0);
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kAttrTimerBlock) {
             if (tx.storages(i).val_hash().size() != 16) {
@@ -1079,12 +1079,13 @@ void NetworkInit::HandleTimeBlock(
 void NetworkInit::HandleElectionBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
+        const block::protobuf::BlockTx& block_tx,
         db::DbWriteBatch& db_batch) {
     auto elect_block = std::make_shared<elect::protobuf::ElectBlock>();
-    for (int32_t i = 0; i < block->tx_list(0).storages_size(); ++i) {
-        if (block->tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
+    for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
+        if (block_tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
             std::string val;
-            if (!prefix_db_->GetTemporaryKv(block->tx_list(0).storages(i).val_hash(), &val)) {
+            if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
                 ZJC_FATAL("elect block get temp kv from db failed!");
                 return;
             }
@@ -1095,7 +1096,7 @@ void NetworkInit::HandleElectionBlock(
             }
 
             std::string hash = protos::GetElectBlockHash(*elect_block);
-            if (hash != block->tx_list(0).storages(i).val_hash()) {
+            if (hash != block_tx.storages(i).val_hash()) {
                 ZJC_FATAL("parse elect block failed!");
                 return;
             }
