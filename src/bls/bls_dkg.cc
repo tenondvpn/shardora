@@ -461,7 +461,6 @@ bool BlsDkg::VerifySekkeyValid(
 
     bls::protobuf::JoinElectBlsInfo verfy_final_vals;
     if (!prefix_db_->GetVerifiedG2s(
-            local_member_index_,
             (*members_)[peer_index]->id,
             &verfy_final_vals)) {
         ZJC_WARN("failed get verified g2: %u, %s",
@@ -857,7 +856,6 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
 
         bls::protobuf::JoinElectBlsInfo verfy_final_vals;
         if (!prefix_db_->GetVerifiedG2s(
-                mem_idx,
                 (*members_)[local_member_index_]->id,
                 &verfy_final_vals)) {
             continue;
