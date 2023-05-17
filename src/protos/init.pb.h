@@ -40,7 +40,7 @@ namespace protobuf_protos_2finit_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[5];
+  static const ::google::protobuf::internal::ParseTable schema[6];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -50,6 +50,9 @@ void AddDescriptors();
 namespace zjchain {
 namespace init {
 namespace protobuf {
+class GenesisInitBlsInfo;
+class GenesisInitBlsInfoDefaultTypeInternal;
+extern GenesisInitBlsInfoDefaultTypeInternal _GenesisInitBlsInfo_default_instance_;
 class GetAddressInfoRequest;
 class GetAddressInfoRequestDefaultTypeInternal;
 extern GetAddressInfoRequestDefaultTypeInternal _GetAddressInfoRequest_default_instance_;
@@ -70,6 +73,7 @@ extern JoinElectInfoDefaultTypeInternal _JoinElectInfo_default_instance_;
 }  // namespace zjchain
 namespace google {
 namespace protobuf {
+template<> ::zjchain::init::protobuf::GenesisInitBlsInfo* Arena::CreateMaybeMessage<::zjchain::init::protobuf::GenesisInitBlsInfo>(Arena*);
 template<> ::zjchain::init::protobuf::GetAddressInfoRequest* Arena::CreateMaybeMessage<::zjchain::init::protobuf::GetAddressInfoRequest>(Arena*);
 template<> ::zjchain::init::protobuf::GetAddressInfoResponse* Arena::CreateMaybeMessage<::zjchain::init::protobuf::GetAddressInfoResponse>(Arena*);
 template<> ::zjchain::init::protobuf::InitMessage* Arena::CreateMaybeMessage<::zjchain::init::protobuf::InitMessage>(Arena*);
@@ -590,6 +594,199 @@ class JoinElectInfo : public ::google::protobuf::Message /* @@protoc_insertion_p
 };
 // -------------------------------------------------------------------
 
+class GenesisInitBlsInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.init.protobuf.GenesisInitBlsInfo) */ {
+ public:
+  GenesisInitBlsInfo();
+  virtual ~GenesisInitBlsInfo();
+
+  GenesisInitBlsInfo(const GenesisInitBlsInfo& from);
+
+  inline GenesisInitBlsInfo& operator=(const GenesisInitBlsInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  GenesisInitBlsInfo(GenesisInitBlsInfo&& from) noexcept
+    : GenesisInitBlsInfo() {
+    *this = ::std::move(from);
+  }
+
+  inline GenesisInitBlsInfo& operator=(GenesisInitBlsInfo&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const GenesisInitBlsInfo& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const GenesisInitBlsInfo* internal_default_instance() {
+    return reinterpret_cast<const GenesisInitBlsInfo*>(
+               &_GenesisInitBlsInfo_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    4;
+
+  void Swap(GenesisInitBlsInfo* other);
+  friend void swap(GenesisInitBlsInfo& a, GenesisInitBlsInfo& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline GenesisInitBlsInfo* New() const final {
+    return CreateMaybeMessage<GenesisInitBlsInfo>(NULL);
+  }
+
+  GenesisInitBlsInfo* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<GenesisInitBlsInfo>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const GenesisInitBlsInfo& from);
+  void MergeFrom(const GenesisInitBlsInfo& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(GenesisInitBlsInfo* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional bytes id = 3;
+  bool has_id() const;
+  void clear_id();
+  static const int kIdFieldNumber = 3;
+  const ::std::string& id() const;
+  void set_id(const ::std::string& value);
+  #if LANG_CXX11
+  void set_id(::std::string&& value);
+  #endif
+  void set_id(const char* value);
+  void set_id(const void* value, size_t size);
+  ::std::string* mutable_id();
+  ::std::string* release_id();
+  void set_allocated_id(::std::string* id);
+
+  // optional bytes bls_enc_data = 4;
+  bool has_bls_enc_data() const;
+  void clear_bls_enc_data();
+  static const int kBlsEncDataFieldNumber = 4;
+  const ::std::string& bls_enc_data() const;
+  void set_bls_enc_data(const ::std::string& value);
+  #if LANG_CXX11
+  void set_bls_enc_data(::std::string&& value);
+  #endif
+  void set_bls_enc_data(const char* value);
+  void set_bls_enc_data(const void* value, size_t size);
+  ::std::string* mutable_bls_enc_data();
+  ::std::string* release_bls_enc_data();
+  void set_allocated_bls_enc_data(::std::string* bls_enc_data);
+
+  // optional bytes bls_hash = 5;
+  bool has_bls_hash() const;
+  void clear_bls_hash();
+  static const int kBlsHashFieldNumber = 5;
+  const ::std::string& bls_hash() const;
+  void set_bls_hash(const ::std::string& value);
+  #if LANG_CXX11
+  void set_bls_hash(::std::string&& value);
+  #endif
+  void set_bls_hash(const char* value);
+  void set_bls_hash(const void* value, size_t size);
+  ::std::string* mutable_bls_hash();
+  ::std::string* release_bls_hash();
+  void set_allocated_bls_hash(::std::string* bls_hash);
+
+  // optional .zjchain.init.protobuf.JoinElectInfo join_info = 6;
+  bool has_join_info() const;
+  void clear_join_info();
+  static const int kJoinInfoFieldNumber = 6;
+  private:
+  const ::zjchain::init::protobuf::JoinElectInfo& _internal_join_info() const;
+  public:
+  const ::zjchain::init::protobuf::JoinElectInfo& join_info() const;
+  ::zjchain::init::protobuf::JoinElectInfo* release_join_info();
+  ::zjchain::init::protobuf::JoinElectInfo* mutable_join_info();
+  void set_allocated_join_info(::zjchain::init::protobuf::JoinElectInfo* join_info);
+
+  // optional uint64 height = 1;
+  bool has_height() const;
+  void clear_height();
+  static const int kHeightFieldNumber = 1;
+  ::google::protobuf::uint64 height() const;
+  void set_height(::google::protobuf::uint64 value);
+
+  // optional uint32 shard_id = 2;
+  bool has_shard_id() const;
+  void clear_shard_id();
+  static const int kShardIdFieldNumber = 2;
+  ::google::protobuf::uint32 shard_id() const;
+  void set_shard_id(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:zjchain.init.protobuf.GenesisInitBlsInfo)
+ private:
+  void set_has_height();
+  void clear_has_height();
+  void set_has_shard_id();
+  void clear_has_shard_id();
+  void set_has_id();
+  void clear_has_id();
+  void set_has_bls_enc_data();
+  void clear_has_bls_enc_data();
+  void set_has_bls_hash();
+  void clear_has_bls_hash();
+  void set_has_join_info();
+  void clear_has_join_info();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::internal::ArenaStringPtr id_;
+  ::google::protobuf::internal::ArenaStringPtr bls_enc_data_;
+  ::google::protobuf::internal::ArenaStringPtr bls_hash_;
+  ::zjchain::init::protobuf::JoinElectInfo* join_info_;
+  ::google::protobuf::uint64 height_;
+  ::google::protobuf::uint32 shard_id_;
+  friend struct ::protobuf_protos_2finit_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class InitMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.init.protobuf.InitMessage) */ {
  public:
   InitMessage();
@@ -632,7 +829,7 @@ class InitMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_InitMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    5;
 
   void Swap(InitMessage* other);
   friend void swap(InitMessage& a, InitMessage& b) {
@@ -1038,6 +1235,314 @@ inline void JoinElectInfo::set_allocated_g2_req(::zjchain::bls::protobuf::Verify
 
 // -------------------------------------------------------------------
 
+// GenesisInitBlsInfo
+
+// optional uint64 height = 1;
+inline bool GenesisInitBlsInfo::has_height() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void GenesisInitBlsInfo::set_has_height() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void GenesisInitBlsInfo::clear_has_height() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void GenesisInitBlsInfo::clear_height() {
+  height_ = GOOGLE_ULONGLONG(0);
+  clear_has_height();
+}
+inline ::google::protobuf::uint64 GenesisInitBlsInfo::height() const {
+  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GenesisInitBlsInfo.height)
+  return height_;
+}
+inline void GenesisInitBlsInfo::set_height(::google::protobuf::uint64 value) {
+  set_has_height();
+  height_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.GenesisInitBlsInfo.height)
+}
+
+// optional uint32 shard_id = 2;
+inline bool GenesisInitBlsInfo::has_shard_id() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void GenesisInitBlsInfo::set_has_shard_id() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void GenesisInitBlsInfo::clear_has_shard_id() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void GenesisInitBlsInfo::clear_shard_id() {
+  shard_id_ = 0u;
+  clear_has_shard_id();
+}
+inline ::google::protobuf::uint32 GenesisInitBlsInfo::shard_id() const {
+  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GenesisInitBlsInfo.shard_id)
+  return shard_id_;
+}
+inline void GenesisInitBlsInfo::set_shard_id(::google::protobuf::uint32 value) {
+  set_has_shard_id();
+  shard_id_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.GenesisInitBlsInfo.shard_id)
+}
+
+// optional bytes id = 3;
+inline bool GenesisInitBlsInfo::has_id() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void GenesisInitBlsInfo::set_has_id() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void GenesisInitBlsInfo::clear_has_id() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void GenesisInitBlsInfo::clear_id() {
+  id_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_id();
+}
+inline const ::std::string& GenesisInitBlsInfo::id() const {
+  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GenesisInitBlsInfo.id)
+  return id_.GetNoArena();
+}
+inline void GenesisInitBlsInfo::set_id(const ::std::string& value) {
+  set_has_id();
+  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.GenesisInitBlsInfo.id)
+}
+#if LANG_CXX11
+inline void GenesisInitBlsInfo::set_id(::std::string&& value) {
+  set_has_id();
+  id_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.init.protobuf.GenesisInitBlsInfo.id)
+}
+#endif
+inline void GenesisInitBlsInfo::set_id(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_id();
+  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.init.protobuf.GenesisInitBlsInfo.id)
+}
+inline void GenesisInitBlsInfo::set_id(const void* value, size_t size) {
+  set_has_id();
+  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.init.protobuf.GenesisInitBlsInfo.id)
+}
+inline ::std::string* GenesisInitBlsInfo::mutable_id() {
+  set_has_id();
+  // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.GenesisInitBlsInfo.id)
+  return id_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* GenesisInitBlsInfo::release_id() {
+  // @@protoc_insertion_point(field_release:zjchain.init.protobuf.GenesisInitBlsInfo.id)
+  if (!has_id()) {
+    return NULL;
+  }
+  clear_has_id();
+  return id_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void GenesisInitBlsInfo::set_allocated_id(::std::string* id) {
+  if (id != NULL) {
+    set_has_id();
+  } else {
+    clear_has_id();
+  }
+  id_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), id);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.GenesisInitBlsInfo.id)
+}
+
+// optional bytes bls_enc_data = 4;
+inline bool GenesisInitBlsInfo::has_bls_enc_data() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void GenesisInitBlsInfo::set_has_bls_enc_data() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void GenesisInitBlsInfo::clear_has_bls_enc_data() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void GenesisInitBlsInfo::clear_bls_enc_data() {
+  bls_enc_data_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_bls_enc_data();
+}
+inline const ::std::string& GenesisInitBlsInfo::bls_enc_data() const {
+  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
+  return bls_enc_data_.GetNoArena();
+}
+inline void GenesisInitBlsInfo::set_bls_enc_data(const ::std::string& value) {
+  set_has_bls_enc_data();
+  bls_enc_data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
+}
+#if LANG_CXX11
+inline void GenesisInitBlsInfo::set_bls_enc_data(::std::string&& value) {
+  set_has_bls_enc_data();
+  bls_enc_data_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
+}
+#endif
+inline void GenesisInitBlsInfo::set_bls_enc_data(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_bls_enc_data();
+  bls_enc_data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
+}
+inline void GenesisInitBlsInfo::set_bls_enc_data(const void* value, size_t size) {
+  set_has_bls_enc_data();
+  bls_enc_data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
+}
+inline ::std::string* GenesisInitBlsInfo::mutable_bls_enc_data() {
+  set_has_bls_enc_data();
+  // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
+  return bls_enc_data_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* GenesisInitBlsInfo::release_bls_enc_data() {
+  // @@protoc_insertion_point(field_release:zjchain.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
+  if (!has_bls_enc_data()) {
+    return NULL;
+  }
+  clear_has_bls_enc_data();
+  return bls_enc_data_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void GenesisInitBlsInfo::set_allocated_bls_enc_data(::std::string* bls_enc_data) {
+  if (bls_enc_data != NULL) {
+    set_has_bls_enc_data();
+  } else {
+    clear_has_bls_enc_data();
+  }
+  bls_enc_data_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), bls_enc_data);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.GenesisInitBlsInfo.bls_enc_data)
+}
+
+// optional bytes bls_hash = 5;
+inline bool GenesisInitBlsInfo::has_bls_hash() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void GenesisInitBlsInfo::set_has_bls_hash() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void GenesisInitBlsInfo::clear_has_bls_hash() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void GenesisInitBlsInfo::clear_bls_hash() {
+  bls_hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_bls_hash();
+}
+inline const ::std::string& GenesisInitBlsInfo::bls_hash() const {
+  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GenesisInitBlsInfo.bls_hash)
+  return bls_hash_.GetNoArena();
+}
+inline void GenesisInitBlsInfo::set_bls_hash(const ::std::string& value) {
+  set_has_bls_hash();
+  bls_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.GenesisInitBlsInfo.bls_hash)
+}
+#if LANG_CXX11
+inline void GenesisInitBlsInfo::set_bls_hash(::std::string&& value) {
+  set_has_bls_hash();
+  bls_hash_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.init.protobuf.GenesisInitBlsInfo.bls_hash)
+}
+#endif
+inline void GenesisInitBlsInfo::set_bls_hash(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_bls_hash();
+  bls_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.init.protobuf.GenesisInitBlsInfo.bls_hash)
+}
+inline void GenesisInitBlsInfo::set_bls_hash(const void* value, size_t size) {
+  set_has_bls_hash();
+  bls_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.init.protobuf.GenesisInitBlsInfo.bls_hash)
+}
+inline ::std::string* GenesisInitBlsInfo::mutable_bls_hash() {
+  set_has_bls_hash();
+  // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.GenesisInitBlsInfo.bls_hash)
+  return bls_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* GenesisInitBlsInfo::release_bls_hash() {
+  // @@protoc_insertion_point(field_release:zjchain.init.protobuf.GenesisInitBlsInfo.bls_hash)
+  if (!has_bls_hash()) {
+    return NULL;
+  }
+  clear_has_bls_hash();
+  return bls_hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void GenesisInitBlsInfo::set_allocated_bls_hash(::std::string* bls_hash) {
+  if (bls_hash != NULL) {
+    set_has_bls_hash();
+  } else {
+    clear_has_bls_hash();
+  }
+  bls_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), bls_hash);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.GenesisInitBlsInfo.bls_hash)
+}
+
+// optional .zjchain.init.protobuf.JoinElectInfo join_info = 6;
+inline bool GenesisInitBlsInfo::has_join_info() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void GenesisInitBlsInfo::set_has_join_info() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void GenesisInitBlsInfo::clear_has_join_info() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void GenesisInitBlsInfo::clear_join_info() {
+  if (join_info_ != NULL) join_info_->Clear();
+  clear_has_join_info();
+}
+inline const ::zjchain::init::protobuf::JoinElectInfo& GenesisInitBlsInfo::_internal_join_info() const {
+  return *join_info_;
+}
+inline const ::zjchain::init::protobuf::JoinElectInfo& GenesisInitBlsInfo::join_info() const {
+  const ::zjchain::init::protobuf::JoinElectInfo* p = join_info_;
+  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GenesisInitBlsInfo.join_info)
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::init::protobuf::JoinElectInfo*>(
+      &::zjchain::init::protobuf::_JoinElectInfo_default_instance_);
+}
+inline ::zjchain::init::protobuf::JoinElectInfo* GenesisInitBlsInfo::release_join_info() {
+  // @@protoc_insertion_point(field_release:zjchain.init.protobuf.GenesisInitBlsInfo.join_info)
+  clear_has_join_info();
+  ::zjchain::init::protobuf::JoinElectInfo* temp = join_info_;
+  join_info_ = NULL;
+  return temp;
+}
+inline ::zjchain::init::protobuf::JoinElectInfo* GenesisInitBlsInfo::mutable_join_info() {
+  set_has_join_info();
+  if (join_info_ == NULL) {
+    auto* p = CreateMaybeMessage<::zjchain::init::protobuf::JoinElectInfo>(GetArenaNoVirtual());
+    join_info_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.GenesisInitBlsInfo.join_info)
+  return join_info_;
+}
+inline void GenesisInitBlsInfo::set_allocated_join_info(::zjchain::init::protobuf::JoinElectInfo* join_info) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete join_info_;
+  }
+  if (join_info) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      join_info = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, join_info, submessage_arena);
+    }
+    set_has_join_info();
+  } else {
+    clear_has_join_info();
+  }
+  join_info_ = join_info;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.GenesisInitBlsInfo.join_info)
+}
+
+// -------------------------------------------------------------------
+
 // InitMessage
 
 // optional .zjchain.init.protobuf.GetAddressInfoRequest addr_req = 1;
@@ -1217,6 +1722,8 @@ inline void InitMessage::set_allocated_pools(::zjchain::init::protobuf::InvalidL
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
