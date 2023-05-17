@@ -488,7 +488,6 @@ void BlockManager::AddNewBlock(
     }
 
     auto local_member_idx = common::GlobalInfo::Instance()->config_local_member_idx();
-    std::cout << "elect height: " << block.electblock_height() << std::endl;
     if (block_item->electblock_height() == 0) {
         // genesis block
         local_member_idx = 0;
@@ -511,7 +510,7 @@ void BlockManager::AddNewBlock(
             break;
         case pools::protobuf::kJoinElect:
             HandleJoinElectTx(thread_idx, *block_item, tx_list[i], local_member_idx, db_batch);
-            if (block.electblock_height() == 0) {
+            if (block_item->electblock_height() == 0) {
                 // genesis block
                 ++local_member_idx;
             }
