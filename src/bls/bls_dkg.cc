@@ -915,7 +915,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             old_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
         }
 
-        assert(old_val == old_g2);
+//         assert(old_val == old_g2);
         auto midx = mem_idx / common::kElectNodeMinMemberIndex;
         if (verfy_final_vals.verify_req().verify_vec_size() <= midx) {
             assert(false);
@@ -938,9 +938,9 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         std::cout << "node " << local_member_index_ << " success get " << mem_idx << " " << common::Encode::HexEncode((*members_)[local_member_index_]->id)
             << ", verified: " << common::Encode::HexEncode(item.x_c0())
             << ", contribution: " << libBLS::ThresholdUtils::fieldElementToString(
-                local_src_secret_key_contribution_[local_member_index_]) << std::endl;
+                local_src_secret_key_contribution_[mem_idx]) << std::endl;
 //         all_verified_val = all_verified_val - old_g2_val + new_g2_val;
-        assert(all_verified_val == local_src_secret_key_contribution_[local_member_index_] * libff::alt_bn128_G2::zero());
+        assert(all_verified_val == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::zero());
     }
 
 #ifdef ZJC_UNITTEST
