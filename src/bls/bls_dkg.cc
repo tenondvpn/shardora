@@ -39,7 +39,7 @@ void BlsDkg::Init(
     security_ = security;
     min_aggree_member_count_ = common::GetSignerCount(n);
     member_count_ = n;
-    dkg_instance_ = std::make_shared<libBLS::Dkg>(member_count_, min_aggree_member_count_);
+    dkg_instance_ = std::make_shared<libBLS::Dkg>(min_aggree_member_count_, member_count_);
     local_sec_key_ = local_sec_key;
     local_publick_key_ = local_publick_key;
     common_public_key_ = common_public_key;
