@@ -194,7 +194,12 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         storage->set_val_size(str.size());
 
         libBLS::Dkg tmpdkg(valid_t, valid_n);
-        auto local_sec_key = tmpdkg.SecretKeyShareCreate(secret_key_contribution[idx]);
+        std::vector<std::vector<libff::alt_bn128_Fr>> tmp_secret_key_contribution;
+        for (int32_t i = 0; i < prikeys.size(); ++i) {
+            tmp_secret_key_contribution.push_back(secret_key_contribution[idx][i]);
+        }
+
+        auto local_sec_key = tmpdkg.SecretKeyShareCreate(tmp_secret_key_contribution);
         auto local_publick_key = tmpdkg.GetPublicKeyFromSecretKey(local_sec_key);
         auto local_pk_ptr = std::make_shared<BLSPublicKey>(local_publick_key);
         auto mem_pk = prev_members->add_bls_pubkey();
