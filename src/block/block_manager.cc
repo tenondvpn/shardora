@@ -487,6 +487,13 @@ void BlockManager::AddNewBlock(
         return;
     }
 
+    auto local_member_idx = common::GlobalInfo::Instance()->config_local_member_idx();
+    std::cout << "elect height: " << block.electblock_height() << std::endl;
+    if (block_item->electblock_height() == 0) {
+        // genesis block
+        local_member_idx = 0;
+    }
+
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         switch (tx_list[i].step()) {
         case pools::protobuf::kRootCreateAddressCrossSharding:
@@ -503,7 +510,12 @@ void BlockManager::AddNewBlock(
             HandleElectTx(thread_idx, *block_item, tx_list[i], db_batch);
             break;
         case pools::protobuf::kJoinElect:
-            HandleJoinElectTx(thread_idx, *block_item, tx_list[i], db_batch);
+            HandleJoinElectTx(thread_idx, *block_item, tx_list[i], local_member_idx, db_batch);
+            if (block.electblock_height() == 0) {
+                // genesis block
+                ++local_member_idx;
+            }
+
             break;
         default:
             break;
@@ -524,19 +536,13 @@ void BlockManager::HandleJoinElectTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
+        uint32_t local_member_idx,
         db::DbWriteBatch& db_batch) {
     prefix_db_->SaveElectNodeStoke(
         tx.from(),
         block.electblock_height(),
         tx.balance(),
         db_batch);
-    auto local_member_idx = common::GlobalInfo::Instance()->config_local_member_idx();
-    std::cout << "elect height: " << block.electblock_height() << std::endl;
-    if (block.electblock_height() == 0) {
-        // genesis block
-        local_member_idx = 0;
-    }
-
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
             std::string val;
@@ -617,10 +623,6 @@ void BlockManager::HandleJoinElectTx(
             ZJC_DEBUG("success save verified g2: %u, %s",
                 local_member_idx,
                 common::Encode::HexEncode(tx.from()).c_str());
-            if (block.electblock_height() == 0) {
-                // genesis block
-                ++local_member_idx;
-            }
 
             break;
         }
