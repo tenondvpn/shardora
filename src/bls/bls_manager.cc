@@ -199,7 +199,7 @@ int BlsManager::Sign(
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
     std::string verify_hash;
-    assert(Verify(t, n, pkey.getPublicKey(), bn_sign, g1_hash, &verify_hash) == kBlsSuccess);
+    assert(Verify(t, n, *pkey.getPublicKey(), bn_sign, g1_hash, &verify_hash) == kBlsSuccess);
     return kBlsSuccess;
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
