@@ -30,6 +30,8 @@ message GenesisInitBlsInfo {
     optional bytes bls_enc_data = 4;
     optional bytes bls_hash = 5;
     optional JoinElectInfo join_info = 6;
+    optional bls.protobuf.LocalPolynomial local_poly = 7;
+    optional bytes prikey = 8;
 }
 
 message InitMessage {

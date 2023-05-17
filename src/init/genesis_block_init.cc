@@ -138,14 +138,15 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
     for (uint32_t idx = 0; idx < prikeys.size(); ++idx) {
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
         secptr->SetPrivateKey(prikeys[idx]);
-        bls::protobuf::LocalPolynomial local_poly;
+        init::protobuf::GenesisInitBlsInfo init_bls_info;
+        bls::protobuf::LocalPolynomial& local_poly = *init_bls_info.mutable_local_poly();
         for (uint32_t j = 0; j < polynomial[idx].size(); ++j) {
             local_poly.add_polynomial(common::Encode::HexDecode(
                 libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j])));
         }
 
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
-        init::protobuf::JoinElectInfo join_info;
+        init::protobuf::JoinElectInfo& join_info = *init_bls_info.mutable_join_info();
         join_info.set_member_idx(idx);
         join_info.set_shard_id(sharding_id);
         auto* req = join_info.mutable_g2_req();
@@ -212,14 +213,15 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         mem_pk->set_y_c1(pkeys_str->at(3));
         auto& common_g2_vec = verification_vector[idx];
         common_public_key = common_public_key + common_g2_vec[0];
+        init_bls_info.set_prikey(prikeys[idx]);
+        init_bls_info.set_bls_hash(check_hash);
+        init_bls_info.set_height(elect_height);
+        init_bls_info.set_shard_id(sharding_id);
+        init_bls_info.set_id(secptr->GetAddress());
         DumpLocalPrivateKey(
-            sharding_id,
-            elect_height,
-            secptr->GetAddress(),
             prikeys[idx],
             libBLS::ThresholdUtils::fieldElementToString(local_sec_key),
-            check_hash,
-            join_info,
+            init_bls_info,
             fd);
     }
 
@@ -235,13 +237,9 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
 }
 
 void GenesisBlockInit::DumpLocalPrivateKey(
-        uint32_t shard_netid,
-        uint64_t height,
-        const std::string& id,
+        init::protobuf::GenesisInitBlsInfo& init_bls_info,
         const std::string& prikey,
         const std::string& sec_key,
-        const std::string& check_hash,
-        const init::protobuf::JoinElectInfo& join_info,
         FILE* fd) {
     // encrypt by private key and save to db
     std::string enc_data;
@@ -254,13 +252,7 @@ void GenesisBlockInit::DumpLocalPrivateKey(
     }
 
     prefix_db_->SaveBlsPrikey(height, shard_netid, id, enc_data);
-    init::protobuf::GenesisInitBlsInfo init_bls_info;
-    *init_bls_info.mutable_join_info() = join_info;
-    init_bls_info.set_height(height);
-    init_bls_info.set_shard_id(shard_netid);
-    init_bls_info.set_id(id);
     init_bls_info.set_bls_enc_data(enc_data);
-    init_bls_info.set_bls_hash(check_hash);
     std::string val = common::Encode::HexEncode(init_bls_info.SerializeAsString()) + "\n";
     fputs(val.c_str(), fd);
 }
@@ -285,6 +277,9 @@ void GenesisBlockInit::ReloadBlsPri(uint32_t sharding_id) {
         prefix_db_->SaveBlsPrikey(height, sharding_id, id, bls_prikey);
         auto check_hash = init_info.bls_hash();
         auto str = init_info.join_info().SerializeAsString();
+        std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
+        secptr->SetPrivateKey(init_info.prikey());
+        prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), init_info.local_poly());
         prefix_db_->SaveTemporaryKv(check_hash, str);
         std::cout << "save temp data success: " << common::Encode::HexEncode(check_hash) << std::endl;
         ZJC_DEBUG("success add bls prikey: %lu, %u, %s",

@@ -69,13 +69,9 @@ private:
         const std::vector<std::string>& prikeys,
         elect::protobuf::PrevMembers* prev_members);
     void DumpLocalPrivateKey(
-        uint32_t shard_netid,
-        uint64_t height,
-        const std::string& id,
+        init::protobuf::GenesisInitBlsInfo& init_bls_info,
         const std::string& prikey,
         const std::string& sec_key,
-        const std::string& check_hash,
-        const init::protobuf::JoinElectInfo& join_info,
         FILE* fd);
     void ReloadBlsPri(uint32_t sharding_id);
     void CreateDefaultAccount();
