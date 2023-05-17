@@ -940,9 +940,9 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             << ", verified: " << common::Encode::HexEncode(item.x_c0())
             << ", polynomial: " << common::Encode::HexEncode(local_poly.polynomial(0))
             << ", contribution: " << libBLS::ThresholdUtils::fieldElementToString(
-                local_src_secret_key_contribution_[mem_idx]) << std::endl;
+                local_src_secret_key_contribution_[local_member_index_]) << std::endl;
 //         all_verified_val = all_verified_val - old_g2_val + new_g2_val;
-        assert(all_verified_val == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::zero());
+        assert(all_verified_val == local_src_secret_key_contribution_[local_member_index_] * libff::alt_bn128_G2::zero());
     }
 
 #ifdef ZJC_UNITTEST
