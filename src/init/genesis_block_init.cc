@@ -222,7 +222,6 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
             init_bls_info,
             prikeys[idx],
             libBLS::ThresholdUtils::fieldElementToString(local_sec_key),
-            init_bls_info,
             fd);
     }
 
