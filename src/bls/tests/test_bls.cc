@@ -578,8 +578,11 @@ TEST_F(TestBls, AllSuccess) {
         auto* req = join_info.mutable_g2_req();
         auto g2_vec = dkg_instance.VerificationVector(polynomial[idx]);
         auto contributions = dkg_instance.SecretKeyContribution(polynomial[idx]);
+        auto contributions1 = dkg_instance.SecretKeyContribution(polynomial[idx]);
         for (uint32_t i = 0; i < contributions.size(); ++i) {
             ASSERT_TRUE(dkg_instance.Verification(i, contributions[i], g2_vec));
+            ASSERT_TRUE(dkg_instance.Verification(i, contributions1[i], g2_vec));
+            ASSERT_TRUE(contributions[i] == contributions1[i]);
         }
 
         std::vector<libff::alt_bn128_G2> verify_g2_vec;
