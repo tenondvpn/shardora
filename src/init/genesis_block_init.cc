@@ -241,7 +241,7 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
                 libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j])));
         }
 
-        std::cout << "save polynomial: " << common::Encode::HexEncode(secptr->GetAddress()) << ", " << common::Encode::HexEncode(init_info.local_poly().polynomial(0)) << std::endl;
+        std::cout << "save polynomial: " << common::Encode::HexEncode(secptr->GetAddress()) << ", " << common::Encode::HexEncode(local_poly.polynomial(0)) << std::endl;
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
         init::protobuf::JoinElectInfo& join_info = *init_bls_info.mutable_join_info();
         join_info.set_member_idx(idx);
@@ -340,7 +340,7 @@ int GenesisBlockInit::CreateJoinElectTx(
                 libBLS::ThresholdUtils::fieldElementToString(polynomial[j])));
         }
 
-        std::cout << "save polynomial: " << common::Encode::HexEncode(secptr->GetAddress()) << ", " << common::Encode::HexEncode(init_info.local_poly().polynomial(0)) << std::endl;
+        std::cout << "save polynomial: " << common::Encode::HexEncode(secptr->GetAddress()) << ", " << common::Encode::HexEncode(local_poly.polynomial(0)) << std::endl;
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
     }
 
