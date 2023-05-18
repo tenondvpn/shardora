@@ -1010,7 +1010,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
     std::vector<std::shared_ptr<security::Security>> secs;
     for (uint32_t i = 0; i < prikeys.size(); ++i) {
-        secs.push_back(std::make_shared<security::Security>());
+        secs.push_back(std::make_shared<security::Ecdsa>());
         secs[i]->SetPrivateKey(prikeys[i]);
     }
 
