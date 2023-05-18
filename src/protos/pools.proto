@@ -65,9 +65,10 @@ message PoolStatisticItem {
 }
 
 message JoinElectNode {
-    optional bytes id = 1;
+    optional bytes pubkey = 1;
     optional uint64 stoke = 2;
     optional uint32 shard = 3;
+    optional int32 elect_pos = 4;
 }
 
 message CrossShardStatisticItem {

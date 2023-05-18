@@ -144,7 +144,8 @@ int NetworkInit::Init(int argc, char** argv) {
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3);
-    shard_statistic_ = std::make_shared<pools::ShardStatistic>(elect_mgr_, db_, pools_mgr_);
+    shard_statistic_ = std::make_shared<pools::ShardStatistic>(
+        elect_mgr_, db_, security_, pools_mgr_);
     block_mgr_->Init(
         account_mgr_,
         db_,

@@ -57,12 +57,16 @@ void ShardStatistic::OnNewBlock(const block::protobuf::Block& block) {
             auto iter = added_heights_[block.pool_index()].find(
                     pool_consensus_heihgts_[block.pool_index()] + 1);
             if (iter == added_heights_[block.pool_index()].end()) {
-                ZJC_DEBUG("failed find pool: %u, height: %lu, max height: %lu, cons height: %lu", block.pool_index(), pool_consensus_heihgts_[block.pool_index()] + 1, pool_max_heihgts_[block.pool_index()], pool_consensus_heihgts_[block.pool_index()]);
+                ZJC_DEBUG("failed find pool: %u, height: %lu, max height: %lu, cons height: %lu",
+                    block.pool_index(), pool_consensus_heihgts_[block.pool_index()] + 1,
+                    pool_max_heihgts_[block.pool_index()], pool_consensus_heihgts_[block.pool_index()]);
                 break;
             }
 
             ++pool_consensus_heihgts_[block.pool_index()];
-            ZJC_DEBUG("success find pool: %u, height: %lu, max height: %lu, cons height: %lu", block.pool_index(), pool_consensus_heihgts_[block.pool_index()] + 1, pool_max_heihgts_[block.pool_index()], pool_consensus_heihgts_[block.pool_index()]);
+            ZJC_DEBUG("success find pool: %u, height: %lu, max height: %lu, cons height: %lu",
+                block.pool_index(), pool_consensus_heihgts_[block.pool_index()] + 1,
+                pool_max_heihgts_[block.pool_index()], pool_consensus_heihgts_[block.pool_index()]);
             added_heights_[block.pool_index()].erase(iter);
         }
     }
@@ -707,11 +711,19 @@ int ShardStatistic::StatisticWithHeights(
             }
         }
 
-        join_elect_node->set_id(pubkey);
+        auto addr_info = prefix_db_->GetAddressInfo(secptr_->GetAddress(pubkey));
+        if (addr_info == nullptr ||
+                addr_info->elect_pos() < 0 ||
+                addr_info->elect_pos() >= common::GlobalInfo::Instance()->each_shard_max_members()) {
+            continue;
+        }
+
+        join_elect_node->set_pubkey(pubkey);
         auto iter = r_eiter->second.find(elect_nodes[i]);
         auto shard_iter = r_siter->second.find(elect_nodes[i]);
         join_elect_node->set_stoke(iter->second);
         join_elect_node->set_shard(shard_iter->second);
+        join_elect_node->set_elect_pos(addr_info->elect_pos());
         str_for_hash.append(elect_nodes[i]);
         str_for_hash.append((char*)&iter->second, sizeof(iter->second));
         str_for_hash.append((char*)&shard_iter->second, sizeof(shard_iter->second));
@@ -727,8 +739,16 @@ int ShardStatistic::StatisticWithHeights(
             }
 
             auto join_elect_node = elect_statistic.add_join_elect_nodes();
-            join_elect_node->set_id((*prepare_members)[i]->pubkey);
+            join_elect_node->set_pubkey((*prepare_members)[i]->pubkey);
+            auto addr_info = prefix_db_->GetAddressInfo(secptr_->GetAddress((*prepare_members)[i]->pubkey));
+            if (addr_info == nullptr ||
+                    addr_info->elect_pos() < 0 ||
+                    addr_info->elect_pos() >= common::GlobalInfo::Instance()->each_shard_max_members()) {
+                continue;
+            }
+
             uint64_t stoke = 0;
+            join_elect_node->set_elect_pos(addr_info->elect_pos());
             join_elect_node->set_stoke(stoke);
             uint32_t shard = common::GlobalInfo::Instance()->network_id();
             join_elect_node->set_shard(shard);

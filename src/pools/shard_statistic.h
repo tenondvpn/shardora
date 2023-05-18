@@ -13,6 +13,7 @@
 #include "pools/tx_utils.h"
 #include "protos/block.pb.h"
 #include "protos/prefix_db.h"
+#include "security/security.h"
 
 namespace zjchain {
 
@@ -28,8 +29,9 @@ public:
     ShardStatistic(
             std::shared_ptr<elect::ElectManager>& elect_mgr,
             std::shared_ptr<db::Db>& db,
+            std::shared_ptr<security::Security>& sec_ptr,
             std::shared_ptr<pools::TxPoolManager>& pools_mgr)
-            : elect_mgr_(elect_mgr), pools_mgr_(pools_mgr) {
+            : elect_mgr_(elect_mgr), secptr_(sec_ptr), pools_mgr_(pools_mgr) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     }
 
@@ -88,6 +90,7 @@ private:
     uint64_t now_vss_random_ = 0;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     uint64_t prepare_elect_height_ = 0;
+    std::shared_ptr<security::Security> secptr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ShardStatistic);
 };
