@@ -555,6 +555,7 @@ void BlockManager::HandleJoinElectTx(
             uint32_t mem_idx = join_info.member_idx();
             str_for_hash.append((char*)&shard_id, sizeof(shard_id));
             str_for_hash.append((char*)&mem_idx, sizeof(mem_idx));
+            auto local_member_index = common::GlobalInfo::Instance()->config_local_member_idx();
             for (int32_t i = 0; i < join_info.g2_req().verify_vec_size(); ++i) {
                 auto& item = join_info.g2_req().verify_vec(i);
                 auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
@@ -569,7 +570,7 @@ void BlockManager::HandleJoinElectTx(
                 auto g2 = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
                 if (i < 3) {
                     for (int32_t j = 0; j < all_pos_count; ++j) {
-                        auto midx = join_info.member_idx() + j * common::kElectNodeMinMemberIndex;
+                        auto midx = local_member_index + j * common::kElectNodeMinMemberIndex;
                         verify_g2s[j] = verify_g2s[j] + power(libff::alt_bn128_Fr(midx + 1), i) * g2;
                     }
                 }
@@ -606,7 +607,6 @@ void BlockManager::HandleJoinElectTx(
 
             verfy_final_vals.set_src_hash(check_hash);
             auto verified_val = verfy_final_vals.SerializeAsString();
-            auto local_member_index = common::GlobalInfo::Instance()->config_local_member_idx();
             prefix_db_->SaveVerifiedG2s(local_member_index, tx.from(), verfy_final_vals, db_batch);
             ZJC_DEBUG("success save verified g2: %u, %s",
                 local_member_index,

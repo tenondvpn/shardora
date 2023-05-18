@@ -63,7 +63,6 @@ private:
         const std::vector<dht::NodePtr>& genesis_nodes);
     std::string GetValidPoolBaseAddr(uint32_t pool_index);
     int CreateBlsGenesisKeys(
-        google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>* tx_list,
         uint64_t elect_height,
         uint32_t sharding_id,
         const std::vector<std::string>& prikeys,
@@ -78,7 +77,11 @@ private:
     void AddBlockItemToCache(
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);
-
+    int CreateJoinElectTx(
+        uint32_t sharding_id,
+        uint32_t idx,
+        const std::string& prikey,
+        block::protobuf::BlockTx* join_elect_tx_info);
     std::map<uint32_t, std::string> pool_index_map_;
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;
     common::Bitmap root_bitmap_{ common::kEachShardMaxNodeCount };
