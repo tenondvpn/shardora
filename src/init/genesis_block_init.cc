@@ -731,7 +731,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
                 auto local_member_index = common::GlobalInfo::Instance()->config_local_member_idx();
                 prefix_db_->SaveVerifiedG2s(idx, secptr->GetAddress(), verfy_final_vals, db_batch);
                 ZJC_DEBUG("success save verified g2: %u, %s",
-                    i,
+                    idx,
                     common::Encode::HexEncode(secptr->GetAddress()).c_str());
             }
         }
@@ -759,7 +759,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
                 auto local_member_index = common::GlobalInfo::Instance()->config_local_member_idx();
                 prefix_db_->SaveVerifiedG2s(idx, secptr->GetAddress(), verfy_final_vals, db_batch);
                 ZJC_DEBUG("success save verified g2: %u, %s",
-                    i,
+                    idx,
                     common::Encode::HexEncode(secptr->GetAddress()).c_str());
             }
         }
