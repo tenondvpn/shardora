@@ -334,7 +334,7 @@ void AccountManager::HandleJoinElectTx(
             common::Encode::HexEncode(tx.from()).c_str());
         account_info = std::make_shared<address::protobuf::AddressInfo>();
         account_info->set_pool_index(block.pool_index());
-        account_info->set_addr(to_txs.tos(i).to());
+        account_info->set_addr(tx.from());
         account_info->set_type(address::protobuf::kNormal);
         account_info->set_sharding_id(block.network_id());
         account_info->set_latest_height(block.height());
