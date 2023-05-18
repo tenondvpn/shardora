@@ -172,6 +172,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
                 assert(old_g2_val == new_g2_val);
                 auto old_all = all_verified_val;
                 all_verified_val = all_verified_val - old_g2_val + new_g2_val;
+                assert(old_all == contribution[mem_idx] * libff::alt_bn128_G2::one());
                 assert(all_verified_val == contribution[mem_idx] * libff::alt_bn128_G2::one());
             }
         }
