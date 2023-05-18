@@ -298,6 +298,61 @@ void AccountManager::HandleRootCreateAddressTx(
         block.pool_index());
 }
 
+
+void AccountManager::HandleJoinElectTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
+    init::protobuf::JoinElectInfo join_info;
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
+            std::string val;
+            if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+                ZJC_DEBUG("handle local to tx failed get val hash error: %s",
+                    common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
+                return;
+            }
+
+            if (!join_info.ParseFromString(val)) {
+                assert(false);
+                break;
+            }
+
+            break;
+        }
+    }
+
+    if (!join_info.has_member_idx()) {
+        ZJC_WARN("get local tos info failed!");
+        return;
+    }
+
+    auto account_info = GetAccountInfo(thread_idx, tx.from());
+    if (account_info == nullptr) {
+        ZJC_INFO("get address info failed create new address to this shard: %s",
+            common::Encode::HexEncode(tx.from()).c_str());
+        account_info = std::make_shared<address::protobuf::AddressInfo>();
+        account_info->set_pool_index(block.pool_index());
+        account_info->set_addr(to_txs.tos(i).to());
+        account_info->set_type(address::protobuf::kNormal);
+        account_info->set_sharding_id(block.network_id());
+        account_info->set_latest_height(block.height());
+        account_info->set_balance(tx.balance());
+        account_info->set_elect_pos(join_info.member_idx());
+        address_map_[thread_idx].add(tx.from(), account_info);
+        prefix_db_->AddAddressInfo(tx.from(), *account_info);
+    } else {
+        account_info->set_latest_height(block.height());
+        account_info->set_balance(tx.balance());
+        account_info->set_elect_pos(join_info.member_idx());
+        prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
+    }
+
+    ZJC_DEBUG("join elect to address new elect pos %s: %lu",
+        common::Encode::HexEncode(tx.from()).c_str(), join_info.member_idx());
+}
+
 void AccountManager::NewBlockWithTx(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
@@ -323,6 +378,9 @@ void AccountManager::NewBlockWithTx(
         break;
     case pools::protobuf::kContractExcute:
         HandleContractExecuteTx(thread_idx, *block_item, tx, db_batch);
+        break;
+    case pools::protobuf::kJoinElect:
+        HandleJoinElectTx(thread_idx, *block_item, tx, db_batch);
         break;
     default:
         break;

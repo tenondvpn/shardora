@@ -84,7 +84,11 @@ private:
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
     void CreatePoolsAddressInfo();
-
+    void HandleJoinElectTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
     static const uint64_t kCheckMissingHeightPeriod = 3000000llu;
     static const uint64_t kFushTreeToDbPeriod = 6000000llu;
     static const uint64_t kRefreshPoolMaxHeightPeriod = 4000000llu;

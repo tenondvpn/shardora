@@ -1001,6 +1001,7 @@ void NetworkInit::AddBlockItemToCache(
         switch (tx_list[i].step()) {
         case pools::protobuf::kNormalFrom:
         case pools::protobuf::kRootCreateAddress:
+        case pools::protobuf::kJoinElect:
             account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             break;
         case pools::protobuf::kConsensusLocalTos:
