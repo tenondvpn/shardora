@@ -15,6 +15,7 @@
 #include "db/db.h"
 #include "dht/dht_utils.h"
 #include "protos/block.pb.h"
+#include "protos/prefix_db.h"
 
 namespace zjchain {
 
