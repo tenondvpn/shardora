@@ -115,7 +115,7 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         secptr->SetPrivateKey(prikeys[i]);
         bls::protobuf::LocalPolynomial local_poly;
         if (!prefix_db_->GetLocalPolynomial(secptr, secptr->GetAddress(), &local_poly)) {
-            ZJC_FATAL("get member %d polynomial failed!",
+            ZJC_FATAL("get member %d %s polynomial failed!",
                 i, common::Encode::HexEncode(secptr->GetAddress()).c_str());
             return kInitError;
         }
