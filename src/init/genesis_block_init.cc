@@ -242,16 +242,24 @@ int GenesisBlockInit::CreateJoinElectTx(
     static const uint32_t n = common::GlobalInfo::Instance()->each_shard_max_members();
     static const uint32_t t = common::GetSignerCount(n);
     libBLS::Dkg dkg_instance = libBLS::Dkg(t, n);
-    std::vector<libff::alt_bn128_Fr> polynomial = dkg_instance.GeneratePolynomial();
     std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
     secptr->SetPrivateKey(prikey);
     bls::protobuf::LocalPolynomial local_poly;
-    for (uint32_t j = 0; j < polynomial.size(); ++j) {
-        local_poly.add_polynomial(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(polynomial[j])));
+    std::vector<libff::alt_bn128_Fr> polynomial;
+    if (prefix_db_->GetLocalPolynomial(secptr, secptr->GetAddress(), &local_poly)) {
+        for (int32_t i = 0; i < local_poly.polynomial_size(); ++i) {
+            polynomial.push_back(libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)).c_str()));
+        }
+    } else {
+        polynomial = dkg_instance.GeneratePolynomial();
+        for (uint32_t j = 0; j < polynomial.size(); ++j) {
+            local_poly.add_polynomial(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(polynomial[j])));
+        }
+
+        prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
     }
 
-    prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
     init::protobuf::JoinElectInfo join_info;
     join_info.set_member_idx(idx);
     join_info.set_shard_id(sharding_id);
@@ -285,20 +293,21 @@ int GenesisBlockInit::CreateJoinElectTx(
     auto check_hash = common::Hash::keccak256(str_for_hash);
     auto str = join_info.SerializeAsString();
     prefix_db_->SaveTemporaryKv(check_hash, str);
-    auto tenon_block = std::make_shared<block::protobuf::Block>();
-    auto tx_list = tenon_block->mutable_tx_list();
-    join_elect_tx_info->set_step(pools::protobuf::kJoinElect);
-    join_elect_tx_info->set_from(secptr->GetAddress());
-    join_elect_tx_info->set_to("");
-    join_elect_tx_info->set_amount(0);
-    join_elect_tx_info->set_gas_limit(0);
-    join_elect_tx_info->set_gas_used(0);
-    join_elect_tx_info->set_balance(0);
-    join_elect_tx_info->set_status(0);
-    auto storage = join_elect_tx_info->add_storages();
-    storage->set_key(protos::kJoinElectVerifyG2);
-    storage->set_val_hash(check_hash);
-    storage->set_val_size(str.size());
+    if (join_elect_tx_info != nullptr) {
+        join_elect_tx_info->set_step(pools::protobuf::kJoinElect);
+        join_elect_tx_info->set_from(secptr->GetAddress());
+        join_elect_tx_info->set_to("");
+        join_elect_tx_info->set_amount(0);
+        join_elect_tx_info->set_gas_limit(0);
+        join_elect_tx_info->set_gas_used(0);
+        join_elect_tx_info->set_balance(0);
+        join_elect_tx_info->set_status(0);
+        auto storage = join_elect_tx_info->add_storages();
+        storage->set_key(protos::kJoinElectVerifyG2);
+        storage->set_val_hash(check_hash);
+        storage->set_val_size(str.size());
+    }
+
     return kInitSuccess;
 }
 
@@ -793,17 +802,30 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     uint64_t all_balance = 0llu;
     pools::protobuf::ToTxHeights init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
-    std::vector<std::string> prikeys;
-    prikeys.push_back(common::Encode::HexDecode(
+    std::vector<std::string> root_prikeys;
+    root_prikeys.push_back(common::Encode::HexDecode(
         "67dfdd4d49509691369225e9059934675dea440d123aa8514441aa6788354016"));
-    prikeys.push_back(common::Encode::HexDecode(
+    root_prikeys.push_back(common::Encode::HexDecode(
         "356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe"));
-    prikeys.push_back(common::Encode::HexDecode(
+    root_prikeys.push_back(common::Encode::HexDecode(
         "a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee"));
-    std::vector<std::shared_ptr<security::Security>> secs;
-    for (uint32_t i = 0; i < prikeys.size(); ++i) {
-        secs.push_back(std::make_shared<security::Ecdsa>());
-        secs[i]->SetPrivateKey(prikeys[i]);
+    std::vector<std::shared_ptr<security::Security>> root_secs;
+    for (uint32_t i = 0; i < root_prikeys.size(); ++i) {
+        root_secs.push_back(std::make_shared<security::Ecdsa>());
+        root_secs[i]->SetPrivateKey(root_prikeys[i]);
+    }
+
+    std::vector<std::string> shard_prikeys;
+    shard_prikeys.push_back(common::Encode::HexDecode(
+        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"));
+    shard_prikeys.push_back(common::Encode::HexDecode(
+        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"));
+    shard_prikeys.push_back(common::Encode::HexDecode(
+        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
+    std::vector<std::shared_ptr<security::Security>> shard_secs;
+    for (uint32_t i = 0; i < shard_prikeys.size(); ++i) {
+        shard_secs.push_back(std::make_shared<security::Ecdsa>());
+        shard_secs[i]->SetPrivateKey(shard_prikeys[i]);
     }
     
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
@@ -856,10 +878,16 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
         }
 
-        for (uint32_t member_idx = 0; member_idx < secs.size(); ++member_idx) {
-            if (common::GetAddressPoolIndex(secs[member_idx]->GetAddress()) == i) {
+        for (uint32_t member_idx = 0; member_idx < root_secs.size(); ++member_idx) {
+            if (common::GetAddressPoolIndex(root_secs[member_idx]->GetAddress()) == i) {
                 auto tx_info = tx_list->Add();
-                CreateJoinElectTx(network::kRootCongressNetworkId, member_idx, prikeys[member_idx], tx_info);
+                CreateJoinElectTx(network::kRootCongressNetworkId, member_idx, root_prikeys[member_idx], tx_info);
+            }
+        }
+
+        for (uint32_t member_idx = 0; member_idx < shard_secs.size(); ++member_idx) {
+            if (common::GetAddressPoolIndex(shard_secs[member_idx]->GetAddress()) == i) {
+                CreateJoinElectTx(network::kRootCongressNetworkId, member_idx, shard_prikeys[member_idx], nullptr);
             }
         }
 
