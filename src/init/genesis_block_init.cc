@@ -113,6 +113,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
                 if (!prefix_db_->GetVerifiedG2s(
                         mem_idx,
                         secptr->GetAddress(),
+                        valid_t,
                         &verfy_final_vals)) {
                     assert(false);
                     continue;

@@ -462,6 +462,7 @@ bool BlsDkg::VerifySekkeyValid(
     if (!prefix_db_->GetVerifiedG2s(
             local_member_index_,
             (*members_)[peer_index]->id,
+            min_aggree_member_count_,
             &verfy_final_vals)) {
         ZJC_WARN("failed get verified g2: %u, %s",
             local_member_index_,
@@ -858,6 +859,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         if (!prefix_db_->GetVerifiedG2s(
                 mem_idx,
                 (*members_)[local_member_index_]->id,
+                valid_t,
                 &verfy_final_vals)) {
             assert(false);
             continue;

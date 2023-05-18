@@ -661,7 +661,7 @@ TEST_F(TestBls, AllSuccess) {
 
             verfy_final_vals.set_src_hash(check_hash);
             auto verified_val = verfy_final_vals.SerializeAsString();
-            prefix_db->SaveVerifiedG2s(tmp_idx, id, verfy_final_vals);
+            prefix_db->SaveVerifiedG2s(tmp_idx, id, verify_g2s.size(), verfy_final_vals);
 // 
 //             auto old_g2 = polynomial[tmp_idx][0] * libff::alt_bn128_G2::one();
 //             polynomial[tmp_idx][0] = libff::alt_bn128_Fr::random_element();

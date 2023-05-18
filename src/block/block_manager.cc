@@ -548,7 +548,6 @@ void BlockManager::HandleJoinElectTx(
             auto all_pos_count = 1;// common::GlobalInfo::Instance()->each_shard_max_members() /
              //   common::kElectNodeMinMemberIndex + 1;
             std::vector<libff::alt_bn128_G2> verify_g2s(all_pos_count, libff::alt_bn128_G2::zero());
-            bls::protobuf::JoinElectBlsInfo verfy_final_vals;
             std::string str_for_hash;
             str_for_hash.reserve(verify_g2s.size() * 4 * 64 + 8);
             uint32_t shard_id = join_info.shard_id();
@@ -568,12 +567,37 @@ void BlockManager::HandleJoinElectTx(
                 auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
                 auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
                 auto g2 = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-                if (i < 2) {
-                    for (int32_t j = 0; j < all_pos_count; ++j) {
-                        auto midx = local_member_index + j * common::kElectNodeMinMemberIndex;
-                        verify_g2s[j] = verify_g2s[j] + power(libff::alt_bn128_Fr(midx + 1), i) * g2;
-                    }
+                bls::protobuf::JoinElectBlsInfo verfy_final_vals;
+                for (int32_t j = 0; j < all_pos_count; ++j) {
+                    auto midx = local_member_index + j * common::kElectNodeMinMemberIndex;
+                    verify_g2s[j] = verify_g2s[j] + power(libff::alt_bn128_Fr(midx + 1), i) * g2;
                 }
+
+                for (uint32_t i = 0; i < verify_g2s.size(); ++i) {
+                    bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verify_req()->add_verify_vec();
+                    verify_item.set_x_c0(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c0)));
+                    verify_item.set_x_c1(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c1)));
+                    verify_item.set_y_c0(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c0)));
+                    verify_item.set_y_c1(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c1)));
+                    verify_item.set_z_c0(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c0)));
+                    verify_item.set_z_c1(common::Encode::HexDecode(
+                        libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c1)));
+                }
+
+                verfy_final_vals.set_src_hash(check_hash);
+                auto verified_val = verfy_final_vals.SerializeAsString();
+                prefix_db_->SaveVerifiedG2s(local_member_index, tx.from(), i + 1, verfy_final_vals, db_batch);
+                ZJC_DEBUG("success save verified g2: %u, peer: %d, t: %d, %s, %s",
+                    local_member_index,
+                    join_info.member_idx(),
+                    i + 1,
+                    common::Encode::HexEncode(tx.from()).c_str(),
+                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[0].X.c0).c_str());
 
                 str_for_hash.append(item.x_c0());
                 str_for_hash.append(item.x_c1());
@@ -589,30 +613,7 @@ void BlockManager::HandleJoinElectTx(
                 break;
             }
 
-            for (uint32_t i = 0; i < verify_g2s.size(); ++i) {
-                bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verify_req()->add_verify_vec();
-                verify_item.set_x_c0(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c0)));
-                verify_item.set_x_c1(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c1)));
-                verify_item.set_y_c0(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c0)));
-                verify_item.set_y_c1(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c1)));
-                verify_item.set_z_c0(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c0)));
-                verify_item.set_z_c1(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c1)));
-            }
-
-            verfy_final_vals.set_src_hash(check_hash);
-            auto verified_val = verfy_final_vals.SerializeAsString();
-            prefix_db_->SaveVerifiedG2s(local_member_index, tx.from(), verfy_final_vals, db_batch);
-            ZJC_DEBUG("success save verified g2: %u, peer: %d, %s, %s",
-                local_member_index,
-                join_info.member_idx(),
-                common::Encode::HexEncode(tx.from()).c_str(),
-                libBLS::ThresholdUtils::fieldElementToString(verify_g2s[0].X.c0).c_str());
+            
             break;
         }
     }

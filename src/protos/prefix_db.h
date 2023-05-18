@@ -1194,12 +1194,14 @@ public:
     void SaveVerifiedG2s(
             uint32_t local_member_idx,
             const std::string& id,
+            uint32_t valid_t,
             const bls::protobuf::JoinElectBlsInfo& verfy_final_vals,
             db::DbWriteBatch& db_batch) {
         std::string key;
         key.reserve(128);
         key.append(kLocalVerifiedG2Prefix);
         key.append((char*)&local_member_idx, sizeof(local_member_idx));
+        key.append((char*)&valid_t, sizeof(valid_t));
         key.append(id);
         std::string val = verfy_final_vals.SerializeAsString();
         db_batch.Put(key, val);
@@ -1208,11 +1210,13 @@ public:
     void SaveVerifiedG2s(
             uint32_t local_member_idx,
             const std::string& id,
+            uint32_t valid_t,
             const bls::protobuf::JoinElectBlsInfo& verfy_final_vals) {
         std::string key;
         key.reserve(128);
         key.append(kLocalVerifiedG2Prefix);
         key.append((char*)&local_member_idx, sizeof(local_member_idx));
+        key.append((char*)&valid_t, sizeof(valid_t));
         key.append(id);
         std::string val = verfy_final_vals.SerializeAsString();
         auto st = db_->Put(key, val);
@@ -1224,11 +1228,13 @@ public:
     bool GetVerifiedG2s(
             uint32_t local_member_idx,
             const std::string& id,
+            uint32_t valid_t,
             bls::protobuf::JoinElectBlsInfo* verfy_final_vals) {
         std::string key;
         key.reserve(128);
         key.append(kLocalVerifiedG2Prefix);
         key.append((char*)&local_member_idx, sizeof(local_member_idx));
+        key.append((char*)&valid_t, sizeof(valid_t));
         key.append(id);
         std::string val;
         auto st = db_->Get(key, &val);
