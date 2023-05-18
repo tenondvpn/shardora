@@ -178,7 +178,6 @@ TEST_F(TestBls, ContributionSignAndVerify) {
             libff::alt_bn128_G2::zero(),
             libff::alt_bn128_G2::zero(),
             db_ptr);
-        dkg[i].dkg_instance_ = std::make_shared<libBLS::Dkg>(t, n);
         dkg[i].local_member_index_ = i;
         dkg[i].CreateContribution(n, valid_t);
     }
