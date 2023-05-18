@@ -3,8 +3,8 @@
 #include <cmath>
 #include <vector>
 
-// #define private public
-// #define protected public
+#define private public
+#define protected public
 #include "common/encode.h"
 #include "common/global_info.h"
 #include "common/random.h"
@@ -798,7 +798,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         "a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee"));
     std::vector<std::shared_ptr<security::Security>> secs;
     for (uint32_t i = 0; i < prikeys.size(); ++i) {
-        secs.push_back(std::make_shared<security::Security>());
+        secs.push_back(std::make_shared<security::Ecdsa>());
         secs[i]->SetPrivateKey(prikeys[i]);
     }
     
