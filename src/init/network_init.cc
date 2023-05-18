@@ -1180,7 +1180,7 @@ void NetworkInit::HandleElectionBlock(
     bft_mgr_->OnNewElectBlock(sharding_id, elect_height, members, common_pk, sec_key);
     block_mgr_->OnNewElectBlock(sharding_id, members);
     vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
-    bls_mgr_->OnNewElectBlock(sharding_id, members, common_pk, block->height(), elect_block);
+    bls_mgr_->OnNewElectBlock(sharding_id, block->height(), members, common_pk, elect_block);
     pools_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     shard_statistic_->OnNewElectBlock(sharding_id, block->height(), elect_height);
     network::UniversalManager::Instance()->OnNewElectBlock(sharding_id, elect_height, members);

@@ -84,6 +84,16 @@ void BlsDkg::OnNewElectionBlock(
         return;
     }
 
+    if (common_public_key_ == common_public_key) {
+        bls::protobuf::LocalPolynomial local_poly;
+        if (prefix_db_->GetLocalPolynomial(security_, security_->GetAddress(), &local_poly, true)) {
+            prefix_db_->GetLocalPolynomial(security_, security_->GetAddress(), local_poly);
+            ZJC_INFO("reset local polinomial success!");
+        } else {
+            ZJC_FATAL("get local polinomial failed!");
+        }
+    }
+
     memset(valid_swaped_keys_, 0, sizeof(valid_swaped_keys_));
     memset(has_swaped_keys_, 0, sizeof(has_swaped_keys_));
     finished_ = false;
