@@ -367,13 +367,13 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
 
                     for (int32_t node_idx = 0; node_idx < elect_statistic.join_elect_nodes_size(); ++node_idx) {
                         if (elect_statistic.join_elect_nodes(i).shard() == network::kRootCongressNetworkId) {
-                            statistic_info_ptr->node_stoke_map[elect_statistic.join_elect_nodes(i).id()] =
+                            statistic_info_ptr->node_stoke_map[elect_statistic.join_elect_nodes(i).pubkey()] =
                                 elect_statistic.join_elect_nodes(i).stoke();
                             ZJC_DEBUG("root sharding kJoinElect add new elect node: %s, stoke: %lu, elect height: %lu",
-                                common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).id()).c_str(),
+                                common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).pubkey()).c_str(),
                                 elect_statistic.join_elect_nodes(i).stoke(),
                                 block.electblock_height());
-                            statistic_info_ptr->node_shard_map[elect_statistic.join_elect_nodes(i).id()] = network::kRootCongressNetworkId;
+                            statistic_info_ptr->node_shard_map[elect_statistic.join_elect_nodes(i).pubkey()] = network::kRootCongressNetworkId;
                         }
                     }
                 }
