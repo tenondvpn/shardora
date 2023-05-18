@@ -3,8 +3,8 @@
 #include <cmath>
 #include <vector>
 
-#define private public
-#define protected public
+// #define private public
+// #define protected public
 #include "common/encode.h"
 #include "common/global_info.h"
 #include "common/random.h"
