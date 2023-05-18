@@ -1054,24 +1054,28 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             genesis_account_balance += common::kGenesisShardingNodesMaxZjc % valid_ids.size();
         }
 
-        auto pool_index = common::GetAddressPoolIndex(address);
+
         {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
             tx_info->set_from("");
             tx_info->set_to(address);
-            tx_info->set_amount(genesis_account_balance);
+            tx_info->set_amount(0);
             tx_info->set_balance(genesis_account_balance);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
         }
 
+        auto pool_index = common::GetAddressPoolIndex(address);
         for (uint32_t member_idx = 0; member_idx < secs.size(); ++member_idx) {
             if (common::GetAddressPoolIndex(secs[member_idx]->GetAddress()) == pool_index) {
                 auto tx_info = tx_list->Add();
                 CreateJoinElectTx(net_id, member_idx, prikeys[member_idx], tx_info);
+                tx_info->set_amount(0);
+                tx_info->set_balance(genesis_account_balance);
             }
         }
+
 
         tenon_block->set_prehash(pool_prev_hash_map[pool_index]);
         tenon_block->set_version(common::kTransactionVersion);
