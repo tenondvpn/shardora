@@ -487,12 +487,6 @@ void BlockManager::AddNewBlock(
         return;
     }
 
-    auto local_member_idx = common::GlobalInfo::Instance()->config_local_member_idx();
-    if (block_item->electblock_height() == 0) {
-        // genesis block
-        local_member_idx = 0;
-    }
-
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         switch (tx_list[i].step()) {
         case pools::protobuf::kRootCreateAddressCrossSharding:
@@ -509,12 +503,7 @@ void BlockManager::AddNewBlock(
             HandleElectTx(thread_idx, *block_item, tx_list[i], db_batch);
             break;
         case pools::protobuf::kJoinElect:
-            HandleJoinElectTx(thread_idx, *block_item, tx_list[i], local_member_idx, db_batch);
-            if (block_item->electblock_height() == 0) {
-                // genesis block
-                ++local_member_idx;
-            }
-
+            HandleJoinElectTx(thread_idx, *block_item, tx_list[i], db_batch);
             break;
         default:
             break;
@@ -535,7 +524,6 @@ void BlockManager::HandleJoinElectTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
-        uint32_t local_member_idx,
         db::DbWriteBatch& db_batch) {
     prefix_db_->SaveElectNodeStoke(
         tx.from(),
@@ -581,7 +569,7 @@ void BlockManager::HandleJoinElectTx(
                 auto g2 = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
                 if (i < 3) {
                     for (int32_t j = 0; j < all_pos_count; ++j) {
-                        auto midx = local_member_idx + j * common::kElectNodeMinMemberIndex;
+                        auto midx = join_info.member_idx() + j * common::kElectNodeMinMemberIndex;
                         verify_g2s[j] = verify_g2s[j] + power(libff::alt_bn128_Fr(midx + 1), i) * g2;
                     }
                 }
@@ -618,9 +606,9 @@ void BlockManager::HandleJoinElectTx(
 
             verfy_final_vals.set_src_hash(check_hash);
             auto verified_val = verfy_final_vals.SerializeAsString();
-            prefix_db_->SaveVerifiedG2s(local_member_idx, tx.from(), verfy_final_vals, db_batch);
+            prefix_db_->SaveVerifiedG2s(join_info.member_idx(), tx.from(), verfy_final_vals, db_batch);
             ZJC_DEBUG("success save verified g2: %u, %s",
-                local_member_idx,
+                join_info.member_idx(),
                 common::Encode::HexEncode(tx.from()).c_str());
 
             break;
