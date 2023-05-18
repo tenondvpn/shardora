@@ -519,8 +519,8 @@ bool BlsDkg::VerifySekkeyValid(
     auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
     auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
     auto all_verified_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-    auto old_g2_val = power(libff::alt_bn128_Fr(peer_index + 1), changed_idx) * old_val;
-    auto new_g2_val = power(libff::alt_bn128_Fr(peer_index + 1), changed_idx) * new_val;
+    auto old_g2_val = power(libff::alt_bn128_Fr(local_member_index_ + 1), changed_idx) * old_val;
+    auto new_g2_val = power(libff::alt_bn128_Fr(local_member_index_ + 1), changed_idx) * new_val;
     all_verified_val = all_verified_val - old_g2_val + new_g2_val;
     return all_verified_val == seckey * libff::alt_bn128_G2::one();
 }
