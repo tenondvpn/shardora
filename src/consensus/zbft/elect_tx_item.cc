@@ -498,14 +498,14 @@ int ElectTxItem::GetJoinElectNodesCredit(
     std::vector<NodeDetailPtr> elect_nodes_to_choose;
     for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
         ZJC_DEBUG("join new node: %s, des shard: %u, statistic shrad: %u",
-            common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).id()).c_str(),
+            common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).pubkey()).c_str(),
             elect_statistic.join_elect_nodes(i).shard(),
             elect_statistic.sharding_id());
         if (elect_statistic.join_elect_nodes(i).shard() != elect_statistic.sharding_id()) {
             continue;
         }
 
-        auto id = sec_ptr_->GetAddress(elect_statistic.join_elect_nodes(i).id());
+        auto id = sec_ptr_->GetAddress(elect_statistic.join_elect_nodes(i).pubkey());
         auto account_info = account_mgr_->GetAccountInfo(
             thread_idx,
             id);
@@ -519,7 +519,7 @@ int ElectTxItem::GetJoinElectNodesCredit(
         node_info->stoke = elect_statistic.join_elect_nodes(i).stoke();
         node_info->tx_count = min_tx_count;
         node_info->credit = account_info->credit();
-        node_info->pubkey = elect_statistic.join_elect_nodes(i).id();
+        node_info->pubkey = elect_statistic.join_elect_nodes(i).pubkey();
         node_info->index = begin_index++;
         elect_nodes_to_choose.push_back(node_info);
     }
