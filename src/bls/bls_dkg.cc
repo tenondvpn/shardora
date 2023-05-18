@@ -84,7 +84,23 @@ void BlsDkg::OnNewElectionBlock(
         return;
     }
 
-    if (common_public_key_ == common_public_key) {
+    auto tmp_common_public_key = common_public_key;
+    common_public_key_.to_affine_coordinates();
+    std::string now_str = 
+        libBLS::ThresholdUtils::fieldElementToString(common_public_key_.X.c0) +
+        libBLS::ThresholdUtils::fieldElementToString(common_public_key_.X.c1) +
+        libBLS::ThresholdUtils::fieldElementToString(common_public_key_.Y.c0) +
+        libBLS::ThresholdUtils::fieldElementToString(common_public_key_.Y.c1);
+    tmp_common_public_key.to_affine_coordinates();
+    std::string des_str =
+        libBLS::ThresholdUtils::fieldElementToString(tmp_common_public_key.X.c0) +
+        libBLS::ThresholdUtils::fieldElementToString(tmp_common_public_key.X.c1) +
+        libBLS::ThresholdUtils::fieldElementToString(tmp_common_public_key.Y.c0) +
+        libBLS::ThresholdUtils::fieldElementToString(tmp_common_public_key.Y.c1);
+    ZJC_DEBUG("valid bls members: %d, conpk: %s, new: %s",
+        bitmap.valid_count(), now_str.c_str(), des_str.c_str());
+
+    if (common_public_key_ == tmp_common_public_key) {
         bls::protobuf::LocalPolynomial local_poly;
         if (prefix_db_->GetLocalPolynomial(security_, security_->GetAddress(), &local_poly, true)) {
             prefix_db_->SaveLocalPolynomial(security_, security_->GetAddress(), local_poly);
