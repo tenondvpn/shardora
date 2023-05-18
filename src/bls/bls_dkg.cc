@@ -97,8 +97,7 @@ void BlsDkg::OnNewElectionBlock(
         libBLS::ThresholdUtils::fieldElementToString(tmp_common_public_key.X.c1) +
         libBLS::ThresholdUtils::fieldElementToString(tmp_common_public_key.Y.c0) +
         libBLS::ThresholdUtils::fieldElementToString(tmp_common_public_key.Y.c1);
-    ZJC_DEBUG("valid bls members: %d, conpk: %s, new: %s",
-        bitmap.valid_count(), now_str.c_str(), des_str.c_str());
+    ZJC_DEBUG("new elect valid bls members conpk: %s, new: %s", now_str.c_str(), des_str.c_str());
 
     if (common_public_key_ == tmp_common_public_key) {
         bls::protobuf::LocalPolynomial local_poly;
