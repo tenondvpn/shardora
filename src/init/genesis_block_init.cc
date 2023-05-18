@@ -1114,6 +1114,95 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             }
         }
 
+        for (uint32_t k = 0; k < prikeys.size(); ++k) {
+            std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
+            secptr->SetPrivateKey(prikeys[k]);
+            bls::protobuf::LocalPolynomial local_poly;
+            std::vector<libff::alt_bn128_Fr> polynomial;
+            if (prefix_db_->GetLocalPolynomial(secptr, secptr->GetAddress(), &local_poly)) {
+                for (int32_t i = 0; i < local_poly.polynomial_size(); ++i) {
+                    polynomial.push_back(libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)).c_str()));
+                }
+
+                libBLS::Dkg dkg_instance = libBLS::Dkg(2, 3);
+                auto contribution = dkg_instance.SecretKeyContribution(polynomial, 3, 2);
+                uint32_t local_member_index_ = k;
+                uint32_t change_idx = 0;
+                auto new_g2 = contribution[change_idx] * libff::alt_bn128_G2::one();
+                for (uint32_t mem_idx = 0; mem_idx < valid_n; ++mem_idx) {
+                    if (mem_idx == local_member_index_) {
+                        continue;
+                    }
+
+                    bls::protobuf::JoinElectBlsInfo verfy_final_vals;
+                    if (!prefix_db_->GetVerifiedG2s(
+                            mem_idx,
+                            secptr->GetAddress(),
+                            &verfy_final_vals)) {
+                        assert(false);
+                        continue;
+                    }
+
+                    std::string val;
+                    if (!prefix_db_->GetTemporaryKv(verfy_final_vals.src_hash(), &val)) {
+                        assert(false);
+                        continue;
+                    }
+
+                    init::protobuf::JoinElectInfo join_info;
+                    if (!join_info.ParseFromString(val)) {
+                        assert(false);
+                        continue;
+                    }
+
+                    if (join_info.g2_req().verify_vec_size() <= change_idx) {
+                        assert(false);
+                        continue;
+                    }
+
+                    libff::alt_bn128_G2 old_val;
+                    {
+                        auto& item = join_info.g2_req().verify_vec(change_idx);
+                        auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+                        auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+                        auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+                        auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+                        auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+                        auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+                        auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+                        auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+                        auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+                        old_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+                        assert(old_val == old_g2);
+                    }
+
+                    auto midx = local_member_index_ / common::kElectNodeMinMemberIndex;
+                    if (verfy_final_vals.verify_req().verify_vec_size() <= midx) {
+                        assert(false);
+                        continue;
+                    }
+
+                    auto& item = verfy_final_vals.verify_req().verify_vec(midx);
+                    auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+                    auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+                    auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+                    auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+                    auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+                    auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+                    auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+                    auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+                    auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+                    auto all_verified_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+                    auto old_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * old_val;
+                    auto new_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * new_g2;
+                    assert(old_g2_val == new_g2_val);
+                    auto old_all = all_verified_val;
+                    all_verified_val = all_verified_val - old_g2_val + new_g2_val;
+                    assert(all_verified_val == contribution[mem_idx] * libff::alt_bn128_G2::one());
+                }
+            }
+        }
+
         block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
         db_->Put(db_batch);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
