@@ -557,6 +557,22 @@ void BlockManager::HandleJoinElectTx(
             auto local_member_index = common::GlobalInfo::Instance()->config_local_member_idx();
             for (int32_t i = 0; i < join_info.g2_req().verify_vec_size(); ++i) {
                 auto& item = join_info.g2_req().verify_vec(i);
+                str_for_hash.append(item.x_c0());
+                str_for_hash.append(item.x_c1());
+                str_for_hash.append(item.y_c0());
+                str_for_hash.append(item.y_c1());
+                str_for_hash.append(item.z_c0());
+                str_for_hash.append(item.z_c1());
+            }
+
+            auto check_hash = common::Hash::keccak256(str_for_hash);
+            if (check_hash != tx.storages(i).val_hash()) {
+                assert(false);
+                break;
+            }
+
+            for (int32_t i = 0; i < join_info.g2_req().verify_vec_size(); ++i) {
+                auto& item = join_info.g2_req().verify_vec(i);
                 auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
                 auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
                 auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
@@ -599,20 +615,7 @@ void BlockManager::HandleJoinElectTx(
                     common::Encode::HexEncode(tx.from()).c_str(),
                     libBLS::ThresholdUtils::fieldElementToString(verify_g2s[0].X.c0).c_str());
 
-                str_for_hash.append(item.x_c0());
-                str_for_hash.append(item.x_c1());
-                str_for_hash.append(item.y_c0());
-                str_for_hash.append(item.y_c1());
-                str_for_hash.append(item.z_c0());
-                str_for_hash.append(item.z_c1());
             }
-
-            auto check_hash = common::Hash::keccak256(str_for_hash);
-            if (check_hash != tx.storages(i).val_hash()) {
-                assert(false);
-                break;
-            }
-
             
             break;
         }
