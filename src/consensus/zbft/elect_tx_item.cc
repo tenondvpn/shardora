@@ -179,17 +179,7 @@ int ElectTxItem::HandleTx(
                 random_str += std::to_string(val) + ",";
                 return val;
             };
-//             srand(static_cast<uint32_t>(vss_mgr_->EpochRandom()));
-//             std::random_shuffle(elect_nodes.begin(), elect_nodes.end());
-//             std::random_shuffle(elect_nodes.begin(), elect_nodes.end(), RandFunc);
-//             {
-//                 std::string ids;
-//                 for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
-//                     ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ",";
-//                 }
-// 
-//                 ZJC_DEBUG("shuffle: %s", ids.c_str());
-//             }
+
             int32_t expect_leader_count = (int32_t)pow(
                 2.0,
                 (double)((int32_t)log2(double(elect_nodes.size() / 3))));
