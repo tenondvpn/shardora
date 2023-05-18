@@ -76,7 +76,6 @@ void BlsDkg::TimerMessage(const transport::MessagePtr& msg_ptr) {
 void BlsDkg::OnNewElectionBlock(
         uint64_t elect_height,
         common::MembersPtr& elected_members,
-        const libff::alt_bn128_G2& common_public_key,
         common::MembersPtr& members,
         std::shared_ptr<TimeBlockItem>& latest_timeblock_info) try {
     if (elect_height <= elect_hegiht_) {
@@ -84,22 +83,18 @@ void BlsDkg::OnNewElectionBlock(
         return;
     }
 
-    auto tmp_common_public_key = common_public_key;
-//     common_public_key_.to_affine_coordinates();
-    std::string now_str = 
-        libBLS::ThresholdUtils::fieldElementToString(common_public_key_.X.c0) +
-        libBLS::ThresholdUtils::fieldElementToString(common_public_key_.X.c1) +
-        libBLS::ThresholdUtils::fieldElementToString(common_public_key_.Y.c0) +
-        libBLS::ThresholdUtils::fieldElementToString(common_public_key_.Y.c1);
-    tmp_common_public_key.to_affine_coordinates();
-    std::string des_str =
-        libBLS::ThresholdUtils::fieldElementToString(tmp_common_public_key.X.c0) +
-        libBLS::ThresholdUtils::fieldElementToString(tmp_common_public_key.X.c1) +
-        libBLS::ThresholdUtils::fieldElementToString(tmp_common_public_key.Y.c0) +
-        libBLS::ThresholdUtils::fieldElementToString(tmp_common_public_key.Y.c1);
-    ZJC_DEBUG("new elect valid bls members conpk: %s, new: %s", now_str.c_str(), des_str.c_str());
+    bool prev_bls_valid = false;
+    for (int32_t i = 0; i < elected_members->size(); ++i) {
+        if ((*elected_members)[i]->id == security_->GetAddress()) {
+            if ((*elected_members)[i]->bls_publick_key != libff::alt_bn128_G2::zero()) {
+                prev_bls_valid = true;
+            }
 
-    if (common_public_key_ == tmp_common_public_key) {
+            break;
+        }
+    }
+
+    if (prev_bls_valid) {
         bls::protobuf::LocalPolynomial local_poly;
         if (prefix_db_->GetLocalPolynomial(security_, security_->GetAddress(), &local_poly, true)) {
             prefix_db_->SaveLocalPolynomial(security_, security_->GetAddress(), local_poly);

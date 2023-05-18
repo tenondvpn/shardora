@@ -22,7 +22,6 @@ public:
         uint32_t sharding_id,
         uint64_t elect_height,
         common::MembersPtr& elected_members,
-        const libff::alt_bn128_G2& common_public_key,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block);
     void OnTimeBlock(
         uint64_t lastest_time_block_tm,

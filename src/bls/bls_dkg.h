@@ -49,7 +49,6 @@ public:
     void OnNewElectionBlock(
         uint64_t elect_height,
         common::MembersPtr& elected_members,
-        const libff::alt_bn128_G2& common_public_key,
         common::MembersPtr& members,
         std::shared_ptr<TimeBlockItem>& latest_timeblock_info);
     void HandleMessage(const transport::MessagePtr& header);

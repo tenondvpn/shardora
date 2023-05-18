@@ -62,6 +62,7 @@ static const std::string kGenesisTimeblockPrefix = "ac\x01";
 static const std::string kLocalPolynomialPrefix = "ad\x01";
 static const std::string kLocalVerifiedG2Prefix = "ae\x01";
 static const std::string kLocalTempPolynomialPrefix = "af\x01";
+static const std::string kLocalTempCommonPublicKeyPrefix = "ag\x01";
 
 class PrefixDb {
 public:
@@ -1248,7 +1249,6 @@ public:
         }
 
         return true;
-
     }
 
 private:
