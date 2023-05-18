@@ -63,7 +63,6 @@ void BlsManager::TimerMessage(const transport::MessagePtr& msg_ptr) {
 void BlsManager::OnNewElectBlock(
         uint32_t sharding_id,
         uint64_t elect_height,
-        common::MembersPtr& elected_members,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
     auto iter = finish_networks_map_.find(sharding_id);
     if (iter != finish_networks_map_.end()) {
