@@ -841,6 +841,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     }
 
     auto new_g2 = polynomial[change_idx] * libff::alt_bn128_G2::one();
+    assert(old_g2 == new_g2);
     auto dkg_instance = std::make_shared<libBLS::Dkg>(valid_t, valid_n);
     local_src_secret_key_contribution_ = dkg_instance->SecretKeyContribution(
         polynomial, valid_n, valid_t);
@@ -914,6 +915,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         auto all_verified_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
         auto old_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * old_val;
         auto new_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * new_g2;
+        assert(old_g2_val == new_g2_val);
         auto old_all = all_verified_val;
         all_verified_val = all_verified_val - old_g2_val + new_g2_val;
         ZJC_DEBUG("local check verify local: %d, peer: %d, contri: %s, old: %s, new: %s, old: %s, new verify val: %s",
@@ -923,6 +925,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             libBLS::ThresholdUtils::fieldElementToString(new_g2.X.c0).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(old_all.X.c0).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(all_verified_val.X.c0).c_str());
+        assert(old_all == all_verified_val);
         assert(all_verified_val == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::one());
     }
 
