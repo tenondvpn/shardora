@@ -96,7 +96,7 @@ void BlsDkg::OnNewElectionBlock(
     for (uint32_t i = 0; i < members_->size(); ++i) {
         if ((*members_)[i]->id == security_->GetAddress()) {
             local_member_index_ = i;
-            if (local_member_index_ == common::GlobalInfo::Instance()->config_local_member_idx()) {
+            if (local_member_index_ != common::GlobalInfo::Instance()->config_local_member_idx()) {
                 ZJC_FATAL("elected member index invalid: %u, %u",
                     local_member_index_,
                     common::GlobalInfo::Instance()->config_local_member_idx());
