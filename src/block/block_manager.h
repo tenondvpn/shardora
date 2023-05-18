@@ -131,7 +131,6 @@ private:
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
-        uint32_t local_member_idx,
         db::DbWriteBatch& db_batch);
     void AddMiningToken(
         const std::string& block_hash,
