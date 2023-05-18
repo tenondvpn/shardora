@@ -608,7 +608,7 @@ void BlockManager::HandleJoinElectTx(
             verfy_final_vals.set_src_hash(check_hash);
             auto verified_val = verfy_final_vals.SerializeAsString();
             prefix_db_->SaveVerifiedG2s(local_member_index, tx.from(), verfy_final_vals, db_batch);
-            ZJC_DEBUG("success save verified g2: %u, peer: %d, %s",
+            ZJC_DEBUG("success save verified g2: %u, peer: %d, %s, %s",
                 local_member_index,
                 join_info.member_idx(),
                 common::Encode::HexEncode(tx.from()).c_str(),
