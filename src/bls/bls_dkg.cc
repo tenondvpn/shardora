@@ -85,7 +85,7 @@ void BlsDkg::OnNewElectionBlock(
     }
 
     auto tmp_common_public_key = common_public_key;
-    common_public_key_.to_affine_coordinates();
+//     common_public_key_.to_affine_coordinates();
     std::string now_str = 
         libBLS::ThresholdUtils::fieldElementToString(common_public_key_.X.c0) +
         libBLS::ThresholdUtils::fieldElementToString(common_public_key_.X.c1) +
