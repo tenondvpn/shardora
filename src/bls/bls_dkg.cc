@@ -386,7 +386,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
     if (!IsSwapKeyPeriod()) {
-        assert(false);
+        //assert(false);
         return;
     }
 
