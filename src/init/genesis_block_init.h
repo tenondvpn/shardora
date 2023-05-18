@@ -10,13 +10,17 @@
 #include <libbls/tools/utils.h>
 #include <dkg/dkg.h>
 
-#include "block/block_manager.h"
 #include "common/bitmap.h"
 #include "common/utils.h"
 #include "dht/dht_utils.h"
 #include "protos/block.pb.h"
 
 namespace zjchain {
+
+namespace block {
+    class AccountManager;
+    class BlockManager;
+}
 
 namespace init {
 

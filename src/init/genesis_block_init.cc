@@ -112,12 +112,12 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
     std::vector<std::vector<libff::alt_bn128_Fr>> polynomial(prikeys.size());
     for (uint32_t i = 0; i < prikeys.size(); ++i) {
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
-        secptr->SetPrivateKey(prikeys[idx]);
+        secptr->SetPrivateKey(prikeys[i]);
         bls::protobuf::LocalPolynomial local_poly;
         prefix_db_->GetLocalPolynomial(secptr, secptr->GetAddress(), &local_poly);
         for (int32_t pol_idx = 0; pol_idx < local_poly.polynomial_size(); ++pol_idx) {
             polynomial[i].push_back(libff::alt_bn128_Fr(common::Encode::HexEncode(
-                local_poly.polynomia(pol_idx)).c_str()));
+                local_poly.polynomial(pol_idx)).c_str()));
         }
     }
 
@@ -283,7 +283,6 @@ int GenesisBlockInit::CreateJoinElectTx(
     auto str = join_info.SerializeAsString();
     auto tenon_block = std::make_shared<block::protobuf::Block>();
     auto tx_list = tenon_block->mutable_tx_list();
-    auto join_elect_tx_info = tx_list->Add();
     join_elect_tx_info->set_step(pools::protobuf::kJoinElect);
     join_elect_tx_info->set_from(secptr->GetAddress());
     join_elect_tx_info->set_to("");
@@ -891,7 +890,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         for (uint32_t i = 0; i < prikeys.size(); ++i) {
             common::GlobalInfo::Instance()->config_local_member_idx_ = i;
             for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
-                if (tenon_block->tx_list(tx_idx).step() == pool::protobuf::kJoinElect) {
+                if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
                     block_mgr_->HandleJoinElectTx(0, *tenon_block, tenon_block->tx_list(tx_idx), db_batch);
                 }
             }
