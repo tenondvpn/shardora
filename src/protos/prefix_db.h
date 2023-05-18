@@ -1192,12 +1192,14 @@ public:
     }
 
     void SaveVerifiedG2s(
+            uint32_t local_member_idx,
             const std::string& id,
             const bls::protobuf::JoinElectBlsInfo& verfy_final_vals,
             db::DbWriteBatch& db_batch) {
         std::string key;
         key.reserve(128);
         key.append(kLocalVerifiedG2Prefix);
+        key.append((char*)&local_member_idx, sizeof(local_member_idx));
         key.append(id);
         std::string val = verfy_final_vals.SerializeAsString();
         db_batch.Put(key, val);
