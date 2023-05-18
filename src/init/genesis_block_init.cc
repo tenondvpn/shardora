@@ -177,37 +177,9 @@ int GenesisBlockInit::CreateGenesisBlocks(
             }
         }
     }
-//     InitBlsVerificationValue();
     db_->ClearPrefix("db_for_gid_");
     assert(res == kInitSuccess);
     return res;
-}
-
-void GenesisBlockInit::InitBlsVerificationValue() {
-    FILE* rlocal_bls_fd = fopen("./saved_verify_one", "r");
-    if (rlocal_bls_fd != nullptr) {
-        char* line = new char[1024 * 1024];
-        uint32_t idx = 0;
-        while (!feof(rlocal_bls_fd)) {
-            fgets(line, 1024 * 1024, rlocal_bls_fd);
-            std::string val = common::Encode::HexDecode(std::string(line, strlen(line) - 1));
-            uint32_t* int_data = (uint32_t*)val.c_str();
-            uint32_t idx = int_data[1];
-            bls::protobuf::BlsVerifyValue verify_val;
-            if (!verify_val.ParseFromArray(val.c_str() + 8, val.size() - 8)) {
-                ZJC_FATAL("parse BlsVerifyValue failed!");
-            }
-
-            prefix_db_->SavePresetVerifyValue(idx, 0, verify_val);
-            ++idx;
-            if (idx >= 1024) {
-                break;
-            }
-        }
-
-        delete[] line;
-        fclose(rlocal_bls_fd);
-    }
 }
 
 int GenesisBlockInit::CreateBlsGenesisKeys(

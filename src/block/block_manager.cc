@@ -568,7 +568,7 @@ void BlockManager::HandleJoinElectTx(
                 auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
                 auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
                 auto g2 = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-                if (i < 3) {
+                if (i < 2) {
                     for (int32_t j = 0; j < all_pos_count; ++j) {
                         auto midx = local_member_index + j * common::kElectNodeMinMemberIndex;
                         verify_g2s[j] = verify_g2s[j] + power(libff::alt_bn128_Fr(midx + 1), i) * g2;

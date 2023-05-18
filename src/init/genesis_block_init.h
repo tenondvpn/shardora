@@ -44,7 +44,6 @@ public:
         const std::vector<dht::NodePtr>& cons_genesis_nodes);
 
 private:
-    void InitBlsVerificationValue();
     int CreateRootGenesisBlocks(
         const std::vector<dht::NodePtr>& root_genesis_nodes,
         const std::vector<dht::NodePtr>& cons_genesis_nodes);
