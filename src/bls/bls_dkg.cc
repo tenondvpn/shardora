@@ -925,8 +925,11 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             libBLS::ThresholdUtils::fieldElementToString(new_g2.X.c0).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(old_all.X.c0).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(all_verified_val.X.c0).c_str());
+        std::cout << 0 << std::endl;
         assert(old_all == all_verified_val);
+        std::cout << 1 << std::endl;
         assert(old_all == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::one());
+        std::cout << 2 << std::endl;
         assert(all_verified_val == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::one());
     }
 
