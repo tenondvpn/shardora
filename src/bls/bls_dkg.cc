@@ -854,7 +854,6 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     }
 
     auto new_g2 = polynomial[change_idx] * libff::alt_bn128_G2::one();
-    assert(old_g2 == new_g2);
     auto dkg_instance = std::make_shared<libBLS::Dkg>(valid_t, valid_n);
     local_src_secret_key_contribution_ = dkg_instance->SecretKeyContribution(
         polynomial, valid_n, valid_t);
