@@ -99,8 +99,6 @@ void BlsDkg::OnNewElectionBlock(
         if (prefix_db_->GetLocalPolynomial(security_, security_->GetAddress(), &local_poly, true)) {
             prefix_db_->SaveLocalPolynomial(security_, security_->GetAddress(), local_poly);
             ZJC_INFO("reset local polinomial success!");
-        } else {
-            ZJC_FATAL("get local polinomial failed!");
         }
     }
 
