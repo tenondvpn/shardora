@@ -802,8 +802,6 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
     char data[20480];
     uint32_t block_count = 0;
     db::DbWriteBatch db_batch;
-    ReloadBlsPri(network::kRootCongressNetworkId);
-    ReloadBlsPri(sharding_id);
     while (fgets(data, 20480, root_gens_init_block_file) != nullptr) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         std::string tmp_data(data, strlen(data) - 1);
@@ -1233,6 +1231,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     uint64_t all_balance = 0llu;
     pools::protobuf::ToTxHeights init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
+    ReloadBlsPri(network::kRootCongressNetworkId);
+    ReloadBlsPri(net_id);
     for (auto iter = pool_index_map_.begin(); iter != pool_index_map_.end(); ++iter) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
