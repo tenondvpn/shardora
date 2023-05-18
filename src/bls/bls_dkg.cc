@@ -424,7 +424,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
     }
 
     auto tmp_swap_key = libff::alt_bn128_Fr(sec_key.c_str());
-    if (!VerifySekkeyValid(local_member_index_, bls_msg.index(), tmp_swap_key)) {
+    if (!VerifySekkeyValid(bls_msg.index(), tmp_swap_key)) {
         ZJC_ERROR("verify error member: %d, index: %d, %s , min_aggree_member_count_: %d",
             local_member_index_, bls_msg.index(),
             libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
@@ -448,7 +448,6 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
 }
 
 bool BlsDkg::VerifySekkeyValid(
-        uint32_t idx,
         uint32_t peer_index,
         const libff::alt_bn128_Fr& seckey) {
     bls::protobuf::BlsVerifyValue verify_val;
@@ -503,7 +502,7 @@ bool BlsDkg::VerifySekkeyValid(
         old_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
     }
 
-    auto midx = idx / common::kElectNodeMinMemberIndex;
+    auto midx = local_member_index_ / common::kElectNodeMinMemberIndex;
     if (verfy_final_vals.verify_req().verify_vec_size() <= midx) {
         assert(false);
         return false;
@@ -520,8 +519,8 @@ bool BlsDkg::VerifySekkeyValid(
     auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
     auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
     auto all_verified_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-    auto old_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx) * old_val;
-    auto new_g2_val = power(libff::alt_bn128_Fr(idx + 1), changed_idx) * new_val;
+    auto old_g2_val = power(libff::alt_bn128_Fr(peer_index + 1), changed_idx) * old_val;
+    auto new_g2_val = power(libff::alt_bn128_Fr(peer_index + 1), changed_idx) * new_val;
     all_verified_val = all_verified_val - old_g2_val + new_g2_val;
     return all_verified_val == seckey * libff::alt_bn128_G2::one();
 }
