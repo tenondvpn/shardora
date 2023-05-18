@@ -68,13 +68,15 @@ void BlsDkg::TimerMessage(const transport::MessagePtr& msg_ptr) {
     if (has_broadcast_swapkey_ && !has_finished_ &&
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 10) &&
             now_tm_us >(begin_time_us_ + finish_offset_)) {
-        FinishNoLock(msg_ptr->thread_idx);
+        FinishBroadcast(msg_ptr->thread_idx);
         has_finished_ = true;
     }
 }
 
 void BlsDkg::OnNewElectionBlock(
         uint64_t elect_height,
+        common::MembersPtr& elected_members,
+        const libff::alt_bn128_G2& common_public_key,
         common::MembersPtr& members,
         std::shared_ptr<TimeBlockItem>& latest_timeblock_info) try {
     if (elect_height <= elect_hegiht_) {
@@ -656,7 +658,7 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
     *seckey_len = msg.size();
 }
 
-void BlsDkg::FinishNoLock(uint8_t thread_idx) try {
+void BlsDkg::FinishBroadcast(uint8_t thread_idx) try {
     if (members_ == nullptr ||
             local_member_index_ >= members_->size() ||
             valid_sec_key_count_ < min_aggree_member_count_) {
@@ -834,10 +836,10 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         polynomial[i] = libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)).c_str());
         if (change_idx == i) {
             old_g2 = polynomial[i] * libff::alt_bn128_G2::one();
-//             polynomial[i] = libff::alt_bn128_Fr::random_element();
-//             while (polynomial[i] == libff::alt_bn128_Fr::zero()) {
-//                 polynomial[i] = libff::alt_bn128_Fr::random_element();
-//             }
+            polynomial[i] = libff::alt_bn128_Fr::random_element();
+            while (polynomial[i] == libff::alt_bn128_Fr::zero()) {
+                polynomial[i] = libff::alt_bn128_Fr::random_element();
+            }
         }
     }
 

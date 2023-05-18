@@ -63,6 +63,8 @@ void BlsManager::TimerMessage(const transport::MessagePtr& msg_ptr) {
 void BlsManager::OnNewElectBlock(
         uint32_t sharding_id,
         uint64_t elect_height,
+        common::MembersPtr& elected_members,
+        const libff::alt_bn128_G2& common_public_key,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
     auto iter = finish_networks_map_.find(sharding_id);
     if (iter != finish_networks_map_.end()) {
@@ -130,7 +132,12 @@ void BlsManager::OnNewElectBlock(
         libff::alt_bn128_G2::zero(),
         libff::alt_bn128_G2::zero(),
         db_);
-    waiting_bls_->OnNewElectionBlock(elect_height, members, latest_timeblock_info_);
+    waiting_bls_->OnNewElectionBlock(
+        elect_height,
+        elected_members,
+        common_public_key,
+        members,
+        latest_timeblock_info_);
     BLS_DEBUG("success add new bls dkg, elect_height: %lu", elect_height);
 }
 

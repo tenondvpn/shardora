@@ -48,6 +48,8 @@ public:
         std::shared_ptr<db::Db>& db);
     void OnNewElectionBlock(
         uint64_t elect_height,
+        common::MembersPtr& elected_members,
+        const libff::alt_bn128_G2& common_public_key,
         common::MembersPtr& members,
         std::shared_ptr<TimeBlockItem>& latest_timeblock_info);
     void HandleMessage(const transport::MessagePtr& header);
@@ -82,7 +84,7 @@ private:
     bool IsSignValid(const transport::MessagePtr& msg_ptr, std::string* msg_hash);
     void BroadcastVerfify(uint8_t thread_idx);
     void SwapSecKey(uint8_t thread_idx);
-    void FinishNoLock(uint8_t thread_idx);
+    void FinishBroadcast(uint8_t thread_idx);
     void CreateContribution(uint32_t valid_n, uint32_t valid_t);
     void CreateDkgMessage(transport::MessagePtr& msg_ptr);
     void BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap);
