@@ -114,7 +114,12 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
         secptr->SetPrivateKey(prikeys[i]);
         bls::protobuf::LocalPolynomial local_poly;
-        prefix_db_->GetLocalPolynomial(secptr, secptr->GetAddress(), &local_poly);
+        if (!prefix_db_->GetLocalPolynomial(secptr, secptr->GetAddress(), &local_poly)) {
+            ZJC_FATAL("get member %d polynomial failed!",
+                i, common::Encode::HexEncode(secptr->GetAddress()).c_str());
+            return kInitError;
+        }
+
         for (int32_t pol_idx = 0; pol_idx < local_poly.polynomial_size(); ++pol_idx) {
             polynomial[i].push_back(libff::alt_bn128_Fr(common::Encode::HexEncode(
                 local_poly.polynomial(pol_idx)).c_str()));
