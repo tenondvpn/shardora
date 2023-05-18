@@ -3,10 +3,13 @@
 #include <cmath>
 #include <vector>
 
+#define private public
 #include "common/encode.h"
+#include "common/global_info.h"
 #include "common/random.h"
 #include "common/split.h"
 #include "block/account_manager.h"
+#include "block/block_manager.h"
 #include "consensus/consensus_utils.h"
 #include "consensus/zbft/zbft_utils.h"
 #include "elect/elect_utils.h"
@@ -18,10 +21,6 @@
 #include "protos/zbft.pb.h"
 #include "security/ecdsa/ecdsa.h"
 #include "timeblock/time_block_utils.h"
-
-#define private public
-#include "block/block_manager.h"
-#include "common/global_info.h"
 
 namespace zjchain {
 

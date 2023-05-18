@@ -24,6 +24,10 @@ namespace block {
     class BlockManager;
 }
 
+namespace pools {
+    class TxPoolManager;
+}
+
 namespace init {
 
 class GenesisBlockInit {
