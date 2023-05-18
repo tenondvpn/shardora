@@ -187,8 +187,6 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
         }
 
         auto check_hash = common::Hash::keccak256(str_for_hash);
-        auto str = join_info.SerializeAsString();
-        prefix_db_->SaveTemporaryKv(check_hash, str);
         prefix_db_->AddBlsVerifyG2(secptr->GetAddress(), *req);
 
         libBLS::Dkg tmpdkg(valid_t, valid_n);
@@ -281,6 +279,7 @@ int GenesisBlockInit::CreateJoinElectTx(
 
     auto check_hash = common::Hash::keccak256(str_for_hash);
     auto str = join_info.SerializeAsString();
+    prefix_db_->SaveTemporaryKv(check_hash, str);
     auto tenon_block = std::make_shared<block::protobuf::Block>();
     auto tx_list = tenon_block->mutable_tx_list();
     join_elect_tx_info->set_step(pools::protobuf::kJoinElect);
