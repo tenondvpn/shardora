@@ -848,7 +848,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         local_src_secret_key_contribution_[local_member_index_]);
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, local_member_index_, val);
-    for (uint32_t mem_idx = 0; mem_idx < member_count_; ++mem_idx) {
+    for (uint32_t mem_idx = 0; mem_idx < valid_n; ++mem_idx) {
         if (mem_idx == local_member_index_) {
             continue;
         }
@@ -858,6 +858,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
                 mem_idx,
                 (*members_)[local_member_index_]->id,
                 &verfy_final_vals)) {
+            assert(false);
             continue;
         }
 
