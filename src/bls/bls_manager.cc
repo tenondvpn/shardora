@@ -698,7 +698,11 @@ bool BlsManager::VerifyAggSignValid(
                 *bls_agg_sign,
                 g1_hash,
                 &verify_hash) != bls::kBlsSuccess) {
-            ZJC_ERROR("verify agg sign failed!");
+            auto bn_sign = *bls_agg_sign;
+            bn_sign.to_affine_coordinates();
+            auto sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
+            auto sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
+            ZJC_ERROR("verify agg sign failed %s, %s!", sign_x.c_str(), sign_y.c_str());
             return false;
         }
 
