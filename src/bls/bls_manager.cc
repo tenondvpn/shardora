@@ -246,8 +246,6 @@ int BlsManager::Verify(
     bn_sign.to_affine_coordinates();
     auto sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
     auto sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
-    BLSPublicKeyShare pkey(local_sec_key, t, n);
-    std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
     BLS_DEBUG("verify t: %u, n: %u, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
         t, n, (sign_x).c_str(), (sign_y).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
