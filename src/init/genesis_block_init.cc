@@ -919,7 +919,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         AddBlockItemToCache(tenon_block, db_batch);
         block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
-        for (uint32_t i = 0; i < prikeys.size(); ++i) {
+        for (uint32_t i = 0; i < root_prikeys.size(); ++i) {
             common::GlobalInfo::Instance()->config_local_member_idx_ = i;
             for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
                 if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
