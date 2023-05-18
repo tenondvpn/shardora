@@ -388,7 +388,7 @@ int GenesisBlockInit::CreateElectBlock(
             std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
             secptr->SetPrivateKey(prikeys[i]);
             bls::protobuf::JoinElectBlsInfo verfy_final_vals;
-            prefix_db_->GetVerifiedG2s(0, tx.from(), &verfy_final_vals);
+            prefix_db_->GetVerifiedG2s(0, secptr->GetAddress(), &verfy_final_vals);
             auto verified_val = verfy_final_vals.SerializeAsString();
             auto local_member_index = common::GlobalInfo::Instance()->config_local_member_idx();
             prefix_db_->SaveVerifiedG2s(i, secptr->GetAddress(), verfy_final_vals, db_batch);
