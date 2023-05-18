@@ -4,6 +4,7 @@
 #include <vector>
 
 #define private public
+#define protected public
 #include "common/encode.h"
 #include "common/global_info.h"
 #include "common/random.h"
@@ -1071,7 +1072,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         for (uint32_t i = 0; i < prikeys.size(); ++i) {
             common::GlobalInfo::Instance()->config_local_member_idx_ = i;
             for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
-                if (tenon_block->tx_list(tx_idx).step() == pool::protobuf::kJoinElect) {
+                if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
                     block_mgr_->HandleJoinElectTx(0, *tenon_block, tenon_block->tx_list(tx_idx), db_batch);
                 }
             }
