@@ -12,6 +12,7 @@
 
 #include "common/bitmap.h"
 #include "common/utils.h"
+#include "db/db.h"
 #include "dht/dht_utils.h"
 #include "protos/block.pb.h"
 
