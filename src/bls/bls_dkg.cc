@@ -915,6 +915,12 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         auto new_g2_val = power(libff::alt_bn128_Fr(mem_idx + 1), change_idx) * new_g2;
         all_verified_val = all_verified_val - old_g2_val + new_g2_val;
         assert(all_verified_val == local_src_secret_key_contribution_[mem_idx] * libff::alt_bn128_G2::one());
+        ZJC_DEBUG("success local check verify local: %d, peer: %d, contri: %s, old: %s, new: %s, new verify val: %s",
+            local_member_index_, mem_idx,
+            libBLS::ThresholdUtils::fieldElementToString(local_src_secret_key_contribution_[mem_idx]).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(old_val.X.c0).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(new_g2.X.c0).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(all_verified_val.X.c0).c_str());
     }
 
 #ifdef ZJC_UNITEST
