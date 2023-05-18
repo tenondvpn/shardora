@@ -241,7 +241,7 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
                 libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j])));
         }
 
-        std::cout << "save polynomial: " << common::Encode::HexEncode(secptr->GetAddress()) << ", " << common::Encode::HexEncode(local_poly.polynomial(0)) << std::endl;
+        std::cout << "0 save polynomial: " << common::Encode::HexEncode(secptr->GetAddress()) << ", " << common::Encode::HexEncode(local_poly.polynomial(0)) << std::endl;
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
         init::protobuf::JoinElectInfo& join_info = *init_bls_info.mutable_join_info();
         join_info.set_member_idx(idx);
@@ -340,7 +340,7 @@ int GenesisBlockInit::CreateJoinElectTx(
                 libBLS::ThresholdUtils::fieldElementToString(polynomial[j])));
         }
 
-        std::cout << "save polynomial: " << common::Encode::HexEncode(secptr->GetAddress()) << ", " << common::Encode::HexEncode(local_poly.polynomial(0)) << std::endl;
+        std::cout << "1 save polynomial: " << common::Encode::HexEncode(secptr->GetAddress()) << ", " << common::Encode::HexEncode(local_poly.polynomial(0)) << std::endl;
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
     }
 
@@ -442,7 +442,7 @@ void GenesisBlockInit::ReloadBlsPri(uint32_t sharding_id) {
         auto str = init_info.join_info().SerializeAsString();
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
         secptr->SetPrivateKey(init_info.prikey());
-        std::cout << "save polynomial: " << common::Encode::HexEncode(secptr->GetAddress()) << ", " << common::Encode::HexEncode(init_info.local_poly().polynomial(0)) << std::endl;
+        std::cout << "2 save polynomial: " << common::Encode::HexEncode(secptr->GetAddress()) << ", " << common::Encode::HexEncode(init_info.local_poly().polynomial(0)) << std::endl;
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), init_info.local_poly());
         prefix_db_->SaveTemporaryKv(check_hash, str);
         std::cout << "save temp data success: " << common::Encode::HexEncode(check_hash) << std::endl;
