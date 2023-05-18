@@ -717,19 +717,24 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
             "356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe"));
         prikeys.push_back(common::Encode::HexDecode(
             "a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee"));
-        for (uint32_t i = 0; i < prikeys.size(); ++i) {
-            std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
-            secptr->SetPrivateKey(prikeys[i]);
-            bls::protobuf::JoinElectBlsInfo verfy_final_vals;
-            prefix_db_->GetVerifiedG2s(0, secptr->GetAddress(), &verfy_final_vals);
-            auto verified_val = verfy_final_vals.SerializeAsString();
-            auto local_member_index = common::GlobalInfo::Instance()->config_local_member_idx();
-            prefix_db_->SaveVerifiedG2s(i, secptr->GetAddress(), verfy_final_vals, db_batch);
-            ZJC_DEBUG("success save verified g2: %u, %s",
-                i,
-                common::Encode::HexEncode(secptr->GetAddress()).c_str());
-        }
+        for (idx = 0; idx < prikeys.size(); ++idx) {
+            for (uint32_t i = 0; i < prikeys.size(); ++i) {
+                if (i == idx) {
+                    continue;
+                }
 
+                std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
+                secptr->SetPrivateKey(prikeys[i]);
+                bls::protobuf::JoinElectBlsInfo verfy_final_vals;
+                prefix_db_->GetVerifiedG2s(0, secptr->GetAddress(), &verfy_final_vals);
+                auto verified_val = verfy_final_vals.SerializeAsString();
+                auto local_member_index = common::GlobalInfo::Instance()->config_local_member_idx();
+                prefix_db_->SaveVerifiedG2s(idx, secptr->GetAddress(), verfy_final_vals, db_batch);
+                ZJC_DEBUG("success save verified g2: %u, %s",
+                    i,
+                    common::Encode::HexEncode(secptr->GetAddress()).c_str());
+            }
+        }
     }
     
     {
@@ -740,17 +745,23 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
             "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"));
         prikeys.push_back(common::Encode::HexDecode(
             "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
-        for (uint32_t i = 0; i < prikeys.size(); ++i) {
-            std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
-            secptr->SetPrivateKey(prikeys[i]);
-            bls::protobuf::JoinElectBlsInfo verfy_final_vals;
-            prefix_db_->GetVerifiedG2s(0, secptr->GetAddress(), &verfy_final_vals);
-            auto verified_val = verfy_final_vals.SerializeAsString();
-            auto local_member_index = common::GlobalInfo::Instance()->config_local_member_idx();
-            prefix_db_->SaveVerifiedG2s(i, secptr->GetAddress(), verfy_final_vals, db_batch);
-            ZJC_DEBUG("success save verified g2: %u, %s",
-                i,
-                common::Encode::HexEncode(secptr->GetAddress()).c_str());
+        for (idx = 0; idx < prikeys.size(); ++idx) {
+            for (uint32_t i = 0; i < prikeys.size(); ++i) {
+                if (i == idx) {
+                    continue;
+                }
+
+                std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
+                secptr->SetPrivateKey(prikeys[i]);
+                bls::protobuf::JoinElectBlsInfo verfy_final_vals;
+                prefix_db_->GetVerifiedG2s(0, secptr->GetAddress(), &verfy_final_vals);
+                auto verified_val = verfy_final_vals.SerializeAsString();
+                auto local_member_index = common::GlobalInfo::Instance()->config_local_member_idx();
+                prefix_db_->SaveVerifiedG2s(idx, secptr->GetAddress(), verfy_final_vals, db_batch);
+                ZJC_DEBUG("success save verified g2: %u, %s",
+                    i,
+                    common::Encode::HexEncode(secptr->GetAddress()).c_str());
+            }
         }
     }
 
