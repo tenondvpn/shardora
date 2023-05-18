@@ -132,7 +132,6 @@ void BlsManager::OnNewElectBlock(
         db_);
     waiting_bls_->OnNewElectionBlock(
         elect_height,
-        elected_members,
         members,
         latest_timeblock_info_);
     BLS_DEBUG("success add new bls dkg, elect_height: %lu", elect_height);
