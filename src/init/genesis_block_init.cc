@@ -1124,8 +1124,10 @@ int GenesisBlockInit::CreateShardNodesBlocks(
                     polynomial.push_back(libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)).c_str()));
                 }
 
-                libBLS::Dkg dkg_instance = libBLS::Dkg(2, 3);
-                auto contribution = dkg_instance.SecretKeyContribution(polynomial, 3, 2);
+                uint32_t valid_n = prikeys.size();
+                uint32_t valid_t = common::GetSignerCount(valid_n);
+                libBLS::Dkg dkg_instance = libBLS::Dkg(valid_t, valid_n);
+                auto contribution = dkg_instance.SecretKeyContribution(polynomial, valid_n, valid_t);
                 uint32_t local_member_index_ = k;
                 uint32_t change_idx = 0;
                 auto new_g2 = contribution[change_idx] * libff::alt_bn128_G2::one();
