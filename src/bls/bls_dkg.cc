@@ -545,7 +545,12 @@ bool BlsDkg::VerifySekkeyValid(
     auto old_g2_val = power(libff::alt_bn128_Fr(local_member_index_ + 1), changed_idx) * old_val;
     auto new_g2_val = power(libff::alt_bn128_Fr(local_member_index_ + 1), changed_idx) * new_val;
     all_verified_val = all_verified_val - old_g2_val + new_g2_val;
-    return all_verified_val == seckey * libff::alt_bn128_G2::one();
+    if (all_verified_val != seckey * libff::alt_bn128_G2::one()) {
+        for_common_pk_g2s_[peer_index] = libff::alt_bn128_G2::zero();
+        return false;
+    }
+
+    return true;
 }
 
 libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t peer_mem_index, uint32_t* changed_idx) {
@@ -806,14 +811,17 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
     common_pk->set_y_c1(
         libBLS::ThresholdUtils::fieldElementToString(common_public_key_.Y.c1));
     std::string pk = common_pk->x_c0() + common_pk->x_c1() + common_pk->y_c0() + common_pk->y_c1();
-    ZJC_DEBUG("valid bls members: %d, pk: %s",
-        bitmap.valid_count(), common::Encode::HexEncode(pk).c_str());
-
     std::string sign_x;
     std::string sign_y;
     libff::alt_bn128_G1 g1_hash;
     CreateDkgMessage(msg_ptr);
     std::string sign_hash = common::Hash::keccak256(pk);
+    ZJC_DEBUG("valid bls members: %d, pk hash: %s, pk: %s",
+        bitmap.valid_count(),
+        common::Encode::HexEncode(sign_hash).c_str(),
+        common::Encode::HexEncode(pk).c_str());
+
+
     bls_mgr_->GetLibffHash(sign_hash, &g1_hash);
     if (bls_mgr_->Sign(
             min_aggree_member_count_,
