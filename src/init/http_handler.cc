@@ -170,7 +170,7 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
             (gas_price != nullptr), (sign_r != nullptr),
             (sign_s != nullptr), (shard_id != nullptr));
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
-        evhtp_send_reply(req, EVHTP_RES_OK);
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
         ZJC_INFO("http transaction param error: %s.", res.c_str());
         return;
     }
@@ -181,7 +181,7 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     if (!common::StringUtil::ToUint64(std::string(amount), &amount_val)) {
         std::string res = std::string("amount not integer: ") + amount;
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
-        evhtp_send_reply(req, EVHTP_RES_OK);
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
         return;
     }
 
@@ -189,7 +189,7 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     if (!common::StringUtil::ToUint64(std::string(gas_limit), &gas_limit_val)) {
         std::string res = std::string("gas_limit not integer: ") + gas_limit;
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
-        evhtp_send_reply(req, EVHTP_RES_OK);
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
         return;
     }
 
@@ -197,7 +197,7 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     if (!common::StringUtil::ToUint64(std::string(gas_price), &gas_price_val)) {
         std::string res = std::string("gas_price not integer: ") + gas_price;
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
-        evhtp_send_reply(req, EVHTP_RES_OK);
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
         return;
     }
 
@@ -205,7 +205,7 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     if (!common::StringUtil::ToInt32(std::string(shard_id), &shard_id_val)) {
         std::string res = std::string("shard_id not integer: ") + shard_id;
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
-        evhtp_send_reply(req, EVHTP_RES_OK);
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
         return;
     }
 
@@ -223,7 +223,7 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     if (!common::StringUtil::ToInt32(std::string(sign_v), &tmp_sign_v)) {
         std::string res = std::string("sign_v not integer: ") + sign_v;
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
-        evhtp_send_reply(req, EVHTP_RES_OK);
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
         return;
     }
 
@@ -245,7 +245,7 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     if (status != http::kHttpSuccess) {
         std::string res = std::string("transaction invalid: ") + GetStatus(status);
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
-        evhtp_send_reply(req, EVHTP_RES_OK);
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
         return;
     }
 
