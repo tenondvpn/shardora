@@ -84,11 +84,22 @@ static int CreateTransactionWithAttr(
     auto new_tx = msg.mutable_tx_proto();
     new_tx->set_gid(gid);
     new_tx->set_pubkey(from_pk);
-    new_tx->set_step(pools::protobuf::kNormalFrom);
+    const char* step = evhtp_kv_find(evhtp_kvs, "type");
+    if (step == nullptr) {
+        return kHttpError;
+    }
+
+    uint32_t step_val = 0;
+    if (!common::StringUtil::ToUint64(std::string(step), &step_val)) {
+        return kHttpError;
+    }
+
+    new_tx->set_step(step_val);
     new_tx->set_to(to);
     new_tx->set_amount(amount);
     new_tx->set_gas_limit(gas_limit);
     new_tx->set_gas_price(gas_price);
+    
     const char* key = evhtp_kv_find(evhtp_kvs, "key");
     const char* val = evhtp_kv_find(evhtp_kvs, "val");
     if (key != nullptr) {
