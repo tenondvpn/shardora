@@ -133,7 +133,7 @@ function create_contract(gid, to, amount, gas_limit, gas_price, contract_bytes, 
 
     return {
         'gid': gid,
-        'frompk': '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16),
+        'pubkey': '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16),
         'to': to,
         'amount': amount,
         'gas_limit': gas_limit,
@@ -145,9 +145,9 @@ function create_contract(gid, to, amount, gas_limit, gas_price, contract_bytes, 
         "bytes_code": contract_bytes,
         "input": input,
         "pepay": prepay,
-        'sig_r': sigR.toString(16),
-        'sig_s': sigS.toString(16),
-        'sig_v': sig.v,
+        'sign_r': sigR.toString(16),
+        'sign_s': sigS.toString(16),
+        'sign_v': sig.v,
     }
 }
 
