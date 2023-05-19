@@ -8,11 +8,25 @@ var querystring = require('querystring');
 var http = require('http');
 var fs = require('fs');
 
-
 var self_private_key = null;
 var self_public_key = null;
 var local_count_shard_id = 3;
 var contract_address = null;
+
+function str_to_hex(str) {
+    var arr1 = [];
+    for (var n = 0; n < str.length; n++) {
+        var hex = Number(str.charCodeAt(n)).toString(16);
+        arr1.push(hex);
+    }
+    return arr1.join('');
+}
+
+function hexToBytes(hex) {
+    for (var bytes = [], c = 0; c < hex.length; c += 2)
+        bytes.push(parseInt(hex.substr(c, 2), 16));
+    return bytes;
+}
 
 function init_private_key() {
     const privateKeyBuf = Secp256k1.uint256("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971", 16)
