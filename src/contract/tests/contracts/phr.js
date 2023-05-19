@@ -232,6 +232,7 @@ function CreatePhr() {
     console.log("AttrReg: " + AttrReg.substring(2) + AttrReg_param_codes.substring(2));
 }
 
+const args = process.argv.slice(2)
 if (args[0] == 0) {
     do_transaction(args[1], 100000, 100000, 1);
 }
