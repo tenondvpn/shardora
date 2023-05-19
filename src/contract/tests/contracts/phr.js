@@ -81,7 +81,7 @@ function GetValidHexString(uint256_bytes) {
 
 function create_contract(gid, to, amount, gas_limit, gas_price, contract_bytes, input, prepay) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
-    var tx_type = 0;
+    var tx_type = 6;
     var frompk = '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16);
     const MAX_UINT32 = 0xFFFFFFFF;
     var amount_buf = new Buffer(8);
