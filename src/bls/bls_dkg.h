@@ -168,6 +168,7 @@ private:
     bool has_broadcast_verify_ = false;
     bool has_broadcast_swapkey_ = false;
     bool has_finished_ = false;
+    std::vector<libff::alt_bn128_G2> for_common_pk_g2s_;
 
 #ifdef ZJC_UNITTEST
     transport::MessagePtr ver_brd_msg_;

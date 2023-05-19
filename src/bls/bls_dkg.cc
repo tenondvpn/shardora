@@ -90,6 +90,7 @@ void BlsDkg::OnNewElectionBlock(
     members_ = members;
     valid_swapkey_set_.clear();
     member_count_ = members_->size();
+    for_common_pk_g2s_ = std::vector<libff::alt_bn128_G2>(member_count_, libff::alt_bn128_G2::zero());
     min_aggree_member_count_ = common::GetSignerCount(member_count_);
     elect_hegiht_ = elect_height;
     for (uint32_t i = 0; i < member_count_; ++i) {
@@ -505,6 +506,23 @@ bool BlsDkg::VerifySekkeyValid(
         auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
         auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
         old_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+
+        if (changed_idx == 0) {
+            for_common_pk_g2s_[peer_index] = new_val;
+        } else {
+            auto& item = join_info.g2_req().verify_vec(0);
+            auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+            auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+            auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+            auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+            auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+            auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+            auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+            auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+            auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+            old_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+            for_common_pk_g2s_[peer_index] = old_val;
+        }
     }
 
     auto midx = local_member_index_ / common::kElectNodeMinMemberIndex;
@@ -689,9 +707,7 @@ void BlsDkg::FinishBroadcast(uint8_t thread_idx) try {
             continue;
         }
 
-        uint32_t changed_idx = 0;
-        auto g2_val = GetVerifyG2FromDb(i, &changed_idx);
-        if (g2_val == libff::alt_bn128_G2::zero()) {
+        if (for_common_pk_g2s_[i] == libff::alt_bn128_G2::zero()) {
             valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
             common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
             BLS_DEBUG("elect_height: %d, invalid all_verification_vector index: %d",
@@ -701,7 +717,11 @@ void BlsDkg::FinishBroadcast(uint8_t thread_idx) try {
 
         std::string seckey;
         if (!prefix_db_->GetSwapKey(
-            local_member_index_, elect_hegiht_, local_member_index_, i, &seckey)) {
+                local_member_index_,
+                elect_hegiht_,
+                local_member_index_,
+                i,
+                &seckey)) {
             valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
             common_public_key_ = common_public_key_ + libff::alt_bn128_G2::zero();
             BLS_DEBUG("elect_height: %d, invalid secret_key_contribution_ index: %d",
@@ -710,7 +730,7 @@ void BlsDkg::FinishBroadcast(uint8_t thread_idx) try {
         }
 
         valid_seck_keys.push_back(libff::alt_bn128_Fr(seckey.c_str()));
-        common_public_key_ = common_public_key_ + g2_val;
+        common_public_key_ = common_public_key_ + for_common_pk_g2s_[i];
         bitmap.Set(i);
     }
 
