@@ -860,7 +860,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     }
 
     std::vector<libff::alt_bn128_Fr> polynomial(valid_t);
-    int32_t change_idx = 0;// common::Random::RandomInt32() % valid_t;
+    int32_t change_idx = common::Random::RandomInt32() % valid_t;
     libff::alt_bn128_G2 old_g2 = libff::alt_bn128_G2::zero();
     for (int32_t i = 0; i < valid_t; ++i) {
         polynomial[i] = libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)).c_str());
