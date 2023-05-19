@@ -697,6 +697,11 @@ bool BlsManager::VerifyAggSignValid(
         std::string verify_hash;
         libff::alt_bn128_G1 g1_hash;
         GetLibffHash(finish_item->max_finish_hash, &g1_hash);
+        auto bn_sign = *bls_agg_sign;
+        bn_sign.to_affine_coordinates();
+        auto sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
+        auto sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
+
         if (Verify(
                 t,
                 n,
@@ -704,19 +709,19 @@ bool BlsManager::VerifyAggSignValid(
                 *bls_agg_sign,
                 g1_hash,
                 &verify_hash) != bls::kBlsSuccess) {
-            auto bn_sign = *bls_agg_sign;
-            bn_sign.to_affine_coordinates();
-            auto sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
-            auto sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
-            ZJC_ERROR("verify agg sign failed hash: %s, g1 hash: %s, agg sign: %s, %s, %s!",
+            ZJC_ERROR("verify agg sign failed t: %d, n: %d, hash: %s, g1 hash: %s, agg sign: %s, %s, %s!",
+                t, n,
                 common::Encode::HexEncode(finish_item->max_finish_hash).c_str(),
                 libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
                 sign_x.c_str(), sign_y.c_str(), debug_idx.c_str());
             return false;
         }
 
-        ZJC_ERROR("verify agg sign success!");
-        return true;
+        ZJC_ERROR("verify agg sign success t: %d, n: %d, hash: %s, g1 hash: %s, agg sign: %s, %s, %s!",
+            t, n,
+            common::Encode::HexEncode(finish_item->max_finish_hash).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
+            sign_x.c_str(), sign_y.c_str(), debug_idx.c_str());        return true;
     } catch (...) {
     }
 
