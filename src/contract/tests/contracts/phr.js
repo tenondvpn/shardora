@@ -8,6 +8,25 @@ var querystring = require('querystring');
 var http = require('http');
 var fs = require('fs');
 
+
+var self_private_key = null;
+var self_public_key = null;
+var local_count_shard_id = 3;
+var contract_address = null;
+
+function init_private_key() {
+    const privateKeyBuf = Secp256k1.uint256("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971", 16)
+    self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
+    self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
+    var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
+    var address = keccak256(pk_bytes).toString('hex')
+    console.log("self_account_id: " + address.toString('hex'));
+    address = address.slice(address.length - 40, address.length)
+    self_account_id = address;
+    contract_address = fs.readFileSync('contract_address', 'utf-8');
+    console.log("contract_address: " + contract_address);
+}
+
 function PostCode(data) {
     var post_data = querystring.stringify(data);
     var post_options = {
@@ -232,6 +251,7 @@ function CreatePhr() {
     console.log("AttrReg: " + AttrReg.substring(2) + AttrReg_param_codes.substring(2));
 }
 
+init_private_key();
 const args = process.argv.slice(2)
 if (args[0] == 0) {
     do_transaction(args[1], 100000, 100000, 1);
