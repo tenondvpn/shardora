@@ -90,11 +90,11 @@ static int CreateTransactionWithAttr(
     }
 
     uint32_t step_val = 0;
-    if (!common::StringUtil::ToUint64(std::string(step), &step_val)) {
+    if (!common::StringUtil::ToUint32(std::string(step), &step_val)) {
         return kHttpError;
     }
 
-    new_tx->set_step(step_val);
+    new_tx->set_step(static_cast<pools::protobuf::StepType>(step_val));
     new_tx->set_to(to);
     new_tx->set_amount(amount);
     new_tx->set_gas_limit(gas_limit);
