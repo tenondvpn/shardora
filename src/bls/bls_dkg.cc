@@ -520,8 +520,8 @@ bool BlsDkg::VerifySekkeyValid(
             auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
             auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
             auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
-            old_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-            for_common_pk_g2s_[peer_index] = old_val;
+            auto tmp_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+            for_common_pk_g2s_[peer_index] = tmp_val;
         }
     }
 
