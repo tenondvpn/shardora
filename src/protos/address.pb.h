@@ -285,6 +285,13 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::uint64 latest_height() const;
   void set_latest_height(::google::protobuf::uint64 value);
 
+  // optional int32 elect_pos = 11 [default = -1];
+  bool has_elect_pos() const;
+  void clear_elect_pos();
+  static const int kElectPosFieldNumber = 11;
+  ::google::protobuf::int32 elect_pos() const;
+  void set_elect_pos(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.address.protobuf.AddressInfo)
  private:
   void set_has_pubkey();
@@ -305,6 +312,8 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   void clear_has_latest_height();
   void set_has_credit();
   void clear_has_credit();
+  void set_has_elect_pos();
+  void clear_has_elect_pos();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -319,6 +328,7 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   int type_;
   ::google::protobuf::int32 credit_;
   ::google::protobuf::uint64 latest_height_;
+  ::google::protobuf::int32 elect_pos_;
   friend struct ::protobuf_protos_2faddress_2eproto::TableStruct;
 };
 // ===================================================================
@@ -700,6 +710,30 @@ inline const ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::Bls
 AddressInfo::g2s() const {
   // @@protoc_insertion_point(field_list:zjchain.address.protobuf.AddressInfo.g2s)
   return g2s_;
+}
+
+// optional int32 elect_pos = 11 [default = -1];
+inline bool AddressInfo::has_elect_pos() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void AddressInfo::set_has_elect_pos() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void AddressInfo::clear_has_elect_pos() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void AddressInfo::clear_elect_pos() {
+  elect_pos_ = -1;
+  clear_has_elect_pos();
+}
+inline ::google::protobuf::int32 AddressInfo::elect_pos() const {
+  // @@protoc_insertion_point(field_get:zjchain.address.protobuf.AddressInfo.elect_pos)
+  return elect_pos_;
+}
+inline void AddressInfo::set_elect_pos(::google::protobuf::int32 value) {
+  set_has_elect_pos();
+  elect_pos_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.address.protobuf.AddressInfo.elect_pos)
 }
 
 #ifdef __GNUC__

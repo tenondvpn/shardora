@@ -23,6 +23,7 @@ namespace protobuf_protos_2fblock_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_Block;
 }  // namespace protobuf_protos_2fblock_2eproto
 namespace protobuf_protos_2fbls_2eproto {
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_LocalPolynomial;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_VerifyVecBrdReq;
 }  // namespace protobuf_protos_2fbls_2eproto
 namespace protobuf_protos_2finit_2eproto {
@@ -137,9 +138,10 @@ static void InitDefaultsGenesisInitBlsInfo() {
   ::zjchain::init::protobuf::GenesisInitBlsInfo::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<1> scc_info_GenesisInitBlsInfo =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsGenesisInitBlsInfo}, {
-      &protobuf_protos_2finit_2eproto::scc_info_JoinElectInfo.base,}};
+::google::protobuf::internal::SCCInfo<2> scc_info_GenesisInitBlsInfo =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 2, InitDefaultsGenesisInitBlsInfo}, {
+      &protobuf_protos_2finit_2eproto::scc_info_JoinElectInfo.base,
+      &protobuf_protos_2fbls_2eproto::scc_info_LocalPolynomial.base,}};
 
 static void InitDefaultsInitMessage() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -215,11 +217,15 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::GenesisInitBlsInfo, bls_enc_data_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::GenesisInitBlsInfo, bls_hash_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::GenesisInitBlsInfo, join_info_),
-  4,
-  5,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::GenesisInitBlsInfo, local_poly_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::GenesisInitBlsInfo, prikey_),
+  6,
+  7,
   0,
   1,
   2,
+  4,
+  5,
   3,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InitMessage, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InitMessage, _internal_metadata_),
@@ -238,8 +244,8 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 7, 13, sizeof(::zjchain::init::protobuf::GetAddressInfoResponse)},
   { 14, 21, sizeof(::zjchain::init::protobuf::InvalidLeaderPools)},
   { 23, 31, sizeof(::zjchain::init::protobuf::JoinElectInfo)},
-  { 34, 45, sizeof(::zjchain::init::protobuf::GenesisInitBlsInfo)},
-  { 51, 59, sizeof(::zjchain::init::protobuf::InitMessage)},
+  { 34, 47, sizeof(::zjchain::init::protobuf::GenesisInitBlsInfo)},
+  { 55, 63, sizeof(::zjchain::init::protobuf::InitMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -280,20 +286,22 @@ void AddDescriptorsImpl() {
       "LeaderPools\022\r\n\005pools\030\001 \003(\005\022\024\n\014elect_heig"
       "ht\030\002 \001(\004\"l\n\rJoinElectInfo\022\020\n\010shard_id\030\001 "
       "\001(\r\022\022\n\nmember_idx\030\002 \001(\r\0225\n\006g2_req\030\003 \001(\0132"
-      "%.zjchain.bls.protobuf.VerifyVecBrdReq\"\243"
+      "%.zjchain.bls.protobuf.VerifyVecBrdReq\"\356"
       "\001\n\022GenesisInitBlsInfo\022\016\n\006height\030\001 \001(\004\022\020\n"
       "\010shard_id\030\002 \001(\r\022\n\n\002id\030\003 \001(\014\022\024\n\014bls_enc_d"
       "ata\030\004 \001(\014\022\020\n\010bls_hash\030\005 \001(\014\0227\n\tjoin_info"
       "\030\006 \001(\0132$.zjchain.init.protobuf.JoinElect"
-      "Info\"\310\001\n\013InitMessage\022>\n\010addr_req\030\001 \001(\0132,"
-      ".zjchain.init.protobuf.GetAddressInfoReq"
-      "uest\022\?\n\010addr_res\030\002 \001(\0132-.zjchain.init.pr"
-      "otobuf.GetAddressInfoResponse\0228\n\005pools\030\003"
-      " \001(\0132).zjchain.init.protobuf.InvalidLead"
-      "erPools"
+      "Info\0229\n\nlocal_poly\030\007 \001(\0132%.zjchain.bls.p"
+      "rotobuf.LocalPolynomial\022\016\n\006prikey\030\010 \001(\014\""
+      "\310\001\n\013InitMessage\022>\n\010addr_req\030\001 \001(\0132,.zjch"
+      "ain.init.protobuf.GetAddressInfoRequest\022"
+      "\?\n\010addr_res\030\002 \001(\0132-.zjchain.init.protobu"
+      "f.GetAddressInfoResponse\0228\n\005pools\030\003 \001(\0132"
+      ").zjchain.init.protobuf.InvalidLeaderPoo"
+      "ls"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 727);
+      descriptor, 802);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/init.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -1405,6 +1413,12 @@ void JoinElectInfo::InternalSwap(JoinElectInfo* other) {
 void GenesisInitBlsInfo::InitAsDefaultInstance() {
   ::zjchain::init::protobuf::_GenesisInitBlsInfo_default_instance_._instance.get_mutable()->join_info_ = const_cast< ::zjchain::init::protobuf::JoinElectInfo*>(
       ::zjchain::init::protobuf::JoinElectInfo::internal_default_instance());
+  ::zjchain::init::protobuf::_GenesisInitBlsInfo_default_instance_._instance.get_mutable()->local_poly_ = const_cast< ::zjchain::bls::protobuf::LocalPolynomial*>(
+      ::zjchain::bls::protobuf::LocalPolynomial::internal_default_instance());
+}
+void GenesisInitBlsInfo::clear_local_poly() {
+  if (local_poly_ != NULL) local_poly_->Clear();
+  clear_has_local_poly();
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int GenesisInitBlsInfo::kHeightFieldNumber;
@@ -1413,6 +1427,8 @@ const int GenesisInitBlsInfo::kIdFieldNumber;
 const int GenesisInitBlsInfo::kBlsEncDataFieldNumber;
 const int GenesisInitBlsInfo::kBlsHashFieldNumber;
 const int GenesisInitBlsInfo::kJoinInfoFieldNumber;
+const int GenesisInitBlsInfo::kLocalPolyFieldNumber;
+const int GenesisInitBlsInfo::kPrikeyFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 GenesisInitBlsInfo::GenesisInitBlsInfo()
@@ -1439,10 +1455,19 @@ GenesisInitBlsInfo::GenesisInitBlsInfo(const GenesisInitBlsInfo& from)
   if (from.has_bls_hash()) {
     bls_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.bls_hash_);
   }
+  prikey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_prikey()) {
+    prikey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.prikey_);
+  }
   if (from.has_join_info()) {
     join_info_ = new ::zjchain::init::protobuf::JoinElectInfo(*from.join_info_);
   } else {
     join_info_ = NULL;
+  }
+  if (from.has_local_poly()) {
+    local_poly_ = new ::zjchain::bls::protobuf::LocalPolynomial(*from.local_poly_);
+  } else {
+    local_poly_ = NULL;
   }
   ::memcpy(&height_, &from.height_,
     static_cast<size_t>(reinterpret_cast<char*>(&shard_id_) -
@@ -1454,6 +1479,7 @@ void GenesisInitBlsInfo::SharedCtor() {
   id_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   bls_enc_data_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   bls_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  prikey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&join_info_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&shard_id_) -
       reinterpret_cast<char*>(&join_info_)) + sizeof(shard_id_));
@@ -1468,7 +1494,9 @@ void GenesisInitBlsInfo::SharedDtor() {
   id_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   bls_enc_data_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   bls_hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  prikey_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != internal_default_instance()) delete join_info_;
+  if (this != internal_default_instance()) delete local_poly_;
 }
 
 void GenesisInitBlsInfo::SetCachedSize(int size) const {
@@ -1492,7 +1520,7 @@ void GenesisInitBlsInfo::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 15u) {
+  if (cached_has_bits & 63u) {
     if (cached_has_bits & 0x00000001u) {
       id_.ClearNonDefaultToEmptyNoArena();
     }
@@ -1503,11 +1531,18 @@ void GenesisInitBlsInfo::Clear() {
       bls_hash_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000008u) {
+      prikey_.ClearNonDefaultToEmptyNoArena();
+    }
+    if (cached_has_bits & 0x00000010u) {
       GOOGLE_DCHECK(join_info_ != NULL);
       join_info_->Clear();
     }
+    if (cached_has_bits & 0x00000020u) {
+      GOOGLE_DCHECK(local_poly_ != NULL);
+      local_poly_->Clear();
+    }
   }
-  if (cached_has_bits & 48u) {
+  if (cached_has_bits & 192u) {
     ::memset(&height_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&shard_id_) -
         reinterpret_cast<char*>(&height_)) + sizeof(shard_id_));
@@ -1602,6 +1637,30 @@ bool GenesisInitBlsInfo::MergePartialFromCodedStream(
         break;
       }
 
+      // optional .zjchain.bls.protobuf.LocalPolynomial local_poly = 7;
+      case 7: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(58u /* 58 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_local_poly()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bytes prikey = 8;
+      case 8: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(66u /* 66 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_prikey()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -1630,12 +1689,12 @@ void GenesisInitBlsInfo::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint64 height = 1;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000040u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(1, this->height(), output);
   }
 
   // optional uint32 shard_id = 2;
-  if (cached_has_bits & 0x00000020u) {
+  if (cached_has_bits & 0x00000080u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->shard_id(), output);
   }
 
@@ -1658,9 +1717,21 @@ void GenesisInitBlsInfo::SerializeWithCachedSizes(
   }
 
   // optional .zjchain.init.protobuf.JoinElectInfo join_info = 6;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       6, this->_internal_join_info(), output);
+  }
+
+  // optional .zjchain.bls.protobuf.LocalPolynomial local_poly = 7;
+  if (cached_has_bits & 0x00000020u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      7, this->_internal_local_poly(), output);
+  }
+
+  // optional bytes prikey = 8;
+  if (cached_has_bits & 0x00000008u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      8, this->prikey(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1679,12 +1750,12 @@ void GenesisInitBlsInfo::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint64 height = 1;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000040u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(1, this->height(), target);
   }
 
   // optional uint32 shard_id = 2;
-  if (cached_has_bits & 0x00000020u) {
+  if (cached_has_bits & 0x00000080u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->shard_id(), target);
   }
 
@@ -1710,10 +1781,24 @@ void GenesisInitBlsInfo::SerializeWithCachedSizes(
   }
 
   // optional .zjchain.init.protobuf.JoinElectInfo join_info = 6;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         6, this->_internal_join_info(), deterministic, target);
+  }
+
+  // optional .zjchain.bls.protobuf.LocalPolynomial local_poly = 7;
+  if (cached_has_bits & 0x00000020u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        7, this->_internal_local_poly(), deterministic, target);
+  }
+
+  // optional bytes prikey = 8;
+  if (cached_has_bits & 0x00000008u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        8, this->prikey(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1733,7 +1818,7 @@ size_t GenesisInitBlsInfo::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 63u) {
+  if (_has_bits_[0 / 32] & 255u) {
     // optional bytes id = 3;
     if (has_id()) {
       total_size += 1 +
@@ -1755,11 +1840,25 @@ size_t GenesisInitBlsInfo::ByteSizeLong() const {
           this->bls_hash());
     }
 
+    // optional bytes prikey = 8;
+    if (has_prikey()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->prikey());
+    }
+
     // optional .zjchain.init.protobuf.JoinElectInfo join_info = 6;
     if (has_join_info()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *join_info_);
+    }
+
+    // optional .zjchain.bls.protobuf.LocalPolynomial local_poly = 7;
+    if (has_local_poly()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *local_poly_);
     }
 
     // optional uint64 height = 1;
@@ -1805,7 +1904,7 @@ void GenesisInitBlsInfo::MergeFrom(const GenesisInitBlsInfo& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 63u) {
+  if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_id();
       id_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.id_);
@@ -1819,12 +1918,19 @@ void GenesisInitBlsInfo::MergeFrom(const GenesisInitBlsInfo& from) {
       bls_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.bls_hash_);
     }
     if (cached_has_bits & 0x00000008u) {
-      mutable_join_info()->::zjchain::init::protobuf::JoinElectInfo::MergeFrom(from.join_info());
+      set_has_prikey();
+      prikey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.prikey_);
     }
     if (cached_has_bits & 0x00000010u) {
-      height_ = from.height_;
+      mutable_join_info()->::zjchain::init::protobuf::JoinElectInfo::MergeFrom(from.join_info());
     }
     if (cached_has_bits & 0x00000020u) {
+      mutable_local_poly()->::zjchain::bls::protobuf::LocalPolynomial::MergeFrom(from.local_poly());
+    }
+    if (cached_has_bits & 0x00000040u) {
+      height_ = from.height_;
+    }
+    if (cached_has_bits & 0x00000080u) {
       shard_id_ = from.shard_id_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -1861,7 +1967,10 @@ void GenesisInitBlsInfo::InternalSwap(GenesisInitBlsInfo* other) {
     GetArenaNoVirtual());
   bls_hash_.Swap(&other->bls_hash_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
+  prikey_.Swap(&other->prikey_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
   swap(join_info_, other->join_info_);
+  swap(local_poly_, other->local_poly_);
   swap(height_, other->height_);
   swap(shard_id_, other->shard_id_);
   swap(_has_bits_[0], other->_has_bits_[0]);

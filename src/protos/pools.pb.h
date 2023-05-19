@@ -1179,20 +1179,20 @@ class JoinElectNode : public ::google::protobuf::Message /* @@protoc_insertion_p
 
   // accessors -------------------------------------------------------
 
-  // optional bytes id = 1;
-  bool has_id() const;
-  void clear_id();
-  static const int kIdFieldNumber = 1;
-  const ::std::string& id() const;
-  void set_id(const ::std::string& value);
+  // optional bytes pubkey = 1;
+  bool has_pubkey() const;
+  void clear_pubkey();
+  static const int kPubkeyFieldNumber = 1;
+  const ::std::string& pubkey() const;
+  void set_pubkey(const ::std::string& value);
   #if LANG_CXX11
-  void set_id(::std::string&& value);
+  void set_pubkey(::std::string&& value);
   #endif
-  void set_id(const char* value);
-  void set_id(const void* value, size_t size);
-  ::std::string* mutable_id();
-  ::std::string* release_id();
-  void set_allocated_id(::std::string* id);
+  void set_pubkey(const char* value);
+  void set_pubkey(const void* value, size_t size);
+  ::std::string* mutable_pubkey();
+  ::std::string* release_pubkey();
+  void set_allocated_pubkey(::std::string* pubkey);
 
   // optional uint64 stoke = 2;
   bool has_stoke() const;
@@ -1208,21 +1208,31 @@ class JoinElectNode : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::google::protobuf::uint32 shard() const;
   void set_shard(::google::protobuf::uint32 value);
 
+  // optional int32 elect_pos = 4;
+  bool has_elect_pos() const;
+  void clear_elect_pos();
+  static const int kElectPosFieldNumber = 4;
+  ::google::protobuf::int32 elect_pos() const;
+  void set_elect_pos(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.JoinElectNode)
  private:
-  void set_has_id();
-  void clear_has_id();
+  void set_has_pubkey();
+  void clear_has_pubkey();
   void set_has_stoke();
   void clear_has_stoke();
   void set_has_shard();
   void clear_has_shard();
+  void set_has_elect_pos();
+  void clear_has_elect_pos();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::internal::ArenaStringPtr id_;
+  ::google::protobuf::internal::ArenaStringPtr pubkey_;
   ::google::protobuf::uint64 stoke_;
   ::google::protobuf::uint32 shard_;
+  ::google::protobuf::int32 elect_pos_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -3032,70 +3042,70 @@ PoolStatisticItem::area_point() const {
 
 // JoinElectNode
 
-// optional bytes id = 1;
-inline bool JoinElectNode::has_id() const {
+// optional bytes pubkey = 1;
+inline bool JoinElectNode::has_pubkey() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void JoinElectNode::set_has_id() {
+inline void JoinElectNode::set_has_pubkey() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void JoinElectNode::clear_has_id() {
+inline void JoinElectNode::clear_has_pubkey() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void JoinElectNode::clear_id() {
-  id_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_id();
+inline void JoinElectNode::clear_pubkey() {
+  pubkey_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_pubkey();
 }
-inline const ::std::string& JoinElectNode::id() const {
-  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.JoinElectNode.id)
-  return id_.GetNoArena();
+inline const ::std::string& JoinElectNode::pubkey() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.JoinElectNode.pubkey)
+  return pubkey_.GetNoArena();
 }
-inline void JoinElectNode::set_id(const ::std::string& value) {
-  set_has_id();
-  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.JoinElectNode.id)
+inline void JoinElectNode::set_pubkey(const ::std::string& value) {
+  set_has_pubkey();
+  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.JoinElectNode.pubkey)
 }
 #if LANG_CXX11
-inline void JoinElectNode::set_id(::std::string&& value) {
-  set_has_id();
-  id_.SetNoArena(
+inline void JoinElectNode::set_pubkey(::std::string&& value) {
+  set_has_pubkey();
+  pubkey_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.pools.protobuf.JoinElectNode.id)
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.pools.protobuf.JoinElectNode.pubkey)
 }
 #endif
-inline void JoinElectNode::set_id(const char* value) {
+inline void JoinElectNode::set_pubkey(const char* value) {
   GOOGLE_DCHECK(value != NULL);
-  set_has_id();
-  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.pools.protobuf.JoinElectNode.id)
+  set_has_pubkey();
+  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.pools.protobuf.JoinElectNode.pubkey)
 }
-inline void JoinElectNode::set_id(const void* value, size_t size) {
-  set_has_id();
-  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+inline void JoinElectNode::set_pubkey(const void* value, size_t size) {
+  set_has_pubkey();
+  pubkey_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.pools.protobuf.JoinElectNode.id)
+  // @@protoc_insertion_point(field_set_pointer:zjchain.pools.protobuf.JoinElectNode.pubkey)
 }
-inline ::std::string* JoinElectNode::mutable_id() {
-  set_has_id();
-  // @@protoc_insertion_point(field_mutable:zjchain.pools.protobuf.JoinElectNode.id)
-  return id_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+inline ::std::string* JoinElectNode::mutable_pubkey() {
+  set_has_pubkey();
+  // @@protoc_insertion_point(field_mutable:zjchain.pools.protobuf.JoinElectNode.pubkey)
+  return pubkey_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* JoinElectNode::release_id() {
-  // @@protoc_insertion_point(field_release:zjchain.pools.protobuf.JoinElectNode.id)
-  if (!has_id()) {
+inline ::std::string* JoinElectNode::release_pubkey() {
+  // @@protoc_insertion_point(field_release:zjchain.pools.protobuf.JoinElectNode.pubkey)
+  if (!has_pubkey()) {
     return NULL;
   }
-  clear_has_id();
-  return id_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_pubkey();
+  return pubkey_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void JoinElectNode::set_allocated_id(::std::string* id) {
-  if (id != NULL) {
-    set_has_id();
+inline void JoinElectNode::set_allocated_pubkey(::std::string* pubkey) {
+  if (pubkey != NULL) {
+    set_has_pubkey();
   } else {
-    clear_has_id();
+    clear_has_pubkey();
   }
-  id_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), id);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.JoinElectNode.id)
+  pubkey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), pubkey);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.JoinElectNode.pubkey)
 }
 
 // optional uint64 stoke = 2;
@@ -3144,6 +3154,30 @@ inline void JoinElectNode::set_shard(::google::protobuf::uint32 value) {
   set_has_shard();
   shard_ = value;
   // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.JoinElectNode.shard)
+}
+
+// optional int32 elect_pos = 4;
+inline bool JoinElectNode::has_elect_pos() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void JoinElectNode::set_has_elect_pos() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void JoinElectNode::clear_has_elect_pos() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void JoinElectNode::clear_elect_pos() {
+  elect_pos_ = 0;
+  clear_has_elect_pos();
+}
+inline ::google::protobuf::int32 JoinElectNode::elect_pos() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.JoinElectNode.elect_pos)
+  return elect_pos_;
+}
+inline void JoinElectNode::set_elect_pos(::google::protobuf::int32 value) {
+  set_has_elect_pos();
+  elect_pos_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.JoinElectNode.elect_pos)
 }
 
 // -------------------------------------------------------------------
