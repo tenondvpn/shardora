@@ -101,9 +101,12 @@ function create_contract(gid, to, amount, gas_limit, gas_price, contract_bytes, 
     var low = (gas_price % MAX_UINT32) - big
     gas_price_buf.writeUInt32LE(big, 4)
     gas_price_buf.writeUInt32LE(low, 0)
+
     var step_buf = new Buffer(8);
-    step_buf.writeUInt32LE(0, 0)
-    step_buf.writeUInt32LE(0, 0)
+    var big = ~~(tx_type / MAX_UINT32)
+    var low = (tx_type % MAX_UINT32) - big
+    step_buf.writeUInt32LE(big, 0)
+    step_buf.writeUInt32LE(low, 0)
 
     var prepay_buf = new Buffer(8);
     var big = ~~(prepay / MAX_UINT32)
@@ -174,8 +177,10 @@ function create_tx(to, amount, gas_limit, gas_price) {
     gas_price_buf.writeUInt32LE(big, 4)
     gas_price_buf.writeUInt32LE(low, 0)
     var step_buf = new Buffer(8);
-    step_buf.writeUInt32LE(0, 0)
-    step_buf.writeUInt32LE(0, 0)
+    var big = ~~(tx_type / MAX_UINT32)
+    var low = (tx_type % MAX_UINT32) - big
+    step_buf.writeUInt32LE(big, 0)
+    step_buf.writeUInt32LE(low, 0)
 
     const message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
         amount_buf, gas_limit_buf, gas_price_buf, step_buf]);
