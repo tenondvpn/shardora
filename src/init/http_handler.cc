@@ -98,6 +98,26 @@ static int CreateTransactionWithAttr(
         }
     }
 
+    const char* contract_bytes = evhtp_kv_find(evhtp_kvs, "bytes_code");
+    if (contract_bytes != nullptr) {
+        new_tx->set_contract_code(common::Encode::HexDecode(contract_bytes));
+    }
+
+    const char* input = evhtp_kv_find(evhtp_kvs, "input");
+    if (input != nullptr) {
+        new_tx->set_contract_input(common::Encode::HexDecode(input));
+    }
+
+    const char* pepay = evhtp_kv_find(evhtp_kvs, "pepay");
+    if (pepay != nullptr) {
+        uint64_t pepay_val = 0;
+        if (!common::StringUtil::ToUint64(std::string(pepay), &pepay_val)) {
+            return kSignatureInvalid;
+        }
+
+        new_tx->set_contract_prepayment(pepay_val);
+    }
+
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign = sign_r + sign_s + "0";// http_handler->security_ptr()->GetSign(sign_r, sign_s, sign_v);
     sign[64] = char(sign_v);

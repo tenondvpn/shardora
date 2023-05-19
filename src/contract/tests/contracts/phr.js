@@ -110,6 +110,7 @@ function create_contract(gid, to, amount, gas_limit, gas_price, contract_bytes, 
         'hash': kechash,
         'attrs_size': 4,
         "bytes_code": contract_bytes,
+        "input": input,
         "pepay": prepay,
         'sig_r': sigR.toString(16),
         'sig_s': sigS.toString(16),
@@ -140,36 +141,101 @@ function call_create_contract(contract_bytes) {
     })
 }
 
-console.log("test smart contract signature: ");
-var account1 = web3.eth.accounts.privateKeyToAccount('0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5');
-console.log("account1 :");
-console.log(account1.address);
-var account2 = web3.eth.accounts.privateKeyToAccount('0x748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05');
-console.log("account2 :");
-console.log(account2.address);
-var account3 = web3.eth.accounts.privateKeyToAccount('0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5');
-console.log("account3 :");
-console.log(account3.address);
 
-var cons_codes = web3.eth.abi.encodeParameters(['address[]'],
-    [[account1.address,
+function create_tx(to, amount, gas_limit, gas_price) {
+    var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
+    var tx_type = 0;
+    var frompk = '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16);
+    const MAX_UINT32 = 0xFFFFFFFF;
+    var amount_buf = new Buffer(8);
+    var big = ~~(amount / MAX_UINT32)
+    var low = (amount % MAX_UINT32) - big
+    amount_buf.writeUInt32LE(big, 4)
+    amount_buf.writeUInt32LE(low, 0)
+
+    var gas_limit_buf = new Buffer(8);
+    var big = ~~(gas_limit / MAX_UINT32)
+    var low = (gas_limit % MAX_UINT32) - big
+    gas_limit_buf.writeUInt32LE(big, 4)
+    gas_limit_buf.writeUInt32LE(low, 0)
+
+    var gas_price_buf = new Buffer(8);
+    var big = ~~(gas_price / MAX_UINT32)
+    var low = (gas_price % MAX_UINT32) - big
+    gas_price_buf.writeUInt32LE(big, 4)
+    gas_price_buf.writeUInt32LE(low, 0)
+    var step_buf = new Buffer(8);
+    step_buf.writeUInt32LE(0, 0)
+    step_buf.writeUInt32LE(0, 0)
+
+    const message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
+        amount_buf, gas_limit_buf, gas_price_buf, step_buf]);
+    var kechash = keccak256(message_buf)
+    var digest = Secp256k1.uint256(kechash, 16)
+    const sig = Secp256k1.ecsign(self_private_key, digest)
+    const sigR = Secp256k1.uint256(sig.r, 16)
+    const sigS = Secp256k1.uint256(sig.s, 16)
+    const pubX = Secp256k1.uint256(self_public_key.x, 16)
+    const pubY = Secp256k1.uint256(self_public_key.y, 16)
+    return {
+        'gid': gid,
+        'pubkey': '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16),
+        'to': to,
+        'amount': amount,
+        'gas_limit': gas_limit,
+        'gas_price': gas_price,
+        'type': tx_type,
+        'shard_id': local_count_shard_id,
+        'sign_r': sigR.toString(16),
+        'sign_s': sigS.toString(16),
+        'sign_v': sig.v,
+    }
+}
+
+function do_transaction(to_addr, amount, gas_limit, gas_price) {
+    var data = create_tx(to_addr, amount, gas_limit, gas_price);
+    PostCode(data);
+}
+
+function CreatePhr() {
+    console.log("test smart contract signature: ");
+    var account1 = web3.eth.accounts.privateKeyToAccount('0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5');
+    console.log("account1 :");
+    console.log(account1.address);
+    var account2 = web3.eth.accounts.privateKeyToAccount('0x748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05');
+    console.log("account2 :");
+    console.log(account2.address);
+    var account3 = web3.eth.accounts.privateKeyToAccount('0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5');
+    console.log("account3 :");
+    console.log(account3.address);
+
+    var cons_codes = web3.eth.abi.encodeParameters(['address[]'],
+        [[account1.address,
         account2.address,
         account3.address]]);
-console.log("cons_codes: " + cons_codes);
+    console.log("cons_codes: " + cons_codes);
 
 
-// func code
-var ResAddFunc = web3.eth.abi.encodeFunctionSignature('ResAdd(bytes32,bytes,bytes)');
-var ResAddFunc_param_codes = web3.eth.abi.encodeParameters(['bytes32', 'bytes', 'bytes'], ['0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', '0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', '0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5']);
-console.log("ResAddFunc: " + ResAddFunc.substring(2) + ResAddFunc_param_codes.substring(2));
+    // func code
+    var ResAddFunc = web3.eth.abi.encodeFunctionSignature('ResAdd(bytes32,bytes,bytes)');
+    var ResAddFunc_param_codes = web3.eth.abi.encodeParameters(['bytes32', 'bytes', 'bytes'], ['0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', '0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', '0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5']);
+    console.log("ResAddFunc: " + ResAddFunc.substring(2) + ResAddFunc_param_codes.substring(2));
 
-var AttrReg = web3.eth.abi.encodeFunctionSignature('AttrReg(bytes,bytes32,bytes[])');
-var test_attr = "test_attr";
-var test_attr_hash = web3.utils.keccak256(test_attr);
+    var AttrReg = web3.eth.abi.encodeFunctionSignature('AttrReg(bytes,bytes32,bytes[])');
+    var test_attr = "test_attr";
+    var test_attr_hash = web3.utils.keccak256(test_attr);
 
-var sig1 = web3.eth.accounts.sign(test_attr_hash, '0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5');
-var sig2 = web3.eth.accounts.sign(test_attr_hash, '0x748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05');
-var sig3 = web3.eth.accounts.sign(test_attr_hash, '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5');
-var AttrReg_param_codes = web3.eth.abi.encodeParameters(['bytes', 'bytes32', 'bytes[]'], ['0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', test_attr_hash, [sig1.signature, sig2.signature, sig3.signature]]);
-console.log("AttrReg: " + AttrReg.substring(2) + AttrReg_param_codes.substring(2));
+    var sig1 = web3.eth.accounts.sign(test_attr_hash, '0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5');
+    var sig2 = web3.eth.accounts.sign(test_attr_hash, '0x748f7eaad8be6841490a134e0518dafdf67714a73d1275f917475abeb504dc05');
+    var sig3 = web3.eth.accounts.sign(test_attr_hash, '0xb546fd36d57b4c9adda29967cf6a1a3e3478f9a4892394e17225cfb6c0d1d1e5');
+    var AttrReg_param_codes = web3.eth.abi.encodeParameters(['bytes', 'bytes32', 'bytes[]'], ['0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', test_attr_hash, [sig1.signature, sig2.signature, sig3.signature]]);
+    console.log("AttrReg: " + AttrReg.substring(2) + AttrReg_param_codes.substring(2));
+}
 
+if (args[0] == 0) {
+    do_transaction(args[1], 100000, 100000, 1);
+}
+
+if (args[0] == 1) {
+    CreatePhr();
+}

@@ -877,7 +877,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     if (change_idx == 0) {
         for_common_pk_g2s_[local_member_index_] = new_g2;
     } else {
-        for_common_pk_g2s_[local_member_index_] = polynomial[0] * libff::alt_bn128_G2::one();;
+        for_common_pk_g2s_[local_member_index_] = polynomial[0] * libff::alt_bn128_G2::one();
     }
 
     auto dkg_instance = std::make_shared<libBLS::Dkg>(valid_t, valid_n);
