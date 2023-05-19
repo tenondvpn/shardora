@@ -92,7 +92,7 @@ void BlsDkg::OnNewElectionBlock(
     member_count_ = members_->size();
     min_aggree_member_count_ = common::GetSignerCount(member_count_);
     elect_hegiht_ = elect_height;
-    for (uint32_t i = 0; i < members_->size(); ++i) {
+    for (uint32_t i = 0; i < member_count_; ++i) {
         if ((*members_)[i]->id == security_->GetAddress()) {
             local_member_index_ = i;
             if (local_member_index_ != common::GlobalInfo::Instance()->config_local_member_idx()) {
@@ -155,14 +155,14 @@ void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) try {
     assert(header.type() == common::kBlsMessage);
     // must verify message signature, to avoid evil node
     auto& bls_msg = header.bls_proto();
-    if (members_->size() <= bls_msg.index()) {
-        BLS_ERROR("members_->size() <= bls_msg.index(): %d, %d",
-            members_->size(), bls_msg.index());
+    if (member_count_ <= bls_msg.index()) {
+        BLS_ERROR("member_count_ <= bls_msg.index(): %d, %d",
+            member_count_, bls_msg.index());
         return;
     }
 
-    if (bls_msg.index() >= members_->size()) {
-        BLS_ERROR("bls_msg.index() >= members_->size()");
+    if (bls_msg.index() >= member_count_) {
+        BLS_ERROR("bls_msg.index() >= member_count_");
         return;
     }
 
@@ -213,9 +213,9 @@ bool BlsDkg::IsSignValid(const transport::MessagePtr& msg_ptr, std::string* cont
 void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
-    if (members_->size() <= bls_msg.index()) {
-        BLS_ERROR("members_->size() <= bls_msg.index(), %u : %u",
-            members_->size(), bls_msg.index());
+    if (member_count_ <= bls_msg.index()) {
+        BLS_ERROR("member_count_ <= bls_msg.index(), %u : %u",
+            member_count_, bls_msg.index());
         assert(false);
         return;
     }
@@ -258,7 +258,7 @@ void BlsDkg::CheckVerifyAllValid(uint8_t thread_idx) {
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (now_tm_us > (begin_time_us_ + kDkgPeriodUs * 2 + 5) &&
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4 - 5)) {
-        for (uint32_t i = 0; i < members_->size(); ++i) {
+        for (uint32_t i = 0; i < member_count_; ++i) {
             if (i == local_member_index_) {
                 continue;
             }
@@ -303,7 +303,7 @@ void BlsDkg::CheckSwapKeyAllValid(uint8_t thread_idx) {
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (now_tm_us > (begin_time_us_ + kDkgPeriodUs * 4 + 5) &&
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 8 - 5)) {
-        for (uint32_t i = 0; i < members_->size(); ++i) {
+        for (uint32_t i = 0; i < member_count_; ++i) {
             auto iter = valid_swapkey_set_.find(i);
             if (iter == valid_swapkey_set_.end()) {
                 SendGetSwapKey(thread_idx, i);
@@ -554,13 +554,13 @@ libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t peer_mem_index, uint32_t*
 }
 
 void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
-    if (members_ == nullptr || local_member_index_ >= members_->size()) {
+    if (members_ == nullptr || local_member_index_ >= member_count_) {
         ZJC_ERROR("member null or member index invalid!");
         assert(false);
         return;
     }
 
-    CreateContribution(members_->size(), common::GetSignerCount(members_->size()));
+    CreateContribution(member_count_, min_aggree_member_count_);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
@@ -588,7 +588,7 @@ void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
 }
 
 void BlsDkg::SwapSecKey(uint8_t thread_idx) try {
-    if (members_ == nullptr || local_member_index_ >= members_->size()) {
+    if (members_ == nullptr || local_member_index_ >= member_count_) {
         ZJC_ERROR("members invalid!");
         return;
     }
@@ -598,7 +598,7 @@ void BlsDkg::SwapSecKey(uint8_t thread_idx) try {
     auto& msg = msg_ptr->header;
     auto& bls_msg = *msg.mutable_bls_proto();
     auto swap_req = bls_msg.mutable_swap_req();
-    for (uint32_t i = 0; i < members_->size(); ++i) {
+    for (uint32_t i = 0; i < member_count_; ++i) {
         auto swap_item = swap_req->add_keys();
         swap_item->set_sec_key("");
         swap_item->set_sec_key_len(0);
@@ -635,7 +635,7 @@ void BlsDkg::SwapSecKey(uint8_t thread_idx) try {
 }
 
 void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* seckey_len) {
-    if (members_ == nullptr || local_member_index_ >= members_->size()) {
+    if (members_ == nullptr || local_member_index_ >= member_count_) {
         return;
     }
 
@@ -662,25 +662,25 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
 
 void BlsDkg::FinishBroadcast(uint8_t thread_idx) try {
     if (members_ == nullptr ||
-            local_member_index_ >= members_->size() ||
+            local_member_index_ >= member_count_ ||
             valid_sec_key_count_ < min_aggree_member_count_) {
         BLS_ERROR("elect_height: %lu, valid count error.valid_sec_key_count_: %d,"
             "min_aggree_member_count_: %d, members_ == nullptr: %d, local_member_index_: %d,"
-            "members_->size(): %d",
+            "member_count_: %d",
             elect_hegiht_, valid_sec_key_count_, min_aggree_member_count_,
-            (members_ == nullptr), local_member_index_, members_->size());
+            (members_ == nullptr), local_member_index_, member_count_);
         return;
     }
 
-    uint32_t bitmap_size = members_->size() / 64 * 64;
-    if (members_->size() % 64 > 0) {
+    uint32_t bitmap_size = member_count_ / 64 * 64;
+    if (member_count_ % 64 > 0) {
         bitmap_size += 64;
     }
 
     common::Bitmap bitmap(bitmap_size);
     common_public_key_ = libff::alt_bn128_G2::zero();
     std::vector<libff::alt_bn128_Fr> valid_seck_keys;
-    for (size_t i = 0; i < members_->size(); ++i) {
+    for (size_t i = 0; i < member_count_; ++i) {
         auto iter = valid_swapkey_set_.find(i);
         if (iter == valid_swapkey_set_.end()) {
             valid_seck_keys.push_back(libff::alt_bn128_Fr::zero());
@@ -715,16 +715,16 @@ void BlsDkg::FinishBroadcast(uint8_t thread_idx) try {
     }
 
     uint32_t valid_count = static_cast<uint32_t>(
-        (float)members_->size() * kBlsMaxExchangeMembersRatio);
+        (float)member_count_ * kBlsMaxExchangeMembersRatio);
     if (bitmap.valid_count() < valid_count) {
         BLS_ERROR("elect_height: %d, bitmap.valid_count: %u < %u, "
-            "members_->size(): %u, kBlsMaxExchangeMembersRatio: %f",
+            "member_count_: %u, kBlsMaxExchangeMembersRatio: %f",
             elect_hegiht_, bitmap.valid_count(), valid_count,
-            members_->size(), kBlsMaxExchangeMembersRatio);
+            member_count_, kBlsMaxExchangeMembersRatio);
         return;
     }
 
-    libBLS::Dkg dkg(min_aggree_member_count_, members_->size());
+    libBLS::Dkg dkg(min_aggree_member_count_, member_count_);
     local_sec_key_ = dkg.SecretKeyShareCreate(valid_seck_keys);
     local_publick_key_ = dkg.GetPublicKeyFromSecretKey(local_sec_key_);
     DumpLocalPrivateKey();

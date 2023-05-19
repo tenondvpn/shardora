@@ -381,7 +381,7 @@ void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
             sign,
             g1_hash,
             &verify_hash) != bls::kBlsSuccess) {
-        ZJC_ERROR("verify bls finish bls sign error t: %d, size: %d, cpk_hash: %s, pk: %s",
+        ZJC_WARN("verify bls finish bls sign error t: %d, size: %d, cpk_hash: %s, pk: %s",
             t, members->size(), common::Encode::HexEncode(cpk_hash).c_str(), common_pk_str.c_str());
         return;
     }
@@ -674,10 +674,16 @@ bool BlsManager::VerifyAggSignValid(
         std::vector<size_t>& in_idx_vec) {
     std::vector<libff::alt_bn128_G1> all_signs;
     std::vector<size_t> idx_vec;
+    std::string debug_idx;
     for (uint32_t i = 0; i < in_idx_vec.size(); ++i) {
         if (in_idx_vec[i] != 0) {
             idx_vec.push_back(in_idx_vec[i]);
             all_signs.push_back(in_all_signs[i]);
+            auto bn_sign = in_all_signs[i];
+            bn_sign.to_affine_coordinates();
+            auto sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
+            auto sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
+            debug_idx += std::to_string(in_idx_vec[i]) + "," + sign_x + "," + sign_y + " ";
         }
     }
 
@@ -702,7 +708,10 @@ bool BlsManager::VerifyAggSignValid(
             bn_sign.to_affine_coordinates();
             auto sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
             auto sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
-            ZJC_ERROR("verify agg sign failed %s, %s!", sign_x.c_str(), sign_y.c_str());
+            ZJC_ERROR("verify agg sign failed hash: %s, g1 hash: %s, agg sign: %s, %s, %s!",
+                common::Encode::HexEncode(finish_item->max_finish_hash).c_str(),
+                libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
+                sign_x.c_str(), sign_y.c_str(), debug_idx.c_str());
             return false;
         }
 
