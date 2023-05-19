@@ -660,6 +660,7 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
     }
 
     if (!UserTxValid(msg_ptr)) {
+        ZJC_DEBUG("create contract error!");
         return;
     }
 
@@ -677,6 +678,13 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
+    ZJC_DEBUG("address balance success: %lu, transfer amount: %lu, "
+        "prepayment: %lu, default call contract gas: %lu, gas price: %lu",
+        msg_ptr->address_info->balance(),
+        tx_msg.amount(),
+        tx_msg.contract_prepayment(),
+        default_gas,
+        tx_msg.gas_price());
 }
 
 void TxPoolManager::PopTxs(uint32_t pool_index) {
