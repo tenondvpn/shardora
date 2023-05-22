@@ -139,7 +139,8 @@ private:
     void RootHandleNormalToTx(
         uint8_t thread_idx,
         uint64_t height,
-        pools::protobuf::ToTxMessage& to_txs);
+        pools::protobuf::ToTxMessage& to_txs,
+        db::DbWriteBatch& db_batch);
     void CreateNewAddress();
     void HandleStatisticBlock(
         const block::protobuf::Block& block,

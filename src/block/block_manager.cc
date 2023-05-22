@@ -294,14 +294,15 @@ void BlockManager::HandleNormalToTx(
 
         HandleLocalNormalToTx(thread_idx, to_txs, tx.step(), tx.storages(0).val_hash());
     } else {
-        RootHandleNormalToTx(thread_idx, block.height(), to_txs);
+        RootHandleNormalToTx(thread_idx, block.height(), to_txs, db_batch);
     }
 }
 
 void BlockManager::RootHandleNormalToTx(
         uint8_t thread_idx,
         uint64_t height,
-        pools::protobuf::ToTxMessage& to_txs) {
+        pools::protobuf::ToTxMessage& to_txs,
+        db::DbWriteBatch& db_batch) {
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         auto tos_item = to_txs.tos(i);
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -332,7 +333,11 @@ void BlockManager::RootHandleNormalToTx(
 //                 tos_item.sharding_id(),
 //                 tos_item.pool_index());
             for (int32_t i = 0; i < tos_item.join_infos_size(); ++i) {
-
+                prefix_db_->SaveNodeVerificationVector(
+                    tos_item.des(),
+                    tos_item.join_infos(i),
+                    db_batch);
+                ZJC_DEBUG("success handle kElectJoin tx: %s", common::Encode::HexEncode(tx.from()).c_str());
             }
             continue;
         }
