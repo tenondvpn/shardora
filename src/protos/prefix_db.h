@@ -1256,7 +1256,7 @@ public:
 
     void SaveNodeVerificationVector(
             const std::string& addr,
-            const init::protobuf::JoinElectInfo& join_info,
+            const bls::protobuf::JoinElectInfo& join_info,
             db::DbWriteBatch& db_batch) {
         std::string key;
         key.reserve(128);
@@ -1268,7 +1268,7 @@ public:
 
     bool GetNodeVerificationVector(
             const std::string& addr,
-            init::protobuf::JoinElectInfo* join_info) {
+            bls::protobuf::JoinElectInfo* join_info) {
         std::string key;
         key.reserve(128);
         key.append(kNodeVerificationVectorPrefix);

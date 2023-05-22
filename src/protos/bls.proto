@@ -27,6 +27,13 @@ message JoinElectBlsInfo {
     optional VerifyVecItem verified_g2 = 1;
 }
 
+message JoinElectInfo {
+    optional uint32 shard_id = 1;
+    optional uint32 member_idx = 2;
+    optional uint32 change_idx = 3;
+    optional VerifyVecBrdReq g2_req = 4;
+}
+
 message LocalPolynomial {
     repeated bytes polynomial = 1;
     optional uint32 change_idx = 2 [default=0];

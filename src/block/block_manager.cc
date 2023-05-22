@@ -326,11 +326,14 @@ void BlockManager::RootHandleNormalToTx(
         }
 
         if (tos_item.step() == pools::protobuf::kJoinElect) {
-            ZJC_DEBUG("create add node stoke direct: %s, amount: %lu, sharding: %u, pool index: %u",
-                common::Encode::HexEncode(tos_item.des()).c_str(),
-                tos_item.amount(),
-                tos_item.sharding_id(),
-                tos_item.pool_index());
+//             ZJC_DEBUG("create add node stoke direct: %s, amount: %lu, sharding: %u, pool index: %u",
+//                 common::Encode::HexEncode(tos_item.des()).c_str(),
+//                 tos_item.amount(),
+//                 tos_item.sharding_id(),
+//                 tos_item.pool_index());
+            for (int32_t i = 0; i < tos_item.g2_reqs_size(); ++i) {
+
+            }
             continue;
         }
 
@@ -538,7 +541,7 @@ void BlockManager::HandleJoinElectTx(
                 break;
             }
 
-            init::protobuf::JoinElectInfo join_info;
+            bls::protobuf::JoinElectInfo join_info;
             if (!join_info.ParseFromString(val)) {
                 assert(false);
                 break;

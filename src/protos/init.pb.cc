@@ -117,10 +117,10 @@ static void InitDefaultsJoinElectInfo() {
 
   {
     void* ptr = &::zjchain::init::protobuf::_JoinElectInfo_default_instance_;
-    new (ptr) ::zjchain::init::protobuf::JoinElectInfo();
+    new (ptr) ::zjchain::bls::protobuf::JoinElectInfo();
     ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
   }
-  ::zjchain::init::protobuf::JoinElectInfo::InitAsDefaultInstance();
+  ::zjchain::bls::protobuf::JoinElectInfo::InitAsDefaultInstance();
 }
 
 ::google::protobuf::internal::SCCInfo<1> scc_info_JoinElectInfo =
@@ -195,14 +195,14 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InvalidLeaderPools, elect_height_),
   ~0u,
   0,
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::JoinElectInfo, _has_bits_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::JoinElectInfo, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::JoinElectInfo, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::JoinElectInfo, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::JoinElectInfo, shard_id_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::JoinElectInfo, member_idx_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::JoinElectInfo, g2_req_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::JoinElectInfo, shard_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::JoinElectInfo, member_idx_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::JoinElectInfo, g2_req_),
   1,
   2,
   0,
@@ -243,7 +243,7 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 0, 6, sizeof(::zjchain::init::protobuf::GetAddressInfoRequest)},
   { 7, 13, sizeof(::zjchain::init::protobuf::GetAddressInfoResponse)},
   { 14, 21, sizeof(::zjchain::init::protobuf::InvalidLeaderPools)},
-  { 23, 31, sizeof(::zjchain::init::protobuf::JoinElectInfo)},
+  { 23, 31, sizeof(::zjchain::bls::protobuf::JoinElectInfo)},
   { 34, 47, sizeof(::zjchain::init::protobuf::GenesisInitBlsInfo)},
   { 55, 63, sizeof(::zjchain::init::protobuf::InitMessage)},
 };
@@ -1411,8 +1411,8 @@ void JoinElectInfo::InternalSwap(JoinElectInfo* other) {
 // ===================================================================
 
 void GenesisInitBlsInfo::InitAsDefaultInstance() {
-  ::zjchain::init::protobuf::_GenesisInitBlsInfo_default_instance_._instance.get_mutable()->join_info_ = const_cast< ::zjchain::init::protobuf::JoinElectInfo*>(
-      ::zjchain::init::protobuf::JoinElectInfo::internal_default_instance());
+  ::zjchain::init::protobuf::_GenesisInitBlsInfo_default_instance_._instance.get_mutable()->join_info_ = const_cast< ::zjchain::bls::protobuf::JoinElectInfo*>(
+      ::zjchain::bls::protobuf::JoinElectInfo::internal_default_instance());
   ::zjchain::init::protobuf::_GenesisInitBlsInfo_default_instance_._instance.get_mutable()->local_poly_ = const_cast< ::zjchain::bls::protobuf::LocalPolynomial*>(
       ::zjchain::bls::protobuf::LocalPolynomial::internal_default_instance());
 }
@@ -1460,7 +1460,7 @@ GenesisInitBlsInfo::GenesisInitBlsInfo(const GenesisInitBlsInfo& from)
     prikey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.prikey_);
   }
   if (from.has_join_info()) {
-    join_info_ = new ::zjchain::init::protobuf::JoinElectInfo(*from.join_info_);
+    join_info_ = new ::zjchain::bls::protobuf::JoinElectInfo(*from.join_info_);
   } else {
     join_info_ = NULL;
   }
@@ -1922,7 +1922,7 @@ void GenesisInitBlsInfo::MergeFrom(const GenesisInitBlsInfo& from) {
       prikey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.prikey_);
     }
     if (cached_has_bits & 0x00000010u) {
-      mutable_join_info()->::zjchain::init::protobuf::JoinElectInfo::MergeFrom(from.join_info());
+      mutable_join_info()->::zjchain::bls::protobuf::JoinElectInfo::MergeFrom(from.join_info());
     }
     if (cached_has_bits & 0x00000020u) {
       mutable_local_poly()->::zjchain::bls::protobuf::LocalPolynomial::MergeFrom(from.local_poly());
@@ -2345,8 +2345,8 @@ template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::init::protobuf::GetAddr
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::init::protobuf::InvalidLeaderPools* Arena::CreateMaybeMessage< ::zjchain::init::protobuf::InvalidLeaderPools >(Arena* arena) {
   return Arena::CreateInternal< ::zjchain::init::protobuf::InvalidLeaderPools >(arena);
 }
-template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::init::protobuf::JoinElectInfo* Arena::CreateMaybeMessage< ::zjchain::init::protobuf::JoinElectInfo >(Arena* arena) {
-  return Arena::CreateInternal< ::zjchain::init::protobuf::JoinElectInfo >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::bls::protobuf::JoinElectInfo* Arena::CreateMaybeMessage< ::zjchain::bls::protobuf::JoinElectInfo >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::bls::protobuf::JoinElectInfo >(arena);
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::init::protobuf::GenesisInitBlsInfo* Arena::CreateMaybeMessage< ::zjchain::init::protobuf::GenesisInitBlsInfo >(Arena* arena) {
   return Arena::CreateInternal< ::zjchain::init::protobuf::GenesisInitBlsInfo >(arena);

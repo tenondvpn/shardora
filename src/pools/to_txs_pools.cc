@@ -489,7 +489,7 @@ std::shared_ptr<address::protobuf::AddressInfo> ToTxsPools::GetAddressInfo(
 void ToTxsPools::HandleElectJoinVerifyVec(
         const std::string& verify_hash,
         std::vector<bls::protobuf::VerifyVecBrdReq>& verify_reqs) {
-    init::protobuf::JoinElectInfo join_info;
+    bls::protobuf::JoinElectInfo join_info;
     std::string val;
     if (!prefix_db_->GetTemporaryKv(verify_hash, &val)) {
         assert(false);

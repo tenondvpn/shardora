@@ -410,7 +410,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    init::protobuf::JoinElectInfo join_info;
+    bls::protobuf::JoinElectInfo join_info;
     if (!join_info.ParseFromString(tx_msg.value())) {
         return;
     }
@@ -452,7 +452,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
 
 bool TxPoolManager::SaveNodeVerfiyVec(
         const std::string& id,
-        const init::protobuf::JoinElectInfo& join_info,
+        const bls::protobuf::JoinElectInfo& join_info,
         std::string* new_hash) {
     auto t = common::GetSignerCount(common::GlobalInfo::Instance()->each_shard_max_members());
     if (join_info.g2_req().verify_vec_size() > 0 && join_info.g2_req().verify_vec_size() != t) {

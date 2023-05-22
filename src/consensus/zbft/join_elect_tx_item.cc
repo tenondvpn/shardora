@@ -37,7 +37,7 @@ int JoinElectTxItem::HandleTx(
                     break;
                 }
 
-                init::protobuf::JoinElectInfo join_info;
+                bls::protobuf::JoinElectInfo join_info;
                 if (!join_info.ParseFromString(val)) {
                     break;
                 }

@@ -571,7 +571,7 @@ TEST_F(TestBls, AllSuccess) {
                 libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j])));
         }
 
-        init::protobuf::JoinElectInfo join_info;
+        bls::protobuf::JoinElectInfo join_info;
         join_info.set_member_idx(idx);
         uint32_t sharding_id = 3;
         join_info.set_shard_id(sharding_id);

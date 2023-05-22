@@ -475,7 +475,7 @@ bool BlsDkg::VerifySekkeyValid(
         }
     }
 
-    init::protobuf::JoinElectInfo join_info;
+    bls::protobuf::JoinElectInfo join_info;
     if (!prefix_db_->GetNodeVerificationVector((*members_)[peer_index]->id, &join_info)) {
         assert(false);
         return false;
@@ -543,7 +543,7 @@ bool BlsDkg::VerifySekkeyValid(
 bool BlsDkg::CheckRecomputeG2s(
         const std::string& id,
         bls::protobuf::JoinElectBlsInfo& verfy_final_vals) {
-    init::protobuf::JoinElectInfo join_info;
+    bls::protobuf::JoinElectInfo join_info;
     if (!prefix_db_->GetNodeVerificationVector(id, &join_info)) {
         return false;
     }
@@ -965,7 +965,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             continue;
         }
 
-        init::protobuf::JoinElectInfo join_info;
+        bls::protobuf::JoinElectInfo join_info;
         if (!prefix_db_->GetNodeVerificationVector((*members_)[local_member_index_]->id, &join_info)) {
             assert(false);
             continue;

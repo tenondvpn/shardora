@@ -332,7 +332,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                         break;
                     }
 
-                    init::protobuf::JoinElectInfo join_info;
+                    bls::protobuf::JoinElectInfo join_info;
                     if (!join_info.ParseFromString(val)) {
                         break;
                     }

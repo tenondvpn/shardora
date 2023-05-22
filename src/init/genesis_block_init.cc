@@ -124,7 +124,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
                     }
                 }
 
-                init::protobuf::JoinElectInfo join_info;
+                bls::protobuf::JoinElectInfo join_info;
                 if (!prefix_db_->GetNodeVerificationVector(secptr->GetAddress(), &join_info)) {
                     assert(false);
                     continue;
@@ -185,7 +185,7 @@ bool GenesisBlockInit::CheckRecomputeG2s(
         const std::string& id,
         bls::protobuf::JoinElectBlsInfo& verfy_final_vals) {
     assert(valid_t > 1);
-    init::protobuf::JoinElectInfo join_info;
+    bls::protobuf::JoinElectInfo join_info;
     if (!prefix_db_->GetNodeVerificationVector(id, &join_info)) {
         return false;
     }
@@ -318,7 +318,7 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
 
         std::cout << "0 save polynomial: " << common::Encode::HexEncode(secptr->GetAddress()) << ", " << common::Encode::HexEncode(local_poly.polynomial(0)) << std::endl;
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
-        init::protobuf::JoinElectInfo& join_info = *init_bls_info.mutable_join_info();
+        bls::protobuf::JoinElectInfo& join_info = *init_bls_info.mutable_join_info();
         join_info.set_member_idx(idx);
         join_info.set_shard_id(sharding_id);
         auto* req = join_info.mutable_g2_req();
@@ -419,7 +419,7 @@ int GenesisBlockInit::CreateJoinElectTx(
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
     }
 
-    init::protobuf::JoinElectInfo join_info;
+    bls::protobuf::JoinElectInfo join_info;
     join_info.set_member_idx(idx);
     join_info.set_shard_id(sharding_id);
     auto* req = join_info.mutable_g2_req();

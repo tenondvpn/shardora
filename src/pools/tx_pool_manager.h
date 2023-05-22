@@ -135,7 +135,7 @@ private:
         const std::vector<int32_t>& invalid_pools);
     bool SaveNodeVerfiyVec(
         const std::string& id,
-        const init::protobuf::JoinElectInfo& join_info,
+        const bls::protobuf::JoinElectInfo& join_info,
         std::string* new_hash);
 
     static const uint32_t kPopMessageCountEachTime = 320u;

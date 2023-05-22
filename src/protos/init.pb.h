@@ -78,7 +78,7 @@ template<> ::zjchain::init::protobuf::GetAddressInfoRequest* Arena::CreateMaybeM
 template<> ::zjchain::init::protobuf::GetAddressInfoResponse* Arena::CreateMaybeMessage<::zjchain::init::protobuf::GetAddressInfoResponse>(Arena*);
 template<> ::zjchain::init::protobuf::InitMessage* Arena::CreateMaybeMessage<::zjchain::init::protobuf::InitMessage>(Arena*);
 template<> ::zjchain::init::protobuf::InvalidLeaderPools* Arena::CreateMaybeMessage<::zjchain::init::protobuf::InvalidLeaderPools>(Arena*);
-template<> ::zjchain::init::protobuf::JoinElectInfo* Arena::CreateMaybeMessage<::zjchain::init::protobuf::JoinElectInfo>(Arena*);
+template<> ::zjchain::bls::protobuf::JoinElectInfo* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::JoinElectInfo>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 namespace zjchain {
@@ -753,12 +753,12 @@ class GenesisInitBlsInfo : public ::google::protobuf::Message /* @@protoc_insert
   void clear_join_info();
   static const int kJoinInfoFieldNumber = 6;
   private:
-  const ::zjchain::init::protobuf::JoinElectInfo& _internal_join_info() const;
+  const ::zjchain::bls::protobuf::JoinElectInfo& _internal_join_info() const;
   public:
-  const ::zjchain::init::protobuf::JoinElectInfo& join_info() const;
-  ::zjchain::init::protobuf::JoinElectInfo* release_join_info();
-  ::zjchain::init::protobuf::JoinElectInfo* mutable_join_info();
-  void set_allocated_join_info(::zjchain::init::protobuf::JoinElectInfo* join_info);
+  const ::zjchain::bls::protobuf::JoinElectInfo& join_info() const;
+  ::zjchain::bls::protobuf::JoinElectInfo* release_join_info();
+  ::zjchain::bls::protobuf::JoinElectInfo* mutable_join_info();
+  void set_allocated_join_info(::zjchain::bls::protobuf::JoinElectInfo* join_info);
 
   // optional .zjchain.bls.protobuf.LocalPolynomial local_poly = 7;
   bool has_local_poly() const;
@@ -812,7 +812,7 @@ class GenesisInitBlsInfo : public ::google::protobuf::Message /* @@protoc_insert
   ::google::protobuf::internal::ArenaStringPtr bls_enc_data_;
   ::google::protobuf::internal::ArenaStringPtr bls_hash_;
   ::google::protobuf::internal::ArenaStringPtr prikey_;
-  ::zjchain::init::protobuf::JoinElectInfo* join_info_;
+  ::zjchain::bls::protobuf::JoinElectInfo* join_info_;
   ::zjchain::bls::protobuf::LocalPolynomial* local_poly_;
   ::google::protobuf::uint64 height_;
   ::google::protobuf::uint32 shard_id_;
@@ -1530,32 +1530,32 @@ inline void GenesisInitBlsInfo::clear_join_info() {
   if (join_info_ != NULL) join_info_->Clear();
   clear_has_join_info();
 }
-inline const ::zjchain::init::protobuf::JoinElectInfo& GenesisInitBlsInfo::_internal_join_info() const {
+inline const ::zjchain::bls::protobuf::JoinElectInfo& GenesisInitBlsInfo::_internal_join_info() const {
   return *join_info_;
 }
-inline const ::zjchain::init::protobuf::JoinElectInfo& GenesisInitBlsInfo::join_info() const {
-  const ::zjchain::init::protobuf::JoinElectInfo* p = join_info_;
+inline const ::zjchain::bls::protobuf::JoinElectInfo& GenesisInitBlsInfo::join_info() const {
+  const ::zjchain::bls::protobuf::JoinElectInfo* p = join_info_;
   // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GenesisInitBlsInfo.join_info)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::init::protobuf::JoinElectInfo*>(
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::bls::protobuf::JoinElectInfo*>(
       &::zjchain::init::protobuf::_JoinElectInfo_default_instance_);
 }
-inline ::zjchain::init::protobuf::JoinElectInfo* GenesisInitBlsInfo::release_join_info() {
+inline ::zjchain::bls::protobuf::JoinElectInfo* GenesisInitBlsInfo::release_join_info() {
   // @@protoc_insertion_point(field_release:zjchain.init.protobuf.GenesisInitBlsInfo.join_info)
   clear_has_join_info();
-  ::zjchain::init::protobuf::JoinElectInfo* temp = join_info_;
+  ::zjchain::bls::protobuf::JoinElectInfo* temp = join_info_;
   join_info_ = NULL;
   return temp;
 }
-inline ::zjchain::init::protobuf::JoinElectInfo* GenesisInitBlsInfo::mutable_join_info() {
+inline ::zjchain::bls::protobuf::JoinElectInfo* GenesisInitBlsInfo::mutable_join_info() {
   set_has_join_info();
   if (join_info_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::init::protobuf::JoinElectInfo>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::zjchain::bls::protobuf::JoinElectInfo>(GetArenaNoVirtual());
     join_info_ = p;
   }
   // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.GenesisInitBlsInfo.join_info)
   return join_info_;
 }
-inline void GenesisInitBlsInfo::set_allocated_join_info(::zjchain::init::protobuf::JoinElectInfo* join_info) {
+inline void GenesisInitBlsInfo::set_allocated_join_info(::zjchain::bls::protobuf::JoinElectInfo* join_info) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete join_info_;

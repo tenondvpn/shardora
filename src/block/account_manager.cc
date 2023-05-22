@@ -304,7 +304,7 @@ void AccountManager::HandleJoinElectTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    init::protobuf::JoinElectInfo join_info;
+    bls::protobuf::JoinElectInfo join_info;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
             std::string val;

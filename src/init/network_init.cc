@@ -491,7 +491,7 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     new_tx->set_gas_limit(consensus::kJoinElectGas + 100000);
     new_tx->set_gas_price(10);
     new_tx->set_key(protos::kElectJoinShard);
-    init::protobuf::JoinElectInfo join_info;
+    bls::protobuf::JoinElectInfo join_info;
     uint32_t pos = common::kInvalidUint32;
     prefix_db_->GetLocalElectPos(security_->GetAddress(), &pos);
     join_info.set_member_idx(pos);
