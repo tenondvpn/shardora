@@ -63,6 +63,8 @@ static const std::string kLocalPolynomialPrefix = "ad\x01";
 static const std::string kLocalVerifiedG2Prefix = "ae\x01";
 static const std::string kLocalTempPolynomialPrefix = "af\x01";
 static const std::string kLocalTempCommonPublicKeyPrefix = "ag\x01";
+static const std::string kNodeVerificationVectorPrefix = "ah\x01";
+
 
 class PrefixDb {
 public:
@@ -1245,6 +1247,39 @@ public:
         }
 
         if (!verfy_final_vals->ParseFromString(val)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    void SaveNodeVerificationVector(
+            const std::string& addr,
+            const init::protobuf::JoinElectInfo& join_info,
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(128);
+        key.append(kNodeVerificationVectorPrefix);
+        key.append(addr);
+        std::string val = join_info.SerializeAsString();
+        db_batch.Put(key, val);
+    }
+
+    bool GetNodeVerificationVector(
+            const std::string& addr,
+            init::protobuf::JoinElectInfo* join_info) {
+        std::string key;
+        key.reserve(128);
+        key.append(kNodeVerificationVectorPrefix);
+        key.append(addr);
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            ZJC_ERROR("write db failed!");
+            return false;
+        }
+
+        if (!join_info->ParseFromString(val)) {
             return false;
         }
 

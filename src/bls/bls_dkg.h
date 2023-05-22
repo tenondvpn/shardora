@@ -94,6 +94,8 @@ private:
     libff::alt_bn128_G2 GetVerifyG2FromDb(uint32_t first_index, uint32_t* changed_idx);
     void DumpLocalPrivateKey();
     bool VerifySekkeyValid(uint32_t peer_index, const libff::alt_bn128_Fr& seckey);
+    bool CheckRecomputeG2s(const std::string& id, bls::protobuf::JoinElectBlsInfo& verfy_final_vals);
+
     bool IsVerifyBrdPeriod() {
 #ifdef ZJC_UNITTEST
         return true;
@@ -133,6 +135,7 @@ private:
     }
 
     static const uint64_t kTimeBlsPeriodSeconds = common::kTimeBlockCreatePeriodSeconds / 3;
+    static const int32_t kVerifiedG2Offset = 32;
 
     BlsManager* bls_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ = nullptr;

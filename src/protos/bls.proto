@@ -24,8 +24,7 @@ message VerifyVecBrdReq {
 }
 
 message JoinElectBlsInfo {
-    optional bytes src_hash = 1;
-    optional VerifyVecBrdReq verify_req = 2;
+    optional VerifyVecItem verified_g2 = 1;
 }
 
 message LocalPolynomial {

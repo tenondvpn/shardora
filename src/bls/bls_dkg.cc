@@ -96,11 +96,11 @@ void BlsDkg::OnNewElectionBlock(
     for (uint32_t i = 0; i < member_count_; ++i) {
         if ((*members_)[i]->id == security_->GetAddress()) {
             local_member_index_ = i;
-            if (local_member_index_ != common::GlobalInfo::Instance()->config_local_member_idx()) {
-                ZJC_FATAL("elected member index invalid: %u, %u",
-                    local_member_index_,
-                    common::GlobalInfo::Instance()->config_local_member_idx());
-            }
+//             if (local_member_index_ != common::GlobalInfo::Instance()->config_local_member_idx()) {
+//                 ZJC_FATAL("elected member index invalid: %u, %u",
+//                     local_member_index_,
+//                     common::GlobalInfo::Instance()->config_local_member_idx());
+//             }
             break;
         }
     }
@@ -469,21 +469,18 @@ bool BlsDkg::VerifySekkeyValid(
             (*members_)[peer_index]->id,
             min_aggree_member_count_,
             &verfy_final_vals)) {
-        ZJC_WARN("failed get verified g2: %u, %s",
-            local_member_index_,
-            common::Encode::HexEncode((*members_)[peer_index]->id).c_str());
-        assert(false);
-        return false;
-    }
-
-    std::string val;
-    if (!prefix_db_->GetTemporaryKv(verfy_final_vals.src_hash(), &val)) {
-        assert(false);
-        return false;
+        // compute verified g2s with new index
+        if (!CheckRecomputeG2s((*members_)[peer_index]->id, verfy_final_vals)) {
+            ZJC_WARN("failed get verified g2: %u, %s",
+                local_member_index_,
+                common::Encode::HexEncode((*members_)[peer_index]->id).c_str());
+            assert(false);
+            return false;
+        }
     }
 
     init::protobuf::JoinElectInfo join_info;
-    if (!join_info.ParseFromString(val)) {
+    if (!prefix_db_->GetNodeVerificationVector((*members_)[peer_index]->id, &join_info)) {
         assert(false);
         return false;
     }
@@ -525,13 +522,7 @@ bool BlsDkg::VerifySekkeyValid(
         }
     }
 
-    auto midx = local_member_index_ / common::kElectNodeMinMemberIndex;
-    if (verfy_final_vals.verify_req().verify_vec_size() <= midx) {
-        assert(false);
-        return false;
-    }
-
-    auto& item = verfy_final_vals.verify_req().verify_vec(midx);
+    auto& item = verfy_final_vals.verified_g2();
     auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
     auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
     auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
@@ -551,6 +542,80 @@ bool BlsDkg::VerifySekkeyValid(
     }
 
     return true;
+}
+
+bool BlsDkg::CheckRecomputeG2s(
+        const std::string& id,
+        bls::protobuf::JoinElectBlsInfo& verfy_final_vals) {
+    init::protobuf::JoinElectInfo join_info;
+    if (!prefix_db_->GetNodeVerificationVector(id, &join_info)) {
+        return false;
+    }
+
+    int32_t min_idx = 0;
+    if (join_info.g2_req().verify_vec_size() >= kVerifiedG2Offset) {
+        min_idx = join_info.g2_req().verify_vec_size() - kVerifiedG2Offset;
+    }
+
+    libff::alt_bn128_G2 verify_g2s = libff::alt_bn128_G2::zero();
+    int32_t begin_idx = join_info.g2_req().verify_vec_size() - 1;
+    for (; begin_idx > min_idx; --begin_idx) {
+        if (prefix_db_->GetVerifiedG2s(local_member_index_, id, begin_idx + 1, &verfy_final_vals)) {
+            auto& item = verfy_final_vals.verified_g2();
+            auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+            auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+            auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+            auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+            auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+            auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+            auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+            auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+            auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+            verify_g2s = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+            ++begin_idx;
+            break;
+        }
+    }
+
+    if (verify_g2s == libff::alt_bn128_G2::zero()) {
+        begin_idx = 0;
+    }
+
+    for (int32_t i = begin_idx; i < member_count_; ++i) {
+        auto& item = join_info.g2_req().verify_vec(i);
+        auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
+        auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
+        auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
+        auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
+        auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
+        auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
+        auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
+        auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
+        auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
+        auto g2 = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
+        verify_g2s = verify_g2s + power(libff::alt_bn128_Fr(local_member_index_ + 1), i) * g2;
+        bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verified_g2();
+        verify_item.set_x_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(verify_g2s.X.c0)));
+        verify_item.set_x_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(verify_g2s.X.c1)));
+        verify_item.set_y_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(verify_g2s.Y.c0)));
+        verify_item.set_y_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(verify_g2s.Y.c1)));
+        verify_item.set_z_c0(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(verify_g2s.Z.c0)));
+        verify_item.set_z_c1(common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(verify_g2s.Z.c1)));
+        auto verified_val = verfy_final_vals.SerializeAsString();
+        prefix_db_->SaveVerifiedG2s(local_member_index_, id, i + 1, verfy_final_vals, db_batch);
+        ZJC_DEBUG("success save verified g2: %u, peer: %d, t: %d, %s, %s",
+            local_member_index_,
+            join_info.member_idx(),
+            i + 1,
+            common::Encode::HexEncode(id).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(verify_g2s[0].X.c0).c_str());
+    }
 }
 
 libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t peer_mem_index, uint32_t* changed_idx) {
