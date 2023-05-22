@@ -558,7 +558,7 @@ bool BlsDkg::CheckRecomputeG2s(
     }
 
     libff::alt_bn128_G2 verify_g2s = libff::alt_bn128_G2::zero();
-    int32_t begin_idx = join_info.g2_req().verify_vec_size() - 1;
+    int32_t begin_idx = min_aggree_member_count_ - 1;
     for (; begin_idx > min_idx; --begin_idx) {
         if (prefix_db_->GetVerifiedG2s(local_member_index_, id, begin_idx + 1, &verfy_final_vals)) {
             auto& item = verfy_final_vals.verified_g2();
