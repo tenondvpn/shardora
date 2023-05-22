@@ -866,10 +866,10 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         polynomial[i] = libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)).c_str());
         if (change_idx == i) {
             old_g2 = polynomial[i] * libff::alt_bn128_G2::one();
-//             polynomial[i] = libff::alt_bn128_Fr::random_element();
-//             while (polynomial[i] == libff::alt_bn128_Fr::zero()) {
-//                 polynomial[i] = libff::alt_bn128_Fr::random_element();
-//             }
+            polynomial[i] = libff::alt_bn128_Fr::random_element();
+            while (polynomial[i] == libff::alt_bn128_Fr::zero()) {
+                polynomial[i] = libff::alt_bn128_Fr::random_element();
+            }
         }
     }
 
