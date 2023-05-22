@@ -279,7 +279,7 @@ std::string GetElectBlockHash(const elect::protobuf::ElectBlock& elect_block) {
 
 std::string GetJoinElectReqHash(const bls::protobuf::JoinElectInfo& req) {
     std::string string_for_hash;
-    string_for_hash.reserve(req.verify_vec_size() * 6 * 64 + 12);
+    string_for_hash.reserve(req.g2_req().verify_vec_size() * 6 * 64 + 12);
     uint32_t shard_id = req.shard_id();
     string_for_hash.append((char*)&shard_id, sizeof(shard_id));
     uint32_t member_idx = req.member_idx();
