@@ -119,14 +119,8 @@ int GenesisBlockInit::CreateGenesisBlocks(
                     continue;
                 }
 
-                std::string val;
-                if (!prefix_db_->GetTemporaryKv(verfy_final_vals.src_hash(), &val)) {
-                    assert(false);
-                    continue;
-                }
-
                 init::protobuf::JoinElectInfo join_info;
-                if (!join_info.ParseFromString(val)) {
+                if (!prefix_db_->GetNodeVerificationVector(secptr->GetAddress(), &join_info)) {
                     assert(false);
                     continue;
                 }
@@ -152,13 +146,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
                     assert(old_val == old_g2);
                 }
 
-                auto midx = local_member_index_ / common::kElectNodeMinMemberIndex;
-                if (verfy_final_vals.verify_req().verify_vec_size() <= midx) {
-                    assert(false);
-                    continue;
-                }
-
-                auto& item = verfy_final_vals.verify_req().verify_vec(midx);
+                auto& item = verfy_final_vals.verified_g2();
                 auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
                 auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
                 auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
