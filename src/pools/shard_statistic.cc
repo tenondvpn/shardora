@@ -728,12 +728,17 @@ int ShardStatistic::StatisticWithHeights(
         }
 
         auto addr_info = prefix_db_->GetAddressInfo(secptr_->GetAddress(pubkey));
-        if (addr_info == nullptr ||
-                addr_info->elect_pos() < 0 ||
-                addr_info->elect_pos() >= common::GlobalInfo::Instance()->each_shard_max_members()) {
+        if (addr_info == nullptr) {
             continue;
         }
 
+        if (addr_info->elect_pos() != common::kInvalidUint32) {
+            if (addr_info->elect_pos() < 0 ||
+                    addr_info->elect_pos() >= common::GlobalInfo::Instance()->each_shard_max_members()) {
+                continue;
+            }
+        }
+        
         join_elect_node->set_pubkey(pubkey);
         auto iter = r_eiter->second.find(elect_nodes[i]);
         auto shard_iter = r_siter->second.find(elect_nodes[i]);
