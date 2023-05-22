@@ -495,7 +495,9 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     uint32_t pos = common::kInvalidUint32;
     prefix_db_->GetLocalElectPos(security_->GetAddress(), &pos);
     join_info.set_member_idx(pos);
-    join_info.set_shard_id(common::GlobalInfo::Instance()->network_id() - network::kConsensusWaitingShardOffset);
+    join_info.set_shard_id(
+        common::GlobalInfo::Instance()->network_id() -
+        network::kConsensusWaitingShardOffset);
     if (pos == common::kInvalidUint32) {
         auto* req = join_info.mutable_g2_req();
         auto res = prefix_db_->GetBlsVerifyG2(security_->GetAddress(), req);

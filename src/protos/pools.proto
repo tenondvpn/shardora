@@ -1,5 +1,6 @@
 syntax = "proto2";
 
+import "protos/bls.proto";
 package zjchain.pools.protobuf;
 
 enum StepType {
@@ -38,6 +39,7 @@ message ToTxMessageItem {
     optional uint32 pool_index = 4;
     optional int32 step = 5;
     optional bytes library_bytes = 6;
+    repeated bls.protobuf.VerifyVecBrdReq g2_reqs = 7;
 }
 
 message ToTxMessage {

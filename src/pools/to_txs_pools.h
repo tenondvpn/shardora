@@ -70,13 +70,19 @@ private:
         pools::protobuf::StepType type,
         uint64_t amount,
         uint64_t des_sharding_id,
-        int32_t pool_index);
+        int32_t pool_index,
+        const std::string& key = "");
+    void HandleElectJoinVerifyVec(
+        const std::string& verify_hash,
+        bls::protobuf::VerifyVecBrdReq& verify_req);
 
     struct ToAddressItemInfo {
         uint64_t amount;
         int32_t pool_index;
         pools::protobuf::StepType type;
         int32_t src_step;
+        std::string elect_join_g2_key;
+        std::vector<bls::protobuf::VerifyVecBrdReq> verify_reqs;
     };
 
     // destination shard -> pool -> height -> items

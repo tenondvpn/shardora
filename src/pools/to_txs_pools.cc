@@ -95,9 +95,9 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
         case pools::protobuf::kConsensusRootElectShard:
             HandleRootElectShard(block, tx_list[i], db_batch);
             break;
-//         case pools::protobuf::kJoinElect:
-//             HandleJoinElect(block, tx_list[i], db_batch);
-//             break;
+        case pools::protobuf::kJoinElect:
+            HandleJoinElect(block, tx_list[i], db_batch);
+            break;
         default:
             break;
         }
@@ -115,11 +115,17 @@ void ToTxsPools::HandleJoinElect(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).key() == protos::kElectNodeStoke) {
-            uint64_t* tmp = (uint64_t*)tx.storages(i).val_hash().c_str();
+        if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
             // distinct with transfer transaction
-            std::string elect_to = tx.from() + common::Encode::HexEncode("0e");
-            AddTxToMap(block, elect_to, tx.step(), tmp[0], network::kRootCongressNetworkId, -1);
+            std::string elect_to = tx.from();
+            AddTxToMap(
+                block,
+                elect_to,
+                tx.step(),
+                0,
+                network::kRootCongressNetworkId,
+                block.pool_index(),
+                tx.storages(i).val_hash());
         }
     }
 }
@@ -258,7 +264,8 @@ void ToTxsPools::AddTxToMap(
         pools::protobuf::StepType type,
         uint64_t amount,
         uint64_t sharding_id,
-        int32_t pool_index) {
+        int32_t pool_index,
+        const std::string& key) {
     auto handled_iter = handled_map_.find(sharding_id);
     if (handled_iter != handled_map_.end()) {
         if (handled_iter->second->heights(block.pool_index()) >= block.height()) {
@@ -298,6 +305,7 @@ void ToTxsPools::AddTxToMap(
         item.amount = 0lu;
         item.pool_index = pool_index;
         item.type = type;
+        item.elect_join_g2_key = key;
         height_iter->second[to] = item;
         ZJC_DEBUG("add to %s step: %u", common::Encode::HexEncode(to).c_str(), type);
     }
@@ -477,6 +485,24 @@ std::shared_ptr<address::protobuf::AddressInfo> ToTxsPools::GetAddressInfo(
     return address_info;
 }
 
+void ToTxsPools::HandleElectJoinVerifyVec(
+        const std::string& verify_hash,
+        std::vector<bls::protobuf::VerifyVecBrdReq>& verify_reqs) {
+    init::protobuf::JoinElectInfo join_info;
+    std::string val;
+    if (!prefix_db_->GetTemporaryKv(verify_hash, &val)) {
+        assert(false);
+        return;
+    }
+
+    if (!join_info.ParseFromString(val)) {
+        assert(false);
+        return;
+    }
+
+    verify_reqs.push_back(join_info.g2_req());
+}
+
 int ToTxsPools::LeaderCreateToHeights(
         uint32_t sharding_id,
         pools::protobuf::ToTxHeights& to_heights) {
@@ -563,11 +589,21 @@ int ToTxsPools::CreateToTxWithHeights(
                     ZJC_DEBUG("len: %u, addr: %s",
                         to_iter->first.size(), common::Encode::HexEncode(to_iter->first).c_str());
                     acc_amount_map[to_iter->first] = to_iter->second;
+                    if (!to_iter->second.elect_join_g2_key.empty()) {
+                        HandleElectJoinVerifyVec(
+                            to_iter->second.elect_join_g2_key,
+                            acc_amount_map[to_iter->first].verify_reqs);
+                    }
                 } else {
 //                     if (amount_iter->second.type == pools::protobuf::kJoinElect) {
 //                         amount_iter->second.amount = to_iter->second.amount;
 //                     } else {
                         amount_iter->second.amount += to_iter->second.amount;
+                        if (!to_iter->second.elect_join_g2_key.empty()) {
+                            HandleElectJoinVerifyVec(
+                                to_iter->second.elect_join_g2_key,
+                                amount_iter->second.verify_reqs);
+                        }
 //                     }
                 }
             }
@@ -623,10 +659,19 @@ int ToTxsPools::CreateToTxWithHeights(
                 common::GlobalInfo::Instance()->network_id());
         } else if (iter->second.type == pools::protobuf::kRootCreateAddress) {
             to_item->set_sharding_id(sharding_id);
+            str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
             ZJC_DEBUG("root create sharding address: %s, %u, pool: %u",
                 common::Encode::HexEncode(iter->first).c_str(),
                 sharding_id,
                 iter->second.pool_index);
+        } else if (iter->second.type == pools::protobuf::kJoinElect) {
+            to_item->set_sharding_id(sharding_id);
+            str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
+            for (uint32_t i = 0; i < iter->second.verify_reqs.size(); ++i) {
+                auto* req = to_item->add_g2_reqs();
+                *req = iter->second.verify_reqs[i];
+                str_for_hash.append(protos::GetJoinElectReqHash(*req));
+            }
         } else {
             auto net_id = common::kInvalidUint32;
             to_item->set_sharding_id(net_id);
