@@ -501,6 +501,10 @@ void ToTxsPools::HandleElectJoinVerifyVec(
         return;
     }
 
+    if (join_info.shard_id() != network::kRootCongressNetworkId) {
+        return;
+    }
+
     verify_reqs.push_back(join_info);
 }
 
