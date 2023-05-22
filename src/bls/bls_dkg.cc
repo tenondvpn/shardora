@@ -994,12 +994,6 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             assert(old_val == old_g2);
         }
 
-        auto midx = local_member_index_ / common::kElectNodeMinMemberIndex;
-        if (verfy_final_vals.verify_req().verify_vec_size() <= midx) {
-            assert(false);
-            return;
-        }
-
         auto& item = verfy_final_vals.verified_g2();
         auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
         auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
