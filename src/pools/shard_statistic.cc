@@ -379,6 +379,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                         break;
                     }
 
+                    ZJC_DEBUG("success get shard election: %lu, lu, join nodes size: %u", tmp[0], tmp[1], elect_statistic.join_elect_nodes_size());
                     for (int32_t node_idx = 0; node_idx < elect_statistic.join_elect_nodes_size(); ++node_idx) {
                         if (elect_statistic.join_elect_nodes(i).shard() == network::kRootCongressNetworkId) {
                             statistic_info_ptr->node_stoke_map[elect_statistic.join_elect_nodes(i).pubkey()] =
