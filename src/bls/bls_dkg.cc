@@ -989,7 +989,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
             auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
             auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
             auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
-            auto z_c0 = libff::alt_bn128_Fq(commGetVerifiedG2son::Encode::HexEncode(item.z_c0()).c_str());
+            auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
             auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
             auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
             old_val = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
