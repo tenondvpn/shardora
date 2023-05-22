@@ -426,14 +426,12 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
 
     std::string new_hash;
     if (!SaveNodeVerfiyVec(msg_ptr->address_info->addr(), join_info, &new_hash)) {
+        assert(false);
         return;
     }
 
-    if (!new_hash.empty()) {
-        tx_msg.set_key(protos::kJoinElectVerifyG2);
-        tx_msg.set_value(new_hash);
-    }
-
+    tx_msg.set_key(protos::kJoinElectVerifyG2);
+    tx_msg.set_value(new_hash);
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
     if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
         // avoid save gid different tx
@@ -456,12 +454,8 @@ bool TxPoolManager::SaveNodeVerfiyVec(
         const std::string& id,
         const init::protobuf::JoinElectInfo& join_info,
         std::string* new_hash) {
-    if (!join_info.has_g2_req()) {
-        return true;
-    }
-
     auto t = common::GetSignerCount(common::GlobalInfo::Instance()->each_shard_max_members());
-    if (join_info.g2_req().verify_vec_size() != t) {
+    if (join_info.g2_req().verify_vec_size() > 0 && join_info.g2_req().verify_vec_size() != t) {
         return false;
     }
 
