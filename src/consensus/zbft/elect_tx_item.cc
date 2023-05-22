@@ -641,7 +641,7 @@ int ElectTxItem::GetJoinElectNodesCredit(
     std::set<uint32_t> weedout_nodes;
     FtsGetNodes(elect_nodes_to_choose, false, 1, weedout_nodes);
     for (auto iter = elect_nodes_to_choose.begin(); iter != elect_nodes_to_choose.end(); ++iter) {
-        if (weedout_nodes.find((*iter)->index) != weedout_nodes.end()) {
+        if (weedout_nodes.find((*iter)->index) == weedout_nodes.end()) {
             continue;
         }
 
