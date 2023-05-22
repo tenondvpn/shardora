@@ -14,6 +14,7 @@
 #include "protos/block.pb.h"
 #include "protos/bls.pb.h"
 #include "protos/elect.pb.h"
+#include "protos/init.pb.h"
 #include "protos/sync.pb.h"
 #include "protos/timeblock.pb.h"
 #include "protos/tx_storage_key.h"
