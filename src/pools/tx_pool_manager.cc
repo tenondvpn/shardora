@@ -407,7 +407,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
             tx_msg.pubkey(),
             msg_ptr->header.sign()) != security::kSecuritySuccess) {
         ZJC_WARN("kElectJoin verify signature failed!");
-        continue;
+        return;
     }
 
     init::protobuf::JoinElectInfo join_info;
