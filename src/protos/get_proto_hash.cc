@@ -277,18 +277,22 @@ std::string GetElectBlockHash(const elect::protobuf::ElectBlock& elect_block) {
     return common::Hash::keccak256(string_for_hash);
 }
 
-std::string GetJoinElectReqHash(const bls::protobuf::VerifyVecBrdReq& req) {
+std::string GetJoinElectReqHash(const bls::protobuf::JoinElectInfo& req) {
     std::string string_for_hash;
-    string_for_hash.reserve(req.verify_vec_size() * 6 * 64 +8);
+    string_for_hash.reserve(req.verify_vec_size() * 6 * 64 + 12);
+    uint32_t shard_id = req.shard_id();
+    string_for_hash.append((char*)&shard_id, sizeof(shard_id));
+    uint32_t member_idx = req.member_idx();
+    string_for_hash.append((char*)&member_idx, sizeof(member_idx));
     uint32_t change_idx = req.change_idx();
     string_for_hash.append((char*)&change_idx, sizeof(change_idx));
-    for (int32_t i = 0; i < req.verify_vec_size(); ++i) {
-        string_for_hash.append(req.verify_vec(i).x_c0());
-        string_for_hash.append(req.verify_vec(i).x_c1());
-        string_for_hash.append(req.verify_vec(i).y_c0());
-        string_for_hash.append(req.verify_vec(i).y_c1());
-        string_for_hash.append(req.verify_vec(i).z_c0());
-        string_for_hash.append(req.verify_vec(i).z_c1());
+    for (int32_t i = 0; i < req.g2_req().verify_vec_size(); ++i) {
+        string_for_hash.append(req.g2_req().verify_vec(i).x_c0());
+        string_for_hash.append(req.g2_req().verify_vec(i).x_c1());
+        string_for_hash.append(req.g2_req().verify_vec(i).y_c0());
+        string_for_hash.append(req.g2_req().verify_vec(i).y_c1());
+        string_for_hash.append(req.g2_req().verify_vec(i).z_c0());
+        string_for_hash.append(req.g2_req().verify_vec(i).z_c1());
     }
 
     return common::Hash::keccak256(string_for_hash);

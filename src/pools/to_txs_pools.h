@@ -74,7 +74,7 @@ private:
         const std::string& key = "");
     void HandleElectJoinVerifyVec(
         const std::string& verify_hash,
-        std::vector<bls::protobuf::VerifyVecBrdReq>& verify_reqs);
+        std::vector<bls::protobuf::JoinElectInfo>& verify_reqs);
 
     struct ToAddressItemInfo {
         uint64_t amount;
@@ -82,7 +82,7 @@ private:
         pools::protobuf::StepType type;
         int32_t src_step;
         std::string elect_join_g2_key;
-        std::vector<bls::protobuf::VerifyVecBrdReq> verify_reqs;
+        std::vector<bls::protobuf::JoinElectInfo> verify_reqs;
     };
 
     // destination shard -> pool -> height -> items

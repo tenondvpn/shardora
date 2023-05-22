@@ -488,7 +488,7 @@ std::shared_ptr<address::protobuf::AddressInfo> ToTxsPools::GetAddressInfo(
 
 void ToTxsPools::HandleElectJoinVerifyVec(
         const std::string& verify_hash,
-        std::vector<bls::protobuf::VerifyVecBrdReq>& verify_reqs) {
+        std::vector<bls::protobuf::JoinElectInfo>& verify_reqs) {
     bls::protobuf::JoinElectInfo join_info;
     std::string val;
     if (!prefix_db_->GetTemporaryKv(verify_hash, &val)) {
@@ -501,7 +501,7 @@ void ToTxsPools::HandleElectJoinVerifyVec(
         return;
     }
 
-    verify_reqs.push_back(join_info.g2_req());
+    verify_reqs.push_back(join_info);
 }
 
 int ToTxsPools::LeaderCreateToHeights(
@@ -669,7 +669,7 @@ int ToTxsPools::CreateToTxWithHeights(
             to_item->set_sharding_id(sharding_id);
             str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
             for (uint32_t i = 0; i < iter->second.verify_reqs.size(); ++i) {
-                auto* req = to_item->add_g2_reqs();
+                auto* req = to_item->add_join_infos();
                 *req = iter->second.verify_reqs[i];
                 str_for_hash.append(protos::GetJoinElectReqHash(*req));
             }
