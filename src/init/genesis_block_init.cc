@@ -3,6 +3,8 @@
 #include <cmath>
 #include <vector>
 
+#include <libbls/tools/utils.h>
+
 #define private public
 #define protected public
 #include "common/encode.h"
@@ -115,7 +117,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
                         secptr->GetAddress(),
                         valid_t,
                         &verfy_final_vals)) {
-                    if (!CheckRecomputeG2s(secptr->GetAddress(), verfy_final_vals)) {
+                    if (!CheckRecomputeG2s(mem_idx, valid_n, secptr->GetAddress(), verfy_final_vals)) {
                         assert(false);
                         continue;
                     }
@@ -176,6 +178,8 @@ int GenesisBlockInit::CreateGenesisBlocks(
 
 
 bool GenesisBlockInit::CheckRecomputeG2s(
+        uint32_t local_member_index,
+        uint32_t member_count,
         const std::string& id,
         bls::protobuf::JoinElectBlsInfo& verfy_final_vals) {
     init::protobuf::JoinElectInfo join_info;
@@ -184,14 +188,14 @@ bool GenesisBlockInit::CheckRecomputeG2s(
     }
 
     int32_t min_idx = 0;
-    if (join_info.g2_req().verify_vec_size() >= kVerifiedG2Offset) {
-        min_idx = join_info.g2_req().verify_vec_size() - kVerifiedG2Offset;
+    if (join_info.g2_req().verify_vec_size() >= 32) {
+        min_idx = join_info.g2_req().verify_vec_size() - 32;
     }
 
     libff::alt_bn128_G2 verify_g2s = libff::alt_bn128_G2::zero();
     int32_t begin_idx = join_info.g2_req().verify_vec_size() - 1;
     for (; begin_idx > min_idx; --begin_idx) {
-        if (prefix_db_->GetVerifiedG2s(local_member_index_, id, begin_idx + 1, &verfy_final_vals)) {
+        if (prefix_db_->GetVerifiedG2s(local_member_index, id, begin_idx + 1, &verfy_final_vals)) {
             auto& item = verfy_final_vals.verified_g2();
             auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
             auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
@@ -212,7 +216,7 @@ bool GenesisBlockInit::CheckRecomputeG2s(
         begin_idx = 0;
     }
 
-    for (int32_t i = begin_idx; i < member_count_; ++i) {
+    for (int32_t i = begin_idx; i < member_count; ++i) {
         auto& item = join_info.g2_req().verify_vec(i);
         auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
         auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
@@ -224,7 +228,7 @@ bool GenesisBlockInit::CheckRecomputeG2s(
         auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
         auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
         auto g2 = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-        verify_g2s = verify_g2s + power(libff::alt_bn128_Fr(local_member_index_ + 1), i) * g2;
+        verify_g2s = verify_g2s + power(libff::alt_bn128_Fr(local_member_index + 1), i) * g2;
         bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verified_g2();
         verify_item.set_x_c0(common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(verify_g2s.X.c0)));
@@ -239,9 +243,9 @@ bool GenesisBlockInit::CheckRecomputeG2s(
         verify_item.set_z_c1(common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(verify_g2s.Z.c1)));
         auto verified_val = verfy_final_vals.SerializeAsString();
-        prefix_db_->SaveVerifiedG2s(local_member_index_, id, i + 1, verfy_final_vals);
+        prefix_db_->SaveVerifiedG2s(local_member_index, id, i + 1, verfy_final_vals);
         ZJC_DEBUG("success save verified g2: %u, peer: %d, t: %d, %s, %s",
-            local_member_index_,
+            local_member_index,
             join_info.member_idx(),
             i + 1,
             common::Encode::HexEncode(id).c_str(),

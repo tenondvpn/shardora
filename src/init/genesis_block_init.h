@@ -93,6 +93,8 @@ private:
         const std::string& prikey,
         block::protobuf::BlockTx* join_elect_tx_info);
     bool CheckRecomputeG2s(
+        uint32_t local_member_index,
+        uint32_t member_count,
         const std::string& id,
         bls::protobuf::JoinElectBlsInfo& verfy_final_vals);
 
