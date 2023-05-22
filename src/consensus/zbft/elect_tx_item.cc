@@ -68,22 +68,17 @@ int ElectTxItem::HandleTx(
                 return kConsensusError;
             }
 
+            elect_members_ = members;
+            for (auto iter = members->begin(); iter != members->end(); ++iter) {
+                added_nodes_.insert((*iter)->pubkey);
+            }
+
             pools::protobuf::PoolStatisticItem tmp_statistic;
             if (max_elect_height != now_elect_height) {
                 ZJC_WARN("old elect coming max_elect_height: %lu, now_elect_height: %lu",
                     max_elect_height, now_elect_height);
                 assert(false);
                 return kConsensusError;
-                // use default value
-//                 for (uint32_t i = 0; i < members->size(); ++i) {
-//                     auto area_point = tmp_statistic.add_area_point();
-//                     area_point->set_x(0);
-//                     area_point->set_y(0);
-//                     tmp_statistic.add_stokes(0);
-//                     tmp_statistic.add_tx_count(0);
-//                 }
-// 
-//                 statistic = &tmp_statistic;
             }
 
             if (members->size() != statistic->tx_count_size() ||
@@ -111,7 +106,7 @@ int ElectTxItem::HandleTx(
 
             uint32_t min_area_weight = common::kInvalidUint32;
             uint32_t min_tx_count = common::kInvalidUint32;
-            std::vector<NodeDetailPtr> elect_nodes;
+            std::vector<NodeDetailPtr> elect_nodes(members->size(), nullptr);
             {
                 std::string ids;
                 for (uint32_t i = 0; i < members->size(); ++i) {
@@ -150,23 +145,38 @@ int ElectTxItem::HandleTx(
                 join_count = common::kEachShardMaxNodeCount - elect_nodes.size();
             }
 
-            std::vector<NodeDetailPtr> src_elect_nodes_to_choose = elect_nodes;
-            res = GetJoinElectNodesCredit(
-                members->size(),
-                join_count,
-                elect_statistic,
+            for (uint32_t i = 0; i < join_count; ++i) {
+                elect_nodes.push_back(nullptr);
+            }
+
+            std::vector<NodeDetailPtr> src_elect_nodes_to_choose;
+            for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+                if (elect_nodes[i] != nullptr) {
+                    src_elect_nodes_to_choose->push_back(elect_nodes[i]);
+                }
+            }
+
+            ChooseNodeForEachIndex(
+                true,
                 thread_idx,
                 min_area_weight,
                 min_tx_count,
+                elect_statistic,
                 elect_nodes);
-            if (res != kConsensusSuccess) {
-                assert(false);
-                return res;
-            }
-
+//             ChooseNodeForEachIndex(
+//                 false,
+//                 thread_idx,
+//                 min_area_weight,
+//                 min_tx_count,
+//                 elect_statistic,
+//                 elect_nodes);
             {
                 std::string ids;
                 for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+                    if (elect_nodes[i] == nullptr) {
+                        continue;
+                    }
+
                     ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ",";
                 }
 
@@ -216,11 +226,16 @@ int ElectTxItem::HandleTx(
             {
                 std::string ids;
                 for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+                    if (elect_nodes[i] == nullptr) {
+                        continue;
+                    }
+
                     ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ",";
                 }
 
                 ZJC_DEBUG("before CreateNewElect: %s", ids.c_str());
             }
+
             CreateNewElect(
                 thread_idx,
                 block,
@@ -233,6 +248,10 @@ int ElectTxItem::HandleTx(
             {
                 std::string ids;
                 for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+                    if (elect_nodes[i] == nullptr) {
+                        continue;
+                    }
+
                     ids += common::Encode::HexEncode(elect_nodes[i]->pubkey) + ",";
                 }
 
@@ -247,6 +266,92 @@ int ElectTxItem::HandleTx(
     return kConsensusError;
 }
 
+void ElectTxItem::ChooseNodeForEachIndex(
+        bool hold_pos,
+        uint8_t thread_idx,
+        uint32_t min_area_weight,
+        uint32_t min_tx_count,
+        const pools::protobuf::ElectStatistic& elect_statistic,
+        std::vector<NodeDetailPtr>& elect_nodes) {
+    for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+        if (elect_nodes[i] != nullptr) {
+            continue;
+        }
+
+        std::vector<NodeDetailPtr> elect_nodes_to_choose;
+        if (hold_pos) {
+            GetIndexNodes(i, elect_statistic, &elect_nodes_to_choose);
+        } else {
+            GetIndexNodes(common::kInvalidUint32, elect_statistic, &elect_nodes_to_choose);
+        }
+
+        if (elect_nodes_to_choose.empty()) {
+            continue;
+        }
+
+        res = GetJoinElectNodesCredit(
+            i,
+            elect_statistic,
+            thread_idx,
+            min_area_weight,
+            min_tx_count,
+            elect_nodes_to_choose,
+            elect_nodes);
+        if (res != kConsensusSuccess) {
+            assert(false);
+            return res;
+        }
+
+        if (elect_nodes[i] != nullptr) {
+            added_nodes_.insert(elect_nodes[i]->pubkey);
+        }
+    }
+}
+
+void ElectTxItem::GetIndexNodes(
+        uint32_t index,
+        const pools::protobuf::ElectStatistic& elect_statistic,
+        std::vector<NodeDetailPtr>* elect_nodes_to_choose) {
+    for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
+        ZJC_DEBUG("join new node: %s, des shard: %u, statistic shrad: %u",
+            common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).pubkey()).c_str(),
+            elect_statistic.join_elect_nodes(i).shard(),
+            elect_statistic.sharding_id());
+        auto iter = added_nodes_.find(elect_statistic.join_elect_nodes(i).pubkey());
+        if (iter != added_nodes_.end()) {
+            continue;
+        }
+
+        if (elect_statistic.join_elect_nodes(i).shard() != elect_statistic.sharding_id()) {
+            continue;
+        }
+
+        if (index != common::kInvalidUint32) {
+            if (elect_statistic.join_elect_nodes(i).elect_pos() != index) {
+                continue;
+            }
+        }
+
+        auto id = sec_ptr_->GetAddress(elect_statistic.join_elect_nodes(i).pubkey());
+        auto account_info = account_mgr_->GetAccountInfo(
+            thread_idx,
+            id);
+        if (account_info == nullptr) {
+            assert(false);
+            return kConsensusError;
+        }
+
+        auto node_info = std::make_shared<ElectNodeInfo>();
+        node_info->area_weight = min_area_weight;
+        node_info->stoke = elect_statistic.join_elect_nodes(i).stoke();
+        node_info->tx_count = min_tx_count;
+        node_info->credit = account_info->credit();
+        node_info->pubkey = elect_statistic.join_elect_nodes(i).pubkey();
+        node_info->index = index;
+        elect_nodes_to_choose->push_back(node_info);
+    }
+}
+
 void ElectTxItem::MiningToken(
         uint8_t thread_idx,
         uint32_t statistic_sharding_id,
@@ -256,6 +361,10 @@ void ElectTxItem::MiningToken(
     uint64_t all_tx_count = 0;
     uint64_t max_tx_count = 0;
     for (int32_t i = 0; i < elect_nodes.size(); ++i) {
+        if (elect_nodes[i] == nullptr) {
+            continue;
+        }
+
         auto tx_count = elect_nodes[i]->tx_count;
         if (tx_count == 0) {
             tx_count = 1;
@@ -284,6 +393,10 @@ void ElectTxItem::MiningToken(
     uint64_t tmp_all_gas_amount = 0;
     if (!stop_mining_) {
         for (int32_t i = 0; i < elect_nodes.size(); ++i) {
+            if (elect_nodes[i] == nullptr) {
+                continue;
+            }
+
             auto id = sec_ptr_->GetAddress(elect_nodes[i]->pubkey);
             auto account_info = account_mgr_->GetAccountInfo(thread_idx, id);
             if (account_info == nullptr) {
@@ -337,11 +450,22 @@ int ElectTxItem::CreateNewElect(
         std::shared_ptr<db::DbWriteBatch>& db_batch,
         block::protobuf::BlockTx& block_tx) {
     elect::protobuf::ElectBlock elect_block;
-    for (auto iter = elect_nodes.begin(); iter != elect_nodes.end(); ++iter) {
-        auto in = elect_block.add_in();
-        in->set_pubkey((*iter)->pubkey);
-        in->set_pool_idx_mod_num((*iter)->leader_mod_index);
-        in->set_mining_amount((*iter)->mining_token);
+    for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+        if (elect_nodes[i] == nullptr) {
+            if (i >= elect_members_->size()) {
+                break;
+            }
+
+            auto in = elect_block.add_in();
+            in->set_pubkey(elect_members_[i]->pubkey);
+            in->set_pool_idx_mod_num(-1);
+            in->set_mining_amount(0);
+        } else {
+            auto in = elect_block.add_in();
+            in->set_pubkey(elect_nodes[i]->pubkey);
+            in->set_pool_idx_mod_num(elect_nodes[i]->leader_mod_index);
+            in->set_mining_amount(elect_nodes[i]->mining_token);
+        }
     }
 
     elect_block.set_gas_for_root(gas_for_root);
@@ -475,64 +599,36 @@ int ElectTxItem::CheckWeedout(
             continue;
         }
 
-        elect_nodes.push_back(*iter);
+        elect_nodes[(*iter)->index] = *iter;
     }
 
     return kConsensusSuccess;
 }
 
 int ElectTxItem::GetJoinElectNodesCredit(
-        uint32_t begin_index,
-        uint32_t count,
+        uint32_t index,
         const pools::protobuf::ElectStatistic& elect_statistic,
         uint8_t thread_idx,
         uint32_t min_area_weight,
         uint32_t min_tx_count,
+        const std::vector<NodeDetailPtr>& elect_nodes_to_choose,
         std::vector<NodeDetailPtr>& elect_nodes) {
-    std::vector<NodeDetailPtr> elect_nodes_to_choose;
-    for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
-        ZJC_DEBUG("join new node: %s, des shard: %u, statistic shrad: %u",
-            common::Encode::HexEncode(elect_statistic.join_elect_nodes(i).pubkey()).c_str(),
-            elect_statistic.join_elect_nodes(i).shard(),
-            elect_statistic.sharding_id());
-        if (elect_statistic.join_elect_nodes(i).shard() != elect_statistic.sharding_id()) {
-            continue;
-        }
-
-        auto id = sec_ptr_->GetAddress(elect_statistic.join_elect_nodes(i).pubkey());
-        auto account_info = account_mgr_->GetAccountInfo(
-            thread_idx,
-            id);
-        if (account_info == nullptr) {
-            assert(false);
-            return kConsensusError;
-        }
-
-        auto node_info = std::make_shared<ElectNodeInfo>();
-        node_info->area_weight = min_area_weight;
-        node_info->stoke = elect_statistic.join_elect_nodes(i).stoke();
-        node_info->tx_count = min_tx_count;
-        node_info->credit = account_info->credit();
-        node_info->pubkey = elect_statistic.join_elect_nodes(i).pubkey();
-        node_info->index = begin_index++;
-        elect_nodes_to_choose.push_back(node_info);
-    }
-
     if (elect_nodes_to_choose.empty()) {
         return kConsensusSuccess;
     }
 
     std::set<uint32_t> weedout_nodes;
-    FtsGetNodes(elect_nodes_to_choose, false, count, weedout_nodes);
+    FtsGetNodes(elect_nodes_to_choose, false, 1, weedout_nodes);
     for (auto iter = elect_nodes_to_choose.begin(); iter != elect_nodes_to_choose.end(); ++iter) {
         if (weedout_nodes.find((*iter)->index) != weedout_nodes.end()) {
             continue;
         }
 
-        elect_nodes.push_back(*iter);
+        elect_nodes[index] = *iter;
         ZJC_DEBUG("success add join elect node: %s",
             common::Encode::HexEncode((*iter)->pubkey).c_str());
         assert(!(*iter)->pubkey.empty());
+        break;
     }
 
     return kConsensusSuccess;
@@ -548,7 +644,8 @@ void ElectTxItem::FtsGetNodes(
     {
         std::string ids;
         for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
-            ids += common::Encode::HexEncode(sec_ptr_->GetAddress(elect_nodes[i]->pubkey)) + ":" + std::to_string(elect_nodes[i]->fts_value) + ",";
+            ids += common::Encode::HexEncode(sec_ptr_->GetAddress(elect_nodes[i]->pubkey)) + ":" +
+                std::to_string(elect_nodes[i]->fts_value) + ",";
         }
 
         ZJC_DEBUG("fts value: %s", ids.c_str());

@@ -65,12 +65,12 @@ private:
         uint32_t* min_tx_count,
         std::vector<NodeDetailPtr>& elect_nodes);
     int GetJoinElectNodesCredit(
-        uint32_t begin_index,
-        uint32_t count,
+        uint32_t index,
         const pools::protobuf::ElectStatistic& elect_statistic,
         uint8_t thread_idx,
         uint32_t min_area_weight,
         uint32_t min_tx_count,
+        const std::vector<NodeDetailPtr>& elect_nodes_to_choose,
         std::vector<NodeDetailPtr>& elect_nodes);
     void FtsGetNodes(
         std::vector<NodeDetailPtr>& elect_nodes,
@@ -95,6 +95,17 @@ private:
         uint64_t all_gas_amount,
         uint64_t* gas_for_root);
     uint64_t GetMiningMaxCount(uint64_t max_tx_count);
+    void GetIndexNodes(
+        uint32_t index,
+        const pools::protobuf::ElectStatistic& elect_statistic,
+        std::vector<NodeDetailPtr>* elect_nodes_to_choose);
+    void ChooseNodeForEachIndex(
+        bool hold_pos,
+        uint8_t thread_idx,
+        uint32_t min_area_weight,
+        uint32_t min_tx_count,
+        const pools::protobuf::ElectStatistic& elect_statistic,
+        std::vector<NodeDetailPtr>& elect_nodes);
 
     static const uint32_t kFtsWeedoutDividRate = 10u;
     static const uint32_t kFtsNewElectJoinRate = 5u;
@@ -116,6 +127,8 @@ private:
     uint64_t first_timeblock_timestamp_ = 0;
     bool stop_mining_ = false;
     uint32_t network_count_ = 2;
+    std::set<std::string> added_nodes_;
+    common::MembersPtr elect_members_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ElectTxItem);
 };

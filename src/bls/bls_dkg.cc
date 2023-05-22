@@ -989,7 +989,6 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     prefix_db_->AddBlsVerifyG2(security_->GetAddress(), bls_verify_req);
     valid_swapkey_set_.insert(local_member_index_);
     ++valid_sec_key_count_;
-    std::cout << "success handle member: " << local_member_index_ << std::endl;
 }
 
 void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
