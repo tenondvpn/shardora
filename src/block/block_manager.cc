@@ -337,7 +337,7 @@ void BlockManager::RootHandleNormalToTx(
                     tos_item.des(),
                     tos_item.join_infos(i),
                     db_batch);
-                ZJC_DEBUG("success handle kElectJoin tx: %s", common::Encode::HexEncode(tx.from()).c_str());
+                ZJC_DEBUG("success handle kElectJoin tx: %s", common::Encode::HexEncode(tos_item.des()).c_str());
             }
             continue;
         }
