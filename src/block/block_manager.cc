@@ -554,7 +554,6 @@ void BlockManager::HandleJoinElectTx(
             uint32_t mem_idx = join_info.member_idx();
             str_for_hash.append((char*)&shard_id, sizeof(shard_id));
             str_for_hash.append((char*)&mem_idx, sizeof(mem_idx));
-            auto local_member_index = common::GlobalInfo::Instance()->config_local_member_idx();
             for (int32_t i = 0; i < join_info.g2_req().verify_vec_size(); ++i) {
                 auto& item = join_info.g2_req().verify_vec(i);
                 str_for_hash.append(item.x_c0());
