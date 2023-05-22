@@ -163,13 +163,13 @@ int ElectTxItem::HandleTx(
                 min_tx_count,
                 elect_statistic,
                 elect_nodes);
-//             ChooseNodeForEachIndex(
-//                 false,
-//                 thread_idx,
-//                 min_area_weight,
-//                 min_tx_count,
-//                 elect_statistic,
-//                 elect_nodes);
+            ChooseNodeForEachIndex(
+                false,
+                thread_idx,
+                min_area_weight,
+                min_tx_count,
+                elect_statistic,
+                elect_nodes);
             {
                 std::string ids;
                 for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
