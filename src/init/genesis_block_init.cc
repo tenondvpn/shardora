@@ -180,9 +180,10 @@ int GenesisBlockInit::CreateGenesisBlocks(
 
 bool GenesisBlockInit::CheckRecomputeG2s(
         uint32_t local_member_index,
-        uint32_t member_count,
+        uint32_t valid_t,
         const std::string& id,
         bls::protobuf::JoinElectBlsInfo& verfy_final_vals) {
+    assert(valid_t > 1);
     init::protobuf::JoinElectInfo join_info;
     if (!prefix_db_->GetNodeVerificationVector(id, &join_info)) {
         return false;
@@ -194,7 +195,7 @@ bool GenesisBlockInit::CheckRecomputeG2s(
     }
 
     libff::alt_bn128_G2 verify_g2s = libff::alt_bn128_G2::zero();
-    int32_t begin_idx = join_info.g2_req().verify_vec_size() - 1;
+    int32_t begin_idx = valid_t - 1;
     for (; begin_idx > min_idx; --begin_idx) {
         if (prefix_db_->GetVerifiedG2s(local_member_index, id, begin_idx + 1, &verfy_final_vals)) {
             auto& item = verfy_final_vals.verified_g2();
@@ -217,7 +218,7 @@ bool GenesisBlockInit::CheckRecomputeG2s(
         begin_idx = 0;
     }
 
-    for (int32_t i = begin_idx; i < member_count; ++i) {
+    for (int32_t i = begin_idx; i < valid_t; ++i) {
         auto& item = join_info.g2_req().verify_vec(i);
         auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
         auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
