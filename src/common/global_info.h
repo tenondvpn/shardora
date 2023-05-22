@@ -130,10 +130,6 @@ public:
         return join_root_;
     }
 
-    uint32_t config_local_member_idx() const {
-        return config_local_member_idx_;
-    }
-
 private:
     GlobalInfo();
     ~GlobalInfo();
@@ -164,7 +160,6 @@ private:
     uint32_t each_shard_max_members_ = 1024u;
     uint32_t sharding_min_nodes_count_ = 3u;
     int32_t join_root_ = common::kJoinRoot;
-    uint32_t config_local_member_idx_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };

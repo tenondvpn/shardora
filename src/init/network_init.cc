@@ -492,7 +492,9 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     new_tx->set_gas_price(10);
     new_tx->set_key(protos::kElectJoinShard);
     init::protobuf::JoinElectInfo join_info;
-    join_info.set_member_idx(common::GlobalInfo::Instance()->config_local_member_idx());
+    uint32_t pos = common::kInvalidUint32;
+    prefix_db_->GetLocalElectPos(security_->GetAddress(), &pos);
+    join_info.set_member_idx(pos);
     join_info.set_shard_id(common::GlobalInfo::Instance()->network_id() - network::kConsensusWaitingShardOffset);
     auto* req = join_info.mutable_g2_req();
     auto res = prefix_db_->GetBlsVerifyG2(security_->GetAddress(), req);

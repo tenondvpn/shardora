@@ -65,7 +65,7 @@ static const std::string kLocalVerifiedG2Prefix = "ae\x01";
 static const std::string kLocalTempPolynomialPrefix = "af\x01";
 static const std::string kLocalTempCommonPublicKeyPrefix = "ag\x01";
 static const std::string kNodeVerificationVectorPrefix = "ah\x01";
-
+static const std::string kNodeLocalElectPosPrefix = "ai\x01";
 
 class PrefixDb {
 public:
@@ -1284,6 +1284,50 @@ public:
             return false;
         }
 
+        return true;
+    }
+
+    void SaveLocalElectPos(const std::string& addr, uint32_t pos, db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(128);
+        key.append(kNodeLocalElectPosPrefix);
+        key.append(addr);
+        char data[4];
+        uint32_t* tmp = (uint32_t*)data;
+        tmp[0] = pos;
+        std::string val(data, sizeof(data));
+        db_batch.Put(key, val);
+    }
+
+    void SaveLocalElectPos(const std::string& addr, uint32_t pos) {
+        std::string key;
+        key.reserve(128);
+        key.append(kNodeLocalElectPosPrefix);
+        key.append(addr);
+        char data[4];
+        uint32_t* tmp = (uint32_t*)data;
+        tmp[0] = pos;
+        std::string val(data, sizeof(data));
+        auto st = db_->Put(key, val);
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+    }
+
+    bool GetLocalElectPos(const std::string& addr, uint32_t* pos) {
+        std::string key;
+        key.reserve(128);
+        key.append(kNodeLocalElectPosPrefix);
+        key.append(addr);
+        std::string val;
+        auto st = db_->Get(key, val);
+        if (!st.ok()) {
+            ZJC_INFO("get db failed!");
+            return false;
+        }
+
+        uint32_t* tmp = (uint32_t*)val.c_str();
+        *pos = tmp[0];
         return true;
     }
 
