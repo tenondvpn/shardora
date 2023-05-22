@@ -92,6 +92,10 @@ private:
         uint32_t idx,
         const std::string& prikey,
         block::protobuf::BlockTx* join_elect_tx_info);
+    bool CheckRecomputeG2s(
+        const std::string& id,
+        bls::protobuf::JoinElectBlsInfo& verfy_final_vals);
+
     std::map<uint32_t, std::string> pool_index_map_;
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;
     common::Bitmap root_bitmap_{ common::kEachShardMaxNodeCount };
