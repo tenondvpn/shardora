@@ -136,9 +136,19 @@ int ElectTxItem::HandleTx(
                 &gas_for_root);
             min_area_weight += 1;
             min_tx_count += 1;
-            uint32_t join_count = members->size() - elect_nodes.size();
+            std::vector<NodeDetailPtr> src_elect_nodes_to_choose;
+            for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
+                if (elect_nodes[i] != nullptr) {
+                    src_elect_nodes_to_choose.push_back(elect_nodes[i]);
+                }
+            }
+
+            uint32_t join_count = 0;
             if (members->size() < common::kEachShardMaxNodeCount) {
                 join_count += members->size() * kFtsNewElectJoinRate / 100;
+                if (join_count <= 0) {
+                    ++join_count;
+                }
             }
 
             if (join_count + elect_nodes.size() > common::kEachShardMaxNodeCount) {
@@ -148,13 +158,6 @@ int ElectTxItem::HandleTx(
             ZJC_DEBUG("add new node count: %u", join_count);
             for (uint32_t i = 0; i < join_count; ++i) {
                 elect_nodes.push_back(nullptr);
-            }
-
-            std::vector<NodeDetailPtr> src_elect_nodes_to_choose;
-            for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
-                if (elect_nodes[i] != nullptr) {
-                    src_elect_nodes_to_choose.push_back(elect_nodes[i]);
-                }
             }
 
             ChooseNodeForEachIndex(
