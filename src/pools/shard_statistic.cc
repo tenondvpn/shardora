@@ -345,15 +345,18 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
         }
 
         if (block.tx_list(i).step() == pools::protobuf::kConsensusRootElectShard && is_root) {
+            ZJC_DEBUG("success handle kConsensusRootElectShard");
             for (int32_t storage_idx = 0; storage_idx < block.tx_list(i).storages_size(); ++storage_idx) {
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kElectNodeAttrElectBlock) {
                     std::string val;
                     if (!prefix_db_->GetTemporaryKv(block.tx_list(i).storages(storage_idx).val_hash(), &val)) {
+                        assert(false);
                         break;
                     }
 
                     elect::protobuf::ElectBlock elect_block;
                     if (!elect_block.ParseFromString(val)) {
+                        assert(false);
                         break;
                     }
 
@@ -361,6 +364,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                         statistic_info_ptr->all_gas_for_root += elect_block.gas_for_root();
                     }
                 }
+
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kShardElection) {
                     uint64_t* tmp = (uint64_t*)block.tx_list(i).storages(storage_idx).val_hash().c_str();
                     pools::protobuf::ElectStatistic elect_statistic;
@@ -371,6 +375,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                         ZJC_WARN("get statistic elect statistic failed! net: %u, height: %lu",
                             tmp[0],
                             tmp[1]);
+                        assert(false);
                         break;
                     }
 
@@ -769,16 +774,17 @@ int ShardStatistic::StatisticWithHeights(
         }
     }
 
-    if (prepare_members != nullptr)
-    ZJC_DEBUG("kJoinElect add new elect node now elect_height: %lu, prepare elect height: %lu, %d, %d,"
-        "new nodes size: %u, now members size: %u, prepare members size: %u",
-        now_elect_height_,
-        prepare_elect_height_,
-        (r_eiter != join_elect_stoke_map.rend()),
-        (r_siter != join_elect_shard_map.rend()),
-        elect_statistic.join_elect_nodes_size(),
-        now_elect_members->size(),
-        prepare_members->size());
+    if (prepare_members != nullptr) {
+        ZJC_DEBUG("kJoinElect add new elect node now elect_height: %lu, prepare elect height: %lu, %d, %d,"
+            "new nodes size: %u, now members size: %u, prepare members size: %u",
+            now_elect_height_,
+            prepare_elect_height_,
+            (r_eiter != join_elect_stoke_map.rend()),
+            (r_siter != join_elect_shard_map.rend()),
+            elect_statistic.join_elect_nodes_size(),
+            now_elect_members->size(),
+            prepare_members->size());
+    }
 
     NormalizeLofMap(lof_map);
     if (!lof_map.empty()) {

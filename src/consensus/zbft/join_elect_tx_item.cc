@@ -31,13 +31,22 @@ int JoinElectTxItem::HandleTx(
             // TODO(): check key exists and reserve gas
             gas_used += (block_tx.storages(i).key().size() + msg_ptr->header.tx_proto().value().size()) *
                 consensus::kKeyValueStorageEachBytes;
-            if (block_tx.storages(i).key() == protos::kElectJoinShard) {
-                uint32_t* tmp = (uint32_t*)block_tx.storages(i).val_hash().c_str();
-                if (tmp[0] != network::kRootCongressNetworkId) {
-                    if (tmp[0] != common::GlobalInfo::Instance()->network_id() ||
-                            tmp[0] != msg_ptr->address_info->sharding_id()) {
+            if (block_tx.storages(i).key() == protos::kJoinElectVerifyG2) {
+                std::string val;
+                if (!prefix_db_->GetTemporaryKv(block.tx_list(i).storages(i).val_hash(), &val)) {
+                    break;
+                }
+
+                init::protobuf::JoinElectInfo join_info;
+                if (!join_info.ParseFromString(val)) {
+                    break;
+                }
+
+                if (join_info.shard_id() != network::kRootCongressNetworkId) {
+                    if (join_info.shard_id() != common::GlobalInfo::Instance()->network_id() ||
+                            join_info.shard_id() != msg_ptr->address_info->sharding_id()) {
                         block_tx.set_status(consensus::kConsensusError);
-                        ZJC_DEBUG("shard error: %lu", tmp[0]);
+                        ZJC_DEBUG("shard error: %lu", join_info.shard_id());
                         break;
                     }
                 }
