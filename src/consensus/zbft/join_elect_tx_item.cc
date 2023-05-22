@@ -91,7 +91,8 @@ int JoinElectTxItem::HandleTx(
     acc_balance_map[from] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
-    ZJC_DEBUG("success join elect: %s", common::Encode::HexEncode(from).c_str());
+    ZJC_DEBUG("status: %d, success join elect: %s",
+        block_tx.status(), common::Encode::HexEncode(from).c_str());
 //     ZJC_DEBUG("handle tx success: %s, %lu, %lu, status: %d",
 //         common::Encode::HexEncode(block_tx.gid()).c_str(),
 //         block_tx.balance(),
