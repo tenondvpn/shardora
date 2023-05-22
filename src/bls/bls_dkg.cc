@@ -581,7 +581,7 @@ bool BlsDkg::CheckRecomputeG2s(
         begin_idx = 0;
     }
 
-    for (int32_t i = begin_idx; i < member_count_; ++i) {
+    for (int32_t i = begin_idx; i < min_aggree_member_count_; ++i) {
         auto& item = join_info.g2_req().verify_vec(i);
         auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
         auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());

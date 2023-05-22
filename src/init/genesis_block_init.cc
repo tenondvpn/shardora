@@ -117,7 +117,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
                         secptr->GetAddress(),
                         valid_t,
                         &verfy_final_vals)) {
-                    if (!CheckRecomputeG2s(mem_idx, valid_n, secptr->GetAddress(), verfy_final_vals)) {
+                    if (!CheckRecomputeG2s(mem_idx, valid_t, secptr->GetAddress(), verfy_final_vals)) {
                         assert(false);
                         continue;
                     }
@@ -171,6 +171,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
             }
         }
     }
+
     db_->ClearPrefix("db_for_gid_");
     assert(res == kInitSuccess);
     return res;
