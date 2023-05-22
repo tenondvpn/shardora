@@ -762,10 +762,15 @@ int ShardStatistic::StatisticWithHeights(
             auto join_elect_node = elect_statistic.add_join_elect_nodes();
             join_elect_node->set_pubkey((*prepare_members)[i]->pubkey);
             auto addr_info = prefix_db_->GetAddressInfo(secptr_->GetAddress((*prepare_members)[i]->pubkey));
-            if (addr_info == nullptr ||
-                    addr_info->elect_pos() < 0 ||
-                    addr_info->elect_pos() >= common::GlobalInfo::Instance()->each_shard_max_members()) {
+            if (addr_info == nullptr) {
                 continue;
+            }
+
+            if (addr_info->elect_pos() != common::kInvalidUint32) {
+                if (addr_info->elect_pos() < 0 ||
+                        addr_info->elect_pos() >= common::GlobalInfo::Instance()->each_shard_max_members()) {
+                    continue;
+                }
             }
 
             uint64_t stoke = 0;
