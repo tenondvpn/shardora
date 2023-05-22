@@ -52,6 +52,11 @@ class JoinElectBlsInfoDefaultTypeInternal {
   ::google::protobuf::internal::ExplicitlyConstructed<JoinElectBlsInfo>
       _instance;
 } _JoinElectBlsInfo_default_instance_;
+class JoinElectInfoDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<JoinElectInfo>
+      _instance;
+} _JoinElectInfo_default_instance_;
 class LocalPolynomialDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<LocalPolynomial>
@@ -172,6 +177,21 @@ static void InitDefaultsJoinElectBlsInfo() {
 
 ::google::protobuf::internal::SCCInfo<1> scc_info_JoinElectBlsInfo =
     {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsJoinElectBlsInfo}, {
+      &protobuf_protos_2fbls_2eproto::scc_info_VerifyVecItem.base,}};
+
+static void InitDefaultsJoinElectInfo() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::zjchain::bls::protobuf::_JoinElectInfo_default_instance_;
+    new (ptr) ::zjchain::bls::protobuf::JoinElectInfo();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::zjchain::bls::protobuf::JoinElectInfo::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<1> scc_info_JoinElectInfo =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsJoinElectInfo}, {
       &protobuf_protos_2fbls_2eproto::scc_info_VerifyVecBrdReq.base,}};
 
 static void InitDefaultsLocalPolynomial() {
@@ -357,6 +377,7 @@ void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_BlsPublicKey.base);
   ::google::protobuf::internal::InitSCC(&scc_info_VerifyVecBrdReq.base);
   ::google::protobuf::internal::InitSCC(&scc_info_JoinElectBlsInfo.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_JoinElectInfo.base);
   ::google::protobuf::internal::InitSCC(&scc_info_LocalPolynomial.base);
   ::google::protobuf::internal::InitSCC(&scc_info_LocalBlsItem.base);
   ::google::protobuf::internal::InitSCC(&scc_info_BlsVerifyValue.base);
@@ -371,7 +392,7 @@ void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_BlsMessage.base);
 }
 
-::google::protobuf::Metadata file_level_metadata[16];
+::google::protobuf::Metadata file_level_metadata[17];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::VerifyVecItem, _has_bits_),
@@ -418,10 +439,21 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::JoinElectBlsInfo, src_hash_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::JoinElectBlsInfo, verify_req_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::JoinElectBlsInfo, verified_g2_),
   0,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::JoinElectInfo, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::JoinElectInfo, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::JoinElectInfo, shard_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::JoinElectInfo, member_idx_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::JoinElectInfo, change_idx_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::JoinElectInfo, g2_req_),
   1,
+  2,
+  3,
+  0,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::LocalPolynomial, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::bls::protobuf::LocalPolynomial, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -551,19 +583,20 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 0, 11, sizeof(::zjchain::bls::protobuf::VerifyVecItem)},
   { 17, 26, sizeof(::zjchain::bls::protobuf::BlsPublicKey)},
   { 30, 37, sizeof(::zjchain::bls::protobuf::VerifyVecBrdReq)},
-  { 39, 46, sizeof(::zjchain::bls::protobuf::JoinElectBlsInfo)},
-  { 48, 55, sizeof(::zjchain::bls::protobuf::LocalPolynomial)},
-  { 57, 66, sizeof(::zjchain::bls::protobuf::LocalBlsItem)},
-  { 70, 76, sizeof(::zjchain::bls::protobuf::BlsVerifyValue)},
-  { 77, 84, sizeof(::zjchain::bls::protobuf::VerifyVecBrdRes)},
-  { 86, 94, sizeof(::zjchain::bls::protobuf::SwapSecKeyItem)},
-  { 97, 103, sizeof(::zjchain::bls::protobuf::SwapSecKeyReq)},
-  { 104, 112, sizeof(::zjchain::bls::protobuf::SwapSecKeyRes)},
-  { 115, 121, sizeof(::zjchain::bls::protobuf::AgainstParticipant)},
-  { 122, 133, sizeof(::zjchain::bls::protobuf::FinishBroadcast)},
-  { 139, 145, sizeof(::zjchain::bls::protobuf::CheckVerfiyReq)},
-  { 146, 152, sizeof(::zjchain::bls::protobuf::CheckSwapKeyReq)},
-  { 153, 165, sizeof(::zjchain::bls::protobuf::BlsMessage)},
+  { 39, 45, sizeof(::zjchain::bls::protobuf::JoinElectBlsInfo)},
+  { 46, 55, sizeof(::zjchain::bls::protobuf::JoinElectInfo)},
+  { 59, 66, sizeof(::zjchain::bls::protobuf::LocalPolynomial)},
+  { 68, 77, sizeof(::zjchain::bls::protobuf::LocalBlsItem)},
+  { 81, 87, sizeof(::zjchain::bls::protobuf::BlsVerifyValue)},
+  { 88, 95, sizeof(::zjchain::bls::protobuf::VerifyVecBrdRes)},
+  { 97, 105, sizeof(::zjchain::bls::protobuf::SwapSecKeyItem)},
+  { 108, 114, sizeof(::zjchain::bls::protobuf::SwapSecKeyReq)},
+  { 115, 123, sizeof(::zjchain::bls::protobuf::SwapSecKeyRes)},
+  { 126, 132, sizeof(::zjchain::bls::protobuf::AgainstParticipant)},
+  { 133, 144, sizeof(::zjchain::bls::protobuf::FinishBroadcast)},
+  { 150, 156, sizeof(::zjchain::bls::protobuf::CheckVerfiyReq)},
+  { 157, 163, sizeof(::zjchain::bls::protobuf::CheckSwapKeyReq)},
+  { 164, 176, sizeof(::zjchain::bls::protobuf::BlsMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -571,6 +604,7 @@ static ::google::protobuf::Message const * const file_default_instances[] = {
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::bls::protobuf::_BlsPublicKey_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::bls::protobuf::_VerifyVecBrdReq_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::bls::protobuf::_JoinElectBlsInfo_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::bls::protobuf::_JoinElectInfo_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::bls::protobuf::_LocalPolynomial_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::bls::protobuf::_LocalBlsItem_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::bls::protobuf::_BlsVerifyValue_default_instance_),
@@ -600,7 +634,7 @@ void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 16);
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 17);
 }
 
 void AddDescriptorsImpl() {
@@ -613,44 +647,47 @@ void AddDescriptorsImpl() {
       "\004x_c0\030\001 \001(\014\022\014\n\004x_c1\030\002 \001(\014\022\014\n\004y_c0\030\003 \001(\014\022"
       "\014\n\004y_c1\030\004 \001(\014\"^\n\017VerifyVecBrdReq\0227\n\nveri"
       "fy_vec\030\001 \003(\0132#.zjchain.bls.protobuf.Veri"
-      "fyVecItem\022\022\n\nchange_idx\030\002 \001(\r\"_\n\020JoinEle"
-      "ctBlsInfo\022\020\n\010src_hash\030\001 \001(\014\0229\n\nverify_re"
-      "q\030\002 \001(\0132%.zjchain.bls.protobuf.VerifyVec"
-      "BrdReq\"<\n\017LocalPolynomial\022\022\n\npolynomial\030"
-      "\001 \003(\014\022\025\n\nchange_idx\030\002 \001(\r:\0010\"}\n\014LocalBls"
-      "Item\022\022\n\npolynomial\030\001 \003(\014\0227\n\nverify_vec\030\002"
-      " \003(\0132#.zjchain.bls.protobuf.VerifyVecIte"
-      "m\022\017\n\007valid_t\030\003 \001(\r\022\017\n\007valid_n\030\004 \001(\r\"I\n\016B"
-      "lsVerifyValue\0227\n\nverify_vec\030\001 \003(\0132#.zjch"
-      "ain.bls.protobuf.VerifyVecItem\"9\n\017Verify"
-      "VecBrdRes\022\021\n\tpublic_ip\030\001 \001(\014\022\023\n\013public_p"
-      "ort\030\002 \001(\r\"j\n\016SwapSecKeyItem\022\017\n\007sec_key\030\001"
-      " \001(\014\022\023\n\013sec_key_len\030\002 \001(\r\0222\n\006old_g2\030\003 \001("
-      "\0132\".zjchain.bls.protobuf.BlsPublicKey\"C\n"
-      "\rSwapSecKeyReq\0222\n\004keys\030\001 \003(\0132$.zjchain.b"
-      "ls.protobuf.SwapSecKeyItem\"D\n\rSwapSecKey"
-      "Res\022\r\n\005index\030\001 \001(\r\022\017\n\007sec_key\030\002 \001(\014\022\023\n\013s"
-      "ec_key_len\030\003 \001(\r\"+\n\022AgainstParticipant\022\025"
-      "\n\ragainst_index\030\001 \001(\r\"\314\001\n\017FinishBroadcas"
-      "t\022\016\n\006bitmap\030\001 \003(\004\0222\n\006pubkey\030\002 \001(\0132\".zjch"
-      "ain.bls.protobuf.BlsPublicKey\0229\n\rcommon_"
-      "pubkey\030\003 \001(\0132\".zjchain.bls.protobuf.BlsP"
-      "ublicKey\022\022\n\nnetwork_id\030\004 \001(\r\022\022\n\nbls_sign"
-      "_x\030\005 \001(\014\022\022\n\nbls_sign_y\030\006 \001(\014\"\037\n\016CheckVer"
-      "fiyReq\022\r\n\005index\030\001 \001(\r\" \n\017CheckSwapKeyReq"
-      "\022\r\n\005index\030\001 \001(\r\"\340\002\n\nBlsMessage\0229\n\nverify"
-      "_brd\030\001 \001(\0132%.zjchain.bls.protobuf.Verify"
-      "VecBrdReq\0225\n\010swap_req\030\002 \001(\0132#.zjchain.bl"
-      "s.protobuf.SwapSecKeyReq\0229\n\nfinish_req\030\003"
-      " \001(\0132%.zjchain.bls.protobuf.FinishBroadc"
-      "ast\022>\n\020check_verify_req\030\004 \001(\0132$.zjchain."
-      "bls.protobuf.CheckVerfiyReq\022@\n\021check_swa"
-      "pkey_req\030\005 \001(\0132%.zjchain.bls.protobuf.Ch"
-      "eckSwapKeyReq\022\r\n\005index\030\006 \001(\r\022\024\n\014elect_he"
-      "ight\030\007 \001(\004"
+      "fyVecItem\022\022\n\nchange_idx\030\002 \001(\r\"L\n\020JoinEle"
+      "ctBlsInfo\0228\n\013verified_g2\030\001 \001(\0132#.zjchain"
+      ".bls.protobuf.VerifyVecItem\"\200\001\n\rJoinElec"
+      "tInfo\022\020\n\010shard_id\030\001 \001(\r\022\022\n\nmember_idx\030\002 "
+      "\001(\r\022\022\n\nchange_idx\030\003 \001(\r\0225\n\006g2_req\030\004 \001(\0132"
+      "%.zjchain.bls.protobuf.VerifyVecBrdReq\"<"
+      "\n\017LocalPolynomial\022\022\n\npolynomial\030\001 \003(\014\022\025\n"
+      "\nchange_idx\030\002 \001(\r:\0010\"}\n\014LocalBlsItem\022\022\n\n"
+      "polynomial\030\001 \003(\014\0227\n\nverify_vec\030\002 \003(\0132#.z"
+      "jchain.bls.protobuf.VerifyVecItem\022\017\n\007val"
+      "id_t\030\003 \001(\r\022\017\n\007valid_n\030\004 \001(\r\"I\n\016BlsVerify"
+      "Value\0227\n\nverify_vec\030\001 \003(\0132#.zjchain.bls."
+      "protobuf.VerifyVecItem\"9\n\017VerifyVecBrdRe"
+      "s\022\021\n\tpublic_ip\030\001 \001(\014\022\023\n\013public_port\030\002 \001("
+      "\r\"j\n\016SwapSecKeyItem\022\017\n\007sec_key\030\001 \001(\014\022\023\n\013"
+      "sec_key_len\030\002 \001(\r\0222\n\006old_g2\030\003 \001(\0132\".zjch"
+      "ain.bls.protobuf.BlsPublicKey\"C\n\rSwapSec"
+      "KeyReq\0222\n\004keys\030\001 \003(\0132$.zjchain.bls.proto"
+      "buf.SwapSecKeyItem\"D\n\rSwapSecKeyRes\022\r\n\005i"
+      "ndex\030\001 \001(\r\022\017\n\007sec_key\030\002 \001(\014\022\023\n\013sec_key_l"
+      "en\030\003 \001(\r\"+\n\022AgainstParticipant\022\025\n\ragains"
+      "t_index\030\001 \001(\r\"\314\001\n\017FinishBroadcast\022\016\n\006bit"
+      "map\030\001 \003(\004\0222\n\006pubkey\030\002 \001(\0132\".zjchain.bls."
+      "protobuf.BlsPublicKey\0229\n\rcommon_pubkey\030\003"
+      " \001(\0132\".zjchain.bls.protobuf.BlsPublicKey"
+      "\022\022\n\nnetwork_id\030\004 \001(\r\022\022\n\nbls_sign_x\030\005 \001(\014"
+      "\022\022\n\nbls_sign_y\030\006 \001(\014\"\037\n\016CheckVerfiyReq\022\r"
+      "\n\005index\030\001 \001(\r\" \n\017CheckSwapKeyReq\022\r\n\005inde"
+      "x\030\001 \001(\r\"\340\002\n\nBlsMessage\0229\n\nverify_brd\030\001 \001"
+      "(\0132%.zjchain.bls.protobuf.VerifyVecBrdRe"
+      "q\0225\n\010swap_req\030\002 \001(\0132#.zjchain.bls.protob"
+      "uf.SwapSecKeyReq\0229\n\nfinish_req\030\003 \001(\0132%.z"
+      "jchain.bls.protobuf.FinishBroadcast\022>\n\020c"
+      "heck_verify_req\030\004 \001(\0132$.zjchain.bls.prot"
+      "obuf.CheckVerfiyReq\022@\n\021check_swapkey_req"
+      "\030\005 \001(\0132%.zjchain.bls.protobuf.CheckSwapK"
+      "eyReq\022\r\n\005index\030\006 \001(\r\022\024\n\014elect_height\030\007 \001"
+      "(\004"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1650);
+      descriptor, 1762);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/bls.proto", &protobuf_RegisterTypes);
 }
@@ -1820,12 +1857,11 @@ void VerifyVecBrdReq::InternalSwap(VerifyVecBrdReq* other) {
 // ===================================================================
 
 void JoinElectBlsInfo::InitAsDefaultInstance() {
-  ::zjchain::bls::protobuf::_JoinElectBlsInfo_default_instance_._instance.get_mutable()->verify_req_ = const_cast< ::zjchain::bls::protobuf::VerifyVecBrdReq*>(
-      ::zjchain::bls::protobuf::VerifyVecBrdReq::internal_default_instance());
+  ::zjchain::bls::protobuf::_JoinElectBlsInfo_default_instance_._instance.get_mutable()->verified_g2_ = const_cast< ::zjchain::bls::protobuf::VerifyVecItem*>(
+      ::zjchain::bls::protobuf::VerifyVecItem::internal_default_instance());
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int JoinElectBlsInfo::kSrcHashFieldNumber;
-const int JoinElectBlsInfo::kVerifyReqFieldNumber;
+const int JoinElectBlsInfo::kVerifiedG2FieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 JoinElectBlsInfo::JoinElectBlsInfo()
@@ -1840,21 +1876,16 @@ JoinElectBlsInfo::JoinElectBlsInfo(const JoinElectBlsInfo& from)
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  src_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.has_src_hash()) {
-    src_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.src_hash_);
-  }
-  if (from.has_verify_req()) {
-    verify_req_ = new ::zjchain::bls::protobuf::VerifyVecBrdReq(*from.verify_req_);
+  if (from.has_verified_g2()) {
+    verified_g2_ = new ::zjchain::bls::protobuf::VerifyVecItem(*from.verified_g2_);
   } else {
-    verify_req_ = NULL;
+    verified_g2_ = NULL;
   }
   // @@protoc_insertion_point(copy_constructor:zjchain.bls.protobuf.JoinElectBlsInfo)
 }
 
 void JoinElectBlsInfo::SharedCtor() {
-  src_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  verify_req_ = NULL;
+  verified_g2_ = NULL;
 }
 
 JoinElectBlsInfo::~JoinElectBlsInfo() {
@@ -1863,8 +1894,7 @@ JoinElectBlsInfo::~JoinElectBlsInfo() {
 }
 
 void JoinElectBlsInfo::SharedDtor() {
-  src_hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != internal_default_instance()) delete verify_req_;
+  if (this != internal_default_instance()) delete verified_g2_;
 }
 
 void JoinElectBlsInfo::SetCachedSize(int size) const {
@@ -1888,14 +1918,9 @@ void JoinElectBlsInfo::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 3u) {
-    if (cached_has_bits & 0x00000001u) {
-      src_hash_.ClearNonDefaultToEmptyNoArena();
-    }
-    if (cached_has_bits & 0x00000002u) {
-      GOOGLE_DCHECK(verify_req_ != NULL);
-      verify_req_->Clear();
-    }
+  if (cached_has_bits & 0x00000001u) {
+    GOOGLE_DCHECK(verified_g2_ != NULL);
+    verified_g2_->Clear();
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -1911,24 +1936,12 @@ bool JoinElectBlsInfo::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional bytes src_hash = 1;
+      // optional .zjchain.bls.protobuf.VerifyVecItem verified_g2 = 1;
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->mutable_src_hash()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // optional .zjchain.bls.protobuf.VerifyVecBrdReq verify_req = 2;
-      case 2: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
-               input, mutable_verify_req()));
+               input, mutable_verified_g2()));
         } else {
           goto handle_unusual;
         }
@@ -1962,16 +1975,10 @@ void JoinElectBlsInfo::SerializeWithCachedSizes(
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  // optional bytes src_hash = 1;
+  // optional .zjchain.bls.protobuf.VerifyVecItem verified_g2 = 1;
   if (cached_has_bits & 0x00000001u) {
-    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
-      1, this->src_hash(), output);
-  }
-
-  // optional .zjchain.bls.protobuf.VerifyVecBrdReq verify_req = 2;
-  if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      2, this->_internal_verify_req(), output);
+      1, this->_internal_verified_g2(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1989,18 +1996,11 @@ void JoinElectBlsInfo::SerializeWithCachedSizes(
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  // optional bytes src_hash = 1;
+  // optional .zjchain.bls.protobuf.VerifyVecItem verified_g2 = 1;
   if (cached_has_bits & 0x00000001u) {
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        1, this->src_hash(), target);
-  }
-
-  // optional .zjchain.bls.protobuf.VerifyVecBrdReq verify_req = 2;
-  if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
-        2, this->_internal_verify_req(), deterministic, target);
+        1, this->_internal_verified_g2(), deterministic, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2020,22 +2020,13 @@ size_t JoinElectBlsInfo::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 3u) {
-    // optional bytes src_hash = 1;
-    if (has_src_hash()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->src_hash());
-    }
-
-    // optional .zjchain.bls.protobuf.VerifyVecBrdReq verify_req = 2;
-    if (has_verify_req()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::MessageSize(
-          *verify_req_);
-    }
-
+  // optional .zjchain.bls.protobuf.VerifyVecItem verified_g2 = 1;
+  if (has_verified_g2()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::MessageSize(
+        *verified_g2_);
   }
+
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
@@ -2063,15 +2054,8 @@ void JoinElectBlsInfo::MergeFrom(const JoinElectBlsInfo& from) {
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 3u) {
-    if (cached_has_bits & 0x00000001u) {
-      set_has_src_hash();
-      src_hash_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.src_hash_);
-    }
-    if (cached_has_bits & 0x00000002u) {
-      mutable_verify_req()->::zjchain::bls::protobuf::VerifyVecBrdReq::MergeFrom(from.verify_req());
-    }
+  if (from.has_verified_g2()) {
+    mutable_verified_g2()->::zjchain::bls::protobuf::VerifyVecItem::MergeFrom(from.verified_g2());
   }
 }
 
@@ -2099,14 +2083,376 @@ void JoinElectBlsInfo::Swap(JoinElectBlsInfo* other) {
 }
 void JoinElectBlsInfo::InternalSwap(JoinElectBlsInfo* other) {
   using std::swap;
-  src_hash_.Swap(&other->src_hash_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-    GetArenaNoVirtual());
-  swap(verify_req_, other->verify_req_);
+  swap(verified_g2_, other->verified_g2_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
 
 ::google::protobuf::Metadata JoinElectBlsInfo::GetMetadata() const {
+  protobuf_protos_2fbls_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fbls_2eproto::file_level_metadata[kIndexInFileMessages];
+}
+
+
+// ===================================================================
+
+void JoinElectInfo::InitAsDefaultInstance() {
+  ::zjchain::bls::protobuf::_JoinElectInfo_default_instance_._instance.get_mutable()->g2_req_ = const_cast< ::zjchain::bls::protobuf::VerifyVecBrdReq*>(
+      ::zjchain::bls::protobuf::VerifyVecBrdReq::internal_default_instance());
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int JoinElectInfo::kShardIdFieldNumber;
+const int JoinElectInfo::kMemberIdxFieldNumber;
+const int JoinElectInfo::kChangeIdxFieldNumber;
+const int JoinElectInfo::kG2ReqFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+JoinElectInfo::JoinElectInfo()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2fbls_2eproto::scc_info_JoinElectInfo.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:zjchain.bls.protobuf.JoinElectInfo)
+}
+JoinElectInfo::JoinElectInfo(const JoinElectInfo& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  if (from.has_g2_req()) {
+    g2_req_ = new ::zjchain::bls::protobuf::VerifyVecBrdReq(*from.g2_req_);
+  } else {
+    g2_req_ = NULL;
+  }
+  ::memcpy(&shard_id_, &from.shard_id_,
+    static_cast<size_t>(reinterpret_cast<char*>(&change_idx_) -
+    reinterpret_cast<char*>(&shard_id_)) + sizeof(change_idx_));
+  // @@protoc_insertion_point(copy_constructor:zjchain.bls.protobuf.JoinElectInfo)
+}
+
+void JoinElectInfo::SharedCtor() {
+  ::memset(&g2_req_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&change_idx_) -
+      reinterpret_cast<char*>(&g2_req_)) + sizeof(change_idx_));
+}
+
+JoinElectInfo::~JoinElectInfo() {
+  // @@protoc_insertion_point(destructor:zjchain.bls.protobuf.JoinElectInfo)
+  SharedDtor();
+}
+
+void JoinElectInfo::SharedDtor() {
+  if (this != internal_default_instance()) delete g2_req_;
+}
+
+void JoinElectInfo::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* JoinElectInfo::descriptor() {
+  ::protobuf_protos_2fbls_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fbls_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const JoinElectInfo& JoinElectInfo::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fbls_2eproto::scc_info_JoinElectInfo.base);
+  return *internal_default_instance();
+}
+
+
+void JoinElectInfo::Clear() {
+// @@protoc_insertion_point(message_clear_start:zjchain.bls.protobuf.JoinElectInfo)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    GOOGLE_DCHECK(g2_req_ != NULL);
+    g2_req_->Clear();
+  }
+  if (cached_has_bits & 14u) {
+    ::memset(&shard_id_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&change_idx_) -
+        reinterpret_cast<char*>(&shard_id_)) + sizeof(change_idx_));
+  }
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool JoinElectInfo::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:zjchain.bls.protobuf.JoinElectInfo)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional uint32 shard_id = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
+          set_has_shard_id();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &shard_id_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint32 member_idx = 2;
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
+          set_has_member_idx();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &member_idx_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint32 change_idx = 3;
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
+          set_has_change_idx();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &change_idx_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.bls.protobuf.VerifyVecBrdReq g2_req = 4;
+      case 4: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(34u /* 34 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_g2_req()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:zjchain.bls.protobuf.JoinElectInfo)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:zjchain.bls.protobuf.JoinElectInfo)
+  return false;
+#undef DO_
+}
+
+void JoinElectInfo::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:zjchain.bls.protobuf.JoinElectInfo)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint32 shard_id = 1;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->shard_id(), output);
+  }
+
+  // optional uint32 member_idx = 2;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->member_idx(), output);
+  }
+
+  // optional uint32 change_idx = 3;
+  if (cached_has_bits & 0x00000008u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->change_idx(), output);
+  }
+
+  // optional .zjchain.bls.protobuf.VerifyVecBrdReq g2_req = 4;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      4, this->_internal_g2_req(), output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:zjchain.bls.protobuf.JoinElectInfo)
+}
+
+::google::protobuf::uint8* JoinElectInfo::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.bls.protobuf.JoinElectInfo)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint32 shard_id = 1;
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->shard_id(), target);
+  }
+
+  // optional uint32 member_idx = 2;
+  if (cached_has_bits & 0x00000004u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->member_idx(), target);
+  }
+
+  // optional uint32 change_idx = 3;
+  if (cached_has_bits & 0x00000008u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->change_idx(), target);
+  }
+
+  // optional .zjchain.bls.protobuf.VerifyVecBrdReq g2_req = 4;
+  if (cached_has_bits & 0x00000001u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        4, this->_internal_g2_req(), deterministic, target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:zjchain.bls.protobuf.JoinElectInfo)
+  return target;
+}
+
+size_t JoinElectInfo::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:zjchain.bls.protobuf.JoinElectInfo)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  if (_has_bits_[0 / 32] & 15u) {
+    // optional .zjchain.bls.protobuf.VerifyVecBrdReq g2_req = 4;
+    if (has_g2_req()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *g2_req_);
+    }
+
+    // optional uint32 shard_id = 1;
+    if (has_shard_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->shard_id());
+    }
+
+    // optional uint32 member_idx = 2;
+    if (has_member_idx()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->member_idx());
+    }
+
+    // optional uint32 change_idx = 3;
+    if (has_change_idx()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->change_idx());
+    }
+
+  }
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void JoinElectInfo::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.bls.protobuf.JoinElectInfo)
+  GOOGLE_DCHECK_NE(&from, this);
+  const JoinElectInfo* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const JoinElectInfo>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.bls.protobuf.JoinElectInfo)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.bls.protobuf.JoinElectInfo)
+    MergeFrom(*source);
+  }
+}
+
+void JoinElectInfo::MergeFrom(const JoinElectInfo& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.bls.protobuf.JoinElectInfo)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 15u) {
+    if (cached_has_bits & 0x00000001u) {
+      mutable_g2_req()->::zjchain::bls::protobuf::VerifyVecBrdReq::MergeFrom(from.g2_req());
+    }
+    if (cached_has_bits & 0x00000002u) {
+      shard_id_ = from.shard_id_;
+    }
+    if (cached_has_bits & 0x00000004u) {
+      member_idx_ = from.member_idx_;
+    }
+    if (cached_has_bits & 0x00000008u) {
+      change_idx_ = from.change_idx_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
+}
+
+void JoinElectInfo::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.bls.protobuf.JoinElectInfo)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void JoinElectInfo::CopyFrom(const JoinElectInfo& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.bls.protobuf.JoinElectInfo)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool JoinElectInfo::IsInitialized() const {
+  return true;
+}
+
+void JoinElectInfo::Swap(JoinElectInfo* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void JoinElectInfo::InternalSwap(JoinElectInfo* other) {
+  using std::swap;
+  swap(g2_req_, other->g2_req_);
+  swap(shard_id_, other->shard_id_);
+  swap(member_idx_, other->member_idx_);
+  swap(change_idx_, other->change_idx_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+::google::protobuf::Metadata JoinElectInfo::GetMetadata() const {
   protobuf_protos_2fbls_2eproto::protobuf_AssignDescriptorsOnce();
   return ::protobuf_protos_2fbls_2eproto::file_level_metadata[kIndexInFileMessages];
 }
@@ -5851,6 +6197,9 @@ template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::bls::protobuf::VerifyVe
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::bls::protobuf::JoinElectBlsInfo* Arena::CreateMaybeMessage< ::zjchain::bls::protobuf::JoinElectBlsInfo >(Arena* arena) {
   return Arena::CreateInternal< ::zjchain::bls::protobuf::JoinElectBlsInfo >(arena);
+}
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::bls::protobuf::JoinElectInfo* Arena::CreateMaybeMessage< ::zjchain::bls::protobuf::JoinElectInfo >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::bls::protobuf::JoinElectInfo >(arena);
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::bls::protobuf::LocalPolynomial* Arena::CreateMaybeMessage< ::zjchain::bls::protobuf::LocalPolynomial >(Arena* arena) {
   return Arena::CreateInternal< ::zjchain::bls::protobuf::LocalPolynomial >(arena);

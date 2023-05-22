@@ -40,7 +40,7 @@ namespace protobuf_protos_2finit_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[6];
+  static const ::google::protobuf::internal::ParseTable schema[5];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -65,9 +65,6 @@ extern InitMessageDefaultTypeInternal _InitMessage_default_instance_;
 class InvalidLeaderPools;
 class InvalidLeaderPoolsDefaultTypeInternal;
 extern InvalidLeaderPoolsDefaultTypeInternal _InvalidLeaderPools_default_instance_;
-class JoinElectInfo;
-class JoinElectInfoDefaultTypeInternal;
-extern JoinElectInfoDefaultTypeInternal _JoinElectInfo_default_instance_;
 }  // namespace protobuf
 }  // namespace init
 }  // namespace zjchain
@@ -78,7 +75,6 @@ template<> ::zjchain::init::protobuf::GetAddressInfoRequest* Arena::CreateMaybeM
 template<> ::zjchain::init::protobuf::GetAddressInfoResponse* Arena::CreateMaybeMessage<::zjchain::init::protobuf::GetAddressInfoResponse>(Arena*);
 template<> ::zjchain::init::protobuf::InitMessage* Arena::CreateMaybeMessage<::zjchain::init::protobuf::InitMessage>(Arena*);
 template<> ::zjchain::init::protobuf::InvalidLeaderPools* Arena::CreateMaybeMessage<::zjchain::init::protobuf::InvalidLeaderPools>(Arena*);
-template<> ::zjchain::bls::protobuf::JoinElectInfo* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::JoinElectInfo>(Arena*);
 }  // namespace protobuf
 }  // namespace google
 namespace zjchain {
@@ -455,145 +451,6 @@ class InvalidLeaderPools : public ::google::protobuf::Message /* @@protoc_insert
 };
 // -------------------------------------------------------------------
 
-class JoinElectInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.init.protobuf.JoinElectInfo) */ {
- public:
-  JoinElectInfo();
-  virtual ~JoinElectInfo();
-
-  JoinElectInfo(const JoinElectInfo& from);
-
-  inline JoinElectInfo& operator=(const JoinElectInfo& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  #if LANG_CXX11
-  JoinElectInfo(JoinElectInfo&& from) noexcept
-    : JoinElectInfo() {
-    *this = ::std::move(from);
-  }
-
-  inline JoinElectInfo& operator=(JoinElectInfo&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-  #endif
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const JoinElectInfo& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const JoinElectInfo* internal_default_instance() {
-    return reinterpret_cast<const JoinElectInfo*>(
-               &_JoinElectInfo_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    3;
-
-  void Swap(JoinElectInfo* other);
-  friend void swap(JoinElectInfo& a, JoinElectInfo& b) {
-    a.Swap(&b);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline JoinElectInfo* New() const final {
-    return CreateMaybeMessage<JoinElectInfo>(NULL);
-  }
-
-  JoinElectInfo* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<JoinElectInfo>(arena);
-  }
-  void CopyFrom(const ::google::protobuf::Message& from) final;
-  void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const JoinElectInfo& from);
-  void MergeFrom(const JoinElectInfo& from);
-  void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input) final;
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const final;
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(JoinElectInfo* other);
-  private:
-  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
-  }
-  inline void* MaybeArenaPtr() const {
-    return NULL;
-  }
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional .zjchain.bls.protobuf.VerifyVecBrdReq g2_req = 3;
-  bool has_g2_req() const;
-  void clear_g2_req();
-  static const int kG2ReqFieldNumber = 3;
-  private:
-  const ::zjchain::bls::protobuf::VerifyVecBrdReq& _internal_g2_req() const;
-  public:
-  const ::zjchain::bls::protobuf::VerifyVecBrdReq& g2_req() const;
-  ::zjchain::bls::protobuf::VerifyVecBrdReq* release_g2_req();
-  ::zjchain::bls::protobuf::VerifyVecBrdReq* mutable_g2_req();
-  void set_allocated_g2_req(::zjchain::bls::protobuf::VerifyVecBrdReq* g2_req);
-
-  // optional uint32 shard_id = 1;
-  bool has_shard_id() const;
-  void clear_shard_id();
-  static const int kShardIdFieldNumber = 1;
-  ::google::protobuf::uint32 shard_id() const;
-  void set_shard_id(::google::protobuf::uint32 value);
-
-  // optional uint32 member_idx = 2;
-  bool has_member_idx() const;
-  void clear_member_idx();
-  static const int kMemberIdxFieldNumber = 2;
-  ::google::protobuf::uint32 member_idx() const;
-  void set_member_idx(::google::protobuf::uint32 value);
-
-  // @@protoc_insertion_point(class_scope:zjchain.init.protobuf.JoinElectInfo)
- private:
-  void set_has_shard_id();
-  void clear_has_shard_id();
-  void set_has_member_idx();
-  void clear_has_member_idx();
-  void set_has_g2_req();
-  void clear_has_g2_req();
-
-  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::HasBits<1> _has_bits_;
-  mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::zjchain::bls::protobuf::VerifyVecBrdReq* g2_req_;
-  ::google::protobuf::uint32 shard_id_;
-  ::google::protobuf::uint32 member_idx_;
-  friend struct ::protobuf_protos_2finit_2eproto::TableStruct;
-};
-// -------------------------------------------------------------------
-
 class GenesisInitBlsInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.init.protobuf.GenesisInitBlsInfo) */ {
  public:
   GenesisInitBlsInfo();
@@ -636,7 +493,7 @@ class GenesisInitBlsInfo : public ::google::protobuf::Message /* @@protoc_insert
                &_GenesisInitBlsInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    3;
 
   void Swap(GenesisInitBlsInfo* other);
   friend void swap(GenesisInitBlsInfo& a, GenesisInitBlsInfo& b) {
@@ -748,7 +605,7 @@ class GenesisInitBlsInfo : public ::google::protobuf::Message /* @@protoc_insert
   ::std::string* release_prikey();
   void set_allocated_prikey(::std::string* prikey);
 
-  // optional .zjchain.init.protobuf.JoinElectInfo join_info = 6;
+  // optional .zjchain.bls.protobuf.JoinElectInfo join_info = 6;
   bool has_join_info() const;
   void clear_join_info();
   static const int kJoinInfoFieldNumber = 6;
@@ -862,7 +719,7 @@ class InitMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_InitMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    4;
 
   void Swap(InitMessage* other);
   friend void swap(InitMessage& a, InitMessage& b) {
@@ -1162,112 +1019,6 @@ inline void InvalidLeaderPools::set_elect_height(::google::protobuf::uint64 valu
 
 // -------------------------------------------------------------------
 
-// JoinElectInfo
-
-// optional uint32 shard_id = 1;
-inline bool JoinElectInfo::has_shard_id() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void JoinElectInfo::set_has_shard_id() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void JoinElectInfo::clear_has_shard_id() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void JoinElectInfo::clear_shard_id() {
-  shard_id_ = 0u;
-  clear_has_shard_id();
-}
-inline ::google::protobuf::uint32 JoinElectInfo::shard_id() const {
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.JoinElectInfo.shard_id)
-  return shard_id_;
-}
-inline void JoinElectInfo::set_shard_id(::google::protobuf::uint32 value) {
-  set_has_shard_id();
-  shard_id_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.JoinElectInfo.shard_id)
-}
-
-// optional uint32 member_idx = 2;
-inline bool JoinElectInfo::has_member_idx() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void JoinElectInfo::set_has_member_idx() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void JoinElectInfo::clear_has_member_idx() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void JoinElectInfo::clear_member_idx() {
-  member_idx_ = 0u;
-  clear_has_member_idx();
-}
-inline ::google::protobuf::uint32 JoinElectInfo::member_idx() const {
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.JoinElectInfo.member_idx)
-  return member_idx_;
-}
-inline void JoinElectInfo::set_member_idx(::google::protobuf::uint32 value) {
-  set_has_member_idx();
-  member_idx_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.JoinElectInfo.member_idx)
-}
-
-// optional .zjchain.bls.protobuf.VerifyVecBrdReq g2_req = 3;
-inline bool JoinElectInfo::has_g2_req() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void JoinElectInfo::set_has_g2_req() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void JoinElectInfo::clear_has_g2_req() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline const ::zjchain::bls::protobuf::VerifyVecBrdReq& JoinElectInfo::_internal_g2_req() const {
-  return *g2_req_;
-}
-inline const ::zjchain::bls::protobuf::VerifyVecBrdReq& JoinElectInfo::g2_req() const {
-  const ::zjchain::bls::protobuf::VerifyVecBrdReq* p = g2_req_;
-  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.JoinElectInfo.g2_req)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::bls::protobuf::VerifyVecBrdReq*>(
-      &::zjchain::bls::protobuf::_VerifyVecBrdReq_default_instance_);
-}
-inline ::zjchain::bls::protobuf::VerifyVecBrdReq* JoinElectInfo::release_g2_req() {
-  // @@protoc_insertion_point(field_release:zjchain.init.protobuf.JoinElectInfo.g2_req)
-  clear_has_g2_req();
-  ::zjchain::bls::protobuf::VerifyVecBrdReq* temp = g2_req_;
-  g2_req_ = NULL;
-  return temp;
-}
-inline ::zjchain::bls::protobuf::VerifyVecBrdReq* JoinElectInfo::mutable_g2_req() {
-  set_has_g2_req();
-  if (g2_req_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::bls::protobuf::VerifyVecBrdReq>(GetArenaNoVirtual());
-    g2_req_ = p;
-  }
-  // @@protoc_insertion_point(field_mutable:zjchain.init.protobuf.JoinElectInfo.g2_req)
-  return g2_req_;
-}
-inline void JoinElectInfo::set_allocated_g2_req(::zjchain::bls::protobuf::VerifyVecBrdReq* g2_req) {
-  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
-    delete reinterpret_cast< ::google::protobuf::MessageLite*>(g2_req_);
-  }
-  if (g2_req) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
-    if (message_arena != submessage_arena) {
-      g2_req = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, g2_req, submessage_arena);
-    }
-    set_has_g2_req();
-  } else {
-    clear_has_g2_req();
-  }
-  g2_req_ = g2_req;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.JoinElectInfo.g2_req)
-}
-
-// -------------------------------------------------------------------
-
 // GenesisInitBlsInfo
 
 // optional uint64 height = 1;
@@ -1516,7 +1267,7 @@ inline void GenesisInitBlsInfo::set_allocated_bls_hash(::std::string* bls_hash) 
   // @@protoc_insertion_point(field_set_allocated:zjchain.init.protobuf.GenesisInitBlsInfo.bls_hash)
 }
 
-// optional .zjchain.init.protobuf.JoinElectInfo join_info = 6;
+// optional .zjchain.bls.protobuf.JoinElectInfo join_info = 6;
 inline bool GenesisInitBlsInfo::has_join_info() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -1526,10 +1277,6 @@ inline void GenesisInitBlsInfo::set_has_join_info() {
 inline void GenesisInitBlsInfo::clear_has_join_info() {
   _has_bits_[0] &= ~0x00000010u;
 }
-inline void GenesisInitBlsInfo::clear_join_info() {
-  if (join_info_ != NULL) join_info_->Clear();
-  clear_has_join_info();
-}
 inline const ::zjchain::bls::protobuf::JoinElectInfo& GenesisInitBlsInfo::_internal_join_info() const {
   return *join_info_;
 }
@@ -1537,7 +1284,7 @@ inline const ::zjchain::bls::protobuf::JoinElectInfo& GenesisInitBlsInfo::join_i
   const ::zjchain::bls::protobuf::JoinElectInfo* p = join_info_;
   // @@protoc_insertion_point(field_get:zjchain.init.protobuf.GenesisInitBlsInfo.join_info)
   return p != NULL ? *p : *reinterpret_cast<const ::zjchain::bls::protobuf::JoinElectInfo*>(
-      &::zjchain::init::protobuf::_JoinElectInfo_default_instance_);
+      &::zjchain::bls::protobuf::_JoinElectInfo_default_instance_);
 }
 inline ::zjchain::bls::protobuf::JoinElectInfo* GenesisInitBlsInfo::release_join_info() {
   // @@protoc_insertion_point(field_release:zjchain.init.protobuf.GenesisInitBlsInfo.join_info)
@@ -1558,7 +1305,7 @@ inline ::zjchain::bls::protobuf::JoinElectInfo* GenesisInitBlsInfo::mutable_join
 inline void GenesisInitBlsInfo::set_allocated_join_info(::zjchain::bls::protobuf::JoinElectInfo* join_info) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
-    delete join_info_;
+    delete reinterpret_cast< ::google::protobuf::MessageLite*>(join_info_);
   }
   if (join_info) {
     ::google::protobuf::Arena* submessage_arena = NULL;
@@ -1875,8 +1622,6 @@ inline void InitMessage::set_allocated_pools(::zjchain::init::protobuf::InvalidL
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

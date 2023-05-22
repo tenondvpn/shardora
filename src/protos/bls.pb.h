@@ -38,7 +38,7 @@ namespace protobuf_protos_2fbls_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[16];
+  static const ::google::protobuf::internal::ParseTable schema[17];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -72,6 +72,9 @@ extern FinishBroadcastDefaultTypeInternal _FinishBroadcast_default_instance_;
 class JoinElectBlsInfo;
 class JoinElectBlsInfoDefaultTypeInternal;
 extern JoinElectBlsInfoDefaultTypeInternal _JoinElectBlsInfo_default_instance_;
+class JoinElectInfo;
+class JoinElectInfoDefaultTypeInternal;
+extern JoinElectInfoDefaultTypeInternal _JoinElectInfo_default_instance_;
 class LocalBlsItem;
 class LocalBlsItemDefaultTypeInternal;
 extern LocalBlsItemDefaultTypeInternal _LocalBlsItem_default_instance_;
@@ -109,6 +112,7 @@ template<> ::zjchain::bls::protobuf::CheckSwapKeyReq* Arena::CreateMaybeMessage<
 template<> ::zjchain::bls::protobuf::CheckVerfiyReq* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::CheckVerfiyReq>(Arena*);
 template<> ::zjchain::bls::protobuf::FinishBroadcast* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::FinishBroadcast>(Arena*);
 template<> ::zjchain::bls::protobuf::JoinElectBlsInfo* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::JoinElectBlsInfo>(Arena*);
+template<> ::zjchain::bls::protobuf::JoinElectInfo* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::JoinElectInfo>(Arena*);
 template<> ::zjchain::bls::protobuf::LocalBlsItem* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::LocalBlsItem>(Arena*);
 template<> ::zjchain::bls::protobuf::LocalPolynomial* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::LocalPolynomial>(Arena*);
 template<> ::zjchain::bls::protobuf::SwapSecKeyItem* Arena::CreateMaybeMessage<::zjchain::bls::protobuf::SwapSecKeyItem>(Arena*);
@@ -734,45 +738,176 @@ class JoinElectBlsInfo : public ::google::protobuf::Message /* @@protoc_insertio
 
   // accessors -------------------------------------------------------
 
-  // optional bytes src_hash = 1;
-  bool has_src_hash() const;
-  void clear_src_hash();
-  static const int kSrcHashFieldNumber = 1;
-  const ::std::string& src_hash() const;
-  void set_src_hash(const ::std::string& value);
-  #if LANG_CXX11
-  void set_src_hash(::std::string&& value);
-  #endif
-  void set_src_hash(const char* value);
-  void set_src_hash(const void* value, size_t size);
-  ::std::string* mutable_src_hash();
-  ::std::string* release_src_hash();
-  void set_allocated_src_hash(::std::string* src_hash);
-
-  // optional .zjchain.bls.protobuf.VerifyVecBrdReq verify_req = 2;
-  bool has_verify_req() const;
-  void clear_verify_req();
-  static const int kVerifyReqFieldNumber = 2;
+  // optional .zjchain.bls.protobuf.VerifyVecItem verified_g2 = 1;
+  bool has_verified_g2() const;
+  void clear_verified_g2();
+  static const int kVerifiedG2FieldNumber = 1;
   private:
-  const ::zjchain::bls::protobuf::VerifyVecBrdReq& _internal_verify_req() const;
+  const ::zjchain::bls::protobuf::VerifyVecItem& _internal_verified_g2() const;
   public:
-  const ::zjchain::bls::protobuf::VerifyVecBrdReq& verify_req() const;
-  ::zjchain::bls::protobuf::VerifyVecBrdReq* release_verify_req();
-  ::zjchain::bls::protobuf::VerifyVecBrdReq* mutable_verify_req();
-  void set_allocated_verify_req(::zjchain::bls::protobuf::VerifyVecBrdReq* verify_req);
+  const ::zjchain::bls::protobuf::VerifyVecItem& verified_g2() const;
+  ::zjchain::bls::protobuf::VerifyVecItem* release_verified_g2();
+  ::zjchain::bls::protobuf::VerifyVecItem* mutable_verified_g2();
+  void set_allocated_verified_g2(::zjchain::bls::protobuf::VerifyVecItem* verified_g2);
 
   // @@protoc_insertion_point(class_scope:zjchain.bls.protobuf.JoinElectBlsInfo)
  private:
-  void set_has_src_hash();
-  void clear_has_src_hash();
-  void set_has_verify_req();
-  void clear_has_verify_req();
+  void set_has_verified_g2();
+  void clear_has_verified_g2();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::internal::ArenaStringPtr src_hash_;
-  ::zjchain::bls::protobuf::VerifyVecBrdReq* verify_req_;
+  ::zjchain::bls::protobuf::VerifyVecItem* verified_g2_;
+  friend struct ::protobuf_protos_2fbls_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class JoinElectInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.bls.protobuf.JoinElectInfo) */ {
+ public:
+  JoinElectInfo();
+  virtual ~JoinElectInfo();
+
+  JoinElectInfo(const JoinElectInfo& from);
+
+  inline JoinElectInfo& operator=(const JoinElectInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  JoinElectInfo(JoinElectInfo&& from) noexcept
+    : JoinElectInfo() {
+    *this = ::std::move(from);
+  }
+
+  inline JoinElectInfo& operator=(JoinElectInfo&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const JoinElectInfo& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const JoinElectInfo* internal_default_instance() {
+    return reinterpret_cast<const JoinElectInfo*>(
+               &_JoinElectInfo_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    4;
+
+  void Swap(JoinElectInfo* other);
+  friend void swap(JoinElectInfo& a, JoinElectInfo& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline JoinElectInfo* New() const final {
+    return CreateMaybeMessage<JoinElectInfo>(NULL);
+  }
+
+  JoinElectInfo* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<JoinElectInfo>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const JoinElectInfo& from);
+  void MergeFrom(const JoinElectInfo& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(JoinElectInfo* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional .zjchain.bls.protobuf.VerifyVecBrdReq g2_req = 4;
+  bool has_g2_req() const;
+  void clear_g2_req();
+  static const int kG2ReqFieldNumber = 4;
+  private:
+  const ::zjchain::bls::protobuf::VerifyVecBrdReq& _internal_g2_req() const;
+  public:
+  const ::zjchain::bls::protobuf::VerifyVecBrdReq& g2_req() const;
+  ::zjchain::bls::protobuf::VerifyVecBrdReq* release_g2_req();
+  ::zjchain::bls::protobuf::VerifyVecBrdReq* mutable_g2_req();
+  void set_allocated_g2_req(::zjchain::bls::protobuf::VerifyVecBrdReq* g2_req);
+
+  // optional uint32 shard_id = 1;
+  bool has_shard_id() const;
+  void clear_shard_id();
+  static const int kShardIdFieldNumber = 1;
+  ::google::protobuf::uint32 shard_id() const;
+  void set_shard_id(::google::protobuf::uint32 value);
+
+  // optional uint32 member_idx = 2;
+  bool has_member_idx() const;
+  void clear_member_idx();
+  static const int kMemberIdxFieldNumber = 2;
+  ::google::protobuf::uint32 member_idx() const;
+  void set_member_idx(::google::protobuf::uint32 value);
+
+  // optional uint32 change_idx = 3;
+  bool has_change_idx() const;
+  void clear_change_idx();
+  static const int kChangeIdxFieldNumber = 3;
+  ::google::protobuf::uint32 change_idx() const;
+  void set_change_idx(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:zjchain.bls.protobuf.JoinElectInfo)
+ private:
+  void set_has_shard_id();
+  void clear_has_shard_id();
+  void set_has_member_idx();
+  void clear_has_member_idx();
+  void set_has_change_idx();
+  void clear_has_change_idx();
+  void set_has_g2_req();
+  void clear_has_g2_req();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::zjchain::bls::protobuf::VerifyVecBrdReq* g2_req_;
+  ::google::protobuf::uint32 shard_id_;
+  ::google::protobuf::uint32 member_idx_;
+  ::google::protobuf::uint32 change_idx_;
   friend struct ::protobuf_protos_2fbls_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -819,7 +954,7 @@ class LocalPolynomial : public ::google::protobuf::Message /* @@protoc_insertion
                &_LocalPolynomial_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    5;
 
   void Swap(LocalPolynomial* other);
   friend void swap(LocalPolynomial& a, LocalPolynomial& b) {
@@ -956,7 +1091,7 @@ class LocalBlsItem : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_LocalBlsItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    6;
 
   void Swap(LocalBlsItem* other);
   friend void swap(LocalBlsItem& a, LocalBlsItem& b) {
@@ -1116,7 +1251,7 @@ class BlsVerifyValue : public ::google::protobuf::Message /* @@protoc_insertion_
                &_BlsVerifyValue_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    7;
 
   void Swap(BlsVerifyValue* other);
   friend void swap(BlsVerifyValue& a, BlsVerifyValue& b) {
@@ -1233,7 +1368,7 @@ class VerifyVecBrdRes : public ::google::protobuf::Message /* @@protoc_insertion
                &_VerifyVecBrdRes_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    8;
 
   void Swap(VerifyVecBrdRes* other);
   friend void swap(VerifyVecBrdRes& a, VerifyVecBrdRes& b) {
@@ -1365,7 +1500,7 @@ class SwapSecKeyItem : public ::google::protobuf::Message /* @@protoc_insertion_
                &_SwapSecKeyItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    9;
 
   void Swap(SwapSecKeyItem* other);
   friend void swap(SwapSecKeyItem& a, SwapSecKeyItem& b) {
@@ -1512,7 +1647,7 @@ class SwapSecKeyReq : public ::google::protobuf::Message /* @@protoc_insertion_p
                &_SwapSecKeyReq_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    10;
 
   void Swap(SwapSecKeyReq* other);
   friend void swap(SwapSecKeyReq& a, SwapSecKeyReq& b) {
@@ -1629,7 +1764,7 @@ class SwapSecKeyRes : public ::google::protobuf::Message /* @@protoc_insertion_p
                &_SwapSecKeyRes_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    11;
 
   void Swap(SwapSecKeyRes* other);
   friend void swap(SwapSecKeyRes& a, SwapSecKeyRes& b) {
@@ -1771,7 +1906,7 @@ class AgainstParticipant : public ::google::protobuf::Message /* @@protoc_insert
                &_AgainstParticipant_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    12;
 
   void Swap(AgainstParticipant* other);
   friend void swap(AgainstParticipant& a, AgainstParticipant& b) {
@@ -1885,7 +2020,7 @@ class FinishBroadcast : public ::google::protobuf::Message /* @@protoc_insertion
                &_FinishBroadcast_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    13;
 
   void Swap(FinishBroadcast* other);
   friend void swap(FinishBroadcast& a, FinishBroadcast& b) {
@@ -2078,7 +2213,7 @@ class CheckVerfiyReq : public ::google::protobuf::Message /* @@protoc_insertion_
                &_CheckVerfiyReq_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    14;
 
   void Swap(CheckVerfiyReq* other);
   friend void swap(CheckVerfiyReq& a, CheckVerfiyReq& b) {
@@ -2192,7 +2327,7 @@ class CheckSwapKeyReq : public ::google::protobuf::Message /* @@protoc_insertion
                &_CheckSwapKeyReq_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    15;
 
   void Swap(CheckSwapKeyReq* other);
   friend void swap(CheckSwapKeyReq& a, CheckSwapKeyReq& b) {
@@ -2306,7 +2441,7 @@ class BlsMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
                &_BlsMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    16;
 
   void Swap(BlsMessage* other);
   friend void swap(BlsMessage& a, BlsMessage& b) {
@@ -3198,128 +3333,196 @@ inline void VerifyVecBrdReq::set_change_idx(::google::protobuf::uint32 value) {
 
 // JoinElectBlsInfo
 
-// optional bytes src_hash = 1;
-inline bool JoinElectBlsInfo::has_src_hash() const {
+// optional .zjchain.bls.protobuf.VerifyVecItem verified_g2 = 1;
+inline bool JoinElectBlsInfo::has_verified_g2() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void JoinElectBlsInfo::set_has_src_hash() {
+inline void JoinElectBlsInfo::set_has_verified_g2() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void JoinElectBlsInfo::clear_has_src_hash() {
+inline void JoinElectBlsInfo::clear_has_verified_g2() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void JoinElectBlsInfo::clear_src_hash() {
-  src_hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_src_hash();
+inline void JoinElectBlsInfo::clear_verified_g2() {
+  if (verified_g2_ != NULL) verified_g2_->Clear();
+  clear_has_verified_g2();
 }
-inline const ::std::string& JoinElectBlsInfo::src_hash() const {
-  // @@protoc_insertion_point(field_get:zjchain.bls.protobuf.JoinElectBlsInfo.src_hash)
-  return src_hash_.GetNoArena();
+inline const ::zjchain::bls::protobuf::VerifyVecItem& JoinElectBlsInfo::_internal_verified_g2() const {
+  return *verified_g2_;
 }
-inline void JoinElectBlsInfo::set_src_hash(const ::std::string& value) {
-  set_has_src_hash();
-  src_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.bls.protobuf.JoinElectBlsInfo.src_hash)
+inline const ::zjchain::bls::protobuf::VerifyVecItem& JoinElectBlsInfo::verified_g2() const {
+  const ::zjchain::bls::protobuf::VerifyVecItem* p = verified_g2_;
+  // @@protoc_insertion_point(field_get:zjchain.bls.protobuf.JoinElectBlsInfo.verified_g2)
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::bls::protobuf::VerifyVecItem*>(
+      &::zjchain::bls::protobuf::_VerifyVecItem_default_instance_);
 }
-#if LANG_CXX11
-inline void JoinElectBlsInfo::set_src_hash(::std::string&& value) {
-  set_has_src_hash();
-  src_hash_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.bls.protobuf.JoinElectBlsInfo.src_hash)
+inline ::zjchain::bls::protobuf::VerifyVecItem* JoinElectBlsInfo::release_verified_g2() {
+  // @@protoc_insertion_point(field_release:zjchain.bls.protobuf.JoinElectBlsInfo.verified_g2)
+  clear_has_verified_g2();
+  ::zjchain::bls::protobuf::VerifyVecItem* temp = verified_g2_;
+  verified_g2_ = NULL;
+  return temp;
 }
-#endif
-inline void JoinElectBlsInfo::set_src_hash(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_src_hash();
-  src_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.bls.protobuf.JoinElectBlsInfo.src_hash)
-}
-inline void JoinElectBlsInfo::set_src_hash(const void* value, size_t size) {
-  set_has_src_hash();
-  src_hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.bls.protobuf.JoinElectBlsInfo.src_hash)
-}
-inline ::std::string* JoinElectBlsInfo::mutable_src_hash() {
-  set_has_src_hash();
-  // @@protoc_insertion_point(field_mutable:zjchain.bls.protobuf.JoinElectBlsInfo.src_hash)
-  return src_hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* JoinElectBlsInfo::release_src_hash() {
-  // @@protoc_insertion_point(field_release:zjchain.bls.protobuf.JoinElectBlsInfo.src_hash)
-  if (!has_src_hash()) {
-    return NULL;
+inline ::zjchain::bls::protobuf::VerifyVecItem* JoinElectBlsInfo::mutable_verified_g2() {
+  set_has_verified_g2();
+  if (verified_g2_ == NULL) {
+    auto* p = CreateMaybeMessage<::zjchain::bls::protobuf::VerifyVecItem>(GetArenaNoVirtual());
+    verified_g2_ = p;
   }
-  clear_has_src_hash();
-  return src_hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  // @@protoc_insertion_point(field_mutable:zjchain.bls.protobuf.JoinElectBlsInfo.verified_g2)
+  return verified_g2_;
 }
-inline void JoinElectBlsInfo::set_allocated_src_hash(::std::string* src_hash) {
-  if (src_hash != NULL) {
-    set_has_src_hash();
+inline void JoinElectBlsInfo::set_allocated_verified_g2(::zjchain::bls::protobuf::VerifyVecItem* verified_g2) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete verified_g2_;
+  }
+  if (verified_g2) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      verified_g2 = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, verified_g2, submessage_arena);
+    }
+    set_has_verified_g2();
   } else {
-    clear_has_src_hash();
+    clear_has_verified_g2();
   }
-  src_hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), src_hash);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.bls.protobuf.JoinElectBlsInfo.src_hash)
+  verified_g2_ = verified_g2;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.bls.protobuf.JoinElectBlsInfo.verified_g2)
 }
 
-// optional .zjchain.bls.protobuf.VerifyVecBrdReq verify_req = 2;
-inline bool JoinElectBlsInfo::has_verify_req() const {
+// -------------------------------------------------------------------
+
+// JoinElectInfo
+
+// optional uint32 shard_id = 1;
+inline bool JoinElectInfo::has_shard_id() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void JoinElectBlsInfo::set_has_verify_req() {
+inline void JoinElectInfo::set_has_shard_id() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void JoinElectBlsInfo::clear_has_verify_req() {
+inline void JoinElectInfo::clear_has_shard_id() {
   _has_bits_[0] &= ~0x00000002u;
 }
-inline void JoinElectBlsInfo::clear_verify_req() {
-  if (verify_req_ != NULL) verify_req_->Clear();
-  clear_has_verify_req();
+inline void JoinElectInfo::clear_shard_id() {
+  shard_id_ = 0u;
+  clear_has_shard_id();
 }
-inline const ::zjchain::bls::protobuf::VerifyVecBrdReq& JoinElectBlsInfo::_internal_verify_req() const {
-  return *verify_req_;
+inline ::google::protobuf::uint32 JoinElectInfo::shard_id() const {
+  // @@protoc_insertion_point(field_get:zjchain.bls.protobuf.JoinElectInfo.shard_id)
+  return shard_id_;
 }
-inline const ::zjchain::bls::protobuf::VerifyVecBrdReq& JoinElectBlsInfo::verify_req() const {
-  const ::zjchain::bls::protobuf::VerifyVecBrdReq* p = verify_req_;
-  // @@protoc_insertion_point(field_get:zjchain.bls.protobuf.JoinElectBlsInfo.verify_req)
+inline void JoinElectInfo::set_shard_id(::google::protobuf::uint32 value) {
+  set_has_shard_id();
+  shard_id_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.bls.protobuf.JoinElectInfo.shard_id)
+}
+
+// optional uint32 member_idx = 2;
+inline bool JoinElectInfo::has_member_idx() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void JoinElectInfo::set_has_member_idx() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void JoinElectInfo::clear_has_member_idx() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void JoinElectInfo::clear_member_idx() {
+  member_idx_ = 0u;
+  clear_has_member_idx();
+}
+inline ::google::protobuf::uint32 JoinElectInfo::member_idx() const {
+  // @@protoc_insertion_point(field_get:zjchain.bls.protobuf.JoinElectInfo.member_idx)
+  return member_idx_;
+}
+inline void JoinElectInfo::set_member_idx(::google::protobuf::uint32 value) {
+  set_has_member_idx();
+  member_idx_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.bls.protobuf.JoinElectInfo.member_idx)
+}
+
+// optional uint32 change_idx = 3;
+inline bool JoinElectInfo::has_change_idx() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void JoinElectInfo::set_has_change_idx() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void JoinElectInfo::clear_has_change_idx() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void JoinElectInfo::clear_change_idx() {
+  change_idx_ = 0u;
+  clear_has_change_idx();
+}
+inline ::google::protobuf::uint32 JoinElectInfo::change_idx() const {
+  // @@protoc_insertion_point(field_get:zjchain.bls.protobuf.JoinElectInfo.change_idx)
+  return change_idx_;
+}
+inline void JoinElectInfo::set_change_idx(::google::protobuf::uint32 value) {
+  set_has_change_idx();
+  change_idx_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.bls.protobuf.JoinElectInfo.change_idx)
+}
+
+// optional .zjchain.bls.protobuf.VerifyVecBrdReq g2_req = 4;
+inline bool JoinElectInfo::has_g2_req() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void JoinElectInfo::set_has_g2_req() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void JoinElectInfo::clear_has_g2_req() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void JoinElectInfo::clear_g2_req() {
+  if (g2_req_ != NULL) g2_req_->Clear();
+  clear_has_g2_req();
+}
+inline const ::zjchain::bls::protobuf::VerifyVecBrdReq& JoinElectInfo::_internal_g2_req() const {
+  return *g2_req_;
+}
+inline const ::zjchain::bls::protobuf::VerifyVecBrdReq& JoinElectInfo::g2_req() const {
+  const ::zjchain::bls::protobuf::VerifyVecBrdReq* p = g2_req_;
+  // @@protoc_insertion_point(field_get:zjchain.bls.protobuf.JoinElectInfo.g2_req)
   return p != NULL ? *p : *reinterpret_cast<const ::zjchain::bls::protobuf::VerifyVecBrdReq*>(
       &::zjchain::bls::protobuf::_VerifyVecBrdReq_default_instance_);
 }
-inline ::zjchain::bls::protobuf::VerifyVecBrdReq* JoinElectBlsInfo::release_verify_req() {
-  // @@protoc_insertion_point(field_release:zjchain.bls.protobuf.JoinElectBlsInfo.verify_req)
-  clear_has_verify_req();
-  ::zjchain::bls::protobuf::VerifyVecBrdReq* temp = verify_req_;
-  verify_req_ = NULL;
+inline ::zjchain::bls::protobuf::VerifyVecBrdReq* JoinElectInfo::release_g2_req() {
+  // @@protoc_insertion_point(field_release:zjchain.bls.protobuf.JoinElectInfo.g2_req)
+  clear_has_g2_req();
+  ::zjchain::bls::protobuf::VerifyVecBrdReq* temp = g2_req_;
+  g2_req_ = NULL;
   return temp;
 }
-inline ::zjchain::bls::protobuf::VerifyVecBrdReq* JoinElectBlsInfo::mutable_verify_req() {
-  set_has_verify_req();
-  if (verify_req_ == NULL) {
+inline ::zjchain::bls::protobuf::VerifyVecBrdReq* JoinElectInfo::mutable_g2_req() {
+  set_has_g2_req();
+  if (g2_req_ == NULL) {
     auto* p = CreateMaybeMessage<::zjchain::bls::protobuf::VerifyVecBrdReq>(GetArenaNoVirtual());
-    verify_req_ = p;
+    g2_req_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.bls.protobuf.JoinElectBlsInfo.verify_req)
-  return verify_req_;
+  // @@protoc_insertion_point(field_mutable:zjchain.bls.protobuf.JoinElectInfo.g2_req)
+  return g2_req_;
 }
-inline void JoinElectBlsInfo::set_allocated_verify_req(::zjchain::bls::protobuf::VerifyVecBrdReq* verify_req) {
+inline void JoinElectInfo::set_allocated_g2_req(::zjchain::bls::protobuf::VerifyVecBrdReq* g2_req) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
-    delete verify_req_;
+    delete g2_req_;
   }
-  if (verify_req) {
+  if (g2_req) {
     ::google::protobuf::Arena* submessage_arena = NULL;
     if (message_arena != submessage_arena) {
-      verify_req = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, verify_req, submessage_arena);
+      g2_req = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, g2_req, submessage_arena);
     }
-    set_has_verify_req();
+    set_has_g2_req();
   } else {
-    clear_has_verify_req();
+    clear_has_g2_req();
   }
-  verify_req_ = verify_req;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.bls.protobuf.JoinElectBlsInfo.verify_req)
+  g2_req_ = g2_req;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.bls.protobuf.JoinElectInfo.g2_req)
 }
 
 // -------------------------------------------------------------------
@@ -4737,6 +4940,8 @@ inline void BlsMessage::set_elect_height(::google::protobuf::uint64 value) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

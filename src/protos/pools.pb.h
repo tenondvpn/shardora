@@ -31,6 +31,7 @@
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
+#include "protos/bls.pb.h"
 // @@protoc_insertion_point(includes)
 #define PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto 
 
@@ -430,6 +431,18 @@ class ToTxMessageItem : public ::google::protobuf::Message /* @@protoc_insertion
 
   // accessors -------------------------------------------------------
 
+  // repeated .zjchain.bls.protobuf.JoinElectInfo join_infos = 7;
+  int join_infos_size() const;
+  void clear_join_infos();
+  static const int kJoinInfosFieldNumber = 7;
+  ::zjchain::bls::protobuf::JoinElectInfo* mutable_join_infos(int index);
+  ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::JoinElectInfo >*
+      mutable_join_infos();
+  const ::zjchain::bls::protobuf::JoinElectInfo& join_infos(int index) const;
+  ::zjchain::bls::protobuf::JoinElectInfo* add_join_infos();
+  const ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::JoinElectInfo >&
+      join_infos() const;
+
   // optional bytes des = 1;
   bool has_des() const;
   void clear_des();
@@ -506,6 +519,7 @@ class ToTxMessageItem : public ::google::protobuf::Message /* @@protoc_insertion
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::JoinElectInfo > join_infos_;
   ::google::protobuf::internal::ArenaStringPtr des_;
   ::google::protobuf::internal::ArenaStringPtr library_bytes_;
   ::google::protobuf::uint64 amount_;
@@ -2590,6 +2604,33 @@ inline void ToTxMessageItem::set_allocated_library_bytes(::std::string* library_
   }
   library_bytes_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), library_bytes);
   // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.ToTxMessageItem.library_bytes)
+}
+
+// repeated .zjchain.bls.protobuf.JoinElectInfo join_infos = 7;
+inline int ToTxMessageItem::join_infos_size() const {
+  return join_infos_.size();
+}
+inline ::zjchain::bls::protobuf::JoinElectInfo* ToTxMessageItem::mutable_join_infos(int index) {
+  // @@protoc_insertion_point(field_mutable:zjchain.pools.protobuf.ToTxMessageItem.join_infos)
+  return join_infos_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::JoinElectInfo >*
+ToTxMessageItem::mutable_join_infos() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.pools.protobuf.ToTxMessageItem.join_infos)
+  return &join_infos_;
+}
+inline const ::zjchain::bls::protobuf::JoinElectInfo& ToTxMessageItem::join_infos(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ToTxMessageItem.join_infos)
+  return join_infos_.Get(index);
+}
+inline ::zjchain::bls::protobuf::JoinElectInfo* ToTxMessageItem::add_join_infos() {
+  // @@protoc_insertion_point(field_add:zjchain.pools.protobuf.ToTxMessageItem.join_infos)
+  return join_infos_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::zjchain::bls::protobuf::JoinElectInfo >&
+ToTxMessageItem::join_infos() const {
+  // @@protoc_insertion_point(field_list:zjchain.pools.protobuf.ToTxMessageItem.join_infos)
+  return join_infos_;
 }
 
 // -------------------------------------------------------------------
