@@ -5,6 +5,7 @@
 #include "network/network_utils.h"
 #include "network/route.h"
 #include "pools/tx_pool_manager.h"
+#include "protos/get_proto_hash.h"
 
 namespace zjchain {
 

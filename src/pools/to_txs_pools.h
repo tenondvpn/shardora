@@ -74,7 +74,7 @@ private:
         const std::string& key = "");
     void HandleElectJoinVerifyVec(
         const std::string& verify_hash,
-        bls::protobuf::VerifyVecBrdReq& verify_req);
+        std::vector<bls::protobuf::VerifyVecBrdReq>& verify_reqs);
 
     struct ToAddressItemInfo {
         uint64_t amount;
