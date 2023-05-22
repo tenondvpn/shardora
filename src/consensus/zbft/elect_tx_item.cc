@@ -297,6 +297,8 @@ void ElectTxItem::ChooseNodeForEachIndex(
                 &elect_nodes_to_choose);
         }
 
+        ZJC_DEBUG("add new node: %u, index: %d, hold pos: %d",
+            elect_nodes_to_choose.size(), i, hold_pos);
         if (elect_nodes_to_choose.empty()) {
             continue;
         }

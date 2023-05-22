@@ -719,7 +719,6 @@ int ShardStatistic::StatisticWithHeights(
 
     debug_for_str += "stoke: ";
     for (int32_t i = 0; i < elect_nodes.size() && i < kWaitingElectNodesMaxCount; ++i) {
-        auto join_elect_node = elect_statistic.add_join_elect_nodes();
         std::string pubkey = elect_nodes[i];
         if (pubkey.size() == security::kUnicastAddressLength) {
             if (!prefix_db_->GetAddressPubkey(elect_nodes[i], &pubkey)) {
@@ -739,6 +738,7 @@ int ShardStatistic::StatisticWithHeights(
             }
         }
         
+        auto join_elect_node = elect_statistic.add_join_elect_nodes();
         join_elect_node->set_pubkey(pubkey);
         auto iter = r_eiter->second.find(elect_nodes[i]);
         auto shard_iter = r_siter->second.find(elect_nodes[i]);
@@ -759,8 +759,6 @@ int ShardStatistic::StatisticWithHeights(
                 continue;
             }
 
-            auto join_elect_node = elect_statistic.add_join_elect_nodes();
-            join_elect_node->set_pubkey((*prepare_members)[i]->pubkey);
             auto addr_info = prefix_db_->GetAddressInfo(secptr_->GetAddress((*prepare_members)[i]->pubkey));
             if (addr_info == nullptr) {
                 continue;
@@ -774,6 +772,8 @@ int ShardStatistic::StatisticWithHeights(
             }
 
             uint64_t stoke = 0;
+            auto join_elect_node = elect_statistic.add_join_elect_nodes();
+            join_elect_node->set_pubkey((*prepare_members)[i]->pubkey);
             join_elect_node->set_elect_pos(addr_info->elect_pos());
             join_elect_node->set_stoke(stoke);
             uint32_t shard = common::GlobalInfo::Instance()->network_id();
