@@ -449,7 +449,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
 
     prefix_db_->SaveAddressPubkey(msg_ptr->address_info->addr(), tx_msg.pubkey());
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-    ZJC_DEBUG("success add elect tx.");
+    ZJC_DEBUG("success add elect tx has verify g2: %d", tx_msg.has_key());
 }
 
 bool TxPoolManager::SaveNodeVerfiyVec(
