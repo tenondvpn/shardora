@@ -97,6 +97,9 @@ private:
     uint64_t GetMiningMaxCount(uint64_t max_tx_count);
     void GetIndexNodes(
         uint32_t index,
+        uint8_t thread_idx,
+        uint32_t min_area_weight,
+        uint32_t min_tx_count,
         const pools::protobuf::ElectStatistic& elect_statistic,
         std::vector<NodeDetailPtr>* elect_nodes_to_choose);
     void ChooseNodeForEachIndex(

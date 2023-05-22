@@ -152,7 +152,7 @@ int ElectTxItem::HandleTx(
             std::vector<NodeDetailPtr> src_elect_nodes_to_choose;
             for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
                 if (elect_nodes[i] != nullptr) {
-                    src_elect_nodes_to_choose->push_back(elect_nodes[i]);
+                    src_elect_nodes_to_choose.push_back(elect_nodes[i]);
                 }
             }
 
@@ -280,16 +280,28 @@ void ElectTxItem::ChooseNodeForEachIndex(
 
         std::vector<NodeDetailPtr> elect_nodes_to_choose;
         if (hold_pos) {
-            GetIndexNodes(i, elect_statistic, &elect_nodes_to_choose);
+            GetIndexNodes(
+                i,
+                thread_idx,
+                min_area_weight,
+                min_tx_count,
+                elect_statistic,
+                &elect_nodes_to_choose);
         } else {
-            GetIndexNodes(common::kInvalidUint32, elect_statistic, &elect_nodes_to_choose);
+            GetIndexNodes(
+                common::kInvalidUint32,
+                thread_idx,
+                min_area_weight,
+                min_tx_count,
+                elect_statistic,
+                &elect_nodes_to_choose);
         }
 
         if (elect_nodes_to_choose.empty()) {
             continue;
         }
 
-        res = GetJoinElectNodesCredit(
+        auto res = GetJoinElectNodesCredit(
             i,
             elect_statistic,
             thread_idx,
@@ -299,7 +311,7 @@ void ElectTxItem::ChooseNodeForEachIndex(
             elect_nodes);
         if (res != kConsensusSuccess) {
             assert(false);
-            return res;
+            return;
         }
 
         if (elect_nodes[i] != nullptr) {
@@ -310,6 +322,9 @@ void ElectTxItem::ChooseNodeForEachIndex(
 
 void ElectTxItem::GetIndexNodes(
         uint32_t index,
+        uint8_t thread_idx,
+        uint32_t min_area_weight,
+        uint32_t min_tx_count,
         const pools::protobuf::ElectStatistic& elect_statistic,
         std::vector<NodeDetailPtr>* elect_nodes_to_choose) {
     for (int32_t i = 0; i < elect_statistic.join_elect_nodes_size(); ++i) {
@@ -338,7 +353,7 @@ void ElectTxItem::GetIndexNodes(
             id);
         if (account_info == nullptr) {
             assert(false);
-            return kConsensusError;
+            return;
         }
 
         auto node_info = std::make_shared<ElectNodeInfo>();
