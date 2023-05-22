@@ -92,6 +92,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
         secptr->SetPrivateKey(prikeys[k]);
         bls::protobuf::LocalPolynomial local_poly;
         std::vector<libff::alt_bn128_Fr> polynomial;
+        prefix_db_->SaveLocalElectPos(secptr->GetAddress(), k);
         if (prefix_db_->GetLocalPolynomial(secptr, secptr->GetAddress(), &local_poly)) {
             for (int32_t i = 0; i < local_poly.polynomial_size(); ++i) {
                 polynomial.push_back(libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)).c_str()));

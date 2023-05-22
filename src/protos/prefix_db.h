@@ -1320,7 +1320,7 @@ public:
         key.append(kNodeLocalElectPosPrefix);
         key.append(addr);
         std::string val;
-        auto st = db_->Get(key, val);
+        auto st = db_->Get(key, &val);
         if (!st.ok()) {
             ZJC_INFO("get db failed!");
             return false;
