@@ -470,7 +470,7 @@ bool BlsDkg::VerifySekkeyValid(
             ZJC_WARN("failed get verified g2: %u, %s",
                 local_member_index_,
                 common::Encode::HexEncode((*members_)[peer_index]->id).c_str());
-            assert(false);
+//             assert(false);
             return false;
         }
     }

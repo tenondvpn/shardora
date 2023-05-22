@@ -333,6 +333,10 @@ void BlockManager::RootHandleNormalToTx(
 //                 tos_item.sharding_id(),
 //                 tos_item.pool_index());
             for (int32_t i = 0; i < tos_item.join_infos_size(); ++i) {
+                if (tos_item.join_infos(i).shard_id() != network::kRootCongressNetworkId) {
+                    continue;
+                }
+
                 prefix_db_->SaveNodeVerificationVector(
                     tos_item.des(),
                     tos_item.join_infos(i),

@@ -1276,7 +1276,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_ERROR("write db failed!");
+            ZJC_ERROR("get data from db failed!");
             return false;
         }
 
