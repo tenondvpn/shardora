@@ -145,6 +145,7 @@ int ElectTxItem::HandleTx(
                 join_count = common::kEachShardMaxNodeCount - elect_nodes.size();
             }
 
+            ZJC_DEBUG("add new node count: %u", join_count);
             for (uint32_t i = 0; i < join_count; ++i) {
                 elect_nodes.push_back(nullptr);
             }
