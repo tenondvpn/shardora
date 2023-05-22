@@ -401,6 +401,15 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    auto msg_hash = pools::GetTxMessageHash(tx_msg);
+    if (security_->Verify(
+            msg_hash,
+            tx_msg.pubkey(),
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        ZJC_WARN("kElectJoin verify signature failed!");
+        continue;
+    }
+
     init::protobuf::JoinElectInfo join_info;
     if (!join_info.ParseFromString(tx_msg.value())) {
         return;
@@ -693,13 +702,12 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
         transport::MessagePtr msg_ptr = nullptr;
         msg_queues_[pool_index].pop(&msg_ptr);
         auto& tx_msg = msg_ptr->header.tx_proto();
-        if (tx_msg.step() == pools::protobuf::kNormalFrom ||
-                tx_msg.step() == pools::protobuf::kJoinElect) {
+        if (tx_msg.step() == pools::protobuf::kNormalFrom) {
             if (security_->Verify(
                     msg_ptr->msg_hash,
                     tx_msg.pubkey(),
                     msg_ptr->header.sign()) != security::kSecuritySuccess) {
-                ZJC_ERROR("verify signature failed!");
+                ZJC_WARN("verify signature failed!");
                 continue;
             }
         }
