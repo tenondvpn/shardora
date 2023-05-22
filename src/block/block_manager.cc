@@ -545,6 +545,11 @@ void BlockManager::HandleJoinElectTx(
                 break;
             }
 
+            if (join_info.g2_req().verify_vec_size() <= 0) {
+                ZJC_DEBUG("success handle kElectJoin tx: %s, not has verfications.",
+                    common::Encode::HexEncode(tx.from()).c_str());
+                break;
+            }
 //             auto all_pos_count = common::GlobalInfo::Instance()->each_shard_max_members() /
 //                 common::kElectNodeMinMemberIndex + 1;
 //             std::vector<libff::alt_bn128_G2> verify_g2s(all_pos_count, libff::alt_bn128_G2::zero());
@@ -571,6 +576,7 @@ void BlockManager::HandleJoinElectTx(
             }
 
             prefix_db_->SaveNodeVerificationVector(tx.from(), join_info, db_batch);
+            ZJC_DEBUG("success handle kElectJoin tx: %s", common::Encode::HexEncode(tx.from()).c_str());
 // 
 //             for (int32_t i = 0; i < join_info.g2_req().verify_vec_size(); ++i) {
 //                 auto& item = join_info.g2_req().verify_vec(i);
