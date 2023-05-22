@@ -70,7 +70,7 @@ private:
         uint8_t thread_idx,
         uint32_t min_area_weight,
         uint32_t min_tx_count,
-        const std::vector<NodeDetailPtr>& elect_nodes_to_choose,
+        std::vector<NodeDetailPtr>& elect_nodes_to_choose,
         std::vector<NodeDetailPtr>& elect_nodes);
     void FtsGetNodes(
         std::vector<NodeDetailPtr>& elect_nodes,

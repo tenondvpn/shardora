@@ -472,7 +472,7 @@ int ElectTxItem::CreateNewElect(
             }
 
             auto in = elect_block.add_in();
-            in->set_pubkey(elect_members_[i]->pubkey);
+            in->set_pubkey((*elect_members_)[i]->pubkey);
             in->set_pool_idx_mod_num(-1);
             in->set_mining_amount(0);
         } else {
@@ -626,7 +626,7 @@ int ElectTxItem::GetJoinElectNodesCredit(
         uint8_t thread_idx,
         uint32_t min_area_weight,
         uint32_t min_tx_count,
-        const std::vector<NodeDetailPtr>& elect_nodes_to_choose,
+        std::vector<NodeDetailPtr>& elect_nodes_to_choose,
         std::vector<NodeDetailPtr>& elect_nodes) {
     if (elect_nodes_to_choose.empty()) {
         return kConsensusSuccess;
