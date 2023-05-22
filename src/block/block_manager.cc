@@ -331,7 +331,7 @@ void BlockManager::RootHandleNormalToTx(
 //                 tos_item.amount(),
 //                 tos_item.sharding_id(),
 //                 tos_item.pool_index());
-            for (int32_t i = 0; i < tos_item.g2_reqs_size(); ++i) {
+            for (int32_t i = 0; i < tos_item.join_infos_size(); ++i) {
 
             }
             continue;
