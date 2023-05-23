@@ -2117,7 +2117,7 @@ void BftManager::BroadcastBlock(
         }
     }
 
-    *msg.mutable_block_proto() = *block_item;
+    *msg.mutable_block() = *block_item;
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     auto* brdcast = msg.mutable_broadcast();
     network::Route::Instance()->Send(msg_ptr);
