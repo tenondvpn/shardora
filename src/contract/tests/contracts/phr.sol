@@ -15,13 +15,20 @@ contract Phr {
     struct PidInfo {
         bytes32 rid;
         bytes32 attr_hash;
+        uint256 time;
+        bool exists;
+    }
+
+    struct PolicyInfo {
+        bytes32 attr_hash;
+        uint256 time;
         bool exists;
     }
 
     mapping(bytes32 => RidInfo) public rids;
     mapping(bytes => mapping(bytes32 => bool)) public pk_attrs;
     mapping(bytes32 => mapping(bytes => bool)) public attr_pks;
-    mapping(bytes32 => bytes32[]) public rid_attrs;
+    mapping(bytes32 => PolicyInfo[]) public rid_attrs;
     mapping(bytes32 => PidInfo) public pids;
     constructor(address[] memory aas) {
         valid_aas = aas;
@@ -63,16 +70,23 @@ contract Phr {
         return pk_attrs[pk][attr_hash];
     }
 
-    function PolicyAdd(bytes32 pid, bytes32 rid, bytes32 attr_hash) public {
+    function PolicyAdd(bytes32 pid, bytes32 rid, bytes32[] attr_hash, uint256[] timeout) public {
         require(owner == msg.sender);
         require(!pids[pid].exists);
-        pids[pid] = PidInfo({
-            rid: rid,
-            attr_hash: attr_hash,
-            exists: true
-        });
+        require(attr_hash.length == timeout.length);
+        uint arrayLength = attr_hash.length;
+        for (uint i=0; i<arrayLength; i++) {
+            pids[pid] = PidInfo({
+                rid: rid,
+                exists: true
+            });
 
-        rid_attrs[rid].push(attr_hash);
+            rid_attrs[rid].push(RidInfo({
+                attr_hash: attr_hash[i],
+                time:timeout[i],
+                exists: true
+            }));
+        }
     }
 
     function PolicyQry(bytes32 pid) public returns (bool) {
@@ -84,7 +98,7 @@ contract Phr {
         uint arrayLength = rid_attrs[rid].length;
         require(arrayLength > 0);
         for (uint i=0; i<arrayLength; i++) {
-            if (attr_pks[rid_attrs[rid][i]][pk]) {
+            if (attr_pks[rid_attrs[rid][i]][pk] && rid_attrs[rid][i].time >= msg.timestamp) {
                 return true;
             }
         }
