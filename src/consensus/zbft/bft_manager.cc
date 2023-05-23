@@ -2367,7 +2367,7 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
 }
 
 bool BftManager::IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info) {
-    if (tx_info.step() != pools::protobuf::kConsensusCreateContract) {
+    if (tx_info.step() != pools::protobuf::kContractUserCreateCall) {
         return false;
     }
 

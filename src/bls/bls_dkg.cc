@@ -927,7 +927,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     libff::alt_bn128_G2 old_g2 = libff::alt_bn128_G2::zero();
     for (uint32_t i = 0; i < valid_t; ++i) {
         polynomial[i] = libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)).c_str());
-        if (change_idx == i) {
+        if (change_idx == (int32_t)i) {
             old_g2 = polynomial[i] * libff::alt_bn128_G2::one();
             polynomial[i] = libff::alt_bn128_Fr::random_element();
             while (polynomial[i] == libff::alt_bn128_Fr::zero()) {

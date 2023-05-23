@@ -852,7 +852,7 @@ int ShardStatistic::StatisticWithHeights(
 
     *statistic_hash = common::Hash::keccak256(str_for_hash);
     std::string heights;
-    for (uint32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
+    for (int32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
         heights += std::to_string(leader_to_heights.heights(i)) + " ";
     }
 
