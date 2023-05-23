@@ -145,6 +145,7 @@ struct StatisticMemberInfoItem {
 };
 
 struct CrossStatisticItem {
+    CrossStatisticItem() : des_net(0), cross_ptr(nullptr) {}
     CrossStatisticItem(uint32_t shard) : des_net(shard), cross_ptr(nullptr) {}
     uint32_t des_net;
     std::shared_ptr<pools::protobuf::CrossShardStatistic> cross_ptr;
