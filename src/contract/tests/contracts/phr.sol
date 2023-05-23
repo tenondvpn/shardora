@@ -49,7 +49,7 @@ contract Phr {
         attrs[pk][attr_hash] = true;
     }
 
-    function QuerryAttr(bytes memory pk, bytes32 attr_hash) public return (bool) {
+    function QuerryAttr(bytes memory pk, bytes32 attr_hash) public returns (bool) {
         return attrs[pk][attr_hash];
     }
 
