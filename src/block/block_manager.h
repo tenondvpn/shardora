@@ -117,6 +117,11 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
+    void HandleCrossTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
     void HandleElectTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
@@ -143,6 +148,11 @@ private:
         db::DbWriteBatch& db_batch);
     void CreateNewAddress();
     void HandleStatisticBlock(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        const pools::protobuf::ElectStatistic& elect_statistic,
+        db::DbWriteBatch& db_batch);
+    void RootCreateCrossTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         const pools::protobuf::ElectStatistic& elect_statistic,

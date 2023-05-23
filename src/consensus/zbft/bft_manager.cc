@@ -2075,6 +2075,7 @@ void BftManager::LeaderBroadcastBlock(
         BroadcastLocalTosBlock(thread_index, block);
         break;
     case pools::protobuf::kStatistic:
+    case pools::protobuf::kCross:
         BroadcastStatisticBlock(thread_index, block);
         break;
     case pools::protobuf::kConsensusRootElectShard:

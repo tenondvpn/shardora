@@ -216,6 +216,24 @@ void BlockManager::GenesisAddAllAccount(
     }
 }
 
+void BlockManager::HandleCrossTx(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
+    for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
+        if (block_tx.storages(i).key() == protos::kShardCross) {
+            if (cross_statistic_tx_ != nullptr) {
+                if (block_tx.storages(i).val_hash() == cross_statistic_tx_->tx_hash) {
+                    cross_statistic_tx_ = nullptr;
+                }
+            }
+
+            break;
+        }
+    }
+}
+
 void BlockManager::HandleStatisticTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
@@ -229,7 +247,6 @@ void BlockManager::HandleStatisticTx(
     ZJC_DEBUG("success handled statistic block time block height: %lu, net: %u",
         consensused_timeblock_height_,
         block.network_id());
-
     pools::protobuf::ElectStatistic elect_statistic;
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kShardStatistic) {
@@ -247,14 +264,8 @@ void BlockManager::HandleStatisticTx(
                     shard_statistic_tx_ = nullptr;
                 }
             }
-        }
 
-        if (block_tx.storages(i).key() == protos::kShardCross) {
-            if (cross_statistic_tx_ != nullptr) {
-                if (block_tx.storages(i).val_hash() == cross_statistic_tx_->tx_hash) {
-                    cross_statistic_tx_ = nullptr;
-                }
-            }
+            break;
         }
     }
 
@@ -331,11 +342,6 @@ void BlockManager::RootHandleNormalToTx(
         }
 
         if (tos_item.step() == pools::protobuf::kJoinElect) {
-//             ZJC_DEBUG("create add node stoke direct: %s, amount: %lu, sharding: %u, pool index: %u",
-//                 common::Encode::HexEncode(tos_item.des()).c_str(),
-//                 tos_item.amount(),
-//                 tos_item.sharding_id(),
-//                 tos_item.pool_index());
             for (int32_t i = 0; i < tos_item.join_infos_size(); ++i) {
                 if (tos_item.join_infos(i).shard_id() != network::kRootCongressNetworkId) {
                     continue;
@@ -514,6 +520,9 @@ void BlockManager::AddNewBlock(
             break;
         case pools::protobuf::kStatistic:
             HandleStatisticTx(thread_idx, *block_item, tx_list[i], db_batch);
+            break;
+        case pools::protobuf::kCross:
+            HandleCrossTx(thread_idx, *block_item, tx_list[i], db_batch);
             break;
         case pools::protobuf::kConsensusRootElectShard:
             HandleElectTx(thread_idx, *block_item, tx_list[i], db_batch);
@@ -850,7 +859,7 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
         ZJC_DEBUG("success add statistic tx: %s", common::Encode::HexEncode(statistic_hash).c_str());
     }
 
-    if (!cross_hash.empty()) {
+    if (!cross_hash.empty()) 
         auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
         auto* tx = new_msg_ptr->header.mutable_tx_proto();
         tx->set_key(protos::kShardCross);
@@ -872,6 +881,53 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
         cross_statistic_tx_ = tx_ptr;
         ZJC_DEBUG("success add cross tx: %s", common::Encode::HexEncode(cross_hash).c_str());
     }
+}
+
+void BlockManager::RootCreateCrossTx(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        const pools::protobuf::ElectStatistic& elect_statistic,
+        db::DbWriteBatch& db_batch) {
+    if (elect_statistic.crosses_size() <= 0) {
+        return;
+    }
+
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto pool_index = block.network_id() % common::kImmutablePoolSize;
+    msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
+    auto tx = msg_ptr->header.mutable_tx_proto();
+    tx->set_step(pools::protobuf::kRootCross);
+    tx->set_pubkey("");
+    tx->set_to(msg_ptr->address_info->addr());
+    auto gid = common::Hash::keccak256(
+        tx.gid() + "_" +
+        std::to_string(block.height()) + "_" +
+        std::to_string(block.pool_index()) + "_" +
+        std::to_string(block.network_id()));
+    tx->set_gas_limit(0);
+    tx->set_amount(0);
+    tx->set_gas_price(common::kBuildinTransactionGasPrice);
+    tx->set_gid(gid);
+    std::string cross_string_for_hash;
+    str_for_hash.reserve(elect_statistic.cross().crosses_size())
+    for (int32_t i = 0; i < elect_statistic.cross().crosses_size(); ++i) {
+        uint32 src_shard = elect_statistic.cross().crosses(i).src_shard();
+        uint32 src_pool = elect_statistic.cross().crosses(i).src_pool();
+        uint64 height = elect_statistic.cross().crosses(i).height();
+        uint32 des_shard = elect_statistic.cross().crosses(i).des_shard();
+        cross_string_for_hash.append((char*)&src_shard, sizeof(src_shard));
+        cross_string_for_hash.append((char*)&pool_idx, sizeof(pool_idx));
+        cross_string_for_hash.append((char*)&height, sizeof(height));
+        cross_string_for_hash.append((char*)&des_shard, sizeof(des_shard));
+    }
+
+    auto hash = common::Hash::keccak256(cross_string_for_hash);
+    prefix_db_->SaveTemporaryKv(hash, elect_statistic.cross().SerializeAsString());
+    tx->set_key(protos::kRootCross);
+    tx->set_value(hash);
+    pools_mgr_->HandleMessage(msg_ptr);
+    ZJC_DEBUG("create new address %s, amount: %lu",
+        common::Encode::HexEncode(tos_item.des()).c_str(), tos_item.amount());
 }
 
 void BlockManager::HandleStatisticBlock(
@@ -899,6 +955,13 @@ void BlockManager::HandleStatisticBlock(
         elect_statistic,
         db_batch);
     assert(block.network_id() == elect_statistic.sharding_id());
+    if (network::kRootCongressNetworkId == common::GlobalInfo::Instance()->network_id() &&
+            block.network_id() != network::kRootCongressNetworkId &&
+            elect_statistic.crosses_size() > 0) {
+        // add cross shard statistic to root pool
+        RootCreateCrossTx(block, block_tx, elect_statistic, db_batch);
+    }
+
     ZJC_DEBUG("success handle statistic block net: %u, sharding: %u, pool: %u, height: %lu",
         block.network_id(), elect_statistic.sharding_id(), block.pool_index(), block.timeblock_height());
     // create elect transaction now for block.network_id

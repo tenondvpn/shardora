@@ -20,6 +20,7 @@ enum StepType {
     kJoinElect = 14;
     kCreateLibrary = 15;
     kCross = 16;
+    kRootCross = 17;
 }
 
 message ToTxHeights {
@@ -91,6 +92,7 @@ message ElectStatistic {
     optional uint32 sharding_id = 4;
     optional uint64 gas_amount = 5;
     repeated uint32 lof_leaders = 6;
+    repeated CrossShardStatistic cross = 7;
 }
 
 message SyncPoolsMaxHeight {

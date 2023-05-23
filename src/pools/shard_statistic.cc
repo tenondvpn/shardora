@@ -840,6 +840,17 @@ int ShardStatistic::StatisticWithHeights(
     str_for_hash.append((char*)&net_id, sizeof(net_id));
     debug_for_str += std::to_string(all_gas_amount) + ",";
     debug_for_str += std::to_string(net_id) + ",";
+    
+    if (!cross_string_for_hash.empty()) {
+        if (is_root) {
+            *cross_hash = common::Hash::keccak256(cross_string_for_hash);
+            prefix_db_->SaveTemporaryKv(*cross_hash, cross_statistic.SerializeAsString());
+        } else {
+            *elect_statistic.mutable_cross() = cross_statistic;
+            str_for_hash.append(common::Hash::keccak256(cross_string_for_hash));
+        }
+    }
+
     *statistic_hash = common::Hash::keccak256(str_for_hash);
     std::string heights;
     for (uint32_t i = 0; i < leader_to_heights.heights_size(); ++i) {
@@ -848,11 +859,6 @@ int ShardStatistic::StatisticWithHeights(
 
     *elect_statistic.mutable_heights() = leader_to_heights;
     prefix_db_->SaveTemporaryKv(*statistic_hash, elect_statistic.SerializeAsString());
-    if (!cross_string_for_hash.empty()) {
-        *cross_hash = common::Hash::keccak256(cross_string_for_hash);
-        prefix_db_->SaveTemporaryKv(*cross_hash, cross_statistic.SerializeAsString());
-    }
-
     ZJC_DEBUG("success create statistic message: %s, heights: %s",
         debug_for_str.c_str(), heights.c_str());
     return kPoolsSuccess;
