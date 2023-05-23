@@ -159,21 +159,13 @@ private:
     void BroadcastLocalTosBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block);
-    void BroadcastStatisticBlock(
-        uint8_t thread_idx,
-        const std::shared_ptr<block::protobuf::Block>& block);
     void BroadcastWaitingBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block);
-    void BroadcastElectBlock(
+    void BroadcastBlock(
         uint8_t thread_idx,
+        uint32_t des_shard,
         const std::shared_ptr<block::protobuf::Block>& block);
-    void RootBroadcastNodeBlock(
-        uint8_t thread_idx,
-        const std::shared_ptr<block::protobuf::Block>& block);
-    void BroadcastToRootBlock(
-        uint8_t thread_idx,
-        const std::shared_ptr<block::protobuf::Block>& block_item);
     void RegisterCreateTxCallbacks();
     void SetThreadItem(
         uint32_t leader_count,
