@@ -43,10 +43,6 @@ void TxPool::InitHeightTree() {
         return;
     }
 
-    if (pool_index_ == common::kRootChainPoolIndex) {
-        net_id = network::kRootCongressNetworkId;
-    }
-
     height_tree_ptr_ = std::make_shared<HeightTreeLevel>(
         net_id,
         pool_index_,
