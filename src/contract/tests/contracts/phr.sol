@@ -40,6 +40,19 @@ contract Phr {
         attrs[pk][attr_hash] = true;
     }
 
+    function UpdateAttr(bytes memory pk, bytes32 attr_hash, bytes[] memory sigs) public {
+        require(valid_aas.length == sigs.length);
+        for (uint i = 0; i < sigs.length; i++) {
+            require(recoverSigner(prefixed(attr_hash), sigs[i]) == valid_aas[i]);
+        }
+
+        attrs[pk][attr_hash] = true;
+    }
+
+    function QuerryAttr(bytes memory pk, bytes32 attr_hash) public return (bool) {
+        return attrs[pk][attr_hash];
+    }
+
     function splitSignature(bytes memory sig)
         internal
         pure
