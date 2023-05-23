@@ -264,8 +264,7 @@ void ShardStatistic::HandleCrossShard(
         break;
     }
     case pools::protobuf::kRootCreateAddressCrossSharding:
-    case pools::protobuf::kConsensusRootElectShard:
-    case pools::protobuf::kConsensusRootTimeBlock: {
+    case pools::protobuf::kConsensusRootElectShard: {
         if (!is_root) {
             return;
         }
