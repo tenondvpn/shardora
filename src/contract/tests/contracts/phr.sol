@@ -14,8 +14,6 @@ contract Phr {
 
     struct PidInfo {
         bytes32 rid;
-        bytes32 attr_hash;
-        uint256 time;
         bool exists;
     }
 
@@ -98,7 +96,7 @@ contract Phr {
         uint arrayLength = rid_attrs[rid].length;
         require(arrayLength > 0);
         for (uint i=0; i<arrayLength; i++) {
-            if (attr_pks[rid_attrs[rid][i]][pk] && rid_attrs[rid][i].time >= msg.timestamp) {
+            if (attr_pks[rid_attrs[rid][i]][pk] && rid_attrs[rid][i].time >= msg.block_timestamp) {
                 return true;
             }
         }
