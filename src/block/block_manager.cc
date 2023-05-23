@@ -115,38 +115,12 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         HandleStatisticMessage(msg_ptr);
     }
 
-    if (msg_ptr->header.has_cross_tos()) {
-        HandleCrossShardingToTxs(msg_ptr);
+    if (msg_ptr->header.has_block()) {
+        auto& header = msg_ptr->header;
+        auto block_ptr = std::make_shared<block::protobuf::Block>(header.block());
+        // (TODO): check block agg sign
+        NetworkNewBlock(msg_ptr->thread_idx, block_ptr);
     }
-
-    if (msg_ptr->header.has_cross_statistic()) {
-        HandleCrossShardingStatisticTxs(msg_ptr);
-    }
-
-    if (msg_ptr->header.has_elect_block()) {
-        HandleElectBlock(msg_ptr);
-    }
-}
-
-void BlockManager::HandleElectBlock(const transport::MessagePtr& msg_ptr) {
-    auto& header = msg_ptr->header;
-    auto block_ptr = std::make_shared<block::protobuf::Block>(header.elect_block().block());
-    // (TODO): check block agg sign
-    NetworkNewBlock(msg_ptr->thread_idx, block_ptr);
-}
-
-void BlockManager::HandleCrossShardingStatisticTxs(const transport::MessagePtr& msg_ptr) {
-    auto& header = msg_ptr->header;
-    auto block_ptr = std::make_shared<block::protobuf::Block>(header.cross_statistic().block());
-    // (TODO): check block agg sign
-    NetworkNewBlock(msg_ptr->thread_idx, block_ptr);
-}
-
-void BlockManager::HandleCrossShardingToTxs(const transport::MessagePtr& msg_ptr) {
-    auto& header = msg_ptr->header;
-    auto block_ptr = std::make_shared<block::protobuf::Block>(header.cross_tos().block());
-    // (TODO): check block agg sign
-    NetworkNewBlock(msg_ptr->thread_idx, block_ptr);
 }
 
 void BlockManager::NetworkNewBlock(

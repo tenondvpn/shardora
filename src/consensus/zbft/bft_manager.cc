@@ -2204,9 +2204,8 @@ void BftManager::BroadcastLocalTosBlock(
     msg.set_type(common::kBlockMessage);
     dht::DhtKeyManager dht_key(to_tx.to_heights().sharding_id());
     msg.set_des_dht_key(dht_key.StrKey());
-    auto& cross_msg = *msg.mutable_cross_tos();
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
-    *cross_msg.mutable_block() = *block_item;
+    *msg.mutable_block() = *block_item;
     auto* brdcast = msg.mutable_broadcast();
     network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("success broadcast cross tos height: %lu, sharding id: %u",
