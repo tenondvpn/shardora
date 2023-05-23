@@ -76,12 +76,34 @@ void TxPoolManager::InitCrossPools() {
                 i < network::kConsensusShardEndNetworkId; ++i) {
             cross_pools_[i - network::kConsensusShardBeginNetworkId].Init(i, db_, kv_sync_);
         }
+
+        max_cross_pools_size_ = network::kConsensusWaitingShardOffset;
     } else {
         cross_pools_ = new CrossPool[1];
         cross_pools_[0].Init(network::kRootCongressNetworkId, db_, kv_sync_);
     }
 
     ZJC_DEBUG("init cross pool success local_is_root: %d", local_is_root);
+}
+
+void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
+    prev_cross_sync_index_ %= max_cross_pools_size_;
+    auto begin_pool = prev_cross_sync_index_;
+    for (; prev_cross_sync_index_ < max_cross_pools_size_; ++prev_cross_sync_index_) {
+        auto res = cross_pools_[prev_cross_sync_index_].SyncMissingBlocks(thread_idx, now_tm_ms);
+        if (res > 0) {
+            ++prev_cross_sync_index_;
+            return;
+        }
+    }
+
+    for (prev_cross_sync_index_ = 0; prev_cross_sync_index_ < begin_pool; ++prev_cross_sync_index_) {
+        auto res = cross_pools_[prev_cross_sync_index_].SyncMissingBlocks(thread_idx, now_tm_ms);
+        if (res > 0) {
+            ++prev_cross_sync_index_;
+            return;
+        }
+    }
 }
 
 void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
@@ -137,6 +159,15 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
 
     if (cross_pools_ == nullptr) {
         InitCrossPools();
+    } else {
+        if (prev_sync_cross_ms_ < now_tm_ms) {
+            SyncCrossPool(msg_ptr->thread_idx);
+            if (max_cross_pools_size_ > 1) {
+                prev_sync_cross_ms_ = now_tm_ms + kSyncCrossPeriod;
+            } else {
+                prev_sync_cross_ms_ = now_tm_ms + kSyncCrossPeriod / now_sharding_count_;
+            }
+        }
     }
 }
 
@@ -208,7 +239,6 @@ void TxPoolManager::CheckLeaderValid(
 
 void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) {
     if (common::GlobalInfo::Instance()->network_id() == common::kInvalidUint32) {
-        tx_pool_[common::kRootChainPoolIndex].SyncMissingBlocks(thread_idx, now_tm_ms);
         return;
     }
 

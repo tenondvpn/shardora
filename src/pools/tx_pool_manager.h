@@ -53,6 +53,10 @@ public:
                 }
             }
         }
+
+        if (sharding_id - network::kRootCongressNetworkId > now_sharding_count_) {
+            now_sharding_count_ = sharding_id - network::kRootCongressNetworkId;
+        }
     }
 
     std::shared_ptr<consensus::WaitingTxsItem> GetTx(
@@ -140,6 +144,7 @@ private:
         const std::string& id,
         const bls::protobuf::JoinElectInfo& join_info,
         std::string* new_hash);
+    void SyncCrossPool(uint8_t thread_idx);
 
     static const uint32_t kPopMessageCountEachTime = 320u;
     static const uint64_t kFlushHeightTreePeriod = 60000lu;
@@ -147,6 +152,7 @@ private:
     static const uint64_t kSyncMissingBlockPeriod = 3000lu;
     static const uint64_t kCheckLeaderLofPeriod = 3000lu;
     static const uint64_t kCaculateLeaderLofPeriod = 30000lu;
+    static const uint64_t kSyncCrossPeriod = 3000lu;
     double kGrubbsValidFactor = 3.217;  // 90%
     const double kInvalidLeaderRatio = 0.85;
 
@@ -161,6 +167,7 @@ private:
     uint64_t prev_timestamp_us_ = 0;
     uint64_t prev_sync_check_ms_ = 0;
     uint64_t prev_sync_heights_ms_ = 0;
+    uint64_t prev_sync_cross_ms_ = 0;
     uint64_t prev_check_leader_valid_ms_ = 0;
     uint64_t prev_cacultate_leader_valid_ms_ = 0;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
@@ -170,6 +177,9 @@ private:
     uint64_t latest_elect_height_ = 0;
     uint32_t latest_leader_count_ = 0;
     CrossPool* cross_pools_ = nullptr;
+    uint32_t max_cross_pools_size_ = 1;
+    uint32_t now_sharding_count_ = 1;
+    uint32_t prev_cross_sync_index_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };
