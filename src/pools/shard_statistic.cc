@@ -596,17 +596,19 @@ int ShardStatistic::StatisticWithHeights(
                     cross_item->set_src_shard(src_shard);
                     cross_item->set_src_pool(pool_idx);
                     cross_item->set_height(height);
-                    cross_item->set_des_shard(cross_iter->second);
+                    cross_item->set_des_shard(cross_iter->second.des_net);
                     cross_string_for_hash.append((char*)&src_shard, sizeof(src_shard));
                     cross_string_for_hash.append((char*)&pool_idx, sizeof(pool_idx));
                     cross_string_for_hash.append((char*)&height, sizeof(height));
-                    cross_string_for_hash.append((char*)&cross_iter->second, sizeof(cross_iter->second));
+                    cross_string_for_hash.append(
+                        (char*)&cross_iter->second.des_net,
+                        sizeof(cross_iter->second.des_net));
                 } else if (cross_iter->second.cross_ptr != nullptr) {
                     for (int32_t i = 0; i < cross_iter->second.cross_ptr->crosses_size(); ++i) {
-                        uint32_t src_shard = elect_statistic.cross().crosses(i).src_shard();
-                        uint32_t src_pool = elect_statistic.cross().crosses(i).src_pool();
-                        uint64_t height = elect_statistic.cross().crosses(i).height();
-                        uint32_t des_shard = elect_statistic.cross().crosses(i).des_shard();
+                        uint32_t src_shard = cross_iter->second.cross_ptr->crosses(i).src_shard();
+                        uint32_t src_pool = cross_iter->second.cross_ptr->crosses(i).src_pool();
+                        uint64_t height = cross_iter->second.cross_ptr->crosses(i).height();
+                        uint32_t des_shard = cross_iter->second.cross_ptr->crosses(i).des_shard();
                         cross_item->set_src_shard(src_shard);
                         cross_item->set_src_pool(src_pool);
                         cross_item->set_height(height);
