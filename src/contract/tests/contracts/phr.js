@@ -234,7 +234,7 @@ function call_contract(input) {
     console.log("contract_address: " + contract_address);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var data = param_contract(
-        6,
+        8,
         gid,
         contract_address,
         0,
