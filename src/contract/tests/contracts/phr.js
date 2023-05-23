@@ -306,7 +306,26 @@ function CreatePhr() {
         var QuerryAttr_param_codes = web3.eth.abi.encodeParameters(['bytes', 'bytes32'], ['0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', test_attr_hash]);
         console.log("QuerryAttr: " + QuerryAttr.substring(2) + QuerryAttr_param_codes.substring(2));
     }
-    
+
+    {
+        var PolicyAdd = web3.eth.abi.encodeFunctionSignature('PolicyAdd(bytes32,bytes32,bytes32)');
+        var test_attr = "test_attr";
+        var test_attr_hash = web3.utils.keccak256(test_attr);
+        var PolicyAdd_param_codes = web3.eth.abi.encodeParameters(['bytes32', 'bytes32', 'bytes32'], ['0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', '0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5',test_attr_hash]);
+        console.log("PolicyAdd: " + PolicyAdd.substring(2) + PolicyAdd_param_codes.substring(2));
+    }
+
+    {
+        var PolicyQry = web3.eth.abi.encodeFunctionSignature('PolicyQry(bytes32)');
+        var PolicyQry_param_codes = web3.eth.abi.encodeParameters(['bytes32'], ['0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5']);
+        console.log("PolicyQry: " + PolicyQry.substring(2) + PolicyQry_param_codes.substring(2));
+    }
+
+    {
+        var Access = web3.eth.abi.encodeFunctionSignature('Access(bytes,bytes32)');
+        var Access_param_codes = web3.eth.abi.encodeParameters(['bytes', 'bytes32'], ['0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', '0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5']);
+        console.log("Access: " + Access.substring(2) + Access_param_codes.substring(2));
+    }
 }
 
 init_private_key();
