@@ -74,14 +74,14 @@ contract Phr {
         require(owner == msg.sender);
         require(!pids[pid].exists);
         require(attr_hash.length == timeout.length);
+        pids[pid] = PidInfo({
+            rid: rid,
+            exists: true
+        });
+
         uint arrayLength = attr_hash.length;
         for (uint i=0; i<arrayLength; i++) {
-            pids[pid] = PidInfo({
-                rid: rid,
-                exists: true
-            });
-
-            rid_attrs[rid].push(RidInfo({
+            rid_attrs[rid].push(PolicyInfo({
                 attr_hash: attr_hash[i],
                 time:timeout[i],
                 exists: true
