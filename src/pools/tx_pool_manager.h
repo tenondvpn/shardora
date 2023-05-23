@@ -7,6 +7,7 @@
 #include "common/thread_safe_queue.h"
 #include "common/unique_map.h"
 #include "pools/tx_pool.h"
+#include "pools/cross_pool.h"
 #include "protos/address.pb.h"
 #include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
