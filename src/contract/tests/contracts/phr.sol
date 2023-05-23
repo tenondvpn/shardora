@@ -96,7 +96,7 @@ contract Phr {
         uint arrayLength = rid_attrs[rid].length;
         require(arrayLength > 0);
         for (uint i=0; i<arrayLength; i++) {
-            if (attr_pks[rid_attrs[rid][i]][pk] && rid_attrs[rid][i].time >= msg.block_timestamp) {
+            if (attr_pks[rid_attrs[rid][i].attr_hash][pk] && rid_attrs[rid][i].time >= block.timestamp) {
                 return true;
             }
         }
