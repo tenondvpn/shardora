@@ -39,6 +39,7 @@ int Ecrecover::call(
         create_address_.c_str(),
         sizeof(res->create_address.bytes));
     res->gas_left -= gas_cast_;
+    ZJC_DEBUG("recover addrress: %s", common::Encode::HexEncode(addr_sha3).c_str());
     return kContractSuccess;
 }
 
