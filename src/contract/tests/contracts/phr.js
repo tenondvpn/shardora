@@ -79,9 +79,8 @@ function GetValidHexString(uint256_bytes) {
     return str_res;
 }
 
-function create_contract(gid, to, amount, gas_limit, gas_price, contract_bytes, input, prepay) {
+function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract_bytes, input, prepay) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
-    var tx_type = 6;
     var frompk = '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16);
     const MAX_UINT32 = 0xFFFFFFFF;
     var amount_buf = new Buffer(8);
@@ -210,7 +209,8 @@ function new_contract(contract_bytes) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var kechash = keccak256(self_account_id + gid + contract_bytes).toString('hex')
     var self_contract_address = kechash.slice(kechash.length - 40, kechash.length)
-    var data = create_contract(
+    var data = param_contract(
+        6,
         gid,
         self_contract_address,
         0,
@@ -227,6 +227,23 @@ function new_contract(contract_bytes) {
             console.error(err)
         }
     })
+}
+
+function call_contract(input) {
+    contract_address = fs.readFileSync('contract_address', 'utf-8');
+    console.log("contract_address: " + contract_address);
+    var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
+    var data = param_contract(
+        6,
+        gid,
+        contract_address,
+        0,
+        10000000,
+        1,
+        "",
+        input,
+        0);
+    PostCode(data);
 }
 
 function do_transaction(to_addr, amount, gas_limit, gas_price) {
@@ -280,5 +297,9 @@ if (args[0] == 1) {
 }
 
 if (args[0] == 2) {
+    call_contract("");
+}
+
+if (args[0] == 3) {
     CreatePhr();
 }
