@@ -13,7 +13,7 @@ contract Phr {
     }
 
     mapping(bytes32 => RidInfo) public rids;
-    mapping(bytes => bytes32[]) public attrs;
+    mapping(bytes => mapping(bytes32 => bool)) public attrs;
 
     constructor(address[] memory aas) {
         valid_aas = aas;
@@ -32,11 +32,12 @@ contract Phr {
 
     function AttrReg(bytes memory pk, bytes32 attr_hash, bytes[] memory sigs) public {
         require(valid_aas.length == sigs.length);
+        require(attrs[pk][attr_hash] == false);
         for (uint i = 0; i < sigs.length; i++) {
             require(recoverSigner(prefixed(attr_hash), sigs[i]) == valid_aas[i]);
         }
 
-        attrs[pk].push(attr_hash);
+        attrs[pk][attr_hash] = true;
     }
 
     function splitSignature(bytes memory sig)
