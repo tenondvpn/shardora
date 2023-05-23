@@ -120,6 +120,9 @@ void BftManager::RegisterCreateTxCallbacks() {
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kCreateLibrary,
         std::bind(&BftManager::CreateLibraryTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kRootCross,
+        std::bind(&BftManager::CreateRootCrossTx, this, std::placeholders::_1));
     block_mgr_->SetCreateToTxFunction(
         std::bind(&BftManager::CreateToTx, this, std::placeholders::_1));
     block_mgr_->SetCreateStatisticTxFunction(

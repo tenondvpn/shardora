@@ -18,6 +18,7 @@
 #include "consensus/zbft/elect_tx_item.h"
 #include "consensus/zbft/from_tx_item.h"
 #include "consensus/zbft/join_elect_tx_item.h"
+#include "consensus/zbft/root_cross_tx_item.h"
 #include "consensus/zbft/root_to_tx_item.h"
 #include "consensus/zbft/statistic_tx_item.h"
 #include "consensus/zbft/time_block_tx.h"
@@ -236,6 +237,10 @@ private:
 
     pools::TxItemPtr CreateCrossTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<CrossTxItem>(msg_ptr, account_mgr_, security_ptr_);
+    }
+
+    pools::TxItemPtr CreateRootCrossTx(const transport::MessagePtr& msg_ptr) {
+        return std::make_shared<RootCrossTxItem>(msg_ptr, account_mgr_, security_ptr_);
     }
 
     pools::TxItemPtr CreateContractUserCreateCallTx(const transport::MessagePtr& msg_ptr) {
