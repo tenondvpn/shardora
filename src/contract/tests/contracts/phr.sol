@@ -70,7 +70,7 @@ contract Phr {
         return pk_attrs[pk][attr_hash];
     }
 
-    function PolicyAdd(bytes32 pid, bytes32 rid, bytes32[] attr_hash, uint256[] timeout) public {
+    function PolicyAdd(bytes32 pid, bytes32 rid, bytes32[] memory attr_hash, uint256[] memory timeout) public {
         require(owner == msg.sender);
         require(!pids[pid].exists);
         require(attr_hash.length == timeout.length);
