@@ -916,7 +916,7 @@ void BlockManager::RootCreateCrossTx(
         uint64_t height = elect_statistic.cross().crosses(i).height();
         uint32_t des_shard = elect_statistic.cross().crosses(i).des_shard();
         cross_string_for_hash.append((char*)&src_shard, sizeof(src_shard));
-        cross_string_for_hash.append((char*)&pool_idx, sizeof(pool_idx));
+        cross_string_for_hash.append((char*)&src_pool, sizeof(src_pool));
         cross_string_for_hash.append((char*)&height, sizeof(height));
         cross_string_for_hash.append((char*)&des_shard, sizeof(des_shard));
     }
@@ -926,8 +926,8 @@ void BlockManager::RootCreateCrossTx(
     tx->set_key(protos::kRootCross);
     tx->set_value(hash);
     pools_mgr_->HandleMessage(msg_ptr);
-    ZJC_DEBUG("create new address %s, amount: %lu",
-        common::Encode::HexEncode(tos_item.des()).c_str(), tos_item.amount());
+    ZJC_DEBUG("create cross tx %s",
+        common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str());
 }
 
 void BlockManager::HandleStatisticBlock(
