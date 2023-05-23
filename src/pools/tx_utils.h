@@ -144,6 +144,12 @@ struct StatisticMemberInfoItem {
     uint32_t leader_index;
 };
 
+struct CrossStatisticItem {
+    CrossStatisticItem(uint32_t shard) : des_net(shard), cross_ptr(nullptr) {}
+    uint32_t des_net;
+    std::shared_ptr<pools::protobuf::CrossShardStatistic> cross_ptr;
+};
+
 struct HeightStatisticInfo {
     HeightStatisticInfo() : elect_height(0), all_gas_amount(0), all_gas_for_root(0) {}
     std::unordered_map<std::string, StatisticMemberInfoItem> node_tx_count_map;
