@@ -12,9 +12,17 @@ contract Phr {
         bool exists;
     }
 
-    mapping(bytes32 => RidInfo) public rids;
-    mapping(bytes => mapping(bytes32 => bool)) public attrs;
+    struct PidInfo {
+        bytes32 rid;
+        bytes32 attr_hash;
+        bool exists;
+    }
 
+    mapping(bytes32 => RidInfo) public rids;
+    mapping(bytes => mapping(bytes32 => bool)) public pk_attrs;
+    mapping(bytes32 => mapping(bytes => bool)) public attr_pks;
+    mapping(bytes32 => bytes32[]) public rid_attrs;
+    mapping(bytes32 => PidInfo) public pids;
     constructor(address[] memory aas) {
         valid_aas = aas;
         owner = msg.sender;
@@ -32,12 +40,13 @@ contract Phr {
 
     function AttrReg(bytes memory pk, bytes32 attr_hash, bytes[] memory sigs) public {
         require(valid_aas.length == sigs.length);
-        require(attrs[pk][attr_hash] == false);
+        require(pk_attrs[pk][attr_hash] == false);
         for (uint i = 0; i < sigs.length; i++) {
             require(recoverSigner(prefixed(attr_hash), sigs[i]) == valid_aas[i]);
         }
 
-        attrs[pk][attr_hash] = true;
+        pk_attrs[pk][attr_hash] = true;
+        attr_pks[attr_hash][pk] = true;
     }
 
     function UpdateAttr(bytes memory pk, bytes32 attr_hash, bytes[] memory sigs) public {
@@ -46,11 +55,41 @@ contract Phr {
             require(recoverSigner(prefixed(attr_hash), sigs[i]) == valid_aas[i]);
         }
 
-        attrs[pk][attr_hash] = true;
+        pk_attrs[pk][attr_hash] = true;
+        attr_pks[attr_hash][pk] = true;
     }
 
     function QuerryAttr(bytes memory pk, bytes32 attr_hash) public returns (bool) {
-        return attrs[pk][attr_hash];
+        return pk_attrs[pk][attr_hash];
+    }
+
+    function PolicyAdd(bytes32 memory pid, bytes32 memory rid, bytes32 attr_hash) public {
+        require(owner == msg.sender);
+        require(!pids[pid].exists);
+        pids[pid] = PidInfo({
+            rid: rid,
+            attr_hash: attr_hash,
+            exists: true
+        });
+
+        rid_attrs[rid].push(attr_hash);
+    }
+
+    function PolicyQry(bytes32 memory pid) public returns (bool) {
+        require(owner == msg.sender);
+        return pids[pid].exists;
+    }
+
+    function Access(bytes memory pk, bytes32 memory rid) public returns (bool) {
+        uint arrayLength = rid_attrs[rid].length;
+        require(arrayLength > 0);
+        for (uint i=0; i<arrayLength; i++) {
+            if (attr_pks[rid_attrs[rid][i]][pk]) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     function splitSignature(bytes memory sig)
