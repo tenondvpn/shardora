@@ -149,6 +149,7 @@ struct HeightStatisticInfo {
     std::unordered_map<std::string, StatisticMemberInfoItem> node_tx_count_map;
     std::unordered_map<std::string, uint64_t> node_stoke_map;
     std::unordered_map<std::string, uint32_t> node_shard_map;
+    std::unordered_map<uint32_t, std::unordered_map<uint64_t, uint32_t>> pool_cross_shard_heights;
     uint64_t elect_height;
     uint64_t all_gas_amount;
     uint64_t all_gas_for_root;

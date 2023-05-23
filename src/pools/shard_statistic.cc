@@ -202,6 +202,8 @@ void ShardStatistic::HandleCrossShard(
 
                     cross_shard_map_[block.pool_index()][block.height()] =
                         to_tx.to_heights().sharding_id();
+                    ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
+                        tx.step(), block.pool_index(), block.height(), to_tx.to_heights().sharding_id());
                     break;
                 }
             }
@@ -212,6 +214,8 @@ void ShardStatistic::HandleCrossShard(
     case pools::protobuf::kStatistic: {
         if (!is_root) {
             cross_shard_map_[block.pool_index()][block.height()] = network::kRootCongressNetworkId;
+            ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
+                tx.step(), block.pool_index(), block.height(), network::kRootCongressNetworkId);
         }
         
         break;
@@ -223,6 +227,8 @@ void ShardStatistic::HandleCrossShard(
             cross_shard_map_[block.pool_index()][block.height()] = network::kRootCongressNetworkId;
         }
 
+        ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
+            tx.step(), block.pool_index(), block.height(), cross_shard_map_[block.pool_index()][block.height()]);
         break;
     }
     case pools::protobuf::kRootCreateAddressCrossSharding:
@@ -233,6 +239,8 @@ void ShardStatistic::HandleCrossShard(
         }
 
         cross_shard_map_[block.pool_index()][block.height()] = network::kNodeNetworkId;
+        ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
+            tx.step(), block.pool_index(), block.height(), network::kNodeNetworkId);
         break;
     }
     default:

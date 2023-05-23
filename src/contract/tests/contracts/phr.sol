@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <0.9.0;
 
-
 contract Phr {
     address[] public valid_aas;
     address public owner;
@@ -28,6 +27,7 @@ contract Phr {
     mapping(bytes32 => mapping(bytes => bool)) public attr_pks;
     mapping(bytes32 => PolicyInfo[]) public rid_attrs;
     mapping(bytes32 => PidInfo) public pids;
+
     constructor(address[] memory aas) {
         valid_aas = aas;
         owner = msg.sender;
