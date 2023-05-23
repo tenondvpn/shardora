@@ -63,7 +63,7 @@ contract Phr {
         return pk_attrs[pk][attr_hash];
     }
 
-    function PolicyAdd(bytes32 memory pid, bytes32 memory rid, bytes32 attr_hash) public {
+    function PolicyAdd(bytes32 pid, bytes32 rid, bytes32 attr_hash) public {
         require(owner == msg.sender);
         require(!pids[pid].exists);
         pids[pid] = PidInfo({
@@ -75,12 +75,12 @@ contract Phr {
         rid_attrs[rid].push(attr_hash);
     }
 
-    function PolicyQry(bytes32 memory pid) public returns (bool) {
+    function PolicyQry(bytes32 pid) public returns (bool) {
         require(owner == msg.sender);
         return pids[pid].exists;
     }
 
-    function Access(bytes memory pk, bytes32 memory rid) public returns (bool) {
+    function Access(bytes memory pk, bytes32 rid) public returns (bool) {
         uint arrayLength = rid_attrs[rid].length;
         require(arrayLength > 0);
         for (uint i=0; i<arrayLength; i++) {
