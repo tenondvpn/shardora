@@ -428,6 +428,7 @@ void NetworkInit::InitLocalNetworkId() {
 
         got_sharding_id = local_node_account_info->sharding_id();
         des_sharding_id_ = got_sharding_id;
+        prefix_db_->SaveJoinShard(got_sharding_id, des_sharding_id_);
     }
 
     elect::ElectBlockManager elect_block_mgr;

@@ -115,6 +115,8 @@ public:
         tx_pool_[pool_index].CheckTimeoutTx();
     }
 
+    void InitCrossPools();
+
 private:
     void DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& addr);
@@ -166,6 +168,7 @@ private:
     volatile uint64_t synced_max_heights_[common::kInvalidPoolIndex] = { 0 };
     uint64_t latest_elect_height_ = 0;
     uint32_t latest_leader_count_ = 0;
+    CrossPool* cross_pools_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

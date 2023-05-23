@@ -47,7 +47,40 @@ TxPoolManager::~TxPoolManager() {
         delete []tx_pool_;
     }
 
+    if (cross_pools_ != nullptr) {
+        delete[] cross_pools_;
+    }
+
     prefix_db_->Destroy();
+}
+
+void TxPoolManager::InitCrossPools() {
+    uint32_t got_sharding_id = common::kInvalidUint32;
+    uint32_t des_sharding_id = common::kInvalidUint32;
+    if (!prefix_db_->GetJoinShard(&got_sharding_id, &des_sharding_id)) {
+        return;
+    }
+
+    bool local_is_root = false;
+    if (des_sharding_id != common::kInvalidUint32) {
+        if (des_sharding_id == network::kRootCongressNetworkId ||
+                des_sharding_id ==
+                network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
+            local_is_root = true;
+        }
+    }
+
+    if (local_is_root) {
+        cross_pools_ = new CrossPool[network::kConsensusWaitingShardOffset];
+        for (uint32_t i = network::kConsensusShardBeginNetworkId; i < network::kConsensusShardEndNetworkId; ++i) {
+            cross_pools_[i - network::kConsensusShardBeginNetworkId]->Init(i, db_, kv_sync_);
+        }
+    } else {
+        cross_pools_ = new CrossPool[1];
+        cross_pools_[0]->Init(network::kRootCongressNetworkId, db_, kv_sync_);
+    }
+
+    ZJC_DEBUG("init cross pool success local_is_root: %d", local_is_root);
 }
 
 void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
@@ -99,6 +132,10 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
     if (prev_sync_heights_ms_ < now_tm_ms) {
         SyncPoolsMaxHeight(msg_ptr->thread_idx);
         prev_sync_heights_ms_ = now_tm_ms + kSyncPoolsMaxHeightsPeriod;
+    }
+
+    if (cross_pools_ == nullptr) {
+        InitCrossPools();
     }
 }
 
