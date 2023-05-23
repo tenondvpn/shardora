@@ -229,6 +229,7 @@ void BlockManager::HandleCrossTx(
                 }
             }
 
+            ZJC_DEBUG("success handle cross tx block.");
             break;
         }
     }
@@ -1092,6 +1093,10 @@ pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) 
 
 pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string& tx_hash) {
     for (auto iter = shard_elect_tx_.begin(); iter != shard_elect_tx_.end(); ++iter) {
+        if (iter->first % common::kImmutablePoolSize != pool_index) {
+            continue;
+        }
+
         auto shard_elect_tx = iter->second;
         if (shard_elect_tx != nullptr && !shard_elect_tx->tx_ptr->in_consensus) {
             if (!tx_hash.empty()) {
