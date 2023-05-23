@@ -30,6 +30,7 @@ void RootZbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) 
         case pools::protobuf::kRootCreateAddressCrossSharding:
         case pools::protobuf::kStatistic:
         case pools::protobuf::kCross:
+        case pools::protobuf::kRootCross:
             RootDefaultTx(zjc_block);
             break;
         default:
