@@ -486,23 +486,26 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     auto& tx_msg = header.tx_proto();
     if (tx_msg.has_key() && tx_msg.key().size() > 0) {
         ZJC_DEBUG("call contract key must empty.");
+        ZJC_DEBUG("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
 
     if (tx_msg.gas_price() <= 0 || tx_msg.gas_limit() <= consensus::kCallContractDefaultUseGas) {
         ZJC_DEBUG("gas price and gas limit error %lu, %lu",
             tx_msg.gas_price(), tx_msg.gas_limit());
+        ZJC_DEBUG("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
 
     msg_ptr->address_info = GetAddressInfo(tx_msg.to());
     if (msg_ptr->address_info == nullptr) {
         ZJC_WARN("no contract address info.");
+        ZJC_DEBUG("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
 
     if (msg_ptr->address_info->addr() == tx_msg.to()) {
-        assert(false);
+        ZJC_DEBUG("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
 
@@ -510,6 +513,7 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
         ZJC_WARN("sharding error: %d, %d",
             msg_ptr->address_info->sharding_id(),
             common::GlobalInfo::Instance()->network_id());
+        ZJC_DEBUG("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
 
@@ -520,10 +524,12 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
             security_->GetAddress(tx_msg.pubkey()),
             &height,
             &prepayment)) {
+        ZJC_DEBUG("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
 
     if (prepayment < tx_msg.amount() + tx_msg.gas_limit() * tx_msg.gas_price()) {
+        ZJC_DEBUG("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
 
@@ -532,16 +538,18 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
         // avoid save gid different tx
         ZJC_DEBUG("tx msg hash exists: %s failed!",
             common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+        ZJC_DEBUG("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
 
     if (prefix_db_->GidExists(tx_msg.gid())) {
         ZJC_DEBUG("tx gid exists: %s failed!", common::Encode::HexEncode(tx_msg.gid()).c_str());
+        ZJC_DEBUG("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-    ZJC_DEBUG("success add contract call.");
+    ZJC_DEBUG("success add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
 }
 
 void TxPoolManager::HandleUserCallContractTx(const transport::MessagePtr& msg_ptr) {
