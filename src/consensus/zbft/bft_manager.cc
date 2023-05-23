@@ -250,7 +250,7 @@ void BftManager::SetThreadItem(
     std::set<uint32_t> leader_pool_set;
     if (local_node_pool_mod_num >= 0) {
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-            if (i % leader_count == local_node_pool_mod_num) {
+            if (i % leader_count == (uint32_t)local_node_pool_mod_num) {
                 leader_pool_set.insert(i);
             }
         }
@@ -895,9 +895,9 @@ void BftManager::CreateResponseMessage(
                 auto& thread_set = elect_item.thread_set;
                 auto thread_item = thread_set[msg_ptr->thread_idx];
                 if (thread_item != nullptr && !thread_item->synced_ip) {
-                    if (thread_item->valid_ip_count * 10 / 9 >= elect_item.members->size()) {
+                    if (thread_item->valid_ip_count * 10 / 9 >= (int32_t)elect_item.members->size()) {
                         auto* new_bft_msg = msg_ptr->response->header.mutable_zbft();
-                        for (int32_t i = 0; i < elect_item.members->size(); ++i) {
+                        for (uint32_t i = 0; i < elect_item.members->size(); ++i) {
                             new_bft_msg->add_ips(thread_item->member_ips[i]);
                             thread_item->all_members_ips[i][thread_item->member_ips[i]] = 1;
                             if (elect_item.leader_count <= 8) {
@@ -1133,7 +1133,7 @@ ZbftPtr BftManager::CreateBftPtr(
         return nullptr;
     }
 
-    if (txs_ptr != nullptr && txs_ptr->txs.size() != bft_msg.tx_bft().tx_hash_list_size()) {
+    if (txs_ptr != nullptr && (int32_t)txs_ptr->txs.size() != bft_msg.tx_bft().tx_hash_list_size()) {
         ZJC_ERROR("invalid consensus, txs not equal to leader.");
         txs_ptr = nullptr;
     }
@@ -2367,7 +2367,7 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
 }
 
 bool BftManager::IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info) {
-    if (tx_info.step() != common::kConsensusCreateContract) {
+    if (tx_info.step() != pools::protobuf::kConsensusCreateContract) {
         return false;
     }
 

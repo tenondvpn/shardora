@@ -430,7 +430,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
             local_member_index_, bls_msg.index(),
             libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
             min_aggree_member_count_);
-//         assert(false);
+        assert(false);
         return;
     }
 
@@ -481,7 +481,7 @@ bool BlsDkg::VerifySekkeyValid(
         return false;
     }
 
-    if (join_info.g2_req().verify_vec_size() <= changed_idx) {
+    if (join_info.g2_req().verify_vec_size() <= (int32_t)changed_idx) {
         assert(false);
         return false;
     }
@@ -577,7 +577,7 @@ bool BlsDkg::CheckRecomputeG2s(
         begin_idx = 0;
     }
 
-    for (int32_t i = begin_idx; i < min_aggree_member_count_; ++i) {
+    for (uint32_t i = begin_idx; i < min_aggree_member_count_; ++i) {
         auto& item = join_info.g2_req().verify_vec(i);
         auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
         auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
@@ -917,7 +917,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
         return;
     }
 
-    if (local_poly.polynomial_size() < valid_t) {
+    if (local_poly.polynomial_size() < (int32_t)valid_t) {
         assert(false);
         return;
     }
@@ -925,7 +925,7 @@ void BlsDkg::CreateContribution(uint32_t valid_n, uint32_t valid_t) {
     std::vector<libff::alt_bn128_Fr> polynomial(valid_t);
     int32_t change_idx = common::Random::RandomInt32() % valid_t;
     libff::alt_bn128_G2 old_g2 = libff::alt_bn128_G2::zero();
-    for (int32_t i = 0; i < valid_t; ++i) {
+    for (uint32_t i = 0; i < valid_t; ++i) {
         polynomial[i] = libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)).c_str());
         if (change_idx == i) {
             old_g2 = polynomial[i] * libff::alt_bn128_G2::one();

@@ -456,7 +456,7 @@ bool TxPoolManager::SaveNodeVerfiyVec(
         const std::string& id,
         const bls::protobuf::JoinElectInfo& join_info,
         std::string* new_hash) {
-    auto t = common::GetSignerCount(common::GlobalInfo::Instance()->each_shard_max_members());
+    int32_t t = common::GetSignerCount(common::GlobalInfo::Instance()->each_shard_max_members());
     if (join_info.g2_req().verify_vec_size() > 0 && join_info.g2_req().verify_vec_size() != t) {
         return false;
     }

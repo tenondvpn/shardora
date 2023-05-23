@@ -103,12 +103,12 @@ void ShardStatistic::HandleStatisticBlock(
                     for (int32_t i = 0; i < elect_statistic.heights().heights_size(); ++i) {
                         if (tx_heights_ptr_->heights(i) > elect_statistic.heights().heights(i)) {
                             std::string init_consensus_height;
-                            for (uint32_t i = 0; i < elect_statistic.heights().heights_size(); ++i) {
+                            for (int32_t i = 0; i < elect_statistic.heights().heights_size(); ++i) {
                                 init_consensus_height += std::to_string(elect_statistic.heights().heights(i)) + " ";
                             }
 
                             std::string src_init_consensus_height;
-                            for (uint32_t i = 0; i < tx_heights_ptr_->heights_size(); ++i) {
+                            for (int32_t i = 0; i < tx_heights_ptr_->heights_size(); ++i) {
                                 src_init_consensus_height += std::to_string(tx_heights_ptr_->heights(i)) + " ";
                             }
 
@@ -171,7 +171,7 @@ void ShardStatistic::HandleStatisticBlock(
                 elect_statistic.heights());
             tx_heights_ptr_ = std::make_shared<pools::protobuf::ToTxHeights>(elect_statistic.heights());
             std::string init_consensus_height;
-            for (uint32_t i = 0; i < tx_heights_ptr_->heights_size(); ++i) {
+            for (int32_t i = 0; i < tx_heights_ptr_->heights_size(); ++i) {
                 init_consensus_height += std::to_string(tx_heights_ptr_->heights(i)) + " ";
             }
 
@@ -306,7 +306,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
         auto& id = (*members)[i]->id;
         auto node_iter = statistic_info_ptr->node_tx_count_map.find(id);
         if (node_iter == statistic_info_ptr->node_tx_count_map.end()) {
-            statistic_info_ptr->node_tx_count_map[id] = { 0, i, block.leader_index() };
+            statistic_info_ptr->node_tx_count_map[id] = { 0, i, (uint32_t)block.leader_index() };
         }
 
         if (!final_bitmap.Valid(i)) {
@@ -420,7 +420,6 @@ int ShardStatistic::LeaderCreateStatisticHeights(pools::protobuf::ToTxHeights& t
     }
 
     for (uint32_t i = 0; i < max_pool; ++i) {
-        auto pool_iter = node_height_count_map_[i].find(i);
         auto r_height_iter = node_height_count_map_[i].rbegin();
         if (r_height_iter == node_height_count_map_[i].rend()) {
             heights += std::to_string(tx_heights_ptr_->heights(i)) + " ";
@@ -479,7 +478,7 @@ int ShardStatistic::StatisticWithHeights(
         ++pool_size;
     }
 
-    if (leader_to_heights.heights_size() != pool_size) {
+    if (leader_to_heights.heights_size() != (int32_t)pool_size) {
         ZJC_DEBUG("pool size error: %d, %d, local sharding: %d",
             leader_to_heights.heights_size(), pool_size,
             common::GlobalInfo::Instance()->network_id());
@@ -496,7 +495,7 @@ int ShardStatistic::StatisticWithHeights(
         return kPoolsError;
     }
 
-    if (tx_heights_ptr_->heights_size() < max_pool) {
+    if (tx_heights_ptr_->heights_size() < (int32_t)max_pool) {
         return kPoolsError;
     }
 
@@ -662,7 +661,7 @@ int ShardStatistic::StatisticWithHeights(
     if (r_hiter == height_node_count_map.rend() || r_hiter->first < now_elect_height_) {
         height_node_count_map[now_elect_height_] = std::unordered_map<std::string, uint32_t>();
         auto& node_count_map = height_node_count_map[now_elect_height_];
-        for (int32_t i = 0; i < now_elect_members->size(); ++i) {
+        for (uint32_t i = 0; i < now_elect_members->size(); ++i) {
             node_count_map[(*now_elect_members)[i]->id] = 0;
         }
     }
@@ -725,7 +724,7 @@ int ShardStatistic::StatisticWithHeights(
     }
 
     debug_for_str += "stoke: ";
-    for (int32_t i = 0; i < elect_nodes.size() && i < kWaitingElectNodesMaxCount; ++i) {
+    for (uint32_t i = 0; i < elect_nodes.size() && i < kWaitingElectNodesMaxCount; ++i) {
         std::string pubkey = elect_nodes[i];
         if (pubkey.size() == security::kUnicastAddressLength) {
             if (!prefix_db_->GetAddressPubkey(elect_nodes[i], &pubkey)) {
@@ -760,7 +759,7 @@ int ShardStatistic::StatisticWithHeights(
     }
 
     if (prepare_members != nullptr) {
-        for (int32_t i = 0; i < prepare_members->size(); ++i) {
+        for (uint32_t i = 0; i < prepare_members->size(); ++i) {
             auto inc_iter = added_id_set.find((*prepare_members)[i]->pubkey);
             if (inc_iter != added_id_set.end()) {
                 continue;
@@ -898,7 +897,7 @@ void ShardStatistic::NormalizeLofMap(std::unordered_map<uint32_t, common::Point>
 
     for (auto iter = lof_map.begin(); iter != lof_map.end(); ++iter) {
         auto avg = avg_map[iter->first];
-        for (int32_t i = 0; i < iter->second.coordinate().size(); ++i) {
+        for (uint32_t i = 0; i < iter->second.coordinate().size(); ++i) {
             iter->second[i] = iter->second[i] * max_avg / avg;
         }
     }
@@ -925,7 +924,7 @@ void ShardStatistic::LoadLatestHeights() {
     }
 
     std::string init_consensus_height;
-    for (uint32_t i = 0; i < tx_heights_ptr_->heights_size(); ++i) {
+    for (int32_t i = 0; i < tx_heights_ptr_->heights_size(); ++i) {
         init_consensus_height += std::to_string(tx_heights_ptr_->heights(i)) + " ";
     }
 

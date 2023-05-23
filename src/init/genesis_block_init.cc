@@ -130,7 +130,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
                     continue;
                 }
 
-                if (join_info.g2_req().verify_vec_size() <= change_idx) {
+                if (join_info.g2_req().verify_vec_size() <= (int32_t)change_idx) {
                     assert(false);
                     continue;
                 }
@@ -219,7 +219,7 @@ bool GenesisBlockInit::CheckRecomputeG2s(
         begin_idx = 0;
     }
 
-    for (int32_t i = begin_idx; i < valid_t; ++i) {
+    for (uint32_t i = begin_idx; i < valid_t; ++i) {
         auto& item = join_info.g2_req().verify_vec(i);
         auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
         auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
@@ -354,7 +354,7 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
 
         libBLS::Dkg tmpdkg(valid_t, valid_n);
         std::vector<libff::alt_bn128_Fr> tmp_secret_key_contribution;
-        for (int32_t i = 0; i < prikeys.size(); ++i) {
+        for (uint32_t i = 0; i < prikeys.size(); ++i) {
             tmp_secret_key_contribution.push_back(secret_key_contribution[idx][i]);
         }
 
@@ -1135,7 +1135,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             init_heights);
         prefix_db_->SaveStatisticLatestHeihgts(network::kRootCongressNetworkId, init_heights);
         std::string init_consensus_height;
-        for (uint32_t i = 0; i < init_heights.heights_size(); ++i) {
+        for (int32_t i = 0; i < init_heights.heights_size(); ++i) {
             init_consensus_height += std::to_string(init_heights.heights(i)) + " ";
         }
 
@@ -1207,10 +1207,9 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
         std::string address = *iter;
-        if (idx == valid_ids.size() - 1) {
+        if (idx + 1 == (int32_t)valid_ids.size()) {
             genesis_account_balance += common::kGenesisShardingNodesMaxZjc % valid_ids.size();
         }
-
 
         {
             auto tx_info = tx_list->Add();
@@ -1401,7 +1400,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     CreateShardNodesBlocks(pool_prev_hash_map, root_genesis_nodes, cons_genesis_nodes, net_id, init_heights);
     prefix_db_->SaveStatisticLatestHeihgts(net_id, init_heights);
     std::string init_consensus_height;
-    for (uint32_t i = 0; i < init_heights.heights_size(); ++i) {
+    for (int32_t i = 0; i < init_heights.heights_size(); ++i) {
         init_consensus_height += std::to_string(init_heights.heights(i)) + " ";
     }
 

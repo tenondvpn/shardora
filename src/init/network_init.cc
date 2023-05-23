@@ -254,7 +254,7 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
     }
 
     for (int32_t i = 0; i < pools.pools_size(); ++i) {
-        if (pools.pools(i) > common::kInvalidPoolIndex) {
+        if ((uint32_t)pools.pools(i) > common::kInvalidPoolIndex) {
             return;
         }
 
@@ -1029,7 +1029,7 @@ void NetworkInit::DbNewBlockCallback(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
-    for (uint32_t i = 0; i < block->tx_list_size(); ++i) {
+    for (int32_t i = 0; i < block->tx_list_size(); ++i) {
         switch (block->tx_list(i).step()) {
         case pools::protobuf::kConsensusRootTimeBlock:
             HandleTimeBlock(thread_idx, block, block->tx_list(i), db_batch);
@@ -1163,13 +1163,13 @@ void NetworkInit::HandleElectionBlock(
             uint32_t for_leader_idx = 0;
             bool valid = false;
             while (!valid) {
-                for (int32_t i = 0; i < leader_count; ++i) {
+                for (uint32_t i = 0; i < leader_count; ++i) {
                     rotation_leaders->rotations[i].rotation_leaders.push_back(for_leaders_index[for_leader_idx++]);
                     if (for_leader_idx >= for_leaders_index.size()) {
                         for_leader_idx = 0;
                     }
 
-                    if (i == leader_count - 1 &&
+                    if (i + 1 == leader_count &&
                             rotation_leaders->rotations[i].rotation_leaders.size() >= kRotationLeaderCount) {
                         valid = true;
                         break;

@@ -40,13 +40,13 @@ int Zbft::Init(
         return kConsensusError;
     }
 
-    if (leader_idx >= members_ptr->size()) {
+    if (leader_idx >= (int32_t)members_ptr->size()) {
         return kConsensusError;
     }
 
     elect_height_ = elect_height;
     leader_mem_ptr_ = (*members_ptr)[leader_idx];
-    if (pool_index() % leader_count != leader_mem_ptr_->pool_index_mod_num) {
+    if (pool_index() % leader_count != (uint32_t)leader_mem_ptr_->pool_index_mod_num) {
         return kConsensusError;
     }
 

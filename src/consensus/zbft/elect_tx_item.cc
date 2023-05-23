@@ -81,9 +81,10 @@ int ElectTxItem::HandleTx(
                 return kConsensusError;
             }
 
-            if (members->size() != statistic->tx_count_size() ||
-                    members->size() != statistic->stokes_size() ||
-                    members->size() != statistic->area_point_size()) {
+            int32_t member_count = members->size();
+            if (member_count != statistic->tx_count_size() ||
+                    member_count != statistic->stokes_size() ||
+                    member_count != statistic->area_point_size()) {
                 ZJC_DEBUG("now_elect_height: %lu, member size error: %u, %u, %u, %u",
                     now_elect_height, members->size(), statistic->tx_count_size(),
                     statistic->stokes_size(), statistic->area_point_size());
@@ -93,7 +94,7 @@ int ElectTxItem::HandleTx(
 
             {
                 std::string ids;
-                for (uint32_t i = 0; i < statistic->tx_count_size(); ++i) {
+                for (int32_t i = 0; i < statistic->tx_count_size(); ++i) {
                     ids += common::Encode::HexEncode(sec_ptr_->GetAddress((*members)[i]->pubkey)) +
                         ":" + std::to_string(statistic->area_point(i).x()) +
                         ":" + std::to_string(statistic->area_point(i).y()) +
@@ -187,13 +188,6 @@ int ElectTxItem::HandleTx(
                 ZJC_DEBUG("join elect: %s", ids.c_str());
             }
             std::string random_str;
-            auto& g2 = *g2_;
-            auto RandFunc = [&g2, &random_str](int idx) -> int {
-                int val = abs(static_cast<int>(g2())) % idx;
-                random_str += std::to_string(val) + ",";
-                return val;
-            };
-
             int32_t expect_leader_count = (int32_t)pow(
                 2.0,
                 (double)((int32_t)log2(double(elect_nodes.size() / 3))));
@@ -215,7 +209,7 @@ int ElectTxItem::HandleTx(
             FtsGetNodes(src_elect_nodes_to_choose, false, expect_leader_count, leader_nodes);
             ZJC_DEBUG("net: %u, elect use height to random order: %lu, leader size: %d, nodes count: %u, leader size: %d, random_str: %s, leader index: %d",
                 elect_statistic.sharding_id(), vss_mgr_->EpochRandom(), expect_leader_count, elect_nodes.size(), leader_nodes.size(), random_str.c_str(), *leader_nodes.begin());
-            if (leader_nodes.size() != expect_leader_count) {
+            if (leader_nodes.size() != (uint32_t)expect_leader_count) {
                 ZJC_ERROR("choose leader failed: %u", elect_statistic.sharding_id());
                 return kConsensusError;
             }
@@ -348,7 +342,7 @@ void ElectTxItem::GetIndexNodes(
         }
 
         if (index != common::kInvalidUint32) {
-            if (elect_statistic.join_elect_nodes(i).elect_pos() != index) {
+            if (elect_statistic.join_elect_nodes(i).elect_pos() != (int32_t)index) {
                 continue;
             }
         }
@@ -381,7 +375,7 @@ void ElectTxItem::MiningToken(
         uint64_t* gas_for_root) {
     uint64_t all_tx_count = 0;
     uint64_t max_tx_count = 0;
-    for (int32_t i = 0; i < elect_nodes.size(); ++i) {
+    for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
         if (elect_nodes[i] == nullptr) {
             continue;
         }
@@ -413,7 +407,7 @@ void ElectTxItem::MiningToken(
     auto now_ming_count = GetMiningMaxCount(max_tx_count);
     uint64_t tmp_all_gas_amount = 0;
     if (!stop_mining_) {
-        for (int32_t i = 0; i < elect_nodes.size(); ++i) {
+        for (uint32_t i = 0; i < elect_nodes.size(); ++i) {
             if (elect_nodes[i] == nullptr) {
                 continue;
             }
@@ -435,7 +429,7 @@ void ElectTxItem::MiningToken(
             auto mining_token = now_ming_count * tx_count / max_tx_count;
             elect_nodes[i]->mining_token = mining_token;
             auto gas_token = tx_count * gas_for_mining / all_tx_count;
-            if (i == elect_nodes.size() - 1) {
+            if (i + 1 == elect_nodes.size()) {
                 assert(gas_for_mining >= tmp_all_gas_amount);
                 gas_token = gas_for_mining - tmp_all_gas_amount;
             }
@@ -540,7 +534,7 @@ int ElectTxItem::CheckWeedout(
         member_tx_count.end(), [](const TxItem& l, const TxItem& r) {
         return l.second > r.second; });
     std::set<uint32_t> invalid_nodes;
-    for (int32_t i = 0; i < direct_weed_out_count; ++i) {
+    for (uint32_t i = 0; i < direct_weed_out_count; ++i) {
         if (member_tx_count[i].second < direct_weedout_tx_count) {
             invalid_nodes.insert(member_tx_count[i].first);
             ZJC_DEBUG("direct weedout: %s, tx count: %u, max_tx_count: %u",

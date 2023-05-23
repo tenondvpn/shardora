@@ -433,7 +433,7 @@ void ToTxsPools::LoadLatestHeights() {
         }
     }
 
-    for (int32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         ZJC_DEBUG("has set consensus height: %u, height: %lu", i, pool_consensus_heihgts_[i]);
     }
 
