@@ -4,10 +4,12 @@ pragma solidity >=0.7.0 <0.9.0;
 
 contract Phr {
     address[] public valid_aas;
+    address public owner;
 
     struct RidInfo {
         bytes pk;
         bytes ci;
+        bool exists;
     }
 
     mapping(bytes32 => RidInfo) public rids;
@@ -15,12 +17,16 @@ contract Phr {
 
     constructor(address[] memory aas) {
         valid_aas = aas;
+        owner = msg.sender;
     }
 
     function ResAdd(bytes32 rid, bytes memory pkDo, bytes memory ci) public {
+        require(owner == msg.sender);
+        require(!rids[rid].exists);
         rids[rid] = RidInfo({
             pk: pkDo,
-            ci: ci
+            ci: ci,
+            exists: true,
         });
     }
 

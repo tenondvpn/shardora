@@ -297,7 +297,7 @@ if (args[0] == 1) {
 }
 
 if (args[0] == 2) {
-    call_contract("");
+    call_contract(args[1]);
 }
 
 if (args[0] == 3) {
