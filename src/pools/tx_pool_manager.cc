@@ -87,6 +87,7 @@ void TxPoolManager::InitCrossPools() {
 }
 
 void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
     prev_cross_sync_index_ %= max_cross_pools_size_;
     auto begin_pool = prev_cross_sync_index_;
     for (; prev_cross_sync_index_ < max_cross_pools_size_; ++prev_cross_sync_index_) {
