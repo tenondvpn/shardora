@@ -900,7 +900,7 @@ void BlockManager::RootCreateCrossTx(
     tx->set_pubkey("");
     tx->set_to(msg_ptr->address_info->addr());
     auto gid = common::Hash::keccak256(
-        tx.gid() + "_" +
+        block_tx.gid() + "_" +
         std::to_string(block.height()) + "_" +
         std::to_string(block.pool_index()) + "_" +
         std::to_string(block.network_id()));
@@ -911,10 +911,10 @@ void BlockManager::RootCreateCrossTx(
     std::string cross_string_for_hash;
     cross_string_for_hash.reserve(elect_statistic.cross().crosses_size() * 48);
     for (int32_t i = 0; i < elect_statistic.cross().crosses_size(); ++i) {
-        uint32 src_shard = elect_statistic.cross().crosses(i).src_shard();
-        uint32 src_pool = elect_statistic.cross().crosses(i).src_pool();
-        uint64 height = elect_statistic.cross().crosses(i).height();
-        uint32 des_shard = elect_statistic.cross().crosses(i).des_shard();
+        uint32_t src_shard = elect_statistic.cross().crosses(i).src_shard();
+        uint32_t src_pool = elect_statistic.cross().crosses(i).src_pool();
+        uint64_t height = elect_statistic.cross().crosses(i).height();
+        uint32_t des_shard = elect_statistic.cross().crosses(i).des_shard();
         cross_string_for_hash.append((char*)&src_shard, sizeof(src_shard));
         cross_string_for_hash.append((char*)&pool_idx, sizeof(pool_idx));
         cross_string_for_hash.append((char*)&height, sizeof(height));
