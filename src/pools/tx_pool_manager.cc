@@ -72,12 +72,13 @@ void TxPoolManager::InitCrossPools() {
 
     if (local_is_root) {
         cross_pools_ = new CrossPool[network::kConsensusWaitingShardOffset];
-        for (uint32_t i = network::kConsensusShardBeginNetworkId; i < network::kConsensusShardEndNetworkId; ++i) {
-            cross_pools_[i - network::kConsensusShardBeginNetworkId]->Init(i, db_, kv_sync_);
+        for (uint32_t i = network::kConsensusShardBeginNetworkId;
+                i < network::kConsensusShardEndNetworkId; ++i) {
+            cross_pools_[i - network::kConsensusShardBeginNetworkId].Init(i, db_, kv_sync_);
         }
     } else {
         cross_pools_ = new CrossPool[1];
-        cross_pools_[0]->Init(network::kRootCongressNetworkId, db_, kv_sync_);
+        cross_pools_[0].Init(network::kRootCongressNetworkId, db_, kv_sync_);
     }
 
     ZJC_DEBUG("init cross pool success local_is_root: %d", local_is_root);
