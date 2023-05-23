@@ -121,15 +121,15 @@ enum StepType {
   kContractExcute = 8,
   kRootCreateAddress = 9,
   kRootCreateAddressCrossSharding = 11,
-  kContractGasPrepayment = 12,
-  kStatistic = 13,
-  kJoinElect = 14,
-  kCreateLibrary = 15,
-  kCross = 16
+  kStatistic = 12,
+  kJoinElect = 13,
+  kCreateLibrary = 14,
+  kCross = 15,
+  kRootCross = 16
 };
 bool StepType_IsValid(int value);
 const StepType StepType_MIN = kNormalFrom;
-const StepType StepType_MAX = kCross;
+const StepType StepType_MAX = kRootCross;
 const int StepType_ARRAYSIZE = StepType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* StepType_descriptor();
@@ -1654,6 +1654,18 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   ::zjchain::pools::protobuf::ToTxHeights* mutable_heights();
   void set_allocated_heights(::zjchain::pools::protobuf::ToTxHeights* heights);
 
+  // optional .zjchain.pools.protobuf.CrossShardStatistic cross = 7;
+  bool has_cross() const;
+  void clear_cross();
+  static const int kCrossFieldNumber = 7;
+  private:
+  const ::zjchain::pools::protobuf::CrossShardStatistic& _internal_cross() const;
+  public:
+  const ::zjchain::pools::protobuf::CrossShardStatistic& cross() const;
+  ::zjchain::pools::protobuf::CrossShardStatistic* release_cross();
+  ::zjchain::pools::protobuf::CrossShardStatistic* mutable_cross();
+  void set_allocated_cross(::zjchain::pools::protobuf::CrossShardStatistic* cross);
+
   // optional uint64 gas_amount = 5;
   bool has_gas_amount() const;
   void clear_gas_amount();
@@ -1676,6 +1688,8 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   void clear_has_sharding_id();
   void set_has_gas_amount();
   void clear_has_gas_amount();
+  void set_has_cross();
+  void clear_has_cross();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -1684,6 +1698,7 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::JoinElectNode > join_elect_nodes_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > lof_leaders_;
   ::zjchain::pools::protobuf::ToTxHeights* heights_;
+  ::zjchain::pools::protobuf::CrossShardStatistic* cross_;
   ::google::protobuf::uint64 gas_amount_;
   ::google::protobuf::uint32 sharding_id_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
@@ -3479,13 +3494,13 @@ ElectStatistic::join_elect_nodes() const {
 
 // optional uint32 sharding_id = 4;
 inline bool ElectStatistic::has_sharding_id() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void ElectStatistic::set_has_sharding_id() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void ElectStatistic::clear_has_sharding_id() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void ElectStatistic::clear_sharding_id() {
   sharding_id_ = 0u;
@@ -3503,13 +3518,13 @@ inline void ElectStatistic::set_sharding_id(::google::protobuf::uint32 value) {
 
 // optional uint64 gas_amount = 5;
 inline bool ElectStatistic::has_gas_amount() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void ElectStatistic::set_has_gas_amount() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void ElectStatistic::clear_has_gas_amount() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void ElectStatistic::clear_gas_amount() {
   gas_amount_ = GOOGLE_ULONGLONG(0);
@@ -3553,6 +3568,64 @@ inline ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
 ElectStatistic::mutable_lof_leaders() {
   // @@protoc_insertion_point(field_mutable_list:zjchain.pools.protobuf.ElectStatistic.lof_leaders)
   return &lof_leaders_;
+}
+
+// optional .zjchain.pools.protobuf.CrossShardStatistic cross = 7;
+inline bool ElectStatistic::has_cross() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ElectStatistic::set_has_cross() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ElectStatistic::clear_has_cross() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ElectStatistic::clear_cross() {
+  if (cross_ != NULL) cross_->Clear();
+  clear_has_cross();
+}
+inline const ::zjchain::pools::protobuf::CrossShardStatistic& ElectStatistic::_internal_cross() const {
+  return *cross_;
+}
+inline const ::zjchain::pools::protobuf::CrossShardStatistic& ElectStatistic::cross() const {
+  const ::zjchain::pools::protobuf::CrossShardStatistic* p = cross_;
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ElectStatistic.cross)
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::pools::protobuf::CrossShardStatistic*>(
+      &::zjchain::pools::protobuf::_CrossShardStatistic_default_instance_);
+}
+inline ::zjchain::pools::protobuf::CrossShardStatistic* ElectStatistic::release_cross() {
+  // @@protoc_insertion_point(field_release:zjchain.pools.protobuf.ElectStatistic.cross)
+  clear_has_cross();
+  ::zjchain::pools::protobuf::CrossShardStatistic* temp = cross_;
+  cross_ = NULL;
+  return temp;
+}
+inline ::zjchain::pools::protobuf::CrossShardStatistic* ElectStatistic::mutable_cross() {
+  set_has_cross();
+  if (cross_ == NULL) {
+    auto* p = CreateMaybeMessage<::zjchain::pools::protobuf::CrossShardStatistic>(GetArenaNoVirtual());
+    cross_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:zjchain.pools.protobuf.ElectStatistic.cross)
+  return cross_;
+}
+inline void ElectStatistic::set_allocated_cross(::zjchain::pools::protobuf::CrossShardStatistic* cross) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete cross_;
+  }
+  if (cross) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      cross = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, cross, submessage_arena);
+    }
+    set_has_cross();
+  } else {
+    clear_has_cross();
+  }
+  cross_ = cross;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.ElectStatistic.cross)
 }
 
 // -------------------------------------------------------------------

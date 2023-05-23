@@ -27,6 +27,7 @@ extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protob
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_CrossShardStatisticItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_JoinElectNode;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_ToTxHeights;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_CrossShardStatistic;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_PoolStatisticItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_ToTxMessageItem;
 }  // namespace protobuf_protos_2fpools_2eproto
@@ -239,11 +240,12 @@ static void InitDefaultsElectStatistic() {
   ::zjchain::pools::protobuf::ElectStatistic::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<3> scc_info_ElectStatistic =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 3, InitDefaultsElectStatistic}, {
+::google::protobuf::internal::SCCInfo<4> scc_info_ElectStatistic =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 4, InitDefaultsElectStatistic}, {
       &protobuf_protos_2fpools_2eproto::scc_info_PoolStatisticItem.base,
       &protobuf_protos_2fpools_2eproto::scc_info_ToTxHeights.base,
-      &protobuf_protos_2fpools_2eproto::scc_info_JoinElectNode.base,}};
+      &protobuf_protos_2fpools_2eproto::scc_info_JoinElectNode.base,
+      &protobuf_protos_2fpools_2eproto::scc_info_CrossShardStatistic.base,}};
 
 static void InitDefaultsSyncPoolsMaxHeight() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -418,12 +420,14 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::ElectStatistic, sharding_id_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::ElectStatistic, gas_amount_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::ElectStatistic, lof_leaders_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::ElectStatistic, cross_),
   ~0u,
   0,
   ~0u,
+  3,
   2,
-  1,
   ~0u,
+  1,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::SyncPoolsMaxHeight, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::SyncPoolsMaxHeight, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -475,9 +479,9 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 82, 91, sizeof(::zjchain::pools::protobuf::JoinElectNode)},
   { 95, 104, sizeof(::zjchain::pools::protobuf::CrossShardStatisticItem)},
   { 108, 114, sizeof(::zjchain::pools::protobuf::CrossShardStatistic)},
-  { 115, 126, sizeof(::zjchain::pools::protobuf::ElectStatistic)},
-  { 132, 139, sizeof(::zjchain::pools::protobuf::SyncPoolsMaxHeight)},
-  { 141, 159, sizeof(::zjchain::pools::protobuf::TxMessage)},
+  { 115, 127, sizeof(::zjchain::pools::protobuf::ElectStatistic)},
+  { 134, 141, sizeof(::zjchain::pools::protobuf::SyncPoolsMaxHeight)},
+  { 143, 161, sizeof(::zjchain::pools::protobuf::TxMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -542,35 +546,36 @@ void AddDescriptorsImpl() {
       "c_pool\030\002 \001(\r\022\016\n\006height\030\003 \001(\004\022\021\n\tdes_shar"
       "d\030\004 \001(\r\"W\n\023CrossShardStatistic\022@\n\007crosse"
       "s\030\001 \003(\0132/.zjchain.pools.protobuf.CrossSh"
-      "ardStatisticItem\"\204\002\n\016ElectStatistic\022=\n\ns"
+      "ardStatisticItem\"\300\002\n\016ElectStatistic\022=\n\ns"
       "tatistics\030\001 \003(\0132).zjchain.pools.protobuf"
       ".PoolStatisticItem\0224\n\007heights\030\002 \001(\0132#.zj"
       "chain.pools.protobuf.ToTxHeights\022\?\n\020join"
       "_elect_nodes\030\003 \003(\0132%.zjchain.pools.proto"
       "buf.JoinElectNode\022\023\n\013sharding_id\030\004 \001(\r\022\022"
-      "\n\ngas_amount\030\005 \001(\004\022\023\n\013lof_leaders\030\006 \003(\r\""
-      "9\n\022SyncPoolsMaxHeight\022\022\n\003req\030\001 \001(\010:\005fals"
-      "e\022\017\n\007heights\030\002 \003(\004\"\240\002\n\tTxMessage\022\017\n\007vers"
-      "ion\030\001 \001(\r\022\013\n\003gid\030\002 \001(\014\022\016\n\006pubkey\030\003 \001(\014\022\021"
-      "\n\tgas_limit\030\004 \001(\004\022\021\n\tgas_price\030\005 \001(\004\022\013\n\003"
-      "key\030\006 \001(\014\022\r\n\005value\030\007 \001(\014\022\n\n\002to\030\010 \001(\014\022\016\n\006"
-      "amount\030\t \001(\004\022;\n\004step\030\n \001(\0162 .zjchain.poo"
-      "ls.protobuf.StepType:\013kNormalFrom\022\033\n\023con"
-      "tract_prepayment\030\013 \001(\004\022\025\n\rcontract_code\030"
-      "\014 \001(\014\022\026\n\016contract_input\030\r \001(\014*\202\003\n\010StepTy"
-      "pe\022\017\n\013kNormalFrom\020\000\022\r\n\tkNormalTo\020\001\022\034\n\030kC"
-      "onsensusRootElectShard\020\002\022\033\n\027kConsensusRo"
-      "otTimeBlock\020\003\022!\n\035kConsensusCreateGenesis"
-      "Acount\020\004\022\026\n\022kConsensusLocalTos\020\005\022\033\n\027kCon"
-      "tractUserCreateCall\020\006\022\025\n\021kContractUserCa"
-      "ll\020\007\022\023\n\017kContractExcute\020\010\022\026\n\022kRootCreate"
-      "Address\020\t\022#\n\037kRootCreateAddressCrossShar"
-      "ding\020\013\022\032\n\026kContractGasPrepayment\020\014\022\016\n\nkS"
-      "tatistic\020\r\022\016\n\nkJoinElect\020\016\022\022\n\016kCreateLib"
-      "rary\020\017\022\n\n\006kCross\020\020"
+      "\n\ngas_amount\030\005 \001(\004\022\023\n\013lof_leaders\030\006 \003(\r\022"
+      ":\n\005cross\030\007 \001(\0132+.zjchain.pools.protobuf."
+      "CrossShardStatistic\"9\n\022SyncPoolsMaxHeigh"
+      "t\022\022\n\003req\030\001 \001(\010:\005false\022\017\n\007heights\030\002 \003(\004\"\240"
+      "\002\n\tTxMessage\022\017\n\007version\030\001 \001(\r\022\013\n\003gid\030\002 \001"
+      "(\014\022\016\n\006pubkey\030\003 \001(\014\022\021\n\tgas_limit\030\004 \001(\004\022\021\n"
+      "\tgas_price\030\005 \001(\004\022\013\n\003key\030\006 \001(\014\022\r\n\005value\030\007"
+      " \001(\014\022\n\n\002to\030\010 \001(\014\022\016\n\006amount\030\t \001(\004\022;\n\004step"
+      "\030\n \001(\0162 .zjchain.pools.protobuf.StepType"
+      ":\013kNormalFrom\022\033\n\023contract_prepayment\030\013 \001"
+      "(\004\022\025\n\rcontract_code\030\014 \001(\014\022\026\n\016contract_in"
+      "put\030\r \001(\014*\373\002\n\010StepType\022\017\n\013kNormalFrom\020\000\022"
+      "\r\n\tkNormalTo\020\001\022\034\n\030kConsensusRootElectSha"
+      "rd\020\002\022\033\n\027kConsensusRootTimeBlock\020\003\022!\n\035kCo"
+      "nsensusCreateGenesisAcount\020\004\022\026\n\022kConsens"
+      "usLocalTos\020\005\022\033\n\027kContractUserCreateCall\020"
+      "\006\022\032\n\026kContractGasPrepayment\020\007\022\023\n\017kContra"
+      "ctExcute\020\010\022\026\n\022kRootCreateAddress\020\t\022#\n\037kR"
+      "ootCreateAddressCrossSharding\020\013\022\016\n\nkStat"
+      "istic\020\014\022\016\n\nkJoinElect\020\r\022\022\n\016kCreateLibrar"
+      "y\020\016\022\n\n\006kCross\020\017\022\016\n\nkRootCross\020\020"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 2058);
+      descriptor, 2111);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/pools.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -3864,6 +3869,8 @@ void CrossShardStatistic::InternalSwap(CrossShardStatistic* other) {
 void ElectStatistic::InitAsDefaultInstance() {
   ::zjchain::pools::protobuf::_ElectStatistic_default_instance_._instance.get_mutable()->heights_ = const_cast< ::zjchain::pools::protobuf::ToTxHeights*>(
       ::zjchain::pools::protobuf::ToTxHeights::internal_default_instance());
+  ::zjchain::pools::protobuf::_ElectStatistic_default_instance_._instance.get_mutable()->cross_ = const_cast< ::zjchain::pools::protobuf::CrossShardStatistic*>(
+      ::zjchain::pools::protobuf::CrossShardStatistic::internal_default_instance());
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int ElectStatistic::kStatisticsFieldNumber;
@@ -3872,6 +3879,7 @@ const int ElectStatistic::kJoinElectNodesFieldNumber;
 const int ElectStatistic::kShardingIdFieldNumber;
 const int ElectStatistic::kGasAmountFieldNumber;
 const int ElectStatistic::kLofLeadersFieldNumber;
+const int ElectStatistic::kCrossFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ElectStatistic::ElectStatistic()
@@ -3894,6 +3902,11 @@ ElectStatistic::ElectStatistic(const ElectStatistic& from)
   } else {
     heights_ = NULL;
   }
+  if (from.has_cross()) {
+    cross_ = new ::zjchain::pools::protobuf::CrossShardStatistic(*from.cross_);
+  } else {
+    cross_ = NULL;
+  }
   ::memcpy(&gas_amount_, &from.gas_amount_,
     static_cast<size_t>(reinterpret_cast<char*>(&sharding_id_) -
     reinterpret_cast<char*>(&gas_amount_)) + sizeof(sharding_id_));
@@ -3913,6 +3926,7 @@ ElectStatistic::~ElectStatistic() {
 
 void ElectStatistic::SharedDtor() {
   if (this != internal_default_instance()) delete heights_;
+  if (this != internal_default_instance()) delete cross_;
 }
 
 void ElectStatistic::SetCachedSize(int size) const {
@@ -3939,11 +3953,17 @@ void ElectStatistic::Clear() {
   join_elect_nodes_.Clear();
   lof_leaders_.Clear();
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    GOOGLE_DCHECK(heights_ != NULL);
-    heights_->Clear();
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
+      GOOGLE_DCHECK(heights_ != NULL);
+      heights_->Clear();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      GOOGLE_DCHECK(cross_ != NULL);
+      cross_->Clear();
+    }
   }
-  if (cached_has_bits & 6u) {
+  if (cached_has_bits & 12u) {
     ::memset(&gas_amount_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&sharding_id_) -
         reinterpret_cast<char*>(&gas_amount_)) + sizeof(sharding_id_));
@@ -4045,6 +4065,18 @@ bool ElectStatistic::MergePartialFromCodedStream(
         break;
       }
 
+      // optional .zjchain.pools.protobuf.CrossShardStatistic cross = 7;
+      case 7: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(58u /* 58 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_cross()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -4097,12 +4129,12 @@ void ElectStatistic::SerializeWithCachedSizes(
   }
 
   // optional uint32 sharding_id = 4;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000008u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->sharding_id(), output);
   }
 
   // optional uint64 gas_amount = 5;
-  if (cached_has_bits & 0x00000002u) {
+  if (cached_has_bits & 0x00000004u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(5, this->gas_amount(), output);
   }
 
@@ -4110,6 +4142,12 @@ void ElectStatistic::SerializeWithCachedSizes(
   for (int i = 0, n = this->lof_leaders_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(
       6, this->lof_leaders(i), output);
+  }
+
+  // optional .zjchain.pools.protobuf.CrossShardStatistic cross = 7;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      7, this->_internal_cross(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -4151,18 +4189,25 @@ void ElectStatistic::SerializeWithCachedSizes(
   }
 
   // optional uint32 sharding_id = 4;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000008u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->sharding_id(), target);
   }
 
   // optional uint64 gas_amount = 5;
-  if (cached_has_bits & 0x00000002u) {
+  if (cached_has_bits & 0x00000004u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(5, this->gas_amount(), target);
   }
 
   // repeated uint32 lof_leaders = 6;
   target = ::google::protobuf::internal::WireFormatLite::
     WriteUInt32ToArray(6, this->lof_leaders_, target);
+
+  // optional .zjchain.pools.protobuf.CrossShardStatistic cross = 7;
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        7, this->_internal_cross(), deterministic, target);
+  }
 
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
@@ -4212,12 +4257,19 @@ size_t ElectStatistic::ByteSizeLong() const {
     total_size += data_size;
   }
 
-  if (_has_bits_[0 / 32] & 7u) {
+  if (_has_bits_[0 / 32] & 15u) {
     // optional .zjchain.pools.protobuf.ToTxHeights heights = 2;
     if (has_heights()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *heights_);
+    }
+
+    // optional .zjchain.pools.protobuf.CrossShardStatistic cross = 7;
+    if (has_cross()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *cross_);
     }
 
     // optional uint64 gas_amount = 5;
@@ -4266,14 +4318,17 @@ void ElectStatistic::MergeFrom(const ElectStatistic& from) {
   join_elect_nodes_.MergeFrom(from.join_elect_nodes_);
   lof_leaders_.MergeFrom(from.lof_leaders_);
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 7u) {
+  if (cached_has_bits & 15u) {
     if (cached_has_bits & 0x00000001u) {
       mutable_heights()->::zjchain::pools::protobuf::ToTxHeights::MergeFrom(from.heights());
     }
     if (cached_has_bits & 0x00000002u) {
-      gas_amount_ = from.gas_amount_;
+      mutable_cross()->::zjchain::pools::protobuf::CrossShardStatistic::MergeFrom(from.cross());
     }
     if (cached_has_bits & 0x00000004u) {
+      gas_amount_ = from.gas_amount_;
+    }
+    if (cached_has_bits & 0x00000008u) {
       sharding_id_ = from.sharding_id_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -4308,6 +4363,7 @@ void ElectStatistic::InternalSwap(ElectStatistic* other) {
   CastToBase(&join_elect_nodes_)->InternalSwap(CastToBase(&other->join_elect_nodes_));
   lof_leaders_.InternalSwap(&other->lof_leaders_);
   swap(heights_, other->heights_);
+  swap(cross_, other->cross_);
   swap(gas_amount_, other->gas_amount_);
   swap(sharding_id_, other->sharding_id_);
   swap(_has_bits_[0], other->_has_bits_[0]);
