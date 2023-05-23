@@ -26,7 +26,7 @@ contract Phr {
         rids[rid] = RidInfo({
             pk: pkDo,
             ci: ci,
-            exists: true,
+            exists: true
         });
     }
 
