@@ -30,7 +30,6 @@ void RootZbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) 
         case pools::protobuf::kRootCreateAddressCrossSharding:
         case pools::protobuf::kStatistic:
         case pools::protobuf::kCross:
-        case pools::protobuf::kRootCross:
             RootDefaultTx(zjc_block);
             break;
         default:
@@ -58,7 +57,7 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
         auto& src_tx = iter->second->msg_ptr->header.tx_proto();
         iter->second->TxToBlockTx(src_tx, db_batch_, &tx);
         // create address must to and have transfer amount
-        if (tx.step() != pools::protobuf::kRootCreateAddress || tx.amount() <= 0) {
+        if (tx.step() == pools::protobuf::kRootCreateAddress && tx.amount() <= 0) {
             ZJC_DEBUG("tx invalid step: %d, amount: %lu, src: %d, %lu",
                 tx.step(), tx.amount(), src_tx.step(), src_tx.amount());
             tx_list->RemoveLast();
