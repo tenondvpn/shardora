@@ -59,7 +59,7 @@ protected:
         block_tx->set_to(tx_info.to());
         block_tx->set_amount(tx_info.amount());
         if (tx_info.step() == pools::protobuf::kContractUserCreateCall ||
-                tx_info.step() == pools::protobuf::kContractUserCall) {
+                tx_info.step() == pools::protobuf::kContractGasPrepayment) {
             if (tx_info.has_contract_prepayment()) {
                 block_tx->set_contract_prepayment(tx_info.contract_prepayment());
             }

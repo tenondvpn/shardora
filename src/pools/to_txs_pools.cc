@@ -81,7 +81,7 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
         case pools::protobuf::kContractUserCreateCall:
             HandleCreateContractUserCall(block, tx_list[i], db_batch);
             break;
-        case pools::protobuf::kContractUserCall:
+        case pools::protobuf::kContractGasPrepayment:
             HandleCallContractUserCall(block, tx_list[i], db_batch);
             break;
         case pools::protobuf::kNormalFrom:

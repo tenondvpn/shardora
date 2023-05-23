@@ -260,7 +260,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         case pools::protobuf::kContractUserCreateCall:
             HandleCreateContractTx(msg_ptr);
             break;
-        case pools::protobuf::kContractUserCall:
+        case pools::protobuf::kContractGasPrepayment:
             HandleUserCallContractTx(msg_ptr);
             break;
         case pools::protobuf::kRootCreateAddress: {

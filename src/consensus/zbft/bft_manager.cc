@@ -109,7 +109,7 @@ void BftManager::RegisterCreateTxCallbacks() {
         pools::protobuf::kContractUserCreateCall,
         std::bind(&BftManager::CreateContractUserCreateCallTx, this, std::placeholders::_1));
     pools_mgr_->RegisterCreateTxFunction(
-        pools::protobuf::kContractUserCall,
+        pools::protobuf::kContractGasPrepayment,
         std::bind(&BftManager::CreateContractUserCallTx, this, std::placeholders::_1));
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kContractExcute,

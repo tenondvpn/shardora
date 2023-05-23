@@ -323,7 +323,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                 block.tx_list(i).step() == pools::protobuf::kContractExcute ||
                 block.tx_list(i).step() == pools::protobuf::kJoinElect ||
                 block.tx_list(i).step() == pools::protobuf::kContractGasPrepayment ||
-                block.tx_list(i).step() == pools::protobuf::kContractUserCall) {
+                block.tx_list(i).step() == pools::protobuf::kContractGasPrepayment) {
             statistic_info_ptr->all_gas_amount += block.tx_list(i).gas_price() * block.tx_list(i).gas_used();
         }
 
