@@ -219,7 +219,7 @@ void BlockManager::GenesisAddAllAccount(
 void BlockManager::HandleCrossTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
+        const block::protobuf::BlockTx& block_tx,
         db::DbWriteBatch& db_batch) {
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kShardCross) {
@@ -859,7 +859,7 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
         ZJC_DEBUG("success add statistic tx: %s", common::Encode::HexEncode(statistic_hash).c_str());
     }
 
-    if (!cross_hash.empty()) 
+    if (!cross_hash.empty()) {
         auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
         auto* tx = new_msg_ptr->header.mutable_tx_proto();
         tx->set_key(protos::kShardCross);
