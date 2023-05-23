@@ -168,7 +168,7 @@ private:
     void BroadcastElectBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block);
-    void BroadcastTimeblock(
+    void RootBroadcastNodeBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block);
     void BroadcastToRootBlock(
