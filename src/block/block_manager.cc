@@ -885,10 +885,10 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
 
 void BlockManager::RootCreateCrossTx(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
+        const block::protobuf::BlockTx& block_tx,
         const pools::protobuf::ElectStatistic& elect_statistic,
         db::DbWriteBatch& db_batch) {
-    if (elect_statistic.crosses_size() <= 0) {
+    if (elect_statistic.cross().crosses_size() <= 0) {
         return;
     }
 
@@ -909,7 +909,7 @@ void BlockManager::RootCreateCrossTx(
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
     tx->set_gid(gid);
     std::string cross_string_for_hash;
-    str_for_hash.reserve(elect_statistic.cross().crosses_size())
+    cross_string_for_hash.reserve(elect_statistic.cross().crosses_size() * 48);
     for (int32_t i = 0; i < elect_statistic.cross().crosses_size(); ++i) {
         uint32 src_shard = elect_statistic.cross().crosses(i).src_shard();
         uint32 src_pool = elect_statistic.cross().crosses(i).src_pool();
@@ -957,7 +957,7 @@ void BlockManager::HandleStatisticBlock(
     assert(block.network_id() == elect_statistic.sharding_id());
     if (network::kRootCongressNetworkId == common::GlobalInfo::Instance()->network_id() &&
             block.network_id() != network::kRootCongressNetworkId &&
-            elect_statistic.crosses_size() > 0) {
+            elect_statistic.cross().crosses_size() > 0) {
         // add cross shard statistic to root pool
         RootCreateCrossTx(block, block_tx, elect_statistic, db_batch);
     }
