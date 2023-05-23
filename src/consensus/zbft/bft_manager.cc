@@ -2065,14 +2065,21 @@ void BftManager::LeaderBroadcastBlock(
         uint8_t thread_index,
         const std::shared_ptr<block::protobuf::Block>& block) {
     BroadcastWaitingBlock(thread_index, block);
+    if (block->pool_index() == common::kRootChainPoolIndex) {
+        if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+            RootBroadcastNodeBlock(thread_index, block);
+        } else {
+            BroadcastToRootBlock(thread_index, block);
+        }
+
+        return;
+    }
+
     if (block->tx_list_size() != 1) {
         return;
     }
 
     switch (block->tx_list(0).step()) {
-    case pools::protobuf::kConsensusRootTimeBlock:
-        BroadcastTimeblock(thread_index, block);
-        break;
     case pools::protobuf::kRootCreateAddressCrossSharding:
     case pools::protobuf::kNormalTo:
         BroadcastLocalTosBlock(thread_index, block);
@@ -2089,7 +2096,39 @@ void BftManager::LeaderBroadcastBlock(
     }
 }
 
-void BftManager::BroadcastTimeblock(
+void BftManager::BroadcastToRootBlock(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block_item) {
+    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
+        return;
+    }
+
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->thread_idx = thread_idx;
+    auto& msg = msg_ptr->header;
+    msg.set_src_sharding_id(network::kRootCongressNetworkId);
+    msg.set_type(common::kBlockMessage);
+    dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
+    msg.set_des_dht_key(dht_key.StrKey());
+    auto& tx = block_item->tx_list(0);
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        std::string val;
+        if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+            auto kv = msg.mutable_sync()->add_items();
+            kv->set_key(tx.storages(i).val_hash());
+            kv->set_value(val);
+        }
+    }
+
+    auto& elect_block = *msg.mutable_elect_block();
+    *elect_block.mutable_block() = *block_item;
+    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
+    auto* brdcast = msg.mutable_broadcast();
+    network::Route::Instance()->Send(msg_ptr);
+    ZJC_DEBUG("success broadcast to root: %lu", block_item->height());
+}
+
+void BftManager::RootBroadcastNodeBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item) {
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
@@ -2118,7 +2157,7 @@ void BftManager::BroadcastTimeblock(
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     auto* brdcast = msg.mutable_broadcast();
     network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("success broadcast timeblock: %lu", block_item->height());
+    ZJC_DEBUG("root success broadcast node block: %lu", block_item->height());
 }
 
 void BftManager::BroadcastElectBlock(
