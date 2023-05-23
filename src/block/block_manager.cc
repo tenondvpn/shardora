@@ -247,16 +247,20 @@ void BlockManager::HandleStatisticTx(
                     shard_statistic_tx_ = nullptr;
                 }
             }
+        }
 
-            break;
+        if (block_tx.storages(i).key() == protos::kShardCross) {
+            if (cross_statistic_tx_ != nullptr) {
+                if (block_tx.storages(i).val_hash() == cross_statistic_tx_->tx_hash) {
+                    cross_statistic_tx_ = nullptr;
+                }
+            }
         }
     }
 
-    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
-        return;
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+        HandleStatisticBlock(block, block_tx, elect_statistic, db_batch);
     }
-
-    HandleStatisticBlock(block, block_tx, elect_statistic, db_batch);
 }
 
 void BlockManager::HandleNormalToTx(
@@ -843,6 +847,7 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
         tx_ptr->tx_hash = statistic_hash;
         tx_ptr->timeout = common::TimeUtils::TimestampMs() + 20000lu;
         shard_statistic_tx_ = tx_ptr;
+        ZJC_DEBUG("success add statistic tx: %s", common::Encode::HexEncode(statistic_hash).c_str());
     }
 
     if (!cross_hash.empty()) {
@@ -865,9 +870,8 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
         tx_ptr->tx_hash = cross_hash;
         tx_ptr->timeout = common::TimeUtils::TimestampMs() + 20000lu;
         cross_statistic_tx_ = tx_ptr;
+        ZJC_DEBUG("success add cross tx: %s", common::Encode::HexEncode(cross_hash).c_str());
     }
-    
-    ZJC_DEBUG("success add statistic tx: %s", common::Encode::HexEncode(statistic_hash).c_str());
 }
 
 void BlockManager::HandleStatisticBlock(
@@ -1127,8 +1131,16 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
         return;
     }
 
+    if (cross_statistic_tx_ != nullptr && cross_statistic_tx_->tx_ptr->in_consensus) {
+        return;
+    }
+
     if (shard_statistic_tx_ != nullptr && shard_statistic_tx_->timeout >= now_tm_ms) {
         shard_statistic_tx_ = nullptr;
+    }
+
+    if (cross_statistic_tx_ != nullptr && cross_statistic_tx_->timeout >= now_tm_ms) {
+        cross_statistic_tx_ = nullptr;
     }
 
     prev_create_statistic_tx_ms_ = now_tm_ms + kCreateToTxPeriodMs;
