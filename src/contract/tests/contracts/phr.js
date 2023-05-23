@@ -303,7 +303,7 @@ function CreatePhr() {
         var QuerryAttr = web3.eth.abi.encodeFunctionSignature('QuerryAttr(bytes,bytes32)');
         var test_attr = "test_attr";
         var test_attr_hash = web3.utils.keccak256(test_attr);
-        var QuerryAttr_param_codes = web3.eth.abi.encodeParameters(['bytes', 'bytes32', 'bytes[]'], ['0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', test_attr_hash]);
+        var QuerryAttr_param_codes = web3.eth.abi.encodeParameters(['bytes', 'bytes32'], ['0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', test_attr_hash]);
         console.log("QuerryAttr: " + QuerryAttr.substring(2) + QuerryAttr_param_codes.substring(2));
     }
     
