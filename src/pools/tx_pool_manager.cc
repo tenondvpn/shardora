@@ -285,6 +285,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             break;
         case pools::protobuf::kRootCross:
             msg_queues_[common::GetAddressPoolIndex(tx_msg.to())].push(msg_ptr);
+            break;
         default:
             ZJC_DEBUG("invalid tx step: %d", tx_msg.step());
             assert(false);
