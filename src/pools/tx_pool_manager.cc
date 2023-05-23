@@ -504,7 +504,8 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    if (msg_ptr->address_info->addr() == tx_msg.to()) {
+    auto from = security_->GetAddress(tx_msg.pubkey());
+    if (msg_ptr->address_info->addr() == from) {
         ZJC_DEBUG("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
@@ -521,7 +522,7 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     uint64_t prepayment = 0;
     if (!prefix_db_->GetContractUserPrepayment(
             tx_msg.to(),
-            security_->GetAddress(tx_msg.pubkey()),
+            from,
             &height,
             &prepayment)) {
         ZJC_DEBUG("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
