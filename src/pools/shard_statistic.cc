@@ -211,15 +211,15 @@ void ShardStatistic::HandleCrossShard(
 
         break;
     }
-//     case pools::protobuf::kStatistic: {
-//         if (!is_root) {
-//             cross_shard_map_[block.pool_index()][block.height()] = network::kRootCongressNetworkId;
-//             ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
-//                 tx.step(), block.pool_index(), block.height(), network::kRootCongressNetworkId);
-//         }
-//         
-//         break;
-//     }
+    case pools::protobuf::kJoinElect: {
+        if (!is_root) {
+            cross_shard_map_[block.pool_index()][block.height()] = network::kRootCongressNetworkId;
+            ZJC_DEBUG("step: %d, success add cross shard pool: %u, height: %lu, des: %u",
+                tx.step(), block.pool_index(), block.height(), network::kRootCongressNetworkId);
+        }
+        
+        break;
+    }
     case pools::protobuf::kCreateLibrary: {
         if (is_root) {
             cross_shard_map_[block.pool_index()][block.height()] = network::kNodeNetworkId;
