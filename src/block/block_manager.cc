@@ -204,7 +204,28 @@ void BlockManager::HandleCrossTx(
                 }
             }
 
-            ZJC_DEBUG("success handle cross tx block.");
+            std::string cross_val;
+            if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &cross_val)) {
+                assert(false);
+                break;
+            }
+
+            pools::protobuf::CrossShardStatistic cross_statistic;
+            if (!cross_statistic.ParseFromString(cross_val)) {
+                assert(false);
+                break;
+            }
+
+            for (int32_t i = 0; i < cross_statistic.crosses_size(); ++i) {
+                ZJC_DEBUG("success handle cross tx block net: %u, pool: %u, height: %lu, "
+                    "src shard: %u, src pool: %u, height: %lu, des shard: %lu",
+                    block.network_id(), block.pool_index(), block.height(),
+                    cross_statistic.crosses(i).src_shard(),
+                    cross_statistic.crosses(i).src_pool(),
+                    cross_statistic.crosses(i).height(),
+                    cross_statistic.crosses(i).des_shard());
+            }
+
             break;
         }
     }
