@@ -21,6 +21,7 @@ void FilterBroadcast::Broadcasting(
         dht::BaseDhtPtr& dht_ptr,
         const transport::MessagePtr& msg_ptr) {
     assert(dht_ptr);
+    assert(!dht_ptr->readonly_hash_sort_dht()->empty());
     auto& message = msg_ptr->header;
     if (message.broadcast().hop_limit() <= message.hop_count()) {
 //         BROAD_INFO("message.broadcast().hop_limit() <= message.hop_count()[%d, %d].",
@@ -33,7 +34,6 @@ void FilterBroadcast::Broadcasting(
     if (message.broadcast().has_hop_to_layer() &&
             message.hop_count() >= message.broadcast().hop_to_layer()) {
         auto nodes = GetlayerNodes(dht_ptr, bloomfilter, message);
-        assert(!nodes.empty());
         for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
             bloomfilter->Add((*iter)->id_hash);
         }
@@ -41,7 +41,6 @@ void FilterBroadcast::Broadcasting(
         LayerSend(thread_idx, dht_ptr, msg_ptr, nodes);
     } else {
         auto nodes = GetRandomFilterNodes(dht_ptr, bloomfilter, message);
-        assert(!nodes.empty());
         for (auto iter = nodes.begin(); iter != nodes.end(); ++iter) {
             bloomfilter->Add((*iter)->id_hash);
         }
