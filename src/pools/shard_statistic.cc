@@ -514,11 +514,7 @@ int ShardStatistic::StatisticWithHeights(
         return kPoolsError;
     }
 
-    uint32_t max_pool = common::kImmutablePoolSize;
-    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-        ++max_pool;
-    }
-
+    uint32_t max_pool = common::kInvalidPoolIndex;
     if (tx_heights_ptr_ == nullptr) {
         return kPoolsError;
     }
@@ -959,11 +955,7 @@ void ShardStatistic::LoadLatestHeights() {
         return;
     }
 
-    uint32_t max_pool_index = common::kImmutablePoolSize;
-    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-        ++max_pool_index;
-    }
-
+    uint32_t max_pool_index = common::kInvalidPoolIndex;
     auto& this_net_heights = tx_heights_ptr_->heights();
     for (int32_t i = 0; i < this_net_heights.size(); ++i) {
         pool_consensus_heihgts_[i] = this_net_heights[i];
