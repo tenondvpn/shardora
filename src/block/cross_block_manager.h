@@ -76,12 +76,6 @@ private:
                         continue;
                     }
 
-                    if (cross_statistic_tx_ != nullptr) {
-                        if (block_tx.storages(i).val_hash() == cross_statistic_tx_->tx_hash) {
-                            cross_statistic_tx_ = nullptr;
-                        }
-                    }
-
                     std::string cross_val;
                     if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &cross_val)) {
                         assert(false);
