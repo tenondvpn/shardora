@@ -549,9 +549,7 @@ void BlockManager::HandleJoinElectTx(
                     common::Encode::HexEncode(tx.from()).c_str());
                 break;
             }
-//             auto all_pos_count = common::GlobalInfo::Instance()->each_shard_max_members() /
-//                 common::kElectNodeMinMemberIndex + 1;
-//             std::vector<libff::alt_bn128_G2> verify_g2s(all_pos_count, libff::alt_bn128_G2::zero());
+
             std::string str_for_hash;
             str_for_hash.reserve(join_info.g2_req().verify_vec_size() * 4 * 64 + 8);
             uint32_t shard_id = join_info.shard_id();
@@ -576,52 +574,6 @@ void BlockManager::HandleJoinElectTx(
 
             prefix_db_->SaveNodeVerificationVector(tx.from(), join_info, db_batch);
             ZJC_DEBUG("success handle kElectJoin tx: %s", common::Encode::HexEncode(tx.from()).c_str());
-// 
-//             for (int32_t i = 0; i < join_info.g2_req().verify_vec_size(); ++i) {
-//                 auto& item = join_info.g2_req().verify_vec(i);
-//                 auto x_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c0()).c_str());
-//                 auto x_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.x_c1()).c_str());
-//                 auto x_coord = libff::alt_bn128_Fq2(x_c0, x_c1);
-//                 auto y_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c0()).c_str());
-//                 auto y_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.y_c1()).c_str());
-//                 auto y_coord = libff::alt_bn128_Fq2(y_c0, y_c1);
-//                 auto z_c0 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c0()).c_str());
-//                 auto z_c1 = libff::alt_bn128_Fq(common::Encode::HexEncode(item.z_c1()).c_str());
-//                 auto z_coord = libff::alt_bn128_Fq2(z_c0, z_c1);
-//                 auto g2 = libff::alt_bn128_G2(x_coord, y_coord, z_coord);
-//                 bls::protobuf::JoinElectBlsInfo verfy_final_vals;
-//                 for (int32_t j = 0; j < all_pos_count; ++j) {
-//                     auto midx = local_member_index + j * common::kElectNodeMinMemberIndex;
-//                     verify_g2s[j] = verify_g2s[j] + power(libff::alt_bn128_Fr(midx + 1), i) * g2;
-//                 }
-// 
-//                 for (uint32_t i = 0; i < verify_g2s.size(); ++i) {
-//                     bls::protobuf::VerifyVecItem& verify_item = *verfy_final_vals.mutable_verify_req()->add_verify_vec();
-//                     verify_item.set_x_c0(common::Encode::HexDecode(
-//                         libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c0)));
-//                     verify_item.set_x_c1(common::Encode::HexDecode(
-//                         libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].X.c1)));
-//                     verify_item.set_y_c0(common::Encode::HexDecode(
-//                         libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c0)));
-//                     verify_item.set_y_c1(common::Encode::HexDecode(
-//                         libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Y.c1)));
-//                     verify_item.set_z_c0(common::Encode::HexDecode(
-//                         libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c0)));
-//                     verify_item.set_z_c1(common::Encode::HexDecode(
-//                         libBLS::ThresholdUtils::fieldElementToString(verify_g2s[i].Z.c1)));
-//                 }
-// 
-//                 verfy_final_vals.set_src_hash(check_hash);
-//                 auto verified_val = verfy_final_vals.SerializeAsString();
-//                 prefix_db_->SaveVerifiedG2s(local_member_index, tx.from(), i + 1, verfy_final_vals, db_batch);
-//                 ZJC_DEBUG("success save verified g2: %u, peer: %d, t: %d, %s, %s",
-//                     local_member_index,
-//                     join_info.member_idx(),
-//                     i + 1,
-//                     common::Encode::HexEncode(tx.from()).c_str(),
-//                     libBLS::ThresholdUtils::fieldElementToString(verify_g2s[0].X.c0).c_str());
-//             }
-            
             break;
         }
     }
@@ -645,13 +597,12 @@ void BlockManager::HandleElectTx(
             }
 
             AddMiningToken(block.hash(), thread_idx, elect_block);
-            auto iter = shard_elect_tx_.find(elect_block.shard_network_id());
-            if (iter == shard_elect_tx_.end()) {
+            if (shard_elect_tx_[elect_block.shard_network_id()] == nullptr) {
                 return;
             }
 
-            if (iter->second->tx_ptr->gid == tx.gid()) {
-                shard_elect_tx_.erase(iter);
+            if (shard_elect_tx_[elect_block.shard_network_id()]->tx_ptr->gid == tx.gid()) {
+                shard_elect_tx_[elect_block.shard_network_id()] = nullptr;
                 ZJC_DEBUG("success erase elect tx: %u", elect_block.shard_network_id());
             }
         }
@@ -1066,12 +1017,18 @@ pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) 
 }
 
 pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string& tx_hash) {
-    for (auto iter = shard_elect_tx_.begin(); iter != shard_elect_tx_.end(); ++iter) {
-        if (iter->first % common::kImmutablePoolSize != pool_index) {
+    for (uint32_t i = network::kRootCongressNetworkId;
+            i < network::kConsensusShardEndNetworkId; ++i) {
+        if (i % common::kImmutablePoolSize != pool_index) {
             continue;
         }
 
-        auto shard_elect_tx = iter->second;
+        if (shard_elect_tx_[i] == nullptr) {
+            continue;
+        }
+
+        auto shard_elect_tx = shard_elect_tx_[i];
+        ZJC_DEBUG("success get elect tx pool: %u, net: %d", pool_index, i);
         if (shard_elect_tx != nullptr && !shard_elect_tx->tx_ptr->in_consensus) {
             if (!tx_hash.empty()) {
                 if (shard_elect_tx->tx_ptr->tx_hash == tx_hash) {
