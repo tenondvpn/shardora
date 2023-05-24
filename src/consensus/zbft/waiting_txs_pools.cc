@@ -55,15 +55,15 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
     }
 
     if (txs_item == nullptr) {
-        txs_item = GetToTxs(pool_index, true);
-    }
-
-    if (txs_item == nullptr) {
         txs_item = GetElectTx(pool_index, "");
     }
 
     if (txs_item == nullptr) {
         txs_item = GetCrossTx(pool_index, "");
+    }
+
+    if (txs_item == nullptr) {
+        txs_item = GetToTxs(pool_index, true);
     }
 
     return txs_item;
