@@ -1041,8 +1041,6 @@ pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) 
 pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string& tx_hash) {
     for (uint32_t i = network::kRootCongressNetworkId;
             i <= max_consensus_sharding_id_; ++i) {
-        if (pool_index == 2)
-        ZJC_DEBUG("now get elect tx pool: %u, net: %d", pool_index, i);
         if (i % common::kImmutablePoolSize != pool_index) {
             continue;
         }
@@ -1052,7 +1050,6 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
         }
 
         auto shard_elect_tx = shard_elect_tx_[i];
-        ZJC_DEBUG("success get elect tx pool: %u, net: %d", pool_index, i);
         if (shard_elect_tx != nullptr && !shard_elect_tx->tx_ptr->in_consensus) {
             if (!tx_hash.empty()) {
                 if (shard_elect_tx->tx_ptr->tx_hash == tx_hash) {
