@@ -1023,6 +1023,7 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
             continue;
         }
 
+        ZJC_DEBUG("now get elect tx pool: %u, net: %d", pool_index, i);
         if (shard_elect_tx_[i] == nullptr) {
             continue;
         }
