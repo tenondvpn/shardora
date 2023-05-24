@@ -258,14 +258,17 @@ void BftManager::SetThreadItem(
 
     for (uint8_t j = 0; j < thread_count_; ++j) {
         auto thread_item = std::make_shared<PoolTxIndexItem>();
+        std::string tmp_val;
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             if (i % thread_count_ == j && leader_pool_set.find(i) != leader_pool_set.end()) {
                 thread_item->pools.push_back(i);
+                tmp_val += std::to_string(i) + " ";
             }
         }
 
         thread_item->prev_index = 0;
         thread_set[j] = thread_item;  // ptr change, multi-thread safe
+        std::cout << j << " : " << tmp_val << std::endl;
     }
 }
 
@@ -304,11 +307,9 @@ ZbftPtr BftManager::Start(
     auto& thread_set = elect_item.thread_set;
     auto thread_item = thread_set[thread_index];
     if (thread_item == nullptr) {
-        ZJC_DEBUG("bft manager called thread_index: %u", thread_index);
         return nullptr;
     }
 
-    ZJC_DEBUG("success bft manager called thread_index: %u", thread_index);
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
     auto begin_index = thread_item->prev_index;
     auto can_new_bft = bft_hash_map_[thread_index].empty();
