@@ -6,6 +6,7 @@
 #include "common/encode.h"
 #include "common/time_utils.h"
 #include "db/db.h"
+#include "network/dht_manager.h"
 #include "network/route.h"
 #include "pools/shard_statistic.h"
 #include "pools/tx_pool_manager.h"
@@ -1171,7 +1172,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) <
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
-        return nullptr;
+        return;
     }
 #endif
 
