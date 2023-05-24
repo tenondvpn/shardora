@@ -1305,18 +1305,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     ReloadBlsPri(network::kRootCongressNetworkId);
     ReloadBlsPri(net_id);
-
-    for (uint32_t i = 0; i < common::kInvalidUint32; ++i) {
-        std::string addr = block::kPoolsAddress;
-        uint32_t* tmp_data = (uint32_t*)addr.data();
-        tmp_data[0] = i;
-        auto pool_idx = common::GetAddressPoolIndex(addr);
-        if (pool_idx == common::kRootChainPoolIndex) {
-            pool_index_map_[pool_idx] = addr;
-            break;
-        }
-    }
-    
+    pool_index_map_[common::kRootChainPoolIndex] = block::kPoolsAddress;
     uint32_t idx = 0;
     for (auto iter = pool_index_map_.begin(); iter != pool_index_map_.end(); ++iter, ++idx) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
