@@ -243,6 +243,7 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
         ELECT_DEBUG("not has prev members. has: %d. pre elect height: %lu",
             elect_block.has_prev_members(),
             elect_block.prev_members().prev_elect_height());
+        assert(false);
         return false;
     }
 
@@ -256,11 +257,13 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
             network::kRootCongressNetworkId,
             common::kRootChainPoolIndex,
             elect_block.prev_members().prev_elect_height());
+        assert(false);
         return false;
     }
 
     if (block_item.tx_list_size() != 1) {
         ELECT_ERROR("not has tx list size.");
+        assert(false);
         return false;
     }
 
@@ -285,12 +288,13 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
         return false;
     }
 
-    if (added_height_.find(elect_block.prev_members().prev_elect_height()) != added_height_.end()) {
+    auto& added_heights = added_height_[elect_block.shard_network_id()];
+    if (added_heights.find(elect_block.prev_members().prev_elect_height()) != added_heights.end()) {
         ELECT_ERROR("height has added: %lu", elect_block.prev_members().prev_elect_height());
         return false;
     }
 
-    added_height_.insert(elect_block.prev_members().prev_elect_height());
+    added_heights.insert(elect_block.prev_members().prev_elect_height());
     latest_member_count_[prev_elect_block.shard_network_id()] = prev_elect_block.in_size();
     std::map<uint32_t, uint32_t> begin_index_map;
     auto& in = prev_elect_block.in();
