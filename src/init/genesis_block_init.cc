@@ -670,10 +670,8 @@ int GenesisBlockInit::CreateElectBlock(
 }
 
 int GenesisBlockInit::GenerateRootSingleBlock(
-        const std::vector<dht::NodePtr>& root_genesis_nodes,
-        const std::vector<dht::NodePtr>& cons_genesis_nodes,
+        FILE* root_gens_init_block_file,
         uint64_t* root_pool_height) {
-    FILE* root_gens_init_block_file = fopen("./root_blocks", "w");
     if (root_gens_init_block_file == nullptr) {
         return kInitError;
     }
@@ -824,53 +822,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         root_pre_hash = consensus::GetBlockHash(*tenon_block);
     }
 
-    uint64_t root_prev_elect_height = root_single_block_height;
-    if (CreateElectBlock(
-            network::kRootCongressNetworkId,
-            root_pre_hash,
-            root_single_block_height++,
-            common::kInvalidUint64,
-            root_gens_init_block_file,
-            root_genesis_nodes) != kInitSuccess) {
-        ZJC_FATAL("CreateElectBlock kRootCongressNetworkId failed!");
-        return kInitError;
-    }
-
-    if (CreateElectBlock(
-            network::kRootCongressNetworkId,
-            root_pre_hash,
-            root_single_block_height++,
-            root_prev_elect_height,
-            root_gens_init_block_file,
-            root_genesis_nodes) != kInitSuccess) {
-        ZJC_FATAL("CreateElectBlock kRootCongressNetworkId failed!");
-        return kInitError;
-    }
-
-    uint64_t shard_prev_elect_height = root_single_block_height;
-    if (CreateElectBlock(
-            network::kConsensusShardBeginNetworkId,
-            root_pre_hash,
-            root_single_block_height++,
-            common::kInvalidUint64,
-            root_gens_init_block_file,
-            cons_genesis_nodes) != kInitSuccess) {
-        ZJC_FATAL("CreateElectBlock kConsensusShardBeginNetworkId failed!");
-        return kInitError;
-    }
-
-    if (CreateElectBlock(
-            network::kConsensusShardBeginNetworkId,
-            root_pre_hash,
-            root_single_block_height++,
-            shard_prev_elect_height,
-            root_gens_init_block_file,
-            cons_genesis_nodes) != kInitSuccess) {
-        ZJC_FATAL("CreateElectBlock kConsensusShardBeginNetworkId failed!");
-        return kInitError;
-    }
-
-    fclose(root_gens_init_block_file);
     *root_pool_height = root_single_block_height - 1;
     return kInitSuccess;
 }
@@ -997,6 +948,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         shard_secs[i]->SetPrivateKey(shard_prikeys[i]);
     }
     
+    std::string prehashes[common::kImmutablePoolSize];
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
@@ -1075,6 +1027,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         tenon_block->set_bls_agg_sign_x("x");
         tenon_block->set_bls_agg_sign_y("y");
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+        prehashes[i] = tenon_block->hash();
         pool_prev_hash_map[iter->first] = tenon_block->hash();
         db::DbWriteBatch db_batch;
         pools_mgr_->UpdateLatestInfo(
@@ -1129,13 +1082,64 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         all_balance += account_ptr->balance();
     }
 
+    FILE* root_gens_init_block_file = fopen("./root_blocks", "w");
+    if (CreateElectBlock(
+            network::kRootCongressNetworkId,
+            prehashes[network::kRootCongressNetworkId],
+            1,
+            common::kInvalidUint64,
+            root_gens_init_block_file,
+            root_genesis_nodes) != kInitSuccess) {
+        ZJC_FATAL("CreateElectBlock kRootCongressNetworkId failed!");
+        return kInitError;
+    }
+
+    if (CreateElectBlock(
+            network::kRootCongressNetworkId,
+            prehashes[network::kRootCongressNetworkId],
+            2,
+            1,
+            root_gens_init_block_file,
+            root_genesis_nodes) != kInitSuccess) {
+        ZJC_FATAL("CreateElectBlock kRootCongressNetworkId failed!");
+        return kInitError;
+    }
+
+
+    uint64_t shard_prev_elect_height = root_single_block_height;
+    if (CreateElectBlock(
+            network::kConsensusShardBeginNetworkId,
+            prehashes[network::kConsensusShardBeginNetworkId],
+            1,
+            common::kInvalidUint64,
+            root_gens_init_block_file,
+            cons_genesis_nodes) != kInitSuccess) {
+        ZJC_FATAL("CreateElectBlock kConsensusShardBeginNetworkId failed!");
+        return kInitError;
+    }
+
+    if (CreateElectBlock(
+            network::kConsensusShardBeginNetworkId,
+            prehashes[network::kConsensusShardBeginNetworkId],
+            2,
+            1,
+            root_gens_init_block_file,
+            cons_genesis_nodes) != kInitSuccess) {
+        ZJC_FATAL("CreateElectBlock kConsensusShardBeginNetworkId failed!");
+        return kInitError;
+    }
+
+    pool_prev_hash_map[network::kRootCongressNetworkId] = prehashes[network::kRootCongressNetworkId];
+    pool_prev_hash_map[network::kConsensusShardBeginNetworkId] = prehashes[network::kConsensusShardBeginNetworkId];
+    *init_heights.mutable_heights(network::kRootCongressNetworkId) = 2;
+    *init_heights.mutable_heights(network::kConsensusShardBeginNetworkId) = 2;
     if (all_balance != 0) {
         ZJC_FATAL("balance all error[%llu][%llu]", all_balance, common::kGenesisFoundationMaxZjc);
         return kInitError;
     }
 
     uint64_t root_pool_height = 0;
-    int res = GenerateRootSingleBlock(root_genesis_nodes, cons_genesis_nodes, &root_pool_height);
+    int res = GenerateRootSingleBlock(root_gens_init_block_file, &root_pool_height);
     if (res == kInitSuccess) {
         init_heights.add_heights(root_pool_height);
         CreateShardNodesBlocks(
@@ -1153,6 +1157,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         ZJC_DEBUG("0 success change min elect statistic heights: %s", init_consensus_height.c_str());
     }
 
+    fclose(root_gens_init_block_file);
     return res;
 }
 
@@ -1195,7 +1200,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
     uint64_t all_balance = 0llu;
     std::map<uint32_t, uint64_t> pool_height;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
-        pool_height[i] = 0;
+        pool_height[i] = init_heights.heights(i);
     }
 
     uint64_t genesis_account_balance = common::kGenesisShardingNodesMaxZjc / valid_ids.size();

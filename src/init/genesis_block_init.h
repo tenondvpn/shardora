@@ -60,8 +60,7 @@ private:
     void InitGenesisAccount();
     void GenerateRootAccounts();
     int GenerateRootSingleBlock(
-        const std::vector<dht::NodePtr>& root_genesis_nodes,
-        const std::vector<dht::NodePtr>& cons_genesis_nodes,
+        FILE* root_gens_init_block_file,
         uint64_t* root_pool_height);
     int GenerateShardSingleBlock(uint32_t sharding_id);
     int CreateElectBlock(
