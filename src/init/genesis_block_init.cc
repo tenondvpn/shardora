@@ -70,6 +70,12 @@ int GenesisBlockInit::CreateGenesisBlocks(
         res = CreateShardGenesisBlocks(root_genesis_nodes, cons_genesis_nodes, net_id);
     }
 
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        std::cout << i << ":" << pools_mgr_->latest_height(i) << std::endl;
+    }
+
+    std::cout << std::endl;
+    std::cout << std::endl;
     std::vector<std::string> prikeys;
     if (net_id == 2) {
         prikeys.push_back(common::Encode::HexDecode(
