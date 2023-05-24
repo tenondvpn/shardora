@@ -268,7 +268,7 @@ void BftManager::SetThreadItem(
 
         thread_item->prev_index = 0;
         thread_set[j] = thread_item;  // ptr change, multi-thread safe
-        std::cout << j << " : " << tmp_val << std::endl;
+        std::cout << (uint32_t)j << " : " << tmp_val << std::endl;
     }
 }
 
@@ -315,6 +315,8 @@ ZbftPtr BftManager::Start(
     auto can_new_bft = bft_hash_map_[thread_index].empty();
     for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
         auto pool_idx = thread_item->pools[thread_item->prev_index];
+        ZJC_DEBUG("now get pool index: %u, can_new_bft: %d, prepare_msg_ptr == nullptr: %d ",
+            pool_idx, can_new_bft, (prepare_msg_ptr == nullptr));
         if (!can_new_bft && prepare_msg_ptr == nullptr) {
             continue;
         }
@@ -330,6 +332,8 @@ ZbftPtr BftManager::Start(
         for (thread_item->prev_index = 0;
                 thread_item->prev_index < begin_index; ++thread_item->prev_index) {
             auto pool_idx = thread_item->pools[thread_item->prev_index];
+            ZJC_DEBUG("now get pool index: %u, can_new_bft: %d, prepare_msg_ptr == nullptr: %d ",
+                pool_idx, can_new_bft, (prepare_msg_ptr == nullptr));
             if (!can_new_bft && prepare_msg_ptr == nullptr) {
                 continue;
             }
