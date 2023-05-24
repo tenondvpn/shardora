@@ -43,7 +43,7 @@ void AccountManager::CreatePoolsAddressInfo() {
     uint32_t i = 0;
     uint32_t valid_idx = 0;
     for (uint32_t i = 0; i < common::kInvalidUint32; ++i) {
-        std::string addr = kPoolsAddress;
+        std::string addr = common::kRootPoolsAddress;
         uint32_t* tmp_data = (uint32_t*)addr.data();
         tmp_data[0] = i;
         auto pool_idx = common::GetAddressPoolIndex(addr);
