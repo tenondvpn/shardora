@@ -1315,7 +1315,11 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
             tx_info->set_from("");
-            tx_info->set_to(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
+            if (idx < common::kImmutablePoolSize) {
+                tx_info->set_to(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
+            } else {
+                tx_info->set_to(address);
+            }
             tx_info->set_amount(0);
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
@@ -1324,7 +1328,12 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
-            tx_info->set_from(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
+            if (idx < common::kImmutablePoolSize) {
+                tx_info->set_from(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
+            } else {
+                tx_info->set_from(address);
+            }
+
             tx_info->set_to("");
             tx_info->set_amount(0);
             tx_info->set_balance(0);
