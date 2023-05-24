@@ -1348,7 +1348,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             tx_info->set_to(address);
 
             if (iter->first == common::kImmutablePoolSize - 1) {
-                genesis_account_balance += common::kGenesisFoundationMaxZjc % pool_index_map_.size();
+                genesis_account_balance += common::kGenesisFoundationMaxZjc % common::kImmutablePoolSize;
             }
 
             tx_info->set_amount(genesis_account_balance);
