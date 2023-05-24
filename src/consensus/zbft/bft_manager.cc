@@ -2121,7 +2121,8 @@ void BftManager::BroadcastBlock(
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     auto* brdcast = msg.mutable_broadcast();
     network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("success broadcast to root: %lu", block_item->height());
+    ZJC_DEBUG("success broadcast to %u, pool: %u, height: %lu",
+        des_shard, block_item->pool_index(), block_item->height());
 }
 
 void BftManager::BroadcastWaitingBlock(
