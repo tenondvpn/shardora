@@ -69,6 +69,9 @@ class LEVELDB_EXPORT WriteBatch {
     virtual void Delete(const Slice& key) = 0;
   };
   Status Iterate(Handler* handler) const;
+  bool Valid() const {
+      return !rep_.empty();
+  }
 
  private:
   friend class WriteBatchInternal;
