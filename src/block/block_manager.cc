@@ -712,7 +712,7 @@ void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {
         auto& block = *elect_block_ptr;
         if (GetBlockWithHeight(
                 network::kRootCongressNetworkId,
-                common::kRootChainPoolIndex,
+                elect_block.shard_network_id() % common::kImmutablePoolSize,
                 elect_block.elect_height(),
                 block) == kBlockSuccess) {
             if (new_block_callback_ != nullptr) {
@@ -721,12 +721,12 @@ void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {
 
             ZJC_INFO("get block with height success: %u, %u, %lu",
                 network::kRootCongressNetworkId,
-                common::kRootChainPoolIndex,
+                elect_block.shard_network_id() % common::kImmutablePoolSize,
                 elect_block.elect_height());
         } else {
             ZJC_FATAL("get block with height failed: %u, %u, %lu",
                 network::kRootCongressNetworkId,
-                common::kRootChainPoolIndex,
+                elect_block.shard_network_id() % common::kImmutablePoolSize,
                 elect_block.elect_height());
         }
     }
