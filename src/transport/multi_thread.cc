@@ -80,8 +80,6 @@ void ThreadHandler::HandleMessage() {
 
                 ZJC_DEBUG("0 over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
             }
-
-            ZJC_DEBUG("kConsensusTimerMessage called thread idx: %u", thread_idx_);
         }
 
         if (thread_idx_ + 1 == common::GlobalInfo::Instance()->message_handler_thread_count()) {

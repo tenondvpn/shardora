@@ -274,21 +274,8 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     transport::MessagePtr prepare_msg_ptr = nullptr;
     ZbftPtr prev_bft = nullptr;
     Start(msg_ptr->thread_idx, prev_bft, prepare_msg_ptr);
-//     if (bft_ptr == nullptr) {
-//         auto btime = common::TimeUtils::TimestampUs();
-        PopAllPoolTxs(msg_ptr->thread_idx);
-//         auto etime = common::TimeUtils::TimestampUs();
-//         ZJC_DEBUG("pop all txs use time: %lu us", (etime - btime));
-//     }
-    
+    PopAllPoolTxs(msg_ptr->thread_idx);
     CheckTimeout(msg_ptr->thread_idx);
-    auto now_tm = common::TimeUtils::TimestampUs();
-    if (prev_test_bft_size_[msg_ptr->thread_idx] + 3000000lu < now_tm) {
-        prev_test_bft_size_[msg_ptr->thread_idx] = now_tm;
-//         ZJC_INFO("thread idx: %d, bft size; %u",
-//             msg_ptr->thread_idx,
-//             bft_hash_map_[msg_ptr->thread_idx].size());
-    }
 #endif
 }
 
@@ -317,9 +304,11 @@ ZbftPtr BftManager::Start(
     auto& thread_set = elect_item.thread_set;
     auto thread_item = thread_set[thread_index];
     if (thread_item == nullptr) {
+        ZJC_DEBUG("bft manager called thread_index: %u", thread_index);
         return nullptr;
     }
 
+    ZJC_DEBUG("success bft manager called thread_index: %u", thread_index);
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
     auto begin_index = thread_item->prev_index;
     auto can_new_bft = bft_hash_map_[thread_index].empty();
