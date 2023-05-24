@@ -2105,7 +2105,7 @@ void BftManager::BroadcastBlock(
     auto& msg = msg_ptr->header;
     msg.set_src_sharding_id(des_shard);
     msg.set_type(common::kBlockMessage);
-    dht::DhtKeyManager dht_key(network::kRootCongressNetworkId);
+    dht::DhtKeyManager dht_key(des_shard);
     msg.set_des_dht_key(dht_key.StrKey());
     auto& tx = block_item->tx_list(0);
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
