@@ -66,6 +66,7 @@ static const std::string kLocalTempPolynomialPrefix = "af\x01";
 static const std::string kLocalTempCommonPublicKeyPrefix = "ag\x01";
 static const std::string kNodeVerificationVectorPrefix = "ah\x01";
 static const std::string kNodeLocalElectPosPrefix = "ai\x01";
+static const std::string kCrossCheckHeightPrefix = "aj\x01";
 
 class PrefixDb {
 public:
@@ -366,6 +367,19 @@ public:
         key.reserve(48);
         key.append(kBlockPrefix);
         key.append(block_hash);
+        return db_->Exist(key);
+    }
+
+    bool BlockExists(
+            uint32_t sharding_id,
+            uint32_t pool_index,
+            uint64_t height) {
+        std::string key;
+        key.reserve(32);
+        key.append(kBlockHeightPrefix);
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        key.append((char*)&pool_index, sizeof(pool_index));
+        key.append((char*)&height, sizeof(height));
         return db_->Exist(key);
     }
 
@@ -1331,6 +1345,43 @@ public:
         return true;
     }
 
+    void SaveCheckCrossHeight(
+            uint32_t local_shard,
+            uint32_t des_shard,
+            uint64_t height,
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(128);
+        key.append(kCrossCheckHeightPrefix);
+        key.append((char*)&local_shard, sizeof(local_shard));
+        key.append((char*)&des_shard, sizeof(des_shard));
+        char data[8];
+        uint64_t* tmp = (uint64_t*)data;
+        tmp[0] = height;
+        std::string val(data, sizeof(data));
+        db_batch.Put(key, val);
+    }
+
+    bool GetCheckCrossHeight(
+            uint32_t local_shard,
+            uint32_t des_shard,
+            uint64_t* height) {
+        std::string key;
+        key.reserve(128);
+        key.append(kCrossCheckHeightPrefix);
+        key.append((char*)&local_shard, sizeof(local_shard));
+        key.append((char*)&des_shard, sizeof(des_shard));
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            ZJC_INFO("get db failed!");
+            return false;
+        }
+
+        uint64_t* tmp = (uint64_t*)val.c_str();
+        *height = tmp[0];
+        return true;
+    }
 private:
     void DumpGidToDb(uint8_t thread_idx) {
         if (!dumped_gid_) {
