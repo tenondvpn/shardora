@@ -8,6 +8,7 @@
 #include <chrono>
 #include <thread>
 
+#include "common/encode.h"
 #include "common/log.h"
 
 #ifndef DISALLOW_COPY_AND_ASSIGN
@@ -191,6 +192,8 @@ static const uint32_t kDefaultBroadcastHopLimit = 5u;
 static const uint32_t kDefaultBroadcastHopToLayer = 2u;
 static const uint32_t kDefaultBroadcastNeighborCount = 7u;
 static const uint64_t kBuildinTransactionGasPrice = 999999999lu;
+static const std::string kRootPoolsAddress = common::Encode::HexDecode(
+    "0000000000000000000000000000000000000000");
 
 #pragma pack(push) 
 #pragma pack(1)

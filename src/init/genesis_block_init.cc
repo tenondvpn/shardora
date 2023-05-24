@@ -598,7 +598,7 @@ int GenesisBlockInit::CreateElectBlock(
     prefix_db_->SaveTemporaryKv(val_hash, val);
     tenon_block->set_prehash(root_pre_hash);
     tenon_block->set_version(common::kTransactionVersion);
-    tenon_block->set_pool_index(common::kRootChainPoolIndex);
+    tenon_block->set_pool_index(shard_netid);
     const auto& bitmap_data = root_bitmap_.data();
     for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
         tenon_block->add_precommit_bitmap(bitmap_data[i]);
@@ -680,7 +680,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
     GenerateRootAccounts();
     uint64_t root_single_block_height = 0llu;
     // for root single block chain
-    auto addr_info = account_mgr_->pools_address_info(common::kRootChainPoolIndex);
+    auto root_pool_addr = common::kRootPoolsAddress;
     std::string root_pre_hash;
     {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
@@ -1311,7 +1311,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     ReloadBlsPri(network::kRootCongressNetworkId);
     ReloadBlsPri(net_id);
-    pool_index_map_[common::kRootChainPoolIndex] = block::kPoolsAddress;
+    pool_index_map_[common::kRootChainPoolIndex] = common::kRootPoolsAddress;
     uint32_t idx = 0;
     for (auto iter = pool_index_map_.begin(); iter != pool_index_map_.end(); ++iter, ++idx) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();

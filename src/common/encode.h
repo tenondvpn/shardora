@@ -2,8 +2,6 @@
 
 #include <string>
 
-#include "common/utils.h"
-
 namespace zjchain {
 
 namespace common {
@@ -20,8 +18,6 @@ public:
 private:
     Encode();
     ~Encode();
-
-    DISALLOW_COPY_AND_ASSIGN(Encode);
 };
 
 }  // namespace common
