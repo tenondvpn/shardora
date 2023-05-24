@@ -993,13 +993,18 @@ void NetworkInit::AddBlockItemToCache(
         block->height(),
         block->tx_list_size(),
         common::Encode::HexEncode(block->hash()).c_str());
-    pools_mgr_->UpdateLatestInfo(
-        thread_idx,
-        block->network_id(),
-        block->pool_index(),
-        block->height(),
-        block->hash(),
-        db_batch);
+    if (block->network_id() == common::GlobalInfo::Instance()->network_id() ||
+            block->network_id() + network::kConsensusWaitingShardOffset ==
+            common::GlobalInfo::Instance()->network_id()) {
+        pools_mgr_->UpdateLatestInfo(
+            thread_idx,
+            block->network_id(),
+            block->pool_index(),
+            block->height(),
+            block->hash(),
+            db_batch);
+    }
+    
     // one block must be one consensus pool
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         if (tx_list[i].status() != consensus::kConsensusSuccess) {
