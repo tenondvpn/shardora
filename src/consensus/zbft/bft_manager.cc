@@ -258,17 +258,14 @@ void BftManager::SetThreadItem(
 
     for (uint8_t j = 0; j < thread_count_; ++j) {
         auto thread_item = std::make_shared<PoolTxIndexItem>();
-        std::string tmp_val;
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
             if (i % thread_count_ == j && leader_pool_set.find(i) != leader_pool_set.end()) {
                 thread_item->pools.push_back(i);
-                tmp_val += std::to_string(i) + " ";
             }
         }
 
         thread_item->prev_index = 0;
         thread_set[j] = thread_item;  // ptr change, multi-thread safe
-        std::cout << (uint32_t)j << " : " << tmp_val << std::endl;
     }
 }
 
