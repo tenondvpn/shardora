@@ -189,10 +189,6 @@ private:
     void InitLatestInfo() {
         pools::protobuf::PoolLatestInfo pool_info;
         uint32_t network_id = common::GlobalInfo::Instance()->network_id();
-        if (pool_index_ == common::kRootChainPoolIndex) {
-            network_id = network::kRootCongressNetworkId;
-        }
-
         if (network_id == common::kInvalidUint32) {
             return;
         }
@@ -212,7 +208,8 @@ private:
                 synced_height_ = pool_info.synced_height();
                 prev_synced_height_ = synced_height_;
                 to_sync_max_height_ = latest_height_;
-                ZJC_DEBUG("pool %lu, init height: %lu", pool_index_, latest_height_);
+                ZJC_DEBUG("init latest pool info shard: %u, pool %lu, init height: %lu",
+                    network_id, pool_index_, latest_height_);
             }
         }
     }
