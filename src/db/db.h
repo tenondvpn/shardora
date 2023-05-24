@@ -64,6 +64,10 @@ public:
     }
 
     DbStatus Put(DbWriteBatch& db_batch) {
+        if (!db_batch.Valid()) {
+            return db::DbStatus();
+        }
+
         DbWriteOptions write_opt;
         return db_->Write(write_opt, &db_batch);
     }

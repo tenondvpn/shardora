@@ -44,11 +44,9 @@ private:
             CheckCross(thread_idx, network::kRootCongressNetworkId, wbatch);
         }
 
-        if (wbatch.Count() > 0) {
-            auto st = db_->Put(wbatch);
-            if (!st.ok()) {
-                ZJC_FATAL("flush to db failed!");
-            }
+        auto st = db_->Put(wbatch);
+        if (!st.ok()) {
+            ZJC_FATAL("flush to db failed!");
         }
     }
 
