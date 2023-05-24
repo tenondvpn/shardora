@@ -1372,7 +1372,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         tenon_block->set_bls_agg_sign_x("x");
         tenon_block->set_bls_agg_sign_y("y");
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-        
         pool_prev_hash_map[iter->first] = tenon_block->hash();
 //         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
         db::DbWriteBatch db_batch;
@@ -1383,7 +1382,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             tenon_block->height(),
             tenon_block->hash(),
             db_batch);
-
         AddBlockItemToCache(tenon_block, db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
         block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
