@@ -410,6 +410,8 @@ void BlockManager::HandleLocalNormalToTx(
 
             sharding_id = to_txs.tos(i).sharding_id();
             pool_index = to_txs.tos(i).pool_index();
+            ZJC_DEBUG("root create address coming %s, shard: %u, pool: %u",
+                common::Encode::HexEncode(addr).c_str(), sharding_id, pool_index);
         } else {
             sharding_id = account_info->sharding_id();
             pool_index = account_info->pool_index();

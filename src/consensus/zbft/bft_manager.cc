@@ -2011,11 +2011,6 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         bitmap_data.push_back(prepare_bitmap_data[i]);
     }
 
-//     auto& bls_commit_sign = bft_ptr->bls_precommit_agg_sign();
-//     zjc_block->set_bls_agg_sign_x(
-//         libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->X));
-//     zjc_block->set_bls_agg_sign_y(
-//         libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->Y));
     auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(zjc_block, bft_ptr->db_batch());
     new_block_cache_callback_(
         thread_idx,
