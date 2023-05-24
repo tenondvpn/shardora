@@ -1167,6 +1167,14 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
 }
 
 void BlockManager::CreateToTx(uint8_t thread_idx) {
+#ifndef ZJC_UNITTEST
+    if (network::DhtManager::Instance()->valid_count(
+            common::GlobalInfo::Instance()->network_id()) <
+            common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
+        return nullptr;
+    }
+#endif
+
     if (create_to_tx_cb_ == nullptr) {
         return;
     }
