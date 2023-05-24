@@ -1019,7 +1019,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) 
 pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string& tx_hash) {
     for (uint32_t i = network::kRootCongressNetworkId;
             i <= max_consensus_sharding_id_; ++i) {
-        if (i == pool_index)
+        if (pool_index == 2)
         ZJC_DEBUG("now get elect tx pool: %u, net: %d", pool_index, i);
         if (i % common::kImmutablePoolSize != pool_index) {
             continue;

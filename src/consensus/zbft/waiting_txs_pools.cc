@@ -32,7 +32,6 @@ std::string WaitingTxsPools::latest_hash(uint32_t pool_index) const {
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool_index) {
-    ZJC_DEBUG("now leader get pool tx: %u.", pool_index);
     std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(pool_index);
     if (txs_item == nullptr) {
         txs_item = wtxs[pool_index].LeaderGetValidTxs();
