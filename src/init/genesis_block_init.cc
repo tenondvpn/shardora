@@ -1105,8 +1105,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         return kInitError;
     }
 
-
-    uint64_t shard_prev_elect_height = root_single_block_height;
     if (CreateElectBlock(
             network::kConsensusShardBeginNetworkId,
             prehashes[network::kConsensusShardBeginNetworkId],
@@ -1131,8 +1129,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
 
     pool_prev_hash_map[network::kRootCongressNetworkId] = prehashes[network::kRootCongressNetworkId];
     pool_prev_hash_map[network::kConsensusShardBeginNetworkId] = prehashes[network::kConsensusShardBeginNetworkId];
-    *init_heights.mutable_heights(network::kRootCongressNetworkId) = 2;
-    *init_heights.mutable_heights(network::kConsensusShardBeginNetworkId) = 2;
+    init_heights.set_heights(network::kRootCongressNetworkId, 2);
+    init_heights.set_heights(network::kConsensusShardBeginNetworkId, 2);
     if (all_balance != 0) {
         ZJC_FATAL("balance all error[%llu][%llu]", all_balance, common::kGenesisFoundationMaxZjc);
         return kInitError;
