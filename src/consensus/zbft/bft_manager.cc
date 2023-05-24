@@ -2096,10 +2096,6 @@ void BftManager::BroadcastBlock(
         uint8_t thread_idx,
         uint32_t des_shard,
         const std::shared_ptr<block::protobuf::Block>& block_item) {
-    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
-        return;
-    }
-
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
