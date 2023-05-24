@@ -352,6 +352,7 @@ ZbftPtr BftManager::Start(
         }
     }
 
+    ++thread_item->prev_index;
     if (txs_ptr == nullptr) {
         return nullptr;
     }
