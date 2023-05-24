@@ -618,6 +618,7 @@ int GenesisBlockInit::CreateElectBlock(
         db_batch);
 
     prefix_db_->SaveLatestElectBlock(ec_block, db_batch);
+    ZJC_DEBUG("success save latest elect block: %u, %lu", ec_block.shard_network_id(), ec_block.elect_height());
     std::string ec_val = common::Encode::HexEncode(tenon_block->SerializeAsString()) +
         "-" + common::Encode::HexEncode(ec_block.SerializeAsString()) + "\n";
     fputs(ec_val.c_str(), root_gens_init_block_file);
