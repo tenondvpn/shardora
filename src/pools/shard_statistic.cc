@@ -501,11 +501,7 @@ int ShardStatistic::StatisticWithHeights(
         common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
         common::GlobalInfo::Instance()->network_id() ==
         network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset);
-    uint32_t pool_size = common::kImmutablePoolSize;
-    if (is_root) {
-        ++pool_size;
-    }
-
+    uint32_t pool_size = common::kInvalidPoolIndex;
     if (leader_to_heights.heights_size() != (int32_t)pool_size) {
         ZJC_DEBUG("pool size error: %d, %d, local sharding: %d",
             leader_to_heights.heights_size(), pool_size,
