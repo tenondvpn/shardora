@@ -688,7 +688,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto tx_info = tx_list->Add();
         tx_info->set_gid(common::CreateGID(""));
         tx_info->set_from("");
-        tx_info->set_to(addr_info->addr());
+        tx_info->set_to(root_pool_addr);
         tx_info->set_amount(0);
         tx_info->set_balance(0);
         tx_info->set_gas_limit(0);
@@ -746,7 +746,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         auto tx_info = tx_list->Add();
         tx_info->set_gid(common::CreateGID(""));
         tx_info->set_from("");
-        tx_info->set_to(addr_info->addr());
+        tx_info->set_to(root_pool_addr);
         tx_info->set_amount(0);
         tx_info->set_balance(0);
         tx_info->set_gas_limit(0);
