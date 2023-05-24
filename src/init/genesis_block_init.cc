@@ -1305,7 +1305,20 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     ReloadBlsPri(network::kRootCongressNetworkId);
     ReloadBlsPri(net_id);
-    for (auto iter = pool_index_map_.begin(); iter != pool_index_map_.end(); ++iter) {
+
+    for (uint32_t i = 0; i < common::kInvalidUint32; ++i) {
+        std::string addr = block::kPoolsAddress;
+        uint32_t* tmp_data = (uint32_t*)addr.data();
+        tmp_data[0] = i;
+        auto pool_idx = common::GetAddressPoolIndex(addr);
+        if (pool_idx == common::kRootChainPoolIndex) {
+            pool_index_map_.insert(addr);
+            break;
+        }
+    }
+    
+    uint32_t idx = 0;
+    for (auto iter = pool_index_map_.begin(); iter != pool_index_map_.end(); ++iter, ++idx) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
         std::string address = iter->second;
@@ -1329,7 +1342,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
         }
-        {
+
+        if (idx < common::kImmutablePoolSize) {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
             tx_info->set_from("");
@@ -1382,9 +1396,16 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             return kInitError;
         }
 
-        if (account_ptr->balance() != genesis_account_balance) {
-            ZJC_FATAL("get address balance failed! [%s]", common::Encode::HexEncode(address).c_str());
-            return kInitError;
+        if (idx < common::kImmutablePoolSize) {
+            if (account_ptr->balance() != genesis_account_balance) {
+                ZJC_FATAL("get address balance failed! [%s]", common::Encode::HexEncode(address).c_str());
+                return kInitError;
+            }
+        } else {
+            if (account_ptr->balance() != 0) {
+                ZJC_FATAL("get address balance failed! [%s]", common::Encode::HexEncode(address).c_str());
+                return kInitError;
+            }
         }
 
         all_balance += account_ptr->balance();
