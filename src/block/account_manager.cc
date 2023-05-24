@@ -40,6 +40,14 @@ int AccountManager::Init(
 }
 
 void AccountManager::CreatePoolsAddressInfo() {
+    root_pool_address_info_ = std::make_shared<address::protobuf::AddressInfo>();
+    root_pool_address_info_->set_pubkey("");
+    root_pool_address_info_->set_balance(0);
+    root_pool_address_info_->set_sharding_id(-1);
+    root_pool_address_info_->set_pool_index(common::kRootChainPoolIndex);
+    root_pool_address_info_->set_addr(common::kRootPoolsAddress);
+    root_pool_address_info_->set_type(address::protobuf::kToTxAddress);
+    root_pool_address_info_->set_latest_height(0);
     uint32_t i = 0;
     uint32_t valid_idx = 0;
     for (uint32_t i = 0; i < common::kInvalidUint32; ++i) {

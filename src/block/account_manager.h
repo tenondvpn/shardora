@@ -46,6 +46,10 @@ public:
     int HandleRefreshHeightsReq(const transport::MessagePtr& msg_ptr);
     int HandleRefreshHeightsRes(const transport::MessagePtr& msg_ptr);
     std::shared_ptr<address::protobuf::AddressInfo>& pools_address_info(uint32_t pool_idx) {
+        if (pool_idx == common::kRootChainPoolIndex) {
+            return root_pool_address_info_;
+        }
+
         return pool_address_info_[pool_idx % common::kImmutablePoolSize];
     }
 
@@ -104,6 +108,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<address::protobuf::AddressInfo> pool_address_info_[common::kImmutablePoolSize] = { nullptr };
+    std::shared_ptr<address::protobuf::AddressInfo> root_pool_address_info_ = nullptr ;
 
     DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };

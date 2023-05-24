@@ -954,6 +954,10 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
 }
 
 std::string GenesisBlockInit::GetValidPoolBaseAddr(uint32_t pool_index) {
+    if (pool_index == common::kRootChainPoolIndex) {
+        return common::kRootPoolsAddress;
+    }
+
     return account_mgr_->pools_address_info(pool_index)->addr();
 }
 
