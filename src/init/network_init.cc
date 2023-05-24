@@ -1049,17 +1049,6 @@ void NetworkInit::DbNewBlockCallback(
     }
 
     shard_statistic_->OnNewBlock(*block);
-//     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
-//             block->network_id() == network::kRootCongressNetworkId &&
-//             block->pool_index() == common::kRootChainPoolIndex) {
-//         pools_mgr_->UpdateLatestInfo(
-//             thread_idx,
-//             block->network_id(),
-//             block->pool_index(),
-//             block->height(),
-//             block->hash(),
-//             db_batch);
-//     }
 }
 
 void NetworkInit::HandleTimeBlock(
