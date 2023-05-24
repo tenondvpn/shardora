@@ -249,7 +249,7 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
     block::protobuf::Block block_item;
     if (block_mgr_->GetBlockWithHeight(
             network::kRootCongressNetworkId,
-            common::kRootChainPoolIndex,
+            elect_block.shard_network_id() % common::kImmutablePoolSize,
             elect_block.prev_members().prev_elect_height(),
             block_item) != block::kBlockSuccess) {
         ELECT_ERROR("get prev block error[%d][%d][%lu].",

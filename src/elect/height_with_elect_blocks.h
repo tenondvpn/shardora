@@ -210,7 +210,7 @@ public:
         block::protobuf::Block block;
         if (!prefix_db_->GetBlockWithHeight(
                 network::kRootCongressNetworkId,
-                common::kRootChainPoolIndex,
+                network_id % common::kImmutablePoolSize,
                 height,
                 &block)) {
             return nullptr;
