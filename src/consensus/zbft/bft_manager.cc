@@ -352,7 +352,7 @@ ZbftPtr BftManager::Start(
         }
     }
 
-    ++thread_item->prev_index;
+    thread_item->prev_index = ++thread_item->prev_index % thread_item->pools.size();
     if (txs_ptr == nullptr) {
         return nullptr;
     }
