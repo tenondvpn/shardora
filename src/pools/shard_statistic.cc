@@ -961,6 +961,7 @@ void ShardStatistic::LoadLatestHeights() {
         pool_consensus_heihgts_[i] = this_net_heights[i];
     }
 
+    assert(tx_heights_ptr_->heights_size() == max_pool_index);
     std::string init_consensus_height;
     for (int32_t i = 0; i < tx_heights_ptr_->heights_size(); ++i) {
         init_consensus_height += std::to_string(tx_heights_ptr_->heights(i)) + " ";
