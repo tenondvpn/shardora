@@ -70,12 +70,6 @@ int GenesisBlockInit::CreateGenesisBlocks(
         res = CreateShardGenesisBlocks(root_genesis_nodes, cons_genesis_nodes, net_id);
     }
 
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        std::cout << i << ":" << pools_mgr_->latest_height(i) << std::endl;
-    }
-
-    std::cout << std::endl;
-    std::cout << std::endl;
     std::vector<std::string> prikeys;
     if (net_id == 2) {
         prikeys.push_back(common::Encode::HexDecode(
@@ -104,7 +98,6 @@ int GenesisBlockInit::CreateGenesisBlocks(
                 polynomial.push_back(libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)).c_str()));
             }
 
-            std::cout << "check: " << k << ", " << common::Encode::HexEncode(secptr->GetAddress()) << ", " << common::Encode::HexEncode(local_poly.polynomial(0)) <<std::endl;
             uint32_t valid_n = prikeys.size();
             uint32_t valid_t = common::GetSignerCount(valid_n);
             libBLS::Dkg dkg_instance = libBLS::Dkg(valid_t, valid_n);
@@ -322,7 +315,6 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
                 libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j])));
         }
 
-        std::cout << "0 save polynomial: " << common::Encode::HexEncode(secptr->GetAddress()) << ", " << common::Encode::HexEncode(local_poly.polynomial(0)) << std::endl;
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
         bls::protobuf::JoinElectInfo& join_info = *init_bls_info.mutable_join_info();
         join_info.set_member_idx(idx);
@@ -421,7 +413,6 @@ int GenesisBlockInit::CreateJoinElectTx(
                 libBLS::ThresholdUtils::fieldElementToString(polynomial[j])));
         }
 
-        std::cout << "1 save polynomial: " << common::Encode::HexEncode(secptr->GetAddress()) << ", " << common::Encode::HexEncode(local_poly.polynomial(0)) << std::endl;
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
     }
 
@@ -523,10 +514,8 @@ void GenesisBlockInit::ReloadBlsPri(uint32_t sharding_id) {
         auto str = init_info.join_info().SerializeAsString();
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
         secptr->SetPrivateKey(init_info.prikey());
-        std::cout << "2 save polynomial: " << common::Encode::HexEncode(secptr->GetAddress()) << ", " << common::Encode::HexEncode(init_info.local_poly().polynomial(0)) << std::endl;
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), init_info.local_poly());
         prefix_db_->SaveTemporaryKv(check_hash, str);
-        std::cout << "save temp data success: " << common::Encode::HexEncode(check_hash) << std::endl;
         ZJC_DEBUG("success add bls prikey: %lu, %u, %s",
             height, sharding_id, common::Encode::HexEncode(id).c_str());
     }
