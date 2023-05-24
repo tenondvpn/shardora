@@ -1312,7 +1312,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         tmp_data[0] = i;
         auto pool_idx = common::GetAddressPoolIndex(addr);
         if (pool_idx == common::kRootChainPoolIndex) {
-            pool_index_map_.insert(addr);
+            pool_index_map_[pool_idx] = addr;
             break;
         }
     }
