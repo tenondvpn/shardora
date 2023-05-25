@@ -1114,7 +1114,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
         }
     }
 
-    ++prev_pool_index_;
+    prev_pool_index_ = ++prev_pool_index_ % (max_consensus_sharding_id_ + 1);
     return nullptr;
 }
 
