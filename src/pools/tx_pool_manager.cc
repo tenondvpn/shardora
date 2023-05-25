@@ -77,7 +77,7 @@ void TxPoolManager::InitCrossPools() {
             cross_pools_[i].Init(i, db_, kv_sync_);
         }
 
-        max_cross_pools_size_ = network::kConsensusWaitingShardOffset;
+        max_cross_pools_size_ = network::kConsensusShardEndNetworkId;
     } else {
         cross_pools_ = new CrossPool[1];
         cross_pools_[0].Init(network::kRootCongressNetworkId, db_, kv_sync_);
