@@ -160,7 +160,12 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
     }
 
     if (prev_sync_cross_ms_ < now_tm_ms) {
-        SyncCrossPool(msg_ptr->thread_idx);
+        if (cross_pools_ == nullptr) {
+            InitCrossPools();
+        } else {
+            SyncCrossPool(msg_ptr->thread_idx);
+        }
+
         if (max_cross_pools_size_ > 1) {
             prev_sync_cross_ms_ = now_tm_ms + kSyncCrossPeriod;
         } else {
