@@ -349,10 +349,14 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             key = std::to_string(iter->network_id()) + "_" +
                 std::to_string(iter->pool_idx()) + "_" +
                 std::to_string(iter->height());
-//             auto block_item = std::make_shared<block::protobuf::Block>();
-//             if (block_item->ParseFromString(iter->value())) {
-//                 block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item);
-//             }
+            auto block_item = std::make_shared<block::protobuf::Block>();
+            if (block_item->ParseFromString(iter->value())) {
+                if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
+                        block_item->network_id() + network::kConsensusWaitingShardOffset !=
+                        common::GlobalInfo::Instance()->network_id()) {
+                    block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item);
+                }
+            }
         }
 
         auto tmp_iter = synced_map_.find(key);

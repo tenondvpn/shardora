@@ -38,6 +38,16 @@ public:
     void TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs);
     void PopTxs(uint32_t pool_index);
     void SetTimeout(uint32_t pool_index) {}
+    void OnNewCrossBlock(
+            uint8_t thread_idx,
+            const std::shared_ptr<block::protobuf::Block>& block_item,
+            db::DbWriteBatch& db_batch) {
+        if (cross_pools_ == nullptr || block_item->network_id() >= max_cross_pools_size_) {
+            return;
+        }
+
+        cross_pools_[max_cross_pools_size_].UpdateLatestInfo(thread_idx, block_item->height());
+    }
 
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, const common::MembersPtr& members) {
         if (sharding_id == common::GlobalInfo::Instance()->network_id() ||

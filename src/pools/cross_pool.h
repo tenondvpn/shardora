@@ -49,18 +49,7 @@ public:
         return latest_height_;
     }
 
-    std::string latest_hash() const {
-        return latest_hash_;
-    }
-
-    void UpdateToSyncHeight(uint8_t thread_idx, uint64_t to_sync_max_height) {
-        if (to_sync_max_height_ < to_sync_max_height) {
-            to_sync_max_height_ = to_sync_max_height;
-            SyncBlock(thread_idx);
-        }
-    }
-
-    uint64_t UpdateLatestInfo(uint8_t thread_idx, uint64_t height, const std::string& hash) {
+    uint64_t UpdateLatestInfo(uint8_t thread_idx, uint64_t height) {
         if (height_tree_ptr_ == nullptr) {
             InitHeightTree();
         }
@@ -73,8 +62,6 @@ public:
 
         if (latest_height_ == common::kInvalidUint64 || latest_height_ < height) {
             latest_height_ = height;
-            latest_hash_ = hash;
-            
         }
 
         if (to_sync_max_height_ == common::kInvalidUint64 || to_sync_max_height_ < latest_height_) {
@@ -145,7 +132,6 @@ private:
                 &pool_info)) {
             if (latest_height_ == common::kInvalidUint64 || latest_height_ < pool_info.height()) {
                 latest_height_ = pool_info.height();
-                latest_hash_ = pool_info.hash();
                 synced_height_ = pool_info.synced_height();
                 prev_synced_height_ = synced_height_;
                 to_sync_max_height_ = latest_height_;
@@ -171,7 +157,6 @@ private:
 
     uint32_t des_sharding_id_ = common::kInvalidUint32;
     uint64_t latest_height_ = common::kInvalidUint64;
-    std::string latest_hash_;
     std::shared_ptr<HeightTreeLevel> height_tree_ptr_ = nullptr;
     uint32_t pool_index_ = common::kRootChainPoolIndex;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;

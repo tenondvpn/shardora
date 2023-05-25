@@ -83,13 +83,6 @@ public:
         return latest_hash_;
     }
 
-    void UpdateToSyncHeight(uint8_t thread_idx, uint64_t to_sync_max_height) {
-        if (to_sync_max_height_ < to_sync_max_height) {
-            to_sync_max_height_ = to_sync_max_height;
-            SyncBlock(thread_idx);
-        }
-    }
-
     uint64_t UpdateLatestInfo(uint8_t thread_idx, uint64_t height, const std::string& hash) {
         if (height_tree_ptr_ == nullptr) {
             InitHeightTree();
