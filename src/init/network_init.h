@@ -2,6 +2,7 @@
 
 #include "block/account_manager.h"
 #include "block/block_manager.h"
+#include "block/cross_block_manager.h"
 #include "bls/bls_manager.h"
 #include "common/utils.h"
 #include "common/config.h"
@@ -115,6 +116,7 @@ private:
     uint32_t invalid_pools_[common::kInvalidPoolIndex] = { 0 };
     uint64_t latest_elect_height_ = 0;
     std::shared_ptr<LeaderRotationInfo> rotation_leaders_ = nullptr;
+    std::shared_ptr<CrossBlockManager> cross_block_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(NetworkInit);
 };

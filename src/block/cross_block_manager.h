@@ -2,6 +2,7 @@
 
 #include "block/block_utils.h"
 #include "common/global_info.h"
+#include "common/tick.h"
 #include "db/db.h"
 #include "protos/prefix_db.h"
 #include "network/network_utils.h"
@@ -18,11 +19,21 @@ public:
             std::shared_ptr<sync::KeyValueSync>& kv_sync)
             : db_(db), kv_sync_(kv_sync) {
         prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+        tick_.CutOff(
+            10000000lu,
+            std::bind(&CrossBlockManager::Ticking, this, std::placeholders::_1));
     }
 
     ~CrossBlockManager() {}
 
 private:
+    void Ticking(uint8_t thread_idx) {
+        CheckCrossSharding(thread_idx);
+        tick_.CutOff(
+            10000000lu,
+            std::bind(&CrossBlockManager::Ticking, this, std::placeholders::_1));
+    }
+
     void CheckCrossSharding(uint8_t thread_idx) {
         local_sharding_id_ = common::GlobalInfo::Instance()->network_id();
         if (local_sharding_id_ == common::kInvalidUint32) {
@@ -35,8 +46,8 @@ private:
 
         db::DbWriteBatch wbatch;
         if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
-                common::GlobalInfo::Instance()->network_id() ==
-                network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
+            common::GlobalInfo::Instance()->network_id() ==
+            network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
             for (uint32_t i = network::kConsensusShardBeginNetworkId; i <= max_sharding_id_; ++i) {
                 CheckCross(thread_idx, i, wbatch);
             }
@@ -132,6 +143,7 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint32_t max_sharding_id_ = 3;
     uint32_t local_sharding_id_ = 0;
+    common::Tick tick_;
 
     DISALLOW_COPY_AND_ASSIGN(CrossBlockManager);
 };
