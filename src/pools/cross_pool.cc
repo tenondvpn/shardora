@@ -52,11 +52,6 @@ uint32_t CrossPool::SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms) {
         return 0;
     }
 
-    if (prev_synced_time_ms_ >= now_tm_ms) {
-        return 0;
-    }
-
-    prev_synced_time_ms_ = now_tm_ms + kSyncBlockPeriodMs;
     if (latest_height_ == common::kInvalidUint64) {
         // sync latest height from neighbors
         kv_sync_->AddSyncHeight(
