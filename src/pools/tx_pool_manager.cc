@@ -30,6 +30,7 @@ TxPoolManager::TxPoolManager(
         tx_pool_[i].Init(i, db, kv_sync);
     }
 
+    InitCrossPools();
     transport::Processor::Instance()->RegisterProcessor(
         common::kPoolTimerMessage,
         std::bind(&TxPoolManager::ConsensusTimerMessage, this, std::placeholders::_1));
@@ -158,16 +159,12 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
         prev_sync_heights_ms_ = now_tm_ms + kSyncPoolsMaxHeightsPeriod;
     }
 
-    if (cross_pools_ == nullptr) {
-        InitCrossPools();
-    } else {
-        if (prev_sync_cross_ms_ < now_tm_ms) {
-            SyncCrossPool(msg_ptr->thread_idx);
-            if (max_cross_pools_size_ > 1) {
-                prev_sync_cross_ms_ = now_tm_ms + kSyncCrossPeriod;
-            } else {
-                prev_sync_cross_ms_ = now_tm_ms + kSyncCrossPeriod / now_sharding_count_;
-            }
+    if (prev_sync_cross_ms_ < now_tm_ms) {
+        SyncCrossPool(msg_ptr->thread_idx);
+        if (max_cross_pools_size_ > 1) {
+            prev_sync_cross_ms_ = now_tm_ms + kSyncCrossPeriod;
+        } else {
+            prev_sync_cross_ms_ = now_tm_ms + kSyncCrossPeriod / now_sharding_count_;
         }
     }
 }
