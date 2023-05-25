@@ -291,19 +291,34 @@ void AccountManager::HandleRootCreateAddressTx(
         return;
     }
 
+    uint32_t sharding_id = common::kInvalidUint32;
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        if (tx.storages(i).key() == protos::kRootCreateAddressKey) {
+            uint32_t* tmp = (uint32_t*)tx.storages(i).val_hash().c_str();
+            sharding_id = tmp[0];
+            break;
+        }
+    }
+
+    if (sharding_id == common::kInvalidUint32) {
+        assert(false);
+        return;
+    }
+
+    uint32_t pool_index = common::GetAddressPoolIndex(block_tx.to());
     account_info = std::make_shared<address::protobuf::AddressInfo>();
-    account_info->set_pool_index(block.pool_index());
+    account_info->set_pool_index(pool_index);
     account_info->set_addr(tx.to());
     account_info->set_type(address::protobuf::kNormal);
-    account_info->set_sharding_id(block.network_id());
+    account_info->set_sharding_id(sharding_id);
     account_info->set_latest_height(block.height());
     account_info->set_balance(0);  // root address balance invalid
     address_map_[thread_idx].add(tx.to(), account_info);
     prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
     ZJC_DEBUG("create root address direct: %s, sharding: %u, pool index: %u",
         common::Encode::HexEncode(tx.to()).c_str(),
-        block.network_id(),
-        block.pool_index());
+        sharding_id,
+        pool_index);
 }
 
 

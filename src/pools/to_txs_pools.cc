@@ -256,6 +256,7 @@ void ToTxsPools::HandleRootCreateAddress(
         return;
     }
 
+    ZJC_DEBUG("success add root create address: sharding: %u, pool: %u", sharding_id, pool_index);
     AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index);
 }
 
@@ -663,6 +664,7 @@ int ToTxsPools::CreateToTxWithHeights(
                 common::Encode::HexEncode(iter->first).c_str(),
                 common::GlobalInfo::Instance()->network_id());
         } else if (iter->second.type == pools::protobuf::kRootCreateAddress) {
+            assert(sharding_id != network::kRootCongressNetworkId);
             to_item->set_sharding_id(sharding_id);
             str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
             ZJC_DEBUG("root create sharding address: %s, %u, pool: %u",
