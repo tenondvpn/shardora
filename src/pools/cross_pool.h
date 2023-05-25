@@ -153,7 +153,8 @@ private:
                 synced_height_ = pool_info.synced_height();
                 prev_synced_height_ = synced_height_;
                 to_sync_max_height_ = latest_height_;
-                ZJC_DEBUG("pool %lu, init height: %lu", pool_index_, latest_height_);
+                ZJC_DEBUG("init height tree latest info network: %u, pool %lu, init height: %lu",
+                    network_id, pool_index_, latest_height_);
             }
         }
     }
