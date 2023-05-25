@@ -56,6 +56,7 @@ uint32_t CrossPool::SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms) {
         return 0;
     }
 
+    prev_synced_time_ms_ = now_tm_ms + kSyncBlockPeriodMs;
     if (latest_height_ == common::kInvalidUint64) {
         // sync latest height from neighbors
         kv_sync_->AddSyncHeight(
@@ -70,7 +71,6 @@ uint32_t CrossPool::SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms) {
         return 1;
     }
 
-    prev_synced_time_ms_ = now_tm_ms + kSyncBlockPeriodMs;
     std::vector<uint64_t> invalid_heights;
     height_tree_ptr_->GetMissingHeights(&invalid_heights, latest_height_);
     if (invalid_heights.size() > 0) {

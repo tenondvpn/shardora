@@ -84,25 +84,53 @@ private:
                 ZJC_DEBUG("handle cross tx.");
                 auto& block_tx = block.tx_list(tx_idx);
                 for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-                    if (block_tx.storages(i).key() != protos::kShardCross) {
+                    pools::protobuf::CrossShardStatistic* cross_statistic = nullptr;
+                    if (sharding_id == network::kRootCongressNetworkId) {
+                        if (block_tx.storages(i).key() != protos::kShardCross) {
+                            continue;
+                        }
+
+                        std::string cross_val;
+                        if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &cross_val)) {
+                            assert(false);
+                            break;
+                        }
+
+                        pools::protobuf::CrossShardStatistic tmp_cross_statistic;
+                        if (!tmp_cross_statistic.ParseFromString(cross_val)) {
+                            assert(false);
+                            break;
+                        }
+
+                        cross_statistic = &tmp_cross_statistic;
+                    } else {
+                        if (block_tx.storages(i).key() != protos::kShardStatistic) {
+                            continue;
+                        }
+
+                        std::string val;
+                        if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
+                            assert(false);
+                            break;
+                        }
+
+                        pools::protobuf::ElectStatistic statistic;
+                        if (!statistic.ParseFromString(val)) {
+                            assert(false);
+                            break;
+                        }
+
+                        cross_statistic = &statistic.cross();
+                    }
+
+                    if (cross_statistic == nullptr) {
                         continue;
                     }
 
-                    std::string cross_val;
-                    if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &cross_val)) {
-                        assert(false);
-                        break;
-                    }
-
-                    pools::protobuf::CrossShardStatistic cross_statistic;
-                    if (!cross_statistic.ParseFromString(cross_val)) {
-                        assert(false);
-                        break;
-                    }
-
-                    for (int32_t cross_idx = 0; cross_idx < cross_statistic.crosses_size(); ++cross_idx) {
-                        auto& cross = cross_statistic.crosses(cross_idx);
-                        ZJC_DEBUG("cross shard block src net: %u, src pool: %u, height: %lu, des net: %u, local_sharding_id_: %u",
+                    for (int32_t cross_idx = 0; cross_idx < cross_statistic->crosses_size(); ++cross_idx) {
+                        auto& cross = cross_statistic->crosses(cross_idx);
+                        ZJC_DEBUG("cross shard block src net: %u, src pool: %u, height: %lu,"
+                            "des net: %u, local_sharding_id_: %u",
                             cross.src_shard(),
                             cross.src_pool(),
                             cross.height(),
