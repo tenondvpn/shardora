@@ -121,6 +121,8 @@ private:
         }
 
         if (check_height != prev_checked_height) {
+            ZJC_DEBUG("refresh cross block height local_sharding_id_: %u, sharding_id: %u, height: %lu",
+                local_sharding_id_, sharding_id, check_height);
             prefix_db_->SaveCheckCrossHeight(local_sharding_id_, sharding_id, check_height, wbatch);
         }
     }
