@@ -129,11 +129,7 @@ private:
     void InitHeightTree();
     void InitLatestInfo() {
         pools::protobuf::PoolLatestInfo pool_info;
-        uint32_t network_id = common::GlobalInfo::Instance()->network_id();
-        if (pool_index_ == common::kRootChainPoolIndex) {
-            network_id = network::kRootCongressNetworkId;
-        }
-
+        uint32_t network_id = des_sharding_id_;
         if (network_id == common::kInvalidUint32) {
             return;
         }
