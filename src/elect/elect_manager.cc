@@ -257,7 +257,6 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
             network::kRootCongressNetworkId,
             common::kRootChainPoolIndex,
             elect_block.prev_members().prev_elect_height());
-        assert(false);
         return false;
     }
 
