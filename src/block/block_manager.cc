@@ -518,7 +518,7 @@ void BlockManager::AddNewBlock(
 
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         switch (tx_list[i].step()) {
-        case pools::protobuf::kRootCreateAddressCrossSharding:
+//         case pools::protobuf::kRootCreateAddressCrossSharding:
         case pools::protobuf::kNormalTo:
             HandleNormalToTx(thread_idx, *block_item, tx_list[i], db_batch);
             break;
