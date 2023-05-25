@@ -309,7 +309,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     }
 
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
+    dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kSyncMessage);
     transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
