@@ -2068,6 +2068,7 @@ void BftManager::LeaderBroadcastBlock(
     switch (block->tx_list(0).step()) {
     case pools::protobuf::kRootCreateAddressCrossSharding:
     case pools::protobuf::kNormalTo:
+        ZJC_DEBUG("broadcast waiting block height: %lu", block->height());
         BroadcastLocalTosBlock(thread_index, block);
         break;
     case pools::protobuf::kConsensusRootElectShard:
@@ -2148,11 +2149,6 @@ void BftManager::BroadcastWaitingBlock(
 void BftManager::BroadcastLocalTosBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item) {
-    if (block_item->tx_list_size() != 1) {
-        assert(false);
-        return;
-    }
-
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;

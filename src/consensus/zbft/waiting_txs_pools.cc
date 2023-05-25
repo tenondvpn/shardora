@@ -187,6 +187,10 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(uint32_t pool_in
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(uint32_t pool_index, bool leader) {
+    if (pool_index == common::kRootChainPoolIndex) {
+        return nullptr;
+    }
+
     auto tx_ptr = block_mgr_->GetToTx(pool_index, leader);
     if (tx_ptr != nullptr) {
         if (leader) {

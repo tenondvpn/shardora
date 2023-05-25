@@ -1114,6 +1114,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
         }
     }
 
+    ++prev_pool_index_;
     return nullptr;
 }
 
