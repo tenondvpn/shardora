@@ -300,7 +300,8 @@ ZbftPtr BftManager::Start(
     }
 #endif
 
-    auto& elect_item = *elect_items_[elect_item_idx_];
+    auto elect_item_ptr = elect_items_[elect_item_idx_];
+    auto& elect_item = *elect_item_ptr;
     auto& thread_set = elect_item.thread_set;
     auto thread_item = thread_set[thread_index];
     if (thread_item == nullptr) {
@@ -1010,7 +1011,8 @@ void BftManager::BackupHandleZbftMessage(
     }
 
     if (msg_ptr->header.zbft().ips_size() > 0) {
-        auto& elect_item = *elect_items_[elect_item_idx_];
+        auto elect_item_ptr = elect_items_[elect_item_idx_];
+        auto& elect_item = *elect_item_ptr;
         auto& thread_set = elect_item.thread_set;
         auto thread_item = thread_set[msg_ptr->thread_idx];
         ZJC_DEBUG("0 get leader ips size: %u, thread: %d",
@@ -1797,7 +1799,8 @@ ZbftPtr BftManager::LeaderGetZbft(
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     if (msg_ptr->thread_idx == 0) {
-        auto& elect_item = *elect_items_[elect_item_idx_];
+        auto elect_item_ptr = elect_items_[elect_item_idx_];
+        auto& elect_item = *elect_item_ptr;
         auto& thread_set = elect_item.thread_set;
         auto thread_item = thread_set[msg_ptr->thread_idx];
         if (thread_item != nullptr && !thread_item->synced_ip) {
