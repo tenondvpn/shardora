@@ -45,9 +45,7 @@ private:
         }
 
         db::DbWriteBatch wbatch;
-        if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
-            common::GlobalInfo::Instance()->network_id() ==
-            network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
+        if (local_sharding_id_ == network::kRootCongressNetworkId) {
             for (uint32_t i = network::kConsensusShardBeginNetworkId; i <= max_sharding_id_; ++i) {
                 CheckCross(thread_idx, i, wbatch);
             }
@@ -72,6 +70,8 @@ private:
                     common::kRootChainPoolIndex,
                     check_height,
                     &block)) {
+                ZJC_DEBUG("failed get block net: %u, pool: %u, height: %lu",
+                    sharding_id, common::kRootChainPoolIndex, check_height);
                 break;
             }
 
