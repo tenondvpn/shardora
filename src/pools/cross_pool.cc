@@ -58,7 +58,15 @@ uint32_t CrossPool::SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms) {
 
     if (latest_height_ == common::kInvalidUint64) {
         // sync latest height from neighbors
-        return 0;
+        kv_sync_->AddSyncHeight(
+            thread_idx,
+            des_sharding_id_,
+            pool_index_,
+            0,
+            sync::kSyncHigh);
+        ZJC_DEBUG("pool: %u, sync missing blocks latest height: %lu, invaid heights size: %u, height: %lu",
+            pool_index_, latest_height_, 1, 0);
+        return 1;
     }
 
     prev_synced_time_ms_ = now_tm_ms + kSyncBlockPeriodMs;
