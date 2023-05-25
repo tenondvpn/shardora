@@ -503,10 +503,12 @@ void BlockManager::AddNewBlock(
         ZJC_DEBUG("add to ck.");
     }
 
-    if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
-            block_item->network_id() + network::kConsensusWaitingShardOffset !=
-            common::GlobalInfo::Instance()->network_id()) {
-        pools_mgr_->OnNewCrossBlock(thread_idx, block_item);
+    if (block_item->pool_index() == common::kRootChainPoolIndex) {
+        if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
+                block_item->network_id() + network::kConsensusWaitingShardOffset !=
+                common::GlobalInfo::Instance()->network_id()) {
+            pools_mgr_->OnNewCrossBlock(thread_idx, block_item);
+        }
     }
 
     const auto& tx_list = block_item->tx_list();
