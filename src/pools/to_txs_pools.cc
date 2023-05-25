@@ -514,6 +514,7 @@ int ToTxsPools::LeaderCreateToHeights(
         pools::protobuf::ToTxHeights& to_heights) {
     auto net_iter = network_txs_pools_.find(sharding_id);
     if (net_iter == network_txs_pools_.end()) {
+        ZJC_DEBUG("sharding_id: %u, leader failed create not exists shard", sharding_id);
         return kPoolsError;
     }
 
@@ -534,6 +535,7 @@ int ToTxsPools::LeaderCreateToHeights(
     }
 
     if (!valid) {
+        ZJC_DEBUG("sharding_id: %u, leader failed create invalid", sharding_id);
         return kPoolsError;
     }
 

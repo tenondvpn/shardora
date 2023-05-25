@@ -2068,7 +2068,7 @@ void BftManager::LeaderBroadcastBlock(
     switch (block->tx_list(0).step()) {
     case pools::protobuf::kRootCreateAddressCrossSharding:
     case pools::protobuf::kNormalTo:
-        ZJC_DEBUG("broadcast waiting block step: %u, height: %lu",
+        ZJC_DEBUG("broadcast to block step: %u, height: %lu",
             block->tx_list(0).step(), block->height());
         BroadcastLocalTosBlock(thread_index, block);
         break;
