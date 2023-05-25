@@ -84,7 +84,8 @@ void TxPoolManager::InitCrossPools() {
         cross_pools_[0].Init(network::kRootCongressNetworkId, db_, kv_sync_);
     }
 
-    ZJC_DEBUG("init cross pool success local_is_root: %d", local_is_root);
+    ZJC_DEBUG("init cross pool success local_is_root: %d, got_sharding_id: %u, des_sharding_id: %u",
+        local_is_root, got_sharding_id, des_sharding_id);
 }
 
 void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
