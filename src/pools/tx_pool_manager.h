@@ -6,6 +6,7 @@
 #include "common/bitmap.h"
 #include "common/thread_safe_queue.h"
 #include "common/unique_map.h"
+#include "network/network_utils.h"
 #include "pools/tx_pool.h"
 #include "pools/cross_pool.h"
 #include "protos/address.pb.h"
@@ -45,7 +46,16 @@ public:
             return;
         }
 
-        cross_pools_[block_item->network_id()].UpdateLatestInfo(thread_idx, block_item->height());
+        uint32_t index = 0;
+        if (max_cross_pools_size_ > 1 && block_item->network_id() >= network::kConsensusShardBeginNetworkId) {
+            index = block_item->network_id() - network::kConsensusShardBeginNetworkId;
+        } else {
+            if (block_item->network_id() != network::kRootCongressNetworkId) {
+                return;
+            }
+        }
+
+        cross_pools_[index].UpdateLatestInfo(thread_idx, block_item->height());
     }
 
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, const common::MembersPtr& members) {
