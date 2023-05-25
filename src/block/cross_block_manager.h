@@ -77,8 +77,14 @@ private:
 
             bool height_valid = true;
             for (int32_t tx_idx = 0; tx_idx < block.tx_list_size(); ++tx_idx) {
-                if (block.tx_list(tx_idx).step() != pools::protobuf::kCross) {
-                    continue;
+                if (sharding_id == network::kRootCongressNetworkId) {
+                    if (block.tx_list(tx_idx).step() != pools::protobuf::kCross) {
+                        continue;
+                    }
+                } else {
+                    if (block.tx_list(tx_idx).step() != pools::protobuf::kStatistic) {
+                        continue;
+                    }
                 }
 
                 ZJC_DEBUG("handle cross tx.");
