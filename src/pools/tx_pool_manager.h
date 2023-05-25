@@ -45,7 +45,7 @@ public:
             return;
         }
 
-        cross_pools_[max_cross_pools_size_].UpdateLatestInfo(thread_idx, block_item->height());
+        cross_pools_[block_item->network_id()].UpdateLatestInfo(thread_idx, block_item->height());
     }
 
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, const common::MembersPtr& members) {
