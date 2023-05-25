@@ -133,7 +133,7 @@ int NetworkInit::Init(int argc, char** argv) {
         vss_mgr_, block_mgr_, security_, bls_mgr_, db_,
         nullptr);
     kv_sync_->Init(block_mgr_, db_);
-    cross_block_mgr_ = std::make_shared<CrossBlockManager>(db_, kv_sync_);
+    cross_block_mgr_ = std::make_shared<block::CrossBlockManager>(db_, kv_sync_);
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(security_, db_, kv_sync_);
     account_mgr_->Init(
         common::GlobalInfo::Instance()->message_handler_thread_count(),

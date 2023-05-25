@@ -116,7 +116,7 @@ private:
     uint32_t invalid_pools_[common::kInvalidPoolIndex] = { 0 };
     uint64_t latest_elect_height_ = 0;
     std::shared_ptr<LeaderRotationInfo> rotation_leaders_ = nullptr;
-    std::shared_ptr<CrossBlockManager> cross_block_mgr_ = nullptr;
+    std::shared_ptr<block::CrossBlockManager> cross_block_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(NetworkInit);
 };
