@@ -296,6 +296,14 @@ void BlockManager::HandleNormalToTx(
     }
 
     to_txs_[to_txs.to_heights().sharding_id()] = nullptr;
+    if (tx.step() == pools::protobuf::kRootCreateAddressCrossSharding) {
+        if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
+                common::GlobalInfo::Instance()->network_id() ==
+                network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
+            return;
+        }
+    }
+
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
             ZJC_WARN("sharding invalid: %lu, %lu.",
@@ -519,11 +527,6 @@ void BlockManager::AddNewBlock(
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         switch (tx_list[i].step()) {
         case pools::protobuf::kRootCreateAddressCrossSharding:
-            if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
-                    common::GlobalInfo::Instance()->network_id() ==
-                    network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
-                break;
-            }
         case pools::protobuf::kNormalTo:
             HandleNormalToTx(thread_idx, *block_item, tx_list[i], db_batch);
             break;
