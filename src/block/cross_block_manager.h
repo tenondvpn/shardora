@@ -107,7 +107,7 @@ private:
                             cross.src_pool(),
                             cross.height(),
                             cross.des_shard(),
-                            local_sharding_id_)
+                            local_sharding_id_);
                         if (cross.des_shard() != local_sharding_id_ &&
                                 cross.des_shard() != network::kNodeNetworkId &&
                                 cross.des_shard() + network::kConsensusWaitingShardOffset !=
