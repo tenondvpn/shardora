@@ -84,7 +84,7 @@ private:
                 ZJC_DEBUG("handle cross tx.");
                 auto& block_tx = block.tx_list(tx_idx);
                 for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
-                    pools::protobuf::CrossShardStatistic* cross_statistic = nullptr;
+                    const pools::protobuf::CrossShardStatistic* cross_statistic = nullptr;
                     if (sharding_id == network::kRootCongressNetworkId) {
                         if (block_tx.storages(i).key() != protos::kShardCross) {
                             continue;
