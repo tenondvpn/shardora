@@ -73,9 +73,8 @@ void TxPoolManager::InitCrossPools() {
 
     if (local_is_root) {
         cross_pools_ = new CrossPool[network::kConsensusWaitingShardOffset];
-        for (uint32_t i = network::kConsensusShardBeginNetworkId;
-                i < network::kConsensusShardEndNetworkId; ++i) {
-            cross_pools_[i - network::kConsensusShardBeginNetworkId].Init(i, db_, kv_sync_);
+        for (uint32_t i = 0; i < network::kConsensusShardEndNetworkId; ++i) {
+            cross_pools_[i].Init(i, db_, kv_sync_);
         }
 
         max_cross_pools_size_ = network::kConsensusWaitingShardOffset;
