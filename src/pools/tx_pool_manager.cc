@@ -88,9 +88,9 @@ void TxPoolManager::InitCrossPools() {
 
 void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    prev_cross_sync_index_ %= max_cross_pools_size_;
+    prev_cross_sync_index_ %= now_sharding_count_;
     auto begin_pool = prev_cross_sync_index_;
-    for (; prev_cross_sync_index_ < max_cross_pools_size_; ++prev_cross_sync_index_) {
+    for (; prev_cross_sync_index_ < now_sharding_count_; ++prev_cross_sync_index_) {
         auto res = cross_pools_[prev_cross_sync_index_].SyncMissingBlocks(thread_idx, now_tm_ms);
         if (res > 0) {
             ++prev_cross_sync_index_;
