@@ -430,7 +430,7 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
             local_member_index_, bls_msg.index(),
             libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
             min_aggree_member_count_);
-        assert(false);
+//         assert(false);
         return;
     }
 
