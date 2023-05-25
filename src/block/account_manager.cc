@@ -305,7 +305,7 @@ void AccountManager::HandleRootCreateAddressTx(
         return;
     }
 
-    uint32_t pool_index = common::GetAddressPoolIndex(block_tx.to());
+    uint32_t pool_index = common::GetAddressPoolIndex(tx.to());
     account_info = std::make_shared<address::protobuf::AddressInfo>();
     account_info->set_pool_index(pool_index);
     account_info->set_addr(tx.to());
