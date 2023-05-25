@@ -5,6 +5,7 @@
 #include "common/utils.h"
 #include "common/global_info.h"
 #include "common/time_utils.h"
+#include "network//network_utils.h"
 #include "protos/prefix_db.h"
 #include "transport/processor.h"
 #include "transport/transport_utils.h"
@@ -228,6 +229,14 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
 }
 
 void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
+    if (msg_ptr->header.src_sharding_id() != common::GlobalInfo::Instance()->network_id() &&
+            msg_ptr->header.src_sharding_id() + network::kConsensusWaitingShardOffset !=
+            common::GlobalInfo::Instance()->network_id() &&
+            msg_ptr->header.src_sharding_id() !=
+            common::GlobalInfo::Instance()->network_id() + network::kConsensusWaitingShardOffset) {
+        return;
+    }
+
     auto& sync_msg = msg_ptr->header.sync_proto();
     if (!sync_msg.has_sync_value_res()) {
         return;
@@ -238,6 +247,12 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
         auto block_item = std::make_shared<block::protobuf::Block>();
         if (block_item->ParseFromString(iter->value()) &&
                 (iter->has_height() || !block_item->hash().empty())) {
+            if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
+                    block_item->network_id() + network::kConsensusWaitingShardOffset !=
+                    common::GlobalInfo::Instance()->network_id()) {
+                continue;
+            }
+
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             auto& msg = new_msg_ptr->header;
             msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
