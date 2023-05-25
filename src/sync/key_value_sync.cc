@@ -313,7 +313,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kSyncMessage);
     transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
-//     ZJC_DEBUG("sync response ok.");
+    ZJC_DEBUG("sync response ok des: %u", msg_ptr->header.src_sharding_id());
 }
 
 bool KeyValueSync::AddSyncKeyValue(transport::protobuf::Header* msg, const block::protobuf::Block& block) {

@@ -81,6 +81,7 @@ private:
                     continue;
                 }
 
+                ZJC_DEBUG("handle cross tx.");
                 auto& block_tx = block.tx_list(tx_idx);
                 for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
                     if (block_tx.storages(i).key() != protos::kShardCross) {
@@ -101,10 +102,16 @@ private:
 
                     for (int32_t cross_idx = 0; cross_idx < cross_statistic.crosses_size(); ++cross_idx) {
                         auto& cross = cross_statistic.crosses(cross_idx);
-                        if (cross.des_shard() != common::GlobalInfo::Instance()->network_id() &&
+                        ZJC_DEBUG("cross shard block src net: %u, src pool: %u, height: %lu, des net: %u, local_sharding_id_: %u",
+                            cross.src_shard(),
+                            cross.src_pool(),
+                            cross.height(),
+                            cross.des_shard(),
+                            local_sharding_id_)
+                        if (cross.des_shard() != local_sharding_id_ &&
                                 cross.des_shard() != network::kNodeNetworkId &&
-                                cross.des_shard() !=
-                                common::GlobalInfo::Instance()->network_id() + network::kConsensusWaitingShardOffset) {
+                                cross.des_shard() + network::kConsensusWaitingShardOffset !=
+                                local_sharding_id_) {
                             continue;
                         }
 
