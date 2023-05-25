@@ -40,8 +40,7 @@ public:
     void SetTimeout(uint32_t pool_index) {}
     void OnNewCrossBlock(
             uint8_t thread_idx,
-            const std::shared_ptr<block::protobuf::Block>& block_item,
-            db::DbWriteBatch& db_batch) {
+            const std::shared_ptr<block::protobuf::Block>& block_item) {
         if (cross_pools_ == nullptr || block_item->network_id() >= max_cross_pools_size_) {
             return;
         }

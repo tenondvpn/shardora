@@ -506,7 +506,7 @@ void BlockManager::AddNewBlock(
     if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
             block_item->network_id() + network::kConsensusWaitingShardOffset !=
             common::GlobalInfo::Instance()->network_id()) {
-        block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item);
+        pools_mgr_->OnNewCrossBlock(thread_idx, block_item);
     }
 
     const auto& tx_list = block_item->tx_list();
