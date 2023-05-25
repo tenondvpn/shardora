@@ -85,6 +85,7 @@ private:
                 auto& block_tx = block.tx_list(tx_idx);
                 for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
                     const pools::protobuf::CrossShardStatistic* cross_statistic = nullptr;
+                    pools::protobuf::CrossShardStatistic tmp_cross_statistic;
                     if (sharding_id == network::kRootCongressNetworkId) {
                         if (block_tx.storages(i).key() != protos::kShardCross) {
                             continue;
@@ -96,7 +97,6 @@ private:
                             break;
                         }
 
-                        pools::protobuf::CrossShardStatistic tmp_cross_statistic;
                         if (!tmp_cross_statistic.ParseFromString(cross_val)) {
                             assert(false);
                             break;
