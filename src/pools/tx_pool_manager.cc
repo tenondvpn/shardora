@@ -63,9 +63,9 @@ void TxPoolManager::InitCrossPools() {
     }
 
     bool local_is_root = false;
-    if (des_sharding_id != common::kInvalidUint32) {
-        if (des_sharding_id == network::kRootCongressNetworkId ||
-                des_sharding_id ==
+    if (got_sharding_id != common::kInvalidUint32) {
+        if (got_sharding_id == network::kRootCongressNetworkId ||
+                got_sharding_id ==
                 network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
             local_is_root = true;
         }
