@@ -545,6 +545,7 @@ bool BlsDkg::CheckRecomputeG2s(
         bls::protobuf::JoinElectBlsInfo& verfy_final_vals) {
     bls::protobuf::JoinElectInfo join_info;
     if (!prefix_db_->GetNodeVerificationVector(id, &join_info)) {
+        ZJC_DEBUG("success handle kElectJoin tx: %s", common::Encode::HexEncode(id).c_str());
         return false;
     }
 
