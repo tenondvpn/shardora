@@ -92,6 +92,7 @@ private:
                 for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
                     const pools::protobuf::CrossShardStatistic* cross_statistic = nullptr;
                     pools::protobuf::CrossShardStatistic tmp_cross_statistic;
+                    pools::protobuf::ElectStatistic statistic;
                     if (sharding_id == network::kRootCongressNetworkId) {
                         if (block_tx.storages(i).key() != protos::kShardCross) {
                             continue;
@@ -120,7 +121,6 @@ private:
                             break;
                         }
 
-                        pools::protobuf::ElectStatistic statistic;
                         if (!statistic.ParseFromString(val)) {
                             assert(false);
                             break;
