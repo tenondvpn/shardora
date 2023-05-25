@@ -229,10 +229,10 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
 }
 
 void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
-    if (msg_ptr->header.src_sharding_id() != common::GlobalInfo::Instance()->network_id() &&
-            msg_ptr->header.src_sharding_id() + network::kConsensusWaitingShardOffset !=
+    if ((uint32_t)msg_ptr->header.src_sharding_id() != common::GlobalInfo::Instance()->network_id() &&
+            (uint32_t)msg_ptr->header.src_sharding_id() + network::kConsensusWaitingShardOffset !=
             common::GlobalInfo::Instance()->network_id() &&
-            msg_ptr->header.src_sharding_id() !=
+            (uint32_t)msg_ptr->header.src_sharding_id() !=
             common::GlobalInfo::Instance()->network_id() + network::kConsensusWaitingShardOffset) {
         return;
     }
