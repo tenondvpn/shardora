@@ -243,7 +243,7 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
         ELECT_DEBUG("not has prev members. has: %d. pre elect height: %lu",
             elect_block.has_prev_members(),
             elect_block.prev_members().prev_elect_height());
-        assert(false);
+//         assert(false);
         return false;
     }
 
