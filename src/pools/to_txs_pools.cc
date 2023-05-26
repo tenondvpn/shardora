@@ -309,7 +309,8 @@ void ToTxsPools::AddTxToMap(
         item.type = type;
         item.elect_join_g2_key = key;
         height_iter->second[to] = item;
-        ZJC_DEBUG("add to %s step: %u", common::Encode::HexEncode(to).c_str(), type);
+        ZJC_DEBUG("add to %s step: %u, des sharding_id: %u",
+            common::Encode::HexEncode(to).c_str(), type, sharding_id);
     }
     
     height_iter->second[to].amount += amount;
@@ -688,9 +689,9 @@ int ToTxsPools::CreateToTxWithHeights(
         }
 
         str_for_hash.append((char*)&iter->second.pool_index, sizeof(iter->second.pool_index));
-        ZJC_DEBUG("set to %s amount %lu, sharding id: %u, pool index: %d",
+        ZJC_DEBUG("set to %s amount %lu, sharding id: %u, des sharding id: %u, pool index: %d",
             common::Encode::HexEncode(iter->first).c_str(),
-            iter->second.amount, to_item->sharding_id(), iter->second.pool_index);
+            iter->second.amount, to_item->sharding_id(), sharding_id, iter->second.pool_index);
     }
 
     *to_hash = common::Hash::keccak256(str_for_hash);

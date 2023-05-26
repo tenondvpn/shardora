@@ -214,7 +214,7 @@ void AccountManager::HandleLocalToTx(
             account_info->set_latest_height(block.height());
             account_info->set_balance(to_txs.tos(i).balance());
             address_map_[thread_idx].add(to_txs.tos(i).to(), account_info);
-            prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info);
+            prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
         } else {
             account_info->set_latest_height(block.height());
             account_info->set_balance(to_txs.tos(i).balance());
