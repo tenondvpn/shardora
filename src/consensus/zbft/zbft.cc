@@ -329,7 +329,6 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
         // times_[times_index_ - 2] = times_[times_index_ - 1];
         //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
 
-        leader_tbft_prepare_hash_ = prpare_hash;
         std::string msg_hash_src;
         msg_hash_src.reserve(32 + 128);
         msg_hash_src.append(prpare_hash);

@@ -470,7 +470,6 @@ protected:
     std::string handle_last_error_msg_;
     std::unordered_map<std::string, std::shared_ptr<LeaderPrepareItem>> prepare_block_map_;
     common::Bitmap prepare_bitmap_;
-    std::string leader_tbft_prepare_hash_;
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<WaitingTxsItem> txs_ptr_ = nullptr;
     std::shared_ptr<consensus::WaitingTxsPools> pools_mgr_ = nullptr;
