@@ -73,9 +73,9 @@ void TxPoolManager::InitCrossPools() {
 
     if (local_is_root) {
         cross_pools_ = new CrossPool[network::kConsensusWaitingShardOffset];
-        for (uint32_t i = network::kRootCongressNetworkId;
+        for (uint32_t i = network::kConsensusShardBeginNetworkId;
                 i < network::kConsensusShardEndNetworkId; ++i) {
-            cross_pools_[i - network::kRootCongressNetworkId].Init(i, db_, kv_sync_);
+            cross_pools_[i - network::kConsensusShardBeginNetworkId].Init(i, db_, kv_sync_);
         }
 
         max_cross_pools_size_ = network::kConsensusWaitingShardOffset;
@@ -90,6 +90,11 @@ void TxPoolManager::InitCrossPools() {
 
 void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
+    if (max_cross_pools_size_ == 1) {
+        cross_pools_[0].SyncMissingBlocks(thread_idx, now_tm_ms);
+        return;
+    }
+
     prev_cross_sync_index_ %= now_sharding_count_;
     auto begin_pool = prev_cross_sync_index_;
     for (; prev_cross_sync_index_ < now_sharding_count_; ++prev_cross_sync_index_) {
