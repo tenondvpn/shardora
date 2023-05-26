@@ -431,7 +431,6 @@ void Zbft::CreatePrecommitVerifyHash() {
 void Zbft::CreateCommitVerifyHash() {
     uint32_t t = min_aggree_member_count_;
     uint32_t n = members_ptr_->size();
-//     ZJC_DEBUG("commit get pk verify hash begin.");
     if (bls_mgr_->GetVerifyHash(
             t,
             n,
@@ -440,9 +439,6 @@ void Zbft::CreateCommitVerifyHash() {
             &commit_bls_agg_verify_hash_) != bls::kBlsSuccess) {
         ZJC_ERROR("get commit hash failed!");
     }
-//     ZJC_DEBUG("commit get pk verify hash end: %s, hash: %s",
-//         common::Encode::HexEncode(commit_bls_agg_verify_hash_).c_str(),
-//         common::Encode::HexEncode(precommit_hash_).c_str());
 }
 
 void Zbft::AfterNetwork() {
@@ -480,15 +476,6 @@ int Zbft::LeaderCreateCommitAggSign() {
         bls_commit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(bls_instance.SignatureRecover(
             all_signs,
             lagrange_coeffs));
-        std::string msg_hash_src;
-        msg_hash_src.reserve(32 + 128);
-        msg_hash_src.append(precommit_hash());
-        for (uint32_t i = 0; i < precommit_bitmap_.data().size(); ++i) {
-            auto& data = precommit_bitmap_.data()[i];
-            msg_hash_src.append((char*)&data, sizeof(data));// precommit_bitmap_.data()[i]);
-        }
-
-        commit_hash_ = common::Hash::keccak256(msg_hash_src);
 //         ZJC_INFO("commit verify start,");
         std::string sign_commit_hash;
         if (bls_mgr_->GetVerifyHash(

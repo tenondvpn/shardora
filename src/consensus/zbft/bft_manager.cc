@@ -2246,11 +2246,6 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
             common::Encode::HexEncode(bft_ptr->gid()).c_str());
         return kConsensusSuccess;
     }
-    
-    if (bft_ptr->precommit_hash().empty()) {
-        ZJC_ERROR("precommit hash empty.");
-        return kConsensusError;
-    }
 
     std::vector<uint64_t> bitmap_data;
     for (int32_t i = 0; i < bft_msg.commit_bitmap_size(); ++i) {

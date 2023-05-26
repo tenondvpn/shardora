@@ -175,11 +175,9 @@ bool BftProto::LeaderCreateCommit(
         auto& bls_commit_sign = bft_ptr->bls_commit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->X));
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->Y));
-        std::string msg_hash_src = bft_ptr->precommit_hash();
         const auto& commit_bitmap_data = bft_ptr->precommit_bitmap().data();
         for (uint32_t i = 0; i < commit_bitmap_data.size(); ++i) {
             bft_msg.add_commit_bitmap(commit_bitmap_data[i]);
-            msg_hash_src += std::to_string(commit_bitmap_data[i]);
         }
     }
 

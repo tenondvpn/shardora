@@ -172,10 +172,6 @@ public:
         return prepare_bitmap_;
     }
 
-    const std::string& precommit_hash() const {
-        return precommit_hash_;
-    }
-
     bool set_bls_precommit_agg_sign(const libff::alt_bn128_G1& agg_sign, const std::string& sign_hash);
 
     const std::shared_ptr<libff::alt_bn128_G1>& bls_precommit_agg_sign() const {
@@ -465,7 +461,6 @@ protected:
     std::shared_ptr<libff::alt_bn128_G1> bls_precommit_agg_sign_{ nullptr };
     std::shared_ptr<libff::alt_bn128_G1> bls_commit_agg_sign_{ nullptr };
     std::string precommit_hash_;
-    std::string commit_hash_;
     uint32_t prepare_verify_failed_count_{ 0 };
     libff::alt_bn128_Fr local_sec_key_{ libff::alt_bn128_Fr::zero() };
     libff::alt_bn128_G2 common_pk_{ libff::alt_bn128_G2::zero() };
