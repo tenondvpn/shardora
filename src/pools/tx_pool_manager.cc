@@ -92,6 +92,16 @@ void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (max_cross_pools_size_ == 1) {
         cross_pools_[0].SyncMissingBlocks(thread_idx, now_tm_ms);
+        if (cross_pools_[0].latest_height() == common::kInvalidUint64 ||
+                cross_pools_[0].latest_height() < cross_synced_max_heights_[0]) {
+            kv_sync_->AddSyncHeight(
+                thread_idx,
+                network::kRootCongressNetworkId,
+                common::kRootChainPoolIndex,
+                cross_synced_max_heights_[0],
+                sync::kSyncHigh);
+        }
+
         return;
     }
 
@@ -103,6 +113,17 @@ void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
             ++prev_cross_sync_index_;
             return;
         }
+
+        if (cross_pools_[prev_cross_sync_index_].latest_height() == common::kInvalidUint64 ||
+                cross_pools_[prev_cross_sync_index_].latest_height() <
+                cross_synced_max_heights_[prev_cross_sync_index_]) {
+            kv_sync_->AddSyncHeight(
+                thread_idx,
+                network::kConsensusShardBeginNetworkId + prev_cross_sync_index_,
+                common::kRootChainPoolIndex,
+                cross_synced_max_heights_[prev_cross_sync_index_],
+                sync::kSyncHigh);
+        }
     }
 
     for (prev_cross_sync_index_ = 0; prev_cross_sync_index_ < begin_pool; ++prev_cross_sync_index_) {
@@ -110,6 +131,17 @@ void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
         if (res > 0) {
             ++prev_cross_sync_index_;
             return;
+        }
+
+        if (cross_pools_[prev_cross_sync_index_].latest_height() == common::kInvalidUint64 ||
+                cross_pools_[prev_cross_sync_index_].latest_height() <
+                cross_synced_max_heights_[prev_cross_sync_index_]) {
+            kv_sync_->AddSyncHeight(
+                thread_idx,
+                network::kConsensusShardBeginNetworkId + prev_cross_sync_index_,
+                common::kRootChainPoolIndex,
+                cross_synced_max_heights_[prev_cross_sync_index_],
+                sync::kSyncHigh);
         }
     }
 }
@@ -420,6 +452,14 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             }
         }
 
+        if (max_cross_pools_size_ == 1) {
+            sync_heights->add_cross_heights(cross_pools_[0]->latest_height());
+        } else {
+            for (uint32_t i = 0; i < now_sharding_count_; ++i) {
+                sync_heights->add_cross_heights(cross_pools_[i]->latest_height());
+            }
+        }
+
         transport::TcpTransport::Instance()->SetMessageHash(
             msg,
             msg_ptr->thread_idx);
@@ -444,6 +484,25 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
 
                 if (heights[i] > tx_pool_[i].latest_height()) {
                     synced_max_heights_[i] = heights[i];
+                }
+            }
+        }
+
+        auto& cross_heights = msg_ptr->header.sync_heights().cross_heights();
+        for (int32_t i = 0; i < cross_heights.size(); ++i) {
+            if (cross_heights[i] != common::kInvalidUint64) {
+                if (tx_pool_[i].latest_height() == common::kInvalidUint64 && cross_synced_max_heights_[i] < cross_heights[i]) {
+                    cross_synced_max_heights_[i] = cross_heights[i];
+                    continue;
+                }
+
+                if (cross_heights[i] > tx_pool_[i].latest_height() + 64) {
+                    cross_synced_max_heights_[i] = tx_pool_[i].latest_height() + 64;
+                    continue;
+                }
+
+                if (cross_heights[i] > tx_pool_[i].latest_height()) {
+                    cross_synced_max_heights_[i] = cross_heights[i];
                 }
             }
         }

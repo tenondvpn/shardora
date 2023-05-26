@@ -197,6 +197,7 @@ private:
     uint32_t prev_synced_pool_index_ = 0;
     uint32_t prev_sync_height_tree_tm_ms_ = 0;
     volatile uint64_t synced_max_heights_[common::kInvalidPoolIndex] = { 0 };
+    volatile uint64_t cross_synced_max_heights_[network::kConsensusWaitingShardOffset] = { 0 };
     uint64_t latest_elect_height_ = 0;
     uint32_t latest_leader_count_ = 0;
     CrossPool* cross_pools_ = nullptr;

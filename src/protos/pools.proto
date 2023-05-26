@@ -97,6 +97,7 @@ message ElectStatistic {
 message SyncPoolsMaxHeight {
     optional bool req = 1 [default=false];
     repeated uint64 heights = 2;
+    repeated uint64 cross_heights = 3;
 }
 
 message TxMessage {
