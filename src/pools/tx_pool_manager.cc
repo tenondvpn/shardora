@@ -445,18 +445,14 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
         auto* sync_heights = msg.mutable_sync_heights();
         uint32_t pool_idx = common::kInvalidPoolIndex;
         for (uint32_t i = 0; i < pool_idx; ++i) {
-            if (tx_pool_[i].latest_height() == common::kInvalidUint64) {
-                sync_heights->add_heights(0);
-            } else {
-                sync_heights->add_heights(tx_pool_[i].latest_height());
-            }
+            sync_heights->add_heights(tx_pool_[i].latest_height());
         }
 
         if (max_cross_pools_size_ == 1) {
-            sync_heights->add_cross_heights(cross_pools_[0]->latest_height());
+            sync_heights->add_cross_heights(cross_pools_[0].latest_height());
         } else {
             for (uint32_t i = 0; i < now_sharding_count_; ++i) {
-                sync_heights->add_cross_heights(cross_pools_[i]->latest_height());
+                sync_heights->add_cross_heights(cross_pools_[i].latest_height());
             }
         }
 
