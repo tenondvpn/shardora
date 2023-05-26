@@ -65,9 +65,6 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
             broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
         } else {
             dht_ptr->SendToClosestNode(msg_ptr);
-            if (message.type() == common::kElectMessage) {
-                NETWORK_ERROR("TTTTTTTT message.type() == common::kElectMessage des_net_id: %d send to close node.", des_net_id);
-            }
         }
         return kNetworkSuccess;
     }
@@ -106,6 +103,7 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
 
     if (header.has_broadcast()) {
         Broadcast(header_ptr->thread_idx, header_ptr);
+        ZJC_DEBUG("broadcast: %lu", header_ptr->header.hash64());
 //         broadcast_queue_[header_ptr->thread_idx].push(header_ptr);
 //         broadcast_con_.notify_one();
     }

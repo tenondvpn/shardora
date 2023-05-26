@@ -896,8 +896,10 @@ int ShardStatistic::StatisticWithHeights(
 
     *elect_statistic.mutable_heights() = leader_to_heights;
     prefix_db_->SaveTemporaryKv(*statistic_hash, elect_statistic.SerializeAsString());
-    ZJC_DEBUG("success create statistic message: %s, heights: %s",
-        debug_for_str.c_str(), heights.c_str());
+    ZJC_DEBUG("success create statistic message: %s, heights: %s, hash: %s",
+        debug_for_str.c_str(),
+        heights.c_str(),
+        common::Encode::HexEncode(*statistic_hash).c_str());
     return kPoolsSuccess;
 }
 
