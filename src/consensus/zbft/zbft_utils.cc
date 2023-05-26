@@ -101,8 +101,8 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
         leader_idx,
         common::Encode::HexEncode(common::Hash::keccak256(msg)).c_str(),
         common::Encode::HexEncode(msg).c_str(),
-        commit_pool_index,
-        commit_height);
+        block.commit_pool_index(),
+        block.commit_height());
     return common::Hash::keccak256(msg);
 }
 
