@@ -1811,6 +1811,18 @@ class SyncPoolsMaxHeight : public ::google::protobuf::Message /* @@protoc_insert
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
       mutable_heights();
 
+  // repeated uint64 cross_heights = 3;
+  int cross_heights_size() const;
+  void clear_cross_heights();
+  static const int kCrossHeightsFieldNumber = 3;
+  ::google::protobuf::uint64 cross_heights(int index) const;
+  void set_cross_heights(int index, ::google::protobuf::uint64 value);
+  void add_cross_heights(::google::protobuf::uint64 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+      cross_heights() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+      mutable_cross_heights();
+
   // optional bool req = 1 [default = false];
   bool has_req() const;
   void clear_req();
@@ -1827,6 +1839,7 @@ class SyncPoolsMaxHeight : public ::google::protobuf::Message /* @@protoc_insert
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > heights_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > cross_heights_;
   bool req_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
@@ -3684,6 +3697,36 @@ inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
 SyncPoolsMaxHeight::mutable_heights() {
   // @@protoc_insertion_point(field_mutable_list:zjchain.pools.protobuf.SyncPoolsMaxHeight.heights)
   return &heights_;
+}
+
+// repeated uint64 cross_heights = 3;
+inline int SyncPoolsMaxHeight::cross_heights_size() const {
+  return cross_heights_.size();
+}
+inline void SyncPoolsMaxHeight::clear_cross_heights() {
+  cross_heights_.Clear();
+}
+inline ::google::protobuf::uint64 SyncPoolsMaxHeight::cross_heights(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.SyncPoolsMaxHeight.cross_heights)
+  return cross_heights_.Get(index);
+}
+inline void SyncPoolsMaxHeight::set_cross_heights(int index, ::google::protobuf::uint64 value) {
+  cross_heights_.Set(index, value);
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.SyncPoolsMaxHeight.cross_heights)
+}
+inline void SyncPoolsMaxHeight::add_cross_heights(::google::protobuf::uint64 value) {
+  cross_heights_.Add(value);
+  // @@protoc_insertion_point(field_add:zjchain.pools.protobuf.SyncPoolsMaxHeight.cross_heights)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+SyncPoolsMaxHeight::cross_heights() const {
+  // @@protoc_insertion_point(field_list:zjchain.pools.protobuf.SyncPoolsMaxHeight.cross_heights)
+  return cross_heights_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+SyncPoolsMaxHeight::mutable_cross_heights() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.pools.protobuf.SyncPoolsMaxHeight.cross_heights)
+  return &cross_heights_;
 }
 
 // -------------------------------------------------------------------

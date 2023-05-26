@@ -435,7 +435,9 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::SyncPoolsMaxHeight, req_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::SyncPoolsMaxHeight, heights_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::SyncPoolsMaxHeight, cross_heights_),
   0,
+  ~0u,
   ~0u,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::TxMessage, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::pools::protobuf::TxMessage, _internal_metadata_),
@@ -480,8 +482,8 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 95, 104, sizeof(::zjchain::pools::protobuf::CrossShardStatisticItem)},
   { 108, 114, sizeof(::zjchain::pools::protobuf::CrossShardStatistic)},
   { 115, 127, sizeof(::zjchain::pools::protobuf::ElectStatistic)},
-  { 134, 141, sizeof(::zjchain::pools::protobuf::SyncPoolsMaxHeight)},
-  { 143, 161, sizeof(::zjchain::pools::protobuf::TxMessage)},
+  { 134, 142, sizeof(::zjchain::pools::protobuf::SyncPoolsMaxHeight)},
+  { 145, 163, sizeof(::zjchain::pools::protobuf::TxMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -554,28 +556,29 @@ void AddDescriptorsImpl() {
       "buf.JoinElectNode\022\023\n\013sharding_id\030\004 \001(\r\022\022"
       "\n\ngas_amount\030\005 \001(\004\022\023\n\013lof_leaders\030\006 \003(\r\022"
       ":\n\005cross\030\007 \001(\0132+.zjchain.pools.protobuf."
-      "CrossShardStatistic\"9\n\022SyncPoolsMaxHeigh"
-      "t\022\022\n\003req\030\001 \001(\010:\005false\022\017\n\007heights\030\002 \003(\004\"\240"
-      "\002\n\tTxMessage\022\017\n\007version\030\001 \001(\r\022\013\n\003gid\030\002 \001"
-      "(\014\022\016\n\006pubkey\030\003 \001(\014\022\021\n\tgas_limit\030\004 \001(\004\022\021\n"
-      "\tgas_price\030\005 \001(\004\022\013\n\003key\030\006 \001(\014\022\r\n\005value\030\007"
-      " \001(\014\022\n\n\002to\030\010 \001(\014\022\016\n\006amount\030\t \001(\004\022;\n\004step"
-      "\030\n \001(\0162 .zjchain.pools.protobuf.StepType"
-      ":\013kNormalFrom\022\033\n\023contract_prepayment\030\013 \001"
-      "(\004\022\025\n\rcontract_code\030\014 \001(\014\022\026\n\016contract_in"
-      "put\030\r \001(\014*\373\002\n\010StepType\022\017\n\013kNormalFrom\020\000\022"
-      "\r\n\tkNormalTo\020\001\022\034\n\030kConsensusRootElectSha"
-      "rd\020\002\022\033\n\027kConsensusRootTimeBlock\020\003\022!\n\035kCo"
-      "nsensusCreateGenesisAcount\020\004\022\026\n\022kConsens"
-      "usLocalTos\020\005\022\033\n\027kContractUserCreateCall\020"
-      "\006\022\032\n\026kContractGasPrepayment\020\007\022\023\n\017kContra"
-      "ctExcute\020\010\022\026\n\022kRootCreateAddress\020\t\022#\n\037kR"
-      "ootCreateAddressCrossSharding\020\013\022\016\n\nkStat"
-      "istic\020\014\022\016\n\nkJoinElect\020\r\022\022\n\016kCreateLibrar"
-      "y\020\016\022\n\n\006kCross\020\017\022\016\n\nkRootCross\020\020"
+      "CrossShardStatistic\"P\n\022SyncPoolsMaxHeigh"
+      "t\022\022\n\003req\030\001 \001(\010:\005false\022\017\n\007heights\030\002 \003(\004\022\025"
+      "\n\rcross_heights\030\003 \003(\004\"\240\002\n\tTxMessage\022\017\n\007v"
+      "ersion\030\001 \001(\r\022\013\n\003gid\030\002 \001(\014\022\016\n\006pubkey\030\003 \001("
+      "\014\022\021\n\tgas_limit\030\004 \001(\004\022\021\n\tgas_price\030\005 \001(\004\022"
+      "\013\n\003key\030\006 \001(\014\022\r\n\005value\030\007 \001(\014\022\n\n\002to\030\010 \001(\014\022"
+      "\016\n\006amount\030\t \001(\004\022;\n\004step\030\n \001(\0162 .zjchain."
+      "pools.protobuf.StepType:\013kNormalFrom\022\033\n\023"
+      "contract_prepayment\030\013 \001(\004\022\025\n\rcontract_co"
+      "de\030\014 \001(\014\022\026\n\016contract_input\030\r \001(\014*\373\002\n\010Ste"
+      "pType\022\017\n\013kNormalFrom\020\000\022\r\n\tkNormalTo\020\001\022\034\n"
+      "\030kConsensusRootElectShard\020\002\022\033\n\027kConsensu"
+      "sRootTimeBlock\020\003\022!\n\035kConsensusCreateGene"
+      "sisAcount\020\004\022\026\n\022kConsensusLocalTos\020\005\022\033\n\027k"
+      "ContractUserCreateCall\020\006\022\032\n\026kContractGas"
+      "Prepayment\020\007\022\023\n\017kContractExcute\020\010\022\026\n\022kRo"
+      "otCreateAddress\020\t\022#\n\037kRootCreateAddressC"
+      "rossSharding\020\013\022\016\n\nkStatistic\020\014\022\016\n\nkJoinE"
+      "lect\020\r\022\022\n\016kCreateLibrary\020\016\022\n\n\006kCross\020\017\022\016"
+      "\n\nkRootCross\020\020"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 2111);
+      descriptor, 2134);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/pools.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -4383,6 +4386,7 @@ void SyncPoolsMaxHeight::InitAsDefaultInstance() {
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int SyncPoolsMaxHeight::kReqFieldNumber;
 const int SyncPoolsMaxHeight::kHeightsFieldNumber;
+const int SyncPoolsMaxHeight::kCrossHeightsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 SyncPoolsMaxHeight::SyncPoolsMaxHeight()
@@ -4396,7 +4400,8 @@ SyncPoolsMaxHeight::SyncPoolsMaxHeight(const SyncPoolsMaxHeight& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_),
-      heights_(from.heights_) {
+      heights_(from.heights_),
+      cross_heights_(from.cross_heights_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   req_ = from.req_;
   // @@protoc_insertion_point(copy_constructor:zjchain.pools.protobuf.SyncPoolsMaxHeight)
@@ -4435,6 +4440,7 @@ void SyncPoolsMaxHeight::Clear() {
   (void) cached_has_bits;
 
   heights_.Clear();
+  cross_heights_.Clear();
   req_ = false;
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -4483,6 +4489,25 @@ bool SyncPoolsMaxHeight::MergePartialFromCodedStream(
         break;
       }
 
+      // repeated uint64 cross_heights = 3;
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 1, 24u, input, this->mutable_cross_heights())));
+        } else if (
+            static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, this->mutable_cross_heights())));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -4521,6 +4546,12 @@ void SyncPoolsMaxHeight::SerializeWithCachedSizes(
       2, this->heights(i), output);
   }
 
+  // repeated uint64 cross_heights = 3;
+  for (int i = 0, n = this->cross_heights_size(); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(
+      3, this->cross_heights(i), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -4545,6 +4576,10 @@ void SyncPoolsMaxHeight::SerializeWithCachedSizes(
   target = ::google::protobuf::internal::WireFormatLite::
     WriteUInt64ToArray(2, this->heights_, target);
 
+  // repeated uint64 cross_heights = 3;
+  target = ::google::protobuf::internal::WireFormatLite::
+    WriteUInt64ToArray(3, this->cross_heights_, target);
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -4568,6 +4603,15 @@ size_t SyncPoolsMaxHeight::ByteSizeLong() const {
       UInt64Size(this->heights_);
     total_size += 1 *
                   ::google::protobuf::internal::FromIntSize(this->heights_size());
+    total_size += data_size;
+  }
+
+  // repeated uint64 cross_heights = 3;
+  {
+    size_t data_size = ::google::protobuf::internal::WireFormatLite::
+      UInt64Size(this->cross_heights_);
+    total_size += 1 *
+                  ::google::protobuf::internal::FromIntSize(this->cross_heights_size());
     total_size += data_size;
   }
 
@@ -4604,6 +4648,7 @@ void SyncPoolsMaxHeight::MergeFrom(const SyncPoolsMaxHeight& from) {
   (void) cached_has_bits;
 
   heights_.MergeFrom(from.heights_);
+  cross_heights_.MergeFrom(from.cross_heights_);
   if (from.has_req()) {
     set_req(from.req());
   }
@@ -4634,6 +4679,7 @@ void SyncPoolsMaxHeight::Swap(SyncPoolsMaxHeight* other) {
 void SyncPoolsMaxHeight::InternalSwap(SyncPoolsMaxHeight* other) {
   using std::swap;
   heights_.InternalSwap(&other->heights_);
+  cross_heights_.InternalSwap(&other->cross_heights_);
   swap(req_, other->req_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
