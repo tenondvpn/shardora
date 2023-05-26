@@ -450,6 +450,7 @@ ZbftPtr BftManager::StartBft(
 }
 
 void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    ZJC_DEBUG("message coming msg hash: %lu", msg_ptr->header.hash64());
     auto& header = msg_ptr->header;
     assert(header.type() == common::kConsensusMessage);
     if (msg_ptr->header.zbft().sync_block() && msg_ptr->header.zbft().has_block()) {

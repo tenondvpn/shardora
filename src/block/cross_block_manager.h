@@ -46,7 +46,7 @@ private:
 
         db::DbWriteBatch wbatch;
         if (local_sharding_id_ == network::kRootCongressNetworkId) {
-            for (uint32_t i = network::kConsensusShardBeginNetworkId; i <= max_sharding_id_; ++i) {
+            for (uint32_t i = network::kRootCongressNetworkId; i <= max_sharding_id_; ++i) {
                 CheckCross(thread_idx, i, wbatch);
             }
         } else {

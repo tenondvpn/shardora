@@ -201,7 +201,7 @@ private:
     uint32_t latest_leader_count_ = 0;
     CrossPool* cross_pools_ = nullptr;
     uint32_t max_cross_pools_size_ = 1;
-    uint32_t now_sharding_count_ = 1;
+    uint32_t now_sharding_count_ = 2;
     uint32_t prev_cross_sync_index_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
