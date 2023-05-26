@@ -1420,6 +1420,7 @@ int BftManager::CheckPrecommit(
         bft_ptr->set_prepare_bitmap(bitmap_data);
         backup_agree_commit = true;
     } while (0);
+
     msg_ptr->response->header.mutable_zbft()->set_agree_commit(backup_agree_commit);
 //     assert(backup_agree_commit);
     if (!backup_agree_commit) {

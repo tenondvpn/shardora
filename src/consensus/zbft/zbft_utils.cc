@@ -78,8 +78,14 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
     msg.append((char*)&elect_height, sizeof(elect_height));
     uint32_t leader_idx = block.leader_index();
     msg.append((char*)&leader_idx, sizeof(leader_idx));
+    uint32_t commit_pool_index = block.commit_pool_index();
+    msg.append((char*)&commit_pool_index, sizeof(commit_pool_index));
+    uint64_t commit_height = block.commit_height();
+    msg.append((char*)&commit_height, sizeof(commit_height));
+
     ZJC_DEBUG("block.prehash(): %s, height: %lu,pool_idx: %u, sharding_id: %u, vss_random: %lu, "
-        "timeblock_height: %lu, elect_height: %lu, leader_idx: %u, get block hash: %s, %s",
+        "timeblock_height: %lu, elect_height: %lu, leader_idx: %u, get block hash: %s, %s,"
+        "commit_pool_index: %u, commit_height: %lu",
         common::Encode::HexEncode(block.prehash()).c_str(),
         height,
         pool_idx,
@@ -89,7 +95,9 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
         elect_height,
         leader_idx,
         common::Encode::HexEncode(common::Hash::keccak256(msg)).c_str(),
-        common::Encode::HexEncode(msg).c_str());
+        common::Encode::HexEncode(msg).c_str(),
+        commit_pool_index,
+        commit_height);
     return common::Hash::keccak256(msg);
 }
 

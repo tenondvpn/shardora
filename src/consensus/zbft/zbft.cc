@@ -620,6 +620,11 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
         return kConsensusNoNewTxs;
     }
 
+    if (pipeline_prev_zbft_ptr_ != nullptr) {
+        zjc_block.set_commit_pool_index(pipeline_prev_zbft_ptr_->prepare_block()->pool_index());
+        zjc_block.set_commit_height(pipeline_prev_zbft_ptr_->prepare_block()->height());
+    }
+
     zjc_block.set_hash(GetBlockHash(zjc_block));
     tx_bft.set_prepare_final_hash(zjc_block.hash());
     tx_bft.set_height(zjc_block.height());
