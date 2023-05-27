@@ -132,7 +132,10 @@ int NetworkInit::Init(int argc, char** argv) {
     elect_mgr_ = std::make_shared<elect::ElectManager>(
         vss_mgr_, block_mgr_, security_, bls_mgr_, db_,
         nullptr);
-    kv_sync_->Init(block_mgr_, db_);
+    kv_sync_->Init(
+        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1),
+        block_mgr_,
+        db_);
     cross_block_mgr_ = std::make_shared<block::CrossBlockManager>(db_, kv_sync_);
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(security_, db_, kv_sync_);
     account_mgr_->Init(
@@ -158,6 +161,7 @@ int NetworkInit::Init(int argc, char** argv) {
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     bft_mgr_ = std::make_shared<consensus::BftManager>();
     auto bft_init_res = bft_mgr_->Init(
+        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1),
         contract_mgr_,
         gas_prepayment_,
         vss_mgr_,
@@ -1201,6 +1205,10 @@ void NetworkInit::HandleElectionBlock(
             std::bind(&NetworkInit::SendJoinElectTransaction, this, std::placeholders::_1));
         ZJC_DEBUG("now send join elect request transaction.");
     }
+}
+
+bool NetworkInit::BlockBlsAggSignatureValid(const block::protobuf::Block& block) {
+    return true;
 }
 
 }  // namespace init

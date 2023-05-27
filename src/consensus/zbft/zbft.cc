@@ -501,8 +501,8 @@ int Zbft::LeaderCreateCommitAggSign() {
 }
 
 bool Zbft::set_bls_precommit_agg_sign(
-    const libff::alt_bn128_G1& agg_sign,
-    const std::string& sign_hash) {
+        const libff::alt_bn128_G1& agg_sign,
+        const std::string& sign_hash) {
     if (prepare_block_ == nullptr) {
         return false;
     }

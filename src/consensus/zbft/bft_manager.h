@@ -52,6 +52,7 @@ class WaitingTxsPools;
 class BftManager : public Consensus {
 public:
     int Init(
+        block::BlockAggValidCallback block_agg_valid_func,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
         std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
         std::shared_ptr<vss::VssManager>& vss_mgr,
@@ -290,6 +291,7 @@ private:
     uint64_t prev_test_bft_size_[common::kMaxThreadCount] = { 0 };
     uint32_t max_consensus_sharding_id_ = 3;
     uint64_t first_timeblock_timestamp_ = 0;
+    block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {

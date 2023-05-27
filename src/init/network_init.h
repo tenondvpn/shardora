@@ -82,6 +82,7 @@ private:
         uint32_t old_leader_idx,
         uint32_t new_leader_idx);
     void CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req);
+    bool BlockBlsAggSignatureValid(const block::protobuf::Block& block);
 
     static const uint32_t kInvalidPoolFactor = 50u;  // 50%
     static const uint32_t kMinValodPoolCount = 4u;  // 64 must finish all

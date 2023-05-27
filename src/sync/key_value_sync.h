@@ -68,6 +68,7 @@ public:
         uint64_t height,
         uint32_t priority);
     void Init(
+        block::BlockAggValidCallback block_agg_valid_func,
         const std::shared_ptr<block::BlockManager>& block_mgr,
         const std::shared_ptr<db::Db>& db);
     void HandleMessage(const transport::MessagePtr& msg);
@@ -101,6 +102,7 @@ private:
     uint64_t prev_sync_tm_us_ = 0;
     uint64_t prev_sync_tmout_us_ = 0;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
+    block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(KeyValueSync);
 };

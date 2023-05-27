@@ -87,8 +87,10 @@ void KeyValueSync::PopItems() {
 }
 
 void KeyValueSync::Init(
+        block::BlockAggValidCallback block_agg_valid_func,
         const std::shared_ptr<block::BlockManager>& block_mgr,
         const std::shared_ptr<db::Db>& db) {
+    block_agg_valid_func_ = block_agg_valid_func;
     block_mgr_ = block_mgr;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db);
@@ -354,7 +356,9 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
                         block_item->network_id() + network::kConsensusWaitingShardOffset !=
                         common::GlobalInfo::Instance()->network_id()) {
-                    block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item);
+                    if (block_agg_valid_func_(*block_item)) {
+                        block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item);
+                    }
                 }
             }
         }

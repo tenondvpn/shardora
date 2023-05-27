@@ -72,6 +72,8 @@ typedef std::function<void(
     uint8_t thread_idx,
     const std::shared_ptr<block::protobuf::Block>& block,
     db::DbWriteBatch& db_batch)> DbBlockCallback;
+typedef std::function<bool(
+    const block::protobuf::Block& block)> BlockAggValidCallback;
 
 }  // namespace block
 

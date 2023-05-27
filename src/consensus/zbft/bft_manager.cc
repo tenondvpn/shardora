@@ -40,6 +40,7 @@ BftManager::~BftManager() {
 }
 
 int BftManager::Init(
+        block::BlockAggValidCallback block_agg_valid_func,
         std::shared_ptr<contract::ContractManager>& contract_mgr,
         std::shared_ptr<consensus::ContractGasPrepayment>& gas_prepayment,
         std::shared_ptr<vss::VssManager>& vss_mgr,
@@ -54,6 +55,7 @@ int BftManager::Init(
         BlockCallback block_cb,
         uint8_t thread_count,
         BlockCacheCallback new_block_cache_callback) {
+    block_agg_valid_func_ = block_agg_valid_func;
     contract_mgr_ = contract_mgr;
     gas_prepayment_ = gas_prepayment;
     vss_mgr_ = vss_mgr;
@@ -571,11 +573,23 @@ void BftManager::HandleSyncConsensusBlock(
                 return;
             }
 
-            if (!req_bft_msg.block().is_cross_block()) {
-                // cache it and waiting commit block.
+            // check bls sign
+            if (!block_agg_valid_func_(req_bft_msg.block())) {
+                ZJC_DEBUG("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+                    req_bft_msg.block().network_id(),
+                    req_bft_msg.block().pool_index(),
+                    req_bft_msg.block().height(),
+                    common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
+                return;
             }
 
             auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
+            if (!req_bft_msg.block().is_cross_block()) {
+                // cache it
+            } else {
+                block_ptr->set_checked_committed(true);
+            }
+
             auto db_batch = std::make_shared<db::DbWriteBatch>();
             auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block_ptr, db_batch);
             new_block_cache_callback_(
