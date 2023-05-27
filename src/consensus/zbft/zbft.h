@@ -156,6 +156,10 @@ public:
     }
 
     void set_precoimmit_hash() {
+        if (prepare_block_ == nullptr) {
+            return;
+        }
+
         prepare_block_->set_is_cross_block(true);
         precommit_hash_ = GetBlockHash(*prepare_block_);
         prepare_block_->set_hash(precommit_hash_);
