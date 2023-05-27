@@ -155,9 +155,10 @@ public:
         bls_mgr_->GetLibffHash(prepare_hash_, &g1_prepare_hash_);
     }
 
-    void set_precoimmit_hash(const std::string& precommit_hash) {
-        precommit_hash_ = precommit_hash;
-        prepare_block_->set_hash(precommit_hash);
+    void set_precoimmit_hash() {
+        prepare_block_->set_is_cross_block(true);
+        precommit_hash_ = GetBlockHash(*prepare_block_);
+        prepare_block_->set_hash(precommit_hash_);
         bls_mgr_->GetLibffHash(precommit_hash_, &g1_precommit_hash_);
         ZJC_DEBUG("reset block hash: %s", common::Encode::HexEncode(precommit_hash_).c_str());
     }

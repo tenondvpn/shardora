@@ -558,6 +558,10 @@ void BftManager::HandleSyncConsensusBlock(
     if (req_bft_msg.has_block()) {
         // verify and add new block
         if (bft_ptr == nullptr) {
+            if (req_bft_msg.block().network_id() != common::GlobalInfo::Instance()->network_id()) {
+                return;
+            }
+
             if (!req_bft_msg.block().has_bls_agg_sign_x() || !req_bft_msg.block().has_bls_agg_sign_y()) {
                 ZJC_DEBUG("not has agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
                     req_bft_msg.block().network_id(),
@@ -565,6 +569,10 @@ void BftManager::HandleSyncConsensusBlock(
                     req_bft_msg.block().height(),
                     common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
                 return;
+            }
+
+            if (!req_bft_msg.block().is_cross_block()) {
+                // cache it and waiting commit block.
             }
 
             auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
@@ -1843,7 +1851,7 @@ int BftManager::LeaderCallPrecommit(
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
-        bft_ptr->set_precoimmit_hash(common::Hash::keccak256(bft_ptr->local_prepare_hash()));
+        bft_ptr->set_precoimmit_hash();
         libff::alt_bn128_G1 sign;
         if (bls_mgr_->Sign(
                 bft_ptr->min_aggree_member_count(),
@@ -1925,7 +1933,7 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
         bitmap_data.push_back(data);
     }
 
-    bft_ptr->set_precoimmit_hash(common::Hash::keccak256(bft_ptr->local_prepare_hash()));
+    bft_ptr->set_precoimmit_hash();
     bft_ptr->set_prepare_bitmap(bitmap_data);
     libff::alt_bn128_G1 sign;
     try {
