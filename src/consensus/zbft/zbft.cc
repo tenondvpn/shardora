@@ -332,7 +332,6 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
 
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
         //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-        set_precoimmit_hash(common::Hash::keccak256(prepare_hash_));
         std::string sign_precommit_hash;
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
         //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);

@@ -1416,7 +1416,6 @@ int BftManager::CheckPrecommit(
             bitmap_data.push_back(bft_msg.bitmap(i));
         }
 
-        bft_ptr->set_precoimmit_hash(bft_ptr->local_prepare_hash());
         bft_ptr->set_prepare_bitmap(bitmap_data);
         backup_agree_commit = true;
     } while (0);
@@ -1839,6 +1838,7 @@ int BftManager::LeaderCallPrecommit(
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
+        bft_ptr->set_precoimmit_hash(common::Hash::keccak256(bft_ptr->local_prepare_hash()));
         libff::alt_bn128_G1 sign;
         if (bls_mgr_->Sign(
                 bft_ptr->min_aggree_member_count(),
