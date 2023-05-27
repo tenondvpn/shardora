@@ -485,8 +485,8 @@ int Zbft::LeaderCreateCommitAggSign() {
 }
 
 bool Zbft::set_bls_precommit_agg_sign(
-        const libff::alt_bn128_G1& agg_sign,
-        const std::string& sign_hash) {
+    const libff::alt_bn128_G1& agg_sign,
+    const std::string& sign_hash) {
     if (prepare_block_ == nullptr) {
         return false;
     }
@@ -510,13 +510,13 @@ bool Zbft::set_bls_precommit_agg_sign(
             common::Encode::HexEncode(sign_hash).c_str());
         return false;
     }
-    
+
     prepare_block_->set_bls_agg_sign_x(
         libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X));
     prepare_block_->set_bls_agg_sign_y(
         libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->Y));
     return true;
-
+}
 
 bool Zbft::verify_bls_precommit_agg_sign(
         const libff::alt_bn128_G1& agg_sign,
