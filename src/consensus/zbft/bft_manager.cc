@@ -1431,14 +1431,14 @@ int BftManager::CheckPrecommit(
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
     // now check commit
-    CheckCommit(msg_ptr);
+    CheckCommit(msg_ptr, false);
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
     return kConsensusSuccess;
 }
 
-int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr) {
+int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg) {
     auto& bft_msg = msg_ptr->header.zbft();
     if (!bft_msg.has_commit_gid() || bft_msg.commit_gid().empty()) {
         return kConsensusSuccess;
@@ -1451,15 +1451,27 @@ int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr) {
         return kConsensusError;
     }
 
-    bft_ptr->set_consensus_status(kConsensusCommited);
-    if (bft_ptr->prepare_block() == nullptr) {
-        // sync block from neighbor nodes
-        ZJC_ERROR("backup commit block failed should sync: %s",
-            common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
-        return kConsensusError;
-    }
+    do {
+        if (check_agg) {
+            if (!CheckAggSignValid(msg_ptr, bft_ptr)) {
+                assert(false);
+                break;
+            }
+        }
 
-    HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
+        bft_ptr->set_consensus_status(kConsensusCommited);
+        if (bft_ptr->prepare_block() != nullptr) {
+//             ZJC_DEBUG("backup CheckCommit success");
+            HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
+        } else {
+            // sync block from neighbor nodes
+            ZJC_ERROR("backup commit block failed should sync: %s",
+                common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
+            return kConsensusError;
+        }
+    } while (0);
+    
+    // start new bft
     return kConsensusSuccess;
 }
 
