@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "block/block_utils.h"
 #include "common/utils.h"
 #include "common/thread_safe_queue.h"
 #include "common/tick.h"
