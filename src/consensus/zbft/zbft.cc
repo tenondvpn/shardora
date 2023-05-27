@@ -577,7 +577,7 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
     if (sign_commit_hash != commit_bls_agg_verify_hash_) {
         ZJC_ERROR("backup verify leader precommit agg sign failed! signx: %s, %s: %s, %s",
             libBLS::ThresholdUtils::fieldElementToString(agg_sign.X).c_str(),
-            common::Encode::HexEncode(agg_sign.X).c_str(),
+            common::Encode::HexEncode(sign_commit_hash).c_str(),
             common::Encode::HexEncode(commit_bls_agg_verify_hash_).c_str(),
             common::Encode::HexEncode(precommit_hash_).c_str());
         return false;
