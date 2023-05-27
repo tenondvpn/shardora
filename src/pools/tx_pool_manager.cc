@@ -444,15 +444,20 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
         msg.set_type(common::kPoolsMessage);
         auto* sync_heights = msg.mutable_sync_heights();
         uint32_t pool_idx = common::kInvalidPoolIndex;
+        std::string sync_debug;
+        std::string cross_debug;
         for (uint32_t i = 0; i < pool_idx; ++i) {
             sync_heights->add_heights(tx_pool_[i].latest_height());
+            sync_debug += std::to_string(tx_pool_[i].latest_height()) + " ";
         }
 
         if (max_cross_pools_size_ == 1) {
             sync_heights->add_cross_heights(cross_pools_[0].latest_height());
+            cross_debug += std::to_string(cross_pools_[0].latest_height()) + " ";
         } else {
             for (uint32_t i = 0; i < now_sharding_count_; ++i) {
                 sync_heights->add_cross_heights(cross_pools_[i].latest_height());
+                cross_debug += std::to_string(cross_pools_[i].latest_height()) + " ";
             }
         }
 
@@ -460,15 +465,20 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             msg,
             msg_ptr->thread_idx);
         transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
+        ZJC_DEBUG("response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
     } else {
         auto& heights = msg_ptr->header.sync_heights().heights();
         if (heights.size() != common::kInvalidPoolIndex) {
             return;
         }
 
+        std::string sync_debug;
+        std::string cross_debug;
         for (int32_t i = 0; i < heights.size(); ++i) {
+            sync_debug += std::to_string(heights[i]) + " ";
             if (heights[i] != common::kInvalidUint64) {
-                if (tx_pool_[i].latest_height() == common::kInvalidUint64 && synced_max_heights_[i] < heights[i]) {
+                if (tx_pool_[i].latest_height() == common::kInvalidUint64 &&
+                        synced_max_heights_[i] < heights[i]) {
                     synced_max_heights_[i] = heights[i];
                     continue;
                 }
@@ -486,8 +496,10 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
 
         auto& cross_heights = msg_ptr->header.sync_heights().cross_heights();
         for (int32_t i = 0; i < cross_heights.size(); ++i) {
+            cross_debug += std::to_string(cross_heights[i]) + " ";
             if (cross_heights[i] != common::kInvalidUint64) {
-                if (tx_pool_[i].latest_height() == common::kInvalidUint64 && cross_synced_max_heights_[i] < cross_heights[i]) {
+                if (tx_pool_[i].latest_height() == common::kInvalidUint64 &&
+                        cross_synced_max_heights_[i] < cross_heights[i]) {
                     cross_synced_max_heights_[i] = cross_heights[i];
                     continue;
                 }
@@ -502,6 +514,8 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                 }
             }
         }
+
+        ZJC_DEBUG("get response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
     }
 }
 
