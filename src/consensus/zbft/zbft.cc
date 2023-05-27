@@ -477,6 +477,10 @@ int Zbft::LeaderCreateCommitAggSign() {
 
 //         ZJC_INFO("commit verify end,");
         bls_commit_agg_sign_->to_affine_coordinates();
+        prepare_block_->set_bls_agg_sign_x(
+            libBLS::ThresholdUtils::fieldElementToString(bls_commit_agg_sign_->X));
+        prepare_block_->set_bls_agg_sign_y(
+            libBLS::ThresholdUtils::fieldElementToString(bls_commit_agg_sign_->Y));
     } catch (...) {
         return kConsensusError;
     }
