@@ -1624,6 +1624,8 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         }
 
         msg_ptr->response->header.mutable_zbft()->set_agree_commit(true);
+        CheckCommit(msg_ptr, false);
+        return;
     }
 
     if (bft_msg.has_commit_gid() && !bft_msg.commit_gid().empty()) {
