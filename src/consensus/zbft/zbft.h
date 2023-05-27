@@ -181,7 +181,7 @@ public:
         return bls_precommit_agg_sign_;
     }
 
-    void set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign);
+    bool set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign);
 
     const std::shared_ptr<libff::alt_bn128_G1>& bls_commit_agg_sign() const {
         assert(bls_commit_agg_sign_ != nullptr);

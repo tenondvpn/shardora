@@ -548,7 +548,7 @@ bool Zbft::verify_bls_precommit_agg_sign(
     return true;
 }
 
-void Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
+bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
     if (prepare_block_ == nullptr) {
         return false;
     }
