@@ -487,7 +487,7 @@ int Zbft::LeaderCreateCommitAggSign() {
 bool Zbft::set_bls_precommit_agg_sign(
         const libff::alt_bn128_G1& agg_sign,
         const std::string& sign_hash) {
-    if (prepare_block_ == nullptr) {
+}    if (prepare_block_ == nullptr) {
         return false;
     }
 
@@ -515,6 +515,67 @@ bool Zbft::set_bls_precommit_agg_sign(
         libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X));
     prepare_block_->set_bls_agg_sign_y(
         libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->Y));
+    return true;
+
+
+bool Zbft::verify_bls_precommit_agg_sign(
+        const libff::alt_bn128_G1& agg_sign,
+        const std::string& sign_hash) {
+    if (prepare_block_ == nullptr) {
+        return false;
+    }
+
+    uint32_t t = min_aggree_member_count_;
+    uint32_t n = members_ptr_->size();
+    std::string sign_commit_hash;
+    if (bls_mgr_->GetVerifyHash(
+            t,
+            n,
+            agg_sign,
+            &sign_commit_hash) != bls::kBlsSuccess) {
+        ZJC_ERROR("verify leader precommit agg sign failed!");
+        return false;
+    }
+
+    bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(agg_sign);
+    if (sign_commit_hash != sign_hash) {
+        ZJC_ERROR("backup verify leader precommit agg sign failed! %s: %s",
+            common::Encode::HexEncode(sign_commit_hash).c_str(),
+            common::Encode::HexEncode(sign_hash).c_str());
+        return false;
+    }
+
+    return true;
+}
+
+void Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
+    if (prepare_block_ == nullptr) {
+        return false;
+    }
+
+    uint32_t t = min_aggree_member_count_;
+    uint32_t n = members_ptr_->size();
+    std::string sign_commit_hash;
+    if (bls_mgr_->GetVerifyHash(
+            t,
+            n,
+            agg_sign,
+            &sign_commit_hash) != bls::kBlsSuccess) {
+        ZJC_ERROR("verify leader commit agg sign failed!");
+        return false;
+    }
+
+    if (sign_commit_hash != precommit_hash_) {
+        ZJC_ERROR("backup verify leader precommit agg sign failed! %s: %s",
+            common::Encode::HexEncode(sign_commit_hash).c_str(),
+            common::Encode::HexEncode(precommit_hash_).c_str());
+        return false;
+    }
+    
+    prepare_block_->set_bls_agg_sign_x(
+        libBLS::ThresholdUtils::fieldElementToString(agg_sign.X));
+    prepare_block_->set_bls_agg_sign_y(
+        libBLS::ThresholdUtils::fieldElementToString(agg_sign.Y));
     return true;
 }
 

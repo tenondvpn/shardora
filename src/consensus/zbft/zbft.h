@@ -157,6 +157,7 @@ public:
 
     void set_precoimmit_hash(const std::string& precommit_hash) {
         precommit_hash_ = precommit_hash;
+        prepare_block_->set_hash(precommit_hash);
         bls_mgr_->GetLibffHash(precommit_hash_, &g1_precommit_hash_);
     }
 
@@ -173,15 +174,14 @@ public:
     }
 
     bool set_bls_precommit_agg_sign(const libff::alt_bn128_G1& agg_sign, const std::string& sign_hash);
+    bool verify_bls_precommit_agg_sign(const libff::alt_bn128_G1& agg_sign, const std::string& sign_hash);
 
     const std::shared_ptr<libff::alt_bn128_G1>& bls_precommit_agg_sign() const {
         assert(bls_precommit_agg_sign_ != nullptr);
         return bls_precommit_agg_sign_;
     }
 
-    void set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
-        bls_commit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(agg_sign);
-    }
+    void set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign);
 
     const std::shared_ptr<libff::alt_bn128_G1>& bls_commit_agg_sign() const {
         assert(bls_commit_agg_sign_ != nullptr);

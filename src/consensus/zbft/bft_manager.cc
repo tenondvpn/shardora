@@ -1932,7 +1932,7 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
         return kConsensusError;
     }
 
-    if (!bft_ptr->set_bls_precommit_agg_sign(
+    if (!bft_ptr->verify_bls_precommit_agg_sign(
             sign,
             bft_ptr->precommit_bls_agg_verify_hash())) {
         ZJC_ERROR("backup verify leader agg sign failed.");
@@ -2259,16 +2259,16 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
         return kConsensusError;
     }
 
-    bft_ptr->set_bls_commit_agg_sign(sign);
-    bft_ptr->set_consensus_status(kConsensusCommited);
-    if (bft_ptr->prepare_block() != nullptr) {
-        HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
-    } else {
-//         ZJC_DEBUG("should sync block now: %s.",
-//             common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
+    if (!bft_ptr->set_bls_commit_agg_sign(sign)) {
         return kConsensusError;
     }
 
+    bft_ptr->set_consensus_status(kConsensusCommited);
+    if (bft_ptr->prepare_block() == nullptr) {
+        return kConsensusError;
+    }
+
+    HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
     return kConsensusSuccess;
 }
 
