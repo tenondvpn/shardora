@@ -1828,7 +1828,10 @@ int BftManager::LeaderCallPrecommit(
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
-    auto next_prepare_bft = Start(msg_ptr->thread_idx, bft_ptr, msg_ptr->response);
+    ZbftPtr next_prepare_bft = nullptr;
+    if (!bft_ptr->is_cross_block()) {
+        next_prepare_bft = Start(msg_ptr->thread_idx, bft_ptr, msg_ptr->response);
+    }
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 

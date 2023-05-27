@@ -211,6 +211,14 @@ public:
         return aggree_;
     }
 
+    bool is_cross_block() {
+        if (prepare_block_ == nullptr) {
+            return false;
+        }
+
+        return prepare_block_->is_cross_block();
+    }
+
     void not_aggree() {
         aggree_ = false;
     }

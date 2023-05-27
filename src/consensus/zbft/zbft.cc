@@ -674,6 +674,11 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
         zjc_block.set_commit_height(pipeline_prev_zbft_ptr_->prepare_block()->height());
     }
 
+    if (txs_ptr_->tx_type != pools::protobuf::kNormalFrom ||
+            txs_ptr_->pool_index == common::kRootChainPoolIndex) {
+        zjc_block.set_is_cross_block(true);
+    }
+
     zjc_block.set_hash(GetBlockHash(zjc_block));
     tx_bft.set_prepare_final_hash(zjc_block.hash());
     tx_bft.set_height(zjc_block.height());
