@@ -1431,14 +1431,14 @@ int BftManager::CheckPrecommit(
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
     // now check commit
-    CheckCommit(msg_ptr, false);
+    CheckCommit(msg_ptr);
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
     return kConsensusSuccess;
 }
 
-int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg) {
+int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr) {
     auto& bft_msg = msg_ptr->header.zbft();
     if (!bft_msg.has_commit_gid() || bft_msg.commit_gid().empty()) {
         return kConsensusSuccess;
@@ -1451,27 +1451,15 @@ int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg
         return kConsensusError;
     }
 
-    do {
-        if (check_agg) {
-            if (!CheckAggSignValid(msg_ptr, bft_ptr)) {
-                assert(false);
-                break;
-            }
-        }
+    bft_ptr->set_consensus_status(kConsensusCommited);
+    if (bft_ptr->prepare_block() == nullptr) {
+        // sync block from neighbor nodes
+        ZJC_ERROR("backup commit block failed should sync: %s",
+            common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
+        return kConsensusError;
+    }
 
-        bft_ptr->set_consensus_status(kConsensusCommited);
-        if (bft_ptr->prepare_block() != nullptr) {
-//             ZJC_DEBUG("backup CheckCommit success");
-            HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
-        } else {
-            // sync block from neighbor nodes
-            ZJC_ERROR("backup commit block failed should sync: %s",
-                common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
-            return kConsensusError;
-        }
-    } while (0);
-    
-    // start new bft
+    HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
     return kConsensusSuccess;
 }
 
@@ -1914,17 +1902,13 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
     }
 #endif
 
-    std::string msg_hash_src;
-    msg_hash_src.reserve(32 + 128);
-    msg_hash_src.append(bft_ptr->local_prepare_hash());
     std::vector<uint64_t> bitmap_data;
     for (int32_t i = 0; i < bft_msg.bitmap_size(); ++i) {
         auto data = bft_msg.bitmap(i);
         bitmap_data.push_back(data);
-        msg_hash_src.append((char*)&data, sizeof(data));
     }
 
-    bft_ptr->set_precoimmit_hash(common::Hash::keccak256(msg_hash_src));
+    bft_ptr->set_precoimmit_hash(common::Hash::keccak256(bft_ptr->local_prepare_hash()));
     bft_ptr->set_prepare_bitmap(bitmap_data);
     libff::alt_bn128_G1 sign;
     try {

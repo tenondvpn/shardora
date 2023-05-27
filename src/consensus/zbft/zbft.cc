@@ -329,25 +329,10 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
         // times_[times_index_ - 2] = times_[times_index_ - 1];
         //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
 
-        std::string msg_hash_src;
-        msg_hash_src.reserve(32 + 128);
-        msg_hash_src.append(prpare_hash);
-        for (uint32_t i = 0; i < iter->second->prepare_bitmap_.data().size(); ++i) {
-            auto& data = iter->second->prepare_bitmap_.data()[i];
-            msg_hash_src.append((char*)&data, sizeof(data));
-        }
 
-        if (prpare_hash != prepare_hash_) {
-            is_synced_block_ = true;
-            set_prepare_hash(prpare_hash);
-            CreatePrecommitVerifyHash();
-            prepare_block_ = nullptr;
-            assert(false);
-        }
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
         //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-
-        set_precoimmit_hash(common::Hash::keccak256(msg_hash_src));
+        set_precoimmit_hash(common::Hash::keccak256(prepare_hash_));
         std::string sign_precommit_hash;
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
         //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);

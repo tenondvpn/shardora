@@ -135,7 +135,7 @@ private:
         const transport::MessagePtr& msg_ptr,
         common::BftMemberPtr& mem_ptr);
     int CheckPrecommit(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
-    int CheckCommit(const transport::MessagePtr& msg_ptr, bool backup_agree_commit);
+    int CheckCommit(const transport::MessagePtr& msg_ptr);
     bool CheckAggSignValid(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
     void SetDefaultResponse(const transport::MessagePtr& msg_ptr);
     bool SetBackupEcdhData(transport::MessagePtr& msg_ptr, common::BftMemberPtr& mem_ptr);

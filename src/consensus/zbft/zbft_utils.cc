@@ -103,6 +103,7 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
         common::Encode::HexEncode(msg).c_str(),
         block.commit_pool_index(),
         block.commit_height());
+
     return common::Hash::keccak256(msg);
 }
 
