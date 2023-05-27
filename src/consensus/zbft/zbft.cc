@@ -352,6 +352,7 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
             //assert(false);
             return kConsensusError;
         }
+
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
 //         if (times_[times_index_ - 1] - times_[times_index_ - 2] > 10000) {
 //             ZJC_DEBUG("get verify hash use time: %lu", (times_[times_index_ - 1] - times_[times_index_ - 2]));
@@ -376,6 +377,12 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
         }
 
         bls_precommit_agg_sign_->to_affine_coordinates();
+        ZJC_ERROR("leader precommit agg sign success! signx: %s, %s: %s, %s",
+            libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X).c_str(),
+            common::Encode::HexEncode(sign_precommit_hash).c_str(),
+            common::Encode::HexEncode(precommit_bls_agg_verify_hash_).c_str(),
+            common::Encode::HexEncode(prepare_hash_).c_str());
+
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
 //         if (times_[times_index_ - 1] - times_[times_index_ - 2] > 10000) {
 //             ZJC_DEBUG("bls_precommit_agg_sign_->to_affine_coordinates use time: %lu", (times_[times_index_ - 1] - times_[times_index_ - 2]));
