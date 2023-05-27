@@ -481,6 +481,7 @@ int Zbft::LeaderCreateCommitAggSign() {
             libBLS::ThresholdUtils::fieldElementToString(bls_commit_agg_sign_->X));
         prepare_block_->set_bls_agg_sign_y(
             libBLS::ThresholdUtils::fieldElementToString(bls_commit_agg_sign_->Y));
+        ZJC_DEBUG("success agg sign: %s", common::Encode::HexEncode(precommit_hash_).c_str());
     } catch (...) {
         return kConsensusError;
     }

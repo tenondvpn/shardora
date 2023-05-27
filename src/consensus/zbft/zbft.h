@@ -159,6 +159,7 @@ public:
         precommit_hash_ = precommit_hash;
         prepare_block_->set_hash(precommit_hash);
         bls_mgr_->GetLibffHash(precommit_hash_, &g1_precommit_hash_);
+        ZJC_DEBUG("reset block hash: %s", common::Encode::HexEncode(precommit_hash_).c_str());
     }
 
     uint32_t leader_index() const {

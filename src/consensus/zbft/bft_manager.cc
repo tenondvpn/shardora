@@ -2260,6 +2260,7 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
     }
 
     if (!bft_ptr->set_bls_commit_agg_sign(sign)) {
+        assert(false);
         return kConsensusError;
     }
 
