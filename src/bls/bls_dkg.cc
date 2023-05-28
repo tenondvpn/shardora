@@ -75,6 +75,7 @@ void BlsDkg::OnNewElectionBlock(
         uint64_t elect_height,
         common::MembersPtr& members,
         std::shared_ptr<TimeBlockItem>& latest_timeblock_info) try {
+    ZJC_DEBUG("new elect height coming: %lu, %lu", elect_height, elect_hegiht_);
     if (elect_height <= elect_hegiht_) {
         ZJC_DEBUG("elect height error: %lu, %lu", elect_height, elect_hegiht_);
         return;

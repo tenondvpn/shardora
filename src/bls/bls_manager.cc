@@ -130,6 +130,7 @@ void BlsManager::OnNewElectBlock(
         libff::alt_bn128_G2::zero(),
         libff::alt_bn128_G2::zero(),
         db_);
+    BLS_DEBUG("call OnNewElectionBlock success add new bls dkg, elect_height: %lu", elect_height);
     waiting_bls_->OnNewElectionBlock(
         elect_height,
         members,
