@@ -390,7 +390,7 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
         // times_[times_index_ - 2] = times_[times_index_ - 1];
         //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
         prepare_bitmap_ = iter->second->prepare_bitmap_;
-        prepare_bitmap_.inversion(member_count_);
+        prepare_bitmap_.inversion(n);
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
         //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
         valid_index_ = iter->second->valid_index;
