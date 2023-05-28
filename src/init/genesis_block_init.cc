@@ -49,6 +49,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
     }
 
     root_bitmap_.inversion(root_genesis_nodes.size());
+    std::cout << root_genesis_nodes.size() << ":" << root_t << "< " << root_bitmap_.valid_count() << std::endl;
     assert(root_bitmap_.valid_count() == (root_genesis_nodes.size() - root_t));
     auto shard_t = common::GetSignerCount(cons_genesis_nodes.size());
     for (uint32_t i = 0; i < shard_t; ++i) {
