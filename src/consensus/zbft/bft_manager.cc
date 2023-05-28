@@ -203,6 +203,10 @@ void BftManager::OnNewElectBlock(
         }
     }
 
+    if (elect_item.local_node_member_index >= members->size()) {
+        return;
+    }
+
     elect_item.elect_height = elect_height;
     elect_item.member_size = members->size();
     elect_item.common_pk = common_pk;
