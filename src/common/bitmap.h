@@ -36,10 +36,21 @@ public:
         valid_count_ = 0;
     }
 
-    void inversion() {
-        for (uint32_t i = 0; i < data_.size(); ++i) {
+    void inversion(uint32_t max_idx) {
+        uint32_t u64_count = max_idx / 64;
+        for (uint32_t i = 0; i < u64_count; ++i) {
             data_[i] = ~data_[i];
         }
+
+        for (uint32_t i = u64_count * 64; i < max_idx; ++i) {
+            if (Valid(i)) {
+                UnSet(i);
+            } else {
+                Set(i);
+            }
+        }
+
+        valid_count_ = max_idx - valid_count_;
     }
 
 private:

@@ -56,7 +56,7 @@ TEST_F(TestBitmap, AddAndContainClear) {
         ASSERT_TRUE(bitmap.Valid(i));
     }
 
-    bitmap.inversion();
+    bitmap.inversion(4096);
     for (uint32_t i = 0; i < 4096; ++i) {
         if (i == 10 || i == 190 || i == 899 || i == 4076) {
             ASSERT_TRUE(bitmap.Valid(i));

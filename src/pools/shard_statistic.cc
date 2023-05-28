@@ -325,6 +325,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
     }
 
     common::Bitmap final_bitmap(bitmap_data);
+    final_bitmap.inversion(member_count);
     assert(final_bitmap.valid_count() == common::GetSignerCount(member_count));
     uint32_t bit_size = final_bitmap.data().size() * 64;
     if (member_count > bit_size || member_count > common::kEachShardMaxNodeCount) {
