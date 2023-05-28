@@ -325,6 +325,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
     }
 
     common::Bitmap final_bitmap(bitmap_data);
+    assert(final_bitmap.valid_count() == common::GetSignerCount(member_count));
     uint32_t bit_size = final_bitmap.data().size() * 64;
     if (member_count > bit_size || member_count > common::kEachShardMaxNodeCount) {
         assert(false);
@@ -548,6 +549,7 @@ int ShardStatistic::StatisticWithHeights(
     uint64_t all_gas_amount = 0;
     uint64_t root_all_gas_amount = 0;
     std::string cross_string_for_hash;
+    std::string heights_hash;
     pools::protobuf::CrossShardStatistic cross_statistic;
     for (uint32_t pool_idx = 0; pool_idx < max_pool; ++pool_idx) {
         uint64_t min_height = 1;
@@ -563,6 +565,8 @@ int ShardStatistic::StatisticWithHeights(
         }
 
         uint64_t prev_height = 0;
+        heights_hash.append((char*)&min_height, sizeof(min_height));
+        heights_hash.append((char*)&max_height, sizeof(max_height));
         ZJC_DEBUG("now handle pool: %u, min height: %lu, max height: %lu", pool_idx, min_height, max_height);
         for (auto height = min_height; height <= max_height; ++height) {
             auto hiter = node_height_count_map_[pool_idx].find(height);
@@ -877,6 +881,7 @@ int ShardStatistic::StatisticWithHeights(
     elect_statistic.set_sharding_id(net_id);
     str_for_hash.append((char*)&all_gas_amount, sizeof(all_gas_amount));
     str_for_hash.append((char*)&net_id, sizeof(net_id));
+    str_for_hash.append(heights_hash);
     debug_for_str += std::to_string(all_gas_amount) + ",";
     debug_for_str += std::to_string(net_id) + ",";
     if (!cross_string_for_hash.empty()) {

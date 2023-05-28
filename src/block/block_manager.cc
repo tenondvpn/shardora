@@ -130,10 +130,6 @@ void BlockManager::NetworkNewBlock(
     if (block_item != nullptr) {
         db::DbWriteBatch db_batch;
         AddNewBlock(thread_idx, block_item, db_batch);
-        if (!db_->Put(db_batch).ok()) {
-            ZJC_FATAL("save db failed!");
-            return;
-        }
     }
 
     HandleAllConsensusBlocks(thread_idx);
