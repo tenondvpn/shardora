@@ -86,6 +86,7 @@ public:
     void Destroy() {
         for (int32_t i = 0; i < 2; ++i) {
             if (!gid_set_[i].empty()) {
+                ZJC_DEBUG("put 4");
                 db_->Put(db_batch[i]);
                 db_batch[i].Clear();
                 gid_set_[i].clear();
@@ -1388,6 +1389,7 @@ private:
     void DumpGidToDb(uint8_t thread_idx) {
         if (!dumped_gid_) {
             uint32_t index = (valid_index_ + 1) % 2;
+            ZJC_DEBUG("put 5");
             db_->Put(db_batch[index]);
             db_batch[index].Clear();
             dumped_gid_ = true;

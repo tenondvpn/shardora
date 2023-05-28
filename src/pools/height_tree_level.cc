@@ -407,6 +407,7 @@ void HeightTreeLevel::FlushToDb() {
         level_vec_index *= kBranchMaxCount;
     }
 
+    ZJC_DEBUG("put 3");
     if (!db_->Put(db_batch).ok()) {
         ZJC_FATAL("write db failed!");
     }

@@ -54,6 +54,7 @@ private:
         }
 
         auto st = db_->Put(wbatch);
+        ZJC_DEBUG("put 2");
         if (!st.ok()) {
             ZJC_FATAL("flush to db failed!");
         }

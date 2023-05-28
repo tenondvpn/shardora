@@ -551,6 +551,7 @@ void BlockManager::AddNewBlock(
     }
 
     auto st = db_->Put(db_batch);
+    ZJC_DEBUG("put 0");
     if (!st.ok()) {
         ZJC_FATAL("write block to db failed!");
     }
@@ -768,6 +769,7 @@ void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {
     }
 
     db_->Put(db_batch);
+    ZJC_DEBUG("put 1");
 }
 
 int BlockManager::GetBlockWithHeight(
