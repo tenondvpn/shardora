@@ -43,12 +43,14 @@ int GenesisBlockInit::CreateGenesisBlocks(
         uint32_t net_id,
         const std::vector<dht::NodePtr>& root_genesis_nodes,
         const std::vector<dht::NodePtr>& cons_genesis_nodes) {
-    for (uint32_t i = 0; i < root_genesis_nodes.size() - 1; ++i) {
+    auto root_t = common::GetSignerCount(root_genesis_nodes.size());
+    for (uint32_t i = 0; i < root_t; ++i) {
         root_bitmap_.Set(i);
     }
 
     root_bitmap_.inversion(root_genesis_nodes.size());
-    for (uint32_t i = 0; i < cons_genesis_nodes.size() - 1; ++i) {
+    auto shard_t = common::GetSignerCount(cons_genesis_nodes.size());
+    for (uint32_t i = 0; i < shard_t; ++i) {
         shard_bitmap_.Set(i);
     }
 
