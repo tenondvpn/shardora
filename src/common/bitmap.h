@@ -42,6 +42,7 @@ public:
             data_[i] = ~data_[i];
         }
 
+        auto valid_count = valid_count_;
         for (uint32_t i = u64_count * 64; i < max_idx; ++i) {
             if (Valid(i)) {
                 UnSet(i);
@@ -50,7 +51,7 @@ public:
             }
         }
 
-        valid_count_ = max_idx - valid_count_;
+        valid_count_ = max_idx - valid_count;
     }
 
 private:
