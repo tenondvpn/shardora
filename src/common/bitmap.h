@@ -36,6 +36,12 @@ public:
         valid_count_ = 0;
     }
 
+    void inversion() {
+        for (uint32_t i = 0; i < data_.size(); ++i) {
+            data_[i] = ~data_[i];
+        }
+    }
+
 private:
     std::vector<uint64_t> data_;
     uint32_t valid_count_{ 0 };
