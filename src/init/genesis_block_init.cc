@@ -47,10 +47,12 @@ int GenesisBlockInit::CreateGenesisBlocks(
         root_bitmap_.Set(i);
     }
 
+    root_bitmap_.inversion(root_genesis_nodes.size());
     for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
         shard_bitmap_.Set(i);
     }
 
+    shard_bitmap_.inversion(cons_genesis_nodes.size());
     if (net_id == network::kRootCongressNetworkId) {
         common::GlobalInfo::Instance()->set_network_id(network::kRootCongressNetworkId);
     } else {
