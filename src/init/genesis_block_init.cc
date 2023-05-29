@@ -1013,51 +1013,44 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
 
 bool GenesisBlockInit::BlsAggSignBlock(
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
-        std::shared_ptr<block::protobuf::Block>& block) {
+        std::shared_ptr<block::protobuf::Block>& block) try {
     std::vector<libff::alt_bn128_G1> all_signs;
-    uint32_t n = genesis_nodes;
+    uint32_t n = genesis_nodes.size();
     uint32_t t = common::GetSignerCount(n);
     std::vector<size_t> idx_vec;
     auto g1_hash = libBLS::Bls::Hashing(block->hash());
     for (uint32_t i = 0; i < t; ++i) {
         libff::alt_bn128_G1 sign;
-        if (bls_mgr_->Sign(
-                t,
-                n,
-                genesis_nodes[i]->bls_prikey,
-                g1_hash,
-                &sign) != bls::kBlsSuccess) {
-            ZJC_ERROR("leader signature error.");
-            return false;
-        }
-
+        bls::BlsSign::Sign(
+            t,
+            n,
+            genesis_nodes[i]->bls_prikey,
+            g1_hash,
+            &sign);
         all_signs.push_back(sign);
         idx_vec.push_back(i + 1);
     }
 
-    try {
-        libBLS::Bls bls_instance = libBLS::Bls(t, n);
-        std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
-        libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
-        auto agg_sign = std::make_shared<libff::alt_bn128_G1>(
-            bls_instance.SignatureRecover(
-                all_signs,
-                lagrange_coeffs));
-        if (libBLS::Bls::Verification(g1_hash, agg_sign, common_pk_[block->network_id()])) {
-            ZJC_FATAL("agg sign failed!");
-            return false;
-        }
-
-        block->set_bls_agg_sign_x(
-            libBLS::ThresholdUtils::fieldElementToString(agg_sign->X));
-        block->set_bls_agg_sign_y(
-            libBLS::ThresholdUtils::fieldElementToString(agg_sign->Y));
-    } catch (std::exception& e) {
-        ZJC_ERROR("catch bls exception: %s", e.what());
+    libBLS::Bls bls_instance = libBLS::Bls(t, n);
+    std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
+    libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
+    auto agg_sign = std::make_shared<libff::alt_bn128_G1>(
+        bls_instance.SignatureRecover(
+            all_signs,
+            lagrange_coeffs));
+    if (libBLS::Bls::Verification(g1_hash, *agg_sign, common_pk_[block->network_id()])) {
+        ZJC_FATAL("agg sign failed!");
         return false;
     }
 
+    block->set_bls_agg_sign_x(
+        libBLS::ThresholdUtils::fieldElementToString(agg_sign->X));
+    block->set_bls_agg_sign_y(
+        libBLS::ThresholdUtils::fieldElementToString(agg_sign->Y));
     return true;
+} catch (std::exception& e) {
+    ZJC_ERROR("catch bls exception: %s", e.what());
+    return false;
 }
 
 void GenesisBlockInit::AddBlockItemToCache(
