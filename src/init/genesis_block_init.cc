@@ -448,7 +448,10 @@ int GenesisBlockInit::CreateElectBlock(
         common_pk->set_y_c0(common_pk_strs->at(2));
         common_pk->set_y_c1(common_pk_strs->at(3));
         prev_members->set_prev_elect_height(prev_height);
+        db::DbWriteBatch db_batch;
         prefix_db_->SaveElectHeightCommonPk(shard_netid, prev_height, *prev_members, db_batch);
+        auto st = db_->Put(db_batch);
+        assert(st.ok());
     }
 
     tenon_block->set_height(height);
