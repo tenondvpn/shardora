@@ -275,11 +275,6 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
     uint32_t valid_n = genesis_nodes.size();
     uint32_t valid_t = common::GetSignerCount(valid_n);
     std::vector<std::vector<libff::alt_bn128_Fr>> secret_key_contribution(valid_n);
-    for (size_t i = 0; i < prikeys.size(); ++i) {
-        secret_key_contribution[i] = dkg_instance.SecretKeyContribution(
-            polynomial[i], valid_n, valid_t);
-    }
-
     for (uint32_t idx = 0; idx < genesis_nodes.size(); ++idx) {
         std::string file = std::string("./") + common::Encode::HexEncode(genesis_nodes[i]->id);
         FILE* fd = fopen(file.c_str(), "r");
@@ -300,8 +295,6 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
         std::string val = common::Encode::HexDecode(tmp_data);
         if (val.size() == 32) {
             // just private key.
-            std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
-            secptr->SetPrivateKey(val);
             genesis_nodes[idx]->prikey = val;
             init_bls_info.set_prikey(val);
             genesis_nodes[idx]->polynomial = dkg_instance.GeneratePolynomial();
@@ -313,7 +306,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
 
             FILE* fd = fopen(file.c_str(), "w");
             std::string val = common::Encode::HexEncode(init_bls_info.SerializeAsString()) + "\n";
-            fwrite(val.c_str(), val.size(), fd);
+            fputs(val.c_str(), fd);
             fclose(fd);
         } else {
             if (!init_bls_info.ParseFromString(val)) {
@@ -329,9 +322,11 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
             }
         }
 
+        std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
+        secptr->SetPrivateKey(genesis_nodes[idx]->prikey);
         genesis_nodes[idx]->verification = dkg_instance.VerificationVector(genesis_nodes[idx]->polynomial);
         secret_key_contribution[idx] = dkg_instance.SecretKeyContribution(
-            genesis_nodes[idx]->polynomial, valid_t);
+            genesis_nodes[idx]->polynomial, valid_n, valid_t);
         bls::protobuf::JoinElectInfo join_info;
         join_info.set_member_idx(idx);
         join_info.set_shard_id(sharding_id);
@@ -362,14 +357,14 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
             str_for_hash.append(verify_item.z_c1());
         }
 
-        genesis_nodes[idx].check_hash = common::Hash::keccak256(str_for_hash);
+        genesis_nodes[idx]->check_hash = common::Hash::keccak256(str_for_hash);
         prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
         prefix_db_->AddBlsVerifyG2(secptr->GetAddress(), *req);
-        prefix_db_->SaveTemporaryKv(genesis_nodes[idx].check_hash, join_info.SerializeAsString());
+        prefix_db_->SaveTemporaryKv(genesis_nodes[idx]->check_hash, join_info.SerializeAsString());
     }
 
-    for (size_t i = 0; i < prikeys.size(); ++i) {
-        for (size_t j = i; j < prikeys.size(); ++j) {
+    for (size_t i = 0; i < genesis_nodes.size(); ++i) {
+        for (size_t j = i; j < genesis_nodes.size(); ++j) {
             std::swap(secret_key_contribution[j][i], secret_key_contribution[i][j]);
         }
     }
