@@ -113,9 +113,8 @@ function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract
     prepay_buf.writeUInt32LE(big, 4)
     prepay_buf.writeUInt32LE(low, 0)
 
-    const message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
+    var message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
         amount_buf, gas_limit_buf, gas_price_buf, step_buf, Buffer.from(contract_bytes, 'hex'), Buffer.from(input, 'hex'), prepay_buf]);
-    //var arrByte = Uint8Array.from(message_buf)
     var kechash = keccak256(message_buf)
 
     var digest = Secp256k1.uint256(kechash, 16)
@@ -181,7 +180,7 @@ function create_tx(to, amount, gas_limit, gas_price) {
     step_buf.writeUInt32LE(big, 0)
     step_buf.writeUInt32LE(low, 0)
 
-    const message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
+    var message_buf = Buffer.concat([Buffer.from(gid, 'hex'), Buffer.from(frompk, 'hex'), Buffer.from(to, 'hex'),
         amount_buf, gas_limit_buf, gas_price_buf, step_buf]);
     var kechash = keccak256(message_buf)
     var digest = Secp256k1.uint256(kechash, 16)

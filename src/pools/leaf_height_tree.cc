@@ -70,7 +70,6 @@ void LeafHeightTree::Set(uint64_t child_index, uint64_t val) {
 
     if (max_vec_index_ < parent_idx) {
         max_vec_index_ = parent_idx;
-//         std::cout << "branch set max vec index: " << max_vec_index_ << std::endl;
     }
 
     data_[parent_idx] = val;
@@ -177,22 +176,13 @@ void LeafHeightTree::SyncToDb(db::DbWriteBatch& db_batch) {
         return;
     }
 
-    std::string sync_data;
-    sync_data += std::to_string(net_id_) + " ";
-    sync_data += std::to_string(pool_index_) + " ";
-    sync_data += std::to_string(level_) + " ";
-    sync_data += std::to_string(node_index_) + " ";
     sync::protobuf::FlushDbItem flush_db;
     for (uint32_t i = 0; i < data_.size(); ++i) {
         flush_db.add_heights(data_[i]);
-        sync_data += std::to_string(data_[i]) + " ";
     }
 
     flush_db.set_max_height(max_height_);
     flush_db.set_max_vec_index(max_vec_index_);
-    sync_data += std::to_string(max_height_) + " ";
-    sync_data += std::to_string(max_vec_index_) + " ";
-    ZJC_DEBUG("sync_data: %s", sync_data.c_str());
     prefix_db_->SaveHeightTree(net_id_, pool_index_, level_, node_index_, flush_db, db_batch);
     dirty_ = false;
 }
@@ -209,7 +199,6 @@ bool LeafHeightTree::LoadFromDb() {
 
     max_height_ = flush_db.max_height();
     max_vec_index_ = flush_db.max_vec_index();
-//     data_.clear();
     for (int32_t i = 0; i < flush_db.heights_size(); ++i) {
         data_[i] = flush_db.heights(i);
     }
@@ -398,7 +387,6 @@ void LeafHeightTree::GetBranchInvalidNode(uint64_t* vec_idx) {
 
     int32_t max_level = GetBranchAlignMaxLevel();
     int32_t parent_idx = 0;
-//     std::cout << "GetBranchInvalidNode: " << parent_idx << ", max_level: " << max_level << ", max_vec_idx: " << max_vec_index_ << std::endl;
     while (max_level > 0) {
         int32_t left_child_idx = level_tree_index_vec_[max_level - 1].first + parent_idx * 2;
         if (data_[left_child_idx] != kLevelNodeValidHeights) {
@@ -435,7 +423,6 @@ void LeafHeightTree::GetLeafInvalidHeights(std::vector<uint64_t>* height_vec) {
     }
 
     uint64_t b_idx = global_leaf_index_ + choosed_leaf_node * 64;
-//     std::cout << "GetLeafInvalidHeights GetAlignMaxLevel: " << max_level << ", b_idx: " << b_idx << ", max_height_: " << max_height_ << std::endl;
     for (uint64_t i = 0; i < 64; ++i) {
         if (b_idx + i > max_height_) {
             break;
@@ -445,10 +432,6 @@ void LeafHeightTree::GetLeafInvalidHeights(std::vector<uint64_t>* height_vec) {
             height_vec->push_back(b_idx + i);
         }
     }
-// 
-//     if (height_vec->empty()) {
-//         height_vec->push_back(max_height_ + 1);
-//     }
 }
 
 }  // namespace pools

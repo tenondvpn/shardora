@@ -300,7 +300,6 @@ public:
 
         ZJC_DEBUG("4 get bls pk and secret key success.height: %lu, network_id: %u",
             height, network_id);
-
         if (common_pk != nullptr) {
             *common_pk = tmp_common_pk;
         }

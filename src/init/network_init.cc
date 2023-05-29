@@ -1207,7 +1207,38 @@ void NetworkInit::HandleElectionBlock(
 }
 
 bool NetworkInit::BlockBlsAggSignatureValid(const block::protobuf::Block& block) {
-    return true;
+    auto block_hash = consensus::GetBlockHash(block);
+    if (block_hash != block.hash()) {
+        return false;
+    }
+
+    libff::alt_bn128_G2 common_pk = libff::alt_bn128_G2::zero();
+    auto members = elect_mgr_->GetNetworkMembersWithHeight(
+        block.electblock_height(),
+        block.network_id(),
+        &common_pk,
+        nullptr);
+    if (members == nullptr || common_pk == libff::alt_bn128_G2::zero()) {
+        ZJC_ERROR("failed get elect members or common pk: %u, %lu, %d",
+            block.network_id(),
+            block.electblock_height(),
+            (common_pk == libff::alt_bn128_G2::zero()));
+        return;
+    }
+
+    libff::alt_bn128_G1 sign;
+    try {
+        sign.X = libff::alt_bn128_Fq(common::Encode::HexEncode(block.bls_agg_sign_x()).c_str());
+        sign.Y = libff::alt_bn128_Fq(common::Encode::HexEncode(block.bls_agg_sign_y()).c_str());
+        sign.Z = libff::alt_bn128_Fq::one();
+    } catch (std::exception& e) {
+        ZJC_ERROR("get invalid bls sign.");
+        return false;
+    }
+
+    bool check_res = libBLS::Bls::Verification(block_hash, sign, common_pk);
+    assert(check_res);
+    return check_res;
 }
 
 }  // namespace init
