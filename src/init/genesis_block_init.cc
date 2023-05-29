@@ -277,7 +277,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
     uint32_t valid_t = common::GetSignerCount(valid_n);
     std::vector<std::vector<libff::alt_bn128_Fr>> secret_key_contribution(valid_n);
     for (uint32_t idx = 0; idx < genesis_nodes.size(); ++idx) {
-        std::string file = std::string("./") + common::Encode::HexEncode(genesis_nodes[i]->id);
+        std::string file = std::string("./") + common::Encode::HexEncode(genesis_nodes[idx]->id);
         bool file_valid = true;
         bls::protobuf::LocalPolynomial local_poly;
         FILE* fd = fopen(file.c_str(), "r");
@@ -299,9 +299,6 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
 
         if (local_poly.polynomial_size() <= 0) {
             // just private key.
-            std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
-            secptr->SetPrivateKey(val);
-            genesis_nodes[idx]->prikey = val;
             genesis_nodes[idx]->polynomial = dkg_instance.GeneratePolynomial();
             for (uint32_t j = 0; j < genesis_nodes[idx]->polynomial.size(); ++j) {
                 local_poly.add_polynomial(common::Encode::HexDecode(
