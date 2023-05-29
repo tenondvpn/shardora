@@ -50,7 +50,8 @@ int GenesisBlockInit::CreateGenesisBlocks(
 
     auto valid_count = root_bitmap_.valid_count();
     root_bitmap_.inversion(root_genesis_nodes.size());
-    std::cout << root_genesis_nodes.size() << ":" << root_t << ", " << root_bitmap_.valid_count() << ", valid count old: " << valid_count << std::endl;
+    std::cout << root_genesis_nodes.size() << ":" << root_t << ", "
+        << root_bitmap_.valid_count() << ", valid count old: " << valid_count << std::endl;
     assert(root_bitmap_.valid_count() == (root_genesis_nodes.size() - root_t));
     auto shard_t = common::GetSignerCount(cons_genesis_nodes.size());
     for (uint32_t i = 0; i < shard_t; ++i) {
@@ -1018,7 +1019,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         }
 
         tenon_block->set_timeblock_height(0);
-        tenon_block->set_electblock_height(0);
+        tenon_block->set_electblock_height(1);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_bls_agg_sign_x("x");
         tenon_block->set_bls_agg_sign_y("y");
@@ -1254,7 +1255,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         }
 
         tenon_block->set_timeblock_height(0);
-        tenon_block->set_electblock_height(0);
+        tenon_block->set_electblock_height(1);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_bls_agg_sign_x("x");
         tenon_block->set_bls_agg_sign_y("y");
@@ -1377,7 +1378,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         }
 
         tenon_block->set_timeblock_height(0);
-        tenon_block->set_electblock_height(0);
+        tenon_block->set_electblock_height(1);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_bls_agg_sign_x("x");
         tenon_block->set_bls_agg_sign_y("y");
