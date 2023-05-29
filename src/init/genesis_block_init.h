@@ -40,21 +40,21 @@ public:
     ~GenesisBlockInit();
     int CreateGenesisBlocks(
         uint32_t net_id,
-        const std::vector<dht::NodePtr>& root_genesis_nodes,
-        const std::vector<dht::NodePtr>& cons_genesis_nodes);
+        const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
+        const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes);
 
 private:
     int CreateRootGenesisBlocks(
-        const std::vector<dht::NodePtr>& root_genesis_nodes,
-        const std::vector<dht::NodePtr>& cons_genesis_nodes);
+        const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
+        const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes);
     int CreateShardGenesisBlocks(
-        const std::vector<dht::NodePtr>& root_genesis_nodes,
-        const std::vector<dht::NodePtr>& cons_genesis_nodes,
+        const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
+        const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id);
     int CreateShardNodesBlocks(
         std::unordered_map<uint32_t, std::string>& pool_prev_hash_map,
-        const std::vector<dht::NodePtr>& root_genesis_nodes,
-        const std::vector<dht::NodePtr>& cons_genesis_nodes,
+        const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
+        const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id,
         pools::protobuf::ToTxHeights& init_heights);
     void InitGenesisAccount();
@@ -69,33 +69,18 @@ private:
         uint64_t height,
         uint64_t prev_height,
         FILE* root_gens_init_block_file,
-        const std::vector<dht::NodePtr>& genesis_nodes);
+        const std::vector<GenisisNodeInfoPtr>& genesis_nodes);
     std::string GetValidPoolBaseAddr(uint32_t pool_index);
-    int CreateBlsGenesisKeys(
-        uint64_t elect_height,
-        uint32_t sharding_id,
-        const std::vector<std::string>& prikeys,
-        elect::protobuf::PrevMembers* prev_members);
-    void DumpLocalPrivateKey(
-        init::protobuf::GenesisInitBlsInfo& init_bls_info,
-        const std::string& prikey,
-        const std::string& sec_key,
-        FILE* fd);
-    void ReloadBlsPri(uint32_t sharding_id);
     void CreateDefaultAccount();
     void AddBlockItemToCache(
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);
-    int CreateJoinElectTx(
-        uint32_t sharding_id,
-        uint32_t idx,
-        const std::string& prikey,
-        block::protobuf::BlockTx* join_elect_tx_info);
     bool CheckRecomputeG2s(
         uint32_t local_member_index,
         uint32_t member_count,
         const std::string& id,
         bls::protobuf::JoinElectBlsInfo& verfy_final_vals);
+    bool CreateNodePrivateInfo(std::vector<GenisisNodeInfoPtr>& genesis_nodes);
 
     std::map<uint32_t, std::string> pool_index_map_;
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;
@@ -106,6 +91,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
+    libff::alt_bn128_G2 common_pk_[16] = { libff::alt_bn128_G2::zero() };
 
     DISALLOW_COPY_AND_ASSIGN(GenesisBlockInit);
 };

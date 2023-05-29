@@ -845,7 +845,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         account_mgr_ = std::make_shared<block::AccountManager>();
         block_mgr_ = std::make_shared<block::BlockManager>();
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
-        std::vector<dht::NodePtr> root_genesis_nodes;
+        std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         if (parser_arg.Has("1")) {
             std::string value;
             if (parser_arg.Get("1", value) != common::kParseSuccess) {
@@ -859,19 +859,14 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
                     continue;
                 }
 
-                auto node_ptr = std::make_shared<dht::Node>();
-                node_ptr->pubkey_str = common::Encode::HexDecode(node_info[0]);
-                node_ptr->public_ip = node_info[1];
-                node_ptr->id = security_->GetAddress(node_ptr->pubkey_str);
-                if (!common::StringUtil::ToUint16(node_info[2], &node_ptr->public_port)) {
-                    continue;
-                }
-
+                auto node_ptr = std::make_shared<GenisisNodeInfo>();
+                node_ptr->pubkey = common::Encode::HexDecode(node_info[0]);
+                node_ptr->id = security_->GetAddress(node_ptr->pubkey);
                 root_genesis_nodes.push_back(node_ptr);
             }
         }
 
-        std::vector<dht::NodePtr> cons_genesis_nodes;
+        std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;
         if (parser_arg.Has("2")) {
             std::string value;
             if (parser_arg.Get("2", value) != common::kParseSuccess) {
@@ -885,14 +880,9 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
                     continue;
                 }
 
-                auto node_ptr = std::make_shared<dht::Node>();
-                node_ptr->pubkey_str = common::Encode::HexDecode(node_info[0]);
-                node_ptr->public_ip = node_info[1];
-                node_ptr->id = security_->GetAddress(node_ptr->pubkey_str);
-                if (!common::StringUtil::ToUint16(node_info[2], &node_ptr->public_port)) {
-                    continue;
-                }
-
+                auto node_ptr = std::make_shared<GenisisNodeInfo>();
+                node_ptr->pubkey = common::Encode::HexDecode(node_info[0]);
+                node_ptr->id = security_->GetAddress(node_ptr->pubkey);
                 cons_genesis_nodes.push_back(node_ptr);
             }
         }
@@ -918,7 +908,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         account_mgr_ = std::make_shared<block::AccountManager>();
         block_mgr_ = std::make_shared<block::BlockManager>();
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
-        std::vector<dht::NodePtr> root_genesis_nodes;
+        std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         if (parser_arg.Has("1")) {
             std::string value;
             if (parser_arg.Get("1", value) != common::kParseSuccess) {
@@ -932,19 +922,14 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
                     continue;
                 }
 
-                auto node_ptr = std::make_shared<dht::Node>();
-                node_ptr->pubkey_str = common::Encode::HexDecode(node_info[0]);
-                node_ptr->public_ip = node_info[1];
-                node_ptr->id = security_->GetAddress(node_ptr->pubkey_str);
-                if (!common::StringUtil::ToUint16(node_info[2], &node_ptr->public_port)) {
-                    continue;
-                }
-
+                auto node_ptr = std::make_shared<GenisisNodeInfo>();
+                node_ptr->pubkey = common::Encode::HexDecode(node_info[0]);
+                node_ptr->id = security_->GetAddress(node_ptr->pubkey);
                 root_genesis_nodes.push_back(node_ptr);
             }
         }
 
-        std::vector<dht::NodePtr> cons_genesis_nodes;
+        std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;
         if (parser_arg.Has("2")) {
             std::string value;
             if (parser_arg.Get("2", value) != common::kParseSuccess) {
@@ -958,14 +943,9 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
                     continue;
                 }
 
-                auto node_ptr = std::make_shared<dht::Node>();
-                node_ptr->pubkey_str = common::Encode::HexDecode(node_info[0]);
-                node_ptr->public_ip = node_info[1];
-                node_ptr->id = security_->GetAddress(node_ptr->pubkey_str);
-                if (!common::StringUtil::ToUint16(node_info[2], &node_ptr->public_port)) {
-                    continue;
-                }
-
+                auto node_ptr = std::make_shared<GenisisNodeInfo>();
+                node_ptr->pubkey = common::Encode::HexDecode(node_info[0]);
+                node_ptr->id = security_->GetAddress(node_ptr->pubkey);
                 cons_genesis_nodes.push_back(node_ptr);
             }
         }

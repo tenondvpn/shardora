@@ -35,6 +35,21 @@ struct LeaderRotationInfo {
     common::MembersPtr members;
 };
 
+struct GenisisNodeInfo {
+    std::string prikey;
+    std::string pubkey;
+    std::string id;
+    std::string bls_prikey;
+    std::vector<libff::alt_bn128_Fr> polynomial;
+    libff::alt_bn128_Fr bls_prikey;
+    libff::alt_bn128_G2 bls_pubkey;
+    std::vector<libff::alt_bn128_G2> verification;
+    std::string check_hash;
+    bls::protobuf::JoinElectInfo join_info;
+};
+
+typedef std::shared_ptr<GenisisNodeInfo> GenisisNodeInfoPtr;
+
 }  // namespace init
 
 }  // namespace zjchain

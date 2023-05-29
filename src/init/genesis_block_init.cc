@@ -41,8 +41,10 @@ GenesisBlockInit::~GenesisBlockInit() {}
 
 int GenesisBlockInit::CreateGenesisBlocks(
         uint32_t net_id,
-        const std::vector<dht::NodePtr>& root_genesis_nodes,
-        const std::vector<dht::NodePtr>& cons_genesis_nodes) {
+        const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
+        const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes) {
+    CreateNodePrivateInfo(root_genesis_nodes);
+    CreateNodePrivateInfo(cons_genesis_nodes);
     auto root_t = common::GetSignerCount(root_genesis_nodes.size());
     for (uint32_t i = 0; i < root_t; ++i) {
         root_bitmap_.Set(i);
@@ -80,19 +82,13 @@ int GenesisBlockInit::CreateGenesisBlocks(
 
     std::vector<std::string> prikeys;
     if (net_id == 2) {
-        prikeys.push_back(common::Encode::HexDecode(
-            "67dfdd4d49509691369225e9059934675dea440d123aa8514441aa6788354016"));
-        prikeys.push_back(common::Encode::HexDecode(
-            "356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe"));
-        prikeys.push_back(common::Encode::HexDecode(
-            "a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee"));
+        for (uint32_t i = 0; i < root_genesis_nodes.size(); ++i) {
+            prikeys.push_back(root_genesis_nodes[i]->prikey);
+        }
     } else if (net_id == 3) {
-        prikeys.push_back(common::Encode::HexDecode(
-            "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"));
-        prikeys.push_back(common::Encode::HexDecode(
-            "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"));
-        prikeys.push_back(common::Encode::HexDecode(
-            "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
+        for (uint32_t i = 0; i < root_genesis_nodes.size(); ++i) {
+            prikeys.push_back(cons_genesis_nodes[i]->prikey);
+        }
     }
 
     for (uint32_t k = 0; k < prikeys.size(); ++k) {
@@ -265,32 +261,14 @@ bool GenesisBlockInit::CheckRecomputeG2s(
     return true;
 }
 
-int GenesisBlockInit::CreateBlsGenesisKeys(
+bool GenesisBlockInit::CreateNodePrivateInfo(
         uint64_t elect_height,
         uint32_t sharding_id,
-        const std::vector<std::string>& prikeys,
-        elect::protobuf::PrevMembers* prev_members) {
+        std::vector<GenisisNodeInfoPtr>& genesis_nodes) {
     static const uint32_t n = common::GlobalInfo::Instance()->each_shard_max_members();
     static const uint32_t t = common::GetSignerCount(n);
     libBLS::Dkg dkg_instance = libBLS::Dkg(t, n);
-    std::vector<std::vector<libff::alt_bn128_Fr>> polynomial(prikeys.size());
-    for (uint32_t i = 0; i < prikeys.size(); ++i) {
-        std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
-        secptr->SetPrivateKey(prikeys[i]);
-        bls::protobuf::LocalPolynomial local_poly;
-        if (!prefix_db_->GetLocalPolynomial(secptr, secptr->GetAddress(), &local_poly)) {
-            ZJC_FATAL("get member %d %s polynomial failed!",
-                i, common::Encode::HexEncode(secptr->GetAddress()).c_str());
-            return kInitError;
-        }
-
-        for (int32_t pol_idx = 0; pol_idx < local_poly.polynomial_size(); ++pol_idx) {
-            polynomial[i].push_back(libff::alt_bn128_Fr(common::Encode::HexEncode(
-                local_poly.polynomial(pol_idx)).c_str()));
-        }
-    }
-
-    uint32_t valid_n = prikeys.size();
+    uint32_t valid_n = genesis_nodes.size();
     uint32_t valid_t = common::GetSignerCount(valid_n);
     std::vector<std::vector<libff::alt_bn128_Fr>> secret_key_contribution(valid_n);
     for (size_t i = 0; i < prikeys.size(); ++i) {
@@ -298,38 +276,63 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
             polynomial[i], valid_n, valid_t);
     }
 
-    std::vector<std::vector<libff::alt_bn128_G2>> verification_vector(prikeys.size());
-    for (size_t i = 0; i < prikeys.size(); ++i) {
-        verification_vector[i] = dkg_instance.VerificationVector(polynomial[i]);
-    }
-
-    for (size_t i = 0; i < prikeys.size(); ++i) {
-        for (size_t j = i; j < prikeys.size(); ++j) {
-            std::swap(secret_key_contribution[j][i], secret_key_contribution[i][j]);
+    for (uint32_t idx = 0; idx < genesis_nodes.size(); ++idx) {
+        std::string file = std::string("./") + common::Encode::HexEncode(genesis_nodes[i]->id);
+        FILE* fd = fopen(file.c_str(), "r");
+        if (fd == nullptr) {
+            ZJC_FATAL("load bls init info failed: %s", file.c_str());
+            return false;
         }
-    }
 
-    FILE* fd = fopen(
-        std::string(std::string("./bls_pri_") + std::to_string(sharding_id)).c_str(),
-        "w");
-    auto common_public_key = libff::alt_bn128_G2::zero();
-    for (uint32_t idx = 0; idx < prikeys.size(); ++idx) {
-        std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
-        secptr->SetPrivateKey(prikeys[idx]);
+        char* data = new char[1024 * 1024 * 10];
         init::protobuf::GenesisInitBlsInfo init_bls_info;
-        bls::protobuf::LocalPolynomial& local_poly = *init_bls_info.mutable_local_poly();
-        for (uint32_t j = 0; j < polynomial[idx].size(); ++j) {
-            local_poly.add_polynomial(common::Encode::HexDecode(
-                libBLS::ThresholdUtils::fieldElementToString(polynomial[idx][j])));
+        if (fgets(data, 1024 * 1024 * 10, fd) == nullptr) {
+            ZJC_FATAL("load bls init info failed: %s", file.c_str());
+            return false;
         }
 
-        prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
-        bls::protobuf::JoinElectInfo& join_info = *init_bls_info.mutable_join_info();
+        fclose(fd);
+        std::string tmp_data(data, strlen(data) - 1);
+        std::string val = common::Encode::HexDecode(tmp_data);
+        if (val.size() == 32) {
+            // just private key.
+            std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
+            secptr->SetPrivateKey(val);
+            genesis_nodes[idx]->prikey = val;
+            init_bls_info.set_prikey(val);
+            genesis_nodes[idx]->polynomial = dkg_instance.GeneratePolynomial();
+            bls::protobuf::LocalPolynomial& local_poly = *init_bls_info.mutable_local_poly();
+            for (uint32_t j = 0; j < genesis_nodes[idx]->polynomial.size(); ++j) {
+                local_poly.add_polynomial(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[idx]->polynomial[j])));
+            }
+
+            FILE* fd = fopen(file.c_str(), "w");
+            std::string val = common::Encode::HexEncode(init_bls_info.SerializeAsString()) + "\n";
+            fwrite(val.c_str(), val.size(), fd);
+            fclose(fd);
+        } else {
+            if (!init_bls_info.ParseFromString(val)) {
+                ZJC_FATAL("load bls init info failed!");
+                return false;
+            }
+
+            genesis_nodes[idx]->prikey = init_bls_info.prikey();
+            for (int32_t poly_idx = 0; poly_idx < init_bls_info.local_poly().polynomial_size(); ++poly_idx) {
+                genesis_nodes[idx]->polynomial.push_back(
+                    libff::alt_bn128_Fr(common::Encode::HexEncode(
+                        init_bls_info.local_poly().polynomial(poly_idx)).c_str()));
+            }
+        }
+
+        genesis_nodes[idx]->verification = dkg_instance.VerificationVector(genesis_nodes[idx]->polynomial);
+        secret_key_contribution[idx] = dkg_instance.SecretKeyContribution(
+            genesis_nodes[idx]->polynomial, valid_t);
+        bls::protobuf::JoinElectInfo& join_info = genesis_nodes[idx]->join_info;
         join_info.set_member_idx(idx);
         join_info.set_shard_id(sharding_id);
         auto* req = join_info.mutable_g2_req();
-        auto g2_vec = dkg_instance.VerificationVector(polynomial[idx]);
-
+        auto g2_vec = dkg_instance.VerificationVector(genesis_nodes[idx]->polynomial);
         std::string str_for_hash;
         str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
         str_for_hash.append((char*)&idx, sizeof(idx));
@@ -355,181 +358,48 @@ int GenesisBlockInit::CreateBlsGenesisKeys(
             str_for_hash.append(verify_item.z_c1());
         }
 
-        auto check_hash = common::Hash::keccak256(str_for_hash);
+        genesis_nodes[idx].check_hash = common::Hash::keccak256(str_for_hash);
+        prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
         prefix_db_->AddBlsVerifyG2(secptr->GetAddress(), *req);
+        prefix_db_->SaveTemporaryKv(genesis_nodes[idx].check_hash, join_info.SerializeAsString());
+    }
 
-        libBLS::Dkg tmpdkg(valid_t, valid_n);
+    for (size_t i = 0; i < prikeys.size(); ++i) {
+        for (size_t j = i; j < prikeys.size(); ++j) {
+            std::swap(secret_key_contribution[j][i], secret_key_contribution[i][j]);
+        }
+    }
+
+    libBLS::Dkg tmpdkg(valid_t, valid_n);
+    auto common_public_key = libff::alt_bn128_G2::zero();
+    for (uint32_t idx = 0; idx < genesis_nodes.size(); ++idx) {
         std::vector<libff::alt_bn128_Fr> tmp_secret_key_contribution;
-        for (uint32_t i = 0; i < prikeys.size(); ++i) {
+        for (uint32_t i = 0; i < genesis_nodes.size(); ++i) {
             tmp_secret_key_contribution.push_back(secret_key_contribution[idx][i]);
         }
 
-        auto local_sec_key = tmpdkg.SecretKeyShareCreate(tmp_secret_key_contribution);
-        auto local_publick_key = tmpdkg.GetPublicKeyFromSecretKey(local_sec_key);
-        auto local_pk_ptr = std::make_shared<BLSPublicKey>(local_publick_key);
-        auto mem_pk = prev_members->add_bls_pubkey();
-        auto pkeys_str = local_pk_ptr->toString();
-        mem_pk->set_x_c0(pkeys_str->at(0));
-        mem_pk->set_x_c1(pkeys_str->at(1));
-        mem_pk->set_y_c0(pkeys_str->at(2));
-        mem_pk->set_y_c1(pkeys_str->at(3));
-        auto& common_g2_vec = verification_vector[idx];
-        common_public_key = common_public_key + common_g2_vec[0];
-        init_bls_info.set_prikey(prikeys[idx]);
-        init_bls_info.set_bls_hash(check_hash);
-        init_bls_info.set_height(elect_height);
-        init_bls_info.set_shard_id(sharding_id);
-        init_bls_info.set_id(secptr->GetAddress());
-        DumpLocalPrivateKey(
-            init_bls_info,
-            prikeys[idx],
-            libBLS::ThresholdUtils::fieldElementToString(local_sec_key),
-            fd);
-    }
-
-    fclose(fd);
-    auto common_pk_ptr = std::make_shared<BLSPublicKey>(common_public_key);
-    auto common_pk_strs = common_pk_ptr->toString();
-    auto common_pk = prev_members->mutable_common_pubkey();
-    common_pk->set_x_c0(common_pk_strs->at(0));
-    common_pk->set_x_c1(common_pk_strs->at(1));
-    common_pk->set_y_c0(common_pk_strs->at(2));
-    common_pk->set_y_c1(common_pk_strs->at(3));
-    return kInitSuccess;
-}
-
-int GenesisBlockInit::CreateJoinElectTx(
-        uint32_t sharding_id,
-        uint32_t idx,
-        const std::string& prikey,
-        block::protobuf::BlockTx* join_elect_tx_info) {
-    static const uint32_t n = common::GlobalInfo::Instance()->each_shard_max_members();
-    static const uint32_t t = common::GetSignerCount(n);
-    libBLS::Dkg dkg_instance = libBLS::Dkg(t, n);
-    std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
-    secptr->SetPrivateKey(prikey);
-    bls::protobuf::LocalPolynomial local_poly;
-    std::vector<libff::alt_bn128_Fr> polynomial;
-    if (prefix_db_->GetLocalPolynomial(secptr, secptr->GetAddress(), &local_poly)) {
-        for (int32_t i = 0; i < local_poly.polynomial_size(); ++i) {
-            polynomial.push_back(libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(i)).c_str()));
-        }
-    } else {
-        polynomial = dkg_instance.GeneratePolynomial();
-        for (uint32_t j = 0; j < polynomial.size(); ++j) {
-            local_poly.add_polynomial(common::Encode::HexDecode(
-                libBLS::ThresholdUtils::fieldElementToString(polynomial[j])));
+        genesis_nodes[idx].bls_prikey = tmpdkg.SecretKeyShareCreate(tmp_secret_key_contribution);
+        genesis_nodes[idx].bls_pubkey = tmpdkg.GetPublicKeyFromSecretKey(genesis_nodes[idx].bls_prikey);
+        common_public_key = common_public_key + genesis_nodes[idx]->verification[0];
+        std::string enc_data;
+        security::Ecdsa ecdsa;
+        if (ecdsa.Encrypt(
+                genesis_nodes[idx].prikey,
+                libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[idx].bls_prikey), ,
+                &enc_data) != security::kSecuritySuccess) {
+            ZJC_FATAL("encrypt data failed!");
+            return false;
         }
 
-        prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
+        prefix_db_->SaveBlsPrikey(
+            elect_height,
+            sharding_id,
+            genesis_nodes[idx].id,
+            enc_data);
     }
 
-    bls::protobuf::JoinElectInfo join_info;
-    join_info.set_member_idx(idx);
-    join_info.set_shard_id(sharding_id);
-    auto* req = join_info.mutable_g2_req();
-    auto g2_vec = dkg_instance.VerificationVector(polynomial);
-    std::string str_for_hash;
-    str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
-    str_for_hash.append((char*)&idx, sizeof(idx));
-    for (uint32_t i = 0; i < t; ++i) {
-        bls::protobuf::VerifyVecItem& verify_item = *req->add_verify_vec();
-        verify_item.set_x_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c0)));
-        verify_item.set_x_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].X.c1)));
-        verify_item.set_y_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c0)));
-        verify_item.set_y_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Y.c1)));
-        verify_item.set_z_c0(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c0)));
-        verify_item.set_z_c1(common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(g2_vec[i].Z.c1)));
-        str_for_hash.append(verify_item.x_c0());
-        str_for_hash.append(verify_item.x_c1());
-        str_for_hash.append(verify_item.y_c0());
-        str_for_hash.append(verify_item.y_c1());
-        str_for_hash.append(verify_item.z_c0());
-        str_for_hash.append(verify_item.z_c1());
-    }
-
-    auto check_hash = common::Hash::keccak256(str_for_hash);
-    auto str = join_info.SerializeAsString();
-    prefix_db_->SaveTemporaryKv(check_hash, str);
-    if (join_elect_tx_info != nullptr) {
-        join_elect_tx_info->set_step(pools::protobuf::kJoinElect);
-        join_elect_tx_info->set_from(secptr->GetAddress());
-        join_elect_tx_info->set_to("");
-        join_elect_tx_info->set_amount(0);
-        join_elect_tx_info->set_gas_limit(0);
-        join_elect_tx_info->set_gas_used(0);
-        join_elect_tx_info->set_balance(0);
-        join_elect_tx_info->set_status(0);
-        auto storage = join_elect_tx_info->add_storages();
-        storage->set_key(protos::kJoinElectVerifyG2);
-        storage->set_val_hash(check_hash);
-        storage->set_val_size(str.size());
-    }
-
-    return kInitSuccess;
-}
-
-void GenesisBlockInit::DumpLocalPrivateKey(
-        init::protobuf::GenesisInitBlsInfo& init_bls_info,
-        const std::string& prikey,
-        const std::string& sec_key,
-        FILE* fd) {
-    // encrypt by private key and save to db
-    std::string enc_data;
-    security::Ecdsa ecdsa;
-    if (ecdsa.Encrypt(
-            sec_key,
-            prikey,
-            &enc_data) != security::kSecuritySuccess) {
-        return;
-    }
-
-    prefix_db_->SaveBlsPrikey(
-        init_bls_info.height(),
-        init_bls_info.shard_id(),
-        init_bls_info.id(),
-        enc_data);
-    init_bls_info.set_bls_enc_data(enc_data);
-    std::string val = common::Encode::HexEncode(init_bls_info.SerializeAsString()) + "\n";
-    fputs(val.c_str(), fd);
-}
-
-void GenesisBlockInit::ReloadBlsPri(uint32_t sharding_id) {
-    FILE* bls_fd = fopen(
-        std::string(std::string("./bls_pri_") + std::to_string(sharding_id)).c_str(),
-        "r");
-    assert(bls_fd != nullptr);
-    char* data = new char[1024 * 1024 * 10];
-    while (fgets(data, 1024 * 1024 * 10, bls_fd) != nullptr) {
-        std::string tmp_data(data, strlen(data) - 1);
-        std::string val = common::Encode::HexDecode(tmp_data);
-        init::protobuf::GenesisInitBlsInfo init_info;
-        if (!init_info.ParseFromString(val)) {
-            ZJC_FATAL("load bls init info failed!");
-        }
-
-        uint64_t height = init_info.height();
-        std::string id = init_info.id();
-        std::string bls_prikey = init_info.bls_enc_data();
-        prefix_db_->SaveBlsPrikey(height, sharding_id, id, bls_prikey);
-        auto check_hash = init_info.bls_hash();
-        auto str = init_info.join_info().SerializeAsString();
-        std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
-        secptr->SetPrivateKey(init_info.prikey());
-        prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), init_info.local_poly());
-        prefix_db_->SaveTemporaryKv(check_hash, str);
-        ZJC_DEBUG("success add bls prikey: %lu, %u, %s",
-            height, sharding_id, common::Encode::HexEncode(id).c_str());
-    }
-
-    delete[] data;
-    fclose(bls_fd);
+    common_pk_[sharding_id] = common_public_key;
+    return true;
 }
 
 int GenesisBlockInit::CreateElectBlock(
@@ -538,7 +408,7 @@ int GenesisBlockInit::CreateElectBlock(
         uint64_t height,
         uint64_t prev_height,
         FILE* root_gens_init_block_file,
-        const std::vector<dht::NodePtr>& genesis_nodes) {
+        const std::vector<GenisisNodeInfoPtr>& genesis_nodes) {
     auto account_info = account_mgr_->pools_address_info(shard_netid);
     auto tenon_block = std::make_shared<block::protobuf::Block>();
     auto tx_list = tenon_block->mutable_tx_list();
@@ -562,26 +432,24 @@ int GenesisBlockInit::CreateElectBlock(
     }
 
     ec_block.set_shard_network_id(shard_netid);
-    std::vector<std::string> prikeys;
-    if (shard_netid == 2) {
-        prikeys.push_back(common::Encode::HexDecode(
-            "67dfdd4d49509691369225e9059934675dea440d123aa8514441aa6788354016"));
-        prikeys.push_back(common::Encode::HexDecode(
-            "356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe"));
-        prikeys.push_back(common::Encode::HexDecode(
-            "a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee"));
-    } else if (shard_netid == 3) {
-        prikeys.push_back(common::Encode::HexDecode(
-            "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"));
-        prikeys.push_back(common::Encode::HexDecode(
-            "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"));
-        prikeys.push_back(common::Encode::HexDecode(
-            "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
-    }
-
-    if (!prikeys.empty() && prev_height != common::kInvalidUint64) {
+    if (prev_height != common::kInvalidUint64) {
         auto prev_members = ec_block.mutable_prev_members();
-        CreateBlsGenesisKeys(prev_height, shard_netid, prikeys, prev_members);
+        for (uint32_t i = 0; i < genesis_nodes.size(); ++i) {
+            auto mem_pk = prev_members->add_bls_pubkey();
+            auto pkeys_str = genesis_nodes[i]->bls_pubkey->toString();
+            mem_pk->set_x_c0(pkeys_str->at(0));
+            mem_pk->set_x_c1(pkeys_str->at(1));
+            mem_pk->set_y_c0(pkeys_str->at(2));
+            mem_pk->set_y_c1(pkeys_str->at(3));
+        }
+
+        auto common_pk_ptr = std::make_shared<BLSPublicKey>(common_pk_[shard_netid]);
+        auto common_pk_strs = common_pk_ptr->toString();
+        auto common_pk = prev_members->mutable_common_pubkey();
+        common_pk->set_x_c0(common_pk_strs->at(0));
+        common_pk->set_x_c1(common_pk_strs->at(1));
+        common_pk->set_y_c0(common_pk_strs->at(2));
+        common_pk->set_y_c1(common_pk_strs->at(3));
         prev_members->set_prev_elect_height(prev_height);
     }
 
@@ -911,40 +779,14 @@ std::string GenesisBlockInit::GetValidPoolBaseAddr(uint32_t pool_index) {
 }
 
 int GenesisBlockInit::CreateRootGenesisBlocks(
-        const std::vector<dht::NodePtr>& root_genesis_nodes,
-        const std::vector<dht::NodePtr>& cons_genesis_nodes) {
+        const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
+        const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes) {
     GenerateRootAccounts();
     InitGenesisAccount();
     uint64_t genesis_account_balance = 0llu;
     uint64_t all_balance = 0llu;
     pools::protobuf::ToTxHeights init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
-    std::vector<std::string> root_prikeys;
-    root_prikeys.push_back(common::Encode::HexDecode(
-        "67dfdd4d49509691369225e9059934675dea440d123aa8514441aa6788354016"));
-    root_prikeys.push_back(common::Encode::HexDecode(
-        "356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe"));
-    root_prikeys.push_back(common::Encode::HexDecode(
-        "a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee"));
-    std::vector<std::shared_ptr<security::Security>> root_secs;
-    for (uint32_t i = 0; i < root_prikeys.size(); ++i) {
-        root_secs.push_back(std::make_shared<security::Ecdsa>());
-        root_secs[i]->SetPrivateKey(root_prikeys[i]);
-    }
-
-    std::vector<std::string> shard_prikeys;
-    shard_prikeys.push_back(common::Encode::HexDecode(
-        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"));
-    shard_prikeys.push_back(common::Encode::HexDecode(
-        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"));
-    shard_prikeys.push_back(common::Encode::HexDecode(
-        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
-    std::vector<std::shared_ptr<security::Security>> shard_secs;
-    for (uint32_t i = 0; i < shard_prikeys.size(); ++i) {
-        shard_secs.push_back(std::make_shared<security::Ecdsa>());
-        shard_secs[i]->SetPrivateKey(shard_prikeys[i]);
-    }
-    
     std::string prehashes[common::kImmutablePoolSize];
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
@@ -996,16 +838,39 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
         }
 
-        for (uint32_t member_idx = 0; member_idx < root_secs.size(); ++member_idx) {
-            if (common::GetAddressPoolIndex(root_secs[member_idx]->GetAddress()) == i) {
-                auto tx_info = tx_list->Add();
-                CreateJoinElectTx(network::kRootCongressNetworkId, member_idx, root_prikeys[member_idx], tx_info);
+        for (uint32_t member_idx = 0; member_idx < root_genesis_nodes.size(); ++member_idx) {
+            if (common::GetAddressPoolIndex(root_genesis_nodes[member_idx]->id) == i) {
+                auto join_elect_tx_info = tx_list->Add();
+                join_elect_tx_info->set_step(pools::protobuf::kJoinElect);
+                join_elect_tx_info->set_from(root_genesis_nodes[member_idx]->id);
+                join_elect_tx_info->set_to("");
+                join_elect_tx_info->set_amount(0);
+                join_elect_tx_info->set_gas_limit(0);
+                join_elect_tx_info->set_gas_used(0);
+                join_elect_tx_info->set_balance(0);
+                join_elect_tx_info->set_status(0);
+                auto storage = join_elect_tx_info->add_storages();
+                storage->set_key(protos::kJoinElectVerifyG2);
+                storage->set_val_hash(root_genesis_nodes[member_idx]->check_hash);
+                storage->set_val_size(33);
             }
         }
 
-        for (uint32_t member_idx = 0; member_idx < shard_secs.size(); ++member_idx) {
-            if (common::GetAddressPoolIndex(shard_secs[member_idx]->GetAddress()) == i) {
-                CreateJoinElectTx(network::kRootCongressNetworkId, member_idx, shard_prikeys[member_idx], nullptr);
+        for (uint32_t member_idx = 0; member_idx < cons_genesis_nodes.size(); ++member_idx) {
+            if (common::GetAddressPoolIndex(cons_genesis_nodes[member_idx]->id) == i) {
+                auto join_elect_tx_info = tx_list->Add();
+                join_elect_tx_info->set_step(pools::protobuf::kJoinElect);
+                join_elect_tx_info->set_from(cons_genesis_nodes[member_idx]->id);
+                join_elect_tx_info->set_to("");
+                join_elect_tx_info->set_amount(0);
+                join_elect_tx_info->set_gas_limit(0);
+                join_elect_tx_info->set_gas_used(0);
+                join_elect_tx_info->set_balance(0);
+                join_elect_tx_info->set_status(0);
+                auto storage = join_elect_tx_info->add_storages();
+                storage->set_key(protos::kJoinElectVerifyG2);
+                storage->set_val_hash(cons_genesis_nodes[member_idx]->check_hash);
+                storage->set_val_size(33);
             }
         }
 
@@ -1169,8 +1034,8 @@ void GenesisBlockInit::AddBlockItemToCache(
 
 int GenesisBlockInit::CreateShardNodesBlocks(
         std::unordered_map<uint32_t, std::string>& pool_prev_hash_map,
-        const std::vector<dht::NodePtr>& root_genesis_nodes,
-        const std::vector<dht::NodePtr>& cons_genesis_nodes,
+        const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
+        const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id,
         pools::protobuf::ToTxHeights& init_heights) {
     std::set<std::string> valid_ids;
@@ -1200,20 +1065,6 @@ int GenesisBlockInit::CreateShardNodesBlocks(
 
     uint64_t genesis_account_balance = common::kGenesisShardingNodesMaxZjc / valid_ids.size();
     int32_t idx = 0;
-
-    std::vector<std::string> prikeys;
-    prikeys.push_back(common::Encode::HexDecode(
-        "e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269"));
-    prikeys.push_back(common::Encode::HexDecode(
-        "b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0"));
-    prikeys.push_back(common::Encode::HexDecode(
-        "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995"));
-    std::vector<std::shared_ptr<security::Security>> secs;
-    for (uint32_t i = 0; i < prikeys.size(); ++i) {
-        secs.push_back(std::make_shared<security::Ecdsa>());
-        secs[i]->SetPrivateKey(prikeys[i]);
-    }
-
     for (auto iter = valid_ids.begin(); iter != valid_ids.end(); ++iter, ++idx) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
@@ -1234,15 +1085,23 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         }
 
         auto pool_index = common::GetAddressPoolIndex(address);
-        for (uint32_t member_idx = 0; member_idx < secs.size(); ++member_idx) {
-            if (common::GetAddressPoolIndex(secs[member_idx]->GetAddress()) == pool_index) {
-                auto tx_info = tx_list->Add();
-                CreateJoinElectTx(net_id, member_idx, prikeys[member_idx], tx_info);
-                tx_info->set_amount(0);
-                tx_info->set_balance(genesis_account_balance);
+        for (uint32_t member_idx = 0; member_idx < cons_genesis_nodes.size(); ++member_idx) {
+            if (common::GetAddressPoolIndex(cons_genesis_nodes[member_idx]->id) == i) {
+                auto join_elect_tx_info = tx_list->Add();
+                join_elect_tx_info->set_step(pools::protobuf::kJoinElect);
+                join_elect_tx_info->set_from(cons_genesis_nodes[member_idx]->id);
+                join_elect_tx_info->set_to("");
+                join_elect_tx_info->set_gas_limit(0);
+                join_elect_tx_info->set_gas_used(0);
+                join_elect_tx_info->set_status(0);
+                auto storage = join_elect_tx_info->add_storages();
+                storage->set_key(protos::kJoinElectVerifyG2);
+                storage->set_val_hash(cons_genesis_nodes[member_idx]->check_hash);
+                storage->set_val_size(33);
+                join_elect_tx_info->set_amount(0);
+                join_elect_tx_info->set_balance(genesis_account_balance);
             }
         }
-
 
         tenon_block->set_prehash(pool_prev_hash_map[pool_index]);
         tenon_block->set_version(common::kTransactionVersion);
@@ -1306,16 +1165,14 @@ int GenesisBlockInit::CreateShardNodesBlocks(
 }
 
 int GenesisBlockInit::CreateShardGenesisBlocks(
-        const std::vector<dht::NodePtr>& root_genesis_nodes,
-        const std::vector<dht::NodePtr>& cons_genesis_nodes,
+        const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
+        const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id) {
     InitGenesisAccount();
     uint64_t genesis_account_balance = common::kGenesisFoundationMaxZjc / pool_index_map_.size();
     uint64_t all_balance = 0llu;
     pools::protobuf::ToTxHeights init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
-    ReloadBlsPri(network::kRootCongressNetworkId);
-    ReloadBlsPri(net_id);
     pool_index_map_[common::kRootChainPoolIndex] = common::kRootPoolsAddress;
     uint32_t idx = 0;
     for (auto iter = pool_index_map_.begin(); iter != pool_index_map_.end(); ++iter, ++idx) {
