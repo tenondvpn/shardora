@@ -318,9 +318,11 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
             all_signs,
             lagrange_coeffs));
         prepare_block_->set_bls_agg_sign_x(
-            libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X));
+            common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X)));
         prepare_block_->set_bls_agg_sign_y(
-            libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->Y));
+            common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->Y)));
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
 //         if (times_[times_index_ - 1] - times_[times_index_ - 2] >= 10000) {
 //             ZJC_DEBUG("SignatureRecover use time %lu us", (times_[times_index_ - 1] - times_[times_index_ - 2]));
@@ -486,11 +488,13 @@ int Zbft::LeaderCreateCommitAggSign() {
 //         ZJC_INFO("commit verify end,");
         bls_commit_agg_sign_->to_affine_coordinates();
         prepare_block_->set_bls_agg_sign_x(
-            libBLS::ThresholdUtils::fieldElementToString(bls_commit_agg_sign_->X));
+            common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(bls_commit_agg_sign_->X)));
         prepare_block_->set_bls_agg_sign_y(
-            libBLS::ThresholdUtils::fieldElementToString(bls_commit_agg_sign_->Y));
+            common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(bls_commit_agg_sign_->Y)));
         ZJC_ERROR("leader agg sign success! signx: %s, %s: %s, %s",
-            prepare_block_->bls_agg_sign_x().c_str(),
+            common::Encode::HexEncode(prepare_block_->bls_agg_sign_x()).c_str(),
             common::Encode::HexEncode(sign_commit_hash).c_str(),
             common::Encode::HexEncode(commit_bls_agg_verify_hash_).c_str(),
             common::Encode::HexEncode(precommit_hash_).c_str());
@@ -529,9 +533,11 @@ bool Zbft::set_bls_precommit_agg_sign(
     }
 
     prepare_block_->set_bls_agg_sign_x(
-        libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X));
+        common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X)));
     prepare_block_->set_bls_agg_sign_y(
-        libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->Y));
+        common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->Y)));
     return true;
 }
 
@@ -592,9 +598,11 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
     }
     
     prepare_block_->set_bls_agg_sign_x(
-        libBLS::ThresholdUtils::fieldElementToString(agg_sign.X));
+        common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(agg_sign.X)));
     prepare_block_->set_bls_agg_sign_y(
-        libBLS::ThresholdUtils::fieldElementToString(agg_sign.Y));
+        common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(agg_sign.Y)));
     return true;
 }
 

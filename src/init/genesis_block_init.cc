@@ -1052,9 +1052,11 @@ bool GenesisBlockInit::BlsAggSignBlock(
     }
 
     block->set_bls_agg_sign_x(
-        libBLS::ThresholdUtils::fieldElementToString(agg_sign->X));
+        common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(agg_sign->X)));
     block->set_bls_agg_sign_y(
-        libBLS::ThresholdUtils::fieldElementToString(agg_sign->Y));
+        common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(agg_sign->Y)));
     return true;
 } catch (std::exception& e) {
     ZJC_ERROR("catch bls exception: %s", e.what());
