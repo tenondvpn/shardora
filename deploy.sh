@@ -37,7 +37,7 @@ cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s1
 cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s2
 cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s3
 cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s4
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s5
+cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s5
 #cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s6
 #cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s7
 #cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s8
@@ -72,8 +72,8 @@ cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/r3/db
 cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s1/db
 cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s2/db
 cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s3/db
-cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s4/db
-#cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s5/db
+cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/s4/db
+cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/s5/db
 #cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s6/db
 #cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s7/db
 #cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s8/db
