@@ -1227,8 +1227,10 @@ bool NetworkInit::BlockBlsAggSignatureValid(const block::protobuf::Block& block)
     assert(check_res);
     return check_res;
 } catch (std::exception& e) {
-    ZJC_ERROR("get invalid bls sign: %s, net: %u, height: %lu",
-        e.what(), block.network_id(), block.height());
+    ZJC_ERROR("get invalid bls sign: %s, net: %u, height: %lu, %s, %s",
+        e.what(), block.network_id(), block.height(),
+        common::Encode::HexEncode(block.bls_agg_sign_x()).c_str(),
+        common::Encode::HexEncode(block.bls_agg_sign_y()).c_str());
     assert(check_res);
     return false;
 }
