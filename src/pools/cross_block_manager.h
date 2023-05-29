@@ -87,7 +87,7 @@ private:
         }
 
         if (cross_synced_max_heights_[sharding_id] != common::kInvalidUint64 &&
-                prev_checked_height < cross_synced_max_heights_[sharding_id]) {
+                prev_checked_height > cross_synced_max_heights_[sharding_id]) {
             return;
         }
 
@@ -198,7 +198,10 @@ private:
                 break;
             }
 
-            cross_synced_max_heights_[sharding_id] = check_height;
+            if (cross_synced_max_heights_[sharding_id] < check_height) {
+                cross_synced_max_heights_[sharding_id] = check_height;
+            }
+
             ++check_height;
         }
 
