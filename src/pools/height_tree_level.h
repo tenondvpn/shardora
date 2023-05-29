@@ -22,7 +22,7 @@ public:
     bool Valid(uint64_t height);
     void GetMissingHeights(std::vector<uint64_t>* heights, uint64_t max_height);
     void PrintTree();
-    void FlushToDb();
+    void FlushToDb(db::DbWriteBatch& db_batch);
     void GetTreeData(std::vector<uint64_t>* data_vec);
 
 private:

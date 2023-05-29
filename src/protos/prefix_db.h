@@ -392,6 +392,7 @@ public:
             uint64_t height,
             block::protobuf::Block* block) {
         std::string block_hash;
+        ZJC_DEBUG("GetBlockWithHeight.");
         if (!GetBlockHashWithBlockHeight(sharding_id, pool_index, height, &block_hash)) {
             return false;
         }
@@ -405,6 +406,7 @@ public:
             uint64_t height,
             std::string* block_str) {
         std::string block_hash;
+        ZJC_DEBUG("GetBlockStringWithHeight.");
         if (!GetBlockHashWithBlockHeight(sharding_id, pool_index, height, &block_hash)) {
             return false;
         }

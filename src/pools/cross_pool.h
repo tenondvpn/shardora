@@ -39,9 +39,9 @@ public:
         std::shared_ptr<sync::KeyValueSync>& kv_sync);
     uint32_t SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms);
 
-    void FlushHeightTree() {
+    void FlushHeightTree(db::DbWriteBatch& db_batch) {
         if (height_tree_ptr_ != nullptr) {
-            height_tree_ptr_->FlushToDb();
+            height_tree_ptr_->FlushToDb(db_batch);
         }
     }
 

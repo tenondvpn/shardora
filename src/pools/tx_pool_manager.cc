@@ -146,13 +146,31 @@ void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
     }
 }
 
+void TxPoolManager::FlushHeightTree() {
+    db::DbWriteBatch db_batch;
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        tx_pool_[i].FlushHeightTree(db_batch);
+    }
+
+    if (cross_pools_ != nullptr) {
+        if (max_cross_pools_size_ == 1) {
+            cross_pools_[0].FlushHeightTree(db_batch);
+        } else {
+            for (uint32_t i = 0; i < now_sharding_count_; ++i) {
+                cross_pools_[i].FlushHeightTree(db_batch);
+            }
+        }
+    }
+
+    if (!db_->Put(db_batch).ok()) {
+        ZJC_FATAL("write db failed!");
+    }
+}
+
 void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (prev_sync_height_tree_tm_ms_ < now_tm_ms) {
-        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-            tx_pool_[i].FlushHeightTree();
-        }
-
+        FlushHeightTree();
         prev_sync_height_tree_tm_ms_ = now_tm_ms + kFlushHeightTreePeriod;
     }
 

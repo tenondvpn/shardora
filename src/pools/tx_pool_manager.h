@@ -168,6 +168,7 @@ private:
         const bls::protobuf::JoinElectInfo& join_info,
         std::string* new_hash);
     void SyncCrossPool(uint8_t thread_idx);
+    void FlushHeightTree();
 
     static const uint32_t kPopMessageCountEachTime = 320u;
     static const uint64_t kFlushHeightTreePeriod = 60000lu;

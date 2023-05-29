@@ -373,10 +373,9 @@ void HeightTreeLevel::LoadFromDb() {
     }
 }
 
-void HeightTreeLevel::FlushToDb() {
+void HeightTreeLevel::FlushToDb(db::DbWriteBatch& db_batch) {
     uint32_t level_vec_index = 1;
     int32_t max_level = (int32_t)(log(kBranchMaxCount) / log(2));
-    db::DbWriteBatch db_batch;
     for (int32_t i = (int32_t)max_level_; i >= 0; --i) {
         auto level_map = tree_level_[i];
         if (level_map == nullptr) {
@@ -405,10 +404,6 @@ void HeightTreeLevel::FlushToDb() {
         }
 
         level_vec_index *= kBranchMaxCount;
-    }
-
-    if (!db_->Put(db_batch).ok()) {
-        ZJC_FATAL("write db failed!");
     }
 }
 
