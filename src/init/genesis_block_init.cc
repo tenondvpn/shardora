@@ -964,7 +964,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             1,
             common::kInvalidUint64,
             root_gens_init_block_file,
-            cons_genesis_nodes) != kInitSuccess) {
+            root_genesis_nodes) != kInitSuccess) {
         ZJC_FATAL("CreateElectBlock kConsensusShardBeginNetworkId failed!");
         return kInitError;
     }
@@ -975,7 +975,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             2,
             1,
             root_gens_init_block_file,
-            cons_genesis_nodes) != kInitSuccess) {
+            root_genesis_nodes) != kInitSuccess) {
         ZJC_FATAL("CreateElectBlock kConsensusShardBeginNetworkId failed!");
         return kInitError;
     }
