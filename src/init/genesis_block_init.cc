@@ -43,8 +43,12 @@ int GenesisBlockInit::CreateGenesisBlocks(
         uint32_t net_id,
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes) {
-    CreateNodePrivateInfo(root_genesis_nodes);
-    CreateNodePrivateInfo(cons_genesis_nodes);
+    if (net_id == network::kRootCongressNetworkId) {
+        CreateNodePrivateInfo(net_id, 1llu, root_genesis_nodes);
+    } else {
+        CreateNodePrivateInfo(net_id, 1llu, cons_genesis_nodes);
+    }
+
     auto root_t = common::GetSignerCount(root_genesis_nodes.size());
     for (uint32_t i = 0; i < root_t; ++i) {
         root_bitmap_.Set(i);
@@ -264,7 +268,7 @@ bool GenesisBlockInit::CheckRecomputeG2s(
 bool GenesisBlockInit::CreateNodePrivateInfo(
         uint64_t elect_height,
         uint32_t sharding_id,
-        std::vector<GenisisNodeInfoPtr>& genesis_nodes) {
+        const std::vector<GenisisNodeInfoPtr>& genesis_nodes) {
     static const uint32_t n = common::GlobalInfo::Instance()->each_shard_max_members();
     static const uint32_t t = common::GetSignerCount(n);
     libBLS::Dkg dkg_instance = libBLS::Dkg(t, n);

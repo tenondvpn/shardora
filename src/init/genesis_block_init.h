@@ -76,7 +76,10 @@ private:
         uint32_t member_count,
         const std::string& id,
         bls::protobuf::JoinElectBlsInfo& verfy_final_vals);
-    bool CreateNodePrivateInfo(std::vector<GenisisNodeInfoPtr>& genesis_nodes);
+    bool CreateNodePrivateInfo(
+        uint32_t shard_id,
+        uint64_t elect_height,
+        const std::vector<GenisisNodeInfoPtr>& genesis_nodes);
 
     std::map<uint32_t, std::string> pool_index_map_;
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;
