@@ -1,8 +1,15 @@
 #pragma once
 
-#include "common/utils.h"
-#include "common/log.h"
+#include <libbls/bls/BLSPrivateKey.h>
+#include <libbls/bls/BLSPrivateKeyShare.h>
+#include <libbls/bls/BLSPublicKey.h>
+#include <libbls/bls/BLSPublicKeyShare.h>
+#include <libbls/tools/utils.h>
+
 #include "common/encode.h"
+#include "common/log.h"
+#include "common/node_members.h"
+#include "common/utils.h"
 
 #define INIT_DEBUG(fmt, ...) ZJC_DEBUG("[init]" fmt, ## __VA_ARGS__)
 #define INIT_INFO(fmt, ...) ZJC_INFO("[init]" fmt, ## __VA_ARGS__)
