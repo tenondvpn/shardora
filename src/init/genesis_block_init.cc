@@ -1150,7 +1150,12 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         tenon_block->set_electblock_height(1);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-        BlsAggSignBlock(root_genesis_nodes, tenon_block);
+        if (net_id == network::kRootCongressNetworkId) {
+            BlsAggSignBlock(root_genesis_nodes, tenon_block);
+        } else {
+            BlsAggSignBlock(cons_genesis_nodes, tenon_block);
+        }
+
         pool_prev_hash_map[pool_index] = tenon_block->hash();
         //         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
         db::DbWriteBatch db_batch;
