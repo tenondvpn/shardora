@@ -463,7 +463,13 @@ void VssManager::HandleSecondPeriodRandom(const protobuf::VssMessage& vss_msg) {
         return;
     }
 
+
     auto& elect_item = elect_item_[elect_valid_index_];
+    if (vss_msg.member_index() >= elect_item.members->size()) {
+        ZJC_WARN("invalid member index: %u, %u", vss_msg.member_index(), elect_item.members->size());
+        return;
+    }
+
     auto& id = (*elect_item.members)[vss_msg.member_index()]->id;
     other_randoms_[vss_msg.member_index()].SetFinalRandomNum(id, vss_msg.random());
     ZJC_DEBUG("HandleSecondPeriodRandom: %s, %llu",
