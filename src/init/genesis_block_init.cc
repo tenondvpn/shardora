@@ -86,6 +86,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
         res = CreateShardGenesisBlocks(root_genesis_nodes, cons_genesis_nodes, net_id);
     }
 
+    prefix_db_->SaveJoinShard(network::kConsensusShardBeginNetworkId, net_id);
     std::vector<std::string> prikeys;
     if (net_id == 2) {
         for (uint32_t i = 0; i < root_genesis_nodes.size(); ++i) {
