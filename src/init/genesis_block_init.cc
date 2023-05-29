@@ -1039,7 +1039,7 @@ bool GenesisBlockInit::BlsAggSignBlock(
         bls_instance.SignatureRecover(
             all_signs,
             lagrange_coeffs));
-    if (libBLS::Bls::Verification(g1_hash, *agg_sign, common_pk_[block->network_id()])) {
+    if (!libBLS::Bls::Verification(g1_hash, *agg_sign, common_pk_[block->network_id()])) {
         ZJC_FATAL("agg sign failed!");
         return false;
     }
