@@ -40,10 +40,7 @@ TxPoolManager::TxPoolManager(
 }
 
 TxPoolManager::~TxPoolManager() {
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        tx_pool_[i].FlushHeightTree();
-    }
-
+    FlushHeightTree();
     if (tx_pool_ != nullptr) {
         delete []tx_pool_;
     }
