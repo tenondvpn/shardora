@@ -953,8 +953,11 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
                 }
 
                 auto node_ptr = std::make_shared<GenisisNodeInfo>();
-                node_ptr->pubkey = common::Encode::HexDecode(node_info[0]);
-                node_ptr->id = security_->GetAddress(node_ptr->pubkey);
+                node_ptr->prikey = common::Encode::HexDecode(node_info[0]);
+                std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
+                secptr->SetPrivateKey(node_ptr->prikey);
+                node_ptr->pubkey = secptr->GetPublicKey();
+                node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
                 cons_genesis_nodes.push_back(node_ptr);
             }
         }
