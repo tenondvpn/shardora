@@ -181,7 +181,8 @@ public:
         {
             if (common_pk != nullptr) {
                 auto pk_iter = height_with_common_pks_[network_id].find(height);
-                if (pk_iter != height_with_common_pks_[network_id].end()) {
+                if (pk_iter != height_with_common_pks_[network_id].end() &&
+                        pk_iter->second != libff::alt_bn128_G2::zero()) {
                     *common_pk = pk_iter->second;
                     ZJC_DEBUG("2 get bls pk and secret key success.height: %lu, network_id: %u",
                         height, network_id);
