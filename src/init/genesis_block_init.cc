@@ -464,9 +464,8 @@ int GenesisBlockInit::CreateElectBlock(
     }
 
     tenon_block->set_network_id(network::kRootCongressNetworkId);
-    tenon_block->set_bls_agg_sign_x("x");
-    tenon_block->set_bls_agg_sign_y("y");
     tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+    BlsAggSignBlock(tenon_block);
     db::DbWriteBatch db_batch;
     pools_mgr_->UpdateLatestInfo(
         0,
@@ -561,10 +560,8 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         }
 
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
-        tenon_block->set_bls_agg_sign_x("x");
-        tenon_block->set_bls_agg_sign_y("y");
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-
+        BlsAggSignBlock(tenon_block);
         fputs((common::Encode::HexEncode(tenon_block->SerializeAsString()) + "\n").c_str(),
             root_gens_init_block_file);
         db::DbWriteBatch db_batch;
@@ -637,9 +634,8 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         }
 
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
-        tenon_block->set_bls_agg_sign_x("x");
-        tenon_block->set_bls_agg_sign_y("y");
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+        BlsAggSignBlock(tenon_block);
         auto tmp_str = tenon_block->SerializeAsString();
         block::protobuf::Block tenon_block2;
         tenon_block2.ParseFromString(tmp_str);
@@ -880,9 +876,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         tenon_block->set_timeblock_height(0);
         tenon_block->set_electblock_height(1);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
-        tenon_block->set_bls_agg_sign_x("x");
-        tenon_block->set_bls_agg_sign_y("y");
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+        BlsAggSignBlock(tenon_block);
         prehashes[i] = tenon_block->hash();
         pool_prev_hash_map[iter->first] = tenon_block->hash();
         db::DbWriteBatch db_batch;
@@ -1015,6 +1010,55 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     return res;
 }
 
+bool GenesisBlockInit::BlsAggSignBlock(
+        const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
+        std::shared_ptr<block::protobuf::Block>& block) {
+    std::vector<libff::alt_bn128_G1> all_signs;
+    uint32_t n = genesis_nodes;
+    uint32_t t = common::GetSignerCount(n);
+    std::vector<size_t> idx_vec;
+    auto g1_hash = libBLS::Bls::Hashing(block->hash());
+    for (uint32_t i = 0; i < t; ++i) {
+        libff::alt_bn128_G1 sign;
+        if (bls_mgr_->Sign(
+                t,
+                n,
+                genesis_nodes[i]->bls_prikey,
+                g1_hash,
+                &sign) != bls::kBlsSuccess) {
+            ZJC_ERROR("leader signature error.");
+            return false;
+        }
+
+        all_signs.push_back(sign);
+        idx_vec.push_back(i + 1);
+    }
+
+    try {
+        libBLS::Bls bls_instance = libBLS::Bls(t, n);
+        std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
+        libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
+        auto agg_sign = std::make_shared<libff::alt_bn128_G1>(
+            bls_instance.SignatureRecover(
+                all_signs,
+                lagrange_coeffs));
+        if (libBLS::Bls::Verification(g1_hash, agg_sign, common_pk_[block->network_id()])) {
+            ZJC_FATAL("agg sign failed!");
+            return false;
+        }
+
+        block->set_bls_agg_sign_x(
+            libBLS::ThresholdUtils::fieldElementToString(agg_sign->X));
+        block->set_bls_agg_sign_y(
+            libBLS::ThresholdUtils::fieldElementToString(agg_sign->Y));
+    } catch (std::exception& e) {
+        ZJC_ERROR("catch bls exception: %s", e.what());
+        return false;
+    }
+
+    return true;
+}
+
 void GenesisBlockInit::AddBlockItemToCache(
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
@@ -1110,9 +1154,8 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         tenon_block->set_timeblock_height(0);
         tenon_block->set_electblock_height(1);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
-        tenon_block->set_bls_agg_sign_x("x");
-        tenon_block->set_bls_agg_sign_y("y");
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+        BlsAggSignBlock(tenon_block);
         pool_prev_hash_map[pool_index] = tenon_block->hash();
         //         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
         db::DbWriteBatch db_batch;
@@ -1231,9 +1274,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         tenon_block->set_timeblock_height(0);
         tenon_block->set_electblock_height(1);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
-        tenon_block->set_bls_agg_sign_x("x");
-        tenon_block->set_bls_agg_sign_y("y");
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
+        BlsAggSignBlock(tenon_block);
         pool_prev_hash_map[iter->first] = tenon_block->hash();
 //         INIT_DEBUG("add genesis block account id: %s", common::Encode::HexEncode(address).c_str());
         db::DbWriteBatch db_batch;

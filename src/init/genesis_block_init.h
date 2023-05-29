@@ -80,6 +80,9 @@ private:
         uint32_t shard_id,
         uint64_t elect_height,
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes);
+    bool BlsAggSignBlock(
+        const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
+        std::shared_ptr<block::protobuf::Block>& block);
 
     std::map<uint32_t, std::string> pool_index_map_;
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;
