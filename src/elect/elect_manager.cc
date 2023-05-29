@@ -387,17 +387,17 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
 
     auto common_pk = BLSPublicKey(std::make_shared<std::vector<std::string>>(pk_vec));
     height_with_block_->AddNewHeightBlock(
-        elect_block.prev_members().prev_elect_height(),
+        elect_block.elect_height(),
         prev_elect_block.shard_network_id(),
         shard_members_ptr,
         *common_pk.getPublicKey());
     if (elect_net_heights_map_[prev_elect_block.shard_network_id()] == common::kInvalidUint64 ||
             elect_block.prev_members().prev_elect_height() >
             elect_net_heights_map_[prev_elect_block.shard_network_id()]) {
-        elect_net_heights_map_[prev_elect_block.shard_network_id()] =
-            elect_block.prev_members().prev_elect_height();
+        elect_net_heights_map_[prev_elect_block.shard_network_id()] = elect_block.elect_height();
+//             elect_block.prev_members().prev_elect_height();
         ELECT_DEBUG("set netid: %d, elect height: %lu",
-            prev_elect_block.shard_network_id(), elect_block.prev_members().prev_elect_height());
+            prev_elect_block.shard_network_id(), elect_block.elect_height());
     }
 
     if (prev_elect_block.shard_network_id() == common::GlobalInfo::Instance()->network_id() ||

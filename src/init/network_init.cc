@@ -1123,6 +1123,7 @@ void NetworkInit::HandleElectionBlock(
 
     auto sharding_id = elect_block->shard_network_id();
     auto elect_height = elect_mgr_->latest_height(sharding_id);
+    assert(elect_height == block->height());
     libff::alt_bn128_G2 common_pk;
     libff::alt_bn128_Fr sec_key;
     auto tmp_members = elect_mgr_->GetNetworkMembersWithHeight(
