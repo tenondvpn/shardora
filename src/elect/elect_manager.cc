@@ -243,9 +243,11 @@ bool ElectManager::ProcessPrevElectMembers(
         bool* elected,
         db::DbWriteBatch& db_batch) {
     if (!elect_block.has_prev_members() || elect_block.prev_members().prev_elect_height() <= 0) {
-        ELECT_DEBUG("not has prev members. has: %d. pre elect height: %lu",
+        ELECT_DEBUG("not has prev members. has: %d. pre elect height: %lu, shard: %u, height: %lu",
             elect_block.has_prev_members(),
-            elect_block.prev_members().prev_elect_height());
+            elect_block.prev_members().prev_elect_height(),
+            elect_block.shard_network_id(),
+            elect_block.elect_height());
         assert(false);
         return false;
     }
