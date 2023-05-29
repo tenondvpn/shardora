@@ -584,7 +584,7 @@ void BftManager::HandleSyncConsensusBlock(
                     req_bft_msg.block().pool_index(),
                     req_bft_msg.block().height(),
                     common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
-                assert(false);
+                //assert(false);
                 return;
             }
 
