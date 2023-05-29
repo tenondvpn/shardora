@@ -276,52 +276,8 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
     uint32_t valid_t = common::GetSignerCount(valid_n);
     std::vector<std::vector<libff::alt_bn128_Fr>> secret_key_contribution(valid_n);
     for (uint32_t idx = 0; idx < genesis_nodes.size(); ++idx) {
-        std::string file = std::string("./") + common::Encode::HexEncode(genesis_nodes[idx]->id);
-        FILE* fd = fopen(file.c_str(), "r");
-        if (fd == nullptr) {
-            ZJC_FATAL("load bls init info failed: %s", file.c_str());
-            return false;
-        }
-
-        char* data = new char[1024 * 1024 * 10];
-        init::protobuf::GenesisInitBlsInfo init_bls_info;
-        if (fgets(data, 1024 * 1024 * 10, fd) == nullptr) {
-            ZJC_FATAL("load bls init info failed: %s", file.c_str());
-            return false;
-        }
-
-        fclose(fd);
-        std::string tmp_data(data, strlen(data) - 1);
-        std::string val = common::Encode::HexDecode(tmp_data);
-        if (val.size() == 32) {
-            // just private key.
-            genesis_nodes[idx]->prikey = val;
-            init_bls_info.set_prikey(val);
-            genesis_nodes[idx]->polynomial = dkg_instance.GeneratePolynomial();
-            bls::protobuf::LocalPolynomial& local_poly = *init_bls_info.mutable_local_poly();
-            for (uint32_t j = 0; j < genesis_nodes[idx]->polynomial.size(); ++j) {
-                local_poly.add_polynomial(common::Encode::HexDecode(
-                    libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[idx]->polynomial[j])));
-            }
-
-            FILE* fd = fopen(file.c_str(), "w");
-            std::string val = common::Encode::HexEncode(init_bls_info.SerializeAsString()) + "\n";
-            fputs(val.c_str(), fd);
-            fclose(fd);
-        } else {
-            if (!init_bls_info.ParseFromString(val)) {
-                ZJC_FATAL("load bls init info failed!");
-                return false;
-            }
-
-            genesis_nodes[idx]->prikey = init_bls_info.prikey();
-            for (int32_t poly_idx = 0; poly_idx < init_bls_info.local_poly().polynomial_size(); ++poly_idx) {
-                genesis_nodes[idx]->polynomial.push_back(
-                    libff::alt_bn128_Fr(common::Encode::HexEncode(
-                        init_bls_info.local_poly().polynomial(poly_idx)).c_str()));
-            }
-        }
-
+        // just private key.
+        genesis_nodes[idx]->polynomial = dkg_instance.GeneratePolynomial();
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
         secptr->SetPrivateKey(genesis_nodes[idx]->prikey);
         genesis_nodes[idx]->verification = dkg_instance.VerificationVector(genesis_nodes[idx]->polynomial);
