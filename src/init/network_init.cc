@@ -859,6 +859,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
                     continue;
                 }
 
+                auto node_ptr = std::make_shared<GenisisNodeInfo>();
                 node_ptr->prikey = common::Encode::HexDecode(node_info[0]);
                 std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
                 secptr->SetPrivateKey(node_ptr->prikey);
@@ -927,6 +928,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
                     continue;
                 }
 
+                auto node_ptr = std::make_shared<GenisisNodeInfo>();
                 node_ptr->prikey = common::Encode::HexDecode(node_info[0]);
                 std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
                 secptr->SetPrivateKey(node_ptr->prikey);

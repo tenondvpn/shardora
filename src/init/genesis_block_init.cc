@@ -278,6 +278,12 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
     for (uint32_t idx = 0; idx < genesis_nodes.size(); ++idx) {
         // just private key.
         genesis_nodes[idx]->polynomial = dkg_instance.GeneratePolynomial();
+        bls::protobuf::LocalPolynomial local_poly;
+        for (uint32_t j = 0; j < genesis_nodes[idx]->polynomial.size(); ++j) {
+            local_poly.add_polynomial(common::Encode::HexDecode(
+                libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[idx]->polynomial[j])));
+        }
+
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
         secptr->SetPrivateKey(genesis_nodes[idx]->prikey);
         genesis_nodes[idx]->verification = dkg_instance.VerificationVector(genesis_nodes[idx]->polynomial);
@@ -314,7 +320,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
         }
 
         genesis_nodes[idx]->check_hash = common::Hash::keccak256(str_for_hash);
-        prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), init_bls_info.local_poly());
+        prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
         prefix_db_->AddBlsVerifyG2(secptr->GetAddress(), *req);
         prefix_db_->SaveTemporaryKv(genesis_nodes[idx]->check_hash, join_info.SerializeAsString());
     }
