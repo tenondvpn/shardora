@@ -449,8 +449,8 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
 int ShardStatistic::LeaderCreateStatisticHeights(pools::protobuf::ToTxHeights& to_heights) {
     bool valid = false;
     std::string heights;
-    uint32_t max_pool = common::kInvalidPoolIndex;
-    for (uint32_t i = 0; i < max_pool; ++i) {
+    assert(tx_heights_ptr_->heights_size() == common::kInvalidPoolIndex);
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         auto r_height_iter = node_height_count_map_[i].rbegin();
         if (r_height_iter == node_height_count_map_[i].rend()) {
             heights += std::to_string(tx_heights_ptr_->heights(i)) + " ";
