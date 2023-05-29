@@ -66,6 +66,7 @@ private:
         uint64_t height,
         uint64_t prev_height,
         FILE* root_gens_init_block_file,
+        const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes);
     std::string GetValidPoolBaseAddr(uint32_t pool_index);
     void CreateDefaultAccount();

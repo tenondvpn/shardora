@@ -403,6 +403,7 @@ int GenesisBlockInit::CreateElectBlock(
         uint64_t height,
         uint64_t prev_height,
         FILE* root_gens_init_block_file,
+        const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes) {
     auto account_info = account_mgr_->pools_address_info(shard_netid);
     auto tenon_block = std::make_shared<block::protobuf::Block>();
@@ -467,7 +468,7 @@ int GenesisBlockInit::CreateElectBlock(
 
     tenon_block->set_network_id(network::kRootCongressNetworkId);
     tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
-    BlsAggSignBlock(genesis_nodes, tenon_block);
+    BlsAggSignBlock(root_genesis_nodes, tenon_block);
     db::DbWriteBatch db_batch;
     pools_mgr_->UpdateLatestInfo(
         0,
@@ -943,6 +944,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             1,
             common::kInvalidUint64,
             root_gens_init_block_file,
+            root_genesis_nodes,
             root_genesis_nodes) != kInitSuccess) {
         ZJC_FATAL("CreateElectBlock kRootCongressNetworkId failed!");
         return kInitError;
@@ -954,6 +956,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             2,
             1,
             root_gens_init_block_file,
+            root_genesis_nodes,
             root_genesis_nodes) != kInitSuccess) {
         ZJC_FATAL("CreateElectBlock kRootCongressNetworkId failed!");
         return kInitError;
@@ -965,7 +968,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             1,
             common::kInvalidUint64,
             root_gens_init_block_file,
-            root_genesis_nodes) != kInitSuccess) {
+            root_genesis_nodes,
+            cons_genesis_nodes) != kInitSuccess) {
         ZJC_FATAL("CreateElectBlock kConsensusShardBeginNetworkId failed!");
         return kInitError;
     }
@@ -976,7 +980,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             2,
             1,
             root_gens_init_block_file,
-            root_genesis_nodes) != kInitSuccess) {
+            root_genesis_nodes,
+            cons_genesis_nodes) != kInitSuccess) {
         ZJC_FATAL("CreateElectBlock kConsensusShardBeginNetworkId failed!");
         return kInitError;
     }
