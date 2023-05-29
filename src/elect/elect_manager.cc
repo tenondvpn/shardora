@@ -164,7 +164,7 @@ common::MembersPtr ElectManager::OnNewElectBlock(
 
     bool elected = false;
     now_elected_ids_.clear();
-    bool cons_elect_valid = ProcessPrevElectMembers(elect_block, &elected);
+    bool cons_elect_valid = ProcessPrevElectMembers(elect_block, &elected, db_batch);
     ProcessNewElectBlock(height, elect_block, &elected);
     if (!cons_elect_valid && !elected) {
         if (common::GlobalInfo::Instance()->network_id() == elect_block.shard_network_id()) {
@@ -238,12 +238,15 @@ void ElectManager::ElectedToConsensusShard(
     }
 }
 
-bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bool* elected) {
+bool ElectManager::ProcessPrevElectMembers(
+        protobuf::ElectBlock& elect_block,
+        bool* elected,
+        db::DbWriteBatch& db_batch) {
     if (!elect_block.has_prev_members() || elect_block.prev_members().prev_elect_height() <= 0) {
         ELECT_DEBUG("not has prev members. has: %d. pre elect height: %lu",
             elect_block.has_prev_members(),
             elect_block.prev_members().prev_elect_height());
-//         assert(false);
+        assert(false);
         return false;
     }
 
@@ -387,17 +390,17 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
 
     auto common_pk = BLSPublicKey(std::make_shared<std::vector<std::string>>(pk_vec));
     height_with_block_->AddNewHeightBlock(
-        elect_block.elect_height(),
+        elect_block.prev_members().prev_elect_height(),
         prev_elect_block.shard_network_id(),
         shard_members_ptr,
         *common_pk.getPublicKey());
     if (elect_net_heights_map_[prev_elect_block.shard_network_id()] == common::kInvalidUint64 ||
             elect_block.prev_members().prev_elect_height() >
             elect_net_heights_map_[prev_elect_block.shard_network_id()]) {
-        elect_net_heights_map_[prev_elect_block.shard_network_id()] = elect_block.elect_height();
-//             elect_block.prev_members().prev_elect_height();
+        elect_net_heights_map_[prev_elect_block.shard_network_id()] =
+            elect_block.prev_members().prev_elect_height();
         ELECT_DEBUG("set netid: %d, elect height: %lu",
-            prev_elect_block.shard_network_id(), elect_block.elect_height());
+            prev_elect_block.shard_network_id(), elect_block.prev_members().prev_elect_height());
     }
 
     if (prev_elect_block.shard_network_id() == common::GlobalInfo::Instance()->network_id() ||
@@ -411,6 +414,11 @@ bool ElectManager::ProcessPrevElectMembers(protobuf::ElectBlock& elect_block, bo
     }
 
     local_node_is_super_leader_ = local_node_is_super_leader;
+    prefix_db_->SaveElectHeightCommonPk(
+        elect_block.shard_network_id(),
+        elect_block.prev_members().prev_elect_height(),
+        elect_block.prev_members(),
+        db_batch);
     return true;
 }
 
@@ -435,7 +443,7 @@ void ElectManager::ProcessNewElectBlock(
             in[i].pool_idx_mod_num()));
         AddNewNodeWithIdAndIp(elect_block.shard_network_id(), id);
         if (id == security_->GetAddress()) {
-            *elected = true;
+//             *elected = true;
             local_waiting_node_member_index_ = i;
         }
 

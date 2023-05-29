@@ -68,7 +68,7 @@ struct BlockToDbItem {
 
 typedef std::shared_ptr<BlockToDbItem> BlockToDbItemPtr;
 
-typedef std::function<void(
+typedef std::function<bool(
     uint8_t thread_idx,
     const std::shared_ptr<block::protobuf::Block>& block,
     db::DbWriteBatch& db_batch)> DbBlockCallback;

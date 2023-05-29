@@ -547,7 +547,10 @@ void BlockManager::AddNewBlock(
     }
 
     if (new_block_callback_ != nullptr) {
-        new_block_callback_(thread_idx, block_item, db_batch);
+        if (!new_block_callback_(thread_idx, block_item, db_batch)) {
+            ZJC_DEBUG("block call back failed!");
+            return;
+        }
     }
 
     auto st = db_->Put(db_batch);

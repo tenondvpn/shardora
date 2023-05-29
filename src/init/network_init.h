@@ -51,7 +51,7 @@ private:
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);
     void InitLocalNetworkId();
-    void DbNewBlockCallback(
+    bool DbNewBlockCallback(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);

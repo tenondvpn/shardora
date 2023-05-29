@@ -216,6 +216,7 @@ public:
             return nullptr;
         }
 
+
         bool eb_valid = false;
         elect::protobuf::ElectBlock elect_block;
         for (int32_t tx_idx = 0; tx_idx < block.tx_list_size(); ++tx_idx) {
@@ -267,7 +268,12 @@ public:
         }
 
         libff::alt_bn128_G2 tmp_common_pk = libff::alt_bn128_G2::zero();
-        auto& prev_members = elect_block.prev_members();
+        elect::protobuf::PrevMembers prev_members;
+        if (!prefix_db_->GetElectHeightCommonPk(network_id, height, &prev_members)) {
+            assert(false);
+            return nullptr;
+        }
+
         if (!prev_members.has_common_pubkey()) {
             ZJC_DEBUG("error get elect block sharding: %u, height: %u, has prev: %d, has common_pk: %d",
                 elect_block.shard_network_id(),

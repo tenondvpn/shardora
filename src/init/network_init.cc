@@ -1029,7 +1029,7 @@ void NetworkInit::AddBlockItemToCache(
 }
 
 // pool tx thread, thread safe
-void NetworkInit::DbNewBlockCallback(
+bool NetworkInit::DbNewBlockCallback(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
@@ -1047,6 +1047,7 @@ void NetworkInit::DbNewBlockCallback(
     }
 
     shard_statistic_->OnNewBlock(*block);
+    return true;
 }
 
 void NetworkInit::HandleTimeBlock(
@@ -1123,7 +1124,6 @@ void NetworkInit::HandleElectionBlock(
 
     auto sharding_id = elect_block->shard_network_id();
     auto elect_height = elect_mgr_->latest_height(sharding_id);
-    assert(elect_height == block->height());
     libff::alt_bn128_G2 common_pk;
     libff::alt_bn128_Fr sec_key;
     auto tmp_members = elect_mgr_->GetNetworkMembersWithHeight(
