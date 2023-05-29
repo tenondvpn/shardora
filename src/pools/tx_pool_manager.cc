@@ -515,22 +515,32 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
         for (int32_t i = 0; i < cross_heights.size(); ++i) {
             cross_debug += std::to_string(cross_heights[i]) + " ";
             if (cross_heights[i] != common::kInvalidUint64) {
-                if (tx_pool_[i].latest_height() == common::kInvalidUint64 &&
-                        cross_synced_max_heights_[i] < cross_heights[i]) {
-                    cross_synced_max_heights_[i] = cross_heights[i];
-                    cross_block_mgr_->UpdateMaxHeight(i, cross_heights[i]);
-                    continue;
-                }
+                uint64_t update_height = common::kInvalidUint64;
+                do {
+                    if (tx_pool_[i].latest_height() == common::kInvalidUint64 &&
+                            cross_synced_max_heights_[i] < cross_heights[i]) {
+                        update_height = cross_heights[i];
+                        break;
+                    }
 
-                if (cross_heights[i] > tx_pool_[i].latest_height() + 64) {
-                    cross_synced_max_heights_[i] = tx_pool_[i].latest_height() + 64;
-                    cross_block_mgr_->UpdateMaxHeight(i, cross_heights[i]);
-                    continue;
-                }
+                    if (cross_heights[i] > tx_pool_[i].latest_height() + 64) {
+                        update_height = tx_pool_[i].latest_height() + 64;
+                        break;
+                    }
 
-                if (cross_heights[i] > tx_pool_[i].latest_height()) {
+                    if (cross_heights[i] > tx_pool_[i].latest_height()) {
+                        update_height = cross_heights[i];
+                        break;
+                    }
+                } while (0);
+                
+                if (update_height != common::kInvalidUint64) {
                     cross_synced_max_heights_[i] = cross_heights[i];
-                    cross_block_mgr_->UpdateMaxHeight(i, cross_heights[i]);
+                    if (max_cross_pools_size_ == 1) {
+                        cross_block_mgr_->UpdateMaxHeight(network::kRootCongressNetworkId, cross_heights[i]);
+                    } else {
+                        cross_block_mgr_->UpdateMaxHeight(i + network::kConsensusShardBeginNetworkId, cross_heights[i]);
+                    }
                 }
             }
         }
