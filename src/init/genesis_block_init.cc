@@ -1073,7 +1073,6 @@ void GenesisBlockInit::AddBlockItemToCache(
         db::DbWriteBatch& db_batch) {
     pools::protobuf::PoolLatestInfo pool_info;
     pool_info.set_height(block->height());
-    tenon_block->set_is_cross_block(true);
     pool_info.set_hash(block->hash());
     prefix_db_->SaveLatestPoolInfo(
         block->network_id(), block->pool_index(), pool_info, db_batch);
