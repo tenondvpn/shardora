@@ -1201,6 +1201,7 @@ void NetworkInit::HandleElectionBlock(
 bool NetworkInit::BlockBlsAggSignatureValid(const block::protobuf::Block& block) try {
     auto block_hash = consensus::GetBlockHash(block);
     if (block_hash != block.hash()) {
+        assert(false);
         return false;
     }
 
@@ -1215,6 +1216,7 @@ bool NetworkInit::BlockBlsAggSignatureValid(const block::protobuf::Block& block)
             block.network_id(),
             block.electblock_height(),
             (common_pk == libff::alt_bn128_G2::zero()));
+        assert(false);
         return false;
     }
 
@@ -1224,6 +1226,14 @@ bool NetworkInit::BlockBlsAggSignatureValid(const block::protobuf::Block& block)
     sign.Z = libff::alt_bn128_Fq::one();
     auto g1_hash = libBLS::Bls::Hashing(block_hash);
     bool check_res = libBLS::Bls::Verification(g1_hash, sign, common_pk);
+    if (!check_res) {
+        ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, common pk x: %s",
+            common::Encode::HexEncode(block_hash).c_str(),
+            common::Encode::HexEncode(block.bls_agg_sign_x()).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(common_pk->X.c0).c_str());
+        assert(check_res);
+    }
+
     return check_res;
 } catch (std::exception& e) {
     ZJC_ERROR("get invalid bls sign: %s, net: %u, height: %lu, %s, %s",

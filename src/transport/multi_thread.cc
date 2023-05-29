@@ -279,9 +279,9 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
 
 void MultiThreadHandler::SaveKeyValue(const transport::protobuf::Header& msg, db::DbWriteBatch& db_batch) {
     for (int32_t i = 0; i < msg.sync().items_size(); ++i) {
-        ZJC_DEBUG("save storage %s, %s",
-            common::Encode::HexEncode(msg.sync().items(i).key()).c_str(),
-            common::Encode::HexEncode(msg.sync().items(i).value()).c_str());
+//         ZJC_DEBUG("save storage %s, %s",
+//             common::Encode::HexEncode(msg.sync().items(i).key()).c_str(),
+//             common::Encode::HexEncode(msg.sync().items(i).value()).c_str());
         prefix_db_->SaveTemporaryKv(
             msg.sync().items(i).key(),
             msg.sync().items(i).value(),

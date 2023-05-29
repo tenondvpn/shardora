@@ -1062,6 +1062,10 @@ bool GenesisBlockInit::BlsAggSignBlock(
     block->set_bls_agg_sign_y(
         common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(agg_sign->Y)));
+    ZJC_DEBUG("verification agg sign success hash: %s, signx: %s, common pk x: %s",
+        common::Encode::HexEncode(block->hash()).c_str(),
+        common::Encode::HexEncode(block->bls_agg_sign_x()).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(common_pk_[block->network_id()].X.c0).c_str());
     return true;
 } catch (std::exception& e) {
     ZJC_ERROR("catch bls exception: %s", e.what());
