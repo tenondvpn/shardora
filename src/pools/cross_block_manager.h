@@ -10,7 +10,7 @@
 
 namespace zjchain {
 
-namespace block {
+namespace pools {
 
 class CrossBlockManager {
 public:
@@ -216,7 +216,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CrossBlockManager);
 };
 
-}  // namespace block
+}  // namespace pools
 
 }  // namespace zjchain
 
