@@ -276,7 +276,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
     uint32_t valid_t = common::GetSignerCount(valid_n);
     std::vector<std::vector<libff::alt_bn128_Fr>> secret_key_contribution(valid_n);
     for (uint32_t idx = 0; idx < genesis_nodes.size(); ++idx) {
-        std::string file = std::string("./") + common::Encode::HexEncode(genesis_nodes[i]->id);
+        std::string file = std::string("./") + common::Encode::HexEncode(genesis_nodes[idx]->id);
         FILE* fd = fopen(file.c_str(), "r");
         if (fd == nullptr) {
             ZJC_FATAL("load bls init info failed: %s", file.c_str());
@@ -358,7 +358,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
         }
 
         genesis_nodes[idx]->check_hash = common::Hash::keccak256(str_for_hash);
-        prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), local_poly);
+        prefix_db_->SaveLocalPolynomial(secptr, secptr->GetAddress(), init_bls_info.local_poly());
         prefix_db_->AddBlsVerifyG2(secptr->GetAddress(), *req);
         prefix_db_->SaveTemporaryKv(genesis_nodes[idx]->check_hash, join_info.SerializeAsString());
     }
@@ -377,14 +377,14 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
             tmp_secret_key_contribution.push_back(secret_key_contribution[idx][i]);
         }
 
-        genesis_nodes[idx].bls_prikey = tmpdkg.SecretKeyShareCreate(tmp_secret_key_contribution);
-        genesis_nodes[idx].bls_pubkey = tmpdkg.GetPublicKeyFromSecretKey(genesis_nodes[idx].bls_prikey);
+        genesis_nodes[idx]->bls_prikey = tmpdkg.SecretKeyShareCreate(tmp_secret_key_contribution);
+        genesis_nodes[idx]->bls_pubkey = tmpdkg.GetPublicKeyFromSecretKey(genesis_nodes[idx]->bls_prikey);
         common_public_key = common_public_key + genesis_nodes[idx]->verification[0];
         std::string enc_data;
         security::Ecdsa ecdsa;
         if (ecdsa.Encrypt(
-                genesis_nodes[idx].prikey,
-                libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[idx].bls_prikey), ,
+                genesis_nodes[idx]->prikey,
+                libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[idx]->bls_prikey),
                 &enc_data) != security::kSecuritySuccess) {
             ZJC_FATAL("encrypt data failed!");
             return false;
@@ -393,7 +393,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
         prefix_db_->SaveBlsPrikey(
             elect_height,
             sharding_id,
-            genesis_nodes[idx].id,
+            genesis_nodes[idx]->id,
             enc_data);
     }
 
@@ -435,7 +435,8 @@ int GenesisBlockInit::CreateElectBlock(
         auto prev_members = ec_block.mutable_prev_members();
         for (uint32_t i = 0; i < genesis_nodes.size(); ++i) {
             auto mem_pk = prev_members->add_bls_pubkey();
-            auto pkeys_str = genesis_nodes[i]->bls_pubkey.toString();
+            auto tmp_pk = std::make_shared<BLSPublicKey>(genesis_nodes[i]->bls_pubkey);
+            auto pkeys_str = tmp_pk->toString();
             mem_pk->set_x_c0(pkeys_str->at(0));
             mem_pk->set_x_c1(pkeys_str->at(1));
             mem_pk->set_y_c0(pkeys_str->at(2));
