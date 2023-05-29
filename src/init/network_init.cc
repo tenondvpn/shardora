@@ -1230,7 +1230,7 @@ bool NetworkInit::BlockBlsAggSignatureValid(const block::protobuf::Block& block)
         ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, common pk x: %s",
             common::Encode::HexEncode(block_hash).c_str(),
             common::Encode::HexEncode(block.bls_agg_sign_x()).c_str(),
-            libBLS::ThresholdUtils::fieldElementToString(common_pk->X.c0).c_str());
+            libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0).c_str());
         assert(check_res);
     }
 
