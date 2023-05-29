@@ -307,7 +307,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
 
             FILE* fd = fopen(file.c_str(), "w");
             std::string val = common::Encode::HexEncode(local_poly.SerializeAsString()) + "\n";
-            fwrite(val.c_str(), val.size(), fd);
+            fputs(val.c_str(), fd);
             fclose(fd);
         } else {
             for (int32_t poly_idx = 0; poly_idx < local_poly.polynomial_size(); ++poly_idx) {
