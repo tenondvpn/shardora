@@ -1005,7 +1005,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             init_consensus_height += std::to_string(init_heights.heights(i)) + " ";
         }
 
-        ZJC_DEBUG("0 success change min elect statistic heights: %s", init_consensus_height.c_str());
+        ZJC_DEBUG("0 success change min elect statistic heights: %u, %s",
+            network::kRootCongressNetworkId, init_consensus_height.c_str());
     }
 
     fclose(root_gens_init_block_file);
