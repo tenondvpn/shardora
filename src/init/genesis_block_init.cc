@@ -881,7 +881,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         }
 
         tenon_block->set_timeblock_height(0);
-        tenon_block->set_electblock_height(1);
+        tenon_block->set_electblock_height(2);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_is_cross_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
@@ -1165,7 +1165,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         }
 
         tenon_block->set_timeblock_height(0);
-        tenon_block->set_electblock_height(1);
+        tenon_block->set_electblock_height(2);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_is_cross_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
@@ -1291,7 +1291,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         }
 
         tenon_block->set_timeblock_height(0);
-        tenon_block->set_electblock_height(1);
+        tenon_block->set_electblock_height(2);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_is_cross_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
