@@ -313,7 +313,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
             fwrite(val.c_str(), val.size(), fd);
             fclose(fd);
         } else {
-            for (int32_t poly_idx = 0; poly_idx < init_bls_info.local_poly().polynomial_size(); ++poly_idx) {
+            for (int32_t poly_idx = 0; poly_idx < local_poly.polynomial_size(); ++poly_idx) {
                 genesis_nodes[idx]->polynomial.push_back(
                     libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(poly_idx)).c_str()));
             }
