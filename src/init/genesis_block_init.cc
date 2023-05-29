@@ -277,12 +277,46 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
     uint32_t valid_t = common::GetSignerCount(valid_n);
     std::vector<std::vector<libff::alt_bn128_Fr>> secret_key_contribution(valid_n);
     for (uint32_t idx = 0; idx < genesis_nodes.size(); ++idx) {
-        // just private key.
-        genesis_nodes[idx]->polynomial = dkg_instance.GeneratePolynomial();
+        std::string file = std::string("./") + common::Encode::HexEncode(genesis_nodes[i]->id);
+        bool file_valid = true;
         bls::protobuf::LocalPolynomial local_poly;
-        for (uint32_t j = 0; j < genesis_nodes[idx]->polynomial.size(); ++j) {
-            local_poly.add_polynomial(common::Encode::HexDecode(
-                libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[idx]->polynomial[j])));
+        FILE* fd = fopen(file.c_str(), "r");
+        if (fd != nullptr) {
+            char* data = new char[1024 * 1024 * 10];
+            if (fgets(data, 1024 * 1024 * 10, fd) == nullptr) {
+                ZJC_FATAL("load bls init info failed: %s", file.c_str());
+                return false;
+            }
+
+            fclose(fd);
+            std::string tmp_data(data, strlen(data) - 1);
+            std::string val = common::Encode::HexDecode(tmp_data);
+            if (!local_poly.ParseFromString(val)) {
+                ZJC_FATAL("load bls init info failed!");
+                return false;
+            }
+        }
+
+        if (local_poly.polynomial_size() <= 0) {
+            // just private key.
+            std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
+            secptr->SetPrivateKey(val);
+            genesis_nodes[idx]->prikey = val;
+            genesis_nodes[idx]->polynomial = dkg_instance.GeneratePolynomial();
+            for (uint32_t j = 0; j < genesis_nodes[idx]->polynomial.size(); ++j) {
+                local_poly.add_polynomial(common::Encode::HexDecode(
+                    libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[idx]->polynomial[j])));
+            }
+
+            FILE* fd = fopen(file.c_str(), "w");
+            std::string val = common::Encode::HexEncode(local_poly.SerializeAsString()) + "\n";
+            fwrite(val.c_str(), val.size(), fd);
+            fclose(fd);
+        } else {
+            for (int32_t poly_idx = 0; poly_idx < init_bls_info.local_poly().polynomial_size(); ++poly_idx) {
+                genesis_nodes[idx]->polynomial.push_back(
+                    libff::alt_bn128_Fr(common::Encode::HexEncode(local_poly.polynomial(poly_idx)).c_str()));
+            }
         }
 
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
