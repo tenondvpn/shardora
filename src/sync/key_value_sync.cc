@@ -363,7 +363,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                             block_item->network_id(),
                             block_item->pool_index(),
                             block_item->height(),
-                            common::Encode::HexEncode(GetBlockHash(*block_item)).c_str());
+                            common::Encode::HexEncode(block_item->hash()).c_str());
                     }
                 }
             }
