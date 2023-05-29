@@ -26,6 +26,12 @@ public:
 
     ~CrossBlockManager() {}
 
+    void UpdateMaxShardingId(uint32_t shard_id) {
+        if (max_sharding_id_ < shard_id) {
+            max_sharding_id_ = shard_id;
+        }
+    }
+
     void UpdateMaxHeight(uint32_t shard_id, uint64_t height) {
         assert(shard_id < network::kConsensusShardEndNetworkId);
         if (cross_synced_max_heights_[shard_id] < height ||
@@ -54,7 +60,7 @@ private:
 
         db::DbWriteBatch wbatch;
         if (local_sharding_id == network::kRootCongressNetworkId) {
-            for (uint32_t i = network::kRootCongressNetworkId; i <= max_sharding_id_; ++i) {
+            for (uint32_t i = network::kConsensusShardBeginNetworkId; i <= max_sharding_id_; ++i) {
                 CheckCross(thread_idx, local_sharding_id, i, wbatch);
             }
         } else {
@@ -207,7 +213,7 @@ private:
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    uint32_t max_sharding_id_ = 3;
+    volatile uint32_t max_sharding_id_ = 3;
     common::Tick tick_;
     volatile uint64_t cross_synced_max_heights_[network::kConsensusShardEndNetworkId] = { common::kInvalidUint64 };
     volatile uint64_t cross_checked_max_heights_[network::kConsensusShardEndNetworkId] = { common::kInvalidUint64 };

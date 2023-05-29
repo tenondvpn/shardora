@@ -81,6 +81,8 @@ public:
         if (sharding_id - network::kRootCongressNetworkId > now_sharding_count_) {
             now_sharding_count_ = sharding_id - network::kRootCongressNetworkId;
         }
+
+        cross_block_mgr_->UpdateMaxShardingId(sharding_id);
     }
 
     std::shared_ptr<consensus::WaitingTxsItem> GetTx(
