@@ -26,6 +26,14 @@ public:
 
     ~CrossBlockManager() {}
 
+    void UpdateMaxHeight(uint32_t shard_id, uint64_t height) {
+        assert(shard_id < network::kConsensusShardEndNetworkId);
+        if (cross_synced_max_heights_[shard_id] < height ||
+                cross_synced_max_heights_[shard_id] == common::kInvalidUint64) {
+            cross_synced_max_heights_[shard_id] = height;
+        }
+    }
+
 private:
     void Ticking(uint8_t thread_idx) {
         CheckCrossSharding(thread_idx);
@@ -35,22 +43,22 @@ private:
     }
 
     void CheckCrossSharding(uint8_t thread_idx) {
-        local_sharding_id_ = common::GlobalInfo::Instance()->network_id();
-        if (local_sharding_id_ == common::kInvalidUint32) {
+        auto local_sharding_id = common::GlobalInfo::Instance()->network_id();
+        if (local_sharding_id == common::kInvalidUint32) {
             return;
         }
 
-        if (local_sharding_id_ >= network::kConsensusShardEndNetworkId) {
-            local_sharding_id_ -= network::kConsensusWaitingShardOffset;
+        if (local_sharding_id >= network::kConsensusShardEndNetworkId) {
+            local_sharding_id -= network::kConsensusWaitingShardOffset;
         }
 
         db::DbWriteBatch wbatch;
-        if (local_sharding_id_ == network::kRootCongressNetworkId) {
+        if (local_sharding_id == network::kRootCongressNetworkId) {
             for (uint32_t i = network::kRootCongressNetworkId; i <= max_sharding_id_; ++i) {
-                CheckCross(thread_idx, i, wbatch);
+                CheckCross(thread_idx, local_sharding_id, i, wbatch);
             }
         } else {
-            CheckCross(thread_idx, network::kRootCongressNetworkId, wbatch);
+            CheckCross(thread_idx, local_sharding_id, network::kRootCongressNetworkId, wbatch);
         }
 
         auto st = db_->Put(wbatch);
@@ -60,9 +68,23 @@ private:
         }
     }
 
-    void CheckCross(uint8_t thread_idx, uint32_t sharding_id, db::DbWriteBatch& wbatch) {
-        uint64_t prev_checked_height = 0;
-        prefix_db_->GetCheckCrossHeight(local_sharding_id_, sharding_id, &prev_checked_height);
+    void CheckCross(
+            uint8_t thread_idx,
+            uint32_t local_sharding_id,
+            uint32_t sharding_id,
+            db::DbWriteBatch& wbatch) {
+        uint64_t prev_checked_height = cross_checked_max_heights_[sharding_id];
+        if (prev_checked_height == common::kInvalidUint64) {
+            if (prefix_db_->GetCheckCrossHeight(local_sharding_id, sharding_id, &prev_checked_height)) {
+                cross_checked_max_heights_[sharding_id] = prev_checked_height;
+            }
+        }
+
+        if (cross_synced_max_heights_[sharding_id] != common::kInvalidUint64 &&
+                prev_checked_height < cross_synced_max_heights_[sharding_id]) {
+            return;
+        }
+
         auto check_height = prev_checked_height;
         while (true) {
             block::protobuf::Block block;
@@ -137,16 +159,16 @@ private:
                     for (int32_t cross_idx = 0; cross_idx < cross_statistic->crosses_size(); ++cross_idx) {
                         auto& cross = cross_statistic->crosses(cross_idx);
                         ZJC_DEBUG("cross shard block src net: %u, src pool: %u, height: %lu,"
-                            "des net: %u, local_sharding_id_: %u",
+                            "des net: %u, local_sharding_id: %u",
                             cross.src_shard(),
                             cross.src_pool(),
                             cross.height(),
                             cross.des_shard(),
-                            local_sharding_id_);
-                        if (cross.des_shard() != local_sharding_id_ &&
+                            local_sharding_id);
+                        if (cross.des_shard() != local_sharding_id &&
                                 cross.des_shard() != network::kNodeNetworkId &&
                                 cross.des_shard() + network::kConsensusWaitingShardOffset !=
-                                local_sharding_id_) {
+                                local_sharding_id) {
                             continue;
                         }
 
@@ -170,13 +192,15 @@ private:
                 break;
             }
 
+            cross_synced_max_heights_[sharding_id] = check_height;
             ++check_height;
         }
 
         if (check_height != prev_checked_height) {
-            ZJC_DEBUG("refresh cross block height local_sharding_id_: %u, sharding_id: %u, height: %lu",
-                local_sharding_id_, sharding_id, check_height);
-            prefix_db_->SaveCheckCrossHeight(local_sharding_id_, sharding_id, check_height, wbatch);
+            ZJC_DEBUG("refresh cross block height local_sharding_id: %u, sharding_id: %u, height: %lu",
+                local_sharding_id, sharding_id, check_height);
+            prefix_db_->SaveCheckCrossHeight(local_sharding_id, sharding_id, check_height, wbatch);
+            cross_checked_max_heights_[sharding_id] = check_height;
         }
     }
 
@@ -184,8 +208,10 @@ private:
     std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     uint32_t max_sharding_id_ = 3;
-    uint32_t local_sharding_id_ = 0;
     common::Tick tick_;
+    volatile uint64_t cross_synced_max_heights_[network::kConsensusShardEndNetworkId] = { common::kInvalidUint64 };
+    volatile uint64_t cross_checked_max_heights_[network::kConsensusShardEndNetworkId] = { common::kInvalidUint64 };
+    bool inited_heights_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(CrossBlockManager);
 };

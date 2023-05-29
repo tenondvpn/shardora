@@ -383,7 +383,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             HandleNormalFromTx(msg_ptr);
             break;
         case pools::protobuf::kCreateLibrary:
-        case pools::protobuf::kContractUserCreateCall:
+        case pools::protobuf::kContractCreate:
             HandleCreateContractTx(msg_ptr);
             break;
         case pools::protobuf::kContractGasPrepayment:
@@ -518,16 +518,19 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                 if (tx_pool_[i].latest_height() == common::kInvalidUint64 &&
                         cross_synced_max_heights_[i] < cross_heights[i]) {
                     cross_synced_max_heights_[i] = cross_heights[i];
+                    cross_block_mgr_->UpdateMaxHeight(i, cross_heights[i]);
                     continue;
                 }
 
                 if (cross_heights[i] > tx_pool_[i].latest_height() + 64) {
                     cross_synced_max_heights_[i] = tx_pool_[i].latest_height() + 64;
+                    cross_block_mgr_->UpdateMaxHeight(i, cross_heights[i]);
                     continue;
                 }
 
                 if (cross_heights[i] > tx_pool_[i].latest_height()) {
                     cross_synced_max_heights_[i] = cross_heights[i];
+                    cross_block_mgr_->UpdateMaxHeight(i, cross_heights[i]);
                 }
             }
         }
@@ -822,7 +825,7 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
 
     uint64_t default_gas = consensus::kCallContractDefaultUseGas +
         tx_msg.value().size() * consensus::kKeyValueStorageEachBytes;
-    if (tx_msg.step() == pools::protobuf::kContractUserCreateCall) {
+    if (tx_msg.step() == pools::protobuf::kContractCreate) {
         if (memcmp(
                 tx_msg.contract_code().c_str(),
                 protos::kContractBytesStartCode.c_str(),

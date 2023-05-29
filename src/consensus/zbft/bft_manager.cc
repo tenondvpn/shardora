@@ -108,7 +108,7 @@ void BftManager::RegisterCreateTxCallbacks() {
         pools::protobuf::kRootCreateAddress,
         std::bind(&BftManager::CreateRootToTxItem, this, std::placeholders::_1));
     pools_mgr_->RegisterCreateTxFunction(
-        pools::protobuf::kContractUserCreateCall,
+        pools::protobuf::kContractCreate,
         std::bind(&BftManager::CreateContractUserCreateCallTx, this, std::placeholders::_1));
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kContractGasPrepayment,
@@ -616,7 +616,7 @@ void BftManager::HandleSyncConsensusBlock(
 //                     common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
                 if (block_hash == bft_ptr->local_prepare_hash()) {
                     bft_ptr->set_prepare_block(std::make_shared<block::protobuf::Block>(req_bft_msg.block()));
-                    SaveKeyValue(msg_ptr->header);
+//                     SaveKeyValue(msg_ptr->header);
                     if (bft_ptr->consensus_status() == kConsensusCommited) {
                         HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
 //                         ZJC_DEBUG("commited  receive block hash: %s",
@@ -2305,7 +2305,7 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
 }
 
 bool BftManager::IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info) {
-    if (tx_info.step() != pools::protobuf::kContractUserCreateCall) {
+    if (tx_info.step() != pools::protobuf::kContractCreate) {
         return false;
     }
 

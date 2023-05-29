@@ -10,7 +10,7 @@ enum StepType {
     kConsensusRootTimeBlock = 3;  // create time block
     kConsensusCreateGenesisAcount = 4;
     kConsensusLocalTos = 5;
-    kContractUserCreateCall = 6;
+    kContractCreate = 6;
     kContractGasPrepayment = 7;
     kContractExcute = 8;
     kRootCreateAddress = 9;

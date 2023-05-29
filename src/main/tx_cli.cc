@@ -82,7 +82,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
     new_tx->set_gas_price(gas_price);
     if (!key.empty()) {
         if (key == "create_contract") {
-            new_tx->set_step(pools::protobuf::kContractUserCreateCall);
+            new_tx->set_step(pools::protobuf::kContractCreate);
             new_tx->set_contract_code(val);
             new_tx->set_contract_prepayment(9000000000lu);
         } else if (key == "prepayment") {

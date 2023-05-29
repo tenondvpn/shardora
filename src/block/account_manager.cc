@@ -396,7 +396,7 @@ void AccountManager::NewBlockWithTx(
     case pools::protobuf::kConsensusLocalTos:
         HandleLocalToTx(thread_idx, *block_item, tx, db_batch);
         break;
-    case pools::protobuf::kContractUserCreateCall:
+    case pools::protobuf::kContractCreate:
         HandleContractCreateUserCall(thread_idx, *block_item, tx, db_batch);
         break;
     case pools::protobuf::kContractExcute:

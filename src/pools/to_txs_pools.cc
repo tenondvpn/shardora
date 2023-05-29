@@ -78,7 +78,7 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
         case pools::protobuf::kRootCreateAddressCrossSharding:
             HandleNormalToTx(block, tx_list[i], db_batch);
             break;
-        case pools::protobuf::kContractUserCreateCall:
+        case pools::protobuf::kContractCreate:
             HandleCreateContractUserCall(block, tx_list[i], db_batch);
             break;
         case pools::protobuf::kContractGasPrepayment:
@@ -644,7 +644,7 @@ int ToTxsPools::CreateToTxWithHeights(
         to_item->set_pool_index(iter->second.pool_index);
         to_item->set_step(iter->second.type);
         // create contract just in caller sharding
-        if (iter->second.type == pools::protobuf::kContractUserCreateCall) {
+        if (iter->second.type == pools::protobuf::kContractCreate) {
             assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
             auto account_info = GetAddressInfo(iter->first);
             if (account_info == nullptr) {

@@ -324,7 +324,7 @@ void BlockManager::RootHandleNormalToTx(
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_step(pools::protobuf::kRootCreateAddress);
-        if (tos_item.step() == pools::protobuf::kContractUserCreateCall) {
+        if (tos_item.step() == pools::protobuf::kContractCreate) {
             // that's contract address, just add address
             auto account_info = std::make_shared<address::protobuf::AddressInfo>();
             account_info->set_pool_index(tos_item.pool_index());
