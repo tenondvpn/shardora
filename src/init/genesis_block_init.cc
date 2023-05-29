@@ -266,8 +266,8 @@ bool GenesisBlockInit::CheckRecomputeG2s(
 }
 
 bool GenesisBlockInit::CreateNodePrivateInfo(
-        uint64_t elect_height,
         uint32_t sharding_id,
+        uint64_t elect_height,
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes) {
     static const uint32_t n = common::GlobalInfo::Instance()->each_shard_max_members();
     static const uint32_t t = common::GetSignerCount(n);
@@ -430,7 +430,7 @@ int GenesisBlockInit::CreateElectBlock(
     int32_t node_idx = 0;
     for (auto iter = genesis_nodes.begin(); iter != genesis_nodes.end(); ++iter) {
         auto in = ec_block.add_in();
-        in->set_pubkey((*iter)->pubkey_str);
+        in->set_pubkey((*iter)->pubkey);
         in->set_pool_idx_mod_num(node_idx < expect_leader_count ? node_idx : -1);
         ++node_idx;
     }
@@ -440,7 +440,7 @@ int GenesisBlockInit::CreateElectBlock(
         auto prev_members = ec_block.mutable_prev_members();
         for (uint32_t i = 0; i < genesis_nodes.size(); ++i) {
             auto mem_pk = prev_members->add_bls_pubkey();
-            auto pkeys_str = genesis_nodes[i]->bls_pubkey->toString();
+            auto pkeys_str = genesis_nodes[i]->bls_pubkey.toString();
             mem_pk->set_x_c0(pkeys_str->at(0));
             mem_pk->set_x_c1(pkeys_str->at(1));
             mem_pk->set_y_c0(pkeys_str->at(2));
@@ -907,7 +907,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         AddBlockItemToCache(tenon_block, db_batch);
         block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
-        for (uint32_t i = 0; i < root_prikeys.size(); ++i) {
+        for (uint32_t i = 0; i < root_genesis_nodes.size(); ++i) {
             for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
                 if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
                     block_mgr_->HandleJoinElectTx(0, *tenon_block, tenon_block->tx_list(tx_idx), db_batch);
@@ -1090,7 +1090,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
 
         auto pool_index = common::GetAddressPoolIndex(address);
         for (uint32_t member_idx = 0; member_idx < cons_genesis_nodes.size(); ++member_idx) {
-            if (common::GetAddressPoolIndex(cons_genesis_nodes[member_idx]->id) == i) {
+            if (common::GetAddressPoolIndex(cons_genesis_nodes[member_idx]->id) == pool_index) {
                 auto join_elect_tx_info = tx_list->Add();
                 join_elect_tx_info->set_step(pools::protobuf::kJoinElect);
                 join_elect_tx_info->set_from(cons_genesis_nodes[member_idx]->id);
@@ -1135,7 +1135,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             db_batch);
         AddBlockItemToCache(tenon_block, db_batch);
         block_mgr_->NetworkNewBlock(0, tenon_block);
-        for (uint32_t i = 0; i < prikeys.size(); ++i) {
+        for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
             for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
                 if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
                     block_mgr_->HandleJoinElectTx(0, *tenon_block, tenon_block->tx_list(tx_idx), db_batch);
