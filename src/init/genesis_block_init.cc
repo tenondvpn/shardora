@@ -1040,7 +1040,7 @@ bool GenesisBlockInit::BlsAggSignBlock(
             all_signs,
             lagrange_coeffs));
     if (!libBLS::Bls::Verification(g1_hash, *agg_sign, common_pk_[block->network_id()])) {
-        ZJC_FATAL("agg sign failed!");
+        ZJC_FATAL("agg sign failed shard: %u", block->network_id());
         return false;
     }
 

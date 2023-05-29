@@ -45,6 +45,7 @@
 } while (0)
 
 #define ZJC_FATAL(fmt, ...)  do {\
+    printf("[DEBUG][%s][%s][%d] " fmt "\n", ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
     LOG_INS.fatal("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
     assert(false);\
     exit(0);\
@@ -76,6 +77,7 @@
 } while (0)
 
 #define ZJC_FATAL(fmt, ...)  do {\
+    printf("[DEBUG][%s][%s][%d] " fmt "\n", ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
     LOG_INS.fatal("[%s][%s][%d] " fmt, ZJC_LOG_FILE_NAME, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
     assert(false);\
     exit(0);\
