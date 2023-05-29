@@ -1051,6 +1051,7 @@ bool GenesisBlockInit::BlsAggSignBlock(
         return false;
     }
 
+    agg_sign->to_affine_coordinates();
     block->set_bls_agg_sign_x(
         common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(agg_sign->X)));

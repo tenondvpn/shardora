@@ -1231,7 +1231,7 @@ bool NetworkInit::BlockBlsAggSignatureValid(const block::protobuf::Block& block)
         e.what(), block.network_id(), block.height(),
         common::Encode::HexEncode(block.bls_agg_sign_x()).c_str(),
         common::Encode::HexEncode(block.bls_agg_sign_y()).c_str());
-    assert(check_res);
+    assert(false);
     return false;
 }
 
