@@ -328,7 +328,7 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
         genesis_nodes[idx]->verification = dkg_instance.VerificationVector(genesis_nodes[idx]->polynomial);
         secret_key_contribution[idx] = dkg_instance.SecretKeyContribution(
             genesis_nodes[idx]->polynomial, valid_t);
-        bls::protobuf::JoinElectInfo& join_info = genesis_nodes[idx]->join_info;
+        bls::protobuf::JoinElectInfo join_info;
         join_info.set_member_idx(idx);
         join_info.set_shard_id(sharding_id);
         auto* req = join_info.mutable_g2_req();

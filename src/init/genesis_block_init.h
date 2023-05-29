@@ -3,11 +3,6 @@
 #include <map>
 #include <vector>
 
-#include <libbls/bls/BLSPrivateKey.h>
-#include <libbls/bls/BLSPrivateKeyShare.h>
-#include <libbls/bls/BLSPublicKey.h>
-#include <libbls/bls/BLSPublicKeyShare.h>
-#include <libbls/tools/utils.h>
 #include <dkg/dkg.h>
 
 #include "common/bitmap.h"
