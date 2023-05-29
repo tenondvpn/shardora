@@ -565,20 +565,20 @@ void AddDescriptorsImpl() {
       "\016\n\006amount\030\t \001(\004\022;\n\004step\030\n \001(\0162 .zjchain."
       "pools.protobuf.StepType:\013kNormalFrom\022\033\n\023"
       "contract_prepayment\030\013 \001(\004\022\025\n\rcontract_co"
-      "de\030\014 \001(\014\022\026\n\016contract_input\030\r \001(\014*\373\002\n\010Ste"
+      "de\030\014 \001(\014\022\026\n\016contract_input\030\r \001(\014*\363\002\n\010Ste"
       "pType\022\017\n\013kNormalFrom\020\000\022\r\n\tkNormalTo\020\001\022\034\n"
       "\030kConsensusRootElectShard\020\002\022\033\n\027kConsensu"
       "sRootTimeBlock\020\003\022!\n\035kConsensusCreateGene"
-      "sisAcount\020\004\022\026\n\022kConsensusLocalTos\020\005\022\033\n\027k"
-      "ContractUserCreateCall\020\006\022\032\n\026kContractGas"
-      "Prepayment\020\007\022\023\n\017kContractExcute\020\010\022\026\n\022kRo"
-      "otCreateAddress\020\t\022#\n\037kRootCreateAddressC"
-      "rossSharding\020\013\022\016\n\nkStatistic\020\014\022\016\n\nkJoinE"
-      "lect\020\r\022\022\n\016kCreateLibrary\020\016\022\n\n\006kCross\020\017\022\016"
-      "\n\nkRootCross\020\020"
+      "sisAcount\020\004\022\026\n\022kConsensusLocalTos\020\005\022\023\n\017k"
+      "ContractCreate\020\006\022\032\n\026kContractGasPrepayme"
+      "nt\020\007\022\023\n\017kContractExcute\020\010\022\026\n\022kRootCreate"
+      "Address\020\t\022#\n\037kRootCreateAddressCrossShar"
+      "ding\020\013\022\016\n\nkStatistic\020\014\022\016\n\nkJoinElect\020\r\022\022"
+      "\n\016kCreateLibrary\020\016\022\n\n\006kCross\020\017\022\016\n\nkRootC"
+      "ross\020\020"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 2134);
+      descriptor, 2126);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/pools.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();

@@ -1033,6 +1033,20 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::uint64 commit_height() const;
   void set_commit_height(::google::protobuf::uint64 value);
 
+  // optional bool is_cross_block = 18 [default = false];
+  bool has_is_cross_block() const;
+  void clear_is_cross_block();
+  static const int kIsCrossBlockFieldNumber = 18;
+  bool is_cross_block() const;
+  void set_is_cross_block(bool value);
+
+  // optional bool checked_committed = 19 [default = false];
+  bool has_checked_committed() const;
+  void clear_checked_committed();
+  static const int kCheckedCommittedFieldNumber = 19;
+  bool checked_committed() const;
+  void set_checked_committed(bool value);
+
   // @@protoc_insertion_point(class_scope:zjchain.block.protobuf.Block)
  private:
   void set_has_network_id();
@@ -1065,6 +1079,10 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   void clear_has_commit_pool_index();
   void set_has_commit_height();
   void clear_has_commit_height();
+  void set_has_is_cross_block();
+  void clear_has_is_cross_block();
+  void set_has_checked_committed();
+  void clear_has_checked_committed();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -1086,6 +1104,8 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::uint64 timestamp_;
   ::google::protobuf::uint64 leader_index_;
   ::google::protobuf::uint64 commit_height_;
+  bool is_cross_block_;
+  bool checked_committed_;
   friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -6290,6 +6310,54 @@ inline void Block::set_commit_height(::google::protobuf::uint64 value) {
   set_has_commit_height();
   commit_height_ = value;
   // @@protoc_insertion_point(field_set:zjchain.block.protobuf.Block.commit_height)
+}
+
+// optional bool is_cross_block = 18 [default = false];
+inline bool Block::has_is_cross_block() const {
+  return (_has_bits_[0] & 0x00008000u) != 0;
+}
+inline void Block::set_has_is_cross_block() {
+  _has_bits_[0] |= 0x00008000u;
+}
+inline void Block::clear_has_is_cross_block() {
+  _has_bits_[0] &= ~0x00008000u;
+}
+inline void Block::clear_is_cross_block() {
+  is_cross_block_ = false;
+  clear_has_is_cross_block();
+}
+inline bool Block::is_cross_block() const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.Block.is_cross_block)
+  return is_cross_block_;
+}
+inline void Block::set_is_cross_block(bool value) {
+  set_has_is_cross_block();
+  is_cross_block_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.Block.is_cross_block)
+}
+
+// optional bool checked_committed = 19 [default = false];
+inline bool Block::has_checked_committed() const {
+  return (_has_bits_[0] & 0x00010000u) != 0;
+}
+inline void Block::set_has_checked_committed() {
+  _has_bits_[0] |= 0x00010000u;
+}
+inline void Block::clear_has_checked_committed() {
+  _has_bits_[0] &= ~0x00010000u;
+}
+inline void Block::clear_checked_committed() {
+  checked_committed_ = false;
+  clear_has_checked_committed();
+}
+inline bool Block::checked_committed() const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.Block.checked_committed)
+  return checked_committed_;
+}
+inline void Block::set_checked_committed(bool value) {
+  set_has_checked_committed();
+  checked_committed_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.Block.checked_committed)
 }
 
 // -------------------------------------------------------------------
