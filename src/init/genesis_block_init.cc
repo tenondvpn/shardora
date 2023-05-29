@@ -13,6 +13,7 @@
 #include "common/split.h"
 #include "block/account_manager.h"
 #include "block/block_manager.h"
+#include "bls/bls_sign.h"
 #include "consensus/consensus_utils.h"
 #include "consensus/zbft/zbft_utils.h"
 #include "elect/elect_utils.h"
