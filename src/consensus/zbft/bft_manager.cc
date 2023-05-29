@@ -579,7 +579,7 @@ void BftManager::HandleSyncConsensusBlock(
 
             // check bls sign
             if (!block_agg_valid_func_(req_bft_msg.block())) {
-                ZJC_DEBUG("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+                ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
                     req_bft_msg.block().network_id(),
                     req_bft_msg.block().pool_index(),
                     req_bft_msg.block().height(),

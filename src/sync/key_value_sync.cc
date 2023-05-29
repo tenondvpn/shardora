@@ -358,6 +358,12 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                         common::GlobalInfo::Instance()->network_id()) {
                     if (block_agg_valid_func_(*block_item)) {
                         block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item);
+                    } else {
+                        ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+                            block_item->network_id(),
+                            block_item->pool_index(),
+                            block_item->height(),
+                            common::Encode::HexEncode(GetBlockHash(*block_item)).c_str());
                     }
                 }
             }
