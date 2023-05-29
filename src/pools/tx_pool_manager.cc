@@ -25,6 +25,7 @@ TxPoolManager::TxPoolManager(
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     prefix_db_->InitGidManager();
     kv_sync_ = kv_sync;
+    cross_block_mgr_ = std::make_shared<block::CrossBlockManager>(db_, kv_sync_);
     tx_pool_ = new TxPool[common::kInvalidPoolIndex];
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         tx_pool_[i].Init(i, db, kv_sync);

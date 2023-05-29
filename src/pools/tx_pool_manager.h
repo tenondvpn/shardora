@@ -7,8 +7,9 @@
 #include "common/thread_safe_queue.h"
 #include "common/unique_map.h"
 #include "network/network_utils.h"
-#include "pools/tx_pool.h"
+#include "pools/cross_block_manager.h"
 #include "pools/cross_pool.h"
+#include "pools/tx_pool.h"
 #include "protos/address.pb.h"
 #include "protos/pools.pb.h"
 #include "protos/prefix_db.h"
@@ -205,6 +206,7 @@ private:
     uint32_t max_cross_pools_size_ = 1;
     uint32_t now_sharding_count_ = 1;
     uint32_t prev_cross_sync_index_ = 0;
+    std::shared_ptr<block::CrossBlockManager> cross_block_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };
