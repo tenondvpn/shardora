@@ -64,7 +64,7 @@ public:
     }
 
     DbStatus Put(DbWriteBatch& db_batch) {
-        if (db_batch.GetDataSize() <= 0) {
+        if (db_batch.ApproximateSize() <= 12) {
             return db::DbStatus();
         }
 
