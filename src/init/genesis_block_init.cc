@@ -1325,7 +1325,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         init_consensus_height += std::to_string(init_heights.heights(i)) + " ";
     }
 
-    ZJC_DEBUG("0 success change min elect statistic heights: %s", init_consensus_height.c_str());
+    ZJC_DEBUG("0 success change min elect statistic heights: %u, %s",
+        net_id, init_consensus_height.c_str());
     return GenerateShardSingleBlock(net_id);
 }
 

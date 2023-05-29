@@ -957,24 +957,24 @@ void ShardStatistic::LoadLatestHeights() {
     if (!prefix_db_->GetStatisticLatestHeihgts(
             common::GlobalInfo::Instance()->network_id(),
             &to_heights)) {
-        ZJC_ERROR("load init statistic heights failed!");
+        ZJC_ERROR("load init statistic heights failed: %u",
+            common::GlobalInfo::Instance()->network_id());
         return;
     }
 
-    uint32_t max_pool_index = common::kInvalidPoolIndex;
     auto& this_net_heights = tx_heights_ptr_->heights();
     for (int32_t i = 0; i < this_net_heights.size(); ++i) {
         pool_consensus_heihgts_[i] = this_net_heights[i];
     }
 
-    assert(tx_heights_ptr_->heights_size() == (int32_t)max_pool_index);
+    assert(tx_heights_ptr_->heights_size() == (int32_t)common::kInvalidPoolIndex);
     std::string init_consensus_height;
     for (int32_t i = 0; i < tx_heights_ptr_->heights_size(); ++i) {
         init_consensus_height += std::to_string(tx_heights_ptr_->heights(i)) + " ";
     }
 
     ZJC_DEBUG("init success change min elect statistic heights: %s", init_consensus_height.c_str());
-    for (uint32_t i = 0; i < max_pool_index; ++i) {
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         uint64_t pool_latest_height = pools_mgr_->latest_height(i);
         if (pool_latest_height == common::kInvalidUint64) {
             continue;
