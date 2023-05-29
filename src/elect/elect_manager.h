@@ -101,7 +101,8 @@ private:
         std::vector<std::string>* pkey_str_vect);
     bool ProcessPrevElectMembers(
         protobuf::ElectBlock& elect_block,
-        bool* elected);
+        bool* elected,
+        db::DbWriteBatch& db_batch);
     void ProcessNewElectBlock(
         uint64_t height,
         protobuf::ElectBlock& elect_block,
