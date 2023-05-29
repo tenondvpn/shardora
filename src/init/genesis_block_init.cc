@@ -45,6 +45,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes) {
     if (net_id == network::kRootCongressNetworkId) {
         CreateNodePrivateInfo(net_id, 1llu, root_genesis_nodes);
+        CreateNodePrivateInfo(network::kConsensusShardBeginNetworkId, 1llu, cons_genesis_nodes);
     } else {
         CreateNodePrivateInfo(net_id, 1llu, cons_genesis_nodes);
     }
