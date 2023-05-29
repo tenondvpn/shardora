@@ -345,8 +345,8 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
         std::string enc_data;
         security::Ecdsa ecdsa;
         if (ecdsa.Encrypt(
-                genesis_nodes[idx]->prikey,
                 libBLS::ThresholdUtils::fieldElementToString(genesis_nodes[idx]->bls_prikey),
+                genesis_nodes[idx]->prikey,
                 &enc_data) != security::kSecuritySuccess) {
             ZJC_FATAL("encrypt data failed!");
             return false;
