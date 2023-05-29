@@ -1401,6 +1401,7 @@ public:
         key.append((char*)&height, sizeof(height));
         std::string val = prv_info.SerializeAsString();
         db_batch.Put(key, val);
+        ZJC_DEBUG("save elect height prev info success: %u, %lu", des_shard, height);
     }
 
     bool GetElectHeightCommonPk(
@@ -1415,11 +1416,12 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_INFO("get db failed!");
+            ZJC_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
             return false;
         }
 
         if (!prv_info->ParseFromString(val)) {
+            ZJC_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
             return false;
         }
 
