@@ -206,7 +206,7 @@ private:
     uint32_t max_cross_pools_size_ = 1;
     uint32_t now_sharding_count_ = 1;
     uint32_t prev_cross_sync_index_ = 0;
-    std::shared_ptr<block::CrossBlockManager> cross_block_mgr_ = nullptr;
+    std::shared_ptr<CrossBlockManager> cross_block_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };
