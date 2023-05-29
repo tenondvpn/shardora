@@ -1223,7 +1223,7 @@ bool NetworkInit::BlockBlsAggSignatureValid(const block::protobuf::Block& block)
             block.network_id(),
             block.electblock_height(),
             (common_pk == libff::alt_bn128_G2::zero()));
-        return;
+        return false;
     }
 
     libff::alt_bn128_G1 sign;
@@ -1236,7 +1236,8 @@ bool NetworkInit::BlockBlsAggSignatureValid(const block::protobuf::Block& block)
         return false;
     }
 
-    bool check_res = libBLS::Bls::Verification(block_hash, sign, common_pk);
+    auto g1_hash = libBLS::Bls::Hashing(block_hash);
+    bool check_res = libBLS::Bls::Verification(g1_hash, sign, common_pk);
     assert(check_res);
     return check_res;
 }
