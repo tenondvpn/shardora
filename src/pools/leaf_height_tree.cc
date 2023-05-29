@@ -177,13 +177,22 @@ void LeafHeightTree::SyncToDb(db::DbWriteBatch& db_batch) {
         return;
     }
 
+    std::string sync_data;
+    sync_data += std::to_string(net_id_) + " ";
+    sync_data += std::to_string(pool_index_) + " ";
+    sync_data += std::to_string(level_) + " ";
+    sync_data += std::to_string(node_index_) + " ";
     sync::protobuf::FlushDbItem flush_db;
     for (uint32_t i = 0; i < data_.size(); ++i) {
         flush_db.add_heights(data_[i]);
+        sync_data += std::to_string(data_[i]) + " ";
     }
 
     flush_db.set_max_height(max_height_);
     flush_db.set_max_vec_index(max_vec_index_);
+    sync_data += std::to_string(max_height_) + " ";
+    sync_data += std::to_string(max_vec_index_) + " ";
+    ZJC_DEBUG("sync_data: %s", sync_data.c_str());
     prefix_db_->SaveHeightTree(net_id_, pool_index_, level_, node_index_, flush_db, db_batch);
     dirty_ = false;
 }
