@@ -445,7 +445,7 @@ void ElectManager::ProcessNewElectBlock(
             in[i].pool_idx_mod_num()));
         AddNewNodeWithIdAndIp(elect_block.shard_network_id(), id);
         if (id == security_->GetAddress()) {
-//             *elected = true;
+            *elected = true;
             local_waiting_node_member_index_ = i;
         }
 
