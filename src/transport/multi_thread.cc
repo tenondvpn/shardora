@@ -271,7 +271,7 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
 void MultiThreadHandler::BlockSaved(const block::protobuf::Block& block_item) {
     auto iter = waiting_check_block_map_[block_item.pool_index()].find(block_item.height());
     if (iter != waiting_check_block_map_[block_item.pool_index()].end()) {
-        waiting_check_block_map_[block_item.pool_index()]->erase(iter);
+        waiting_check_block_map_[block_item.pool_index()].erase(iter);
     }
 
     auto commit_iter = committed_heights_[block_item.pool_index()].find(block_item.height());
@@ -280,7 +280,7 @@ void MultiThreadHandler::BlockSaved(const block::protobuf::Block& block_item) {
     }
 }
 
-void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Block>& block_ptr) {
+void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Block>& block_item) {
     if (!block_item->is_cross_block()) {
         waiting_check_block_map_[block_item->pool_index()][block_item->height()] = block_item;
         auto iter = committed_heights_[block_item->pool_index()].find(block_item->height());
