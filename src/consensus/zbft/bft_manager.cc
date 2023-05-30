@@ -564,7 +564,7 @@ void BftManager::HandleSyncConsensusBlock(
     if (req_bft_msg.has_block()) {
         // verify and add new block
         if (bft_ptr == nullptr) {
-            if (!msg_ptr->checked_block) {
+            if (!msg_ptr->checked_block && !req_bft_msg.block().is_cross_block()) {
                 ZJC_DEBUG("not checked block net: %u, pool: %u, height: %lu, block hash: %s",
                     req_bft_msg.block().network_id(),
                     req_bft_msg.block().pool_index(),
@@ -573,7 +573,9 @@ void BftManager::HandleSyncConsensusBlock(
                 return;
             }
 
-            if (req_bft_msg.block().network_id() != common::GlobalInfo::Instance()->network_id()) {
+            if (req_bft_msg.block().network_id() != common::GlobalInfo::Instance()->network_id() &&
+                    req_bft_msg.block().network_id() + network::kConsensusWaitingShardOffset !=
+                    common::GlobalInfo::Instance()->network_id()) {
                 return;
             }
 
