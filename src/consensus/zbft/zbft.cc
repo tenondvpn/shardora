@@ -532,7 +532,7 @@ bool Zbft::set_bls_precommit_agg_sign(
         return false;
     }
 
-    agg_sign.to_affine_coordinates();
+    bls_precommit_agg_sign_->to_affine_coordinates();
     prepare_block_->set_bls_agg_sign_x(
         common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X)));
@@ -542,7 +542,7 @@ bool Zbft::set_bls_precommit_agg_sign(
     ZJC_DEBUG("precommit success set bls sign, hash: %s, sign x: %s, sign y: %s",
         common::Encode::HexEncode(sign_hash).c_str(),
         common::Encode::HexEncode(prepare_block_->bls_agg_sign_x()).c_str(),
-        common::Encode::HexEncode(prepare_block_->bls_agg_sign_y()).c_str())
+        common::Encode::HexEncode(prepare_block_->bls_agg_sign_y()).c_str());
     return true;
 }
 
@@ -602,17 +602,18 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
         return false;
     }
     
-    agg_sign.to_affine_coordinates();
+    auto tmp_sign = agg_sign;
+    tmp_sign.to_affine_coordinates();
     prepare_block_->set_bls_agg_sign_x(
         common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(agg_sign.X)));
+            libBLS::ThresholdUtils::fieldElementToString(tmp_sign.X)));
     prepare_block_->set_bls_agg_sign_y(
         common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(agg_sign.Y)));
+            libBLS::ThresholdUtils::fieldElementToString(tmp_sign.Y)));
     ZJC_DEBUG("commit success set bls sign, hash: %s, sign x: %s, sign y: %s",
-        common::Encode::HexEncode(sign_hash).c_str(),
+        common::Encode::HexEncode(prepare_block_->hash()).c_str(),
         common::Encode::HexEncode(prepare_block_->bls_agg_sign_x()).c_str(),
-        common::Encode::HexEncode(prepare_block_->bls_agg_sign_y()).c_str())
+        common::Encode::HexEncode(prepare_block_->bls_agg_sign_y()).c_str());
     return true;
 }
 
