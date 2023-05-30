@@ -294,7 +294,7 @@ void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Bl
     if (block_item->has_commit_pool_index() && block_item->has_commit_height()) {
         auto iter = waiting_check_block_map_[block_item->commit_pool_index()].find(
             block_item->commit_height());
-        if (iter != waiting_check_block_map_[block_item->commit_pool_index()]->end()) {
+        if (iter != waiting_check_block_map_[block_item->commit_pool_index()].end()) {
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             new_msg_ptr->checked_block = true;
             CreateConsensusBlockMessage(new_msg_ptr, iter->second);
