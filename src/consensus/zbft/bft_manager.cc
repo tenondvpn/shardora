@@ -564,6 +564,10 @@ void BftManager::HandleSyncConsensusBlock(
     if (req_bft_msg.has_block()) {
         // verify and add new block
         if (bft_ptr == nullptr) {
+            if (!msg_ptr->checked_block) {
+                return;
+            }
+
             if (req_bft_msg.block().network_id() != common::GlobalInfo::Instance()->network_id()) {
                 return;
             }
@@ -588,6 +592,7 @@ void BftManager::HandleSyncConsensusBlock(
                 return;
             }
 
+            auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
             auto db_batch = std::make_shared<db::DbWriteBatch>();
             auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block_ptr, db_batch);
             new_block_cache_callback_(

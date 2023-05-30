@@ -843,7 +843,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         }
 
         account_mgr_ = std::make_shared<block::AccountManager>();
-        block_mgr_ = std::make_shared<block::BlockManager>();
+        block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         if (parser_arg.Has("1")) {
@@ -912,7 +912,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         }
 
         account_mgr_ = std::make_shared<block::AccountManager>();
-        block_mgr_ = std::make_shared<block::BlockManager>();
+        block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         if (parser_arg.Has("1")) {
