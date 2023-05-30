@@ -515,6 +515,11 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     auto mem_ptr = (*members)[header.zbft().member_index()];
+    if (mem_ptr->bls_publick_key == libff::alt_bn128_G2::zero()) {
+        ZJC_DEBUG("invalid bls signature.");
+        return;
+    }
+
     // leader's message
     auto btime = msg_ptr->times_idx;
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
