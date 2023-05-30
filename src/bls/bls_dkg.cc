@@ -660,7 +660,8 @@ void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
         return;
     }
 
-    ZJC_DEBUG("brd verify g2 success local: %d,  %s, %s",
+    ZJC_DEBUG("brd verify g2 success local net: %u, local: %d,  %s, %s",
+        common::GlobalInfo::Instance()->network_id(),
         local_member_index_,
         common::Encode::HexEncode((*members_)[local_member_index_]->id).c_str(),
         common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str());
@@ -711,7 +712,8 @@ void BlsDkg::SwapSecKey(uint8_t thread_idx) try {
     }
 
     CreateDkgMessage(msg_ptr);
-    ZJC_DEBUG("success send swap seckey request local member index: %d", local_member_index_);
+    ZJC_DEBUG("success send swap seckey request local member index: %d, local net: %u",
+        local_member_index_, common::GlobalInfo::Instance()->network_id());
 #ifdef ZJC_UNITTEST
     sec_swap_msgs_ = msg_ptr;
     ZJC_DEBUG("success add swap msg");
@@ -991,6 +993,7 @@ void BlsDkg::CreateDkgMessage(transport::MessagePtr& msg_ptr) {
         dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
         msg.set_des_dht_key(dht_key.StrKey());
     }
+
     msg.set_type(common::kBlsMessage);
     auto broad_param = msg.mutable_broadcast();
     bls_msg.set_elect_height(elect_hegiht_);
