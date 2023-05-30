@@ -1160,7 +1160,8 @@ void NetworkInit::HandleElectionBlock(
             bool valid = false;
             while (!valid) {
                 for (uint32_t i = 0; i < leader_count; ++i) {
-                    rotation_leaders->rotations[i].rotation_leaders.push_back(for_leaders_index[for_leader_idx++]);
+                    rotation_leaders->rotations[i].rotation_leaders.push_back(
+                        for_leaders_index[for_leader_idx++]);
                     if (for_leader_idx >= for_leaders_index.size()) {
                         for_leader_idx = 0;
                     }
@@ -1237,8 +1238,10 @@ bool NetworkInit::BlockBlsAggSignatureValid(const block::protobuf::Block& block)
 
     return check_res;
 } catch (std::exception& e) {
-    ZJC_ERROR("get invalid bls sign: %s, net: %u, height: %lu, %s, %s",
+    ZJC_ERROR("get invalid bls sign: %s, net: %u, height: %lu, prehash: %s, hash: %s, sign: %s, %s",
         e.what(), block.network_id(), block.height(),
+        common::Encode::HexEncode(block.prehash()).c_str(),
+        common::Encode::HexEncode(block.hash()).c_str(),
         common::Encode::HexEncode(block.bls_agg_sign_x()).c_str(),
         common::Encode::HexEncode(block.bls_agg_sign_y()).c_str());
     assert(false);
