@@ -278,6 +278,12 @@ void MultiThreadHandler::BlockSaved(const block::protobuf::Block& block_item) {
     if (commit_iter != committed_heights_[block_item.pool_index()].end()) {
         committed_heights_[block_item.pool_index()].erase(commit_iter);
     }
+
+    ZJC_DEBUG("remove not checked block net: %u, pool: %u, height: %lu, block hash: %s",
+        block_item.network_id(),
+        block_item.pool_index(),
+        block_item.height(),
+        common::Encode::HexEncode(block_item.hash()).c_str());
 }
 
 void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Block>& block_item) {
@@ -288,7 +294,19 @@ void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Bl
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             new_msg_ptr->checked_block = true;
             CreateConsensusBlockMessage(new_msg_ptr, block_item);
+            ZJC_DEBUG("call not checked block net: %u, pool: %u, height: %lu, block hash: %s",
+                block_item->network_id(),
+                block_item->pool_index(),
+                block_item->height(),
+                common::Encode::HexEncode(block_item->hash()).c_str());
+
         }
+
+        ZJC_DEBUG("add not checked block net: %u, pool: %u, height: %lu, block hash: %s",
+            block_item->network_id(),
+            block_item->pool_index(),
+            block_item->height(),
+            common::Encode::HexEncode(block_item->hash()).c_str());
     }
 
     if (block_item->has_commit_pool_index() && block_item->has_commit_height()) {
@@ -298,6 +316,12 @@ void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Bl
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             new_msg_ptr->checked_block = true;
             CreateConsensusBlockMessage(new_msg_ptr, iter->second);
+            ZJC_DEBUG("call not checked block net: %u, pool: %u, height: %lu, block hash: %s",
+                iter->second->network_id(),
+                iter->second->pool_index(),
+                iter->second->height(),
+                common::Encode::HexEncode(iter->second->hash()).c_str());
+
         }
 
         committed_heights_[block_item->commit_pool_index()].insert(block_item->commit_height());

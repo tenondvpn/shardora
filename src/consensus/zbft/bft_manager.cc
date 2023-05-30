@@ -565,6 +565,11 @@ void BftManager::HandleSyncConsensusBlock(
         // verify and add new block
         if (bft_ptr == nullptr) {
             if (!msg_ptr->checked_block) {
+                ZJC_DEBUG("not checked block net: %u, pool: %u, height: %lu, block hash: %s",
+                    req_bft_msg.block().network_id(),
+                    req_bft_msg.block().pool_index(),
+                    req_bft_msg.block().height(),
+                    common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
                 return;
             }
 
