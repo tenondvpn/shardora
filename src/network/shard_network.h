@@ -4,6 +4,7 @@
 
 #include "common/utils.h"
 #include "common/string_utils.h"
+#include "dht/dht_function.h"
 #include "dht/dht_key.h"
 #include "network/universal.h"
 #include "network/network_utils.h"
