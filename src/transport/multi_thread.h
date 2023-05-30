@@ -63,6 +63,8 @@ public:
     void HandleMessage(MessagePtr& msg_ptr);
     MessagePtr GetMessageFromQueue(uint32_t thread_idx);
     void Destroy();
+    void BlockSaved(const block::protobuf::Block& block);
+
     void NewHttpServer(MessagePtr& msg_ptr) {
         http_server_message_queue_.push(msg_ptr);
     }
@@ -77,6 +79,10 @@ private:
     uint8_t GetTxThreadIndex(MessagePtr& msg_ptr);
     void HandleSyncBlockResponse(MessagePtr& msg_ptr);
     void SaveKeyValue(const transport::protobuf::Header& msg, db::DbWriteBatch& db_batch);
+    void CheckBlockCommitted(std::shared_ptr<block::protobuf::Block>& block_ptr);
+    void CreateConsensusBlockMessage(
+        std::shared_ptr<transport::TransportMessage>& new_msg_ptr,
+        std::shared_ptr<block::protobuf::Block>& block_ptr);
 
     static const int kQueueObjectCount = 1024 * 1024;
 
@@ -93,6 +99,8 @@ private:
     uint8_t robin_index_ = 0;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    std::unordered_map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_check_block_map_[common::kInvalidPoolIndex];
+    std::unordered_set<uint64_t> committed_heights_[common::kInvalidPoolIndex];
 
     DISALLOW_COPY_AND_ASSIGN(MultiThreadHandler);
 };

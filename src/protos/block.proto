@@ -51,8 +51,7 @@ message Block {
     optional uint64 leader_index = 15;
     optional uint32 commit_pool_index = 16;
     optional uint64 commit_height = 17;
-    optional bool is_cross_block = 18 [default=false];
-    optional bool checked_committed = 19 [default=false];  // just for local node to verification committed bls agg signature
+    optional bool is_cross_block = 18 [default=false];  // not pipelined commit
 }
 
 message ConsensusToTxsItem {

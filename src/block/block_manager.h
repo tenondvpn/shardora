@@ -15,6 +15,7 @@
 #include "protos/prefix_db.h"
 #include "protos/transport.pb.h"
 #include "security/security.h"
+#include "transport/multi_thread.h"
 #include "transport/transport_utils.h"
 
 namespace zjchain {
@@ -29,7 +30,7 @@ namespace block {
 class AccountManager;
 class BlockManager {
 public:
-    BlockManager();
+    BlockManager(transport::MultiThreadHandler& net_handler_);
     ~BlockManager();
     int Init(
         std::shared_ptr<AccountManager>& account_mgr,
@@ -188,6 +189,7 @@ private:
     std::unordered_map<uint32_t, std::map<
         uint64_t,
         std::shared_ptr<pools::protobuf::ElectStatistic>>> shard_timeblock_statistic_;
+    transport::MultiThreadHandler& net_handler_;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

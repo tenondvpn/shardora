@@ -127,7 +127,7 @@ int NetworkInit::Init(int argc, char** argv) {
     }
 
     account_mgr_ = std::make_shared<block::AccountManager>();
-    block_mgr_ = std::make_shared<block::BlockManager>();
+    block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
     bls_mgr_ = std::make_shared<bls::BlsManager>(security_, db_);
     elect_mgr_ = std::make_shared<elect::ElectManager>(
         vss_mgr_, block_mgr_, security_, bls_mgr_, db_,

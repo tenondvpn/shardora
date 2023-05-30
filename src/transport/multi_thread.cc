@@ -248,33 +248,83 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
         auto block_item = std::make_shared<block::protobuf::Block>();
         if (block_item->ParseFromString(iter->value()) &&
                 (iter->has_height() || !block_item->hash().empty())) {
+            if (prefix_db_->BlockExists(block_item->hash())) {
+                continue;
+            }
+
             if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
                     block_item->network_id() + network::kConsensusWaitingShardOffset !=
                     common::GlobalInfo::Instance()->network_id()) {
                 continue;
             }
-
-            auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-            auto& msg = new_msg_ptr->header;
-            msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-            common::DhtKey dht_key;
-            dht_key.construct.net_id = common::GlobalInfo::Instance()->network_id();
-            std::string str_key = std::string(dht_key.dht_key, sizeof(dht_key.dht_key));
-            msg.set_des_dht_key(str_key);
-            msg.set_type(common::kConsensusMessage);
-            auto& bft_msg = *msg.mutable_zbft();
-            bft_msg.set_sync_block(true);
-            bft_msg.set_member_index(-1);
-            bft_msg.set_pool_index(block_item->pool_index());
-            assert(block_item->has_bls_agg_sign_y() && block_item->has_bls_agg_sign_x());
-            *bft_msg.mutable_block() = *block_item;
-            auto queue_idx = GetThreadIndex(new_msg_ptr);
-            threads_message_queues_[queue_idx][kTransportPriorityHighest].push(new_msg_ptr);
-            wait_con_[queue_idx % all_thread_count_].notify_one();
-            ZJC_DEBUG("create sync block message: %d, index: %d, queue_idx: %d",
-                queue_idx, block_item->pool_index(), queue_idx);
+            
+            CheckBlockCommitted(block_item);
+            if (block_item->is_cross_block()) {
+                auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+                new_msg_ptr->checked_block = true;
+                CreateConsensusBlockMessage(new_msg_ptr, block_item);
+            }
         }
     }
+}
+
+void MultiThreadHandler::BlockSaved(const block::protobuf::Block& block_item) {
+    auto iter = waiting_check_block_map_[block_item.pool_index()].find(block_item.height());
+    if (iter != waiting_check_block_map_[block_item.pool_index()].end()) {
+        waiting_check_block_map_[block_item.pool_index()]->erase(iter);
+    }
+
+    auto commit_iter = committed_heights_[block_item.pool_index()].find(block_item.height());
+    if (commit_iter != committed_heights_[block_item.pool_index()].end()) {
+        committed_heights_[block_item.pool_index()].erase(commit_iter);
+    }
+}
+
+void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Block>& block_ptr) {
+    if (!block_item->is_cross_block()) {
+        waiting_check_block_map_[block_item->pool_index()][block_item->height()] = block_item;
+        auto iter = committed_heights_[block_item->pool_index()].find(block_item->height());
+        if (iter != committed_heights_[block_item->pool_index()].end()) {
+            auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+            new_msg_ptr->checked_block = true;
+            CreateConsensusBlockMessage(new_msg_ptr, block_item);
+        }
+    }
+
+    if (block_item->has_commit_pool_index() && block_item->has_commit_height()) {
+        auto iter = waiting_check_block_map_[block_item->commit_pool_index()].find(
+            block_item->commit_height());
+        if (iter != waiting_check_block_map_[block_item->commit_pool_index()]->end()) {
+            auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+            new_msg_ptr->checked_block = true;
+            CreateConsensusBlockMessage(new_msg_ptr, iter->second);
+        }
+
+        committed_heights_[block_item->commit_pool_index()].insert(block_item->commit_height());
+    }
+}
+
+void MultiThreadHandler::CreateConsensusBlockMessage(
+        std::shared_ptr<transport::TransportMessage>& new_msg_ptr,
+        std::shared_ptr<block::protobuf::Block>& block_item) {
+    auto& msg = new_msg_ptr->header;
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    common::DhtKey dht_key;
+    dht_key.construct.net_id = common::GlobalInfo::Instance()->network_id();
+    std::string str_key = std::string(dht_key.dht_key, sizeof(dht_key.dht_key));
+    msg.set_des_dht_key(str_key);
+    msg.set_type(common::kConsensusMessage);
+    auto& bft_msg = *msg.mutable_zbft();
+    bft_msg.set_sync_block(true);
+    bft_msg.set_member_index(-1);
+    bft_msg.set_pool_index(block_item->pool_index());
+    assert(block_item->has_bls_agg_sign_y() && block_item->has_bls_agg_sign_x());
+    *bft_msg.mutable_block() = *block_item;
+    auto queue_idx = GetThreadIndex(new_msg_ptr);
+    threads_message_queues_[queue_idx][kTransportPriorityHighest].push(new_msg_ptr);
+    wait_con_[queue_idx % all_thread_count_].notify_one();
+    ZJC_DEBUG("create sync block message: %d, index: %d, queue_idx: %d",
+        queue_idx, block_item->pool_index(), queue_idx);
 }
 
 void MultiThreadHandler::SaveKeyValue(const transport::protobuf::Header& msg, db::DbWriteBatch& db_batch) {

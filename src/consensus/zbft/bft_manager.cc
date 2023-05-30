@@ -588,13 +588,6 @@ void BftManager::HandleSyncConsensusBlock(
                 return;
             }
 
-            auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
-            if (!req_bft_msg.block().is_cross_block()) {
-                // cache it
-            } else {
-                block_ptr->set_checked_committed(true);
-            }
-
             auto db_batch = std::make_shared<db::DbWriteBatch>();
             auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block_ptr, db_batch);
             new_block_cache_callback_(

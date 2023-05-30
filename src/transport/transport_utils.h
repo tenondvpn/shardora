@@ -67,7 +67,7 @@ enum TcpConnnectionType {
 };
 
 struct TransportMessage {
-    TransportMessage() : conn(nullptr), response(nullptr), tmp_ptr(nullptr) {
+    TransportMessage() : conn(nullptr), response(nullptr), tmp_ptr(nullptr), checked_block(false) {
         memset(times, 0, sizeof(times));
         times_idx = 0;
     }
@@ -79,6 +79,7 @@ struct TransportMessage {
     std::string msg_hash;
     std::shared_ptr<TransportMessage> response;
     void* tmp_ptr;
+    bool checked_block;
     uint64_t times[128];
     uint32_t times_idx;
 };

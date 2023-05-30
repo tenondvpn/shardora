@@ -21,7 +21,7 @@ namespace block {
 static const std::string kShardElectPrefix = common::Encode::HexDecode(
     "227a252b30589b8ed984cf437c475b069d0597fc6d51ec6570e95a681ffa9fe2");
 
-BlockManager::BlockManager() {
+BlockManager::BlockManager(transport::MultiThreadHandler& net_handler) : net_handler_(net_handler) {
 }
 
 BlockManager::~BlockManager() {
@@ -553,6 +553,7 @@ void BlockManager::AddNewBlock(
         }
     }
 
+    net_handler_.BlockSaved(*block_item);
     auto st = db_->Put(db_batch);
     ZJC_DEBUG("put 0");
     if (!st.ok()) {
