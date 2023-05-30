@@ -317,6 +317,7 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
             bls_instance.SignatureRecover(
             all_signs,
             lagrange_coeffs));
+        bls_precommit_agg_sign_->to_affine_coordinates();
         prepare_block_->set_bls_agg_sign_x(
             common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X)));
@@ -378,7 +379,6 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
             return kConsensusError;
         }
 
-        bls_precommit_agg_sign_->to_affine_coordinates();
         ZJC_ERROR("leader precommit agg sign success! signx: %s, %s: %s, %s",
             libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X).c_str(),
             common::Encode::HexEncode(sign_precommit_hash).c_str(),
@@ -532,12 +532,17 @@ bool Zbft::set_bls_precommit_agg_sign(
         return false;
     }
 
+    agg_sign.to_affine_coordinates();
     prepare_block_->set_bls_agg_sign_x(
         common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X)));
     prepare_block_->set_bls_agg_sign_y(
         common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->Y)));
+    ZJC_DEBUG("precommit success set bls sign, hash: %s, sign x: %s, sign y: %s",
+        common::Encode::HexEncode(sign_hash).c_str(),
+        common::Encode::HexEncode(prepare_block_->bls_agg_sign_x()).c_str(),
+        common::Encode::HexEncode(prepare_block_->bls_agg_sign_y()).c_str())
     return true;
 }
 
@@ -597,12 +602,17 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
         return false;
     }
     
+    agg_sign.to_affine_coordinates();
     prepare_block_->set_bls_agg_sign_x(
         common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(agg_sign.X)));
     prepare_block_->set_bls_agg_sign_y(
         common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(agg_sign.Y)));
+    ZJC_DEBUG("commit success set bls sign, hash: %s, sign x: %s, sign y: %s",
+        common::Encode::HexEncode(sign_hash).c_str(),
+        common::Encode::HexEncode(prepare_block_->bls_agg_sign_x()).c_str(),
+        common::Encode::HexEncode(prepare_block_->bls_agg_sign_y()).c_str())
     return true;
 }
 
