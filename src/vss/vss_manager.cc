@@ -501,6 +501,10 @@ void VssManager::SetConsensusFinalRandomNum(const std::string& id, uint64_t fina
 
 void VssManager::HandleThirdPeriodRandom(const protobuf::VssMessage& vss_msg) {
     auto& elect_item = elect_item_[elect_valid_index_];
+    if (vss_msg.member_index() >= elect_item.members->size()) {
+        return;
+    }
+
     auto& id = (*elect_item.members)[vss_msg.member_index()]->id;
     if (!IsVssThirdPeriodsHandleMessage()) {
         ZJC_ERROR("not IsVssThirdPeriodsHandleMessage, id: %s",

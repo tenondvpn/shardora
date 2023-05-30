@@ -244,7 +244,7 @@ void Universal::OnNewElectBlock(
         for (auto iter = dht_ptr->begin(); iter < dht_ptr->end(); ++iter) {
             auto node = *iter;
             if (new_item->id_set.find((*iter)->id) != new_item->id_set.end()) {
-                DhtManager::Instance()->Join(*iter);
+                des_dht->UniversalJoin(*iter);
                 ZJC_DEBUG("expand nodes join network %u add new node: %s:%u, %s",
                     sharding_id,
                     (*iter)->public_ip.c_str(),
