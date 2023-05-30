@@ -195,6 +195,24 @@ int ShardNetwork<DhtType>::JoinShard(uint8_t thread_idx) {
         NETWORK_ERROR("join shard network [%u] failed!", sharding_id_);
     }
 
+    auto uni_net = UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
+    std::vector<NodePtr> nodes;
+    dht::DhtFunction::GetNetworkNodes(uni_net->readonly_hash_sort_dht(), sharding_id_, nodes);
+    for (uint32_t i = 0; i < nodes.size(); ++i) {
+        auto new_node = std::make_shared<dht::Node>(
+            sharding_id_,
+            nodes[i]->public_ip,
+            nodes[i]->public_port,
+            nodes[i]->pubkey_str,
+            nodes[i]->id);
+        elect_dht_->Join(new_node);
+        ZJC_DEBUG("join network %u add new node: %s:%u, %s",
+            sharding_id_,
+            nodes[i]->public_ip.c_str(),
+            nodes[i]->public_port,
+            common::Encode::HexEncode(nodes[i]->id).c_str());
+    }
+
     NETWORK_DEBUG("join network: %d success.", sharding_id_);
     return kNetworkSuccess;
 }
