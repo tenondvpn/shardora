@@ -196,7 +196,7 @@ int ShardNetwork<DhtType>::JoinShard(uint8_t thread_idx) {
     }
 
     auto uni_net = UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
-    std::vector<NodePtr> nodes;
+    std::vector<dht::NodePtr> nodes;
     dht::DhtFunction::GetNetworkNodes(uni_net->readonly_hash_sort_dht(), sharding_id_, nodes);
     for (uint32_t i = 0; i < nodes.size(); ++i) {
         auto new_node = std::make_shared<dht::Node>(
