@@ -248,7 +248,7 @@ bool ElectManager::ProcessPrevElectMembers(
             elect_block.prev_members().prev_elect_height(),
             elect_block.shard_network_id(),
             elect_block.elect_height());
-        assert(false);
+//         assert(false);
         return false;
     }
 
