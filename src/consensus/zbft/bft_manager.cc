@@ -357,7 +357,14 @@ ZbftPtr BftManager::Start(
 //     ZJC_INFO("thread_index: %d, pool index: %d, tx size: %u, pool zbft size: %d",
 //         thread_index, txs_ptr->pool_index, txs_ptr->txs.size(), txs_pools_->ZbftSize(txs_ptr->pool_index));
     txs_ptr->thread_index = thread_index;
-    return StartBft(elect_item, txs_ptr, prev_bft, prepare_msg_ptr);
+    auto zbft_ptr = StartBft(elect_item, txs_ptr, prev_bft, prepare_msg_ptr);
+    if (zbft_ptr == nullptr) {
+        for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
+            iter->second->in_consensus = false;
+        }
+    }
+
+    return zbft_ptr;
 }
 
 int BftManager::InitZbftPtr(int32_t leader_idx, const ElectItem& elect_item, ZbftPtr& bft_ptr) {
