@@ -1059,6 +1059,10 @@ pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) 
 }
 
 pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string& tx_hash) {
+    if (pool_index == 2 || pool_index == 3) {
+        ZJC_DEBUG("now get elect tx: %u", pool_index);
+    }
+
     for (uint32_t i = network::kRootCongressNetworkId;
             i <= max_consensus_sharding_id_; ++i) {
         if (i % common::kImmutablePoolSize != pool_index) {
@@ -1066,11 +1070,19 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
         }
 
         if (shard_elect_tx_[i] == nullptr) {
+            if (pool_index == 2 || pool_index == 3) {
+                ZJC_DEBUG("failed get elect tx: %u", pool_index);
+            }
             continue;
         }
 
         auto shard_elect_tx = shard_elect_tx_[i];
-        if (shard_elect_tx != nullptr && !shard_elect_tx->tx_ptr->in_consensus) {
+        if (pool_index == 2 || pool_index == 3) {
+            ZJC_DEBUG("now get elect tx valid check: %u, in consensus: %d",
+                pool_index, shard_elect_tx->tx_ptr->in_consensus);
+        }
+
+        if (!shard_elect_tx->tx_ptr->in_consensus) {
             if (!tx_hash.empty()) {
                 if (shard_elect_tx->tx_ptr->tx_hash == tx_hash) {
                     shard_elect_tx->tx_ptr->in_consensus = true;
@@ -1082,6 +1094,9 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
 
             auto now_tm = common::TimeUtils::TimestampUs();
             if (shard_elect_tx->tx_ptr->time_valid > now_tm) {
+                if (pool_index == 2 || pool_index == 3) {
+                    ZJC_DEBUG("now get elect tx time invalid: %u", pool_index);
+                }
                 continue;
             }
 
