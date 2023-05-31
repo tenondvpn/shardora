@@ -196,6 +196,9 @@ void BftManager::OnNewElectBlock(
             elect_item.local_member = (*members)[i];
             elect_item.local_node_member_index = i;
             local_node_pool_mod_num = (*members)[i]->pool_index_mod_num;
+            if ((*members)[i]->bls_publick_key != libff::alt_bn128_G2::zero()) {
+                elect_item.bls_valid = true;
+            }
         }
 
         if ((*members)[i]->pool_index_mod_num >= 0) {
@@ -508,6 +511,10 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     if (header.zbft().has_sync_block() && header.zbft().sync_block()) {
         return HandleSyncConsensusBlock(elect_item, msg_ptr);
+    }
+    
+    if (!elect_item.bls_valid) {
+        return;
     }
 
     assert(header.zbft().elect_height() > 0);

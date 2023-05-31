@@ -77,7 +77,7 @@ struct PoolTxIndexItem {
 
 struct ElectItem {
     ElectItem() : members(nullptr), local_member(nullptr),
-            elect_height(0), local_node_member_index(common::kInvalidUint32) {
+            elect_height(0), local_node_member_index(common::kInvalidUint32), bls_valid(false) {
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             thread_set[i] = nullptr;
         }
@@ -92,6 +92,7 @@ struct ElectItem {
     std::shared_ptr<PoolTxIndexItem> thread_set[common::kMaxThreadCount];
     libff::alt_bn128_G2 common_pk;
     libff::alt_bn128_Fr sec_key;
+    bool bls_valid;
 };
 
 typedef std::function<void(
