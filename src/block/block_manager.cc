@@ -148,7 +148,7 @@ void BlockManager::NetworkNewBlock(
                 block_item->network_id(),
                 block_item->pool_index(),
                 block_item->height());
-            assert(false);
+            //assert(false);
             return;
         }
 
