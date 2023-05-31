@@ -156,7 +156,8 @@ int NetworkInit::Init(int argc, char** argv) {
         shard_statistic_,
         security_,
         security_->GetAddress(),
-        new_db_cb);
+        new_db_cb,
+        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     bft_mgr_ = std::make_shared<consensus::BftManager>();
     auto bft_init_res = bft_mgr_->Init(
