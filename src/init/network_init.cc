@@ -386,11 +386,13 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
     // random chance to join root shard
     if (common::GlobalInfo::Instance()->join_root() == common::kJoinRoot) {
         sharding_id = network::kRootCongressNetworkId;
-    } else if (common::GlobalInfo::Instance()->join_root() == common::kRandom ||
+    } else if (common::GlobalInfo::Instance()->join_root() == common::kRandom &&
             common::Random::RandomInt32() % 4 == 1) {
         sharding_id = network::kRootCongressNetworkId;
     }
         
+    std::cout << "success handle init res message. response shard: " << sharding_id
+        << ", join type: " << common::GlobalInfo::Instance()->join_root() << ", rand join: " << sharding_id << std::endl;
     prefix_db_->SaveJoinShard(sharding_id, des_sharding_id_);
     auto waiting_network_id = sharding_id + network::kConsensusWaitingShardOffset;
     if (elect_mgr_->Join(msg_ptr->thread_idx, waiting_network_id) != elect::kElectSuccess) {
