@@ -279,6 +279,24 @@ void MultiThreadHandler::BlockSaved(const block::protobuf::Block& block_item) {
         committed_heights_[block_item.pool_index()].erase(commit_iter);
     }
 
+    if (block_item->has_commit_pool_index() && block_item->has_commit_height()) {
+        auto iter = waiting_check_block_map_[block_item->commit_pool_index()].find(
+            block_item->commit_height());
+        if (iter != waiting_check_block_map_[block_item->commit_pool_index()].end()) {
+            auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+            new_msg_ptr->checked_block = true;
+            CreateConsensusBlockMessage(new_msg_ptr, iter->second);
+            ZJC_DEBUG("call not checked block net: %u, pool: %u, height: %lu, block hash: %s",
+                iter->second->network_id(),
+                iter->second->pool_index(),
+                iter->second->height(),
+                common::Encode::HexEncode(iter->second->hash()).c_str());
+
+        }
+
+        committed_heights_[block_item->commit_pool_index()].insert(block_item->commit_height());
+    }
+
     ZJC_DEBUG("remove not checked block net: %u, pool: %u, height: %lu, block hash: %s",
         block_item.network_id(),
         block_item.pool_index(),
