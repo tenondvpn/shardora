@@ -39,7 +39,8 @@ public:
         std::shared_ptr<pools::ShardStatistic>& statistic_mgr,
         std::shared_ptr<security::Security>& security,
         const std::string& local_id,
-        DbBlockCallback new_block_callback);
+        DbBlockCallback new_block_callback,
+        block::BlockAggValidCallback block_agg_valid_func);
     void NetworkNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item);
@@ -190,6 +191,7 @@ private:
         uint64_t,
         std::shared_ptr<pools::protobuf::ElectStatistic>>> shard_timeblock_statistic_;
     transport::MultiThreadHandler& net_handler_;
+    block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

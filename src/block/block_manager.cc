@@ -37,7 +37,8 @@ int BlockManager::Init(
         std::shared_ptr<pools::ShardStatistic>& statistic_mgr,
         std::shared_ptr<security::Security>& security,
         const std::string& local_id,
-        DbBlockCallback new_block_callback) {
+        DbBlockCallback new_block_callback,
+        block::BlockAggValidCallback block_agg_valid_func) {
     account_mgr_ = account_mgr;
     db_ = db;
     pools_mgr_ = pools_mgr;
@@ -48,6 +49,7 @@ int BlockManager::Init(
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     to_txs_pool_ = std::make_shared<pools::ToTxsPools>(
         db_, local_id, max_consensus_sharding_id_, pools_mgr_);
+    block_agg_valid_func_ = block_agg_valid_func;
     if (common::GlobalInfo::Instance()->for_ck_server()) {
         ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "");
         ZJC_DEBUG("support ck");
@@ -128,6 +130,28 @@ void BlockManager::NetworkNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item) {
     if (block_item != nullptr) {
+        if (!block_item->is_cross_block()) {
+            ZJC_ERROR("not cross block coming: %s, signx: %s, net: %u, pool: %u, height: %lu",
+                common::Encode::HexEncode(block_item->hash()).c_str(),
+                common::Encode::HexEncode(block_item->bls_agg_sign_x()).c_str(),
+                block_item->network_id(),
+                block_item->pool_index(),
+                block_item->height());
+            assert(false);
+            return;
+        }
+
+        if (!block_agg_valid_func_(*block_item)) {
+            ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, net: %u, pool: %u, height: %lu",
+                common::Encode::HexEncode(block_item->hash()).c_str(),
+                common::Encode::HexEncode(block_item->bls_agg_sign_x()).c_str(),
+                block_item->network_id(),
+                block_item->pool_index(),
+                block_item->height());
+            assert(false);
+            return;
+        }
+
         db::DbWriteBatch db_batch;
         AddNewBlock(thread_idx, block_item, db_batch);
     }
