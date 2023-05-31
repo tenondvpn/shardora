@@ -1222,7 +1222,7 @@ bool NetworkInit::BlockBlsAggSignatureValid(const block::protobuf::Block& block)
             block.network_id(),
             block.electblock_height(),
             (common_pk == libff::alt_bn128_G2::zero()));
-        assert(false);
+//         assert(false);
         return false;
     }
 

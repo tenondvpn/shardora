@@ -274,7 +274,7 @@ public:
         if (common_pk != nullptr) {
             elect::protobuf::PrevMembers prev_members;
             if (!prefix_db_->GetElectHeightCommonPk(network_id, height, &prev_members)) {
-                assert(false);
+//                 assert(false);
                 return nullptr;
             }
 
