@@ -278,9 +278,9 @@ void BlockManager::HandleStatisticTx(
 
             if (shard_statistic_tx_ != nullptr) {
                 if (block_tx.storages(i).val_hash() == shard_statistic_tx_->tx_hash) {
-                    shard_statistic_tx_ = nullptr;
                     ZJC_DEBUG("remove statistic tx: %s",
                         common::Encode::HexEncode(shard_statistic_tx_->tx_hash).c_str());
+                    shard_statistic_tx_ = nullptr;
                 }
             }
 
