@@ -73,6 +73,7 @@ void ShardStatistic::OnNewBlock(const block::protobuf::Block& block) {
 
     if (tx_list.empty()) {
         ZJC_DEBUG("tx list empty!");
+        assert(false);
         return;
     }
 
@@ -574,7 +575,10 @@ int ShardStatistic::StatisticWithHeights(
         uint64_t prev_height = 0;
         heights_hash.append((char*)&min_height, sizeof(min_height));
         heights_hash.append((char*)&max_height, sizeof(max_height));
-        ZJC_DEBUG("now handle pool: %u, min height: %lu, max height: %lu", pool_idx, min_height, max_height);
+        if (max_height >= min_height) {
+            ZJC_DEBUG("now handle pool: %u, min height: %lu, max height: %lu", pool_idx, min_height, max_height);
+        }
+
         for (auto height = min_height; height <= max_height; ++height) {
             auto hiter = node_height_count_map_[pool_idx].find(height);
             if (hiter == node_height_count_map_[pool_idx].end()) {
@@ -637,8 +641,8 @@ int ShardStatistic::StatisticWithHeights(
                     tmp_iter->second += niter->second.tx_count;
                 }
 
-                ZJC_DEBUG("pool: %u, height: %lu, index: %u, tx_count: %u",
-                    pool_idx, hiter->first, niter->first, node_count_map[niter->first]);
+                ZJC_DEBUG("pool: %u, height: %lu, id: %s, tx_count: %u",
+                    pool_idx, hiter->first, common::Encode::HexEncode(niter->first).c_str(), node_count_map[niter->first]);
                 if (elect_height == now_elect_height_) {
                     auto liter = lof_map.find(niter->second.leader_index);
                     if (liter == lof_map.end()) {
