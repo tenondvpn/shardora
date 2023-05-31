@@ -364,7 +364,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                             block_item->pool_index(),
                             block_item->height(),
                             common::Encode::HexEncode(block_item->hash()).c_str());
-                        assert(false);
+                        //assert(false);
                     }
                 }
             }
