@@ -304,7 +304,6 @@ bool ElectManager::ProcessPrevElectMembers(
     auto& in = prev_elect_block.in();
 //     std::cout << "in member count: " << in.size() << std::endl;
     auto shard_members_ptr = std::make_shared<common::Members>();
-    uint32_t member_index = 0;
     ClearExistsNetwork(prev_elect_block.shard_network_id());
     auto& prev_members_bls = elect_block.prev_members().bls_pubkey();
     if (prev_members_bls.size() != in.size()) {
@@ -319,18 +318,19 @@ bool ElectManager::ProcessPrevElectMembers(
     uint32_t leader_count = 0;
     for (int32_t i = 0; i < in.size(); ++i) {
         auto id = security_->GetAddress(in[i].pubkey());
+        int32_t pool_idx_mod_num = elect_block.prev_members().bls_pubkey(i).pool_idx_mod_num();
         shard_members_ptr->push_back(std::make_shared<common::BftMember>(
             prev_elect_block.shard_network_id(),
             id,
             in[i].pubkey(),
-            member_index,
-            in[i].pool_idx_mod_num()));
-        if (in[i].pool_idx_mod_num() >= 0) {
+            i,
+            pool_idx_mod_num));
+        if (pool_idx_mod_num >= 0) {
             ++leader_count;
         }
 
+        now_elected_ids_.insert(id);
         AddNewNodeWithIdAndIp(prev_elect_block.shard_network_id(), id);
-        ++member_index;
     }
 
     latest_leader_count_[prev_elect_block.shard_network_id()] = leader_count;
@@ -338,16 +338,7 @@ bool ElectManager::ProcessPrevElectMembers(
     UpdatePrevElectMembers(shard_members_ptr, elect_block, elected, &pk_vec);
     bool local_node_is_super_leader = false;
     {
-        common::Members tmp_leaders;
-        std::vector<uint32_t> node_index_vec;
-        uint32_t index = 0;
         for (auto iter = shard_members_ptr->begin(); iter != shard_members_ptr->end(); ++iter) {
-            if ((*iter)->pool_index_mod_num >= 0) {
-                tmp_leaders.push_back(*iter);
-                node_index_vec.push_back(index++);
-            }
-
-            now_elected_ids_.insert((*iter)->id);
             ELECT_INFO("DDDDDDDDDD elect height: %lu, network: %d,"
                 "leader: %s, pool_index_mod_num: %d, valid pk: %d",
                 elect_block.prev_members().prev_elect_height(),
@@ -355,12 +346,6 @@ bool ElectManager::ProcessPrevElectMembers(
                 common::Encode::HexEncode((*iter)->id).c_str(),
                 (*iter)->pool_index_mod_num,
                 ((*iter)->bls_publick_key == libff::alt_bn128_G2::zero()));
-//             std::cout << "DDDDDDDDDDDDDDDDDD ProcessNewElectBlock network: "
-//                 << prev_elect_block.shard_network_id()
-//                 << ", member leader: " << common::Encode::HexEncode((*iter)->id)
-//                 << ", (*iter)->pool_index_mod_num: " << (*iter)->pool_index_mod_num
-//                 << ", leader count: " << prev_elect_block.leader_count()
-//                 << std::endl;
         }
     }
 
@@ -430,7 +415,6 @@ void ElectManager::ProcessNewElectBlock(
         bool* elected) {
     auto& in = elect_block.in();
     auto shard_members_ptr = std::make_shared<common::Members>();
-    uint32_t member_index = 0;
     if (elect_block.shard_network_id() == common::GlobalInfo::Instance()->network_id()) {
         local_waiting_node_member_index_ = kInvalidMemberIndex;
     }
@@ -441,7 +425,7 @@ void ElectManager::ProcessNewElectBlock(
             elect_block.shard_network_id(),
             id,
             in[i].pubkey(),
-            member_index,
+            i,
             in[i].pool_idx_mod_num()));
         AddNewNodeWithIdAndIp(elect_block.shard_network_id(), id);
         if (id == security_->GetAddress()) {
@@ -457,14 +441,6 @@ void ElectManager::ProcessNewElectBlock(
             common::Encode::HexEncode(id).c_str(),
             in[i].pool_idx_mod_num(),
             local_waiting_node_member_index_);
-//         std::cout << "FFFFFFFFFFFFFFFFFFF ProcessNewElectBlock network: "
-//             << elect_block.shard_network_id()
-//             << ", member leader: " << common::Encode::HexEncode(id)
-//             << ", (*iter)->pool_index_mod_num: " << in[i].pool_idx_mod_num()
-//             << ", leader count: " << elect_block.leader_count()
-//             << std::endl;
-
-        ++member_index;
     }
 
     waiting_members_ptr_[elect_block.shard_network_id()] = shard_members_ptr;
