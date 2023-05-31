@@ -19,8 +19,16 @@ message BlsPublicKey {
     optional bytes y_c1 = 4;
 }
 
+message PrevMemberInfo {
+    optional bytes x_c0 = 1;
+    optional bytes x_c1 = 2;
+    optional bytes y_c0 = 3;
+    optional bytes y_c1 = 4;
+    optional int32 pool_idx_mod_num = 5 [default=-1];
+}
+
 message PrevMembers {
-    repeated BlsPublicKey bls_pubkey = 1;
+    repeated PrevMemberInfo bls_pubkey = 1;
     optional uint64 prev_elect_height = 2;
     optional BlsPublicKey common_pubkey = 3;
 }

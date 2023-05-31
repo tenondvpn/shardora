@@ -848,6 +848,7 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
     common_pk->set_y_c1(
         libBLS::ThresholdUtils::fieldElementToString(common_pk_iter->second.Y.c1));
     pre_ec_members->set_prev_elect_height(elect_iter->second->height);
+    ResetLeaders(members, ec_block.mutable_prev_members());
     BLS_DEBUG("network: %u, elect height: %lu, AddBlsConsensusInfo success max_finish_count_: %d,"
         "member count: %d, x_c0: %s, x_c1: %s, y_c0: %s, y_c1: %s.",
         ec_block.shard_network_id(),
@@ -856,6 +857,28 @@ int BlsManager::AddBlsConsensusInfo(elect::protobuf::ElectBlock& ec_block) {
         common_pk->x_c0().c_str(), common_pk->x_c1().c_str(),
         common_pk->y_c0().c_str(), common_pk->y_c1().c_str());
     return kBlsSuccess;
+}
+
+void BlsManager::ResetLeaders(
+        const common::MembersPtr& members,
+        elect::protobuf::PrevMembers* prev_members) {
+    for (int32_t i = 0; i < prev_members->bls_pubkey_size(); ++i) {
+        if ((*members)[i]->pool_index_mod_num >= 0) {
+            auto bls_pk = prev_members->mutable_bls_pubkey(i);
+            if (bls_pk->x_c0().empty()) {
+                for (uint32_t mem_idx = 0; mem_idx < members->size(); ++mem_idx) {
+                    if ((*members)[mem_idx]->pool_index_mod_num < 0) {
+                        (*members)[mem_idx]->pool_index_mod_num = (*members)[i]->pool_index_mod_num;
+                        auto prev_bls_pk = prev_members->mutable_bls_pubkey(mem_idx);
+                        prev_bls_pk->set_pool_idx_mod_num((*members)[i]->pool_index_mod_num);
+                        break;
+                    }
+                }
+            } else {
+                bls_pk->set_pool_idx_mod_num((*members)[i]->pool_index_mod_num);
+            }
+        }
+    }
 }
 
 };  // namespace bls
