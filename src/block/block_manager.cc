@@ -141,7 +141,7 @@ void BlockManager::NetworkNewBlock(
             return;
         }
 
-        if (!block_agg_valid_func_(*block_item)) {
+        if (block_agg_valid_func_ != nullptr && !block_agg_valid_func_(*block_item)) {
             ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, net: %u, pool: %u, height: %lu",
                 common::Encode::HexEncode(block_item->hash()).c_str(),
                 common::Encode::HexEncode(block_item->bls_agg_sign_x()).c_str(),
