@@ -376,7 +376,8 @@ void NetworkInit::HandleAddrRes(const transport::MessagePtr& msg_ptr) {
         }
     }
 
-    std::cout << "success handle init res message. response shard: " << sharding_id << std::endl;
+    std::cout << "success handle init res message. response shard: " << sharding_id
+        << ", join type: " << common::GlobalInfo::Instance()->join_root() <<  std::endl;
     if (sharding_id == common::kInvalidUint32) {
         return;
     }
