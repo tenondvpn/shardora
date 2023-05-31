@@ -349,6 +349,10 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
         }
 
         statistic_info_ptr->node_tx_count_map[id].tx_count += block.tx_list_size();
+        ZJC_DEBUG("statistic tx count index: %u, id: %s, net: %u, pool: %u height: %lu, count: %u",
+            i, common::Encode::HexEncode(id).c_str(),
+            block.network_id(), block.pool_index(),
+            block.height(), block.tx_list_size());
     }
 
     for (int32_t i = 0; i < block.tx_list_size(); ++i) {
@@ -702,7 +706,6 @@ int ShardStatistic::StatisticWithHeights(
     std::string str_for_hash;
     std::string debug_for_str;
     pools::protobuf::ElectStatistic elect_statistic;
-    debug_for_str += "tx_count: ";
     auto r_hiter = height_node_count_map.rbegin();
     if (r_hiter == height_node_count_map.rend() || r_hiter->first < now_elect_height_) {
         height_node_count_map[now_elect_height_] = std::unordered_map<std::string, uint32_t>();
@@ -734,7 +737,7 @@ int ShardStatistic::StatisticWithHeights(
 
             statistic_item.add_tx_count(tx_count);
             str_for_hash.append((char*)&tx_count, sizeof(tx_count));
-            debug_for_str += std::to_string(tx_count) + ",";
+            debug_for_str += "tx_count: " + std::to_string(tx_count) + ", ";
             uint64_t stoke = 0;
             if (!is_root) {
                 prefix_db_->GetElectNodeMinStoke(
@@ -761,7 +764,7 @@ int ShardStatistic::StatisticWithHeights(
             int32_t y1 = area_point->y();
             str_for_hash.append((char*)&x1, sizeof(x1));
             str_for_hash.append((char*)&y1, sizeof(y1));
-            debug_for_str += "xy: " + std::to_string(x1) + ":" + std::to_string(y1) + ",";
+            debug_for_str += "xy: " + std::to_string(x1) + "-" + std::to_string(y1) + ",";
         }
 
         statistic_item.set_elect_height(hiter->first);
