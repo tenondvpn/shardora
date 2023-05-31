@@ -63,13 +63,14 @@ private:
     void HandleStatisticBlock(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
-    void HandleStatistic(const block::protobuf::Block& block);
+    bool HandleStatistic(const block::protobuf::Block& block);
     void HandleCrossShard(
         bool is_root,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void LoadLatestHeights();
     void NormalizeLofMap(std::unordered_map<uint32_t, common::Point>& lof_map);
+    bool LoadAndStatisticBlock(uint32_t poll_index, uint64_t height);
 
     static const uint32_t kLofRation = 5;
     static const uint32_t kLofMaxNodes = 8;

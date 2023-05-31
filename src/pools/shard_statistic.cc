@@ -281,25 +281,25 @@ void ShardStatistic::HandleCrossShard(
     }
 }
 
-void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
+bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
     bool is_root = (
         common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
         common::GlobalInfo::Instance()->network_id() ==
         network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset);
     if (block.electblock_height() == 0) {
         ZJC_DEBUG("block elect height zero error");
-        return;
+        return false;
     }
 
     if (block.pool_index() >= common::kInvalidPoolIndex) {
         ZJC_ERROR("block po0l index error: %u", block.pool_index());
         assert(false);
-        return;
+        return false;
     }
 
     auto hiter = node_height_count_map_[block.pool_index()].find(block.height());
     if (hiter != node_height_count_map_[block.pool_index()].end()) {
-        return;
+        return true;
     }
 
     auto members = elect_mgr_->GetNetworkMembersWithHeight(
@@ -310,14 +310,14 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
     if (members == nullptr) {
         ZJC_WARN("get members failed, elect height: %lu, net: %u",
             block.electblock_height(), common::GlobalInfo::Instance()->network_id());
-        return;
+        return false;
     }
 
     uint32_t member_count = members->size();
     if (members == nullptr || block.leader_index() >= members->size() ||
             (*members)[block.leader_index()]->pool_index_mod_num < 0) {
         assert(false);
-        return;
+        return false;
     }
 
     std::vector<uint64_t> bitmap_data;
@@ -332,7 +332,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
     uint32_t bit_size = final_bitmap.data().size() * 64;
     if (member_count > bit_size || member_count > common::kEachShardMaxNodeCount) {
         assert(false);
-        return;
+        return false;
     }
 
     auto statistic_info_ptr = std::make_shared<HeightStatisticInfo>();
@@ -450,6 +450,7 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
         "cons height: %lu, elect height: %lu",
         block.network_id(), block.pool_index(), block.height(),
         pool_consensus_heihgts_[block.pool_index()], block.electblock_height());
+    return true;
 }
 
 int ShardStatistic::LeaderCreateStatisticHeights(pools::protobuf::ToTxHeights& to_heights) {
@@ -500,6 +501,20 @@ void ShardStatistic::OnTimeBlock(
 
     latest_timeblock_tm_ = lastest_time_block_tm;
     now_vss_random_ = vss_random;
+}
+
+bool ShardStatistic::LoadAndStatisticBlock(uint32_t poll_index, uint64_t height) {
+    uint32_t net_id = common::GlobalInfo::Instance()->network_id();
+    if (net_id >= network::kConsensusWaitingShardBeginNetworkId) {
+        net_id -= network::kConsensusWaitingShardOffset;
+    }
+
+    block::protobuf::Block block;
+    if (!prefix_db_->GetBlockWithHeight(net_id, poll_index, height, &block)) {
+        return false;
+    }
+
+    return HandleStatistic(block);
 }
 
 int ShardStatistic::StatisticWithHeights(
@@ -581,6 +596,14 @@ int ShardStatistic::StatisticWithHeights(
 
         for (auto height = min_height; height <= max_height; ++height) {
             auto hiter = node_height_count_map_[pool_idx].find(height);
+            if (hiter == node_height_count_map_[pool_idx].end()) {
+                if (!LoadAndStatisticBlock(pool_idx, height)) {
+                    ZJC_WARN("statistic get height failed, pool: %u, height: %lu", pool_idx, height);
+                    return kPoolsError;
+                }
+            }
+
+            hiter = node_height_count_map_[pool_idx].find(height);
             if (hiter == node_height_count_map_[pool_idx].end()) {
                 ZJC_WARN("statistic get height failed, pool: %u, height: %lu", pool_idx, height);
                 return kPoolsError;
