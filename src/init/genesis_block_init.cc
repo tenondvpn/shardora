@@ -420,11 +420,10 @@ int GenesisBlockInit::CreateElectBlock(
     elect::protobuf::ElectBlock ec_block;
     int32_t expect_leader_count = (int32_t)pow(2.0, (double)((int32_t)log2(double(genesis_nodes.size() / 3))));
     int32_t node_idx = 0;
-    for (auto iter = genesis_nodes.begin(); iter != genesis_nodes.end(); ++iter) {
+    for (auto iter = genesis_nodes.begin(); iter != genesis_nodes.end(); ++iter, ++node_idx) {
         auto in = ec_block.add_in();
         in->set_pubkey((*iter)->pubkey);
         in->set_pool_idx_mod_num(node_idx < expect_leader_count ? node_idx : -1);
-        ++node_idx;
     }
 
     ec_block.set_shard_network_id(shard_netid);
@@ -438,6 +437,7 @@ int GenesisBlockInit::CreateElectBlock(
             mem_pk->set_x_c1(pkeys_str->at(1));
             mem_pk->set_y_c0(pkeys_str->at(2));
             mem_pk->set_y_c1(pkeys_str->at(3));
+            mem_pk->set_pool_idx_mod_num(i < expect_leader_count ? i : -1);
         }
 
         auto common_pk_ptr = std::make_shared<BLSPublicKey>(common_pk_[shard_netid]);
