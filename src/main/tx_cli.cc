@@ -99,6 +99,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
         }
     }
 
+    transport::TcpTransport::Instance()->SetMessageHash(msg);
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign;
     if (security->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
@@ -242,7 +243,7 @@ int tx_main(int argc, char** argv) {
             return 1;
         }
 
-        std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << std::endl;
+        std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << ", tx hash: " << tx_msg_ptr->header.hash64() << std::endl;
         if (pos % 1 == 0) {
             ++prikey_pos;
             from_prikey = prikeys[prikey_pos % prikeys.size()];
