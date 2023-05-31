@@ -703,7 +703,10 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     tx_bft.set_prepare_final_hash(zjc_block.hash());
     tx_bft.set_height(zjc_block.height());
     tx_bft.set_tx_type(txs_ptr_->tx_type);
-    ZJC_DEBUG("prepool index: %d, pre height: %lu, pool index: %d, height: %lu, prehash: %s, hash: %s",
+    ZJC_DEBUG("has prepool: %d, has preheight: %d, prepool index: %d,"
+        "pre height: %lu, pool index: %d, height: %lu, prehash: %s, hash: %s",
+        zjc_block.has_commit_pool_index(),
+        zjc_block.has_commit_height(),
         zjc_block.commit_pool_index(),
         zjc_block.commit_height(),
         pool_index(),
