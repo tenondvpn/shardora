@@ -159,7 +159,7 @@ private:
     bool for_ck_server_ = false;
     uint32_t each_shard_max_members_ = 1024u;
     uint32_t sharding_min_nodes_count_ = 3u;
-    int32_t join_root_ = common::kJoinRoot;
+    int32_t join_root_ = common::kRandom;
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };
