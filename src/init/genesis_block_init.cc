@@ -418,7 +418,9 @@ int GenesisBlockInit::CreateElectBlock(
     tx_info->set_balance(0);
     tx_info->set_status(0);
     elect::protobuf::ElectBlock ec_block;
-    int32_t expect_leader_count = (int32_t)pow(2.0, (double)((int32_t)log2(double(genesis_nodes.size() / 3))));
+    uint32_t expect_leader_count = (uint32_t)pow(
+        2.0,
+        (double)((uint32_t)log2(double(genesis_nodes.size() / 3))));
     int32_t node_idx = 0;
     for (auto iter = genesis_nodes.begin(); iter != genesis_nodes.end(); ++iter, ++node_idx) {
         auto in = ec_block.add_in();
