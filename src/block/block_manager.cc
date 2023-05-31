@@ -1066,7 +1066,7 @@ pools::TxItemPtr BlockManager::GetCrossTx(uint32_t pool_index, bool leader) {
 
 pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) {
     if (leader) {
-        if (shard_elect_tx_ != nullptr) {
+        if (shard_statistic_tx_ != nullptr) {
             ZJC_DEBUG("get statistic pool: %u, tx: %d, in consensus: %d", pool_index, leader, shard_statistic_tx_->tx_ptr->in_consensus);
         } else {
             ZJC_DEBUG("not exists get statistic pool: %u get statistic tx: %d", pool_index, leader);
