@@ -349,10 +349,11 @@ void ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
         }
 
         statistic_info_ptr->node_tx_count_map[id].tx_count += block.tx_list_size();
-        ZJC_DEBUG("statistic tx count index: %u, id: %s, net: %u, pool: %u height: %lu, count: %u",
+        ZJC_DEBUG("statistic tx count index: %u, id: %s, net: %u, pool: %u height: %lu, count: %u, all: %u",
             i, common::Encode::HexEncode(id).c_str(),
             block.network_id(), block.pool_index(),
-            block.height(), block.tx_list_size());
+            block.height(), block.tx_list_size(),
+            statistic_info_ptr->node_tx_count_map[id].tx_count);
     }
 
     for (int32_t i = 0; i < block.tx_list_size(); ++i) {
@@ -636,6 +637,8 @@ int ShardStatistic::StatisticWithHeights(
                     tmp_iter->second += niter->second.tx_count;
                 }
 
+                ZJC_DEBUG("pool: %u, height: %lu, index: %u, tx_count: %u",
+                    pool_idx, hiter->first, niter->first, node_count_map[niter->first]);
                 if (elect_height == now_elect_height_) {
                     auto liter = lof_map.find(niter->second.leader_index);
                     if (liter == lof_map.end()) {
@@ -751,7 +754,6 @@ int ShardStatistic::StatisticWithHeights(
             area_point->set_y(0);
             if (ip_int != 0) {
                 auto ip = common::Uint32ToIp(ip_int);
-                ZJC_DEBUG("add ip %s, %u", ip.c_str(), ip_int);
                 float x = 0.0;
                 float y = 0.0;
                 if (common::Ip::Instance()->GetIpLocation(ip, &x, &y) == 0) {
@@ -765,6 +767,8 @@ int ShardStatistic::StatisticWithHeights(
             str_for_hash.append((char*)&x1, sizeof(x1));
             str_for_hash.append((char*)&y1, sizeof(y1));
             debug_for_str += "xy: " + std::to_string(x1) + "-" + std::to_string(y1) + ",";
+            ZJC_DEBUG("elect height: %lu, id: %s, tx count: %u",
+                hiter->first, common::Encode::HexEncode(id).c_str(), tx_count);
         }
 
         statistic_item.set_elect_height(hiter->first);
