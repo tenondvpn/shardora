@@ -1700,7 +1700,7 @@ int BftManager::LeaderHandleZbftMessage(
         const transport::MessagePtr& msg_ptr) {
     auto& bft_msg = msg_ptr->header.zbft();
     if (bft_msg.has_prepare_gid() && !bft_msg.prepare_gid().empty()) {
-//         ZJC_DEBUG("has prepare  now leader handle gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+        ZJC_DEBUG("has prepare  now leader handle gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
@@ -1709,7 +1709,7 @@ int BftManager::LeaderHandleZbftMessage(
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
         if (bft_ptr == nullptr) {
-//             ZJC_ERROR("prepare get bft failed: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+            ZJC_ERROR("prepare get bft failed: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             return kConsensusError;
         }
 
@@ -1738,15 +1738,15 @@ int BftManager::LeaderHandleZbftMessage(
             //msg_ptr->times[msg_ptr->times_idx - 2] = msg_ptr->times[msg_ptr->times_idx - 1];
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
-//             ZJC_DEBUG("LeaderHandleZbftMessage res: %d, mem: %d", res, bft_msg.member_index());
+            ZJC_DEBUG("LeaderHandleZbftMessage res: %d, mem: %d", res, bft_msg.member_index());
             if (res == kConsensusAgree) {
                 //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
                 //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
                 if (bft_ptr->prepare_block() == nullptr) {
-//                     ZJC_DEBUG("invalid block and sync from other hash: %s, gid: %s",
-//                         common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-//                         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+                    ZJC_DEBUG("invalid block and sync from other hash: %s, gid: %s",
+                        common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+                        common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
                     assert(false);
                 }
                 //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -1784,7 +1784,7 @@ int BftManager::LeaderHandleZbftMessage(
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
-//         ZJC_DEBUG("has precommit now leader handle gid: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+        ZJC_DEBUG("has precommit now leader handle gid: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
         auto bft_ptr = LeaderGetZbft(msg_ptr, bft_msg.precommit_gid());
         if (bft_ptr == nullptr) {
 //             ZJC_ERROR("precommit get bft failed: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
@@ -1888,9 +1888,9 @@ int BftManager::LeaderCallPrecommit(
 
     if (next_prepare_bft != nullptr) {
         bft_vec[0] = next_prepare_bft;
-//         ZJC_DEBUG("use next prepare.");
+        ZJC_DEBUG("use next prepare.");
     } else {
-//         ZJC_DEBUG("use g1_precommit_hash prepare.");
+        ZJC_DEBUG("use g1_precommit_hash prepare.");
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
@@ -1948,13 +1948,14 @@ int BftManager::LeaderCallPrecommit(
 
     }
 
-//     ZJC_DEBUG("LeaderCallPrecommit success gid: %s",
-//         common::Encode::HexEncode(bft_ptr->gid()).c_str());
+    ZJC_DEBUG("LeaderCallPrecommit success gid: %s",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str());
     return kConsensusSuccess;
 }
 
 int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr) {
-//     ZJC_DEBUG("BackupPrecommit");
+    ZJC_DEBUG("BackupPrecommit gid: %s",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str());
     auto& bft_msg = msg_ptr->header.zbft();
     if (!bft_msg.agree_precommit()) {
         ZJC_INFO("BackupPrecommit gid: %s",
@@ -1998,7 +1999,7 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
     bft_ptr->set_consensus_status(kConsensusCommit);
     std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
     bft_vec[1] = bft_ptr;
-//     ZJC_DEBUG("BackupPrecommit success.");
+    ZJC_DEBUG("BackupPrecommit success.");
     return kConsensusSuccess;
 }
 
@@ -2291,7 +2292,8 @@ int BftManager::LeaderCallCommit(
 }
 
 int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr) {
-//     ZJC_DEBUG("BackupCommit");
+    ZJC_DEBUG("BackupCommit gid: %s",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str());
     auto& bft_msg = msg_ptr->header.zbft();
     if (!bft_msg.agree_commit()) {
         ZJC_ERROR("BackupCommit gid: %s",
