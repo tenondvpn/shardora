@@ -44,6 +44,7 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
         pool_max_heihgts_[block.pool_index()] = block.height();
     }
 
+    ZJC_DEBUG("to txs new block coming pool: %u, height: %lu, cons height: %lu", block.pool_index(), block.height(), pool_consensus_heihgts_[block.pool_index()]);
     if (pool_consensus_heihgts_[block.pool_index()] + 1 == block.height()) {
         ++pool_consensus_heihgts_[block.pool_index()];
         for (; pool_consensus_heihgts_[block.pool_index()] <= pool_max_heihgts_[block.pool_index()];
