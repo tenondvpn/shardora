@@ -69,6 +69,9 @@ int ToTxLocalItem::HandleTx(
         str_for_hash.append(to_txs.tos(i).des());
         str_for_hash.append((char*)&to_balance, sizeof(to_balance));
         acc_balance_map[to_txs.tos(i).des()] = to_balance;
+        ZJC_DEBUG("add local to: %s, balance: %lu",
+            common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
+            to_balance);
 
     }
 

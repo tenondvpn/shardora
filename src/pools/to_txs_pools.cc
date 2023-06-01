@@ -383,12 +383,15 @@ void ToTxsPools::HandleNormalToTx(
     handled_map_[heights.sharding_id()] = heights_ptr;
     prefix_db_->SaveLatestToTxsHeights(heights, db_batch);
     auto net_iter = network_txs_pools_.find(heights.sharding_id());
-    if (net_iter == network_txs_pools_.end()) {
-        ZJC_DEBUG("no sharding exists.");
-        return;
-    }
-
     for (int32_t i = 0; i < heights.heights_size(); ++i) {
+        if (heights.heights(i) > pool_consensus_heihgts_[i]) {
+            pool_consensus_heihgts_[i] = heights.heights(i);
+        }
+
+        if (net_iter == network_txs_pools_.end()) {
+            continue;;
+        }
+
         auto pool_iter = net_iter->second.find(i);
         if (pool_iter == net_iter->second.end()) {
             continue;
