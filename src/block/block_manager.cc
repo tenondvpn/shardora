@@ -420,7 +420,7 @@ void BlockManager::HandleLocalNormalToTx(
         auto account_info = account_mgr_->GetAccountInfo(thread_idx, addr);
         if (account_info == nullptr) {
             if (step != pools::protobuf::kRootCreateAddressCrossSharding) {
-//                 assert(false);
+                assert(false);
                 continue;
             }
 
