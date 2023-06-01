@@ -80,6 +80,11 @@ static transport::MessagePtr CreateTransactionWithAttr(
     new_tx->set_amount(amount);
     new_tx->set_gas_limit(gas_limit);
     new_tx->set_gas_price(gas_price);
+    std::cout << "tx from: " << common::Encode::HexEncode(security->GetAddress())
+        << " to: " << common::Encode::HexEncode(to)
+        << "gid: " << common::Encode::HexEncode(gid)
+        << " amount: " << amount
+        << std::endl;
     if (!key.empty()) {
         if (key == "create_contract") {
             new_tx->set_step(pools::protobuf::kContractCreate);
@@ -243,7 +248,7 @@ int tx_main(int argc, char** argv) {
             return 1;
         }
 
-        std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << ", tx hash: " << tx_msg_ptr->header.hash64() << std::endl;
+//         std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << ", tx hash: " << tx_msg_ptr->header.hash64() << std::endl;
         if (pos % 1 == 0) {
             ++prikey_pos;
             from_prikey = prikeys[prikey_pos % prikeys.size()];
