@@ -386,6 +386,15 @@ void ToTxsPools::HandleNormalToTx(
     for (int32_t i = 0; i < heights.heights_size(); ++i) {
         if (heights.heights(i) > pool_consensus_heihgts_[i]) {
             pool_consensus_heihgts_[i] = heights.heights(i);
+            for (; pool_consensus_heihgts_[i] <= pool_max_heihgts_[i];
+                ++pool_consensus_heihgts_[i]) {
+                auto iter = added_heights_[i].find(pool_consensus_heihgts_[i] + 1);
+                if (iter == added_heights_[i].end()) {
+                    break;
+                }
+
+                added_heights_[i].erase(iter);
+            }
         }
 
         if (net_iter == network_txs_pools_.end()) {
