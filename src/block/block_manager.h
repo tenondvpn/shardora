@@ -157,7 +157,7 @@ private:
         const pools::protobuf::ElectStatistic& elect_statistic,
         db::DbWriteBatch& db_batch);
 
-    static const uint64_t kCreateToTxPeriodMs = 10000u;
+    static const uint64_t kCreateToTxPeriodMs = 10000lu;
 
     std::shared_ptr<AccountManager> account_mgr_ = nullptr;
     common::ThreadSafeQueue<BlockToDbItemPtr>* consensus_block_queues_ = nullptr;

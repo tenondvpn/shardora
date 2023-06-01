@@ -1030,6 +1030,10 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
             continue;
         }
 
+        if (tmp_tx != nullptr && tmp_tx->tx_hash == tos_hash) {
+            continue;
+        }
+
         auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
         new_msg_ptr->address_info = account_mgr_->pools_address_info(
             heights.sharding_id() % common::kImmutablePoolSize);
@@ -1299,6 +1303,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         return;
     }
 
+    ZJC_DEBUG("now create new to tx: %lu, now tm: %lu", prev_create_to_tx_ms_, now_tm_ms);
     prev_create_to_tx_ms_ = now_tm_ms + kCreateToTxPeriodMs;
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
