@@ -776,9 +776,11 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     }
 
     if (msg_ptr->address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-        ZJC_WARN("sharding error: %d, %d",
+        ZJC_WARN("sharding error id: %s, shard: %d, local shard: %d",
+            common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
             msg_ptr->address_info->sharding_id(),
             common::GlobalInfo::Instance()->network_id());
+        assert(false);
         return false;
     }
 
