@@ -511,9 +511,10 @@ void BlockManager::HandleLocalNormalToTx(
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_DEBUG("success add local transfer tx tos hash: %s, heights_hash: %s",
+        ZJC_DEBUG("success add local transfer tx tos hash: %s, heights_hash: %s, gid: %s",
             common::Encode::HexEncode(tos_hash).c_str(),
-            common::Encode::HexEncode(heights_hash).c_str());
+            common::Encode::HexEncode(heights_hash).c_str(),
+            common::Encode::HexEncode(gid).c_str());
     }
 }
 
