@@ -1007,11 +1007,10 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     auto now_time_ms = common::TimeUtils::TimestampMs();
     for (int32_t i = 0; i < msg_ptr->header.block_proto().to_txs_size(); ++i) {
         auto& heights = msg_ptr->header.block_proto().to_txs(i);
-        // check if is leader
-//         if (to_txs_[heights.sharding_id()] != nullptr) {
-//             ZJC_DEBUG("to txs sharding not consensus yet: %u", heights.sharding_id());
-//             continue;
-//         }
+        if (to_txs_[heights.sharding_id()] != nullptr) {
+            ZJC_DEBUG("to txs sharding not consensus yet: %u", heights.sharding_id());
+            continue;
+        }
 
         std::string tos_hash;
         if (to_txs_pool_->CreateToTxWithHeights(
