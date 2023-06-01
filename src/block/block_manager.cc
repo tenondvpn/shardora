@@ -491,7 +491,7 @@ void BlockManager::HandleLocalNormalToTx(
             str_for_hash.append((char*)&amount, sizeof(amount));
             ZJC_DEBUG("heights_hash: %s, ammount success add local transfer to %s, %lu",
                 common::Encode::HexEncode(heights_hash).c_str(),
-                common::Encode::HexEncode(iter->first).c_str(), iter->second.first);
+                common::Encode::HexEncode(iter->second.tos(i).des()).c_str(), amount);
         }
 
         auto val = iter->second.SerializeAsString();
