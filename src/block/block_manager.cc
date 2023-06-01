@@ -1012,9 +1012,10 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     auto now_time_ms = common::TimeUtils::TimestampMs();
     for (int32_t i = 0; i < msg_ptr->header.block_proto().to_txs_size(); ++i) {
         auto& heights = msg_ptr->header.block_proto().to_txs(i);
-        if (to_txs_[heights.sharding_id()] != nullptr &&
-                to_txs_[heights.sharding_id()]->tx_ptr->in_consensus &&
-                to_txs_[heights.sharding_id()]->tx_ptr->timeout > now_time_ms) {
+        auto tmp_tx = to_txs_[heights.sharding_id()];
+        if (tmp_tx != nullptr &&
+                tmp_tx->tx_ptr->in_consensus &&
+                tmp_tx->tx_ptr->timeout > now_time_ms) {
             ZJC_DEBUG("to txs sharding not consensus yet: %u", heights.sharding_id());
             continue;
         }
