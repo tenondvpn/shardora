@@ -102,7 +102,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
     transport::TcpTransport::Instance()->SetMessageHash(msg, 0);
     std::cout << "tx from: " << common::Encode::HexEncode(security->GetAddress())
         << " to: " << common::Encode::HexEncode(to)
-        << "gid: " << common::Encode::HexEncode(gid)
+        << " gid: " << common::Encode::HexEncode(gid)
         << " amount: " << amount
         << " hash64: " << msg.hash64()
         << std::endl;
