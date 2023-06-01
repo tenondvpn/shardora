@@ -334,6 +334,7 @@ void BlockManager::HandleNormalToTx(
             return;
         }
 
+        ZJC_DEBUG("success add local transfer tx tos hash: %s", common::Encode::HexEncode(tx.storages(0).val_hash()).c_str());
         HandleLocalNormalToTx(thread_idx, to_txs, tx.step(), tx.storages(0).val_hash());
     } else {
         RootHandleNormalToTx(thread_idx, block.height(), to_txs, db_batch);
@@ -488,6 +489,9 @@ void BlockManager::HandleLocalNormalToTx(
             str_for_hash.append((char*)&pool_idx, sizeof(pool_idx));
             uint64_t amount = iter->second.tos(i).amount();
             str_for_hash.append((char*)&amount, sizeof(amount));
+            ZJC_DEBUG("heights_hash: %s, ammount success add local transfer to %s, %lu",
+                common::Encode::HexEncode(heights_hash).c_str(),
+                common::Encode::HexEncode(iter->first).c_str(), iter->second.first);
         }
 
         auto val = iter->second.SerializeAsString();
@@ -507,6 +511,9 @@ void BlockManager::HandleLocalNormalToTx(
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
         pools_mgr_->HandleMessage(msg_ptr);
+        ZJC_DEBUG("success add local transfer tx tos hash: %s, heights_hash: %s",
+            common::Encode::HexEncode(tos_hash).c_str(),
+            common::Encode::HexEncode(heights_hash).c_str());
     }
 }
 
