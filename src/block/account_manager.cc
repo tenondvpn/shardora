@@ -204,8 +204,10 @@ void AccountManager::HandleLocalToTx(
 
         auto account_info = GetAccountInfo(thread_idx, to_txs.tos(i).to());
         if (account_info == nullptr) {
-            ZJC_INFO("get address info failed create new address to this shard: %s",
-                common::Encode::HexEncode(to_txs.tos(i).to()).c_str());
+            ZJC_INFO("0 get address info failed create new address to this id: %s,"
+                "shard: %s, local shard: %u",
+                common::Encode::HexEncode(to_txs.tos(i).to()).c_str(), block.network_id(),
+                common::GlobalInfo::Instance()->network_id());
             account_info = std::make_shared<address::protobuf::AddressInfo>();
             account_info->set_pool_index(block.pool_index());
             account_info->set_addr(to_txs.tos(i).to());
@@ -250,6 +252,11 @@ void AccountManager::HandleContractCreateUserCall(
             account_info->set_bytes_code(bytes_code);
             address_map_[thread_idx].add(tx.to(), account_info);
             prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
+            ZJC_INFO("1 get address info failed create new address to this id: %s,"
+                "shard: %s, local shard: %u",
+                common::Encode::HexEncode(tx.to()).c_str(), block.network_id(),
+                common::GlobalInfo::Instance()->network_id());
+
             ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
                 common::Encode::HexEncode(tx.to()).c_str(),
                 tx.amount(),
@@ -315,6 +322,11 @@ void AccountManager::HandleRootCreateAddressTx(
     account_info->set_balance(0);  // root address balance invalid
     address_map_[thread_idx].add(tx.to(), account_info);
     prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
+    ZJC_INFO("2 get address info failed create new address to this id: %s,"
+        "shard: %s, local shard: %u",
+        common::Encode::HexEncode(tx.to()).c_str(), sharding_id,
+        common::GlobalInfo::Instance()->network_id());
+
     ZJC_DEBUG("create root address direct: %s, sharding: %u, pool index: %u",
         common::Encode::HexEncode(tx.to()).c_str(),
         sharding_id,
@@ -365,6 +377,11 @@ void AccountManager::HandleJoinElectTx(
         account_info->set_elect_pos(join_info.member_idx());
         address_map_[thread_idx].add(tx.from(), account_info);
         prefix_db_->AddAddressInfo(tx.from(), *account_info);
+        ZJC_INFO("3 get address info failed create new address to this id: %s,"
+            "shard: %s, local shard: %u",
+            common::Encode::HexEncode(tx.from()).c_str(), block.network_id(),
+            common::GlobalInfo::Instance()->network_id());
+
     } else {
         account_info->set_latest_height(block.height());
         account_info->set_balance(tx.balance());
