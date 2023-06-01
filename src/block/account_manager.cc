@@ -205,7 +205,7 @@ void AccountManager::HandleLocalToTx(
         auto account_info = GetAccountInfo(thread_idx, to_txs.tos(i).to());
         if (account_info == nullptr) {
             ZJC_INFO("0 get address info failed create new address to this id: %s,"
-                "shard: %s, local shard: %u",
+                "shard: %u, local shard: %u",
                 common::Encode::HexEncode(to_txs.tos(i).to()).c_str(), block.network_id(),
                 common::GlobalInfo::Instance()->network_id());
             account_info = std::make_shared<address::protobuf::AddressInfo>();
@@ -253,7 +253,7 @@ void AccountManager::HandleContractCreateUserCall(
             address_map_[thread_idx].add(tx.to(), account_info);
             prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
             ZJC_INFO("1 get address info failed create new address to this id: %s,"
-                "shard: %s, local shard: %u",
+                "shard: %u, local shard: %u",
                 common::Encode::HexEncode(tx.to()).c_str(), block.network_id(),
                 common::GlobalInfo::Instance()->network_id());
 
@@ -323,7 +323,7 @@ void AccountManager::HandleRootCreateAddressTx(
     address_map_[thread_idx].add(tx.to(), account_info);
     prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
     ZJC_INFO("2 get address info failed create new address to this id: %s,"
-        "shard: %s, local shard: %u",
+        "shard: %u, local shard: %u",
         common::Encode::HexEncode(tx.to()).c_str(), sharding_id,
         common::GlobalInfo::Instance()->network_id());
 
@@ -378,7 +378,7 @@ void AccountManager::HandleJoinElectTx(
         address_map_[thread_idx].add(tx.from(), account_info);
         prefix_db_->AddAddressInfo(tx.from(), *account_info);
         ZJC_INFO("3 get address info failed create new address to this id: %s,"
-            "shard: %s, local shard: %u",
+            "shard: %u, local shard: %u",
             common::Encode::HexEncode(tx.from()).c_str(), block.network_id(),
             common::GlobalInfo::Instance()->network_id());
 
