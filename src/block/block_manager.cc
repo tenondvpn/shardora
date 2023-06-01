@@ -95,7 +95,9 @@ void BlockManager::OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& mem
         max_consensus_sharding_id_ = sharding_id;
     }
 
-    if (sharding_id == common::GlobalInfo::Instance()->network_id()) {
+    if (sharding_id == common::GlobalInfo::Instance()->network_id() ||
+            sharding_id + network::kConsensusWaitingShardOffset ==
+            common::GlobalInfo::Instance()->network_id()) {
         for (auto iter = members->begin(); iter != members->end(); ++iter) {
             if ((*iter)->pool_index_mod_num == 0) {
                 to_tx_leader_ = *iter;
@@ -1010,7 +1012,9 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     auto now_time_ms = common::TimeUtils::TimestampMs();
     for (int32_t i = 0; i < msg_ptr->header.block_proto().to_txs_size(); ++i) {
         auto& heights = msg_ptr->header.block_proto().to_txs(i);
-        if (to_txs_[heights.sharding_id()] != nullptr) {
+        if (to_txs_[heights.sharding_id()] != nullptr &&
+                to_txs_[heights.sharding_id()]->tx_ptr->in_consensus &&
+                to_txs_[heights.sharding_id()]->tx_ptr->timeout > now_tm) {
             ZJC_DEBUG("to txs sharding not consensus yet: %u", heights.sharding_id());
             continue;
         }
