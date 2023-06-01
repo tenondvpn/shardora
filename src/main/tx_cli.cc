@@ -80,11 +80,6 @@ static transport::MessagePtr CreateTransactionWithAttr(
     new_tx->set_amount(amount);
     new_tx->set_gas_limit(gas_limit);
     new_tx->set_gas_price(gas_price);
-    std::cout << "tx from: " << common::Encode::HexEncode(security->GetAddress())
-        << " to: " << common::Encode::HexEncode(to)
-        << "gid: " << common::Encode::HexEncode(gid)
-        << " amount: " << amount
-        << std::endl;
     if (!key.empty()) {
         if (key == "create_contract") {
             new_tx->set_step(pools::protobuf::kContractCreate);
@@ -105,6 +100,12 @@ static transport::MessagePtr CreateTransactionWithAttr(
     }
 
     transport::TcpTransport::Instance()->SetMessageHash(msg, 0);
+    std::cout << "tx from: " << common::Encode::HexEncode(security->GetAddress())
+        << " to: " << common::Encode::HexEncode(to)
+        << "gid: " << common::Encode::HexEncode(gid)
+        << " amount: " << amount
+        << " hash64: " << msg.hash64()
+        << std::endl;
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign;
     if (security->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
