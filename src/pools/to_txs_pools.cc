@@ -35,7 +35,9 @@ ToTxsPools::ToTxsPools(
 ToTxsPools::~ToTxsPools() {}
 
 void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch& db_batch) {
-    if (block.network_id() != common::GlobalInfo::Instance()->network_id()) {
+    if (block.network_id() != common::GlobalInfo::Instance()->network_id() &&
+            block.network_id() + network::kConsensusWaitingShardOffset !=
+            common::GlobalInfo::Instance()->network_id()) {
         ZJC_DEBUG("network invalid!");
         return;
     }
