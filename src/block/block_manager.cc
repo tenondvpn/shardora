@@ -420,7 +420,10 @@ void BlockManager::HandleLocalNormalToTx(
         auto account_info = account_mgr_->GetAccountInfo(thread_idx, addr);
         if (account_info == nullptr) {
             if (step != pools::protobuf::kRootCreateAddressCrossSharding) {
-                assert(false);
+//                 assert(false);
+                ZJC_WARN("failed add local transfer tx tos heights_hash: %s, id: %s",
+                    common::Encode::HexEncode(heights_hash).c_str(),
+                    common::Encode::HexEncode(addr).c_str());
                 continue;
             }
 
