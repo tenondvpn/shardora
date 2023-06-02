@@ -973,7 +973,7 @@ void BftManager::CreateResponseMessage(
             assert(msg_ptr->response->header.has_broadcast());
             network::Route::Instance()->Send(msg_ptr->response);
             ZJC_DEBUG("leader broadcast bft message prepare gid: %s, hash64: %lu",
-                common::Encode::HexEncode(msg_ptr->response.zbft().prepare_gid()).c_str(),
+                common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
                 msg_ptr->response.hash64());
         } else {
             transport::TcpTransport::Instance()->Send(
@@ -981,8 +981,8 @@ void BftManager::CreateResponseMessage(
                 msg_ptr->conn,
                 msg_ptr->response->header);
             ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu",
-                common::Encode::HexEncode(msg_ptr->response.zbft().prepare_gid()).c_str(),
-                msg_ptr->response.hash64(),
+                common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
+                msg_ptr->response->header.hash64(),
                 msg_ptr->header.hash64());
         }
 #endif
