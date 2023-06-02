@@ -203,12 +203,13 @@ void BlockManager::GenesisAddAllAccount(
         account_info->set_pool_index(common::GetAddressPoolIndex(account_id));
         account_info->set_addr(account_id);
         account_info->set_type(address::protobuf::kNormal);
-        account_info->set_sharding_id(block_item->network_id());
+        account_info->set_sharding_id(des_sharding_id);
         account_info->set_latest_height(block_item->height());
         account_info->set_balance(tx_list[i].balance());
-        ZJC_DEBUG("genesis add new account %s : %lu",
+        ZJC_DEBUG("genesis add new account %s : %lu, shard: %u",
             common::Encode::HexEncode(account_info->addr()).c_str(),
-            account_info->balance());
+            account_info->balance(),
+            des_sharding_id);
         prefix_db_->AddAddressInfo(account_info->addr(), *account_info, db_batch);
     }
 }
