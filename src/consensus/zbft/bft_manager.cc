@@ -1440,7 +1440,14 @@ int BftManager::CheckPrecommit(
 
     auto bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
     if (bft_ptr == nullptr) {
-        ZJC_DEBUG("failed no bft Backup CheckPrecommit: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+        ZJC_DEBUG("failed no bft Backup CheckPrecommit: %s",
+            common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+        return kConsensusError;
+    }
+
+    if (bft_ptr->leader_index() != bft_msg.member_index()) {
+        ZJC_DEBUG("leader changed failed CheckPrecommit: %s",
+            common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
         return kConsensusError;
     }
 

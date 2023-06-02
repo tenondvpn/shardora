@@ -187,7 +187,6 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
     // all key value must temp kv
     db::DbWriteBatch db_batch;
     SaveKeyValue(msg_ptr->header, db_batch);
-    ZJC_DEBUG("put 6");
     if (!db_->Put(db_batch).ok()) {
         ZJC_FATAL("save db failed!");
         return;
