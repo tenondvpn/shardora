@@ -43,6 +43,8 @@ public:
     void OnNewCrossBlock(
             uint8_t thread_idx,
             const std::shared_ptr<block::protobuf::Block>& block_item) {
+        ZJC_DEBUG("new cross block coming net: %u, pool: %u, height: %lu",
+            block_item->network_id(), block_item->pool_index(), block_item->height());
         if (block_item->pool_index() != common::kRootChainPoolIndex) {
             return;
         }
@@ -61,6 +63,8 @@ public:
         }
 
         cross_pools_[index].UpdateLatestInfo(thread_idx, block_item->height());
+        ZJC_DEBUG("succcess update cross block latest info net: %u, pool: %u, height: %lu",
+            block_item->network_id(), block_item->pool_index(), block_item->height());
     }
 
     void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, const common::MembersPtr& members) {
