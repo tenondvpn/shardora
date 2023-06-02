@@ -1440,6 +1440,7 @@ int BftManager::CheckPrecommit(
 
     auto bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
     if (bft_ptr == nullptr) {
+        ZJC_DEBUG("failed no bft Backup CheckPrecommit: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
         return kConsensusError;
     }
 
@@ -1459,7 +1460,7 @@ int BftManager::CheckPrecommit(
                 bft_msg.precommit_gid());
         }
 
-//         ZJC_DEBUG("Backup CheckPrecommit: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+        ZJC_DEBUG("Backup CheckPrecommit: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
 #ifdef ZJC_UNITTEST
         if (test_for_precommit_evil_) {
             ZJC_ERROR("1 bft backup precommit failed! not agree bft gid: %s",
@@ -1616,7 +1617,9 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
 
         if (bft_ptr == nullptr || !bft_ptr->BackupCheckLeaderValid(&bft_msg)) {
             // oppose
-//             ZJC_DEBUG("create bft ptr failed!");
+            ZJC_DEBUG("create bft ptr failed backup create consensus bft gid: %s, tx size: %d",
+                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+                bft_ptr->txs_ptr()->txs.size());
             return;
         }
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -1636,19 +1639,19 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             return;
         }
 #endif
-//         ZJC_DEBUG("backup create consensus bft prepare hash: %s, gid: %s, tx size: %d",
-//             common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-//             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-//             bft_ptr->txs_ptr()->txs.size());
+        ZJC_DEBUG("backup create consensus bft prepare hash: %s, gid: %s, tx size: %d",
+            common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+            bft_ptr->txs_ptr()->txs.size());
         if (!bft_ptr->local_prepare_hash().empty()) {
-//             ZJC_DEBUG("backup create consensus bft prepare hash: %s, prehash: %s, leader prehash: %s, pre height: %lu, leader pre height: %lu, gid: %s, tx size: %d",
-//                 common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-//                 common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
-//                 common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
-//                 bft_ptr->prepare_block()->height(),
-//                 bft_msg.prepare_height(),
-//                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-//                 bft_ptr->txs_ptr()->txs.size());
+            ZJC_DEBUG("backup create consensus bft prepare hash: %s, prehash: %s, leader prehash: %s, pre height: %lu, leader pre height: %lu, gid: %s, tx size: %d",
+                common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+                common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
+                common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
+                bft_ptr->prepare_block()->height(),
+                bft_msg.prepare_height(),
+                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+                bft_ptr->txs_ptr()->txs.size());
 //             if (!bft_msg.prepare_hash().empty() && bft_ptr->prepare_block()->prehash() != bft_msg.prepare_hash()) {
 //                 assert(false);
 //             }
@@ -1663,7 +1666,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         bft_vec[0] = bft_ptr;
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-        //         ZJC_DEBUG("BackupPrepare success: %s", common::Encode::HexEncode(bft_vec[0]->gid()).c_str());
+        ZJC_DEBUG("BackupPrepare success: %s", common::Encode::HexEncode(bft_vec[0]->gid()).c_str());
         return;
     }
 
