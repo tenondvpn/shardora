@@ -317,6 +317,8 @@ void ToTxsPools::AddTxToMap(
     }
     
     height_iter->second[to].amount += amount;
+    ZJC_DEBUG("success add block pool: %u, height: %lu, id: %s, amount: %lu, all amount: %lu, step: %u",
+        block.pool_index(), block.height(), common::Encode::HexEncode(to).c_str(), amount, height_iter->second[to].amount, type);
 }
 
 void ToTxsPools::HandleNormalToTx(
