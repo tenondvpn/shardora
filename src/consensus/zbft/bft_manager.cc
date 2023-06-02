@@ -974,7 +974,7 @@ void BftManager::CreateResponseMessage(
             network::Route::Instance()->Send(msg_ptr->response);
             ZJC_DEBUG("leader broadcast bft message prepare gid: %s, hash64: %lu",
                 common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
-                msg_ptr->response.hash64());
+                msg_ptr->response->header.hash64());
         } else {
             transport::TcpTransport::Instance()->Send(
                 msg_ptr->thread_idx,
