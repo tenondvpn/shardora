@@ -311,6 +311,7 @@ void NetworkInit::NotifyRotationLeader(
         int32_t pool_mod_index,
         uint32_t old_leader_idx,
         uint32_t new_leader_idx) {
+    ZJC_DEBUG("now rotation leader.");
 }
 
 void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {

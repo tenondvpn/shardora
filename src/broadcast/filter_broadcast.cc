@@ -94,6 +94,10 @@ std::vector<dht::NodePtr> FilterBroadcast::GetlayerNodes(
     uint32_t neighbor_count = GetNeighborCount(message);
     for (uint32_t i = 0; i < pos_vec.size(); ++i) {
         if (bloomfilter->Contain((*hash_order_dht)[pos_vec[i]]->id_hash)) {
+            ZJC_DEBUG("bloom filtered: %s:%d, %lu",
+                (*hash_order_dht)[pos_vec[i]]->public_ip.c_str(),
+                (*hash_order_dht)[pos_vec[i]]->public_port,
+                (*hash_order_dht)[pos_vec[i]]->id_hash);
             continue;
         }
 
@@ -136,6 +140,10 @@ std::vector<dht::NodePtr> FilterBroadcast::GetRandomFilterNodes(
     uint32_t neighbor_count = GetNeighborCount(message);
     for (uint32_t i = 0; i < pos_vec.size(); ++i) {
         if (bloomfilter->Contain((*readobly_dht)[pos_vec[i]]->id_hash)) {
+            ZJC_DEBUG("bloom filtered: %s:%d, %lu",
+                (*readobly_dht)[pos_vec[i]]->public_ip.c_str(),
+                (*readobly_dht)[pos_vec[i]]->public_port,
+                (*readobly_dht)[pos_vec[i]]->id_hash);
             continue;
         }
 
