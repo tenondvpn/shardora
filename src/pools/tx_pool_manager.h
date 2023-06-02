@@ -49,7 +49,7 @@ public:
             return;
         }
 
-        if (cross_pools_ == nullptr || block_item->network_id() >= max_cross_pools_size_) {
+        if (cross_pools_ == nullptr) {
             return;
         }
 
@@ -60,6 +60,11 @@ public:
             if (block_item->network_id() != network::kRootCongressNetworkId) {
                 return;
             }
+        }
+
+        if (index >= max_cross_pools_size_) {
+            assert(false);
+            return;
         }
 
         cross_pools_[index].UpdateLatestInfo(thread_idx, block_item->height());
