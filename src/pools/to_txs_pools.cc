@@ -317,8 +317,8 @@ void ToTxsPools::AddTxToMap(
     }
     
     height_iter->second[to].amount += amount;
-    ZJC_DEBUG("success add block pool: %u, height: %lu, id: %s, amount: %lu, all amount: %lu, step: %u",
-        block.pool_index(), block.height(), common::Encode::HexEncode(to).c_str(), amount, height_iter->second[to].amount, type);
+    ZJC_DEBUG("to block pool: %u, height: %lu, success add block pool: %u, height: %lu, id: %s, amount: %lu, all amount: %lu, step: %u",
+        block.pool_index(), block.height(), block.pool_index(), block.height(), common::Encode::HexEncode(to).c_str(), amount, height_iter->second[to].amount, type);
 }
 
 void ToTxsPools::HandleNormalToTx(
@@ -416,7 +416,8 @@ void ToTxsPools::HandleNormalToTx(
                 break;
             }
 
-//             ZJC_DEBUG("erase sharding: %u, height: %lu", heights.sharding_id(), height_iter->first);
+            ZJC_DEBUG("to block pool: %u, height: %lu, erase sharding: %u, pool: %u, height: %lu",
+                i, height_iter->first, heights.sharding_id(), i, height_iter->first);
             pool_iter->second.erase(height_iter++);
         }
     }
@@ -610,7 +611,8 @@ int ToTxsPools::CreateToTxWithHeights(
 
             for (auto to_iter = hiter->second.begin();
                     to_iter != hiter->second.end(); ++to_iter) {
-                ZJC_DEBUG("success add account transfer amount height: %lu, id: %s, amount: %lu",
+                ZJC_DEBUG("to block pool: %u, height: %lu, success add account transfer amount height: %lu, id: %s, amount: %lu",
+                    pool_idx, height,
                     height, common::Encode::HexEncode(to_iter->first).c_str(), to_iter->second.amount);
                 auto amount_iter = acc_amount_map.find(to_iter->first);
                 if (amount_iter == acc_amount_map.end()) {
