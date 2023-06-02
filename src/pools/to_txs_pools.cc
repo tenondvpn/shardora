@@ -608,6 +608,8 @@ int ToTxsPools::CreateToTxWithHeights(
 
             for (auto to_iter = hiter->second.begin();
                     to_iter != hiter->second.end(); ++to_iter) {
+                ZJC_DEBUG("success add account transfer amount height: %lu, id: %s, amount: %lu",
+                    height, common::Encode::HexEncode(to_iter->first).c_str(), to_iter->second.amount);
                 auto amount_iter = acc_amount_map.find(to_iter->first);
                 if (amount_iter == acc_amount_map.end()) {
                     ZJC_DEBUG("len: %u, addr: %s",
