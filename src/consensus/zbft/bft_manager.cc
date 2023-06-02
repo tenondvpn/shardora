@@ -972,11 +972,18 @@ void BftManager::CreateResponseMessage(
 
             assert(msg_ptr->response->header.has_broadcast());
             network::Route::Instance()->Send(msg_ptr->response);
+            ZJC_DEBUG("leader broadcast bft message prepare gid: %s, hash64: %lu",
+                common::Encode::HexEncode(msg_ptr->response.zbft().prepare_gid()).c_str(),
+                msg_ptr->response.hash64());
         } else {
             transport::TcpTransport::Instance()->Send(
                 msg_ptr->thread_idx,
                 msg_ptr->conn,
                 msg_ptr->response->header);
+            ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu",
+                common::Encode::HexEncode(msg_ptr->response.zbft().prepare_gid()).c_str(),
+                msg_ptr->response.hash64(),
+                msg_ptr->header.hash64());
         }
 #endif
     } else {
@@ -1578,10 +1585,10 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         return;
     }
 
-//     ZJC_DEBUG("prepare gid: %s, precommit gid: %s, commit gid: %s",
-//         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-//         common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
-//         common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
+    ZJC_DEBUG("prepare gid: %s, precommit gid: %s, commit gid: %s",
+        common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+        common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
+        common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
     msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_msg.pool_index());
     if (bft_msg.has_prepare_gid() && !bft_msg.prepare_gid().empty()) {
         msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
