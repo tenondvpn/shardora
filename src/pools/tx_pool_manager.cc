@@ -304,32 +304,32 @@ void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) 
     auto begin_pool = prev_synced_pool_index_;
     for (; prev_synced_pool_index_ < common::kInvalidPoolIndex; ++prev_synced_pool_index_) {
         auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(thread_idx, now_tm_ms);
-        if (res > 0) {
-            ++prev_synced_pool_index_;
-            return;
-        }
-
         if (tx_pool_[prev_synced_pool_index_].latest_height() == common::kInvalidUint64 ||
                 tx_pool_[prev_synced_pool_index_].latest_height() <
                 synced_max_heights_[prev_synced_pool_index_]) {
             SyncBlockWithMaxHeights(
                 thread_idx, prev_synced_pool_index_, synced_max_heights_[prev_synced_pool_index_]);
         }
+
+        if (res > 0) {
+            ++prev_synced_pool_index_;
+            return;
+        }
     }
 
     for (prev_synced_pool_index_ = 0;
             prev_synced_pool_index_ < begin_pool; ++prev_synced_pool_index_) {
         auto res = tx_pool_[prev_synced_pool_index_].SyncMissingBlocks(thread_idx, now_tm_ms);
-        if (res > 0) {
-            ++prev_synced_pool_index_;
-            return;
-        }
-
         if (tx_pool_[prev_synced_pool_index_].latest_height() == common::kInvalidUint64 || 
                 tx_pool_[prev_synced_pool_index_].latest_height() <
                 synced_max_heights_[prev_synced_pool_index_]) {
             SyncBlockWithMaxHeights(
                 thread_idx, prev_synced_pool_index_, synced_max_heights_[prev_synced_pool_index_]);
+        }
+
+        if (res > 0) {
+            ++prev_synced_pool_index_;
+            return;
         }
     }
 }
