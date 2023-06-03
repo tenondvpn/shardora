@@ -145,7 +145,6 @@ private:
         uint64_t height,
         pools::protobuf::ToTxMessage& to_txs,
         db::DbWriteBatch& db_batch);
-    void CreateNewAddress();
     void HandleStatisticBlock(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
@@ -160,6 +159,7 @@ private:
 
     static const uint64_t kCreateToTxPeriodMs = 10000lu;
     static const uint64_t kRetryStatisticPeriod = 3000lu;
+//     static const uint64_t kRetryToTxPeriod = 3000lu;
 
     std::shared_ptr<AccountManager> account_mgr_ = nullptr;
     common::ThreadSafeQueue<BlockToDbItemPtr>* consensus_block_queues_ = nullptr;
@@ -196,6 +196,7 @@ private:
     transport::MultiThreadHandler& net_handler_;
     block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
     std::shared_ptr<pools::protobuf::ToTxHeights> statistic_heights_ptr_ = nullptr;
+//     std::shared_ptr<pools::protobuf::ToTxHeights> to_tx_heights_ptr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };
