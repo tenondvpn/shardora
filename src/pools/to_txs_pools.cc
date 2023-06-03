@@ -377,15 +377,15 @@ void ToTxsPools::HandleNormalToTx(
     ZJC_DEBUG("new to tx coming: %lu, sharding id: %u", block.height(), heights.sharding_id());
     auto handled_iter = handled_map_.find(heights.sharding_id());
     if (handled_iter != handled_map_.end()) {
-        if (handled_iter->second->block_height() >= block.height()) {
-            ZJC_WARN("block_height failed: %lu, %lu!",
-                handled_iter->second->block_height(), block.height());
-            return;
+        if (handled_iter->second->block_height() < block.height()) {
+            handled_map_[heights.sharding_id()] = heights_ptr;
+            prefix_db_->SaveLatestToTxsHeights(heights, db_batch);
         }
+    } else {
+        handled_map_[heights.sharding_id()] = heights_ptr;
+        prefix_db_->SaveLatestToTxsHeights(heights, db_batch);
     }
 
-    handled_map_[heights.sharding_id()] = heights_ptr;
-    prefix_db_->SaveLatestToTxsHeights(heights, db_batch);
     auto net_iter = network_txs_pools_.find(heights.sharding_id());
     for (int32_t i = 0; i < heights.heights_size(); ++i) {
         if (heights.heights(i) > pool_consensus_heihgts_[i]) {
