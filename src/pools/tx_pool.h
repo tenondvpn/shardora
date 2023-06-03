@@ -75,7 +75,7 @@ public:
         return txs_items;
     }
 
-    uint64_t latest_height() const {
+    uint64_t latest_height() {
         if (latest_height_ == common::kInvalidUint64) {
             InitLatestInfo();
         }
@@ -84,7 +84,7 @@ public:
         return latest_height_;
     }
 
-    std::string latest_hash() const {
+    std::string& latest_hash() {
         if (latest_hash_.empty()) {
             InitLatestInfo();
         }
