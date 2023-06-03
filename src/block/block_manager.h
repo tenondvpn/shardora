@@ -156,8 +156,10 @@ private:
         const block::protobuf::BlockTx& tx,
         const pools::protobuf::ElectStatistic& elect_statistic,
         db::DbWriteBatch& db_batch);
+    void StatisticWithLeaderHeights(const pools::protobuf::ToTxHeights& heights, bool retry);
 
     static const uint64_t kCreateToTxPeriodMs = 10000lu;
+    static const uint64_t kRetryStatisticPeriod = 3000lu;
 
     std::shared_ptr<AccountManager> account_mgr_ = nullptr;
     common::ThreadSafeQueue<BlockToDbItemPtr>* consensus_block_queues_ = nullptr;
@@ -168,6 +170,7 @@ private:
     std::shared_ptr<security::Security> security_ = nullptr;
     uint64_t prev_create_to_tx_ms_ = 0;
     uint64_t prev_create_statistic_tx_ms_ = 0;
+    uint64_t prev_retry_create_statistic_tx_ms_ = 0;
     common::BftMemberPtr to_tx_leader_ = nullptr;
     uint32_t max_consensus_sharding_id_ = 3;
     std::string local_id_;
@@ -192,6 +195,7 @@ private:
         std::shared_ptr<pools::protobuf::ElectStatistic>>> shard_timeblock_statistic_;
     transport::MultiThreadHandler& net_handler_;
     block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
+    std::shared_ptr<pools::protobuf::ToTxHeights> statistic_heights_ptr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

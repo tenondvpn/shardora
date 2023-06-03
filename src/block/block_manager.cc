@@ -593,6 +593,17 @@ void BlockManager::AddNewBlock(
         }
     }
 
+    if (block_item->network_id() == common::GlobalInfo::Instance()->network_id() || 
+            block_item->network_id() + network::kConsensusWaitingShardOffset ==
+            common::GlobalInfo::Instance()->network_id()) {
+        auto now_tm_ms = common::TimeUtils::TimestampMs();
+        if (statistic_heights_ptr_ != nullptr && prev_retry_create_statistic_tx_ms_ < now_tm_ms) {
+            auto tmp_ptr = statistic_heights_ptr_;
+            StatisticWithLeaderHeights(*tmp_ptr, true);
+            prev_retry_create_statistic_tx_ms_ = now_tm_ms + kRetryStatisticPeriod;
+        }
+    }
+            
     net_handler_.BlockSaved(*block_item);
     auto st = db_->Put(db_batch);
     ZJC_DEBUG("put 0");
@@ -828,12 +839,11 @@ int BlockManager::GetBlockWithHeight(
     return kBlockSuccess;
 }
 
-void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) {
-    if (create_statistic_tx_cb_ == nullptr || msg_ptr == nullptr) {
+void BlockManager::StatisticWithLeaderHeights(const pools::protobuf::ToTxHeights& heights, bool retry) {
+     if (create_statistic_tx_cb_ == nullptr || msg_ptr == nullptr) {
         return;
     }
 
-    auto& heights = msg_ptr->header.block_proto().shard_statistic_tx();
     std::string statistic_hash;
     std::string cross_hash;
     if (statistic_mgr_->StatisticWithHeights(
@@ -841,8 +851,13 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
             &statistic_hash,
             &cross_hash) != pools::kPoolsSuccess) {
         ZJC_DEBUG("error to txs sharding create statistic tx");
+        if (!retry) {
+            statistic_heights_ptr_ = std::make_shared<pools::protobuf::ToTxHeights>(heights);
+        }
+
         return;
     }
+
 
     if (!statistic_hash.empty()) {
         auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -889,6 +904,12 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
         cross_statistic_tx_ = tx_ptr;
         ZJC_DEBUG("success add cross tx: %s", common::Encode::HexEncode(cross_hash).c_str());
     }
+
+    statistic_heights_ptr_ = nullptr;
+}
+
+void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) {
+    StatisticWithLeaderHeights(msg_ptr->header.to_tx_heights(), false);
 }
 
 void BlockManager::RootCreateCrossTx(
