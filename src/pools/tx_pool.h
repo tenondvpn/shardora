@@ -76,10 +76,20 @@ public:
     }
 
     uint64_t latest_height() const {
+        if (latest_height_ == common::kInvalidUint64) {
+            InitLatestInfo();
+        }
+
+        assert(latest_height_ != common::kInvalidUint64);
         return latest_height_;
     }
 
     std::string latest_hash() const {
+        if (latest_hash_.empty()) {
+            InitLatestInfo();
+        }
+
+        assert(!latest_hash_.empty());
         return latest_hash_;
     }
 
