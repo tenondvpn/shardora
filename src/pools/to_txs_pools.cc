@@ -593,8 +593,11 @@ int ToTxsPools::CreateToTxWithHeights(
 
         uint64_t max_height = leader_to_heights.heights(pool_idx);
         if (max_height > pool_consensus_heihgts_[pool_idx]) {
-            ZJC_DEBUG("pool %u, invalid height: %lu, consensus height: %lu",
-                pool_idx, max_height, pool_consensus_heihgts_[pool_idx]);
+            ZJC_DEBUG("pool %u, invalid height: %lu, consensus height: %lu, found: %d",
+                pool_idx,
+                max_height,
+                pool_consensus_heihgts_[pool_idx],
+                handled_iter != handled_map_.end());
             return kPoolsError;
         }
 
