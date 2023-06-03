@@ -909,7 +909,7 @@ void BlockManager::StatisticWithLeaderHeights(const pools::protobuf::ToTxHeights
 }
 
 void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) {
-    StatisticWithLeaderHeights(msg_ptr->header.to_tx_heights(), false);
+    StatisticWithLeaderHeights(msg_ptr->header.block_proto().shard_statistic_tx(), false);
 }
 
 void BlockManager::RootCreateCrossTx(
