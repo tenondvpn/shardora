@@ -840,7 +840,7 @@ int BlockManager::GetBlockWithHeight(
 }
 
 void BlockManager::StatisticWithLeaderHeights(const pools::protobuf::ToTxHeights& heights, bool retry) {
-     if (create_statistic_tx_cb_ == nullptr || msg_ptr == nullptr) {
+     if (create_statistic_tx_cb_ == nullptr) {
         return;
     }
 
