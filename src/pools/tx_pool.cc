@@ -85,7 +85,7 @@ uint32_t TxPool::SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms) {
         }
 
         for (uint32_t i = 0; i < invalid_heights.size(); ++i) {
-            if (prefix_db_->BlockExists(des_sharding_id_, pool_index_, invalid_heights[i])) {
+            if (prefix_db_->BlockExists(net_id, pool_index_, invalid_heights[i])) {
                 height_tree_ptr_->Set(invalid_heights[i]);
                 ZJC_DEBUG("pool exists des shard: %u, pool: %u, sync missing blocks latest height: %lu,"
                     "invaid heights size: %u, height: %lu",
