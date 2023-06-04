@@ -1797,7 +1797,8 @@ int BftManager::LeaderHandleZbftMessage(
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
                 msg_ptr->response->header.mutable_zbft()->set_prepare_gid(bft_msg.prepare_gid());
                 msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
-                ZJC_INFO("precommit call oppose now gid: %s, prepare hash: %s",
+                ZJC_INFO("precommit call oppose now step: %d, gid: %s, prepare hash: %s",
+                    bft_ptr->txs_ptr()->tx_type,
                     common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
                     common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
                 // just all consensus rollback

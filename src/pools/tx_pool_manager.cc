@@ -107,11 +107,6 @@ void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
     auto begin_pool = prev_cross_sync_index_;
     for (; prev_cross_sync_index_ < now_sharding_count_; ++prev_cross_sync_index_) {
         auto res = cross_pools_[prev_cross_sync_index_].SyncMissingBlocks(thread_idx, now_tm_ms);
-        if (res > 0) {
-            ++prev_cross_sync_index_;
-            return;
-        }
-
         if (cross_pools_[prev_cross_sync_index_].latest_height() == common::kInvalidUint64 ||
                 cross_pools_[prev_cross_sync_index_].latest_height() <
                 cross_synced_max_heights_[prev_cross_sync_index_]) {
@@ -121,16 +116,16 @@ void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
                 common::kRootChainPoolIndex,
                 cross_synced_max_heights_[prev_cross_sync_index_],
                 sync::kSyncHigh);
+        }
+
+        if (res > 0) {
+            ++prev_cross_sync_index_;
+            return;
         }
     }
 
     for (prev_cross_sync_index_ = 0; prev_cross_sync_index_ < begin_pool; ++prev_cross_sync_index_) {
         auto res = cross_pools_[prev_cross_sync_index_].SyncMissingBlocks(thread_idx, now_tm_ms);
-        if (res > 0) {
-            ++prev_cross_sync_index_;
-            return;
-        }
-
         if (cross_pools_[prev_cross_sync_index_].latest_height() == common::kInvalidUint64 ||
                 cross_pools_[prev_cross_sync_index_].latest_height() <
                 cross_synced_max_heights_[prev_cross_sync_index_]) {
@@ -140,6 +135,11 @@ void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
                 common::kRootChainPoolIndex,
                 cross_synced_max_heights_[prev_cross_sync_index_],
                 sync::kSyncHigh);
+        }
+
+        if (res > 0) {
+            ++prev_cross_sync_index_;
+            return;
         }
     }
 }
@@ -312,6 +312,10 @@ void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) 
         }
 
         if (res > 0) {
+            ZJC_DEBUG("success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+                prev_synced_pool_index_,
+                res, tx_pool_[prev_synced_pool_index_].latest_height(),
+                synced_max_heights_[prev_synced_pool_index_]);
             ++prev_synced_pool_index_;
             return;
         }
@@ -328,6 +332,10 @@ void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) 
         }
 
         if (res > 0) {
+            ZJC_DEBUG("success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+                prev_synced_pool_index_,
+                res, tx_pool_[prev_synced_pool_index_].latest_height(),
+                synced_max_heights_[prev_synced_pool_index_]);
             ++prev_synced_pool_index_;
             return;
         }
