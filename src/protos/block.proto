@@ -184,11 +184,10 @@ message ElectBlockMessage {
     optional Block block = 1;
 }
 
-
 message ShardToTxMessage {
-    repeated pools.protobuf.ShardToTxItem to_txs = 17;
-    optional uint32 leader_idx = 1;
-    optional uint64 elect_height = 1;
+    repeated pools.protobuf.ShardToTxItem to_txs = 1;
+    optional uint32 leader_idx = 2;
+    optional uint64 elect_height = 3;
 }
 
 message BlockMessage {
