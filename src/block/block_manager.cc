@@ -536,6 +536,7 @@ void BlockManager::AddNewBlock(
         block_item->tx_list_size(),
         common::Encode::HexEncode(block_item->hash()).c_str(),
         thread_idx);
+    assert(block_item->electblock_height() >= 1);
     if (!prefix_db_->SaveBlock(*block_item, db_batch)) {
         ZJC_DEBUG("block saved: %lu", block_item->height());
         return;
