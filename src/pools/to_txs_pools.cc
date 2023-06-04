@@ -344,7 +344,7 @@ void ToTxsPools::HandleNormalToTx(
         return;
     }
 
-    auto heights_ptr = std::make_shared<pools::protobuf::ToTxHeights>();
+    auto heights_ptr = std::make_shared<pools::protobuf::ShardToTxItem>();
     auto& heights = *heights_ptr;
     heights.set_block_height(block.height());
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
