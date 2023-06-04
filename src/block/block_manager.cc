@@ -119,7 +119,7 @@ void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, 
 
 void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // verify signature valid and check leader valid
-    if (msg_ptr->header.block_proto().to_txs_size() > 0) {
+    if (msg_ptr->header.block_proto().has_shard_to() > 0) {
         if (latest_members_ == nullptr) {
             return;
         }
@@ -129,19 +129,20 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             return;
         }
 
-        if (latest_members_->size() <= msg_ptr->header.block_proto().leader_idx()) {
+        if (latest_members_->size() <= msg_ptr->header.block_proto().shard_to().leader_idx()) {
             return;
         }
 
-        auto& mem_ptr = (*latest_members_)[msg_ptr->header.block_proto().leader_idx()];
+        auto& mem_ptr = (*latest_members_)[msg_ptr->header.block_proto().shard_to().leader_idx()];
         auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
         if (security_->Verify(
                 msg_hash,
                 mem_ptr->pubkey,
                 msg_ptr->header.sign()) != security::kSecuritySuccess) {
             assert(false);
-            return false;
+            return;
         }
+
         HandleToTxsMessage(msg_ptr, false);
     }
 
@@ -1082,7 +1083,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     auto now_time_ms = common::TimeUtils::TimestampMs();
     auto& to_txs = shard_to.to_txs();
     for (int32_t i = 0; i < to_txs.size(); ++i) {
-        auto& heights = to_txs(i);
+        auto& heights = to_txs[i];
         auto tmp_tx = leader_to_txs->to_txs[heights.sharding_id()];
         if (tmp_tx != nullptr && tmp_tx->success) {
             continue;
@@ -1386,7 +1387,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kBlockMessage);
     auto& block_msg = *msg.mutable_block_proto();
-    auto& shard_to = block_msg.mutable_shard_to();
+    auto& shard_to = *block_msg.mutable_shard_to();
     auto iter = leader_to_txs_.find(latest_elect_height_);
     for (uint32_t i = network::kRootCongressNetworkId; i <= max_consensus_sharding_id_; ++i) {
         if (iter != leader_to_txs_.end()) {
@@ -1403,13 +1404,13 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         auto& to_heights = *shard_to.add_to_txs();
         int res = to_txs_pool_->LeaderCreateToHeights(i, to_heights);
         if (res != pools::kPoolsSuccess || to_heights.heights_size() <= 0) {
-            block_msg.mutable_to_txs()->RemoveLast();
+            shard_to.mutable_to_txs()->RemoveLast();
         } else {
-            block_msg.set_leader_idx(to_tx_leader_->index);
+            shard_to.set_leader_idx(to_tx_leader_->index);
         }
     }
 
-    if (block_msg.to_txs_size() <= 0) {
+    if (shard_to.to_txs_size() <= 0) {
         return;
     }
     
@@ -1421,7 +1422,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     std::string sign;
     if (security_->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
         assert(false);
-        return false;
+        return;
     }
 
     msg_ptr->header.set_sign(sign);
