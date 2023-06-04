@@ -536,6 +536,7 @@ void BlockManager::AddNewBlock(
         block_item->tx_list_size(),
         common::Encode::HexEncode(block_item->hash()).c_str(),
         thread_idx);
+    // TODO: check all block saved success
     assert(block_item->electblock_height() >= 1);
     if (!prefix_db_->SaveBlock(*block_item, db_batch)) {
         ZJC_DEBUG("block saved: %lu", block_item->height());
@@ -549,11 +550,11 @@ void BlockManager::AddNewBlock(
     }
 
     if (block_item->pool_index() == common::kRootChainPoolIndex) {
-        if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
-                block_item->network_id() + network::kConsensusWaitingShardOffset !=
-                common::GlobalInfo::Instance()->network_id()) {
-            pools_mgr_->OnNewCrossBlock(thread_idx, block_item);
-        }
+//         if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
+//                 block_item->network_id() + network::kConsensusWaitingShardOffset !=
+//                 common::GlobalInfo::Instance()->network_id()) {
+        pools_mgr_->OnNewCrossBlock(thread_idx, block_item);
+//         }
     }
 
     const auto& tx_list = block_item->tx_list();
