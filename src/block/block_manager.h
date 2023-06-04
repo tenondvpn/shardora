@@ -156,6 +156,7 @@ private:
         const pools::protobuf::ElectStatistic& elect_statistic,
         db::DbWriteBatch& db_batch);
     void StatisticWithLeaderHeights(const pools::protobuf::ToTxHeights& heights, bool retry);
+    std::shared_ptr<LeaderWithToTxItem> GetValidLeaderShardTo();
 
     static const uint64_t kCreateToTxPeriodMs = 10000lu;
     static const uint64_t kRetryStatisticPeriod = 3000lu;
@@ -174,7 +175,8 @@ private:
     common::BftMemberPtr to_tx_leader_ = nullptr;
     uint32_t max_consensus_sharding_id_ = 3;
     std::string local_id_;
-    std::shared_ptr<BlockTxsItem> to_txs_[network::kConsensusShardEndNetworkId] = { nullptr };
+//     std::shared_ptr<BlockTxsItem> to_txs_[network::kConsensusShardEndNetworkId] = { nullptr };
+    std::map<uint64_t, std::shared_ptr<LeaderWithToTxItem>> leader_to_txs_;
     std::shared_ptr<BlockTxsItem> shard_statistic_tx_ = nullptr;
     std::shared_ptr<BlockTxsItem> cross_statistic_tx_ = nullptr;
     std::shared_ptr<BlockTxsItem> shard_elect_tx_[network::kConsensusShardEndNetworkId];
@@ -197,6 +199,8 @@ private:
     block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
     std::shared_ptr<pools::protobuf::ToTxHeights> statistic_heights_ptr_ = nullptr;
 //     std::shared_ptr<pools::protobuf::ToTxHeights> to_tx_heights_ptr_ = nullptr;
+    common::MembersPtr latest_members_ = nullptr;
+    uint64_t latest_elect_height_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

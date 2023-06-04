@@ -24,9 +24,10 @@ public:
     void NewBlock(const block::protobuf::Block& block, db::DbWriteBatch& db_batch);
     int CreateToTxWithHeights(
         uint32_t sharding_id,
-        const pools::protobuf::ToTxHeights& leader_to_heights,
+        uint64_t elect_height,
+        const pools::protobuf::ShardToTxItem& leader_to_heights,
         std::string* to_hash);
-    int LeaderCreateToHeights(uint32_t sharding_id, pools::protobuf::ToTxHeights& to_heights);
+    int LeaderCreateToHeights(uint32_t sharding_id, pools::protobuf::ShardToTxItem& to_heights);
 
 private:
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(

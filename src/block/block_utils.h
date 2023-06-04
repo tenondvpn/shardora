@@ -50,11 +50,12 @@ static const std::string kCreateGenesisNetwrokAccount = common::Encode::HexDecod
     "b5be6f0090e4f5d40458258ed9adf843324c0327145c48b55091f33673d2d5a4");
 
 struct BlockTxsItem {
-    BlockTxsItem() : tx_ptr(nullptr), tx_count(0) {}
+    BlockTxsItem() : tx_ptr(nullptr), tx_count(0), success(false) {}
     pools::TxItemPtr tx_ptr;
     std::string tx_hash;
     uint32_t tx_count;
     uint64_t timeout;
+    bool success;
 };
 
 typedef std::shared_ptr<block::protobuf::Block> BlockPtr;
@@ -64,6 +65,13 @@ struct BlockToDbItem {
         : block_ptr(bptr), db_batch(batch) {}
     BlockPtr block_ptr;
     std::shared_ptr<db::DbWriteBatch> db_batch;
+};
+
+struct LeaderWithToTxItem {
+    std::shared_ptr<BlockTxsItem> to_txs[network::kConsensusShardEndNetworkId];
+    uint64_t elect_height;
+    uint32_t leader_idx;
+    transport::MessagePtr to_txs_msg;
 };
 
 typedef std::shared_ptr<BlockToDbItem> BlockToDbItemPtr;

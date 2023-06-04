@@ -530,7 +530,7 @@ void ToTxsPools::HandleElectJoinVerifyVec(
 
 int ToTxsPools::LeaderCreateToHeights(
         uint32_t sharding_id,
-        pools::protobuf::ToTxHeights& to_heights) {
+        pools::protobuf::ShardToTxItem& to_heights) {
     auto net_iter = network_txs_pools_.find(sharding_id);
     if (net_iter == network_txs_pools_.end()) {
         ZJC_DEBUG("sharding_id: %u, leader failed create not exists shard", sharding_id);
@@ -564,7 +564,8 @@ int ToTxsPools::LeaderCreateToHeights(
 
 int ToTxsPools::CreateToTxWithHeights(
         uint32_t sharding_id,
-        const pools::protobuf::ToTxHeights& leader_to_heights,
+        uint64_t elect_height,
+        const pools::protobuf::ShardToTxItem& leader_to_heights,
         std::string* to_hash) {
     auto net_iter = network_txs_pools_.find(sharding_id);
     if (net_iter == network_txs_pools_.end()) {
@@ -724,6 +725,7 @@ int ToTxsPools::CreateToTxWithHeights(
         common::Encode::HexEncode(*to_hash).c_str(),
         test_heights.c_str());
     to_tx.set_heights_hash(*to_hash);
+    to_tx.set_elect_height(elect_height);
     *to_tx.mutable_to_heights() = leader_to_heights;
     auto val = to_tx.SerializeAsString();
     prefix_db_->SaveTemporaryKv(*to_hash, val);

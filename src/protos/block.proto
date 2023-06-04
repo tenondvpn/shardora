@@ -184,6 +184,13 @@ message ElectBlockMessage {
     optional Block block = 1;
 }
 
+
+message ShardToTxMessage {
+    repeated pools.protobuf.ShardToTxItem to_txs = 17;
+    optional uint32 leader_idx = 1;
+    optional uint64 elect_height = 1;
+}
+
 message BlockMessage {
     optional GetTxBlockRequest block_req = 1;
     optional GetTxBlockResponse block_res = 2;
@@ -201,6 +208,7 @@ message BlockMessage {
     optional RefreshPoolHeightResponse ref_heights_res = 14;
     optional GetAccountShardRequest acc_shard_req = 15;
     optional GetAccountShardReponse acc_shard_res = 16;
-    repeated pools.protobuf.ToTxHeights to_txs = 17;
+    optional ShardToTxMessage shard_to = 17;
     optional pools.protobuf.ToTxHeights shard_statistic_tx = 18;
+    optional uint32_t leader_idx = 19;
 }
