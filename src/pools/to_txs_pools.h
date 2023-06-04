@@ -95,7 +95,7 @@ private:
     common::UniqueMap<std::string, protos::AddressInfoPtr, 10240, 16> address_map_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    std::unordered_map<uint32_t, std::shared_ptr<pools::protobuf::ToTxHeights>> handled_map_;
+    std::unordered_map<uint32_t, std::shared_ptr<pools::protobuf::ShardToTxItem>> handled_map_;
     std::string local_id_;
     uint64_t pool_consensus_heihgts_[common::kInvalidPoolIndex] = { 0 };
     uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
