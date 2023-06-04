@@ -84,7 +84,7 @@ public:
 
     void CreateToTx(uint8_t thread_idx);
     void CreateStatisticTx(uint8_t thread_idx);
-    void OnNewElectBlock(uint32_t sharding_id, common::MembersPtr& members);
+    void OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members);
     pools::TxItemPtr GetToTx(uint32_t pool_index, bool leader);
     pools::TxItemPtr GetStatisticTx(uint32_t pool_index, bool leader);
     pools::TxItemPtr GetElectTx(uint32_t pool_index, const std::string& tx_hash);

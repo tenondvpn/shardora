@@ -1188,7 +1188,7 @@ void NetworkInit::HandleElectionBlock(
     }
 
     bft_mgr_->OnNewElectBlock(sharding_id, elect_height, members, common_pk, sec_key);
-    block_mgr_->OnNewElectBlock(sharding_id, members);
+    block_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     vss_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     bls_mgr_->OnNewElectBlock(sharding_id, block->height(), elect_block);
     pools_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
