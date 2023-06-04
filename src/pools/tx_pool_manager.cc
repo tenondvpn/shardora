@@ -119,6 +119,10 @@ void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
         }
 
         if (res > 0) {
+            ZJC_DEBUG("cross success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+                prev_cross_sync_index_,
+                res, cross_pools_[prev_cross_sync_index_].latest_height(),
+                cross_synced_max_heights_[prev_synced_pool_index_]);
             ++prev_cross_sync_index_;
             return;
         }
@@ -138,6 +142,10 @@ void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
         }
 
         if (res > 0) {
+            ZJC_DEBUG("cross success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+                prev_cross_sync_index_,
+                res, cross_pools_[prev_cross_sync_index_].latest_height(),
+                cross_synced_max_heights_[prev_synced_pool_index_]);
             ++prev_cross_sync_index_;
             return;
         }
