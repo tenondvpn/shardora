@@ -210,5 +210,4 @@ message BlockMessage {
     optional GetAccountShardReponse acc_shard_res = 16;
     optional ShardToTxMessage shard_to = 17;
     optional pools.protobuf.ToTxHeights shard_statistic_tx = 18;
-    optional uint32_t leader_idx = 19;
 }
