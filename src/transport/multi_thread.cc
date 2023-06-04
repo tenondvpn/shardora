@@ -285,10 +285,12 @@ void MultiThreadHandler::BlockSaved(const block::protobuf::Block& block_item) {
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             new_msg_ptr->checked_block = true;
             CreateConsensusBlockMessage(new_msg_ptr, iter->second);
-            ZJC_DEBUG("call not checked block net: %u, pool: %u, height: %lu, block hash: %s",
+            ZJC_DEBUG("111 call not checked block net: %u, pool: %u, height: %lu, prepool: %u, preheight: %lu, block hash: %s",
                 iter->second->network_id(),
                 iter->second->pool_index(),
                 iter->second->height(),
+                block_item.commit_pool_index(),
+                block_item.commit_height(),
                 common::Encode::HexEncode(iter->second->hash()).c_str());
 
         }
@@ -333,10 +335,12 @@ void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Bl
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             new_msg_ptr->checked_block = true;
             CreateConsensusBlockMessage(new_msg_ptr, iter->second);
-            ZJC_DEBUG("call not checked block net: %u, pool: %u, height: %lu, block hash: %s",
+            ZJC_DEBUG("call not checked block net: %u, pool: %u, height: %lu, prepool: %u, preheight: %lu, block hash: %s",
                 iter->second->network_id(),
                 iter->second->pool_index(),
                 iter->second->height(),
+                block_item->commit_pool_index(),
+                block_item->commit_height(),
                 common::Encode::HexEncode(iter->second->hash()).c_str());
 
         }
