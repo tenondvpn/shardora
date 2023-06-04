@@ -16,6 +16,7 @@
 #include "common/string_utils.h"
 #include "common/utils.h"
 #include "db/db.h"
+#include "network/network_utils.h"
 #include "pools/tx_utils.h"
 #include "protos/block.pb.h"
 
