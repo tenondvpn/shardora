@@ -1137,7 +1137,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         to_txs_ptr->tx_hash = tos_hash;
         to_txs_ptr->timeout = now_time_ms + 30000lu;
         leader_to_txs->to_txs[heights.sharding_id()] = to_txs_ptr;
-        tmp_tx->success = true;
+        to_txs_ptr->success = true;
         ZJC_DEBUG("success add txs: %s", common::Encode::HexEncode(tos_hash).c_str());
     }
 
