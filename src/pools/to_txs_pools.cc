@@ -431,7 +431,7 @@ void ToTxsPools::LoadLatestHeights() {
     for (uint32_t i = network::kRootCongressNetworkId;
             i < network::kConsensusShardEndNetworkId; ++i) {
         auto heights_ptr = std::make_shared<pools::protobuf::ToTxHeights>();
-        pools::protobuf::ToTxHeights& to_heights = *heights_ptr;
+        pools::protobuf::ShardToTxItem& to_heights = *heights_ptr;
         if (!prefix_db_->GetLatestToTxsHeights(i, &to_heights)) {
             continue;
         }
