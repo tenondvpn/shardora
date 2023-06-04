@@ -447,7 +447,7 @@ public:
     }
 
     void SaveLatestToTxsHeights(
-            const pools::protobuf::ToTxHeights& heights,
+            const pools::protobuf::ShardToTxItem& heights,
             db::DbWriteBatch& batch) {
         std::string key;
         key.reserve(48);
@@ -457,7 +457,7 @@ public:
         batch.Put(key, heights.SerializeAsString());
     }
 
-    bool GetLatestToTxsHeights(uint32_t sharding_id, pools::protobuf::ToTxHeights* heights) {
+    bool GetLatestToTxsHeights(uint32_t sharding_id, pools::protobuf::ShardToTxItem* heights) {
         std::string key;
         key.reserve(48);
         key.append(kLatestToTxsHeightsPrefix);
