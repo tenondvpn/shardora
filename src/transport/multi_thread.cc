@@ -273,10 +273,10 @@ void MultiThreadHandler::BlockSaved(const block::protobuf::Block& block_item) {
         waiting_check_block_map_[block_item.pool_index()].erase(iter);
     }
 
-    auto commit_iter = committed_heights_[block_item.pool_index()].find(block_item.height());
-    if (commit_iter != committed_heights_[block_item.pool_index()].end()) {
-        committed_heights_[block_item.pool_index()].erase(commit_iter);
-    }
+//     auto commit_iter = committed_heights_[block_item.pool_index()].find(block_item.height());
+//     if (commit_iter != committed_heights_[block_item.pool_index()].end()) {
+//         committed_heights_[block_item.pool_index()].erase(commit_iter);
+//     }
 
     if (block_item.has_commit_pool_index() && block_item.has_commit_height()) {
         auto iter = waiting_check_block_map_[block_item.commit_pool_index()].find(
