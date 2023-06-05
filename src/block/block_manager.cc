@@ -938,6 +938,10 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
         msg_ptr->header.block_proto().statistic_tx().elect_height(),
         msg_ptr->header.block_proto().statistic_tx().leader_idx(),
         msg_ptr->header.block_proto().statistic_tx().leader_to_idx());
+    if (msg_ptr->header.block_proto().statistic_tx().elect_height() < latest_elect_height_) {
+        return;
+    }
+
     if (create_statistic_tx_cb_ == nullptr) {
         return;
     }
@@ -961,6 +965,12 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
 
     if (statistic_item->shard_statistic_tx != nullptr &&
             statistic_item->leader_to_index >= msg_ptr->header.block_proto().statistic_tx().leader_to_idx()) {
+        return;
+    }
+
+    if (msg_ptr->header.block_proto().statistic_tx().elect_height() != latest_elect_height_) {
+        ZJC_DEBUG("elect height invalid and retry later local: %lu, leader: %lu",
+            msg_ptr->header.block_proto().statistic_tx().elect_height(), latest_elect_height_);
         return;
     }
 
