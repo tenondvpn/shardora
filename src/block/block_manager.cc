@@ -948,6 +948,7 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
         statistic_item->leader_idx = msg_ptr->header.block_proto().statistic_tx().leader_idx();
         statistic_item->leader_to_index = msg_ptr->header.block_proto().statistic_tx().leader_to_idx();
         statistic_item->statistic_msg = msg_ptr;
+        leader_statistic_txs_[msg_ptr->header.block_proto().statistic_tx().elect_height()] = statistic_item;
     }
 
     if (msg_ptr->header.block_proto().statistic_tx().leader_idx() == statistic_item->leader_idx &&
@@ -1043,10 +1044,6 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
 
     if (statistic_item->shard_statistic_tx != nullptr && statistic_item->cross_statistic_tx != nullptr) {
         statistic_item->statistic_msg = nullptr;
-    }
-
-    if (iter == leader_statistic_txs_.end()) {
-        leader_statistic_txs_[msg_ptr->header.block_proto().statistic_tx().elect_height()] = statistic_item;
     }
 
     auto riter = leader_statistic_txs_.rbegin();
