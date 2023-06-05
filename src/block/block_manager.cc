@@ -1085,7 +1085,10 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     for (int32_t i = 0; i < to_txs.size(); ++i) {
         auto& heights = to_txs[i];
         auto tmp_tx = leader_to_txs->to_txs[heights.sharding_id()];
+        ZJC_DEBUG("now handle to leader idx: %u, leader to index: %d, tmp_tx != nullptr: %d",
+            (tmp_tx != nullptr), shard_to.leader_idx(), shard_to.leader_to_idx());
         if (tmp_tx != nullptr && tmp_tx->success && tmp_tx->leader_to_index <= shard_to.leader_to_idx()) {
+            assert(false);
             continue;
         }
 
