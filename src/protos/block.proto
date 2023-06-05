@@ -191,6 +191,13 @@ message ShardToTxMessage {
     optional int32 leader_to_idx = 4;
 }
 
+message StatisticTxMessage {
+    optional pools.protobuf.StatisticTxItem statistic = 1;
+    optional uint32 leader_idx = 2;
+    optional uint64 elect_height = 3;
+    optional int32 leader_to_idx = 4;
+}
+
 message BlockMessage {
     optional GetTxBlockRequest block_req = 1;
     optional GetTxBlockResponse block_res = 2;
@@ -209,5 +216,5 @@ message BlockMessage {
     optional GetAccountShardRequest acc_shard_req = 15;
     optional GetAccountShardReponse acc_shard_res = 16;
     optional ShardToTxMessage shard_to = 17;
-    optional pools.protobuf.ToTxHeights shard_statistic_tx = 18;
+    optional pools.protobuf.StatisticTxMessage statistic_tx = 18;
 }

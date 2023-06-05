@@ -155,12 +155,17 @@ private:
         const block::protobuf::BlockTx& tx,
         const pools::protobuf::ElectStatistic& elect_statistic,
         db::DbWriteBatch& db_batch);
-    void StatisticWithLeaderHeights(const pools::protobuf::ToTxHeights& heights, bool retry);
+    void StatisticWithLeaderHeights(const transport::MessagePtr& msg_ptr, bool retry);
     std::shared_ptr<LeaderWithToTxItem> GetValidLeaderShardTo();
 
     static const uint64_t kCreateToTxPeriodMs = 10000lu;
     static const uint64_t kRetryStatisticPeriod = 3000lu;
-//     static const uint64_t kRetryToTxPeriod = 3000lu;
+    static const uint64_t kStatisticTimeoutMs = 20000lu;
+    static const uint64_t kToTimeoutMs = 10000lu;
+    static const uint64_t kStatisticValidTimeout = 10000000lu;
+    static const uint64_t kToValidTimeout = 3000000lu;
+    static const uint64_t kElectTimeout = 20000lu;
+    static const uint64_t kElectValidTimeout = 3000000lu;
 
     std::shared_ptr<AccountManager> account_mgr_ = nullptr;
     common::ThreadSafeQueue<BlockToDbItemPtr>* consensus_block_queues_ = nullptr;
@@ -177,8 +182,7 @@ private:
     std::string local_id_;
 //     std::shared_ptr<BlockTxsItem> to_txs_[network::kConsensusShardEndNetworkId] = { nullptr };
     std::map<uint64_t, std::shared_ptr<LeaderWithToTxItem>> leader_to_txs_;
-    std::shared_ptr<BlockTxsItem> shard_statistic_tx_ = nullptr;
-    std::shared_ptr<BlockTxsItem> cross_statistic_tx_ = nullptr;
+    std::map<uint64_t, std::shared_ptr<LeaderWithStatisticTxItem>> leader_statistic_txs_;
     std::shared_ptr<BlockTxsItem> shard_elect_tx_[network::kConsensusShardEndNetworkId];
     pools::CreateConsensusItemFunction create_to_tx_cb_ = nullptr;
     pools::CreateConsensusItemFunction create_statistic_tx_cb_ = nullptr;
@@ -186,7 +190,6 @@ private:
     pools::CreateConsensusItemFunction cross_tx_cb_ = nullptr;
     uint32_t prev_pool_index_ = network::kRootCongressNetworkId;
     std::shared_ptr<ck::ClickHouseClient> ck_client_ = nullptr;
-    transport::MessagePtr to_txs_msg_ = nullptr;
     uint64_t prev_to_txs_tm_us_ = 0;
     DbBlockCallback new_block_callback_ = nullptr;
     std::shared_ptr<pools::ShardStatistic> statistic_mgr_ = nullptr;

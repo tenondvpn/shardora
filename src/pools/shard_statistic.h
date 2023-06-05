@@ -50,10 +50,11 @@ public:
         uint64_t latest_time_block_height,
         uint64_t vss_random);
     int StatisticWithHeights(
-        const pools::protobuf::ToTxHeights& leader_to_heights,
+        uint64_t elect_height,
+        const pools::protobuf::StatisticTxItem& leader_to_heights,
         std::string* statistic_hash,
         std::string* cross_hash);
-    int LeaderCreateStatisticHeights(pools::protobuf::ToTxHeights& to_heights);
+    int LeaderCreateStatisticHeights(pools::protobuf::StatisticTxItem& to_heights);
 
 private:
     void CreateStatisticTransaction(uint64_t timeblock_height);

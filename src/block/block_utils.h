@@ -76,6 +76,15 @@ struct LeaderWithToTxItem {
     transport::MessagePtr to_txs_msg;
 };
 
+
+struct LeaderWithStatisticTxItem {
+    std::shared_ptr<BlockTxsItem> shard_statistic_tx;
+    std::shared_ptr<BlockTxsItem> cross_statistic_tx;
+    uint64_t elect_height;
+    uint32_t leader_idx;
+    transport::MessagePtr statistic_msg;
+};
+
 typedef std::shared_ptr<BlockToDbItem> BlockToDbItemPtr;
 
 typedef std::function<bool(

@@ -453,7 +453,7 @@ bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
     return true;
 }
 
-int ShardStatistic::LeaderCreateStatisticHeights(pools::protobuf::ToTxHeights& to_heights) {
+int ShardStatistic::LeaderCreateStatisticHeights(pools::protobuf::StatisticTxItem& to_heights) {
     bool valid = false;
     std::string heights;
     assert(tx_heights_ptr_->heights_size() == common::kInvalidPoolIndex);
@@ -518,7 +518,8 @@ bool ShardStatistic::LoadAndStatisticBlock(uint32_t poll_index, uint64_t height)
 }
 
 int ShardStatistic::StatisticWithHeights(
-        const pools::protobuf::ToTxHeights& leader_to_heights,
+        uint64_t elect_height,
+        const pools::protobuf::StatisticTxItem& leader_to_heights,
         std::string* statistic_hash,
         std::string* cross_hash) {
     bool is_root = (
@@ -915,6 +916,7 @@ int ShardStatistic::StatisticWithHeights(
 
     auto net_id = common::GlobalInfo::Instance()->network_id();
     elect_statistic.set_sharding_id(net_id);
+    elect_statistic.set_elect_height(elect_height);
     str_for_hash.append((char*)&all_gas_amount, sizeof(all_gas_amount));
     str_for_hash.append((char*)&net_id, sizeof(net_id));
     str_for_hash.append(heights_hash);
