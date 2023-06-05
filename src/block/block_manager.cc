@@ -1017,9 +1017,12 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
 
     if (iter == leader_statistic_txs_.end()) {
         leader_statistic_txs_[msg_ptr->header.block_proto().statistic_tx().elect_height()] = statistic_item;
-        auto iter = leader_statistic_txs_.rbegin();
-        latest_shard_statistic_tx_ = iter->second->shard_statistic_tx;
-        latest_cross_statistic_tx_ = iter->second->cross_statistic_tx;
+    }
+
+    auto riter = leader_statistic_txs_.rbegin();
+    if (riter != leader_statistic_txs_.rend()) {
+        latest_shard_statistic_tx_ = riter->second->shard_statistic_tx;
+        latest_cross_statistic_tx_ = riter->second->cross_statistic_tx;
         ZJC_DEBUG("success set statistic tx elect height: %lu, statistic: %d, cross: %d",
             msg_ptr->header.block_proto().statistic_tx().elect_height(),
             (latest_shard_statistic_tx_ != nullptr),
