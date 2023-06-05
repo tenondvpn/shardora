@@ -959,6 +959,8 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
             &statistic_hash,
             &cross_hash) != pools::kPoolsSuccess) {
         ZJC_DEBUG("error to txs sharding create statistic tx");
+        statistic_item->shard_statistic_tx = nullptr;
+        statistic_item->cross_statistic_tx = nullptr;
         return;
     }
 
