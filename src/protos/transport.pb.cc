@@ -20,7 +20,7 @@
 // @@protoc_insertion_point(includes)
 
 namespace protobuf_protos_2fblock_2eproto {
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<17> scc_info_BlockMessage;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<18> scc_info_BlockMessage;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_Block;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_CrossShardingStatisticMessage;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_CrossShardingTosMessage;

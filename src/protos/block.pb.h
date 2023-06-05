@@ -39,7 +39,7 @@ namespace protobuf_protos_2fblock_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[29];
+  static const ::google::protobuf::internal::ParseTable schema[31];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -115,9 +115,15 @@ extern RefreshPoolHeightRequestDefaultTypeInternal _RefreshPoolHeightRequest_def
 class RefreshPoolHeightResponse;
 class RefreshPoolHeightResponseDefaultTypeInternal;
 extern RefreshPoolHeightResponseDefaultTypeInternal _RefreshPoolHeightResponse_default_instance_;
+class ShardToTxMessage;
+class ShardToTxMessageDefaultTypeInternal;
+extern ShardToTxMessageDefaultTypeInternal _ShardToTxMessage_default_instance_;
 class StatisticInfo;
 class StatisticInfoDefaultTypeInternal;
 extern StatisticInfoDefaultTypeInternal _StatisticInfo_default_instance_;
+class StatisticTxMessage;
+class StatisticTxMessageDefaultTypeInternal;
+extern StatisticTxMessageDefaultTypeInternal _StatisticTxMessage_default_instance_;
 class StorageItem;
 class StorageItemDefaultTypeInternal;
 extern StorageItemDefaultTypeInternal _StorageItem_default_instance_;
@@ -163,7 +169,9 @@ template<> ::zjchain::block::protobuf::GetTxBlockRequest* Arena::CreateMaybeMess
 template<> ::zjchain::block::protobuf::GetTxBlockResponse* Arena::CreateMaybeMessage<::zjchain::block::protobuf::GetTxBlockResponse>(Arena*);
 template<> ::zjchain::block::protobuf::RefreshPoolHeightRequest* Arena::CreateMaybeMessage<::zjchain::block::protobuf::RefreshPoolHeightRequest>(Arena*);
 template<> ::zjchain::block::protobuf::RefreshPoolHeightResponse* Arena::CreateMaybeMessage<::zjchain::block::protobuf::RefreshPoolHeightResponse>(Arena*);
+template<> ::zjchain::block::protobuf::ShardToTxMessage* Arena::CreateMaybeMessage<::zjchain::block::protobuf::ShardToTxMessage>(Arena*);
 template<> ::zjchain::block::protobuf::StatisticInfo* Arena::CreateMaybeMessage<::zjchain::block::protobuf::StatisticInfo>(Arena*);
+template<> ::zjchain::block::protobuf::StatisticTxMessage* Arena::CreateMaybeMessage<::zjchain::block::protobuf::StatisticTxMessage>(Arena*);
 template<> ::zjchain::block::protobuf::StorageItem* Arena::CreateMaybeMessage<::zjchain::block::protobuf::StorageItem>(Arena*);
 template<> ::zjchain::block::protobuf::TransferItem* Arena::CreateMaybeMessage<::zjchain::block::protobuf::TransferItem>(Arena*);
 template<> ::zjchain::block::protobuf::UpdateVpnActiveRequest* Arena::CreateMaybeMessage<::zjchain::block::protobuf::UpdateVpnActiveRequest>(Arena*);
@@ -1040,13 +1048,6 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   bool is_cross_block() const;
   void set_is_cross_block(bool value);
 
-  // optional bool checked_committed = 19 [default = false];
-  bool has_checked_committed() const;
-  void clear_checked_committed();
-  static const int kCheckedCommittedFieldNumber = 19;
-  bool checked_committed() const;
-  void set_checked_committed(bool value);
-
   // @@protoc_insertion_point(class_scope:zjchain.block.protobuf.Block)
  private:
   void set_has_network_id();
@@ -1081,8 +1082,6 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   void clear_has_commit_height();
   void set_has_is_cross_block();
   void clear_has_is_cross_block();
-  void set_has_checked_committed();
-  void clear_has_checked_committed();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -1105,7 +1104,6 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::uint64 leader_index_;
   ::google::protobuf::uint64 commit_height_;
   bool is_cross_block_;
-  bool checked_committed_;
   friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -4436,6 +4434,302 @@ class ElectBlockMessage : public ::google::protobuf::Message /* @@protoc_inserti
 };
 // -------------------------------------------------------------------
 
+class ShardToTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.block.protobuf.ShardToTxMessage) */ {
+ public:
+  ShardToTxMessage();
+  virtual ~ShardToTxMessage();
+
+  ShardToTxMessage(const ShardToTxMessage& from);
+
+  inline ShardToTxMessage& operator=(const ShardToTxMessage& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  ShardToTxMessage(ShardToTxMessage&& from) noexcept
+    : ShardToTxMessage() {
+    *this = ::std::move(from);
+  }
+
+  inline ShardToTxMessage& operator=(ShardToTxMessage&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ShardToTxMessage& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ShardToTxMessage* internal_default_instance() {
+    return reinterpret_cast<const ShardToTxMessage*>(
+               &_ShardToTxMessage_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    28;
+
+  void Swap(ShardToTxMessage* other);
+  friend void swap(ShardToTxMessage& a, ShardToTxMessage& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ShardToTxMessage* New() const final {
+    return CreateMaybeMessage<ShardToTxMessage>(NULL);
+  }
+
+  ShardToTxMessage* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<ShardToTxMessage>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const ShardToTxMessage& from);
+  void MergeFrom(const ShardToTxMessage& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ShardToTxMessage* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated .zjchain.pools.protobuf.ShardToTxItem to_txs = 1;
+  int to_txs_size() const;
+  void clear_to_txs();
+  static const int kToTxsFieldNumber = 1;
+  ::zjchain::pools::protobuf::ShardToTxItem* mutable_to_txs(int index);
+  ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ShardToTxItem >*
+      mutable_to_txs();
+  const ::zjchain::pools::protobuf::ShardToTxItem& to_txs(int index) const;
+  ::zjchain::pools::protobuf::ShardToTxItem* add_to_txs();
+  const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ShardToTxItem >&
+      to_txs() const;
+
+  // optional uint64 elect_height = 3;
+  bool has_elect_height() const;
+  void clear_elect_height();
+  static const int kElectHeightFieldNumber = 3;
+  ::google::protobuf::uint64 elect_height() const;
+  void set_elect_height(::google::protobuf::uint64 value);
+
+  // optional uint32 leader_idx = 2;
+  bool has_leader_idx() const;
+  void clear_leader_idx();
+  static const int kLeaderIdxFieldNumber = 2;
+  ::google::protobuf::uint32 leader_idx() const;
+  void set_leader_idx(::google::protobuf::uint32 value);
+
+  // optional int32 leader_to_idx = 4;
+  bool has_leader_to_idx() const;
+  void clear_leader_to_idx();
+  static const int kLeaderToIdxFieldNumber = 4;
+  ::google::protobuf::int32 leader_to_idx() const;
+  void set_leader_to_idx(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:zjchain.block.protobuf.ShardToTxMessage)
+ private:
+  void set_has_leader_idx();
+  void clear_has_leader_idx();
+  void set_has_elect_height();
+  void clear_has_elect_height();
+  void set_has_leader_to_idx();
+  void clear_has_leader_to_idx();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ShardToTxItem > to_txs_;
+  ::google::protobuf::uint64 elect_height_;
+  ::google::protobuf::uint32 leader_idx_;
+  ::google::protobuf::int32 leader_to_idx_;
+  friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class StatisticTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.block.protobuf.StatisticTxMessage) */ {
+ public:
+  StatisticTxMessage();
+  virtual ~StatisticTxMessage();
+
+  StatisticTxMessage(const StatisticTxMessage& from);
+
+  inline StatisticTxMessage& operator=(const StatisticTxMessage& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  StatisticTxMessage(StatisticTxMessage&& from) noexcept
+    : StatisticTxMessage() {
+    *this = ::std::move(from);
+  }
+
+  inline StatisticTxMessage& operator=(StatisticTxMessage&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const StatisticTxMessage& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const StatisticTxMessage* internal_default_instance() {
+    return reinterpret_cast<const StatisticTxMessage*>(
+               &_StatisticTxMessage_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    29;
+
+  void Swap(StatisticTxMessage* other);
+  friend void swap(StatisticTxMessage& a, StatisticTxMessage& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline StatisticTxMessage* New() const final {
+    return CreateMaybeMessage<StatisticTxMessage>(NULL);
+  }
+
+  StatisticTxMessage* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<StatisticTxMessage>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const StatisticTxMessage& from);
+  void MergeFrom(const StatisticTxMessage& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(StatisticTxMessage* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional .zjchain.pools.protobuf.StatisticTxItem statistic = 1;
+  bool has_statistic() const;
+  void clear_statistic();
+  static const int kStatisticFieldNumber = 1;
+  private:
+  const ::zjchain::pools::protobuf::StatisticTxItem& _internal_statistic() const;
+  public:
+  const ::zjchain::pools::protobuf::StatisticTxItem& statistic() const;
+  ::zjchain::pools::protobuf::StatisticTxItem* release_statistic();
+  ::zjchain::pools::protobuf::StatisticTxItem* mutable_statistic();
+  void set_allocated_statistic(::zjchain::pools::protobuf::StatisticTxItem* statistic);
+
+  // optional uint64 elect_height = 3;
+  bool has_elect_height() const;
+  void clear_elect_height();
+  static const int kElectHeightFieldNumber = 3;
+  ::google::protobuf::uint64 elect_height() const;
+  void set_elect_height(::google::protobuf::uint64 value);
+
+  // optional uint32 leader_idx = 2;
+  bool has_leader_idx() const;
+  void clear_leader_idx();
+  static const int kLeaderIdxFieldNumber = 2;
+  ::google::protobuf::uint32 leader_idx() const;
+  void set_leader_idx(::google::protobuf::uint32 value);
+
+  // optional int32 leader_to_idx = 4;
+  bool has_leader_to_idx() const;
+  void clear_leader_to_idx();
+  static const int kLeaderToIdxFieldNumber = 4;
+  ::google::protobuf::int32 leader_to_idx() const;
+  void set_leader_to_idx(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:zjchain.block.protobuf.StatisticTxMessage)
+ private:
+  void set_has_statistic();
+  void clear_has_statistic();
+  void set_has_leader_idx();
+  void clear_has_leader_idx();
+  void set_has_elect_height();
+  void clear_has_elect_height();
+  void set_has_leader_to_idx();
+  void clear_has_leader_to_idx();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::zjchain::pools::protobuf::StatisticTxItem* statistic_;
+  ::google::protobuf::uint64 elect_height_;
+  ::google::protobuf::uint32 leader_idx_;
+  ::google::protobuf::int32 leader_to_idx_;
+  friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.block.protobuf.BlockMessage) */ {
  public:
   BlockMessage();
@@ -4478,7 +4772,7 @@ class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_BlockMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    28;
+    30;
 
   void Swap(BlockMessage* other);
   friend void swap(BlockMessage& a, BlockMessage& b) {
@@ -4529,18 +4823,6 @@ class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
-  // repeated .zjchain.pools.protobuf.ToTxHeights to_txs = 17;
-  int to_txs_size() const;
-  void clear_to_txs();
-  static const int kToTxsFieldNumber = 17;
-  ::zjchain::pools::protobuf::ToTxHeights* mutable_to_txs(int index);
-  ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ToTxHeights >*
-      mutable_to_txs();
-  const ::zjchain::pools::protobuf::ToTxHeights& to_txs(int index) const;
-  ::zjchain::pools::protobuf::ToTxHeights* add_to_txs();
-  const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ToTxHeights >&
-      to_txs() const;
 
   // optional .zjchain.block.protobuf.GetTxBlockRequest block_req = 1;
   bool has_block_req() const;
@@ -4734,17 +5016,29 @@ class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::zjchain::block::protobuf::GetAccountShardReponse* mutable_acc_shard_res();
   void set_allocated_acc_shard_res(::zjchain::block::protobuf::GetAccountShardReponse* acc_shard_res);
 
-  // optional .zjchain.pools.protobuf.ToTxHeights shard_statistic_tx = 18;
-  bool has_shard_statistic_tx() const;
-  void clear_shard_statistic_tx();
-  static const int kShardStatisticTxFieldNumber = 18;
+  // optional .zjchain.block.protobuf.ShardToTxMessage shard_to = 17;
+  bool has_shard_to() const;
+  void clear_shard_to();
+  static const int kShardToFieldNumber = 17;
   private:
-  const ::zjchain::pools::protobuf::ToTxHeights& _internal_shard_statistic_tx() const;
+  const ::zjchain::block::protobuf::ShardToTxMessage& _internal_shard_to() const;
   public:
-  const ::zjchain::pools::protobuf::ToTxHeights& shard_statistic_tx() const;
-  ::zjchain::pools::protobuf::ToTxHeights* release_shard_statistic_tx();
-  ::zjchain::pools::protobuf::ToTxHeights* mutable_shard_statistic_tx();
-  void set_allocated_shard_statistic_tx(::zjchain::pools::protobuf::ToTxHeights* shard_statistic_tx);
+  const ::zjchain::block::protobuf::ShardToTxMessage& shard_to() const;
+  ::zjchain::block::protobuf::ShardToTxMessage* release_shard_to();
+  ::zjchain::block::protobuf::ShardToTxMessage* mutable_shard_to();
+  void set_allocated_shard_to(::zjchain::block::protobuf::ShardToTxMessage* shard_to);
+
+  // optional .zjchain.block.protobuf.StatisticTxMessage statistic_tx = 18;
+  bool has_statistic_tx() const;
+  void clear_statistic_tx();
+  static const int kStatisticTxFieldNumber = 18;
+  private:
+  const ::zjchain::block::protobuf::StatisticTxMessage& _internal_statistic_tx() const;
+  public:
+  const ::zjchain::block::protobuf::StatisticTxMessage& statistic_tx() const;
+  ::zjchain::block::protobuf::StatisticTxMessage* release_statistic_tx();
+  ::zjchain::block::protobuf::StatisticTxMessage* mutable_statistic_tx();
+  void set_allocated_statistic_tx(::zjchain::block::protobuf::StatisticTxMessage* statistic_tx);
 
   // @@protoc_insertion_point(class_scope:zjchain.block.protobuf.BlockMessage)
  private:
@@ -4780,13 +5074,14 @@ class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   void clear_has_acc_shard_req();
   void set_has_acc_shard_res();
   void clear_has_acc_shard_res();
-  void set_has_shard_statistic_tx();
-  void clear_has_shard_statistic_tx();
+  void set_has_shard_to();
+  void clear_has_shard_to();
+  void set_has_statistic_tx();
+  void clear_has_statistic_tx();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ToTxHeights > to_txs_;
   ::zjchain::block::protobuf::GetTxBlockRequest* block_req_;
   ::zjchain::block::protobuf::GetTxBlockResponse* block_res_;
   ::zjchain::block::protobuf::AccountHeightRequest* height_req_;
@@ -4803,7 +5098,8 @@ class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::zjchain::block::protobuf::RefreshPoolHeightResponse* ref_heights_res_;
   ::zjchain::block::protobuf::GetAccountShardRequest* acc_shard_req_;
   ::zjchain::block::protobuf::GetAccountShardReponse* acc_shard_res_;
-  ::zjchain::pools::protobuf::ToTxHeights* shard_statistic_tx_;
+  ::zjchain::block::protobuf::ShardToTxMessage* shard_to_;
+  ::zjchain::block::protobuf::StatisticTxMessage* statistic_tx_;
   friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
 };
 // ===================================================================
@@ -6334,30 +6630,6 @@ inline void Block::set_is_cross_block(bool value) {
   set_has_is_cross_block();
   is_cross_block_ = value;
   // @@protoc_insertion_point(field_set:zjchain.block.protobuf.Block.is_cross_block)
-}
-
-// optional bool checked_committed = 19 [default = false];
-inline bool Block::has_checked_committed() const {
-  return (_has_bits_[0] & 0x00010000u) != 0;
-}
-inline void Block::set_has_checked_committed() {
-  _has_bits_[0] |= 0x00010000u;
-}
-inline void Block::clear_has_checked_committed() {
-  _has_bits_[0] &= ~0x00010000u;
-}
-inline void Block::clear_checked_committed() {
-  checked_committed_ = false;
-  clear_has_checked_committed();
-}
-inline bool Block::checked_committed() const {
-  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.Block.checked_committed)
-  return checked_committed_;
-}
-inline void Block::set_checked_committed(bool value) {
-  set_has_checked_committed();
-  checked_committed_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.Block.checked_committed)
 }
 
 // -------------------------------------------------------------------
@@ -9098,6 +9370,239 @@ inline void ElectBlockMessage::set_allocated_block(::zjchain::block::protobuf::B
 
 // -------------------------------------------------------------------
 
+// ShardToTxMessage
+
+// repeated .zjchain.pools.protobuf.ShardToTxItem to_txs = 1;
+inline int ShardToTxMessage::to_txs_size() const {
+  return to_txs_.size();
+}
+inline ::zjchain::pools::protobuf::ShardToTxItem* ShardToTxMessage::mutable_to_txs(int index) {
+  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.ShardToTxMessage.to_txs)
+  return to_txs_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ShardToTxItem >*
+ShardToTxMessage::mutable_to_txs() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.block.protobuf.ShardToTxMessage.to_txs)
+  return &to_txs_;
+}
+inline const ::zjchain::pools::protobuf::ShardToTxItem& ShardToTxMessage::to_txs(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.ShardToTxMessage.to_txs)
+  return to_txs_.Get(index);
+}
+inline ::zjchain::pools::protobuf::ShardToTxItem* ShardToTxMessage::add_to_txs() {
+  // @@protoc_insertion_point(field_add:zjchain.block.protobuf.ShardToTxMessage.to_txs)
+  return to_txs_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ShardToTxItem >&
+ShardToTxMessage::to_txs() const {
+  // @@protoc_insertion_point(field_list:zjchain.block.protobuf.ShardToTxMessage.to_txs)
+  return to_txs_;
+}
+
+// optional uint32 leader_idx = 2;
+inline bool ShardToTxMessage::has_leader_idx() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ShardToTxMessage::set_has_leader_idx() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ShardToTxMessage::clear_has_leader_idx() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ShardToTxMessage::clear_leader_idx() {
+  leader_idx_ = 0u;
+  clear_has_leader_idx();
+}
+inline ::google::protobuf::uint32 ShardToTxMessage::leader_idx() const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.ShardToTxMessage.leader_idx)
+  return leader_idx_;
+}
+inline void ShardToTxMessage::set_leader_idx(::google::protobuf::uint32 value) {
+  set_has_leader_idx();
+  leader_idx_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.ShardToTxMessage.leader_idx)
+}
+
+// optional uint64 elect_height = 3;
+inline bool ShardToTxMessage::has_elect_height() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ShardToTxMessage::set_has_elect_height() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ShardToTxMessage::clear_has_elect_height() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ShardToTxMessage::clear_elect_height() {
+  elect_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_elect_height();
+}
+inline ::google::protobuf::uint64 ShardToTxMessage::elect_height() const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.ShardToTxMessage.elect_height)
+  return elect_height_;
+}
+inline void ShardToTxMessage::set_elect_height(::google::protobuf::uint64 value) {
+  set_has_elect_height();
+  elect_height_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.ShardToTxMessage.elect_height)
+}
+
+// optional int32 leader_to_idx = 4;
+inline bool ShardToTxMessage::has_leader_to_idx() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void ShardToTxMessage::set_has_leader_to_idx() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void ShardToTxMessage::clear_has_leader_to_idx() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void ShardToTxMessage::clear_leader_to_idx() {
+  leader_to_idx_ = 0;
+  clear_has_leader_to_idx();
+}
+inline ::google::protobuf::int32 ShardToTxMessage::leader_to_idx() const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.ShardToTxMessage.leader_to_idx)
+  return leader_to_idx_;
+}
+inline void ShardToTxMessage::set_leader_to_idx(::google::protobuf::int32 value) {
+  set_has_leader_to_idx();
+  leader_to_idx_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.ShardToTxMessage.leader_to_idx)
+}
+
+// -------------------------------------------------------------------
+
+// StatisticTxMessage
+
+// optional .zjchain.pools.protobuf.StatisticTxItem statistic = 1;
+inline bool StatisticTxMessage::has_statistic() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void StatisticTxMessage::set_has_statistic() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void StatisticTxMessage::clear_has_statistic() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline const ::zjchain::pools::protobuf::StatisticTxItem& StatisticTxMessage::_internal_statistic() const {
+  return *statistic_;
+}
+inline const ::zjchain::pools::protobuf::StatisticTxItem& StatisticTxMessage::statistic() const {
+  const ::zjchain::pools::protobuf::StatisticTxItem* p = statistic_;
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.StatisticTxMessage.statistic)
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::pools::protobuf::StatisticTxItem*>(
+      &::zjchain::pools::protobuf::_StatisticTxItem_default_instance_);
+}
+inline ::zjchain::pools::protobuf::StatisticTxItem* StatisticTxMessage::release_statistic() {
+  // @@protoc_insertion_point(field_release:zjchain.block.protobuf.StatisticTxMessage.statistic)
+  clear_has_statistic();
+  ::zjchain::pools::protobuf::StatisticTxItem* temp = statistic_;
+  statistic_ = NULL;
+  return temp;
+}
+inline ::zjchain::pools::protobuf::StatisticTxItem* StatisticTxMessage::mutable_statistic() {
+  set_has_statistic();
+  if (statistic_ == NULL) {
+    auto* p = CreateMaybeMessage<::zjchain::pools::protobuf::StatisticTxItem>(GetArenaNoVirtual());
+    statistic_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.StatisticTxMessage.statistic)
+  return statistic_;
+}
+inline void StatisticTxMessage::set_allocated_statistic(::zjchain::pools::protobuf::StatisticTxItem* statistic) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete reinterpret_cast< ::google::protobuf::MessageLite*>(statistic_);
+  }
+  if (statistic) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      statistic = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, statistic, submessage_arena);
+    }
+    set_has_statistic();
+  } else {
+    clear_has_statistic();
+  }
+  statistic_ = statistic;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.StatisticTxMessage.statistic)
+}
+
+// optional uint32 leader_idx = 2;
+inline bool StatisticTxMessage::has_leader_idx() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void StatisticTxMessage::set_has_leader_idx() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void StatisticTxMessage::clear_has_leader_idx() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void StatisticTxMessage::clear_leader_idx() {
+  leader_idx_ = 0u;
+  clear_has_leader_idx();
+}
+inline ::google::protobuf::uint32 StatisticTxMessage::leader_idx() const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.StatisticTxMessage.leader_idx)
+  return leader_idx_;
+}
+inline void StatisticTxMessage::set_leader_idx(::google::protobuf::uint32 value) {
+  set_has_leader_idx();
+  leader_idx_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.StatisticTxMessage.leader_idx)
+}
+
+// optional uint64 elect_height = 3;
+inline bool StatisticTxMessage::has_elect_height() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void StatisticTxMessage::set_has_elect_height() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void StatisticTxMessage::clear_has_elect_height() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void StatisticTxMessage::clear_elect_height() {
+  elect_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_elect_height();
+}
+inline ::google::protobuf::uint64 StatisticTxMessage::elect_height() const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.StatisticTxMessage.elect_height)
+  return elect_height_;
+}
+inline void StatisticTxMessage::set_elect_height(::google::protobuf::uint64 value) {
+  set_has_elect_height();
+  elect_height_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.StatisticTxMessage.elect_height)
+}
+
+// optional int32 leader_to_idx = 4;
+inline bool StatisticTxMessage::has_leader_to_idx() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void StatisticTxMessage::set_has_leader_to_idx() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void StatisticTxMessage::clear_has_leader_to_idx() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void StatisticTxMessage::clear_leader_to_idx() {
+  leader_to_idx_ = 0;
+  clear_has_leader_to_idx();
+}
+inline ::google::protobuf::int32 StatisticTxMessage::leader_to_idx() const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.StatisticTxMessage.leader_to_idx)
+  return leader_to_idx_;
+}
+inline void StatisticTxMessage::set_leader_to_idx(::google::protobuf::int32 value) {
+  set_has_leader_to_idx();
+  leader_to_idx_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.StatisticTxMessage.leader_to_idx)
+}
+
+// -------------------------------------------------------------------
+
 // BlockMessage
 
 // optional .zjchain.block.protobuf.GetTxBlockRequest block_req = 1;
@@ -10028,90 +10533,129 @@ inline void BlockMessage::set_allocated_acc_shard_res(::zjchain::block::protobuf
   // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.BlockMessage.acc_shard_res)
 }
 
-// repeated .zjchain.pools.protobuf.ToTxHeights to_txs = 17;
-inline int BlockMessage::to_txs_size() const {
-  return to_txs_.size();
-}
-inline ::zjchain::pools::protobuf::ToTxHeights* BlockMessage::mutable_to_txs(int index) {
-  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.BlockMessage.to_txs)
-  return to_txs_.Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ToTxHeights >*
-BlockMessage::mutable_to_txs() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.block.protobuf.BlockMessage.to_txs)
-  return &to_txs_;
-}
-inline const ::zjchain::pools::protobuf::ToTxHeights& BlockMessage::to_txs(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.BlockMessage.to_txs)
-  return to_txs_.Get(index);
-}
-inline ::zjchain::pools::protobuf::ToTxHeights* BlockMessage::add_to_txs() {
-  // @@protoc_insertion_point(field_add:zjchain.block.protobuf.BlockMessage.to_txs)
-  return to_txs_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ToTxHeights >&
-BlockMessage::to_txs() const {
-  // @@protoc_insertion_point(field_list:zjchain.block.protobuf.BlockMessage.to_txs)
-  return to_txs_;
-}
-
-// optional .zjchain.pools.protobuf.ToTxHeights shard_statistic_tx = 18;
-inline bool BlockMessage::has_shard_statistic_tx() const {
+// optional .zjchain.block.protobuf.ShardToTxMessage shard_to = 17;
+inline bool BlockMessage::has_shard_to() const {
   return (_has_bits_[0] & 0x00010000u) != 0;
 }
-inline void BlockMessage::set_has_shard_statistic_tx() {
+inline void BlockMessage::set_has_shard_to() {
   _has_bits_[0] |= 0x00010000u;
 }
-inline void BlockMessage::clear_has_shard_statistic_tx() {
+inline void BlockMessage::clear_has_shard_to() {
   _has_bits_[0] &= ~0x00010000u;
 }
-inline const ::zjchain::pools::protobuf::ToTxHeights& BlockMessage::_internal_shard_statistic_tx() const {
-  return *shard_statistic_tx_;
+inline void BlockMessage::clear_shard_to() {
+  if (shard_to_ != NULL) shard_to_->Clear();
+  clear_has_shard_to();
 }
-inline const ::zjchain::pools::protobuf::ToTxHeights& BlockMessage::shard_statistic_tx() const {
-  const ::zjchain::pools::protobuf::ToTxHeights* p = shard_statistic_tx_;
-  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.BlockMessage.shard_statistic_tx)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::pools::protobuf::ToTxHeights*>(
-      &::zjchain::pools::protobuf::_ToTxHeights_default_instance_);
+inline const ::zjchain::block::protobuf::ShardToTxMessage& BlockMessage::_internal_shard_to() const {
+  return *shard_to_;
 }
-inline ::zjchain::pools::protobuf::ToTxHeights* BlockMessage::release_shard_statistic_tx() {
-  // @@protoc_insertion_point(field_release:zjchain.block.protobuf.BlockMessage.shard_statistic_tx)
-  clear_has_shard_statistic_tx();
-  ::zjchain::pools::protobuf::ToTxHeights* temp = shard_statistic_tx_;
-  shard_statistic_tx_ = NULL;
+inline const ::zjchain::block::protobuf::ShardToTxMessage& BlockMessage::shard_to() const {
+  const ::zjchain::block::protobuf::ShardToTxMessage* p = shard_to_;
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.BlockMessage.shard_to)
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::block::protobuf::ShardToTxMessage*>(
+      &::zjchain::block::protobuf::_ShardToTxMessage_default_instance_);
+}
+inline ::zjchain::block::protobuf::ShardToTxMessage* BlockMessage::release_shard_to() {
+  // @@protoc_insertion_point(field_release:zjchain.block.protobuf.BlockMessage.shard_to)
+  clear_has_shard_to();
+  ::zjchain::block::protobuf::ShardToTxMessage* temp = shard_to_;
+  shard_to_ = NULL;
   return temp;
 }
-inline ::zjchain::pools::protobuf::ToTxHeights* BlockMessage::mutable_shard_statistic_tx() {
-  set_has_shard_statistic_tx();
-  if (shard_statistic_tx_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::pools::protobuf::ToTxHeights>(GetArenaNoVirtual());
-    shard_statistic_tx_ = p;
+inline ::zjchain::block::protobuf::ShardToTxMessage* BlockMessage::mutable_shard_to() {
+  set_has_shard_to();
+  if (shard_to_ == NULL) {
+    auto* p = CreateMaybeMessage<::zjchain::block::protobuf::ShardToTxMessage>(GetArenaNoVirtual());
+    shard_to_ = p;
   }
-  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.BlockMessage.shard_statistic_tx)
-  return shard_statistic_tx_;
+  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.BlockMessage.shard_to)
+  return shard_to_;
 }
-inline void BlockMessage::set_allocated_shard_statistic_tx(::zjchain::pools::protobuf::ToTxHeights* shard_statistic_tx) {
+inline void BlockMessage::set_allocated_shard_to(::zjchain::block::protobuf::ShardToTxMessage* shard_to) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
-    delete reinterpret_cast< ::google::protobuf::MessageLite*>(shard_statistic_tx_);
+    delete shard_to_;
   }
-  if (shard_statistic_tx) {
+  if (shard_to) {
     ::google::protobuf::Arena* submessage_arena = NULL;
     if (message_arena != submessage_arena) {
-      shard_statistic_tx = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, shard_statistic_tx, submessage_arena);
+      shard_to = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, shard_to, submessage_arena);
     }
-    set_has_shard_statistic_tx();
+    set_has_shard_to();
   } else {
-    clear_has_shard_statistic_tx();
+    clear_has_shard_to();
   }
-  shard_statistic_tx_ = shard_statistic_tx;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.BlockMessage.shard_statistic_tx)
+  shard_to_ = shard_to;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.BlockMessage.shard_to)
+}
+
+// optional .zjchain.block.protobuf.StatisticTxMessage statistic_tx = 18;
+inline bool BlockMessage::has_statistic_tx() const {
+  return (_has_bits_[0] & 0x00020000u) != 0;
+}
+inline void BlockMessage::set_has_statistic_tx() {
+  _has_bits_[0] |= 0x00020000u;
+}
+inline void BlockMessage::clear_has_statistic_tx() {
+  _has_bits_[0] &= ~0x00020000u;
+}
+inline void BlockMessage::clear_statistic_tx() {
+  if (statistic_tx_ != NULL) statistic_tx_->Clear();
+  clear_has_statistic_tx();
+}
+inline const ::zjchain::block::protobuf::StatisticTxMessage& BlockMessage::_internal_statistic_tx() const {
+  return *statistic_tx_;
+}
+inline const ::zjchain::block::protobuf::StatisticTxMessage& BlockMessage::statistic_tx() const {
+  const ::zjchain::block::protobuf::StatisticTxMessage* p = statistic_tx_;
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.BlockMessage.statistic_tx)
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::block::protobuf::StatisticTxMessage*>(
+      &::zjchain::block::protobuf::_StatisticTxMessage_default_instance_);
+}
+inline ::zjchain::block::protobuf::StatisticTxMessage* BlockMessage::release_statistic_tx() {
+  // @@protoc_insertion_point(field_release:zjchain.block.protobuf.BlockMessage.statistic_tx)
+  clear_has_statistic_tx();
+  ::zjchain::block::protobuf::StatisticTxMessage* temp = statistic_tx_;
+  statistic_tx_ = NULL;
+  return temp;
+}
+inline ::zjchain::block::protobuf::StatisticTxMessage* BlockMessage::mutable_statistic_tx() {
+  set_has_statistic_tx();
+  if (statistic_tx_ == NULL) {
+    auto* p = CreateMaybeMessage<::zjchain::block::protobuf::StatisticTxMessage>(GetArenaNoVirtual());
+    statistic_tx_ = p;
+  }
+  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.BlockMessage.statistic_tx)
+  return statistic_tx_;
+}
+inline void BlockMessage::set_allocated_statistic_tx(::zjchain::block::protobuf::StatisticTxMessage* statistic_tx) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete statistic_tx_;
+  }
+  if (statistic_tx) {
+    ::google::protobuf::Arena* submessage_arena = NULL;
+    if (message_arena != submessage_arena) {
+      statistic_tx = ::google::protobuf::internal::GetOwnedMessage(
+          message_arena, statistic_tx, submessage_arena);
+    }
+    set_has_statistic_tx();
+  } else {
+    clear_has_statistic_tx();
+  }
+  statistic_tx_ = statistic_tx;
+  // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.BlockMessage.statistic_tx)
 }
 
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

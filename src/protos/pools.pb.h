@@ -40,7 +40,7 @@ namespace protobuf_protos_2fpools_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[12];
+  static const ::google::protobuf::internal::ParseTable schema[14];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -71,6 +71,12 @@ extern PoolLatestInfoDefaultTypeInternal _PoolLatestInfo_default_instance_;
 class PoolStatisticItem;
 class PoolStatisticItemDefaultTypeInternal;
 extern PoolStatisticItemDefaultTypeInternal _PoolStatisticItem_default_instance_;
+class ShardToTxItem;
+class ShardToTxItemDefaultTypeInternal;
+extern ShardToTxItemDefaultTypeInternal _ShardToTxItem_default_instance_;
+class StatisticTxItem;
+class StatisticTxItemDefaultTypeInternal;
+extern StatisticTxItemDefaultTypeInternal _StatisticTxItem_default_instance_;
 class SyncPoolsMaxHeight;
 class SyncPoolsMaxHeightDefaultTypeInternal;
 extern SyncPoolsMaxHeightDefaultTypeInternal _SyncPoolsMaxHeight_default_instance_;
@@ -98,6 +104,8 @@ template<> ::zjchain::pools::protobuf::ElectStatistic* Arena::CreateMaybeMessage
 template<> ::zjchain::pools::protobuf::JoinElectNode* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::JoinElectNode>(Arena*);
 template<> ::zjchain::pools::protobuf::PoolLatestInfo* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::PoolLatestInfo>(Arena*);
 template<> ::zjchain::pools::protobuf::PoolStatisticItem* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::PoolStatisticItem>(Arena*);
+template<> ::zjchain::pools::protobuf::ShardToTxItem* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::ShardToTxItem>(Arena*);
+template<> ::zjchain::pools::protobuf::StatisticTxItem* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::StatisticTxItem>(Arena*);
 template<> ::zjchain::pools::protobuf::SyncPoolsMaxHeight* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::SyncPoolsMaxHeight>(Arena*);
 template<> ::zjchain::pools::protobuf::ToTxHeights* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::ToTxHeights>(Arena*);
 template<> ::zjchain::pools::protobuf::ToTxMessage* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::ToTxMessage>(Arena*);
@@ -530,6 +538,280 @@ class ToTxMessageItem : public ::google::protobuf::Message /* @@protoc_insertion
 };
 // -------------------------------------------------------------------
 
+class ShardToTxItem : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.pools.protobuf.ShardToTxItem) */ {
+ public:
+  ShardToTxItem();
+  virtual ~ShardToTxItem();
+
+  ShardToTxItem(const ShardToTxItem& from);
+
+  inline ShardToTxItem& operator=(const ShardToTxItem& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  ShardToTxItem(ShardToTxItem&& from) noexcept
+    : ShardToTxItem() {
+    *this = ::std::move(from);
+  }
+
+  inline ShardToTxItem& operator=(ShardToTxItem&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ShardToTxItem& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ShardToTxItem* internal_default_instance() {
+    return reinterpret_cast<const ShardToTxItem*>(
+               &_ShardToTxItem_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    2;
+
+  void Swap(ShardToTxItem* other);
+  friend void swap(ShardToTxItem& a, ShardToTxItem& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ShardToTxItem* New() const final {
+    return CreateMaybeMessage<ShardToTxItem>(NULL);
+  }
+
+  ShardToTxItem* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<ShardToTxItem>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const ShardToTxItem& from);
+  void MergeFrom(const ShardToTxItem& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ShardToTxItem* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated uint64 heights = 2;
+  int heights_size() const;
+  void clear_heights();
+  static const int kHeightsFieldNumber = 2;
+  ::google::protobuf::uint64 heights(int index) const;
+  void set_heights(int index, ::google::protobuf::uint64 value);
+  void add_heights(::google::protobuf::uint64 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+      heights() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+      mutable_heights();
+
+  // optional uint64 block_height = 3;
+  bool has_block_height() const;
+  void clear_block_height();
+  static const int kBlockHeightFieldNumber = 3;
+  ::google::protobuf::uint64 block_height() const;
+  void set_block_height(::google::protobuf::uint64 value);
+
+  // optional uint32 sharding_id = 1;
+  bool has_sharding_id() const;
+  void clear_sharding_id();
+  static const int kShardingIdFieldNumber = 1;
+  ::google::protobuf::uint32 sharding_id() const;
+  void set_sharding_id(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.ShardToTxItem)
+ private:
+  void set_has_sharding_id();
+  void clear_has_sharding_id();
+  void set_has_block_height();
+  void clear_has_block_height();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > heights_;
+  ::google::protobuf::uint64 block_height_;
+  ::google::protobuf::uint32 sharding_id_;
+  friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
+class StatisticTxItem : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.pools.protobuf.StatisticTxItem) */ {
+ public:
+  StatisticTxItem();
+  virtual ~StatisticTxItem();
+
+  StatisticTxItem(const StatisticTxItem& from);
+
+  inline StatisticTxItem& operator=(const StatisticTxItem& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  StatisticTxItem(StatisticTxItem&& from) noexcept
+    : StatisticTxItem() {
+    *this = ::std::move(from);
+  }
+
+  inline StatisticTxItem& operator=(StatisticTxItem&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const StatisticTxItem& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const StatisticTxItem* internal_default_instance() {
+    return reinterpret_cast<const StatisticTxItem*>(
+               &_StatisticTxItem_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    3;
+
+  void Swap(StatisticTxItem* other);
+  friend void swap(StatisticTxItem& a, StatisticTxItem& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline StatisticTxItem* New() const final {
+    return CreateMaybeMessage<StatisticTxItem>(NULL);
+  }
+
+  StatisticTxItem* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<StatisticTxItem>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const StatisticTxItem& from);
+  void MergeFrom(const StatisticTxItem& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(StatisticTxItem* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated uint64 heights = 2;
+  int heights_size() const;
+  void clear_heights();
+  static const int kHeightsFieldNumber = 2;
+  ::google::protobuf::uint64 heights(int index) const;
+  void set_heights(int index, ::google::protobuf::uint64 value);
+  void add_heights(::google::protobuf::uint64 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+      heights() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+      mutable_heights();
+
+  // optional uint64 block_height = 3;
+  bool has_block_height() const;
+  void clear_block_height();
+  static const int kBlockHeightFieldNumber = 3;
+  ::google::protobuf::uint64 block_height() const;
+  void set_block_height(::google::protobuf::uint64 value);
+
+  // optional uint32 sharding_id = 1;
+  bool has_sharding_id() const;
+  void clear_sharding_id();
+  static const int kShardingIdFieldNumber = 1;
+  ::google::protobuf::uint32 sharding_id() const;
+  void set_sharding_id(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.StatisticTxItem)
+ private:
+  void set_has_sharding_id();
+  void clear_has_sharding_id();
+  void set_has_block_height();
+  void clear_has_block_height();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > heights_;
+  ::google::protobuf::uint64 block_height_;
+  ::google::protobuf::uint32 sharding_id_;
+  friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class ToTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.pools.protobuf.ToTxMessage) */ {
  public:
   ToTxMessage();
@@ -572,7 +854,7 @@ class ToTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
                &_ToTxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    4;
 
   void Swap(ToTxMessage* other);
   friend void swap(ToTxMessage& a, ToTxMessage& b) {
@@ -651,17 +933,24 @@ class ToTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::std::string* release_heights_hash();
   void set_allocated_heights_hash(::std::string* heights_hash);
 
-  // optional .zjchain.pools.protobuf.ToTxHeights to_heights = 3;
+  // optional .zjchain.pools.protobuf.ShardToTxItem to_heights = 3;
   bool has_to_heights() const;
   void clear_to_heights();
   static const int kToHeightsFieldNumber = 3;
   private:
-  const ::zjchain::pools::protobuf::ToTxHeights& _internal_to_heights() const;
+  const ::zjchain::pools::protobuf::ShardToTxItem& _internal_to_heights() const;
   public:
-  const ::zjchain::pools::protobuf::ToTxHeights& to_heights() const;
-  ::zjchain::pools::protobuf::ToTxHeights* release_to_heights();
-  ::zjchain::pools::protobuf::ToTxHeights* mutable_to_heights();
-  void set_allocated_to_heights(::zjchain::pools::protobuf::ToTxHeights* to_heights);
+  const ::zjchain::pools::protobuf::ShardToTxItem& to_heights() const;
+  ::zjchain::pools::protobuf::ShardToTxItem* release_to_heights();
+  ::zjchain::pools::protobuf::ShardToTxItem* mutable_to_heights();
+  void set_allocated_to_heights(::zjchain::pools::protobuf::ShardToTxItem* to_heights);
+
+  // optional uint64 elect_height = 4;
+  bool has_elect_height() const;
+  void clear_elect_height();
+  static const int kElectHeightFieldNumber = 4;
+  ::google::protobuf::uint64 elect_height() const;
+  void set_elect_height(::google::protobuf::uint64 value);
 
   // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.ToTxMessage)
  private:
@@ -669,13 +958,16 @@ class ToTxMessage : public ::google::protobuf::Message /* @@protoc_insertion_poi
   void clear_has_heights_hash();
   void set_has_to_heights();
   void clear_has_to_heights();
+  void set_has_elect_height();
+  void clear_has_elect_height();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::ToTxMessageItem > tos_;
   ::google::protobuf::internal::ArenaStringPtr heights_hash_;
-  ::zjchain::pools::protobuf::ToTxHeights* to_heights_;
+  ::zjchain::pools::protobuf::ShardToTxItem* to_heights_;
+  ::google::protobuf::uint64 elect_height_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -722,7 +1014,7 @@ class PoolLatestInfo : public ::google::protobuf::Message /* @@protoc_insertion_
                &_PoolLatestInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    3;
+    5;
 
   void Swap(PoolLatestInfo* other);
   friend void swap(PoolLatestInfo& a, PoolLatestInfo& b) {
@@ -864,7 +1156,7 @@ class AreaInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
                &_AreaInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    6;
 
   void Swap(AreaInfo* other);
   friend void swap(AreaInfo& a, AreaInfo& b) {
@@ -988,7 +1280,7 @@ class PoolStatisticItem : public ::google::protobuf::Message /* @@protoc_inserti
                &_PoolStatisticItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    7;
 
   void Swap(PoolStatisticItem* other);
   friend void swap(PoolStatisticItem& a, PoolStatisticItem& b) {
@@ -1141,7 +1433,7 @@ class JoinElectNode : public ::google::protobuf::Message /* @@protoc_insertion_p
                &_JoinElectNode_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    8;
 
   void Swap(JoinElectNode* other);
   friend void swap(JoinElectNode& a, JoinElectNode& b) {
@@ -1293,7 +1585,7 @@ class CrossShardStatisticItem : public ::google::protobuf::Message /* @@protoc_i
                &_CrossShardStatisticItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    9;
 
   void Swap(CrossShardStatisticItem* other);
   friend void swap(CrossShardStatisticItem& a, CrossShardStatisticItem& b) {
@@ -1437,7 +1729,7 @@ class CrossShardStatistic : public ::google::protobuf::Message /* @@protoc_inser
                &_CrossShardStatistic_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    10;
 
   void Swap(CrossShardStatistic* other);
   friend void swap(CrossShardStatistic& a, CrossShardStatistic& b) {
@@ -1554,7 +1846,7 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
                &_ElectStatistic_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    11;
 
   void Swap(ElectStatistic* other);
   friend void swap(ElectStatistic& a, ElectStatistic& b) {
@@ -1642,17 +1934,17 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 >*
       mutable_lof_leaders();
 
-  // optional .zjchain.pools.protobuf.ToTxHeights heights = 2;
+  // optional .zjchain.pools.protobuf.StatisticTxItem heights = 2;
   bool has_heights() const;
   void clear_heights();
   static const int kHeightsFieldNumber = 2;
   private:
-  const ::zjchain::pools::protobuf::ToTxHeights& _internal_heights() const;
+  const ::zjchain::pools::protobuf::StatisticTxItem& _internal_heights() const;
   public:
-  const ::zjchain::pools::protobuf::ToTxHeights& heights() const;
-  ::zjchain::pools::protobuf::ToTxHeights* release_heights();
-  ::zjchain::pools::protobuf::ToTxHeights* mutable_heights();
-  void set_allocated_heights(::zjchain::pools::protobuf::ToTxHeights* heights);
+  const ::zjchain::pools::protobuf::StatisticTxItem& heights() const;
+  ::zjchain::pools::protobuf::StatisticTxItem* release_heights();
+  ::zjchain::pools::protobuf::StatisticTxItem* mutable_heights();
+  void set_allocated_heights(::zjchain::pools::protobuf::StatisticTxItem* heights);
 
   // optional .zjchain.pools.protobuf.CrossShardStatistic cross = 7;
   bool has_cross() const;
@@ -1673,6 +1965,13 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint64 gas_amount() const;
   void set_gas_amount(::google::protobuf::uint64 value);
 
+  // optional uint64 elect_height = 8;
+  bool has_elect_height() const;
+  void clear_elect_height();
+  static const int kElectHeightFieldNumber = 8;
+  ::google::protobuf::uint64 elect_height() const;
+  void set_elect_height(::google::protobuf::uint64 value);
+
   // optional uint32 sharding_id = 4;
   bool has_sharding_id() const;
   void clear_sharding_id();
@@ -1690,6 +1989,8 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   void clear_has_gas_amount();
   void set_has_cross();
   void clear_has_cross();
+  void set_has_elect_height();
+  void clear_has_elect_height();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -1697,9 +1998,10 @@ class ElectStatistic : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::PoolStatisticItem > statistics_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::JoinElectNode > join_elect_nodes_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint32 > lof_leaders_;
-  ::zjchain::pools::protobuf::ToTxHeights* heights_;
+  ::zjchain::pools::protobuf::StatisticTxItem* heights_;
   ::zjchain::pools::protobuf::CrossShardStatistic* cross_;
   ::google::protobuf::uint64 gas_amount_;
+  ::google::protobuf::uint64 elect_height_;
   ::google::protobuf::uint32 sharding_id_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
@@ -1747,7 +2049,7 @@ class SyncPoolsMaxHeight : public ::google::protobuf::Message /* @@protoc_insert
                &_SyncPoolsMaxHeight_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    12;
 
   void Swap(SyncPoolsMaxHeight* other);
   friend void swap(SyncPoolsMaxHeight& a, SyncPoolsMaxHeight& b) {
@@ -1887,7 +2189,7 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
                &_TxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    13;
 
   void Swap(TxMessage* other);
   friend void swap(TxMessage& a, TxMessage& b) {
@@ -2663,6 +2965,170 @@ ToTxMessageItem::join_infos() const {
 
 // -------------------------------------------------------------------
 
+// ShardToTxItem
+
+// optional uint32 sharding_id = 1;
+inline bool ShardToTxItem::has_sharding_id() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void ShardToTxItem::set_has_sharding_id() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void ShardToTxItem::clear_has_sharding_id() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void ShardToTxItem::clear_sharding_id() {
+  sharding_id_ = 0u;
+  clear_has_sharding_id();
+}
+inline ::google::protobuf::uint32 ShardToTxItem::sharding_id() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ShardToTxItem.sharding_id)
+  return sharding_id_;
+}
+inline void ShardToTxItem::set_sharding_id(::google::protobuf::uint32 value) {
+  set_has_sharding_id();
+  sharding_id_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ShardToTxItem.sharding_id)
+}
+
+// repeated uint64 heights = 2;
+inline int ShardToTxItem::heights_size() const {
+  return heights_.size();
+}
+inline void ShardToTxItem::clear_heights() {
+  heights_.Clear();
+}
+inline ::google::protobuf::uint64 ShardToTxItem::heights(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ShardToTxItem.heights)
+  return heights_.Get(index);
+}
+inline void ShardToTxItem::set_heights(int index, ::google::protobuf::uint64 value) {
+  heights_.Set(index, value);
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ShardToTxItem.heights)
+}
+inline void ShardToTxItem::add_heights(::google::protobuf::uint64 value) {
+  heights_.Add(value);
+  // @@protoc_insertion_point(field_add:zjchain.pools.protobuf.ShardToTxItem.heights)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+ShardToTxItem::heights() const {
+  // @@protoc_insertion_point(field_list:zjchain.pools.protobuf.ShardToTxItem.heights)
+  return heights_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+ShardToTxItem::mutable_heights() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.pools.protobuf.ShardToTxItem.heights)
+  return &heights_;
+}
+
+// optional uint64 block_height = 3;
+inline bool ShardToTxItem::has_block_height() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void ShardToTxItem::set_has_block_height() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void ShardToTxItem::clear_has_block_height() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void ShardToTxItem::clear_block_height() {
+  block_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_block_height();
+}
+inline ::google::protobuf::uint64 ShardToTxItem::block_height() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ShardToTxItem.block_height)
+  return block_height_;
+}
+inline void ShardToTxItem::set_block_height(::google::protobuf::uint64 value) {
+  set_has_block_height();
+  block_height_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ShardToTxItem.block_height)
+}
+
+// -------------------------------------------------------------------
+
+// StatisticTxItem
+
+// optional uint32 sharding_id = 1;
+inline bool StatisticTxItem::has_sharding_id() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void StatisticTxItem::set_has_sharding_id() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void StatisticTxItem::clear_has_sharding_id() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void StatisticTxItem::clear_sharding_id() {
+  sharding_id_ = 0u;
+  clear_has_sharding_id();
+}
+inline ::google::protobuf::uint32 StatisticTxItem::sharding_id() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.StatisticTxItem.sharding_id)
+  return sharding_id_;
+}
+inline void StatisticTxItem::set_sharding_id(::google::protobuf::uint32 value) {
+  set_has_sharding_id();
+  sharding_id_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.StatisticTxItem.sharding_id)
+}
+
+// repeated uint64 heights = 2;
+inline int StatisticTxItem::heights_size() const {
+  return heights_.size();
+}
+inline void StatisticTxItem::clear_heights() {
+  heights_.Clear();
+}
+inline ::google::protobuf::uint64 StatisticTxItem::heights(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.StatisticTxItem.heights)
+  return heights_.Get(index);
+}
+inline void StatisticTxItem::set_heights(int index, ::google::protobuf::uint64 value) {
+  heights_.Set(index, value);
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.StatisticTxItem.heights)
+}
+inline void StatisticTxItem::add_heights(::google::protobuf::uint64 value) {
+  heights_.Add(value);
+  // @@protoc_insertion_point(field_add:zjchain.pools.protobuf.StatisticTxItem.heights)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+StatisticTxItem::heights() const {
+  // @@protoc_insertion_point(field_list:zjchain.pools.protobuf.StatisticTxItem.heights)
+  return heights_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+StatisticTxItem::mutable_heights() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.pools.protobuf.StatisticTxItem.heights)
+  return &heights_;
+}
+
+// optional uint64 block_height = 3;
+inline bool StatisticTxItem::has_block_height() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void StatisticTxItem::set_has_block_height() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void StatisticTxItem::clear_has_block_height() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void StatisticTxItem::clear_block_height() {
+  block_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_block_height();
+}
+inline ::google::protobuf::uint64 StatisticTxItem::block_height() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.StatisticTxItem.block_height)
+  return block_height_;
+}
+inline void StatisticTxItem::set_block_height(::google::protobuf::uint64 value) {
+  set_has_block_height();
+  block_height_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.StatisticTxItem.block_height)
+}
+
+// -------------------------------------------------------------------
+
 // ToTxMessage
 
 // optional bytes heights_hash = 1;
@@ -2761,7 +3227,7 @@ ToTxMessage::tos() const {
   return tos_;
 }
 
-// optional .zjchain.pools.protobuf.ToTxHeights to_heights = 3;
+// optional .zjchain.pools.protobuf.ShardToTxItem to_heights = 3;
 inline bool ToTxMessage::has_to_heights() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -2775,32 +3241,32 @@ inline void ToTxMessage::clear_to_heights() {
   if (to_heights_ != NULL) to_heights_->Clear();
   clear_has_to_heights();
 }
-inline const ::zjchain::pools::protobuf::ToTxHeights& ToTxMessage::_internal_to_heights() const {
+inline const ::zjchain::pools::protobuf::ShardToTxItem& ToTxMessage::_internal_to_heights() const {
   return *to_heights_;
 }
-inline const ::zjchain::pools::protobuf::ToTxHeights& ToTxMessage::to_heights() const {
-  const ::zjchain::pools::protobuf::ToTxHeights* p = to_heights_;
+inline const ::zjchain::pools::protobuf::ShardToTxItem& ToTxMessage::to_heights() const {
+  const ::zjchain::pools::protobuf::ShardToTxItem* p = to_heights_;
   // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ToTxMessage.to_heights)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::pools::protobuf::ToTxHeights*>(
-      &::zjchain::pools::protobuf::_ToTxHeights_default_instance_);
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::pools::protobuf::ShardToTxItem*>(
+      &::zjchain::pools::protobuf::_ShardToTxItem_default_instance_);
 }
-inline ::zjchain::pools::protobuf::ToTxHeights* ToTxMessage::release_to_heights() {
+inline ::zjchain::pools::protobuf::ShardToTxItem* ToTxMessage::release_to_heights() {
   // @@protoc_insertion_point(field_release:zjchain.pools.protobuf.ToTxMessage.to_heights)
   clear_has_to_heights();
-  ::zjchain::pools::protobuf::ToTxHeights* temp = to_heights_;
+  ::zjchain::pools::protobuf::ShardToTxItem* temp = to_heights_;
   to_heights_ = NULL;
   return temp;
 }
-inline ::zjchain::pools::protobuf::ToTxHeights* ToTxMessage::mutable_to_heights() {
+inline ::zjchain::pools::protobuf::ShardToTxItem* ToTxMessage::mutable_to_heights() {
   set_has_to_heights();
   if (to_heights_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::pools::protobuf::ToTxHeights>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::zjchain::pools::protobuf::ShardToTxItem>(GetArenaNoVirtual());
     to_heights_ = p;
   }
   // @@protoc_insertion_point(field_mutable:zjchain.pools.protobuf.ToTxMessage.to_heights)
   return to_heights_;
 }
-inline void ToTxMessage::set_allocated_to_heights(::zjchain::pools::protobuf::ToTxHeights* to_heights) {
+inline void ToTxMessage::set_allocated_to_heights(::zjchain::pools::protobuf::ShardToTxItem* to_heights) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete to_heights_;
@@ -2817,6 +3283,30 @@ inline void ToTxMessage::set_allocated_to_heights(::zjchain::pools::protobuf::To
   }
   to_heights_ = to_heights;
   // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.ToTxMessage.to_heights)
+}
+
+// optional uint64 elect_height = 4;
+inline bool ToTxMessage::has_elect_height() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void ToTxMessage::set_has_elect_height() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void ToTxMessage::clear_has_elect_height() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void ToTxMessage::clear_elect_height() {
+  elect_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_elect_height();
+}
+inline ::google::protobuf::uint64 ToTxMessage::elect_height() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ToTxMessage.elect_height)
+  return elect_height_;
+}
+inline void ToTxMessage::set_elect_height(::google::protobuf::uint64 value) {
+  set_has_elect_height();
+  elect_height_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ToTxMessage.elect_height)
 }
 
 // -------------------------------------------------------------------
@@ -3417,7 +3907,7 @@ ElectStatistic::statistics() const {
   return statistics_;
 }
 
-// optional .zjchain.pools.protobuf.ToTxHeights heights = 2;
+// optional .zjchain.pools.protobuf.StatisticTxItem heights = 2;
 inline bool ElectStatistic::has_heights() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -3431,32 +3921,32 @@ inline void ElectStatistic::clear_heights() {
   if (heights_ != NULL) heights_->Clear();
   clear_has_heights();
 }
-inline const ::zjchain::pools::protobuf::ToTxHeights& ElectStatistic::_internal_heights() const {
+inline const ::zjchain::pools::protobuf::StatisticTxItem& ElectStatistic::_internal_heights() const {
   return *heights_;
 }
-inline const ::zjchain::pools::protobuf::ToTxHeights& ElectStatistic::heights() const {
-  const ::zjchain::pools::protobuf::ToTxHeights* p = heights_;
+inline const ::zjchain::pools::protobuf::StatisticTxItem& ElectStatistic::heights() const {
+  const ::zjchain::pools::protobuf::StatisticTxItem* p = heights_;
   // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ElectStatistic.heights)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::pools::protobuf::ToTxHeights*>(
-      &::zjchain::pools::protobuf::_ToTxHeights_default_instance_);
+  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::pools::protobuf::StatisticTxItem*>(
+      &::zjchain::pools::protobuf::_StatisticTxItem_default_instance_);
 }
-inline ::zjchain::pools::protobuf::ToTxHeights* ElectStatistic::release_heights() {
+inline ::zjchain::pools::protobuf::StatisticTxItem* ElectStatistic::release_heights() {
   // @@protoc_insertion_point(field_release:zjchain.pools.protobuf.ElectStatistic.heights)
   clear_has_heights();
-  ::zjchain::pools::protobuf::ToTxHeights* temp = heights_;
+  ::zjchain::pools::protobuf::StatisticTxItem* temp = heights_;
   heights_ = NULL;
   return temp;
 }
-inline ::zjchain::pools::protobuf::ToTxHeights* ElectStatistic::mutable_heights() {
+inline ::zjchain::pools::protobuf::StatisticTxItem* ElectStatistic::mutable_heights() {
   set_has_heights();
   if (heights_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::pools::protobuf::ToTxHeights>(GetArenaNoVirtual());
+    auto* p = CreateMaybeMessage<::zjchain::pools::protobuf::StatisticTxItem>(GetArenaNoVirtual());
     heights_ = p;
   }
   // @@protoc_insertion_point(field_mutable:zjchain.pools.protobuf.ElectStatistic.heights)
   return heights_;
 }
-inline void ElectStatistic::set_allocated_heights(::zjchain::pools::protobuf::ToTxHeights* heights) {
+inline void ElectStatistic::set_allocated_heights(::zjchain::pools::protobuf::StatisticTxItem* heights) {
   ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
   if (message_arena == NULL) {
     delete heights_;
@@ -3507,13 +3997,13 @@ ElectStatistic::join_elect_nodes() const {
 
 // optional uint32 sharding_id = 4;
 inline bool ElectStatistic::has_sharding_id() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void ElectStatistic::set_has_sharding_id() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void ElectStatistic::clear_has_sharding_id() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void ElectStatistic::clear_sharding_id() {
   sharding_id_ = 0u;
@@ -3639,6 +4129,30 @@ inline void ElectStatistic::set_allocated_cross(::zjchain::pools::protobuf::Cros
   }
   cross_ = cross;
   // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.ElectStatistic.cross)
+}
+
+// optional uint64 elect_height = 8;
+inline bool ElectStatistic::has_elect_height() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void ElectStatistic::set_has_elect_height() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void ElectStatistic::clear_has_elect_height() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void ElectStatistic::clear_elect_height() {
+  elect_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_elect_height();
+}
+inline ::google::protobuf::uint64 ElectStatistic::elect_height() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ElectStatistic.elect_height)
+  return elect_height_;
+}
+inline void ElectStatistic::set_elect_height(::google::protobuf::uint64 value) {
+  set_has_elect_height();
+  elect_height_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ElectStatistic.elect_height)
 }
 
 // -------------------------------------------------------------------
@@ -4343,6 +4857,10 @@ inline void TxMessage::set_allocated_contract_input(::std::string* contract_inpu
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
