@@ -170,7 +170,7 @@ void ShardStatistic::HandleStatisticBlock(
             prefix_db_->SaveStatisticLatestHeihgts(
                 common::GlobalInfo::Instance()->network_id(),
                 elect_statistic.heights());
-            tx_heights_ptr_ = std::make_shared<pools::protobuf::ToTxHeights>(elect_statistic.heights());
+            tx_heights_ptr_ = std::make_shared<pools::protobuf::StatisticTxItem>(elect_statistic.heights());
             std::string init_consensus_height;
             for (int32_t i = 0; i < tx_heights_ptr_->heights_size(); ++i) {
                 init_consensus_height += std::to_string(tx_heights_ptr_->heights(i)) + " ";
