@@ -915,6 +915,12 @@ int BlockManager::GetBlockWithHeight(
 }
 
 void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_ptr, bool retry) {
+    ZJC_DEBUG("now statistic with leader heights retry: %d, "
+        "elect height: %lu, leader idx: %u, to idx: %u",
+        retry,
+        msg_ptr->header.block_proto().statistic_tx().elect_height(),
+        msg_ptr->header.block_proto().statistic_tx().leader_idx(),
+        msg_ptr->header.block_proto().statistic_tx().leader_to_idx());
     if (create_statistic_tx_cb_ == nullptr) {
         return;
     }
@@ -1436,9 +1442,9 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
         statistic_msg.set_leader_idx(to_tx_leader_->index);
         // send to other nodes
         auto& broadcast = *msg.mutable_broadcast();
-        statistic_message_->thread_idx = thread_idx;
     }
     
+    statistic_message_->thread_idx = thread_idx;
     auto& msg = statistic_message_->header;
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
