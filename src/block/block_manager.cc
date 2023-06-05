@@ -1471,9 +1471,11 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
         auto& broadcast = *msg.mutable_broadcast();
     }
     
-    statistic_msg.set_leader_to_idx(leader_create_statistic_heights_index_++);
     statistic_message_->thread_idx = thread_idx;
     auto& msg = statistic_message_->header;
+    auto& block_msg = *msg.mutable_block_proto();
+    block::protobuf::StatisticTxMessage& statistic_msg = *block_msg.mutable_statistic_tx();
+    statistic_msg.set_leader_to_idx(leader_create_statistic_heights_index_++);
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
     std::string sign;
