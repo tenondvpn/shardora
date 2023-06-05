@@ -97,6 +97,22 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 
     CreateToTx(msg_ptr->thread_idx);
     CreateStatisticTx(msg_ptr->thread_idx);
+    auto now_tm_ms = now_tm / 1000;
+    if (!leader_statistic_txs_.empty() && prev_retry_create_statistic_tx_ms_ < now_tm_ms) {
+        if (leader_statistic_txs_.size() >= 4) {
+            leader_statistic_txs_.erase(leader_statistic_txs_.begin());
+        }
+
+        for (auto iter = leader_statistic_txs_.rbegin(); iter != leader_statistic_txs_.rend(); ++iter) {
+            auto tmp_ptr = iter->second->statistic_msg;
+            if (tmp_ptr != nullptr) {
+                StatisticWithLeaderHeights(tmp_ptr, true);
+                break;
+            }
+        }
+
+        prev_retry_create_statistic_tx_ms_ = now_tm_ms + kRetryStatisticPeriod;
+    }
 }
 
 void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members) {
