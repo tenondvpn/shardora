@@ -316,6 +316,17 @@ void BlockManager::HandleCrossTx(
                 break;
             }
 
+            auto iter = leader_statistic_txs_.find(cross_statistic.elect_height());
+            if (iter != leader_statistic_txs_.end()) {
+                iter->second->cross_statistic_tx = nullptr;
+                ZJC_DEBUG("erase statistic elect height: %lu, hash: %s",
+                    cross_statistic.elect_height(),
+                    common::Encode::HexEncode(block_tx.storages(i).val_hash()).c_str());
+                if (iter->second->shard_statistic_tx == nullptr) {
+                    leader_statistic_txs_.erase(iter);
+                }
+            }
+
             for (int32_t i = 0; i < cross_statistic.crosses_size(); ++i) {
                 ZJC_DEBUG("success handle cross tx block net: %u, pool: %u, height: %lu, "
                     "src shard: %u, src pool: %u, height: %lu, des shard: %lu",
@@ -359,6 +370,18 @@ void BlockManager::HandleStatisticTx(
             if (latest_shard_statistic_tx_ != nullptr && latest_shard_statistic_tx_->tx_hash == block_tx.storages(i).val_hash()) {
                 latest_shard_statistic_tx_ = nullptr;
             }
+
+            auto iter = leader_statistic_txs_.find(elect_statistic.elect_height());
+            if (iter != leader_statistic_txs_.end()) {
+                iter->second->shard_statistic_tx = nullptr;
+                ZJC_DEBUG("erase statistic elect height: %lu, hash: %s",
+                    elect_statistic.elect_height(),
+                    common::Encode::HexEncode(block_tx.storages(i).val_hash()).c_str());
+                if (iter->second->cross_statistic_tx == nullptr) {
+                    leader_statistic_txs_.erase(iter);
+                }
+            }
+
             break;
         }
     }

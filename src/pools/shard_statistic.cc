@@ -919,6 +919,7 @@ int ShardStatistic::StatisticWithHeights(
     str_for_hash.append(heights_hash);
     debug_for_str += std::to_string(all_gas_amount) + ",";
     debug_for_str += std::to_string(net_id) + ",";
+    cross_statistic.set_elect_height(elect_height);
     if (!cross_string_for_hash.empty()) {
         if (is_root) {
             *cross_hash = common::Hash::keccak256(cross_string_for_hash);
