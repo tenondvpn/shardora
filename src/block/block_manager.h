@@ -163,7 +163,7 @@ private:
     static const uint64_t kRetryStatisticPeriod = 3000lu;
     static const uint64_t kStatisticTimeoutMs = 20000lu;
     static const uint64_t kToTimeoutMs = 10000lu;
-    static const uint64_t kStatisticValidTimeout = 10000000lu;
+    static const uint64_t kStatisticValidTimeout = 3000000lu;
     static const uint64_t kToValidTimeout = 3000000lu;
     static const uint64_t kElectTimeout = 20000lu;
     static const uint64_t kElectValidTimeout = 3000000lu;

@@ -1263,7 +1263,7 @@ pools::TxItemPtr BlockManager::GetCrossTx(uint32_t pool_index, bool leader) {
 }
 
 pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) {
-    auto& shard_statistic_tx = latest_shard_statistic_tx_;
+    auto shard_statistic_tx = latest_shard_statistic_tx_;
     if (shard_statistic_tx != nullptr && !shard_statistic_tx->tx_ptr->in_consensus) {
         auto now_tm = common::TimeUtils::TimestampUs();
         if (leader && shard_statistic_tx->tx_ptr->time_valid > now_tm) {
