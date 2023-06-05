@@ -962,53 +962,57 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
     }
 
     if (!statistic_hash.empty()) {
-        auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-        auto* tx = new_msg_ptr->header.mutable_tx_proto();
-        tx->set_key(protos::kShardStatistic);
-        tx->set_value(statistic_hash);
-        tx->set_pubkey("");
-        tx->set_step(pools::protobuf::kStatistic);
-        auto gid = common::Hash::keccak256(
-            statistic_hash + std::to_string(common::GlobalInfo::Instance()->network_id()));
-        tx->set_gas_limit(0);
-        tx->set_amount(0);
-        tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_gid(gid);
-        auto tx_ptr = std::make_shared<BlockTxsItem>();
-        tx_ptr->tx_ptr = create_statistic_tx_cb_(new_msg_ptr);
-        tx_ptr->tx_ptr->time_valid += kStatisticValidTimeout;
-        tx_ptr->tx_ptr->in_consensus = false;
-        tx_ptr->tx_hash = statistic_hash;
-        tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
-        statistic_item->shard_statistic_tx = tx_ptr;
-        ZJC_DEBUG("success add statistic tx: %s", common::Encode::HexEncode(statistic_hash).c_str());
-        if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
+        if (statistic_item->shard_statistic_tx == nullptr || statistic_item->shard_statistic_tx->tx_hash != statistic_hash) {
+            auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto* tx = new_msg_ptr->header.mutable_tx_proto();
+            tx->set_key(protos::kShardStatistic);
+            tx->set_value(statistic_hash);
+            tx->set_pubkey("");
+            tx->set_step(pools::protobuf::kStatistic);
+            auto gid = common::Hash::keccak256(
+                statistic_hash + std::to_string(common::GlobalInfo::Instance()->network_id()));
+            tx->set_gas_limit(0);
+            tx->set_amount(0);
+            tx->set_gas_price(common::kBuildinTransactionGasPrice);
+            tx->set_gid(gid);
+            auto tx_ptr = std::make_shared<BlockTxsItem>();
+            tx_ptr->tx_ptr = create_statistic_tx_cb_(new_msg_ptr);
+            tx_ptr->tx_ptr->time_valid += kStatisticValidTimeout;
+            tx_ptr->tx_ptr->in_consensus = false;
+            tx_ptr->tx_hash = statistic_hash;
+            tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
+            statistic_item->shard_statistic_tx = tx_ptr;
+            ZJC_DEBUG("success add statistic tx: %s", common::Encode::HexEncode(statistic_hash).c_str());
+            if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
                 common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
-            statistic_item->statistic_msg = nullptr;
+                statistic_item->statistic_msg = nullptr;
+            }
         }
     }
 
     if (!cross_hash.empty()) {
-        auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-        auto* tx = new_msg_ptr->header.mutable_tx_proto();
-        tx->set_key(protos::kShardCross);
-        tx->set_value(cross_hash);
-        tx->set_pubkey("");
-        tx->set_step(pools::protobuf::kCross);
-        auto gid = common::Hash::keccak256(
-            cross_hash + std::to_string(common::GlobalInfo::Instance()->network_id()));
-        tx->set_gas_limit(0);
-        tx->set_amount(0);
-        tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_gid(gid);
-        auto tx_ptr = std::make_shared<BlockTxsItem>();
-        tx_ptr->tx_ptr = cross_tx_cb_(new_msg_ptr);
-        tx_ptr->tx_ptr->time_valid += kStatisticValidTimeout;
-        tx_ptr->tx_ptr->in_consensus = false;
-        tx_ptr->tx_hash = cross_hash;
-        tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
-        statistic_item->cross_statistic_tx = tx_ptr;
-        ZJC_DEBUG("success add cross tx: %s", common::Encode::HexEncode(cross_hash).c_str());
+        if (statistic_item->cross_statistic_tx == nullptr || statistic_item->cross_statistic_tx->tx_hash != cross_hash) {
+            auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+            auto* tx = new_msg_ptr->header.mutable_tx_proto();
+            tx->set_key(protos::kShardCross);
+            tx->set_value(cross_hash);
+            tx->set_pubkey("");
+            tx->set_step(pools::protobuf::kCross);
+            auto gid = common::Hash::keccak256(
+                cross_hash + std::to_string(common::GlobalInfo::Instance()->network_id()));
+            tx->set_gas_limit(0);
+            tx->set_amount(0);
+            tx->set_gas_price(common::kBuildinTransactionGasPrice);
+            tx->set_gid(gid);
+            auto tx_ptr = std::make_shared<BlockTxsItem>();
+            tx_ptr->tx_ptr = cross_tx_cb_(new_msg_ptr);
+            tx_ptr->tx_ptr->time_valid += kStatisticValidTimeout;
+            tx_ptr->tx_ptr->in_consensus = false;
+            tx_ptr->tx_hash = cross_hash;
+            tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
+            statistic_item->cross_statistic_tx = tx_ptr;
+            ZJC_DEBUG("success add cross tx: %s", common::Encode::HexEncode(cross_hash).c_str());
+        }
     }
 
     if (statistic_item->shard_statistic_tx != nullptr && statistic_item->cross_statistic_tx != nullptr) {
@@ -1418,6 +1422,7 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
         return;
     }
 
+    statistic_msg.set_elect_height(latest_elect_height_);
     statistic_msg.set_leader_to_idx(leader_create_statistic_heights_index_++);
     statistic_msg.set_leader_idx(to_tx_leader_->index);
     // send to other nodes
