@@ -216,5 +216,5 @@ message BlockMessage {
     optional GetAccountShardRequest acc_shard_req = 15;
     optional GetAccountShardReponse acc_shard_res = 16;
     optional ShardToTxMessage shard_to = 17;
-    optional pools.protobuf.StatisticTxMessage statistic_tx = 18;
+    optional StatisticTxMessage statistic_tx = 18;
 }
