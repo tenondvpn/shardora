@@ -52,7 +52,7 @@ private:
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id,
-        pools::protobuf::ToTxHeights& init_heights);
+        pools::protobuf::StatisticTxItem& init_heights);
     void InitGenesisAccount();
     void GenerateRootAccounts();
     int GenerateRootSingleBlock(

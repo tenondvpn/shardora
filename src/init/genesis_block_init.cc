@@ -791,7 +791,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     InitGenesisAccount();
     uint64_t genesis_account_balance = 0llu;
     uint64_t all_balance = 0llu;
-    pools::protobuf::ToTxHeights init_heights;
+    pools::protobuf::StatisticTxItem init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     std::string prehashes[common::kImmutablePoolSize];
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
@@ -1097,7 +1097,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id,
-        pools::protobuf::ToTxHeights& init_heights) {
+        pools::protobuf::StatisticTxItem& init_heights) {
     std::set<std::string> valid_ids;
     for (auto iter = root_genesis_nodes.begin(); iter != root_genesis_nodes.end(); ++iter) {
         if (valid_ids.find((*iter)->id) != valid_ids.end()) {
@@ -1237,7 +1237,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     InitGenesisAccount();
     uint64_t genesis_account_balance = common::kGenesisFoundationMaxZjc / pool_index_map_.size();
     uint64_t all_balance = 0llu;
-    pools::protobuf::ToTxHeights init_heights;
+    pools::protobuf::StatisticTxItem init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     pool_index_map_[common::kRootChainPoolIndex] = common::kRootPoolsAddress;
     uint32_t idx = 0;
