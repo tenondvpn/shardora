@@ -936,7 +936,10 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
     if (statistic_item->shard_statistic_tx != nullptr &&
             statistic_item->shard_statistic_tx->tx_ptr->in_consensus &&
             statistic_item->shard_statistic_tx->tx_ptr->timeout > now_time_ms) {
-        ZJC_DEBUG("statistic txs sharding not consensus yet: %u", heights.sharding_id());
+        ZJC_DEBUG("statistic txs sharding not consensus yet: %u, %u, %lu",
+            statistic_item->leader_idx,
+            statistic_item->leader_to_index,
+            msg_ptr->header.block_proto().statistic_tx().elect_height());
         return;
     }
 
