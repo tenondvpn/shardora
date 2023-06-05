@@ -136,7 +136,10 @@ void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, 
 
         latest_members_ = members;
         latest_elect_height_ = elect_height;
+        latest_cross_statistic_tx_ = nullptr;
+        latest_shard_statistic_tx_ = nullptr;
         statistic_message_ = nullptr;
+        leader_statistic_txs_.clear();
     }
 }
 
