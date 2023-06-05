@@ -289,7 +289,7 @@ void BlockManager::HandleCrossTx(
                 break;
             }
 
-            if (latest_cross_statistic_tx_->tx_hash == block_tx.storages(i).val_hash()) {
+            if (latest_cross_statistic_tx_ != nullptr && latest_cross_statistic_tx_->tx_hash == block_tx.storages(i).val_hash()) {
                 latest_cross_statistic_tx_ = nullptr;
             }
 
@@ -339,7 +339,7 @@ void BlockManager::HandleStatisticTx(
                 return;
             }
 
-            if (latest_shard_statistic_tx_->tx_hash == block_tx.storages(i).val_hash()) {
+            if (latest_shard_statistic_tx_ != nullptr && latest_shard_statistic_tx_->tx_hash == block_tx.storages(i).val_hash()) {
                 latest_shard_statistic_tx_ = nullptr;
             }
             break;
