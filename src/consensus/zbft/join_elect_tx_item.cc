@@ -33,7 +33,7 @@ int JoinElectTxItem::HandleTx(
                 consensus::kKeyValueStorageEachBytes;
             if (block_tx.storages(i).key() == protos::kJoinElectVerifyG2) {
                 std::string val;
-                if (!prefix_db_->GetTemporaryKv(block.tx_list(i).storages(i).val_hash(), &val)) {
+                if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
                     break;
                 }
 
