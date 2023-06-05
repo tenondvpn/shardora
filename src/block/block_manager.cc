@@ -663,15 +663,16 @@ void BlockManager::AddNewBlock(
             block_item->network_id() + network::kConsensusWaitingShardOffset ==
             common::GlobalInfo::Instance()->network_id()) {
         auto now_tm_ms = common::TimeUtils::TimestampMs();
-        if (statistic_heights_ptr_ != nullptr && prev_retry_create_statistic_tx_ms_ < now_tm_ms) {
+        if (!leader_statistic_txs_.empty() && prev_retry_create_statistic_tx_ms_ < now_tm_ms) {
             if (leader_statistic_txs_.size() >= 4) {
                 leader_statistic_txs_.erase(leader_statistic_txs_.begin());
             }
 
-            for (auto iter = leader_statistic_txs_.begin(); iter != leader_statistic_txs_.end(); ++iter) {
+            for (auto iter = leader_statistic_txs_.rbegin(); iter != leader_statistic_txs_.rend(); ++iter) {
                 auto tmp_ptr = iter->second->statistic_msg;
                 if (tmp_ptr != nullptr) {
                     StatisticWithLeaderHeights(tmp_ptr, true);
+                    break;
                 }
             }
 
