@@ -87,16 +87,11 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     NetworkNewBlock(msg_ptr->thread_idx, nullptr);
-    if (to_tx_leader_ == nullptr) {
-        return;
+    if (to_tx_leader_ != nullptr && local_id_ == to_tx_leader_->id) {
+        CreateToTx(msg_ptr->thread_idx);
+        CreateStatisticTx(msg_ptr->thread_idx);
     }
 
-    if (local_id_ != to_tx_leader_->id) {
-        return;
-    }
-
-    CreateToTx(msg_ptr->thread_idx);
-    CreateStatisticTx(msg_ptr->thread_idx);
     auto now_tm_ms = now_tm / 1000;
     if (!leader_statistic_txs_.empty() && prev_retry_create_statistic_tx_ms_ < now_tm_ms) {
         if (leader_statistic_txs_.size() >= 4) {
