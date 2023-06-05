@@ -1023,10 +1023,6 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             statistic_item->shard_statistic_tx = tx_ptr;
             ZJC_DEBUG("success add statistic tx: %s", common::Encode::HexEncode(statistic_hash).c_str());
-            if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
-                common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
-                statistic_item->statistic_msg = nullptr;
-            }
         }
     }
 
@@ -1054,10 +1050,6 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
             statistic_item->cross_statistic_tx = tx_ptr;
             ZJC_DEBUG("success add cross tx: %s", common::Encode::HexEncode(cross_hash).c_str());
         }
-    }
-
-    if (statistic_item->shard_statistic_tx != nullptr && statistic_item->cross_statistic_tx != nullptr) {
-        statistic_item->statistic_msg = nullptr;
     }
 
     auto riter = leader_statistic_txs_.rbegin();
