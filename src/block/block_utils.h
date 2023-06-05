@@ -51,12 +51,13 @@ static const std::string kCreateGenesisNetwrokAccount = common::Encode::HexDecod
     "b5be6f0090e4f5d40458258ed9adf843324c0327145c48b55091f33673d2d5a4");
 
 struct BlockTxsItem {
-    BlockTxsItem() : tx_ptr(nullptr), tx_count(0), success(false) {}
+    BlockTxsItem() : tx_ptr(nullptr), tx_count(0), success(false), leader_to_index(-1) {}
     pools::TxItemPtr tx_ptr;
     std::string tx_hash;
     uint32_t tx_count;
     uint64_t timeout;
     bool success;
+    int32_t leader_to_index;
 };
 
 typedef std::shared_ptr<block::protobuf::Block> BlockPtr;

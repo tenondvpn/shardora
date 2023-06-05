@@ -374,6 +374,8 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
         if (tmp_iter != synced_map_.end()) {
             added_key_set_.erase(tmp_iter->second->key);
             synced_map_.erase(tmp_iter);
+        } else {
+            assert(false);
         }
 
         ZJC_DEBUG("block response coming: %s, sync map size: %u",

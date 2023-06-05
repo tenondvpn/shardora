@@ -188,6 +188,7 @@ message ShardToTxMessage {
     repeated pools.protobuf.ShardToTxItem to_txs = 1;
     optional uint32 leader_idx = 2;
     optional uint64 elect_height = 3;
+    optional int32 leader_to_idx = 4;
 }
 
 message BlockMessage {

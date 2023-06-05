@@ -201,6 +201,7 @@ private:
 //     std::shared_ptr<pools::protobuf::ToTxHeights> to_tx_heights_ptr_ = nullptr;
     common::MembersPtr latest_members_ = nullptr;
     uint64_t latest_elect_height_ = 0;
+    int32_t leader_create_to_heights_index_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

@@ -1085,7 +1085,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     for (int32_t i = 0; i < to_txs.size(); ++i) {
         auto& heights = to_txs[i];
         auto tmp_tx = leader_to_txs->to_txs[heights.sharding_id()];
-        if (tmp_tx != nullptr && tmp_tx->success) {
+        if (tmp_tx != nullptr && tmp_tx->success && tmp_tx->leader_to_index <= shard_to.leader_to_idx()) {
             continue;
         }
 
@@ -1138,7 +1138,9 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         to_txs_ptr->timeout = now_time_ms + 30000lu;
         leader_to_txs->to_txs[heights.sharding_id()] = to_txs_ptr;
         to_txs_ptr->success = true;
-        ZJC_DEBUG("success add txs: %s", common::Encode::HexEncode(tos_hash).c_str());
+        to_txs_ptr->leader_to_index = shard_to.leader_to_idx();
+        ZJC_DEBUG("success add txs: %s, leader idx: %u, leader to index: %d",
+            common::Encode::HexEncode(tos_hash).c_str(), shard_to.leader_idx(), shard_to.leader_to_idx());
     }
 
     if (all_valid) {
@@ -1414,6 +1416,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         return;
     }
     
+    shard_to.set_leader_to_idx(leader_create_to_heights_index_++);
     // send to other nodes
     auto& broadcast = *msg.mutable_broadcast();
     msg_ptr->thread_idx = thread_idx;
