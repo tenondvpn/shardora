@@ -885,7 +885,7 @@ public:
 
     void SaveStatisticLatestHeihgts(
             uint32_t sharding_id,
-            const pools::protobuf::ToTxHeights& to_heights) {
+            const pools::protobuf::StatisticTxItem& to_heights) {
         std::string key;
         key.reserve(64);
         key.append(kPresetPolynomialPrefix);
@@ -899,7 +899,7 @@ public:
 
     bool GetStatisticLatestHeihgts(
             uint32_t sharding_id,
-            pools::protobuf::ToTxHeights* to_heights) {
+            pools::protobuf::StatisticTxItem* to_heights) {
         std::string key;
         key.reserve(64);
         key.append(kPresetPolynomialPrefix);
