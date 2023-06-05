@@ -123,6 +123,7 @@ void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, 
 
         latest_members_ = members;
         latest_elect_height_ = elect_height;
+        statistic_message_ = nullptr;
     }
 }
 
@@ -1412,38 +1413,42 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
     }
 
     prev_create_statistic_tx_ms_ = now_tm_ms + kCreateToTxPeriodMs;
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    auto& msg = msg_ptr->header;
-    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
-    msg.set_des_dht_key(dht_key.StrKey());
-    msg.set_type(common::kBlockMessage);
-    auto& block_msg = *msg.mutable_block_proto();
-    block::protobuf::StatisticTxMessage& statistic_msg = *block_msg.mutable_statistic_tx();
-    auto& to_heights = *statistic_msg.mutable_statistic();
-    int res = statistic_mgr_->LeaderCreateStatisticHeights(to_heights);
-    if (res != pools::kPoolsSuccess || to_heights.heights_size() <= 0) {
-        ZJC_WARN("leader create statistic heights failed!");
-        return;
-    }
+    if (statistic_message_ == nullptr) {
+        statistic_message_ = std::make_shared<transport::TransportMessage>();
+        auto& msg = statistic_message_->header;
+        msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+        dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
+        msg.set_des_dht_key(dht_key.StrKey());
+        msg.set_type(common::kBlockMessage);
+        auto& block_msg = *msg.mutable_block_proto();
+        block::protobuf::StatisticTxMessage& statistic_msg = *block_msg.mutable_statistic_tx();
+        auto& to_heights = *statistic_msg.mutable_statistic();
+        int res = statistic_mgr_->LeaderCreateStatisticHeights(to_heights);
+        if (res != pools::kPoolsSuccess || to_heights.heights_size() <= 0) {
+            ZJC_WARN("leader create statistic heights failed!");
+            return;
+        }
 
-    statistic_msg.set_elect_height(latest_elect_height_);
-    statistic_msg.set_leader_to_idx(leader_create_statistic_heights_index_++);
-    statistic_msg.set_leader_idx(to_tx_leader_->index);
-    // send to other nodes
-    auto& broadcast = *msg.mutable_broadcast();
-    msg_ptr->thread_idx = thread_idx;
+        statistic_msg.set_elect_height(latest_elect_height_);
+        statistic_msg.set_leader_to_idx(leader_create_statistic_heights_index_++);
+        statistic_msg.set_leader_idx(to_tx_leader_->index);
+        // send to other nodes
+        auto& broadcast = *msg.mutable_broadcast();
+        statistic_message_->thread_idx = thread_idx;
+    }
+    
+    auto& msg = statistic_message_->header;
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
-    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
+    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
     std::string sign;
     if (security_->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
         assert(false);
         return;
     }
 
-    msg_ptr->header.set_sign(sign);
-    network::Route::Instance()->Send(msg_ptr);
-    HandleStatisticMessage(msg_ptr);
+    statistic_message_->header.set_sign(sign);
+    network::Route::Instance()->Send(statistic_message_);
+    HandleStatisticMessage(statistic_message_);
     ZJC_DEBUG("leader success broadcast statistic heights.");
 }
 

@@ -210,6 +210,7 @@ private:
     int32_t leader_create_statistic_heights_index_ = 0;
     std::shared_ptr<BlockTxsItem> latest_shard_statistic_tx_ = nullptr;
     std::shared_ptr<BlockTxsItem> latest_cross_statistic_tx_ = nullptr;
+    std::shared_ptr<transport::TransportMessage> statistic_message_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };
