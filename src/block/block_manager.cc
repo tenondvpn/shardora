@@ -1241,6 +1241,11 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     if (all_valid) {
         leader_to_txs->to_txs_msg = nullptr;
     }
+
+    auto rbegin = leader_to_txs_.rbegin();
+    if (rbegin != leader_to_txs_.rend()) {
+        latest_to_tx_ = rbegin->second;
+    }
 }
 
 pools::TxItemPtr BlockManager::GetCrossTx(uint32_t pool_index, bool leader) {
@@ -1329,15 +1334,15 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
 
 
 pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
-    auto now_tm = common::TimeUtils::TimestampUs();
-    auto rbegin = leader_to_txs_.rbegin();
-    if (rbegin == leader_to_txs_.rend()) {
+    if (latest_to_tx_ == nullptr) {
         return nullptr;
     }
 
+    auto now_tm = common::TimeUtils::TimestampUs();
+    auto latest_to_tx = latest_to_tx_;
     for (uint32_t i = prev_pool_index_; i <= max_consensus_sharding_id_; ++i) {
         if (i % common::kImmutablePoolSize == pool_index) {
-            auto tmp_to_txs = rbegin->second->to_txs[i];
+            auto tmp_to_txs = latest_to_tx->to_txs[i];
             if (tmp_to_txs != nullptr && !tmp_to_txs->tx_ptr->in_consensus) {
                 if (leader && tmp_to_txs->tx_ptr->time_valid > now_tm) {
                     continue;
@@ -1352,7 +1357,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
 
     for (uint32_t i = network::kRootCongressNetworkId; i < prev_pool_index_; ++i) {
         if (i % common::kImmutablePoolSize == pool_index) {
-            auto tmp_to_txs = rbegin->second->to_txs[i];
+            auto tmp_to_txs = latest_to_tx->to_txs[i];
             if (tmp_to_txs != nullptr && !tmp_to_txs->tx_ptr->in_consensus) {
                 if (leader && tmp_to_txs->tx_ptr->time_valid > now_tm) {
                     continue;

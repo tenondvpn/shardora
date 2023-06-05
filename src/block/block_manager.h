@@ -183,6 +183,7 @@ private:
     std::string local_id_;
 //     std::shared_ptr<BlockTxsItem> to_txs_[network::kConsensusShardEndNetworkId] = { nullptr };
     std::map<uint64_t, std::shared_ptr<LeaderWithToTxItem>> leader_to_txs_;
+    std::shared_ptr<LeaderWithToTxItem> latest_to_tx_ = nullptr;
     std::map<uint64_t, std::shared_ptr<LeaderWithStatisticTxItem>> leader_statistic_txs_;
     std::shared_ptr<BlockTxsItem> shard_elect_tx_[network::kConsensusShardEndNetworkId];
     pools::CreateConsensusItemFunction create_to_tx_cb_ = nullptr;
