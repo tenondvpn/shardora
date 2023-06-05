@@ -591,10 +591,7 @@ int ShardStatistic::StatisticWithHeights(
         uint64_t prev_height = 0;
         heights_hash.append((char*)&min_height, sizeof(min_height));
         heights_hash.append((char*)&max_height, sizeof(max_height));
-        if (max_height >= min_height) {
-            ZJC_DEBUG("now handle pool: %u, min height: %lu, max height: %lu", pool_idx, min_height, max_height);
-        }
-
+        ZJC_DEBUG("now handle pool: %u, min height: %lu, max height: %lu", pool_idx, min_height, max_height);
         for (auto height = min_height; height <= max_height; ++height) {
             auto hiter = node_height_count_map_[pool_idx].find(height);
             if (hiter == node_height_count_map_[pool_idx].end()) {
