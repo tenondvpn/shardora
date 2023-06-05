@@ -289,6 +289,10 @@ void BlockManager::HandleCrossTx(
                 break;
             }
 
+            if (latest_cross_statistic_tx_->tx_hash == block_tx.storages(i).val_hash()) {
+                latest_cross_statistic_tx_ = nullptr;
+            }
+
             pools::protobuf::CrossShardStatistic cross_statistic;
             if (!cross_statistic.ParseFromString(cross_val)) {
                 assert(false);
@@ -335,6 +339,9 @@ void BlockManager::HandleStatisticTx(
                 return;
             }
 
+            if (latest_shard_statistic_tx_->tx_hash == block_tx.storages(i).val_hash()) {
+                latest_shard_statistic_tx_ = nullptr;
+            }
             break;
         }
     }
@@ -920,7 +927,6 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
         statistic_item->leader_idx = msg_ptr->header.block_proto().statistic_tx().leader_idx();
         statistic_item->leader_to_index = msg_ptr->header.block_proto().statistic_tx().leader_to_idx();
         statistic_item->statistic_msg = msg_ptr;
-        leader_statistic_txs_[msg_ptr->header.block_proto().statistic_tx().elect_height()] = statistic_item;
     }
 
     if (msg_ptr->header.block_proto().statistic_tx().leader_to_idx() > statistic_item->leader_to_index) {
@@ -1007,6 +1013,17 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
 
     if (statistic_item->shard_statistic_tx != nullptr && statistic_item->cross_statistic_tx != nullptr) {
         statistic_item->statistic_msg = nullptr;
+    }
+
+    if (iter == leader_statistic_txs_.end()) {
+        leader_statistic_txs_[msg_ptr->header.block_proto().statistic_tx().elect_height()] = statistic_item;
+        auto iter = leader_statistic_txs_.rbegin();
+        latest_shard_statistic_tx_ = iter->second->shard_statistic_tx;
+        latest_cross_statistic_tx_ = iter->second->cross_statistic_tx;
+        ZJC_DEBUG("success set statistic tx elect height: %lu, statistic: %d, cross: %d",
+            msg_ptr->header.block_proto().statistic_tx().elect_height(),
+            (latest_shard_statistic_tx_ != nullptr),
+            (latest_cross_statistic_tx_ != nullptr));
     }
 }
 
@@ -1220,12 +1237,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
 }
 
 pools::TxItemPtr BlockManager::GetCrossTx(uint32_t pool_index, bool leader) {
-    if (leader_statistic_txs_.empty()) {
-        return nullptr;
-    }
-
-    auto iter = leader_statistic_txs_.rbegin();
-    auto& cross_statistic_tx = iter->second->cross_statistic_tx;
+    auto& cross_statistic_tx = latest_cross_statistic_tx_;
     if (cross_statistic_tx != nullptr && !cross_statistic_tx->tx_ptr->in_consensus) {
         auto now_tm = common::TimeUtils::TimestampUs();
         if (leader && cross_statistic_tx->tx_ptr->time_valid > now_tm) {
@@ -1244,12 +1256,7 @@ pools::TxItemPtr BlockManager::GetCrossTx(uint32_t pool_index, bool leader) {
 }
 
 pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) {
-    if (leader_statistic_txs_.empty()) {
-        return nullptr;
-    }
-
-    auto iter = leader_statistic_txs_.rbegin();
-    auto& shard_statistic_tx = iter->second->shard_statistic_tx;
+    auto& shard_statistic_tx = latest_shard_statistic_tx_;
     if (shard_statistic_tx != nullptr && !shard_statistic_tx->tx_ptr->in_consensus) {
         auto now_tm = common::TimeUtils::TimestampUs();
         if (leader && shard_statistic_tx->tx_ptr->time_valid > now_tm) {

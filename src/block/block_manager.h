@@ -207,6 +207,8 @@ private:
     uint64_t latest_elect_height_ = 0;
     int32_t leader_create_to_heights_index_ = 0;
     int32_t leader_create_statistic_heights_index_ = 0;
+    std::shared_ptr<BlockTxsItem> latest_shard_statistic_tx_ = nullptr;
+    std::shared_ptr<BlockTxsItem> latest_cross_statistic_tx_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };
