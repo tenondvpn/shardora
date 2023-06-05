@@ -157,6 +157,7 @@ private:
         db::DbWriteBatch& db_batch);
     void StatisticWithLeaderHeights(const transport::MessagePtr& msg_ptr, bool retry);
     std::shared_ptr<LeaderWithToTxItem> GetValidLeaderShardTo();
+    bool LeaderSignatureValid(const transport::MessagePtr& msg_ptr);
 
     static const uint64_t kCreateToTxPeriodMs = 10000lu;
     static const uint64_t kRetryStatisticPeriod = 3000lu;
@@ -205,6 +206,7 @@ private:
     common::MembersPtr latest_members_ = nullptr;
     uint64_t latest_elect_height_ = 0;
     int32_t leader_create_to_heights_index_ = 0;
+    int32_t leader_create_statistic_heights_index_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

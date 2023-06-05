@@ -78,11 +78,19 @@ struct LeaderWithToTxItem {
 
 
 struct LeaderWithStatisticTxItem {
+    LeaderWithStatisticTxItem() :
+        shard_statistic_tx(nullptr),
+        cross_statistic_tx(nullptr),
+        elect_height(0),
+        leader_idx(common::kInvalidUint32),
+        statistic_msg(nullptr),
+        leader_to_index(-1) {}
     std::shared_ptr<BlockTxsItem> shard_statistic_tx;
     std::shared_ptr<BlockTxsItem> cross_statistic_tx;
     uint64_t elect_height;
     uint32_t leader_idx;
     transport::MessagePtr statistic_msg;
+    int32_t leader_to_index;
 };
 
 typedef std::shared_ptr<BlockToDbItem> BlockToDbItemPtr;

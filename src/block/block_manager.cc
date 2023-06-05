@@ -155,7 +155,30 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         HandleToTxsMessage(msg_ptr, false);
     }
 
-    if (msg_ptr->header.block_proto().has_shard_statistic_tx()) {
+    if (msg_ptr->header.block_proto().has_statistic_tx()) {
+        if (latest_members_ == nullptr) {
+            return;
+        }
+
+        if (!msg_ptr->header.has_sign()) {
+            assert(false);
+            return;
+        }
+
+        if (latest_members_->size() <= msg_ptr->header.block_proto().statistic_tx().leader_idx()) {
+            return;
+        }
+
+        auto& mem_ptr = (*latest_members_)[msg_ptr->header.block_proto().statistic_tx().leader_idx()];
+        auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
+        if (security_->Verify(
+                msg_hash,
+                mem_ptr->pubkey,
+                msg_ptr->header.sign()) != security::kSecuritySuccess) {
+            assert(false);
+            return;
+        }
+
         HandleStatisticMessage(msg_ptr);
     }
 
@@ -260,12 +283,6 @@ void BlockManager::HandleCrossTx(
         db::DbWriteBatch& db_batch) {
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kShardCross) {
-            if (cross_statistic_tx_ != nullptr) {
-                if (block_tx.storages(i).val_hash() == cross_statistic_tx_->tx_hash) {
-                    cross_statistic_tx_ = nullptr;
-                }
-            }
-
             std::string cross_val;
             if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &cross_val)) {
                 assert(false);
@@ -316,14 +333,6 @@ void BlockManager::HandleStatisticTx(
 
             if (!elect_statistic.ParseFromString(val)) {
                 return;
-            }
-
-            if (shard_statistic_tx_ != nullptr) {
-                if (block_tx.storages(i).val_hash() == shard_statistic_tx_->tx_hash) {
-                    ZJC_DEBUG("remove statistic tx: %s",
-                        common::Encode::HexEncode(shard_statistic_tx_->tx_hash).c_str());
-                    shard_statistic_tx_ = nullptr;
-                }
             }
 
             break;
@@ -908,8 +917,27 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
         statistic_item = iter->second;
     } else {
         statistic_item = std::make_shared<LeaderWithStatisticTxItem>();
+        statistic_item->leader_idx = msg_ptr->header.block_proto().statistic_tx().leader_idx();
+        statistic_item->leader_to_index = msg_ptr->header.block_proto().statistic_tx().leader_to_idx();
         statistic_item->statistic_msg = msg_ptr;
         leader_statistic_txs_[msg_ptr->header.block_proto().statistic_tx().elect_height()] = statistic_item;
+    }
+
+    if (msg_ptr->header.block_proto().statistic_tx().leader_to_idx() > statistic_item->leader_to_index) {
+        statistic_item->statistic_msg = msg_ptr;
+    }
+
+    if (statistic_item->shard_statistic_tx != nullptr &&
+            statistic_item->leader_to_index >= msg_ptr->header.block_proto().statistic_tx().leader_to_idx()) {
+        return;
+    }
+
+    auto now_time_ms = common::TimeUtils::TimestampMs();
+    if (statistic_item->shard_statistic_tx != nullptr &&
+            statistic_item->shard_statistic_tx->tx_ptr->in_consensus &&
+            statistic_item->shard_statistic_tx->tx_ptr->timeout > now_time_ms) {
+        ZJC_DEBUG("statistic txs sharding not consensus yet: %u", heights.sharding_id());
+        return;
     }
 
     auto& heights = msg_ptr->header.block_proto().statistic_tx().statistic();
@@ -1361,24 +1389,6 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
         return;
     }
 
-    if (shard_statistic_tx_ != nullptr && shard_statistic_tx_->tx_ptr->in_consensus) {
-        return;
-    }
-
-    if (cross_statistic_tx_ != nullptr && cross_statistic_tx_->tx_ptr->in_consensus) {
-        return;
-    }
-
-    if (shard_statistic_tx_ != nullptr && shard_statistic_tx_->timeout >= now_tm_ms) {
-        ZJC_DEBUG("timeout remove statistic tx: %s",
-            common::Encode::HexEncode(shard_statistic_tx_->tx_hash).c_str());
-        shard_statistic_tx_ = nullptr;
-    }
-
-    if (cross_statistic_tx_ != nullptr && cross_statistic_tx_->timeout >= now_tm_ms) {
-        cross_statistic_tx_ = nullptr;
-    }
-
     prev_create_statistic_tx_ms_ = now_tm_ms + kCreateToTxPeriodMs;
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
@@ -1387,17 +1397,28 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kBlockMessage);
     auto& block_msg = *msg.mutable_block_proto();
-    pools::protobuf::StatisticTxItem& to_heights = *block_msg.mutable_shard_statistic_tx();
+    block::protobuf::StatisticTxMessage& statistic_msg = *block_msg.mutable_statistic_tx();
+    auto& to_heights = *statistic_msg.mutable_statistic();
     int res = statistic_mgr_->LeaderCreateStatisticHeights(to_heights);
     if (res != pools::kPoolsSuccess || to_heights.heights_size() <= 0) {
         ZJC_WARN("leader create statistic heights failed!");
         return;
     }
 
+    statistic_msg.set_leader_to_idx(leader_create_statistic_heights_index_++);
+    statistic_msg.set_leader_idx(to_tx_leader_->index);
     // send to other nodes
     auto& broadcast = *msg.mutable_broadcast();
     msg_ptr->thread_idx = thread_idx;
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
+    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
+    std::string sign;
+    if (security_->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
+        assert(false);
+        return;
+    }
+
+    msg_ptr->header.set_sign(sign);
     network::Route::Instance()->Send(msg_ptr);
     HandleStatisticMessage(msg_ptr);
     ZJC_DEBUG("leader success broadcast statistic heights.");
