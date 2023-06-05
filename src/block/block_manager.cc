@@ -94,11 +94,13 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 
     auto now_tm_ms = now_tm / 1000;
     if (!leader_statistic_txs_.empty() && prev_retry_create_statistic_tx_ms_ < now_tm_ms) {
+        ZJC_DEBUG("now call retry statistic.");
         if (leader_statistic_txs_.size() >= 4) {
             leader_statistic_txs_.erase(leader_statistic_txs_.begin());
         }
 
         for (auto iter = leader_statistic_txs_.rbegin(); iter != leader_statistic_txs_.rend(); ++iter) {
+            ZJC_DEBUG("now call retry statistic 1: %d", (iter->second->statistic_msg != nullptr));
             auto tmp_ptr = iter->second->statistic_msg;
             if (tmp_ptr != nullptr) {
                 StatisticWithLeaderHeights(tmp_ptr, true);
@@ -948,7 +950,8 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
         statistic_item->statistic_msg = msg_ptr;
     }
 
-    if (msg_ptr->header.block_proto().statistic_tx().leader_to_idx() > statistic_item->leader_to_index) {
+    if (msg_ptr->header.block_proto().statistic_tx().leader_idx() == statistic_item->leader_idx &&
+            msg_ptr->header.block_proto().statistic_tx().leader_to_idx() > statistic_item->leader_to_index) {
         statistic_item->statistic_msg = msg_ptr;
     }
 
@@ -983,7 +986,8 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
     }
 
     if (!statistic_hash.empty()) {
-        if (statistic_item->shard_statistic_tx == nullptr || statistic_item->shard_statistic_tx->tx_hash != statistic_hash) {
+        if (statistic_item->shard_statistic_tx == nullptr ||
+                statistic_item->shard_statistic_tx->tx_hash != statistic_hash) {
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             auto* tx = new_msg_ptr->header.mutable_tx_proto();
             tx->set_key(protos::kShardStatistic);
@@ -1012,7 +1016,8 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
     }
 
     if (!cross_hash.empty()) {
-        if (statistic_item->cross_statistic_tx == nullptr || statistic_item->cross_statistic_tx->tx_hash != cross_hash) {
+        if (statistic_item->cross_statistic_tx == nullptr ||
+                statistic_item->cross_statistic_tx->tx_hash != cross_hash) {
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             auto* tx = new_msg_ptr->header.mutable_tx_proto();
             tx->set_key(protos::kShardCross);
