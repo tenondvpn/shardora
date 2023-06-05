@@ -988,7 +988,7 @@ void ShardStatistic::NormalizeLofMap(std::unordered_map<uint32_t, common::Point>
 }
 
 void ShardStatistic::LoadLatestHeights() {
-    tx_heights_ptr_ = std::make_shared<pools::protobuf::ToTxHeights>();
+    tx_heights_ptr_ = std::make_shared<pools::protobuf::StatisticTxItem>();
     auto& to_heights = *tx_heights_ptr_;
     if (!prefix_db_->GetStatisticLatestHeihgts(
             common::GlobalInfo::Instance()->network_id(),
