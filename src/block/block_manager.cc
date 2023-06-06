@@ -388,10 +388,6 @@ void BlockManager::HandleStatisticTx(
 
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         HandleStatisticBlock(block, block_tx, elect_statistic, db_batch);
-        auto iter = leader_statistic_txs_.find(elect_statistic.elect_height());
-        if (iter != leader_statistic_txs_.end()) {
-            leader_statistic_txs_.erase(iter);
-        }
     }
 }
 
@@ -698,27 +694,6 @@ void BlockManager::AddNewBlock(
         }
     }
 
-    if (block_item->network_id() == common::GlobalInfo::Instance()->network_id() || 
-            block_item->network_id() + network::kConsensusWaitingShardOffset ==
-            common::GlobalInfo::Instance()->network_id()) {
-        auto now_tm_ms = common::TimeUtils::TimestampMs();
-        if (!leader_statistic_txs_.empty() && prev_retry_create_statistic_tx_ms_ < now_tm_ms) {
-            if (leader_statistic_txs_.size() >= 4) {
-                leader_statistic_txs_.erase(leader_statistic_txs_.begin());
-            }
-
-            for (auto iter = leader_statistic_txs_.rbegin(); iter != leader_statistic_txs_.rend(); ++iter) {
-                auto tmp_ptr = iter->second->statistic_msg;
-                if (tmp_ptr != nullptr) {
-                    StatisticWithLeaderHeights(tmp_ptr, true);
-                    break;
-                }
-            }
-
-            prev_retry_create_statistic_tx_ms_ = now_tm_ms + kRetryStatisticPeriod;
-        }
-    }
-            
     net_handler_.BlockSaved(*block_item);
     auto st = db_->Put(db_batch);
     ZJC_DEBUG("put 0");
@@ -1502,7 +1477,8 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
     statistic_message_->header.set_sign(sign);
     network::Route::Instance()->Send(statistic_message_);
     HandleStatisticMessage(statistic_message_);
-    ZJC_DEBUG("leader success broadcast statistic heights.");
+    ZJC_DEBUG("leader success broadcast statistic heights elect height: %lu, leader_create_statistic_heights_index_: %d",
+        latest_elect_height_, leader_create_statistic_heights_index_);
 }
 
 void BlockManager::CreateToTx(uint8_t thread_idx) {
