@@ -1303,7 +1303,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) 
     if (shard_statistic_tx != nullptr) {
         auto now_tm = common::TimeUtils::TimestampUs();
         if (shard_statistic_tx->tx_ptr->in_consensus) {
-            if (shard_elect_tx_->tx_ptr->timeout < now_tm) {
+            if (shard_statistic_tx->tx_ptr->timeout < now_tm) {
                 shard_statistic_tx->tx_ptr->in_consensus = false;
             }
         }
