@@ -1020,7 +1020,9 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
             tx_ptr->tx_hash = statistic_hash;
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             statistic_item->shard_statistic_tx = tx_ptr;
-            ZJC_DEBUG("success add statistic tx: %s", common::Encode::HexEncode(statistic_hash).c_str());
+            ZJC_DEBUG("success add statistic tx: %s, statistic elect height: %lu",
+                common::Encode::HexEncode(statistic_hash).c_str(),
+                msg_ptr->header.block_proto().statistic_tx().elect_height());
         }
     }
 
@@ -1054,7 +1056,7 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
     if (riter != leader_statistic_txs_.rend()) {
         latest_shard_statistic_tx_ = riter->second->shard_statistic_tx;
         latest_cross_statistic_tx_ = riter->second->cross_statistic_tx;
-        ZJC_DEBUG("success set statistic tx elect height: %lu, statistic: %d, cross: %d",
+        ZJC_DEBUG("success set statistic tx statistic elect height: %lu, statistic: %d, cross: %d",
             msg_ptr->header.block_proto().statistic_tx().elect_height(),
             (latest_shard_statistic_tx_ != nullptr),
             (latest_cross_statistic_tx_ != nullptr));
@@ -1167,10 +1169,12 @@ void BlockManager::HandleStatisticBlock(
     auto shard_elect_tx = std::make_shared<BlockTxsItem>();
     shard_elect_tx->tx_ptr = create_elect_tx_cb_(new_msg_ptr);
     shard_elect_tx->tx_ptr->time_valid += kElectValidTimeout;
-//     shard_elect_tx->tx_hash = gid;
     shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + kElectTimeout;
     shard_elect_tx_[block.network_id()] = shard_elect_tx;
-    ZJC_DEBUG("success add elect tx: %u, %lu, gid: %s", block.network_id(), block.timeblock_height(), common::Encode::HexEncode(gid).c_str());
+    ZJC_DEBUG("success add elect tx: %u, %lu, gid: %s, statistic elect height: %lu",
+        block.network_id(), block.timeblock_height(),
+        common::Encode::HexEncode(gid).c_str(),
+        elect_statistic.elect_height());
 }
 
 void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool recreate) {
@@ -1296,8 +1300,14 @@ pools::TxItemPtr BlockManager::GetCrossTx(uint32_t pool_index, bool leader) {
 
 pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) {
     auto shard_statistic_tx = latest_shard_statistic_tx_;
-    if (shard_statistic_tx != nullptr && !shard_statistic_tx->tx_ptr->in_consensus) {
+    if (shard_statistic_tx != nullptr) {
         auto now_tm = common::TimeUtils::TimestampUs();
+        if (shard_statistic_tx->tx_ptr->in_consensus) {
+            if (shard_elect_tx_->tx_ptr->timeout < now_tm) {
+                shard_statistic_tx->tx_ptr->in_consensus = false;
+            }
+        }
+
         if (leader && shard_statistic_tx->tx_ptr->time_valid > now_tm) {
             return nullptr;
         }
