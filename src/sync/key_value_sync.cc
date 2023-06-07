@@ -64,8 +64,11 @@ void KeyValueSync::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 
 void KeyValueSync::PopItems() {
     uint32_t pop_count = 0;
+    ZJC_INFO("KeyValueSync timer coming 0 0.");
     for (uint8_t thread_idx = 0; thread_idx < common::kMaxThreadCount; ++thread_idx) {
+        ZJC_INFO("KeyValueSync timer coming 0 1.");
         while (item_queues_[thread_idx].size() > 0 && pop_count++ < 64) {
+            ZJC_INFO("KeyValueSync timer coming 0 2.");
             SyncItemPtr item = nullptr;
             item_queues_[thread_idx].pop(&item);
             auto iter = added_key_set_.find(item->key);
@@ -83,8 +86,10 @@ void KeyValueSync::PopItems() {
                 continue;
             }
 
+            ZJC_INFO("KeyValueSync timer coming 0 3.");
             prio_sync_queue_[item->priority].push(item);
-//             ZJC_DEBUG("add new sync item key: %s, priority: %u",
+            ZJC_INFO("KeyValueSync timer coming 0 4.");
+            //             ZJC_DEBUG("add new sync item key: %s, priority: %u",
 //                 item->key.c_str(), item->priority);
         }
     }
