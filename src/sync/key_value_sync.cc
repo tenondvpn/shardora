@@ -49,12 +49,17 @@ void KeyValueSync::AddSyncHeight(
 }
 
 void KeyValueSync::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
-    PopItems();
     auto now_tm_us = common::TimeUtils::TimestampUs();
+    PopItems();
     CheckSyncItem(msg_ptr->thread_idx);
     if (prev_sync_tmout_us_ + kSyncTimeoutPeriodUs < now_tm_us) {
         prev_sync_tmout_us_ = now_tm_us;
         CheckSyncTimeout();
+    }
+
+    auto etime = common::TimeUtils::TimestampUs();
+    if (etime - now_tm_us >= 100000lu) {
+        ZJC_DEBUG("KeyValueSync handle message use time: %lu", (etime - now_tm_us));
     }
 }
 

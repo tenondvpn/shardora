@@ -108,6 +108,11 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 
         prev_retry_create_statistic_tx_ms_ = now_tm_ms + kRetryStatisticPeriod;
     }
+
+    auto etime = common::TimeUtils::TimestampMs();
+    if (etime - now_tm_ms >= 100) {
+        ZJC_DEBUG("block manager handle message use time: %lu", (etime - now_tm_ms));
+    }
 }
 
 void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members) {

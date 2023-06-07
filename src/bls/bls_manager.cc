@@ -55,8 +55,14 @@ void BlsManager::TimerMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    auto now_tm_ms = common::TimeUtils::TimestampUs();
     if (waiting_bls_ != nullptr) {
         waiting_bls_->TimerMessage(msg_ptr);
+    }
+
+    auto etime = common::TimeUtils::TimestampUs();
+    if (etime - now_tm_ms >= 100000lu) {
+        ZJC_DEBUG("BlsManager handle message use time: %lu", (etime - now_tm_ms));
     }
 }
 

@@ -248,6 +248,11 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
             prev_sync_cross_ms_ = now_tm_ms + kSyncCrossPeriod / now_sharding_count_;
         }
     }
+
+    auto etime = common::TimeUtils::TimestampMs();
+    if (etime - now_tm_ms >= 100) {
+        ZJC_DEBUG("TxPoolManager handle message use time: %lu", (etime - now_tm_ms));
+    }
 }
 
 void TxPoolManager::BroadcastInvalidPools(

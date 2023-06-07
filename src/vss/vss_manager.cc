@@ -98,10 +98,16 @@ void VssManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    auto now_tm_us = common::TimeUtils::TimestampUs();
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         BroadcastFirstPeriodHash(msg_ptr->thread_idx);
         BroadcastSecondPeriodRandom(msg_ptr->thread_idx);
         BroadcastThirdPeriodRandom(msg_ptr->thread_idx);
+    }
+
+    auto etime = common::TimeUtils::TimestampUs();
+    if (etime - now_tm_us >= 100000lu) {
+        ZJC_DEBUG("VssManager handle message use time: %lu", (etime - now_tm_us));
     }
 }
 
