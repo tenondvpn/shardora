@@ -42,7 +42,9 @@ std::string BloomFilter::Serialize() const {
 }
 
 BloomFilter::BloomFilter(const std::vector<uint64_t>& data, uint32_t hash_count)
-        : data_(data), hash_count_(hash_count) {}
+        : data_(data), hash_count_(hash_count) {
+    assert(data_.size() <= 256);
+}
 
 BloomFilter::~BloomFilter() {}
 
