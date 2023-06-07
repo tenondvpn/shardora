@@ -1793,13 +1793,23 @@ class CrossShardStatistic : public ::google::protobuf::Message /* @@protoc_inser
   const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::CrossShardStatisticItem >&
       crosses() const;
 
+  // optional uint64 elect_height = 2;
+  bool has_elect_height() const;
+  void clear_elect_height();
+  static const int kElectHeightFieldNumber = 2;
+  ::google::protobuf::uint64 elect_height() const;
+  void set_elect_height(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.CrossShardStatistic)
  private:
+  void set_has_elect_height();
+  void clear_has_elect_height();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::CrossShardStatisticItem > crosses_;
+  ::google::protobuf::uint64 elect_height_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -3871,6 +3881,30 @@ inline const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::C
 CrossShardStatistic::crosses() const {
   // @@protoc_insertion_point(field_list:zjchain.pools.protobuf.CrossShardStatistic.crosses)
   return crosses_;
+}
+
+// optional uint64 elect_height = 2;
+inline bool CrossShardStatistic::has_elect_height() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void CrossShardStatistic::set_has_elect_height() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void CrossShardStatistic::clear_has_elect_height() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void CrossShardStatistic::clear_elect_height() {
+  elect_height_ = GOOGLE_ULONGLONG(0);
+  clear_has_elect_height();
+}
+inline ::google::protobuf::uint64 CrossShardStatistic::elect_height() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.CrossShardStatistic.elect_height)
+  return elect_height_;
+}
+inline void CrossShardStatistic::set_elect_height(::google::protobuf::uint64 value) {
+  set_has_elect_height();
+  elect_height_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.CrossShardStatistic.elect_height)
 }
 
 // -------------------------------------------------------------------
