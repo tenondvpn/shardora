@@ -662,8 +662,8 @@ int ShardStatistic::StatisticWithHeights(
                     tmp_iter->second += niter->second.tx_count;
                 }
 
-                ZJC_DEBUG("pool: %u, height: %lu, id: %s, tx_count: %u",
-                    pool_idx, hiter->first, common::Encode::HexEncode(niter->first).c_str(), node_count_map[niter->first]);
+//                 ZJC_DEBUG("pool: %u, height: %lu, id: %s, tx_count: %u",
+//                     pool_idx, hiter->first, common::Encode::HexEncode(niter->first).c_str(), node_count_map[niter->first]);
                 if (elect_height == now_elect_height_) {
                     auto liter = lof_map.find(niter->second.leader_index);
                     if (liter == lof_map.end()) {
@@ -752,8 +752,8 @@ int ShardStatistic::StatisticWithHeights(
             common::GlobalInfo::Instance()->network_id(),
             nullptr,
             nullptr);
-        ZJC_DEBUG("now get network members: %u, size: %u, height: %lu",
-            common::GlobalInfo::Instance()->network_id(), members->size(), hiter->first);
+//         ZJC_DEBUG("now get network members: %u, size: %u, height: %lu",
+//             common::GlobalInfo::Instance()->network_id(), members->size(), hiter->first);
         str_for_hash.reserve(1024 * 1024);
         for (uint32_t midx = 0; midx < members->size(); ++midx) {
             auto& id = (*members)[midx]->id;
@@ -792,8 +792,8 @@ int ShardStatistic::StatisticWithHeights(
             str_for_hash.append((char*)&x1, sizeof(x1));
             str_for_hash.append((char*)&y1, sizeof(y1));
             debug_for_str += "xy: " + std::to_string(x1) + "-" + std::to_string(y1) + ",";
-            ZJC_DEBUG("elect height: %lu, id: %s, tx count: %u",
-                hiter->first, common::Encode::HexEncode(id).c_str(), tx_count);
+//             ZJC_DEBUG("elect height: %lu, id: %s, tx count: %u",
+//                 hiter->first, common::Encode::HexEncode(id).c_str(), tx_count);
         }
 
         statistic_item.set_elect_height(hiter->first);
@@ -870,17 +870,17 @@ int ShardStatistic::StatisticWithHeights(
         }
     }
 
-    if (prepare_members != nullptr) {
-        ZJC_DEBUG("kJoinElect add new elect node now elect_height: %lu, prepare elect height: %lu, %d, %d,"
-            "new nodes size: %u, now members size: %u, prepare members size: %u",
-            now_elect_height_,
-            prepare_elect_height_,
-            (r_eiter != join_elect_stoke_map.rend()),
-            (r_siter != join_elect_shard_map.rend()),
-            elect_statistic.join_elect_nodes_size(),
-            now_elect_members->size(),
-            prepare_members->size());
-    }
+//     if (prepare_members != nullptr) {
+//         ZJC_DEBUG("kJoinElect add new elect node now elect_height: %lu, prepare elect height: %lu, %d, %d,"
+//             "new nodes size: %u, now members size: %u, prepare members size: %u",
+//             now_elect_height_,
+//             prepare_elect_height_,
+//             (r_eiter != join_elect_stoke_map.rend()),
+//             (r_siter != join_elect_shard_map.rend()),
+//             elect_statistic.join_elect_nodes_size(),
+//             now_elect_members->size(),
+//             prepare_members->size());
+//     }
 
     NormalizeLofMap(lof_map);
     if (!lof_map.empty()) {

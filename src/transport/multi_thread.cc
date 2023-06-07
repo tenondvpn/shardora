@@ -269,7 +269,6 @@ void MultiThreadHandler::BlockSaved(const block::protobuf::Block& block_item) {
     if (block_item.has_commit_pool_index() && block_item.has_commit_height()) {
         saved_block_queue_.push(std::make_shared<SavedBlockQueueItem>(
             block_item.commit_pool_index() , block_item.commit_height()));
-        committed_heights_[block_item.commit_pool_index()].insert(block_item.commit_height());
 //         ZJC_DEBUG("success add commit pool index: %u, height: %lu, this block pool: %u, height: %lu", block_item.commit_pool_index(), block_item.commit_height(), block_item.pool_index(), block_item.height());
     }
 
@@ -287,6 +286,8 @@ void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Bl
             break;
         }
 
+        ZJC_DEBUG("success add commit pool index: %u, height: %lu",
+            item->checked_pool, item->checked_height);
         committed_heights_[item->checked_pool].insert(item->checked_height);
     }
 

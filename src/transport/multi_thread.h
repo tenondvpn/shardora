@@ -88,6 +88,7 @@ private:
     void HandleSyncBlockResponse(MessagePtr& msg_ptr);
     void SaveKeyValue(const transport::protobuf::Header& msg, db::DbWriteBatch& db_batch);
     void CheckBlockCommitted(std::shared_ptr<block::protobuf::Block>& block_ptr);
+    void TimerCheckBlockCommitted();
     void CreateConsensusBlockMessage(
         std::shared_ptr<transport::TransportMessage>& new_msg_ptr,
         std::shared_ptr<block::protobuf::Block>& block_ptr);
