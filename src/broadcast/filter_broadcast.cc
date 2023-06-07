@@ -29,6 +29,7 @@ void FilterBroadcast::Broadcasting(
         return;
     }
 
+    assert(message.broadcast().bloomfilter_size() < 64);
     auto bloomfilter = GetBloomfilter(message);
     bloomfilter->Add(dht_ptr->local_node()->id_hash);
     if (message.broadcast().has_hop_to_layer() &&
@@ -48,7 +49,7 @@ void FilterBroadcast::Broadcasting(
 
         ZJC_DEBUG("random Broadcasting: %lu, size: %u",
             msg_ptr->header.hash64(), nodes.size());
-        assert(msg_ptr->header.broadcast().bloomfilter_size() < 256);
+        assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
         Send(thread_idx, dht_ptr, msg_ptr, nodes);
     }
 }

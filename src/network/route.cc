@@ -62,6 +62,7 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
 
     if (dht_ptr != nullptr) {
         if (message.has_broadcast()) {
+            assert(message.broadcast().bloomfilter_size() < 64);
             broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
         } else {
             dht_ptr->SendToClosestNode(msg_ptr);
@@ -204,6 +205,7 @@ void Route::Broadcast(uint8_t thread_idx, const transport::MessagePtr& msg_ptr) 
         }
     }
 
+    assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
     broadcast_->Broadcasting(thread_idx, des_dht, msg_ptr);
 }
 
