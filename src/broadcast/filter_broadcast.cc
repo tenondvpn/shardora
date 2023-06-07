@@ -157,9 +157,9 @@ std::vector<dht::NodePtr> FilterBroadcast::GetRandomFilterNodes(
         }
     }
 
-    ZJC_DEBUG("data size: %u", bloomfilter->data_size());
-    for (int32_t i = 0; i < bloomfilter->data_size(); ++i) {
-        ZJC_DEBUG("data i: %d, data: %lu", i, bloomfilter->data(i));
+    ZJC_DEBUG("data size: %u", bloomfilter->data().size());
+    for (uint32_t i = 0; i < bloomfilter->data().size(); ++i) {
+        ZJC_DEBUG("data i: %d, data: %lu", i, bloomfilter->data()[i]);
     }
 
     auto& data = bloomfilter->data();
