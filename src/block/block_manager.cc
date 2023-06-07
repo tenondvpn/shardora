@@ -1468,11 +1468,12 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
         statistic_msg.set_elect_height(latest_elect_height_);
         statistic_msg.set_leader_idx(to_tx_leader_->index);
         // send to other nodes
-        auto& broadcast = *msg.mutable_broadcast();
     }
     
+    statistic_message_->header.release_broadcast();
     statistic_message_->thread_idx = thread_idx;
     auto& msg = statistic_message_->header;
+    auto& broadcast = *msg.mutable_broadcast();
     auto& block_msg = *msg.mutable_block_proto();
     block::protobuf::StatisticTxMessage& statistic_msg = *block_msg.mutable_statistic_tx();
     statistic_msg.set_leader_to_idx(leader_create_statistic_heights_index_++);
