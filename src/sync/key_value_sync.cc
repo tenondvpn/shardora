@@ -51,8 +51,10 @@ void KeyValueSync::AddSyncHeight(
 void KeyValueSync::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     ZJC_INFO("KeyValueSync timer coming.");
     PopItems();
+    ZJC_INFO("KeyValueSync timer coming 0.");
     auto now_tm_us = common::TimeUtils::TimestampUs();
     CheckSyncItem(msg_ptr->thread_idx);
+    ZJC_INFO("KeyValueSync timer coming 1.");
     if (prev_sync_tmout_us_ + kSyncTimeoutPeriodUs < now_tm_us) {
         prev_sync_tmout_us_ = now_tm_us;
         CheckSyncTimeout();
