@@ -70,6 +70,12 @@ public:
     }
 
 private:
+    struct SavedBlockQueueItem {
+        uint32_t checked_pool;
+        uint64_t checked_height;
+    };
+
+    typedef std::shared_ptr<SavedBlockQueueItem> SavedBlockQueueItemPtr;
     void Join();
     int StartTcpServer();
     int32_t GetPriority(int32_t msg_type);
@@ -92,6 +98,7 @@ private:
     common::UniqueSet<uint64_t, 10240, 32> unique_message_sets_;
     common::ThreadSafeQueue<MessagePtr>** threads_message_queues_;
     common::ThreadSafeQueue<MessagePtr> http_server_message_queue_;
+    common::ThreadSafeQueue<SavedBlockQueueItemPtr> saved_block_queue_;
     std::condition_variable* wait_con_ = nullptr;
     std::mutex* wait_mutex_ = nullptr;
     uint32_t consensus_thread_count_ = 4;
