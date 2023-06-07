@@ -23,6 +23,7 @@ public:
     bool operator!=(const BloomFilter& r) const;
 
     const std::vector<uint64_t>& data() const {
+        assert(data_.size() <= 256);
         return data_;
     }
 

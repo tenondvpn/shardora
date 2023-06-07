@@ -14,7 +14,9 @@ BloomFilter::BloomFilter(uint32_t bit_count, uint32_t hash_count) : hash_count_(
     for (uint32_t i = 0; i < data_cnt; ++i) {
         data_.push_back(0ull);
     }
+
     assert(!data_.empty());
+    assert(data_.size() <= 256);
 }
 
 void BloomFilter::Deserialize(const uint64_t* data, uint32_t count, uint32_t hash_count) {
@@ -23,6 +25,7 @@ void BloomFilter::Deserialize(const uint64_t* data, uint32_t count, uint32_t has
         data_.push_back(data[i]);
     }
 
+    assert(data_.size() <= 256);
     hash_count_ = hash_count;
 }
 
