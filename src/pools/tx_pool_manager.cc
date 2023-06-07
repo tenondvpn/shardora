@@ -250,7 +250,7 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
     }
 
     auto etime = common::TimeUtils::TimestampMs();
-    if (etime - now_tm_ms >= 100) {
+    if (etime - now_tm_ms >= 10) {
         ZJC_DEBUG("TxPoolManager handle message use time: %lu", (etime - now_tm_ms));
     }
 }

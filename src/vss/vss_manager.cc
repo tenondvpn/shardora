@@ -106,7 +106,7 @@ void VssManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     auto etime = common::TimeUtils::TimestampUs();
-    if (etime - now_tm_us >= 100000lu) {
+    if (etime - now_tm_us >= 10000lu) {
         ZJC_DEBUG("VssManager handle message use time: %lu", (etime - now_tm_us));
     }
 }

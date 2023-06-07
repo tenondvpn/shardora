@@ -116,7 +116,7 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     auto etime = common::TimeUtils::TimestampUs();
-    if (etime - now_tm >= 100000lu) {
+    if (etime - now_tm >= 10000lu) {
         ZJC_DEBUG("block manager handle message use time: %lu, %lu, %lu, %lu, %lu, %lu",
             (etime - now_tm), (now_tm1 - now_tm), (now_tm2 - now_tm1), (now_tm3 - now_tm2), (now_tm4 - now_tm3), (etime - now_tm4));
     }
