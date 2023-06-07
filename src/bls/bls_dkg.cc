@@ -75,9 +75,7 @@ void BlsDkg::OnNewElectionBlock(
         uint64_t elect_height,
         common::MembersPtr& members,
         std::shared_ptr<TimeBlockItem>& latest_timeblock_info) try {
-    ZJC_DEBUG("new elect height coming: %lu, %lu", elect_height, elect_hegiht_);
     if (elect_height <= elect_hegiht_) {
-        ZJC_DEBUG("elect height error: %lu, %lu", elect_height, elect_hegiht_);
         return;
     }
 
@@ -122,15 +120,15 @@ void BlsDkg::OnNewElectionBlock(
     ver_offset_ += (common::Random::RandomUint32() % (kDkgPeriodUs * 3 / 1000000lu)) * 1000000lu;
     swap_offset_ += (common::Random::RandomUint32() % (kDkgPeriodUs * 3 / 1000000lu)) * 1000000lu;
     finish_offset_ += (common::Random::RandomUint32() % (kDkgPeriodUs * 3 / 1000000lu)) * 1000000lu;
-    ZJC_DEBUG("bls time point now: %u, time block tm: %u, begin_time_sec_: %u, "
-        "kDkgPeriodUs: %u, ver_offset_: %u, swap_offset_: %u, finish_offset_: %u",
-        common::TimeUtils::TimestampSeconds(),
-        latest_timeblock_info->lastest_time_block_tm,
-        begin_time_us_ / 1000000,
-        kDkgPeriodUs / 1000000,
-        ver_offset_ / 1000000,
-        swap_offset_ / 1000000,
-        finish_offset_ / 1000000);
+//     ZJC_DEBUG("bls time point now: %u, time block tm: %u, begin_time_sec_: %u, "
+//         "kDkgPeriodUs: %u, ver_offset_: %u, swap_offset_: %u, finish_offset_: %u",
+//         common::TimeUtils::TimestampSeconds(),
+//         latest_timeblock_info->lastest_time_block_tm,
+//         begin_time_us_ / 1000000,
+//         kDkgPeriodUs / 1000000,
+//         ver_offset_ / 1000000,
+//         swap_offset_ / 1000000,
+//         finish_offset_ / 1000000);
     has_broadcast_verify_ = false;
     has_broadcast_swapkey_ = false;
     has_finished_ = false;
@@ -171,12 +169,10 @@ void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) try {
     }
 
     if (bls_msg.has_verify_brd()) {
-        ZJC_DEBUG("verify g2 coming member index: %d.", bls_msg.index());
         HandleVerifyBroadcast(msg_ptr);
     }
 
     if (bls_msg.has_swap_req()) {
-        ZJC_DEBUG("swap seckey coming member index: %d.", bls_msg.index());
         HandleSwapSecKey(msg_ptr);
     }
 
@@ -244,10 +240,10 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
     }
 
     prefix_db_->AddBlsVerifyG2((*members_)[bls_msg.index()]->id, bls_msg.verify_brd());
-    ZJC_DEBUG("save verify g2 success local: %d, %lu, %u, %u, %s, %s",
-        local_member_index_, elect_hegiht_, bls_msg.index(), 0,
-        common::Encode::HexEncode((*members_)[bls_msg.index()]->id).c_str(),
-        common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str());
+//     ZJC_DEBUG("save verify g2 success local: %d, %lu, %u, %u, %s, %s",
+//         local_member_index_, elect_hegiht_, bls_msg.index(), 0,
+//         common::Encode::HexEncode((*members_)[bls_msg.index()]->id).c_str(),
+//         common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str());
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
 }
@@ -394,7 +390,6 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
 
     std::string dec_msg;
     std::string encrypt_key;
-    ZJC_DEBUG("2");
     if (security_->GetEcdhKey(
             (*members_)[bls_msg.index()]->pubkey,
             &encrypt_key) != security::kSecuritySuccess) {
@@ -435,10 +430,10 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-    ZJC_DEBUG("swap verify success member: %d, index: %d, %s, min_aggree_member_count_: %u",
-        local_member_index_, bls_msg.index(),
-        libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
-        min_aggree_member_count_);
+//     ZJC_DEBUG("swap verify success member: %d, index: %d, %s, min_aggree_member_count_: %u",
+//         local_member_index_, bls_msg.index(),
+//         libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
+//         min_aggree_member_count_);
     // swap
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, bls_msg.index(), sec_key);
@@ -546,7 +541,7 @@ bool BlsDkg::CheckRecomputeG2s(
         bls::protobuf::JoinElectBlsInfo& verfy_final_vals) {
     bls::protobuf::JoinElectInfo join_info;
     if (!prefix_db_->GetNodeVerificationVector(id, &join_info)) {
-        ZJC_DEBUG("failed get verifcaton handle kElectJoin tx: %s", common::Encode::HexEncode(id).c_str());
+//         ZJC_DEBUG("failed get verifcaton handle kElectJoin tx: %s", common::Encode::HexEncode(id).c_str());
         return false;
     }
 
@@ -607,12 +602,12 @@ bool BlsDkg::CheckRecomputeG2s(
             libBLS::ThresholdUtils::fieldElementToString(verify_g2s.Z.c1)));
         auto verified_val = verfy_final_vals.SerializeAsString();
         prefix_db_->SaveVerifiedG2s(local_member_index_, id, i + 1, verfy_final_vals);
-        ZJC_DEBUG("success save verified g2: %u, peer: %d, t: %d, %s, %s",
-            local_member_index_,
-            join_info.member_idx(),
-            i + 1,
-            common::Encode::HexEncode(id).c_str(),
-            libBLS::ThresholdUtils::fieldElementToString(verify_g2s.X.c0).c_str());
+//         ZJC_DEBUG("success save verified g2: %u, peer: %d, t: %d, %s, %s",
+//             local_member_index_,
+//             join_info.member_idx(),
+//             i + 1,
+//             common::Encode::HexEncode(id).c_str(),
+//             libBLS::ThresholdUtils::fieldElementToString(verify_g2s.X.c0).c_str());
     }
 
     return true;
@@ -622,8 +617,8 @@ libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t peer_mem_index, uint32_t*
     bls::protobuf::VerifyVecBrdReq req;
     auto res = prefix_db_->GetBlsVerifyG2((*members_)[peer_mem_index]->id, &req);
     if (!res) {
-        ZJC_DEBUG("get verify g2 failed local: %d, %lu, %u",
-            local_member_index_, elect_hegiht_, peer_mem_index);
+//         ZJC_DEBUG("get verify g2 failed local: %d, %lu, %u",
+//             local_member_index_, elect_hegiht_, peer_mem_index);
         return libff::alt_bn128_G2::zero();
     }
 
@@ -660,12 +655,11 @@ void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
         return;
     }
 
-    ZJC_DEBUG("brd verify g2 success local net: %u, local: %d,  %s, %s",
-        common::GlobalInfo::Instance()->network_id(),
-        local_member_index_,
-        common::Encode::HexEncode((*members_)[local_member_index_]->id).c_str(),
-        common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str());
-
+//     ZJC_DEBUG("brd verify g2 success local net: %u, local: %d,  %s, %s",
+//         common::GlobalInfo::Instance()->network_id(),
+//         local_member_index_,
+//         common::Encode::HexEncode((*members_)[local_member_index_]->id).c_str(),
+//         common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str());
     CreateDkgMessage(msg_ptr);
 #ifdef ZJC_UNITTEST
     ver_brd_msg_ = msg_ptr;
@@ -712,8 +706,8 @@ void BlsDkg::SwapSecKey(uint8_t thread_idx) try {
     }
 
     CreateDkgMessage(msg_ptr);
-    ZJC_DEBUG("success send swap seckey request local member index: %d, local net: %u",
-        local_member_index_, common::GlobalInfo::Instance()->network_id());
+//     ZJC_DEBUG("success send swap seckey request local member index: %d, local net: %u",
+//         local_member_index_, common::GlobalInfo::Instance()->network_id());
 #ifdef ZJC_UNITTEST
     sec_swap_msgs_ = msg_ptr;
     ZJC_DEBUG("success add swap msg");
@@ -731,7 +725,6 @@ void BlsDkg::CreateSwapKey(uint32_t member_idx, std::string* seckey, int32_t* se
 
     auto msg = libBLS::ThresholdUtils::fieldElementToString(
         local_src_secret_key_contribution_[member_idx]);
-    ZJC_DEBUG("des member_idx: %d, local: %d, swap key: %s", member_idx, local_member_index_, msg.c_str());
     std::string encrypt_key;
     if (security_->GetEcdhKey(
             (*members_)[member_idx]->pubkey,
@@ -822,7 +815,6 @@ void BlsDkg::FinishBroadcast(uint8_t thread_idx) try {
     DumpLocalPrivateKey();
     BroadcastFinish(thread_idx, bitmap);
     finished_ = true;
-    ZJC_DEBUG("success finish local member: %d", local_member_index_);
 } catch (std::exception& e) {
     local_sec_key_ = libff::alt_bn128_Fr::zero();
     BLS_ERROR("catch error: %s", e.what());
@@ -883,12 +875,6 @@ void BlsDkg::BroadcastFinish(uint8_t thread_idx, const common::Bitmap& bitmap) {
     libff::alt_bn128_G1 g1_hash;
     CreateDkgMessage(msg_ptr);
     std::string sign_hash = common::Hash::keccak256(pk);
-    ZJC_DEBUG("valid bls members: %d, pk hash: %s, pk: %s",
-        bitmap.valid_count(),
-        common::Encode::HexEncode(sign_hash).c_str(),
-        common::Encode::HexEncode(pk).c_str());
-
-
     bls_mgr_->GetLibffHash(sign_hash, &g1_hash);
     if (bls_mgr_->Sign(
             min_aggree_member_count_,

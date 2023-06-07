@@ -69,19 +69,16 @@ public:
         }
 
         DbWriteOptions write_opt;
-        ZJC_DEBUG("success put db data.");
         return db_->Write(write_opt, &db_batch);
     }
 
     DbStatus Put(const std::string& key, const std::string& value) {
         DbWriteOptions write_opt;
-        ZJC_DEBUG("1 success put db data.");
         return db_->Put(write_opt, DbSlice(key), DbSlice(value));
     }
 
     DbStatus Put(const std::string& key, const char* value, size_t len) {
         DbWriteOptions write_opt;
-        ZJC_DEBUG("2 success put db data.");
         return db_->Put(write_opt, DbSlice(key), DbSlice(value, len));
     }
 
