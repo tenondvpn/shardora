@@ -204,6 +204,7 @@ int TcpTransport::Send(
         uint8_t thread_idx,
         tnet::TcpInterface* tcp_conn,
         const transport::protobuf::Header& message) {
+    assert(message.broadcast().bloomfilter_size() < 64);
     std::string msg;
     if (!message.has_hash64() || message.hash64() == 0) {
         SetMessageHash(message, thread_idx);
@@ -224,6 +225,7 @@ int TcpTransport::Send(
         uint16_t des_port,
         const transport::protobuf::Header& message) {
     std::string msg;
+    assert(message.broadcast().bloomfilter_size() < 64);
     if (!message.has_hash64() || message.hash64() == 0) {
         SetMessageHash(message, thread_idx);
     }

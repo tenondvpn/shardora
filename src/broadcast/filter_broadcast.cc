@@ -62,7 +62,7 @@ std::shared_ptr<common::BloomFilter> FilterBroadcast::GetBloomfilter(
     }
 
     std::vector<uint64_t> data;
-    assert(message.broadcast().bloomfilter_size() < 256);
+    assert(message.broadcast().bloomfilter_size() < 64);
     for (auto i = 0; i < message.broadcast().bloomfilter_size(); ++i) {
         data.push_back(message.broadcast().bloomfilter(i));
     }
