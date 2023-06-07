@@ -46,8 +46,9 @@ void FilterBroadcast::Broadcasting(
             bloomfilter->Add((*iter)->id_hash);
         }
 
+        ZJC_DEBUG("random Broadcasting: %lu, size: %u",
+            msg_ptr->header.hash64(), nodes.size());
         assert(msg_ptr->header.broadcast().bloomfilter_size() < 256);
-        ZJC_DEBUG("random Broadcasting: %lu, size: %u", msg_ptr->header.hash64(), nodes.size());
         Send(thread_idx, dht_ptr, msg_ptr, nodes);
     }
 }
@@ -65,6 +66,8 @@ std::shared_ptr<common::BloomFilter> FilterBroadcast::GetBloomfilter(
     for (auto i = 0; i < message.broadcast().bloomfilter_size(); ++i) {
         data.push_back(message.broadcast().bloomfilter(i));
     }
+
+    assert(data.size() < 64);
     return std::make_shared<common::BloomFilter>(data, kBloomfilterHashCount);
 }
 
