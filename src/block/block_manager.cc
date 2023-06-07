@@ -1135,12 +1135,15 @@ void BlockManager::HandleStatisticBlock(
         const pools::protobuf::ElectStatistic& elect_statistic,
         db::DbWriteBatch& db_batch) {
     if (create_elect_tx_cb_ == nullptr) {
+        ZJC_INFO("create_elect_tx_cb_ == nullptr");
         return;
     }
    
     if (prefix_db_->ExistsStatisticedShardingHeight(
             block.network_id(),
             block.timeblock_height())) {
+        ZJC_INFO("prefix_db_->ExistsStatisticedShardingHeight net: %u, tm height: %lu",
+            block.network_id(), block.timeblock_height());
         return;
     }
 
