@@ -86,10 +86,16 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
         prev_to_txs_tm_us_ = now_tm;
     }
 
+    auto now_tm1 = common::TimeUtils::TimestampUs();
     NetworkNewBlock(msg_ptr->thread_idx, nullptr);
+    auto now_tm2 = common::TimeUtils::TimestampUs();
+    auto now_tm3 = common::TimeUtils::TimestampUs();
+    auto now_tm4 = common::TimeUtils::TimestampUs();
     if (to_tx_leader_ != nullptr && local_id_ == to_tx_leader_->id) {
         CreateToTx(msg_ptr->thread_idx);
+        now_tm3 = common::TimeUtils::TimestampUs();
         CreateStatisticTx(msg_ptr->thread_idx);
+        now_tm4 = common::TimeUtils::TimestampUs();
     }
 
     auto now_tm_ms = now_tm / 1000;
@@ -109,9 +115,10 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
         prev_retry_create_statistic_tx_ms_ = now_tm_ms + kRetryStatisticPeriod;
     }
 
-    auto etime = common::TimeUtils::TimestampMs();
-    if (etime - now_tm_ms >= 100) {
-        ZJC_DEBUG("block manager handle message use time: %lu", (etime - now_tm_ms));
+    auto etime = common::TimeUtils::TimestampUs();
+    if (etime - now_tm >= 100000lu) {
+        ZJC_DEBUG("block manager handle message use time: %lu, %lu, %lu, %lu, %lu, %lu",
+            (etime - now_tm), (now_tm1 - now_tm), (now_tm2 - now_tm1), (now_tm3 - now_tm2), (now_tm4 - now_tm3), , (etime - now_tm4));
     }
 }
 
