@@ -49,15 +49,19 @@ BlsManager::BlsManager(
 BlsManager::~BlsManager() {}
 
 void BlsManager::TimerMessage(const transport::MessagePtr& msg_ptr) {
+    ZJC_INFO("BlsManager timer coming.");
+
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) <
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
+        ZJC_INFO("BlsManager timer over.");
         return;
     }
 
     if (waiting_bls_ != nullptr) {
         waiting_bls_->TimerMessage(msg_ptr);
     }
+    ZJC_INFO("BlsManager timer over.");
 }
 
 void BlsManager::OnNewElectBlock(

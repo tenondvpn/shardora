@@ -187,12 +187,14 @@ void TxPoolManager::FlushHeightTree() {
 }
 
 void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+    ZJC_INFO("KeyValueSync timer coming.");
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (prev_sync_height_tree_tm_ms_ < now_tm_ms) {
         FlushHeightTree();
         prev_sync_height_tree_tm_ms_ = now_tm_ms + kFlushHeightTreePeriod;
     }
 
+    ZJC_INFO("KeyValueSync timer coming 0.");
     if (prev_check_leader_valid_ms_ < now_tm_ms) {
         bool get_factor = false;
         if (prev_cacultate_leader_valid_ms_ < now_tm_ms) {
@@ -224,16 +226,19 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
         prev_check_leader_valid_ms_ = now_tm_ms + kCheckLeaderLofPeriod;
     }
 
+    ZJC_INFO("KeyValueSync timer coming 1.");
     if (prev_sync_check_ms_ < now_tm_ms) {
         SyncMinssingHeights(msg_ptr->thread_idx, now_tm_ms);
         prev_sync_check_ms_ = now_tm_ms + kSyncMissingBlockPeriod;
     }
 
+    ZJC_INFO("KeyValueSync timer coming 2.");
     if (prev_sync_heights_ms_ < now_tm_ms) {
         SyncPoolsMaxHeight(msg_ptr->thread_idx);
         prev_sync_heights_ms_ = now_tm_ms + kSyncPoolsMaxHeightsPeriod;
     }
 
+    ZJC_INFO("KeyValueSync timer coming 3.");
     if (prev_sync_cross_ms_ < now_tm_ms) {
         if (cross_pools_ == nullptr) {
             InitCrossPools();
@@ -247,6 +252,7 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
             prev_sync_cross_ms_ = now_tm_ms + kSyncCrossPeriod / now_sharding_count_;
         }
     }
+    ZJC_INFO("KeyValueSync timer over.");
 }
 
 void TxPoolManager::BroadcastInvalidPools(

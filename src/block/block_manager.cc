@@ -68,6 +68,7 @@ int BlockManager::Init(
 }
 
 void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+    ZJC_INFO("BlockManager timer coming.");
     auto now_tm = common::TimeUtils::TimestampUs();
     if (now_tm > prev_to_txs_tm_us_ + 1000000) {
         if (leader_to_txs_.size() >= 4) {
@@ -110,6 +111,7 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 
         prev_retry_create_statistic_tx_ms_ = now_tm_ms + kRetryStatisticPeriod;
     }
+    ZJC_INFO("BlockManager timer coming over.");
 }
 
 void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members) {

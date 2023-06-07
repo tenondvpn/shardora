@@ -73,7 +73,7 @@ void ThreadHandler::HandleMessage() {
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
                 }
 
-                ZJC_INFO("0 over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
+                ZJC_INFO("kConsensusTimerMessage over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
         }
 
         if (thread_idx_ + 1 == common::GlobalInfo::Instance()->message_handler_thread_count()) {
@@ -89,7 +89,7 @@ void ThreadHandler::HandleMessage() {
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
                 }
 
-                ZJC_INFO("1 over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
+                ZJC_INFO("thread over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
         }
 
         std::unique_lock<std::mutex> lock(wait_mutex_);
