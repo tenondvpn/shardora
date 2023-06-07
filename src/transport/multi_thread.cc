@@ -48,7 +48,7 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
             msg_ptr->thread_idx = thread_idx_;
             auto btime = common::TimeUtils::TimestampUs();
-            ZJC_INFO("message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
+//             ZJC_INFO("message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
             if (etime - btime > 100000) {
@@ -84,7 +84,7 @@ void ThreadHandler::HandleMessage() {
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->thread_idx = thread_idx_;
             msg_ptr->header.set_type(common::kPoolTimerMessage);
-            ZJC_INFO("thread timer message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
+//             ZJC_INFO("thread timer message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
             if (etime - btime > 100000lu) {
@@ -167,7 +167,6 @@ int32_t MultiThreadHandler::GetPriority(int32_t msg_type) {
 }
 
 void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
-    ZJC_DEBUG("message coming msg hash: %lu", msg_ptr->header.hash64());
     uint32_t priority = GetPriority(msg_ptr->header.type());
     if (thread_vec_.empty()) {
         return;
@@ -202,9 +201,6 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
 
     threads_message_queues_[queue_idx][priority].push(msg_ptr);
     wait_con_[queue_idx % all_thread_count_].notify_one();
-    if (msg_ptr->header.type() == common::kPoolsMessage) {
-        ZJC_DEBUG("pools message coming.");
-    }
 }
 
 uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
@@ -270,38 +266,18 @@ void MultiThreadHandler::BlockSaved(const block::protobuf::Block& block_item) {
         waiting_check_block_map_[block_item.pool_index()].erase(iter);
     }
 
-//     auto commit_iter = committed_heights_[block_item.pool_index()].find(block_item.height());
-//     if (commit_iter != committed_heights_[block_item.pool_index()].end()) {
-//         committed_heights_[block_item.pool_index()].erase(commit_iter);
-//     }
-
     if (block_item.has_commit_pool_index() && block_item.has_commit_height()) {
-//         auto iter = waiting_check_block_map_[block_item.commit_pool_index()].find(
-//             block_item.commit_height());
-//         if (iter != waiting_check_block_map_[block_item.commit_pool_index()].end()) {
-//             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-//             new_msg_ptr->checked_block = true;
-//             CreateConsensusBlockMessage(new_msg_ptr, iter->second);
-//             ZJC_DEBUG("111 call not checked block net: %u, pool: %u, height: %lu, prepool: %u, preheight: %lu, block hash: %s",
-//                 iter->second->network_id(),
-//                 iter->second->pool_index(),
-//                 iter->second->height(),
-//                 block_item.commit_pool_index(),
-//                 block_item.commit_height(),
-//                 common::Encode::HexEncode(iter->second->hash()).c_str());
-// 
-//         }
         saved_block_queue_.push(std::make_shared<SavedBlockQueueItem>(
             block_item.commit_pool_index() , block_item.commit_height()));
         committed_heights_[block_item.commit_pool_index()].insert(block_item.commit_height());
-        ZJC_DEBUG("success add commit pool index: %u, height: %lu, this block pool: %u, height: %lu", block_item.commit_pool_index(), block_item.commit_height(), block_item.pool_index(), block_item.height());
+//         ZJC_DEBUG("success add commit pool index: %u, height: %lu, this block pool: %u, height: %lu", block_item.commit_pool_index(), block_item.commit_height(), block_item.pool_index(), block_item.height());
     }
 
-    ZJC_DEBUG("remove not checked block net: %u, pool: %u, height: %lu, block hash: %s",
-        block_item.network_id(),
-        block_item.pool_index(),
-        block_item.height(),
-        common::Encode::HexEncode(block_item.hash()).c_str());
+//     ZJC_DEBUG("remove not checked block net: %u, pool: %u, height: %lu, block hash: %s",
+//         block_item.network_id(),
+//         block_item.pool_index(),
+//         block_item.height(),
+//         common::Encode::HexEncode(block_item.hash()).c_str());
 }
 
 void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Block>& block_item) {
@@ -394,12 +370,7 @@ void MultiThreadHandler::SaveKeyValue(const transport::protobuf::Header& msg, db
 }
 
 bool MultiThreadHandler::IsMessageUnique(uint64_t msg_hash) {
-    bool valid = unique_message_sets_.add(msg_hash);
-    if (!valid) {
-        ZJC_DEBUG("message filtered: %lu", msg_hash);
-    }
-
-    return valid;
+    return unique_message_sets_.add(msg_hash);
 }
  
 MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx) {
