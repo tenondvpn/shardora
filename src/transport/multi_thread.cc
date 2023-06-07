@@ -49,20 +49,14 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->thread_idx = thread_idx_;
             auto btime = common::TimeUtils::TimestampUs();
             Processor::Instance()->HandleMessage(msg_ptr);
-            ZJC_DEBUG("message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
+            ZJC_INFO("message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             auto etime = common::TimeUtils::TimestampUs();
-            if (etime - btime >= 100000lu) {
                 std::string t;
                 for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
                 }
 
-                ZJC_DEBUG("over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
-            }
-
-            if (msg_ptr->header.type() == common::kPoolsMessage) {
-                ZJC_DEBUG("thread pools message coming.");
-            }
+                ZJC_INFO("over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
 
         }
 
@@ -71,16 +65,15 @@ void ThreadHandler::HandleMessage() {
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->thread_idx = thread_idx_;
             msg_ptr->header.set_type(common::kConsensusTimerMessage);
+            ZJC_INFO("kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
-            if (etime - btime >= 100000lu) {
                 std::string t;
                 for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
                 }
 
-                ZJC_DEBUG("0 over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
-            }
+                ZJC_INFO("0 over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
         }
 
         if (thread_idx_ + 1 == common::GlobalInfo::Instance()->message_handler_thread_count()) {
@@ -88,16 +81,15 @@ void ThreadHandler::HandleMessage() {
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->thread_idx = thread_idx_;
             msg_ptr->header.set_type(common::kPoolTimerMessage);
+            ZJC_INFO("thread timer message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
-            if (etime - btime >= 100000lu) {
                 std::string t;
                 for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
                 }
 
-                ZJC_DEBUG("1 over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
-            }
+                ZJC_INFO("1 over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
         }
 
         std::unique_lock<std::mutex> lock(wait_mutex_);

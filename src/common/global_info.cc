@@ -23,7 +23,7 @@ GlobalInfo::GlobalInfo() {}
 GlobalInfo::~GlobalInfo() {}
 
 int GlobalInfo::Init(const common::Config& config) {
-    message_handler_thread_count_ = 4;
+    message_handler_thread_count_ = 1;
     config.Get("zjchain", "consensus_thread_count", message_handler_thread_count_);
     ++message_handler_thread_count_;
 

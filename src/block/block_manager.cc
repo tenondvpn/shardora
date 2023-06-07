@@ -914,7 +914,6 @@ void BlockManager::LoadLatestBlocks(uint8_t thread_idx) {
     }
 
     db_->Put(db_batch);
-    ZJC_DEBUG("put 1");
 }
 
 int BlockManager::GetBlockWithHeight(
