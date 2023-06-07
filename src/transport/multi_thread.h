@@ -71,6 +71,8 @@ public:
 
 private:
     struct SavedBlockQueueItem {
+        SavedBlockQueueItem(uint32_t pool, uint64_t height)
+            : checked_pool(pool), checked_height(height) {}
         uint32_t checked_pool;
         uint64_t checked_height;
     };
