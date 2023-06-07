@@ -118,7 +118,7 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     auto etime = common::TimeUtils::TimestampUs();
     if (etime - now_tm >= 100000lu) {
         ZJC_DEBUG("block manager handle message use time: %lu, %lu, %lu, %lu, %lu, %lu",
-            (etime - now_tm), (now_tm1 - now_tm), (now_tm2 - now_tm1), (now_tm3 - now_tm2), (now_tm4 - now_tm3), , (etime - now_tm4));
+            (etime - now_tm), (now_tm1 - now_tm), (now_tm2 - now_tm1), (now_tm3 - now_tm2), (now_tm4 - now_tm3), (etime - now_tm4));
     }
 }
 
@@ -220,6 +220,7 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 void BlockManager::NetworkNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item) {
+    auto now_tm = common::TimeUtils::TimestampUs();
     if (block_item != nullptr) {
         if (!block_item->is_cross_block()) {
             ZJC_ERROR("not cross block coming: %s, signx: %s, net: %u, pool: %u, height: %lu",
@@ -247,7 +248,12 @@ void BlockManager::NetworkNewBlock(
         AddNewBlock(thread_idx, block_item, db_batch);
     }
 
+    auto now_tm1 = common::TimeUtils::TimestampUs();
     HandleAllConsensusBlocks(thread_idx);
+    auto now_tm2 = common::TimeUtils::TimestampUs();
+    if (now_tm2 - now_tm > 100000lu) {
+        ZJC_DEBUG("BlockManager::NetworkNewBlock use time: %lu, %lu", (now_tm1 - now_tm), (now_tm2 - now_tm1));
+    }
 }
 
 void BlockManager::ConsensusAddBlock(
