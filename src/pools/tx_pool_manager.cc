@@ -31,6 +31,7 @@ TxPoolManager::TxPoolManager(
         tx_pool_[i].Init(i, db, kv_sync);
     }
 
+    ZJC_INFO("TxPoolManager init success: %d", common::kInvalidPoolIndex);
     InitCrossPools();
     transport::Processor::Instance()->RegisterProcessor(
         common::kPoolTimerMessage,
@@ -187,14 +188,14 @@ void TxPoolManager::FlushHeightTree() {
 }
 
 void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
-    ZJC_INFO("KeyValueSync timer coming.");
+    ZJC_INFO("TxPoolManager timer coming.");
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (prev_sync_height_tree_tm_ms_ < now_tm_ms) {
         FlushHeightTree();
         prev_sync_height_tree_tm_ms_ = now_tm_ms + kFlushHeightTreePeriod;
     }
 
-    ZJC_INFO("KeyValueSync timer coming 0.");
+    ZJC_INFO("TxPoolManager timer coming 0.");
     if (prev_check_leader_valid_ms_ < now_tm_ms) {
         bool get_factor = false;
         if (prev_cacultate_leader_valid_ms_ < now_tm_ms) {
@@ -203,13 +204,18 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
         }
 
         std::vector<double> factors(common::kInvalidPoolIndex);
+        ZJC_INFO("TxPoolManager timer coming 1.");
         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+            ZJC_INFO("TxPoolManager timer coming 2.");
             double res = tx_pool_[i].CheckLeaderValid(get_factor);
             if (get_factor) {
+                ZJC_INFO("TxPoolManager timer coming 2 0.");
                 factors[i] = res;
+                ZJC_INFO("TxPoolManager timer coming 2 1.");
             }
         }
 
+        ZJC_INFO("TxPoolManager timer coming 3.");
         if (get_factor) {
             if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
                 factors.pop_back();
@@ -217,28 +223,32 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
 
             std::vector<int32_t> invalid_pools;
             invalid_pools.reserve(64);
+            ZJC_INFO("TxPoolManager timer coming 4.");
             CheckLeaderValid(factors, &invalid_pools);
+            ZJC_INFO("TxPoolManager timer coming 5.");
             if (invalid_pools.size() < 32) {
+                ZJC_INFO("TxPoolManager timer coming 6.");
                 BroadcastInvalidPools(msg_ptr->thread_idx, invalid_pools);
+                ZJC_INFO("TxPoolManager timer coming 7.");
             }
         }
 
         prev_check_leader_valid_ms_ = now_tm_ms + kCheckLeaderLofPeriod;
     }
 
-    ZJC_INFO("KeyValueSync timer coming 1.");
+    ZJC_INFO("TxPoolManager timer coming 1.");
     if (prev_sync_check_ms_ < now_tm_ms) {
         SyncMinssingHeights(msg_ptr->thread_idx, now_tm_ms);
         prev_sync_check_ms_ = now_tm_ms + kSyncMissingBlockPeriod;
     }
 
-    ZJC_INFO("KeyValueSync timer coming 2.");
+    ZJC_INFO("TxPoolManager timer coming 2.");
     if (prev_sync_heights_ms_ < now_tm_ms) {
         SyncPoolsMaxHeight(msg_ptr->thread_idx);
         prev_sync_heights_ms_ = now_tm_ms + kSyncPoolsMaxHeightsPeriod;
     }
 
-    ZJC_INFO("KeyValueSync timer coming 3.");
+    ZJC_INFO("TxPoolManager timer coming 3.");
     if (prev_sync_cross_ms_ < now_tm_ms) {
         if (cross_pools_ == nullptr) {
             InitCrossPools();
@@ -252,7 +262,7 @@ void TxPoolManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) 
             prev_sync_cross_ms_ = now_tm_ms + kSyncCrossPeriod / now_sharding_count_;
         }
     }
-    ZJC_INFO("KeyValueSync timer over.");
+    ZJC_INFO("TxPoolManager timer over.");
 }
 
 void TxPoolManager::BroadcastInvalidPools(

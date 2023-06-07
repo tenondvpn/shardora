@@ -160,6 +160,7 @@ public:
 
     double CheckLeaderValid(bool get_factor) {
         all_finish_tx_count += finish_tx_count;
+        ZJC_INFO("TxPoolManager CheckLeaderValid timer coming 2 0.");
         double factor = 0.0;
         if (get_factor) {
             if (all_tx_count > 0) {
@@ -168,6 +169,7 @@ public:
                 factor = 1.0;
             }
 
+            ZJC_INFO("TxPoolManager CheckLeaderValid timer coming 2 0 1.");
             if (checked_count < kLeaderLofFactorCount) {
                 factor = 1.0;
             }
@@ -177,9 +179,12 @@ public:
             all_finish_tx_count = 0;
         }
 
+        ZJC_INFO("TxPoolManager CheckLeaderValid timer coming 2 1.");
         ++checked_count;
         all_tx_count += gid_map_.size();
         finish_tx_count = 0;
+        ZJC_INFO("TxPoolManager CheckLeaderValid timer coming 2 2.");
+        return factor;
     }
 
 private:
