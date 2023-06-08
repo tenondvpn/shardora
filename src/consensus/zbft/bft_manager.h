@@ -253,6 +253,11 @@ private:
             contract_mgr_, gas_prepayment_, db_, msg_ptr, account_mgr_, security_ptr_);
     }
 
+    int NextPrepareErrorLeaderCallPrecommit(
+        const ElectItem& elect_item,
+        ZbftPtr& bft_ptr,
+        const transport::MessagePtr& msg_ptr);
+
     static const uint32_t kCheckTimeoutPeriodMilli = 3000lu;
 
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
