@@ -216,7 +216,7 @@ void BftManager::OnNewElectBlock(
     elect_item.sec_key = sec_key;
     auto new_idx = (elect_item_idx_ + 1) % 2;
     elect_items_[new_idx] = elect_item_ptr;
-    ZJC_INFO("new elect block local leader index: %d, leader_count: %d, thread_count_: %d, elect height: %lu, member size: %d",
+    ZJC_DEBUG("new elect block local leader index: %d, leader_count: %d, thread_count_: %d, elect height: %lu, member size: %d",
         local_node_pool_mod_num, elect_item.leader_count, thread_count_, elect_item.elect_height, members->size());
     auto& thread_set = elect_item.thread_set;
     SetThreadItem(elect_item.leader_count, local_node_pool_mod_num, thread_set);
@@ -357,7 +357,7 @@ ZbftPtr BftManager::Start(
         return nullptr;
     }
 
-//     ZJC_INFO("thread_index: %d, pool index: %d, tx size: %u, pool zbft size: %d",
+//     ZJC_DEBUG("thread_index: %d, pool index: %d, tx size: %u, pool zbft size: %d",
 //         thread_index, txs_ptr->pool_index, txs_ptr->txs.size(), txs_pools_->ZbftSize(txs_ptr->pool_index));
     txs_ptr->thread_index = thread_index;
     auto zbft_ptr = StartBft(elect_item, txs_ptr, prev_bft, prepare_msg_ptr);
@@ -454,7 +454,7 @@ ZbftPtr BftManager::StartBft(
         return nullptr;
     }
 
-    ZJC_INFO("use pipeline: %d, this node is leader and start bft: %s,"
+    ZJC_DEBUG("use pipeline: %d, this node is leader and start bft: %s,"
         "pool index: %d, thread index: %d, prepare hash: %s, tx size: %d",
         (prepare_msg_ptr != nullptr),
         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
@@ -491,7 +491,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     auto& elect_item = *elect_item_ptr;
-    ZJC_INFO("consensus message coming prepare gid: %s, precommit gid: %s, "
+    ZJC_DEBUG("consensus message coming prepare gid: %s, precommit gid: %s, "
         "commit gid: %s thread idx: %d, has sync: %d, txhash: %lu, "
         "member index: %d, other member index: %d, pool index: %d, elect height: %lu",
         common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
@@ -767,7 +767,7 @@ void BftManager::SyncConsensusBlock(
             (*readobly_dht)[pos_vec[i]]->public_ip,
             (*readobly_dht)[pos_vec[i]]->public_port,
             msg);
-        ZJC_INFO("send sync block %s:%d bft gid: %s",
+        ZJC_DEBUG("send sync block %s:%d bft gid: %s",
             (*readobly_dht)[pos_vec[i]]->public_ip.c_str(),
             (*readobly_dht)[pos_vec[i]]->public_port,
             common::Encode::HexEncode(bft_gid).c_str());
@@ -1457,7 +1457,7 @@ int BftManager::CheckPrecommit(
             // sync from other nodes
             bft_ptr->set_prepare_hash(bft_msg.prepare_hash());
             bft_ptr->CreatePrecommitVerifyHash();
-            ZJC_INFO("use leader prepare hash: %s",
+            ZJC_DEBUG("use leader prepare hash: %s",
                 common::Encode::HexEncode(bft_msg.prepare_hash()).c_str());
             bft_ptr->set_prepare_block(nullptr);
             SyncConsensusBlock(
@@ -1689,7 +1689,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             // sync block from others
             precommit_bft_ptr->set_prepare_hash(bft_msg.prepare_hash());
             precommit_bft_ptr->CreatePrecommitVerifyHash();
-            ZJC_INFO("1 use leader prepare hash: %s",
+            ZJC_DEBUG("1 use leader prepare hash: %s",
                 common::Encode::HexEncode(bft_msg.prepare_hash()).c_str());
             precommit_bft_ptr->set_prepare_block(nullptr);
             SyncConsensusBlock(
@@ -1804,7 +1804,7 @@ int BftManager::LeaderHandleZbftMessage(
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
                 msg_ptr->response->header.mutable_zbft()->set_prepare_gid(bft_msg.prepare_gid());
                 msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
-                ZJC_INFO("precommit call oppose now step: %d, gid: %s, prepare hash: %s, precommit gid: %s",
+                ZJC_DEBUG("precommit call oppose now step: %d, gid: %s, prepare hash: %s, precommit gid: %s",
                     bft_ptr->txs_ptr()->tx_type,
                     common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
                     common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
@@ -2052,7 +2052,7 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
     auto& bft_msg = msg_ptr->header.zbft();
     if (!bft_msg.agree_precommit()) {
-        ZJC_INFO("BackupPrecommit gid: %s",
+        ZJC_DEBUG("BackupPrecommit gid: %s",
             common::Encode::HexEncode(bft_ptr->gid()).c_str());
         return kConsensusSuccess;
     }
@@ -2187,7 +2187,7 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         common::AutoSpinLock auto_lock(prev_count_mutex_);
         prev_count_ += zjc_block->tx_list_size();
         if (now_tm_us > prev_tps_tm_us_ + 3000000lu) {
-            ZJC_INFO("tps: %.2f", (double(prev_count_) / (double(now_tm_us - prev_tps_tm_us_) / 1000000.0)));
+            ZJC_DEBUG("tps: %.2f", (double(prev_count_) / (double(now_tm_us - prev_tps_tm_us_) / 1000000.0)));
             prev_tps_tm_us_ = now_tm_us;
             prev_count_ = 0;
         }

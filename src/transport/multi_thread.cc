@@ -48,7 +48,7 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
             msg_ptr->thread_idx = thread_idx_;
             auto btime = common::TimeUtils::TimestampUs();
-            ZJC_INFO("message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
+//             ZJC_INFO("message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
             if (etime - btime > 100000) {
