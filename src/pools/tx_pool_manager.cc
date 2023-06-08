@@ -871,14 +871,6 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
 
 void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr) {
     auto& tx_msg = msg_ptr->header.tx_proto();
-    ZJC_INFO("0 address balance success: %lu, transfer amount: %lu, "
-        "prepayment: %lu, default call contract gas: %lu, gas price: %lu, conract bytes: %s",
-        0,
-        tx_msg.amount(),
-        tx_msg.contract_prepayment(),
-        0,
-        tx_msg.gas_price(),
-        common::Encode::HexEncode(tx_msg.contract_code()).c_str());
     if (!tx_msg.has_contract_code()) {
         ZJC_DEBUG("create contract not has valid contract code: %s",
             common::Encode::HexEncode(tx_msg.contract_code()).c_str());
