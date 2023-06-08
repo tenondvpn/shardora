@@ -43,6 +43,10 @@ contract Phr {
         });
     }
 
+    function QuerryRes(bytes32 rid) public returns (bool) {
+        return rids[rid].exists;
+    }
+
     function AttrReg(bytes memory pk, bytes32 attr_hash, bytes[] memory sigs) public {
         require(valid_aas.length == sigs.length);
         require(pk_attrs[pk][attr_hash] == false);
