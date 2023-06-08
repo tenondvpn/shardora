@@ -1764,7 +1764,11 @@ int BftManager::LeaderHandleZbftMessage(
             //msg_ptr->times[msg_ptr->times_idx - 2] = msg_ptr->times[msg_ptr->times_idx - 1];
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
-            ZJC_DEBUG("LeaderHandleZbftMessage res: %d, mem: %d", res, bft_msg.member_index());
+            ZJC_DEBUG("LeaderHandleZbftMessage res: %d, mem: %d, prepare gid: %s, precommit gid: %s",
+                res,
+                bft_msg.member_index(),
+                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+                common::Encode::HexEncode(bft_ptr->gid()).c_str());
             if (res == kConsensusAgree) {
                 //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
                 //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
@@ -1791,7 +1795,6 @@ int BftManager::LeaderHandleZbftMessage(
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
                 msg_ptr->response->header.mutable_zbft()->set_prepare_gid(bft_msg.prepare_gid());
                 msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
-                ZJC_DEBUG("precommit call oppose now.");
             }
         } else {
             if (bft_ptr->AddPrepareOpposeNode(member_ptr->id) == kConsensusOppose) {
@@ -1962,8 +1965,9 @@ int BftManager::LeaderCallPrecommit(
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
         } else {
-            ZJC_ERROR("leader must sync block: %s",
-                common::Encode::HexEncode(prev_ptr->local_prepare_hash()).c_str());
+            ZJC_ERROR("leader must sync block: %s, gid: %s",
+                common::Encode::HexEncode(prev_ptr->local_prepare_hash()).c_str(),
+                common::Encode::HexEncode(bft_ptr->gid()).c_str());
             return kConsensusSuccess;
         }
 
