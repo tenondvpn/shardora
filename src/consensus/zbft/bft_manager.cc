@@ -1946,7 +1946,6 @@ int BftManager::NextPrepareErrorLeaderCallPrecommit(
     auto prev_ptr = bft_ptr->pipeline_prev_zbft_ptr();
     if (prev_ptr != nullptr) {
         prev_ptr->set_consensus_status(kConsensusCommited);
-        bft_ptr->set_prev_bft_ptr(nullptr);
         if (prev_ptr->prepare_block() != nullptr) {
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
@@ -2029,7 +2028,6 @@ int BftManager::LeaderCallPrecommit(
     auto prev_ptr = bft_ptr->pipeline_prev_zbft_ptr();
     if (prev_ptr != nullptr) {
         prev_ptr->set_consensus_status(kConsensusCommited);
-        bft_ptr->set_prev_bft_ptr(nullptr);
         if (prev_ptr->prepare_block() != nullptr) {
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
