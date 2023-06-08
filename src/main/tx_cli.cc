@@ -627,7 +627,7 @@ int contract_set_prepayment(int argc, char** argv) {
     return 0;
 }
 
-int contract_call(int argc, char** argv) {
+int contract_call(int argc, char** argv, bool more=false) {
     LoadAllAccounts();
     SignalRegister();
     WriteDefaultLogConf();
@@ -684,30 +684,40 @@ int contract_call(int argc, char** argv) {
         std::cout << "use input: " << argv[3] << std::endl;
     }
 
-    auto tx_msg_ptr = CreateTransactionWithAttr(
-        security,
-        gid,
-        from_prikey,
-        to,
-        "call",
-        input,
-        100000,
-        10000000,
-        10,
-        3);
-    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
-        std::cout << "send tcp client failed!" << std::endl;
-        return 1;
-    }
+    for (uint32_t i = 0; i < 100000; ++i) {
+        auto tx_msg_ptr = CreateTransactionWithAttr(
+            security,
+            gid,
+            from_prikey,
+            to,
+            "call",
+            input,
+            100000,
+            10000000,
+            10,
+            3);
+        if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
+            std::cout << "send tcp client failed!" << std::endl;
+            return 1;
+        }
 
-    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 22001, tx_msg_ptr->header) != 0) {
-        std::cout << "send tcp client failed!" << std::endl;
-        return 1;
-    }
+        if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 22001, tx_msg_ptr->header) != 0) {
+            std::cout << "send tcp client failed!" << std::endl;
+            return 1;
+        }
 
-    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 21001, tx_msg_ptr->header) != 0) {
-        std::cout << "send tcp client failed!" << std::endl;
-        return 1;
+        if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 21001, tx_msg_ptr->header) != 0) {
+            std::cout << "send tcp client failed!" << std::endl;
+            return 1;
+        }
+
+        if (!more) {
+            break;
+        }
+
+        if (pos % 100 == 0) {
+            usleep(100000);
+        }
     }
 
     std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << std::endl;
@@ -734,7 +744,7 @@ int main(int argc, char** argv) {
         }
     } else if (argv[1][0] == '3') {
         if (argc > 2) {
-            contract_call(argc, argv);
+            contract_call(argc, argv, true);
         }
     } else if (argv[1][0] == '4') {
         create_library(argc, argv);
