@@ -106,6 +106,7 @@ public:
             const address::protobuf::AddressInfo& addr_info,
             db::DbWriteBatch& db_batch) {
         db_batch.Put(kAddressPrefix + addr, addr_info.SerializeAsString());
+        ZJC_INFO("success add addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
     }
 
     void AddAddressInfo(const std::string& addr, const std::string& val) {
@@ -126,11 +127,13 @@ public:
         std::string val;
         auto st = db_->Get(kAddressPrefix + addr, &val);
         if (!st.ok()) {
+            ZJC_INFO("failed get addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
             return nullptr;
         }
 
         auto addr_info = std::make_shared<address::protobuf::AddressInfo>();
         if (!addr_info->ParseFromString(val)) {
+            ZJC_INFO("failed parse addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
             return nullptr;
         }
 
