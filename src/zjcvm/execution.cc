@@ -99,6 +99,7 @@ int Execution::execute(
                 out_res->status_code, gas_used, create_gas, common::Encode::HexEncode(bytes_code).c_str());
             return out_res->status_code;
         } else {
+            const auto gas_used = msg.gas - out_res->gas_left;
             ZJC_ERROR("out_res->status_code != EVMC_SUCCESS.nResult: %d, gas_used: %lu, gas limit: %lu, codes: %s",
                 out_res->status_code, gas_used, create_gas, common::Encode::HexEncode(bytes_code).c_str());
         }
