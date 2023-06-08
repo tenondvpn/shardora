@@ -100,12 +100,12 @@ static transport::MessagePtr CreateTransactionWithAttr(
     }
 
     transport::TcpTransport::Instance()->SetMessageHash(msg, 0);
-    std::cout << "tx from: " << common::Encode::HexEncode(security->GetAddress())
-        << " to: " << common::Encode::HexEncode(to)
-        << " gid: " << common::Encode::HexEncode(gid)
-        << " amount: " << amount
-        << " hash64: " << msg.hash64()
-        << std::endl;
+//     std::cout << "tx from: " << common::Encode::HexEncode(security->GetAddress())
+//         << " to: " << common::Encode::HexEncode(to)
+//         << " gid: " << common::Encode::HexEncode(gid)
+//         << " amount: " << amount
+//         << " hash64: " << msg.hash64()
+//         << std::endl;
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign;
     if (security->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
@@ -254,7 +254,7 @@ int tx_main(int argc, char** argv) {
             ++prikey_pos;
             from_prikey = prikeys[prikey_pos % prikeys.size()];
             security->SetPrivateKey(from_prikey);
-            usleep(100000);
+            usleep(10000);
         }
     }
 
