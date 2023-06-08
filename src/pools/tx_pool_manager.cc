@@ -33,9 +33,9 @@ TxPoolManager::TxPoolManager(
 
     ZJC_INFO("TxPoolManager init success: %d", common::kInvalidPoolIndex);
     InitCrossPools();
-    transport::Processor::Instance()->RegisterProcessor(
-        common::kPoolTimerMessage,
-        std::bind(&TxPoolManager::ConsensusTimerMessage, this, std::placeholders::_1));
+//     transport::Processor::Instance()->RegisterProcessor(
+//         common::kPoolTimerMessage,
+//         std::bind(&TxPoolManager::ConsensusTimerMessage, this, std::placeholders::_1));
     network::Route::Instance()->RegisterMessage(
         common::kPoolsMessage,
         std::bind(&TxPoolManager::HandleMessage, this, std::placeholders::_1));
@@ -429,7 +429,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             HandleCreateContractTx(msg_ptr);
             break;
         case pools::protobuf::kContractGasPrepayment:
-            HandleUserCallContractTx(msg_ptr);
+            HandleSetContractPrepayment(msg_ptr);
             break;
         case pools::protobuf::kRootCreateAddress: {
             if (tx_msg.to().size() != security::kUnicastAddressLength) {
@@ -773,7 +773,7 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     ZJC_INFO("success add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
 }
 
-void TxPoolManager::HandleUserCallContractTx(const transport::MessagePtr& msg_ptr) {
+void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg_ptr) {
     auto& tx_msg = msg_ptr->header.tx_proto();
     // user can't direct call contract, pay contract prepayment and call contract direct
     if (!tx_msg.contract_input().empty() ||

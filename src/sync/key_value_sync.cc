@@ -102,9 +102,9 @@ void KeyValueSync::Init(
     network::Route::Instance()->RegisterMessage(
         common::kSyncMessage,
         std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
-    transport::Processor::Instance()->RegisterProcessor(
-        common::kPoolTimerMessage,
-        std::bind(&KeyValueSync::ConsensusTimerMessage, this, std::placeholders::_1));
+//     transport::Processor::Instance()->RegisterProcessor(
+//         common::kPoolTimerMessage,
+//         std::bind(&KeyValueSync::ConsensusTimerMessage, this, std::placeholders::_1));
 }
 
 void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {

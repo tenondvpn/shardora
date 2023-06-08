@@ -17,9 +17,9 @@ VssManager::VssManager(std::shared_ptr<security::Security>& security_ptr)
     network::Route::Instance()->RegisterMessage(
         common::kVssMessage,
         std::bind(&VssManager::HandleMessage, this, std::placeholders::_1));
-    transport::Processor::Instance()->RegisterProcessor(
-        common::kPoolTimerMessage,
-        std::bind(&VssManager::ConsensusTimerMessage, this, std::placeholders::_1));
+//     transport::Processor::Instance()->RegisterProcessor(
+//         common::kPoolTimerMessage,
+//         std::bind(&VssManager::ConsensusTimerMessage, this, std::placeholders::_1));
 }
 
 uint64_t VssManager::EpochRandom() {

@@ -41,9 +41,9 @@ BlsManager::BlsManager(
     network::Route::Instance()->RegisterMessage(
         common::kBlsMessage,
         std::bind(&BlsManager::HandleMessage, this, std::placeholders::_1));
-    transport::Processor::Instance()->RegisterProcessor(
-        common::kPoolTimerMessage,
-        std::bind(&BlsManager::TimerMessage, this, std::placeholders::_1));
+//     transport::Processor::Instance()->RegisterProcessor(
+//         common::kPoolTimerMessage,
+//         std::bind(&BlsManager::TimerMessage, this, std::placeholders::_1));
 }
 
 BlsManager::~BlsManager() {}
