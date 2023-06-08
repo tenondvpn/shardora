@@ -2187,7 +2187,7 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         common::AutoSpinLock auto_lock(prev_count_mutex_);
         prev_count_ += zjc_block->tx_list_size();
         if (now_tm_us > prev_tps_tm_us_ + 3000000lu) {
-            ZJC_DEBUG("tps: %.2f", (double(prev_count_) / (double(now_tm_us - prev_tps_tm_us_) / 1000000.0)));
+            ZJC_INFO("tps: %.2f", (double(prev_count_) / (double(now_tm_us - prev_tps_tm_us_) / 1000000.0)));
             prev_tps_tm_us_ = now_tm_us;
             prev_count_ = 0;
         }
