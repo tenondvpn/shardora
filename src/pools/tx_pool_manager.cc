@@ -908,13 +908,14 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
             tx_msg.amount(),
             tx_msg.contract_prepayment(),
             default_gas,
-            tx_msg.gas_price());
+            tx_msg.gas_price(),
+            common::Encode::HexEncode(tx_msg.contract_code()).c_str());
         return;
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-    ZJC_DEBUG("address balance success: %lu, transfer amount: %lu, "
-        "prepayment: %lu, default call contract gas: %lu, gas price: %lu",
+    ZJC_INFO("address balance success: %lu, transfer amount: %lu, "
+        "prepayment: %lu, default call contract gas: %lu, gas price: %lu, conract bytes: %s",
         msg_ptr->address_info->balance(),
         tx_msg.amount(),
         tx_msg.contract_prepayment(),
