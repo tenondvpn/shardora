@@ -71,7 +71,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kPoolsMessage);
     msg.set_hop_count(0);
-    auto broadcast = msg.mutable_broadcast();
+//     auto broadcast = msg.mutable_broadcast();
     auto new_tx = msg.mutable_tx_proto();
     new_tx->set_gid(gid);
     new_tx->set_pubkey(security->GetPublicKeyUnCompressed());
