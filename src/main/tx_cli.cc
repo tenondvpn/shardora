@@ -513,7 +513,7 @@ int contract_main(int argc, char** argv) {
         to,
         "create_contract",
         bytescode,
-        100000,
+        0,
         10000000,
         10,
         3);
