@@ -1809,7 +1809,7 @@ int BftManager::LeaderHandleZbftMessage(
                     common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
                     common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
                     common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-                assert(false);
+//                 assert(false);
                 // just all consensus rollback
             }
         }
