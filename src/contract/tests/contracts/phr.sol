@@ -49,7 +49,7 @@ contract Phr {
 
     function AttrReg(bytes memory pk, bytes32 attr_hash, bytes[] memory sigs) public {
         require(valid_aas.length == sigs.length);
-        require(pk_attrs[pk][attr_hash] == false);
+        //require(pk_attrs[pk][attr_hash] == false);
         for (uint i = 0; i < sigs.length; i++) {
             require(recoverSigner(prefixed(attr_hash), sigs[i]) == valid_aas[i]);
         }
