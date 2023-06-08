@@ -74,7 +74,7 @@ contract Phr {
 
     function PolicyAdd(bytes32 pid, bytes32 rid, bytes32[] memory attr_hash, uint256[] memory timeout) public {
         require(owner == msg.sender);
-        require(!pids[pid].exists);
+        //require(!pids[pid].exists);
         require(attr_hash.length == timeout.length);
         pids[pid] = PidInfo({
             rid: rid,
