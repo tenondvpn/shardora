@@ -647,7 +647,7 @@ void BlockManager::AddNewBlock(
         "tx size: %u, hash: %s, thread_idx: %d",
         block_item->network_id(),
         block_item->commit_pool_index(),
-        block_item->commit_height();
+        block_item->commit_height(),
         block_item->pool_index(),
         block_item->height(),
         block_item->tx_list_size(),
