@@ -685,6 +685,8 @@ int contract_call(int argc, char** argv, bool more=false) {
     }
 
     for (uint32_t i = 0; i < 100000u; ++i) {
+        uint64_t* gid_int = (uint64_t*)gid.data();
+        gid_int[0] = i;
         auto tx_msg_ptr = CreateTransactionWithAttr(
             security,
             gid,
