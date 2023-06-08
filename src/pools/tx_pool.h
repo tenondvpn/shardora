@@ -124,7 +124,7 @@ public:
             SyncBlock(thread_idx);
         }
 
-        ZJC_INFO("pool index: %d, new height: %lu, new synced height: %lu, prev_synced_height_: %lu, to_sync_max_height_: %lu, latest height: %lu",
+        ZJC_DEBUG("pool index: %d, new height: %lu, new synced height: %lu, prev_synced_height_: %lu, to_sync_max_height_: %lu, latest height: %lu",
             pool_index_, height, synced_height_, prev_synced_height_, to_sync_max_height_, latest_height_);
         return synced_height_;
     }
