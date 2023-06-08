@@ -684,7 +684,7 @@ int contract_call(int argc, char** argv, bool more=false) {
         std::cout << "use input: " << argv[3] << std::endl;
     }
 
-    for (uint32_t i = 0; i < 100000; ++i) {
+    for (uint32_t i = 0; i < 100000u; ++i) {
         auto tx_msg_ptr = CreateTransactionWithAttr(
             security,
             gid,
@@ -692,7 +692,7 @@ int contract_call(int argc, char** argv, bool more=false) {
             to,
             "call",
             input,
-            100000,
+            0,
             10000000,
             10,
             3);
@@ -715,7 +715,7 @@ int contract_call(int argc, char** argv, bool more=false) {
             break;
         }
 
-        if (pos % 100 == 0) {
+        if (i % 100 == 0) {
             usleep(100000);
         }
     }
