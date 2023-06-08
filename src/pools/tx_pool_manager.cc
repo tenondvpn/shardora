@@ -873,7 +873,7 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
     auto& tx_msg = msg_ptr->header.tx_proto();
     ZJC_INFO("0 address balance success: %lu, transfer amount: %lu, "
         "prepayment: %lu, default call contract gas: %lu, gas price: %lu, conract bytes: %s",
-        msg_ptr->address_info->balance(),
+        0,
         tx_msg.amount(),
         tx_msg.contract_prepayment(),
         0,
