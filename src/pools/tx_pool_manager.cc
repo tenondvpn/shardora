@@ -876,7 +876,7 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
         msg_ptr->address_info->balance(),
         tx_msg.amount(),
         tx_msg.contract_prepayment(),
-        default_gas,
+        0,
         tx_msg.gas_price(),
         common::Encode::HexEncode(tx_msg.contract_code()).c_str());
     if (!tx_msg.has_contract_code()) {
