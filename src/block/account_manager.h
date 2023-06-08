@@ -67,7 +67,7 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
-    void HandleContractCreateUserCall(
+    void HandleCreateContract(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,

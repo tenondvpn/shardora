@@ -229,7 +229,7 @@ void AccountManager::HandleLocalToTx(
     }
 }
 
-void AccountManager::HandleContractCreateUserCall(
+void AccountManager::HandleCreateContract(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
@@ -415,7 +415,7 @@ void AccountManager::NewBlockWithTx(
         HandleLocalToTx(thread_idx, *block_item, tx, db_batch);
         break;
     case pools::protobuf::kContractCreate:
-        HandleContractCreateUserCall(thread_idx, *block_item, tx, db_batch);
+        HandleCreateContract(thread_idx, *block_item, tx, db_batch);
         break;
     case pools::protobuf::kContractExcute:
         HandleContractExecuteTx(thread_idx, *block_item, tx, db_batch);

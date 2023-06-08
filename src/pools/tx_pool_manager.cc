@@ -720,8 +720,7 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
 
     msg_ptr->address_info = GetAddressInfo(tx_msg.to());
     if (msg_ptr->address_info == nullptr) {
-        ZJC_WARN("no contract address info.");
-        ZJC_DEBUG("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+        ZJC_WARN("no contract address info: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
 
