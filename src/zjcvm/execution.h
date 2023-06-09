@@ -102,7 +102,7 @@ public:
             const std::string& val,
             db::DbWriteBatch& db_batch) {
 //         storage_map_[thread_idx].update(key, val);
-        prefix_db_->SaveTemporaryKv(key, val, db_batch);
+//         prefix_db_->SaveTemporaryKv(key, val, db_batch);
         ZJC_DEBUG("update storage: %s, %s", common::Encode::HexEncode(key).c_str(), common::Encode::HexEncode(val).c_str());
     }
 
