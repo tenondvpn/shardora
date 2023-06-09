@@ -473,11 +473,13 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("message coming msg hash: %lu", msg_ptr->header.hash64());
     auto& header = msg_ptr->header;
     assert(header.type() == common::kConsensusMessage);
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (msg_ptr->header.zbft().sync_block() && msg_ptr->header.zbft().has_block()) {
         ElectItem elect_item;
         return HandleSyncConsensusBlock(elect_item, msg_ptr);
     }
 
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (elect_item_ptr->elect_height != header.zbft().elect_height()) {
         elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
@@ -513,10 +515,12 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (header.zbft().has_sync_block() && header.zbft().sync_block()) {
         return HandleSyncConsensusBlock(elect_item, msg_ptr);
     }
     
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (!elect_item.bls_valid) {
         return;
     }
@@ -524,7 +528,9 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     assert(header.zbft().elect_height() > 0);
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     assert(header.zbft().has_member_index());
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     SetDefaultResponse(msg_ptr);
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     std::vector<ZbftPtr> zbft_vec = { nullptr, nullptr, nullptr };
     msg_ptr->tmp_ptr = &zbft_vec;
     auto& members = elect_item.members;
@@ -540,6 +546,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     // leader's message
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     int res = kConsensusSuccess;
     if (header.zbft().leader_idx() >= 0) {
         BackupHandleZbftMessage(msg_ptr->thread_idx, elect_item, msg_ptr);
@@ -547,6 +554,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         LeaderHandleZbftMessage(elect_item, msg_ptr);
     }
 
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
 //     if ((msg_ptr->times[etime] - msg_ptr->times[btime]) > 20000) {
 //         for (uint32_t i = btime + 1; i <= etime; ++i) {
@@ -561,15 +569,18 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         zbft_vec,
         msg_ptr,
         mem_ptr);
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     ClearBft(msg_ptr);
     //     ZJC_DEBUG("create response over.");
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (zbft_vec[0] != nullptr) {
 //         ZJC_DEBUG("delay create bls verify hash leader: %d", header.zbft().leader());
         zbft_vec[0]->AfterNetwork();
     } else if (zbft_vec[1] != nullptr) {
         zbft_vec[1]->AfterNetwork();
     }
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
 }
 
