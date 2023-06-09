@@ -287,7 +287,7 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();;
     PopAllPoolTxs(msg_ptr->thread_idx);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();;
-    CheckTimeout(msg_ptr->thread_idx);
+//     CheckTimeout(msg_ptr->thread_idx);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();;
 #endif
 }

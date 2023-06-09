@@ -68,6 +68,7 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->thread_idx = thread_idx_;
             msg_ptr->header.set_type(common::kConsensusTimerMessage);
 //             ZJC_INFO("kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
+            msg_ptr->times[msg_ptr->times_idx++] = btime;
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
             if (etime - btime > 100000) {
