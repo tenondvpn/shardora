@@ -2408,14 +2408,13 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
     }
 
     prev_checktime_out_milli_ = now_timestamp_us / 1000 + kCheckTimeoutPeriodMilli;
-    while (!bft_queue_[thread_idx].empty()) {
-        auto bft_ptr = bft_queue_[thread_idx].front();
-        if (!bft_ptr->timeout(now_timestamp_us)) {
-            break;
+    for (auto iter = bft_hash_map_[thread_idx].begin(); iter != bft_hash_map_[thread_idx].end(); ++iter) {
+        if (!iter->second->timeout(now_timestamp_us)) {
+            continue;
         }
 
         RemoveBft(thread_idx, bft_ptr->gid(), bft_ptr->this_node_is_leader());
-        bft_queue_[thread_idx].pop();
+        break;
     }
     
 }
