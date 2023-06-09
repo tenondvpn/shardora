@@ -2108,9 +2108,12 @@ int BftManager::LeaderCommit(
 }
 
 void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr) {
-    return;
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto& zjc_block = bft_ptr->prepare_block();
+    if (zjc_block->tx_list(0).step() != pools::protobuf::kContractCreate) {
+        return;
+    }
+
     const auto& prepare_bitmap_data = bft_ptr->prepare_bitmap().data();
     std::vector<uint64_t> bitmap_data;
     for (uint32_t i = 0; i < prepare_bitmap_data.size(); ++i) {
