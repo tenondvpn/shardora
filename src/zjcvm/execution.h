@@ -85,9 +85,9 @@ public:
 
             if (tx.storages(i).val_size() > 32) {
                 std::string val;
-                if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
-                    continue;
-                }
+//                 if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+//                     continue;
+//                 }
 
                 UpdateStorage(thread_idx, tx.storages(i).key(), val, db_batch);
             } else {
