@@ -121,7 +121,7 @@ int Execution::execute(
 
     ZJC_DEBUG("now call contract, msg sender: %s", common::Encode::HexEncode(std::string((char*)msg.sender.bytes, 20)).c_str());
     *out_res = evm_.execute(host, rev, msg, exec_code_data, exec_code_size);
-    ZJC_INFO("execute res: %d", out_res->status_code);
+//     ZJC_INFO("execute res: %d", out_res->status_code);
     return kZjcvmSuccess;
 }
 
