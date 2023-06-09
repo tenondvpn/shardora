@@ -35,7 +35,7 @@ contract Phr {
 
     function ResAdd(bytes32 rid, bytes memory pkDo, bytes memory ci) public {
         require(owner == msg.sender);
-        require(!rids[rid].exists);
+        //require(!rids[rid].exists);
         rids[rid] = RidInfo({
             pk: pkDo,
             ci: ci,
