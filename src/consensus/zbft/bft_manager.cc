@@ -1638,7 +1638,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
 
         if (bft_ptr == nullptr || !bft_ptr->BackupCheckLeaderValid(&bft_msg)) {
             // oppose
-            ZJC_DEBUG("create bft ptr failed backup create consensus bft gid: %s, tx size: %d",
+            ZJC_ERROR("create bft ptr failed backup create consensus bft gid: %s, tx size: %d",
                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
                 bft_ptr->txs_ptr()->txs.size());
             return;
@@ -1817,7 +1817,7 @@ int BftManager::LeaderHandleZbftMessage(
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
                 msg_ptr->response->header.mutable_zbft()->set_prepare_gid(bft_msg.prepare_gid());
                 msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
-                ZJC_DEBUG("precommit call oppose now step: %d, gid: %s, prepare hash: %s, precommit gid: %s",
+                ZJC_ERROR("precommit call oppose now step: %d, gid: %s, prepare hash: %s, precommit gid: %s",
                     bft_ptr->txs_ptr()->tx_type,
                     common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
                     common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
@@ -1850,7 +1850,7 @@ int BftManager::LeaderHandleZbftMessage(
             if (bft_ptr->AddPrecommitOpposeNode(member_ptr->id) == kConsensusOppose) {
                 msg_ptr->response->header.mutable_zbft()->set_agree_commit(false);
                 msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
-                //                 ZJC_DEBUG("commit call oppose now.");
+                ZJC_ERROR("commit call oppose now.");
             }
         }
     }
