@@ -2128,10 +2128,10 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
         queue_item_ptr->block_ptr->pool_index(),
         queue_item_ptr->block_ptr->tx_list());
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
+//     block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (bft_ptr->this_node_is_leader()) {
-//         LeaderBroadcastBlock(msg_ptr->thread_idx, zjc_block);
+        LeaderBroadcastBlock(msg_ptr->thread_idx, zjc_block);
     }
 
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
