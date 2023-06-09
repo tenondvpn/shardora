@@ -769,6 +769,7 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    return;
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 //     ZJC_INFO("success add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
 }
