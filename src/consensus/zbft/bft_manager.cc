@@ -2108,6 +2108,7 @@ int BftManager::LeaderCommit(
 }
 
 void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr) {
+    return;
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto& zjc_block = bft_ptr->prepare_block();
     const auto& prepare_bitmap_data = bft_ptr->prepare_bitmap().data();
@@ -2128,7 +2129,6 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
         queue_item_ptr->block_ptr->pool_index(),
         queue_item_ptr->block_ptr->tx_list());
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    if (zjc_block->tx_list(0).step() == pools::protobuf::kContractCreate)
     block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (bft_ptr->this_node_is_leader()) {
