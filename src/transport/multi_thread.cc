@@ -54,7 +54,11 @@ void ThreadHandler::HandleMessage() {
             auto etime = common::TimeUtils::TimestampUs();
             if (etime - btime > 100000) {
                 std::string t;
-                for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
+                for (uint32_t i = 1; i < 128; ++i) {
+                    if (msg_ptr->times[i] == 0) {
+                        break;
+                    }
+
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
                 }
 
