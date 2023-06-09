@@ -224,7 +224,6 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 void BlockManager::NetworkNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item) {
-    auto now_tm = common::TimeUtils::TimestampUs();
     if (block_item != nullptr) {
         if (!block_item->is_cross_block()) {
             ZJC_ERROR("not cross block coming: %s, signx: %s, net: %u, pool: %u, height: %lu",
@@ -252,12 +251,7 @@ void BlockManager::NetworkNewBlock(
         AddNewBlock(thread_idx, block_item, db_batch);
     }
 
-    auto now_tm1 = common::TimeUtils::TimestampUs();
     HandleAllConsensusBlocks(thread_idx);
-    auto now_tm2 = common::TimeUtils::TimestampUs();
-    if (consensus_block_queues_ != nullptr && thread_idx < common::GlobalInfo::Instance()->message_handler_thread_count()) {
-        ZJC_INFO("BlockManager::NetworkNewBlock use time: %lu, %lu, block size: %u", (now_tm1 - now_tm), (now_tm2 - now_tm1), consensus_block_queues_[thread_idx].size());
-    }
 }
 
 void BlockManager::ConsensusAddBlock(
@@ -718,7 +712,6 @@ void BlockManager::AddNewBlock(
 
 //     net_handler_.BlockSaved(*block_item);
     auto st = db_->Put(db_batch);
-    ZJC_DEBUG("put 0");
     if (!st.ok()) {
         ZJC_FATAL("write block to db failed!");
     }

@@ -2110,7 +2110,6 @@ int BftManager::LeaderCommit(
 void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto& zjc_block = bft_ptr->prepare_block();
-    zjc_block->set_pool_index(bft_ptr->pool_index());
     const auto& prepare_bitmap_data = bft_ptr->prepare_bitmap().data();
     std::vector<uint64_t> bitmap_data;
     for (uint32_t i = 0; i < prepare_bitmap_data.size(); ++i) {
@@ -2132,7 +2131,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
     block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (bft_ptr->this_node_is_leader()) {
-        LeaderBroadcastBlock(msg_ptr->thread_idx, zjc_block);
+//         LeaderBroadcastBlock(msg_ptr->thread_idx, zjc_block);
     }
 
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
