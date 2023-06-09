@@ -255,9 +255,7 @@ void BlockManager::NetworkNewBlock(
     auto now_tm1 = common::TimeUtils::TimestampUs();
     HandleAllConsensusBlocks(thread_idx);
     auto now_tm2 = common::TimeUtils::TimestampUs();
-    if (now_tm2 - now_tm > 100000lu) {
-        ZJC_DEBUG("BlockManager::NetworkNewBlock use time: %lu, %lu", (now_tm1 - now_tm), (now_tm2 - now_tm1));
-    }
+    ZJC_DEBUG("BlockManager::NetworkNewBlock use time: %lu, %lu, block size: %u", (now_tm1 - now_tm), (now_tm2 - now_tm1), consensus_block_queues_[thread_idx].size());
 }
 
 void BlockManager::ConsensusAddBlock(
