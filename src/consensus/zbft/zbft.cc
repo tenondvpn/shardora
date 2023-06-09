@@ -10,7 +10,9 @@ namespace zjchain {
 
 namespace consensus {
 
-Zbft::~Zbft() {}
+Zbft::~Zbft() {
+    ZJC_INFO("zbft destroy.");
+}
 
 Zbft::Zbft(
         std::shared_ptr<block::AccountManager>& account_mgr,
