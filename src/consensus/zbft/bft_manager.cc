@@ -1960,8 +1960,6 @@ int BftManager::LeaderCallPrecommit(
         ZJC_DEBUG("use next prepare.");
     } else {
         ZJC_DEBUG("use g1_precommit_hash prepare.");
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
         bft_ptr->set_precoimmit_hash();
         libff::alt_bn128_G1 sign;
         if (bls_mgr_->Sign(
@@ -1973,8 +1971,6 @@ int BftManager::LeaderCallPrecommit(
             ZJC_ERROR("leader signature error.");
             return kConsensusError;
         }
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
         if (bft_ptr->LeaderCommitOk(
                 elect_item.local_node_member_index,
@@ -1983,16 +1979,9 @@ int BftManager::LeaderCallPrecommit(
             ZJC_ERROR("leader commit failed!");
             return kConsensusError;
         }
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
     }
 
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    if (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] > 10000lu) {
-        ZJC_INFO("%d use time: %lu", msg_ptr->times_idx, (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2]));
-    }
-
     bft_ptr->init_precommit_timeout();
     bft_ptr->set_consensus_status(kConsensusCommit);
     bft_vec[1] = bft_ptr;
@@ -2000,11 +1989,7 @@ int BftManager::LeaderCallPrecommit(
     if (prev_ptr != nullptr) {
         prev_ptr->set_consensus_status(kConsensusCommited);
         if (prev_ptr->prepare_block() != nullptr) {
-            //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-            //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
             HandleLocalCommitBlock(msg_ptr->thread_idx, prev_ptr);
-            //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-            //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
         } else {
             ZJC_ERROR("leader must sync block: %s, gid: %s",
                 common::Encode::HexEncode(prev_ptr->local_prepare_hash()).c_str(),
@@ -2014,6 +1999,10 @@ int BftManager::LeaderCallPrecommit(
     }
 
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    if (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] > 10000lu) {
+        ZJC_INFO("%d use time: %lu", msg_ptr->times_idx, (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2]));
+    }
+
     ZJC_DEBUG("LeaderCallPrecommit success gid: %s",
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
     return kConsensusSuccess;
