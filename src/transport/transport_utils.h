@@ -69,7 +69,6 @@ enum TcpConnnectionType {
 struct TransportMessage {
     TransportMessage() : conn(nullptr), response(nullptr), tmp_ptr(nullptr), checked_block(false) {
         memset(times, 0, sizeof(times));
-        times_idx = 0;
     }
 
     protobuf::Header header;
@@ -81,7 +80,6 @@ struct TransportMessage {
     void* tmp_ptr;
     bool checked_block;
     uint64_t times[128];
-    uint32_t times_idx;
 };
 
 typedef std::shared_ptr<TransportMessage> MessagePtr;
