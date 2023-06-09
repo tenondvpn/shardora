@@ -1720,16 +1720,15 @@ int BftManager::LeaderHandleZbftMessage(
     auto& bft_msg = msg_ptr->header.zbft();
     if (bft_msg.has_prepare_gid() && !bft_msg.prepare_gid().empty()) {
         ZJC_DEBUG("has prepare  now leader handle gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         auto bft_ptr = LeaderGetZbft(msg_ptr, bft_msg.prepare_gid());
         if (bft_ptr == nullptr) {
 //             ZJC_ERROR("prepare get bft failed: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             return kConsensusError;
         }
 
-        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         auto& member_ptr = (*bft_ptr->members_ptr())[bft_msg.member_index()];
         if (bft_msg.agree_precommit() && bft_msg.prepare_hash() == bft_ptr->local_prepare_hash()) {
+            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             libff::alt_bn128_G1 sign;
             try {
                 sign.X = libff::alt_bn128_Fq(bft_msg.bls_sign_x().c_str());
@@ -1750,7 +1749,9 @@ int BftManager::LeaderHandleZbftMessage(
                 res,
                 bft_msg.member_index(),
                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             if (res == kConsensusAgree) {
+                msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
                 if (bft_ptr->prepare_block() == nullptr) {
                     ZJC_DEBUG("invalid block and sync from other hash: %s, gid: %s",
                         common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
@@ -1760,19 +1761,25 @@ int BftManager::LeaderHandleZbftMessage(
 
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
                 msg_ptr->response->header.mutable_zbft()->set_agree_commit(true);
+                msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
                 LeaderCallPrecommit(elect_item, bft_ptr, msg_ptr);
                 if (!msg_ptr->response->header.mutable_zbft()->has_pool_index()) {
                     msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
                 }
+                msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             } else if (res == kConsensusOppose) {
+                msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
                 msg_ptr->response->header.mutable_zbft()->set_prepare_gid(bft_msg.prepare_gid());
                 msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
                 auto prev_ptr = bft_ptr->pipeline_prev_zbft_ptr();
+                msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
                 if (prev_ptr != nullptr) {
                     NextPrepareErrorLeaderCallPrecommit(elect_item, prev_ptr, msg_ptr);
                 }
+                msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             }
+            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         } else {
             if (bft_ptr->AddPrepareOpposeNode(member_ptr->id) == kConsensusOppose) {
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
@@ -1789,7 +1796,6 @@ int BftManager::LeaderHandleZbftMessage(
         }
     }
 
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (bft_msg.has_precommit_gid() && !bft_msg.precommit_gid().empty()) {
         ZJC_DEBUG("has precommit now leader handle gid: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
         auto bft_ptr = LeaderGetZbft(msg_ptr, bft_msg.precommit_gid());
@@ -1810,7 +1816,6 @@ int BftManager::LeaderHandleZbftMessage(
         }
     }
 
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     return kConsensusSuccess;
 }
 
