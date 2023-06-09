@@ -60,14 +60,15 @@ int BlockManager::Init(
     network::Route::Instance()->RegisterMessage(
         common::kBlockMessage,
         std::bind(&BlockManager::HandleMessage, this, std::placeholders::_1));
-    transport::Processor::Instance()->RegisterProcessor(
-        common::kPoolTimerMessage,
-        std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
+//     transport::Processor::Instance()->RegisterProcessor(
+//         common::kPoolTimerMessage,
+//         std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
+    test_sync_block_tick_.CutOff(10000000lu, std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
     bool genesis = false;
     return kBlockSuccess;
 }
 
-void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+void BlockManager::ConsensusTimerMessage(uint8_t thread_idx) {
 //     auto now_tm = common::TimeUtils::TimestampUs();
 //     if (now_tm > prev_to_txs_tm_us_ + 1000000) {
 //         if (leader_to_txs_.size() >= 4) {
@@ -87,7 +88,8 @@ void BlockManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 //     }
 // 
 //     auto now_tm1 = common::TimeUtils::TimestampUs();
-    NetworkNewBlock(msg_ptr->thread_idx, nullptr);
+    NetworkNewBlock(thread_idx, nullptr);
+    test_sync_block_tick_.CutOff(10000000lu, std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
 //     auto now_tm2 = common::TimeUtils::TimestampUs();
 //     auto now_tm3 = common::TimeUtils::TimestampUs();
 //     auto now_tm4 = common::TimeUtils::TimestampUs();
