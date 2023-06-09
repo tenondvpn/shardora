@@ -11,7 +11,6 @@ namespace zjchain {
 namespace consensus {
 
 Zbft::~Zbft() {
-    ZJC_INFO("zbft destroy.");
 }
 
 Zbft::Zbft(
