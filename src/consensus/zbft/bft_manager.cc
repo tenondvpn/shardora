@@ -1272,7 +1272,7 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
     }
 
     bft_hash_map_[bft_ptr->thread_index()][gid] = bft_ptr;
-    bft_queue_[bft_ptr->thread_index()].push(bft_ptr);
+//     bft_queue_[bft_ptr->thread_index()].push(bft_ptr);
     return kConsensusSuccess;
 }
 
