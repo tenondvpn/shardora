@@ -287,7 +287,7 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();;
     PopAllPoolTxs(msg_ptr->thread_idx);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();;
-//     CheckTimeout(msg_ptr->thread_idx);
+    CheckTimeout(msg_ptr->thread_idx);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();;
 #endif
 }
@@ -2413,7 +2413,7 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
             continue;
         }
 
-        RemoveBft(thread_idx, bft_ptr->gid(), bft_ptr->this_node_is_leader());
+        RemoveBft(thread_idx, iter->second->gid(), iter->second->this_node_is_leader());
         break;
     }
     
