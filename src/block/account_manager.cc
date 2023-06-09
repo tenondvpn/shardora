@@ -33,7 +33,7 @@ int AccountManager::Init(
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     pools_mgr_ = pools_mgr;
-    address_map_ = new common::UniqueMap<std::string, protos::AddressInfoPtr, 1024, 16>[thread_count];
+//     address_map_ = new common::UniqueMap<std::string, protos::AddressInfoPtr, 1024, 16>[thread_count];
     CreatePoolsAddressInfo();
     inited_ = true;
     return kBlockSuccess;
@@ -87,14 +87,14 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(
         const std::string& addr) {
     // first get from cache
     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
-    if (address_map_[thread_idx].get(addr, &address_info)) {
-        return address_info;
-    }
+//     if (address_map_[thread_idx].get(addr, &address_info)) {
+//         return address_info;
+//     }
 
     // get from db and add to memory cache
     address_info = prefix_db_->GetAddressInfo(addr);
     if (address_info != nullptr) {
-        address_map_[thread_idx].add(addr, address_info);
+//         address_map_[thread_idx].add(addr, address_info);
     }
 
     return address_info;
@@ -216,7 +216,7 @@ void AccountManager::HandleLocalToTx(
             account_info->set_sharding_id(block.network_id());
             account_info->set_latest_height(block.height());
             account_info->set_balance(to_txs.tos(i).balance());
-            address_map_[thread_idx].add(to_txs.tos(i).to(), account_info);
+//             address_map_[thread_idx].add(to_txs.tos(i).to(), account_info);
             prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
         } else {
             account_info->set_latest_height(block.height());
@@ -251,7 +251,7 @@ void AccountManager::HandleCreateContract(
             account_info->set_latest_height(block.height());
             account_info->set_balance(tx.amount());
             account_info->set_bytes_code(bytes_code);
-            address_map_[thread_idx].add(tx.to(), account_info);
+//             address_map_[thread_idx].add(tx.to(), account_info);
             prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
             ZJC_INFO("1 get address info failed create new address to this id: %s,"
                 "shard: %u, local shard: %u",
@@ -321,7 +321,7 @@ void AccountManager::HandleRootCreateAddressTx(
     account_info->set_sharding_id(sharding_id);
     account_info->set_latest_height(block.height());
     account_info->set_balance(0);  // root address balance invalid
-    address_map_[thread_idx].add(tx.to(), account_info);
+//     address_map_[thread_idx].add(tx.to(), account_info);
     prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
     ZJC_INFO("2 get address info failed create new address to this id: %s,"
         "shard: %u, local shard: %u",
@@ -376,7 +376,7 @@ void AccountManager::HandleJoinElectTx(
         account_info->set_latest_height(block.height());
         account_info->set_balance(tx.balance());
         account_info->set_elect_pos(join_info.member_idx());
-        address_map_[thread_idx].add(tx.from(), account_info);
+//         address_map_[thread_idx].add(tx.from(), account_info);
         prefix_db_->AddAddressInfo(tx.from(), *account_info);
         ZJC_INFO("3 get address info failed create new address to this id: %s,"
             "shard: %u, local shard: %u",

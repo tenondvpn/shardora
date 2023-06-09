@@ -1307,8 +1307,6 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
 //             ZJC_DEBUG("remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
         }
     }
-
-    ZJC_INFO("thread idx bft size: %u", bft_hash_map_[thread_idx].size());
 }
 
 int BftManager::LeaderPrepare(
