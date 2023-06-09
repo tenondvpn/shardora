@@ -1024,8 +1024,8 @@ void NetworkInit::AddBlockItemToCache(
         case pools::protobuf::kContractCreate:
         case pools::protobuf::kContractExcute:
             account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
-            gas_prepayment_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
-            zjcvm::Execution::Instance()->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
+//             gas_prepayment_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
+//             zjcvm::Execution::Instance()->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             break;
         default:
             break;
