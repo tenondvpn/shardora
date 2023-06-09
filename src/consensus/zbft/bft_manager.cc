@@ -1728,7 +1728,6 @@ int BftManager::LeaderHandleZbftMessage(
 
         auto& member_ptr = (*bft_ptr->members_ptr())[bft_msg.member_index()];
         if (bft_msg.agree_precommit() && bft_msg.prepare_hash() == bft_ptr->local_prepare_hash()) {
-            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             libff::alt_bn128_G1 sign;
             try {
                 sign.X = libff::alt_bn128_Fq(bft_msg.bls_sign_x().c_str());
@@ -1749,7 +1748,6 @@ int BftManager::LeaderHandleZbftMessage(
                 res,
                 bft_msg.member_index(),
                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             if (res == kConsensusAgree) {
                 msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
                 if (bft_ptr->prepare_block() == nullptr) {
@@ -1768,18 +1766,14 @@ int BftManager::LeaderHandleZbftMessage(
                 }
                 msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             } else if (res == kConsensusOppose) {
-                msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
                 msg_ptr->response->header.mutable_zbft()->set_prepare_gid(bft_msg.prepare_gid());
                 msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
                 auto prev_ptr = bft_ptr->pipeline_prev_zbft_ptr();
-                msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
                 if (prev_ptr != nullptr) {
                     NextPrepareErrorLeaderCallPrecommit(elect_item, prev_ptr, msg_ptr);
                 }
-                msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             }
-            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         } else {
             if (bft_ptr->AddPrepareOpposeNode(member_ptr->id) == kConsensusOppose) {
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
@@ -1951,16 +1945,13 @@ int BftManager::LeaderCallPrecommit(
         ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr) {
     std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     ZbftPtr next_prepare_bft = nullptr;
     if (!bft_ptr->is_cross_block()) {
         next_prepare_bft = Start(msg_ptr->thread_idx, bft_ptr, msg_ptr->response);
     }
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (next_prepare_bft != nullptr) {
         bft_vec[0] = next_prepare_bft;
         ZJC_DEBUG("use next prepare.");
@@ -1994,6 +1985,7 @@ int BftManager::LeaderCallPrecommit(
 
     }
 
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     bft_ptr->init_precommit_timeout();
     bft_ptr->set_consensus_status(kConsensusCommit);
     bft_vec[1] = bft_ptr;
@@ -2014,6 +2006,7 @@ int BftManager::LeaderCallPrecommit(
         }
     }
 
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     ZJC_DEBUG("LeaderCallPrecommit success gid: %s",
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
     return kConsensusSuccess;
