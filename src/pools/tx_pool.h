@@ -99,7 +99,7 @@ public:
         }
 
         if (height_tree_ptr_ != nullptr) {
-//             height_tree_ptr_->Set(height);
+            height_tree_ptr_->Set(height);
             ZJC_DEBUG("success set height, net: %u, pool: %u, height: %lu",
                 common::GlobalInfo::Instance()->network_id(), pool_index_, height);
         }
@@ -109,20 +109,20 @@ public:
             latest_hash_ = hash;
             
         }
-// 
-//         if (to_sync_max_height_ == common::kInvalidUint64 || to_sync_max_height_ < latest_height_) {
-//             to_sync_max_height_ = latest_height_;
-//         }
-// 
-//         if (synced_height_ + 1 == height) {
-//             synced_height_ = height;
-//             UpdateSyncedHeight();
-//             if (prev_synced_height_ < synced_height_) {
-//                 prev_synced_height_ = synced_height_;
-//             }
-//         } else {
-//             SyncBlock(thread_idx);
-//         }
+
+        if (to_sync_max_height_ == common::kInvalidUint64 || to_sync_max_height_ < latest_height_) {
+            to_sync_max_height_ = latest_height_;
+        }
+
+        if (synced_height_ + 1 == height) {
+            synced_height_ = height;
+            UpdateSyncedHeight();
+            if (prev_synced_height_ < synced_height_) {
+                prev_synced_height_ = synced_height_;
+            }
+        } else {
+            SyncBlock(thread_idx);
+        }
 
         ZJC_DEBUG("pool index: %d, new height: %lu, new synced height: %lu, prev_synced_height_: %lu, to_sync_max_height_: %lu, latest height: %lu",
             pool_index_, height, synced_height_, prev_synced_height_, to_sync_max_height_, latest_height_);
