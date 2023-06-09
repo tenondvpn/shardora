@@ -282,13 +282,13 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 #ifndef ZJC_UNITTEST
     transport::MessagePtr prepare_msg_ptr = nullptr;
     ZbftPtr prev_bft = nullptr;
-    msg_ptr->times[1] = common::TimeUtils::TimestampUs();
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     Start(msg_ptr->thread_idx, prev_bft, prepare_msg_ptr);
-    msg_ptr->times[2] = common::TimeUtils::TimestampUs();;
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();;
     PopAllPoolTxs(msg_ptr->thread_idx);
-    msg_ptr->times[3] = common::TimeUtils::TimestampUs();;
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();;
     CheckTimeout(msg_ptr->thread_idx);
-    msg_ptr->times[4] = common::TimeUtils::TimestampUs();;
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();;
 #endif
 }
 
@@ -539,7 +539,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     // leader's message
-    auto btime = msg_ptr->times_idx;
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     int res = kConsensusSuccess;
     if (header.zbft().leader_idx() >= 0) {
@@ -548,7 +547,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         LeaderHandleZbftMessage(elect_item, msg_ptr);
     }
 
-    auto etime = msg_ptr->times_idx;
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
 //     if ((msg_ptr->times[etime] - msg_ptr->times[btime]) > 20000) {
 //         for (uint32_t i = btime + 1; i <= etime; ++i) {

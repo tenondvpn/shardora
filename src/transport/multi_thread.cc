@@ -48,17 +48,13 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
             msg_ptr->thread_idx = thread_idx_;
             auto btime = common::TimeUtils::TimestampUs();
-            msg_ptr->times[0] = btime;
+            msg_ptr->times[msg_ptr->times_idx++] = btime;
 //             ZJC_INFO("message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
             if (etime - btime > 100000) {
                 std::string t;
-                for (uint32_t i = 1; i < 128; ++i) {
-                    if (msg_ptr->times[i] == 0) {
-                        break;
-                    }
-
+                for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
                 }
 
@@ -76,11 +72,7 @@ void ThreadHandler::HandleMessage() {
             auto etime = common::TimeUtils::TimestampUs();
             if (etime - btime > 100000) {
                 std::string t;
-                for (uint32_t i = 1; i < 128; ++i) {
-                    if (msg_ptr->times[i] == 0) {
-                        break;
-                    }
-
+                for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
                 }
 
