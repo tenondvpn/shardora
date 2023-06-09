@@ -63,7 +63,9 @@ int BlockManager::Init(
 //     transport::Processor::Instance()->RegisterProcessor(
 //         common::kPoolTimerMessage,
 //         std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
-    test_sync_block_tick_.CutOff(10000000lu, std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
+    test_sync_block_tick_.CutOff(
+        10000000lu,
+        std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
     bool genesis = false;
     return kBlockSuccess;
 }
