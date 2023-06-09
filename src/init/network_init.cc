@@ -1008,6 +1008,7 @@ void NetworkInit::AddBlockItemToCache(
             db_batch);
     }
     
+    return;
     // one block must be one consensus pool
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         if (tx_list[i].status() != consensus::kConsensusSuccess) {

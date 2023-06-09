@@ -2110,31 +2110,28 @@ int BftManager::LeaderCommit(
 void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto& zjc_block = bft_ptr->prepare_block();
-    if (zjc_block->tx_list(0).step() == pools::protobuf::kContractCreate) {
-        const auto& prepare_bitmap_data = bft_ptr->prepare_bitmap().data();
-        std::vector<uint64_t> bitmap_data;
-        for (uint32_t i = 0; i < prepare_bitmap_data.size(); ++i) {
-            zjc_block->add_precommit_bitmap(prepare_bitmap_data[i]);
-            bitmap_data.push_back(prepare_bitmap_data[i]);
-        }
-
-        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(zjc_block, bft_ptr->db_batch());
-        new_block_cache_callback_(
-            msg_ptr->thread_idx,
-            queue_item_ptr->block_ptr,
-            *queue_item_ptr->db_batch);
-        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
-        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        if (bft_ptr->this_node_is_leader()) {
-            LeaderBroadcastBlock(msg_ptr->thread_idx, zjc_block);
-        }
-
-        msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    const auto& prepare_bitmap_data = bft_ptr->prepare_bitmap().data();
+    std::vector<uint64_t> bitmap_data;
+    for (uint32_t i = 0; i < prepare_bitmap_data.size(); ++i) {
+        zjc_block->add_precommit_bitmap(prepare_bitmap_data[i]);
+        bitmap_data.push_back(prepare_bitmap_data[i]);
     }
 
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(zjc_block, bft_ptr->db_batch());
+    new_block_cache_callback_(
+        msg_ptr->thread_idx,
+        queue_item_ptr->block_ptr,
+        *queue_item_ptr->db_batch);
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    if (bft_ptr->this_node_is_leader()) {
+        LeaderBroadcastBlock(msg_ptr->thread_idx, zjc_block);
+    }
+
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     pools_mgr_->TxOver(
         zjc_block->pool_index(),
         zjc_block->tx_list());
