@@ -664,17 +664,17 @@ void BlockManager::AddNewBlock(
         return;
     }
 
-    to_txs_pool_->NewBlock(*block_item, db_batch);
-    if (ck_client_ != nullptr) {
-        ck_client_->AddNewBlock(block_item);
-        ZJC_DEBUG("add to ck.");
-    }
+//     to_txs_pool_->NewBlock(*block_item, db_batch);
+//     if (ck_client_ != nullptr) {
+//         ck_client_->AddNewBlock(block_item);
+//         ZJC_DEBUG("add to ck.");
+//     }
 
     if (block_item->pool_index() == common::kRootChainPoolIndex) {
 //         if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
 //                 block_item->network_id() + network::kConsensusWaitingShardOffset !=
 //                 common::GlobalInfo::Instance()->network_id()) {
-        pools_mgr_->OnNewCrossBlock(thread_idx, block_item);
+//         pools_mgr_->OnNewCrossBlock(thread_idx, block_item);
 //         }
     }
 

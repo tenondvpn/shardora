@@ -282,9 +282,13 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 #ifndef ZJC_UNITTEST
     transport::MessagePtr prepare_msg_ptr = nullptr;
     ZbftPtr prev_bft = nullptr;
+    msg_ptr->times[1] = common::TimeUtils::TimestampUs();;
     Start(msg_ptr->thread_idx, prev_bft, prepare_msg_ptr);
+    msg_ptr->times[2] = common::TimeUtils::TimestampUs();;
     PopAllPoolTxs(msg_ptr->thread_idx);
+    msg_ptr->times[3] = common::TimeUtils::TimestampUs();;
     CheckTimeout(msg_ptr->thread_idx);
+    msg_ptr->times[4] = common::TimeUtils::TimestampUs();;
 #endif
 }
 
