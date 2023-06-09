@@ -636,7 +636,7 @@ void BftManager::HandleSyncConsensusBlock(
                     bft_ptr->set_prepare_block(std::make_shared<block::protobuf::Block>(req_bft_msg.block()));
 //                     SaveKeyValue(msg_ptr->header);
                     if (bft_ptr->consensus_status() == kConsensusCommited) {
-                        HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
+                        HandleLocalCommitBlock(msg_ptr, bft_ptr);
 //                         ZJC_DEBUG("commited  receive block hash: %s",
 //                             common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
                     }
@@ -1528,7 +1528,7 @@ int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg
         bft_ptr->set_consensus_status(kConsensusCommited);
         if (bft_ptr->prepare_block() != nullptr) {
             ZJC_DEBUG("success backup CheckCommit: %s", common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
-            HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
+            HandleLocalCommitBlock(msg_ptr, bft_ptr);
         } else {
             // sync block from neighbor nodes
             ZJC_ERROR("backup commit block failed should sync: %s, gid: %s",
@@ -1916,7 +1916,7 @@ int BftManager::NextPrepareErrorLeaderCallPrecommit(
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
-            HandleLocalCommitBlock(msg_ptr->thread_idx, prev_ptr);
+            HandleLocalCommitBlock(msg_ptr, prev_ptr);
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
@@ -1988,7 +1988,7 @@ int BftManager::LeaderCallPrecommit(
     if (prev_ptr != nullptr) {
         prev_ptr->set_consensus_status(kConsensusCommited);
         if (prev_ptr->prepare_block() != nullptr) {
-            HandleLocalCommitBlock(msg_ptr->thread_idx, prev_ptr);
+            HandleLocalCommitBlock(msg_ptr, prev_ptr);
         } else {
             ZJC_ERROR("leader must sync block: %s, gid: %s",
                 common::Encode::HexEncode(prev_ptr->local_prepare_hash()).c_str(),
@@ -2107,7 +2107,7 @@ int BftManager::LeaderCommit(
     return kConsensusSuccess;
 }
 
-void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
+void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto& zjc_block = bft_ptr->prepare_block();
     zjc_block->set_pool_index(bft_ptr->pool_index());
@@ -2121,16 +2121,16 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(zjc_block, bft_ptr->db_batch());
     new_block_cache_callback_(
-        thread_idx,
+        msg_ptr->thread_idx,
         queue_item_ptr->block_ptr,
         *queue_item_ptr->db_batch);
     pools_mgr_->TxOver(
         queue_item_ptr->block_ptr->pool_index(),
         queue_item_ptr->block_ptr->tx_list());
-    block_mgr_->ConsensusAddBlock(thread_idx, queue_item_ptr);
+    block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (bft_ptr->this_node_is_leader()) {
-        LeaderBroadcastBlock(thread_idx, zjc_block);
+        LeaderBroadcastBlock(msg_ptr->thread_idx, zjc_block);
     }
 
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -2320,7 +2320,7 @@ int BftManager::LeaderCallCommit(
 
     bft_ptr->set_consensus_status(kConsensusCommited);
     if (bft_ptr->prepare_block() != nullptr) {
-        HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
+        HandleLocalCommitBlock(msg_ptr, bft_ptr);
     } else {
         // sync block from neighbor nodes
         // if (bft_ptr->pool_index() == common::kImmutablePoolSize) {
@@ -2380,7 +2380,7 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
         return kConsensusError;
     }
 
-    HandleLocalCommitBlock(msg_ptr->thread_idx, bft_ptr);
+    HandleLocalCommitBlock(msg_ptr, bft_ptr);
     return kConsensusSuccess;
 }
 

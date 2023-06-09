@@ -123,7 +123,7 @@ private:
         const transport::MessagePtr& msg_ptr);
     void BackupPrepare(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
     bool IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info);
-    void HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr);
+    void HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
     int InitZbftPtr(int32_t leader_idx, const ElectItem& elect_item, ZbftPtr& bft_ptr);
     bool VerifyBackupIdValid(
         const transport::MessagePtr& msg_ptr,
