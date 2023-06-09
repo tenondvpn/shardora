@@ -249,7 +249,7 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
     }
 
     finish_tx_count += tx_list.size();
-    ZJC_DEBUG("tx size: %u, %u, %u", gid_map_.size(), prio_map_.size(), universal_prio_map_.size());
+    ZJC_INFO("tx size: %u, %u, %u", gid_map_.size(), prio_map_.size(), universal_prio_map_.size());
 }
 
 }  // namespace pools
