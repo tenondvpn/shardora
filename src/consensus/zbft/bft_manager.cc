@@ -1981,7 +1981,6 @@ int BftManager::LeaderCallPrecommit(
         }
     }
 
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     bft_ptr->init_precommit_timeout();
     bft_ptr->set_consensus_status(kConsensusCommit);
     bft_vec[1] = bft_ptr;
@@ -1996,11 +1995,6 @@ int BftManager::LeaderCallPrecommit(
                 common::Encode::HexEncode(bft_ptr->gid()).c_str());
             return kConsensusSuccess;
         }
-    }
-
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    if (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] > 50000lu) {
-        ZJC_INFO("%d use time: %lu", msg_ptr->times_idx, (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2]));
     }
 
     ZJC_DEBUG("LeaderCallPrecommit success gid: %s",
@@ -2114,6 +2108,7 @@ int BftManager::LeaderCommit(
 }
 
 void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto& zjc_block = bft_ptr->prepare_block();
     zjc_block->set_pool_index(bft_ptr->pool_index());
     const auto& prepare_bitmap_data = bft_ptr->prepare_bitmap().data();
@@ -2123,6 +2118,7 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         bitmap_data.push_back(prepare_bitmap_data[i]);
     }
 
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(zjc_block, bft_ptr->db_batch());
     new_block_cache_callback_(
         thread_idx,
@@ -2132,12 +2128,15 @@ void BftManager::HandleLocalCommitBlock(int32_t thread_idx, ZbftPtr& bft_ptr) {
         queue_item_ptr->block_ptr->pool_index(),
         queue_item_ptr->block_ptr->tx_list());
     block_mgr_->ConsensusAddBlock(thread_idx, queue_item_ptr);
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (bft_ptr->this_node_is_leader()) {
         LeaderBroadcastBlock(thread_idx, zjc_block);
     }
 
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     RemoveBft(bft_ptr->thread_index(), bft_ptr->gid(), bft_ptr->this_node_is_leader());
     assert(bft_ptr->prepare_block()->precommit_bitmap_size() == zjc_block->precommit_bitmap_size());
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     // for test
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tps_tm_us_ == 0) {
