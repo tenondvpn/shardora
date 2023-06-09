@@ -188,7 +188,7 @@ public:
 private:
     uint8_t thread_count_ = 0;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    common::UniqueMap<std::string, uint64_t, 10240, 16>* prepayment_gas_ = nullptr;
+    common::UniqueMap<std::string, uint64_t, 256, 16>* prepayment_gas_ = nullptr;
     uint64_t pools_max_heights_[common::kImmutablePoolSize] = { 0 };
 
     DISALLOW_COPY_AND_ASSIGN(ContractGasPrepayment);
