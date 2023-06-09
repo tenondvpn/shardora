@@ -1952,6 +1952,9 @@ int BftManager::LeaderCallPrecommit(
     }
 
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    if (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] > 10000lu) {
+        ZJC_INFO("%d use time: %lu", msg_ptr->times_idx, (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2]));
+    }
     if (next_prepare_bft != nullptr) {
         bft_vec[0] = next_prepare_bft;
         ZJC_DEBUG("use next prepare.");
@@ -1986,6 +1989,10 @@ int BftManager::LeaderCallPrecommit(
     }
 
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    if (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] > 10000lu) {
+        ZJC_INFO("%d use time: %lu", msg_ptr->times_idx, (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2]));
+    }
+
     bft_ptr->init_precommit_timeout();
     bft_ptr->set_consensus_status(kConsensusCommit);
     bft_vec[1] = bft_ptr;
