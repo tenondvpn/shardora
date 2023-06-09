@@ -72,28 +72,28 @@ public:
             const std::shared_ptr<block::protobuf::Block>& block_item,
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
-        if (tx.step() != pools::protobuf::kContractCreate &&
-                tx.step() != pools::protobuf::kContractExcute) {
-            return;
-        }
-
-        for (int32_t i = 0; i < tx.storages_size(); ++i) {
-            if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
-                continue;
-            }
-
-
-            if (tx.storages(i).val_size() > 32) {
-                std::string val;
+//         if (tx.step() != pools::protobuf::kContractCreate &&
+//                 tx.step() != pools::protobuf::kContractExcute) {
+//             return;
+//         }
+// 
+//         for (int32_t i = 0; i < tx.storages_size(); ++i) {
+//             if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
+//                 continue;
+//             }
+// 
+// 
+//             if (tx.storages(i).val_size() > 32) {
+//                 std::string val;
 //                 if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
 //                     continue;
 //                 }
-
-                UpdateStorage(thread_idx, tx.storages(i).key(), val, db_batch);
-            } else {
-                UpdateStorage(thread_idx, tx.storages(i).key(), tx.storages(i).val_hash(), db_batch);
-            }
-        }
+// 
+//                 UpdateStorage(thread_idx, tx.storages(i).key(), val, db_batch);
+//             } else {
+//                 UpdateStorage(thread_idx, tx.storages(i).key(), tx.storages(i).val_hash(), db_batch);
+//             }
+//         }
     }
 
     void UpdateStorage(
@@ -101,8 +101,8 @@ public:
             const std::string& key,
             const std::string& val,
             db::DbWriteBatch& db_batch) {
-//         storage_map_[thread_idx].update(key, val);
-//         prefix_db_->SaveTemporaryKv(key, val, db_batch);
+        storage_map_[thread_idx].update(key, val);
+        prefix_db_->SaveTemporaryKv(key, val, db_batch);
         ZJC_DEBUG("update storage: %s, %s", common::Encode::HexEncode(key).c_str(), common::Encode::HexEncode(val).c_str());
     }
 
