@@ -255,8 +255,10 @@ void BlockManager::NetworkNewBlock(
     auto now_tm1 = common::TimeUtils::TimestampUs();
     HandleAllConsensusBlocks(thread_idx);
     auto now_tm2 = common::TimeUtils::TimestampUs();
-    if (consensus_block_queues_ != nullptr)
-    ZJC_INFO("BlockManager::NetworkNewBlock use time: %lu, %lu, block size: %u", (now_tm1 - now_tm), (now_tm2 - now_tm1), consensus_block_queues_[thread_idx].size());
+//     if (consensus_block_queues_ != nullptr) {
+    ZJC_INFO("block size thread_idx: %u, all thread count: %u", thread_idx, common::GlobalInfo::Instance()->message_handler_thread_count());
+//         ZJC_INFO("BlockManager::NetworkNewBlock use time: %lu, %lu, block size: %u", (now_tm1 - now_tm), (now_tm2 - now_tm1), consensus_block_queues_[thread_idx].size());
+//     }
 }
 
 void BlockManager::ConsensusAddBlock(
