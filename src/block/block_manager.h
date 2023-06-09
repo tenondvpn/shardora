@@ -98,7 +98,7 @@ public:
 
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
-    void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
+    void ConsensusTimerMessage(uint8_t thread_idx);
     void HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool recreate);
     void HandleStatisticMessage(const transport::MessagePtr& msg_ptr);
     void HandleAllConsensusBlocks(uint8_t thread_idx);
