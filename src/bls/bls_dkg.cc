@@ -70,8 +70,6 @@ void BlsDkg::TimerMessage(uint8_t thread_idx) {
         FinishBroadcast(thread_idx);
         has_finished_ = true;
     }
-
-    ZJC_DEBUG("bls timer coming.");
 }
 
 void BlsDkg::OnNewElectionBlock(
