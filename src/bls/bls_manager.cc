@@ -55,8 +55,9 @@ void BlsManager::TimerMessage(uint8_t thread_idx) {
 
     PopFinishMessage(thread_idx);
     auto now_tm_ms = common::TimeUtils::TimestampUs();
-    if (waiting_bls_ != nullptr) {
-        waiting_bls_->TimerMessage(thread_idx);
+    auto tmp_bls = waiting_bls_;
+    if (tmp_bls != nullptr) {
+        tmp_bls->TimerMessage(thread_idx);
     }
 
     auto etime = common::TimeUtils::TimestampUs();
@@ -123,6 +124,7 @@ void BlsManager::OnNewElectBlock(
     latest_elect_height_ = elect_height;
     if (waiting_bls_ != nullptr) {
         waiting_bls_ = nullptr;
+    }
 
     auto waiting_bls = std::make_shared<bls::BlsDkg>();
     waiting_bls->Init(
