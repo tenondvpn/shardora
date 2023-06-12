@@ -447,10 +447,10 @@ void BlsDkg::HandleSwapSecKey(const transport::MessagePtr& msg_ptr) try {
         return;
     }
 
-//     ZJC_DEBUG("swap verify success member: %d, index: %d, %s, min_aggree_member_count_: %u",
-//         local_member_index_, bls_msg.index(),
-//         libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
-//         min_aggree_member_count_);
+    ZJC_DEBUG("swap verify success member: %d, index: %d, %s, min_aggree_member_count_: %u",
+        local_member_index_, bls_msg.index(),
+        libBLS::ThresholdUtils::fieldElementToString(tmp_swap_key).c_str(),
+        min_aggree_member_count_);
     // swap
     prefix_db_->SaveSwapKey(
         local_member_index_, elect_hegiht_, local_member_index_, bls_msg.index(), sec_key);
@@ -634,8 +634,8 @@ libff::alt_bn128_G2 BlsDkg::GetVerifyG2FromDb(uint32_t peer_mem_index, uint32_t*
     bls::protobuf::VerifyVecBrdReq req;
     auto res = prefix_db_->GetBlsVerifyG2((*members_)[peer_mem_index]->id, &req);
     if (!res) {
-//         ZJC_DEBUG("get verify g2 failed local: %d, %lu, %u",
-//             local_member_index_, elect_hegiht_, peer_mem_index);
+        ZJC_DEBUG("get verify g2 failed local: %d, %lu, %u",
+            local_member_index_, elect_hegiht_, peer_mem_index);
         return libff::alt_bn128_G2::zero();
     }
 
