@@ -49,7 +49,7 @@ void BlsDkg::Destroy() {
 
 void BlsDkg::TimerMessage(uint8_t thread_idx) {
     auto now_tm_us = common::TimeUtils::TimestampUs();
-    PopBlsMessage();
+    PopBlsMessage(thread_idx);
     if (!has_broadcast_verify_ &&
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4) &&
             now_tm_us > (begin_time_us_ + ver_offset_)) {

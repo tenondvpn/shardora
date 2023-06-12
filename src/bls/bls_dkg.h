@@ -16,6 +16,7 @@
 #include "bls/bls_utils.h"
 #include "common/bitmap.h"
 #include "common/node_members.h"
+#include "common/thread_safe_queue.h"
 #include "common/tick.h"
 #include "common/time_utils.h"
 #include "common/utils.h"
