@@ -48,22 +48,22 @@ BlsManager::~BlsManager() {}
 
 void BlsManager::TimerMessage(uint8_t thread_idx) {
     if (network::DhtManager::Instance()->valid_count(
-            common::GlobalInfo::Instance()->network_id()) <
+            common::GlobalInfo::Instance()->network_id()) >=
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
-        return;
+        PopFinishMessage(thread_idx);
+        auto now_tm_ms = common::TimeUtils::TimestampUs();
+        auto tmp_bls = waiting_bls_;
+        if (tmp_bls != nullptr) {
+            tmp_bls->TimerMessage(thread_idx);
+        }
+
+        auto etime = common::TimeUtils::TimestampUs();
+        if (etime - now_tm_ms >= 10000lu) {
+            ZJC_DEBUG("BlsManager handle message use time: %lu", (etime - now_tm_ms));
+        }
     }
 
-    PopFinishMessage(thread_idx);
-    auto now_tm_ms = common::TimeUtils::TimestampUs();
-    auto tmp_bls = waiting_bls_;
-    if (tmp_bls != nullptr) {
-        tmp_bls->TimerMessage(thread_idx);
-    }
-
-    auto etime = common::TimeUtils::TimestampUs();
-    if (etime - now_tm_ms >= 10000lu) {
-        ZJC_DEBUG("BlsManager handle message use time: %lu", (etime - now_tm_ms));
-    }
+    tick_.CutOff(100000lu, std::bind(&BlsManager::TimerMessage, this, std::placeholders::_1));
 }
 
 void BlsManager::OnNewElectBlock(
