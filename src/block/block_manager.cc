@@ -235,7 +235,7 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         auto block_ptr = std::make_shared<block::protobuf::Block>(header.block());
         if (block_agg_valid_func_(*block_ptr)) {
             // just one thread
-            block_from_network_queue_->push(block_ptr);
+            block_from_network_queue_.push(block_ptr);
         }
     }
 }
