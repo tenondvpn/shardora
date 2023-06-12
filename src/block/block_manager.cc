@@ -686,18 +686,18 @@ void BlockManager::AddNewBlock(
         return;
     }
 
-//     to_txs_pool_->NewBlock(*block_item, db_batch);
-//     if (ck_client_ != nullptr) {
-//         ck_client_->AddNewBlock(block_item);
-//         ZJC_DEBUG("add to ck.");
-//     }
+    to_txs_pool_->NewBlock(*block_item, db_batch);
+    if (ck_client_ != nullptr) {
+        ck_client_->AddNewBlock(block_item);
+        ZJC_DEBUG("add to ck.");
+    }
 
     if (block_item->pool_index() == common::kRootChainPoolIndex) {
-//         if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
-//                 block_item->network_id() + network::kConsensusWaitingShardOffset !=
-//                 common::GlobalInfo::Instance()->network_id()) {
-//         pools_mgr_->OnNewCrossBlock(thread_idx, block_item);
-//         }
+        if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
+                block_item->network_id() + network::kConsensusWaitingShardOffset !=
+                common::GlobalInfo::Instance()->network_id()) {
+            pools_mgr_->OnNewCrossBlock(thread_idx, block_item);
+        }
     }
 
     const auto& tx_list = block_item->tx_list();
@@ -705,40 +705,40 @@ void BlockManager::AddNewBlock(
         return;
     }
 
-//     for (int32_t i = 0; i < tx_list.size(); ++i) {
-//         switch (tx_list[i].step()) {
-//         case pools::protobuf::kRootCreateAddressCrossSharding:
-//         case pools::protobuf::kNormalTo:
-//             HandleNormalToTx(thread_idx, *block_item, tx_list[i], db_batch);
-//             break;
-//         case pools::protobuf::kConsensusRootTimeBlock:
-//             prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
-//             break;
-//         case pools::protobuf::kStatistic:
-//             HandleStatisticTx(thread_idx, *block_item, tx_list[i], db_batch);
-//             break;
-//         case pools::protobuf::kCross:
-//             HandleCrossTx(thread_idx, *block_item, tx_list[i], db_batch);
-//             break;
-//         case pools::protobuf::kConsensusRootElectShard:
-//             HandleElectTx(thread_idx, *block_item, tx_list[i], db_batch);
-//             break;
-//         case pools::protobuf::kJoinElect:
-//             HandleJoinElectTx(thread_idx, *block_item, tx_list[i], db_batch);
-//             break;
-//         default:
-//             break;
-//         }
-//     }
+    for (int32_t i = 0; i < tx_list.size(); ++i) {
+        switch (tx_list[i].step()) {
+        case pools::protobuf::kRootCreateAddressCrossSharding:
+        case pools::protobuf::kNormalTo:
+            HandleNormalToTx(thread_idx, *block_item, tx_list[i], db_batch);
+            break;
+        case pools::protobuf::kConsensusRootTimeBlock:
+            prefix_db_->SaveLatestTimeBlock(block_item->height(), db_batch);
+            break;
+        case pools::protobuf::kStatistic:
+            HandleStatisticTx(thread_idx, *block_item, tx_list[i], db_batch);
+            break;
+        case pools::protobuf::kCross:
+            HandleCrossTx(thread_idx, *block_item, tx_list[i], db_batch);
+            break;
+        case pools::protobuf::kConsensusRootElectShard:
+            HandleElectTx(thread_idx, *block_item, tx_list[i], db_batch);
+            break;
+        case pools::protobuf::kJoinElect:
+            HandleJoinElectTx(thread_idx, *block_item, tx_list[i], db_batch);
+            break;
+        default:
+            break;
+        }
+    }
 
-//     if (new_block_callback_ != nullptr) {
-//         if (!new_block_callback_(thread_idx, block_item, db_batch)) {
-//             ZJC_DEBUG("block call back failed!");
-//             return;
-//         }
-//     }
+    if (new_block_callback_ != nullptr) {
+        if (!new_block_callback_(thread_idx, block_item, db_batch)) {
+            ZJC_DEBUG("block call back failed!");
+            return;
+        }
+    }
 
-//     net_handler_.BlockSaved(*block_item);
+    net_handler_.BlockSaved(*block_item);
     auto st = db_->Put(db_batch);
     if (!st.ok()) {
         ZJC_FATAL("write block to db failed!");
