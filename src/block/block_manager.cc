@@ -270,7 +270,7 @@ void BlockManager::NetworkNewBlock(
         AddNewBlock(thread_idx, block_item, db_batch);
     }
 
-    while (!block_from_network_queue_.size() > 0) {
+    while (block_from_network_queue_.size() > 0) {
         std::shared_ptr<block::protobuf::Block> block_ptr = nullptr;
         if (block_from_network_queue_.pop(&block_ptr)) {
             db::DbWriteBatch db_batch;
