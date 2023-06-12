@@ -466,7 +466,8 @@ ZbftPtr BftManager::StartBft(
         bft_ptr->thread_index(),
         common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
         txs_ptr->txs.size(),
-        prepare_msg_ptr->tx_hash_list_size());
+        prepare_msg_ptr->header.zbft().tx_hash_list_size());
+    assert(prepare_msg_ptr->header.zbft().tx_hash_list_size() > 0);
     return bft_ptr;
 }
 
@@ -1373,7 +1374,6 @@ int BftManager::LeaderPrepare(
         }
     }
 
-    assert(new_bft_msg->tx_hash_list_size() > 0);
     new_bft_msg->set_member_index(elect_item.local_node_member_index);
     new_bft_msg->set_elect_height(elect_item.elect_height);
     assert(elect_item.elect_height > 0);
