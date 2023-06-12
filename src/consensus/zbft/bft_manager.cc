@@ -466,8 +466,8 @@ ZbftPtr BftManager::StartBft(
         bft_ptr->thread_index(),
         common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
         txs_ptr->txs.size(),
-        prepare_msg_ptr->header.zbft().tx_hash_list_size());
-    assert(prepare_msg_ptr->header.zbft().tx_hash_list_size() > 0);
+        prepare_msg_ptr->header.zbft().tx_bft().tx_hash_list_size());
+    assert(prepare_msg_ptr->header.zbft().tx_bft().tx_hash_list_size() > 0);
     return bft_ptr;
 }
 
