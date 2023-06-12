@@ -47,26 +47,27 @@ void BlsDkg::Init(
 void BlsDkg::Destroy() {
 }
 
-void BlsDkg::TimerMessage(const transport::MessagePtr& msg_ptr) {
+void BlsDkg::TimerMessage(uint8_t thread_idx) {
     auto now_tm_us = common::TimeUtils::TimestampUs();
+    PopBlsMessage();
     if (!has_broadcast_verify_ &&
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4) &&
             now_tm_us > (begin_time_us_ + ver_offset_)) {
-        BroadcastVerfify(msg_ptr->thread_idx);
+        BroadcastVerfify(thread_idx);
         has_broadcast_verify_ = true;
     }
 
     if (has_broadcast_verify_ && !has_broadcast_swapkey_ && 
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7) &&
             now_tm_us >(begin_time_us_ + swap_offset_)) {
-        SwapSecKey(msg_ptr->thread_idx);
+        SwapSecKey(thread_idx);
         has_broadcast_swapkey_ = true;
     }
 
     if (has_broadcast_swapkey_ && !has_finished_ &&
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 10) &&
             now_tm_us >(begin_time_us_ + finish_offset_)) {
-        FinishBroadcast(msg_ptr->thread_idx);
+        FinishBroadcast(thread_idx);
         has_finished_ = true;
     }
 }
@@ -136,7 +137,23 @@ void BlsDkg::OnNewElectionBlock(
     BLS_ERROR("catch error: %s", e.what());
 }
 
-void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) try {
+void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) {
+    bls_msg_queue_.push(msg_ptr);
+}
+
+void BlsDkg::PopBlsMessage(uint8_t thread_idx) {
+    while (bls_msg_queue_.size() > 0) {
+        transport::MessagePtr msg_ptr = nullptr;
+        if (!bls_msg_queue_.pop(&msg_ptr)) {
+            break;
+        }
+
+        msg_ptr->thread_idx = thread_idx;
+        HandleBlsMessage(msg_ptr);
+    }
+}
+
+void BlsDkg::HandleBlsMessage(const transport::MessagePtr& msg_ptr) try {
     if (members_ == nullptr) {
         BLS_ERROR("members_ == nullptr");
         return;

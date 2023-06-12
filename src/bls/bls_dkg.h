@@ -72,7 +72,7 @@ public:
 
     void Destroy();
 
-    void TimerMessage(const transport::MessagePtr& msg_ptr);
+    void TimerMessage(uint8_t thread_idx);
 
 private:
     void HandleVerifyBroadcast(const transport::MessagePtr& header);
@@ -95,6 +95,8 @@ private:
     void DumpLocalPrivateKey();
     bool VerifySekkeyValid(uint32_t peer_index, const libff::alt_bn128_Fr& seckey);
     bool CheckRecomputeG2s(const std::string& id, bls::protobuf::JoinElectBlsInfo& verfy_final_vals);
+    void PopBlsMessage(uint8_t thread_idx);
+    void HandleBlsMessage(const transport::MessagePtr& msg_ptr);
 
     bool IsVerifyBrdPeriod() {
 #ifdef ZJC_UNITTEST
@@ -172,6 +174,7 @@ private:
     bool has_broadcast_swapkey_ = false;
     bool has_finished_ = false;
     std::vector<libff::alt_bn128_G2> for_common_pk_g2s_;
+    common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> bls_msg_queue_;
 
 #ifdef ZJC_UNITTEST
     transport::MessagePtr ver_brd_msg_;

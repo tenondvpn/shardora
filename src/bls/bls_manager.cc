@@ -41,14 +41,12 @@ BlsManager::BlsManager(
     network::Route::Instance()->RegisterMessage(
         common::kBlsMessage,
         std::bind(&BlsManager::HandleMessage, this, std::placeholders::_1));
-//     transport::Processor::Instance()->RegisterProcessor(
-//         common::kPoolTimerMessage,
-//         std::bind(&BlsManager::TimerMessage, this, std::placeholders::_1));
+    tick_.CutOff(100000lu, std::bind(&BlsManager::TimerMessage, this, std::placeholders::_1));
 }
 
 BlsManager::~BlsManager() {}
 
-void BlsManager::TimerMessage(const transport::MessagePtr& msg_ptr) {
+void BlsManager::TimerMessage(uint8_t thread_idx) {
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) <
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
@@ -57,7 +55,7 @@ void BlsManager::TimerMessage(const transport::MessagePtr& msg_ptr) {
 
     auto now_tm_ms = common::TimeUtils::TimestampUs();
     if (waiting_bls_ != nullptr) {
-        waiting_bls_->TimerMessage(msg_ptr);
+        waiting_bls_->TimerMessage(thread_idx);
     }
 
     auto etime = common::TimeUtils::TimestampUs();

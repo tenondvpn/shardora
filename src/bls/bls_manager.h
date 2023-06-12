@@ -88,7 +88,7 @@ private:
         BlsFinishItemPtr& finish_item,
         std::vector<libff::alt_bn128_G1>& all_signs,
         std::vector<size_t>& idx_vec);
-    void TimerMessage(const transport::MessagePtr& msg_ptr);
+    void TimerMessage(uint8_t thread_idx);
     void ResetLeaders(
         const common::MembersPtr& members,
         elect::protobuf::PrevMembers* prev_members);
@@ -102,6 +102,7 @@ private:
     std::shared_ptr<TimeBlockItem> latest_timeblock_info_ = nullptr;
     uint64_t latest_elect_height_ = 0;
     std::unordered_map<uint32_t, std::shared_ptr<ElectItem>> elect_members_;
+    common::Tick tick_;
 
     DISALLOW_COPY_AND_ASSIGN(BlsManager);
 };
