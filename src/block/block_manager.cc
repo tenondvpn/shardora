@@ -849,7 +849,7 @@ void BlockManager::AddMiningToken(
         }
 
         auto id = security_->GetAddress(elect_block.in(i).pubkey());
-        auto account_info = account_mgr_->GetAccountInfo(thread_idx, id);
+        auto account_info = prefix_db_->GetAddressInfo(id);
         if (account_info == nullptr ||
                 account_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
             continue;
