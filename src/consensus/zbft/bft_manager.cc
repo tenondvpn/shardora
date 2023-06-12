@@ -458,16 +458,27 @@ ZbftPtr BftManager::StartBft(
         return nullptr;
     }
 
-    ZJC_DEBUG("use pipeline: %d, this node is leader and start bft: %s,"
-        "pool index: %d, thread index: %d, prepare hash: %s, tx size: %d, msg tx size: %u",
-        (prepare_msg_ptr != nullptr),
-        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-        bft_ptr->pool_index(),
-        bft_ptr->thread_index(),
-        common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-        txs_ptr->txs.size(),
-        prepare_msg_ptr->header.zbft().tx_bft().tx_hash_list_size());
-    assert(prepare_msg_ptr->header.zbft().tx_bft().tx_hash_list_size() > 0);
+    if (prepare_msg_ptr != nullptr) {
+        ZJC_DEBUG("use pipeline: %d, this node is leader and start bft: %s,"
+            "pool index: %d, thread index: %d, prepare hash: %s, tx size: %d, msg tx size: %u",
+            (prepare_msg_ptr != nullptr),
+            common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+            bft_ptr->pool_index(),
+            bft_ptr->thread_index(),
+            common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+            txs_ptr->txs.size(),
+            prepare_msg_ptr->header.zbft().tx_bft().tx_hash_list_size());
+        assert(prepare_msg_ptr->header.zbft().tx_bft().tx_hash_list_size() > 0);
+    } else {
+        ZJC_DEBUG("use pipeline: %d, this node is leader and start bft: %s,"
+            "pool index: %d, thread index: %d, prepare hash: %s, tx size: %d",
+            (prepare_msg_ptr != nullptr),
+            common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+            bft_ptr->pool_index(),
+            bft_ptr->thread_index(),
+            common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+            txs_ptr->txs.size());
+    }
     return bft_ptr;
 }
 
