@@ -166,7 +166,7 @@ private:
     void HandleContractExcute(const transport::MessagePtr& msg_ptr);
     void HandleElectTx(const transport::MessagePtr& msg_ptr);
     bool UserTxValid(const transport::MessagePtr& msg_ptr);
-    void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
+    void ConsensusTimerMessage(uint8_t thread_idx);
     void SyncPoolsMaxHeight(uint8_t thread_idx);
     void HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_ptr);
     void SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms);
@@ -181,6 +181,8 @@ private:
         std::string* new_hash);
     void SyncCrossPool(uint8_t thread_idx);
     void FlushHeightTree();
+    void PopPoolsMessage(uint8_t thread_idx);
+    void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);
 
     static const uint32_t kPopMessageCountEachTime = 320u;
     static const uint64_t kFlushHeightTreePeriod = 60000lu;
@@ -218,6 +220,8 @@ private:
     uint32_t now_sharding_count_ = 1;
     uint32_t prev_cross_sync_index_ = 0;
     std::shared_ptr<CrossBlockManager> cross_block_mgr_ = nullptr;
+    common::Tick tick_;
+    common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };
