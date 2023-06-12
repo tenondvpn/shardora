@@ -250,7 +250,7 @@ int tx_main(int argc, char** argv) {
 //         }
 
 //         std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << ", tx hash: " << tx_msg_ptr->header.hash64() << std::endl;
-        if (pos % 1000 == 0) {
+        if (pos % 1 == 0) {
             ++prikey_pos;
             from_prikey = prikeys[prikey_pos % prikeys.size()];
             security->SetPrivateKey(from_prikey);
