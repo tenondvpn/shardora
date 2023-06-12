@@ -49,7 +49,9 @@ private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     uint64_t GetAllVssValid();
     void SetConsensusFinalRandomNum(const std::string& id, uint64_t final_random_num);
-    void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
+    void ConsensusTimerMessage(uint8_t thread_idx);
+    void PopVssMessage(uint8_t thread_idx);
+    void HandleVssMessage(const transport::MessagePtr& msg_ptr);
 
     int64_t kDkgPeriodUs = common::kTimeBlockCreatePeriodSeconds / 10 * 1000u * 1000u;
 
@@ -83,6 +85,8 @@ private:
     uint64_t third_try_times_ = 0;
     uint64_t third_prev_tm_ = 0;
     uint64_t end_tm_  = 0;
+    common::Tick tick_;
+    common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> vss_msg_queue_;
 
     // for unit test
 #ifdef ZJC_UNITTEST

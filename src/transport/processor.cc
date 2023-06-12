@@ -13,20 +13,18 @@ Processor* Processor::Instance() {
 
 void Processor::RegisterProcessor(uint32_t type, MessageProcessor processor) {
     assert(type < common::kLegoMaxMessageTypeCount);
-    message_processor_[type].push_back(processor);
+    message_processor_[type] = processor;
 }
 
 void Processor::HandleMessage(MessagePtr& msg_ptr) {
     auto& message = msg_ptr->header;
     assert(message.type() < common::kLegoMaxMessageTypeCount);
-    if (message_processor_[message.type()].empty()) {
+    if (message_processor_[message.type()] == nullptr) {
+        assert(false);
         return;
     }
 
-    for (auto iter = message_processor_[message.type()].begin();
-            iter != message_processor_[message.type()].end(); ++iter) {
-        (*iter)(msg_ptr);
-    }
+    (message_processor_[message.type()])(msg_ptr);
 }
 
 Processor::Processor() {}

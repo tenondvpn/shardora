@@ -17,9 +17,9 @@ VssManager::VssManager(std::shared_ptr<security::Security>& security_ptr)
     network::Route::Instance()->RegisterMessage(
         common::kVssMessage,
         std::bind(&VssManager::HandleMessage, this, std::placeholders::_1));
-//     transport::Processor::Instance()->RegisterProcessor(
-//         common::kPoolTimerMessage,
-//         std::bind(&VssManager::ConsensusTimerMessage, this, std::placeholders::_1));
+    tick_.CutOff(
+        100000lu,
+        std::bind(&VssManager::ConsensusTimerMessage, this, std::placeholders::_1));
 }
 
 uint64_t VssManager::EpochRandom() {
@@ -91,13 +91,14 @@ void VssManager::OnTimeBlock(
         tmblock_tm, begin_time_us_, first_offset_, second_offset_, third_offset_, kDkgPeriodUs, local_random_.GetHash());
 }
 
-void VssManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+void VssManager::ConsensusTimerMessage(uint8_t thread_idx) {
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) <
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
         return;
     }
 
+    PopVssMessage(thread_idx);
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         BroadcastFirstPeriodHash(msg_ptr->thread_idx);
@@ -406,10 +407,28 @@ void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
 void VssManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kVssMessage);
+    vss_msg_queue_.push(msg_ptr);
+}
+
+void VssManager::PopVssMessage(uint8_t thread_idx) {
+    while (vss_msg_queue_.size() > 0) {
+        transport::MessagePtr msg_ptr = nullptr;
+        if (!vss_msg_queue_.pop(&msg_ptr)) {
+            break;
+        }
+
+        msg_ptr->thread_idx = thread_idx;
+        HandleVssMessage(msg_ptr);
+    }
+}
+
+void VssManager::HandleVssMessage(const transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
+    assert(header.type() == common::kVssMessage);
     ZJC_DEBUG("vss message coming.");
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
-            common::GlobalInfo::Instance()->network_id() !=
-            (network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
+        common::GlobalInfo::Instance()->network_id() !=
+        (network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset)) {
         ZJC_DEBUG("invalid vss message network_id: %d", common::GlobalInfo::Instance()->network_id());
         return;
     }
