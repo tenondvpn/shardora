@@ -61,7 +61,7 @@ int BlockManager::Init(
         common::kBlockMessage,
         std::bind(&BlockManager::HandleMessage, this, std::placeholders::_1));
     test_sync_block_tick_.CutOff(
-        10000000lu,
+        100000lu,
         std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
     bool genesis = false;
     return kBlockSuccess;
@@ -123,7 +123,7 @@ void BlockManager::ConsensusTimerMessage(uint8_t thread_idx) {
             (etime - now_tm), (now_tm1 - now_tm), (now_tm2 - now_tm1), (now_tm3 - now_tm2), (now_tm4 - now_tm3), (etime - now_tm4));
     }
 
-    test_sync_block_tick_.CutOff(10000000lu, std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
+    test_sync_block_tick_.CutOff(100000lu, std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
 }
 
 void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members) {
@@ -1228,6 +1228,7 @@ void BlockManager::HandleStatisticBlock(
 }
 
 void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool recreate) {
+    ZJC_DEBUG("to tx message coming: %lu", msg_ptr->header.hash64());
     if (create_to_tx_cb_ == nullptr || msg_ptr == nullptr) {
         return;
     }
