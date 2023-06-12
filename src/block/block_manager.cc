@@ -159,7 +159,7 @@ void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, 
 
 void BlockManager::HandleToTxMessage() {
     std::shared_ptr<transport::TransportMessage> msg_ptr = nullptr;
-    if (!to_tx_msg_queue_->pop(&msg_ptr)) {
+    if (!to_tx_msg_queue_.pop(&msg_ptr)) {
         return;
     }
 
@@ -191,7 +191,7 @@ void BlockManager::HandleToTxMessage() {
 
 void BlockManager::HandleStatisticTxMessage() {
     std::shared_ptr<transport::TransportMessage> msg_ptr = nullptr;
-    if (!statistic_tx_msg_queue_->pop(&msg_ptr)) {
+    if (!statistic_tx_msg_queue_.pop(&msg_ptr)) {
         return;
     }
 
@@ -223,7 +223,7 @@ void BlockManager::HandleStatisticTxMessage() {
 
 void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.block_proto().has_shard_to() > 0) {
-        to_tx_msg_queue_->push(msg_ptr);
+        to_tx_msg_queue_.push(msg_ptr);
     }
 
     if (msg_ptr->header.block_proto().has_statistic_tx()) {
@@ -270,7 +270,7 @@ void BlockManager::NetworkNewBlock(
         AddNewBlock(thread_idx, block_item, db_batch);
     }
 
-    while (!block_from_network_queue_->size() > 0) {
+    while (!block_from_network_queue_.size() > 0) {
         std::shared_ptr<block::protobuf::Block> block_ptr = nullptr;
         if (block_from_network_queue_.pop(&block_ptr)) {
             db::DbWriteBatch db_batch;
