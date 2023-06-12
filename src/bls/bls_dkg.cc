@@ -70,6 +70,8 @@ void BlsDkg::TimerMessage(uint8_t thread_idx) {
         FinishBroadcast(thread_idx);
         has_finished_ = true;
     }
+
+    ZJC_DEBUG("bls timer coming.");
 }
 
 void BlsDkg::OnNewElectionBlock(
@@ -121,15 +123,15 @@ void BlsDkg::OnNewElectionBlock(
     ver_offset_ += (common::Random::RandomUint32() % (kDkgPeriodUs * 3 / 1000000lu)) * 1000000lu;
     swap_offset_ += (common::Random::RandomUint32() % (kDkgPeriodUs * 3 / 1000000lu)) * 1000000lu;
     finish_offset_ += (common::Random::RandomUint32() % (kDkgPeriodUs * 3 / 1000000lu)) * 1000000lu;
-//     ZJC_DEBUG("bls time point now: %u, time block tm: %u, begin_time_sec_: %u, "
-//         "kDkgPeriodUs: %u, ver_offset_: %u, swap_offset_: %u, finish_offset_: %u",
-//         common::TimeUtils::TimestampSeconds(),
-//         latest_timeblock_info->lastest_time_block_tm,
-//         begin_time_us_ / 1000000,
-//         kDkgPeriodUs / 1000000,
-//         ver_offset_ / 1000000,
-//         swap_offset_ / 1000000,
-//         finish_offset_ / 1000000);
+    ZJC_DEBUG("bls time point now: %u, time block tm: %u, begin_time_sec_: %u, "
+        "kDkgPeriodUs: %u, ver_offset_: %u, swap_offset_: %u, finish_offset_: %u",
+        common::TimeUtils::TimestampSeconds(),
+        latest_timeblock_info->lastest_time_block_tm,
+        begin_time_us_ / 1000000,
+        kDkgPeriodUs / 1000000,
+        ver_offset_ / 1000000,
+        swap_offset_ / 1000000,
+        finish_offset_ / 1000000);
     has_broadcast_verify_ = false;
     has_broadcast_swapkey_ = false;
     has_finished_ = false;
@@ -257,10 +259,10 @@ void BlsDkg::HandleVerifyBroadcast(const transport::MessagePtr& msg_ptr) try {
     }
 
     prefix_db_->AddBlsVerifyG2((*members_)[bls_msg.index()]->id, bls_msg.verify_brd());
-//     ZJC_DEBUG("save verify g2 success local: %d, %lu, %u, %u, %s, %s",
-//         local_member_index_, elect_hegiht_, bls_msg.index(), 0,
-//         common::Encode::HexEncode((*members_)[bls_msg.index()]->id).c_str(),
-//         common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str());
+    ZJC_DEBUG("save verify g2 success local: %d, %lu, %u, %u, %s, %s",
+        local_member_index_, elect_hegiht_, bls_msg.index(), 0,
+        common::Encode::HexEncode((*members_)[bls_msg.index()]->id).c_str(),
+        common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str());
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
 }
@@ -672,11 +674,11 @@ void BlsDkg::BroadcastVerfify(uint8_t thread_idx) try {
         return;
     }
 
-//     ZJC_DEBUG("brd verify g2 success local net: %u, local: %d,  %s, %s",
-//         common::GlobalInfo::Instance()->network_id(),
-//         local_member_index_,
-//         common::Encode::HexEncode((*members_)[local_member_index_]->id).c_str(),
-//         common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str());
+    ZJC_DEBUG("brd verify g2 success local net: %u, local: %d,  %s, %s",
+        common::GlobalInfo::Instance()->network_id(),
+        local_member_index_,
+        common::Encode::HexEncode((*members_)[local_member_index_]->id).c_str(),
+        common::Encode::HexEncode(bls_msg.verify_brd().verify_vec(0).x_c0()).c_str());
     CreateDkgMessage(msg_ptr);
 #ifdef ZJC_UNITTEST
     ver_brd_msg_ = msg_ptr;
@@ -723,8 +725,8 @@ void BlsDkg::SwapSecKey(uint8_t thread_idx) try {
     }
 
     CreateDkgMessage(msg_ptr);
-//     ZJC_DEBUG("success send swap seckey request local member index: %d, local net: %u",
-//         local_member_index_, common::GlobalInfo::Instance()->network_id());
+    ZJC_DEBUG("success send swap seckey request local member index: %d, local net: %u",
+        local_member_index_, common::GlobalInfo::Instance()->network_id());
 #ifdef ZJC_UNITTEST
     sec_swap_msgs_ = msg_ptr;
     ZJC_DEBUG("success add swap msg");
