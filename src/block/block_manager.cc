@@ -803,7 +803,8 @@ void BlockManager::HandleJoinElectTx(
             }
 
             prefix_db_->SaveNodeVerificationVector(tx.from(), join_info, db_batch);
-            ZJC_DEBUG("success handle kElectJoin tx: %s", common::Encode::HexEncode(tx.from()).c_str());
+            ZJC_DEBUG("success handle kElectJoin tx: %s, net: %u, pool: %u, height: %lu",
+                common::Encode::HexEncode(tx.from()).c_str(), block.network_id(), block.pool_index(), block.height());
             break;
         }
     }
