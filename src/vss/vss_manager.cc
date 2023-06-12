@@ -93,23 +93,25 @@ void VssManager::OnTimeBlock(
 
 void VssManager::ConsensusTimerMessage(uint8_t thread_idx) {
     if (network::DhtManager::Instance()->valid_count(
-            common::GlobalInfo::Instance()->network_id()) <
+            common::GlobalInfo::Instance()->network_id()) >=
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
-        return;
+        PopVssMessage(thread_idx);
+        auto now_tm_us = common::TimeUtils::TimestampUs();
+        if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+            BroadcastFirstPeriodHash(thread_idx);
+            BroadcastSecondPeriodRandom(thread_idx);
+            BroadcastThirdPeriodRandom(thread_idx);
+        }
+
+        auto etime = common::TimeUtils::TimestampUs();
+        if (etime - now_tm_us >= 10000lu) {
+            ZJC_DEBUG("VssManager handle message use time: %lu", (etime - now_tm_us));
+        }
     }
 
-    PopVssMessage(thread_idx);
-    auto now_tm_us = common::TimeUtils::TimestampUs();
-    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-        BroadcastFirstPeriodHash(msg_ptr->thread_idx);
-        BroadcastSecondPeriodRandom(msg_ptr->thread_idx);
-        BroadcastThirdPeriodRandom(msg_ptr->thread_idx);
-    }
-
-    auto etime = common::TimeUtils::TimestampUs();
-    if (etime - now_tm_us >= 10000lu) {
-        ZJC_DEBUG("VssManager handle message use time: %lu", (etime - now_tm_us));
-    }
+    tick_.CutOff(
+        100000lu,
+        std::bind(&VssManager::ConsensusTimerMessage, this, std::placeholders::_1));
 }
 
 void VssManager::OnNewElectBlock(

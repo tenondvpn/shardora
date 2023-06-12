@@ -3,8 +3,9 @@
 #include <mutex>
 #include <atomic>
 
-#include "common/utils.h"
+#include "common/thread_safe_queue.h"
 #include "common/tick.h"
+#include "common/utils.h"
 #include "protos/vss.pb.h"
 #include "protos/transport.pb.h"
 #include "security/security.h"
