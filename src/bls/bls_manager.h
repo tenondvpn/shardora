@@ -92,6 +92,7 @@ private:
     void ResetLeaders(
         const common::MembersPtr& members,
         elect::protobuf::PrevMembers* prev_members);
+    void PopFinishMessage(uint8_t thread_idx);
 
     std::shared_ptr<bls::BlsDkg> waiting_bls_{ nullptr };
     uint64_t max_height_{ common::kInvalidUint64 };
@@ -103,6 +104,7 @@ private:
     uint64_t latest_elect_height_ = 0;
     std::unordered_map<uint32_t, std::shared_ptr<ElectItem>> elect_members_;
     common::Tick tick_;
+    common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> finish_msg_queue_;
 
     DISALLOW_COPY_AND_ASSIGN(BlsManager);
 };

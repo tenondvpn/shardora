@@ -53,6 +53,7 @@ void BlsManager::TimerMessage(uint8_t thread_idx) {
         return;
     }
 
+    PopFinishMessage(thread_idx);
     auto now_tm_ms = common::TimeUtils::TimestampUs();
     if (waiting_bls_ != nullptr) {
         waiting_bls_->TimerMessage(thread_idx);
@@ -297,7 +298,7 @@ void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& bls_msg = header.bls_proto();
     if (bls_msg.has_finish_req()) {
-        HandleFinish(msg_ptr);
+        finish_msg_queue_.push(msg_ptr);
         return;
     }
 
@@ -308,6 +309,18 @@ void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
 int BlsManager::GetLibffHash(const std::string& str_hash, libff::alt_bn128_G1* g1_hash) {
     return BlsSign::GetLibffHash(str_hash, g1_hash);
+}
+
+void BlsManager::PopFinishMessage(uint8_t thread_idx) {
+    while (finish_msg_queue_.size() > 0) {
+        transport::MessagePtr msg_ptr = nullptr;
+        if (!finish_msg_queue_.pop(&msg_ptr)) {
+            break;
+        }
+
+        msg_ptr->thread_idx = thread_idx;
+        HandleFinish(msg_ptr);
+    }
 }
 
 void BlsManager::HandleFinish(const transport::MessagePtr& msg_ptr) {
