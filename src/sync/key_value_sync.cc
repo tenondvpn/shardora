@@ -35,6 +35,23 @@ void KeyValueSync::AddSync(
 
 }
 
+
+void KeyValueSync::Init(
+    block::BlockAggValidCallback block_agg_valid_func,
+    const std::shared_ptr<block::BlockManager>& block_mgr,
+    const std::shared_ptr<db::Db>& db) {
+    block_agg_valid_func_ = block_agg_valid_func;
+    block_mgr_ = block_mgr;
+    db_ = db;
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db);
+    network::Route::Instance()->RegisterMessage(
+        common::kSyncMessage,
+        std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
+    tick_.CutOff(
+        100000lu,
+        std::bind(&KeyValueSync::ConsensusTimerMessage, this, std::placeholders::_1));
+}
+
 void KeyValueSync::AddSyncHeight(
         uint8_t thread_idx,
         uint32_t network_id,
@@ -48,8 +65,9 @@ void KeyValueSync::AddSyncHeight(
         item->key.c_str(), item->priority);
 }
 
-void KeyValueSync::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
+void KeyValueSync::ConsensusTimerMessage(uint8_t thread_idx) {
     auto now_tm_us = common::TimeUtils::TimestampUs();
+    PopKvMessage(thread_idx);
     PopItems();
     CheckSyncItem(msg_ptr->thread_idx);
     if (prev_sync_tmout_us_ + kSyncTimeoutPeriodUs < now_tm_us) {
@@ -61,6 +79,10 @@ void KeyValueSync::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     if (etime - now_tm_us >= 10000lu) {
         ZJC_DEBUG("KeyValueSync handle message use time: %lu", (etime - now_tm_us));
     }
+
+    tick_.CutOff(
+        100000lu,
+        std::bind(&KeyValueSync::ConsensusTimerMessage, this, std::placeholders::_1));
 }
 
 void KeyValueSync::PopItems() {
@@ -89,22 +111,6 @@ void KeyValueSync::PopItems() {
 //                 item->key.c_str(), item->priority);
         }
     }
-}
-
-void KeyValueSync::Init(
-        block::BlockAggValidCallback block_agg_valid_func,
-        const std::shared_ptr<block::BlockManager>& block_mgr,
-        const std::shared_ptr<db::Db>& db) {
-    block_agg_valid_func_ = block_agg_valid_func;
-    block_mgr_ = block_mgr;
-    db_ = db;
-    prefix_db_ = std::make_shared<protos::PrefixDb>(db);
-    network::Route::Instance()->RegisterMessage(
-        common::kSyncMessage,
-        std::bind(&KeyValueSync::HandleMessage, this, std::placeholders::_1));
-//     transport::Processor::Instance()->RegisterProcessor(
-//         common::kPoolTimerMessage,
-//         std::bind(&KeyValueSync::ConsensusTimerMessage, this, std::placeholders::_1));
 }
 
 void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
@@ -254,6 +260,23 @@ void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
 //     ZJC_DEBUG("key value sync message coming req: %d, res: %d",
 //         header.sync_proto().has_sync_value_req(),
 //         header.sync_proto().has_sync_value_res());
+    kv_msg_queue_.push(msg_ptr);
+    
+}
+
+void KeyValueSync::PopKvMessage(uint8_t thread_idx) {
+    while (kv_msg_queue_.size() > 0) {
+        transport::MessagePtr msg_ptr = nullptr;
+        if (!kv_msg_queue_.pop(&msg_ptr)) {
+            break;
+        }
+
+        msg_ptr->thread_idx = thread_idx;
+        HandleKvMessage(msg_ptr);
+    }
+}
+
+void KeyValueSync::HandleKvMessage(const transport::MessagePtr& msg_ptr) {
     if (header.sync_proto().has_sync_value_req()) {
         ProcessSyncValueRequest(msg_ptr);
     }

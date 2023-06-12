@@ -351,8 +351,6 @@ void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) 
                 prev_synced_pool_index_,
                 res, tx_pool_[prev_synced_pool_index_].latest_height(),
                 synced_max_heights_[prev_synced_pool_index_]);
-//             ++prev_synced_pool_index_;
-//             return;
         }
     }
 
@@ -375,8 +373,6 @@ void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) 
                 prev_synced_pool_index_,
                 res, tx_pool_[prev_synced_pool_index_].latest_height(),
                 synced_max_heights_[prev_synced_pool_index_]);
-//             ++prev_synced_pool_index_;
-//             return;
         }
     }
 }

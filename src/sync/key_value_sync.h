@@ -88,8 +88,10 @@ private:
     void ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr);
     void ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr);
     void PopItems();
-    void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
+    void ConsensusTimerMessage(uint8_t thread_idx);
     bool AddSyncKeyValue(transport::protobuf::Header* msg, const block::protobuf::Block& block);
+    void PopKvMessage(uint8_t thread_idx);
+    void HandleKvMessage(const transport::MessagePtr& msg_ptr);
 
     static const uint64_t kSyncPeriodUs = 300000lu;
     static const uint64_t kSyncTimeoutPeriodUs = 300000lu;
@@ -104,6 +106,8 @@ private:
     uint64_t prev_sync_tmout_us_ = 0;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
+    common::Tick tick_;
+    common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> kv_msg_queue_;
 
     DISALLOW_COPY_AND_ASSIGN(KeyValueSync);
 };
