@@ -71,7 +71,7 @@ static transport::MessagePtr CreateTransactionWithAttr(
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kPoolsMessage);
     msg.set_hop_count(0);
-//     auto broadcast = msg.mutable_broadcast();
+    auto broadcast = msg.mutable_broadcast();
     auto new_tx = msg.mutable_tx_proto();
     new_tx->set_gid(gid);
     new_tx->set_pubkey(security->GetPublicKeyUnCompressed());
@@ -100,12 +100,12 @@ static transport::MessagePtr CreateTransactionWithAttr(
     }
 
     transport::TcpTransport::Instance()->SetMessageHash(msg, 0);
-//     std::cout << "tx from: " << common::Encode::HexEncode(security->GetAddress())
-//         << " to: " << common::Encode::HexEncode(to)
-//         << " gid: " << common::Encode::HexEncode(gid)
-//         << " amount: " << amount
-//         << " hash64: " << msg.hash64()
-//         << std::endl;
+    std::cout << "tx from: " << common::Encode::HexEncode(security->GetAddress())
+        << " to: " << common::Encode::HexEncode(to)
+        << " gid: " << common::Encode::HexEncode(gid)
+        << " amount: " << amount
+        << " hash64: " << msg.hash64()
+        << std::endl;
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign;
     if (security->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
@@ -239,15 +239,15 @@ int tx_main(int argc, char** argv) {
             return 1;
         }
 
-        if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 22001, tx_msg_ptr->header) != 0) {
-            std::cout << "send tcp client failed!" << std::endl;
-            return 1;
-        }
-
-        if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 21001, tx_msg_ptr->header) != 0) {
-            std::cout << "send tcp client failed!" << std::endl;
-            return 1;
-        }
+//         if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 22001, tx_msg_ptr->header) != 0) {
+//             std::cout << "send tcp client failed!" << std::endl;
+//             return 1;
+//         }
+// 
+//         if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 21001, tx_msg_ptr->header) != 0) {
+//             std::cout << "send tcp client failed!" << std::endl;
+//             return 1;
+//         }
 
 //         std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << ", tx hash: " << tx_msg_ptr->header.hash64() << std::endl;
         if (pos % 1000 == 0) {
