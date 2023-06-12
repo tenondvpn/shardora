@@ -678,7 +678,7 @@ void BlockManager::AddNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBatch& db_batch) {
-    ZJC_DEBUG("new block coming sharding id: %u, , prepool index: %d,pre height: %lu, pool: %d, height: %lu,"
+    ZJC_DEBUG("new block coming sharding id: %u, pool: %d, height: %lu, prepool index: %d,pre height: %lu"
         "tx size: %u, hash: %s, thread_idx: %d",
         block_item->network_id(),
         block_item->commit_pool_index(),

@@ -1784,6 +1784,11 @@ int BftManager::LeaderHandleZbftMessage(
                     common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
                     common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
                     common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+                auto prev_ptr = bft_ptr->pipeline_prev_zbft_ptr();
+                if (prev_ptr != nullptr) {
+                    // precommit prev consensus
+                    NextPrepareErrorLeaderCallPrecommit(elect_item, prev_ptr, msg_ptr);
+                }
 //                 assert(false);
                 // just all consensus rollback
             }
