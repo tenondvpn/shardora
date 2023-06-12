@@ -122,12 +122,10 @@ void BlsManager::OnNewElectBlock(
 
     latest_elect_height_ = elect_height;
     if (waiting_bls_ != nullptr) {
-        waiting_bls_->Destroy();
-        waiting_bls_.reset();
-    }
+        waiting_bls_ = nullptr;
 
-    waiting_bls_ = std::make_shared<bls::BlsDkg>();
-    waiting_bls_->Init(
+    auto waiting_bls = std::make_shared<bls::BlsDkg>();
+    waiting_bls->Init(
         this,
         security_,
         0,
@@ -137,11 +135,12 @@ void BlsManager::OnNewElectBlock(
         libff::alt_bn128_G2::zero(),
         db_);
 //     BLS_DEBUG("call OnNewElectionBlock success add new bls dkg, elect_height: %lu", elect_height);
-    waiting_bls_->OnNewElectionBlock(
+    waiting_bls->OnNewElectionBlock(
         elect_height,
         members,
         latest_timeblock_info_);
-//     BLS_DEBUG("success add new bls dkg, elect_height: %lu", elect_height);
+    waiting_bls_ = waiting_bls;
+    BLS_DEBUG("success add new bls dkg, elect_height: %lu", elect_height);
 }
 
 void BlsManager::OnTimeBlock(
