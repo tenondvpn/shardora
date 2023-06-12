@@ -566,7 +566,7 @@ void BlockManager::HandleLocalNormalToTx(
             addr = to_txs.tos(i).des().substr(0, security::kUnicastAddressLength);
         }
 
-        auto account_info = GetAccountInfo(thread_idx, addr);
+        auto account_info = GetAccountInfo(addr);
         if (account_info == nullptr) {
             if (step != pools::protobuf::kRootCreateAddressCrossSharding) {
 //                 assert(false);
