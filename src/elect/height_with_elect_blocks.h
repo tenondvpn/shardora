@@ -214,6 +214,7 @@ public:
                 network_id % common::kImmutablePoolSize,
                 height,
                 &block)) {
+            assert(false);
             return nullptr;
         }
 
