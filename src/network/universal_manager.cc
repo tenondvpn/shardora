@@ -176,10 +176,10 @@ void UniversalManager::OnNewElectBlock(
         uint32_t sharding_id,
         uint64_t elect_height,
         common::MembersPtr& members,
-    const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
+        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
     if (dhts_[kUniversalNetworkId] != nullptr) {
         Universal* unidht = static_cast<Universal*>(dhts_[kUniversalNetworkId].get());
-        unidht->OnNewElectBlock(sharding_id, elect_height, members);
+        unidht->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
     }
 }
 
