@@ -223,7 +223,8 @@ int Universal::Destroy() {
 void Universal::OnNewElectBlock(
         uint32_t sharding_id,
         uint64_t elect_height,
-        common::MembersPtr& members) {
+        common::MembersPtr& members,
+        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block) {
     auto iter = sharding_latest_height_map_.find(sharding_id);
     if (iter != sharding_latest_height_map_.end() && iter->second->height >= elect_height) {
         return;
@@ -233,6 +234,12 @@ void Universal::OnNewElectBlock(
     new_item->height = elect_height;
     for (auto iter = members->begin(); iter != members->end(); ++iter) {
         new_item->id_set.insert((*iter)->id);
+    }
+
+    auto& in = elect_block->in();
+    for (int32_t i = 0; i < in.size(); ++i) {
+        auto id = security_->GetAddress(in[i].pubkey());
+        new_item->id_set.insert(id);
     }
 
     sharding_latest_height_map_[sharding_id] = new_item;

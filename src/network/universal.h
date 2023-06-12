@@ -30,8 +30,8 @@ public:
     void OnNewElectBlock(
         uint32_t sharding_id,
         uint64_t elect_height,
-        common::MembersPtr& members);
-
+        common::MembersPtr& members,
+        const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block);
     void AddNetworkId(uint32_t network_id);
     void RemoveNetworkId(uint32_t network_id);
     bool HasNetworkId(uint32_t network_id);
