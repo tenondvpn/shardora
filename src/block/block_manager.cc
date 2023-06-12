@@ -195,7 +195,9 @@ void BlockManager::HandleStatisticTxMessage() {
         return;
     }
 
+    ZJC_DEBUG("handle statistic message hash: %lu", msg_ptr->header.hash64());
     if (latest_members_ == nullptr) {
+        ZJC_DEBUG("failed statistic message hash: %lu", msg_ptr->header.hash64());
         return;
     }
 
@@ -205,6 +207,7 @@ void BlockManager::HandleStatisticTxMessage() {
     }
 
     if (latest_members_->size() <= msg_ptr->header.block_proto().statistic_tx().leader_idx()) {
+        ZJC_DEBUG("failed statistic message hash: %lu", msg_ptr->header.hash64());
         return;
     }
 
@@ -236,6 +239,7 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         if (block_agg_valid_func_(*block_ptr)) {
             // just one thread
             block_from_network_queue_.push(block_ptr);
+            ZJC_DEBUG("add new block message hash: %lu", msg_ptr->header.hash64());
         }
     }
 }
