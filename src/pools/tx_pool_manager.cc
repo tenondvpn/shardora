@@ -382,6 +382,10 @@ void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) 
 }
 
 void TxPoolManager::SyncBlockWithMaxHeights(uint8_t thread_idx, uint32_t pool_idx, uint64_t height) {
+    if (kv_sync_ == nullptr) {
+        return;
+    }
+
     auto net_id = common::GlobalInfo::Instance()->network_id();
     if (net_id >= network::kConsensusWaitingShardBeginNetworkId &&
             net_id < network::kConsensusWaitingShardEndNetworkId) {
