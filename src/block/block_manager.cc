@@ -60,9 +60,6 @@ int BlockManager::Init(
     network::Route::Instance()->RegisterMessage(
         common::kBlockMessage,
         std::bind(&BlockManager::HandleMessage, this, std::placeholders::_1));
-    transport::Processor::Instance()->RegisterProcessor(
-        common::kPoolTimerMessage,
-        std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
     test_sync_block_tick_.CutOff(
         10000000lu,
         std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
@@ -97,9 +94,9 @@ void BlockManager::ConsensusTimerMessage(uint8_t thread_idx) {
     auto now_tm3 = common::TimeUtils::TimestampUs();
     auto now_tm4 = common::TimeUtils::TimestampUs();
     if (to_tx_leader_ != nullptr && local_id_ == to_tx_leader_->id) {
-        CreateToTx(msg_ptr->thread_idx);
+        CreateToTx(thread_idx);
         now_tm3 = common::TimeUtils::TimestampUs();
-        CreateStatisticTx(msg_ptr->thread_idx);
+        CreateStatisticTx(thread_idx);
         now_tm4 = common::TimeUtils::TimestampUs();
     }
 
@@ -125,6 +122,7 @@ void BlockManager::ConsensusTimerMessage(uint8_t thread_idx) {
         ZJC_DEBUG("block manager handle message use time: %lu, %lu, %lu, %lu, %lu, %lu",
             (etime - now_tm), (now_tm1 - now_tm), (now_tm2 - now_tm1), (now_tm3 - now_tm2), (now_tm4 - now_tm3), (etime - now_tm4));
     }
+
     test_sync_block_tick_.CutOff(10000000lu, std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
 }
 
