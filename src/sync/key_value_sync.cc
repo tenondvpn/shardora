@@ -69,7 +69,7 @@ void KeyValueSync::ConsensusTimerMessage(uint8_t thread_idx) {
     auto now_tm_us = common::TimeUtils::TimestampUs();
     PopKvMessage(thread_idx);
     PopItems();
-    CheckSyncItem(msg_ptr->thread_idx);
+    CheckSyncItem(thread_idx);
     if (prev_sync_tmout_us_ + kSyncTimeoutPeriodUs < now_tm_us) {
         prev_sync_tmout_us_ = now_tm_us;
         CheckSyncTimeout();
@@ -277,6 +277,7 @@ void KeyValueSync::PopKvMessage(uint8_t thread_idx) {
 }
 
 void KeyValueSync::HandleKvMessage(const transport::MessagePtr& msg_ptr) {
+    auto& header = msg_ptr->header;
     if (header.sync_proto().has_sync_value_req()) {
         ProcessSyncValueRequest(msg_ptr);
     }
