@@ -160,6 +160,7 @@ private:
     bool LeaderSignatureValid(const transport::MessagePtr& msg_ptr);
     void HandleToTxMessage();
     void HandleStatisticTxMessage();
+    std::shared_ptr<address::protobuf::AddressInfo> GetAccountInfo(const std::string& addr);
 
     static const uint64_t kCreateToTxPeriodMs = 10000lu;
     static const uint64_t kRetryStatisticPeriod = 3000lu;

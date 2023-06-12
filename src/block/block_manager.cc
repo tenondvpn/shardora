@@ -546,6 +546,11 @@ void BlockManager::RootHandleNormalToTx(
     }
 }
 
+std::shared_ptr<address::protobuf::AddressInfo> BlockManager::GetAccountInfo(
+        const std::string& addr) {
+    return prefix_db_->GetAddressInfo(addr);
+}
+
 void BlockManager::HandleLocalNormalToTx(
         uint8_t thread_idx,
         const pools::protobuf::ToTxMessage& to_txs,
@@ -561,7 +566,7 @@ void BlockManager::HandleLocalNormalToTx(
             addr = to_txs.tos(i).des().substr(0, security::kUnicastAddressLength);
         }
 
-        auto account_info = account_mgr_->GetAccountInfo(thread_idx, addr);
+        auto account_info = GetAccountInfo(thread_idx, addr);
         if (account_info == nullptr) {
             if (step != pools::protobuf::kRootCreateAddressCrossSharding) {
 //                 assert(false);
@@ -849,7 +854,7 @@ void BlockManager::AddMiningToken(
         }
 
         auto id = security_->GetAddress(elect_block.in(i).pubkey());
-        auto account_info = prefix_db_->GetAddressInfo(id);
+        auto account_info = GetAccountInfo(id);
         if (account_info == nullptr ||
                 account_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
             continue;
