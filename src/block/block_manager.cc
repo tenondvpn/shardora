@@ -60,9 +60,9 @@ int BlockManager::Init(
     network::Route::Instance()->RegisterMessage(
         common::kBlockMessage,
         std::bind(&BlockManager::HandleMessage, this, std::placeholders::_1));
-//     transport::Processor::Instance()->RegisterProcessor(
-//         common::kPoolTimerMessage,
-//         std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
+    transport::Processor::Instance()->RegisterProcessor(
+        common::kPoolTimerMessage,
+        std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
     test_sync_block_tick_.CutOff(
         10000000lu,
         std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
@@ -71,59 +71,61 @@ int BlockManager::Init(
 }
 
 void BlockManager::ConsensusTimerMessage(uint8_t thread_idx) {
-//     auto now_tm = common::TimeUtils::TimestampUs();
-//     if (now_tm > prev_to_txs_tm_us_ + 1000000) {
-//         if (leader_to_txs_.size() >= 4) {
-//             leader_to_txs_.erase(leader_to_txs_.begin());
-//         }
-// 
-//         for (auto iter = leader_to_txs_.begin(); iter != leader_to_txs_.end(); ++iter) {
-//             auto msg_ptr = iter->second->to_txs_msg;
-//             if (msg_ptr == nullptr) {
-//                 continue;
-//             }
-// 
-//             HandleToTxsMessage(msg_ptr, true);
-//         }
-// 
-//         prev_to_txs_tm_us_ = now_tm;
-//     }
-// 
-//     auto now_tm1 = common::TimeUtils::TimestampUs();
+    auto now_tm = common::TimeUtils::TimestampUs();
+    if (now_tm > prev_to_txs_tm_us_ + 1000000) {
+        if (leader_to_txs_.size() >= 4) {
+            leader_to_txs_.erase(leader_to_txs_.begin());
+        }
+
+        for (auto iter = leader_to_txs_.begin(); iter != leader_to_txs_.end(); ++iter) {
+            auto msg_ptr = iter->second->to_txs_msg;
+            if (msg_ptr == nullptr) {
+                continue;
+            }
+
+            HandleToTxsMessage(msg_ptr, true);
+        }
+
+        prev_to_txs_tm_us_ = now_tm;
+    }
+
+    auto now_tm1 = common::TimeUtils::TimestampUs();
+    HandleToTxMessage();
+    HandleStatisticTxMessage();
     NetworkNewBlock(thread_idx, nullptr);
+    auto now_tm2 = common::TimeUtils::TimestampUs();
+    auto now_tm3 = common::TimeUtils::TimestampUs();
+    auto now_tm4 = common::TimeUtils::TimestampUs();
+    if (to_tx_leader_ != nullptr && local_id_ == to_tx_leader_->id) {
+        CreateToTx(msg_ptr->thread_idx);
+        now_tm3 = common::TimeUtils::TimestampUs();
+        CreateStatisticTx(msg_ptr->thread_idx);
+        now_tm4 = common::TimeUtils::TimestampUs();
+    }
+
+    auto now_tm_ms = now_tm / 1000;
+    if (!leader_statistic_txs_.empty() && prev_retry_create_statistic_tx_ms_ < now_tm_ms) {
+        if (leader_statistic_txs_.size() >= 4) {
+            leader_statistic_txs_.erase(leader_statistic_txs_.begin());
+        }
+
+        for (auto iter = leader_statistic_txs_.rbegin(); iter != leader_statistic_txs_.rend(); ++iter) {
+            auto tmp_ptr = iter->second->statistic_msg;
+            if (tmp_ptr != nullptr) {
+                StatisticWithLeaderHeights(tmp_ptr, true);
+                break;
+            }
+        }
+
+        prev_retry_create_statistic_tx_ms_ = now_tm_ms + kRetryStatisticPeriod;
+    }
+
+    auto etime = common::TimeUtils::TimestampUs();
+    if (etime - now_tm >= 10000lu) {
+        ZJC_DEBUG("block manager handle message use time: %lu, %lu, %lu, %lu, %lu, %lu",
+            (etime - now_tm), (now_tm1 - now_tm), (now_tm2 - now_tm1), (now_tm3 - now_tm2), (now_tm4 - now_tm3), (etime - now_tm4));
+    }
     test_sync_block_tick_.CutOff(10000000lu, std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
-//     auto now_tm2 = common::TimeUtils::TimestampUs();
-//     auto now_tm3 = common::TimeUtils::TimestampUs();
-//     auto now_tm4 = common::TimeUtils::TimestampUs();
-//     if (to_tx_leader_ != nullptr && local_id_ == to_tx_leader_->id) {
-//         CreateToTx(msg_ptr->thread_idx);
-//         now_tm3 = common::TimeUtils::TimestampUs();
-//         CreateStatisticTx(msg_ptr->thread_idx);
-//         now_tm4 = common::TimeUtils::TimestampUs();
-//     }
-// 
-//     auto now_tm_ms = now_tm / 1000;
-//     if (!leader_statistic_txs_.empty() && prev_retry_create_statistic_tx_ms_ < now_tm_ms) {
-//         if (leader_statistic_txs_.size() >= 4) {
-//             leader_statistic_txs_.erase(leader_statistic_txs_.begin());
-//         }
-// 
-//         for (auto iter = leader_statistic_txs_.rbegin(); iter != leader_statistic_txs_.rend(); ++iter) {
-//             auto tmp_ptr = iter->second->statistic_msg;
-//             if (tmp_ptr != nullptr) {
-//                 StatisticWithLeaderHeights(tmp_ptr, true);
-//                 break;
-//             }
-//         }
-// 
-//         prev_retry_create_statistic_tx_ms_ = now_tm_ms + kRetryStatisticPeriod;
-//     }
-// 
-//     auto etime = common::TimeUtils::TimestampUs();
-//     if (etime - now_tm >= 10000lu) {
-//         ZJC_DEBUG("block manager handle message use time: %lu, %lu, %lu, %lu, %lu, %lu",
-//             (etime - now_tm), (now_tm1 - now_tm), (now_tm2 - now_tm1), (now_tm3 - now_tm2), (now_tm4 - now_tm3), (etime - now_tm4));
-//     }
 }
 
 void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, common::MembersPtr& members) {
@@ -157,67 +159,86 @@ void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, 
     }
 }
 
+void BlockManager::HandleToTxMessage() {
+    std::shared_ptr<transport::TransportMessage> msg_ptr = nullptr;
+    if (!to_tx_msg_queue_->pop(&msg_ptr)) {
+        return;
+    }
+
+    if (latest_members_ == nullptr) {
+        return;
+    }
+
+    if (!msg_ptr->header.has_sign()) {
+        assert(false);
+        return;
+    }
+
+    if (latest_members_->size() <= msg_ptr->header.block_proto().shard_to().leader_idx()) {
+        return;
+    }
+
+    auto& mem_ptr = (*latest_members_)[msg_ptr->header.block_proto().shard_to().leader_idx()];
+    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
+    if (security_->Verify(
+            msg_hash,
+            mem_ptr->pubkey,
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        assert(false);
+        return;
+    }
+
+    HandleToTxsMessage(msg_ptr, false);
+}
+
+void BlockManager::HandleStatisticTxMessage() {
+    std::shared_ptr<transport::TransportMessage> msg_ptr = nullptr;
+    if (!statistic_tx_msg_queue_->pop(&msg_ptr)) {
+        return;
+    }
+
+    if (latest_members_ == nullptr) {
+        return;
+    }
+
+    if (!msg_ptr->header.has_sign()) {
+        assert(false);
+        return;
+    }
+
+    if (latest_members_->size() <= msg_ptr->header.block_proto().statistic_tx().leader_idx()) {
+        return;
+    }
+
+    auto& mem_ptr = (*latest_members_)[msg_ptr->header.block_proto().statistic_tx().leader_idx()];
+    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
+    if (security_->Verify(
+            msg_hash,
+            mem_ptr->pubkey,
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        assert(false);
+        return;
+    }
+
+    HandleStatisticMessage(msg_ptr);
+}
+
 void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
-    // verify signature valid and check leader valid
     if (msg_ptr->header.block_proto().has_shard_to() > 0) {
-        if (latest_members_ == nullptr) {
-            return;
-        }
-
-        if (!msg_ptr->header.has_sign()) {
-            assert(false);
-            return;
-        }
-
-        if (latest_members_->size() <= msg_ptr->header.block_proto().shard_to().leader_idx()) {
-            return;
-        }
-
-        auto& mem_ptr = (*latest_members_)[msg_ptr->header.block_proto().shard_to().leader_idx()];
-        auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
-        if (security_->Verify(
-                msg_hash,
-                mem_ptr->pubkey,
-                msg_ptr->header.sign()) != security::kSecuritySuccess) {
-            assert(false);
-            return;
-        }
-
-        HandleToTxsMessage(msg_ptr, false);
+        to_tx_msg_queue_->push(msg_ptr);
     }
 
     if (msg_ptr->header.block_proto().has_statistic_tx()) {
-        if (latest_members_ == nullptr) {
-            return;
-        }
-
-        if (!msg_ptr->header.has_sign()) {
-            assert(false);
-            return;
-        }
-
-        if (latest_members_->size() <= msg_ptr->header.block_proto().statistic_tx().leader_idx()) {
-            return;
-        }
-
-        auto& mem_ptr = (*latest_members_)[msg_ptr->header.block_proto().statistic_tx().leader_idx()];
-        auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
-        if (security_->Verify(
-                msg_hash,
-                mem_ptr->pubkey,
-                msg_ptr->header.sign()) != security::kSecuritySuccess) {
-            assert(false);
-            return;
-        }
-
-        HandleStatisticMessage(msg_ptr);
+        statistic_tx_msg_queue_.push(msg_ptr);
     }
 
     if (msg_ptr->header.has_block()) {
         auto& header = msg_ptr->header;
         auto block_ptr = std::make_shared<block::protobuf::Block>(header.block());
-        // (TODO): check block agg sign
-        NetworkNewBlock(msg_ptr->thread_idx, block_ptr);
+        if (block_agg_valid_func_(*block_ptr)) {
+            // just one thread
+            block_from_network_queue_->push(block_ptr);
+        }
     }
 }
 
@@ -249,6 +270,14 @@ void BlockManager::NetworkNewBlock(
 
         db::DbWriteBatch db_batch;
         AddNewBlock(thread_idx, block_item, db_batch);
+    }
+
+    while (!block_from_network_queue_->size() > 0) {
+        std::shared_ptr<block::protobuf::Block> block_ptr = nullptr;
+        if (block_from_network_queue_.pop(&block_ptr)) {
+            db::DbWriteBatch db_batch;
+            AddNewBlock(thread_idx, block_ptr, db_batch);
+        }
     }
 
     HandleAllConsensusBlocks(thread_idx);
@@ -381,7 +410,8 @@ void BlockManager::HandleStatisticTx(
                 return;
             }
 
-            if (latest_shard_statistic_tx_ != nullptr && latest_shard_statistic_tx_->tx_hash == block_tx.storages(i).val_hash()) {
+            if (latest_shard_statistic_tx_ != nullptr &&
+                    latest_shard_statistic_tx_->tx_hash == block_tx.storages(i).val_hash()) {
                 latest_shard_statistic_tx_ = nullptr;
             }
 

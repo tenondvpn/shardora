@@ -35,7 +35,7 @@ contract Phr {
 
     function ResAdd(bytes32 rid, bytes memory pkDo, bytes memory ci) public {
         require(owner == msg.sender);
-        //require(!rids[rid].exists);
+        require(!rids[rid].exists);
         rids[rid] = RidInfo({
             pk: pkDo,
             ci: ci,
@@ -49,7 +49,7 @@ contract Phr {
 
     function AttrReg(bytes memory pk, bytes32 attr_hash, bytes[] memory sigs) public {
         require(valid_aas.length == sigs.length);
-        //require(pk_attrs[pk][attr_hash] == false);
+        require(pk_attrs[pk][attr_hash] == false);
         for (uint i = 0; i < sigs.length; i++) {
             require(recoverSigner(prefixed(attr_hash), sigs[i]) == valid_aas[i]);
         }
@@ -74,7 +74,7 @@ contract Phr {
 
     function PolicyAdd(bytes32 pid, bytes32 rid, bytes32[] memory attr_hash, uint256[] memory timeout) public {
         require(owner == msg.sender);
-        //require(!pids[pid].exists);
+        require(!pids[pid].exists);
         require(attr_hash.length == timeout.length);
         pids[pid] = PidInfo({
             rid: rid,

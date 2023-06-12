@@ -158,6 +158,8 @@ private:
     void StatisticWithLeaderHeights(const transport::MessagePtr& msg_ptr, bool retry);
     std::shared_ptr<LeaderWithToTxItem> GetValidLeaderShardTo();
     bool LeaderSignatureValid(const transport::MessagePtr& msg_ptr);
+    void HandleToTxMessage();
+    void HandleStatisticTxMessage();
 
     static const uint64_t kCreateToTxPeriodMs = 10000lu;
     static const uint64_t kRetryStatisticPeriod = 3000lu;
@@ -212,6 +214,9 @@ private:
     std::shared_ptr<BlockTxsItem> latest_cross_statistic_tx_ = nullptr;
     std::shared_ptr<transport::TransportMessage> statistic_message_ = nullptr;
     common::Tick test_sync_block_tick_;
+    common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> block_from_network_queue_;
+    common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> to_tx_msg_queue_;
+    common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> statistic_tx_msg_queue_;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };
