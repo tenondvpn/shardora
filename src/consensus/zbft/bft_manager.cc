@@ -459,13 +459,14 @@ ZbftPtr BftManager::StartBft(
     }
 
     ZJC_DEBUG("use pipeline: %d, this node is leader and start bft: %s,"
-        "pool index: %d, thread index: %d, prepare hash: %s, tx size: %d",
+        "pool index: %d, thread index: %d, prepare hash: %s, tx size: %d, msg tx size: %u",
         (prepare_msg_ptr != nullptr),
         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
         bft_ptr->pool_index(),
         bft_ptr->thread_index(),
         common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-        txs_ptr->txs.size());
+        txs_ptr->txs.size(),
+        prepare_msg_ptr->tx_hash_list_size());
     return bft_ptr;
 }
 
@@ -1367,10 +1368,12 @@ int BftManager::LeaderPrepare(
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
         if (!msg_res) {
+            assert(false);
             return kConsensusError;
         }
     }
 
+    assert(new_bft_msg->tx_hash_list_size() > 0);
     new_bft_msg->set_member_index(elect_item.local_node_member_index);
     new_bft_msg->set_elect_height(elect_item.elect_height);
     assert(elect_item.elect_height > 0);
@@ -1618,9 +1621,8 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
 
         if (bft_ptr == nullptr || !bft_ptr->BackupCheckLeaderValid(&bft_msg)) {
             // oppose
-            ZJC_ERROR("create bft ptr failed backup create consensus bft gid: %s, tx size: %d",
-                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-                bft_ptr->txs_ptr()->txs.size());
+            ZJC_ERROR("create bft ptr failed backup create consensus bft gid: %s",
+                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             return;
         }
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
