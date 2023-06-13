@@ -63,7 +63,9 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
     if (dht_ptr != nullptr) {
         if (message.has_broadcast()) {
             assert(message.broadcast().bloomfilter_size() < 64);
-            broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
+//             broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
+            broadcast_queue_[header_ptr->thread_idx].push(msg_ptr);
+            broadcast_con_.notify_one();
         } else {
             dht_ptr->SendToClosestNode(msg_ptr);
         }
@@ -103,10 +105,10 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
     }
 
     if (header.has_broadcast()) {
-        Broadcast(header_ptr->thread_idx, header_ptr);
+//         Broadcast(header_ptr->thread_idx, header_ptr);
         ZJC_DEBUG("broadcast: %lu", header_ptr->header.hash64());
-//         broadcast_queue_[header_ptr->thread_idx].push(header_ptr);
-//         broadcast_con_.notify_one();
+        broadcast_queue_[header_ptr->thread_idx].push(header_ptr);
+        broadcast_con_.notify_one();
     }
 
     message_processor_[header.type()](header_ptr);
@@ -206,7 +208,9 @@ void Route::Broadcast(uint8_t thread_idx, const transport::MessagePtr& msg_ptr) 
     }
 
     assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
-    broadcast_->Broadcasting(thread_idx, des_dht, msg_ptr);
+    broadcast_queue_[thread_idx].push(msg_ptr);
+    broadcast_con_.notify_one();
+//     broadcast_->Broadcasting(thread_idx, des_dht, msg_ptr);
 }
 
 dht::BaseDhtPtr Route::GetDht(const std::string& dht_key) {
