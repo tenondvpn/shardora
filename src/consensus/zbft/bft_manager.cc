@@ -1209,6 +1209,11 @@ ZbftPtr BftManager::CreateBftPtr(
         return nullptr;
     }
 
+    if (txs_ptr == nullptr) {
+        assert(false);
+        return nullptr;
+    }
+
     if (txs_ptr != nullptr && (int32_t)txs_ptr->txs.size() != bft_msg.tx_bft().tx_hash_list_size()) {
         ZJC_ERROR("invalid consensus, txs not equal to leader.");
         txs_ptr = nullptr;
