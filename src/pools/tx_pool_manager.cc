@@ -34,7 +34,7 @@ TxPoolManager::TxPoolManager(
     ZJC_INFO("TxPoolManager init success: %d", common::kInvalidPoolIndex);
     InitCrossPools();
     tick_.CutOff(
-        100000lu,
+        10000lu,
         std::bind(&TxPoolManager::ConsensusTimerMessage, this, std::placeholders::_1));
     network::Route::Instance()->RegisterMessage(
         common::kPoolsMessage,
@@ -870,6 +870,7 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
 
 void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
     if (!UserTxValid(msg_ptr)) {
+        assert(false);
         return;
     }
 
@@ -883,6 +884,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
             tx_msg.amount(),
             tx_msg.contract_prepayment(),
             consensus::kCallContractDefaultUseGas);
+        assert(false);
         return;
     }
 
