@@ -1821,6 +1821,8 @@ int BftManager::LeaderHandleZbftMessage(
                     // precommit prev consensus
                     NextPrepareErrorLeaderCallPrecommit(elect_item, prev_ptr, msg_ptr);
                 }
+
+                RemoveBft(bft_ptr);
 //                 assert(false);
                 // just all consensus rollback
             }

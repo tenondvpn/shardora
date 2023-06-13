@@ -92,6 +92,7 @@ bool BftProto::LeaderCreatePreCommit(
     msg.set_type(common::kConsensusMessage);
     auto broad_param = msg.mutable_broadcast();
     auto& bft_msg = *msg.mutable_zbft();
+    bft_msg.clear_prepare_gid();
     bft_msg.set_leader_idx(leader_idx);
     bft_msg.set_precommit_gid(bft_ptr->gid());
     bft_msg.set_commit_gid(commit_gid);
@@ -160,6 +161,8 @@ bool BftProto::LeaderCreateCommit(
     auto broad_param = msg.mutable_broadcast();
     auto& bft_msg = *msg.mutable_zbft();
     zbft::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
+    bft_msg.clear_prepare_gid();
+    bft_msg.clear_precommit_gid();
     bft_msg.set_leader_idx(leader_idx);
     bft_msg.set_commit_gid(bft_ptr->gid());
     bft_msg.set_pool_index(bft_ptr->pool_index());
