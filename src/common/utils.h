@@ -155,6 +155,8 @@ static const uint32_t kNodePublicIpMaskLen = 22u;  // node public ip just Mask l
 static const int32_t kInitNodeCredit = 30;
 static const double kMiningTokenMultiplicationFactor = 1.0;
 
+static const uint64_t kToPeriodMs = 10000lu;
+
 // broadcast default params
 static const uint32_t kBroadcastDefaultNeighborCount = 7u;
 static const uint32_t kBloomfilterBitSize = 256u;

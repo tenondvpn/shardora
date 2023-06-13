@@ -60,7 +60,7 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
             added_heights_[block.pool_index()].erase(iter);
         }
     } else {
-        added_heights_[block.pool_index()].insert(block.height());
+        added_heights_[block.pool_index()].insert(std::make_pair(block.height(), block.timestamp()));
     }
 
     const auto& tx_list = block.tx_list();
@@ -540,6 +540,7 @@ int ToTxsPools::LeaderCreateToHeights(
     to_heights.set_sharding_id(sharding_id);
     bool valid = false;
     std::string heights;
+    auto timeout = common::TimeUtils::TimestampMs() + kToPeriodMs;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto pool_iter = net_iter->second.find(i);
         auto r_height_iter = pool_iter->second.rbegin();
@@ -547,6 +548,19 @@ int ToTxsPools::LeaderCreateToHeights(
             heights += std::to_string(0) + " ";
             to_heights.add_heights(0);
         } else {
+            while (r_height_iter != pool_iter->second.rend()) {
+                auto add_iter = added_heights_[i].find(r_height_iter->first);
+                assert(add_iter != added_heights_[i].end());
+                if (add_iter != added_heights_[i].end()) {
+                    if (add_iter->second > timeout) {
+                        ++r_height_iter;
+                        continue;
+                    }
+                }
+
+                break;
+            }
+
             to_heights.add_heights(r_height_iter->first);
             heights += std::to_string(r_height_iter->first) + " ";
             valid = true;
