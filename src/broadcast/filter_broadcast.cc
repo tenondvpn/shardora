@@ -118,6 +118,7 @@ std::vector<dht::NodePtr> FilterBroadcast::GetlayerNodes(
     }
 
     auto& data = bloomfilter->data();
+    broad_param->clear_bloomfilter();
     for (uint32_t i = 0; i < data.size(); ++i) {
         broad_param->add_bloomfilter(data[i]);
     }
@@ -172,6 +173,7 @@ std::vector<dht::NodePtr> FilterBroadcast::GetRandomFilterNodes(
     auto& data = bloomfilter->data();
     auto cast_msg = const_cast<transport::protobuf::Header*>(&message);
     auto broad_param = cast_msg->mutable_broadcast();
+    broad_param->clear_bloomfilter();
     for (uint32_t i = 0; i < data.size(); ++i) {
         broad_param->add_bloomfilter(data[i]);
     }
