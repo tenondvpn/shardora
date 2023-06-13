@@ -540,7 +540,7 @@ int ToTxsPools::LeaderCreateToHeights(
     to_heights.set_sharding_id(sharding_id);
     bool valid = false;
     std::string heights;
-    auto timeout = common::TimeUtils::TimestampMs() + kToPeriodMs;
+    auto timeout = common::TimeUtils::TimestampMs() + common::kToPeriodMs;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto pool_iter = net_iter->second.find(i);
         auto r_height_iter = pool_iter->second.rbegin();
