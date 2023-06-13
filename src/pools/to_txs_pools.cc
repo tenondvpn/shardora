@@ -539,7 +539,7 @@ int ToTxsPools::LeaderCreateToHeights(
     to_heights.set_sharding_id(sharding_id);
     bool valid = false;
     std::string heights;
-    auto timeout = common::TimeUtils::TimestampMs() + common::kToPeriodMs;
+    auto timeout = common::TimeUtils::TimestampMs();
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         auto pool_iter = net_iter->second.find(i);
         auto r_height_iter = pool_iter->second.rbegin();
@@ -551,13 +551,19 @@ int ToTxsPools::LeaderCreateToHeights(
                 auto add_iter = added_heights_[i].find(r_height_iter->first);
                 assert(add_iter != added_heights_[i].end());
                 if (add_iter == added_heights_[i].end()) {
-                    if (add_iter->second > timeout) {
+                    if (add_iter->second + common::kToPeriodMs > timeout) {
                         ++r_height_iter;
                         continue;
                     }
                 }
 
                 break;
+            }
+
+            if (r_height_iter == pool_iter->second.rend()) {
+                heights += std::to_string(0) + " ";
+                to_heights.add_heights(0);
+                continue;
             }
 
             to_heights.add_heights(r_height_iter->first);
