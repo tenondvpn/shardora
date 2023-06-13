@@ -68,6 +68,7 @@ public:
         uint8_t thread_count,
         BlockCacheCallback new_block_cache_callback);
     void OnNewElectBlock(
+        uint64_t block_tm_ms,
         uint32_t sharding_id,
         uint64_t elect_height,
         common::MembersPtr& members,
@@ -142,7 +143,10 @@ private:
     bool SetBackupEcdhData(transport::MessagePtr& msg_ptr, common::BftMemberPtr& mem_ptr);
     bool LeaderSignMessage(transport::MessagePtr& msg_ptr);
     void ClearBft(const transport::MessagePtr& msg_ptr);
-    ZbftPtr LeaderGetZbft(const transport::MessagePtr& msg_ptr, const std::string& gid);
+    ZbftPtr LeaderGetZbft(
+        const transport::MessagePtr& msg_ptr,
+        const ElectItem& elect_item,
+        const std::string& gid);
     void SyncConsensusBlock(
         const ElectItem& elect_item,
         uint8_t thread_idx,

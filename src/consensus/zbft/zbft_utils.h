@@ -4,13 +4,14 @@
 
 #include <libbls/tools/utils.h>
 
-#include "common/utils.h"
-#include "common/log.h"
-#include "common/hash.h"
+#include "common/bitmap.h"
 #include "common/global_info.h"
+#include "common/hash.h"
+#include "common/log.h"
 #include "common/node_members.h"
 #include "common/thread_safe_queue.h"
-#include "common/bitmap.h"
+#include "common/time_utils.h"
+#include "common/utils.h"
 #include "db/db.h"
 #include "protos/block.pb.h"
 #include "transport/transport_utils.h"
@@ -32,6 +33,29 @@ enum WaitingBlockType {
     kSyncBlock,
     kToBlock,
 };
+
+
+static const uint32_t kBftOneConsensusMaxCount = 32u;  // every consensus
+static const uint32_t kBftOneConsensusMinCount = 1u;
+// bft will delay 500ms for all node ready
+
+// broadcast default param
+static const uint32_t kBftBroadcastIgnBloomfilterHop = 1u;
+static const uint32_t kBftBroadcastStopTimes = 2u;
+static const uint32_t kBftHopLimit = 5u;
+static const uint32_t kBftHopToLayer = 2u;
+static const uint32_t kBftNeighborCount = 7u;
+static const uint32_t kBftTimeout = 14u * 1000u * 1000u;  // bft timeout 15s
+// tx pool timeout 3 * kTimeBlockCreatePeriodSeconds seconds
+static const uint32_t kTxPoolFinalStatisticTimeoutSeconds = /*kBftFinalStatisticStartDeltaTime / 1000000u + */30u;
+static const uint32_t kTxPoolElectionTimeoutSeconds = /*kBftElectionStartDeltaTime / 1000000u + */30u;
+static const uint32_t kBftTimeoutCheckPeriod = 10u * 1000u * 1000u;
+static const uint32_t kBftLeaderPrepareWaitPeriod = 5u * 1000u * 1000u;
+static const uint32_t kPrevTransportVersion = 0;
+static const uint32_t kTransportVersion = 1;
+static const int64_t kChangeLeaderTimePeriodSec = 30l;
+static const uint32_t kSyncFromOtherCount = 3u;
+static const uint64_t kElectBlockValidTimeMs = 10000lu
 
 class WaitingTxsItem;
 struct ZbftItem {
@@ -78,6 +102,7 @@ struct PoolTxIndexItem {
 struct ElectItem {
     ElectItem() : members(nullptr), local_member(nullptr),
             elect_height(0), local_node_member_index(common::kInvalidUint32), bls_valid(false) {
+        time_valid = common::TimeUtils::TimestampMs() + kElectBlockValidTimeMs;
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             thread_set[i] = nullptr;
         }
@@ -93,6 +118,7 @@ struct ElectItem {
     libff::alt_bn128_G2 common_pk;
     libff::alt_bn128_Fr sec_key;
     bool bls_valid;
+    uint64_t time_valid;
 };
 
 typedef std::function<void(
@@ -100,26 +126,6 @@ typedef std::function<void(
     std::shared_ptr<block::protobuf::Block>& block,
     db::DbWriteBatch& db_batch)> BlockCacheCallback;
 
-static const uint32_t kBftOneConsensusMaxCount = 32u;  // every consensus
-static const uint32_t kBftOneConsensusMinCount = 1u;
-// bft will delay 500ms for all node ready
-
-// broadcast default param
-static const uint32_t kBftBroadcastIgnBloomfilterHop = 1u;
-static const uint32_t kBftBroadcastStopTimes = 2u;
-static const uint32_t kBftHopLimit = 5u;
-static const uint32_t kBftHopToLayer = 2u;
-static const uint32_t kBftNeighborCount = 7u;
-static const uint32_t kBftTimeout = 14u * 1000u * 1000u;  // bft timeout 15s
-// tx pool timeout 3 * kTimeBlockCreatePeriodSeconds seconds
-static const uint32_t kTxPoolFinalStatisticTimeoutSeconds = /*kBftFinalStatisticStartDeltaTime / 1000000u + */30u;
-static const uint32_t kTxPoolElectionTimeoutSeconds = /*kBftElectionStartDeltaTime / 1000000u + */30u;
-static const uint32_t kBftTimeoutCheckPeriod = 10u * 1000u * 1000u;
-static const uint32_t kBftLeaderPrepareWaitPeriod = 5u * 1000u * 1000u;
-static const uint32_t kPrevTransportVersion = 0;
-static const uint32_t kTransportVersion = 1;
-static const int64_t kChangeLeaderTimePeriodSec = 30l;
-static const uint32_t kSyncFromOtherCount = 3u;
 
 std::string StatusToString(uint32_t status);
 // hash128(gid + from + to + amount + type + attrs(k:v))
