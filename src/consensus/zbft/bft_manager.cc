@@ -1208,8 +1208,11 @@ ZbftPtr BftManager::CreateBftPtr(
     if (txs_ptr != nullptr && precommit_ptr != nullptr) {
         for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
             if (precommit_ptr->txs_ptr()->txs.find(iter->first) !=
-                precommit_ptr->txs_ptr()->txs.end()) {
+                    precommit_ptr->txs_ptr()->txs.end()) {
                 txs_ptr = nullptr;
+                ZJC_DEBUG("tx invalid: %s, gid: %s",
+                    common::Encode::HexEncode(iter->first).c_str(),
+                    common::Encode::HexEncode(iter->second->gid).c_str());
                 break;
             }
         }
