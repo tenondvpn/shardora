@@ -59,10 +59,9 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
 // 
 //             added_heights_[block.pool_index()].erase(iter);
         }
-    } else {
-        added_heights_[block.pool_index()].insert(std::make_pair(block.height(), block.timestamp()));
     }
 
+    added_heights_[block.pool_index()].insert(std::make_pair(block.height(), block.timestamp()));
     const auto& tx_list = block.tx_list();
     if (tx_list.empty()) {
         ZJC_DEBUG("tx list empty!");
@@ -551,7 +550,7 @@ int ToTxsPools::LeaderCreateToHeights(
             while (r_height_iter != pool_iter->second.rend()) {
                 auto add_iter = added_heights_[i].find(r_height_iter->first);
                 assert(add_iter != added_heights_[i].end());
-                if (add_iter != added_heights_[i].end()) {
+                if (add_iter == added_heights_[i].end()) {
                     if (add_iter->second > timeout) {
                         ++r_height_iter;
                         continue;
