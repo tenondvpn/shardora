@@ -97,6 +97,12 @@ public:
     std::shared_ptr<consensus::WaitingTxsItem> GetTx(
             uint32_t pool_index,
             const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list) {
+        auto items = tx_pool_[pool_index].GetTx(tx_hash_list);
+        if (items != nullptr) {
+            return items;
+        }
+
+        PopTxs(pool_index);
         return tx_pool_[pool_index].GetTx(tx_hash_list);
     }
 
