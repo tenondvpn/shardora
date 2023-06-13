@@ -1210,6 +1210,7 @@ ZbftPtr BftManager::CreateBftPtr(
     }
 
     if (txs_ptr == nullptr) {
+        ZJC_INFO("get tx failed leader tx size: %d, type: %d", bft_msg.tx_bft().tx_hash_list_size(), bft_msg.tx_bft().tx_type());
         assert(false);
         return nullptr;
     }
