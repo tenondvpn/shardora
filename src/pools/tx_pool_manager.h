@@ -184,7 +184,7 @@ private:
     void PopPoolsMessage(uint8_t thread_idx);
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);
 
-    static const uint32_t kPopMessageCountEachTime = 1024u;
+    static const uint32_t kPopMessageCountEachTime = 64u;
     static const uint64_t kFlushHeightTreePeriod = 60000lu;
     static const uint64_t kSyncPoolsMaxHeightsPeriod = 3000lu;
     static const uint64_t kSyncMissingBlockPeriod = 3000lu;
