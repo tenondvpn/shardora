@@ -1822,7 +1822,7 @@ int BftManager::LeaderHandleZbftMessage(
                     NextPrepareErrorLeaderCallPrecommit(elect_item, prev_ptr, msg_ptr);
                 }
 
-                RemoveBft(bft_ptr);
+                RemoveBft(msg_ptr->thread_idx, bft_ptr, true);
 //                 assert(false);
                 // just all consensus rollback
             }
