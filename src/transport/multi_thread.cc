@@ -284,9 +284,9 @@ void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Bl
             break;
         }
 
-        auto iter = waiting_check_block_map_[item.pool].find(item.height);
-        if (iter != waiting_check_block_map_[item.pool].end()) {
-            waiting_check_block_map_[item.pool].erase(iter);
+        auto iter = waiting_check_block_map_[item->pool].find(item->height);
+        if (iter != waiting_check_block_map_[item->pool].end()) {
+            waiting_check_block_map_[item->pool].erase(iter);
         }
 
         ZJC_INFO("success add commit pool index: %u, height: %lu",
