@@ -340,6 +340,7 @@ tnet::TcpConnection* TcpTransport::GetConnection(
 // }
 
 void TcpTransport::EraseConn(uint8_t thread_idx) {
+    return;
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     // delay to release
     common::AutoSpinLock guard(erase_conns_mutex_);
