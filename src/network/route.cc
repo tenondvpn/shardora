@@ -107,7 +107,8 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
     if (header.has_broadcast()) {
 //         Broadcast(header_ptr->thread_idx, header_ptr);
         ZJC_DEBUG("broadcast: %lu", header_ptr->header.hash64());
-        broadcast_queue_[header_ptr->thread_idx].push(header_ptr);
+        auto tmp_ptr = std::make_shared<transport::TransportMessage>(*header_ptr);
+        broadcast_queue_[header_ptr->thread_idx].push(tmp_ptr);
         broadcast_con_.notify_one();
     }
 
