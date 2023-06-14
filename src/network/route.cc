@@ -20,7 +20,7 @@ Route* Route::Instance() {
 
 void Route::Init() {
 //     auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count();
-    broadcast_queue_ = new BroadcastQueue[common::kMaxThreadCount];
+    broadcast_queue_ = new BroadcastQueue[common::kMaxThreadCount + 1];
     RegisterMessage(
             common::kDhtMessage,
             std::bind(&Route::HandleDhtMessage, this, std::placeholders::_1));
