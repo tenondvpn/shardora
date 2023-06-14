@@ -19,8 +19,8 @@ Route* Route::Instance() {
 }
 
 void Route::Init() {
-//     auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count();
-    broadcast_queue_ = new BroadcastQueue[common::kMaxThreadCount];
+    auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count();
+    broadcast_queue_ = new BroadcastQueue[thread_count];
     RegisterMessage(
             common::kDhtMessage,
             std::bind(&Route::HandleDhtMessage, this, std::placeholders::_1));
@@ -28,7 +28,8 @@ void Route::Init() {
             common::kNetworkMessage,
             std::bind(&Route::HandleDhtMessage, this, std::placeholders::_1));
     broadcast_ = std::make_shared<broadcast::FilterBroadcast>();
-    broadcast_thread_index_ = common::kMaxThreadCount;
+    broadcast_thread_index_ = common::GlobalInfo::Instance()->message_handler_thread_count() + 3 +
+        common::GlobalInfo::Instance()->tick_thread_pool_count();
     broadcast_thread_ = std::make_shared<std::thread>(std::bind(&Route::Broadcasting, this));
 }
 
@@ -62,9 +63,9 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
     if (dht_ptr != nullptr) {
         if (message.has_broadcast()) {
             assert(message.broadcast().bloomfilter_size() < 64);
-//             broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
-            broadcast_queue_[msg_ptr->thread_idx].push(msg_ptr);
-            broadcast_con_.notify_one();
+            broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
+//             broadcast_queue_[header_ptr->thread_idx].push(msg_ptr);
+//             broadcast_con_.notify_one();
         } else {
             dht_ptr->SendToClosestNode(msg_ptr);
         }
@@ -104,10 +105,10 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
     }
 
     if (header.has_broadcast()) {
-//         Broadcast(header_ptr->thread_idx, header_ptr);
+        Broadcast(header_ptr->thread_idx, header_ptr);
         ZJC_DEBUG("broadcast: %lu", header_ptr->header.hash64());
-        broadcast_queue_[header_ptr->thread_idx].push(header_ptr);
-        broadcast_con_.notify_one();
+//         broadcast_queue_[header_ptr->thread_idx].push(header_ptr);
+//         broadcast_con_.notify_one();
     }
 
     message_processor_[header.type()](header_ptr);
@@ -115,8 +116,10 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
 
 void Route::Broadcasting() {
     while (!destroy_) {
+        break;
         bool has_data = false;
-        for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+        for (uint32_t i = 0;
+                i < common::GlobalInfo::Instance()->message_handler_thread_count(); ++i) {
             while (broadcast_queue_[i].size() > 0) {
                 transport::MessagePtr msg_ptr;
                 if (broadcast_queue_[i].pop(&msg_ptr)) {
@@ -180,14 +183,12 @@ Route::~Route() {
 void Route::Broadcast(uint8_t thread_idx, const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     if (!header.has_broadcast() || !header.has_des_dht_key()) {
-        assert(false);
         return;
     }
 
     uint32_t des_net_id = dht::DhtKeyManager::DhtKeyGetNetId(header.des_dht_key());
     auto des_dht = GetDht(header.des_dht_key());
     if (!des_dht) {
-        assert(false);
         return;
     }
 
@@ -206,8 +207,9 @@ void Route::Broadcast(uint8_t thread_idx, const transport::MessagePtr& msg_ptr) 
         }
     }
 
-    msg_ptr->thread_idx = thread_idx;
     assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
+//     broadcast_queue_[thread_idx].push(msg_ptr);
+//     broadcast_con_.notify_one();
     broadcast_->Broadcasting(thread_idx, des_dht, msg_ptr);
 }
 
