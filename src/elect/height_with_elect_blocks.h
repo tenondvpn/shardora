@@ -216,7 +216,7 @@ public:
                 &block)) {
             ZJC_INFO("failed get block with height net: %u, pool: %u, height: %lu",
                 network::kRootCongressNetworkId, network_id, height);
-            assert(false);
+//             assert(false);
             return nullptr;
         }
 
