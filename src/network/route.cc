@@ -20,7 +20,7 @@ Route* Route::Instance() {
 
 void Route::Init() {
     auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count();
-    broadcast_queue_ = new BroadcastQueue[thread_count];
+    broadcast_queue_ = new BroadcastQueue[common::kMaxThreadCount];
     RegisterMessage(
             common::kDhtMessage,
             std::bind(&Route::HandleDhtMessage, this, std::placeholders::_1));
@@ -63,9 +63,9 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
     if (dht_ptr != nullptr) {
         if (message.has_broadcast()) {
             assert(message.broadcast().bloomfilter_size() < 64);
-            broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
-//             broadcast_queue_[header_ptr->thread_idx].push(msg_ptr);
-//             broadcast_con_.notify_one();
+//             broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
+            broadcast_queue_[header_ptr->thread_idx].push(msg_ptr);
+            broadcast_con_.notify_one();
         } else {
             dht_ptr->SendToClosestNode(msg_ptr);
         }
@@ -116,10 +116,8 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
 
 void Route::Broadcasting() {
     while (!destroy_) {
-        break;
         bool has_data = false;
-        for (uint32_t i = 0;
-                i < common::GlobalInfo::Instance()->message_handler_thread_count(); ++i) {
+        for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             while (broadcast_queue_[i].size() > 0) {
                 transport::MessagePtr msg_ptr;
                 if (broadcast_queue_[i].pop(&msg_ptr)) {
