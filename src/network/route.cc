@@ -206,7 +206,7 @@ void Route::Broadcast(uint8_t thread_idx, const transport::MessagePtr& msg_ptr) 
         }
     }
 
-    msg_ptr->thread_idx = broadcast_thread_index_;
+    msg_ptr->thread_idx = thread_idx;
     assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
     broadcast_->Broadcasting(thread_idx, des_dht, msg_ptr);
 }
