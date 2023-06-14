@@ -115,10 +115,8 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
 
 void Route::Broadcasting() {
     while (!destroy_) {
-        break;
         bool has_data = false;
-        for (uint32_t i = 0;
-                i < common::GlobalInfo::Instance()->message_handler_thread_count(); ++i) {
+        for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             while (broadcast_queue_[i].size() > 0) {
                 transport::MessagePtr msg_ptr;
                 if (broadcast_queue_[i].pop(&msg_ptr)) {
