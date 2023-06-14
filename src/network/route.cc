@@ -28,8 +28,7 @@ void Route::Init() {
             common::kNetworkMessage,
             std::bind(&Route::HandleDhtMessage, this, std::placeholders::_1));
     broadcast_ = std::make_shared<broadcast::FilterBroadcast>();
-    broadcast_thread_index_ = common::GlobalInfo::Instance()->message_handler_thread_count() + 3 +
-        common::GlobalInfo::Instance()->tick_thread_pool_count();
+    broadcast_thread_index_ = common::kMaxThreadCount;
     broadcast_thread_ = std::make_shared<std::thread>(std::bind(&Route::Broadcasting, this));
 }
 
