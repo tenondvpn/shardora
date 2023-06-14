@@ -180,12 +180,14 @@ Route::~Route() {
 void Route::Broadcast(uint8_t thread_idx, const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     if (!header.has_broadcast() || !header.has_des_dht_key()) {
+        assert(false);
         return;
     }
 
     uint32_t des_net_id = dht::DhtKeyManager::DhtKeyGetNetId(header.des_dht_key());
     auto des_dht = GetDht(header.des_dht_key());
     if (!des_dht) {
+        assert(false);
         return;
     }
 
@@ -205,9 +207,9 @@ void Route::Broadcast(uint8_t thread_idx, const transport::MessagePtr& msg_ptr) 
     }
 
     assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
-    broadcast_queue_[thread_idx].push(msg_ptr);
-    broadcast_con_.notify_one();
-//     broadcast_->Broadcasting(thread_idx, des_dht, msg_ptr);
+//     broadcast_queue_[thread_idx].push(msg_ptr);
+//     broadcast_con_.notify_one();
+    broadcast_->Broadcasting(thread_idx, des_dht, msg_ptr);
 }
 
 dht::BaseDhtPtr Route::GetDht(const std::string& dht_key) {
