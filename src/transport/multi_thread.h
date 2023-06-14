@@ -71,10 +71,12 @@ public:
 
 private:
     struct SavedBlockQueueItem {
-        SavedBlockQueueItem(uint32_t pool, uint64_t height)
-            : checked_pool(pool), checked_height(height) {}
+        SavedBlockQueueItem(uint32_t c_pool, uint64_t c_height, uint32_t p, uint64_t h)
+            : checked_pool(c_pool), checked_height(c_height), pool(p), height(h) {}
         uint32_t checked_pool;
         uint64_t checked_height;
+        uint32_t pool;
+        uint64_t height;
     };
 
     typedef std::shared_ptr<SavedBlockQueueItem> SavedBlockQueueItemPtr;

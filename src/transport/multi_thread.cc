@@ -264,14 +264,9 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
 }
 
 void MultiThreadHandler::BlockSaved(const block::protobuf::Block& block_item) {
-    auto iter = waiting_check_block_map_[block_item.pool_index()].find(block_item.height());
-    if (iter != waiting_check_block_map_[block_item.pool_index()].end()) {
-        waiting_check_block_map_[block_item.pool_index()].erase(iter);
-    }
-
     if (block_item.has_commit_pool_index() && block_item.has_commit_height()) {
         saved_block_queue_.push(std::make_shared<SavedBlockQueueItem>(
-            block_item.commit_pool_index() , block_item.commit_height()));
+            block_item.commit_pool_index() , block_item.commit_height(), block_item.pool_index(), block_item.height()));
 //         ZJC_DEBUG("success add commit pool index: %u, height: %lu, this block pool: %u, height: %lu", block_item.commit_pool_index(), block_item.commit_height(), block_item.pool_index(), block_item.height());
     }
 
@@ -287,6 +282,11 @@ void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Bl
         SavedBlockQueueItemPtr item;
         if (!saved_block_queue_.pop(&item)) {
             break;
+        }
+
+        auto iter = waiting_check_block_map_[item.pool].find(item.height);
+        if (iter != waiting_check_block_map_[item.pool].end()) {
+            waiting_check_block_map_[item.pool].erase(iter);
         }
 
         ZJC_INFO("success add commit pool index: %u, height: %lu",
