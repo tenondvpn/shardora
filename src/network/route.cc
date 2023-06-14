@@ -20,7 +20,7 @@ Route* Route::Instance() {
 
 void Route::Init() {
 //     auto thread_count = common::GlobalInfo::Instance()->message_handler_thread_count();
-    broadcast_queue_ = new BroadcastQueue[common::kMaxThreadCount + 1];
+    broadcast_queue_ = new BroadcastQueue[common::kMaxThreadCount];
     RegisterMessage(
             common::kDhtMessage,
             std::bind(&Route::HandleDhtMessage, this, std::placeholders::_1));
@@ -116,7 +116,7 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
 void Route::Broadcasting() {
     while (!destroy_) {
         bool has_data = false;
-        for (uint32_t i = 0; i <= common::kMaxThreadCount; ++i) {
+        for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             while (broadcast_queue_[i].size() > 0) {
                 transport::MessagePtr msg_ptr;
                 if (broadcast_queue_[i].pop(&msg_ptr)) {
@@ -206,9 +206,8 @@ void Route::Broadcast(uint8_t thread_idx, const transport::MessagePtr& msg_ptr) 
         }
     }
 
+    msg_ptr->thread_idx = broadcast_thread_index_;
     assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
-//     broadcast_queue_[thread_idx].push(msg_ptr);
-//     broadcast_con_.notify_one();
     broadcast_->Broadcasting(thread_idx, des_dht, msg_ptr);
 }
 
