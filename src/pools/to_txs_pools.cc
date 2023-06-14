@@ -51,11 +51,11 @@ void ToTxsPools::NewBlock(const block::protobuf::Block& block, db::DbWriteBatch&
         ++pool_consensus_heihgts_[block.pool_index()];
         for (; pool_consensus_heihgts_[block.pool_index()] <= pool_max_heihgts_[block.pool_index()];
                 ++pool_consensus_heihgts_[block.pool_index()]) {
-//             auto iter = added_heights_[block.pool_index()].find(
-//                     pool_consensus_heihgts_[block.pool_index()] + 1);
-//             if (iter == added_heights_[block.pool_index()].end()) {
-//                 break;
-//             }
+            auto iter = added_heights_[block.pool_index()].find(
+                    pool_consensus_heihgts_[block.pool_index()] + 1);
+            if (iter == added_heights_[block.pool_index()].end()) {
+                break;
+            }
 // 
 //             added_heights_[block.pool_index()].erase(iter);
         }
