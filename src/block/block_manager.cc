@@ -94,6 +94,7 @@ void BlockManager::ConsensusTimerMessage(uint8_t thread_idx) {
     auto now_tm3 = common::TimeUtils::TimestampUs();
     auto now_tm4 = common::TimeUtils::TimestampUs();
     if (to_tx_leader_ != nullptr && local_id_ == to_tx_leader_->id) {
+        ZJC_DEBUG("now leader create to and statistic message.");
         CreateToTx(thread_idx);
         now_tm3 = common::TimeUtils::TimestampUs();
         CreateStatisticTx(thread_idx);

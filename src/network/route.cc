@@ -188,6 +188,7 @@ void Route::Broadcast(uint8_t thread_idx, const transport::MessagePtr& msg_ptr) 
     uint32_t des_net_id = dht::DhtKeyManager::DhtKeyGetNetId(header.des_dht_key());
     auto des_dht = GetDht(header.des_dht_key());
     if (!des_dht) {
+        RouteByUniversal(msg_ptr);
         return;
     }
 
@@ -207,8 +208,6 @@ void Route::Broadcast(uint8_t thread_idx, const transport::MessagePtr& msg_ptr) 
     }
 
     assert(msg_ptr->header.broadcast().bloomfilter_size() < 64);
-//     broadcast_queue_[thread_idx].push(msg_ptr);
-//     broadcast_con_.notify_one();
     broadcast_->Broadcasting(thread_idx, des_dht, msg_ptr);
 }
 
