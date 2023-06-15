@@ -21,13 +21,14 @@ public:
         uint32_t max_sharding_id,
         std::shared_ptr<pools::TxPoolManager>& pools_mgr);
     ~ToTxsPools();
-    void NewBlock(const block::protobuf::Block& block, db::DbWriteBatch& db_batch);
+    void NewBlock(const std::shared_ptr<block::protobuf::Block>& block, db::DbWriteBatch& db_batch);
     int CreateToTxWithHeights(
         uint32_t sharding_id,
         uint64_t elect_height,
         const pools::protobuf::ShardToTxItem& leader_to_heights,
         std::string* to_hash);
-    int LeaderCreateToHeights(uint32_t sharding_id, pools::protobuf::ShardToTxItem& to_heights);
+    int LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights);
+    bool StatisticTos(const pools::protobuf::ShardToTxItem& to_heights);
 
 private:
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(
@@ -76,6 +77,7 @@ private:
     void HandleElectJoinVerifyVec(
         const std::string& verify_hash,
         std::vector<bls::protobuf::JoinElectInfo>& verify_reqs);
+    bool PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_t max_height);
 
     struct ToAddressItemInfo {
         uint64_t amount;
@@ -99,7 +101,7 @@ private:
     std::string local_id_;
     uint64_t pool_consensus_heihgts_[common::kInvalidPoolIndex] = { 0 };
     uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
-    std::unordered_map<uint64_t, uint64_t> added_heights_[common::kInvalidPoolIndex];
+    std::unordered_map<uint64_t, std::shared_ptr<block::protobuf::Block>> added_heights_[common::kInvalidPoolIndex];
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ToTxsPools);

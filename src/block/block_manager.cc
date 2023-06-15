@@ -696,7 +696,7 @@ void BlockManager::AddNewBlock(
         return;
     }
 
-    to_txs_pool_->NewBlock(*block_item, db_batch);
+    to_txs_pool_->NewBlock(block_item, db_batch);
     if (ck_client_ != nullptr) {
         ck_client_->AddNewBlock(block_item);
         ZJC_DEBUG("add to ck.");
@@ -1256,13 +1256,18 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         ZJC_DEBUG("now handle to tx messages.");
     }
 
-
+    
     bool all_valid = true;
     auto now_time_ms = common::TimeUtils::TimestampMs();
     auto& to_txs = shard_to.to_txs();
-    for (int32_t i = 0; i < to_txs.size(); ++i) {
-        auto& heights = to_txs[i];
-        auto tmp_tx = leader_to_txs->to_txs[heights.sharding_id()];
+    auto& heights = to_txs[i];
+    if (!to_txs_pool_->StatisticTos(heights)) {
+        return;
+    }
+
+    for (int32_t sharding_id = network::kRootCongressNetworkId;
+            sharding_id < max_consensus_sharding_id_; ++sharding_id) {
+        auto tmp_tx = leader_to_txs->to_txs[sharding_id];
         ZJC_DEBUG("now handle to leader idx: %u, leader to index: %d, tmp_tx != nullptr: %d",
             shard_to.leader_idx(), shard_to.leader_to_idx(), (tmp_tx != nullptr));
         if (tmp_tx != nullptr && tmp_tx->success && tmp_tx->leader_to_index >= shard_to.leader_to_idx()) {
@@ -1275,18 +1280,18 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         if (tmp_tx != nullptr &&
                 tmp_tx->tx_ptr->in_consensus &&
                 tmp_tx->tx_ptr->timeout > now_time_ms) {
-            ZJC_DEBUG("to txs sharding not consensus yet: %u", heights.sharding_id());
+            ZJC_DEBUG("to txs sharding not consensus yet: %u", sharding_id);
             continue;
         }
 
         std::string tos_hash;
         if (to_txs_pool_->CreateToTxWithHeights(
-                heights.sharding_id(),
+                sharding_id,
                 leader_to_txs->elect_height,
                 heights,
                 &tos_hash) != pools::kPoolsSuccess) {
             all_valid = false;
-            ZJC_DEBUG("error to txs sharding create to txs: %u", heights.sharding_id());
+            ZJC_DEBUG("error to txs sharding create to txs: %u", sharding_id);
             continue;
         }
 
@@ -1296,8 +1301,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         }
 
         auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-        new_msg_ptr->address_info = account_mgr_->pools_address_info(
-            heights.sharding_id() % common::kImmutablePoolSize);
+        new_msg_ptr->address_info = account_mgr_->pools_address_info(sharding_id % common::kImmutablePoolSize);
         auto* tx = new_msg_ptr->header.mutable_tx_proto();
         tx->set_key(protos::kNormalTos);
         tx->set_value(tos_hash);
@@ -1309,8 +1313,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
             tx->set_step(pools::protobuf::kNormalTo);
         }
 
-        auto gid = common::Hash::keccak256(
-            tos_hash + std::to_string(heights.sharding_id()));
+        auto gid = common::Hash::keccak256(tos_hash + std::to_string(sharding_id));
         tx->set_gas_limit(0);
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
@@ -1320,7 +1323,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         to_txs_ptr->tx_ptr->time_valid += kToValidTimeout;
         to_txs_ptr->tx_hash = tos_hash;
         to_txs_ptr->timeout = now_time_ms + kToTimeoutMs;
-        leader_to_txs->to_txs[heights.sharding_id()] = to_txs_ptr;
+        leader_to_txs->to_txs[sharding_id] = to_txs_ptr;
         to_txs_ptr->success = true;
         to_txs_ptr->leader_to_index = shard_to.leader_to_idx();
         ZJC_DEBUG("success add txs: %s, leader idx: %u, leader to index: %d",
@@ -1590,25 +1593,23 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     auto& block_msg = *msg.mutable_block_proto();
     auto& shard_to = *block_msg.mutable_shard_to();
     auto iter = leader_to_txs_.find(latest_elect_height_);
-    for (uint32_t i = network::kRootCongressNetworkId; i <= max_consensus_sharding_id_; ++i) {
-        if (iter != leader_to_txs_.end()) {
-            auto tmp_to_txs = iter->second->to_txs[i];
-            if (tmp_to_txs != nullptr && tmp_to_txs->tx_ptr->in_consensus) {
-                continue;
-            }
-
-            if (tmp_to_txs != nullptr && tmp_to_txs->timeout >= now_tm_ms) {
-                iter->second->to_txs[i] = nullptr;
-            }
+    if (iter != leader_to_txs_.end()) {
+        auto tmp_to_txs = iter->second->to_txs[i];
+        if (tmp_to_txs != nullptr && tmp_to_txs->tx_ptr->in_consensus) {
+            continue;
         }
 
-        auto& to_heights = *shard_to.add_to_txs();
-        int res = to_txs_pool_->LeaderCreateToHeights(i, to_heights);
-        if (res != pools::kPoolsSuccess || to_heights.heights_size() <= 0) {
-            shard_to.mutable_to_txs()->RemoveLast();
-        } else {
-            shard_to.set_leader_idx(to_tx_leader_->index);
+        if (tmp_to_txs != nullptr && tmp_to_txs->timeout >= now_tm_ms) {
+            iter->second->to_txs[i] = nullptr;
         }
+    }
+
+    auto& to_heights = *shard_to.add_to_txs();
+    int res = to_txs_pool_->LeaderCreateToHeights(to_heights);
+    if (res != pools::kPoolsSuccess || to_heights.heights_size() <= 0) {
+        shard_to.mutable_to_txs()->RemoveLast();
+    } else {
+        shard_to.set_leader_idx(to_tx_leader_->index);
     }
 
     if (shard_to.to_txs_size() <= 0) {
