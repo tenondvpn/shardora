@@ -89,7 +89,7 @@ bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_
             switch (tx_list[i].step()) {
             case pools::protobuf::kNormalTo:
             case pools::protobuf::kRootCreateAddressCrossSharding:
-                HandleNormalToTx(block, tx_list[i], db_batch);
+                HandleNormalToTx(block, tx_list[i]);
                 break;
             case pools::protobuf::kContractCreate:
                 HandleCreateContractUserCall(block, tx_list[i]);
@@ -436,12 +436,13 @@ void ToTxsPools::LoadLatestHeights() {
         bool consensus_stop = false;
         for (uint64_t height = pool_consensus_heihgts_[i];
                 height <= pool_latest_height; ++height) {
-            block::protobuf::Block block;
+            auto block_ptr = std::make_shared<block::protobuf::Block>();
+            auto& block = block_ptr;
             if (!prefix_db_->GetBlockWithHeight(
                     common::GlobalInfo::Instance()->network_id(), i, height, &block)) {
                 consensus_stop = true;
             } else {
-                NewBlock(block, db_batch);
+                NewBlock(block_ptr, db_batch);
             }
 
             if (!consensus_stop) {
@@ -542,6 +543,7 @@ bool ToTxsPools::StatisticTos(const pools::protobuf::ShardToTxItem& leader_to_he
             min_height = prev_to_heights_->heights(pool_idx) + 1;
         }
 
+        uint64_t max_height = leader_to_heights.heights(pool_idx);
         if (!PreStatisticTos(pool_idx, min_height, max_height)) {
             return false;
         }
@@ -553,7 +555,7 @@ bool ToTxsPools::StatisticTos(const pools::protobuf::ShardToTxItem& leader_to_he
 int ToTxsPools::CreateToTxWithHeights(
         uint32_t sharding_id,
         uint64_t elect_height,
-        const pools::protobuf::ShardToTxItem& src_leader_to_heights,
+        const pools::protobuf::ShardToTxItem& leader_to_heights,
         std::string* to_hash) {
     auto net_iter = network_txs_pools_.find(sharding_id);
     if (net_iter == network_txs_pools_.end()) {
