@@ -81,7 +81,7 @@ private:
     typedef std::unordered_map<std::string, ToAddressItemInfo> TxMap;
     typedef std::map<uint64_t, TxMap> HeightMap;  // order by height
     typedef std::unordered_map <uint32_t, HeightMap> PoolMap;
-    typedef std::unordered_map <uint32_t, TxMap> ShardingMap;
+    typedef std::unordered_map <uint32_t, PoolMap> ShardingMap;
     ShardingMap network_txs_pools_;
     common::UniqueMap<std::string, protos::AddressInfoPtr, 10240, 16> address_map_;
     std::shared_ptr<db::Db> db_ = nullptr;
