@@ -1318,7 +1318,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         tx->set_step(pools::protobuf::kNormalTo);
     }
 
-    auto gid = common::Hash::keccak256(final_hash + std::to_string(sharding_id));
+    auto gid = common::Hash::keccak256(final_hash);
     tx->set_gas_limit(0);
     tx->set_amount(0);
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
@@ -1448,11 +1448,10 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
     auto tmp_to_txs = latest_to_tx->to_tx;
     if (tmp_to_txs != nullptr && !tmp_to_txs->tx_ptr->in_consensus) {
         if (leader && tmp_to_txs->tx_ptr->time_valid > now_tm) {
-            continue;
+            return nullptr;
         }
 
         tmp_to_txs->tx_ptr->in_consensus = true;
-        prev_pool_index_ = i + 1;
         return tmp_to_txs->tx_ptr;
     }
 
@@ -1580,13 +1579,13 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     auto& shard_to = *block_msg.mutable_shard_to();
     auto iter = leader_to_txs_.find(latest_elect_height_);
     if (iter != leader_to_txs_.end()) {
-        auto tmp_to_txs = iter->second->to_txs[i];
+        auto tmp_to_txs = iter->second->to_tx;
         if (tmp_to_txs != nullptr && tmp_to_txs->tx_ptr->in_consensus) {
-            continue;
+            return;
         }
 
         if (tmp_to_txs != nullptr && tmp_to_txs->timeout >= now_tm_ms) {
-            iter->second->to_txs[i] = nullptr;
+            iter->second->to_tx = nullptr;
         }
     }
 
