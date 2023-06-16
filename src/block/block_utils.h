@@ -70,7 +70,7 @@ struct BlockToDbItem {
 };
 
 struct LeaderWithToTxItem {
-    std::shared_ptr<BlockTxsItem> to_txs[network::kConsensusShardEndNetworkId];
+    std::shared_ptr<BlockTxsItem> to_tx;
     uint64_t elect_height;
     uint32_t leader_idx;
     transport::MessagePtr to_txs_msg;

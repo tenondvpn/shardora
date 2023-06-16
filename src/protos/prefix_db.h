@@ -449,6 +449,18 @@ public:
         return true;
     }
 
+    void SaveLatestToTxsHeights(const pools::protobuf::ShardToTxItem& heights) {
+        std::string key;
+        key.reserve(48);
+        key.append(kLatestToTxsHeightsPrefix);
+        uint32_t sharding_id = heights.sharding_id();
+        key.append((char*)&sharding_id, sizeof(sharding_id));
+        auto st = db_->Put(key, heights.SerializeAsString());
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+    }
+
     void SaveLatestToTxsHeights(
             const pools::protobuf::ShardToTxItem& heights,
             db::DbWriteBatch& batch) {

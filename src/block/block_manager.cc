@@ -1256,6 +1256,23 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         ZJC_DEBUG("now handle to tx messages.");
     }
 
+    auto tmp_tx = leader_to_txs->to_tx;
+    ZJC_DEBUG("now handle to leader idx: %u, leader to index: %d, tmp_tx != nullptr: %d",
+        shard_to.leader_idx(), shard_to.leader_to_idx(), (tmp_tx != nullptr));
+    if (tmp_tx != nullptr && tmp_tx->success && tmp_tx->leader_to_index >= shard_to.leader_to_idx()) {
+        //             assert(false);
+        ZJC_DEBUG("handled to leader idx: %u, leader to index: %d, tmp_tx != nullptr: %d, %u, %d",
+            shard_to.leader_idx(), shard_to.leader_to_idx(),
+            tmp_tx->success, (tmp_tx != nullptr), tmp_tx->leader_to_index);
+        continue;
+    }
+
+    if (tmp_tx != nullptr &&
+            tmp_tx->tx_ptr->in_consensus &&
+            tmp_tx->tx_ptr->timeout > now_time_ms) {
+        ZJC_DEBUG("to txs sharding not consensus yet: %u", sharding_id);
+        continue;
+    }
     
     bool all_valid = true;
     auto now_time_ms = common::TimeUtils::TimestampMs();
@@ -1265,25 +1282,9 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         return;
     }
 
+    std::string tos_hashs;
     for (int32_t sharding_id = network::kRootCongressNetworkId;
             sharding_id < max_consensus_sharding_id_; ++sharding_id) {
-        auto tmp_tx = leader_to_txs->to_txs[sharding_id];
-        ZJC_DEBUG("now handle to leader idx: %u, leader to index: %d, tmp_tx != nullptr: %d",
-            shard_to.leader_idx(), shard_to.leader_to_idx(), (tmp_tx != nullptr));
-        if (tmp_tx != nullptr && tmp_tx->success && tmp_tx->leader_to_index >= shard_to.leader_to_idx()) {
-//             assert(false);
-            ZJC_DEBUG("handled to leader idx: %u, leader to index: %d, tmp_tx != nullptr: %d, %u, %d",
-                shard_to.leader_idx(), shard_to.leader_to_idx(), tmp_tx->success, (tmp_tx != nullptr), tmp_tx->leader_to_index);
-            continue;
-        }
-
-        if (tmp_tx != nullptr &&
-                tmp_tx->tx_ptr->in_consensus &&
-                tmp_tx->tx_ptr->timeout > now_time_ms) {
-            ZJC_DEBUG("to txs sharding not consensus yet: %u", sharding_id);
-            continue;
-        }
-
         std::string tos_hash;
         if (to_txs_pool_->CreateToTxWithHeights(
                 sharding_id,
@@ -1295,41 +1296,44 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
             continue;
         }
 
-        if (tmp_tx != nullptr && tmp_tx->tx_hash == tos_hash) {
-            ZJC_DEBUG("tx hash equal to old: %s", common::Encode::HexEncode(tos_hash).c_str());
-            continue;
-        }
-
-        auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-        new_msg_ptr->address_info = account_mgr_->pools_address_info(sharding_id % common::kImmutablePoolSize);
-        auto* tx = new_msg_ptr->header.mutable_tx_proto();
-        tx->set_key(protos::kNormalTos);
-        tx->set_value(tos_hash);
-        tx->set_pubkey("");
-        tx->set_to(new_msg_ptr->address_info->addr());
-        if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-            tx->set_step(pools::protobuf::kRootCreateAddressCrossSharding);
-        } else {
-            tx->set_step(pools::protobuf::kNormalTo);
-        }
-
-        auto gid = common::Hash::keccak256(tos_hash + std::to_string(sharding_id));
-        tx->set_gas_limit(0);
-        tx->set_amount(0);
-        tx->set_gas_price(common::kBuildinTransactionGasPrice);
-        tx->set_gid(gid);
-        auto to_txs_ptr = std::make_shared<BlockTxsItem>();
-        to_txs_ptr->tx_ptr = create_to_tx_cb_(new_msg_ptr);
-        to_txs_ptr->tx_ptr->time_valid += kToValidTimeout;
-        to_txs_ptr->tx_hash = tos_hash;
-        to_txs_ptr->timeout = now_time_ms + kToTimeoutMs;
-        leader_to_txs->to_txs[sharding_id] = to_txs_ptr;
-        to_txs_ptr->success = true;
-        to_txs_ptr->leader_to_index = shard_to.leader_to_idx();
-        ZJC_DEBUG("success add txs: %s, leader idx: %u, leader to index: %d",
-            common::Encode::HexEncode(tos_hash).c_str(), shard_to.leader_idx(), shard_to.leader_to_idx());
+        tos_hashs += tos_hash;
+    }
+    
+    auto final_hash = common::Hash::keccak256(tos_hashs);
+    if (tmp_tx != nullptr && tmp_tx->tx_hash == final_hash) {
+        ZJC_DEBUG("tx hash equal to old: %s", common::Encode::HexEncode(tos_hash).c_str());
+        continue;
     }
 
+    prefix_db_->SaveTemporaryKv(final_hash, tos_hashs);
+    auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
+    new_msg_ptr->address_info = account_mgr_->pools_address_info(sharding_id % common::kImmutablePoolSize);
+    auto* tx = new_msg_ptr->header.mutable_tx_proto();
+    tx->set_key(protos::kNormalTos);
+    tx->set_value(final_hash);
+    tx->set_pubkey("");
+    tx->set_to(new_msg_ptr->address_info->addr());
+    if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+        tx->set_step(pools::protobuf::kRootCreateAddressCrossSharding);
+    } else {
+        tx->set_step(pools::protobuf::kNormalTo);
+    }
+
+    auto gid = common::Hash::keccak256(final_hash + std::to_string(sharding_id));
+    tx->set_gas_limit(0);
+    tx->set_amount(0);
+    tx->set_gas_price(common::kBuildinTransactionGasPrice);
+    tx->set_gid(gid);
+    auto to_txs_ptr = std::make_shared<BlockTxsItem>();
+    to_txs_ptr->tx_ptr = create_to_tx_cb_(new_msg_ptr);
+    to_txs_ptr->tx_ptr->time_valid += kToValidTimeout;
+    to_txs_ptr->tx_hash = final_hash;
+    to_txs_ptr->timeout = now_time_ms + kToTimeoutMs;
+    leader_to_txs->to_txs[sharding_id] = to_txs_ptr;
+    to_txs_ptr->success = true;
+    to_txs_ptr->leader_to_index = shard_to.leader_to_idx();
+    ZJC_DEBUG("success add txs: %s, leader idx: %u, leader to index: %d",
+        common::Encode::HexEncode(final_hash).c_str(), shard_to.leader_idx(), shard_to.leader_to_idx());
     if (all_valid) {
         leader_to_txs->to_txs_msg = nullptr;
     }

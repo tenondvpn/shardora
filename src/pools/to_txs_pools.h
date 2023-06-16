@@ -35,37 +35,26 @@ private:
         const std::string& addr);
     void HandleNormalToTx(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx_info,
-        db::DbWriteBatch& db_batch);
+        const block::protobuf::BlockTx& tx_info);
     void LoadLatestHeights();
     void HandleNormalFrom(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch);
+        const block::protobuf::BlockTx& tx);
     void HandleCreateContractUserCall(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch);
+        const block::protobuf::BlockTx& tx);
     void HandleContractGasPrepayment(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch);
+        const block::protobuf::BlockTx& tx);
     void HandleRootCreateAddress(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch);
+        const block::protobuf::BlockTx& tx);
     void HandleContractExecute(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch);
+        const block::protobuf::BlockTx& tx);
     void HandleJoinElect(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch);
-    void HandleRootElectShard(
-        const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx_info,
-        db::DbWriteBatch& db_batch);
+        const block::protobuf::BlockTx& tx);
     void AddTxToMap(
         const block::protobuf::Block& block,
         const std::string& to,
@@ -92,7 +81,7 @@ private:
     typedef std::unordered_map<std::string, ToAddressItemInfo> TxMap;
     typedef std::map<uint64_t, TxMap> HeightMap;  // order by height
     typedef std::unordered_map <uint32_t, HeightMap> PoolMap;
-    typedef std::unordered_map <uint32_t, PoolMap> ShardingMap;
+    typedef std::unordered_map <uint32_t, TxMap> ShardingMap;
     ShardingMap network_txs_pools_;
     common::UniqueMap<std::string, protos::AddressInfoPtr, 10240, 16> address_map_;
     std::shared_ptr<db::Db> db_ = nullptr;
@@ -103,6 +92,7 @@ private:
     uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
     std::unordered_map<uint64_t, std::shared_ptr<block::protobuf::Block>> added_heights_[common::kInvalidPoolIndex];
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
+    std::shared_ptr<pools::protobuf::ShardToTxItem> prev_to_heights_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ToTxsPools);
 };

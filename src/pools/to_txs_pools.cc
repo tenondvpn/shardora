@@ -64,12 +64,6 @@ void ToTxsPools::NewBlock(const std::shared_ptr<block::protobuf::Block>& block_p
     added_heights_[block.pool_index()].insert(std::make_pair(block.height(), block_ptr));
 }
 
-void ToTxsPools::HandleRootElectShard(
-        const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx_info,
-        db::DbWriteBatch& db_batch) {
-}
-
 bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_t max_height) {
     for (uint64_t height = min_height; height < max_height; ++height) {
         auto iter = added_heights_[pool_idx].find(height);
@@ -80,8 +74,9 @@ bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_
         auto& block = *iter->second;
         const auto& tx_list = block.tx_list();
         if (tx_list.empty()) {
+            assert(false);
             ZJC_DEBUG("tx list empty!");
-            return;
+            return false;
         }
 
         // one block must be one consensus pool
@@ -97,25 +92,22 @@ bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_
                 HandleNormalToTx(block, tx_list[i], db_batch);
                 break;
             case pools::protobuf::kContractCreate:
-                HandleCreateContractUserCall(block, tx_list[i], db_batch);
+                HandleCreateContractUserCall(block, tx_list[i]);
                 break;
             case pools::protobuf::kContractGasPrepayment:
-                HandleContractGasPrepayment(block, tx_list[i], db_batch);
+                HandleContractGasPrepayment(block, tx_list[i]);
                 break;
             case pools::protobuf::kNormalFrom:
-                HandleNormalFrom(block, tx_list[i], db_batch);
+                HandleNormalFrom(block, tx_list[i]);
                 break;
             case pools::protobuf::kRootCreateAddress:
-                HandleRootCreateAddress(block, tx_list[i], db_batch);
+                HandleRootCreateAddress(block, tx_list[i]);
                 break;
             case pools::protobuf::kContractExcute:
-                HandleContractExecute(block, tx_list[i], db_batch);
-                break;
-            case pools::protobuf::kConsensusRootElectShard:
-                HandleRootElectShard(block, tx_list[i], db_batch);
+                HandleContractExecute(block, tx_list[i]);
                 break;
             case pools::protobuf::kJoinElect:
-                HandleJoinElect(block, tx_list[i], db_batch);
+                HandleJoinElect(block, tx_list[i]);
                 break;
             default:
                 break;
@@ -128,8 +120,7 @@ bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_
 
 void ToTxsPools::HandleJoinElect(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch) {
+        const block::protobuf::BlockTx& tx) {
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kJoinElectVerifyG2) {
             // distinct with transfer transaction
@@ -148,8 +139,7 @@ void ToTxsPools::HandleJoinElect(
 
 void ToTxsPools::HandleContractExecute(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch) {
+        const block::protobuf::BlockTx& tx) {
     for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = -1;
@@ -172,10 +162,9 @@ void ToTxsPools::HandleContractExecute(
 
 void ToTxsPools::HandleContractGasPrepayment(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch) {
+        const block::protobuf::BlockTx& tx) {
     if (tx.amount() > 0) {
-        HandleNormalFrom(block, tx, db_batch);
+        HandleNormalFrom(block, tx);
     }
 
     if (tx.contract_prepayment() > 0) {
@@ -201,8 +190,7 @@ void ToTxsPools::HandleContractGasPrepayment(
 
 void ToTxsPools::HandleNormalFrom(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch) {
+        const block::protobuf::BlockTx& tx) {
     if (tx.amount() <= 0) {
         ZJC_DEBUG("from transfer amount invalid!");
         return;
@@ -222,8 +210,7 @@ void ToTxsPools::HandleNormalFrom(
 
 void ToTxsPools::HandleCreateContractUserCall(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch) {
+        const block::protobuf::BlockTx& tx) {
     uint32_t sharding_id = network::kRootCongressNetworkId;
     uint32_t pool_index = block.pool_index();
     AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index);
@@ -249,8 +236,7 @@ void ToTxsPools::HandleCreateContractUserCall(
 
 void ToTxsPools::HandleRootCreateAddress(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx,
-        db::DbWriteBatch& db_batch) {
+        const block::protobuf::BlockTx& tx) {
     if (tx.amount() <= 0) {
         ZJC_DEBUG("from transfer amount invalid!");
         return;
@@ -283,18 +269,6 @@ void ToTxsPools::AddTxToMap(
         uint64_t sharding_id,
         int32_t pool_index,
         const std::string& key) {
-    auto handled_iter = handled_map_.find(sharding_id);
-    if (handled_iter != handled_map_.end()) {
-        if (handled_iter->second->heights(block.pool_index()) >= block.height()) {
-            ZJC_DEBUG("height invalid, %lu: %lu, sharding: %u, pool: %u!",
-                handled_iter->second->heights(block.pool_index()),
-                block.height(),
-                block.network_id(),
-                block.pool_index());
-            return;
-        }
-    }
-
     auto net_iter = network_txs_pools_.find(sharding_id);
     if (net_iter == network_txs_pools_.end()) {
         PoolMap pool_map;
@@ -335,17 +309,9 @@ void ToTxsPools::AddTxToMap(
 
 void ToTxsPools::HandleNormalToTx(
         const block::protobuf::Block& block,
-        const block::protobuf::BlockTx& tx_info,
-        db::DbWriteBatch& db_batch) {
+        const block::protobuf::BlockTx& tx_info) {
     for (auto net_iter = network_txs_pools_.begin();
             net_iter != network_txs_pools_.end(); ++net_iter) {
-        auto handled_iter = handled_map_.find(net_iter->first);
-        if (handled_iter != handled_map_.end()) {
-            if (handled_iter->second->heights(block.pool_index()) >= block.height()) {
-                continue;
-            }
-        }
-
         TxMap tx_map;
         // just clear and reload txs, height must unique
         net_iter->second[block.pool_index()][block.height()] = tx_map;
@@ -358,7 +324,6 @@ void ToTxsPools::HandleNormalToTx(
 
     auto heights_ptr = std::make_shared<pools::protobuf::ShardToTxItem>();
     auto& heights = *heights_ptr;
-    heights.set_block_height(block.height());
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
         if (tx_info.storages(i).key() == protos::kNormalTos) {
             std::string to_txs_str;
@@ -386,18 +351,10 @@ void ToTxsPools::HandleNormalToTx(
         return;
     }
 
+    heights.set_block_height(block.height());
     ZJC_DEBUG("new to tx coming: %lu, sharding id: %u", block.height(), heights.sharding_id());
-    auto handled_iter = handled_map_.find(heights.sharding_id());
-    if (handled_iter != handled_map_.end()) {
-        if (handled_iter->second->block_height() < block.height()) {
-            handled_map_[heights.sharding_id()] = heights_ptr;
-            prefix_db_->SaveLatestToTxsHeights(heights, db_batch);
-        }
-    } else {
-        handled_map_[heights.sharding_id()] = heights_ptr;
-        prefix_db_->SaveLatestToTxsHeights(heights, db_batch);
-    }
-
+    handled_map_[heights.sharding_id()] = heights_ptr;
+    prefix_db_->SaveLatestToTxsHeights(heights);
     auto net_iter = network_txs_pools_.find(heights.sharding_id());
     for (int32_t i = 0; i < heights.heights_size(); ++i) {
         if (heights.heights(i) > pool_consensus_heihgts_[i]) {
@@ -551,7 +508,7 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
             assert(add_iter != added_heights_[i].end());
             if (add_iter == added_heights_[i].end()) {
                 if (add_iter->second->timestamp() + common::kToPeriodMs > timeout) {
-                    --cons_height
+                    --cons_height;
                     continue;
                 }
             }
@@ -578,26 +535,11 @@ bool ToTxsPools::StatisticTos(const pools::protobuf::ShardToTxItem& leader_to_he
         return false;
     }
 
-    auto handled_iter = handled_map_.find(sharding_id);
+    network_txs_pools_.clear();
     for (uint32_t pool_idx = 0; pool_idx < common::kImmutablePoolSize; ++pool_idx) {
         uint64_t min_height = 1;
-        if (handled_iter != handled_map_.end()) {
-            min_height = handled_iter->second->heights(pool_idx) + 1;
-        }
-
-        uint64_t max_height = leader_to_heights.heights(pool_idx);
-        if (max_height > pool_consensus_heihgts_[pool_idx]) {
-            ZJC_DEBUG("pool %u, invalid height: %lu, consensus height: %lu, found: %d",
-                pool_idx,
-                max_height,
-                pool_consensus_heihgts_[pool_idx],
-                handled_iter != handled_map_.end());
-            return false;
-        }
-
-        if (max_height > 0) {
-            ZJC_DEBUG("sharding_id: %u, pool: %d, min_height: %lu, max_height: %lu",
-                sharding_id, pool_idx, min_height, max_height);
+        if (prev_to_heights_ != nullptr) {
+            min_height = prev_to_heights_->heights(pool_idx) + 1;
         }
 
         if (!PreStatisticTos(pool_idx, min_height, max_height)) {
@@ -611,7 +553,7 @@ bool ToTxsPools::StatisticTos(const pools::protobuf::ShardToTxItem& leader_to_he
 int ToTxsPools::CreateToTxWithHeights(
         uint32_t sharding_id,
         uint64_t elect_height,
-        const pools::protobuf::ShardToTxItem& leader_to_heights,
+        const pools::protobuf::ShardToTxItem& src_leader_to_heights,
         std::string* to_hash) {
     auto net_iter = network_txs_pools_.find(sharding_id);
     if (net_iter == network_txs_pools_.end()) {
@@ -619,26 +561,20 @@ int ToTxsPools::CreateToTxWithHeights(
         return kPoolsError;
     }
 
-    if (leader_to_heights.heights_size() != common::kImmutablePoolSize) {
+    if (src_leader_to_heights.heights_size() != common::kImmutablePoolSize) {
         assert(false);
         return kPoolsError;
     }
 
-    auto handled_iter = handled_map_.find(sharding_id);
     std::map<std::string, ToAddressItemInfo> acc_amount_map;
     for (uint32_t pool_idx = 0; pool_idx < common::kImmutablePoolSize; ++pool_idx) {
         uint64_t min_height = 1;
-        if (handled_iter != handled_map_.end()) {
-            min_height = handled_iter->second->heights(pool_idx) + 1;
-        }
-
         uint64_t max_height = leader_to_heights.heights(pool_idx);
         if (max_height > pool_consensus_heihgts_[pool_idx]) {
-            ZJC_DEBUG("pool %u, invalid height: %lu, consensus height: %lu, found: %d",
+            ZJC_DEBUG("pool %u, invalid height: %lu, consensus height: %lu",
                 pool_idx,
                 max_height,
-                pool_consensus_heihgts_[pool_idx],
-                handled_iter != handled_map_.end());
+                pool_consensus_heihgts_[pool_idx]);
             return kPoolsError;
         }
 
@@ -773,6 +709,7 @@ int ToTxsPools::CreateToTxWithHeights(
     to_tx.set_heights_hash(*to_hash);
     to_tx.set_elect_height(elect_height);
     *to_tx.mutable_to_heights() = leader_to_heights;
+    to_tx.mutable_to_heights()->set_sharding_id(sharding_id);
     auto val = to_tx.SerializeAsString();
     prefix_db_->SaveTemporaryKv(*to_hash, val);
     return kPoolsSuccess;
