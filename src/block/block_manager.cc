@@ -1276,7 +1276,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     }
     
     bool all_valid = true;
-    auto& heights = shard_to.to_txs();
+    auto& heights = shard_to.to_txs(0);
     if (!to_txs_pool_->StatisticTos(heights)) {
         return;
     }
@@ -1455,7 +1455,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
         prev_pool_index_ = i + 1;
         return tmp_to_txs->tx_ptr;
     }
-       
+
     return nullptr;
 }
 
