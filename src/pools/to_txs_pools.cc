@@ -437,7 +437,7 @@ void ToTxsPools::LoadLatestHeights() {
         for (uint64_t height = pool_consensus_heihgts_[i];
                 height <= pool_latest_height; ++height) {
             auto block_ptr = std::make_shared<block::protobuf::Block>();
-            auto& block = block_ptr;
+            auto& block = *block_ptr;
             if (!prefix_db_->GetBlockWithHeight(
                     common::GlobalInfo::Instance()->network_id(), i, height, &block)) {
                 consensus_stop = true;
