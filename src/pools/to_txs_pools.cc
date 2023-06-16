@@ -563,7 +563,7 @@ int ToTxsPools::CreateToTxWithHeights(
         return kPoolsError;
     }
 
-    if (src_leader_to_heights.heights_size() != common::kImmutablePoolSize) {
+    if (leader_to_heights.heights_size() != common::kImmutablePoolSize) {
         assert(false);
         return kPoolsError;
     }
