@@ -464,7 +464,7 @@ void BlockManager::HandleNormalToTx(
 
     auto iter = leader_to_txs_.find(to_txs.elect_height());
     if (iter != leader_to_txs_.end()) {
-        iter->second->to_txs[to_txs.to_heights().sharding_id()] = nullptr;
+        iter->second->to_tx = nullptr;
     }
 
     if (tx.step() == pools::protobuf::kRootCreateAddressCrossSharding) {
@@ -1264,20 +1264,19 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         ZJC_DEBUG("handled to leader idx: %u, leader to index: %d, tmp_tx != nullptr: %d, %u, %d",
             shard_to.leader_idx(), shard_to.leader_to_idx(),
             tmp_tx->success, (tmp_tx != nullptr), tmp_tx->leader_to_index);
-        continue;
+        return;
     }
 
+    auto now_time_ms = common::TimeUtils::TimestampMs();
     if (tmp_tx != nullptr &&
             tmp_tx->tx_ptr->in_consensus &&
             tmp_tx->tx_ptr->timeout > now_time_ms) {
-        ZJC_DEBUG("to txs sharding not consensus yet: %u", sharding_id);
-        continue;
+        ZJC_DEBUG("to txs sharding not consensus yet");
+        return;
     }
     
     bool all_valid = true;
-    auto now_time_ms = common::TimeUtils::TimestampMs();
-    auto& to_txs = shard_to.to_txs();
-    auto& heights = to_txs[i];
+    auto& heights = shard_to.to_txs();
     if (!to_txs_pool_->StatisticTos(heights)) {
         return;
     }
@@ -1301,13 +1300,13 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     
     auto final_hash = common::Hash::keccak256(tos_hashs);
     if (tmp_tx != nullptr && tmp_tx->tx_hash == final_hash) {
-        ZJC_DEBUG("tx hash equal to old: %s", common::Encode::HexEncode(tos_hash).c_str());
-        continue;
+        ZJC_DEBUG("tx hash equal to old: %s", common::Encode::HexEncode(final_hash).c_str());
+        return;
     }
 
     prefix_db_->SaveTemporaryKv(final_hash, tos_hashs);
     auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-    new_msg_ptr->address_info = account_mgr_->pools_address_info(sharding_id % common::kImmutablePoolSize);
+    new_msg_ptr->address_info = account_mgr_->pools_address_info(0 % common::kImmutablePoolSize);
     auto* tx = new_msg_ptr->header.mutable_tx_proto();
     tx->set_key(protos::kNormalTos);
     tx->set_value(final_hash);
@@ -1329,7 +1328,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     to_txs_ptr->tx_ptr->time_valid += kToValidTimeout;
     to_txs_ptr->tx_hash = final_hash;
     to_txs_ptr->timeout = now_time_ms + kToTimeoutMs;
-    leader_to_txs->to_txs[sharding_id] = to_txs_ptr;
+    leader_to_txs->to_tx = to_txs_ptr;
     to_txs_ptr->success = true;
     to_txs_ptr->leader_to_index = shard_to.leader_to_idx();
     ZJC_DEBUG("success add txs: %s, leader idx: %u, leader to index: %d",
@@ -1440,40 +1439,23 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
         return nullptr;
     }
 
+    if (pool_index != 0) {
+        return nullptr;
+    }
+
     auto now_tm = common::TimeUtils::TimestampUs();
     auto latest_to_tx = latest_to_tx_;
-    for (uint32_t i = prev_pool_index_; i <= max_consensus_sharding_id_; ++i) {
-        if (i % common::kImmutablePoolSize == pool_index) {
-            auto tmp_to_txs = latest_to_tx->to_txs[i];
-            if (tmp_to_txs != nullptr && !tmp_to_txs->tx_ptr->in_consensus) {
-                if (leader && tmp_to_txs->tx_ptr->time_valid > now_tm) {
-                    continue;
-                }
-
-                tmp_to_txs->tx_ptr->in_consensus = true;
-                prev_pool_index_ = i + 1;
-                return tmp_to_txs->tx_ptr;
-            }
+    auto tmp_to_txs = latest_to_tx->to_tx;
+    if (tmp_to_txs != nullptr && !tmp_to_txs->tx_ptr->in_consensus) {
+        if (leader && tmp_to_txs->tx_ptr->time_valid > now_tm) {
+            continue;
         }
+
+        tmp_to_txs->tx_ptr->in_consensus = true;
+        prev_pool_index_ = i + 1;
+        return tmp_to_txs->tx_ptr;
     }
-
-    for (uint32_t i = network::kRootCongressNetworkId; i < prev_pool_index_; ++i) {
-        if (i % common::kImmutablePoolSize == pool_index) {
-            auto tmp_to_txs = latest_to_tx->to_txs[i];
-            if (tmp_to_txs != nullptr && !tmp_to_txs->tx_ptr->in_consensus) {
-                if (leader && tmp_to_txs->tx_ptr->time_valid > now_tm) {
-                    continue;
-                }
-
-                tmp_to_txs->tx_ptr->in_consensus = true;
-                prev_pool_index_ = i + 1;
-                return tmp_to_txs->tx_ptr;
-            }
-        }
-    }
-
-    ++prev_pool_index_;
-    prev_pool_index_ %= (max_consensus_sharding_id_ + 1);
+       
     return nullptr;
 }
 
