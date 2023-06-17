@@ -1318,7 +1318,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     auto to_txs_ptr = std::make_shared<BlockTxsItem>();
     to_txs_ptr->tx_ptr = create_to_tx_cb_(new_msg_ptr);
     to_txs_ptr->tx_ptr->time_valid += kToValidTimeout;
-    to_txs_ptr->tx_hash = final_hash;
+    to_txs_ptr->tx_hash = gid;
     to_txs_ptr->timeout = now_time_ms + kToTimeoutMs;
     leader_to_txs->to_tx = to_txs_ptr;
     to_txs_ptr->success = true;
