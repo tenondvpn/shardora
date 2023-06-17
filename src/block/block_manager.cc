@@ -1310,7 +1310,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         tx->set_step(pools::protobuf::kNormalTo);
     }
 
-    auto gid = common::Hash::keccak256(final_hash);
+    auto gid = common::Hash::keccak256(tos_hashs);
     tx->set_gas_limit(0);
     tx->set_amount(0);
     tx->set_gas_price(common::kBuildinTransactionGasPrice);
