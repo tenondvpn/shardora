@@ -21,8 +21,8 @@ public:
         std::shared_ptr<block::AccountManager>& account_mgr,
         std::shared_ptr<security::Security>& sec_ptr);
     virtual ~RootToTxItem();
-
-    virtual int TxToBlockTx(
+// 
+//     virtual int TxToBlockTx(
             const pools::protobuf::TxMessage& tx_info,
             std::shared_ptr<db::DbWriteBatch>& db_batch,
             block::protobuf::BlockTx* block_tx) {
@@ -48,8 +48,7 @@ public:
         }
 
         return consensus::kConsensusSuccess;
-    }
-
+   
     virtual int HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
