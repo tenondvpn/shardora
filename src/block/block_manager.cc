@@ -1324,7 +1324,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     to_txs_ptr->success = true;
     to_txs_ptr->leader_to_index = shard_to.leader_to_idx();
     ZJC_DEBUG("success add txs: %s, leader idx: %u, leader to index: %d",
-        common::Encode::HexEncode(final_hash).c_str(), shard_to.leader_idx(), shard_to.leader_to_idx());
+        common::Encode::HexEncode(tos_hashs).c_str(), shard_to.leader_idx(), shard_to.leader_to_idx());
     if (all_valid) {
         leader_to_txs->to_txs_msg = nullptr;
     }
