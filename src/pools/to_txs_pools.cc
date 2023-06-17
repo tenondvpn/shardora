@@ -76,7 +76,7 @@ bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_
 
             block_ptr = std::make_shared<block::protobuf::Block>();
             auto& block = *block_ptr;
-            if (!prefix_db_->GetBlock(net_id, pool_idx, height, &block)) {
+            if (!prefix_db_->GetBlockWithHeight(net_id, pool_idx, height, &block)) {
                 return false;
             }
         } else {
