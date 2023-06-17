@@ -1260,7 +1260,6 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     ZJC_DEBUG("now handle to leader idx: %u, leader to index: %d, tmp_tx != nullptr: %d",
         shard_to.leader_idx(), shard_to.leader_to_idx(), (tmp_tx != nullptr));
     if (tmp_tx != nullptr && tmp_tx->success && tmp_tx->leader_to_index >= shard_to.leader_to_idx()) {
-        //             assert(false);
         ZJC_DEBUG("handled to leader idx: %u, leader to index: %d, tmp_tx != nullptr: %d, %u, %d",
             shard_to.leader_idx(), shard_to.leader_to_idx(),
             tmp_tx->success, (tmp_tx != nullptr), tmp_tx->leader_to_index);

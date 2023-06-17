@@ -573,7 +573,6 @@ int ToTxsPools::CreateToTxWithHeights(
         std::string* to_hash) {
     auto net_iter = network_txs_pools_.find(sharding_id);
     if (net_iter == network_txs_pools_.end()) {
-        assert(false);
         return kPoolsError;
     }
 
