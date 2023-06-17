@@ -67,11 +67,25 @@ void ToTxsPools::NewBlock(const std::shared_ptr<block::protobuf::Block>& block_p
 bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_t max_height) {
     for (uint64_t height = min_height; height < max_height; ++height) {
         auto iter = added_heights_[pool_idx].find(height);
+        std::shared_ptr<block::protobuf::Block> block_ptr = nullptr;
         if (iter == added_heights_[pool_idx].end()) {
-            return false;
+            auto net_id = common::GlobalInfo::Instance()->network_id();
+            if (net_id >= network::kConsensusShardEndNetworkId) {
+                net_id -= network::kConsensusWaitingShardOffset;
+            }
+
+            block_ptr = std::make_shared<block::protobuf::Block>();
+            auto& block = *block_ptr;
+            if (!prefix_db_->GetBlock(net_id, pool_idx, height, &block)) {
+                return false;
+            }
+        } else {
+            block_ptr = iter->second;
         }
 
-        auto& block = *iter->second;
+        ZJC_DEBUG("now handle block net: %u, pool: %u, height: %lu",
+            common::GlobalInfo::Instance()->network_id(), pool_idx, height);
+        auto& block = *block_ptr;
         const auto& tx_list = block.tx_list();
         if (tx_list.empty()) {
             assert(false);
