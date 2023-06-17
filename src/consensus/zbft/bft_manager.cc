@@ -2293,6 +2293,9 @@ void BftManager::BroadcastLocalTosBlock(
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         std::string val;
         if (prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &val)) {
+            ZJC_DEBUG("get to tx storage key: %s, value: %s",
+                common::Encode::HexEncode(tx.storages(i).val_hash()).c_str(),
+                common::Encode::HexEncode(val).c_str());
             if (tx.storages(i).key() == protos::kNormalTos) {
                 if (!to_tx.ParseFromString(val)) {
                     assert(false);
@@ -2307,6 +2310,8 @@ void BftManager::BroadcastLocalTosBlock(
             auto kv = msg.mutable_sync()->add_items();
             kv->set_key(tx.storages(i).val_hash());
             kv->set_value(val);
+        } else {
+            assert(false);
         }
     }
 
