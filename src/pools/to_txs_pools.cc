@@ -600,8 +600,7 @@ int ToTxsPools::CreateToTxWithHeights(
 
         auto pool_iter = net_iter->second.find(pool_idx);
         if (pool_iter == net_iter->second.end()) {
-            assert(false);
-            return kPoolsError;
+            continue;
         }
 
         for (auto height = min_height; height <= max_height; ++height) {
