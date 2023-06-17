@@ -1297,18 +1297,11 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         tos_hashs += tos_hash;
     }
     
-    auto final_hash = common::Hash::keccak256(tos_hashs);
-    if (tmp_tx != nullptr && tmp_tx->tx_hash == final_hash) {
-        ZJC_DEBUG("tx hash equal to old: %s", common::Encode::HexEncode(final_hash).c_str());
-        return;
-    }
-
-    prefix_db_->SaveTemporaryKv(final_hash, tos_hashs);
     auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
     new_msg_ptr->address_info = account_mgr_->pools_address_info(0 % common::kImmutablePoolSize);
     auto* tx = new_msg_ptr->header.mutable_tx_proto();
     tx->set_key(protos::kNormalTos);
-    tx->set_value(final_hash);
+    tx->set_value(tos_hashs);
     tx->set_pubkey("");
     tx->set_to(new_msg_ptr->address_info->addr());
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {

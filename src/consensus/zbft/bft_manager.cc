@@ -2285,9 +2285,6 @@ void BftManager::BroadcastWaitingBlock(
 void BftManager::BroadcastLocalTosBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item) {
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->thread_idx = thread_idx;
-    auto& msg = msg_ptr->header;
     auto& tx = block_item->tx_list(0);
     pools::protobuf::ToTxMessage to_tx;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
@@ -2296,40 +2293,42 @@ void BftManager::BroadcastLocalTosBlock(
             ZJC_DEBUG("get to tx storage key: %s, value: %s",
                 common::Encode::HexEncode(tx.storages(i).val_hash()).c_str(),
                 common::Encode::HexEncode(val).c_str());
-            if (tx.storages(i).key() == protos::kNormalTos) {
-                if (!to_tx.ParseFromString(val)) {
-                    assert(false);
-                    return;
-                }
-
-                if (to_tx.to_heights().sharding_id() == common::GlobalInfo::Instance()->network_id()) {
-                    return;
-                }
+            if (tx.storages(i).key() != protos::kNormalToShards) {
+                assert(false);
+                continue;
             }
 
+            if (!to_tx.ParseFromString(val)) {
+                assert(false);
+                continue;
+            }
+
+            if (to_tx.to_heights().sharding_id() == common::GlobalInfo::Instance()->network_id()) {
+                continue;
+            }
+
+            auto msg_ptr = std::make_shared<transport::TransportMessage>();
+            msg_ptr->thread_idx = thread_idx;
+            auto& msg = msg_ptr->header;
             auto kv = msg.mutable_sync()->add_items();
             kv->set_key(tx.storages(i).val_hash());
             kv->set_value(val);
+            msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+            msg.set_type(common::kBlockMessage);
+            dht::DhtKeyManager dht_key(to_tx.to_heights().sharding_id());
+            msg.set_des_dht_key(dht_key.StrKey());
+            transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
+            *msg.mutable_block() = *block_item;
+            auto* brdcast = msg.mutable_broadcast();
+            network::Route::Instance()->Send(msg_ptr);
+            ZJC_DEBUG("success broadcast cross tos height: %lu, sharding id: %u",
+                block_item->height(), to_tx.to_heights().sharding_id());
         } else {
             assert(false);
         }
     }
 
-    if (!to_tx.has_to_heights()) {
-        assert(false);
-        return;
-    }
-
-    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    msg.set_type(common::kBlockMessage);
-    dht::DhtKeyManager dht_key(to_tx.to_heights().sharding_id());
-    msg.set_des_dht_key(dht_key.StrKey());
-    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
-    *msg.mutable_block() = *block_item;
-    auto* brdcast = msg.mutable_broadcast();
-    network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("success broadcast cross tos height: %lu, sharding id: %u",
-        block_item->height(), to_tx.to_heights().sharding_id());
+    
 }
 
 int BftManager::LeaderCallCommit(
