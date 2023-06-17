@@ -83,8 +83,6 @@ bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_
             block_ptr = iter->second;
         }
 
-        ZJC_DEBUG("now handle block net: %u, pool: %u, height: %lu",
-            common::GlobalInfo::Instance()->network_id(), pool_idx, height);
         auto& block = *block_ptr;
         const auto& tx_list = block.tx_list();
         if (tx_list.empty()) {
@@ -100,6 +98,8 @@ bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_
                 continue;
             }
 
+            ZJC_DEBUG("now handle block net: %u, pool: %u, height: %lu, step: %u",
+                common::GlobalInfo::Instance()->network_id(), pool_idx, height, tx_list[i].step());
             switch (tx_list[i].step()) {
             case pools::protobuf::kNormalTo:
             case pools::protobuf::kRootCreateAddressCrossSharding:
