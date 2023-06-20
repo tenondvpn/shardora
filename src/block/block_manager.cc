@@ -352,7 +352,8 @@ void BlockManager::HandleCrossTx(
                 break;
             }
 
-            if (latest_cross_statistic_tx_ != nullptr && latest_cross_statistic_tx_->tx_hash == block_tx.storages(i).val_hash()) {
+            if (latest_cross_statistic_tx_ != nullptr &&
+                    latest_cross_statistic_tx_->tx_hash == block_tx.storages(i).val_hash()) {
                 latest_cross_statistic_tx_ = nullptr;
             }
 
@@ -401,6 +402,11 @@ void BlockManager::HandleStatisticTx(
     ZJC_DEBUG("success handled statistic block time block height: %lu, net: %u",
         consensused_timeblock_height_,
         block.network_id());
+    uint32_t net_id = common::GlobalInfo::Instance()->network_id();
+    if (net_id >= network::kConsensusShardEndNetworkId) {
+        net_id -= network::kConsensusWaitingShardOffset;
+    }
+
     pools::protobuf::ElectStatistic elect_statistic;
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kShardStatistic) {
@@ -424,7 +430,8 @@ void BlockManager::HandleStatisticTx(
                 ZJC_DEBUG("erase statistic elect height: %lu, hash: %s",
                     elect_statistic.elect_height(),
                     common::Encode::HexEncode(block_tx.storages(i).val_hash()).c_str());
-                if (iter->second->cross_statistic_tx == nullptr) {
+                if (iter->second->cross_statistic_tx == nullptr ||
+                        net_id != network::kRootCongressNetworkId) {
                     leader_statistic_txs_.erase(iter);
                 }
             }
@@ -1234,12 +1241,19 @@ void BlockManager::HandleStatisticBlock(
 }
 
 void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool recreate) {
-    ZJC_DEBUG("to tx message coming: %lu", msg_ptr->header.hash64());
+    auto& shard_to = msg_ptr->header.block_proto().shard_to();
+    auto& heights = shard_to.to_txs(0);
+    std::string str_heights;
+    for (int32_t i = 0; i < heights.heights_size(); ++i) {
+        str_heights += std::to_string(heights.heights(i)) + " ";
+    }
+
+    ZJC_DEBUG("to tx message coming: %lu, elect height: %lu, heights: %s",
+        msg_ptr->header.hash64(), shard_to.elect_height(), str_heights.c_str());
     if (create_to_tx_cb_ == nullptr || msg_ptr == nullptr) {
         return;
     }
 
-    auto& shard_to = msg_ptr->header.block_proto().shard_to();
     std::shared_ptr<LeaderWithToTxItem> leader_to_txs = nullptr;
     auto iter = leader_to_txs_.find(shard_to.elect_height());
     if (iter != leader_to_txs_.end()) {
@@ -1275,8 +1289,8 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     }
     
     bool all_valid = true;
-    auto& heights = shard_to.to_txs(0);
     if (!to_txs_pool_->StatisticTos(heights)) {
+        ZJC_DEBUG("statistic tos failed!");
         return;
     }
 
@@ -1295,6 +1309,11 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         }
 
         tos_hashs += tos_hash;
+    }
+
+    if (tos_hashs.empty()) {
+        ZJC_DEBUG("tos_hashs.empty()!");
+        return;
     }
     
     auto new_msg_ptr = std::make_shared<transport::TransportMessage>();

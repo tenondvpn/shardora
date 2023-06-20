@@ -46,7 +46,7 @@ bool BftProto::LeaderCreatePrepare(
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
 //         assert(bft_ptr->prepare_block()->prehash() == prev_btr->local_prepare_hash());
 //         assert(bft_ptr->prepare_block()->height() == prev_btr->height() + 1);
-        bft_msg.set_prepare_hash(prev_btr->local_prepare_hash());
+        bft_msg.set_prepare_hash(prev_btr->prepare_block()->hash());
     }
 
     return true;
@@ -104,11 +104,6 @@ bool BftProto::LeaderCreatePreCommit(
     bft_msg.set_agree_precommit(agree);
     bft_msg.set_agree_commit(agree);
     bft_msg.set_elect_height(bft_ptr->elect_height());
-    auto pre_ptr = bft_ptr->pipeline_prev_zbft_ptr();
-    if (agree && pre_ptr != nullptr) {
-        bft_msg.set_prepare_hash(pre_ptr->local_prepare_hash());
-    }
-
     if (agree) {
         const auto& bitmap_data = bft_ptr->prepare_bitmap().data();
         for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
@@ -118,7 +113,7 @@ bool BftProto::LeaderCreatePreCommit(
         auto& bls_precommit_sign = bft_ptr->bls_precommit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
-        bft_msg.set_prepare_hash(bft_ptr->local_prepare_hash());
+        bft_msg.set_prepare_hash(bft_ptr->prepare_block()->hash());
     }
 
     return true;

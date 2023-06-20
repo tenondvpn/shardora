@@ -110,9 +110,9 @@ public:
         }
 
         min_oppose_member_count_ = member_count_ / 3;
-        if (member_count_ % 3 > 0) {
+//         if (member_count_ % 3 > 0) {
             min_oppose_member_count_ += 1;
-        }
+//         }
 
 //         ZJC_DEBUG("consensus member count: %d/%d, oppose count: %d",
 //             min_aggree_member_count_, member_count_, min_oppose_member_count_);
