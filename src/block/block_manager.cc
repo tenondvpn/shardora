@@ -990,13 +990,20 @@ int BlockManager::GetBlockWithHeight(
 }
 
 void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_ptr, bool retry) {
+    auto& heights = msg_ptr->header.block_proto().statistic_tx().statistic();
+    std::string height_str;
+    for (int32_t i = 0; i < heights.heights_size(); ++i) {
+        height_str += std::to_string(heights.heights(i)) + " ";
+    }
+
     ZJC_DEBUG("now statistic with leader heights retry: %d, "
-        "elect height: %lu, local elect_height: %lu, leader idx: %u, to idx: %u",
+        "elect height: %lu, local elect_height: %lu, leader idx: %u, to idx: %u, heights: %s",
         retry,
         msg_ptr->header.block_proto().statistic_tx().elect_height(),
         latest_elect_height_,
         msg_ptr->header.block_proto().statistic_tx().leader_idx(),
-        msg_ptr->header.block_proto().statistic_tx().leader_to_idx());
+        msg_ptr->header.block_proto().statistic_tx().leader_to_idx(),
+        height_str.c_str());
     if (msg_ptr->header.block_proto().statistic_tx().elect_height() < latest_elect_height_) {
         return;
     }
@@ -1044,7 +1051,6 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
         return;
     }
 
-    auto& heights = msg_ptr->header.block_proto().statistic_tx().statistic();
     std::string statistic_hash;
     std::string cross_hash;
     if (statistic_mgr_->StatisticWithHeights(
@@ -1080,9 +1086,10 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
             tx_ptr->tx_hash = statistic_hash;
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             statistic_item->shard_statistic_tx = tx_ptr;
-            ZJC_DEBUG("success add statistic tx: %s, statistic elect height: %lu",
+            ZJC_DEBUG("success add statistic tx: %s, statistic elect height: %lu, heights: %s",
                 common::Encode::HexEncode(statistic_hash).c_str(),
-                msg_ptr->header.block_proto().statistic_tx().elect_height());
+                msg_ptr->header.block_proto().statistic_tx().elect_height(),
+                height_str.c_str());
         }
     }
 
