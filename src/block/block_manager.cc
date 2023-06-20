@@ -1399,6 +1399,8 @@ pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) 
         auto* tx = shard_statistic_tx->tx_ptr->msg_ptr->header.mutable_tx_proto();
         tx->set_to(shard_statistic_tx->tx_ptr->msg_ptr->address_info->addr());
         shard_statistic_tx->tx_ptr->in_consensus = true;
+        ZJC_DEBUG("success get statistic tx hash: %s",
+            common::Encode::HexEncode(shard_statistic_tx->tx_hash).c_str());
         return shard_statistic_tx->tx_ptr;
     }
 
