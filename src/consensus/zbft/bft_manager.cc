@@ -1362,7 +1362,27 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
                     NextPrepareErrorLeaderCallPrecommit(elect_item, pre_bft, msg_ptr);
                 }
             } else if (bft_ptr->consensus_status() == kConsensusPreCommit) {
-                ZJC_DEBUG("precommit remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
+                if (bft_ptr != nullptr && bft_ptr->this_node_is_leader()) {
+                    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+                    msg_ptr->thread_idx = thread_idx;
+                    auto elect_item_ptr = elect_items_[elect_item_idx_];
+                    if (elect_item_ptr->elect_height != bft_ptr->elect_height()) {
+                        elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
+                        if (elect_item_ptr->elect_height != bft_ptr->elect_height()) {
+                            ZJC_DEBUG("elect height error: %lu, %lu, %lu",
+                                bft_ptr->elect_height(),
+                                elect_items_[elect_item_idx_]->elect_height,
+                                elect_items_[(elect_item_idx_ + 1) % 2]->elect_height);
+                            assert(false);
+                            return;
+                        }
+                    }
+
+                    auto& elect_item = *elect_item_ptr;
+                    NextPrepareErrorLeaderCallPrecommit(elect_item, bft_ptr, msg_ptr);
+                }
+                ZJC_DEBUG("precommit can't remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
+                return;
                 assert(false);
             }
 
