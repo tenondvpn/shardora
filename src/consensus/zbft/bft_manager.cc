@@ -1378,8 +1378,20 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
                         }
                     }
 
+                    SetDefaultResponse(msg_ptr);
+                    std::vector<ZbftPtr> zbft_vec = { nullptr, nullptr, nullptr };
+                    msg_ptr->tmp_ptr = &zbft_vec;
                     auto& elect_item = *elect_item_ptr;
                     NextPrepareErrorLeaderCallPrecommit(elect_item, bft_ptr, msg_ptr);
+                    CreateResponseMessage(
+                        elect_item,
+                        false,
+                        zbft_vec,
+                        msg_ptr,
+                        nullptr);
+                    if (zbft_vec[1] != nullptr) {
+                        zbft_vec[1]->AfterNetwork();
+                    }
                 }
                 ZJC_DEBUG("precommit can't remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
                 return;
