@@ -1350,7 +1350,7 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
                         elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
                         if (elect_item_ptr->elect_height != pre_bft->elect_height()) {
                             ZJC_DEBUG("elect height error: %lu, %lu, %lu",
-                                header.zbft().elect_height(),
+                                pre_bft->elect_height(),
                                 elect_items_[elect_item_idx_]->elect_height,
                                 elect_items_[(elect_item_idx_ + 1) % 2]->elect_height);
                             assert(false);
@@ -1359,7 +1359,7 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
                     }
 
                     auto& elect_item = *elect_item_ptr;
-                    NextPrepareErrorLeaderCallPrecommit(elect_item, prev_ptr, msg_ptr);
+                    NextPrepareErrorLeaderCallPrecommit(elect_item, pre_bft, msg_ptr);
                 }
             } else if (bft_ptr->consensus_status() == kConsensusPreCommit) {
                 assert(false);
