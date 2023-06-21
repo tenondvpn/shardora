@@ -1357,8 +1357,21 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
                         }
                     }
 
+                    SetDefaultResponse(msg_ptr);
+                    std::vector<ZbftPtr> zbft_vec = { nullptr, nullptr, nullptr };
+                    msg_ptr->tmp_ptr = &zbft_vec;
                     auto& elect_item = *elect_item_ptr;
                     NextPrepareErrorLeaderCallPrecommit(elect_item, pre_bft, msg_ptr);
+                    common::BftMemberPtr mem_ptr = nullptr;
+                    CreateResponseMessage(
+                        elect_item,
+                        false,
+                        zbft_vec,
+                        msg_ptr,
+                        mem_ptr);
+                    if (zbft_vec[1] != nullptr) {
+                        zbft_vec[1]->AfterNetwork();
+                    }
                 }
             } else if (bft_ptr->consensus_status() == kConsensusPreCommit) {
                 if (bft_ptr != nullptr && bft_ptr->this_node_is_leader()) {
