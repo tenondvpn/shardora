@@ -412,24 +412,31 @@ void BlockManager::HandleStatisticTx(
         if (block_tx.storages(i).key() == protos::kShardStatistic) {
             std::string val;
             if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
-                return;
+                continue;
             }
 
             if (!elect_statistic.ParseFromString(val)) {
-                return;
+                continue;
+            }
+
+            if (elect_statistic.sharding_id() != net_id) {
+                continue;
             }
 
             if (latest_shard_statistic_tx_ != nullptr &&
                     latest_shard_statistic_tx_->tx_hash == block_tx.storages(i).val_hash()) {
                 latest_shard_statistic_tx_ = nullptr;
+                statistic_message_ = nullptr;
             }
 
             auto iter = leader_statistic_txs_.find(elect_statistic.elect_height());
             if (iter != leader_statistic_txs_.end()) {
                 iter->second->shard_statistic_tx = nullptr;
-                ZJC_DEBUG("erase statistic elect height: %lu, hash: %s",
+                ZJC_DEBUG("erase statistic elect height: %lu, net: %u, hash: %s, latest_shard_statistic_tx_ = null: %d",
                     elect_statistic.elect_height(),
-                    common::Encode::HexEncode(block_tx.storages(i).val_hash()).c_str());
+                    net_id,
+                    common::Encode::HexEncode(block_tx.storages(i).val_hash()).c_str(),
+                    (latest_shard_statistic_tx_ == nullptr));
                 if (iter->second->cross_statistic_tx == nullptr ||
                         net_id != network::kRootCongressNetworkId) {
                     leader_statistic_txs_.erase(iter);

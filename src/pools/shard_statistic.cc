@@ -527,6 +527,11 @@ int ShardStatistic::StatisticWithHeights(
         common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
         common::GlobalInfo::Instance()->network_id() ==
         network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset);
+    uint32_t local_net_id = common::GlobalInfo::Instance()->network_id();
+    if (local_net_id >= network::kConsensusShardEndNetworkId) {
+        local_net_id -= network::kConsensusWaitingShardOffset;
+    }
+
     uint32_t pool_size = common::kInvalidPoolIndex;
     if (leader_to_heights.heights_size() != (int32_t)pool_size) {
         ZJC_DEBUG("pool size error: %d, %d, local sharding: %d",
@@ -584,9 +589,17 @@ int ShardStatistic::StatisticWithHeights(
 
         uint64_t max_height = leader_to_heights.heights(pool_idx);
         if (max_height > pool_consensus_heihgts_[pool_idx]) {
-            ZJC_WARN("pool %u, invalid height: %lu, consensus height: %lu",
-                pool_idx, max_height, pool_consensus_heihgts_[pool_idx]);
-            return kPoolsError;
+            for (uint32_t i = pool_consensus_heihgts_[pool_idx] + 1; i <= max_height; ++i) {
+                block::protobuf::Block block;
+                if (prefix_db_->GetBlockWithHeight(local_net_id, pool_idx, i, &block)) {
+                    ++pool_consensus_heihgts_[pool_idx];
+                    OnNewBlock(block);
+                } else {
+                    ZJC_WARN("pool %u, invalid height: %lu, consensus height: %lu",
+                        pool_idx, max_height, pool_consensus_heihgts_[pool_idx]);
+                    return kPoolsError;
+                }
+            }
         }
 
         uint64_t prev_height = 0;

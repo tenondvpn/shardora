@@ -516,10 +516,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 header.zbft().elect_height(),
                 elect_items_[elect_item_idx_]->elect_height,
                 elect_items_[(elect_item_idx_ + 1) % 2]->elect_height);
-//             if (!header.zbft().sync_block()) {
-//                 assert(false);
-//             }
-
             return;
         }
     }
@@ -1344,6 +1340,31 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
         auto iter = bft_hash_map_[thread_idx].find(gid);
         if (iter != bft_hash_map_[thread_idx].end()) {
             bft_ptr = iter->second;
+            if (bft_ptr->consensus_status() == kConsensusPrepare) {
+                auto pre_bft = bft_ptr->pipeline_prev_zbft_ptr();
+                if (pre_bft != nullptr) {
+                    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+                    msg_ptr->thread_idx = thread_idx;
+                    auto elect_item_ptr = elect_items_[elect_item_idx_];
+                    if (elect_item_ptr->elect_height != pre_bft->elect_height()) {
+                        elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
+                        if (elect_item_ptr->elect_height != pre_bft->elect_height()) {
+                            ZJC_DEBUG("elect height error: %lu, %lu, %lu",
+                                header.zbft().elect_height(),
+                                elect_items_[elect_item_idx_]->elect_height,
+                                elect_items_[(elect_item_idx_ + 1) % 2]->elect_height);
+                            assert(false);
+                            return;
+                        }
+                    }
+
+                    auto& elect_item = *elect_item_ptr;
+                    NextPrepareErrorLeaderCallPrecommit(elect_item, prev_ptr, msg_ptr);
+                }
+            } else if (bft_ptr->consensus_status() == kConsensusPreCommit) {
+                assert(false);
+            }
+
             bft_ptr->Destroy();
             bft_hash_map_[thread_idx].erase(iter);
             ZJC_DEBUG("remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
@@ -1954,11 +1975,7 @@ int BftManager::NextPrepareErrorLeaderCallPrecommit(
     }
 
     std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     ZJC_DEBUG("use g1_precommit_hash prepare.");
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     bft_ptr->set_precoimmit_hash();
     libff::alt_bn128_G1 sign;
     if (bls_mgr_->Sign(
@@ -1970,8 +1987,6 @@ int BftManager::NextPrepareErrorLeaderCallPrecommit(
         ZJC_ERROR("leader signature error.");
         return kConsensusError;
     }
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
     if (bft_ptr->LeaderCommitOk(
             elect_item.local_node_member_index,
@@ -1980,8 +1995,6 @@ int BftManager::NextPrepareErrorLeaderCallPrecommit(
         ZJC_ERROR("leader commit failed!");
         return kConsensusError;
     }
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
     bft_ptr->init_precommit_timeout();
     bft_ptr->set_consensus_status(kConsensusCommit);
