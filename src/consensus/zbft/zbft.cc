@@ -544,6 +544,7 @@ bool Zbft::set_bls_precommit_agg_sign(
         common::Encode::HexEncode(sign_hash).c_str(),
         common::Encode::HexEncode(prepare_block_->bls_agg_sign_x()).c_str(),
         common::Encode::HexEncode(prepare_block_->bls_agg_sign_y()).c_str());
+    set_consensus_status(kConsensusPreCommit);
     return true;
 }
 
@@ -615,6 +616,7 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
         common::Encode::HexEncode(prepare_block_->hash()).c_str(),
         common::Encode::HexEncode(prepare_block_->bls_agg_sign_x()).c_str(),
         common::Encode::HexEncode(prepare_block_->bls_agg_sign_y()).c_str());
+    set_consensus_status(kConsensusCommit);
     return true;
 }
 
