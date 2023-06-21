@@ -1292,7 +1292,6 @@ ZbftPtr BftManager::CreateBftPtr(
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     bft_ptr->set_gid(bft_msg.prepare_gid());
     bft_ptr->set_network_id(bft_msg.net_id());
-    bft_ptr->set_consensus_status(kConsensusPrepare);
     bft_ptr->set_member_count(elect_item.member_size);
     return bft_ptr;
 }
@@ -1473,7 +1472,7 @@ int BftManager::LeaderPrepare(
     new_bft_msg->set_elect_height(elect_item.elect_height);
     assert(elect_item.elect_height > 0);
     bft_ptr->init_prepare_timeout();
-    bft_ptr->set_consensus_status(kConsensusPreCommit);
+    bft_ptr->set_consensus_status(kConsensusPrepare);
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     if (prepare_msg_ptr == nullptr) {
@@ -1776,7 +1775,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         AddBft(bft_ptr);
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-        bft_ptr->set_consensus_status(kConsensusPreCommit);
+        bft_ptr->set_consensus_status(kConsensusPrepare);
         std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
         bft_vec[0] = bft_ptr;
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -2031,7 +2030,7 @@ int BftManager::NextPrepareErrorLeaderCallPrecommit(
     }
 
     bft_ptr->init_precommit_timeout();
-    bft_ptr->set_consensus_status(kConsensusCommit);
+//     bft_ptr->set_consensus_status(kConsensusCommit);
     bft_vec[1] = bft_ptr;
     ZJC_DEBUG("NextPrepareErrorLeaderCallPrecommit success gid: %s",
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
@@ -2092,7 +2091,7 @@ int BftManager::LeaderCallPrecommit(
     }
 
     bft_ptr->init_precommit_timeout();
-    bft_ptr->set_consensus_status(kConsensusCommit);
+//     bft_ptr->set_consensus_status(kConsensusCommit);
     bft_vec[1] = bft_ptr;
     ZJC_DEBUG("LeaderCallPrecommit success gid: %s",
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
@@ -2142,7 +2141,7 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
         return kConsensusError;
     }
 
-    bft_ptr->set_consensus_status(kConsensusCommit);
+//     bft_ptr->set_consensus_status(kConsensusCommit);
     std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
     bft_vec[1] = bft_ptr;
     ZJC_DEBUG("BackupPrecommit success.");
