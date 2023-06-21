@@ -1473,6 +1473,7 @@ int BftManager::LeaderPrepare(
     new_bft_msg->set_elect_height(elect_item.elect_height);
     assert(elect_item.elect_height > 0);
     bft_ptr->init_prepare_timeout();
+    bft_ptr->set_consensus_status(kConsensusPreCommit);
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     if (prepare_msg_ptr == nullptr) {
@@ -1775,6 +1776,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         AddBft(bft_ptr);
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
+        bft_ptr->set_consensus_status(kConsensusPreCommit);
         std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
         bft_vec[0] = bft_ptr;
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();

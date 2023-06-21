@@ -396,7 +396,7 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
         prepare_bitmap_.inversion(n);
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
         //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-        set_consensus_status(kConsensusPreCommit);
+//         set_consensus_status(kConsensusPreCommit);
         valid_index_ = iter->second->valid_index;
     } catch (std::exception& e) {
         ZJC_ERROR("catch bls exception: %s", e.what());
@@ -495,7 +495,7 @@ int Zbft::LeaderCreateCommitAggSign() {
         prepare_block_->set_bls_agg_sign_y(
             common::Encode::HexDecode(
                 libBLS::ThresholdUtils::fieldElementToString(bls_commit_agg_sign_->Y)));
-        set_consensus_status(kConsensusCommit);
+//         set_consensus_status(kConsensusCommit);
         ZJC_DEBUG("leader agg sign success! signx: %s, %s: %s, %s",
             common::Encode::HexEncode(prepare_block_->bls_agg_sign_x()).c_str(),
             common::Encode::HexEncode(sign_commit_hash).c_str(),
@@ -546,7 +546,7 @@ bool Zbft::set_bls_precommit_agg_sign(
         common::Encode::HexEncode(sign_hash).c_str(),
         common::Encode::HexEncode(prepare_block_->bls_agg_sign_x()).c_str(),
         common::Encode::HexEncode(prepare_block_->bls_agg_sign_y()).c_str());
-    set_consensus_status(kConsensusPreCommit);
+//     set_consensus_status(kConsensusPreCommit);
     return true;
 }
 
@@ -618,7 +618,7 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
         common::Encode::HexEncode(prepare_block_->hash()).c_str(),
         common::Encode::HexEncode(prepare_block_->bls_agg_sign_x()).c_str(),
         common::Encode::HexEncode(prepare_block_->bls_agg_sign_y()).c_str());
-    set_consensus_status(kConsensusCommit);
+//     set_consensus_status(kConsensusCommit);
     return true;
 }
 
