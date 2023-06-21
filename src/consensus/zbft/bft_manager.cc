@@ -1342,7 +1342,7 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
             bft_ptr = iter->second;
             if (bft_ptr->consensus_status() == kConsensusPrepare) {
                 auto pre_bft = bft_ptr->pipeline_prev_zbft_ptr();
-                if (pre_bft != nullptr) {
+                if (pre_bft != nullptr && pre_bft->this_node_is_leader()) {
                     auto msg_ptr = std::make_shared<transport::TransportMessage>();
                     msg_ptr->thread_idx = thread_idx;
                     auto elect_item_ptr = elect_items_[elect_item_idx_];
@@ -1362,6 +1362,7 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
                     NextPrepareErrorLeaderCallPrecommit(elect_item, pre_bft, msg_ptr);
                 }
             } else if (bft_ptr->consensus_status() == kConsensusPreCommit) {
+                ZJC_DEBUG("precommit remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
                 assert(false);
             }
 
