@@ -486,6 +486,10 @@ int Zbft::LeaderCreateCommitAggSign() {
             return kConsensusError;
         }
 
+        if (commit_bls_agg_verify_hash_.empty()) {
+            CreateCommitVerifyHash();
+        }
+
         if (sign_commit_hash != commit_bls_agg_verify_hash_) {
             ZJC_ERROR("leader verify leader commit agg sign failed!");
             assert(!commit_bls_agg_verify_hash_.empty());
@@ -600,6 +604,10 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
             &sign_commit_hash) != bls::kBlsSuccess) {
         ZJC_ERROR("verify leader commit agg sign failed!");
         return false;
+    }
+
+    if (commit_bls_agg_verify_hash_.empty()) {
+        CreateCommitVerifyHash();
     }
 
     if (sign_commit_hash != commit_bls_agg_verify_hash_) {
