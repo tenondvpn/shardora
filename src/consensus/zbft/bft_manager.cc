@@ -1598,6 +1598,7 @@ int BftManager::CheckPrecommit(
         }
 
         bft_ptr->set_prepare_bitmap(bitmap_data);
+        bft_ptr->set_consensus_status(kConsensusPreCommit);
         backup_agree_commit = true;
     } while (0);
 
@@ -2156,7 +2157,7 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
         return kConsensusError;
     }
 
-//     bft_ptr->set_consensus_status(kConsensusCommit);
+    bft_ptr->set_consensus_status(kConsensusCommit);
     std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
     bft_vec[1] = bft_ptr;
     ZJC_DEBUG("BackupPrecommit success.");
