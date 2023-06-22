@@ -53,6 +53,7 @@ void BlsDkg::TimerMessage(uint8_t thread_idx) {
     if (!has_broadcast_verify_ &&
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 4) &&
             now_tm_us > (begin_time_us_ + ver_offset_)) {
+        ZJC_DEBUG("now call send verify g2.");
         BroadcastVerfify(thread_idx);
         has_broadcast_verify_ = true;
     }
@@ -60,6 +61,7 @@ void BlsDkg::TimerMessage(uint8_t thread_idx) {
     if (has_broadcast_verify_ && !has_broadcast_swapkey_ && 
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 7) &&
             now_tm_us >(begin_time_us_ + swap_offset_)) {
+        ZJC_DEBUG("now call send swap sec key.");
         SwapSecKey(thread_idx);
         has_broadcast_swapkey_ = true;
     }
@@ -67,6 +69,7 @@ void BlsDkg::TimerMessage(uint8_t thread_idx) {
     if (has_broadcast_swapkey_ && !has_finished_ &&
             now_tm_us < (begin_time_us_ + kDkgPeriodUs * 10) &&
             now_tm_us >(begin_time_us_ + finish_offset_)) {
+        ZJC_DEBUG("now call send finish.");
         FinishBroadcast(thread_idx);
         has_finished_ = true;
     }
