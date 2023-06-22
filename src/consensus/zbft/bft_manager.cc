@@ -584,7 +584,9 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (zbft_vec[0] != nullptr) {
         zbft_vec[0]->AfterNetwork();
-    } else if (zbft_vec[1] != nullptr) {
+    } 
+    
+    if (zbft_vec[1] != nullptr) {
         zbft_vec[1]->AfterNetwork();
     }
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
