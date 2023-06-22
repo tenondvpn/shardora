@@ -655,6 +655,17 @@ void BftManager::HandleSyncConsensusBlock(
                 block_ptr->height(),
                 common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str(),
                 common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str());
+            auto iter = bft_hash_map_[thread_idx].begin();
+            while (iter != bft_hash_map_[thread_idx].end()) {
+                bft_ptr = iter->second;
+                if (bft_ptr->prepare_block()->height() <= block_ptr->height()) {
+                    bft_ptr->Destroy();
+                    bft_hash_map_[thread_idx]->erase(iter++);
+                    continue;
+                }
+
+                ++iter;
+            }
         } else {
             if (bft_ptr->prepare_block() == nullptr) {
                 auto block_hash = GetBlockHash(req_bft_msg.block());
