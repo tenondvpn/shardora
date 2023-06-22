@@ -649,27 +649,28 @@ void BftManager::HandleSyncConsensusBlock(
             block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
             pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
             // remove bft
-            ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+            ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s, precommit_gid: %s",
                 block_ptr->network_id(),
                 block_ptr->pool_index(),
                 block_ptr->height(),
-                common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str());
+                common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str(),
+                common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str());
         } else {
             if (bft_ptr->prepare_block() == nullptr) {
                 auto block_hash = GetBlockHash(req_bft_msg.block());
-//                 ZJC_DEBUG("receive block hash: %s, local: %s",
-//                     common::Encode::HexEncode(block_hash).c_str(),
-//                     common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
+                ZJC_DEBUG("receive block hash: %s, local: %s",
+                    common::Encode::HexEncode(block_hash).c_str(),
+                    common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
                 if (block_hash == bft_ptr->local_prepare_hash()) {
                     bft_ptr->set_prepare_block(std::make_shared<block::protobuf::Block>(req_bft_msg.block()));
 //                     SaveKeyValue(msg_ptr->header);
                     if (bft_ptr->consensus_status() == kConsensusCommited) {
                         HandleLocalCommitBlock(msg_ptr, bft_ptr);
-//                         ZJC_DEBUG("commited  receive block hash: %s",
-//                             common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
+                        ZJC_DEBUG("commited  receive block hash: %s",
+                            common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
                     }
-//                     ZJC_DEBUG("receive block hash: %s",
-//                         common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
+                    ZJC_DEBUG("receive block hash: %s",
+                        common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
                 }
             }
         }
@@ -1376,7 +1377,9 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
                     }
                 }
             } else if (bft_ptr->consensus_status() == kConsensusPreCommit) {
-                if (bft_ptr != nullptr && bft_ptr->this_node_is_leader()) {
+                if (bft_ptr != nullptr &&
+                        bft_ptr->this_node_is_leader() &&
+                        bft_ptr->prepare_block()->height() > pools_mgr_->latest_height(bft_ptr->pool_index())) {
                     auto msg_ptr = std::make_shared<transport::TransportMessage>();
                     msg_ptr->thread_idx = thread_idx;
                     auto elect_item_ptr = elect_items_[elect_item_idx_];
