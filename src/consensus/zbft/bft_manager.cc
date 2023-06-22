@@ -2157,7 +2157,7 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
         return kConsensusError;
     }
 
-    bft_ptr->set_consensus_status(kConsensusCommit);
+    bft_ptr->set_consensus_status(kConsensusPreCommit);
     std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
     bft_vec[1] = bft_ptr;
     ZJC_DEBUG("BackupPrecommit success.");
