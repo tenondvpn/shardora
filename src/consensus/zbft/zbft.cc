@@ -437,7 +437,10 @@ void Zbft::CreateCommitVerifyHash() {
 }
 
 void Zbft::AfterNetwork() {
-    ZJC_DEBUG("AfterNetwork consensus_status_: %d", consensus_status_);
+    ZJC_DEBUG("AfterNetwork consensus_status_: %d, gid: %s, hash: %s",
+        consensus_status_,
+        common::Encode::HexEncode(gid_).c_str(),
+        common::Encode::HexEncode(prepare_block_->hash()).c_str());
     if (consensus_status_ == kConsensusPrepare) {
         CreatePrecommitVerifyHash();
     }
