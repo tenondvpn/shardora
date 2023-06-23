@@ -736,7 +736,6 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
         zjc_block.height(),
         common::Encode::HexEncode(zjc_block.prehash()).c_str(),
         common::Encode::HexEncode(zjc_block.hash()).c_str());
-    height_ = zjc_block.height();
     set_prepare_hash(zjc_block.hash());
     prepare_block_ = prepare_block;
     return kConsensusSuccess;

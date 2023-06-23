@@ -326,6 +326,7 @@ ZbftPtr BftManager::Start(
             elect_item_ptr = item_ptr;
         }
     }
+
     auto& elect_item = *elect_item_ptr;
     auto& thread_set = elect_item.thread_set;
     auto thread_item = thread_set[thread_index];
@@ -1321,6 +1322,14 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
         return kConsensusAdded;
     }
 
+    for (auto iter = bft_hash_map_[bft_ptr->thread_index()].begin();
+            iter != bft_hash_map_[bft_ptr->thread_index()].end(); ++iter) {
+        if (bft_ptr->height() <= iter->second->height()) {
+            ZJC_ERROR("block height error: %lu", bft_ptr->height());
+            return kConsensusError;
+        }
+    }
+
     bft_hash_map_[bft_ptr->thread_index()][gid] = bft_ptr;
 //     bft_queue_[bft_ptr->thread_index()].push(bft_ptr);
     return kConsensusSuccess;
@@ -1752,7 +1761,17 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
 
             return;
         }
-        
+
+        auto now_ms = common::TimeUtils::TimestampMs();
+        auto now_elect_item = elect_items_[elect_item_idx_];
+        if (now_elect_item->time_valid <= now_ms && now_elect_item->elect_height != elect_item.elect_height) {
+            ZJC_ERROR("BackupPrepare failed %s invalid elect height: %lu, %lu",
+                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+                now_elect_item->elect_height,
+                elect_item.elect_height);
+            return;
+        }
+
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 

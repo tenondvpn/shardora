@@ -420,7 +420,7 @@ public:
     }
 
     uint64_t height() const {
-        return height_;
+        return prepare_block_->height();
     }
 
     bool timeout(uint64_t now_tm) const {
@@ -496,7 +496,6 @@ protected:
     std::shared_ptr<Zbft> pipeline_prev_zbft_ptr_ = nullptr;
     bool is_synced_block_ = false;
     std::vector<uint32_t> valid_index_;
-    uint64_t height_ = { common::kInvalidUint64 };
     uint32_t consensus_prepare_max_count_ = 0;
     uint32_t consensus_prepare_all_count_ = 0;
     uint64_t timeout_ = 0;
