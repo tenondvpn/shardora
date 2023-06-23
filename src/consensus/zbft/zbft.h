@@ -420,6 +420,10 @@ public:
     }
 
     uint64_t height() const {
+        if (prepare_block_ == nullptr) {
+            return kInvalidUint64;
+        }
+
         return prepare_block_->height();
     }
 
