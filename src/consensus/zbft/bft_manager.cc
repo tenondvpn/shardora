@@ -659,9 +659,10 @@ void BftManager::HandleSyncConsensusBlock(
             auto iter = bft_hash_map_[msg_ptr->thread_idx].begin();
             while (iter != bft_hash_map_[msg_ptr->thread_idx].end()) {
                 bft_ptr = iter->second;
-                if (bft_ptr->prepare_block()->height() <= block_ptr->height()) {
-                    bft_ptr->Destroy();
+                if (bft_ptr->prepare_block() == nullptr ||
+                        bft_ptr->prepare_block()->height() <= block_ptr->height()) {
                     bft_hash_map_[msg_ptr->thread_idx].erase(iter++);
+                    bft_ptr->Destroy();
                     continue;
                 }
 
