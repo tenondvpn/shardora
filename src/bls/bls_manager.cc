@@ -41,7 +41,7 @@ BlsManager::BlsManager(
     network::Route::Instance()->RegisterMessage(
         common::kBlsMessage,
         std::bind(&BlsManager::HandleMessage, this, std::placeholders::_1));
-    tick_.CutOff(100000lu, std::bind(&BlsManager::TimerMessage, this, std::placeholders::_1));
+    tick_.CutOff(1000000lu, std::bind(&BlsManager::TimerMessage, this, std::placeholders::_1));
 }
 
 BlsManager::~BlsManager() {}
@@ -61,9 +61,16 @@ void BlsManager::TimerMessage(uint8_t thread_idx) {
         if (etime - now_tm_ms >= 10000lu) {
             ZJC_DEBUG("BlsManager handle message use time: %lu", (etime - now_tm_ms));
         }
+
+        ZJC_DEBUG("bls_dkg called!");
+    } else {
+        ZJC_DEBUG("valid nodes count invalid: %u, %u",
+            network::DhtManager::Instance()->valid_count(
+                common::GlobalInfo::Instance()->network_id()),
+            common::GlobalInfo::Instance()->sharding_min_nodes_count());
     }
 
-    tick_.CutOff(100000lu, std::bind(&BlsManager::TimerMessage, this, std::placeholders::_1));
+    tick_.CutOff(1000000lu, std::bind(&BlsManager::TimerMessage, this, std::placeholders::_1));
 }
 
 void BlsManager::OnNewElectBlock(
