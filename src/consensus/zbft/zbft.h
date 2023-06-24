@@ -212,6 +212,9 @@ public:
         prepare_block_ = prepare_block;
         if (prepare_block_ != nullptr) {
             precommit_hash_ = prepare_block_->hash();
+            ZJC_DEBUG("set block hash: %s, gid: %s",
+                common::Encode::HexEncode(precommit_hash_).c_str(),
+                common::Encode::HexEncode(gid()).c_str());
             prepare_hash_ = precommit_hash_;
         }
     }
