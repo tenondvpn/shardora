@@ -70,7 +70,7 @@ void BlsManager::TimerMessage(uint8_t thread_idx) {
             common::GlobalInfo::Instance()->sharding_min_nodes_count());
     }
 
-    tick_.CutOff(1000000lu, std::bind(&BlsManager::TimerMessage, this, std::placeholders::_1));
+    tick_.CutOff(100000lu, std::bind(&BlsManager::TimerMessage, this, std::placeholders::_1));
 }
 
 void BlsManager::OnNewElectBlock(

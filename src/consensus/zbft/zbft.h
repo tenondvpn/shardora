@@ -217,6 +217,7 @@ public:
                 common::Encode::HexEncode(gid()).c_str());
             prepare_hash_ = precommit_hash_;
             bls_mgr_->GetLibffHash(precommit_hash_, &g1_precommit_hash_);
+            CreateCommitVerifyHash();
             ZJC_DEBUG("reset block hash: %s", common::Encode::HexEncode(precommit_hash_).c_str());
         }
     }
