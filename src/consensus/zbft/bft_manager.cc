@@ -602,6 +602,9 @@ void BftManager::HandleSyncConsensusBlock(
         bft_ptr = GetBft(msg_ptr->thread_idx, req_bft_msg.precommit_gid(), true);
     }
 
+    ZJC_DEBUG("sync consensus block coming: %s, hash: %s",
+        common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
+        common::Encode::HexEncode(req_bft_msg.block().hash()).c_str());
     if (req_bft_msg.has_block()) {
         // verify and add new block
         if (bft_ptr == nullptr) {
@@ -2502,6 +2505,13 @@ int BftManager::LeaderCallCommit(
 int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("BackupCommit gid: %s",
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
+    bft_ptr->set_consensus_status(kConsensusCommited);
+    if (bft_ptr->prepare_block() == nullptr) {
+        ZJC_DEBUG("prepare block null, BackupCommit gid: %s",
+            common::Encode::HexEncode(bft_ptr->gid()).c_str());
+        return kConsensusError;
+    }
+
     auto& bft_msg = msg_ptr->header.zbft();
     if (!bft_msg.agree_commit()) {
         ZJC_ERROR("BackupCommit gid: %s",
@@ -2526,12 +2536,6 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
     }
 
     if (!bft_ptr->set_bls_commit_agg_sign(sign)) {
-        assert(false);
-        return kConsensusError;
-    }
-
-    bft_ptr->set_consensus_status(kConsensusCommited);
-    if (bft_ptr->prepare_block() == nullptr) {
         assert(false);
         return kConsensusError;
     }
