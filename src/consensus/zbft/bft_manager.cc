@@ -1436,8 +1436,8 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
                     }
                 }
                 ZJC_DEBUG("precommit can't remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
-                return;
                 assert(false);
+                return;
             }
 
             bft_ptr->Destroy();
