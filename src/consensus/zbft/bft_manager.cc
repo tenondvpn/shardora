@@ -1325,8 +1325,11 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
 
     for (auto iter = bft_hash_map_[bft_ptr->thread_index()].begin();
             iter != bft_hash_map_[bft_ptr->thread_index()].end(); ++iter) {
-        if (iter->second->height() != common::kInvalidUint64 && bft_ptr->height() <= iter->second->height()) {
-            ZJC_ERROR("block height error: %lu, %lu", bft_ptr->height(), iter->second->height());
+        if (iter->second->height() != common::kInvalidUint64 &&
+                bft_ptr->pool_index() == iter->second->height() &&
+                bft_ptr->height() <= iter->second->height()) {
+            ZJC_ERROR("block height error: %lu, %lu, pool: %u",
+                bft_ptr->height(), iter->second->height(), bft_ptr->pool_index());
             return kConsensusError;
         }
     }
