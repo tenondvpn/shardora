@@ -208,8 +208,12 @@ public:
         return prepare_block_;
     }
 
-    void set_prepare_block(std::shared_ptr<block::protobuf::Block> prepare_block) {
+    void set_prepare_block(std::shared_ptr<block::protobuf::Block>& prepare_block) {
         prepare_block_ = prepare_block;
+        if (prepare_block_ != nullptr) {
+            precommit_hash_ = prepare_block_->hash();
+            prepare_hash_ = precommit_hash_;
+        }
     }
 
     bool aggree() {

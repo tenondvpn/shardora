@@ -682,8 +682,9 @@ void BftManager::HandleSyncConsensusBlock(
                         ZJC_DEBUG("commited  receive block hash: %s",
                             common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
                     }
-                    ZJC_DEBUG("receive block hash: %s",
-                        common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
+                    ZJC_DEBUG("receive block hash: %s, gid: %s",
+                        common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
+                        common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str());
                 }
             }
         }

@@ -79,6 +79,7 @@ enum BftStatus {
     kConsensusCallContract = 7,
     kConsensusStepTimeout = 8,
     kConsensusSyncBlock = 9,
+    kConsensusFailed = 10,
 };
 
 enum BftRole {
