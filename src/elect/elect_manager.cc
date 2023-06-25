@@ -338,6 +338,20 @@ bool ElectManager::ProcessPrevElectMembers(
     UpdatePrevElectMembers(shard_members_ptr, elect_block, elected, &pk_vec);
     bool local_node_is_super_leader = false;
     {
+        std::vector<std::string> pkey_str = {
+                prev_elect_block.prev_members().common_pubkey().x_c0(),
+                prev_elect_block.prev_members().common_pubkey().x_c1(),
+                prev_elect_block.prev_members().common_pubkey().y_c0(),
+                prev_elect_block.prev_members().common_pubkey().y_c1()
+        };
+
+        BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
+        auto tmp_common_pk = *pkey.getPublicKey();
+        if (tmp_common_pk == libff::alt_bn128_G2::zero()) {
+            assert(false);
+            return nullptr;
+        }
+
         for (auto iter = shard_members_ptr->begin(); iter != shard_members_ptr->end(); ++iter) {
             ELECT_INFO("DDDDDDDDDD elect height: %lu, network: %d,"
                 "leader: %s, pool_index_mod_num: %d, valid pk: %d, pk x: %s",
@@ -346,7 +360,7 @@ bool ElectManager::ProcessPrevElectMembers(
                 common::Encode::HexEncode((*iter)->id).c_str(),
                 (*iter)->pool_index_mod_num,
                 ((*iter)->bls_publick_key == libff::alt_bn128_G2::zero()),
-                common::Encode::HexEncode(prev_elect_block.prev_members().common_pubkey().x_c0()).c_str());
+                libBLS::ThresholdUtils::fieldElementToString(tmp_common_pk->X.c0).c_str());
         }
     }
 
