@@ -55,7 +55,6 @@ bool BftProto::LeaderCreatePrepare(
 bool BftProto::BackupCreatePrepare(
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         const ZbftPtr& bft_ptr,
-        bool agree,
         const std::string& precommit_gid,
         zbft::protobuf::ZbftMessage* pipeline_msg) {
     auto& bft_msg = *pipeline_msg;
@@ -63,6 +62,10 @@ bool BftProto::BackupCreatePrepare(
     bft_msg.set_prepare_gid(bft_ptr->gid());
     bft_msg.set_precommit_gid(precommit_gid);
     bft_msg.set_prepare_hash(bft_ptr->local_prepare_hash());
+    if (bft_ptr->txs_ptr()->txs.empty()) {
+        bft_msg.set_agree_precommit(false);
+    }
+
     std::string bls_sign_x;
     std::string bls_sign_y;
     if (bls_mgr->Sign(
@@ -122,7 +125,6 @@ bool BftProto::LeaderCreatePreCommit(
 bool BftProto::BackupCreatePreCommit(
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         const ZbftPtr& bft_ptr,
-        bool agree,
         transport::protobuf::Header& msg) {
     auto& bft_msg = *msg.mutable_zbft();
     bft_msg.set_leader_idx(-1);

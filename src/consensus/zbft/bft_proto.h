@@ -25,7 +25,6 @@ public:
     static bool BackupCreatePrepare(
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         const ZbftPtr& bft_ptr,
-        bool agree,
         const std::string& pre_commit_gid,
         zbft::protobuf::ZbftMessage* pipeline_msg);
     static bool LeaderCreatePreCommit(
@@ -37,7 +36,6 @@ public:
     static bool BackupCreatePreCommit(
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         const ZbftPtr& bft_ptr,
-        bool agree,
         transport::protobuf::Header& msg);
     static bool LeaderCreateCommit(
         int32_t leader_idx,

@@ -909,7 +909,6 @@ void BftManager::CreateResponseMessage(
             bool res = BftProto::BackupCreatePrepare(
                 bls_mgr_,
                 zbft_vec[0],
-                true,
                 precommit_gid,
                 new_bft_msg);
             if (!res) {
@@ -920,7 +919,6 @@ void BftManager::CreateResponseMessage(
             auto res = BftProto::BackupCreatePreCommit(
                 bls_mgr_,
                 zbft_vec[1],
-                true,
                 msg_ptr->response->header);
             if (!res) {
                 ZJC_ERROR("BackupCreatePreCommit not has data.");
@@ -1236,12 +1234,6 @@ ZbftPtr BftManager::CreateBftPtr(
         }
     } else {
         ZJC_ERROR("invalid consensus, tx empty.");
-        return nullptr;
-    }
-
-    if (txs_ptr == nullptr) {
-        ZJC_INFO("get tx failed leader tx size: %d, type: %d",
-            bft_msg.tx_bft().tx_hash_list_size(), bft_msg.tx_bft().tx_type());
         return nullptr;
     }
 
@@ -1585,44 +1577,6 @@ int BftManager::CheckPrecommit(
 
     auto bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
     if (bft_ptr == nullptr) {
-        auto txs_ptr = std::make_shared<WaitingTxsItem>();
-        txs_ptr->thread_index = msg_ptr->thread_idx;
-        txs_ptr->pool_index = -1;
-        if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-            bft_ptr = std::make_shared<RootZbft>(
-                account_mgr_,
-                security_ptr_,
-                bls_mgr_,
-                txs_ptr,
-                txs_pools_,
-                tm_block_mgr_);
-        } else {
-            bft_ptr = std::make_shared<Zbft>(
-                account_mgr_,
-                security_ptr_,
-                bls_mgr_,
-                txs_ptr,
-                txs_pools_,
-                tm_block_mgr_);
-        }
-    
-        auto commit_ptr = GetBft(msg_ptr->thread_idx, bft_msg.commit_gid(), false);
-        if (commit_ptr != nullptr && commit_ptr->prepare_block() != nullptr) {
-            bft_ptr->set_prev_bft_ptr(commit_ptr);
-            commit_ptr->set_consensus_status(kConsensusCommited);
-            ZJC_DEBUG("backup set precommit gid: %s, pre hash: %s, gid: %s",
-                common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
-                common::Encode::HexEncode(commit_ptr->prepare_block()->hash()).c_str(),
-                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-        }
-
-        bft_ptr->set_prepare_block(nullptr);
-        bft_ptr->set_gid(bft_msg.precommit_gid());
-        bft_ptr->set_network_id(bft_msg.net_id());
-        bft_ptr->set_member_count(elect_item.member_size);
-        AddBft(bft_ptr);
-        ZJC_DEBUG("failed no bft Backup CheckPrecommit: %s",
-            common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
         SyncConsensusBlock(
             elect_item,
             msg_ptr->thread_idx,
@@ -1821,25 +1775,17 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
         auto bft_ptr = CreateBftPtr(elect_item, msg_ptr);
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
-        if (bft_ptr == nullptr || !bft_ptr->BackupCheckLeaderValid(&bft_msg)) {
+        if (bft_ptr == nullptr || bft_ptr->txs_ptr()->txs.empty() || !bft_ptr->BackupCheckLeaderValid(&bft_msg)) {
             // oppose
             ZJC_ERROR("create bft ptr failed backup create consensus bft gid: %s",
                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-            return;
+        } else {
+            auto* new_bft_msg = msg_ptr->response->header.mutable_zbft();
+            int prepare_res = bft_ptr->Prepare(false, new_bft_msg);
+            if (prepare_res != kConsensusSuccess) {
+                ZJC_ERROR("prepare failed gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+            }
         }
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
-        auto* new_bft_msg = msg_ptr->response->header.mutable_zbft();
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-        int prepare_res = bft_ptr->Prepare(false, new_bft_msg);
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //msg_ptr->times[msg_ptr->times_idx - 2] = msg_ptr->times[msg_ptr->times_idx - 1];
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 #ifdef ZJC_UNITTEST
         if (test_for_prepare_evil_) {
             ZJC_ERROR("1 bft backup prepare failed! not agree bft gid: %s",
