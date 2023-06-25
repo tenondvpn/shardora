@@ -1617,6 +1617,7 @@ int BftManager::CheckPrecommit(
 
         if (!CheckAggSignValid(msg_ptr, bft_ptr)) {
             //assert(false);
+            ZJC_DEBUG("check agg sign failed backup agree commit: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
             break;
         }
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -1637,6 +1638,7 @@ int BftManager::CheckPrecommit(
     msg_ptr->response->header.mutable_zbft()->set_agree_commit(backup_agree_commit);
 //     assert(backup_agree_commit);
     if (!backup_agree_commit) {
+        ZJC_DEBUG("failed backup agree commit: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
         return kConsensusError;
     }
     
@@ -1742,7 +1744,8 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         return;
     }
 
-    ZJC_DEBUG("prepare gid: %s, precommit gid: %s, commit gid: %s",
+    ZJC_DEBUG("has prepare: %d, prepare gid: %s, precommit gid: %s, commit gid: %s",
+        bft_msg.has_prepare_gid(),
         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
         common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
         common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
@@ -1753,6 +1756,8 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
         if (CheckPrecommit(elect_item, msg_ptr) != kConsensusSuccess) {
+            ZJC_DEBUG("check precommit failed precommit gid: %s",
+                common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
             return;
         }
 
@@ -1780,6 +1785,9 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             if (prepare_res != kConsensusSuccess) {
                 ZJC_ERROR("prepare failed gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             }
+
+            ZJC_DEBUG("success create bft ptr backup create consensus bft gid: %s",
+                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
         }
 #ifdef ZJC_UNITTEST
         if (test_for_prepare_evil_) {
