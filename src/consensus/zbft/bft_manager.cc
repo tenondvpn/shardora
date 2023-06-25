@@ -1585,12 +1585,15 @@ int BftManager::CheckPrecommit(
 
     auto bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
     if (bft_ptr == nullptr) {
+        auto txs_ptr = std::make_shared<WaitingTxsItem>();
+        txs_ptr->thread_index = msg_ptr->thread_idx;
+        txs_ptr->pool_index = -1;
         if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
             bft_ptr = std::make_shared<RootZbft>(
                 account_mgr_,
                 security_ptr_,
                 bls_mgr_,
-                nullptr,
+                txs_ptr,
                 txs_pools_,
                 tm_block_mgr_);
         } else {
@@ -1598,7 +1601,7 @@ int BftManager::CheckPrecommit(
                 account_mgr_,
                 security_ptr_,
                 bls_mgr_,
-                nullptr,
+                txs_ptr,
                 txs_pools_,
                 tm_block_mgr_);
         }
