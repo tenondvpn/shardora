@@ -1631,6 +1631,8 @@ int BftManager::CheckPrecommit(
         bft_ptr->set_prepare_bitmap(bitmap_data);
         bft_ptr->set_consensus_status(kConsensusPreCommit);
         backup_agree_commit = true;
+        std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
+        bft_vec[1] = bft_ptr;
     } while (0);
 
     msg_ptr->response->header.mutable_zbft()->set_agree_commit(backup_agree_commit);
