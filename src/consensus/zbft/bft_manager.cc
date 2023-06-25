@@ -1338,7 +1338,7 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
                 bft_ptr->height() <= iter->second->height()) {
             ZJC_ERROR("block height error: %lu, %lu, pool: %u",
                 bft_ptr->height(), iter->second->height(), bft_ptr->pool_index());
-            return kConsensusError;
+            bft_ptr->set_prepare_block(nullptr);
         }
     }
 
