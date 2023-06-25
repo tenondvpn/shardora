@@ -1704,18 +1704,21 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             return;
         }
 
+        prepare_bft->set_consensus_status(kConsensusFailed);
         RemoveBft(msg_ptr->thread_idx, prepare_bft->gid(), false);
         auto precommit_bft = prepare_bft->pipeline_prev_zbft_ptr();
         if (precommit_bft == nullptr) {
             return;
         }
 
+        precommit_bft->set_consensus_status(kConsensusFailed);
         RemoveBft(msg_ptr->thread_idx, precommit_bft->gid(), false);
         auto commit_bft = precommit_bft->pipeline_prev_zbft_ptr();
         if (commit_bft == nullptr) {
             return;
         }
 
+        commit_bft->set_consensus_status(kConsensusFailed);
         RemoveBft(msg_ptr->thread_idx, commit_bft->gid(), false);
         return;
     }
@@ -1734,12 +1737,14 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             return;
         }
 
+        prepare_bft->set_consensus_status(kConsensusFailed);
         RemoveBft(msg_ptr->thread_idx, prepare_bft->gid(), false);
         auto precommit_bft = prepare_bft->pipeline_prev_zbft_ptr();
         if (precommit_bft == nullptr) {
             return;
         }
 
+        precommit_bft->set_consensus_status(kConsensusFailed);
         RemoveBft(msg_ptr->thread_idx, precommit_bft->gid(), false);
         return;
     }
