@@ -1575,11 +1575,8 @@ int BftManager::CheckPrecommit(
 
     auto bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
     if (bft_ptr == nullptr) {
-        SyncConsensusBlock(
-            elect_item,
-            msg_ptr->thread_idx,
-            -1,  // not used
-            bft_msg.precommit_gid());
+        ZJC_DEBUG("failed get precommit gid: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+        assert(false);
         return kConsensusError;
     }
 
