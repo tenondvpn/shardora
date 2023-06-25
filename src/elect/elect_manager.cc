@@ -340,12 +340,13 @@ bool ElectManager::ProcessPrevElectMembers(
     {
         for (auto iter = shard_members_ptr->begin(); iter != shard_members_ptr->end(); ++iter) {
             ELECT_INFO("DDDDDDDDDD elect height: %lu, network: %d,"
-                "leader: %s, pool_index_mod_num: %d, valid pk: %d",
+                "leader: %s, pool_index_mod_num: %d, valid pk: %d, pk x: %s",
                 elect_block.prev_members().prev_elect_height(),
                 prev_elect_block.shard_network_id(),
                 common::Encode::HexEncode((*iter)->id).c_str(),
                 (*iter)->pool_index_mod_num,
-                ((*iter)->bls_publick_key == libff::alt_bn128_G2::zero()));
+                ((*iter)->bls_publick_key == libff::alt_bn128_G2::zero()),
+                common::Encode::HexEncode(prev_elect_block.prev_members().common_pubkey().x_c0()).c_str());
         }
     }
 
