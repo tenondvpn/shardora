@@ -1957,6 +1957,7 @@ int BftManager::LeaderHandleZbftMessage(
                     }
 
                     if (next_prepare_bft != nullptr) {
+                        std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("use next prepare.");
                     }
