@@ -1235,6 +1235,10 @@ ZbftPtr BftManager::CreateBftPtr(
                 bft_msg.pool_index(),
                 bft_msg.tx_bft().tx_hash_list(),
                 msg_ptr->thread_idx);
+            if (txs_ptr == nullptr) {
+                ZJC_ERROR("invalid consensus kNormal, txs not equal to leader. pool_index: %d, gid: %s",
+                    bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+            }
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
         }
@@ -1305,6 +1309,7 @@ ZbftPtr BftManager::CreateBftPtr(
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     if (InitZbftPtr(bft_msg.leader_idx(), elect_item, bft_ptr) != kConsensusSuccess) {
+        assert(false);
         return nullptr;
     }
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -1782,8 +1787,8 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         auto bft_ptr = CreateBftPtr(elect_item, msg_ptr);
         if (bft_ptr == nullptr || bft_ptr->txs_ptr()->txs.empty() || !bft_ptr->BackupCheckLeaderValid(&bft_msg)) {
             // oppose
-            ZJC_ERROR("create bft ptr failed backup create consensus bft gid: %s",
-                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+            ZJC_ERROR("create bft ptr failed backup create consensus bft gid: %s, tx size: %d",
+                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), bft_ptr->txs_ptr()->txs.size());
         } else {
             auto* new_bft_msg = msg_ptr->response->header.mutable_zbft();
             int prepare_res = bft_ptr->Prepare(false, new_bft_msg);
