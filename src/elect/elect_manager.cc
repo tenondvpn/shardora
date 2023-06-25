@@ -349,7 +349,6 @@ bool ElectManager::ProcessPrevElectMembers(
         auto tmp_common_pk = *pkey.getPublicKey();
         if (tmp_common_pk == libff::alt_bn128_G2::zero()) {
             assert(false);
-            return nullptr;
         }
 
         for (auto iter = shard_members_ptr->begin(); iter != shard_members_ptr->end(); ++iter) {
@@ -360,7 +359,7 @@ bool ElectManager::ProcessPrevElectMembers(
                 common::Encode::HexEncode((*iter)->id).c_str(),
                 (*iter)->pool_index_mod_num,
                 ((*iter)->bls_publick_key == libff::alt_bn128_G2::zero()),
-                libBLS::ThresholdUtils::fieldElementToString(tmp_common_pk->X.c0).c_str());
+                libBLS::ThresholdUtils::fieldElementToString(tmp_common_pk.X.c0).c_str());
         }
     }
 
