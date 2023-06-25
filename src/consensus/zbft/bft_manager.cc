@@ -1593,7 +1593,7 @@ int BftManager::CheckPrecommit(
 
     bool backup_agree_commit = false;
     do {
-        if (bft_msg.prepare_hash() != bft_ptr->prepare_block()->hash()) {
+        if (bft_ptr->prepare_block() == nullptr || bft_msg.prepare_hash() != bft_ptr->prepare_block()->hash()) {
             // sync from other nodes
             bft_ptr->set_prepare_hash(bft_msg.prepare_hash());
             bft_ptr->CreatePrecommitVerifyHash();
