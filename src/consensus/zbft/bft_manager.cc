@@ -602,9 +602,10 @@ void BftManager::HandleSyncConsensusBlock(
         bft_ptr = GetBft(msg_ptr->thread_idx, req_bft_msg.precommit_gid(), true);
     }
 
-    ZJC_DEBUG("sync consensus block coming: %s, hash: %s",
+    ZJC_DEBUG("sync consensus block coming: %s, hash: %s, is cross block: %d",
         common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
-        common::Encode::HexEncode(req_bft_msg.block().hash()).c_str());
+        common::Encode::HexEncode(req_bft_msg.block().hash()).c_str(),
+        req_bft_msg.block().is_cross_block());
     if (req_bft_msg.has_block()) {
         // verify and add new block
         if (bft_ptr == nullptr) {
