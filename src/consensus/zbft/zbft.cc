@@ -486,7 +486,7 @@ int Zbft::LeaderCreateCommitAggSign() {
             return kConsensusError;
         }
 
-        if (precommit_hash_.empty()) {
+        if (precommit_hash_ != prepare_block_->hash()) {
             precommit_hash_ = prepare_block_->hash();
             CreateCommitVerifyHash();
         }
@@ -612,7 +612,7 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
         return false;
     }
 
-    if (precommit_hash_.empty()) {
+    if (precommit_hash_ != prepare_block_->hash()) {
         precommit_hash_ = prepare_block_->hash();
         CreateCommitVerifyHash();
     }
