@@ -2302,8 +2302,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
                 block.network_id(),
                 block.electblock_height(),
                 (common_pk == libff::alt_bn128_G2::zero()));
-            //         assert(false);
-            return false;
+            assert(false);
         }
 
         libff::alt_bn128_G1 sign;
@@ -2312,7 +2311,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
         sign.Z = libff::alt_bn128_Fq::one();
         bool check_res = libBLS::Bls::Verification(g1_hash, sign, common_pk);
         ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, common pk x: %s",
-            common::Encode::HexEncode(block_hash).c_str(),
+            common::Encode::HexEncode(block.hash()).c_str(),
             common::Encode::HexEncode(block.bls_agg_sign_x()).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0).c_str());
         if (!check_res) {
