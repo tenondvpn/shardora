@@ -1590,7 +1590,7 @@ int BftManager::CheckPrecommit(
                 account_mgr_,
                 security_ptr_,
                 bls_mgr_,
-                txs_ptr,
+                nullptr,
                 txs_pools_,
                 tm_block_mgr_);
         } else {
@@ -1598,7 +1598,7 @@ int BftManager::CheckPrecommit(
                 account_mgr_,
                 security_ptr_,
                 bls_mgr_,
-                txs_ptr,
+                nullptr,
                 txs_pools_,
                 tm_block_mgr_);
         }
