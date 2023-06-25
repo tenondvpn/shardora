@@ -437,6 +437,10 @@ void Zbft::CreateCommitVerifyHash() {
 }
 
 void Zbft::AfterNetwork() {
+    if (prepare_block_ == nullptr) {
+        return;
+    }
+
     ZJC_DEBUG("AfterNetwork consensus_status_: %d, gid: %s, hash: %s",
         consensus_status_,
         common::Encode::HexEncode(gid_).c_str(),
