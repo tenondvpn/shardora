@@ -2286,6 +2286,39 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
     assert(bft_ptr->prepare_block()->precommit_bitmap_size() == zjc_block->precommit_bitmap_size());
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     // for test
+    // TODO: for test
+    {
+        auto& block = *bft_ptr->prepare_block();
+        assert(block.hash() == GetBlockHash(block));
+        auto g1_hash = libBLS::Bls::Hashing(block.hash());
+        libff::alt_bn128_G2 common_pk = libff::alt_bn128_G2::zero();
+        auto members = elect_mgr_->GetNetworkMembersWithHeight(
+            block.electblock_height(),
+            block.network_id(),
+            &common_pk,
+            nullptr);
+        if (members == nullptr || common_pk == libff::alt_bn128_G2::zero()) {
+            ZJC_ERROR("failed get elect members or common pk: %u, %lu, %d",
+                block.network_id(),
+                block.electblock_height(),
+                (common_pk == libff::alt_bn128_G2::zero()));
+            //         assert(false);
+            return false;
+        }
+
+        libff::alt_bn128_G1 sign;
+        sign.X = libff::alt_bn128_Fq(common::Encode::HexEncode(block.bls_agg_sign_x()).c_str());
+        sign.Y = libff::alt_bn128_Fq(common::Encode::HexEncode(block.bls_agg_sign_y()).c_str());
+        sign.Z = libff::alt_bn128_Fq::one();
+        bool check_res = libBLS::Bls::Verification(g1_hash, sign, common_pk);
+        ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, common pk x: %s",
+            common::Encode::HexEncode(block_hash).c_str(),
+            common::Encode::HexEncode(block.bls_agg_sign_x()).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0).c_str());
+        if (!check_res) {
+            assert(check_res);
+        }
+    }
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tps_tm_us_ == 0) {
         prev_tps_tm_us_ = now_tm_us;
