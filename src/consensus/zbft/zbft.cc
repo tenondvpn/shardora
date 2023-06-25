@@ -607,6 +607,10 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
         return false;
     }
 
+    if (precommit_hash_.empty()) {
+        precommit_hash_ = prepare_block_->hash();
+    }
+
     if (commit_bls_agg_verify_hash_.empty()) {
         CreateCommitVerifyHash();
     }
