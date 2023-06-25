@@ -1597,10 +1597,9 @@ int BftManager::CheckPrecommit(
             // sync from other nodes
             bft_ptr->set_prepare_hash(bft_msg.prepare_hash());
             bft_ptr->CreatePrecommitVerifyHash();
-            ZJC_DEBUG("use leader prepare hash: %s, precommit gid: %s, block hash: %s",
+            ZJC_DEBUG("use leader prepare hash: %s, precommit gid: %s",
                 common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
-                common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
-                common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
+                common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
             bft_ptr->set_prepare_block(nullptr);
             SyncConsensusBlock(
                 elect_item,
