@@ -688,6 +688,15 @@ void BftManager::HandleSyncConsensusBlock(
                     ZJC_DEBUG("receive block hash: %s, gid: %s",
                         common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
                         common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str());
+
+                    auto prev_bft = bft_ptr->pipeline_prev_zbft_ptr();
+                    if (prev_bft != nullptr) {
+                        if (prev_bft->consensus_status() == kConsensusCommited) {
+                            HandleLocalCommitBlock(msg_ptr, prev_bft);
+                            ZJC_DEBUG("prev commited receive block hash: %s",
+                                common::Encode::HexEncode(prev_bft->prepare_block()->hash()).c_str());
+                        }
+                    }
                 }
             }
         }
@@ -1576,8 +1585,46 @@ int BftManager::CheckPrecommit(
 
     auto bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
     if (bft_ptr == nullptr) {
+        if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
+            bft_ptr = std::make_shared<RootZbft>(
+                account_mgr_,
+                security_ptr_,
+                bls_mgr_,
+                txs_ptr,
+                txs_pools_,
+                tm_block_mgr_);
+        } else {
+            bft_ptr = std::make_shared<Zbft>(
+                account_mgr_,
+                security_ptr_,
+                bls_mgr_,
+                txs_ptr,
+                txs_pools_,
+                tm_block_mgr_);
+        }
+    
+        auto commit_ptr = GetBft(msg_ptr->thread_idx, bft_msg.commit_gid(), false);
+        if (commit_ptr != nullptr && commit_ptr->prepare_block() != nullptr) {
+            bft_ptr->set_prev_bft_ptr(commit_ptr);
+            commit_ptr->set_consensus_status(kConsensusCommited);
+            ZJC_DEBUG("backup set precommit gid: %s, pre hash: %s, gid: %s",
+                common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
+                common::Encode::HexEncode(commit_ptr->prepare_block()->hash()).c_str(),
+                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+        }
+
+        bft_ptr->set_prepare_block(nullptr);
+        bft_ptr->set_gid(bft_msg.precommit_gid());
+        bft_ptr->set_network_id(bft_msg.net_id());
+        bft_ptr->set_member_count(elect_item.member_size);
+        AddBft(bft_ptr);
         ZJC_DEBUG("failed no bft Backup CheckPrecommit: %s",
             common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+        SyncConsensusBlock(
+            elect_item,
+            msg_ptr->thread_idx,
+            -1,  // not used
+            bft_msg.precommit_gid());
         return kConsensusError;
     }
 
@@ -1754,21 +1801,6 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
         if (CheckPrecommit(elect_item, msg_ptr) != kConsensusSuccess) {
-            if (bft_msg.has_commit_gid() && !bft_msg.commit_gid().empty()) {
-                auto commit_bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.commit_gid(), false);
-                if (commit_bft_ptr == nullptr) {
-                    ZJC_ERROR("get commit bft failed: %s",
-                        common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
-                    return;
-                }
-
-                if (BackupCommit(commit_bft_ptr, msg_ptr) != kConsensusSuccess) {
-                    ZJC_ERROR("backup commit bft failed: %s",
-                        common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
-                    return;
-                }
-            }
-
             return;
         }
 
