@@ -2061,6 +2061,7 @@ int BftManager::NextPrepareErrorLeaderCallPrecommit(
         const ElectItem& elect_item,
         ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr) {
+    assert(false);
     auto prev_ptr = bft_ptr->pipeline_prev_zbft_ptr();
     if (prev_ptr != nullptr) {
         prev_ptr->set_consensus_status(kConsensusCommited);
