@@ -1581,7 +1581,6 @@ int BftManager::CheckPrecommit(
     auto bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
     if (bft_ptr == nullptr) {
         ZJC_DEBUG("failed get precommit gid: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-        assert(false);
         return kConsensusError;
     }
 
@@ -1768,7 +1767,6 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         if (CheckPrecommit(elect_item, msg_ptr) != kConsensusSuccess) {
             ZJC_DEBUG("check precommit failed precommit gid: %s",
                 common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-            return;
         }
 
         auto now_ms = common::TimeUtils::TimestampMs();
