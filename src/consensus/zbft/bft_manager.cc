@@ -691,12 +691,18 @@ void BftManager::HandleSyncConsensusBlock(
 
                     auto prev_bft = bft_ptr->pipeline_prev_zbft_ptr();
                     if (prev_bft != nullptr) {
+                        ZJC_DEBUG("receive pre block hash: %s, gid: %s, status: %d",
+                            common::Encode::HexEncode(prev_bft->prepare_block()->hash()).c_str(),
+                            common::Encode::HexEncode(prev_bft->gid()).c_str(),
+                            prev_bft->consensus_status());
                         if (prev_bft->consensus_status() == kConsensusCommited) {
                             HandleLocalCommitBlock(msg_ptr, prev_bft);
                             ZJC_DEBUG("prev commited receive block hash: %s",
                                 common::Encode::HexEncode(prev_bft->prepare_block()->hash()).c_str());
                         }
                     }
+                } else {
+
                 }
             }
         }
@@ -1294,14 +1300,6 @@ ZbftPtr BftManager::CreateBftPtr(
         if (bft_msg.has_prepare_hash()) {
             assert(bft_msg.prepare_hash() == precommit_ptr->prepare_block()->hash());
         }
-//     } else {
-//         if (bft_msg.has_prepare_height()) {
-//             bft_ptr->set_leader_pre_height(bft_msg.prepare_height());
-//         }
-// 
-//         if (bft_msg.has_prepare_hash()) {
-//             bft_ptr->set_leader_pre_hash(bft_msg.prepare_hash());
-//         }
     }
 
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -1340,7 +1338,7 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
     }
 
     bft_hash_map_[bft_ptr->thread_index()][gid] = bft_ptr;
-//     bft_queue_[bft_ptr->thread_index()].push(bft_ptr);
+    ZJC_DEBUG("success add gid: %s", common::Encode::HexEncode(gid).c_str());
     return kConsensusSuccess;
 }
 
@@ -1593,7 +1591,8 @@ int BftManager::CheckPrecommit(
 
     bool backup_agree_commit = false;
     do {
-        if (bft_ptr->prepare_block() == nullptr || bft_msg.prepare_hash() != bft_ptr->prepare_block()->hash()) {
+        if (bft_ptr->prepare_block() == nullptr ||
+                bft_msg.prepare_hash() != bft_ptr->prepare_block()->hash()) {
             // sync from other nodes
             bft_ptr->set_prepare_hash(bft_msg.prepare_hash());
             bft_ptr->CreatePrecommitVerifyHash();
