@@ -336,30 +336,19 @@ bool ElectManager::ProcessPrevElectMembers(
     latest_leader_count_[prev_elect_block.shard_network_id()] = leader_count;
     std::vector<std::string> pk_vec;
     UpdatePrevElectMembers(shard_members_ptr, elect_block, elected, &pk_vec);
+    auto common_pk = BLSPublicKey(std::make_shared<std::vector<std::string>>(pk_vec));
     bool local_node_is_super_leader = false;
     {
-        std::vector<std::string> pkey_str = {
-                prev_elect_block.prev_members().common_pubkey().x_c0(),
-                prev_elect_block.prev_members().common_pubkey().x_c1(),
-                prev_elect_block.prev_members().common_pubkey().y_c0(),
-                prev_elect_block.prev_members().common_pubkey().y_c1()
-        };
-
-        BLSPublicKey pkey(std::make_shared<std::vector<std::string>>(pkey_str));
-        auto tmp_common_pk = *pkey.getPublicKey();
-        if (tmp_common_pk == libff::alt_bn128_G2::zero()) {
-            assert(false);
-        }
 
         for (auto iter = shard_members_ptr->begin(); iter != shard_members_ptr->end(); ++iter) {
             ELECT_INFO("DDDDDDDDDD elect height: %lu, network: %d,"
-                "leader: %s, pool_index_mod_num: %d, valid pk: %d, pk x: %s",
+                "leader: %s, pool_index_mod_num: %d, valid pk: %d, cpk x: %s",
                 elect_block.prev_members().prev_elect_height(),
                 prev_elect_block.shard_network_id(),
                 common::Encode::HexEncode((*iter)->id).c_str(),
                 (*iter)->pool_index_mod_num,
                 ((*iter)->bls_publick_key == libff::alt_bn128_G2::zero()),
-                libBLS::ThresholdUtils::fieldElementToString(tmp_common_pk.X.c0).c_str());
+                libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0).c_str());
         }
     }
 
@@ -389,7 +378,6 @@ bool ElectManager::ProcessPrevElectMembers(
         valid_shard_networks_.insert(prev_elect_block.shard_network_id());
     }
 
-    auto common_pk = BLSPublicKey(std::make_shared<std::vector<std::string>>(pk_vec));
     height_with_block_->AddNewHeightBlock(
         elect_block.prev_members().prev_elect_height(),
         prev_elect_block.shard_network_id(),
