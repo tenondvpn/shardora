@@ -348,7 +348,7 @@ bool ElectManager::ProcessPrevElectMembers(
                 common::Encode::HexEncode((*iter)->id).c_str(),
                 (*iter)->pool_index_mod_num,
                 ((*iter)->bls_publick_key == libff::alt_bn128_G2::zero()),
-                libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0).c_str());
+                libBLS::ThresholdUtils::fieldElementToString((*common_pk.getPublicKey()).X.c0).c_str());
         }
     }
 
