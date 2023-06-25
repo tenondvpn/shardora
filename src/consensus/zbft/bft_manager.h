@@ -176,6 +176,7 @@ private:
         uint32_t leader_count,
         int32_t local_node_pool_mod_num,
         std::shared_ptr<PoolTxIndexItem>* thread_set);
+    void ReConsensusBft(ZbftPtr& zbft_ptr);
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);

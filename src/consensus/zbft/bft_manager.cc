@@ -1236,8 +1236,8 @@ ZbftPtr BftManager::CreateBftPtr(
                 bft_msg.tx_bft().tx_hash_list(),
                 msg_ptr->thread_idx);
             if (txs_ptr == nullptr) {
-                ZJC_ERROR("invalid consensus kNormal, txs not equal to leader. pool_index: %d, gid: %s",
-                    bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+                ZJC_ERROR("invalid consensus kNormal, txs not equal to leader. pool_index: %d, gid: %s, tx size: %u",
+                    bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), bft_msg.tx_bft().tx_hash_list_size());
             }
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
@@ -1951,9 +1951,19 @@ int BftManager::LeaderHandleZbftMessage(
                 auto prev_ptr = bft_ptr->pipeline_prev_zbft_ptr();
                 if (prev_ptr != nullptr) {
                     // precommit prev consensus
-                    NextPrepareErrorLeaderCallPrecommit(elect_item, prev_ptr, msg_ptr);
+                    ZbftPtr next_prepare_bft = nullptr;
+                    if (!bft_ptr->is_cross_block()) {
+                        next_prepare_bft = Start(msg_ptr->thread_idx, bft_ptr, msg_ptr->response);
+                    }
+
+                    if (next_prepare_bft != nullptr) {
+                        bft_vec[0] = next_prepare_bft;
+                        ZJC_DEBUG("use next prepare.");
+                    }
+//                     NextPrepareErrorLeaderCallPrecommit(elect_item, prev_ptr, msg_ptr);
                 }
 
+                bft_ptr->set_consensus_status(kConsensusFailed);
                 RemoveBft(msg_ptr->thread_idx, bft_ptr->gid(), true);
 //                 assert(false);
                 // just all consensus rollback
@@ -1982,6 +1992,9 @@ int BftManager::LeaderHandleZbftMessage(
     }
 
     return kConsensusSuccess;
+}
+
+void BftManager::ReConsensusBft(ZbftPtr& pref_bft_ptr) {
 }
 
 ZbftPtr BftManager::LeaderGetZbft(
@@ -2310,7 +2323,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
         sign.Y = libff::alt_bn128_Fq(common::Encode::HexEncode(block.bls_agg_sign_y()).c_str());
         sign.Z = libff::alt_bn128_Fq::one();
         bool check_res = libBLS::Bls::Verification(g1_hash, sign, common_pk);
-        ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, common pk x: %s",
+        ZJC_INFO("verification agg sign hash: %s, signx: %s, common pk x: %s",
             common::Encode::HexEncode(block.hash()).c_str(),
             common::Encode::HexEncode(block.bls_agg_sign_x()).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0).c_str());
