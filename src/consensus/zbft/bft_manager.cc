@@ -679,6 +679,17 @@ void BftManager::HandleSyncConsensusBlock(
                     common::Encode::HexEncode(block_hash).c_str(),
                     common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
                 if (block_hash == bft_ptr->local_prepare_hash()) {
+                    // check bls sign
+                    if (!block_agg_valid_func_(req_bft_msg.block())) {
+                        ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+                            req_bft_msg.block().network_id(),
+                            req_bft_msg.block().pool_index(),
+                            req_bft_msg.block().height(),
+                            common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
+                        //assert(false);
+                        return;
+                    }
+
                     bft_ptr->set_prepare_block(std::make_shared<block::protobuf::Block>(req_bft_msg.block()));
 //                     SaveKeyValue(msg_ptr->header);
                     if (bft_ptr->consensus_status() == kConsensusCommited) {
