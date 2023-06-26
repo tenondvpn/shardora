@@ -347,6 +347,9 @@ void ToTxsPools::HandleNormalToTx(
                 return;
             }
             
+            ZJC_DEBUG("success get normal to key: %s, val: %s",
+                common::Encode::HexEncode(tx_info.storages(i).val_hash()).c_str(),
+                common::Encode::HexEncode(to_txs_str).c_str());
             pools::protobuf::ToTxMessage to_tx;
             if (!to_tx.ParseFromString(to_txs_str)) {
                 ZJC_WARN("parse from to txs message failed: %s",
