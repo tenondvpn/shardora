@@ -169,6 +169,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(uint32_t pool_in
             auto now_tm = common::TimeUtils::TimestampUs();
             if (tx_ptr->prev_consensus_tm_us + 300000lu > now_tm) {
                 tx_ptr->in_consensus = false;
+                ZJC_DEBUG("leader failed get statistic tx.");
                 return nullptr;
             }
 
@@ -181,6 +182,10 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(uint32_t pool_in
         txs_item->tx_type = pools::protobuf::kStatistic;
         ZJC_DEBUG("1 success get statistic tx %u, %d", pool_index, leader);
         return txs_item;
+    }
+
+    if (leader) {
+        ZJC_DEBUG("0 leader failed get statistic tx.");
     }
 
     return nullptr;
