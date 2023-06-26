@@ -336,41 +336,56 @@ void ToTxsPools::HandleNormalToTx(
         return;
     }
 
-    auto heights_ptr = std::make_shared<pools::protobuf::ShardToTxItem>();
-    auto& heights = *heights_ptr;
+    auto local_net = common::GlobalInfo::Instance()->network_id();
+    if (local_net >= network::kConsensusShardEndNetworkId) {
+        local_net -= network::kConsensusShardEndNetworkId;
+    }
+
+    std::shared_ptr<pools::protobuf::ShardToTxItem> local_heights_ptr = nullptr;
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
         if (tx_info.storages(i).key() == protos::kNormalToShards) {
             std::string to_txs_str;
             if (!prefix_db_->GetTemporaryKv(tx_info.storages(i).val_hash(), &to_txs_str)) {
                 ZJC_WARN("get to tx heights failed: %s!",
                     common::Encode::HexEncode(tx_info.storages(i).val_hash()).c_str());
-                return;
+                continue;
             }
             
-            ZJC_DEBUG("success get normal to key: %s, val: %s",
-                common::Encode::HexEncode(tx_info.storages(i).val_hash()).c_str(),
-                common::Encode::HexEncode(to_txs_str).c_str());
             pools::protobuf::ToTxMessage to_tx;
             if (!to_tx.ParseFromString(to_txs_str)) {
                 ZJC_WARN("parse from to txs message failed: %s",
                     common::Encode::HexEncode(tx_info.storages(i).val_hash()).c_str());
-                return;
+                assert(false);
+                continue;
             }
 
-            heights = to_tx.to_heights();
-            break;
+            ZJC_DEBUG("success get normal to key: %s, val: %s, sharding id: %u",
+                common::Encode::HexEncode(tx_info.storages(i).val_hash()).c_str(),
+                common::Encode::HexEncode(to_txs_str).c_str(),
+                to_tx.to_heights().sharding_id());
+            if (to_tx.to_heights().heights_size() != common::kImmutablePoolSize) {
+                ZJC_ERROR("invalid heights size: %d, %d",
+                    to_tx.to_heights().heights_size(), common::kImmutablePoolSize);
+                continue;
+            }
+
+            auto heights_ptr = std::make_shared<pools::protobuf::ShardToTxItem>();
+            *heights_ptr = to_tx.to_heights();
+            handled_map_[heights_ptr->sharding_id()] = heights_ptr;
+            if (to_tx.to_heights().sharding_id() == local_net) {
+                local_heights_ptr = heights_ptr;
+                break;
+            }
         }
     }
 
-    if (heights.heights_size() != common::kImmutablePoolSize) {
-        ZJC_ERROR("invalid heights size: %d, %d",
-            heights.heights_size(), common::kImmutablePoolSize);
+    if (local_heights_ptr == nullptr) {
         return;
     }
 
+    auto& heights = *local_heights_ptr;
     heights.set_block_height(block.height());
     ZJC_DEBUG("new to tx coming: %lu, sharding id: %u", block.height(), heights.sharding_id());
-    handled_map_[heights.sharding_id()] = heights_ptr;
     prefix_db_->SaveLatestToTxsHeights(heights);
     auto net_iter = network_txs_pools_.find(heights.sharding_id());
     for (int32_t i = 0; i < heights.heights_size(); ++i) {
@@ -388,7 +403,7 @@ void ToTxsPools::HandleNormalToTx(
         }
 
         if (net_iter == network_txs_pools_.end()) {
-            continue;;
+            continue;
         }
 
         auto pool_iter = net_iter->second.find(i);
@@ -407,6 +422,8 @@ void ToTxsPools::HandleNormalToTx(
             pool_iter->second.erase(height_iter++);
         }
     }
+
+    prev_to_heights_ = local_heights_ptr;
 }
 
 void ToTxsPools::LoadLatestHeights() {
@@ -561,6 +578,7 @@ bool ToTxsPools::StatisticTos(const pools::protobuf::ShardToTxItem& leader_to_he
         }
 
         uint64_t max_height = leader_to_heights.heights(pool_idx);
+        ZJC_DEBUG("StatisticTos pool: %u, min: %lu, max: %lu", pool_idx, min_height, max_height);
         if (!PreStatisticTos(pool_idx, min_height, max_height)) {
             return false;
         }
