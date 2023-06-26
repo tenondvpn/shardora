@@ -1638,6 +1638,9 @@ int BftManager::CheckPrecommit(
         bft_vec[1] = bft_ptr;
     } while (0);
 
+    ZJC_DEBUG("Backup CheckPrecommit: %s, aggree commit: %d",
+        common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
+        backup_agree_commit);
     msg_ptr->response->header.mutable_zbft()->set_agree_commit(backup_agree_commit);
 //     assert(backup_agree_commit);
     if (!backup_agree_commit) {
@@ -1953,14 +1956,17 @@ int BftManager::LeaderHandleZbftMessage(
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
                 msg_ptr->response->header.mutable_zbft()->set_oppose_prepare_gid(bft_msg.prepare_gid());
                 msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
-                ZJC_ERROR("precommit call oppose now step: %d, gid: %s, prepare hash: %s, precommit gid: %s",
-                    bft_ptr->txs_ptr()->tx_type,
-                    common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-                    common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-                    common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
                 auto prev_ptr = bft_ptr->pipeline_prev_zbft_ptr();
                 bft_ptr->set_consensus_status(kConsensusFailed);
                 RemoveBft(msg_ptr->thread_idx, bft_ptr->gid(), true);
+                ZJC_ERROR("precommit call oppose now step: %d, gid: %s, prepare hash: %s,"
+                    " precommit gid: %s, has prev bft: %d, agree commit: %d",
+                    bft_ptr->txs_ptr()->tx_type,
+                    common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+                    common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+                    common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
+                    (prev_ptr != nullptr),
+                    bft_msg.agree_commit());
                 if (prev_ptr != nullptr && bft_msg.agree_commit()) {
                     // precommit prev consensus
                     ZbftPtr next_prepare_bft = nullptr;
