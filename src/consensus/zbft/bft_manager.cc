@@ -1410,6 +1410,7 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
                     }
                 }
             } else if (bft_ptr->consensus_status() == kConsensusPreCommit) {
+                ZJC_DEBUG("precommit remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
                 if (bft_ptr != nullptr &&
                         bft_ptr->this_node_is_leader() &&
                         bft_ptr->prepare_block()->height() > pools_mgr_->latest_height(bft_ptr->pool_index())) {
@@ -1444,7 +1445,6 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
                         zbft_vec[1]->AfterNetwork();
                     }
                 }
-                ZJC_DEBUG("precommit can't remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
                 assert(false);
                 return;
             }
