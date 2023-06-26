@@ -1332,6 +1332,7 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
         return kConsensusAdded;
     }
 
+    int res = kConsensusSuccess;
     for (auto iter = bft_hash_map_[bft_ptr->thread_index()].begin();
             iter != bft_hash_map_[bft_ptr->thread_index()].end(); ++iter) {
         if (iter->second->height() != common::kInvalidUint64 &&
@@ -1340,12 +1341,14 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
             ZJC_ERROR("block height error: %lu, %lu, pool: %u",
                 bft_ptr->height(), iter->second->height(), bft_ptr->pool_index());
             bft_ptr->set_prepare_block(nullptr);
+            res = kConsensusError;
+            break;
         }
     }
 
     bft_hash_map_[bft_ptr->thread_index()][gid] = bft_ptr;
-    ZJC_DEBUG("success add gid: %s", common::Encode::HexEncode(gid).c_str());
-    return kConsensusSuccess;
+    ZJC_DEBUG("add gid: %s, res: %d", common::Encode::HexEncode(gid).c_str(), res);
+    return res;
 }
 
 ZbftPtr BftManager::GetBft(uint8_t thread_index, const std::string& in_gid, bool leader) {
@@ -1799,7 +1802,10 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
         }
 
-        AddBft(bft_ptr);
+        if (AddBft(bft_ptr) != kConsensusSuccess) {
+            msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
+        }
+
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
         bft_ptr->set_consensus_status(kConsensusPrepare);
