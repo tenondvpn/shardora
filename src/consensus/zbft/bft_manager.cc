@@ -1950,11 +1950,13 @@ int BftManager::LeaderHandleZbftMessage(
                     common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
                     common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
                 auto prev_ptr = bft_ptr->pipeline_prev_zbft_ptr();
+                bft_ptr->set_consensus_status(kConsensusFailed);
+                RemoveBft(msg_ptr->thread_idx, bft_ptr->gid(), true);
                 if (prev_ptr != nullptr) {
                     // precommit prev consensus
                     ZbftPtr next_prepare_bft = nullptr;
                     if (!bft_ptr->is_cross_block()) {
-                        next_prepare_bft = Start(msg_ptr->thread_idx, bft_ptr, msg_ptr->response);
+                        next_prepare_bft = Start(msg_ptr->thread_idx, prev_ptr, msg_ptr->response);
                     }
 
                     if (next_prepare_bft != nullptr) {
@@ -1964,9 +1966,6 @@ int BftManager::LeaderHandleZbftMessage(
                     }
 //                     NextPrepareErrorLeaderCallPrecommit(elect_item, prev_ptr, msg_ptr);
                 }
-
-                bft_ptr->set_consensus_status(kConsensusFailed);
-                RemoveBft(msg_ptr->thread_idx, bft_ptr->gid(), true);
 //                 assert(false);
                 // just all consensus rollback
             }
