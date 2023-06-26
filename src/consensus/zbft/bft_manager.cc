@@ -1988,7 +1988,7 @@ int BftManager::LeaderHandleZbftMessage(
                 msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
                 auto prev_ptr = bft_ptr->pipeline_prev_zbft_ptr();
                 bft_ptr->set_consensus_status(kConsensusFailed);
-                RemoveBft(msg_ptr->thread_idx, bft_ptr, true);
+                RemoveBft(msg_ptr->thread_idx, bft_ptr->gid(), true);
                 if (prev_ptr != nullptr) {
                     ZbftPtr next_prepare_bft = nullptr;
                     if (!bft_ptr->is_cross_block()) {
