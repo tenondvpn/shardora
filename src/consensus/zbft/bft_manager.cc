@@ -1377,82 +1377,60 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
             bft_ptr = iter->second;
             if (bft_ptr->consensus_status() == kConsensusPrepare) {
                 auto pre_bft = bft_ptr->pipeline_prev_zbft_ptr();
+                bft_ptr->Destroy();
+                bft_hash_map_[thread_idx].erase(iter);
+                ZJC_DEBUG("remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
                 if (pre_bft != nullptr && pre_bft->this_node_is_leader()) {
-                    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-                    msg_ptr->thread_idx = thread_idx;
-                    auto elect_item_ptr = elect_items_[elect_item_idx_];
-                    if (elect_item_ptr->elect_height != pre_bft->elect_height()) {
-                        elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
-                        if (elect_item_ptr->elect_height != pre_bft->elect_height()) {
-                            ZJC_DEBUG("elect height error: %lu, %lu, %lu",
-                                pre_bft->elect_height(),
-                                elect_items_[elect_item_idx_]->elect_height,
-                                elect_items_[(elect_item_idx_ + 1) % 2]->elect_height);
-                            assert(false);
-                            return;
-                        }
-                    }
-
-                    SetDefaultResponse(msg_ptr);
-                    std::vector<ZbftPtr> zbft_vec = { nullptr, nullptr, nullptr };
-                    msg_ptr->tmp_ptr = &zbft_vec;
-                    auto& elect_item = *elect_item_ptr;
-                    NextPrepareErrorLeaderCallPrecommit(elect_item, pre_bft, msg_ptr);
-                    common::BftMemberPtr mem_ptr = nullptr;
-                    CreateResponseMessage(
-                        elect_item,
-                        false,
-                        zbft_vec,
-                        msg_ptr,
-                        mem_ptr);
-                    if (zbft_vec[1] != nullptr) {
-                        zbft_vec[1]->AfterNetwork();
-                    }
+                    ReConsensusBft(pre_bft);
                 }
             } else if (bft_ptr->consensus_status() == kConsensusPreCommit) {
-                ZJC_DEBUG("precommit remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
-                if (bft_ptr != nullptr &&
-                        bft_ptr->this_node_is_leader() &&
-                        bft_ptr->prepare_block()->height() > pools_mgr_->latest_height(bft_ptr->pool_index())) {
-                    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-                    msg_ptr->thread_idx = thread_idx;
-                    auto elect_item_ptr = elect_items_[elect_item_idx_];
-                    if (elect_item_ptr->elect_height != bft_ptr->elect_height()) {
-                        elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
-                        if (elect_item_ptr->elect_height != bft_ptr->elect_height()) {
-                            ZJC_DEBUG("elect height error: %lu, %lu, %lu",
-                                bft_ptr->elect_height(),
-                                elect_items_[elect_item_idx_]->elect_height,
-                                elect_items_[(elect_item_idx_ + 1) % 2]->elect_height);
-                            assert(false);
-                            return;
-                        }
-                    }
-
-                    SetDefaultResponse(msg_ptr);
-                    std::vector<ZbftPtr> zbft_vec = { nullptr, nullptr, nullptr };
-                    msg_ptr->tmp_ptr = &zbft_vec;
-                    auto& elect_item = *elect_item_ptr;
-                    NextPrepareErrorLeaderCallPrecommit(elect_item, bft_ptr, msg_ptr);
-                    common::BftMemberPtr mem_ptr = nullptr;
-                    CreateResponseMessage(
-                        elect_item,
-                        false,
-                        zbft_vec,
-                        msg_ptr,
-                        mem_ptr);
-                    if (zbft_vec[1] != nullptr) {
-                        zbft_vec[1]->AfterNetwork();
-                    }
-                }
-                assert(false);
-                return;
+                // TODO: check it
+            } else {
+                bft_ptr->Destroy();
+                bft_hash_map_[thread_idx].erase(iter);
+                ZJC_DEBUG("remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
             }
-
-            bft_ptr->Destroy();
-            bft_hash_map_[thread_idx].erase(iter);
-            ZJC_DEBUG("remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
         }
+    }
+}
+
+void BftManager::ReConsensusBft(ZbftPtr& prev_ptr) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->thread_idx = thread_idx;
+    auto elect_item_ptr = elect_items_[elect_item_idx_];
+    if (elect_item_ptr->elect_height != pre_bft->elect_height()) {
+        elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
+        if (elect_item_ptr->elect_height != pre_bft->elect_height()) {
+            ZJC_DEBUG("elect height error: %lu, %lu, %lu",
+                pre_bft->elect_height(),
+                elect_items_[elect_item_idx_]->elect_height,
+                elect_items_[(elect_item_idx_ + 1) % 2]->elect_height);
+            assert(false);
+            return;
+        }
+    }
+
+    SetDefaultResponse(msg_ptr);
+    std::vector<ZbftPtr> zbft_vec = { nullptr, nullptr, nullptr };
+    msg_ptr->tmp_ptr = &zbft_vec;
+    auto elect_item = *elect_item_ptr;
+    ZbftPtr next_prepare_bft = nullptr;
+    if (!prev_ptr->is_cross_block()) {
+        next_prepare_bft = Start(msg_ptr->thread_idx, prev_ptr, msg_ptr->response);
+    }
+
+    zbft_vec[0] = next_prepare_bft;
+    zbft_vec[1] = prev_ptr;
+    //     NextPrepareErrorLeaderCallPrecommit(elect_item, pre_bft, msg_ptr);
+    common::BftMemberPtr mem_ptr = nullptr;
+    CreateResponseMessage(
+        elect_item,
+        false,
+        zbft_vec,
+        msg_ptr,
+        mem_ptr);
+    if (next_prepare_bft != nullptr) {
+        next_prepare_bft->AfterNetwork();
     }
 }
 
@@ -1770,6 +1748,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                 common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
         }
 
+        auto bft_ptr = CreateBftPtr(elect_item, msg_ptr);
         auto now_ms = common::TimeUtils::TimestampMs();
         auto now_elect_item = elect_items_[elect_item_idx_];
         if (now_elect_item->time_valid <= now_ms && now_elect_item->elect_height != elect_item.elect_height) {
@@ -1777,13 +1756,9 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
                 now_elect_item->elect_height,
                 elect_item.elect_height);
-            return;
+            bft_ptr->txs_ptr()->txs.clear();
         }
 
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
-        auto bft_ptr = CreateBftPtr(elect_item, msg_ptr);
         if (bft_ptr == nullptr || bft_ptr->txs_ptr()->txs.empty() || !bft_ptr->BackupCheckLeaderValid(&bft_msg)) {
             // oppose
             ZJC_ERROR("create bft ptr failed backup create consensus bft gid: %s, tx size: %d",
@@ -1993,9 +1968,6 @@ int BftManager::LeaderHandleZbftMessage(
     }
 
     return kConsensusSuccess;
-}
-
-void BftManager::ReConsensusBft(ZbftPtr& pref_bft_ptr) {
 }
 
 ZbftPtr BftManager::LeaderGetZbft(
