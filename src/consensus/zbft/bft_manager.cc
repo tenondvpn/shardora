@@ -1969,6 +1969,8 @@ int BftManager::LeaderHandleZbftMessage(
                 // just all consensus rollback
             }
         }
+
+        return;
     }
 
     if (bft_msg.has_precommit_gid() && !bft_msg.precommit_gid().empty()) {
