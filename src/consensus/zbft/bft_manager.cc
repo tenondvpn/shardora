@@ -1828,9 +1828,13 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
     }
 
     if (bft_msg.has_precommit_gid() && !bft_msg.precommit_gid().empty()) {
+        ZJC_DEBUG("handle precommit gid: %s",
+            common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
         msg_ptr->response->header.mutable_zbft()->set_agree_commit(false);
         auto precommit_bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
         if (precommit_bft_ptr == nullptr) {
+            ZJC_DEBUG("get precommit gid failed: %s",
+                common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
             return;
         }
 
@@ -2149,8 +2153,13 @@ int BftManager::LeaderCallPrecommit(
         bft_vec[0] = next_prepare_bft;
         ZJC_DEBUG("use next prepare.");
     } else {
-        ZJC_DEBUG("use g1_precommit_hash prepare.");
+        ZJC_DEBUG("use g1_precommit_hash prepare hash: %s, gid: %s",
+            common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
+            common::Encode::HexEncode(bft_ptr->gid()).c_str());
         bft_ptr->set_precoimmit_hash();
+        ZJC_DEBUG("use g1_precommit_hash prepare hash: %s, gid: %s",
+            common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
+            common::Encode::HexEncode(bft_ptr->gid()).c_str());
         libff::alt_bn128_G1 sign;
         if (bls_mgr_->Sign(
                 bft_ptr->min_aggree_member_count(),
