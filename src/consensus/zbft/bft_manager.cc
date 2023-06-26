@@ -654,12 +654,14 @@ void BftManager::HandleSyncConsensusBlock(
             block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
             pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
             // remove bft
-            ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s, precommit_gid: %s",
+            ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s,"
+                " precommit_gid: %s, precommit_bitmap size: %u",
                 block_ptr->network_id(),
                 block_ptr->pool_index(),
                 block_ptr->height(),
                 common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str(),
-                common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str());
+                common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
+                block_ptr->precommit_bitmap_size());
             auto iter = bft_hash_map_[msg_ptr->thread_idx].begin();
             while (iter != bft_hash_map_[msg_ptr->thread_idx].end()) {
                 bft_ptr = iter->second;
