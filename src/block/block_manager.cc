@@ -1398,6 +1398,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) 
         }
 
         if (leader && shard_statistic_tx->tx_ptr->time_valid > now_tm) {
+            ZJC_DEBUG("leader get statistic tx time invalid.");
             return nullptr;
         }
 
@@ -1411,6 +1412,9 @@ pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) 
         return shard_statistic_tx->tx_ptr;
     }
 
+    if (leader) {
+        ZJC_DEBUG("leader get statistic tx failed.");
+    }
     return nullptr;
 }
 
