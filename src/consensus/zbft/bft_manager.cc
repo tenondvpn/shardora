@@ -602,10 +602,11 @@ void BftManager::HandleSyncConsensusBlock(
         bft_ptr = GetBft(msg_ptr->thread_idx, req_bft_msg.precommit_gid(), true);
     }
 
-    ZJC_DEBUG("sync consensus block coming: %s, hash: %s, is cross block: %d",
+    ZJC_DEBUG("sync consensus block coming: %s, hash: %s, is cross block: %d, hash64: %lu",
         common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
         common::Encode::HexEncode(req_bft_msg.block().hash()).c_str(),
-        req_bft_msg.block().is_cross_block());
+        req_bft_msg.block().is_cross_block(),
+        msg_ptr->header.hash64());
     if (req_bft_msg.has_block()) {
         // verify and add new block
         if (bft_ptr == nullptr) {
@@ -665,12 +666,14 @@ void BftManager::HandleSyncConsensusBlock(
             auto iter = bft_hash_map_[msg_ptr->thread_idx].begin();
             while (iter != bft_hash_map_[msg_ptr->thread_idx].end()) {
                 bft_ptr = iter->second;
-                if (bft_ptr->prepare_block() == nullptr ||
-                        bft_ptr->prepare_block()->height() <= block_ptr->height()) {
-                    ZJC_DEBUG("remove bft gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
-                    bft_hash_map_[msg_ptr->thread_idx].erase(iter++);
-                    bft_ptr->Destroy();
-                    continue;
+                if (bft_ptr->pool_index() == iter->second->pool_index()) {
+                    if (bft_ptr->prepare_block() != nullptr &&
+                            bft_ptr->prepare_block()->height() <= block_ptr->height()) {
+                        ZJC_DEBUG("remove bft gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
+                        bft_hash_map_[msg_ptr->thread_idx].erase(iter++);
+                        bft_ptr->Destroy();
+                        continue;
+                    }
                 }
 
                 ++iter;
@@ -754,13 +757,15 @@ void BftManager::HandleSyncConsensusBlock(
         assert(elect_item.elect_height > 0);
         *bft_msg.mutable_block() = *bft_ptr->prepare_block();
         assert(bft_msg.block().height() > 0);
+        transport::TcpTransport::Instance()->SetMessageHash(msg, msg_ptr->thread_idx);
         transport::TcpTransport::Instance()->Send(
             msg_ptr->thread_idx,
             msg_ptr->conn,
             msg);
-//         ZJC_DEBUG("send res to block hash: %s, gid: %s",
-//             common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
-//             common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str());
+        ZJC_DEBUG("send res to block hash: %s, gid: %s, hash64: %lu",
+            common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
+            common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
+            msg.hash64());
     }
 }
 
