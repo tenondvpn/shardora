@@ -341,7 +341,7 @@ void ToTxsPools::HandleNormalToTx(
         local_net -= network::kConsensusShardEndNetworkId;
     }
 
-    std::shared_ptr<pools::protobuf::ShardToTxItem> local_heights_ptr = nullptr;
+    auto heights_ptr = std::make_shared<pools::protobuf::ShardToTxItem>();
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
         if (tx_info.storages(i).key() == protos::kNormalToShards) {
             std::string to_txs_str;
@@ -369,21 +369,16 @@ void ToTxsPools::HandleNormalToTx(
                 continue;
             }
 
-            auto heights_ptr = std::make_shared<pools::protobuf::ShardToTxItem>();
             *heights_ptr = to_tx.to_heights();
-            handled_map_[heights_ptr->sharding_id()] = heights_ptr;
-            if (to_tx.to_heights().sharding_id() == local_net) {
-                local_heights_ptr = heights_ptr;
-                break;
-            }
+            break;
         }
     }
 
-    if (local_heights_ptr == nullptr) {
+    if (heights_ptr == nullptr) {
         return;
     }
 
-    auto& heights = *local_heights_ptr;
+    auto& heights = *heights_ptr;
     heights.set_block_height(block.height());
     ZJC_DEBUG("new to tx coming: %lu, sharding id: %u", block.height(), heights.sharding_id());
     prefix_db_->SaveLatestToTxsHeights(heights);
@@ -423,7 +418,7 @@ void ToTxsPools::HandleNormalToTx(
         }
     }
 
-    prev_to_heights_ = local_heights_ptr;
+    prev_to_heights_ = heights_ptr;
 }
 
 void ToTxsPools::LoadLatestHeights() {
@@ -439,7 +434,8 @@ void ToTxsPools::LoadLatestHeights() {
             continue;
         }
 
-        handled_map_[i] = heights_ptr;
+        prev_to_heights_ = heights_ptr;
+        break;
     }
 
     uint32_t max_pool_index = common::kImmutablePoolSize;
@@ -447,9 +443,8 @@ void ToTxsPools::LoadLatestHeights() {
         ++max_pool_index;
     }
 
-    auto iter = handled_map_.find(common::GlobalInfo::Instance()->network_id());
-    if (iter != handled_map_.end()) {
-        auto& this_net_heights = iter->second->heights();
+    if (prev_to_heights_ != nullptr) {
+        auto& this_net_heights = *prev_to_heights_;
         for (int32_t i = 0; i < this_net_heights.size(); ++i) {
             pool_consensus_heihgts_[i] = this_net_heights[i];
             ZJC_DEBUG("set consensus height: %u, height: %lu", i, this_net_heights[i]);
