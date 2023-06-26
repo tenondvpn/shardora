@@ -667,6 +667,7 @@ void BftManager::HandleSyncConsensusBlock(
                 bft_ptr = iter->second;
                 if (bft_ptr->prepare_block() == nullptr ||
                         bft_ptr->prepare_block()->height() <= block_ptr->height()) {
+                    ZJC_DEBUG("remove bft gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
                     bft_hash_map_[msg_ptr->thread_idx].erase(iter++);
                     bft_ptr->Destroy();
                     continue;
@@ -1360,7 +1361,10 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
     }
 
     bft_hash_map_[bft_ptr->thread_index()][gid] = bft_ptr;
-    ZJC_DEBUG("add gid: %s, res: %d", common::Encode::HexEncode(gid).c_str(), res);
+    ZJC_DEBUG("thread idx: %d, add gid: %s, res: %d",
+        bft_ptr->thread_index(),
+        common::Encode::HexEncode(gid).c_str(),
+        res);
     return res;
 }
 
