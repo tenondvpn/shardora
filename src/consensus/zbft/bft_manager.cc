@@ -1776,7 +1776,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         auto bft_ptr = CreateBftPtr(elect_item, msg_ptr);
         auto now_ms = common::TimeUtils::TimestampMs();
         auto now_elect_item = elect_items_[elect_item_idx_];
-        if (now_elect_item->time_valid <= now_ms && now_elect_item->elect_height != elect_item.elect_height) {
+        if (now_elect_item->time_valid + 10000lu <= now_ms && now_elect_item->elect_height != elect_item.elect_height) {
             ZJC_ERROR("BackupPrepare failed %s invalid elect height: %lu, %lu",
                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
                 now_elect_item->elect_height,
