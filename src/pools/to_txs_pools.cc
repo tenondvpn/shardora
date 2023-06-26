@@ -339,7 +339,7 @@ void ToTxsPools::HandleNormalToTx(
     auto heights_ptr = std::make_shared<pools::protobuf::ShardToTxItem>();
     auto& heights = *heights_ptr;
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
-        if (tx_info.storages(i).key() == protos::kNormalTos) {
+        if (tx_info.storages(i).key() == protos::kNormalToShards) {
             std::string to_txs_str;
             if (!prefix_db_->GetTemporaryKv(tx_info.storages(i).val_hash(), &to_txs_str)) {
                 ZJC_WARN("get to tx heights failed: %s!",
