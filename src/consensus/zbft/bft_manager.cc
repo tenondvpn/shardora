@@ -923,9 +923,11 @@ void BftManager::CreateResponseMessage(
         const std::vector<ZbftPtr>& zbft_vec,
         const transport::MessagePtr& msg_ptr,
         common::BftMemberPtr& mem_ptr) {
+    auto elect_height = elect_item.elect_height;
     if (response_to_leader) {
         // pre-commit reuse prepare's bls sign
         if (zbft_vec[0] != nullptr) {
+            elect_height = zbft_vec[0]->elect_height();
             auto* new_bft_msg = msg_ptr->response->header.mutable_zbft();
             std::string precommit_gid = "";
             if (zbft_vec[1] != nullptr) {
@@ -942,6 +944,7 @@ void BftManager::CreateResponseMessage(
                 return;
             }
         } else if (zbft_vec[1] != nullptr) {
+            elect_height = zbft_vec[1]->elect_height();
             auto res = BftProto::BackupCreatePreCommit(
                 bls_mgr_,
                 zbft_vec[1],
@@ -953,6 +956,7 @@ void BftManager::CreateResponseMessage(
         }
     } else {
         if (zbft_vec[0] != nullptr) {
+            elect_height = zbft_vec[0]->elect_height();
             auto* new_bft_msg = msg_ptr->response->header.mutable_zbft();
             std::string precommit_gid;
             std::string commit_gid;
@@ -976,6 +980,7 @@ void BftManager::CreateResponseMessage(
                 return;
             }
         } else if (zbft_vec[1] != nullptr) {
+            elect_height = zbft_vec[1]->elect_height();
             std::string commit_gid;
             if (zbft_vec[1]->pipeline_prev_zbft_ptr() != nullptr) {
                 commit_gid = zbft_vec[1]->pipeline_prev_zbft_ptr()->gid();
@@ -997,8 +1002,7 @@ void BftManager::CreateResponseMessage(
         assert(msg_ptr->response->header.zbft().has_pool_index());
         msg_ptr->response->header.mutable_zbft()->set_member_index(
             elect_item.local_node_member_index);
-        msg_ptr->response->header.mutable_zbft()->set_elect_height(
-            elect_item.elect_height);
+        msg_ptr->response->header.mutable_zbft()->set_elect_height(elect_height);
         assert(elect_item.elect_height > 0);
         if (response_to_leader) {
             //assert(msg_ptr->response->header.mutable_zbft()->member_index() != 0);
