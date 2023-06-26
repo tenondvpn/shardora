@@ -1898,11 +1898,16 @@ int BftManager::LeaderHandleZbftMessage(
         ZJC_DEBUG("has prepare  now leader handle gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
         auto bft_ptr = LeaderGetZbft(msg_ptr, elect_item, bft_msg.prepare_gid());
         if (bft_ptr == nullptr) {
-//             ZJC_ERROR("prepare get bft failed: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+            ZJC_ERROR("prepare get bft failed: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             return kConsensusError;
         }
 
         auto& member_ptr = (*bft_ptr->members_ptr())[bft_msg.member_index()];
+        ZJC_DEBUG("has prepare  now leader handle gid: %s, agree precommit: %d, prepare hash: %s, local hash: %s",
+            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+            bft_msg.agree_precommit(),
+            common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
+            common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
         if (bft_msg.agree_precommit() && bft_msg.prepare_hash() == bft_ptr->local_prepare_hash()) {
             libff::alt_bn128_G1 sign;
             try {
