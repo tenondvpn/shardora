@@ -1970,7 +1970,7 @@ int BftManager::LeaderHandleZbftMessage(
             }
         }
 
-        return;
+        return kConsensusSuccess;
     }
 
     if (bft_msg.has_precommit_gid() && !bft_msg.precommit_gid().empty()) {
