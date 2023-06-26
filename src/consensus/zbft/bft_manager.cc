@@ -1415,12 +1415,12 @@ void BftManager::ReConsensusBft(uint8_t thread_idx, ZbftPtr& pre_bft) {
     msg_ptr->tmp_ptr = &zbft_vec;
     auto elect_item = *elect_item_ptr;
     ZbftPtr next_prepare_bft = nullptr;
-    if (!prev_ptr->is_cross_block()) {
+    if (!pre_bft->is_cross_block()) {
         next_prepare_bft = Start(msg_ptr->thread_idx, pre_bft, msg_ptr->response);
     }
 
     zbft_vec[0] = next_prepare_bft;
-    zbft_vec[1] = prev_ptr;
+    zbft_vec[1] = pre_bft;
     //     NextPrepareErrorLeaderCallPrecommit(elect_item, pre_bft, msg_ptr);
     common::BftMemberPtr mem_ptr = nullptr;
     CreateResponseMessage(
