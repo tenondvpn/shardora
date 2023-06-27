@@ -348,8 +348,9 @@ void MultiThreadHandler::CreateConsensusBlockMessage(
     transport::TcpTransport::Instance()->SetMessageHash(new_msg_ptr->header, queue_idx);
     threads_message_queues_[queue_idx][kTransportPriorityHighest].push(new_msg_ptr);
     wait_con_[queue_idx % all_thread_count_].notify_one();
-    ZJC_DEBUG("create sync block message: %d, index: %d, queue_idx: %d",
-        queue_idx, block_item->pool_index(), queue_idx);
+    ZJC_DEBUG("create sync block message: %d, index: %d, queue_idx: %d, hash64: %lu, block hash: %s",
+        queue_idx, block_item->pool_index(), queue_idx, new_msg_ptr->header.hash64(),
+        common::Encode::HexEncode(block_item->hash()).c_str());
 }
 
 void MultiThreadHandler::SaveKeyValue(const transport::protobuf::Header& msg, db::DbWriteBatch& db_batch) {
