@@ -49,7 +49,7 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->thread_idx = thread_idx_;
             auto btime = common::TimeUtils::TimestampUs();
             msg_ptr->times[msg_ptr->times_idx++] = btime;
-            ZJC_INFO("message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
+            ZJC_DEBUG("message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
             if (etime - btime > 100000) {
@@ -80,24 +80,6 @@ void ThreadHandler::HandleMessage() {
                 ZJC_INFO("kConsensusTimerMessage over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
             }
         }
-
-//         if (thread_idx_ + 1 == common::GlobalInfo::Instance()->message_handler_thread_count()) {
-//             auto btime = common::TimeUtils::TimestampUs();
-//             auto msg_ptr = std::make_shared<transport::TransportMessage>();
-//             msg_ptr->thread_idx = thread_idx_;
-//             msg_ptr->header.set_type(common::kPoolTimerMessage);
-// //             ZJC_INFO("thread timer message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
-//             Processor::Instance()->HandleMessage(msg_ptr);
-//             auto etime = common::TimeUtils::TimestampUs();
-//             if (etime - btime > 100000lu) {
-//                 std::string t;
-//                 for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
-//                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
-//                 }
-// 
-//                 ZJC_INFO("thread over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
-//             }
-//         }
 
         std::unique_lock<std::mutex> lock(wait_mutex_);
         wait_con_.wait_for(lock, std::chrono::milliseconds(10));
@@ -272,7 +254,7 @@ void MultiThreadHandler::BlockSaved(const block::protobuf::Block& block_item) {
 //         ZJC_DEBUG("success add commit pool index: %u, height: %lu, this block pool: %u, height: %lu", block_item.commit_pool_index(), block_item.commit_height(), block_item.pool_index(), block_item.height());
     }
 
-    ZJC_INFO("remove not checked block net: %u, pool: %u, height: %lu, block hash: %s",
+    ZJC_DEBUG("remove not checked block net: %u, pool: %u, height: %lu, block hash: %s",
         block_item.network_id(),
         block_item.pool_index(),
         block_item.height(),
@@ -291,7 +273,7 @@ void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Bl
             waiting_check_block_map_[item->pool].erase(iter);
         }
 
-        ZJC_INFO("success add commit pool index: %u, height: %lu",
+        ZJC_DEBUG("success add commit pool index: %u, height: %lu",
             item->checked_pool, item->checked_height);
         committed_heights_[item->checked_pool].insert(item->checked_height);
     }
@@ -303,7 +285,7 @@ void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Bl
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             new_msg_ptr->checked_block = true;
             CreateConsensusBlockMessage(new_msg_ptr, block_item);
-            ZJC_INFO("call not checked block net: %u, pool: %u, height: %lu, block hash: %s",
+            ZJC_DEBUG("call not checked block net: %u, pool: %u, height: %lu, block hash: %s",
                 block_item->network_id(),
                 block_item->pool_index(),
                 block_item->height(),
@@ -311,7 +293,7 @@ void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Bl
 
         }
 
-        ZJC_INFO("add not checked block net: %u, pool: %u, height: %lu, block hash: %s",
+        ZJC_DEBUG("add not checked block net: %u, pool: %u, height: %lu, block hash: %s",
             block_item->network_id(),
             block_item->pool_index(),
             block_item->height(),
@@ -325,7 +307,7 @@ void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Bl
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             new_msg_ptr->checked_block = true;
             CreateConsensusBlockMessage(new_msg_ptr, iter->second);
-            ZJC_INFO("call not checked block net: %u, pool: %u, height: %lu, prepool: %u, preheight: %lu, block hash: %s",
+            ZJC_DEBUG("call not checked block net: %u, pool: %u, height: %lu, prepool: %u, preheight: %lu, block hash: %s",
                 iter->second->network_id(),
                 iter->second->pool_index(),
                 iter->second->height(),
@@ -336,7 +318,7 @@ void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Bl
         }
 
         committed_heights_[block_item->commit_pool_index()].insert(block_item->commit_height());
-        ZJC_INFO("success add commit pool index: %u, height: %lu, this pool: %u, height: %lu", block_item->commit_pool_index(), block_item->commit_height(), block_item->pool_index(), block_item->height());
+        ZJC_DEBUG("success add commit pool index: %u, height: %lu, this pool: %u, height: %lu", block_item->commit_pool_index(), block_item->commit_height(), block_item->pool_index(), block_item->height());
     }
 }
 

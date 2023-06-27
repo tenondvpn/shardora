@@ -90,15 +90,10 @@ void BlockManager::ConsensusTimerMessage(uint8_t thread_idx) {
     HandleToTxMessage();
     HandleStatisticTxMessage();
     NetworkNewBlock(thread_idx, nullptr);
-    auto now_tm2 = common::TimeUtils::TimestampUs();
-    auto now_tm3 = common::TimeUtils::TimestampUs();
-    auto now_tm4 = common::TimeUtils::TimestampUs();
     if (to_tx_leader_ != nullptr && local_id_ == to_tx_leader_->id) {
         ZJC_DEBUG("now leader create to and statistic message.");
         CreateToTx(thread_idx);
-        now_tm3 = common::TimeUtils::TimestampUs();
         CreateStatisticTx(thread_idx);
-        now_tm4 = common::TimeUtils::TimestampUs();
     }
 
     auto now_tm_ms = now_tm / 1000;
@@ -116,12 +111,6 @@ void BlockManager::ConsensusTimerMessage(uint8_t thread_idx) {
         }
 
         prev_retry_create_statistic_tx_ms_ = now_tm_ms + kRetryStatisticPeriod;
-    }
-
-    auto etime = common::TimeUtils::TimestampUs();
-    if (etime - now_tm >= 10000lu) {
-        ZJC_DEBUG("block manager handle message use time: %lu, %lu, %lu, %lu, %lu, %lu",
-            (etime - now_tm), (now_tm1 - now_tm), (now_tm2 - now_tm1), (now_tm3 - now_tm2), (now_tm4 - now_tm3), (etime - now_tm4));
     }
 
     test_sync_block_tick_.CutOff(100000lu, std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
@@ -1309,7 +1298,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     }
 
     std::string tos_hashs;
-    for (int32_t sharding_id = network::kRootCongressNetworkId;
+    for (uint32_t sharding_id = network::kRootCongressNetworkId;
             sharding_id < max_consensus_sharding_id_; ++sharding_id) {
         std::string tos_hash;
         if (to_txs_pool_->CreateToTxWithHeights(

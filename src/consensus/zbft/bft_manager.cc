@@ -374,8 +374,8 @@ ZbftPtr BftManager::Start(
         return nullptr;
     }
 
-//     ZJC_DEBUG("thread_index: %d, pool index: %d, tx size: %u, pool zbft size: %d",
-//         thread_index, txs_ptr->pool_index, txs_ptr->txs.size(), txs_pools_->ZbftSize(txs_ptr->pool_index));
+    ZJC_DEBUG("thread_index: %d, pool index: %d, tx size: %u, pool zbft size: %d",
+        thread_index, txs_ptr->pool_index, txs_ptr->txs.size(), txs_pools_->ZbftSize(txs_ptr->pool_index));
     txs_ptr->thread_index = thread_index;
     auto zbft_ptr = StartBft(elect_item, txs_ptr, prev_bft, prepare_msg_ptr);
     if (zbft_ptr == nullptr) {
