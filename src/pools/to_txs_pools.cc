@@ -47,6 +47,12 @@ void ToTxsPools::NewBlock(const std::shared_ptr<block::protobuf::Block>& block_p
         pool_max_heihgts_[block.pool_index()] = block.height();
     }
 
+    for (int32_t i = 0; i < block_ptr->tx_list_size(); ++i) {
+        if (block_ptr->tx_list(i).to() == common::Encode::HexDecode("6101d9ec5aff3001dece14e1f4a35a39ed506bd6274b")) {
+            assert(false);
+        }
+    }
+
     ZJC_DEBUG("to txs new block coming pool: %u, height: %lu, cons height: %lu",
         block.pool_index(), block.height(), pool_consensus_heihgts_[block.pool_index()]);
     if (pool_consensus_heihgts_[block.pool_index()] + 1 == block.height()) {
