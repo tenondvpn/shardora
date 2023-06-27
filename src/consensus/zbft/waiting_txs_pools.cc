@@ -157,6 +157,10 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(uint32_t pool_in
         if (pool_index != common::kRootChainPoolIndex) {
             return nullptr;
         }
+
+        if (leader) {
+            ZJC_DEBUG("leader get statistic tx now.");
+        }
     } else {
         if (pool_index != 0) {
             return nullptr;
