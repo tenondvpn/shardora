@@ -96,6 +96,17 @@ bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_
             block_ptr = iter->second;
         }
 
+        for (int32_t i = 0; i < block_ptr->tx_list_size(); ++i) {
+            if (block_ptr->tx_list(i).to() == common::Encode::HexDecode("6101d9ec5aff3001dece14e1f4a35a39ed506bd6274b")) {
+                ZJC_DEBUG("get block invalid address: %u, %u, %lu", block_ptr->network_id(), block_ptr->pool_index(), block_ptr->height());
+                assert(false);
+            }
+
+            if (block_ptr->tx_list(i).from() == common::Encode::HexDecode("6101d9ec5aff3001dece14e1f4a35a39ed506bd6274b")) {
+                ZJC_DEBUG("get block invalid address: %u, %u, %lu", block_ptr->network_id(), block_ptr->pool_index(), block_ptr->height());
+                assert(false);
+            }
+        }
         auto& block = *block_ptr;
         const auto& tx_list = block.tx_list();
         if (tx_list.empty()) {
