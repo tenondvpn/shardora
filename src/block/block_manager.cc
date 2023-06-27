@@ -1406,7 +1406,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) 
         return shard_statistic_tx->tx_ptr;
     }
 
-    ZJC_DEBUG("get statistic tx failed.");
+    ZJC_DEBUG("get statistic tx failed latest_shard_statistic_tx_ is null");
     return nullptr;
 }
 
