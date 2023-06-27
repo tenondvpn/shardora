@@ -457,6 +457,14 @@ public:
         return db_batch_;
     }
 
+    bool should_timer_to_restart() const {
+        return should_timer_to_restart_;
+    }
+
+    void set_should_timer_to_restart(bool tag) {
+        should_timer_to_restart_ = true;
+    }
+
 protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
@@ -516,6 +524,7 @@ protected:
     uint64_t leader_pre_height_ = 0;
     std::string leader_pre_hash_;
     zjcvm::ZjchainHost zjc_host;
+    bool should_timer_to_restart_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(Zbft);
 public:

@@ -1415,7 +1415,18 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
                     ReConsensusBft(thread_idx, pre_bft);
                 }
             } else if (bft_ptr->consensus_status() == kConsensusPreCommit) {
-                // TODO: check it
+                // cross block remove
+                if (bft_ptr->prepare_block() == nullptr || bft_ptr->prepare_block()->is_cross_block()) {
+                    bft_ptr->Destroy();
+                    bft_hash_map_[thread_idx].erase(iter);
+                    ZJC_DEBUG("cross precommit block remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
+                    return;
+                }
+
+                if (bft_ptr->should_timer_to_restart()) {
+                    ReConsensusBft(thread_idx, bft_ptr);
+                    bft_ptr->set_should_timer_to_restart(false);
+                }
             } else {
                 bft_ptr->Destroy();
                 bft_hash_map_[thread_idx].erase(iter);
@@ -1445,11 +1456,7 @@ void BftManager::ReConsensusBft(uint8_t thread_idx, ZbftPtr& pre_bft) {
     std::vector<ZbftPtr> zbft_vec = { nullptr, nullptr, nullptr };
     msg_ptr->tmp_ptr = &zbft_vec;
     auto elect_item = *elect_item_ptr;
-    ZbftPtr next_prepare_bft = nullptr;
-    if (!pre_bft->is_cross_block()) {
-        next_prepare_bft = Start(msg_ptr->thread_idx, pre_bft, msg_ptr->response);
-    }
-
+    ZbftPtr next_prepare_bft = Start(msg_ptr->thread_idx, pre_bft, msg_ptr->response);
     zbft_vec[0] = next_prepare_bft;
     zbft_vec[1] = pre_bft;
     //     NextPrepareErrorLeaderCallPrecommit(elect_item, pre_bft, msg_ptr);
@@ -1963,8 +1970,9 @@ int BftManager::LeaderHandleZbftMessage(
                         std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
-                    }
-//                     NextPrepareErrorLeaderCallPrecommit(elect_item, prev_ptr, msg_ptr);
+                    } else {
+                        prev_ptr->set_should_timer_to_restart(true);
+                    }//                     NextPrepareErrorLeaderCallPrecommit(elect_item, prev_ptr, msg_ptr);
                 }
             }
         } else {
@@ -1994,6 +2002,8 @@ int BftManager::LeaderHandleZbftMessage(
                         std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
+                    } else {
+                        prev_ptr->set_should_timer_to_restart(true);
                     }
 //                     NextPrepareErrorLeaderCallPrecommit(elect_item, prev_ptr, msg_ptr);
                 }
@@ -2024,15 +2034,13 @@ int BftManager::LeaderHandleZbftMessage(
                 bft_ptr->set_consensus_status(kConsensusFailed);
                 RemoveBft(msg_ptr->thread_idx, bft_ptr->gid(), true);
                 if (prev_ptr != nullptr) {
-                    ZbftPtr next_prepare_bft = nullptr;
-                    if (!bft_ptr->is_cross_block()) {
-                        next_prepare_bft = Start(msg_ptr->thread_idx, prev_ptr, msg_ptr->response);
-                    }
-
+                    ZbftPtr next_prepare_bft = Start(msg_ptr->thread_idx, prev_ptr, msg_ptr->response);
                     if (next_prepare_bft != nullptr) {
                         std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
+                    } else {
+                        prev_ptr->set_should_timer_to_restart(true);
                     }
                     ZJC_ERROR("commit call oppose now.");
                 }
