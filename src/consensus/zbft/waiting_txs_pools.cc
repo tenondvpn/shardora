@@ -45,13 +45,28 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index) {
+    if (pool_index == common::kRootChainPoolIndex) {
+        ZJC_DEBUG("0 leader now get root pool index.");
+    }
+
     std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
     if (pool_index == common::kRootChainPoolIndex) {
         txs_item = GetTimeblockTx(pool_index, true);
     }
 
+    if (pool_index == common::kRootChainPoolIndex) {
+        ZJC_DEBUG("1 leader now get root pool index.");
+    }
+
     if (txs_item == nullptr) {
+        if (pool_index == common::kRootChainPoolIndex) {
+            ZJC_DEBUG("now statistic 1 leader now get root pool index.");
+        }
+
         txs_item = GetStatisticTx(pool_index, true);
+        if (pool_index == common::kRootChainPoolIndex) {
+            ZJC_DEBUG("success statistic 1 leader now get root pool index.");
+        }
     }
 
     if (txs_item == nullptr) {
