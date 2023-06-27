@@ -340,7 +340,7 @@ void MultiThreadHandler::CreateConsensusBlockMessage(
     assert(block_item->has_bls_agg_sign_y() && block_item->has_bls_agg_sign_x());
     *bft_msg.mutable_block() = *block_item;
     auto queue_idx = GetThreadIndex(new_msg_ptr);
-    transport::TcpTransport::Instance()->SetMessageHash(*new_msg_ptr, queue_idx);
+    transport::TcpTransport::Instance()->SetMessageHash(new_msg_ptr->header, queue_idx);
     threads_message_queues_[queue_idx][kTransportPriorityHighest].push(new_msg_ptr);
     wait_con_[queue_idx % all_thread_count_].notify_one();
     ZJC_DEBUG("create sync block message: %d, index: %d, queue_idx: %d",
