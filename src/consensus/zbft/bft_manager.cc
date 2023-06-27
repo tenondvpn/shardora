@@ -1983,7 +1983,7 @@ int BftManager::LeaderHandleZbftMessage(
                     common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
                     (prev_ptr != nullptr),
                     bft_msg.agree_commit());
-                if (prev_ptr != nullptr && bft_msg.agree_commit()) {
+                if (prev_ptr != nullptr) {
                     // precommit prev consensus
                     ZbftPtr next_prepare_bft = nullptr;
                     if (!prev_ptr->is_cross_block()) {
