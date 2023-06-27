@@ -50,6 +50,7 @@ public:
             return root_pool_address_info_;
         }
 
+        assert(pool_address_info_[pool_idx % common::kImmutablePoolSize] != common::Encode::HexDecode("6101d9ec5aff3001dece14e1f4a35a39ed506bd6274b"));
         return pool_address_info_[pool_idx % common::kImmutablePoolSize];
     }
 
