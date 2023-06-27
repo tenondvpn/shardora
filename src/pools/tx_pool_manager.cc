@@ -986,7 +986,6 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
     }
 
     tx_pool_[pool_index].AddTx(tx_ptr);
-    assert(msg_ptr->header.tx_proto().to() != common::Encode::HexDecode("6101d9ec5aff3001dece14e1f4a35a39ed506bd6274b"));
     ZJC_DEBUG("success add local transfer to tx %u, %s, gid: %s, from pk: %s, to: %s",
         pool_index,
         common::Encode::HexEncode(tx_ptr->tx_hash).c_str(),

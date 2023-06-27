@@ -16,8 +16,6 @@ int FromTxItem::HandleTx(
     uint64_t from_balance = 0;
     uint64_t to_balance = 0;
     auto& from = msg_ptr->address_info->addr();
-    ZJC_DEBUG("normal from coming: %s", common::Encode::HexEncode(block_tx.to()).c_str());
-    assert(block_tx.to() != common::Encode::HexDecode("6101d9ec5aff3001dece14e1f4a35a39ed506bd6274b"));
     int balance_status = GetTempAccountBalance(
         thread_idx, from, acc_balance_map, &from_balance);
     if (balance_status != kConsensusSuccess) {

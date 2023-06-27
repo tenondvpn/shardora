@@ -47,12 +47,6 @@ void ToTxsPools::NewBlock(const std::shared_ptr<block::protobuf::Block>& block_p
         pool_max_heihgts_[block.pool_index()] = block.height();
     }
 
-    for (int32_t i = 0; i < block_ptr->tx_list_size(); ++i) {
-        if (block_ptr->tx_list(i).to() == common::Encode::HexDecode("6101d9ec5aff3001dece14e1f4a35a39ed506bd6274b")) {
-            assert(false);
-        }
-    }
-
     ZJC_DEBUG("to txs new block coming pool: %u, height: %lu, cons height: %lu",
         block.pool_index(), block.height(), pool_consensus_heihgts_[block.pool_index()]);
     if (pool_consensus_heihgts_[block.pool_index()] + 1 == block.height()) {
@@ -85,28 +79,10 @@ bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_
             if (!prefix_db_->GetBlockWithHeight(net_id, pool_idx, height, &block)) {
                 return false;
             }
-
-            for (int32_t i = 0; i < block_ptr->tx_list_size(); ++i) {
-                if (block_ptr->tx_list(i).to() == common::Encode::HexDecode("6101d9ec5aff3001dece14e1f4a35a39ed506bd6274b")) {
-                    ZJC_DEBUG("get block invalid address: %u, %u, %lu", net_id, pool_idx, height);
-                    assert(false);
-                }
-            }
         } else {
             block_ptr = iter->second;
         }
 
-        for (int32_t i = 0; i < block_ptr->tx_list_size(); ++i) {
-            if (block_ptr->tx_list(i).to() == common::Encode::HexDecode("6101d9ec5aff3001dece14e1f4a35a39ed506bd6274b")) {
-                ZJC_DEBUG("get block invalid address: %u, %u, %lu", block_ptr->network_id(), block_ptr->pool_index(), block_ptr->height());
-                assert(false);
-            }
-
-            if (block_ptr->tx_list(i).from() == common::Encode::HexDecode("6101d9ec5aff3001dece14e1f4a35a39ed506bd6274b")) {
-                ZJC_DEBUG("get block invalid address: %u, %u, %lu", block_ptr->network_id(), block_ptr->pool_index(), block_ptr->height());
-                assert(false);
-            }
-        }
         auto& block = *block_ptr;
         const auto& tx_list = block.tx_list();
         if (tx_list.empty()) {
