@@ -85,6 +85,13 @@ bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_
             if (!prefix_db_->GetBlockWithHeight(net_id, pool_idx, height, &block)) {
                 return false;
             }
+
+            for (int32_t i = 0; i < block_ptr->tx_list_size(); ++i) {
+                if (block_ptr->tx_list(i).to() == common::Encode::HexDecode("6101d9ec5aff3001dece14e1f4a35a39ed506bd6274b")) {
+                    ZJC_DEBUG("get block invalid address: %u, %u, %lu", net_id, pool_idx, height);
+                    assert(false);
+                }
+            }
         } else {
             block_ptr = iter->second;
         }
