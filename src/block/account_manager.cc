@@ -95,8 +95,6 @@ protos::AddressInfoPtr AccountManager::GetAccountInfo(
     address_info = prefix_db_->GetAddressInfo(addr);
     if (address_info != nullptr) {
         address_map_[thread_idx].add(addr, address_info);
-    } else {
-        assert(false);
     }
 
     return address_info;
