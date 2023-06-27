@@ -1119,10 +1119,14 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
     if (riter != leader_statistic_txs_.rend()) {
         latest_shard_statistic_tx_ = riter->second->shard_statistic_tx;
         latest_cross_statistic_tx_ = riter->second->cross_statistic_tx;
-        ZJC_DEBUG("success set statistic tx statistic elect height: %lu, statistic: %d, cross: %d",
+        ZJC_DEBUG("success set statistic tx statistic elect height: %lu, statistic: %d, cross: %d, tx hash: %s",
             msg_ptr->header.block_proto().statistic_tx().elect_height(),
             (latest_shard_statistic_tx_ != nullptr),
-            (latest_cross_statistic_tx_ != nullptr));
+            (latest_cross_statistic_tx_ != nullptr),
+            common::Encode::HexEncode(latest_shard_statistic_tx_->tx_hash).c_str());
+        if (statistic_item->elect_height == riter->second->elect_height) {
+            assert(statistic_item->shard_statistic_tx->tx_hash == latest_shard_statistic_tx_->tx_hash);
+        }
     }
 }
 
@@ -1381,6 +1385,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) 
     if (shard_statistic_tx != nullptr) {
         auto now_tm = common::TimeUtils::TimestampUs();
         if (shard_statistic_tx->tx_ptr->in_consensus) {
+            ZJC_DEBUG("get statistic tx failed is in consensus.");
             if (shard_statistic_tx->tx_ptr->timeout < now_tm) {
                 shard_statistic_tx->tx_ptr->in_consensus = false;
             }
@@ -1401,9 +1406,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) 
         return shard_statistic_tx->tx_ptr;
     }
 
-    if (leader) {
-        ZJC_DEBUG("leader get statistic tx failed.");
-    }
+    ZJC_DEBUG("get statistic tx failed.");
     return nullptr;
 }
 
