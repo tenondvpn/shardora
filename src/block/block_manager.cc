@@ -1299,7 +1299,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
 
     std::string tos_hashs;
     for (uint32_t sharding_id = network::kRootCongressNetworkId;
-            sharding_id < max_consensus_sharding_id_; ++sharding_id) {
+            sharding_id <= max_consensus_sharding_id_; ++sharding_id) {
         std::string tos_hash;
         if (to_txs_pool_->CreateToTxWithHeights(
                 sharding_id,
