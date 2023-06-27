@@ -664,21 +664,6 @@ void BftManager::HandleSyncConsensusBlock(
                 common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str(),
                 common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
                 block_ptr->precommit_bitmap_size());
-//             auto iter = bft_hash_map_[msg_ptr->thread_idx].begin();
-//             while (iter != bft_hash_map_[msg_ptr->thread_idx].end()) {
-//                 bft_ptr = iter->second;
-//                 if (bft_ptr->pool_index() == block_ptr->pool_index()) {
-//                     if (bft_ptr->prepare_block() != nullptr &&
-//                             bft_ptr->prepare_block()->height() <= block_ptr->height()) {
-//                         ZJC_DEBUG("remove bft gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
-//                         bft_hash_map_[msg_ptr->thread_idx].erase(iter++);
-//                         bft_ptr->Destroy();
-//                         continue;
-//                     }
-//                 }
-// 
-//                 ++iter;
-//             }
         } else {
             if (bft_ptr->prepare_block() == nullptr) {
                 auto block_hash = GetBlockHash(req_bft_msg.block());
@@ -2469,8 +2454,8 @@ void BftManager::BroadcastBlock(
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     auto* brdcast = msg.mutable_broadcast();
     network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("success broadcast to %u, pool: %u, height: %lu",
-        des_shard, block_item->pool_index(), block_item->height());
+    ZJC_DEBUG("success broadcast to %u, pool: %u, height: %lu, hash64: %lu",
+        des_shard, block_item->pool_index(), block_item->height(), msg.hash64());
 }
 
 void BftManager::BroadcastWaitingBlock(

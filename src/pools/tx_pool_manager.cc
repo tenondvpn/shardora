@@ -189,6 +189,7 @@ void TxPoolManager::FlushHeightTree() {
 
 void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
+    ZJC_DEBUG("tx pool manager called timer: %lu", now_tm_ms);
     PopPoolsMessage(thread_idx);
     if (prev_sync_height_tree_tm_ms_ < now_tm_ms) {
         FlushHeightTree();
@@ -255,6 +256,7 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
         ZJC_DEBUG("TxPoolManager handle message use time: %lu", (etime - now_tm_ms));
     }
 
+    ZJC_DEBUG("end tx pool manager called timer: %lu", now_tm_ms);
     tick_.CutOff(
         100000lu,
         std::bind(&TxPoolManager::ConsensusTimerMessage, this, std::placeholders::_1));
