@@ -4,6 +4,7 @@
 
 #include "common/utils.h"
 #include "common/global_info.h"
+#include "common/random.h"
 #include "common/time_utils.h"
 #include "network//network_utils.h"
 #include "protos/prefix_db.h"
