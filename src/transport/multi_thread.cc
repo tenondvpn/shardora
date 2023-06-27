@@ -39,7 +39,7 @@ void ThreadHandler::Join() {
 }
 
 void ThreadHandler::HandleMessage() {
-    uint32_t thread_timer_hash_64 = common::Random::RandomUint64();
+    uint64_t thread_timer_hash_64 = common::Random::RandomUint64();
     while (!destroy_) {
         while (!destroy_) {
             auto msg_ptr = msg_handler_->GetMessageFromQueue(thread_idx_);
