@@ -679,9 +679,10 @@ void BftManager::HandleSyncConsensusBlock(
         } else {
             if (bft_ptr->prepare_block() == nullptr) {
                 auto block_hash = GetBlockHash(req_bft_msg.block());
-                ZJC_DEBUG("receive block hash: %s, local: %s",
+                ZJC_DEBUG("receive block hash: %s, local: %s, status: %d",
                     common::Encode::HexEncode(block_hash).c_str(),
-                    common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
+                    common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+                    bft_ptr->consensus_status());
                 if (block_hash == bft_ptr->local_prepare_hash()) {
                     // check bls sign
                     if (!block_agg_valid_func_(req_bft_msg.block())) {
