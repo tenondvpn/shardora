@@ -172,9 +172,11 @@ public:
     }
 
     void set_prepare_bitmap(const std::vector<uint64_t>& bitmap_data) {
-        prepare_block_->clear_precommit_bitmap();
-        for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
-            prepare_block_->add_precommit_bitmap(bitmap_data[i]);
+        if (prepare_block_ != nullptr) {
+            prepare_block_->clear_precommit_bitmap();
+            for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
+                prepare_block_->add_precommit_bitmap(bitmap_data[i]);
+            }
         }
 
         prepare_bitmap_ = common::Bitmap(bitmap_data);
