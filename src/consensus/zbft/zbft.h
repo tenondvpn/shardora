@@ -178,7 +178,7 @@ public:
         }
 
         prepare_bitmap_ = common::Bitmap(bitmap_data);
-        assert(prepare_bitmap_.valid_count() < min_oppose_member_count_);
+        assert(prepare_bitmap_.valid_count() == member_count_ - min_aggree_member_count_);
     }
 
     const common::Bitmap& prepare_bitmap() const {
