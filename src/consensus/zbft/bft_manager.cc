@@ -378,6 +378,7 @@ ZbftPtr BftManager::Start(
     }
 
     if (txs_ptr == nullptr) {
+        ZJC_DEBUG("leader start bft failed, thread: %d, can_new_bft: %d", thread_index, can_new_bft);
         return nullptr;
     }
 
@@ -387,6 +388,7 @@ ZbftPtr BftManager::Start(
         for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
             iter->second->in_consensus = false;
         }
+        ZJC_DEBUG("leader start bft failed, thread: %d, can_new_bft: %d", thread_index, can_new_bft);
     }
 
     return zbft_ptr;
@@ -1414,9 +1416,12 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
 //                     bft_ptr->Destroy();
 //                     bft_hash_map_[thread_idx].erase(iter);
 //                     ZJC_DEBUG("cross precommit block remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
-//                     return;
+                    return;
                 }
-// 
+                ZJC_DEBUG("can not remove bft gid: %s, %d",
+                    common::Encode::HexEncode(gid).c_str(),
+                    (bft_ptr->prepare_block() != nullptr));
+                // 
 //                 if (bft_ptr->should_timer_to_restart()) {
 //                     ReConsensusBft(thread_idx, bft_ptr);
 //                     bft_ptr->set_should_timer_to_restart(false);
