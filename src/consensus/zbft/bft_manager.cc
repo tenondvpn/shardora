@@ -1429,15 +1429,15 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
     }
 }
 
-void BftManager::ReConsensusBft(uint8_t thread_idx, ZbftPtr& pre_bft) {
+void BftManager::ReConsensusBft(uint8_t thread_idx, ZbftPtr& bft_ptr) {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
     auto elect_item_ptr = elect_items_[elect_item_idx_];
-    if (elect_item_ptr->elect_height != pre_bft->elect_height()) {
+    if (elect_item_ptr->elect_height != bft_ptr->elect_height()) {
         elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
-        if (elect_item_ptr->elect_height != pre_bft->elect_height()) {
+        if (elect_item_ptr->elect_height != bft_ptr->elect_height()) {
             ZJC_DEBUG("elect height error: %lu, %lu, %lu",
-                pre_bft->elect_height(),
+                bft_ptr->elect_height(),
                 elect_items_[elect_item_idx_]->elect_height,
                 elect_items_[(elect_item_idx_ + 1) % 2]->elect_height);
             assert(false);
@@ -1449,10 +1449,38 @@ void BftManager::ReConsensusBft(uint8_t thread_idx, ZbftPtr& pre_bft) {
     std::vector<ZbftPtr> zbft_vec = { nullptr, nullptr, nullptr };
     msg_ptr->tmp_ptr = &zbft_vec;
     auto elect_item = *elect_item_ptr;
-    ZbftPtr next_prepare_bft = Start(msg_ptr->thread_idx, pre_bft, msg_ptr->response);
-    zbft_vec[0] = next_prepare_bft;
-    zbft_vec[1] = pre_bft;
-    //     NextPrepareErrorLeaderCallPrecommit(elect_item, pre_bft, msg_ptr);
+    std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
+    ZJC_DEBUG("use g1_precommit_hash prepare hash: %s, gid: %s",
+        common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
+        common::Encode::HexEncode(bft_ptr->gid()).c_str());
+    bft_ptr->set_precoimmit_hash();
+    ZJC_DEBUG("use g1_precommit_hash prepare hash: %s, gid: %s",
+        common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
+        common::Encode::HexEncode(bft_ptr->gid()).c_str());
+    libff::alt_bn128_G1 sign;
+    if (bls_mgr_->Sign(
+            bft_ptr->min_aggree_member_count(),
+            bft_ptr->member_count(),
+            bft_ptr->local_sec_key(),
+            bft_ptr->g1_precommit_hash(),
+            &sign) != bls::kBlsSuccess) {
+        ZJC_ERROR("leader signature error.");
+        return kConsensusError;
+    }
+
+    if (bft_ptr->LeaderCommitOk(
+            elect_item.local_node_member_index,
+            sign,
+            security_ptr_->GetAddress()) != kConsensusWaitingBackup) {
+        ZJC_ERROR("leader commit failed!");
+        return kConsensusError;
+    }
+
+    bft_ptr->init_precommit_timeout();
+    ZJC_DEBUG("LeaderCallPrecommit success gid: %s",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str());
+    zbft_vec[0] = nullptr;
+    zbft_vec[1] = bft_ptr;
     common::BftMemberPtr mem_ptr = nullptr;
     CreateResponseMessage(
         elect_item,
@@ -1964,7 +1992,8 @@ int BftManager::LeaderHandleZbftMessage(
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
                     } else {
-                        prev_ptr->set_should_timer_to_restart(true);
+                        ReConsensusBft(thread_idx, bft_ptr);
+//                         prev_ptr->set_should_timer_to_restart(true);
                     }//                     NextPrepareErrorLeaderCallPrecommit(elect_item, prev_ptr, msg_ptr);
                 }
             }
@@ -1996,9 +2025,13 @@ int BftManager::LeaderHandleZbftMessage(
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
                     } else {
-                        prev_ptr->set_should_timer_to_restart(true);
+                        ReConsensusBft(thread_idx, bft_ptr);
+//                         prev_ptr->set_should_timer_to_restart(true);
+//                         ZJC_DEBUG("oppose use next prepare set_should_timer_to_restart");
                     }
 //                     NextPrepareErrorLeaderCallPrecommit(elect_item, prev_ptr, msg_ptr);
+                } else {
+                    assert(bft_msg.precommit_gid().empty());
                 }
 //                 assert(false);
                 // just all consensus rollback
@@ -2033,7 +2066,8 @@ int BftManager::LeaderHandleZbftMessage(
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
                     } else {
-                        prev_ptr->set_should_timer_to_restart(true);
+                        ReConsensusBft(thread_idx, bft_ptr);
+//                         prev_ptr->set_should_timer_to_restart(true);
                     }
                     ZJC_ERROR("commit call oppose now.");
                 }
