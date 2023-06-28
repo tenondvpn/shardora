@@ -516,12 +516,13 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (elect_item_ptr->elect_height != header.zbft().elect_height()) {
-        auto tmp_elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
-        if (tmp_elect_item_ptr != nullptr && tmp_elect_item_ptr->elect_height != header.zbft().elect_height()) {
+        auto elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
+        if (elect_item_ptr == nullptr ||
+            elect_item_ptr->elect_height != header.zbft().elect_height()) {
             ZJC_DEBUG("elect height error: %lu, %lu, %lu",
                 header.zbft().elect_height(),
                 elect_item_ptr->elect_height,
-                tmp_elect_item_ptr->elect_height);
+                elect_item_ptr->elect_height);
             return;
         }
     }
@@ -529,7 +530,8 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& elect_item = *elect_item_ptr;
     ZJC_DEBUG("consensus message coming prepare gid: %s, precommit gid: %s, "
         "commit gid: %s thread idx: %d, has sync: %d, txhash: %lu, "
-        "member index: %d, other member index: %d, pool index: %d, elect height: %lu",
+        "member index: %d, other member index: %d, pool index: %d, "
+        "elect height: %lu, local elect height: %lu",
         common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
         common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
@@ -539,7 +541,8 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         elect_item.local_node_member_index,
         header.zbft().member_index(),
         header.zbft().pool_index(),
-        header.zbft().elect_height());
+        header.zbft().elect_height(),
+        elect_item.elect_height);
     if (elect_item.local_node_member_index == header.zbft().member_index()) {
         //assert(false);
         return;
