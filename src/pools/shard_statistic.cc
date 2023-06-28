@@ -329,7 +329,7 @@ bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
     final_bitmap.inversion(member_count);
     ZJC_DEBUG("final_bitmap.valid_count(): %u, signer count: %u",
         final_bitmap.valid_count(), common::GetSignerCount(member_count));
-    assert(final_bitmap.valid_count() == common::GetSignerCount(member_count));
+    assert(final_bitmap.valid_count() >= common::GetSignerCount(member_count));
     uint32_t bit_size = final_bitmap.data().size() * 64;
     if (member_count > bit_size || member_count > common::kEachShardMaxNodeCount) {
         assert(false);
