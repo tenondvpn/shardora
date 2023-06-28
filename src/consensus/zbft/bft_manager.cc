@@ -509,7 +509,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("message coming msg hash: %lu", msg_ptr->header.hash64());
     auto& header = msg_ptr->header;
     assert(header.type() == common::kConsensusMessage);
-    if (msg_ptr->header.zbft().sync_block() && msg_ptr->header.zbft().has_block()) {
+    if (msg_ptr->header.zbft().sync_block()) {
         ElectItem elect_item;
         return HandleSyncConsensusBlock(elect_item, msg_ptr);
     }
@@ -548,10 +548,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    if (header.zbft().has_sync_block() && header.zbft().sync_block()) {
-        return HandleSyncConsensusBlock(elect_item, msg_ptr);
-    }
-    
     if (!elect_item.bls_valid) {
         return;
     }
@@ -598,6 +594,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (zbft_vec[1] != nullptr) {
         zbft_vec[1]->AfterNetwork();
     }
+
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
 }
 
@@ -746,9 +743,9 @@ void BftManager::HandleSyncConsensusBlock(
         bft_msg.set_sync_block(true);
         bft_msg.set_precommit_gid(req_bft_msg.precommit_gid());
         bft_msg.set_pool_index(bft_ptr->pool_index());
-        bft_msg.set_member_index(elect_item.local_node_member_index);
-        bft_msg.set_elect_height(elect_item.elect_height);
-        assert(elect_item.elect_height > 0);
+//         bft_msg.set_member_index(elect_item.local_node_member_index);
+//         bft_msg.set_elect_height(elect_item.elect_height);
+//         assert(elect_item.elect_height > 0);
         *bft_msg.mutable_block() = *bft_ptr->prepare_block();
         assert(bft_msg.block().height() > 0);
         transport::TcpTransport::Instance()->SetMessageHash(msg, msg_ptr->thread_idx);
