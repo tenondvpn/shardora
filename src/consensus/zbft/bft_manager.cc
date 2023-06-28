@@ -710,7 +710,8 @@ void BftManager::HandleSyncConsensusBlock(
                             common::Encode::HexEncode(prev_bft->prepare_block()->hash()).c_str(),
                             common::Encode::HexEncode(prev_bft->gid()).c_str(),
                             prev_bft->consensus_status());
-                        if (prev_bft->consensus_status() == kConsensusCommited) {
+                        if (prev_bft->consensus_status() == kConsensusCommited ||
+                                prev_bft->consensus_status() == kConsensusPreCommit) {
                             HandleLocalCommitBlock(msg_ptr, prev_bft);
                             ZJC_DEBUG("prev commited receive block hash: %s",
                                 common::Encode::HexEncode(prev_bft->prepare_block()->hash()).c_str());
@@ -1616,24 +1617,26 @@ int BftManager::CheckPrecommit(
         const ElectItem& elect_item,
         const transport::MessagePtr& msg_ptr) {
     auto& bft_msg = msg_ptr->header.zbft();
-    if (!bft_msg.has_precommit_gid() || bft_msg.precommit_gid().empty()) {
-        return kConsensusSuccess;
-    }
-
-    auto bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
-    if (bft_ptr == nullptr) {
-        ZJC_DEBUG("failed get precommit gid: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-        return kConsensusError;
-    }
-
-    if (bft_ptr->leader_index() != bft_msg.member_index()) {
-        ZJC_DEBUG("leader changed failed CheckPrecommit: %s",
-            common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-        return kConsensusError;
-    }
-
     bool backup_agree_commit = false;
     do {
+        if (!bft_msg.has_precommit_gid() || bft_msg.precommit_gid().empty()) {
+            backup_agree_commit = true;
+            break;
+        }
+
+        auto bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
+        if (bft_ptr == nullptr) {
+            ZJC_DEBUG("failed get precommit gid: %s",
+                common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+            break;
+        }
+
+        if (bft_ptr->leader_index() != bft_msg.member_index()) {
+            ZJC_DEBUG("leader changed failed CheckPrecommit: %s",
+                common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+            break;
+        }
+
         if (bft_ptr->prepare_block() == nullptr ||
                 bft_msg.prepare_hash() != bft_ptr->prepare_block()->hash()) {
             // sync from other nodes
@@ -1684,21 +1687,14 @@ int BftManager::CheckPrecommit(
     ZJC_DEBUG("Backup CheckPrecommit: %s, aggree commit: %d",
         common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
         backup_agree_commit);
-    msg_ptr->response->header.mutable_zbft()->set_agree_commit(backup_agree_commit);
-//     assert(backup_agree_commit);
+    CheckCommit(msg_ptr, false);
     if (!backup_agree_commit) {
-        ZJC_DEBUG("failed backup agree commit: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+        ZJC_DEBUG("failed backup agree commit: %s",
+            common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
         return kConsensusError;
     }
-    
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
-    // now check commit
-    CheckCommit(msg_ptr, false);
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
+    msg_ptr->response->header.mutable_zbft()->set_agree_commit(backup_agree_commit);
     return kConsensusSuccess;
 }
 
@@ -1783,12 +1779,10 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
             common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
         auto prepare_bft = GetBft(msg_ptr->thread_idx, bft_msg.oppose_prepare_gid(), false);
-        if (prepare_bft == nullptr) {
-            return;
+        if (prepare_bft != nullptr) {
+            prepare_bft->set_consensus_status(kConsensusFailed);
+            RemoveBft(msg_ptr->thread_idx, prepare_bft->gid(), false);
         }
-
-        prepare_bft->set_consensus_status(kConsensusFailed);
-        RemoveBft(msg_ptr->thread_idx, prepare_bft->gid(), false);
     }
 
     ZJC_DEBUG("has prepare: %d, prepare gid: %s, precommit gid: %s, commit gid: %s",
