@@ -1465,7 +1465,7 @@ void BftManager::ReConsensusBft(uint8_t thread_idx, ZbftPtr& bft_ptr) {
             bft_ptr->g1_precommit_hash(),
             &sign) != bls::kBlsSuccess) {
         ZJC_ERROR("leader signature error.");
-        return kConsensusError;
+        return;
     }
 
     if (bft_ptr->LeaderCommitOk(
@@ -1473,7 +1473,7 @@ void BftManager::ReConsensusBft(uint8_t thread_idx, ZbftPtr& bft_ptr) {
             sign,
             security_ptr_->GetAddress()) != kConsensusWaitingBackup) {
         ZJC_ERROR("leader commit failed!");
-        return kConsensusError;
+        return;
     }
 
     bft_ptr->init_precommit_timeout();
@@ -1488,9 +1488,7 @@ void BftManager::ReConsensusBft(uint8_t thread_idx, ZbftPtr& bft_ptr) {
         zbft_vec,
         msg_ptr,
         mem_ptr);
-    if (next_prepare_bft != nullptr) {
-        next_prepare_bft->AfterNetwork();
-    }
+    bft_ptr->AfterNetwork();
 }
 
 int BftManager::LeaderPrepare(
@@ -1992,7 +1990,7 @@ int BftManager::LeaderHandleZbftMessage(
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
                     } else {
-                        ReConsensusBft(thread_idx, bft_ptr);
+                        ReConsensusBft(msg_ptr->thread_idx, bft_ptr);
 //                         prev_ptr->set_should_timer_to_restart(true);
                     }//                     NextPrepareErrorLeaderCallPrecommit(elect_item, prev_ptr, msg_ptr);
                 }
@@ -2025,7 +2023,7 @@ int BftManager::LeaderHandleZbftMessage(
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
                     } else {
-                        ReConsensusBft(thread_idx, bft_ptr);
+                        ReConsensusBft(msg_ptr->thread_idx, bft_ptr);
 //                         prev_ptr->set_should_timer_to_restart(true);
 //                         ZJC_DEBUG("oppose use next prepare set_should_timer_to_restart");
                     }
@@ -2066,7 +2064,7 @@ int BftManager::LeaderHandleZbftMessage(
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
                     } else {
-                        ReConsensusBft(thread_idx, bft_ptr);
+                        ReConsensusBft(msg_ptr->thread_idx, bft_ptr);
 //                         prev_ptr->set_should_timer_to_restart(true);
                     }
                     ZJC_ERROR("commit call oppose now.");
