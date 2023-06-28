@@ -731,6 +731,11 @@ void BftManager::HandleSyncConsensusBlock(
             return;
         }
 
+        if (bft_ptr->consensus_status() != kConsensusCommited &&
+                bft_ptr->consensus_status() != kConsensusPreCommit) {
+            return;
+        }
+
         transport::protobuf::Header msg;
         if (!AddSyncKeyValue(&msg, *bft_ptr->prepare_block())) {
             ZJC_WARN("get key value failed, sync block failed!");
@@ -2357,12 +2362,10 @@ int BftManager::LeaderCommit(
 void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto& zjc_block = bft_ptr->prepare_block();
-    const auto& prepare_bitmap_data = bft_ptr->prepare_bitmap().data();
-    std::vector<uint64_t> bitmap_data;
-    for (uint32_t i = 0; i < prepare_bitmap_data.size(); ++i) {
-        zjc_block->add_precommit_bitmap(prepare_bitmap_data[i]);
-        bitmap_data.push_back(prepare_bitmap_data[i]);
-    }
+//     const auto& prepare_bitmap_data = bft_ptr->prepare_bitmap().data();
+//     for (uint32_t i = 0; i < prepare_bitmap_data.size(); ++i) {
+//         zjc_block->add_precommit_bitmap(prepare_bitmap_data[i]);
+//     }
 
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(zjc_block, bft_ptr->db_batch());

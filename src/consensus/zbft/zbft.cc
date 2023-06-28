@@ -398,6 +398,12 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
         //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
         prepare_bitmap_ = iter->second->prepare_bitmap_;
         prepare_bitmap_.inversion(n);
+        auto& bitmap_data = prepare_bitmap_.data();
+        for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
+            prepare_block_->clear_precommit_bitmap();
+            prepare_block_->add_precommit_bitmap(bitmap_data[i]);
+        }
+
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
         //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
         set_consensus_status(kConsensusPreCommit);
