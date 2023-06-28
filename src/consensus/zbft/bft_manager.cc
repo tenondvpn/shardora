@@ -1488,6 +1488,7 @@ void BftManager::ReConsensusBft(uint8_t thread_idx, ZbftPtr& bft_ptr) {
         return;
     }
 
+    bft_ptr->RechallengePrecommitClear();
     bft_ptr->init_precommit_timeout();
     ZJC_DEBUG("LeaderCallPrecommit success gid: %s",
         common::Encode::HexEncode(bft_ptr->gid()).c_str());

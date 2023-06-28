@@ -400,8 +400,8 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
         prepare_bitmap_.inversion(n);
         assert(prepare_bitmap_.valid_count() == member_count_ - min_aggree_member_count_);
         auto& bitmap_data = prepare_bitmap_.data();
+        prepare_block_->clear_precommit_bitmap();
         for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
-            prepare_block_->clear_precommit_bitmap();
             prepare_block_->add_precommit_bitmap(bitmap_data[i]);
         }
 
