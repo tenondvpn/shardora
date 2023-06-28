@@ -330,6 +330,10 @@ ZbftPtr BftManager::Start(
         }
     }
 
+    if (prev_bft != nullptr && prev_bft->elect_height() != elect_item_ptr->elect_height) {
+        return nullptr;
+    }
+
     auto& elect_item = *elect_item_ptr;
     auto& thread_set = elect_item.thread_set;
     auto thread_item = thread_set[thread_index];
@@ -512,12 +516,12 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (elect_item_ptr->elect_height != header.zbft().elect_height()) {
-        elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
-        if (elect_item_ptr->elect_height != header.zbft().elect_height()) {
+        auto tmp_elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
+        if (tmp_elect_item_ptr != nullptr && tmp_elect_item_ptr->elect_height != header.zbft().elect_height()) {
             ZJC_DEBUG("elect height error: %lu, %lu, %lu",
                 header.zbft().elect_height(),
-                elect_items_[elect_item_idx_]->elect_height,
-                elect_items_[(elect_item_idx_ + 1) % 2]->elect_height);
+                elect_item_ptr->elect_height,
+                tmp_elect_item_ptr->elect_height);
             return;
         }
     }
