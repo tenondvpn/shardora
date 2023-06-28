@@ -516,9 +516,9 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (elect_item_ptr->elect_height != header.zbft().elect_height()) {
-        auto elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
+        elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
         if (elect_item_ptr == nullptr ||
-            elect_item_ptr->elect_height != header.zbft().elect_height()) {
+                elect_item_ptr->elect_height != header.zbft().elect_height()) {
             ZJC_DEBUG("elect height error: %lu, %lu, %lu",
                 header.zbft().elect_height(),
                 elect_item_ptr->elect_height,
