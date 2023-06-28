@@ -1409,17 +1409,18 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
                 }
             } else if (bft_ptr->consensus_status() == kConsensusPreCommit) {
                 // cross block remove
-                if (bft_ptr->prepare_block() == nullptr || bft_ptr->prepare_block()->is_cross_block()) {
-                    bft_ptr->Destroy();
-                    bft_hash_map_[thread_idx].erase(iter);
-                    ZJC_DEBUG("cross precommit block remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
-                    return;
-                }
-
-                if (bft_ptr->should_timer_to_restart()) {
+                if (bft_ptr->prepare_block() != nullptr && bft_ptr->prepare_block()->is_cross_block()) {
                     ReConsensusBft(thread_idx, bft_ptr);
-                    bft_ptr->set_should_timer_to_restart(false);
+//                     bft_ptr->Destroy();
+//                     bft_hash_map_[thread_idx].erase(iter);
+//                     ZJC_DEBUG("cross precommit block remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
+//                     return;
                 }
+// 
+//                 if (bft_ptr->should_timer_to_restart()) {
+//                     ReConsensusBft(thread_idx, bft_ptr);
+//                     bft_ptr->set_should_timer_to_restart(false);
+//                 }
             } else {
                 bft_ptr->Destroy();
                 bft_hash_map_[thread_idx].erase(iter);
