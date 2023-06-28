@@ -2317,6 +2317,8 @@ int BftManager::LeaderCommit(
         LeaderCallCommit(elect_item, msg_ptr, bft_ptr);
     }
 
+    ZJC_DEBUG("LeaderCommit coming gid: %s, res: %d",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str(), res);
     return kConsensusSuccess;
 }
 
@@ -2557,6 +2559,7 @@ int BftManager::LeaderCallCommit(
         const ElectItem& elect_item,
         const transport::MessagePtr& msg_ptr,
         ZbftPtr& bft_ptr) {
+    ZJC_DEBUG("leader commit called: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
     // check pre-commit multi sign and leader commit
     auto res = BftProto::LeaderCreateCommit(
         elect_item.local_node_member_index,
@@ -2586,8 +2589,9 @@ int BftManager::LeaderCallCommit(
         //         bft_ptr->prepare_latest_height(),
         //         sync::kSyncHighest);
         // }
-//         ZJC_DEBUG("leader should sync block now: %s.",
-//             common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
+        ZJC_DEBUG("leader should sync block now gid: %s",
+            common::Encode::HexEncode(bft_ptr->gid()).c_str());
+        assert(false);
         return kConsensusSuccess;
     }
     
