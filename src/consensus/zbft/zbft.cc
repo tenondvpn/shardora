@@ -49,9 +49,9 @@ int Zbft::Init(
 
     elect_height_ = elect_height;
     leader_mem_ptr_ = (*members_ptr)[leader_idx];
-    if (pool_index() % leader_count != (uint32_t)leader_mem_ptr_->pool_index_mod_num) {
-        ZJC_ERROR("pool_index() % leader_count != (uint32_t)leader_mem_ptr_->pool_index_mod_num",
-            pool_index() % leader_count, leader_mem_ptr_->pool_index_mod_num);
+    if ((pool_index() % leader_count) != (uint32_t)leader_mem_ptr_->pool_index_mod_num) {
+        ZJC_ERROR("pool_index() leader_count != (uint32_t)leader_mem_ptr_->pool_index_mod_num: %u, %u",
+            (pool_index() % leader_count), leader_mem_ptr_->pool_index_mod_num);
         return kConsensusError;
     }
 
