@@ -311,13 +311,6 @@ void ToTxsPools::AddTxToMap(
 void ToTxsPools::HandleNormalToTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx_info) {
-//     for (auto net_iter = network_txs_pools_.begin();
-//             net_iter != network_txs_pools_.end(); ++net_iter) {
-//         TxMap tx_map;
-//         // just clear and reload txs, height must unique
-//         net_iter->second[block.pool_index()][block.height()] = tx_map;
-//     }
-
     if (tx_info.storages_size() <= 0) {
         assert(false);
         return;
@@ -365,45 +358,38 @@ void ToTxsPools::HandleNormalToTx(
         return;
     }
 
-//     auto& heights = *heights_ptr;
-//     heights.set_block_height(block.height());
-//     ZJC_DEBUG("new to tx coming: %lu, sharding id: %u", block.height(), heights.sharding_id());
-//     prefix_db_->SaveLatestToTxsHeights(heights);
-//     auto net_iter = network_txs_pools_.find(heights.sharding_id());
-//     for (int32_t i = 0; i < heights.heights_size(); ++i) {
-//         if (heights.heights(i) > pool_consensus_heihgts_[i]) {
-//             pool_consensus_heihgts_[i] = heights.heights(i);
-//             for (; pool_consensus_heihgts_[i] <= pool_max_heihgts_[i];
-//                 ++pool_consensus_heihgts_[i]) {
-//                 auto iter = added_heights_[i].find(pool_consensus_heihgts_[i] + 1);
-//                 if (iter == added_heights_[i].end()) {
-//                     break;
-//                 }
-// 
-//                 added_heights_[i].erase(iter);
-//             }
-//         }
-// 
-//         if (net_iter == network_txs_pools_.end()) {
-//             continue;
-//         }
-// 
-//         auto pool_iter = net_iter->second.find(i);
-//         if (pool_iter == net_iter->second.end()) {
-//             continue;
-//         }
-// 
-//         auto height_iter = pool_iter->second.begin();
-//         while (height_iter != pool_iter->second.end()) {
-//             if (height_iter->first > heights.heights(i)) {
-//                 break;
-//             }
-// 
-//             ZJC_DEBUG("to block pool: %u, height: %lu, erase sharding: %u, pool: %u, height: %lu",
-//                 i, height_iter->first, heights.sharding_id(), i, height_iter->first);
-//             pool_iter->second.erase(height_iter++);
-//         }
-//     }
+    auto& heights = *heights_ptr;
+    heights.set_block_height(block.height());
+    ZJC_DEBUG("new to tx coming: %lu, sharding id: %u", block.height(), heights.sharding_id());
+    prefix_db_->SaveLatestToTxsHeights(heights);
+    for (int32_t i = 0; i < heights.heights_size(); ++i) {
+        if (heights.heights(i) > has_statistic_height_[i]) {
+            has_statistic_height_[i] = heights.heights(i);
+        }
+
+        if (heights.heights(i) > pool_consensus_heihgts_[i]) {
+            pool_consensus_heihgts_[i] = heights.heights(i);
+            for (; pool_consensus_heihgts_[i] <= pool_max_heihgts_[i];
+                ++pool_consensus_heihgts_[i]) {
+            }
+        }
+
+        auto pool_iter = network_txs_pools_.find(i);
+        if (pool_iter == network_txs_pools_.end()) {
+            continue;
+        }
+
+        auto height_iter = pool_iter->second.begin();
+        while (height_iter != pool_iter->second.end()) {
+            if (height_iter->first > heights.heights(i)) {
+                break;
+            }
+
+            ZJC_DEBUG("to block pool: %u, height: %lu, erase sharding: %u, pool: %u, height: %lu",
+                i, height_iter->first, heights.sharding_id(), i, height_iter->first);
+            pool_iter->second.erase(height_iter++);
+        }
+    }
 
     prev_to_heights_ = heights_ptr;
 }
