@@ -31,32 +31,32 @@ mkdir -p /root/zjnodes/r5/log
 mkdir -p /root/zjnodes/r6/log
 mkdir -p /root/zjnodes/r7/log
 
-cp -rf ./cbuild_Debug/zjchain /root/zjnodes/zjchain
-cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s1
-cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s2
-cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s3
-cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s4
-cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s5
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s6
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s7
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s8
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s9
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s10
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s11
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s12
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s13
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s14
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s15
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s16
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s17
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/s18
-cp -rf ./cbuild_Debug/zjchain /root/zjnodes/r1
-cp -rf ./cbuild_Debug/zjchain /root/zjnodes/r2
-cp -rf ./cbuild_Debug/zjchain /root/zjnodes/r3
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/r4
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/r5
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/r6
-#cp -rf ./cbuild_Debug/zjchain /root/zjnodes/r7
+cp -rf ./zjchain /root/zjnodes/zjchain
+cp -rf ./zjchain /root/zjnodes/s1
+cp -rf ./zjchain /root/zjnodes/s2
+cp -rf ./zjchain /root/zjnodes/s3
+cp -rf ./zjchain /root/zjnodes/s4
+cp -rf ./zjchain /root/zjnodes/s5
+#cp -rf ./zjchain /root/zjnodes/s6
+#cp -rf ./zjchain /root/zjnodes/s7
+#cp -rf ./zjchain /root/zjnodes/s8
+#cp -rf ./zjchain /root/zjnodes/s9
+#cp -rf ./zjchain /root/zjnodes/s10
+#cp -rf ./zjchain /root/zjnodes/s11
+#cp -rf ./zjchain /root/zjnodes/s12
+#cp -rf ./zjchain /root/zjnodes/s13
+#cp -rf ./zjchain /root/zjnodes/s14
+#cp -rf ./zjchain /root/zjnodes/s15
+#cp -rf ./zjchain /root/zjnodes/s16
+#cp -rf ./zjchain /root/zjnodes/s17
+#cp -rf ./zjchain /root/zjnodes/s18
+cp -rf ./zjchain /root/zjnodes/r1
+cp -rf ./zjchain /root/zjnodes/r2
+cp -rf ./zjchain /root/zjnodes/r3
+#cp -rf ./zjchain /root/zjnodes/r4
+#cp -rf ./zjchain /root/zjnodes/r5
+#cp -rf ./zjchain /root/zjnodes/r6
+#cp -rf ./zjchain /root/zjnodes/r7
 
 cd /root/zjnodes/zjchain && ./zjchain -U -1 67dfdd4d49509691369225e9059934675dea440d123aa8514441aa6788354016:127.0.0.1:1,356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe:127.0.0.1:2,a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee:127.0.0.1:2 -2 e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269:127.0.0.1:3,b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0:127.0.0.1:4,0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995:127.0.0.1:5
 cd /root/zjnodes/zjchain && ./zjchain -S -1 67dfdd4d49509691369225e9059934675dea440d123aa8514441aa6788354016:127.0.0.1:1,356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe:127.0.0.1:2,a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee:127.0.0.1:2 -2 e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269:127.0.0.1:3,b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0:127.0.0.1:4,0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995:127.0.0.1:5
