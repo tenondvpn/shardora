@@ -1996,7 +1996,7 @@ int BftManager::LeaderHandleZbftMessage(
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
                     } else {
-                        ReConsensusBft(msg_ptr->thread_idx, bft_ptr);
+                        ReConsensusBft(msg_ptr->thread_idx, prev_ptr);
 //                         prev_ptr->set_should_timer_to_restart(true);
                     }//                     NextPrepareErrorLeaderCallPrecommit(elect_item, prev_ptr, msg_ptr);
                 }
@@ -2029,7 +2029,7 @@ int BftManager::LeaderHandleZbftMessage(
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
                     } else {
-                        ReConsensusBft(msg_ptr->thread_idx, bft_ptr);
+                        ReConsensusBft(msg_ptr->thread_idx, prev_ptr);
 //                         prev_ptr->set_should_timer_to_restart(true);
 //                         ZJC_DEBUG("oppose use next prepare set_should_timer_to_restart");
                     }
@@ -2070,7 +2070,7 @@ int BftManager::LeaderHandleZbftMessage(
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
                     } else {
-                        ReConsensusBft(msg_ptr->thread_idx, bft_ptr);
+                        ReConsensusBft(msg_ptr->thread_idx, prev_ptr);
 //                         prev_ptr->set_should_timer_to_restart(true);
                     }
                     ZJC_ERROR("commit call oppose now.");
