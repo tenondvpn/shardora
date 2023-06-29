@@ -473,16 +473,18 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
         case pools::protobuf::kContractExcute:
             HandleContractExcute(msg_ptr);
             break;
-        case pools::protobuf::kConsensusLocalTos:
+        case pools::protobuf::kConsensusLocalTos: {
             auto pool_index = common::GetAddressPoolIndex(tx_msg.to());
             msg_queues_[pool_index].push(msg_ptr);
             ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
             break;
-        case pools::protobuf::kRootCross:
+        }
+        case pools::protobuf::kRootCross: {
             auto pool_index = common::GetAddressPoolIndex(tx_msg.to());
             msg_queues_[pool_index].push(msg_ptr);
             ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
             break;
+        }
         default:
             ZJC_DEBUG("invalid tx step: %d", tx_msg.step());
             assert(false);
