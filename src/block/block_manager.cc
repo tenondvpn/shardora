@@ -440,7 +440,7 @@ void BlockManager::HandleStatisticTx(
     }
 
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
-        HandleStatisticBlock(block, block_tx, elect_statistic, db_batch);
+        HandleStatisticBlock(thread_idx, block, block_tx, elect_statistic, db_batch);
     }
 }
 
@@ -1142,6 +1142,7 @@ void BlockManager::HandleStatisticMessage(const transport::MessagePtr& msg_ptr) 
 }
 
 void BlockManager::RootCreateCrossTx(
+        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& block_tx,
         const pools::protobuf::ElectStatistic& elect_statistic,
@@ -1190,6 +1191,7 @@ void BlockManager::RootCreateCrossTx(
 }
 
 void BlockManager::HandleStatisticBlock(
+        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& block_tx,
         const pools::protobuf::ElectStatistic& elect_statistic,
@@ -1221,7 +1223,7 @@ void BlockManager::HandleStatisticBlock(
             block.network_id() != network::kRootCongressNetworkId &&
             elect_statistic.cross().crosses_size() > 0) {
         // add cross shard statistic to root pool
-        RootCreateCrossTx(block, block_tx, elect_statistic, db_batch);
+        RootCreateCrossTx(thread_idx, block, block_tx, elect_statistic, db_batch);
     }
 
     ZJC_DEBUG("success handle statistic block net: %u, sharding: %u, pool: %u, height: %lu",

@@ -146,11 +146,13 @@ private:
         pools::protobuf::ToTxMessage& to_txs,
         db::DbWriteBatch& db_batch);
     void HandleStatisticBlock(
+        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         const pools::protobuf::ElectStatistic& elect_statistic,
         db::DbWriteBatch& db_batch);
     void RootCreateCrossTx(
+        uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         const pools::protobuf::ElectStatistic& elect_statistic,
