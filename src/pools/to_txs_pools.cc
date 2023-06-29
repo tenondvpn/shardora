@@ -611,6 +611,7 @@ int ToTxsPools::CreateToTxWithHeights(
 
             for (auto to_iter = hiter->second.begin();
                     to_iter != hiter->second.end(); ++to_iter) {
+                auto des_sharding_id = to_iter->second.sharding_id;
                 if (to_iter->second.sharding_id == common::kInvalidUint32) {
                     uint32_t* tmp_data = (uint32_t*)to_iter->first.c_str();
                     uint32_t step = tmp_data[0];
@@ -620,13 +621,16 @@ int ToTxsPools::CreateToTxWithHeights(
                         if (sharding_id != network::kRootCongressNetworkId) {
                             continue;
                         }
+
+                        des_sharding_id = network::kRootCongressNetworkId;
                     } else {
                         to_iter->second.sharding_id = account_info->sharding_id();
+                        des_sharding_id = to_iter->second.sharding_id;
                     }
                 }
 
-                if (to_iter->second.sharding_id != sharding_id) {
-                    ZJC_DEBUG("find pool index: %u height: %lu sharding: %u, %u failed!", pool_idx, height, to_iter->second.sharding_id, sharding_id);
+                if (des_sharding_id != sharding_id) {
+                    ZJC_DEBUG("find pool index: %u height: %lu sharding: %u, %u failed!", pool_idx, height, des_sharding_id, sharding_id);
                     continue;
                 }
 
