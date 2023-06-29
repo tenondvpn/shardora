@@ -281,7 +281,7 @@ void BlockManager::ConsensusAddBlock(
         uint8_t thread_idx,
         const BlockToDbItemPtr& block_item) {
     consensus_block_queues_[thread_idx].push(block_item);
-    ZJC_DEBUG("queue size consensus_block_queues_: %d", consensus_block_queues_.size());
+    ZJC_DEBUG("queue size thread_idx: %d consensus_block_queues_: %d", thread_idx, consensus_block_queues_[thread_idx].size());
 }
 
 void BlockManager::NewBlockWithTx(
