@@ -422,6 +422,13 @@ std::shared_ptr<address::protobuf::AddressInfo> TxPoolManager::GetAddressInfo(
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // just one thread
     pools_msg_queue_.push(msg_ptr);
+    if (msg_ptr->thread_idx != thread_idx_) {
+        ZJC_DEBUG("queue size thread_idx_: %d, msg_ptr->thread_idx: %d, pools_msg_queue_: %d", thread_idx_, msg_ptr->thread_idx, pools_msg_queue_.size());
+        if (thread_idx_ != 250) {
+            assert(false;)
+        }
+        thread_idx_ = msg_ptr->thread_idx;
+    }
     ZJC_DEBUG("queue size pools_msg_queue_: %d", pools_msg_queue_.size());
 }
 
