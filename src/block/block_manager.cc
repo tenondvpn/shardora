@@ -1572,7 +1572,6 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
 }
 
 void BlockManager::CreateToTx(uint8_t thread_idx) {
-    return;
 #ifndef ZJC_UNITTEST
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) <

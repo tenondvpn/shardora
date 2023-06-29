@@ -71,6 +71,7 @@ private:
     struct ToAddressItemInfo {
         uint64_t amount;
         int32_t pool_index;
+        uint32_t sharding_id;
         pools::protobuf::StepType type;
         int32_t src_step;
         std::string elect_join_g2_key;
@@ -81,8 +82,7 @@ private:
     typedef std::unordered_map<std::string, ToAddressItemInfo> TxMap;
     typedef std::map<uint64_t, TxMap> HeightMap;  // order by height
     typedef std::unordered_map <uint32_t, HeightMap> PoolMap;
-    typedef std::unordered_map <uint32_t, PoolMap> ShardingMap;
-    ShardingMap network_txs_pools_;
+    PoolMap network_txs_pools_;
     common::UniqueMap<std::string, protos::AddressInfoPtr, 10240, 16> address_map_;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
@@ -93,6 +93,7 @@ private:
     std::unordered_map<uint64_t, std::shared_ptr<block::protobuf::Block>> added_heights_[common::kInvalidPoolIndex];
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<pools::protobuf::ShardToTxItem> prev_to_heights_ = nullptr;
+    uint64_t has_statistic_height_[common::kInvalidPoolIndex] = { 1 };
 
     DISALLOW_COPY_AND_ASSIGN(ToTxsPools);
 };
