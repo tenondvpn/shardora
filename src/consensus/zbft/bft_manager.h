@@ -97,6 +97,7 @@ private:
         ZbftPtr& prev_bft,
         const transport::MessagePtr& prepare_msg_ptr);
     void RemoveBft(uint8_t thread_idx, const std::string& gid, bool is_leader);
+    void RemoveBftWithBlockHash(uint8_t thread_idx, const std::string& hash);
     int LeaderPrepare(
         const ElectItem& elect_item,
         ZbftPtr& bft_ptr,
