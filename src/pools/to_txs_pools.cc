@@ -18,13 +18,8 @@ ToTxsPools::ToTxsPools(
         std::shared_ptr<pools::TxPoolManager>& pools_mgr)
         : db_(db), local_id_(local_id), pools_mgr_(pools_mgr) {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-    PoolMap pool_map;
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        pool_map[i] = HeightMap();
-    }
-
-    for (uint32_t i = network::kRootCongressNetworkId; i <= max_sharding_id; ++i) {
-        network_txs_pools_[i] = pool_map;
+        network_txs_pools_[i] = HeightMap();
     }
 
     if (pools_mgr_ != nullptr) {
