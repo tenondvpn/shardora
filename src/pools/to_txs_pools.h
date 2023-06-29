@@ -60,8 +60,8 @@ private:
         const std::string& to,
         pools::protobuf::StepType type,
         uint64_t amount,
-        uint64_t des_sharding_id,
         int32_t pool_index,
+        uint32_t sharding_id,
         const std::string& key = "");
     void HandleElectJoinVerifyVec(
         const std::string& verify_hash,
