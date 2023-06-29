@@ -30,6 +30,7 @@ void KeyValueSync::AddSync(
     assert(priority <= kSyncHighest);
     auto item = std::make_shared<SyncItem>(network_id, key, priority);
     item_queues_[thread_idx].push(item);
+    ZJC_DEBUG("queue size thread_idx: %d, item_queues_: %d", thread_idx, item_queues_[thread_idx].size());
 //     ZJC_DEBUG("key value add new sync item key: %s, priority: %u",
 //         item->key.c_str(), item->priority);
 
@@ -261,6 +262,7 @@ void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
 //         header.sync_proto().has_sync_value_req(),
 //         header.sync_proto().has_sync_value_res());
     kv_msg_queue_.push(msg_ptr);
+    ZJC_DEBUG("queue size kv_msg_queue_: %d", kv_msg_queue_.size());
     
 }
 

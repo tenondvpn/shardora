@@ -410,6 +410,7 @@ void VssManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kVssMessage);
     vss_msg_queue_.push(msg_ptr);
+    ZJC_DEBUG("queue size vss_msg_queue_: %d", vss_msg_queue_.size());
 }
 
 void VssManager::PopVssMessage(uint8_t thread_idx) {

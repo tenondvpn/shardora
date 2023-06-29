@@ -422,6 +422,7 @@ std::shared_ptr<address::protobuf::AddressInfo> TxPoolManager::GetAddressInfo(
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // just one thread
     pools_msg_queue_.push(msg_ptr);
+    ZJC_DEBUG("queue size pools_msg_queue_: %d", pools_msg_queue_.size());
 }
 
 void TxPoolManager::PopPoolsMessage(uint8_t thread_idx) {
@@ -466,16 +467,21 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
 
             auto pool_index = common::GetAddressPoolIndex(tx_msg.to()) % common::kImmutablePoolSize;
             msg_queues_[pool_index].push(msg_ptr);
+            ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
             break;
         }
         case pools::protobuf::kContractExcute:
             HandleContractExcute(msg_ptr);
             break;
         case pools::protobuf::kConsensusLocalTos:
-            msg_queues_[common::GetAddressPoolIndex(tx_msg.to())].push(msg_ptr);
+            auto pool_index = common::GetAddressPoolIndex(tx_msg.to());
+            msg_queues_[pool_index].push(msg_ptr);
+            ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
             break;
         case pools::protobuf::kRootCross:
-            msg_queues_[common::GetAddressPoolIndex(tx_msg.to())].push(msg_ptr);
+            auto pool_index = common::GetAddressPoolIndex(tx_msg.to());
+            msg_queues_[pool_index].push(msg_ptr);
+            ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
             break;
         default:
             ZJC_DEBUG("invalid tx step: %d", tx_msg.step());
@@ -691,6 +697,7 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
 
     prefix_db_->SaveAddressPubkey(msg_ptr->address_info->addr(), tx_msg.pubkey());
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
+    ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
     ZJC_DEBUG("success add elect tx has verify g2: %d", tx_msg.has_key());
 }
 
@@ -793,7 +800,8 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-//     ZJC_INFO("success add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+    ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
+    //     ZJC_INFO("success add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
 }
 
 void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg_ptr) {
@@ -823,6 +831,7 @@ void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
+    ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
 }
 
 bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
@@ -891,6 +900,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
+    ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
     ZJC_DEBUG("success push tx: %s, %lu", common::Encode::HexEncode(tx_msg.gid()).c_str(), msg_ptr->header.hash64());
 }
 
@@ -938,6 +948,7 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
+    ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
     ZJC_INFO("address balance success: %lu, transfer amount: %lu, "
         "prepayment: %lu, default call contract gas: %lu, gas price: %lu, conract bytes: %s",
         msg_ptr->address_info->balance(),

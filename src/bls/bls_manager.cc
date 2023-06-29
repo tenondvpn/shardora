@@ -307,6 +307,7 @@ void BlsManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& bls_msg = header.bls_proto();
     if (bls_msg.has_finish_req()) {
         finish_msg_queue_.push(msg_ptr);
+        ZJC_DEBUG("queue size finish_msg_queue_: %d", finish_msg_queue_.size());
         return;
     }
 

@@ -142,6 +142,7 @@ void BlsDkg::OnNewElectionBlock(
 
 void BlsDkg::HandleMessage(const transport::MessagePtr& msg_ptr) {
     bls_msg_queue_.push(msg_ptr);
+    ZJC_DEBUG("queue size bls_msg_queue_: %d", bls_msg_queue_.size());
 }
 
 void BlsDkg::PopBlsMessage(uint8_t thread_idx) {

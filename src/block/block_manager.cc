@@ -217,10 +217,12 @@ void BlockManager::HandleStatisticTxMessage() {
 void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.block_proto().has_shard_to() > 0) {
         to_tx_msg_queue_.push(msg_ptr);
+        ZJC_DEBUG("queue size to_tx_msg_queue_: %d", to_tx_msg_queue_.size());
     }
 
     if (msg_ptr->header.block_proto().has_statistic_tx()) {
         statistic_tx_msg_queue_.push(msg_ptr);
+        ZJC_DEBUG("queue size statistic_tx_msg_queue_: %d", statistic_tx_msg_queue_.size());
     }
 
     if (msg_ptr->header.has_block()) {
@@ -229,7 +231,7 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         if (block_agg_valid_func_(*block_ptr)) {
             // just one thread
             block_from_network_queue_.push(block_ptr);
-            ZJC_DEBUG("add new block message hash: %lu", msg_ptr->header.hash64());
+            ZJC_DEBUG("queue size add new block message hash: %lu, block_from_network_queue_ size: %d", msg_ptr->header.hash64(), block_from_network_queue_.size());
         }
     }
 }
@@ -279,6 +281,7 @@ void BlockManager::ConsensusAddBlock(
         uint8_t thread_idx,
         const BlockToDbItemPtr& block_item) {
     consensus_block_queues_[thread_idx].push(block_item);
+    ZJC_DEBUG("queue size consensus_block_queues_: %d", consensus_block_queues_.size());
 }
 
 void BlockManager::NewBlockWithTx(

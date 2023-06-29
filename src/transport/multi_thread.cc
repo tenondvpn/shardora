@@ -193,7 +193,8 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
 
     threads_message_queues_[queue_idx][priority].push(msg_ptr);
     wait_con_[queue_idx % all_thread_count_].notify_one();
-    ZJC_DEBUG("message push success: %lu", msg_ptr->header.hash64());
+    ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, priority: %d, thread queue size: %u",
+        msg_ptr->header.hash64(), queue_idx, priority, threads_message_queues_[queue_idx][priority].size());
 }
 
 uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
@@ -260,11 +261,12 @@ void MultiThreadHandler::BlockSaved(const block::protobuf::Block& block_item) {
 //         ZJC_DEBUG("success add commit pool index: %u, height: %lu, this block pool: %u, height: %lu", block_item.commit_pool_index(), block_item.commit_height(), block_item.pool_index(), block_item.height());
     }
 
-    ZJC_DEBUG("remove not checked block net: %u, pool: %u, height: %lu, block hash: %s",
+    ZJC_DEBUG("queue size remove not checked block net: %u, pool: %u, height: %lu, block hash: %s, saved queue size: %d",
         block_item.network_id(),
         block_item.pool_index(),
         block_item.height(),
-        common::Encode::HexEncode(block_item.hash()).c_str());
+        common::Encode::HexEncode(block_item.hash()).c_str(),
+        saved_block_queue_.size());
 }
 
 void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Block>& block_item) {
