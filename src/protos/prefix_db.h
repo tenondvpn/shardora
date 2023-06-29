@@ -127,7 +127,7 @@ public:
         std::string val;
         auto st = db_->Get(kAddressPrefix + addr, &val);
         if (!st.ok()) {
-            ZJC_INFO("failed get addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
+            ZJC_DEBUG("failed get addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
             return nullptr;
         }
 
