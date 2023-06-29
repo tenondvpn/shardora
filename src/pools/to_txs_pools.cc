@@ -598,12 +598,14 @@ int ToTxsPools::CreateToTxWithHeights(
 
         auto pool_iter = network_txs_pools_.find(pool_idx);
         if (pool_iter == network_txs_pools_.end()) {
+            ZJC_DEBUG("find pool index: %u failed!", pool_idx);
             continue;
         }
 
         for (auto height = min_height; height <= max_height; ++height) {
             auto hiter = pool_iter->second.find(height);
             if (hiter == pool_iter->second.end()) {
+                ZJC_DEBUG("find pool index: %u height: %lu failed!", pool_idx, height);
                 continue;
             }
 
@@ -624,6 +626,7 @@ int ToTxsPools::CreateToTxWithHeights(
                 }
 
                 if (to_iter->second.sharding_id != sharding_id) {
+                    ZJC_DEBUG("find pool index: %u height: %lu sharding: %u, %u failed!", pool_idx, height, to_iter->second.sharding_id, sharding_id);
                     continue;
                 }
 
