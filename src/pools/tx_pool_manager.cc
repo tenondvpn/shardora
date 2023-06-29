@@ -425,7 +425,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->thread_idx != thread_idx_) {
         ZJC_DEBUG("queue size thread_idx_: %d, msg_ptr->thread_idx: %d, pools_msg_queue_: %d", thread_idx_, msg_ptr->thread_idx, pools_msg_queue_.size());
         if (thread_idx_ != 250) {
-            assert(false;)
+            assert(false);
         }
         thread_idx_ = msg_ptr->thread_idx;
     }
