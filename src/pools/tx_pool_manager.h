@@ -221,8 +221,7 @@ private:
     uint32_t prev_cross_sync_index_ = 0;
     std::shared_ptr<CrossBlockManager> cross_block_mgr_ = nullptr;
     common::Tick tick_;
-    common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_;
-    volatile uint8_t thread_idx_ = 250;
+    common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_[common::kMaxThreadCount];
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

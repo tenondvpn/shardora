@@ -551,6 +551,7 @@ void BlockManager::RootHandleNormalToTx(
         tx->set_gid(gid);
         auto pool_index = common::Hash::Hash32(tos_item.des()) % common::kImmutablePoolSize;
         msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
+        msg_ptr->thread_idx = thread_idx;
         pools_mgr_->HandleMessage(msg_ptr);
         ZJC_DEBUG("create new address %s, amount: %lu",
             common::Encode::HexEncode(tos_item.des()).c_str(), tos_item.amount());
@@ -673,6 +674,7 @@ void BlockManager::HandleLocalNormalToTx(
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
+        msg_ptr->thread_idx = thread_idx;
         pools_mgr_->HandleMessage(msg_ptr);
         ZJC_DEBUG("success add local transfer tx tos hash: %s, heights_hash: %s, gid: %s",
             common::Encode::HexEncode(tos_hash).c_str(),
@@ -916,6 +918,7 @@ void BlockManager::AddMiningToken(
         tx->set_amount(0);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
+        msg_ptr->thread_idx = thread_idx;
         pools_mgr_->HandleMessage(msg_ptr);
     }
 }
@@ -1180,6 +1183,7 @@ void BlockManager::RootCreateCrossTx(
     prefix_db_->SaveTemporaryKv(hash, elect_statistic.cross().SerializeAsString());
     tx->set_key(protos::kRootCross);
     tx->set_value(hash);
+    msg_ptr->thread_idx = thread_idx;
     pools_mgr_->HandleMessage(msg_ptr);
     ZJC_DEBUG("create cross tx %s",
         common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str());
