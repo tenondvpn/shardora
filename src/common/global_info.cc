@@ -61,6 +61,7 @@ int GlobalInfo::Init(const common::Config& config) {
     ip_db_path_ = "./conf/GeoLite2-City.mmdb";
     config.Get("zjchain", "ip_db_path", ip_db_path_);
     config.Get("zjchain", "missing_node", missing_node_);
+    config.Get("zjchain", "ck_port", ck_port_);
 
     return kCommonSuccess;
 }
