@@ -280,8 +280,8 @@ void ToTxsPools::AddTxToMap(
     auto pool_iter = network_txs_pools_.find(block.pool_index());
     if (pool_iter == network_txs_pools_.end()) {
         HeightMap height_map;
-        net_iter->second[block.pool_index()] = height_map;
-        pool_iter = net_iter->second.find(block.pool_index());
+        network_txs_pools_[block.pool_index()] = height_map;
+        pool_iter = network_txs_pools_.find(block.pool_index());
     }
 
     auto height_iter = pool_iter->second.find(block.height());
