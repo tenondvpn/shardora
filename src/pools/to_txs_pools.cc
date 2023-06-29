@@ -577,7 +577,11 @@ int ToTxsPools::CreateToTxWithHeights(
 
     std::map<std::string, ToAddressItemInfo> acc_amount_map;
     for (uint32_t pool_idx = 0; pool_idx < common::kImmutablePoolSize; ++pool_idx) {
-        uint64_t min_height = prev_to_heights_->heights(pool_idx) + 1;
+        uint64_t min_height = 1llu;
+        if (prev_to_heights_ != nullptr) {
+            prev_to_heights_->heights(pool_idx) + 1;
+        }
+
         uint64_t max_height = leader_to_heights.heights(pool_idx);
         if (max_height > pool_consensus_heihgts_[pool_idx]) {
             ZJC_DEBUG("pool %u, invalid height: %lu, consensus height: %lu",
