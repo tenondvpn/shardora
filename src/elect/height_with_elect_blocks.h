@@ -185,7 +185,7 @@ public:
         }
 
         if (height_with_members_[network_id].size() >= kMaxCacheElectBlockCount) {
-            height_with_members_[network_id].erase(height_with_members_[network_id].rbegin());
+            height_with_members_[network_id].erase(height_with_members_[network_id].begin());
         }
 
         return shard_members;
@@ -203,11 +203,7 @@ private:
         }
 
         if (!prev_members.has_common_pubkey()) {
-            ZJC_DEBUG("error get elect block sharding: %u, height: %u, has prev: %d, has common_pk: %d",
-                elect_block.shard_network_id(),
-                elect_block.elect_height(),
-                elect_block.has_prev_members(),
-                elect_block.prev_members().has_common_pubkey());
+            return libff::alt_bn128_G2::zero();
         }
 
         std::vector<std::string> pkey_str = {
@@ -301,7 +297,7 @@ private:
 
     static const uint32_t kMaxKeepElectBlockCount = 3u;
     static const uint32_t kMaxCacheElectBlockCount = 7u;
-    std::map<uint64_t, std::shared_ptr<HeightMembersItem>> height_with_members_[network::kConsensusShardEndNetworkId];
+    std::map<uint64_t, std::shared_ptr<HeightMembersItem>, std::less<uint64_t>> height_with_members_[network::kConsensusShardEndNetworkId];
     HeightMembersItemPtr members_ptrs_[network::kConsensusShardEndNetworkId][kMaxKeepElectBlockCount];
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
