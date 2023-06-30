@@ -88,6 +88,7 @@ int Zbft::ChangeLeader(
     }
 
     reset_timeout();
+    return kConsensusSuccess;
 }
 
 int Zbft::Init(
