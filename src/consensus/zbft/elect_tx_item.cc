@@ -94,8 +94,8 @@ int ElectTxItem::HandleTx(
 
             {
                 std::string ids;
-                ZJC_DEBUG("now debug for pubkey: %s", common::Encode::HexEncode((*members)[i]->pubkey).c_str());
                 for (int32_t i = 0; i < statistic->tx_count_size(); ++i) {
+                    ZJC_DEBUG("now debug for pubkey: %s", common::Encode::HexEncode((*members)[i]->pubkey).c_str());
                     ids += common::Encode::HexEncode(sec_ptr_->GetAddress((*members)[i]->pubkey)) +
                         ":" + std::to_string(statistic->area_point(i).x()) +
                         ":" + std::to_string(statistic->area_point(i).y()) +
