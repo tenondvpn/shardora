@@ -27,7 +27,9 @@ static const uint32_t kHeightLevelItemMaxCount = 2 * kBranchMaxCount - 1;
 static const uint64_t kLevelNodeValidHeights = 0xFFFFFFFFFFFFFFFFlu;
 static const uint32_t kStatisticMaxCount = 3u;
 static const uint32_t kWaitingElectNodesMaxCount = 256u;
-static const uint32_t kLeaderLofFactorCount = 32u;
+static const uint64_t kCheckLeaderLofPeriod = 3000lu;
+static const uint64_t kCaculateLeaderLofPeriod = 30000lu;
+static const uint32_t kLeaderLofFactorCount = kCaculateLeaderLofPeriod / kCheckLeaderLofPeriod * 2 / 3;
 
 enum PoolsErrorCode {
     kPoolsSuccess = 0,

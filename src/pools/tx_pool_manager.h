@@ -192,8 +192,6 @@ private:
     static const uint64_t kFlushHeightTreePeriod = 60000lu;
     static const uint64_t kSyncPoolsMaxHeightsPeriod = 3000lu;
     static const uint64_t kSyncMissingBlockPeriod = 3000lu;
-    static const uint64_t kCheckLeaderLofPeriod = 3000lu;
-    static const uint64_t kCaculateLeaderLofPeriod = 30000lu;
     static const uint64_t kSyncCrossPeriod = 3000lu;
     double kGrubbsValidFactor = 3.217;  // 90%
     const double kInvalidLeaderRatio = 0.85;
