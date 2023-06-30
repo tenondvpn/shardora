@@ -234,6 +234,7 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
+    ZJC_DEBUG("roatation leader message coming..");
     auto rotation = rotation_leaders_;
     if (rotation == nullptr) {
         return;

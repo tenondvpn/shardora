@@ -297,6 +297,7 @@ void TxPoolManager::BroadcastInvalidPools(
 
     msg_ptr->header.set_sign(sign);
     network::Route::Instance()->Send(msg_ptr);
+    ZJC_DEBUG("success broadcast invalid pools.");
 }
 
 void TxPoolManager::CheckLeaderValid(
