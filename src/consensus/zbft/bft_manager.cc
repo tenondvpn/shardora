@@ -1443,10 +1443,8 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
                 }
 
                 if (bft_ptr->prepare_block() == nullptr) {
-                    bft_ptr->Destroy();
-                    bft_hash_map_[thread_idx].erase(iter);
-                    ZJC_DEBUG("remove bft gid: %s, thread_idx: %d", common::Encode::HexEncode(gid).c_str(), thread_idx);
-                    return;
+                    // TODO: sync this block from other node
+                    SyncConsensusBlock()
                 }
 
                 ZJC_DEBUG("can not remove bft gid: %s, %d, thread_idx: %d",
