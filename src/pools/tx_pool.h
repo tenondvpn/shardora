@@ -159,27 +159,28 @@ public:
     }
 
     double CheckLeaderValid(bool get_factor) {
-        all_finish_tx_count += finish_tx_count;
+        all_finish_tx_count_ += finish_tx_count_;
         double factor = 0.0;
         if (get_factor) {
-            if (all_tx_count > 0) {
-                factor = (double)all_finish_tx_count / (double)all_tx_count;
+            if (all_tx_count_ > 0) {
+                factor = (double)all_finish_tx_count_ / (double)all_tx_count_;
             } else {
                 factor = 1.0;
             }
 
-            if (checked_count < kLeaderLofFactorCount) {
+            if (checked_count_ < kLeaderLofFactorCount) {
+                ZJC_DEBUG("checked_count_: %d, kLeaderLofFactorCount: %d, factor: %f", checked_count_, kLeaderLofFactorCount, factor);
                 factor = 1.0;
             }
 
-            checked_count = 0;
-            all_tx_count = 0;
-            all_finish_tx_count = 0;
+            checked_count_ = 0;
+            all_tx_count_ = 0;
+            all_finish_tx_count_ = 0;
         }
 
-        ++checked_count;
-        all_tx_count += gid_map_.size();
-        finish_tx_count = 0;
+        ++checked_count_;
+        all_tx_count_ += gid_map_.size();
+        finish_tx_count_ = 0;
         return factor;
     }
 
@@ -249,10 +250,10 @@ private:
     uint64_t to_sync_max_height_ = 0;
     uint64_t prev_synced_time_ms_ = 0;
     std::shared_ptr<db::Db> db_ = nullptr;
-    uint32_t all_finish_tx_count = 0;
-    uint32_t all_tx_count = 0;
-    uint32_t checked_count = 0;
-    volatile uint32_t finish_tx_count = 0;
+    uint32_t all_finish_tx_count_ = 0;
+    uint32_t all_tx_count_ = 0;
+    uint32_t checked_count_ = 0;
+    volatile uint32_t finish_tx_count_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };
