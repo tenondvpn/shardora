@@ -2412,6 +2412,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
     pools_mgr_->TxOver(
         zjc_block->pool_index(),
         zjc_block->tx_list());
+    bft_ptr->set_consensus_status(kConsensusCommited);
     RemoveBft(bft_ptr->thread_index(), bft_ptr->gid(), bft_ptr->this_node_is_leader());
     assert(bft_ptr->prepare_block()->precommit_bitmap_size() == zjc_block->precommit_bitmap_size());
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
