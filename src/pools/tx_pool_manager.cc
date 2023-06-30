@@ -208,6 +208,7 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
             double res = tx_pool_[i].CheckLeaderValid(get_factor);
             if (get_factor) {
                 factors[i] = res;
+                ZJC_DEBUG("get_factor: %d, get invalid pool factor pool: %d, factor: %f", get_factor, i, res);
             }
         }
 
@@ -215,6 +216,7 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
             std::vector<int32_t> invalid_pools;
             invalid_pools.reserve(64);
             CheckLeaderValid(factors, &invalid_pools);
+            ZJC_DEBUG("get_factor: %d, get invalid pool factor pool: %d, factor: %f, invalid_pools.size(): %d", get_factor, i, res, invalid_pools.size());
             if (invalid_pools.size() < 32) {
                 BroadcastInvalidPools(thread_idx, invalid_pools);
             }
