@@ -551,17 +551,27 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return HandleSyncConsensusBlock(elect_item, msg_ptr);
     }
 
-    auto elect_item_ptr = elect_items_[elect_item_idx_];
+    auto now_ms = common::TimeUtils::TimestampMs();
+    auto& elect_item_ptr = elect_items_[elect_item_idx_];
     if (elect_item_ptr->elect_height != header.zbft().elect_height()) {
-        elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
-        if (elect_item_ptr == nullptr ||
-                elect_item_ptr->elect_height != header.zbft().elect_height()) {
+        auto& old_elect_item = elect_items_[(elect_item_idx_ + 1) % 2];
+        if (old_elect_item->elect_height != header.zbft().elect_height()) {
             ZJC_DEBUG("elect height error: %lu, %lu, %lu",
                 header.zbft().elect_height(),
                 elect_item_ptr->elect_height,
                 elect_item_ptr->elect_height);
             return;
         }
+
+        if (elect_item_ptr->time_valid + 10000lu < now_ms) {
+            ZJC_DEBUG("must change new elect, elect height error: %lu, %lu, %lu",
+                header.zbft().elect_height(),
+                elect_item_ptr->elect_height,
+                old_elect_item->elect_height);
+            return;
+        }
+
+        elect_item_ptr = old_elect_item;
     }
 
     auto& elect_item = *elect_item_ptr;
@@ -582,17 +592,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         elect_item.elect_height);
     if (elect_item.local_node_member_index == header.zbft().member_index()) {
         //assert(false);
-        return;
-    }
-
-    auto now_ms = common::TimeUtils::TimestampMs();
-    if (elect_item.time_valid + 10000lu <= now_ms) {
-        ZJC_ERROR("BackupPrepare failed prepare: %s, precommit: %s, commit: %s, "
-            "invalid elect height: %lu",
-            common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
-            common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
-            common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
-            elect_item.elect_height);
         return;
     }
 
