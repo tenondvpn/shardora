@@ -379,9 +379,10 @@ ZbftPtr BftManager::Start(
 
     if (txs_ptr == nullptr) {
         if (!bft_hash_map_[thread_index].empty()) {
-            ZJC_DEBUG("leader start bft failed, thread: %d, can_new_bft: %d, bft size: %d, gid: %s",
+            ZJC_DEBUG("leader start bft failed, thread: %d, can_new_bft: %d, bft size: %d, gid: %s, status: %d",
                 thread_index, can_new_bft, bft_hash_map_[thread_index].size(),
-                common::Encode::HexEncode(bft_hash_map_[thread_index].begin()->second->gid()).c_str());
+                common::Encode::HexEncode(bft_hash_map_[thread_index].begin()->second->gid()).c_str(),
+                bft_hash_map_[thread_index].begin()->second->consensus_status());
         }
         return nullptr;
     }
@@ -393,9 +394,10 @@ ZbftPtr BftManager::Start(
             iter->second->in_consensus = false;
         }
         if (!bft_hash_map_[thread_index].empty()) {
-            ZJC_DEBUG("leader start bft failed, thread: %d, can_new_bft: %d, bft size: %d, gid: %s",
+            ZJC_DEBUG("leader start bft failed, thread: %d, can_new_bft: %d, bft size: %d, gid: %s, status: %d",
                 thread_index, can_new_bft, bft_hash_map_[thread_index].size(),
-                common::Encode::HexEncode(bft_hash_map_[thread_index].begin()->second->gid()).c_str());
+                common::Encode::HexEncode(bft_hash_map_[thread_index].begin()->second->gid()).c_str(),
+                bft_hash_map_[thread_index].begin()->second->consensus_status());
         }
     }
 
