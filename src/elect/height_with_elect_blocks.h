@@ -159,17 +159,17 @@ public:
             return iter->second->members_ptr;
         }
 
-        auto shard_members = GetMembers(network_id, height);
+        auto shard_members = GetMembers(security, network_id, height);
         if (shard_members == nullptr) {
             return nullptr;
         }
 
-        auto pk = GetCommonPublicKey(network_id, height);
-        if (pk == libff::alt_bn128_G2::zero()) {
+        auto new_item = std::make_shared<HeightMembersItem>(shard_members, height);
+        new_item->common_bls_publick_key = GetCommonPublicKey(network_id, height);
+        if (new_item->common_bls_publick_key == libff::alt_bn128_G2::zero()) {
             return nullptr;
         }
 
-        auto new_item = std::make_shared<HeightMembersItem>(shard_members, pk);
         height_with_members_[network_id][height] = new_item;
         std::string bls_prikey;
         if (prefix_db_->GetBlsPrikey(security_ptr_, height, network_id, &bls_prikey)) {
@@ -229,7 +229,10 @@ private:
         return tmp_common_pk;
     }
 
-    common::MembersPtr GetMembers(uint32_t network_id, uint64_t height) {
+    common::MembersPtr GetMembers(
+            std::shared_ptr<security::Security>& security,
+            uint32_t network_id,
+            uint64_t height) {
         block::protobuf::Block block;
         if (!prefix_db_->GetBlockWithHeight(
                 network::kRootCongressNetworkId,
