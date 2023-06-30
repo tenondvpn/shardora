@@ -177,7 +177,7 @@ public:
         }
 
         if (common_pk != nullptr) {
-            *common_pk = new_item->local_sec_key;
+            *common_pk = new_item->common_bls_publick_key;
         }
 
         if (local_sec_key != nullptr) {
