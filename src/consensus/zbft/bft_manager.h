@@ -178,6 +178,10 @@ private:
         int32_t local_node_pool_mod_num,
         std::shared_ptr<PoolTxIndexItem>* thread_set);
     void ReConsensusBft(uint8_t thread_idx, ZbftPtr& zbft_ptr);
+    int ChangePrecommitBftLeader(
+        ZbftPtr& bft_ptr,
+        uint32_t leader_idx,
+        const ElectItem& elect_item);
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
@@ -264,7 +268,7 @@ private:
         ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr);
 
-    static const uint32_t kCheckTimeoutPeriodMilli = 3000lu;
+    static const uint32_t kCheckTimeoutPeriodMilli = 1000lu;
 
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;

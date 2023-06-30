@@ -402,6 +402,31 @@ ZbftPtr BftManager::Start(
     return zbft_ptr;
 }
 
+int BftManager::ChangePrecommitBftLeader(
+        ZbftPtr& bft_ptr,
+        uint32_t leader_idx,
+        const ElectItem& elect_item) {
+    ZJC_DEBUG("now change precommit leader: %s, leader idx: %d, old elect height: %lu, elect height: %lu",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str(), leader_idx, bft_ptr->elect_height(), elect_item.elect_height);
+    // pre-commit timeout and changed new leader
+    if (bft_ptr->elect_height() >= elect_item.elect_height) {
+        return kConsensusSuccess;
+    }
+
+    if (bft_ptr->Init(
+            leader_idx,
+            elect_item.leader_count,
+            elect_item.elect_height,
+            elect_item.members,
+            elect_item.common_pk,
+            elect_item.sec_key) != kConsensusSuccess) {
+        ZJC_ERROR("bft init failed!");
+        return kConsensusError;
+    }
+
+    return kConsensusSuccess;
+}
+
 int BftManager::InitZbftPtr(int32_t leader_idx, const ElectItem& elect_item, ZbftPtr& bft_ptr) {
     if (bft_ptr->Init(
             leader_idx,
@@ -1451,13 +1476,25 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
                 }
             } else if (bft_ptr->consensus_status() == kConsensusPreCommit) {
                 // cross block remove
+                auto now_tm_ms = common::TimeUtils::TimestampMs();
+                auto elect_item_ptr = elect_items_[elect_item_idx_];
+                if (elect_item_ptr != nullptr && elect_item_ptr->time_valid < now_tm_ms) {
+                    auto& elect_item = *elect_item_ptr;
+                    for (uint32_t i = 0;
+                            i != elect_item.members->size(); ++i) {
+                        if (((*elect_item.members)[i])->pool_index() % elect_item.leader_count ==
+                                ((*elect_item.members)[i])->pool_index_mod_num) {
+                            ChangePrecommitBftLeader(
+                                bft_ptr,
+                                i,
+                                elect_item);
+                        }
+                }
+
                 if (bft_ptr->prepare_block() != nullptr &&
                         bft_ptr->prepare_block()->is_cross_block() &&
                         bft_ptr->this_node_is_leader()) {
                     ReConsensusBft(thread_idx, bft_ptr);
-//                     bft_ptr->Destroy();
-//                     bft_hash_map_[thread_idx].erase(iter);
-//                     ZJC_DEBUG("cross precommit block remove bft gid: %s", common::Encode::HexEncode(gid).c_str());
                     return;
                 }
 

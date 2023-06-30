@@ -29,6 +29,67 @@ Zbft::Zbft(
     reset_timeout();
 }
 
+int Zbft::ChangeLeader(
+        int32_t leader_idx,
+        int32_t leader_count,
+        uint64_t elect_height,
+        const common::MembersPtr& members_ptr,
+        const libff::alt_bn128_G2& common_pk,
+        const libff::alt_bn128_Fr& local_sec_key) {
+    if (members_ptr == nullptr) {
+        ZJC_ERROR("elected memmbers is null;");
+        return kConsensusError;
+    }
+
+    if (leader_idx >= (int32_t)members_ptr->size()) {
+        ZJC_ERROR("leader_idx >= (int32_t)members_ptr->size(), %u, %u",
+            leader_idx, members_ptr->size());
+        return kConsensusError;
+    }
+
+    elect_height_ = elect_height;
+    leader_mem_ptr_ = (*members_ptr)[leader_idx];
+    if ((pool_index() % leader_count) != (uint32_t)leader_mem_ptr_->pool_index_mod_num) {
+        ZJC_ERROR("pool_index() leader_count != (uint32_t)leader_mem_ptr_->pool_index_mod_num: %u, %u",
+            (pool_index() % leader_count), leader_mem_ptr_->pool_index_mod_num);
+        return kConsensusError;
+    }
+
+    leader_index_ = leader_idx;
+    members_ptr_ = members_ptr;
+    common_pk_ = common_pk;
+    local_sec_key_ = local_sec_key;
+    if (leader_index_ >= members_ptr_->size() ||
+            common_pk_ == libff::alt_bn128_G2::zero() ||
+            local_sec_key_ == libff::alt_bn128_Fr::zero()) {
+        ZJC_ERROR("leader_index_: %d, size: %d, common_pk_: %d, local_sec_key_: %d",
+            leader_index_,
+            members_ptr_->size(),
+            (common_pk_ == libff::alt_bn128_G2::zero()),
+            (local_sec_key_ == libff::alt_bn128_Fr::zero()));
+        return kConsensusError;
+    }
+
+    if (leader_mem_ptr_->id == security_ptr_->GetAddress()) {
+        this_node_is_leader_ = true;
+    }
+
+    if (prepare_block_ != nullptr) {
+        auto& zjc_block = *prepare_block_;
+        zjc_block.set_timestamp(common::TimeUtils::TimestampMs());
+        if (txs_ptr_->tx_type != pools::protobuf::kNormalFrom) {
+            zjc_block.set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
+        }
+
+        zjc_block.set_electblock_height(elect_height_);
+        assert(elect_height_ >= 1);
+        zjc_block.set_leader_index(leader_index_);
+        zjc_block.set_hash(GetBlockHash(zjc_block));
+    }
+
+    reset_timeout();
+}
+
 int Zbft::Init(
         int32_t leader_idx,
         int32_t leader_count,
