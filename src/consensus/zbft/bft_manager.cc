@@ -1483,12 +1483,13 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
                     for (uint32_t i = 0;
                             i != elect_item.members->size(); ++i) {
                         if (bft_ptr->pool_index() % elect_item.leader_count ==
-                                ((*elect_item.members)[i])->pool_index_mod_num) {
+                            ((*elect_item.members)[i])->pool_index_mod_num) {
                             ChangePrecommitBftLeader(
                                 bft_ptr,
                                 i,
                                 elect_item);
                         }
+                    }
                 }
 
                 if (bft_ptr->prepare_block() != nullptr &&
