@@ -553,11 +553,10 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto now_ms = common::TimeUtils::TimestampMs();
     if (elect_item.time_valid + 10000lu <= now_ms) {
         ZJC_ERROR("BackupPrepare failed prepare: %s, precommit: %s, commit: %s, "
-            "invalid elect height: %lu, %lu",
-            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-            common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
-            common::Encode::HexEncode(bft_msg.commit_gid()).c_str(),
-            now_elect_item->elect_height,
+            "invalid elect height: %lu",
+            common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+            common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
+            common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
             elect_item.elect_height);
         return;
     }
