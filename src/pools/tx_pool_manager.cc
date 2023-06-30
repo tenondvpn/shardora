@@ -201,32 +201,36 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
     }
 
     if (prev_check_leader_valid_ms_ < now_tm_ms) {
-        bool get_factor = false;
-        if (prev_cacultate_leader_valid_ms_ < now_tm_ms) {
-            get_factor = true;
-            prev_cacultate_leader_valid_ms_ = now_tm_ms + kCaculateLeaderLofPeriod;
-        }
+        if (network::DhtManager::Instance()->valid_count(
+                common::GlobalInfo::Instance()->network_id()) >=
+                common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
+            bool get_factor = false;
+            if (prev_cacultate_leader_valid_ms_ < now_tm_ms) {
+                get_factor = true;
+                prev_cacultate_leader_valid_ms_ = now_tm_ms + kCaculateLeaderLofPeriod;
+            }
 
-        std::vector<double> factors(common::kInvalidPoolIndex);
-        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-            double res = tx_pool_[i].CheckLeaderValid(get_factor);
+            std::vector<double> factors(common::kInvalidPoolIndex);
+            for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+                double res = tx_pool_[i].CheckLeaderValid(get_factor);
+                if (get_factor) {
+                    factors[i] = res;
+                    ZJC_DEBUG("get_factor: %d, get invalid pool factor pool: %d, factor: %f", get_factor, i, res);
+                }
+            }
+
             if (get_factor) {
-                factors[i] = res;
-                ZJC_DEBUG("get_factor: %d, get invalid pool factor pool: %d, factor: %f", get_factor, i, res);
+                std::vector<int32_t> invalid_pools;
+                invalid_pools.reserve(64);
+                CheckLeaderValid(factors, &invalid_pools);
+                ZJC_DEBUG("invalid_pools.size(): %d", invalid_pools.size());
+                if (invalid_pools.size() < 32) {
+                    BroadcastInvalidPools(thread_idx, invalid_pools);
+                }
             }
-        }
 
-        if (get_factor) {
-            std::vector<int32_t> invalid_pools;
-            invalid_pools.reserve(64);
-            CheckLeaderValid(factors, &invalid_pools);
-            ZJC_DEBUG("invalid_pools.size(): %d", invalid_pools.size());
-            if (invalid_pools.size() < 32) {
-                BroadcastInvalidPools(thread_idx, invalid_pools);
-            }
+            prev_check_leader_valid_ms_ = now_tm_ms + kCheckLeaderLofPeriod;
         }
-
-        prev_check_leader_valid_ms_ = now_tm_ms + kCheckLeaderLofPeriod;
     }
 
     if (prev_sync_check_ms_ < now_tm_ms) {
