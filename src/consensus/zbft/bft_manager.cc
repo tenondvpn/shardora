@@ -378,7 +378,8 @@ ZbftPtr BftManager::Start(
     }
 
     if (txs_ptr == nullptr) {
-        ZJC_DEBUG("leader start bft failed, thread: %d, can_new_bft: %d", thread_index, can_new_bft);
+        ZJC_DEBUG("leader start bft failed, thread: %d, can_new_bft: %d, bft size: %d",
+            thread_index, can_new_bft, bft_hash_map_[thread_index].size());
         return nullptr;
     }
 
@@ -388,7 +389,8 @@ ZbftPtr BftManager::Start(
         for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
             iter->second->in_consensus = false;
         }
-        ZJC_DEBUG("leader start bft failed, thread: %d, can_new_bft: %d", thread_index, can_new_bft);
+        ZJC_DEBUG("leader start bft failed, thread: %d, can_new_bft: %d, bft size: %d",
+            thread_index, can_new_bft, bft_hash_map_[thread_index].size());
     }
 
     return zbft_ptr;
@@ -560,7 +562,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             elect_item.elect_height);
         return;
     }
-
 
     if (header.zbft().has_sync_block() && header.zbft().sync_block()) {
         return HandleSyncConsensusBlock(elect_item, msg_ptr);
