@@ -69,10 +69,6 @@ public:
     common::MembersPtr GetWaitingNetworkMembers(uint32_t network_id);
     bool IsIdExistsInAnyShard(const std::string& id);
 
-    libff::alt_bn128_G2 GetCommonPublicKey(uint64_t height, uint32_t network_id) {
-        return height_with_block_->GetCommonPublicKey(height, network_id);
-    }
-
     std::unordered_set<uint32_t> valid_shard_networks() {
         std::lock_guard<std::mutex> guard(valid_shard_networks_mutex_);
         return valid_shard_networks_;
