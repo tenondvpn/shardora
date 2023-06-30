@@ -273,6 +273,7 @@ std::string Secp256k1::ToPublicFromCompressed(const std::string& in_pubkey) {
             &raw_pubkey,
             (uint8_t*)in_pubkey.c_str(),
             in_pubkey.size())) {
+        assert(false);
         return "";
     }
 
