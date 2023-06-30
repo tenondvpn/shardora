@@ -248,7 +248,7 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
         RemoveTx(tx_list[i].gid());
     }
 
-    finish_tx_count += tx_list.size();
+    finish_tx_count_ += tx_list.size();
 }
 
 }  // namespace pools
