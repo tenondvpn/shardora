@@ -212,10 +212,6 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
         }
 
         if (get_factor) {
-            if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
-                factors.pop_back();
-            }
-
             std::vector<int32_t> invalid_pools;
             invalid_pools.reserve(64);
             CheckLeaderValid(factors, &invalid_pools);
@@ -283,6 +279,7 @@ void TxPoolManager::BroadcastInvalidPools(
     auto* init_msg = msg_ptr->header.mutable_init_proto();
     auto* pools = init_msg->mutable_pools();
     pools->set_elect_height(latest_elect_height_);
+    pools->set_member_index(member_index_);
     for (uint32_t i = 0; i < invalid_pools.size(); ++i) {
         pools->add_pools(invalid_pools[i]);
     }
@@ -291,6 +288,14 @@ void TxPoolManager::BroadcastInvalidPools(
     transport::TcpTransport::Instance()->SetMessageHash(
         msg_ptr->header,
         msg_ptr->thread_idx);
+    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
+    std::string sign;
+    if (security_->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
+        assert(false);
+        return;
+    }
+
+    msg_ptr->header.set_sign(sign);
     network::Route::Instance()->Send(msg_ptr);
 }
 

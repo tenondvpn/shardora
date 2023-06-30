@@ -83,6 +83,10 @@ public:
                     if ((*members)[i]->pool_index_mod_num >= 0) {
                         ++latest_leader_count_;
                     }
+
+                    if ((*members)[i]->id == security_->GetAddress()) {
+                        member_index_ = i;
+                    }
                 }
             }
         }
@@ -215,6 +219,7 @@ private:
     volatile uint64_t cross_synced_max_heights_[network::kConsensusWaitingShardOffset] = { 0 };
     uint64_t latest_elect_height_ = 0;
     uint32_t latest_leader_count_ = 0;
+    uint32_t member_index_ = common::kInvalidUint32;
     CrossPool* cross_pools_ = nullptr;
     uint32_t max_cross_pools_size_ = 1;
     uint32_t now_sharding_count_ = 1;

@@ -240,7 +240,17 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
     }
 
     auto& pools = msg_ptr->header.init_proto().pools();
-    if (pools.elect_height() != rotation->elect_height) {
+    if (pools.elect_height() != rotation->elect_height || pools.member_index() >= rotation->members->size()) {
+        return;
+    }
+
+    auto& mem_ptr = (*rotation->members)[pools.member_index()];
+    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
+    if (security_->Verify(
+            msg_hash,
+            mem_ptr->pubkey,
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        assert(false);
         return;
     }
 
