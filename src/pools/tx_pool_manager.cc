@@ -310,7 +310,7 @@ void TxPoolManager::CheckLeaderValid(
         average += factors[i];
     }
 
-    if (average <= 0.000001) {
+    if (average <= factors.size() * 10.0 / 9.0) {
         // all leader invalid
         if (latest_leader_count_ <= 2) {
             invalid_pools->push_back(-1);
