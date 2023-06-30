@@ -378,8 +378,9 @@ ZbftPtr BftManager::Start(
     }
 
     if (txs_ptr == nullptr) {
-        ZJC_DEBUG("leader start bft failed, thread: %d, can_new_bft: %d, bft size: %d",
-            thread_index, can_new_bft, bft_hash_map_[thread_index].size());
+        ZJC_DEBUG("leader start bft failed, thread: %d, can_new_bft: %d, bft size: %d, gid: %s",
+            thread_index, can_new_bft, bft_hash_map_[thread_index].size(),
+            common::Encode::HexEncode(bft_hash_map_[thread_index].begin()->second->gid()).c_str());
         return nullptr;
     }
 
@@ -389,8 +390,9 @@ ZbftPtr BftManager::Start(
         for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
             iter->second->in_consensus = false;
         }
-        ZJC_DEBUG("leader start bft failed, thread: %d, can_new_bft: %d, bft size: %d",
-            thread_index, can_new_bft, bft_hash_map_[thread_index].size());
+        ZJC_DEBUG("leader start bft failed, thread: %d, can_new_bft: %d, bft size: %d, gid: %s",
+            thread_index, can_new_bft, bft_hash_map_[thread_index].size(),
+            common::Encode::HexEncode(bft_hash_map_[thread_index].begin()->second->gid()).c_str());
     }
 
     return zbft_ptr;
