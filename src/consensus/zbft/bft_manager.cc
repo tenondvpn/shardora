@@ -183,7 +183,8 @@ void BftManager::OnNewElectBlock(
         return;
     }
 
-    if (elect_items_[elect_item_idx_]->elect_height >= elect_height) {
+    auto tmp_item_ptr = elect_items_[elect_item_idx_];
+    if (tmp_item_ptr->elect_height >= elect_height) {
         return;
     }
 
