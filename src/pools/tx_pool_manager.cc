@@ -5,6 +5,7 @@
 #include "common/hash.h"
 #include "common/string_utils.h"
 #include "dht/dht_key.h"
+#include "network/dht_manager.h"
 #include "network/network_utils.h"
 #include "network/route.h"
 #include "protos/prefix_db.h"
