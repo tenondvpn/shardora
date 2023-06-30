@@ -1440,6 +1440,7 @@ public:
             return false;
         }
 
+        ZJC_DEBUG("get elect height prev info success: %u, %lu", des_shard, height);
         return true;
     }
 
