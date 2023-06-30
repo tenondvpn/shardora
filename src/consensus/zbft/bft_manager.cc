@@ -1444,7 +1444,7 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
 
                 if (bft_ptr->prepare_block() == nullptr) {
                     // TODO: sync this block from other node
-                    SyncConsensusBlock()
+//                     SyncConsensusBlock()
                 }
 
                 ZJC_DEBUG("can not remove bft gid: %s, %d, thread_idx: %d",
