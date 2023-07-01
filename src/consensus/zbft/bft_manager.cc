@@ -295,6 +295,21 @@ void BftManager::RotationLeader(
         return;
     }
 
+    if (elect_item_ptr->mod_with_leader_index[leader_mod_num] == new_leader_idx) {
+        return;
+    }
+
+    if (elect_item_ptr->local_node_member_index == elect_item_ptr->mod_with_leader_index[leader_mod_num]) {
+        for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
+            elect_item_ptr->thread_set[i] = nullptr;
+        }
+    }
+
+    if (elect_item_ptr->local_node_member_index == new_leader_idx) {
+        auto& thread_set = elect_item_ptr->thread_set;
+        SetThreadItem(elect_item_ptr->leader_count, leader_mod_num, thread_set);
+    }
+
     elect_item_ptr->mod_with_leader_index[leader_mod_num] = new_leader_idx;
 }
 
