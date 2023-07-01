@@ -311,6 +311,7 @@ void BftManager::RotationLeader(
     }
 
     elect_item_ptr->mod_with_leader_index[leader_mod_num] = new_leader_idx;
+    ZJC_DEBUG("rotation leader success: %d, %lu, %u", leader_mod_num, elect_height, new_leader_idx);
 }
 
 ZbftPtr BftManager::Start(
