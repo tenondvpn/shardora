@@ -295,7 +295,7 @@ void BftManager::RotationLeader(
         return;
     }
 
-    elect_item.mod_with_leader_index[leader_mod_num] = new_leader_idx;
+    elect_item_ptr->mod_with_leader_index[leader_mod_num] = new_leader_idx;
 }
 
 ZbftPtr BftManager::Start(
@@ -1173,7 +1173,7 @@ bool BftManager::VerifyLeaderIdValid(const ElectItem& elect_item, const transpor
         return false;
     }
 
-    auto mod_num = msg_ptr->pool_index() % elect_item.leader_count;
+    auto mod_num = msg_ptr->header.zbft().pool_index() % elect_item.leader_count;
     if (elect_item.mod_with_leader_index[mod_num] != msg_ptr->header.zbft().member_index()) {
         return false;
     }
