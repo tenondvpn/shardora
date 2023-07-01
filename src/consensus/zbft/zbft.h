@@ -480,6 +480,15 @@ public:
         should_timer_to_restart_ = true;
     }
 
+    int32_t pool_mod_num() const {
+        if (leader_mem_ptr_ == nullptr) {
+            assert(false);
+            return -1;
+        }
+
+        return leader_mem_ptr_->pool_index_mod_num;
+    }
+
 protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;

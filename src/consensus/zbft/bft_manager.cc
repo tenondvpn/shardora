@@ -419,7 +419,7 @@ int BftManager::ChangePrecommitBftLeader(
     ZJC_DEBUG("now change precommit leader: %s, leader idx: %d, old elect height: %lu, elect height: %lu",
         common::Encode::HexEncode(bft_ptr->gid()).c_str(), leader_idx, bft_ptr->elect_height(), elect_item.elect_height);
     // pre-commit timeout and changed new leader
-    if (bft_ptr->elect_height() >= elect_item.elect_height) {
+    if (bft_ptr->elect_height() > elect_item.elect_height) {
         return kConsensusSuccess;
     }
 
@@ -1489,23 +1489,6 @@ void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool l
                     ReConsensusBft(thread_idx, pre_bft);
                 }
             } else if (bft_ptr->consensus_status() == kConsensusPreCommit) {
-                // cross block remove
-                auto now_tm_ms = common::TimeUtils::TimestampMs();
-                auto elect_item_ptr = elect_items_[elect_item_idx_];
-                if (elect_item_ptr != nullptr && elect_item_ptr->time_valid < now_tm_ms) {
-                    auto& elect_item = *elect_item_ptr;
-                    for (uint32_t i = 0;
-                            i != elect_item.members->size(); ++i) {
-                        if (bft_ptr->pool_index() % elect_item.leader_count ==
-                            ((*elect_item.members)[i])->pool_index_mod_num) {
-                            ChangePrecommitBftLeader(
-                                bft_ptr,
-                                i,
-                                elect_item);
-                        }
-                    }
-                }
-
                 if (bft_ptr->prepare_block() != nullptr &&
                         bft_ptr->prepare_block()->is_cross_block() &&
                         bft_ptr->this_node_is_leader()) {
@@ -2795,7 +2778,15 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
     }
 
     prev_checktime_out_milli_ = now_timestamp_us / 1000 + kCheckTimeoutPeriodMilli;
+    auto elect_item_ptr = elect_items_[elect_item_idx_];
     for (auto iter = bft_hash_map_[thread_idx].begin(); iter != bft_hash_map_[thread_idx].end(); ++iter) {
+        auto valid_leader_idx = elect_item_ptr->mod_with_leader_index[iter->second->pool_mod_num()];
+        if (iter->second->leader_index() != valid_leader_idx &&
+                iter->second->consensus_status() == kConsensusPreCommit) {
+            ChangePrecommitBftLeader(iter->second, valid_leader_idx, *elect_item_ptr);
+            continue;
+        }
+
         if (!iter->second->timeout(now_timestamp_us)) {
             continue;
         }
