@@ -138,7 +138,7 @@ int NetworkInit::Init(int argc, char** argv) {
         db_);
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(
         security_, db_, kv_sync_,
-        std::bind&NetworkInit::RotationLeaderCallback, this, std::placeholders::_1));
+        std::bind(&NetworkInit::RotationLeaderCallback, this, std::placeholders::_1));
     account_mgr_->Init(
         common::GlobalInfo::Instance()->message_handler_thread_count(),
         db_,
