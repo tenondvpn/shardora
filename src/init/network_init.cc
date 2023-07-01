@@ -136,7 +136,9 @@ int NetworkInit::Init(int argc, char** argv) {
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1),
         block_mgr_,
         db_);
-    pools_mgr_ = std::make_shared<pools::TxPoolManager>(security_, db_, kv_sync_);
+    pools_mgr_ = std::make_shared<pools::TxPoolManager>(
+        security_, db_, kv_sync_,
+        std::bind&NetworkInit::RotationLeaderCallback, this, std::placeholders::_1));
     account_mgr_->Init(
         common::GlobalInfo::Instance()->message_handler_thread_count(),
         db_,
@@ -268,14 +270,6 @@ void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_poo
     bft_mgr_->RotationLeader(
         max_invalid_mod_idx,
         rotation->rotations[max_invalid_mod_idx].rotation_leaders[rotation_idx]);
-}
-
-void NetworkInit::NotifyRotationLeader(
-        uint64_t elect_height,
-        int32_t pool_mod_index,
-        uint32_t old_leader_idx,
-        uint32_t new_leader_idx) {
-    ZJC_DEBUG("now rotation leader.");
 }
 
 void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
