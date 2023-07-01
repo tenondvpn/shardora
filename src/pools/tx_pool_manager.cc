@@ -20,12 +20,14 @@ namespace pools {
 TxPoolManager::TxPoolManager(
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<db::Db>& db,
-        std::shared_ptr<sync::KeyValueSync>& kv_sync) {
+        std::shared_ptr<sync::KeyValueSync>& kv_sync,
+        RotationLeaderCallback rotatition_leader_cb) {
     security_ = security;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     prefix_db_->InitGidManager();
     kv_sync_ = kv_sync;
+    rotatition_leader_cb_ = rotatition_leader_cb;
     cross_block_mgr_ = std::make_shared<CrossBlockManager>(db_, kv_sync_);
     tx_pool_ = new TxPool[common::kInvalidPoolIndex];
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
@@ -34,10 +36,6 @@ TxPoolManager::TxPoolManager(
 
     ZJC_INFO("TxPoolManager init success: %d", common::kInvalidPoolIndex);
     InitCrossPools();
-    if (security_ == nullptr) {
-        return;
-    }
-
     tick_.CutOff(
         10000lu,
         std::bind(&TxPoolManager::ConsensusTimerMessage, this, std::placeholders::_1));
@@ -225,8 +223,9 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
                 invalid_pools.reserve(64);
                 CheckLeaderValid(factors, &invalid_pools);
                 ZJC_DEBUG("invalid_pools.size(): %d", invalid_pools.size());
-                if (invalid_pools.size() < 32) {
-                    BroadcastInvalidPools(thread_idx, invalid_pools);
+                if (!invalid_pools.empty() &&
+                        rotatition_leader_cb_ != nullptr) {
+                    rotatition_leader_cb_(invalid_pools);
                 }
             }
 
@@ -267,48 +266,6 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
     tick_.CutOff(
         100000lu,
         std::bind(&TxPoolManager::ConsensusTimerMessage, this, std::placeholders::_1));
-}
-
-void TxPoolManager::BroadcastInvalidPools(
-        uint8_t thread_idx,
-        const std::vector<int32_t>& invalid_pools) {
-    if (invalid_pools.empty()) {
-        return;
-    }
-
-    auto net_id = common::GlobalInfo::Instance()->network_id();
-    if (net_id < network::kRootCongressNetworkId || net_id >= network::kConsensusShardEndNetworkId) {
-        return;
-    }
-
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->thread_idx = thread_idx;
-    msg_ptr->header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    dht::DhtKeyManager dht_key(net_id);
-    msg_ptr->header.set_des_dht_key(dht_key.StrKey());
-    msg_ptr->header.set_type(common::kInitMessage);
-    auto* init_msg = msg_ptr->header.mutable_init_proto();
-    auto* pools = init_msg->mutable_pools();
-    pools->set_elect_height(latest_elect_height_);
-    pools->set_member_index(member_index_);
-    for (uint32_t i = 0; i < invalid_pools.size(); ++i) {
-        pools->add_pools(invalid_pools[i]);
-    }
-
-    msg_ptr->header.mutable_broadcast();
-    transport::TcpTransport::Instance()->SetMessageHash(
-        msg_ptr->header,
-        msg_ptr->thread_idx);
-    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
-    std::string sign;
-    if (security_->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
-        assert(false);
-        return;
-    }
-
-    msg_ptr->header.set_sign(sign);
-    network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("success broadcast invalid pools.");
 }
 
 void TxPoolManager::CheckLeaderValid(

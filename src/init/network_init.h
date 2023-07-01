@@ -71,15 +71,7 @@ private:
     void HandleAddrRes(const transport::MessagePtr& msg_ptr);
     void HandleLeaderPools(const transport::MessagePtr& msg_ptr);
     void GetAddressShardingId(uint8_t thread_idx);
-    void RotationLeader(
-        std::shared_ptr<LeaderRotationInfo>& rotation,
-        int32_t leader_mod_idx,
-        RotatitionLeaders& r_leader);
-    void NotifyRotationLeader(
-        uint64_t elect_height,
-        int32_t pool_mod_index,
-        uint32_t old_leader_idx,
-        uint32_t new_leader_idx);
+    void RotationLeaderCallback(const std::vector<int32_t>& invalid_pools);
     void CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req);
     bool BlockBlsAggSignatureValid(const block::protobuf::Block& block);
 

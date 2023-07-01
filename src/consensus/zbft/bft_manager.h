@@ -83,6 +83,7 @@ public:
     virtual ~BftManager();
     int AddBft(ZbftPtr& bft_ptr);
     ZbftPtr GetBft(uint8_t thread_index, const std::string& gid, bool leader);
+    void RotationLeader(int32_t leader_mod_num, uint32_t new_leader_idx);
 
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);

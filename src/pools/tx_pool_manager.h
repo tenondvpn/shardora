@@ -27,7 +27,8 @@ public:
     TxPoolManager(
         std::shared_ptr<security::Security>& security,
         std::shared_ptr<db::Db>& db,
-        std::shared_ptr<sync::KeyValueSync>& kv_sync);
+        std::shared_ptr<sync::KeyValueSync>& kv_sync,
+        RotationLeaderCallback rotatition_leader_cb);
     ~TxPoolManager();
     void HandleMessage(const transport::MessagePtr& msg);
     void GetTx(
@@ -225,6 +226,7 @@ private:
     std::shared_ptr<CrossBlockManager> cross_block_mgr_ = nullptr;
     common::Tick tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_[common::kMaxThreadCount];
+    RotationLeaderCallback rotatition_leader_cb_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

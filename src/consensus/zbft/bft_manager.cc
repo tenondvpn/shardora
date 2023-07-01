@@ -306,6 +306,10 @@ void BftManager::PopAllPoolTxs(uint8_t thread_index) {
     }
 }
 
+void BftManager::RotationLeader(int32_t leader_mod_num, uint32_t new_leader_idx) {
+
+}
+
 ZbftPtr BftManager::Start(
         uint8_t thread_index,
         ZbftPtr& prev_bft,

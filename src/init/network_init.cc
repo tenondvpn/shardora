@@ -227,94 +227,47 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.init_proto().has_addr_res()) {
         HandleAddrRes(msg_ptr);
     }
-
-    if (msg_ptr->header.init_proto().has_pools()) {
-        HandleLeaderPools(msg_ptr);
-    }
 }
 
-void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
-    ZJC_DEBUG("roatation leader message coming..");
+void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_pools) {
     auto rotation = rotation_leaders_;
     if (rotation == nullptr) {
         return;
     }
 
-    auto& pools = msg_ptr->header.init_proto().pools();
-    if (pools.elect_height() != rotation->elect_height || pools.member_index() >= rotation->members->size()) {
+    if (rotation->rotations.empty()) {
         return;
     }
 
-    auto& mem_ptr = (*rotation->members)[pools.member_index()];
-    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
-    if (security_->Verify(
-            msg_hash,
-            mem_ptr->pubkey,
-            msg_ptr->header.sign()) != security::kSecuritySuccess) {
-        assert(false);
+    if (common::TimeUtils::TimestampSeconds() <= rotation->tm_block_tm) {
         return;
     }
 
-    auto invalid_member_count = common::GetSignerCount(rotation->members->size());
-    auto invalid_pool_count = common::kInvalidPoolIndex * kInvalidPoolFactor / 100;
-    if (pools.pools_size() == 1 &&
-            pools.pools(0) == -1 &&
-            rotation->rotations.size() <= 2) {
-        // rotation all leader
-        for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
-            auto& r_leader = rotation->rotations[i];
-            RotationLeader(rotation, i, r_leader);
+    uint32_t rotation_idx = (common::TimeUtils::TimestampSeconds() - rotation->tm_block_tm) /
+        kRotationLeaderCount;
+    if (invalid_pools.size() == 1 && invalid_pools[0] == -1) {
+        for (int32_t i = 0; i < rotation->rotations.size(); ++i) {
+            bft_mgr_->RotationLeader(i, rotation->rotations[i].rotation_leaders[rotation_idx]);
         }
 
         return;
     }
 
-    for (int32_t i = 0; i < pools.pools_size(); ++i) {
-        if ((uint32_t)pools.pools(i) > common::kInvalidPoolIndex) {
-            return;
-        }
-
-        ++invalid_pools_[pools.pools(i)];
-        if (invalid_pools_[pools.pools(i)] >= invalid_member_count) {
-            auto leader_mod_idx = pools.pools(i) % rotation->rotations.size();
-            auto& r_leader = rotation->rotations[leader_mod_idx];
-            ++r_leader.invalid_pool_count;
-            if (r_leader.invalid_pool_count >= invalid_pool_count) {
-                RotationLeader(rotation, leader_mod_idx, r_leader);
-            }
+    uint32_t max_invalid_mod_count = 0;
+    int32_t max_invalid_mod_idx = -1;
+    uint32_t invalid_leader_mods[rotation->rotations.size()] = { 0 };
+    for (uint32_t i = 0; i < invalid_pools.size(); ++i) {
+        auto& tmp_mod = invalid_leader_mods[invalid_pools[i] % rotation->rotations.size()];
+        ++tmp_mod;
+        if (tmp_mod > max_invalid_mod_count) {
+            max_invalid_mod_count = tmp_mod;
+            max_invalid_mod_idx = invalid_pools[i] % rotation->rotations.size();
         }
     }
-}
 
-void NetworkInit::RotationLeader(
-        std::shared_ptr<LeaderRotationInfo>& rotation,
-        int32_t leader_mod_idx,
-        RotatitionLeaders& r_leader) {
-    // now leader rotation
-    rotation->invalid_leaders.insert(r_leader.now_leader_idx);
-    uint32_t try_times = 0;
-    while (try_times++ < r_leader.rotation_leaders.size()) {
-        if (r_leader.now_rotation_idx >= r_leader.rotation_leaders.size()) {
-            r_leader.now_rotation_idx = 0;
-        }
-
-        auto new_leader_idx = r_leader.rotation_leaders[r_leader.now_rotation_idx++];
-        auto iter = rotation->invalid_leaders.find(new_leader_idx);
-        if (iter != rotation->invalid_leaders.end()) {
-            continue;
-        }
-
-        (*rotation->members)[r_leader.now_leader_idx]->pool_index_mod_num = -1;
-        (*rotation->members)[new_leader_idx]->pool_index_mod_num = leader_mod_idx;
-        NotifyRotationLeader(
-            rotation->elect_height,
-            leader_mod_idx,
-            r_leader.now_leader_idx,
-            new_leader_idx);
-        r_leader.now_leader_idx = new_leader_idx;
-        r_leader.invalid_pool_count = 0;
-        break;
-    }
+    bft_mgr_->RotationLeader(
+        max_invalid_mod_idx,
+        rotation->rotations[max_invalid_mod_idx].rotation_leaders[rotation_idx]);
 }
 
 void NetworkInit::NotifyRotationLeader(
@@ -1172,6 +1125,7 @@ void NetworkInit::HandleElectionBlock(
 
             rotation_leaders->rotations.resize(leader_count);
             rotation_leaders->members = members;
+            rotation_leaders->tm_block_tm = tm_block_mgr_->LatestTimestamp();
             uint32_t for_leader_idx = 0;
             bool valid = false;
             while (!valid) {

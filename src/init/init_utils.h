@@ -40,6 +40,7 @@ struct LeaderRotationInfo {
     std::vector<RotatitionLeaders> rotations;
     std::set<uint32_t> invalid_leaders;
     common::MembersPtr members;
+    uint64_t tm_block_tm;
 };
 
 struct GenisisNodeInfo {
