@@ -248,8 +248,11 @@ void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_poo
     uint32_t rotation_idx = (common::TimeUtils::TimestampSeconds() - rotation->tm_block_tm) /
         kRotationLeaderCount;
     if (invalid_pools.size() == 1 && invalid_pools[0] == -1) {
-        for (int32_t i = 0; i < rotation->rotations.size(); ++i) {
-            bft_mgr_->RotationLeader(i, rotation->rotations[i].rotation_leaders[rotation_idx]);
+        for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
+            bft_mgr_->RotationLeader(
+                i,
+                rotation->elect_height,
+                rotation->rotations[i].rotation_leaders[rotation_idx]);
         }
 
         return;
@@ -269,6 +272,7 @@ void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_poo
 
     bft_mgr_->RotationLeader(
         max_invalid_mod_idx,
+        rotation->elect_height,
         rotation->rotations[max_invalid_mod_idx].rotation_leaders[rotation_idx]);
 }
 

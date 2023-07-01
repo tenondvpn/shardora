@@ -205,6 +205,7 @@ void BftManager::OnNewElectBlock(
 
         if ((*members)[i]->pool_index_mod_num >= 0) {
             ++elect_item.leader_count;
+            elect_item.mod_with_leader_index[(*members)[i]->pool_index_mod_num] = i;
         }
     }
 
@@ -222,27 +223,6 @@ void BftManager::OnNewElectBlock(
         local_node_pool_mod_num, elect_item.leader_count, thread_count_, elect_item.elect_height, members->size());
     auto& thread_set = elect_item.thread_set;
     SetThreadItem(elect_item.leader_count, local_node_pool_mod_num, thread_set);
-//     std::set<uint32_t> leader_pool_set;
-//     if (local_node_pool_mod_num >= 0) {
-//         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-//             if (i % elect_item.leader_count == local_node_pool_mod_num) {
-//                 leader_pool_set.insert(i);
-//             }
-//         }
-//     }
-// 
-//     for (uint8_t j = 0; j < thread_count_; ++j) {
-//         auto thread_item = std::make_shared<PoolTxIndexItem>();
-//         for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-//             if (i % thread_count_ == j && leader_pool_set.find(i) != leader_pool_set.end()) {
-//                 thread_item->pools.push_back(i);
-//             }
-//         }
-// 
-//         thread_item->prev_index = 0;
-//         thread_set[j] = thread_item;  // ptr change, multi-thread safe
-//     }
-
     thread_set[0]->member_ips[elect_item.local_node_member_index] = common::IpToUint32(
         common::GlobalInfo::Instance()->config_local_ip().c_str());
     thread_set[0]->valid_ip_count = 1;
@@ -306,8 +286,16 @@ void BftManager::PopAllPoolTxs(uint8_t thread_index) {
     }
 }
 
-void BftManager::RotationLeader(int32_t leader_mod_num, uint32_t new_leader_idx) {
+void BftManager::RotationLeader(
+        int32_t leader_mod_num,
+        uint64_t elect_height,
+        uint32_t new_leader_idx) {
+    auto elect_item_ptr = elect_items_[elect_item_idx_];
+    if (elect_item_ptr->elect_height != elect_height) {
+        return;
+    }
 
+    elect_item.mod_with_leader_index[leader_mod_num] = new_leader_idx;
 }
 
 ZbftPtr BftManager::Start(
@@ -1182,6 +1170,11 @@ bool BftManager::SetBackupEcdhData(transport::MessagePtr& msg_ptr, common::BftMe
 bool BftManager::VerifyLeaderIdValid(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr) {
     if (!msg_ptr->header.has_sign()) {
         assert(false);
+        return false;
+    }
+
+    auto mod_num = msg_ptr->pool_index() % elect_item.leader_count;
+    if (elect_item.mod_with_leader_index[mod_num] != msg_ptr->header.zbft().member_index()) {
         return false;
     }
 

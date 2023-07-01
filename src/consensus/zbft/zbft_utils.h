@@ -106,6 +106,8 @@ struct ElectItem {
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             thread_set[i] = nullptr;
         }
+
+        memset(mod_with_leader_index, 0, sizeof(mod_with_leader_index));
     }
 
     common::MembersPtr members;
@@ -119,6 +121,7 @@ struct ElectItem {
     libff::alt_bn128_Fr sec_key;
     bool bls_valid;
     uint64_t time_valid;
+    volatile uint32_t mod_with_leader_index[256];
 };
 
 typedef std::function<void(
