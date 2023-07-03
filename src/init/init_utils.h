@@ -42,7 +42,7 @@ struct RotatitionLeaders {
 };
 
 struct LeaderRotationInfo {
-    LeaderRotationInfo() : elect_height(0), members(nullptr), version(0){
+    LeaderRotationInfo() : elect_height(0), members(nullptr) {
         memset(rotation_used, 0, sizeof(rotation_used));
     }
 
@@ -53,7 +53,7 @@ struct LeaderRotationInfo {
     common::MembersPtr members;
     uint64_t tm_block_tm;
     uint32_t local_member_index;
-    bool rotation_used[1024];
+    bool rotation_used[common::kEachShardMaxNodeCount];
 };
 
 struct GenisisNodeInfo {
