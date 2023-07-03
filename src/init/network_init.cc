@@ -305,6 +305,10 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    if (rotation->rotation_used[pools.leader_idx()]) {
+        assert(false);
+        return;
+    }
 
     if (pools.mod_num() >= rotation->rotations.size()) {
         assert(false);
@@ -343,13 +347,13 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
     ++count_iter->second;
     uint32_t t = common::GetSignerCount(rotation->members->size());
     if (count_iter->second >= t) {
+        rotation->rotation_used[pools.leader_idx()] = true;
         bft_mgr_->RotationLeader(
             pools.mod_num(),
             rotation->elect_height,
             pools.leader_idx());
     }
 }
-
 
 void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_pools) {
     auto rotation = rotation_leaders_;
