@@ -247,21 +247,18 @@ void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_poo
 
     if (invalid_pools.size() == 1 && invalid_pools[0] == -1) {
         for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
-            auto rotation_idx = rotation->rotations[i].now_rotation_idx++;
+            auto rotation_idx = rotation->valid_rotation_leaders.front();
+            rotation->valid_rotation_leaders.pop();
             ZJC_DEBUG("now tm: %lu, old: %lu, kRotationLeaderCount: %u, rotation_idx: %u, "
-                "invalid_pools size: %u, rotation_leaders.size(): %u, new leader idx: %u",
+                "invalid_pools size: %u, rotation->valid_rotation_leaders.size(): %u, new leader idx: %u",
                 common::TimeUtils::TimestampSeconds(),
                 rotation->tm_block_tm, kRotationLeaderCount, rotation_idx,
-                invalid_pools.size(), rotation->rotations[i].rotation_leaders.size(),
-                rotation->rotations[i].rotation_leaders[rotation_idx]);
-            if (rotation_idx >= rotation->rotations[i].rotation_leaders.size()) {
-                return;
-            }
-
+                invalid_pools.size(), rotation->valid_rotation_leaders.size(),
+                rotation_idx);
             bft_mgr_->RotationLeader(
                 i,
                 rotation->elect_height,
-                rotation->rotations[i].rotation_leaders[rotation_idx]);
+                rotation_idx);
         }
 
         return;
@@ -279,20 +276,17 @@ void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_poo
         }
     }
 
-    auto rotation_idx =rotation->rotations[max_invalid_mod_idx].now_rotation_idx++;
+    auto rotation_idx = rotation->valid_rotation_leaders.front();
+    rotation->valid_rotation_leaders.pop();
     ZJC_DEBUG("now tm: %lu, old: %lu, kRotationLeaderCount: %u, rotation_idx: %u, "
-        "invalid_pools size: %u, rotation_leaders.size(): %u",
+        "invalid_pools size: %u, rotation->valid_rotation_leaders.size(): %u",
         common::TimeUtils::TimestampSeconds(),
         rotation->tm_block_tm, kRotationLeaderCount, rotation_idx,
-        invalid_pools.size(), rotation->rotations[max_invalid_mod_idx].rotation_leaders.size());
-    if (rotation_idx >= rotation->rotations[max_invalid_mod_idx].rotation_leaders.size()) {
-        return;
-    }
-
+        invalid_pools.size(), rotation->valid_rotation_leaders.size());
     bft_mgr_->RotationLeader(
         max_invalid_mod_idx,
         rotation->elect_height,
-        rotation->rotations[max_invalid_mod_idx].rotation_leaders[rotation_idx]);
+        rotation_idx);
 }
 
 void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
@@ -1134,7 +1128,7 @@ void NetworkInit::HandleElectionBlock(
                     ++leader_count;
                     leader_idx_map[(*members)[i]->pool_index_mod_num] = i;
                 } else {
-                    rotation_leaders.valid_rotation_leaders.push(i);
+                    rotation_leaders->valid_rotation_leaders.push(i);
                 }
             }
 
