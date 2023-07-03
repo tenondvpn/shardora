@@ -437,16 +437,46 @@ class InvalidLeaderPools : public ::google::protobuf::Message /* @@protoc_insert
   ::google::protobuf::uint64 elect_height() const;
   void set_elect_height(::google::protobuf::uint64 value);
 
+  // optional uint32 member_index = 3;
+  bool has_member_index() const;
+  void clear_member_index();
+  static const int kMemberIndexFieldNumber = 3;
+  ::google::protobuf::uint32 member_index() const;
+  void set_member_index(::google::protobuf::uint32 value);
+
+  // optional int32 mod_num = 4;
+  bool has_mod_num() const;
+  void clear_mod_num();
+  static const int kModNumFieldNumber = 4;
+  ::google::protobuf::int32 mod_num() const;
+  void set_mod_num(::google::protobuf::int32 value);
+
+  // optional uint32 leader_idx = 5;
+  bool has_leader_idx() const;
+  void clear_leader_idx();
+  static const int kLeaderIdxFieldNumber = 5;
+  ::google::protobuf::uint32 leader_idx() const;
+  void set_leader_idx(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.init.protobuf.InvalidLeaderPools)
  private:
   void set_has_elect_height();
   void clear_has_elect_height();
+  void set_has_member_index();
+  void clear_has_member_index();
+  void set_has_mod_num();
+  void clear_has_mod_num();
+  void set_has_leader_idx();
+  void clear_has_leader_idx();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > pools_;
   ::google::protobuf::uint64 elect_height_;
+  ::google::protobuf::uint32 member_index_;
+  ::google::protobuf::int32 mod_num_;
+  ::google::protobuf::uint32 leader_idx_;
   friend struct ::protobuf_protos_2finit_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -1015,6 +1045,78 @@ inline void InvalidLeaderPools::set_elect_height(::google::protobuf::uint64 valu
   set_has_elect_height();
   elect_height_ = value;
   // @@protoc_insertion_point(field_set:zjchain.init.protobuf.InvalidLeaderPools.elect_height)
+}
+
+// optional uint32 member_index = 3;
+inline bool InvalidLeaderPools::has_member_index() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void InvalidLeaderPools::set_has_member_index() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void InvalidLeaderPools::clear_has_member_index() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void InvalidLeaderPools::clear_member_index() {
+  member_index_ = 0u;
+  clear_has_member_index();
+}
+inline ::google::protobuf::uint32 InvalidLeaderPools::member_index() const {
+  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.InvalidLeaderPools.member_index)
+  return member_index_;
+}
+inline void InvalidLeaderPools::set_member_index(::google::protobuf::uint32 value) {
+  set_has_member_index();
+  member_index_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.InvalidLeaderPools.member_index)
+}
+
+// optional int32 mod_num = 4;
+inline bool InvalidLeaderPools::has_mod_num() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void InvalidLeaderPools::set_has_mod_num() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void InvalidLeaderPools::clear_has_mod_num() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void InvalidLeaderPools::clear_mod_num() {
+  mod_num_ = 0;
+  clear_has_mod_num();
+}
+inline ::google::protobuf::int32 InvalidLeaderPools::mod_num() const {
+  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.InvalidLeaderPools.mod_num)
+  return mod_num_;
+}
+inline void InvalidLeaderPools::set_mod_num(::google::protobuf::int32 value) {
+  set_has_mod_num();
+  mod_num_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.InvalidLeaderPools.mod_num)
+}
+
+// optional uint32 leader_idx = 5;
+inline bool InvalidLeaderPools::has_leader_idx() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void InvalidLeaderPools::set_has_leader_idx() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void InvalidLeaderPools::clear_has_leader_idx() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void InvalidLeaderPools::clear_leader_idx() {
+  leader_idx_ = 0u;
+  clear_has_leader_idx();
+}
+inline ::google::protobuf::uint32 InvalidLeaderPools::leader_idx() const {
+  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.InvalidLeaderPools.leader_idx)
+  return leader_idx_;
+}
+inline void InvalidLeaderPools::set_leader_idx(::google::protobuf::uint32 value) {
+  set_has_leader_idx();
+  leader_idx_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.InvalidLeaderPools.leader_idx)
 }
 
 // -------------------------------------------------------------------

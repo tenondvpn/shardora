@@ -171,8 +171,14 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InvalidLeaderPools, pools_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InvalidLeaderPools, elect_height_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InvalidLeaderPools, member_index_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InvalidLeaderPools, mod_num_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InvalidLeaderPools, leader_idx_),
   ~0u,
   0,
+  1,
+  2,
+  3,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::GenesisInitBlsInfo, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::GenesisInitBlsInfo, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -209,9 +215,9 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 6, sizeof(::zjchain::init::protobuf::GetAddressInfoRequest)},
   { 7, 13, sizeof(::zjchain::init::protobuf::GetAddressInfoResponse)},
-  { 14, 21, sizeof(::zjchain::init::protobuf::InvalidLeaderPools)},
-  { 23, 36, sizeof(::zjchain::init::protobuf::GenesisInitBlsInfo)},
-  { 44, 52, sizeof(::zjchain::init::protobuf::InitMessage)},
+  { 14, 24, sizeof(::zjchain::init::protobuf::InvalidLeaderPools)},
+  { 29, 42, sizeof(::zjchain::init::protobuf::GenesisInitBlsInfo)},
+  { 50, 58, sizeof(::zjchain::init::protobuf::InitMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -247,23 +253,24 @@ void AddDescriptorsImpl() {
       "uf\032\020protos/bls.proto\032\022protos/block.proto"
       "\"#\n\025GetAddressInfoRequest\022\n\n\002id\030\001 \001(\014\"F\n"
       "\026GetAddressInfoResponse\022,\n\005block\030\001 \001(\0132\035"
-      ".zjchain.block.protobuf.Block\"9\n\022Invalid"
+      ".zjchain.block.protobuf.Block\"t\n\022Invalid"
       "LeaderPools\022\r\n\005pools\030\001 \003(\005\022\024\n\014elect_heig"
-      "ht\030\002 \001(\004\"\355\001\n\022GenesisInitBlsInfo\022\016\n\006heigh"
-      "t\030\001 \001(\004\022\020\n\010shard_id\030\002 \001(\r\022\n\n\002id\030\003 \001(\014\022\024\n"
-      "\014bls_enc_data\030\004 \001(\014\022\020\n\010bls_hash\030\005 \001(\014\0226\n"
-      "\tjoin_info\030\006 \001(\0132#.zjchain.bls.protobuf."
-      "JoinElectInfo\0229\n\nlocal_poly\030\007 \001(\0132%.zjch"
-      "ain.bls.protobuf.LocalPolynomial\022\016\n\006prik"
-      "ey\030\010 \001(\014\"\310\001\n\013InitMessage\022>\n\010addr_req\030\001 \001"
-      "(\0132,.zjchain.init.protobuf.GetAddressInf"
-      "oRequest\022\?\n\010addr_res\030\002 \001(\0132-.zjchain.ini"
-      "t.protobuf.GetAddressInfoResponse\0228\n\005poo"
-      "ls\030\003 \001(\0132).zjchain.init.protobuf.Invalid"
-      "LeaderPools"
+      "ht\030\002 \001(\004\022\024\n\014member_index\030\003 \001(\r\022\017\n\007mod_nu"
+      "m\030\004 \001(\005\022\022\n\nleader_idx\030\005 \001(\r\"\355\001\n\022GenesisI"
+      "nitBlsInfo\022\016\n\006height\030\001 \001(\004\022\020\n\010shard_id\030\002"
+      " \001(\r\022\n\n\002id\030\003 \001(\014\022\024\n\014bls_enc_data\030\004 \001(\014\022\020"
+      "\n\010bls_hash\030\005 \001(\014\0226\n\tjoin_info\030\006 \001(\0132#.zj"
+      "chain.bls.protobuf.JoinElectInfo\0229\n\nloca"
+      "l_poly\030\007 \001(\0132%.zjchain.bls.protobuf.Loca"
+      "lPolynomial\022\016\n\006prikey\030\010 \001(\014\"\310\001\n\013InitMess"
+      "age\022>\n\010addr_req\030\001 \001(\0132,.zjchain.init.pro"
+      "tobuf.GetAddressInfoRequest\022\?\n\010addr_res\030"
+      "\002 \001(\0132-.zjchain.init.protobuf.GetAddress"
+      "InfoResponse\0228\n\005pools\030\003 \001(\0132).zjchain.in"
+      "it.protobuf.InvalidLeaderPools"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 691);
+      descriptor, 750);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/init.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -774,6 +781,9 @@ void InvalidLeaderPools::InitAsDefaultInstance() {
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int InvalidLeaderPools::kPoolsFieldNumber;
 const int InvalidLeaderPools::kElectHeightFieldNumber;
+const int InvalidLeaderPools::kMemberIndexFieldNumber;
+const int InvalidLeaderPools::kModNumFieldNumber;
+const int InvalidLeaderPools::kLeaderIdxFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 InvalidLeaderPools::InvalidLeaderPools()
@@ -789,12 +799,16 @@ InvalidLeaderPools::InvalidLeaderPools(const InvalidLeaderPools& from)
       _has_bits_(from._has_bits_),
       pools_(from.pools_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  elect_height_ = from.elect_height_;
+  ::memcpy(&elect_height_, &from.elect_height_,
+    static_cast<size_t>(reinterpret_cast<char*>(&leader_idx_) -
+    reinterpret_cast<char*>(&elect_height_)) + sizeof(leader_idx_));
   // @@protoc_insertion_point(copy_constructor:zjchain.init.protobuf.InvalidLeaderPools)
 }
 
 void InvalidLeaderPools::SharedCtor() {
-  elect_height_ = GOOGLE_ULONGLONG(0);
+  ::memset(&elect_height_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&leader_idx_) -
+      reinterpret_cast<char*>(&elect_height_)) + sizeof(leader_idx_));
 }
 
 InvalidLeaderPools::~InvalidLeaderPools() {
@@ -826,7 +840,12 @@ void InvalidLeaderPools::Clear() {
   (void) cached_has_bits;
 
   pools_.Clear();
-  elect_height_ = GOOGLE_ULONGLONG(0);
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 15u) {
+    ::memset(&elect_height_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&leader_idx_) -
+        reinterpret_cast<char*>(&elect_height_)) + sizeof(leader_idx_));
+  }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
 }
@@ -874,6 +893,48 @@ bool InvalidLeaderPools::MergePartialFromCodedStream(
         break;
       }
 
+      // optional uint32 member_index = 3;
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
+          set_has_member_index();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &member_index_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional int32 mod_num = 4;
+      case 4: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(32u /* 32 & 0xFF */)) {
+          set_has_mod_num();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &mod_num_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint32 leader_idx = 5;
+      case 5: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(40u /* 40 & 0xFF */)) {
+          set_has_leader_idx();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &leader_idx_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -912,6 +973,21 @@ void InvalidLeaderPools::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->elect_height(), output);
   }
 
+  // optional uint32 member_index = 3;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->member_index(), output);
+  }
+
+  // optional int32 mod_num = 4;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->mod_num(), output);
+  }
+
+  // optional uint32 leader_idx = 5;
+  if (cached_has_bits & 0x00000008u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(5, this->leader_idx(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -934,6 +1010,21 @@ void InvalidLeaderPools::SerializeWithCachedSizes(
   // optional uint64 elect_height = 2;
   if (cached_has_bits & 0x00000001u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->elect_height(), target);
+  }
+
+  // optional uint32 member_index = 3;
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->member_index(), target);
+  }
+
+  // optional int32 mod_num = 4;
+  if (cached_has_bits & 0x00000004u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(4, this->mod_num(), target);
+  }
+
+  // optional uint32 leader_idx = 5;
+  if (cached_has_bits & 0x00000008u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(5, this->leader_idx(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -962,13 +1053,36 @@ size_t InvalidLeaderPools::ByteSizeLong() const {
     total_size += data_size;
   }
 
-  // optional uint64 elect_height = 2;
-  if (has_elect_height()) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::UInt64Size(
-        this->elect_height());
-  }
+  if (_has_bits_[0 / 32] & 15u) {
+    // optional uint64 elect_height = 2;
+    if (has_elect_height()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->elect_height());
+    }
 
+    // optional uint32 member_index = 3;
+    if (has_member_index()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->member_index());
+    }
+
+    // optional int32 mod_num = 4;
+    if (has_mod_num()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->mod_num());
+    }
+
+    // optional uint32 leader_idx = 5;
+    if (has_leader_idx()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->leader_idx());
+    }
+
+  }
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
@@ -997,8 +1111,21 @@ void InvalidLeaderPools::MergeFrom(const InvalidLeaderPools& from) {
   (void) cached_has_bits;
 
   pools_.MergeFrom(from.pools_);
-  if (from.has_elect_height()) {
-    set_elect_height(from.elect_height());
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 15u) {
+    if (cached_has_bits & 0x00000001u) {
+      elect_height_ = from.elect_height_;
+    }
+    if (cached_has_bits & 0x00000002u) {
+      member_index_ = from.member_index_;
+    }
+    if (cached_has_bits & 0x00000004u) {
+      mod_num_ = from.mod_num_;
+    }
+    if (cached_has_bits & 0x00000008u) {
+      leader_idx_ = from.leader_idx_;
+    }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 
@@ -1028,6 +1155,9 @@ void InvalidLeaderPools::InternalSwap(InvalidLeaderPools* other) {
   using std::swap;
   pools_.InternalSwap(&other->pools_);
   swap(elect_height_, other->elect_height_);
+  swap(member_index_, other->member_index_);
+  swap(mod_num_, other->mod_num_);
+  swap(leader_idx_, other->leader_idx_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
