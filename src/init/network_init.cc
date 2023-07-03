@@ -1259,7 +1259,7 @@ void NetworkInit::HandleElectionBlock(
                     debug_str += std::to_string(vec[i]) + " ";
                 }
 
-                ZJC_DEBUG("random_seed: %u, set rotations: %s", debug_str.c_str());
+                ZJC_DEBUG("random_seed: %u, set rotations: %s", random_seed - 1, debug_str.c_str());
             }
 
             rotation_leaders_ = rotation_leaders;
