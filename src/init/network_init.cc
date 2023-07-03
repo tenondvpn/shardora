@@ -1128,28 +1128,19 @@ void NetworkInit::HandleElectionBlock(
             auto rotation_leaders = std::make_shared<LeaderRotationInfo>();
             rotation_leaders->elect_height = elect_height;
             uint32_t leader_count = 0;
-            std::queue<uint32_t> for_leaders_index;
             std::map<uint32_t, uint32_t> leader_idx_map;
             for (uint32_t i = 0; i < members->size(); ++i) {
                 if ((*members)[i]->pool_index_mod_num >= 0) {
                     ++leader_count;
                     leader_idx_map[(*members)[i]->pool_index_mod_num] = i;
                 } else {
-                    for_leaders_index.push(i);
+                    rotation_leaders.valid_rotation_leaders.push(i);
                 }
             }
 
             rotation_leaders->rotations.resize(leader_count);
             rotation_leaders->members = members;
             rotation_leaders->tm_block_tm = tm_block_mgr_->LatestTimestamp();
-            while (!for_leaders_index.empty()) {
-                for (uint32_t i = 0; i < leader_count; ++i) {
-                    rotation_leaders->rotations[i].rotation_leaders.push_back(
-                        for_leaders_index.front());
-                    for_leaders_index.pop();
-                }
-            }
-            
             for (auto iter = leader_idx_map.begin(); iter != leader_idx_map.end(); ++iter) {
                 rotation_leaders->rotations[iter->first].now_leader_idx = iter->second;
             }

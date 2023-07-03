@@ -1,5 +1,7 @@
 #pragma once
 
+#include <queue>
+
 #include <libbls/bls/BLSPrivateKey.h>
 #include <libbls/bls/BLSPrivateKeyShare.h>
 #include <libbls/bls/BLSPublicKey.h>
@@ -41,6 +43,7 @@ struct LeaderRotationInfo {
     std::set<uint32_t> invalid_leaders;
     common::MembersPtr members;
     uint64_t tm_block_tm;
+    std::queue<uint32_t> valid_rotation_leaders;
 };
 
 struct GenisisNodeInfo {

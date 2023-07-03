@@ -1400,7 +1400,7 @@ ZbftPtr BftManager::CreateBftPtr(
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     if (InitZbftPtr(bft_msg.leader_idx(), elect_item, bft_ptr) != kConsensusSuccess) {
-        assert(false);
+//         assert(false);
         return nullptr;
     }
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
