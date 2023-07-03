@@ -417,8 +417,14 @@ ZbftPtr BftManager::Start(
                 common::Encode::HexEncode(bft_hash_map_[thread_index].begin()->second->gid()).c_str(),
                 bft_hash_map_[thread_index].begin()->second->consensus_status());
         }
+
+        return nullptr;
     }
 
+    ZJC_DEBUG("leader start bft success, thread: %d, can_new_bft: %d, bft size: %d, gid: %s, status: %d",
+        thread_index, can_new_bft, bft_hash_map_[thread_index].size(),
+        common::Encode::HexEncode(bft_hash_map_[thread_index].begin()->second->gid()).c_str(),
+        bft_hash_map_[thread_index].begin()->second->consensus_status());
     return zbft_ptr;
 }
 
