@@ -225,7 +225,7 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
                 CheckLeaderValid(factors, &invalid_pools);
                 ZJC_DEBUG("invalid_pools.size(): %d", invalid_pools.size());
                 if (!invalid_pools.empty() && rotatition_leader_cb_ != nullptr) {
-                    rotatition_leader_cb_(invalid_pools);
+                    rotatition_leader_cb_(thread_idx, invalid_pools);
                 }
             }
 

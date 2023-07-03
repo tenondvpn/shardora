@@ -138,7 +138,7 @@ int NetworkInit::Init(int argc, char** argv) {
         db_);
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(
         security_, db_, kv_sync_,
-        std::bind(&NetworkInit::RotationLeaderCallback, this, std::placeholders::_1));
+        std::bind(&NetworkInit::RotationLeaderCallback, this, std::placeholders::_1, std::placeholders::_2));
     account_mgr_->Init(
         common::GlobalInfo::Instance()->message_handler_thread_count(),
         db_,
@@ -236,6 +236,7 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void NetworkInit::BroadcastInvalidPools(
+        uint8_t thread_idx,
         std::shared_ptr<LeaderRotationInfo> rotation,
         int32_t mod_num) {
     auto net_id = common::GlobalInfo::Instance()->network_id();
@@ -258,10 +259,9 @@ void NetworkInit::BroadcastInvalidPools(
     }
 
     ZJC_DEBUG("now tm: %lu, old: %lu, kRotationLeaderCount: %u, leader_idx: %u, "
-        "invalid_pools size: %u, new leader idx: %u",
+        "new leader idx: %u",
         common::TimeUtils::TimestampSeconds(),
         rotation->tm_block_tm, kRotationLeaderCount, leader_idx,
-        invalid_pools.size(),
         leader_idx);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
@@ -275,7 +275,7 @@ void NetworkInit::BroadcastInvalidPools(
     pools->set_member_index(rotation->local_member_index);
     pools->set_mod_num(mod_num);
     pools->set_leader_idx(leader_idx);
-    pools->set_version(rotation->version);
+    pools->set_version(rotation->rotations[mod_num].version);
     msg_ptr->header.mutable_broadcast();
     transport::TcpTransport::Instance()->SetMessageHash(
         msg_ptr->header,
@@ -326,10 +326,10 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
     }
 
     auto& leader_rotation = rotation->rotations[pools.mod_num()];
-    auto iter = leader_rotation.version_with_count.find(pools->version());
+    auto iter = leader_rotation.version_with_count.find(pools.version());
     if (iter == leader_rotation.version_with_count.end()) {
-        leader_rotation.version_with_count[pools->version()] = RotatitionVersionInfo();
-        iter = leader_rotation.version_with_count.find(pools->version());
+        leader_rotation.version_with_count[pools.version()] = RotatitionVersionInfo();
+        iter = leader_rotation.version_with_count.find(pools.version());
     }
 
     auto exist_iter = iter->second.handled_set.find(pools.member_index());
@@ -355,7 +355,7 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
     }
 }
 
-void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_pools) {
+void NetworkInit::RotationLeaderCallback(uint8_t thread_idx, const std::vector<int32_t>& invalid_pools) {
     auto rotation = rotation_leaders_;
     if (rotation == nullptr) {
         return;
@@ -371,7 +371,7 @@ void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_poo
 
     if (invalid_pools.size() == 1 && invalid_pools[0] == -1) {
         for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
-            BroadcastInvalidPools(*rotation, i);
+            BroadcastInvalidPools(thread_idx, rotation, i);
         }
 
         return;
@@ -393,7 +393,7 @@ void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_poo
         return;
     }
 
-    BroadcastInvalidPools(*rotation, max_invalid_mod_idx);
+    BroadcastInvalidPools(thread_idx, rotation, max_invalid_mod_idx);
 }
 
 void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
@@ -1230,7 +1230,7 @@ void NetworkInit::HandleElectionBlock(
             rotation_leaders->elect_height = elect_height;
             uint32_t leader_count = 0;
             std::map<uint32_t, uint32_t> leader_idx_map;
-            std::vector<uint32> rotaton_members;
+            std::vector<uint32_t> rotaton_members;
             for (uint32_t i = 0; i < members->size(); ++i) {
                 if ((*members)[i]->pool_index_mod_num >= 0) {
                     ++leader_count;
