@@ -1535,7 +1535,6 @@ void BftManager::ReConsensusBft(uint8_t thread_idx, ZbftPtr& bft_ptr) {
                 bft_ptr->elect_height(),
                 elect_items_[elect_item_idx_]->elect_height,
                 elect_items_[(elect_item_idx_ + 1) % 2]->elect_height);
-            assert(false);
             return;
         }
     }
