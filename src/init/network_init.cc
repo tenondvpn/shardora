@@ -259,9 +259,8 @@ void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_poo
                 i,
                 rotation->elect_height,
                 rotation_idx);
+            return;
         }
-
-        return;
     }
 
     uint32_t max_invalid_mod_count = 0;
@@ -274,6 +273,10 @@ void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_poo
             max_invalid_mod_count = tmp_mod;
             max_invalid_mod_idx = invalid_pools[i] % rotation->rotations.size();
         }
+    }
+
+    if (max_invalid_mod_idx == -1) {
+        return;
     }
 
     auto rotation_idx = rotation->valid_rotation_leaders.front();
