@@ -253,9 +253,11 @@ void NetworkInit::BroadcastInvalidPools(
         auto idx = rotation->rotations[mod_num].version %
             rotation->rotations[mod_num].rotation_leaders.size();
         leader_idx = rotation->rotations[mod_num].rotation_leaders[idx];
-        if (rotation->rotation_used[leader_idx]) {
-            ++rotation->rotations[mod_num].version;
+        if (!rotation->rotation_used[leader_idx]) {
+            break;
         }
+
+        ++rotation->rotations[mod_num].version;
     }
 
     ZJC_DEBUG("now tm: %lu, old: %lu, kRotationLeaderCount: %u, leader_idx: %u, "
