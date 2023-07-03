@@ -247,8 +247,15 @@ void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_poo
 
     uint32_t rotation_idx = (common::TimeUtils::TimestampSeconds() - rotation->tm_block_tm) /
         kRotationLeaderCount;
+    ZJC_DEBUG("now tm: %lu, old: %lu, kRotationLeaderCount: %u, rotation_idx: %u, invalid_pools size: %u",
+        common::TimeUtils::TimestampSeconds(), rotation->tm_block_tm, kRotationLeaderCount, rotation_idx,
+        invalid_pools.size());
     if (invalid_pools.size() == 1 && invalid_pools[0] == -1) {
         for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
+            if (rotation_idx >= rotation->rotations[i].rotation_leaders.size()) {
+                return;
+            }
+
             bft_mgr_->RotationLeader(
                 i,
                 rotation->elect_height,
@@ -268,6 +275,10 @@ void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_poo
             max_invalid_mod_count = tmp_mod;
             max_invalid_mod_idx = invalid_pools[i] % rotation->rotations.size();
         }
+    }
+
+    if (rotation_idx >= rotation->rotations[max_invalid_mod_idx].rotation_leaders.size()) {
+        return;
     }
 
     bft_mgr_->RotationLeader(
