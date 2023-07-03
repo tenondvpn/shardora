@@ -18,7 +18,7 @@ message InvalidLeaderPools {
     optional uint32 member_index = 3;
     optional int32 mod_num = 4;
     optional uint32 leader_idx = 5;
-    optional uint32 version = 5;
+    optional uint32 version = 6;
 }
 
 message GenesisInitBlsInfo {
