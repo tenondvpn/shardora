@@ -388,10 +388,11 @@ ZbftPtr BftManager::Start(
 
     if (txs_ptr == nullptr) {
         if (!bft_hash_map_[thread_index].empty()) {
-            ZJC_DEBUG("leader start bft failed, thread: %d, can_new_bft: %d, bft size: %d, gid: %s, status: %d",
+            ZJC_DEBUG("leader start bft failed, thread: %d, can_new_bft: %d, bft size: %d, gid: %s, status: %d, hash: %s",
                 thread_index, can_new_bft, bft_hash_map_[thread_index].size(),
                 common::Encode::HexEncode(bft_hash_map_[thread_index].begin()->second->gid()).c_str(),
-                bft_hash_map_[thread_index].begin()->second->consensus_status());
+                bft_hash_map_[thread_index].begin()->second->consensus_status(),
+                common::Encode::HexEncode(bft_hash_map_[thread_index].begin()->second->gid()).c_str());
         }
         return nullptr;
     }
@@ -1409,9 +1410,9 @@ ZbftPtr BftManager::CreateBftPtr(
 
 int BftManager::AddBft(ZbftPtr& bft_ptr) {
     auto gid = bft_ptr->gid();
-    if (bft_ptr->this_node_is_leader()) {
-        gid += "L";
-    }
+//     if (bft_ptr->this_node_is_leader()) {
+//         gid += "L";
+//     }
 
     auto iter = bft_hash_map_[bft_ptr->thread_index()].find(gid);
     if (iter != bft_hash_map_[bft_ptr->thread_index()].end()) {
@@ -1442,9 +1443,9 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
 
 ZbftPtr BftManager::GetBft(uint8_t thread_index, const std::string& in_gid, bool leader) {
     auto gid = in_gid;
-    if (leader) {
-        gid += "L";
-    }
+//     if (leader) {
+//         gid += "L";
+//     }
 
     auto iter = bft_hash_map_[thread_index].find(gid);
     if (iter == bft_hash_map_[thread_index].end()) {
@@ -1472,9 +1473,9 @@ void BftManager::RemoveBftWithBlockHash(uint8_t thread_idx, const std::string& h
 
 void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool leader) {
     auto gid = in_gid;
-    if (leader) {
-        gid += "L";
-    }
+//     if (leader) {
+//         gid += "L";
+//     }
 
     ZbftPtr bft_ptr{ nullptr };
     {
@@ -2517,9 +2518,10 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
         }
     }
 
-    ZJC_DEBUG("new block: %s, gid: %s",
+    ZJC_DEBUG("new block: %s, gid: %s. is leader: %d",
         common::Encode::HexEncode(zjc_block->hash()).c_str(),
-        common::Encode::HexEncode(bft_ptr->gid()).c_str());
+        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+        bft_ptr->this_node_is_leader());
 }
 
 void BftManager::LeaderBroadcastBlock(
