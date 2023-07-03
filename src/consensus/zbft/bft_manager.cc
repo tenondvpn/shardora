@@ -1436,8 +1436,9 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
         if (iter->second->height() != common::kInvalidUint64 &&
                 bft_ptr->pool_index() == iter->second->pool_index() &&
                 bft_ptr->height() <= iter->second->height()) {
-            ZJC_ERROR("block height error: %lu, %lu, pool: %u",
-                bft_ptr->height(), iter->second->height(), bft_ptr->pool_index());
+            ZJC_ERROR("block height error: %lu, %lu, pool: %u, gid: %s",
+                bft_ptr->height(), iter->second->height(),
+                bft_ptr->pool_index(), common::Encode::HexEncode(bft_ptr->gid()).c_str());
             bft_ptr->set_prepare_block(nullptr);
             res = kConsensusError;
             break;
@@ -2521,10 +2522,11 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
         }
     }
 
-    ZJC_DEBUG("new block: %s, gid: %s. is leader: %d",
+    ZJC_DEBUG("new block: %s, gid: %s. is leader: %d, thread idx: %d",
         common::Encode::HexEncode(zjc_block->hash()).c_str(),
         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-        bft_ptr->this_node_is_leader());
+        bft_ptr->this_node_is_leader(),
+        msg_ptr->thread_idx);
 }
 
 void BftManager::LeaderBroadcastBlock(
@@ -2672,8 +2674,6 @@ void BftManager::BroadcastLocalTosBlock(
             assert(false);
         }
     }
-
-    
 }
 
 int BftManager::LeaderCallCommit(

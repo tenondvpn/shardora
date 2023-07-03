@@ -88,6 +88,11 @@ private:
 
         if (cross_synced_max_heights_[sharding_id] != common::kInvalidUint64 &&
                 prev_checked_height > cross_synced_max_heights_[sharding_id]) {
+            ZJC_DEBUG("check failed local_sharding_id: %u, sharding_id: %u, prev_checked_height: %lu, %lu",
+                local_sharding_id,
+                sharding_id,
+                prev_checked_height,
+                cross_synced_max_heights_[sharding_id]);
             return;
         }
 
