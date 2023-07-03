@@ -302,7 +302,7 @@ void BftManager::RotationLeader(
 
     (*elect_item_ptr->members)[old_leader_idx]->pool_index_mod_num = -1;
     (*elect_item_ptr->members)[new_leader_idx]->pool_index_mod_num = leader_mod_num;
-    if (elect_item_ptr->local_node_member_index == elect_item_ptr->mod_with_leader_index[leader_mod_num]) {
+    if (elect_item_ptr->local_node_member_index == old_leader_idx) {
         for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
             elect_item_ptr->thread_set[i] = nullptr;
         }
@@ -318,6 +318,7 @@ void BftManager::RotationLeader(
     }
 
     elect_item_ptr->mod_with_leader_index[leader_mod_num] = new_leader_idx;
+    assert(new_leader_idx < elect_item_ptr->members->size());
     ZJC_INFO("rotation leader success: %d, %lu, old_leader_idx: %u, new leader idx: %u, local index: %d",
         leader_mod_num, elect_height, old_leader_idx, new_leader_idx, elect_item_ptr->local_node_member_index);
 }
@@ -2787,6 +2788,7 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     for (auto iter = bft_hash_map_[thread_idx].begin(); iter != bft_hash_map_[thread_idx].end(); ++iter) {
         auto valid_leader_idx = elect_item_ptr->mod_with_leader_index[iter->second->pool_mod_num()];
+        assert(valid_leader_idx < elect_item_ptr->members->size());
         if (iter->second->leader_index() != valid_leader_idx &&
                 elect_item_ptr->change_leader_time_valid < now_ms &&
                 iter->second->consensus_status() == kConsensusPreCommit) {
