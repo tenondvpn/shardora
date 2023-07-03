@@ -249,10 +249,11 @@ void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_poo
         for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
             auto rotation_idx = rotation->rotations[i].now_rotation_idx++;
             ZJC_DEBUG("now tm: %lu, old: %lu, kRotationLeaderCount: %u, rotation_idx: %u, "
-                "invalid_pools size: %u, rotation_leaders.size(): %u",
+                "invalid_pools size: %u, rotation_leaders.size(): %u, new leader idx: %u",
                 common::TimeUtils::TimestampSeconds(),
                 rotation->tm_block_tm, kRotationLeaderCount, rotation_idx,
-                invalid_pools.size(), rotation->rotations[i].rotation_leaders.size());
+                invalid_pools.size(), rotation->rotations[i].rotation_leaders.size(),
+                rotation->rotations[i].rotation_leaders[rotation_idx]);
             if (rotation_idx >= rotation->rotations[i].rotation_leaders.size()) {
                 return;
             }
@@ -1127,36 +1128,25 @@ void NetworkInit::HandleElectionBlock(
             auto rotation_leaders = std::make_shared<LeaderRotationInfo>();
             rotation_leaders->elect_height = elect_height;
             uint32_t leader_count = 0;
-            std::deque<uint32_t> for_leaders_index;
+            std::queue<uint32_t> for_leaders_index;
             std::map<uint32_t, uint32_t> leader_idx_map;
             for (uint32_t i = 0; i < members->size(); ++i) {
                 if ((*members)[i]->pool_index_mod_num >= 0) {
                     ++leader_count;
-                    for_leaders_index.push_back(i);
                     leader_idx_map[(*members)[i]->pool_index_mod_num] = i;
                 } else {
-                    for_leaders_index.push_front(i);
+                    for_leaders_index.push(i);
                 }
             }
 
             rotation_leaders->rotations.resize(leader_count);
             rotation_leaders->members = members;
             rotation_leaders->tm_block_tm = tm_block_mgr_->LatestTimestamp();
-            uint32_t for_leader_idx = 0;
-            bool valid = false;
-            while (!valid) {
+            while (!for_leaders_index.empty()) {
                 for (uint32_t i = 0; i < leader_count; ++i) {
                     rotation_leaders->rotations[i].rotation_leaders.push_back(
-                        for_leaders_index[for_leader_idx++]);
-                    if (for_leader_idx >= for_leaders_index.size()) {
-                        for_leader_idx = 0;
-                    }
-
-                    if (i + 1 == leader_count &&
-                            rotation_leaders->rotations[i].rotation_leaders.size() >= kRotationLeaderCount) {
-                        valid = true;
-                        break;
-                    }
+                        for_leaders_index.front());
+                    for_leaders_index.pop();
                 }
             }
             

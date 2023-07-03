@@ -295,10 +295,13 @@ void BftManager::RotationLeader(
         return;
     }
 
-    if (elect_item_ptr->mod_with_leader_index[leader_mod_num] == new_leader_idx) {
+    auto old_leader_idx = elect_item_ptr->mod_with_leader_index[leader_mod_num];
+    if (old_leader_idx == new_leader_idx) {
         return;
     }
 
+    (*elect_item_ptr->members)[old_leader_idx]->pool_index_mod_num = -1;
+    (*elect_item_ptr->members)[new_leader_idx]->pool_index_mod_num = leader_mod_num;
     if (elect_item_ptr->local_node_member_index == elect_item_ptr->mod_with_leader_index[leader_mod_num]) {
         for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
             elect_item_ptr->thread_set[i] = nullptr;
@@ -425,7 +428,7 @@ int BftManager::ChangePrecommitBftLeader(
         return kConsensusSuccess;
     }
 
-    if (bft_ptr->Init(
+    if (bft_ptr->ChangeLeader(
             leader_idx,
             elect_item.leader_count,
             elect_item.elect_height,

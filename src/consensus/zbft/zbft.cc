@@ -36,6 +36,8 @@ int Zbft::ChangeLeader(
         const common::MembersPtr& members_ptr,
         const libff::alt_bn128_G2& common_pk,
         const libff::alt_bn128_Fr& local_sec_key) {
+    ZJC_DEBUG("change bft leader called gid: %s, leader_idx: %d, elect_height: %lu",
+        common::Encode::HexEncode(gid()).c_str(), leader_idx, elect_height);
     if (members_ptr == nullptr) {
         ZJC_ERROR("elected memmbers is null;");
         return kConsensusError;
@@ -88,6 +90,8 @@ int Zbft::ChangeLeader(
     }
 
     reset_timeout();
+    ZJC_DEBUG("success change bft leader called gid: %s, leader_idx: %d, elect_height: %lu",
+        common::Encode::HexEncode(gid()).c_str(), leader_idx, elect_height);
     return kConsensusSuccess;
 }
 
