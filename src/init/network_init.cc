@@ -247,7 +247,7 @@ void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_poo
 
     if (invalid_pools.size() == 1 && invalid_pools[0] == -1) {
         for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
-            auto rotation_idx = ++rotation->rotations[i].now_rotation_idx;
+            auto rotation_idx = rotation->rotations[i].now_rotation_idx++;
             ZJC_DEBUG("now tm: %lu, old: %lu, kRotationLeaderCount: %u, rotation_idx: %u, "
                 "invalid_pools size: %u, rotation_leaders.size(): %u",
                 common::TimeUtils::TimestampSeconds(),
@@ -278,7 +278,7 @@ void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_poo
         }
     }
 
-    auto rotation_idx = ++rotation->rotations[max_invalid_mod_idx].now_rotation_idx;
+    auto rotation_idx =rotation->rotations[max_invalid_mod_idx].now_rotation_idx++;
     ZJC_DEBUG("now tm: %lu, old: %lu, kRotationLeaderCount: %u, rotation_idx: %u, "
         "invalid_pools size: %u, rotation_leaders.size(): %u",
         common::TimeUtils::TimestampSeconds(),
