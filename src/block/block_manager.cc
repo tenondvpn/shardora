@@ -148,7 +148,7 @@ void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, 
     }
 }
 
-void BlockManager::Changeleader(int32_t mod_num, common::BftMemberPtr& mem_ptr) {
+void BlockManager::ChangeLeader(int32_t mod_num, common::BftMemberPtr& mem_ptr) {
     if (mod_num == 0) {
         to_tx_leader_ = mem_ptr;
         ZJC_DEBUG("success change leader: %u, %s",
