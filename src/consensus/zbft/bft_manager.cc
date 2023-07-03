@@ -1412,11 +1412,7 @@ ZbftPtr BftManager::CreateBftPtr(
 }
 
 int BftManager::AddBft(ZbftPtr& bft_ptr) {
-    auto gid = bft_ptr->gid();
-//     if (bft_ptr->this_node_is_leader()) {
-//         gid += "L";
-//     }
-
+    auto& gid = bft_ptr->gid();
     auto iter = bft_hash_map_[bft_ptr->thread_index()].find(gid);
     if (iter != bft_hash_map_[bft_ptr->thread_index()].end()) {
         return kConsensusAdded;
@@ -1444,19 +1440,14 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
     return res;
 }
 
-ZbftPtr BftManager::GetBft(uint8_t thread_index, const std::string& in_gid, bool leader) {
-    auto gid = in_gid;
-//     if (leader) {
-//         gid += "L";
-//     }
-
+ZbftPtr BftManager::GetBft(uint8_t thread_index, const std::string& gid, bool leader) {
     auto iter = bft_hash_map_[thread_index].find(gid);
     if (iter == bft_hash_map_[thread_index].end()) {
         return nullptr;
     }
 
     iter->second->ClearTime();
-    assert(in_gid == iter->second->gid());
+    assert(gid == iter->second->gid());
     return iter->second;
 }
 
@@ -1474,12 +1465,7 @@ void BftManager::RemoveBftWithBlockHash(uint8_t thread_idx, const std::string& h
     }
 }
 
-void BftManager::RemoveBft(uint8_t thread_idx, const std::string& in_gid, bool leader) {
-    auto gid = in_gid;
-//     if (leader) {
-//         gid += "L";
-//     }
-
+void BftManager::RemoveBft(uint8_t thread_idx, const std::string& gid, bool leader) {
     ZbftPtr bft_ptr{ nullptr };
     {
         auto iter = bft_hash_map_[thread_idx].find(gid);

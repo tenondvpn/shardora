@@ -229,7 +229,127 @@ void NetworkInit::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.init_proto().has_addr_res()) {
         HandleAddrRes(msg_ptr);
     }
+
+    if (msg_ptr->header.init_proto().has_pools()) {
+        HandleLeaderPools(msg_ptr);
+    }
 }
+
+void NetworkInit::BroadcastInvalidPools(
+        std::shared_ptr<LeaderRotationInfo> rotation,
+        int32_t mod_num) {
+    auto net_id = common::GlobalInfo::Instance()->network_id();
+    if (net_id < network::kRootCongressNetworkId || net_id >= network::kConsensusShardEndNetworkId) {
+        return;
+    }
+
+    if (rotation->rotations[mod_num].version < 0) {
+        rotation->rotations[mod_num].version = 0;
+    }
+
+    uint32_t leader_idx = common::kInvalidUint32;
+    while (true) {
+        auto idx = rotation->rotations[mod_num].version %
+            rotation->rotations[mod_num].rotation_leaders.size();
+        leader_idx = rotation->rotations[mod_num].rotation_leaders[idx];
+        if (rotation->rotation_used[leader_idx]) {
+            ++rotation->rotations[mod_num].version;
+        }
+    }
+
+    ZJC_DEBUG("now tm: %lu, old: %lu, kRotationLeaderCount: %u, leader_idx: %u, "
+        "invalid_pools size: %u, new leader idx: %u",
+        common::TimeUtils::TimestampSeconds(),
+        rotation->tm_block_tm, kRotationLeaderCount, leader_idx,
+        invalid_pools.size(),
+        leader_idx);
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->thread_idx = thread_idx;
+    msg_ptr->header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    dht::DhtKeyManager dht_key(net_id);
+    msg_ptr->header.set_des_dht_key(dht_key.StrKey());
+    msg_ptr->header.set_type(common::kInitMessage);
+    auto* init_msg = msg_ptr->header.mutable_init_proto();
+    auto* pools = init_msg->mutable_pools();
+    pools->set_elect_height(rotation->elect_height);
+    pools->set_member_index(rotation->local_member_index);
+    pools->set_mod_num(mod_num);
+    pools->set_leader_idx(leader_idx);
+    pools->set_version(rotation->version);
+    msg_ptr->header.mutable_broadcast();
+    transport::TcpTransport::Instance()->SetMessageHash(
+        msg_ptr->header,
+        msg_ptr->thread_idx);
+    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
+    std::string sign;
+    if (security_->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
+        assert(false);
+        return;
+    }
+
+    msg_ptr->header.set_sign(sign);
+    network::Route::Instance()->Send(msg_ptr);
+    ZJC_DEBUG("success broadcast invalid pools.");
+}
+
+void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
+    ZJC_DEBUG("roatation leader message coming..");
+    auto rotation = rotation_leaders_;
+    if (rotation == nullptr) {
+        return;
+    }
+
+    auto& pools = msg_ptr->header.init_proto().pools();
+    if (pools.elect_height() != rotation->elect_height ||
+            pools.member_index() >= rotation->members->size()) {
+        return;
+    }
+
+
+    if (pools.mod_num() >= rotation->rotations.size()) {
+        assert(false);
+        return;
+    }
+
+    auto& mem_ptr = (*rotation->members)[pools.member_index()];
+    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
+    if (security_->Verify(
+            msg_hash,
+            mem_ptr->pubkey,
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        assert(false);
+        return;
+    }
+
+    auto& leader_rotation = rotation->rotations[pools.mod_num()];
+    auto iter = leader_rotation.version_with_count.find(pools->version());
+    if (iter == leader_rotation.version_with_count.end()) {
+        leader_rotation.version_with_count[pools->version()] = RotatitionVersionInfo();
+        iter = leader_rotation.version_with_count.find(pools->version());
+    }
+
+    auto exist_iter = iter->second.handled_set.find(pools.member_index());
+    if (exist_iter != iter->second.handled_set.end()) {
+        return;
+    }
+
+    iter->second.handled_set.insert(pools.member_index());
+    auto count_iter = iter->second.count_map.find(pools.leader_idx());
+    if (count_iter == iter->second.count_map.end()) {
+        iter->second.count_map[pools.leader_idx()] = 0;
+        count_iter = iter->second.count_map.find(pools.leader_idx());
+    }
+
+    ++count_iter->second;
+    uint32_t t = common::GetSignerCount(rotation->members->size());
+    if (count_iter->second >= t) {
+        bft_mgr_->RotationLeader(
+            pools.mod_num(),
+            rotation->elect_height,
+            pools.leader_idx());
+    }
+}
+
 
 void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_pools) {
     auto rotation = rotation_leaders_;
@@ -247,20 +367,10 @@ void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_poo
 
     if (invalid_pools.size() == 1 && invalid_pools[0] == -1) {
         for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
-            auto rotation_idx = rotation->valid_rotation_leaders.front();
-            rotation->valid_rotation_leaders.pop();
-            ZJC_DEBUG("now tm: %lu, old: %lu, kRotationLeaderCount: %u, rotation_idx: %u, "
-                "invalid_pools size: %u, rotation->valid_rotation_leaders.size(): %u, new leader idx: %u",
-                common::TimeUtils::TimestampSeconds(),
-                rotation->tm_block_tm, kRotationLeaderCount, rotation_idx,
-                invalid_pools.size(), rotation->valid_rotation_leaders.size(),
-                rotation_idx);
-            bft_mgr_->RotationLeader(
-                i,
-                rotation->elect_height,
-                rotation_idx);
-            return;
+            BroadcastInvalidPools(*rotation, i);
         }
+
+        return;
     }
 
     uint32_t max_invalid_mod_count = 0;
@@ -279,17 +389,7 @@ void NetworkInit::RotationLeaderCallback(const std::vector<int32_t>& invalid_poo
         return;
     }
 
-    auto rotation_idx = rotation->valid_rotation_leaders.front();
-    rotation->valid_rotation_leaders.pop();
-    ZJC_DEBUG("now tm: %lu, old: %lu, kRotationLeaderCount: %u, rotation_idx: %u, "
-        "invalid_pools size: %u, rotation->valid_rotation_leaders.size(): %u",
-        common::TimeUtils::TimestampSeconds(),
-        rotation->tm_block_tm, kRotationLeaderCount, rotation_idx,
-        invalid_pools.size(), rotation->valid_rotation_leaders.size());
-    bft_mgr_->RotationLeader(
-        max_invalid_mod_idx,
-        rotation->elect_height,
-        rotation_idx);
+    BroadcastInvalidPools(*rotation, max_invalid_mod_idx);
 }
 
 void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {
@@ -1126,20 +1226,36 @@ void NetworkInit::HandleElectionBlock(
             rotation_leaders->elect_height = elect_height;
             uint32_t leader_count = 0;
             std::map<uint32_t, uint32_t> leader_idx_map;
+            std::vector<uint32> rotaton_members;
             for (uint32_t i = 0; i < members->size(); ++i) {
                 if ((*members)[i]->pool_index_mod_num >= 0) {
                     ++leader_count;
                     leader_idx_map[(*members)[i]->pool_index_mod_num] = i;
+                    rotation_leaders->rotation_used[i] = true;
                 } else {
-                    rotation_leaders->valid_rotation_leaders.push(i);
+                    rotaton_members.push_back(i);
+                }
+
+                if ((*members)[i]->id == security_->GetAddress()) {
+                    rotation_leaders->local_member_index = i;
                 }
             }
 
             rotation_leaders->rotations.resize(leader_count);
             rotation_leaders->members = members;
             rotation_leaders->tm_block_tm = tm_block_mgr_->LatestTimestamp();
+            uint32_t random_seed = 19245u;
             for (auto iter = leader_idx_map.begin(); iter != leader_idx_map.end(); ++iter) {
                 rotation_leaders->rotations[iter->first].now_leader_idx = iter->second;
+                rotation_leaders->rotations[iter->first].rotation_leaders = rotaton_members;
+                auto& vec = rotation_leaders->rotations[iter->first].rotation_leaders;
+                std::shuffle(vec.begin(), vec.end(), std::default_random_engine(random_seed++));
+                std::string debug_str;
+                for (uint32_t i = 0; i < vec.size(); ++i) {
+                    debug_str += std::to_string(vec[i]) + " ";
+                }
+
+                ZJC_DEBUG("random_seed: %u, set rotations: %s", debug_str.c_str());
             }
 
             rotation_leaders_ = rotation_leaders;

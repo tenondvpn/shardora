@@ -74,6 +74,10 @@ private:
     void RotationLeaderCallback(const std::vector<int32_t>& invalid_pools);
     void CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req);
     bool BlockBlsAggSignatureValid(const block::protobuf::Block& block);
+    void BroadcastInvalidPools(
+        std::shared_ptr<LeaderRotationInfo> leader_rotation,
+        int32_t mod_num);
+    void HandleLeaderPools(const transport::MessagePtr& msg_ptr);
 
     static const uint32_t kInvalidPoolFactor = 50u;  // 50%
     static const uint32_t kMinValodPoolCount = 4u;  // 64 must finish all

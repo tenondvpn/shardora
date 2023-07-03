@@ -27,23 +27,33 @@ enum InitErrorCode {
     kInitError = 1,
 };
 
+struct RotatitionVersionInfo {
+    std::set<uint32_t> handled_set;
+    std::map<uint32_t, uint32_t> count_map;
+};
+
 struct RotatitionLeaders {
-    RotatitionLeaders() : now_rotation_idx(0), invalid_pool_count(0), now_leader_idx(0) {}
+    RotatitionLeaders() : version(-1), invalid_pool_count(0), now_leader_idx(0) {}
+    int32_t version;
     std::vector<uint32_t> rotation_leaders;
-    uint32_t now_rotation_idx;
     uint32_t invalid_pool_count;
     uint32_t now_leader_idx;
+    std::map<uint32_t, RotatitionVersionInfo> version_with_count;
 };
 
 struct LeaderRotationInfo {
-    LeaderRotationInfo() : elect_height(0), members(nullptr) {}
+    LeaderRotationInfo() : elect_height(0), members(nullptr), version(0){
+        memset(rotation_used, 0, sizeof(rotation_used));
+    }
+
     uint64_t elect_height;
     uint32_t member_count;
     std::vector<RotatitionLeaders> rotations;
     std::set<uint32_t> invalid_leaders;
     common::MembersPtr members;
     uint64_t tm_block_tm;
-    std::queue<uint32_t> valid_rotation_leaders;
+    uint32_t local_member_index;
+    bool rotation_used[1024];
 };
 
 struct GenisisNodeInfo {
