@@ -291,6 +291,7 @@ void NetworkInit::BroadcastInvalidPools(
 
     msg_ptr->header.set_sign(sign);
     network::Route::Instance()->Send(msg_ptr);
+    HandleLeaderPools(msg_ptr);
     ZJC_DEBUG("success broadcast invalid pools.");
 }
 
@@ -298,12 +299,14 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("roatation leader message coming..");
     auto rotation = rotation_leaders_;
     if (rotation == nullptr) {
+        assert(false);
         return;
     }
 
     auto& pools = msg_ptr->header.init_proto().pools();
     if (pools.elect_height() != rotation->elect_height ||
             pools.member_index() >= rotation->members->size()) {
+        assert(false);
         return;
     }
 
@@ -348,6 +351,13 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
 
     ++count_iter->second;
     uint32_t t = common::GetSignerCount(rotation->members->size());
+    ZJC_DEBUG("roatation leader message coming mod num: %d, elect height: %lu, "
+        "new leader idx: %u, count: %u, t: %u",
+        pools.mod_num(),
+        rotation->elect_height,
+        pools.leader_idx(),
+        count_iter->second,
+        t);
     if (count_iter->second >= t) {
         rotation->rotation_used[pools.leader_idx()] = true;
         bft_mgr_->RotationLeader(
