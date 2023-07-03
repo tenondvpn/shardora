@@ -95,6 +95,7 @@ public:
         uint32_t des_sharding_id,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBatch& db_batch);
+    void Changeleader(int32_t mod_num, common::BftMemberPtr& mem_ptr);
 
 private:
     void HandleMessage(const transport::MessagePtr& msg_ptr);

@@ -360,6 +360,8 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
         t);
     if (count_iter->second >= t) {
         rotation->rotation_used[pools.leader_idx()] = true;
+        auto mem_ptr = (*rotation->members)[pools.leader_idx()];
+        block_mgr_->ChangeLeader(pools.mod_num(), mem_ptr);
         bft_mgr_->RotationLeader(
             pools.mod_num(),
             rotation->elect_height,

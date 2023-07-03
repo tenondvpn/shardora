@@ -90,7 +90,8 @@ void BlockManager::ConsensusTimerMessage(uint8_t thread_idx) {
     HandleToTxMessage();
     HandleStatisticTxMessage();
     NetworkNewBlock(thread_idx, nullptr);
-    if (to_tx_leader_ != nullptr && local_id_ == to_tx_leader_->id) {
+    auto tmp_to_tx_leader = to_tx_leader_;
+    if (tmp_to_tx_leader != nullptr && local_id_ == tmp_to_tx_leader->id) {
         ZJC_DEBUG("now leader create to and statistic message.");
         CreateToTx(thread_idx);
         CreateStatisticTx(thread_idx);
@@ -131,9 +132,10 @@ void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, 
         for (auto iter = members->begin(); iter != members->end(); ++iter) {
             if ((*iter)->pool_index_mod_num == 0) {
                 to_tx_leader_ = *iter;
+                tmp_to_tx_leader = to_tx_leader_;
                 ZJC_DEBUG("success get leader: %u, %s",
                     sharding_id,
-                    common::Encode::HexEncode(to_tx_leader_->id).c_str());
+                    common::Encode::HexEncode(tmp_to_tx_leader->id).c_str());
                 break;
             }
         }
@@ -144,6 +146,16 @@ void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, 
         latest_shard_statistic_tx_ = nullptr;
         statistic_message_ = nullptr;
         leader_statistic_txs_.clear();
+    }
+}
+
+void BlockManager::Changeleader(int32_t mod_num, common::BftMemberPtr& mem_ptr) {
+    if (mod_num == 0) {
+        to_tx_leader_ = mem_ptr;
+        tmp_to_tx_leader = to_tx_leader_;
+        ZJC_DEBUG("success change leader: %u, %s",
+            sharding_id,
+            common::Encode::HexEncode(tmp_to_tx_leader->id).c_str());
     }
 }
 
@@ -1506,15 +1518,16 @@ void BlockManager::OnTimeBlock(
 
 void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
     // check this node is leader
-    if (to_tx_leader_ == nullptr) {
+    auto tmp_to_tx_leader = to_tx_leader_;
+    if (tmp_to_tx_leader == nullptr) {
         ZJC_DEBUG("leader null");
         return;
     }
 
-    if (local_id_ != to_tx_leader_->id) {
+    if (local_id_ != tmp_to_tx_leader->id) {
         ZJC_DEBUG("not leader local_id_: %s, to tx leader: %s",
             common::Encode::HexEncode(local_id_).c_str(),
-            common::Encode::HexEncode(to_tx_leader_->id).c_str());
+            common::Encode::HexEncode(tmp_to_tx_leader->id).c_str());
         return;
     }
 
@@ -1545,7 +1558,7 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
         }
 
         statistic_msg.set_elect_height(latest_elect_height_);
-        statistic_msg.set_leader_idx(to_tx_leader_->index);
+        statistic_msg.set_leader_idx(tmp_to_tx_leader->index);
         // send to other nodes
     }
     
@@ -1585,12 +1598,13 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     }
 
     // check this node is leader
-    if (to_tx_leader_ == nullptr) {
+    auto tmp_to_tx_leader = to_tx_leader_;
+    if (tmp_to_tx_leader == nullptr) {
         ZJC_DEBUG("leader null");
         return;
     }
 
-    if (local_id_ != to_tx_leader_->id) {
+    if (local_id_ != tmp_to_tx_leader->id) {
         ZJC_DEBUG("not leader");
         return;
     }
@@ -1627,7 +1641,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     if (res != pools::kPoolsSuccess || to_heights.heights_size() <= 0) {
         shard_to.mutable_to_txs()->RemoveLast();
     } else {
-        shard_to.set_leader_idx(to_tx_leader_->index);
+        shard_to.set_leader_idx(tmp_to_tx_leader->index);
     }
 
     if (shard_to.to_txs_size() <= 0) {
