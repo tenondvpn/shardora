@@ -576,7 +576,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             return;
         }
 
-        if (elect_item_ptr->time_valid + 10000lu < now_ms) {
+        if (elect_item_ptr->change_leader_time_valid < now_ms) {
             ZJC_DEBUG("must change new elect, elect height error: %lu, %lu, %lu",
                 header.zbft().elect_height(),
                 elect_item_ptr->elect_height,
@@ -1897,7 +1897,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         auto bft_ptr = CreateBftPtr(elect_item, msg_ptr);
         auto now_ms = common::TimeUtils::TimestampMs();
         auto now_elect_item = elect_items_[elect_item_idx_];
-        if (now_elect_item->time_valid + 10000lu <= now_ms && now_elect_item->elect_height != elect_item.elect_height) {
+        if (now_elect_item->change_leader_time_valid <= now_ms && now_elect_item->elect_height != elect_item.elect_height) {
             ZJC_ERROR("BackupPrepare failed %s invalid elect height: %lu, %lu",
                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
                 now_elect_item->elect_height,
@@ -2792,7 +2792,7 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
     for (auto iter = bft_hash_map_[thread_idx].begin(); iter != bft_hash_map_[thread_idx].end(); ++iter) {
         auto valid_leader_idx = elect_item_ptr->mod_with_leader_index[iter->second->pool_mod_num()];
         if (iter->second->leader_index() != valid_leader_idx &&
-                elect_item_ptr->time_valid < now_ms &&
+                elect_item_ptr->change_leader_time_valid < now_ms &&
                 iter->second->consensus_status() == kConsensusPreCommit) {
             ChangePrecommitBftLeader(iter->second, valid_leader_idx, *elect_item_ptr);
             continue;

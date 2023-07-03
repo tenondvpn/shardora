@@ -103,6 +103,7 @@ struct ElectItem {
     ElectItem() : members(nullptr), local_member(nullptr),
             elect_height(0), local_node_member_index(common::kInvalidUint32), bls_valid(false) {
         time_valid = common::TimeUtils::TimestampMs() + kElectBlockValidTimeMs;
+        change_leader_time_valid = time_valid + kElectBlockValidTimeMs;
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             thread_set[i] = nullptr;
         }
@@ -124,6 +125,7 @@ struct ElectItem {
     libff::alt_bn128_Fr sec_key;
     bool bls_valid;
     uint64_t time_valid;
+    uint64_t change_leader_time_valid;
     volatile int32_t mod_with_leader_index[256];
 };
 
