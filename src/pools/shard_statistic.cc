@@ -314,8 +314,7 @@ bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
     }
 
     uint32_t member_count = members->size();
-    if (members == nullptr || block.leader_index() >= members->size() ||
-            (*members)[block.leader_index()]->pool_index_mod_num < 0) {
+    if (members == nullptr || block.leader_index() >= members->size()) {
         assert(false);
         return false;
     }
