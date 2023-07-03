@@ -132,10 +132,9 @@ void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, 
         for (auto iter = members->begin(); iter != members->end(); ++iter) {
             if ((*iter)->pool_index_mod_num == 0) {
                 to_tx_leader_ = *iter;
-                tmp_to_tx_leader = to_tx_leader_;
                 ZJC_DEBUG("success get leader: %u, %s",
                     sharding_id,
-                    common::Encode::HexEncode(tmp_to_tx_leader->id).c_str());
+                    common::Encode::HexEncode(to_tx_leader_->id).c_str());
                 break;
             }
         }
@@ -152,10 +151,9 @@ void BlockManager::OnNewElectBlock(uint32_t sharding_id, uint64_t elect_height, 
 void BlockManager::Changeleader(int32_t mod_num, common::BftMemberPtr& mem_ptr) {
     if (mod_num == 0) {
         to_tx_leader_ = mem_ptr;
-        tmp_to_tx_leader = to_tx_leader_;
         ZJC_DEBUG("success change leader: %u, %s",
-            sharding_id,
-            common::Encode::HexEncode(tmp_to_tx_leader->id).c_str());
+            common::GlobalInfo::Instance()->network_id(),
+            common::Encode::HexEncode(to_tx_leader_->id).c_str());
     }
 }
 
