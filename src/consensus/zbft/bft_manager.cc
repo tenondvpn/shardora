@@ -2451,29 +2451,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
 //         zjc_block->add_precommit_bitmap(prepare_bitmap_data[i]);
 //     }
 
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(zjc_block, bft_ptr->db_batch());
-    new_block_cache_callback_(
-        msg_ptr->thread_idx,
-        queue_item_ptr->block_ptr,
-        *queue_item_ptr->db_batch);
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    if (bft_ptr->this_node_is_leader()) {
-        LeaderBroadcastBlock(msg_ptr->thread_idx, zjc_block);
-    }
-
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    pools_mgr_->TxOver(
-        zjc_block->pool_index(),
-        zjc_block->tx_list());
-    bft_ptr->set_consensus_status(kConsensusCommited);
-    RemoveBft(bft_ptr->thread_index(), bft_ptr->gid(), bft_ptr->this_node_is_leader());
-    assert(bft_ptr->prepare_block()->precommit_bitmap_size() == zjc_block->precommit_bitmap_size());
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    // for test
+        // for test
     // TODO: for test
     {
         auto& block = *bft_ptr->prepare_block();
@@ -2504,8 +2482,33 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
             libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0).c_str());
         if (!check_res) {
             assert(check_res);
+            return;
         }
     }
+
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(zjc_block, bft_ptr->db_batch());
+    new_block_cache_callback_(
+        msg_ptr->thread_idx,
+        queue_item_ptr->block_ptr,
+        *queue_item_ptr->db_batch);
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    if (bft_ptr->this_node_is_leader()) {
+        LeaderBroadcastBlock(msg_ptr->thread_idx, zjc_block);
+    }
+
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    pools_mgr_->TxOver(
+        zjc_block->pool_index(),
+        zjc_block->tx_list());
+    bft_ptr->set_consensus_status(kConsensusCommited);
+    RemoveBft(bft_ptr->thread_index(), bft_ptr->gid(), bft_ptr->this_node_is_leader());
+    assert(bft_ptr->prepare_block()->precommit_bitmap_size() == zjc_block->precommit_bitmap_size());
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tps_tm_us_ == 0) {
         prev_tps_tm_us_ = now_tm_us;
@@ -2779,15 +2782,17 @@ bool BftManager::IsCreateContractLibraray(const block::protobuf::BlockTx& tx_inf
 
 void BftManager::CheckTimeout(uint8_t thread_idx) {
     auto now_timestamp_us = common::TimeUtils::TimestampUs();
-    if (prev_checktime_out_milli_ > now_timestamp_us / 1000) {
+    if (prev_checktime_out_milli_ > now_timestamp_us / 1000lu) {
         return;
     }
 
+    auto now_ms = now_timestamp_us / 1000lu;
     prev_checktime_out_milli_ = now_timestamp_us / 1000 + kCheckTimeoutPeriodMilli;
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     for (auto iter = bft_hash_map_[thread_idx].begin(); iter != bft_hash_map_[thread_idx].end(); ++iter) {
         auto valid_leader_idx = elect_item_ptr->mod_with_leader_index[iter->second->pool_mod_num()];
         if (iter->second->leader_index() != valid_leader_idx &&
+                elect_item_ptr->time_valid < now_ms &&
                 iter->second->consensus_status() == kConsensusPreCommit) {
             ChangePrecommitBftLeader(iter->second, valid_leader_idx, *elect_item_ptr);
             continue;

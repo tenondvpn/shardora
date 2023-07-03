@@ -87,11 +87,12 @@ int Zbft::ChangeLeader(
         assert(elect_height_ >= 1);
         zjc_block.set_leader_index(leader_index_);
         zjc_block.set_hash(GetBlockHash(zjc_block));
+        ZJC_DEBUG("success change bft leader called gid: %s, leader_idx: %d, elect_height: %lu, block hash: %s",
+            common::Encode::HexEncode(gid()).c_str(), leader_idx, elect_height,
+            common::Encode::HexEncode(zjc_block.hash()).c_str());
     }
 
     reset_timeout();
-    ZJC_DEBUG("success change bft leader called gid: %s, leader_idx: %d, elect_height: %lu",
-        common::Encode::HexEncode(gid()).c_str(), leader_idx, elect_height);
     return kConsensusSuccess;
 }
 
