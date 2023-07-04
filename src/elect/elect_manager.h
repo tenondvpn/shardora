@@ -69,11 +69,6 @@ public:
     common::MembersPtr GetWaitingNetworkMembers(uint32_t network_id);
     bool IsIdExistsInAnyShard(const std::string& id);
 
-    std::unordered_set<uint32_t> valid_shard_networks() {
-        std::lock_guard<std::mutex> guard(valid_shard_networks_mutex_);
-        return valid_shard_networks_;
-    }
-
     uint64_t waiting_elect_height(uint32_t network_id) {
         return waiting_elect_height_[network_id];
     }
@@ -122,7 +117,6 @@ private:
     uint64_t elect_net_heights_map_[network::kConsensusShardEndNetworkId];
     std::mutex elect_members_mutex_;
     std::mutex network_leaders_mutex_;
-    std::unordered_set<uint32_t> valid_shard_networks_;
     std::mutex valid_shard_networks_mutex_;
     common::Tick waiting_hb_tick_;
     std::unordered_map<uint32_t, std::unordered_set<std::string>> added_net_id_set_;

@@ -1,5 +1,6 @@
 syntax = "proto2";
 
+import "protos/block.proto";
 package zjchain.elect.protobuf;
 
 message VerifyVecValue {
@@ -86,6 +87,15 @@ message SyncNodeStokeResponse {
     optional uint64 now_tm_height = 2;
 }
 
+message SyncElectBlockRequest {
+    optional uint32 sharding_id = 1;
+    optional uint64 min_elect_height = 2;
+}
+
+message SyncElectBlockResponse {
+    repeated block.protobuf.Block block_list = 1;
+}
+
 message ElectMessage {
     optional ElectBlock elect_block = 1;
     optional ElectBlock prev_elect_block = 2;
@@ -97,4 +107,6 @@ message ElectMessage {
     optional LeaderRotationMessage leader_rotation = 8;
     optional SyncNodeStokeRequest sync_stoke_req = 9;
     optional SyncNodeStokeResponse sync_stoke_res = 10;
+    optional SyncElectBlockRequest elect_block_req = 11;
+    optional SyncElectBlockResponse elect_block_res = 12;
 }

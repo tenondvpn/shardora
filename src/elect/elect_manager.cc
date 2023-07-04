@@ -117,33 +117,6 @@ void ElectManager::OnTimeBlock(uint64_t tm_block_tm) {
 void ElectManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kElectMessage);
-    // TODO: verify message signature
-    ELECT_DEBUG("TTTTTT received elect message.");
-    auto& ec_msg = header.elect_proto();
-    if (ec_msg.has_leader_rotation()) {
-//         auto mem_index = ec_msg.member_index();
-//         auto members = *(members_ptr_[common::GlobalInfo::Instance()->network_id()]);
-//         if (mem_index >= members->size()) {
-//             return;
-//         }
-// 
-//         auto id = (*members)[mem_index]->id;
-//         auto all_size = members_ptr_[common::GlobalInfo::Instance()->network_id()]->size();
-//         auto mem_ptr = GetMemberWithId(common::GlobalInfo::Instance()->network_id(), id);
-//         if (mem_ptr) {
-//             std::string hash_str = ec_msg.leader_rotation().leader_id() + 
-//                 std::to_string(ec_msg.leader_rotation().pool_mod_num());
-//             auto message_hash = common::Hash::keccak256(hash_str);
-//             if (security_->Verify(
-//                     message_hash,
-//                     ec_msg.pubkey(),
-//                     ec_msg.sign_ch()) != security::kSecuritySuccess) {
-//                 ELECT_ERROR("leader rotation verify signature error.");
-//                 return;
-//             }
-// 
-//         }
-    }
 }
 
 common::MembersPtr ElectManager::OnNewElectBlock(
@@ -373,11 +346,6 @@ bool ElectManager::ProcessPrevElectMembers(
     }
 
     members_ptr_[prev_elect_block.shard_network_id()] = shard_members_ptr;
-    {
-        std::lock_guard<std::mutex> guard(valid_shard_networks_mutex_);
-        valid_shard_networks_.insert(prev_elect_block.shard_network_id());
-    }
-
     height_with_block_->AddNewHeightBlock(
         elect_block.prev_members().prev_elect_height(),
         prev_elect_block.shard_network_id(),
