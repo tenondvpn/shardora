@@ -1286,6 +1286,7 @@ void NetworkInit::HandleElectionBlock(
     bls_mgr_->OnNewElectBlock(sharding_id, block->height(), elect_block);
     pools_mgr_->OnNewElectBlock(sharding_id, elect_height, members);
     shard_statistic_->OnNewElectBlock(sharding_id, block->height(), elect_height);
+    kv_sync_->OnNewElectBlock(sharding_id, elect_height);
     network::UniversalManager::Instance()->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
     ZJC_DEBUG("1 success called election block. elect height: %lu, net: %u, local net id: %u",
         elect_height, elect_block->shard_network_id(), common::GlobalInfo::Instance()->network_id());

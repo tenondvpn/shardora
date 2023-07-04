@@ -378,7 +378,6 @@ void KeyValueSync::ResponseElectBlock(
         return;
     }
 
-
     auto& shard_set = shard_with_elect_height_[sync_req.network_id()];
     auto iter = shard_set->rbegin();
     if (iter != shard_set.rend()) {
