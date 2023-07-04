@@ -157,6 +157,7 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
                 height_item->set_pool_idx(item->pool_idx);
                 height_item->set_height(item->height);
                 height_item->set_tag(item->tag);
+                ZJC_DEBUG("sync get elect block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
             } else {
                 sync_req->add_keys(item->key);
             }
@@ -376,8 +377,10 @@ void KeyValueSync::ResponseElectBlock(
         transport::protobuf::Header& msg,
         sync::protobuf::SyncValueResponse* sync_res,
         uint32_t& add_size) {
+    ZJC_DEBUG("request elect block coming.");
     if (network_id >= network::kConsensusShardEndNetworkId ||
             network_id < network::kRootCongressNetworkId) {
+        ZJC_DEBUG("request elect block coming network invalid: %u", network_id);
         return;
     }
 
@@ -390,9 +393,11 @@ void KeyValueSync::ResponseElectBlock(
             block::protobuf::Block block;
             if (!prefix_db_->GetBlockWithHeight(
                     network::kRootCongressNetworkId,
-                    network_id,
+                    network_id % common::kImmutablePoolSize,
                     i,
                     &block)) {
+                ZJC_DEBUG("block invalid network: %u, pool: %lu, height: %lu",
+                    network::kRootCongressNetworkId, network_id % common::kImmutablePoolSize, i);
                 return;
             }
 
@@ -410,6 +415,8 @@ void KeyValueSync::ResponseElectBlock(
 
     auto fiter = shard_set.find(sync_item.height());
     if (fiter == shard_set.end()) {
+        ZJC_DEBUG("find height error block invalid network: %u, pool: %lu, height: %lu",
+            network::kRootCongressNetworkId, network_id % common::kImmutablePoolSize, sync_item.height());
         return;
     }
 
@@ -418,9 +425,11 @@ void KeyValueSync::ResponseElectBlock(
         block::protobuf::Block block;
         if (!prefix_db_->GetBlockWithHeight(
                 network::kRootCongressNetworkId,
-                network_id,
+                network_id % common::kImmutablePoolSize,
                 *fiter,
                 &block)) {
+            ZJC_DEBUG("block invalid network: %u, pool: %lu, height: %lu",
+                network::kRootCongressNetworkId, network_id % common::kImmutablePoolSize, i);
             return;
         }
 
@@ -433,6 +442,8 @@ void KeyValueSync::ResponseElectBlock(
         res->set_pool_idx(block.pool_index());
         res->set_height(block.height());
         res->set_value(block.SerializeAsString());
+        ZJC_DEBUG("block success network: %u, pool: %lu, height: %lu",
+            block.network_id(), block.pool_index(), block.height());
         add_size += 16 + res->value().size();
         if (add_size >= kSyncPacketMaxSize) {
             break;
