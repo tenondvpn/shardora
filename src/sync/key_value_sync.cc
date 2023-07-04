@@ -391,27 +391,24 @@ void KeyValueSync::ResponseElectBlock(
     std::vector<uint64_t> valid_elect_heights;
     uint64_t min_height = 1;
     if (iter != shard_set.rend()) {
-        min_height = *iter;
+        min_height = *iter + 1;
     }
 
     uint64_t elect_height = elect_net_heights_map_[network_id];
-    while (true) {
+    while (elect_height > min_height) {
         block::protobuf::Block block;
         if (!prefix_db_->GetBlockWithHeight(
                 network::kRootCongressNetworkId,
                 network_id % common::kImmutablePoolSize,
-            elect_height,
+                elect_height,
                 &block)) {
             ZJC_DEBUG("block invalid network: %u, pool: %lu, height: %lu",
-                network::kRootCongressNetworkId, network_id % common::kImmutablePoolSize, i);
+                network::kRootCongressNetworkId, network_id % common::kImmutablePoolSize, elect_height);
             return;
         }
 
-        valid_elect_heights.push_back(i);
+        valid_elect_heights.push_back(elect_height);
         elect_height = block.electblock_height();
-        if (elect_height <= min_height) {
-            break;
-        }
     }
 
     for (auto iter = valid_elect_heights.begin(); iter != valid_elect_heights.end(); ++iter) {
