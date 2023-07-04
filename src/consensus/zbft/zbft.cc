@@ -93,6 +93,7 @@ int Zbft::ChangeLeader(
     }
 
     reset_timeout();
+    assert(leader_mem_ptr_ != nullptr);
     return kConsensusSuccess;
 }
 
@@ -142,6 +143,7 @@ int Zbft::Init(
     }
 
     db_batch_ = std::make_shared<db::DbWriteBatch>();
+    assert(leader_mem_ptr_ != nullptr);
     return kConsensusSuccess;
 }
 

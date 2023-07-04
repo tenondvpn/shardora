@@ -2739,18 +2739,20 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
     prev_checktime_out_milli_ = now_timestamp_us / 1000 + kCheckTimeoutPeriodMilli;
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     for (auto iter = bft_hash_map_[thread_idx].begin(); iter != bft_hash_map_[thread_idx].end(); ++iter) {
-        auto valid_leader_idx = elect_item_ptr->mod_with_leader_index[iter->second->pool_mod_num()];
-        if (valid_leader_idx >= elect_item_ptr->members->size()) {
-            ZJC_DEBUG("invalid leader index %u, mod num: %d, gid: %s",
-                valid_leader_idx, iter->second->pool_mod_num(),
-                common::Encode::HexEncode(iter->second->gid()).c_str());
-            assert(false);
-        } else {
-            if (iter->second->leader_index() != valid_leader_idx &&
-                elect_item_ptr->change_leader_time_valid < now_ms &&
-                iter->second->consensus_status() == kConsensusPreCommit) {
-                ChangePrecommitBftLeader(iter->second, valid_leader_idx, *elect_item_ptr);
-                continue;
+        if (iter->second->pool_mod_num() >= 0 && iter->second->pool_mod_num() < elect_item_ptr->leader_count) {
+            auto valid_leader_idx = elect_item_ptr->mod_with_leader_index[iter->second->pool_mod_num()];
+            if (valid_leader_idx >= elect_item_ptr->members->size()) {
+                ZJC_DEBUG("invalid leader index %u, mod num: %d, gid: %s",
+                    valid_leader_idx, iter->second->pool_mod_num(),
+                    common::Encode::HexEncode(iter->second->gid()).c_str());
+                assert(false);
+            } else {
+                if (iter->second->leader_index() != valid_leader_idx &&
+                        elect_item_ptr->change_leader_time_valid < now_ms &&
+                        iter->second->consensus_status() == kConsensusPreCommit) {
+                    ChangePrecommitBftLeader(iter->second, valid_leader_idx, *elect_item_ptr);
+                    continue;
+                }
             }
         }
 
