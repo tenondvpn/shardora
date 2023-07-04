@@ -174,11 +174,13 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InvalidLeaderPools, member_index_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InvalidLeaderPools, mod_num_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InvalidLeaderPools, leader_idx_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::InvalidLeaderPools, version_),
   ~0u,
   0,
   1,
   2,
   3,
+  4,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::GenesisInitBlsInfo, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::init::protobuf::GenesisInitBlsInfo, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -215,9 +217,9 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 6, sizeof(::zjchain::init::protobuf::GetAddressInfoRequest)},
   { 7, 13, sizeof(::zjchain::init::protobuf::GetAddressInfoResponse)},
-  { 14, 24, sizeof(::zjchain::init::protobuf::InvalidLeaderPools)},
-  { 29, 42, sizeof(::zjchain::init::protobuf::GenesisInitBlsInfo)},
-  { 50, 58, sizeof(::zjchain::init::protobuf::InitMessage)},
+  { 14, 25, sizeof(::zjchain::init::protobuf::InvalidLeaderPools)},
+  { 31, 44, sizeof(::zjchain::init::protobuf::GenesisInitBlsInfo)},
+  { 52, 60, sizeof(::zjchain::init::protobuf::InitMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -253,24 +255,25 @@ void AddDescriptorsImpl() {
       "uf\032\020protos/bls.proto\032\022protos/block.proto"
       "\"#\n\025GetAddressInfoRequest\022\n\n\002id\030\001 \001(\014\"F\n"
       "\026GetAddressInfoResponse\022,\n\005block\030\001 \001(\0132\035"
-      ".zjchain.block.protobuf.Block\"t\n\022Invalid"
-      "LeaderPools\022\r\n\005pools\030\001 \003(\005\022\024\n\014elect_heig"
-      "ht\030\002 \001(\004\022\024\n\014member_index\030\003 \001(\r\022\017\n\007mod_nu"
-      "m\030\004 \001(\005\022\022\n\nleader_idx\030\005 \001(\r\"\355\001\n\022GenesisI"
-      "nitBlsInfo\022\016\n\006height\030\001 \001(\004\022\020\n\010shard_id\030\002"
-      " \001(\r\022\n\n\002id\030\003 \001(\014\022\024\n\014bls_enc_data\030\004 \001(\014\022\020"
-      "\n\010bls_hash\030\005 \001(\014\0226\n\tjoin_info\030\006 \001(\0132#.zj"
-      "chain.bls.protobuf.JoinElectInfo\0229\n\nloca"
-      "l_poly\030\007 \001(\0132%.zjchain.bls.protobuf.Loca"
-      "lPolynomial\022\016\n\006prikey\030\010 \001(\014\"\310\001\n\013InitMess"
-      "age\022>\n\010addr_req\030\001 \001(\0132,.zjchain.init.pro"
-      "tobuf.GetAddressInfoRequest\022\?\n\010addr_res\030"
-      "\002 \001(\0132-.zjchain.init.protobuf.GetAddress"
-      "InfoResponse\0228\n\005pools\030\003 \001(\0132).zjchain.in"
-      "it.protobuf.InvalidLeaderPools"
+      ".zjchain.block.protobuf.Block\"\205\001\n\022Invali"
+      "dLeaderPools\022\r\n\005pools\030\001 \003(\005\022\024\n\014elect_hei"
+      "ght\030\002 \001(\004\022\024\n\014member_index\030\003 \001(\r\022\017\n\007mod_n"
+      "um\030\004 \001(\005\022\022\n\nleader_idx\030\005 \001(\r\022\017\n\007version\030"
+      "\006 \001(\r\"\355\001\n\022GenesisInitBlsInfo\022\016\n\006height\030\001"
+      " \001(\004\022\020\n\010shard_id\030\002 \001(\r\022\n\n\002id\030\003 \001(\014\022\024\n\014bl"
+      "s_enc_data\030\004 \001(\014\022\020\n\010bls_hash\030\005 \001(\014\0226\n\tjo"
+      "in_info\030\006 \001(\0132#.zjchain.bls.protobuf.Joi"
+      "nElectInfo\0229\n\nlocal_poly\030\007 \001(\0132%.zjchain"
+      ".bls.protobuf.LocalPolynomial\022\016\n\006prikey\030"
+      "\010 \001(\014\"\310\001\n\013InitMessage\022>\n\010addr_req\030\001 \001(\0132"
+      ",.zjchain.init.protobuf.GetAddressInfoRe"
+      "quest\022\?\n\010addr_res\030\002 \001(\0132-.zjchain.init.p"
+      "rotobuf.GetAddressInfoResponse\0228\n\005pools\030"
+      "\003 \001(\0132).zjchain.init.protobuf.InvalidLea"
+      "derPools"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 750);
+      descriptor, 768);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/init.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -784,6 +787,7 @@ const int InvalidLeaderPools::kElectHeightFieldNumber;
 const int InvalidLeaderPools::kMemberIndexFieldNumber;
 const int InvalidLeaderPools::kModNumFieldNumber;
 const int InvalidLeaderPools::kLeaderIdxFieldNumber;
+const int InvalidLeaderPools::kVersionFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 InvalidLeaderPools::InvalidLeaderPools()
@@ -800,15 +804,15 @@ InvalidLeaderPools::InvalidLeaderPools(const InvalidLeaderPools& from)
       pools_(from.pools_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&elect_height_, &from.elect_height_,
-    static_cast<size_t>(reinterpret_cast<char*>(&leader_idx_) -
-    reinterpret_cast<char*>(&elect_height_)) + sizeof(leader_idx_));
+    static_cast<size_t>(reinterpret_cast<char*>(&version_) -
+    reinterpret_cast<char*>(&elect_height_)) + sizeof(version_));
   // @@protoc_insertion_point(copy_constructor:zjchain.init.protobuf.InvalidLeaderPools)
 }
 
 void InvalidLeaderPools::SharedCtor() {
   ::memset(&elect_height_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&leader_idx_) -
-      reinterpret_cast<char*>(&elect_height_)) + sizeof(leader_idx_));
+      reinterpret_cast<char*>(&version_) -
+      reinterpret_cast<char*>(&elect_height_)) + sizeof(version_));
 }
 
 InvalidLeaderPools::~InvalidLeaderPools() {
@@ -841,10 +845,10 @@ void InvalidLeaderPools::Clear() {
 
   pools_.Clear();
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 15u) {
+  if (cached_has_bits & 31u) {
     ::memset(&elect_height_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&leader_idx_) -
-        reinterpret_cast<char*>(&elect_height_)) + sizeof(leader_idx_));
+        reinterpret_cast<char*>(&version_) -
+        reinterpret_cast<char*>(&elect_height_)) + sizeof(version_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -935,6 +939,20 @@ bool InvalidLeaderPools::MergePartialFromCodedStream(
         break;
       }
 
+      // optional uint32 version = 6;
+      case 6: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
+          set_has_version();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &version_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -988,6 +1006,11 @@ void InvalidLeaderPools::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(5, this->leader_idx(), output);
   }
 
+  // optional uint32 version = 6;
+  if (cached_has_bits & 0x00000010u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->version(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -1027,6 +1050,11 @@ void InvalidLeaderPools::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(5, this->leader_idx(), target);
   }
 
+  // optional uint32 version = 6;
+  if (cached_has_bits & 0x00000010u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(6, this->version(), target);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -1053,7 +1081,7 @@ size_t InvalidLeaderPools::ByteSizeLong() const {
     total_size += data_size;
   }
 
-  if (_has_bits_[0 / 32] & 15u) {
+  if (_has_bits_[0 / 32] & 31u) {
     // optional uint64 elect_height = 2;
     if (has_elect_height()) {
       total_size += 1 +
@@ -1080,6 +1108,13 @@ size_t InvalidLeaderPools::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
           this->leader_idx());
+    }
+
+    // optional uint32 version = 6;
+    if (has_version()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->version());
     }
 
   }
@@ -1112,7 +1147,7 @@ void InvalidLeaderPools::MergeFrom(const InvalidLeaderPools& from) {
 
   pools_.MergeFrom(from.pools_);
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 15u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
       elect_height_ = from.elect_height_;
     }
@@ -1124,6 +1159,9 @@ void InvalidLeaderPools::MergeFrom(const InvalidLeaderPools& from) {
     }
     if (cached_has_bits & 0x00000008u) {
       leader_idx_ = from.leader_idx_;
+    }
+    if (cached_has_bits & 0x00000010u) {
+      version_ = from.version_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -1158,6 +1196,7 @@ void InvalidLeaderPools::InternalSwap(InvalidLeaderPools* other) {
   swap(member_index_, other->member_index_);
   swap(mod_num_, other->mod_num_);
   swap(leader_idx_, other->leader_idx_);
+  swap(version_, other->version_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }

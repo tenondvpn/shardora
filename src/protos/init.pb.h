@@ -458,6 +458,13 @@ class InvalidLeaderPools : public ::google::protobuf::Message /* @@protoc_insert
   ::google::protobuf::uint32 leader_idx() const;
   void set_leader_idx(::google::protobuf::uint32 value);
 
+  // optional uint32 version = 6;
+  bool has_version() const;
+  void clear_version();
+  static const int kVersionFieldNumber = 6;
+  ::google::protobuf::uint32 version() const;
+  void set_version(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.init.protobuf.InvalidLeaderPools)
  private:
   void set_has_elect_height();
@@ -468,6 +475,8 @@ class InvalidLeaderPools : public ::google::protobuf::Message /* @@protoc_insert
   void clear_has_mod_num();
   void set_has_leader_idx();
   void clear_has_leader_idx();
+  void set_has_version();
+  void clear_has_version();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -477,6 +486,7 @@ class InvalidLeaderPools : public ::google::protobuf::Message /* @@protoc_insert
   ::google::protobuf::uint32 member_index_;
   ::google::protobuf::int32 mod_num_;
   ::google::protobuf::uint32 leader_idx_;
+  ::google::protobuf::uint32 version_;
   friend struct ::protobuf_protos_2finit_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -1117,6 +1127,30 @@ inline void InvalidLeaderPools::set_leader_idx(::google::protobuf::uint32 value)
   set_has_leader_idx();
   leader_idx_ = value;
   // @@protoc_insertion_point(field_set:zjchain.init.protobuf.InvalidLeaderPools.leader_idx)
+}
+
+// optional uint32 version = 6;
+inline bool InvalidLeaderPools::has_version() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void InvalidLeaderPools::set_has_version() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void InvalidLeaderPools::clear_has_version() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void InvalidLeaderPools::clear_version() {
+  version_ = 0u;
+  clear_has_version();
+}
+inline ::google::protobuf::uint32 InvalidLeaderPools::version() const {
+  // @@protoc_insertion_point(field_get:zjchain.init.protobuf.InvalidLeaderPools.version)
+  return version_;
+}
+inline void InvalidLeaderPools::set_version(::google::protobuf::uint32 value) {
+  set_has_version();
+  version_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.init.protobuf.InvalidLeaderPools.version)
 }
 
 // -------------------------------------------------------------------

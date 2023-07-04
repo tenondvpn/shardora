@@ -19,15 +19,20 @@
 #endif
 // @@protoc_insertion_point(includes)
 
+namespace protobuf_protos_2fblock_2eproto {
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fblock_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_Block;
+}  // namespace protobuf_protos_2fblock_2eproto
 namespace protobuf_protos_2felect_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_BlsPublicKey;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_LeaderRotationMessage;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_PrevMemberInfo;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_SyncElectBlockRequest;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_SyncNodeStokeItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_SyncNodeStokeResItem;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_WaitingNodeHeartbeat;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_WaitingNodesMessage;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_member;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_SyncElectBlockResponse;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_SyncNodeStokeRequest;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<1> scc_info_SyncNodeStokeResponse;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<2> scc_info_ElectBlock;
@@ -101,6 +106,16 @@ class SyncNodeStokeResponseDefaultTypeInternal {
   ::google::protobuf::internal::ExplicitlyConstructed<SyncNodeStokeResponse>
       _instance;
 } _SyncNodeStokeResponse_default_instance_;
+class SyncElectBlockRequestDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<SyncElectBlockRequest>
+      _instance;
+} _SyncElectBlockRequest_default_instance_;
+class SyncElectBlockResponseDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<SyncElectBlockResponse>
+      _instance;
+} _SyncElectBlockResponse_default_instance_;
 class ElectMessageDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<ElectMessage>
@@ -298,6 +313,35 @@ static void InitDefaultsSyncNodeStokeResponse() {
     {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsSyncNodeStokeResponse}, {
       &protobuf_protos_2felect_2eproto::scc_info_SyncNodeStokeResItem.base,}};
 
+static void InitDefaultsSyncElectBlockRequest() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::zjchain::elect::protobuf::_SyncElectBlockRequest_default_instance_;
+    new (ptr) ::zjchain::elect::protobuf::SyncElectBlockRequest();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::zjchain::elect::protobuf::SyncElectBlockRequest::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_SyncElectBlockRequest =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsSyncElectBlockRequest}, {}};
+
+static void InitDefaultsSyncElectBlockResponse() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::zjchain::elect::protobuf::_SyncElectBlockResponse_default_instance_;
+    new (ptr) ::zjchain::elect::protobuf::SyncElectBlockResponse();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::zjchain::elect::protobuf::SyncElectBlockResponse::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<1> scc_info_SyncElectBlockResponse =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsSyncElectBlockResponse}, {
+      &protobuf_protos_2fblock_2eproto::scc_info_Block.base,}};
+
 static void InitDefaultsElectMessage() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -309,14 +353,16 @@ static void InitDefaultsElectMessage() {
   ::zjchain::elect::protobuf::ElectMessage::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<6> scc_info_ElectMessage =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 6, InitDefaultsElectMessage}, {
+::google::protobuf::internal::SCCInfo<8> scc_info_ElectMessage =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 8, InitDefaultsElectMessage}, {
       &protobuf_protos_2felect_2eproto::scc_info_ElectBlock.base,
       &protobuf_protos_2felect_2eproto::scc_info_WaitingNodesMessage.base,
       &protobuf_protos_2felect_2eproto::scc_info_WaitingNodeHeartbeat.base,
       &protobuf_protos_2felect_2eproto::scc_info_LeaderRotationMessage.base,
       &protobuf_protos_2felect_2eproto::scc_info_SyncNodeStokeRequest.base,
-      &protobuf_protos_2felect_2eproto::scc_info_SyncNodeStokeResponse.base,}};
+      &protobuf_protos_2felect_2eproto::scc_info_SyncNodeStokeResponse.base,
+      &protobuf_protos_2felect_2eproto::scc_info_SyncElectBlockRequest.base,
+      &protobuf_protos_2felect_2eproto::scc_info_SyncElectBlockResponse.base,}};
 
 void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_VerifyVecValue.base);
@@ -332,10 +378,12 @@ void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_SyncNodeStokeRequest.base);
   ::google::protobuf::internal::InitSCC(&scc_info_SyncNodeStokeResItem.base);
   ::google::protobuf::internal::InitSCC(&scc_info_SyncNodeStokeResponse.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_SyncElectBlockRequest.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_SyncElectBlockResponse.base);
   ::google::protobuf::internal::InitSCC(&scc_info_ElectMessage.base);
 }
 
-::google::protobuf::Metadata file_level_metadata[14];
+::google::protobuf::Metadata file_level_metadata[16];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::VerifyVecValue, _has_bits_),
@@ -493,6 +541,22 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::SyncNodeStokeResponse, now_tm_height_),
   ~0u,
   0,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::SyncElectBlockRequest, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::SyncElectBlockRequest, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::SyncElectBlockRequest, sharding_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::SyncElectBlockRequest, min_elect_height_),
+  1,
+  0,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::SyncElectBlockResponse, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::SyncElectBlockResponse, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::SyncElectBlockResponse, block_list_),
+  ~0u,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectMessage, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectMessage, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -508,16 +572,20 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectMessage, leader_rotation_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectMessage, sync_stoke_req_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectMessage, sync_stoke_res_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectMessage, elect_block_req_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::elect::protobuf::ElectMessage, elect_block_res_),
   2,
   3,
   4,
-  9,
+  11,
   0,
   1,
   5,
   6,
   7,
   8,
+  9,
+  10,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 12, sizeof(::zjchain::elect::protobuf::VerifyVecValue)},
@@ -533,7 +601,9 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 128, 135, sizeof(::zjchain::elect::protobuf::SyncNodeStokeRequest)},
   { 137, 144, sizeof(::zjchain::elect::protobuf::SyncNodeStokeResItem)},
   { 146, 153, sizeof(::zjchain::elect::protobuf::SyncNodeStokeResponse)},
-  { 155, 170, sizeof(::zjchain::elect::protobuf::ElectMessage)},
+  { 155, 162, sizeof(::zjchain::elect::protobuf::SyncElectBlockRequest)},
+  { 164, 170, sizeof(::zjchain::elect::protobuf::SyncElectBlockResponse)},
+  { 171, 188, sizeof(::zjchain::elect::protobuf::ElectMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -550,6 +620,8 @@ static ::google::protobuf::Message const * const file_default_instances[] = {
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::elect::protobuf::_SyncNodeStokeRequest_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::elect::protobuf::_SyncNodeStokeResItem_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::elect::protobuf::_SyncNodeStokeResponse_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::elect::protobuf::_SyncElectBlockRequest_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::elect::protobuf::_SyncElectBlockResponse_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::elect::protobuf::_ElectMessage_default_instance_),
 };
 
@@ -568,66 +640,75 @@ void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 14);
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 16);
 }
 
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
       "\n\022protos/elect.proto\022\026zjchain.elect.prot"
-      "obuf\"u\n\016VerifyVecValue\022\014\n\004x_c0\030\001 \001(\014\022\014\n\004"
-      "x_c1\030\002 \001(\014\022\014\n\004y_c0\030\003 \001(\014\022\014\n\004y_c1\030\004 \001(\014\022\014"
-      "\n\004z_c0\030\005 \001(\014\022\014\n\004z_c1\030\006 \001(\014\022\017\n\007valid_t\030\007 "
-      "\001(\r\"F\n\014BlsPublicKey\022\014\n\004x_c0\030\001 \001(\014\022\014\n\004x_c"
-      "1\030\002 \001(\014\022\014\n\004y_c0\030\003 \001(\014\022\014\n\004y_c1\030\004 \001(\014\"f\n\016P"
-      "revMemberInfo\022\014\n\004x_c0\030\001 \001(\014\022\014\n\004x_c1\030\002 \001("
-      "\014\022\014\n\004y_c0\030\003 \001(\014\022\014\n\004y_c1\030\004 \001(\014\022\034\n\020pool_id"
-      "x_mod_num\030\005 \001(\005:\002-1\"\241\001\n\013PrevMembers\022:\n\nb"
-      "ls_pubkey\030\001 \003(\0132&.zjchain.elect.protobuf"
-      ".PrevMemberInfo\022\031\n\021prev_elect_height\030\002 \001"
-      "(\004\022;\n\rcommon_pubkey\030\003 \001(\0132$.zjchain.elec"
-      "t.protobuf.BlsPublicKey\"I\n\006member\022\016\n\006pub"
-      "key\030\001 \001(\014\022\030\n\020pool_idx_mod_num\030\002 \001(\005\022\025\n\rm"
-      "ining_amount\030\003 \001(\004\"\321\001\n\nElectBlock\022*\n\002in\030"
-      "\001 \003(\0132\036.zjchain.elect.protobuf.member\0229\n"
-      "\014prev_members\030\002 \001(\0132#.zjchain.elect.prot"
-      "obuf.PrevMembers\022\030\n\020shard_network_id\030\003 \001"
-      "(\r\022\024\n\014elect_height\030\004 \001(\004\022\026\n\016all_gas_amou"
-      "nt\030\005 \001(\004\022\024\n\014gas_for_root\030\006 \001(\004\"Y\n\023Waitin"
-      "gNodesMessage\022\024\n\014nodes_filter\030\001 \003(\004\022\030\n\020w"
-      "aiting_shard_id\030\002 \001(\r\022\022\n\nstoke_hash\030\003 \001("
-      "\014\"i\n\024WaitingNodeHeartbeat\022\021\n\tpublic_ip\030\001"
-      " \001(\014\022\023\n\013public_port\030\002 \001(\r\022\022\n\nnetwork_id\030"
-      "\003 \001(\r\022\025\n\rtimestamp_sec\030\004 \001(\004\"@\n\025LeaderRo"
-      "tationMessage\022\021\n\tleader_id\030\001 \001(\014\022\024\n\014pool"
-      "_mod_num\030\002 \001(\r\"9\n\021SyncNodeStokeItem\022\n\n\002i"
-      "d\030\001 \001(\014\022\030\n\020synced_tm_height\030\002 \001(\004\"k\n\024Syn"
-      "cNodeStokeRequest\022<\n\tsync_item\030\001 \003(\0132).z"
-      "jchain.elect.protobuf.SyncNodeStokeItem\022"
-      "\025\n\rnow_tm_height\030\002 \001(\004\"3\n\024SyncNodeStokeR"
-      "esItem\022\n\n\002id\030\001 \001(\014\022\017\n\007balance\030\002 \001(\004\"k\n\025S"
-      "yncNodeStokeResponse\022;\n\005items\030\001 \003(\0132,.zj"
-      "chain.elect.protobuf.SyncNodeStokeResIte"
-      "m\022\025\n\rnow_tm_height\030\002 \001(\004\"\240\004\n\014ElectMessag"
-      "e\0227\n\013elect_block\030\001 \001(\0132\".zjchain.elect.p"
-      "rotobuf.ElectBlock\022<\n\020prev_elect_block\030\002"
-      " \001(\0132\".zjchain.elect.protobuf.ElectBlock"
-      "\022B\n\rwaiting_nodes\030\003 \001(\0132+.zjchain.elect."
-      "protobuf.WaitingNodesMessage\022\024\n\014member_i"
-      "ndex\030\004 \001(\005\022\017\n\007sign_ch\030\005 \001(\014\022\020\n\010sign_res\030"
-      "\006 \001(\014\022G\n\021waiting_heartbeat\030\007 \001(\0132,.zjcha"
-      "in.elect.protobuf.WaitingNodeHeartbeat\022F"
-      "\n\017leader_rotation\030\010 \001(\0132-.zjchain.elect."
-      "protobuf.LeaderRotationMessage\022D\n\016sync_s"
-      "toke_req\030\t \001(\0132,.zjchain.elect.protobuf."
-      "SyncNodeStokeRequest\022E\n\016sync_stoke_res\030\n"
-      " \001(\0132-.zjchain.elect.protobuf.SyncNodeSt"
-      "okeResponse"
+      "obuf\032\022protos/block.proto\"u\n\016VerifyVecVal"
+      "ue\022\014\n\004x_c0\030\001 \001(\014\022\014\n\004x_c1\030\002 \001(\014\022\014\n\004y_c0\030\003"
+      " \001(\014\022\014\n\004y_c1\030\004 \001(\014\022\014\n\004z_c0\030\005 \001(\014\022\014\n\004z_c1"
+      "\030\006 \001(\014\022\017\n\007valid_t\030\007 \001(\r\"F\n\014BlsPublicKey\022"
+      "\014\n\004x_c0\030\001 \001(\014\022\014\n\004x_c1\030\002 \001(\014\022\014\n\004y_c0\030\003 \001("
+      "\014\022\014\n\004y_c1\030\004 \001(\014\"f\n\016PrevMemberInfo\022\014\n\004x_c"
+      "0\030\001 \001(\014\022\014\n\004x_c1\030\002 \001(\014\022\014\n\004y_c0\030\003 \001(\014\022\014\n\004y"
+      "_c1\030\004 \001(\014\022\034\n\020pool_idx_mod_num\030\005 \001(\005:\002-1\""
+      "\241\001\n\013PrevMembers\022:\n\nbls_pubkey\030\001 \003(\0132&.zj"
+      "chain.elect.protobuf.PrevMemberInfo\022\031\n\021p"
+      "rev_elect_height\030\002 \001(\004\022;\n\rcommon_pubkey\030"
+      "\003 \001(\0132$.zjchain.elect.protobuf.BlsPublic"
+      "Key\"I\n\006member\022\016\n\006pubkey\030\001 \001(\014\022\030\n\020pool_id"
+      "x_mod_num\030\002 \001(\005\022\025\n\rmining_amount\030\003 \001(\004\"\321"
+      "\001\n\nElectBlock\022*\n\002in\030\001 \003(\0132\036.zjchain.elec"
+      "t.protobuf.member\0229\n\014prev_members\030\002 \001(\0132"
+      "#.zjchain.elect.protobuf.PrevMembers\022\030\n\020"
+      "shard_network_id\030\003 \001(\r\022\024\n\014elect_height\030\004"
+      " \001(\004\022\026\n\016all_gas_amount\030\005 \001(\004\022\024\n\014gas_for_"
+      "root\030\006 \001(\004\"Y\n\023WaitingNodesMessage\022\024\n\014nod"
+      "es_filter\030\001 \003(\004\022\030\n\020waiting_shard_id\030\002 \001("
+      "\r\022\022\n\nstoke_hash\030\003 \001(\014\"i\n\024WaitingNodeHear"
+      "tbeat\022\021\n\tpublic_ip\030\001 \001(\014\022\023\n\013public_port\030"
+      "\002 \001(\r\022\022\n\nnetwork_id\030\003 \001(\r\022\025\n\rtimestamp_s"
+      "ec\030\004 \001(\004\"@\n\025LeaderRotationMessage\022\021\n\tlea"
+      "der_id\030\001 \001(\014\022\024\n\014pool_mod_num\030\002 \001(\r\"9\n\021Sy"
+      "ncNodeStokeItem\022\n\n\002id\030\001 \001(\014\022\030\n\020synced_tm"
+      "_height\030\002 \001(\004\"k\n\024SyncNodeStokeRequest\022<\n"
+      "\tsync_item\030\001 \003(\0132).zjchain.elect.protobu"
+      "f.SyncNodeStokeItem\022\025\n\rnow_tm_height\030\002 \001"
+      "(\004\"3\n\024SyncNodeStokeResItem\022\n\n\002id\030\001 \001(\014\022\017"
+      "\n\007balance\030\002 \001(\004\"k\n\025SyncNodeStokeResponse"
+      "\022;\n\005items\030\001 \003(\0132,.zjchain.elect.protobuf"
+      ".SyncNodeStokeResItem\022\025\n\rnow_tm_height\030\002"
+      " \001(\004\"F\n\025SyncElectBlockRequest\022\023\n\013shardin"
+      "g_id\030\001 \001(\r\022\030\n\020min_elect_height\030\002 \001(\004\"K\n\026"
+      "SyncElectBlockResponse\0221\n\nblock_list\030\001 \003"
+      "(\0132\035.zjchain.block.protobuf.Block\"\261\005\n\014El"
+      "ectMessage\0227\n\013elect_block\030\001 \001(\0132\".zjchai"
+      "n.elect.protobuf.ElectBlock\022<\n\020prev_elec"
+      "t_block\030\002 \001(\0132\".zjchain.elect.protobuf.E"
+      "lectBlock\022B\n\rwaiting_nodes\030\003 \001(\0132+.zjcha"
+      "in.elect.protobuf.WaitingNodesMessage\022\024\n"
+      "\014member_index\030\004 \001(\005\022\017\n\007sign_ch\030\005 \001(\014\022\020\n\010"
+      "sign_res\030\006 \001(\014\022G\n\021waiting_heartbeat\030\007 \001("
+      "\0132,.zjchain.elect.protobuf.WaitingNodeHe"
+      "artbeat\022F\n\017leader_rotation\030\010 \001(\0132-.zjcha"
+      "in.elect.protobuf.LeaderRotationMessage\022"
+      "D\n\016sync_stoke_req\030\t \001(\0132,.zjchain.elect."
+      "protobuf.SyncNodeStokeRequest\022E\n\016sync_st"
+      "oke_res\030\n \001(\0132-.zjchain.elect.protobuf.S"
+      "yncNodeStokeResponse\022F\n\017elect_block_req\030"
+      "\013 \001(\0132-.zjchain.elect.protobuf.SyncElect"
+      "BlockRequest\022G\n\017elect_block_res\030\014 \001(\0132.."
+      "zjchain.elect.protobuf.SyncElectBlockRes"
+      "ponse"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1931);
+      descriptor, 2245);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/elect.proto", &protobuf_RegisterTypes);
+  ::protobuf_protos_2fblock_2eproto::AddDescriptors();
 }
 
 void AddDescriptors() {
@@ -5177,6 +5258,520 @@ void SyncNodeStokeResponse::InternalSwap(SyncNodeStokeResponse* other) {
 
 // ===================================================================
 
+void SyncElectBlockRequest::InitAsDefaultInstance() {
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int SyncElectBlockRequest::kShardingIdFieldNumber;
+const int SyncElectBlockRequest::kMinElectHeightFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+SyncElectBlockRequest::SyncElectBlockRequest()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2felect_2eproto::scc_info_SyncElectBlockRequest.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:zjchain.elect.protobuf.SyncElectBlockRequest)
+}
+SyncElectBlockRequest::SyncElectBlockRequest(const SyncElectBlockRequest& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::memcpy(&min_elect_height_, &from.min_elect_height_,
+    static_cast<size_t>(reinterpret_cast<char*>(&sharding_id_) -
+    reinterpret_cast<char*>(&min_elect_height_)) + sizeof(sharding_id_));
+  // @@protoc_insertion_point(copy_constructor:zjchain.elect.protobuf.SyncElectBlockRequest)
+}
+
+void SyncElectBlockRequest::SharedCtor() {
+  ::memset(&min_elect_height_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&sharding_id_) -
+      reinterpret_cast<char*>(&min_elect_height_)) + sizeof(sharding_id_));
+}
+
+SyncElectBlockRequest::~SyncElectBlockRequest() {
+  // @@protoc_insertion_point(destructor:zjchain.elect.protobuf.SyncElectBlockRequest)
+  SharedDtor();
+}
+
+void SyncElectBlockRequest::SharedDtor() {
+}
+
+void SyncElectBlockRequest::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* SyncElectBlockRequest::descriptor() {
+  ::protobuf_protos_2felect_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2felect_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const SyncElectBlockRequest& SyncElectBlockRequest::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2felect_2eproto::scc_info_SyncElectBlockRequest.base);
+  return *internal_default_instance();
+}
+
+
+void SyncElectBlockRequest::Clear() {
+// @@protoc_insertion_point(message_clear_start:zjchain.elect.protobuf.SyncElectBlockRequest)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 3u) {
+    ::memset(&min_elect_height_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&sharding_id_) -
+        reinterpret_cast<char*>(&min_elect_height_)) + sizeof(sharding_id_));
+  }
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool SyncElectBlockRequest::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:zjchain.elect.protobuf.SyncElectBlockRequest)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional uint32 sharding_id = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
+          set_has_sharding_id();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &sharding_id_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint64 min_elect_height = 2;
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
+          set_has_min_elect_height();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &min_elect_height_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:zjchain.elect.protobuf.SyncElectBlockRequest)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:zjchain.elect.protobuf.SyncElectBlockRequest)
+  return false;
+#undef DO_
+}
+
+void SyncElectBlockRequest::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:zjchain.elect.protobuf.SyncElectBlockRequest)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint32 sharding_id = 1;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->sharding_id(), output);
+  }
+
+  // optional uint64 min_elect_height = 2;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->min_elect_height(), output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:zjchain.elect.protobuf.SyncElectBlockRequest)
+}
+
+::google::protobuf::uint8* SyncElectBlockRequest::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.elect.protobuf.SyncElectBlockRequest)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint32 sharding_id = 1;
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->sharding_id(), target);
+  }
+
+  // optional uint64 min_elect_height = 2;
+  if (cached_has_bits & 0x00000001u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->min_elect_height(), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:zjchain.elect.protobuf.SyncElectBlockRequest)
+  return target;
+}
+
+size_t SyncElectBlockRequest::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:zjchain.elect.protobuf.SyncElectBlockRequest)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  if (_has_bits_[0 / 32] & 3u) {
+    // optional uint64 min_elect_height = 2;
+    if (has_min_elect_height()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->min_elect_height());
+    }
+
+    // optional uint32 sharding_id = 1;
+    if (has_sharding_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->sharding_id());
+    }
+
+  }
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void SyncElectBlockRequest::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.elect.protobuf.SyncElectBlockRequest)
+  GOOGLE_DCHECK_NE(&from, this);
+  const SyncElectBlockRequest* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const SyncElectBlockRequest>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.elect.protobuf.SyncElectBlockRequest)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.elect.protobuf.SyncElectBlockRequest)
+    MergeFrom(*source);
+  }
+}
+
+void SyncElectBlockRequest::MergeFrom(const SyncElectBlockRequest& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.elect.protobuf.SyncElectBlockRequest)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
+      min_elect_height_ = from.min_elect_height_;
+    }
+    if (cached_has_bits & 0x00000002u) {
+      sharding_id_ = from.sharding_id_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
+}
+
+void SyncElectBlockRequest::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.elect.protobuf.SyncElectBlockRequest)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void SyncElectBlockRequest::CopyFrom(const SyncElectBlockRequest& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.elect.protobuf.SyncElectBlockRequest)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool SyncElectBlockRequest::IsInitialized() const {
+  return true;
+}
+
+void SyncElectBlockRequest::Swap(SyncElectBlockRequest* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void SyncElectBlockRequest::InternalSwap(SyncElectBlockRequest* other) {
+  using std::swap;
+  swap(min_elect_height_, other->min_elect_height_);
+  swap(sharding_id_, other->sharding_id_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+::google::protobuf::Metadata SyncElectBlockRequest::GetMetadata() const {
+  protobuf_protos_2felect_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2felect_2eproto::file_level_metadata[kIndexInFileMessages];
+}
+
+
+// ===================================================================
+
+void SyncElectBlockResponse::InitAsDefaultInstance() {
+}
+void SyncElectBlockResponse::clear_block_list() {
+  block_list_.Clear();
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int SyncElectBlockResponse::kBlockListFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+SyncElectBlockResponse::SyncElectBlockResponse()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2felect_2eproto::scc_info_SyncElectBlockResponse.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:zjchain.elect.protobuf.SyncElectBlockResponse)
+}
+SyncElectBlockResponse::SyncElectBlockResponse(const SyncElectBlockResponse& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_),
+      block_list_(from.block_list_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:zjchain.elect.protobuf.SyncElectBlockResponse)
+}
+
+void SyncElectBlockResponse::SharedCtor() {
+}
+
+SyncElectBlockResponse::~SyncElectBlockResponse() {
+  // @@protoc_insertion_point(destructor:zjchain.elect.protobuf.SyncElectBlockResponse)
+  SharedDtor();
+}
+
+void SyncElectBlockResponse::SharedDtor() {
+}
+
+void SyncElectBlockResponse::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* SyncElectBlockResponse::descriptor() {
+  ::protobuf_protos_2felect_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2felect_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const SyncElectBlockResponse& SyncElectBlockResponse::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2felect_2eproto::scc_info_SyncElectBlockResponse.base);
+  return *internal_default_instance();
+}
+
+
+void SyncElectBlockResponse::Clear() {
+// @@protoc_insertion_point(message_clear_start:zjchain.elect.protobuf.SyncElectBlockResponse)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  block_list_.Clear();
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool SyncElectBlockResponse::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:zjchain.elect.protobuf.SyncElectBlockResponse)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // repeated .zjchain.block.protobuf.Block block_list = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+                input, add_block_list()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:zjchain.elect.protobuf.SyncElectBlockResponse)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:zjchain.elect.protobuf.SyncElectBlockResponse)
+  return false;
+#undef DO_
+}
+
+void SyncElectBlockResponse::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:zjchain.elect.protobuf.SyncElectBlockResponse)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // repeated .zjchain.block.protobuf.Block block_list = 1;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->block_list_size()); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      1,
+      this->block_list(static_cast<int>(i)),
+      output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:zjchain.elect.protobuf.SyncElectBlockResponse)
+}
+
+::google::protobuf::uint8* SyncElectBlockResponse::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.elect.protobuf.SyncElectBlockResponse)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // repeated .zjchain.block.protobuf.Block block_list = 1;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->block_list_size()); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        1, this->block_list(static_cast<int>(i)), deterministic, target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:zjchain.elect.protobuf.SyncElectBlockResponse)
+  return target;
+}
+
+size_t SyncElectBlockResponse::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:zjchain.elect.protobuf.SyncElectBlockResponse)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  // repeated .zjchain.block.protobuf.Block block_list = 1;
+  {
+    unsigned int count = static_cast<unsigned int>(this->block_list_size());
+    total_size += 1UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          this->block_list(static_cast<int>(i)));
+    }
+  }
+
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void SyncElectBlockResponse::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.elect.protobuf.SyncElectBlockResponse)
+  GOOGLE_DCHECK_NE(&from, this);
+  const SyncElectBlockResponse* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const SyncElectBlockResponse>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.elect.protobuf.SyncElectBlockResponse)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.elect.protobuf.SyncElectBlockResponse)
+    MergeFrom(*source);
+  }
+}
+
+void SyncElectBlockResponse::MergeFrom(const SyncElectBlockResponse& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.elect.protobuf.SyncElectBlockResponse)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  block_list_.MergeFrom(from.block_list_);
+}
+
+void SyncElectBlockResponse::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.elect.protobuf.SyncElectBlockResponse)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void SyncElectBlockResponse::CopyFrom(const SyncElectBlockResponse& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.elect.protobuf.SyncElectBlockResponse)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool SyncElectBlockResponse::IsInitialized() const {
+  return true;
+}
+
+void SyncElectBlockResponse::Swap(SyncElectBlockResponse* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void SyncElectBlockResponse::InternalSwap(SyncElectBlockResponse* other) {
+  using std::swap;
+  CastToBase(&block_list_)->InternalSwap(CastToBase(&other->block_list_));
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+::google::protobuf::Metadata SyncElectBlockResponse::GetMetadata() const {
+  protobuf_protos_2felect_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2felect_2eproto::file_level_metadata[kIndexInFileMessages];
+}
+
+
+// ===================================================================
+
 void ElectMessage::InitAsDefaultInstance() {
   ::zjchain::elect::protobuf::_ElectMessage_default_instance_._instance.get_mutable()->elect_block_ = const_cast< ::zjchain::elect::protobuf::ElectBlock*>(
       ::zjchain::elect::protobuf::ElectBlock::internal_default_instance());
@@ -5192,6 +5787,10 @@ void ElectMessage::InitAsDefaultInstance() {
       ::zjchain::elect::protobuf::SyncNodeStokeRequest::internal_default_instance());
   ::zjchain::elect::protobuf::_ElectMessage_default_instance_._instance.get_mutable()->sync_stoke_res_ = const_cast< ::zjchain::elect::protobuf::SyncNodeStokeResponse*>(
       ::zjchain::elect::protobuf::SyncNodeStokeResponse::internal_default_instance());
+  ::zjchain::elect::protobuf::_ElectMessage_default_instance_._instance.get_mutable()->elect_block_req_ = const_cast< ::zjchain::elect::protobuf::SyncElectBlockRequest*>(
+      ::zjchain::elect::protobuf::SyncElectBlockRequest::internal_default_instance());
+  ::zjchain::elect::protobuf::_ElectMessage_default_instance_._instance.get_mutable()->elect_block_res_ = const_cast< ::zjchain::elect::protobuf::SyncElectBlockResponse*>(
+      ::zjchain::elect::protobuf::SyncElectBlockResponse::internal_default_instance());
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int ElectMessage::kElectBlockFieldNumber;
@@ -5204,6 +5803,8 @@ const int ElectMessage::kWaitingHeartbeatFieldNumber;
 const int ElectMessage::kLeaderRotationFieldNumber;
 const int ElectMessage::kSyncStokeReqFieldNumber;
 const int ElectMessage::kSyncStokeResFieldNumber;
+const int ElectMessage::kElectBlockReqFieldNumber;
+const int ElectMessage::kElectBlockResFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ElectMessage::ElectMessage()
@@ -5261,6 +5862,16 @@ ElectMessage::ElectMessage(const ElectMessage& from)
   } else {
     sync_stoke_res_ = NULL;
   }
+  if (from.has_elect_block_req()) {
+    elect_block_req_ = new ::zjchain::elect::protobuf::SyncElectBlockRequest(*from.elect_block_req_);
+  } else {
+    elect_block_req_ = NULL;
+  }
+  if (from.has_elect_block_res()) {
+    elect_block_res_ = new ::zjchain::elect::protobuf::SyncElectBlockResponse(*from.elect_block_res_);
+  } else {
+    elect_block_res_ = NULL;
+  }
   member_index_ = from.member_index_;
   // @@protoc_insertion_point(copy_constructor:zjchain.elect.protobuf.ElectMessage)
 }
@@ -5288,6 +5899,8 @@ void ElectMessage::SharedDtor() {
   if (this != internal_default_instance()) delete leader_rotation_;
   if (this != internal_default_instance()) delete sync_stoke_req_;
   if (this != internal_default_instance()) delete sync_stoke_res_;
+  if (this != internal_default_instance()) delete elect_block_req_;
+  if (this != internal_default_instance()) delete elect_block_res_;
 }
 
 void ElectMessage::SetCachedSize(int size) const {
@@ -5343,9 +5956,19 @@ void ElectMessage::Clear() {
       sync_stoke_req_->Clear();
     }
   }
-  if (cached_has_bits & 0x00000100u) {
-    GOOGLE_DCHECK(sync_stoke_res_ != NULL);
-    sync_stoke_res_->Clear();
+  if (cached_has_bits & 1792u) {
+    if (cached_has_bits & 0x00000100u) {
+      GOOGLE_DCHECK(sync_stoke_res_ != NULL);
+      sync_stoke_res_->Clear();
+    }
+    if (cached_has_bits & 0x00000200u) {
+      GOOGLE_DCHECK(elect_block_req_ != NULL);
+      elect_block_req_->Clear();
+    }
+    if (cached_has_bits & 0x00000400u) {
+      GOOGLE_DCHECK(elect_block_res_ != NULL);
+      elect_block_res_->Clear();
+    }
   }
   member_index_ = 0;
   _has_bits_.Clear();
@@ -5484,6 +6107,30 @@ bool ElectMessage::MergePartialFromCodedStream(
         break;
       }
 
+      // optional .zjchain.elect.protobuf.SyncElectBlockRequest elect_block_req = 11;
+      case 11: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(90u /* 90 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_elect_block_req()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.elect.protobuf.SyncElectBlockResponse elect_block_res = 12;
+      case 12: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(98u /* 98 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_elect_block_res()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -5530,7 +6177,7 @@ void ElectMessage::SerializeWithCachedSizes(
   }
 
   // optional int32 member_index = 4;
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000800u) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->member_index(), output);
   }
 
@@ -5570,6 +6217,18 @@ void ElectMessage::SerializeWithCachedSizes(
       10, this->_internal_sync_stoke_res(), output);
   }
 
+  // optional .zjchain.elect.protobuf.SyncElectBlockRequest elect_block_req = 11;
+  if (cached_has_bits & 0x00000200u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      11, this->_internal_elect_block_req(), output);
+  }
+
+  // optional .zjchain.elect.protobuf.SyncElectBlockResponse elect_block_res = 12;
+  if (cached_has_bits & 0x00000400u) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      12, this->_internal_elect_block_res(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -5607,7 +6266,7 @@ void ElectMessage::SerializeWithCachedSizes(
   }
 
   // optional int32 member_index = 4;
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000800u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(4, this->member_index(), target);
   }
 
@@ -5651,6 +6310,20 @@ void ElectMessage::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         10, this->_internal_sync_stoke_res(), deterministic, target);
+  }
+
+  // optional .zjchain.elect.protobuf.SyncElectBlockRequest elect_block_req = 11;
+  if (cached_has_bits & 0x00000200u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        11, this->_internal_elect_block_req(), deterministic, target);
+  }
+
+  // optional .zjchain.elect.protobuf.SyncElectBlockResponse elect_block_res = 12;
+  if (cached_has_bits & 0x00000400u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        12, this->_internal_elect_block_res(), deterministic, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -5728,12 +6401,26 @@ size_t ElectMessage::ByteSizeLong() const {
     }
 
   }
-  if (_has_bits_[8 / 32] & 768u) {
+  if (_has_bits_[8 / 32] & 3840u) {
     // optional .zjchain.elect.protobuf.SyncNodeStokeResponse sync_stoke_res = 10;
     if (has_sync_stoke_res()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           *sync_stoke_res_);
+    }
+
+    // optional .zjchain.elect.protobuf.SyncElectBlockRequest elect_block_req = 11;
+    if (has_elect_block_req()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *elect_block_req_);
+    }
+
+    // optional .zjchain.elect.protobuf.SyncElectBlockResponse elect_block_res = 12;
+    if (has_elect_block_res()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          *elect_block_res_);
     }
 
     // optional int32 member_index = 4;
@@ -5800,11 +6487,17 @@ void ElectMessage::MergeFrom(const ElectMessage& from) {
       mutable_sync_stoke_req()->::zjchain::elect::protobuf::SyncNodeStokeRequest::MergeFrom(from.sync_stoke_req());
     }
   }
-  if (cached_has_bits & 768u) {
+  if (cached_has_bits & 3840u) {
     if (cached_has_bits & 0x00000100u) {
       mutable_sync_stoke_res()->::zjchain::elect::protobuf::SyncNodeStokeResponse::MergeFrom(from.sync_stoke_res());
     }
     if (cached_has_bits & 0x00000200u) {
+      mutable_elect_block_req()->::zjchain::elect::protobuf::SyncElectBlockRequest::MergeFrom(from.elect_block_req());
+    }
+    if (cached_has_bits & 0x00000400u) {
+      mutable_elect_block_res()->::zjchain::elect::protobuf::SyncElectBlockResponse::MergeFrom(from.elect_block_res());
+    }
+    if (cached_has_bits & 0x00000800u) {
       member_index_ = from.member_index_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -5846,6 +6539,8 @@ void ElectMessage::InternalSwap(ElectMessage* other) {
   swap(leader_rotation_, other->leader_rotation_);
   swap(sync_stoke_req_, other->sync_stoke_req_);
   swap(sync_stoke_res_, other->sync_stoke_res_);
+  swap(elect_block_req_, other->elect_block_req_);
+  swap(elect_block_res_, other->elect_block_res_);
   swap(member_index_, other->member_index_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -5901,6 +6596,12 @@ template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::elect::protobuf::SyncNo
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::elect::protobuf::SyncNodeStokeResponse* Arena::CreateMaybeMessage< ::zjchain::elect::protobuf::SyncNodeStokeResponse >(Arena* arena) {
   return Arena::CreateInternal< ::zjchain::elect::protobuf::SyncNodeStokeResponse >(arena);
+}
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::elect::protobuf::SyncElectBlockRequest* Arena::CreateMaybeMessage< ::zjchain::elect::protobuf::SyncElectBlockRequest >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::elect::protobuf::SyncElectBlockRequest >(arena);
+}
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::elect::protobuf::SyncElectBlockResponse* Arena::CreateMaybeMessage< ::zjchain::elect::protobuf::SyncElectBlockResponse >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::elect::protobuf::SyncElectBlockResponse >(arena);
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::elect::protobuf::ElectMessage* Arena::CreateMaybeMessage< ::zjchain::elect::protobuf::ElectMessage >(Arena* arena) {
   return Arena::CreateInternal< ::zjchain::elect::protobuf::ElectMessage >(arena);
