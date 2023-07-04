@@ -104,12 +104,15 @@ void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
         }
 
         if (ex_height != common::kInvalidUint64) {
-            kv_sync_->AddSyncHeight(
-                thread_idx,
-                network::kRootCongressNetworkId,
-                common::kRootChainPoolIndex,
-                ex_height,
-                sync::kSyncHigh);
+            uint32_t count = 0;
+            for (uint64_t i = ex_height; i < cross_synced_max_heights_[0] && count < 64; ++i, ++count) {
+                kv_sync_->AddSyncHeight(
+                    thread_idx,
+                    network::kRootCongressNetworkId,
+                    common::kRootChainPoolIndex,
+                    i,
+                    sync::kSyncHigh);
+            }
         }
 
         ZJC_DEBUG("cross success sync mising heights pool: %u, height: %lu, "
