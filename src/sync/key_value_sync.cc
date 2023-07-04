@@ -331,10 +331,10 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
         if (sync_msg.sync_value_req().heights(i).tag() == kBlockHeight) {
             block::protobuf::Block block;
             if (!prefix_db_->GetBlockWithHeight(
-                network_id,
-                sync_msg.sync_value_req().heights(i).pool_idx(),
-                sync_msg.sync_value_req().heights(i).height(),
-                &block)) {
+                    network_id,
+                    sync_msg.sync_value_req().heights(i).pool_idx(),
+                    sync_msg.sync_value_req().heights(i).height(),
+                    &block)) {
                 continue;
             }
 
@@ -399,7 +399,7 @@ void KeyValueSync::ResponseElectBlock(
         block::protobuf::Block block;
         if (!prefix_db_->GetBlockWithHeight(
                 network::kRootCongressNetworkId,
-                network_id % common::kImmutablePoolSize,
+                sync_item.pool_idx(),
                 elect_height,
                 &block)) {
             ZJC_DEBUG("block invalid network: %u, pool: %lu, height: %lu",
@@ -408,7 +408,8 @@ void KeyValueSync::ResponseElectBlock(
         }
 
         valid_elect_heights.push_back(elect_height);
-        ZJC_DEBUG("success get elect height: %lu, prev: %lu, min_height: %lu", elect_height, block.electblock_height(), min_height);
+        ZJC_DEBUG("success get network_id: %u, pool: %u, elect height: %lu, prev: %lu, min_height: %lu",
+            network::kRootCongressNetworkId, sync_item.pool_idx(), elect_height, block.electblock_height(), min_height);
         elect_height = block.electblock_height();
     }
 
@@ -503,7 +504,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                         AddSyncElectBlock(
                             msg_ptr->thread_idx,
                             network::kRootCongressNetworkId,
-                            block_item->network_id(),
+                            block_item->network_id() % common::kImmutablePoolSize,
                             block_item->electblock_height(),
                             kSyncHigh);
                     }
