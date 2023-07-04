@@ -323,9 +323,9 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
         }
     }
 
+    auto network_id = sync_msg.sync_value_req().network_id();
     for (int32_t i = 0; i < sync_msg.sync_value_req().heights_size(); ++i) {
         if (sync_msg.sync_value_req().heights(i).tag() == kBlockHeight) {
-            auto network_id = sync_msg.sync_value_req().network_id();
             block::protobuf::Block block;
             if (!prefix_db_->GetBlockWithHeight(
                 network_id,
@@ -336,7 +336,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             }
 
 
-            if (!AddSyncKeyValue(&msg, block)) {
+            if (!AddSyncKeyValue(&msg, block, add_size)) {
                 continue;
             }
 
@@ -376,21 +376,21 @@ void KeyValueSync::ResponseElectBlock(
         transport::protobuf::Header& msg,
         sync::protobuf::SyncValueResponse* res,
         uint32_t& add_size) {
-    if (sync_item.network_id() >= network::kConsensusShardEndNetworkId ||
-        sync_item.network_id() < network::kRootCongressNetworkId) {
+    if (network_id >= network::kConsensusShardEndNetworkId ||
+            network_id < network::kRootCongressNetworkId) {
         return;
     }
 
-    auto& shard_set = shard_with_elect_height_[sync_item.network_id()];
+    auto& shard_set = shard_with_elect_height_[network_id];
     auto iter = shard_set->rbegin();
     std::vector<uint64_t> valid_elect_heights;
     if (iter != shard_set.rend()) {
-        uint64_t i = elect_net_heights_map_[sync_item.network_id()];
+        uint64_t i = elect_net_heights_map_[network_id];
         while (true) {
             block::protobuf::Block block;
             if (!prefix_db_->GetBlockWithHeight(
                     network::kRootCongressNetworkId,
-                    sync_item.network_id(),
+                    network_id,
                     i,
                     &block)) {
                 return;
@@ -418,13 +418,13 @@ void KeyValueSync::ResponseElectBlock(
         block::protobuf::Block block;
         if (!prefix_db_->GetBlockWithHeight(
                 network::kRootCongressNetworkId,
-                sync_item.network_id(),
+                network_id,
                 *fiter,
                 &block)) {
             return;
         }
 
-        if (!AddSyncKeyValue(&msg, block)) {
+        if (!AddSyncKeyValue(&msg, block, add_size)) {
             return;
         }
 
@@ -440,7 +440,10 @@ void KeyValueSync::ResponseElectBlock(
     }
 }
 
-bool KeyValueSync::AddSyncKeyValue(transport::protobuf::Header* msg, const block::protobuf::Block& block) {
+bool KeyValueSync::AddSyncKeyValue(
+        transport::protobuf::Header* msg,
+        const block::protobuf::Block& block,
+        uint32_t& add_size) {
     auto* sync_info = msg->mutable_sync();
     for (int32_t i = 0; i < block.tx_list_size(); ++i) {
         auto& tx = block.tx_list(i);
@@ -456,6 +459,10 @@ bool KeyValueSync::AddSyncKeyValue(transport::protobuf::Header* msg, const block
                 auto* sync_item = sync_info->add_items();
                 sync_item->set_key(storage.val_hash());
                 sync_item->set_value(val);
+                add_size += storage.val_hash().size() + val.size();
+                if (add_size >= kSyncPacketMaxSize) {
+                    break;
+                }
             }
         }
     }
