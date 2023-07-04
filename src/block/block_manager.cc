@@ -265,7 +265,7 @@ void BlockManager::GenesisNewBlock(
     AddNewBlock(thread_idx, block_item, db_batch);
 }
 
-void BlockManager::NetworkNewBlock(
+int BlockManager::NetworkNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item) {
     if (block_item != nullptr) {
