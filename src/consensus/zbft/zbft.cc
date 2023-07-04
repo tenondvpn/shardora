@@ -323,15 +323,19 @@ int Zbft::LeaderCommitOk(
     commit_aggree_set_.insert(id);
     precommit_bitmap_.Set(index);
     backup_commit_signs_[index] = backup_sign;
-//     ZJC_DEBUG("commit_aggree_set_.size() >= min_aggree_member_count_: %d, %d",
-//         commit_aggree_set_.size(), min_aggree_member_count_);
+    ZJC_DEBUG("commit_aggree_set_.size(), min_aggree_member_count_: %d, %d, id: %s, gid: %s",
+        commit_aggree_set_.size(), min_aggree_member_count_,
+        common::Encode::HexEncode(id).c_str(),
+        common::Encode::HexEncode(gid()).c_str());
     if (commit_aggree_set_.size() >= min_aggree_member_count_) {
         leader_handled_commit_ = true;
+        ZJC_DEBUG("gid precommit agg sign: %s", common::Encode::HexEncode(gid()).c_str());
         if (LeaderCreateCommitAggSign() != kConsensusSuccess) {
-            ZJC_ERROR("leader create commit agg sign failed!");
+            ZJC_ERROR("leader create commit agg sign failed: %s", common::Encode::HexEncode(gid()).c_str());
             return kConsensusOppose;
         }
 
+        ZJC_DEBUG("gid aggree precommit agg sign: %s", common::Encode::HexEncode(gid()).c_str());
         return kConsensusAgree;
     }
 
@@ -340,10 +344,8 @@ int Zbft::LeaderCommitOk(
 
 void Zbft::RechallengePrecommitClear() {
     leader_handled_commit_ = false;
-    init_precommit_timeout();
     precommit_bitmap_.clear();
     commit_aggree_set_.clear();
-//     precommit_aggree_set_.clear();
     precommit_oppose_set_.clear();
     commit_oppose_set_.clear();
 }

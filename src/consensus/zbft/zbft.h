@@ -209,16 +209,6 @@ public:
         return bls_commit_agg_sign_;
     }
 
-    void init_prepare_timeout() {
-        prepare_timeout_ = (std::chrono::steady_clock::now() +
-                std::chrono::microseconds(kBftLeaderPrepareWaitPeriod));
-    }
-
-    void init_precommit_timeout() {
-        precommit_timeout_ = (std::chrono::steady_clock::now() +
-                std::chrono::microseconds(kBftLeaderPrepareWaitPeriod));
-    }
-
     std::shared_ptr<block::protobuf::Block>& prepare_block() {
         return prepare_block_;
     }
@@ -319,6 +309,7 @@ public:
         commit_oppose_set_.insert(id);
         if (commit_oppose_set_.size() >= min_oppose_member_count_) {
             leader_handled_commit_ = true;
+            ZJC_DEBUG("gid precommit oppose: %s", common::Encode::HexEncode(gid()).c_str());
             return kConsensusOppose;
         }
 
@@ -505,8 +496,6 @@ protected:
     common::Bitmap precommit_bitmap_{ common::kEachShardMaxNodeCount };
     uint32_t consensus_status_{ kConsensusInit };
     std::string prepare_hash_;
-    std::chrono::steady_clock::time_point prepare_timeout_;
-    std::chrono::steady_clock::time_point precommit_timeout_;
     std::shared_ptr<block::protobuf::Block> prepare_block_{ nullptr };
     std::unordered_set<std::string> precommit_oppose_set_;
     std::unordered_set<std::string> commit_aggree_set_;
@@ -517,7 +506,7 @@ protected:
     std::set<uint32_t> prepare_enc_failed_nodes_;
     bool this_node_is_leader_{ false };
     uint64_t elect_height_{ 0 };
-    libff::alt_bn128_G1 backup_commit_signs_[common::kEachShardMaxNodeCount];
+    libff::alt_bn128_G1 backup_commit_signs_[common::kEachShardMaxNodeCount] = { libff::alt_bn128_G1::zero() };
     std::shared_ptr<libff::alt_bn128_G1> bls_precommit_agg_sign_{ nullptr };
     std::shared_ptr<libff::alt_bn128_G1> bls_commit_agg_sign_{ nullptr };
     std::string precommit_hash_;
