@@ -140,7 +140,7 @@ private:
     block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
     common::Tick tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> kv_msg_queue_;
-    std::set<uint64_t> shard_with_elect_height_[network::kConsensusShardEndNetworkId] = { 1 };
+    std::set<uint64_t> shard_with_elect_height_[network::kConsensusShardEndNetworkId];
     uint64_t elect_net_heights_map_[network::kConsensusShardEndNetworkId] = { 0 };
 
     DISALLOW_COPY_AND_ASSIGN(KeyValueSync);
