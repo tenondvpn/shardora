@@ -1288,8 +1288,8 @@ void NetworkInit::HandleElectionBlock(
     shard_statistic_->OnNewElectBlock(sharding_id, block->height(), elect_height);
     kv_sync_->OnNewElectBlock(sharding_id, elect_height);
     network::UniversalManager::Instance()->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
-    ZJC_DEBUG("1 success called election block. elect height: %lu, net: %u, local net id: %u",
-        elect_height, elect_block->shard_network_id(), common::GlobalInfo::Instance()->network_id());
+    ZJC_DEBUG("1 success called election block. height: %lu, elect height: %lu, net: %u, local net id: %u",
+        block->height(), elect_height, elect_block->shard_network_id(), common::GlobalInfo::Instance()->network_id());
     if (sharding_id + network::kConsensusWaitingShardOffset ==
             common::GlobalInfo::Instance()->network_id()) {
         join_elect_tick_.CutOff(
