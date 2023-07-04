@@ -157,7 +157,9 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
                 height_item->set_pool_idx(item->pool_idx);
                 height_item->set_height(item->height);
                 height_item->set_tag(item->tag);
-                ZJC_DEBUG("sync get elect block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
+                if (item->tag == kElectBlock) {
+                    ZJC_DEBUG("sync get elect block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
+                }
             } else {
                 sync_req->add_keys(item->key);
             }
@@ -387,25 +389,28 @@ void KeyValueSync::ResponseElectBlock(
     auto& shard_set = shard_with_elect_height_[network_id];
     auto iter = shard_set.rbegin();
     std::vector<uint64_t> valid_elect_heights;
+    uint64_t min_height = 1;
     if (iter != shard_set.rend()) {
-        uint64_t i = elect_net_heights_map_[network_id];
-        while (true) {
-            block::protobuf::Block block;
-            if (!prefix_db_->GetBlockWithHeight(
-                    network::kRootCongressNetworkId,
-                    network_id % common::kImmutablePoolSize,
-                    i,
-                    &block)) {
-                ZJC_DEBUG("block invalid network: %u, pool: %lu, height: %lu",
-                    network::kRootCongressNetworkId, network_id % common::kImmutablePoolSize, i);
-                return;
-            }
+        min_height = *iter;
+    }
 
-            valid_elect_heights.push_back(i);
-            i = block.electblock_height();
-            if (i <= *iter) {
-                break;
-            }
+    uint64_t elect_height = elect_net_heights_map_[network_id];
+    while (true) {
+        block::protobuf::Block block;
+        if (!prefix_db_->GetBlockWithHeight(
+                network::kRootCongressNetworkId,
+                network_id % common::kImmutablePoolSize,
+            elect_height,
+                &block)) {
+            ZJC_DEBUG("block invalid network: %u, pool: %lu, height: %lu",
+                network::kRootCongressNetworkId, network_id % common::kImmutablePoolSize, i);
+            return;
+        }
+
+        valid_elect_heights.push_back(i);
+        elect_height = block.electblock_height();
+        if (elect_height <= min_height) {
+            break;
         }
     }
 
