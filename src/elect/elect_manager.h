@@ -114,7 +114,6 @@ private:
     std::shared_ptr<ElectNode> elect_node_ptr_{ nullptr };
     common::Tick create_elect_block_tick_;
     std::unordered_set<uint64_t> added_height_[network::kConsensusShardEndNetworkId];
-    uint64_t elect_net_heights_map_[network::kConsensusShardEndNetworkId];
     std::mutex elect_members_mutex_;
     std::mutex network_leaders_mutex_;
     std::mutex valid_shard_networks_mutex_;

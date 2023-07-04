@@ -493,7 +493,7 @@ int GenesisBlockInit::CreateElectBlock(
     fputs(ec_val.c_str(), root_gens_init_block_file);
     AddBlockItemToCache(tenon_block, db_batch);
     block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
-    block_mgr_->NetworkNewBlock(0, tenon_block);
+    block_mgr_->GenesisNewBlock(0, tenon_block);
     db_->Put(db_batch);
 //     std::string pool_hash;
 //     uint64_t pool_height = 0;
@@ -589,7 +589,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
 
         AddBlockItemToCache(tenon_block, db_batch);
         block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
-        block_mgr_->NetworkNewBlock(0, tenon_block);
+        block_mgr_->GenesisNewBlock(0, tenon_block);
         db_->Put(db_batch);
         std::string pool_hash;
         uint64_t pool_height = 0;
@@ -672,7 +672,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         fputs((common::Encode::HexEncode(tmp_str) + "\n").c_str(), root_gens_init_block_file);
 //         tmblock::TimeBlockManager::Instance()->UpdateTimeBlock(1, now_tm, now_tm);
         AddBlockItemToCache(tenon_block, db_batch);
-        block_mgr_->NetworkNewBlock(0, tenon_block);
+        block_mgr_->GenesisNewBlock(0, tenon_block);
         block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
         db_->Put(db_batch);
         std::string pool_hash;
@@ -724,7 +724,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
 
         AddBlockItemToCache(tenon_block, db_batch);
         block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
-        block_mgr_->NetworkNewBlock(0, tenon_block);
+        block_mgr_->GenesisNewBlock(0, tenon_block);
         for (int32_t i = 0; i < tenon_block->tx_list_size(); ++i) {
             for (int32_t j = 0; j < tenon_block->tx_list(i).storages_size(); ++j) {
                 if (tenon_block->tx_list(i).storages(j).key() == protos::kElectNodeAttrElectBlock) {
@@ -908,7 +908,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
 
         AddBlockItemToCache(tenon_block, db_batch);
         block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
-        block_mgr_->NetworkNewBlock(0, tenon_block);
+        block_mgr_->GenesisNewBlock(0, tenon_block);
         for (uint32_t i = 0; i < root_genesis_nodes.size(); ++i) {
             for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
                 if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
@@ -1196,7 +1196,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             tenon_block->hash(),
             db_batch);
         AddBlockItemToCache(tenon_block, db_batch);
-        block_mgr_->NetworkNewBlock(0, tenon_block);
+        block_mgr_->GenesisNewBlock(0, tenon_block);
         for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
             for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
                 if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
@@ -1317,7 +1317,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             tenon_block->hash(),
             db_batch);
         AddBlockItemToCache(tenon_block, db_batch);
-        block_mgr_->NetworkNewBlock(0, tenon_block);
+        block_mgr_->GenesisNewBlock(0, tenon_block);
         block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
         db_->Put(db_batch);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);

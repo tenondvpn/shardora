@@ -44,6 +44,10 @@ public:
     void NetworkNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item);
+    // just for genesis create new block
+    void GenesisNewBlock(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block_item);
     void OnTimeBlock(
         uint8_t thread_idx,
         uint64_t lastest_time_block_tm,
@@ -98,6 +102,7 @@ public:
     void ChangeLeader(int32_t mod_num, common::BftMemberPtr& mem_ptr);
 
 private:
+    void HandleAllNewBlock(uint8_t thread_idx);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(uint8_t thread_idx);
     void HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool recreate);

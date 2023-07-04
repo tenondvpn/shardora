@@ -36,11 +36,10 @@ void KeyValueSync::AddSync(
 
 }
 
-
 void KeyValueSync::Init(
-    block::BlockAggValidCallback block_agg_valid_func,
-    const std::shared_ptr<block::BlockManager>& block_mgr,
-    const std::shared_ptr<db::Db>& db) {
+        block::BlockAggValidCallback block_agg_valid_func,
+        const std::shared_ptr<block::BlockManager>& block_mgr,
+        const std::shared_ptr<db::Db>& db) {
     block_agg_valid_func_ = block_agg_valid_func;
     block_mgr_ = block_mgr;
     db_ = db;
@@ -61,6 +60,19 @@ void KeyValueSync::AddSyncHeight(
         uint32_t priority) {
     assert(priority <= kSyncHighest);
     auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority);
+    item_queues_[thread_idx].push(item);
+    ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
+        item->key.c_str(), item->priority);
+}
+
+void KeyValueSync::AddSyncElectBlock(
+        uint8_t thread_idx,
+        uint32_t network_id,
+        uint32_t pool_idx,
+        uint64_t height,
+        uint32_t priority) {
+    assert(priority <= kSyncHighest);
+    auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority, kElectBlock);
     item_queues_[thread_idx].push(item);
     ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
         item->key.c_str(), item->priority);
@@ -148,6 +160,7 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
                 sync_req->add_keys(item->key);
             }
 
+            height_item->set_tag(item->tag);
             if (sync_req->keys_size() + sync_req->heights_size() > (int32_t)kEachRequestMaxSyncKeyCount) {
                 uint64_t choose_node = SendSyncRequest(
                     thread_idx,
@@ -311,30 +324,38 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     }
 
     for (int32_t i = 0; i < sync_msg.sync_value_req().heights_size(); ++i) {
-        auto network_id = sync_msg.sync_value_req().network_id();
-        block::protobuf::Block block;
-        if (!prefix_db_->GetBlockWithHeight(
+        if (sync_msg.sync_value_req().tag() == kBlockHeight) {
+            auto network_id = sync_msg.sync_value_req().network_id();
+            block::protobuf::Block block;
+            if (!prefix_db_->GetBlockWithHeight(
                 network_id,
                 sync_msg.sync_value_req().heights(i).pool_idx(),
                 sync_msg.sync_value_req().heights(i).height(),
                 &block)) {
+                continue;
+            }
+
+
+            if (!AddSyncKeyValue(&msg, block)) {
+                continue;
+            }
+
+            auto res = sync_res->add_res();
+            res->set_network_id(network_id);
+            res->set_pool_idx(sync_msg.sync_value_req().heights(i).pool_idx());
+            res->set_height(sync_msg.sync_value_req().heights(i).height());
+            res->set_value(block.SerializeAsString());
+            add_size += 16 + res->value().size();
+            if (add_size >= kSyncPacketMaxSize) {
+                break;
+            }
+        } else if (sync_msg.sync_value_req().tag() == kElectBlock) {
+            ResponseElectBlock(sync_msg.sync_value_req(), sync_res);
+        } else {
+            assert(false);
             continue;
         }
-
-
-        if (!AddSyncKeyValue(&msg, block)) {
-            continue;
-        }
-
-        auto res = sync_res->add_res();
-        res->set_network_id(network_id);
-        res->set_pool_idx(sync_msg.sync_value_req().heights(i).pool_idx());
-        res->set_height(sync_msg.sync_value_req().heights(i).height());
-        res->set_value(block.SerializeAsString());
-        add_size += 16 + res->value().size();
-        if (add_size >= kSyncPacketMaxSize) {
-            break;
-        }
+        
     }
 
     if (add_size == 0) {
@@ -347,6 +368,69 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     msg.set_type(common::kSyncMessage);
     transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
     ZJC_DEBUG("sync response ok des: %u", msg_ptr->header.src_sharding_id());
+}
+
+void KeyValueSync::ResponseElectBlock(
+        const sync::protobuf::SyncHeightItem& sync_item,
+        sync::protobuf::SyncValueResponse* res) {
+    if (sync_req.network_id() >= network::kConsensusShardEndNetworkId ||
+            sync_req.network_id() < network::kRootCongressNetworkId) {
+        return;
+    }
+
+
+    auto& shard_set = shard_with_elect_height_[sync_req.network_id()];
+    auto iter = shard_set->rbegin();
+    if (iter != shard_set.rend()) {
+        uint64_t i = elect_net_heights_map_[sync_req.network_id()];
+        while (true) {
+            block::protobuf::Block block;
+            if (!prefix_db_->GetBlockWithHeight(
+                    network::kRootCongressNetworkId,
+                    sync_req.network_id(),
+                    i,
+                    &block)) {
+                return;
+            }
+
+            shard_set.insert(i);
+            i = block.electblock_height();
+            if (i <= *iter) {
+                break;
+            }
+        }
+    }
+
+    auto fiter = shard_set.find(sync_item.height());
+    if (fiter == shard_set.end()) {
+        return;
+    }
+
+    ++fiter;
+    for (; fiter != shard_set.end(); ++fiter) {
+        block::protobuf::Block block;
+        if (!prefix_db_->GetBlockWithHeight(
+                network::kRootCongressNetworkId,
+                sync_item.network_id(),
+                *fiter,
+                &block)) {
+            return;
+        }
+
+        if (!AddSyncKeyValue(&msg, block)) {
+            return;
+        }
+
+        auto res = sync_res->add_res();
+        res->set_network_id(block.network_id());
+        res->set_pool_idx(block.pool_idx());
+        res->set_height(block.height());
+        res->set_value(block.SerializeAsString());
+        add_size += 16 + res->value().size();
+        if (add_size >= kSyncPacketMaxSize) {
+            break;
+        }
+    }
 }
 
 bool KeyValueSync::AddSyncKeyValue(transport::protobuf::Header* msg, const block::protobuf::Block& block) {
@@ -387,16 +471,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
                         block_item->network_id() + network::kConsensusWaitingShardOffset !=
                         common::GlobalInfo::Instance()->network_id()) {
-                    if (block_agg_valid_func_(*block_item)) {
-                        block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item);
-                    } else {
-                        ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
-                            block_item->network_id(),
-                            block_item->pool_index(),
-                            block_item->height(),
-                            common::Encode::HexEncode(block_item->hash()).c_str());
-                        //assert(false);
-                    }
+                    block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item);
                 }
             }
         }

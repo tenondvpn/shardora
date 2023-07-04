@@ -89,7 +89,7 @@ void BlockManager::ConsensusTimerMessage(uint8_t thread_idx) {
     auto now_tm1 = common::TimeUtils::TimestampUs();
     HandleToTxMessage();
     HandleStatisticTxMessage();
-    NetworkNewBlock(thread_idx, nullptr);
+    HandleAllNewBlock(thread_idx);
     auto tmp_to_tx_leader = to_tx_leader_;
     if (tmp_to_tx_leader != nullptr && local_id_ == tmp_to_tx_leader->id) {
         ZJC_DEBUG("now leader create to and statistic message.");
@@ -246,6 +246,25 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 }
 
+void HandleAllNewBlock(uint8_t thread_idx) {
+    while (block_from_network_queue_.size() > 0) {
+        std::shared_ptr<block::protobuf::Block> block_ptr = nullptr;
+        if (block_from_network_queue_.pop(&block_ptr)) {
+            db::DbWriteBatch db_batch;
+            AddNewBlock(thread_idx, block_ptr, db_batch);
+        }
+    }
+
+    HandleAllConsensusBlocks(thread_idx);
+}
+
+void BlockManager::GenesisNewBlock(
+        uint8_t thread_idx,
+        const std::shared_ptr<block::protobuf::Block>& block_item) {
+    db::DbWriteBatch db_batch;
+    AddNewBlock(thread_idx, block_item, db_batch);
+}
+
 void BlockManager::NetworkNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item) {
@@ -272,19 +291,8 @@ void BlockManager::NetworkNewBlock(
             return;
         }
 
-        db::DbWriteBatch db_batch;
-        AddNewBlock(thread_idx, block_item, db_batch);
+        block_from_network_queue_.push(block_item);
     }
-
-    while (block_from_network_queue_.size() > 0) {
-        std::shared_ptr<block::protobuf::Block> block_ptr = nullptr;
-        if (block_from_network_queue_.pop(&block_ptr)) {
-            db::DbWriteBatch db_batch;
-            AddNewBlock(thread_idx, block_ptr, db_batch);
-        }
-    }
-
-    HandleAllConsensusBlocks(thread_idx);
 }
 
 void BlockManager::ConsensusAddBlock(

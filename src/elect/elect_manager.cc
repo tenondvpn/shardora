@@ -117,6 +117,14 @@ void ElectManager::OnTimeBlock(uint64_t tm_block_tm) {
 void ElectManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     assert(header.type() == common::kElectMessage);
+    auto& elect_msg = header.elect_proto();
+    if (elect_msg.has_elect_block_req()) {
+
+    }
+
+    if (elect_msg.has_elect_block_res()) {
+
+    }
 }
 
 common::MembersPtr ElectManager::OnNewElectBlock(
