@@ -122,9 +122,11 @@ private:
     void PopKvMessage(uint8_t thread_idx);
     void HandleKvMessage(const transport::MessagePtr& msg_ptr);
     void ResponseElectBlock(
+        uint32_t network_id,
         const sync::protobuf::SyncHeightItem& sync_item,
         transport::protobuf::Header& msg,
-        sync::protobuf::SyncValueResponse* res);
+        sync::protobuf::SyncValueResponse* res,
+        uint32_t& add_size);
 
     static const uint64_t kSyncPeriodUs = 300000lu;
     static const uint64_t kSyncTimeoutPeriodUs = 300000lu;

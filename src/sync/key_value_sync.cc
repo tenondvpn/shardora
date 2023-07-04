@@ -350,7 +350,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                 break;
             }
         } else if (sync_msg.sync_value_req().heights(i).tag() == kElectBlock) {
-            ResponseElectBlock(sync_msg.sync_value_req().heights(i), msg, sync_res);
+            ResponseElectBlock(network_id, sync_msg.sync_value_req().heights(i), msg, sync_res, add_size);
         } else {
             assert(false);
             continue;
@@ -371,9 +371,11 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
 }
 
 void KeyValueSync::ResponseElectBlock(
+        uint32_t network_id,
         const sync::protobuf::SyncHeightItem& sync_item,
         transport::protobuf::Header& msg,
-        sync::protobuf::SyncValueResponse* res) {
+        sync::protobuf::SyncValueResponse* res,
+        uint32_t& add_size) {
     if (sync_item.network_id() >= network::kConsensusShardEndNetworkId ||
         sync_item.network_id() < network::kRootCongressNetworkId) {
         return;
@@ -428,7 +430,7 @@ void KeyValueSync::ResponseElectBlock(
 
         auto res = sync_res->add_res();
         res->set_network_id(block.network_id());
-        res->set_pool_idx(block.pool_idx());
+        res->set_pool_idx(block.pool_index());
         res->set_height(block.height());
         res->set_value(block.SerializeAsString());
         add_size += 16 + res->value().size();
