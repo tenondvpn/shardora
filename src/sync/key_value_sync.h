@@ -123,6 +123,7 @@ private:
     void HandleKvMessage(const transport::MessagePtr& msg_ptr);
     void ResponseElectBlock(
         const sync::protobuf::SyncHeightItem& sync_item,
+        transport::protobuf::Header& msg,
         sync::protobuf::SyncValueResponse* res);
 
     static const uint64_t kSyncPeriodUs = 300000lu;

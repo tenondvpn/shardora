@@ -156,11 +156,11 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
                 auto height_item = sync_req->add_heights();
                 height_item->set_pool_idx(item->pool_idx);
                 height_item->set_height(item->height);
+                height_item->set_tag(item->tag);
             } else {
                 sync_req->add_keys(item->key);
             }
 
-            height_item->set_tag(item->tag);
             if (sync_req->keys_size() + sync_req->heights_size() > (int32_t)kEachRequestMaxSyncKeyCount) {
                 uint64_t choose_node = SendSyncRequest(
                     thread_idx,
@@ -324,7 +324,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     }
 
     for (int32_t i = 0; i < sync_msg.sync_value_req().heights_size(); ++i) {
-        if (sync_msg.sync_value_req().tag() == kBlockHeight) {
+        if (sync_msg.sync_value_req().heights(i).tag() == kBlockHeight) {
             auto network_id = sync_msg.sync_value_req().network_id();
             block::protobuf::Block block;
             if (!prefix_db_->GetBlockWithHeight(
@@ -349,8 +349,8 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             if (add_size >= kSyncPacketMaxSize) {
                 break;
             }
-        } else if (sync_msg.sync_value_req().tag() == kElectBlock) {
-            ResponseElectBlock(sync_msg.sync_value_req(), sync_res);
+        } else if (sync_msg.sync_value_req().heights(i).tag() == kElectBlock) {
+            ResponseElectBlock(sync_msg.sync_value_req().heights(i), msg, sync_res);
         } else {
             assert(false);
             continue;
@@ -372,22 +372,23 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
 
 void KeyValueSync::ResponseElectBlock(
         const sync::protobuf::SyncHeightItem& sync_item,
+        transport::protobuf::Header& msg,
         sync::protobuf::SyncValueResponse* res) {
-    if (sync_req.network_id() >= network::kConsensusShardEndNetworkId ||
-            sync_req.network_id() < network::kRootCongressNetworkId) {
+    if (sync_item.network_id() >= network::kConsensusShardEndNetworkId ||
+        sync_item.network_id() < network::kRootCongressNetworkId) {
         return;
     }
 
-    auto& shard_set = shard_with_elect_height_[sync_req.network_id()];
+    auto& shard_set = shard_with_elect_height_[sync_item.network_id()];
     auto iter = shard_set->rbegin();
     std::vector<uint64_t> valid_elect_heights;
     if (iter != shard_set.rend()) {
-        uint64_t i = elect_net_heights_map_[sync_req.network_id()];
+        uint64_t i = elect_net_heights_map_[sync_item.network_id()];
         while (true) {
             block::protobuf::Block block;
             if (!prefix_db_->GetBlockWithHeight(
                     network::kRootCongressNetworkId,
-                    sync_req.network_id(),
+                    sync_item.network_id(),
                     i,
                     &block)) {
                 return;
