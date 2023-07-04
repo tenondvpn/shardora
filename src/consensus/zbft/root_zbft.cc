@@ -110,6 +110,7 @@ void RootZbft::RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_bl
         return;
     }
 
+    ZJC_DEBUG("elect use elect height: %lu, now elect height: %lu", zjc_block.electblock_height(), zjc_block.height());
     // (TODO): check elect is valid in the time block period,
     // one time block, one elect block
     // check after this shard statistic block coming
