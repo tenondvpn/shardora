@@ -408,6 +408,7 @@ void KeyValueSync::ResponseElectBlock(
         }
 
         valid_elect_heights.push_back(elect_height);
+        ZJC_DEBUG("success get elect height: %lu, prev: %lu, min_height: %lu", elect_height, block.electblock_height(), min_height);
         elect_height = block.electblock_height();
     }
 
