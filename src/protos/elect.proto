@@ -1,6 +1,5 @@
 syntax = "proto2";
 
-import "protos/block.proto";
 package zjchain.elect.protobuf;
 
 message VerifyVecValue {
