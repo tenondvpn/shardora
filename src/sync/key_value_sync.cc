@@ -380,6 +380,7 @@ void KeyValueSync::ResponseElectBlock(
 
     auto& shard_set = shard_with_elect_height_[sync_req.network_id()];
     auto iter = shard_set->rbegin();
+    std::vector<uint64_t> valid_elect_heights;
     if (iter != shard_set.rend()) {
         uint64_t i = elect_net_heights_map_[sync_req.network_id()];
         while (true) {
@@ -392,12 +393,16 @@ void KeyValueSync::ResponseElectBlock(
                 return;
             }
 
-            shard_set.insert(i);
+            valid_elect_heights.push_back(i);
             i = block.electblock_height();
             if (i <= *iter) {
                 break;
             }
         }
+    }
+
+    for (auto iter = valid_elect_heights.begin(); iter != valid_elect_heights.end(); ++iter) {
+        shard_set.insert(*iter);
     }
 
     auto fiter = shard_set.find(sync_item.height());
