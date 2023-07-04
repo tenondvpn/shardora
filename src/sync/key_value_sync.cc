@@ -429,7 +429,7 @@ void KeyValueSync::ResponseElectBlock(
                 *fiter,
                 &block)) {
             ZJC_DEBUG("block invalid network: %u, pool: %lu, height: %lu",
-                network::kRootCongressNetworkId, network_id % common::kImmutablePoolSize, i);
+                network::kRootCongressNetworkId, network_id % common::kImmutablePoolSize, *fiter);
             return;
         }
 
