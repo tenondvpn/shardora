@@ -277,7 +277,7 @@ void BlockManager::NetworkNewBlock(
                 block_item->pool_index(),
                 block_item->height());
             assert(false);
-            return;
+            return kBlockError;
         }
 
         if (block_agg_valid_func_ != nullptr && !block_agg_valid_func_(*block_item)) {
@@ -288,11 +288,13 @@ void BlockManager::NetworkNewBlock(
                 block_item->pool_index(),
                 block_item->height());
             //assert(false);
-            return;
+            return kBlockVerifyAggSignFailed;
         }
 
         block_from_network_queue_.push(block_item);
     }
+
+    return kBlockSuccess;
 }
 
 void BlockManager::ConsensusAddBlock(

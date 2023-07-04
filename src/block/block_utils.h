@@ -35,6 +35,7 @@ enum BlockErrorCode {
     kBlockDbNotExists = 2,
     kBlockDbDataInvalid = 3,
     kBlockAddressNotExists = 4,
+    kBlockVerifyAggSignFailed = 5,
 };
 
 enum AddressType {

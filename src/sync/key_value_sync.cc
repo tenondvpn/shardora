@@ -485,7 +485,13 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
                         block_item->network_id() + network::kConsensusWaitingShardOffset !=
                         common::GlobalInfo::Instance()->network_id()) {
-                    block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item);
+                    if (block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item) == block::kBlockVerifyAggSignFailed) {
+                        AddSyncElectBlock(
+                            msg_ptr->thread_idx,
+                            network::kRootCongressNetworkId,
+                            block_item->network_id(),
+                            block_item->electblock_height());
+                    }
                 }
             }
         }

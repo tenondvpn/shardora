@@ -41,7 +41,7 @@ public:
         const std::string& local_id,
         DbBlockCallback new_block_callback,
         block::BlockAggValidCallback block_agg_valid_func);
-    void NetworkNewBlock(
+    int NetworkNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item);
     // just for genesis create new block
