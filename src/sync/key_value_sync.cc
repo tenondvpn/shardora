@@ -391,7 +391,7 @@ void KeyValueSync::ResponseElectBlock(
     std::vector<uint64_t> valid_elect_heights;
     uint64_t min_height = 1;
     if (iter != shard_set.rend()) {
-        min_height = *iter + 1;
+        min_height = *iter;
     }
 
     uint64_t elect_height = elect_net_heights_map_[network_id];
@@ -476,9 +476,9 @@ void KeyValueSync::ResponseElectBlock(
         res->set_pool_idx(block.pool_index());
         res->set_height(block.height());
         res->set_value(block.SerializeAsString());
-        ZJC_DEBUG("block success network: %u, pool: %lu, height: %lu",
-            block.network_id(), block.pool_index(), block.height());
         add_size += 16 + res->value().size();
+        ZJC_DEBUG("block success network: %u, pool: %lu, height: %lu, add_size: %u, kSyncPacketMaxSize: %u",
+            block.network_id(), block.pool_index(), block.height(), add_size, kSyncPacketMaxSize);
         if (add_size >= kSyncPacketMaxSize) {
             break;
         }
