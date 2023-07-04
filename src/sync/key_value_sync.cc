@@ -407,10 +407,31 @@ void KeyValueSync::ResponseElectBlock(
             return;
         }
 
+        elect::protobuf::ElectBlock prev_elect_block;
+        bool ec_block_loaded = false;
+        for (int32_t i = 0; i < block.tx_list(0).storages_size(); ++i) {
+            if (block.tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
+                std::string val;
+                if (!prefix_db_->GetTemporaryKv(block.tx_list(0).storages(i).val_hash(), &val)) {
+                    ZJC_FATAL("elect block get temp kv from db failed!");
+                    return false;
+                }
+
+                prev_elect_block.ParseFromString(val);
+                ec_block_loaded = true;
+                break;
+            }
+        }
+
+        if (!ec_block_loaded) {
+            assert(false);
+            return;
+        }
+
         valid_elect_heights.push_back(elect_height);
         ZJC_DEBUG("success get network_id: %u, pool: %u, elect height: %lu, prev: %lu, min_height: %lu",
-            network::kRootCongressNetworkId, sync_item.pool_idx(), elect_height, block.electblock_height(), min_height);
-        elect_height = block.electblock_height();
+            network::kRootCongressNetworkId, sync_item.pool_idx(), elect_height, prev_elect_block.elect_height(), min_height);
+        elect_height = prev_elect_block.elect_height();
     }
 
     for (auto iter = valid_elect_heights.begin(); iter != valid_elect_heights.end(); ++iter) {
