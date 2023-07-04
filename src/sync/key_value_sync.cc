@@ -490,7 +490,8 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                             msg_ptr->thread_idx,
                             network::kRootCongressNetworkId,
                             block_item->network_id(),
-                            block_item->electblock_height());
+                            block_item->electblock_height(),
+                            kSyncHigh);
                     }
                 }
             }
