@@ -93,21 +93,32 @@ void TxPoolManager::InitCrossPools() {
 void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (max_cross_pools_size_ == 1) {
-        cross_pools_[0].SyncMissingBlocks(thread_idx, now_tm_ms);
-        if (cross_pools_[0].latest_height() == common::kInvalidUint64 ||
-                cross_pools_[0].latest_height() < cross_synced_max_heights_[0]) {
+        auto sync_count = cross_pools_[0].SyncMissingBlocks(thread_idx, now_tm_ms);
+        uint64_t ex_height = common::kInvalidUint64;
+        if (cross_pools_[0].latest_height() == common::kInvalidUint64) {
+            ex_height = 1;
+        } else {
+            if (cross_pools_[0].latest_height() < cross_synced_max_heights_[0]) {
+                ex_height = cross_pools_[0].latest_height() + 1;
+            }
+        }
+
+        if (ex_height != common::kInvalidUint64) {
             kv_sync_->AddSyncHeight(
                 thread_idx,
                 network::kRootCongressNetworkId,
                 common::kRootChainPoolIndex,
-                cross_synced_max_heights_[0],
+                ex_height,
                 sync::kSyncHigh);
         }
 
-        ZJC_DEBUG("cross success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+        ZJC_DEBUG("cross success sync mising heights pool: %u, height: %lu, "
+            "max height: %lu, des max height: %lu, sync_count: %d",
             0,
-            0, cross_pools_[0].latest_height(),
-            cross_synced_max_heights_[0]);
+            0,
+            cross_pools_[0].latest_height(),
+            ex_height,
+            sync_count);
         return;
     }
 
