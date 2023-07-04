@@ -374,7 +374,7 @@ void KeyValueSync::ResponseElectBlock(
         uint32_t network_id,
         const sync::protobuf::SyncHeightItem& sync_item,
         transport::protobuf::Header& msg,
-        sync::protobuf::SyncValueResponse* res,
+        sync::protobuf::SyncValueResponse* sync_res,
         uint32_t& add_size) {
     if (network_id >= network::kConsensusShardEndNetworkId ||
             network_id < network::kRootCongressNetworkId) {
@@ -382,7 +382,7 @@ void KeyValueSync::ResponseElectBlock(
     }
 
     auto& shard_set = shard_with_elect_height_[network_id];
-    auto iter = shard_set->rbegin();
+    auto iter = shard_set.rbegin();
     std::vector<uint64_t> valid_elect_heights;
     if (iter != shard_set.rend()) {
         uint64_t i = elect_net_heights_map_[network_id];
