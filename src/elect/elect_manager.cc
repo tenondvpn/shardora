@@ -249,7 +249,7 @@ bool ElectManager::ProcessPrevElectMembers(
         if (block_item.tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
             std::string val;
             if (!prefix_db_->GetTemporaryKv(block_item.tx_list(0).storages(i).val_hash(), &val)) {
-                ZJC_FATAL("elect block get temp kv from db failed!");
+                ZJC_ERROR("elect block get temp kv from db failed!");
                 return false;
             }
 
