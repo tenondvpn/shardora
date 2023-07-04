@@ -564,31 +564,43 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
 
         auto& cross_heights = msg_ptr->header.sync_heights().cross_heights();
         for (int32_t i = 0; i < cross_heights.size(); ++i) {
+            if (max_cross_pools_size_ == 1) {
+                if (cross_heights.size() != 1) {
+                    assert(false);
+                    break;
+                }
+            } else {
+                if (cross_heights.size() != network::kConsensusWaitingShardOffset) {
+                    assert(false);
+                    break;
+                }
+            }
+
             cross_debug += std::to_string(cross_heights[i]) + " ";
             if (cross_heights[i] != common::kInvalidUint64) {
                 uint64_t update_height = common::kInvalidUint64;
                 do {
-                    if (tx_pool_[i].latest_height() == common::kInvalidUint64 &&
+                    if (cross_pools_[i].latest_height() == common::kInvalidUint64 &&
                             cross_synced_max_heights_[i] < cross_heights[i]) {
                         update_height = cross_heights[i];
                         break;
                     }
 
-                    if (cross_heights[i] > tx_pool_[i].latest_height() + 64) {
-                        update_height = tx_pool_[i].latest_height() + 64;
+                    if (cross_heights[i] > cross_pools_[i].latest_height() + 64) {
+                        update_height = cross_pools_[i].latest_height() + 64;
                         break;
                     }
 
-                    if (cross_heights[i] > tx_pool_[i].latest_height()) {
+                    if (cross_heights[i] > cross_pools_[i].latest_height()) {
                         update_height = cross_heights[i];
                         break;
                     }
                 } while (0);
                 
                 ZJC_DEBUG("get response pool heights: %s, cross pool heights: %s, update_height: %lu, "
-                    "cross_synced_max_heights_[i]: %lu, tx_pool_[i].latest_height(): %lu, cross_heights[i]: %lu",
+                    "cross_synced_max_heights_[i]: %lu, cross_pools_[i].latest_height(): %lu, cross_heights[i]: %lu",
                     sync_debug.c_str(), cross_debug.c_str(), update_height,
-                    cross_synced_max_heights_[i], tx_pool_[i].latest_height(),
+                    cross_synced_max_heights_[i], cross_pools_[i].latest_height(),
                     cross_heights[i]);
                 if (update_height != common::kInvalidUint64) {
                     cross_synced_max_heights_[i] = cross_heights[i];
