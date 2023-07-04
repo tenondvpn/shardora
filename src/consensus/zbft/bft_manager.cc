@@ -1651,7 +1651,7 @@ int BftManager::LeaderPrepare(
     new_bft_msg->set_member_index(elect_item.local_node_member_index);
     new_bft_msg->set_elect_height(elect_item.elect_height);
     assert(elect_item.elect_height > 0);
-    bft_ptr->init_prepare_timeout();
+    bft_ptr->reset_timeout();
     bft_ptr->set_consensus_status(kConsensusPrepare);
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
@@ -2278,7 +2278,7 @@ int BftManager::LeaderCallPrecommit(
         }
     }
 
-    bft_ptr->init_precommit_timeout();
+    bft_ptr->reset_timeout();
 //     bft_ptr->set_consensus_status(kConsensusCommit);
     bft_vec[1] = bft_ptr;
     ZJC_DEBUG("LeaderCallPrecommit success gid: %s",
