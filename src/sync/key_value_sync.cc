@@ -417,7 +417,11 @@ void KeyValueSync::ResponseElectBlock(
                     return;
                 }
 
-                prev_elect_block.ParseFromString(val);
+                if (!prev_elect_block.ParseFromString(val)) {
+                    assert(false);
+                    return;
+                }
+
                 ec_block_loaded = true;
                 break;
             }
@@ -430,8 +434,13 @@ void KeyValueSync::ResponseElectBlock(
 
         valid_elect_heights.push_back(elect_height);
         ZJC_DEBUG("success get network_id: %u, pool: %u, elect height: %lu, prev: %lu, min_height: %lu",
-            network::kRootCongressNetworkId, sync_item.pool_idx(), elect_height, prev_elect_block.elect_height(), min_height);
-        elect_height = prev_elect_block.elect_height();
+            network::kRootCongressNetworkId, sync_item.pool_idx(), elect_height,
+            prev_elect_block.prev_members().prev_elect_height(), min_height);
+        if (elect_height == prev_elect_block.prev_members().prev_elect_height()) {
+            assert(false);
+            return;
+        }
+        elect_height = prev_elect_block.prev_members().prev_elect_height();
     }
 
     for (auto iter = valid_elect_heights.begin(); iter != valid_elect_heights.end(); ++iter) {
