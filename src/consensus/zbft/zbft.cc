@@ -58,6 +58,7 @@ int Zbft::ChangeLeader(
     }
 
     pool_index_mod_num_ = leader_mem_ptr_->pool_index_mod_num;
+    assert(pool_index_mod_num_ >= 0);
     leader_index_ = leader_idx;
     members_ptr_ = members_ptr;
     common_pk_ = common_pk;

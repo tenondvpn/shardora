@@ -2755,7 +2755,10 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
                 }
             }
         } else {
-            assert(false);
+            ZJC_DEBUG("pool mod invalid: %u, leader size: %u", iter->second->pool_mod_num(), elect_item_ptr->leader_count);
+            if (iter->second->pool_mod_num() < 0) {
+                assert(false);
+            }
         }
 
         if (!iter->second->timeout(now_timestamp_us)) {
