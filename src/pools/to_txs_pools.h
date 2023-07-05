@@ -62,7 +62,7 @@ private:
         uint64_t amount,
         uint32_t sharding_id,
         int32_t pool_index,
-        const std::string& key = "");
+        const std::string& key);
     void HandleElectJoinVerifyVec(
         const std::string& verify_hash,
         std::vector<bls::protobuf::JoinElectInfo>& verify_reqs);

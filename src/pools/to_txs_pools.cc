@@ -165,7 +165,8 @@ void ToTxsPools::HandleContractExecute(
             pools::protobuf::kNormalFrom,
             tx.contract_txs(i).amount(),
             sharding_id,
-            pool_index);
+            pool_index,
+            "");
     }
 }
 
@@ -191,7 +192,8 @@ void ToTxsPools::HandleContractGasPrepayment(
             pools::protobuf::kContractGasPrepayment,
             tx.contract_prepayment(),
             sharding_id,
-            pool_index);
+            pool_index,
+            "");
     }
 }
 
@@ -210,7 +212,7 @@ void ToTxsPools::HandleNormalFrom(
         sharding_id = addr_info->sharding_id();
     }
 
-    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index);
+    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "");
 }
 
 void ToTxsPools::HandleCreateContractUserCall(
@@ -218,7 +220,7 @@ void ToTxsPools::HandleCreateContractUserCall(
         const block::protobuf::BlockTx& tx) {
     uint32_t sharding_id = network::kRootCongressNetworkId;
     uint32_t pool_index = block.pool_index();
-    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index);
+    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "");
     for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = -1;
@@ -233,7 +235,8 @@ void ToTxsPools::HandleCreateContractUserCall(
             pools::protobuf::kNormalFrom,
             tx.contract_txs(i).amount(),
             sharding_id,
-            pool_index);
+            pool_index,
+            "");
     }
 }
 
@@ -261,7 +264,7 @@ void ToTxsPools::HandleRootCreateAddress(
     }
 
     ZJC_DEBUG("success add root create address: sharding: %u, pool: %u", sharding_id, pool_index);
-    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index);
+    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "");
 }
 
 void ToTxsPools::AddTxToMap(

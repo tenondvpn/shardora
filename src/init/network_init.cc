@@ -305,7 +305,10 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
     auto& pools = msg_ptr->header.init_proto().pools();
     if (pools.elect_height() != rotation->elect_height ||
             pools.member_index() >= rotation->members->size()) {
-        assert(false);
+        ZJC_WARN("elect height error pools.elect_height(): %lu, rotation->elect_height: %lu, "
+            "pools.member_index(): %u, rotation->members->size(): %u",
+            pools.elect_height(), rotation->elect_height,
+            pools.member_index(), rotation->members->size());
         return;
     }
 
