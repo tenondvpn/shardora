@@ -2754,6 +2754,8 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
                     continue;
                 }
             }
+        } else {
+            assert(false);
         }
 
         if (!iter->second->timeout(now_timestamp_us)) {
