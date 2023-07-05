@@ -269,8 +269,8 @@ void ToTxsPools::AddTxToMap(
         const std::string& in_to,
         pools::protobuf::StepType type,
         uint64_t amount,
-        int32_t pool_index,
         uint32_t sharding_id,
+        int32_t pool_index,
         const std::string& key) {
     std::string to(in_to.size() + 4, '\0');
     char* tmp_to_data = to.data();
@@ -618,7 +618,8 @@ int ToTxsPools::CreateToTxWithHeights(
                 }
 
                 if (des_sharding_id != sharding_id) {
-                    ZJC_DEBUG("find pool index: %u height: %lu sharding: %u, %u failed!", pool_idx, height, des_sharding_id, sharding_id);
+                    ZJC_DEBUG("find pool index: %u height: %lu sharding: %u, %u failed id: %s, amount: %lu",
+                        pool_idx, height, des_sharding_id, sharding_id, common::Encode::HexEncode(to_iter->first).c_str(), to_iter->second.amount);
                     continue;
                 }
 
@@ -649,6 +650,7 @@ int ToTxsPools::CreateToTxWithHeights(
 
     if (acc_amount_map.empty()) {
 //         assert(false);
+        ZJC_DEBUG("acc amount map empty.");
         return kPoolsError;
     }
 
