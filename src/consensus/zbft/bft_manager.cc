@@ -1227,6 +1227,7 @@ bool BftManager::VerifyLeaderIdValid(const ElectItem& elect_item, const transpor
 
     auto mod_num = msg_ptr->header.zbft().pool_index() % elect_item.leader_count;
     if (elect_item.mod_with_leader_index[mod_num] != msg_ptr->header.zbft().member_index()) {
+        assert(false);
         return false;
     }
 
@@ -1236,7 +1237,7 @@ bool BftManager::VerifyLeaderIdValid(const ElectItem& elect_item, const transpor
             msg_hash,
             mem_ptr->pubkey,
             msg_ptr->header.sign()) != security::kSecuritySuccess) {
-//         assert(false);
+        assert(false);
         return false;
     }
 
