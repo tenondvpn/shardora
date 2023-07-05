@@ -346,6 +346,10 @@ ZbftPtr BftManager::Start(
         if (item_ptr != nullptr) {
             elect_item_ptr = item_ptr;
         }
+
+        if (elect_item_ptr->time_valid > now_tm_ms) {
+            return nullptr;
+        }
     }
 
     if (prev_bft != nullptr && prev_bft->elect_height() != elect_item_ptr->elect_height) {
@@ -581,18 +585,34 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (elect_item_ptr->elect_height != header.zbft().elect_height()) {
         auto old_elect_item = elect_items_[(elect_item_idx_ + 1) % 2];
         if (old_elect_item->elect_height != header.zbft().elect_height()) {
-            ZJC_DEBUG("elect height error: %lu, %lu, %lu",
+            ZJC_DEBUG("elect height error: %lu, %lu, %lu, "
+                "prepare gid: %s, precommit gid: %s, commit gid: %s thread idx: %d, "
+                "has sync: %d, txhash: %lu,",
                 header.zbft().elect_height(),
                 elect_item_ptr->elect_height,
-                elect_item_ptr->elect_height);
+                old_elect_item->elect_height,
+                common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+                common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
+                common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+                msg_ptr->thread_idx,
+                header.zbft().has_sync_block(),
+                header.hash64());
             return;
         }
 
         if (elect_item_ptr->change_leader_time_valid < now_ms) {
-            ZJC_DEBUG("must change new elect, elect height error: %lu, %lu, %lu",
+            ZJC_DEBUG("must change new elect, elect height error: %lu, %lu, %lu, "
+                "prepare gid: %s, precommit gid: %s, commit gid: %s thread idx: %d, "
+                "has sync: %d, txhash: %lu,",
                 header.zbft().elect_height(),
                 elect_item_ptr->elect_height,
-                old_elect_item->elect_height);
+                old_elect_item->elect_height,
+                common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+                common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
+                common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+                msg_ptr->thread_idx,
+                header.zbft().has_sync_block(),
+                header.hash64());
             return;
         }
 
