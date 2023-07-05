@@ -311,7 +311,6 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
     }
 
     if (rotation->rotation_used[pools.leader_idx()]) {
-        assert(false);
         return;
     }
 
