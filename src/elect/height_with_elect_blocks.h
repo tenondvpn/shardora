@@ -114,8 +114,7 @@ public:
         ZJC_DEBUG("get bls pk and secret key success.height: %lu, network_id: %u",
             height, network_id);
         if (network_id >= network::kConsensusShardEndNetworkId) {
-            assert(false);
-            return nullptr;
+            network_id -= network::kConsensusWaitingShardOffset;
         }
 
         for (int32_t i = 0; i < 3; ++i) {
