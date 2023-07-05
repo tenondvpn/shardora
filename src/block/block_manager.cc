@@ -238,7 +238,7 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.has_block()) {
         auto& header = msg_ptr->header;
         auto block_ptr = std::make_shared<block::protobuf::Block>(header.block());
-        if (block_agg_valid_func_(*block_ptr)) {
+        if (block_agg_valid_func_(msg_ptr->thread_idx, *block_ptr)) {
             // just one thread
             block_from_network_queue_.push(block_ptr);
             ZJC_DEBUG("queue size add new block message hash: %lu, block_from_network_queue_ size: %d", msg_ptr->header.hash64(), block_from_network_queue_.size());
