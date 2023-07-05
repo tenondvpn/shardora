@@ -57,6 +57,7 @@ int Zbft::ChangeLeader(
         return kConsensusError;
     }
 
+    pool_index_mod_num_ = leader_mem_ptr_->pool_index_mod_num;
     leader_index_ = leader_idx;
     members_ptr_ = members_ptr;
     common_pk_ = common_pk;
@@ -123,6 +124,7 @@ int Zbft::Init(
         return kConsensusError;
     }
 
+    pool_index_mod_num_ = leader_mem_ptr_->pool_index_mod_num;
     leader_index_ = leader_idx;
     members_ptr_ = members_ptr;
     common_pk_ = common_pk;

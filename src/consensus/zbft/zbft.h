@@ -472,12 +472,7 @@ public:
     }
 
     int32_t pool_mod_num() const {
-        if (leader_mem_ptr_ == nullptr) {
-            assert(false);
-            return -1;
-        }
-
-        return leader_mem_ptr_->pool_index_mod_num;
+        return pool_index_mod_num_;
     }
 
 protected:
@@ -538,6 +533,7 @@ protected:
     std::string leader_pre_hash_;
     zjcvm::ZjchainHost zjc_host;
     bool should_timer_to_restart_ = false;
+    int32_t pool_index_mod_num_ = -1;
 
     DISALLOW_COPY_AND_ASSIGN(Zbft);
 public:
