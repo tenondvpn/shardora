@@ -1320,7 +1320,7 @@ bool NetworkInit::BlockBlsAggSignatureValid(uint8_t thread_idx, const block::pro
            network::kRootCongressNetworkId,
            block.network_id() % common::kImmutablePoolSize,
            block.electblock_height(),
-           kSyncHigh);
+           sync::kSyncHigh);
         return false;
     }
 
