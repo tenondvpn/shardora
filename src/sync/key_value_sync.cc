@@ -37,10 +37,8 @@ void KeyValueSync::AddSync(
 }
 
 void KeyValueSync::Init(
-        block::BlockAggValidCallback block_agg_valid_func,
         const std::shared_ptr<block::BlockManager>& block_mgr,
         const std::shared_ptr<db::Db>& db) {
-    block_agg_valid_func_ = block_agg_valid_func;
     block_mgr_ = block_mgr;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db);
@@ -532,12 +530,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                         block_item->network_id() + network::kConsensusWaitingShardOffset !=
                         common::GlobalInfo::Instance()->network_id()) {
                     if (block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item) == block::kBlockVerifyAggSignFailed) {
-                        AddSyncElectBlock(
-                            msg_ptr->thread_idx,
-                            network::kRootCongressNetworkId,
-                            block_item->network_id() % common::kImmutablePoolSize,
-                            block_item->electblock_height(),
-                            kSyncHigh);
+                        // 
                     }
                 }
             }

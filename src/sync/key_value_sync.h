@@ -92,7 +92,6 @@ public:
         uint64_t height,
         uint32_t priority);
     void Init(
-        block::BlockAggValidCallback block_agg_valid_func,
         const std::shared_ptr<block::BlockManager>& block_mgr,
         const std::shared_ptr<db::Db>& db);
     void HandleMessage(const transport::MessagePtr& msg);
@@ -143,7 +142,6 @@ private:
     uint64_t prev_sync_tm_us_ = 0;
     uint64_t prev_sync_tmout_us_ = 0;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
-    block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
     common::Tick tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> kv_msg_queue_;
     std::set<uint64_t> shard_with_elect_height_[network::kConsensusShardEndNetworkId];

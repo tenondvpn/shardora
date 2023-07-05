@@ -133,7 +133,6 @@ int NetworkInit::Init(int argc, char** argv) {
         vss_mgr_, block_mgr_, security_, bls_mgr_, db_,
         nullptr);
     kv_sync_->Init(
-        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1),
         block_mgr_,
         db_);
     pools_mgr_ = std::make_shared<pools::TxPoolManager>(
@@ -159,11 +158,11 @@ int NetworkInit::Init(int argc, char** argv) {
         security_,
         security_->GetAddress(),
         new_db_cb,
-        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1));
+        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1, std::placeholders::_2));
     tm_block_mgr_ = std::make_shared<timeblock::TimeBlockManager>();
     bft_mgr_ = std::make_shared<consensus::BftManager>();
     auto bft_init_res = bft_mgr_->Init(
-        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1),
+        std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1, std::placeholders::_2),
         contract_mgr_,
         gas_prepayment_,
         vss_mgr_,
@@ -1298,7 +1297,7 @@ void NetworkInit::HandleElectionBlock(
     }
 }
 
-bool NetworkInit::BlockBlsAggSignatureValid(const block::protobuf::Block& block) try {
+bool NetworkInit::BlockBlsAggSignatureValid(uint8_t thread_idx, const block::protobuf::Block& block) try {
     auto block_hash = consensus::GetBlockHash(block);
     if (block_hash != block.hash()) {
         assert(false);
@@ -1316,7 +1315,12 @@ bool NetworkInit::BlockBlsAggSignatureValid(const block::protobuf::Block& block)
             block.network_id(),
             block.electblock_height(),
             (common_pk == libff::alt_bn128_G2::zero()));
-//         assert(false);
+       kv_sync_->AddSyncElectBlock(
+           thread_idx,
+           network::kRootCongressNetworkId,
+           block.network_id() % common::kImmutablePoolSize,
+           block.electblock_height(),
+           kSyncHigh);
         return false;
     }
 

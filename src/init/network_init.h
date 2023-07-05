@@ -73,7 +73,7 @@ private:
     void GetAddressShardingId(uint8_t thread_idx);
     void RotationLeaderCallback(uint8_t thread_idx, const std::vector<int32_t>& invalid_pools);
     void CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req);
-    bool BlockBlsAggSignatureValid(const block::protobuf::Block& block);
+    bool BlockBlsAggSignatureValid(uint8_t thread_idx, const block::protobuf::Block& block);
     void BroadcastInvalidPools(
         uint8_t thread_idx,
         std::shared_ptr<LeaderRotationInfo> leader_rotation,

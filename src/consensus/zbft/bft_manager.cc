@@ -716,7 +716,7 @@ void BftManager::HandleSyncConsensusBlock(
             }
 
             // check bls sign
-            if (!block_agg_valid_func_(req_bft_msg.block())) {
+            if (!block_agg_valid_func_(msg_ptr->thread_idx, req_bft_msg.block())) {
                 ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
                     req_bft_msg.block().network_id(),
                     req_bft_msg.block().pool_index(),
@@ -754,7 +754,7 @@ void BftManager::HandleSyncConsensusBlock(
                     bft_ptr->consensus_status());
                 if (block_hash == bft_ptr->local_prepare_hash()) {
                     // check bls sign
-                    if (!block_agg_valid_func_(req_bft_msg.block())) {
+                    if (!block_agg_valid_func_(msg_ptr->thread_idx, req_bft_msg.block())) {
                         ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
                             req_bft_msg.block().network_id(),
                             req_bft_msg.block().pool_index(),
