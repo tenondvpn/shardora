@@ -440,6 +440,7 @@ void KeyValueSync::ResponseElectBlock(
             assert(false);
             return;
         }
+
         elect_height = prev_elect_block.prev_members().prev_elect_height();
     }
 
