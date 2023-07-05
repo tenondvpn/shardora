@@ -407,7 +407,9 @@ void KeyValueSync::ResponseElectBlock(
 
         elect::protobuf::ElectBlock prev_elect_block;
         bool ec_block_loaded = false;
+        assert(block.tx_list_size() == 1);
         for (int32_t i = 0; i < block.tx_list(0).storages_size(); ++i) {
+            ZJC_DEBUG("get tx storage key: %s, tx size: %d", block.tx_list(0).storages(i).key().c_str(), block.tx_list_size());
             if (block.tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
                 std::string val;
                 if (!prefix_db_->GetTemporaryKv(block.tx_list(0).storages(i).val_hash(), &val)) {
