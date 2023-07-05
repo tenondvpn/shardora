@@ -20,7 +20,11 @@ GlobalInfo* GlobalInfo::Instance() {
 
 GlobalInfo::GlobalInfo() {}
 
-GlobalInfo::~GlobalInfo() {}
+GlobalInfo::~GlobalInfo() {
+    if (thread_with_pools_ != nullptr) {
+        delete[] thread_with_pools_;
+    }
+}
 
 int GlobalInfo::Init(const common::Config& config) {
     message_handler_thread_count_ = 4;
@@ -62,6 +66,14 @@ int GlobalInfo::Init(const common::Config& config) {
     config.Get("zjchain", "ip_db_path", ip_db_path_);
     config.Get("zjchain", "missing_node", missing_node_);
     config.Get("zjchain", "ck_port", ck_port_);
+
+    auto bft_thread = message_handler_thread_count_ - 1;
+    thread_with_pools_ = new std::set<uint32_t>[bft_thread];
+    auto each_thread_pools_count = common::kInvalidPoolIndex / bft_thread;
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        thread_with_pools_[i % each_thread_pools_count].insert(i);
+        pools_with_thread_[i] = i % each_thread_pools_count;
+    }
 
     return kCommonSuccess;
 }

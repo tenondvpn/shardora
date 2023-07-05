@@ -134,6 +134,14 @@ public:
         return ck_port_;
     }
 
+    const std::set<uint32_t>* thread_with_pools() const {
+        return thread_with_pools_;
+    }
+
+    const uint32_t* pools_with_thread() const {
+        return pools_with_thread_;
+    }
+
 private:
     GlobalInfo();
     ~GlobalInfo();
@@ -165,6 +173,8 @@ private:
     uint32_t each_shard_max_members_ = 1024u;
     uint32_t sharding_min_nodes_count_ = 2u;
     int32_t join_root_ = common::kRandom;
+    std::set<uint32_t>* thread_with_pools_ = nullptr;
+    uint32_t pools_with_thread_[common::kInvalidPoolIndex] = { 0 };
 
     DISALLOW_COPY_AND_ASSIGN(GlobalInfo);
 };

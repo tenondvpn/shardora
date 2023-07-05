@@ -249,11 +249,12 @@ void BftManager::SetThreadItem(
 
     for (uint8_t j = 0; j < thread_count_; ++j) {
         auto thread_item = std::make_shared<PoolTxIndexItem>();
+        auto& pools_set = common::GlobalInfo::Instance()->thread_with_pools()[j];
         std::string thread_debug_str;
-        for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-            if (i % thread_count_ == j && leader_pool_set.find(i) != leader_pool_set.end()) {
-                thread_item->pools.push_back(i);
-                thread_debug_str += std::to_string(i) + " ";
+        for (auto iter = pools_set.begin(); iter != pools_set.end(); ++iter) {
+            if (*iter % thread_count_ == j && leader_pool_set.find(*iter) != leader_pool_set.end()) {
+                thread_item->pools.push_back(*iter);
+                thread_debug_str += std::to_string(*iter) + " ";
             }
         }
 
