@@ -1561,6 +1561,8 @@ void BftManager::ReConsensusBft(uint8_t thread_idx, ZbftPtr& bft_ptr) {
         return;
     }
 
+    bft_ptr->RechallengePrecommitClear();
+    bft_ptr->reset_timeout();
     if (bft_ptr->LeaderCommitOk(
             elect_item.local_node_member_index,
             sign,
@@ -1569,8 +1571,6 @@ void BftManager::ReConsensusBft(uint8_t thread_idx, ZbftPtr& bft_ptr) {
         return;
     }
 
-    bft_ptr->RechallengePrecommitClear();
-    bft_ptr->reset_timeout();
     ZJC_DEBUG("LeaderCallPrecommit success gid: %s",
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
     zbft_vec[0] = nullptr;
