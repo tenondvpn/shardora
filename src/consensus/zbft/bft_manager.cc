@@ -930,7 +930,11 @@ void BftManager::ClearBft(const transport::MessagePtr& msg_ptr) {
     auto& zbft = *msg_ptr->response->header.mutable_zbft();
     auto& from_zbft = msg_ptr->header.zbft();
     if (zbft.has_agree_commit() && !zbft.agree_commit()) {
-        ZJC_DEBUG("not agree commit: %u, %s", zbft.pool_index(), common::Encode::HexEncode(zbft.gid()).c_str());
+        ZJC_WARN("not agree commit: %u, prepare gid; %s, precommit gid: %s. commit gid: %s",
+            zbft.pool_index(),
+            common::Encode::HexEncode(zbft.prepare_gid()).c_str(),
+            common::Encode::HexEncode(zbft.precommit_gid()).c_str(),
+            common::Encode::HexEncode(zbft.commit_gid()).c_str());
         assert(false);
     }
     
