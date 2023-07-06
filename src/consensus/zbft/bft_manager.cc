@@ -345,10 +345,11 @@ ZbftPtr BftManager::Start(
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (elect_item_ptr->time_valid > now_tm_ms) {
         auto item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
-        if (item_ptr != nullptr) {
-            elect_item_ptr = item_ptr;
+        if (item_ptr == nullptr) {
+            return nullptr;
         }
 
+        elect_item_ptr = item_ptr;
         if (elect_item_ptr->time_valid > now_tm_ms) {
             return nullptr;
         }
