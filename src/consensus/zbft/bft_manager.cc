@@ -276,7 +276,7 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 
 void BftManager::PopAllPoolTxs(uint8_t thread_index) {
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
-        if (pool_idx % thread_count_ == thread_index) {
+        if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
             pools_mgr_->PopTxs(pool_idx);
             pools_mgr_->CheckTimeoutTx(pool_idx);
         }
