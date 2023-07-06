@@ -954,16 +954,20 @@ void BftManager::ClearBft(const transport::MessagePtr& msg_ptr) {
     
     if (zbft.has_agree_precommit() && !zbft.agree_precommit()) {
         zbft.release_tx_bft();
+        ZJC_WARN("not agree precommit: %u, prepare gid; %s, precommit gid: %s. commit gid: %s",
+            zbft.pool_index(),
+            common::Encode::HexEncode(zbft.prepare_gid()).c_str(),
+            common::Encode::HexEncode(zbft.precommit_gid()).c_str(),
+            common::Encode::HexEncode(zbft.commit_gid()).c_str());
         auto prepare_bft = GetBft(from_zbft.pool_index(), from_zbft.prepare_gid());
         if (prepare_bft != nullptr) {
             RemoveBft(prepare_bft->pool_index(), prepare_bft->gid());
         }
-
-        auto precommit_bft = prepare_bft->pipeline_prev_zbft_ptr();
-        if (precommit_bft != nullptr) {
-            assert(false);
-            RemoveBft(precommit_bft->pool_index(), precommit_bft->gid());
-        }
+//         auto precommit_bft = prepare_bft->pipeline_prev_zbft_ptr();
+//         if (precommit_bft != nullptr) {
+//             assert(false);
+//             RemoveBft(precommit_bft->pool_index(), precommit_bft->gid());
+//         }
     }
 }
 
