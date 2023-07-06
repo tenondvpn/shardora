@@ -64,8 +64,8 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
         if (message.has_broadcast()) {
             assert(message.broadcast().bloomfilter_size() < 64);
 //             broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
-            broadcast_queue_[msg_ptr->thread_idx].push(msg_ptr);
             ZJC_DEBUG("queue size thread: %d, broadcast_queue_: %d", msg_ptr->thread_idx, broadcast_queue_[msg_ptr->thread_idx].size());
+            broadcast_queue_[msg_ptr->thread_idx].push(msg_ptr);
             broadcast_con_.notify_one();
         } else {
             dht_ptr->SendToClosestNode(msg_ptr);

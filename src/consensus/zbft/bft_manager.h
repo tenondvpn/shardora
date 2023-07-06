@@ -182,7 +182,7 @@ private:
         uint32_t leader_count,
         int32_t local_node_pool_mod_num,
         std::shared_ptr<PoolTxIndexItem>* thread_set);
-    void ReConsensusBft(uint8_t thread_idx, ZbftPtr& zbft_ptr);
+    void ReConsensusBft(ZbftPtr& zbft_ptr);
     int ChangePrecommitBftLeader(
         ZbftPtr& bft_ptr,
         uint32_t leader_idx,
