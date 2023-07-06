@@ -395,7 +395,7 @@ ZbftPtr BftManager::Start(
             thread_item->prev_index = ++thread_item->prev_index % thread_item->pools.size();
         }
     } else {
-        txs_ptr = txs_pools_->LeaderGetValidTxs(prev_bft->pool_index();
+        txs_ptr = txs_pools_->LeaderGetValidTxs(prev_bft->pool_index());
     }
 
     if (txs_ptr == nullptr) {
