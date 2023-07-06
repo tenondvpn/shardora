@@ -913,7 +913,7 @@ void BftManager::RemoveWaitingBlock(uint32_t pool_index, const std::string& preh
             block_ptr->precommit_bitmap_size());
         // remove bft
         RemoveBftWithBlockHash(thread_idx, block_ptr->hash());
-        RemoveWaitingBlock(block_ptr->prehash());
+        RemoveWaitingBlock(pool_index, block_ptr->prehash());
     }
 }
 
