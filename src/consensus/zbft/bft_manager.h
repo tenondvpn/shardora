@@ -81,14 +81,14 @@ public:
         uint32_t new_leader_idx);
     BftManager();
     virtual ~BftManager();
-    int AddBft(ZbftPtr& bft_ptr);
-    ZbftPtr GetBft(uint8_t thread_index, const std::string& gid, bool leader);
     void RotationLeader(
         int32_t leader_mod_num,
         uint64_t elect_height,
         uint32_t new_leader_idx);
 
 private:
+    int AddBft(ZbftPtr& bft_ptr);
+    ZbftPtr GetBft(uint32_t pool_index, const std::string& gid);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
     ZbftPtr Start(
@@ -100,8 +100,8 @@ private:
         std::shared_ptr<WaitingTxsItem>& txs_ptr,
         ZbftPtr& prev_bft,
         const transport::MessagePtr& prepare_msg_ptr);
-    void RemoveBft(uint8_t thread_idx, const std::string& gid, bool is_leader);
-    void RemoveBftWithBlockHash(uint8_t thread_idx, const std::string& hash);
+    void RemoveBft(uint32_t pool_index, const std::string& gid);
+    void RemoveBftWithBlockHash(uint32_t pool_index, const std::string& hash);
     int LeaderPrepare(
         const ElectItem& elect_item,
         ZbftPtr& bft_ptr,
@@ -311,6 +311,7 @@ private:
     uint32_t max_consensus_sharding_id_ = 3;
     uint64_t first_timeblock_timestamp_ = 0;
     block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
+    std::deque<ZbftPtr> pools_with_zbfts_[common::kInvalidPoolIndex];
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {
