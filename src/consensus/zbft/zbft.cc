@@ -700,7 +700,6 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
         return false;
     }
 
-
     if (prepare_block_->is_cross_block()) {
         if (sign_commit_hash != commit_bls_agg_verify_hash_) {
             ZJC_ERROR("backup verify leader precommit agg sign failed! signx: %s, %s: %s, %s",
