@@ -566,74 +566,92 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     auto now_ms = common::TimeUtils::TimestampMs();
     auto elect_item_ptr = elect_items_[elect_item_idx_];
-    if (elect_item_ptr->elect_height != header.zbft().elect_height()) {
-        auto old_elect_item = elect_items_[(elect_item_idx_ + 1) % 2];
-        if (old_elect_item->elect_height != header.zbft().elect_height()) {
-            ZJC_DEBUG("elect height error: %lu, %lu, %lu, "
-                "prepare gid: %s, precommit gid: %s, commit gid: %s thread idx: %d, "
-                "has sync: %d, txhash: %lu,",
-                header.zbft().elect_height(),
-                elect_item_ptr->elect_height,
-                old_elect_item->elect_height,
-                common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
-                common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
-                common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
-                msg_ptr->thread_idx,
-                header.zbft().has_sync_block(),
-                header.hash64());
-            return;
+    assert(common::GlobalInfo::Instance()->pools_with_thread()[header.zbft().pool_index()] == msg_ptr->thread_idx);
+    do
+    {
+        if (elect_item_ptr->elect_height != header.zbft().elect_height()) {
+            auto old_elect_item = elect_items_[(elect_item_idx_ + 1) % 2];
+            if (old_elect_item->elect_height != header.zbft().elect_height()) {
+                ZJC_DEBUG("elect height error: %lu, %lu, %lu, "
+                    "prepare gid: %s, precommit gid: %s, commit gid: %s thread idx: %d, "
+                    "has sync: %d, txhash: %lu,",
+                    header.zbft().elect_height(),
+                    elect_item_ptr->elect_height,
+                    old_elect_item->elect_height,
+                    common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+                    common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
+                    common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+                    msg_ptr->thread_idx,
+                    header.zbft().has_sync_block(),
+                    header.hash64());
+                elect_item_ptr = nullptr;
+                break;
+            }
+
+            if (elect_item_ptr->change_leader_time_valid < now_ms) {
+                ZJC_DEBUG("must change new elect, elect height error: %lu, %lu, %lu, "
+                    "prepare gid: %s, precommit gid: %s, commit gid: %s thread idx: %d, "
+                    "has sync: %d, txhash: %lu,",
+                    header.zbft().elect_height(),
+                    elect_item_ptr->elect_height,
+                    old_elect_item->elect_height,
+                    common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+                    common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
+                    common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+                    msg_ptr->thread_idx,
+                    header.zbft().has_sync_block(),
+                    header.hash64());
+                elect_item_ptr = nullptr;
+                break;
+            }
+
+            elect_item_ptr = old_elect_item;
         }
 
-        if (elect_item_ptr->change_leader_time_valid < now_ms) {
-            ZJC_DEBUG("must change new elect, elect height error: %lu, %lu, %lu, "
-                "prepare gid: %s, precommit gid: %s, commit gid: %s thread idx: %d, "
-                "has sync: %d, txhash: %lu,",
-                header.zbft().elect_height(),
-                elect_item_ptr->elect_height,
-                old_elect_item->elect_height,
-                common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
-                common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
-                common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
-                msg_ptr->thread_idx,
-                header.zbft().has_sync_block(),
-                header.hash64());
-            return;
+        ZJC_DEBUG("consensus message coming pool index: %u, prepare gid: %s, precommit gid: %s, "
+            "commit gid: %s thread idx: %d, has sync: %d, txhash: %lu, "
+            "member index: %d, other member index: %d, pool index: %d, "
+            "elect height: %lu, local elect height: %lu",
+            header.zbft().pool_index(),
+            common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+            common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
+            common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+            msg_ptr->thread_idx,
+            header.zbft().has_sync_block(),
+            header.hash64(),
+            elect_item_ptr->local_node_member_index,
+            header.zbft().member_index(),
+            header.zbft().pool_index(),
+            header.zbft().elect_height(),
+            elect_item_ptr->elect_height);
+        if (elect_item_ptr->local_node_member_index == header.zbft().member_index()) {
+            //assert(false);
+            elect_item_ptr = nullptr;
+            break;
         }
 
-        elect_item_ptr = old_elect_item;
+        if (header.zbft().has_sync_block() && header.zbft().sync_block()) {
+            return HandleSyncConsensusBlock(*elect_item_ptr, msg_ptr);
+        }
+    
+        if (!elect_item_ptr->bls_valid) {
+            elect_item_ptr = nullptr;
+            break;
+        }
+    } while (0);
+
+    if (elect_item_ptr == nullptr) {
+        if (header.zbft().leader_idx() >= 0 && !header.zbft().prepare_gid().empty()) {
+            // timer to re-handle the message
+            if (msg_ptr->timeout > now_ms * 1000lu) {
+                backup_prapare_msg_queue_[msg_ptr->thread_idx].insert(msg_ptr);
+            }
+        }
+
+        return;
     }
 
     auto& elect_item = *elect_item_ptr;
-    assert(common::GlobalInfo::Instance()->pools_with_thread()[header.zbft().pool_index()] == msg_ptr->thread_idx);
-    ZJC_DEBUG("consensus message coming pool index: %u, prepare gid: %s, precommit gid: %s, "
-        "commit gid: %s thread idx: %d, has sync: %d, txhash: %lu, "
-        "member index: %d, other member index: %d, pool index: %d, "
-        "elect height: %lu, local elect height: %lu",
-        header.zbft().pool_index(),
-        common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
-        common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
-        common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
-        msg_ptr->thread_idx,
-        header.zbft().has_sync_block(),
-        header.hash64(),
-        elect_item.local_node_member_index,
-        header.zbft().member_index(),
-        header.zbft().pool_index(),
-        header.zbft().elect_height(),
-        elect_item.elect_height);
-    if (elect_item.local_node_member_index == header.zbft().member_index()) {
-        //assert(false);
-        return;
-    }
-
-    if (header.zbft().has_sync_block() && header.zbft().sync_block()) {
-        return HandleSyncConsensusBlock(elect_item, msg_ptr);
-    }
-    
-    if (!elect_item.bls_valid) {
-        return;
-    }
-
     assert(header.zbft().elect_height() > 0);
     assert(header.zbft().has_member_index());
     SetDefaultResponse(msg_ptr);
