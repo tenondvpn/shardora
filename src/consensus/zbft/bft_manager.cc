@@ -1588,11 +1588,11 @@ void BftManager::CheckMessageTimeout(uint8_t thread_index) {
     auto now_tm_us = common::TimeUtils::TimestampUs();
     auto iter = msg_set.begin();
     while (iter != msg_set.end()) {
-        auto& msg_ptr = *iter;
+        auto msg_ptr = *iter;
         assert(msg_ptr->thread_idx == thread_index);
         if (msg_ptr->timeout < now_tm_us) {
-            msg_set.erase(iter++);
-            continue;
+            msg_set.erase(iter);
+            break;
         }
 
         if (msg_ptr->prev_timestamp <= now_tm_us) {
