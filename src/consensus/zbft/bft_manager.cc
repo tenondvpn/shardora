@@ -1512,10 +1512,9 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
     }
 
     bft_queue.push_back(bft_ptr);
-    ZJC_DEBUG("pool idx: %d, add gid: %s, res: %d",
+    ZJC_DEBUG("success add bft pool idx: %d, add gid: %s",
         bft_ptr->pool_index(),
-        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-        res);
+        common::Encode::HexEncode(bft_ptr->gid()).c_str());
     return kConsensusSuccess;
 }
 
