@@ -1392,7 +1392,7 @@ ZbftPtr BftManager::CreateBftPtr(
     }
     
     if (txs_ptr == nullptr) {
-        txs_ptr = std::make_shared<WaitingTxsItem>();
+        return nullptr;
     }
 
     txs_ptr->thread_index = msg_ptr->thread_idx;
@@ -1424,10 +1424,12 @@ ZbftPtr BftManager::CreateBftPtr(
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
         if (bft_msg.has_prepare_height()) {
             assert(bft_msg.prepare_height() == precommit_ptr->prepare_block()->height());
+            return nullptr;
         }
 
         if (bft_msg.has_prepare_hash()) {
             assert(bft_msg.prepare_hash() == precommit_ptr->prepare_block()->hash());
+            return nullptr;
         }
     }
 
@@ -1450,6 +1452,12 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
     auto& bft_queue = pools_with_zbfts_[bft_ptr->pool_index()];
     for (auto iter = bft_queue.begin(); iter != bft_queue.end(); ++iter) {
         auto tmp_bft = *iter;
+        if (tmp_bft->gid() == bft_ptr->gid()) {
+            assert(false);
+            res = kConsensusError;
+            break;
+        }
+
         if (tmp_bft->height() != common::kInvalidUint64 &&
                 bft_ptr->pool_index() == tmp_bft->pool_index() &&
                 bft_ptr->height() <= tmp_bft->height()) {
@@ -1532,10 +1540,10 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
 //                     SyncConsensusBlock()
         }
 
-        ZJC_DEBUG("can not remove bft gid: %s, %d, pool_index: %d",
-            common::Encode::HexEncode(gid).c_str(),
-            (bft_ptr->prepare_block() != nullptr),
-            pool_index);
+//         ZJC_DEBUG("can not remove bft gid: %s, %d, pool_index: %d",
+//             common::Encode::HexEncode(gid).c_str(),
+//             (bft_ptr->prepare_block() != nullptr),
+//             pool_index);
         // 
 //                 if (bft_ptr->should_timer_to_restart()) {
 //                     ReConsensusBft(thread_idx, bft_ptr);
