@@ -1981,10 +1981,15 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
                 now_elect_item->elect_height,
                 elect_item.elect_height);
-            bft_ptr->txs_ptr()->txs.clear();
+            if (bft_ptr != nullptr) {
+                bft_ptr = nullptr;
+            }
         }
 
-        if (bft_ptr == nullptr || bft_ptr->txs_ptr()->txs.empty() || !bft_ptr->BackupCheckLeaderValid(&bft_msg)) {
+        if (bft_ptr == nullptr ||
+                bft_ptr->txs_ptr() == nullptr ||
+                bft_ptr->txs_ptr()->txs.empty() ||
+                !bft_ptr->BackupCheckLeaderValid(&bft_msg)) {
             // oppose
             ZJC_ERROR("create bft ptr failed backup create consensus bft gid: %s",
                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
