@@ -314,7 +314,7 @@ private:
     uint64_t first_timeblock_timestamp_ = 0;
     block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
     std::deque<ZbftPtr> pools_with_zbfts_[common::kInvalidPoolIndex];
-    std::unordered_set<transport::MessagePtr> backup_prapare_msg_queue_[common::kMaxThreadCount];
+    std::deque<transport::MessagePtr> backup_prapare_msg_queue_[common::kMaxThreadCount];
     std::unordered_map<std::string, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
 
 #ifdef ZJC_UNITTEST

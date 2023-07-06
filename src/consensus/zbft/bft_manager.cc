@@ -650,7 +650,13 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         if (header.zbft().leader_idx() >= 0 && !header.zbft().prepare_gid().empty()) {
             // timer to re-handle the message
             if (msg_ptr->timeout > now_ms * 1000lu) {
-                backup_prapare_msg_queue_[msg_ptr->thread_idx].insert(msg_ptr);
+                if (!msg_ptr->retry) {
+                    msg_ptr->retry = true;
+                    backup_prapare_msg_queue_[msg_ptr->thread_idx].push_back(msg_ptr);
+                    if (backup_prapare_msg_queue_[msg_ptr->thread_idx].size() > 16) {
+                        backup_prapare_msg_queue_[msg_ptr->thread_idx].pop_front();
+                    }
+                }
             }
         }
 
@@ -683,7 +689,14 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             if (!msg_ptr->response->header.has_zbft() || !msg_ptr->response->header.zbft().agree_precommit()) {
                 // timer to re-handle the message
                 if (msg_ptr->timeout > now_ms * 1000lu) {
-                    backup_prapare_msg_queue_[msg_ptr->thread_idx].insert(msg_ptr);
+                    if (!msg_ptr->retry) {
+                        msg_ptr->retry = true;
+                        backup_prapare_msg_queue_[msg_ptr->thread_idx].push_back(msg_ptr);
+                        if (backup_prapare_msg_queue_[msg_ptr->thread_idx].size() > 16) {
+                            backup_prapare_msg_queue_[msg_ptr->thread_idx].pop_front();
+                        }
+                    }
+
                     return;
                 }
             }
@@ -1572,8 +1585,8 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
 
 void BftManager::CheckMessageTimeout(uint8_t thread_index) {
     auto& msg_set = backup_prapare_msg_queue_[thread_index];
-    auto iter = msg_set.begin();
     auto now_tm_us = common::TimeUtils::TimestampUs();
+    auto iter = msg_set.begin();
     while (iter != msg_set.end()) {
         auto& msg_ptr = *iter;
         assert(msg_ptr->thread_idx == thread_index);
@@ -1585,7 +1598,6 @@ void BftManager::CheckMessageTimeout(uint8_t thread_index) {
         if (msg_ptr->prev_timestamp <= now_tm_us) {
             msg_ptr->prev_timestamp = now_tm_us + transport::kMessagePeriodUs;
             HandleMessage(msg_ptr);
-            msg_set.erase(iter++);
             continue;
         }
 
