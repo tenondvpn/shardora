@@ -677,11 +677,7 @@ void BftManager::HandleSyncConsensusBlock(
         const ElectItem& elect_item,
         const transport::MessagePtr& msg_ptr) {
     auto& req_bft_msg = msg_ptr->header.zbft();
-    auto bft_ptr = GetBft(msg_ptr->thread_idx, req_bft_msg.precommit_gid(), false);
-    if (bft_ptr == nullptr) {
-        bft_ptr = GetBft(msg_ptr->thread_idx, req_bft_msg.precommit_gid(), true);
-    }
-
+    auto bft_ptr = GetBft(req_bft_msg.pool_index(), req_bft_msg.precommit_gid());
     ZJC_DEBUG("sync consensus block coming: %s, hash: %s, is cross block: %d, hash64: %lu",
         common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
         common::Encode::HexEncode(req_bft_msg.block().hash()).c_str(),
@@ -941,7 +937,7 @@ void BftManager::ClearBft(const transport::MessagePtr& msg_ptr) {
     if (zbft.has_agree_precommit() && !zbft.agree_precommit()) {
         zbft.release_tx_bft();
 //         ZJC_DEBUG("not agree precommit.");
-        auto prepare_bft = GetBft(msg_ptr->thread_idx, from_zbft.prepare_gid(), is_leader);
+        auto prepare_bft = GetBft(from_zbft.pool_index(), from_zbft.prepare_gid());
         if (prepare_bft == nullptr) {
 //             ZJC_DEBUG("not agree precommit prepare gid failed: %s", common::Encode::HexEncode(from_zbft.prepare_gid()).c_str());
             return;
@@ -1336,7 +1332,7 @@ ZbftPtr BftManager::CreateBftPtr(
         txs_ptr = nullptr;
     }
 
-    auto precommit_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
+    auto precommit_ptr = GetBft(bft_msg.pool_index(), bft_msg.precommit_gid());
     if (txs_ptr != nullptr && precommit_ptr != nullptr) {
         for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
             if (precommit_ptr->txs_ptr()->txs.find(iter->first) !=
@@ -1746,7 +1742,7 @@ int BftManager::CheckPrecommit(
             break;
         }
 
-        auto bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
+        auto bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.precommit_gid());
         if (bft_ptr == nullptr) {
             ZJC_DEBUG("failed get precommit gid: %s",
                 common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
@@ -1827,7 +1823,7 @@ int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg
     }
 
     ZJC_DEBUG("backup CheckCommit: %s", common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
-    auto bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.commit_gid(), false);
+    auto bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.commit_gid());
     if (bft_ptr == nullptr) {
 //         assert(false);
         return kConsensusError;
@@ -1874,7 +1870,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             common::Encode::HexEncode(bft_msg.oppose_prepare_gid()).c_str(),
             common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
             common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
-        auto prepare_bft = GetBft(msg_ptr->thread_idx, bft_msg.oppose_prepare_gid(), false);
+        auto prepare_bft = GetBft(bft_msg.pool_index(), bft_msg.oppose_prepare_gid());
         if (prepare_bft != nullptr) {
             prepare_bft->set_consensus_status(kConsensusFailed);
             RemoveBft(prepare_bft->pool_index(), prepare_bft->gid());
@@ -1971,7 +1967,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         ZJC_DEBUG("handle precommit gid: %s",
             common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
         msg_ptr->response->header.mutable_zbft()->set_agree_commit(false);
-        auto precommit_bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.precommit_gid(), false);
+        auto precommit_bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.precommit_gid());
         if (precommit_bft_ptr == nullptr) {
             ZJC_DEBUG("get precommit gid failed: %s",
                 common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
@@ -1999,7 +1995,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
     }
 
     if (bft_msg.has_commit_gid() && !bft_msg.commit_gid().empty()) {
-        auto commit_bft_ptr = GetBft(msg_ptr->thread_idx, bft_msg.commit_gid(), false);
+        auto commit_bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.commit_gid());
         if (commit_bft_ptr == nullptr) {
             ZJC_ERROR("get commit bft failed: %s",
                 common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
@@ -2176,7 +2172,7 @@ ZbftPtr BftManager::LeaderGetZbft(
         const ElectItem& elect_item,
         const std::string& bft_gid) {
     auto& bft_msg = msg_ptr->header.zbft();
-    auto bft_ptr = GetBft(msg_ptr->thread_idx, bft_gid, true);
+    auto bft_ptr = GetBft(bft_msg.pool_index(), bft_gid);
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
