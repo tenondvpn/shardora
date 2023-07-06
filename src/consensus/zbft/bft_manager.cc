@@ -650,12 +650,9 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         if (header.zbft().leader_idx() >= 0 && !header.zbft().prepare_gid().empty()) {
             // timer to re-handle the message
             if (msg_ptr->timeout > now_ms * 1000lu) {
-                if (!msg_ptr->retry) {
-                    msg_ptr->retry = true;
-                    backup_prapare_msg_queue_[msg_ptr->thread_idx].push_back(msg_ptr);
-                    if (backup_prapare_msg_queue_[msg_ptr->thread_idx].size() > 16) {
-                        backup_prapare_msg_queue_[msg_ptr->thread_idx].pop_front();
-                    }
+                backup_prapare_msg_queue_[msg_ptr->thread_idx].push_back(msg_ptr);
+                if (backup_prapare_msg_queue_[msg_ptr->thread_idx].size() > 16) {
+                    backup_prapare_msg_queue_[msg_ptr->thread_idx].pop_front();
                 }
             }
         }
@@ -689,14 +686,10 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             if (!msg_ptr->response->header.has_zbft() || !msg_ptr->response->header.zbft().agree_precommit()) {
                 // timer to re-handle the message
                 if (msg_ptr->timeout > now_ms * 1000lu) {
-                    if (!msg_ptr->retry) {
-                        msg_ptr->retry = true;
-                        backup_prapare_msg_queue_[msg_ptr->thread_idx].push_back(msg_ptr);
-                        if (backup_prapare_msg_queue_[msg_ptr->thread_idx].size() > 16) {
-                            backup_prapare_msg_queue_[msg_ptr->thread_idx].pop_front();
-                        }
+                    backup_prapare_msg_queue_[msg_ptr->thread_idx].push_back(msg_ptr);
+                    if (backup_prapare_msg_queue_[msg_ptr->thread_idx].size() > 16) {
+                        backup_prapare_msg_queue_[msg_ptr->thread_idx].pop_front();
                     }
-
                     return;
                 }
             }
@@ -1597,7 +1590,9 @@ void BftManager::CheckMessageTimeout(uint8_t thread_index) {
 
         if (msg_ptr->prev_timestamp <= now_tm_us) {
             msg_ptr->prev_timestamp = now_tm_us + transport::kMessagePeriodUs;
+            msg_set.erase(iter);
             HandleMessage(msg_ptr);
+            break;
         }
 
         ++iter;
