@@ -280,7 +280,6 @@ private:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<block::BlockManager> block_mgr_ = nullptr;
     std::shared_ptr<elect::ElectManager> elect_mgr_ = nullptr;
-    std::unordered_map<std::string, ZbftPtr>* bft_hash_map_ = nullptr;
     std::queue<ZbftPtr>* bft_queue_ = nullptr;
     std::atomic<uint32_t> tps_{ 0 };
     std::atomic<uint32_t> pre_tps_{ 0 };
