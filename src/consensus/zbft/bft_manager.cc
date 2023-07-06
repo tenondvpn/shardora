@@ -360,23 +360,9 @@ ZbftPtr BftManager::Start(
     }
 
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
-    auto begin_index = thread_item->prev_index;
-    for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
-        auto pool_idx = thread_item->pools[thread_item->prev_index];
-        if (!pools_with_zbfts_[pool_idx].empty()) {
-            continue;
-        }
-
-        txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
-        if (txs_ptr != nullptr) {
-            // now leader create zbft ptr and start consensus
-            break;
-        }
-    }
-
-    if (txs_ptr == nullptr) {
-        for (thread_item->prev_index = 0;
-                thread_item->prev_index < begin_index; ++thread_item->prev_index) {
+    if (prev_bft == nullptr) {
+        auto begin_index = thread_item->prev_index;
+        for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
             auto pool_idx = thread_item->pools[thread_item->prev_index];
             if (!pools_with_zbfts_[pool_idx].empty()) {
                 continue;
@@ -388,10 +374,28 @@ ZbftPtr BftManager::Start(
                 break;
             }
         }
-    }
 
-    if (thread_item->pools.size() > 0) {
-        thread_item->prev_index = ++thread_item->prev_index % thread_item->pools.size();
+        if (txs_ptr == nullptr) {
+            for (thread_item->prev_index = 0;
+                    thread_item->prev_index < begin_index; ++thread_item->prev_index) {
+                auto pool_idx = thread_item->pools[thread_item->prev_index];
+                if (!pools_with_zbfts_[pool_idx].empty()) {
+                    continue;
+                }
+
+                txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
+                if (txs_ptr != nullptr) {
+                    // now leader create zbft ptr and start consensus
+                    break;
+                }
+            }
+        }
+
+        if (thread_item->pools.size() > 0) {
+            thread_item->prev_index = ++thread_item->prev_index % thread_item->pools.size();
+        }
+    } else {
+        txs_ptr = txs_pools_->LeaderGetValidTxs(prev_bft->pool_index();
     }
 
     if (txs_ptr == nullptr) {
