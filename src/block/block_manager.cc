@@ -217,7 +217,6 @@ void BlockManager::HandleStatisticTxMessage() {
             msg_hash,
             mem_ptr->pubkey,
             msg_ptr->header.sign()) != security::kSecuritySuccess) {
-        assert(false);
         return;
     }
 
