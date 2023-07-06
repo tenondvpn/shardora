@@ -1982,6 +1982,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                 now_elect_item->elect_height,
                 elect_item.elect_height);
             if (bft_ptr != nullptr) {
+                RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
                 bft_ptr = nullptr;
             }
         }
@@ -1993,6 +1994,9 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             // oppose
             ZJC_ERROR("create bft ptr failed backup create consensus bft gid: %s",
                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+            if (bft_ptr != nullptr) {
+                RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
+            }
         } else {
             auto* new_bft_msg = msg_ptr->response->header.mutable_zbft();
             int prepare_res = bft_ptr->Prepare(false, new_bft_msg);
