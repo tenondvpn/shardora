@@ -264,6 +264,7 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     transport::MessagePtr prepare_msg_ptr = nullptr;
     ZbftPtr prev_bft = nullptr;
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    ZJC_DEBUG("Init use time: %lu", (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2]));
     Start(msg_ptr->thread_idx, prev_bft, prepare_msg_ptr);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     ZJC_DEBUG("Start use time: %lu", (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2]));
