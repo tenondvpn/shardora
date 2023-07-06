@@ -943,9 +943,13 @@ void BftManager::ClearBft(const transport::MessagePtr& msg_ptr) {
             common::Encode::HexEncode(zbft.prepare_gid()).c_str(),
             common::Encode::HexEncode(zbft.precommit_gid()).c_str(),
             common::Encode::HexEncode(zbft.commit_gid()).c_str());
-        if (!zbft.precommit_gid().empty()) {
-            assert(false);
+        auto prepare_bft = GetBft(from_zbft.pool_index(), from_zbft.prepare_gid());
+        if (prepare_bft != nullptr) {
+            RemoveBft(prepare_bft->pool_index(), prepare_bft->gid());
         }
+//         if (!zbft.precommit_gid().empty()) {
+//             assert(false);
+//         }
     }
     
     if (zbft.has_agree_precommit() && !zbft.agree_precommit()) {
@@ -953,7 +957,6 @@ void BftManager::ClearBft(const transport::MessagePtr& msg_ptr) {
         auto prepare_bft = GetBft(from_zbft.pool_index(), from_zbft.prepare_gid());
         if (prepare_bft != nullptr) {
             RemoveBft(prepare_bft->pool_index(), prepare_bft->gid());
-            return;
         }
 
         auto precommit_bft = prepare_bft->pipeline_prev_zbft_ptr();
@@ -1350,7 +1353,7 @@ ZbftPtr BftManager::CreateBftPtr(
                 txs_ptr = nullptr;
                 ZJC_DEBUG("tx invalid: %s, gid: %s",
                     common::Encode::HexEncode(iter->first).c_str(),
-                    common::Encode::HexEncode(iter->second->gid).c_str());
+                    common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
                 break;
             }
         }
