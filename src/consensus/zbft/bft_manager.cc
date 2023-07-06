@@ -1444,6 +1444,8 @@ ZbftPtr BftManager::CreateBftPtr(
     bft_ptr->set_gid(bft_msg.prepare_gid());
     bft_ptr->set_network_id(bft_msg.net_id());
     bft_ptr->set_member_count(elect_item.member_size);
+    ZJC_DEBUG("success create bft: %s, tx size: %u",
+        common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), txs_ptr->tx.size());
     return bft_ptr;
 }
 
@@ -1989,8 +1991,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
 
         if (bft_ptr == nullptr ||
                 bft_ptr->txs_ptr() == nullptr ||
-                bft_ptr->txs_ptr()->txs.empty() ||
-                !bft_ptr->BackupCheckLeaderValid(&bft_msg)) {
+                bft_ptr->txs_ptr()->txs.empty()) {
             // oppose
             ZJC_ERROR("create bft ptr failed backup create consensus bft gid: %s",
                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
