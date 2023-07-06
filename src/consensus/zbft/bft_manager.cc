@@ -1445,7 +1445,7 @@ ZbftPtr BftManager::CreateBftPtr(
     bft_ptr->set_network_id(bft_msg.net_id());
     bft_ptr->set_member_count(elect_item.member_size);
     ZJC_DEBUG("success create bft: %s, tx size: %u",
-        common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), txs_ptr->tx.size());
+        common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), txs_ptr->txs.size());
     return bft_ptr;
 }
 
