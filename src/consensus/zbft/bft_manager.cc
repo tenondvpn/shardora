@@ -1424,12 +1424,10 @@ ZbftPtr BftManager::CreateBftPtr(
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
         if (bft_msg.has_prepare_height()) {
             assert(bft_msg.prepare_height() == precommit_ptr->prepare_block()->height());
-            return nullptr;
         }
 
         if (bft_msg.has_prepare_hash()) {
             assert(bft_msg.prepare_hash() == precommit_ptr->prepare_block()->hash());
-            return nullptr;
         }
     }
 
