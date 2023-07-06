@@ -266,11 +266,16 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     Start(msg_ptr->thread_idx, prev_bft, prepare_msg_ptr);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    ZJC_DEBUG("Start use time: %lu", (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2]));
     PopAllPoolTxs(msg_ptr->thread_idx);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    ZJC_DEBUG("PopAllPoolTxs use time: %lu", (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2]));
     CheckTimeout(msg_ptr->thread_idx);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    ZJC_DEBUG("CheckTimeout use time: %lu", (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2]));
     CheckMessageTimeout(msg_ptr->thread_idx);
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    ZJC_DEBUG("CheckMessageTimeout use time: %lu", (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2]));
 #endif
 }
 
