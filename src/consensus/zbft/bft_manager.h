@@ -114,6 +114,7 @@ private:
         const transport::MessagePtr& msg_ptr);
     int BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     void CheckTimeout(uint8_t thread_index);
+    void CheckMessageTimeout(uint8_t thread_index);
     int LeaderCallPrecommit(
         const ElectItem& elect_item,
         ZbftPtr& bft_ptr,
@@ -311,6 +312,7 @@ private:
     uint64_t first_timeblock_timestamp_ = 0;
     block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
     std::deque<ZbftPtr> pools_with_zbfts_[common::kInvalidPoolIndex];
+    std::unordered_set<transport::MessagePtr> backup_prapare_msg_queue_[common::kMaxThreadCount];
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {

@@ -265,11 +265,12 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     ZbftPtr prev_bft = nullptr;
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     Start(msg_ptr->thread_idx, prev_bft, prepare_msg_ptr);
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();;
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     PopAllPoolTxs(msg_ptr->thread_idx);
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();;
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     CheckTimeout(msg_ptr->thread_idx);
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();;
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    CheckMessageTimeout(msg_ptr->thread_idx);
 #endif
 }
 
@@ -654,6 +655,15 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     int res = kConsensusSuccess;
     if (header.zbft().leader_idx() >= 0) {
         BackupHandleZbftMessage(msg_ptr->thread_idx, elect_item, msg_ptr);
+        if (!header.zbft().prepare_gid().empty()) {
+            if (!msg_ptr->response->header.has_zbft() || !msg_ptr->response->header.zbft().agree_precommit()) {
+                // timer to re-handle the message
+                if (msg_ptr->timeout > now_ms * 1000lu) {
+                    backup_prapare_msg_queue_[msg_ptr->thread_idx].insert(msg_ptr);
+                    return;
+                }
+            }
+        }
     } else {
         LeaderHandleZbftMessage(elect_item, msg_ptr);
     }
@@ -666,7 +676,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         msg_ptr,
         mem_ptr);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    ClearBft(msg_ptr);
+//     ClearBft(msg_ptr);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     if (zbft_vec[0] != nullptr) {
         zbft_vec[0]->AfterNetwork();
@@ -1200,7 +1210,7 @@ bool BftManager::VerifyLeaderIdValid(const ElectItem& elect_item, const transpor
 
     auto mod_num = msg_ptr->header.zbft().pool_index() % elect_item.leader_count;
     if (elect_item.mod_with_leader_index[mod_num] != msg_ptr->header.zbft().member_index()) {
-        assert(false);
+        //assert(false);
         return false;
     }
 
@@ -1520,6 +1530,28 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
     }
 }
 
+void BftManager::CheckMessageTimeout(uint8_t thread_index) {
+    auto& msg_set = backup_prapare_msg_queue_[thread_index];
+    auto iter = msg_set.begin();
+    auto now_tm_us = common::TimeUtils::TimestampUs();
+    while (iter != msg_set.end()) {
+        auto& msg_ptr = *iter;
+        assert(msg_ptr->thread_idx == thread_index);
+        if (msg_ptr->timeout < now_tm_us) {
+            msg_set.erase(iter++);
+            continue;
+        }
+
+        if (msg_ptr->prev_timestamp <= now_tm_us) {
+            msg_ptr->prev_timestamp = now_tm_us + transport::kMessagePeriodUs;
+            HandleMessage(msg_ptr);
+            msg_set.erase(iter++);
+            continue;
+        }
+
+        ++iter;
+    }
+}
 
 void BftManager::CheckTimeout(uint8_t thread_idx) {
     auto now_timestamp_us = common::TimeUtils::TimestampUs();

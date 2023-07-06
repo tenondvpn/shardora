@@ -66,8 +66,13 @@ enum TcpConnnectionType {
     kRemoveClient = 3,
 };
 
+static const uint64_t kMessageTimeoutUs = 5000000lu;
+static const uint64_t kMessagePeriodUs = 500000lu;
+
 struct TransportMessage {
     TransportMessage() : conn(nullptr), response(nullptr), tmp_ptr(nullptr), checked_block(false) {
+        timeout = common::TimeUtils::TimestampUs() + kMessageTimeoutUs;
+        prev_timestamp = common::TimeUtils::TimestampUs() + kMessagePeriodUs;
         memset(times, 0, sizeof(times));
         times_idx = 0;
     }
@@ -82,6 +87,8 @@ struct TransportMessage {
     bool checked_block;
     uint64_t times[128];
     uint32_t times_idx;
+    uint64_t timeout;
+    uint64_t prev_timestamp;
 };
 
 typedef std::shared_ptr<TransportMessage> MessagePtr;
