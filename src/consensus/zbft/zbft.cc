@@ -814,11 +814,6 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
         return kConsensusNoNewTxs;
     }
 
-    if (pipeline_prev_zbft_ptr_ != nullptr) {
-        zjc_block.set_commit_pool_index(pipeline_prev_zbft_ptr_->prepare_block()->pool_index());
-        zjc_block.set_commit_height(pipeline_prev_zbft_ptr_->prepare_block()->height());
-    }
-
     if (txs_ptr_->tx_type != pools::protobuf::kNormalFrom ||
             txs_ptr_->pool_index == common::kRootChainPoolIndex) {
         zjc_block.set_is_cross_block(true);
@@ -828,12 +823,7 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     tx_bft.set_prepare_final_hash(zjc_block.hash());
     tx_bft.set_height(zjc_block.height());
     tx_bft.set_tx_type(txs_ptr_->tx_type);
-    ZJC_DEBUG("has prepool: %d, has preheight: %d, prepool index: %d,"
-        "pre height: %lu, pool index: %d, height: %lu, prehash: %s, hash: %s",
-        zjc_block.has_commit_pool_index(),
-        zjc_block.has_commit_height(),
-        zjc_block.commit_pool_index(),
-        zjc_block.commit_height(),
+    ZJC_DEBUG("pool index: %d, height: %lu, prehash: %s, hash: %s",
         pool_index(),
         zjc_block.height(),
         common::Encode::HexEncode(zjc_block.prehash()).c_str(),

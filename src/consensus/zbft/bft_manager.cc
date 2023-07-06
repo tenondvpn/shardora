@@ -720,12 +720,8 @@ void BftManager::HandleSyncConsensusBlock(
     if (req_bft_msg.has_block()) {
         // verify and add new block
         if (bft_ptr == nullptr) {
-            if (!msg_ptr->checked_block && !req_bft_msg.block().is_cross_block()) {
-                ZJC_DEBUG("not checked block net: %u, pool: %u, height: %lu, block hash: %s",
-                    req_bft_msg.block().network_id(),
-                    req_bft_msg.block().pool_index(),
-                    req_bft_msg.block().height(),
-                    common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
+            if (!req_bft_msg.block().is_cross_block()) {
+                AddWaitingBlock(msg_ptr);
                 return;
             }
 
@@ -774,6 +770,7 @@ void BftManager::HandleSyncConsensusBlock(
                 common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
                 block_ptr->precommit_bitmap_size());
             RemoveBftWithBlockHash(msg_ptr->thread_idx, block_ptr->hash());
+            RemoveWaitingBlock(block_ptr->pool_index(), block_ptr->prehash());
         } else {
             if (bft_ptr->prepare_block() == nullptr) {
                 auto block_hash = GetBlockHash(req_bft_msg.block());
@@ -817,8 +814,6 @@ void BftManager::HandleSyncConsensusBlock(
                                 common::Encode::HexEncode(prev_bft->prepare_block()->hash()).c_str());
                         }
                     }
-                } else {
-
                 }
             }
         }
@@ -870,6 +865,55 @@ void BftManager::HandleSyncConsensusBlock(
             common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
             common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
             msg.hash64());
+    }
+}
+
+void BftManager::AddWaitingBlock(const transport::MessagePtr& msg_ptr) {
+    auto& req_bft_msg = msg_ptr->header.zbft();
+    auto& block_map = waiting_blocks_[req_bft_msg.block().pool_index()];
+    auto iter = block_map.find(req_bft_msg.block().hash());
+    if (iter != block_map.end()) {
+        return;
+    }
+
+    if (prefix_db_->BlockExists(req_bft_msg.block().hash())) {
+        return;
+    }
+
+    auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
+    block_map[req_bft_msg.block().hash()] = block_ptr;
+}
+
+void BftManager::RemoveWaitingBlock(uint32_t pool_index, const std::string& prehash) {
+    auto& block_map = waiting_blocks_[pool_index];
+    auto iter = block_map.find(prehash);
+    if (iter == block_map.end()) {
+        return;
+    }
+    
+    auto block_ptr = iter->second;
+    block_map.erase(iter);
+    // check bls sign
+    auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pool_index];
+    if (block_agg_valid_func_(thread_idx, *block_ptr)) {
+        auto db_batch = std::make_shared<db::DbWriteBatch>();
+        auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block_ptr, db_batch);
+        new_block_cache_callback_(
+            thread_idx,
+            queue_item_ptr->block_ptr,
+            *queue_item_ptr->db_batch);
+        block_mgr_->ConsensusAddBlock(thread_idx, queue_item_ptr);
+        pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
+        ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s, "
+            "precommit_bitmap size: %u",
+            block_ptr->network_id(),
+            block_ptr->pool_index(),
+            block_ptr->height(),
+            common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str(),
+            block_ptr->precommit_bitmap_size());
+        // remove bft
+        RemoveBftWithBlockHash(thread_idx, block_ptr->hash());
+        RemoveWaitingBlock(block_ptr->prehash());
     }
 }
 
@@ -2520,7 +2564,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
     RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
     assert(bft_ptr->prepare_block()->precommit_bitmap_size() == zjc_block->precommit_bitmap_size());
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-
+    RemoveWaitingBlock(zjc_block->pool_index(), zjc_block->prehash());
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tps_tm_us_ == 0) {
         prev_tps_tm_us_ = now_tm_us;

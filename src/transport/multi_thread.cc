@@ -254,89 +254,10 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
                 continue;
             }
             
-            CheckBlockCommitted(block_item);
-            if (block_item->is_cross_block()) {
-                auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-                new_msg_ptr->checked_block = true;
-                CreateConsensusBlockMessage(new_msg_ptr, block_item);
-            }
-        }
-    }
-}
-
-void MultiThreadHandler::BlockSaved(const block::protobuf::Block& block_item) {
-    if (block_item.has_commit_pool_index() && block_item.has_commit_height()) {
-        saved_block_queue_.push(std::make_shared<SavedBlockQueueItem>(
-            block_item.commit_pool_index() , block_item.commit_height(), block_item.pool_index(), block_item.height()));
-//         ZJC_DEBUG("success add commit pool index: %u, height: %lu, this block pool: %u, height: %lu", block_item.commit_pool_index(), block_item.commit_height(), block_item.pool_index(), block_item.height());
-    }
-
-    ZJC_DEBUG("queue size remove not checked block net: %u, pool: %u, height: %lu, block hash: %s, saved queue size: %d",
-        block_item.network_id(),
-        block_item.pool_index(),
-        block_item.height(),
-        common::Encode::HexEncode(block_item.hash()).c_str(),
-        saved_block_queue_.size());
-}
-
-void MultiThreadHandler::CheckBlockCommitted(std::shared_ptr<block::protobuf::Block>& block_item) {
-    while (saved_block_queue_.size() > 0) {
-        SavedBlockQueueItemPtr item;
-        if (!saved_block_queue_.pop(&item)) {
-            break;
-        }
-
-        auto iter = waiting_check_block_map_[item->pool].find(item->height);
-        if (iter != waiting_check_block_map_[item->pool].end()) {
-            waiting_check_block_map_[item->pool].erase(iter);
-        }
-
-        ZJC_DEBUG("success add commit pool index: %u, height: %lu",
-            item->checked_pool, item->checked_height);
-        committed_heights_[item->checked_pool].insert(item->checked_height);
-    }
-
-    if (!block_item->is_cross_block()) {
-        waiting_check_block_map_[block_item->pool_index()][block_item->height()] = block_item;
-        auto iter = committed_heights_[block_item->pool_index()].find(block_item->height());
-        if (iter != committed_heights_[block_item->pool_index()].end()) {
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
             new_msg_ptr->checked_block = true;
             CreateConsensusBlockMessage(new_msg_ptr, block_item);
-            ZJC_DEBUG("call not checked block net: %u, pool: %u, height: %lu, block hash: %s",
-                block_item->network_id(),
-                block_item->pool_index(),
-                block_item->height(),
-                common::Encode::HexEncode(block_item->hash()).c_str());
-
         }
-
-        ZJC_DEBUG("add not checked block net: %u, pool: %u, height: %lu, block hash: %s",
-            block_item->network_id(),
-            block_item->pool_index(),
-            block_item->height(),
-            common::Encode::HexEncode(block_item->hash()).c_str());
-    }
-
-    if (block_item->has_commit_pool_index() && block_item->has_commit_height()) {
-        auto iter = waiting_check_block_map_[block_item->commit_pool_index()].find(
-            block_item->commit_height());
-        if (iter != waiting_check_block_map_[block_item->commit_pool_index()].end()) {
-            auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-            new_msg_ptr->checked_block = true;
-            CreateConsensusBlockMessage(new_msg_ptr, iter->second);
-            ZJC_DEBUG("call not checked block net: %u, pool: %u, height: %lu, prepool: %u, preheight: %lu, block hash: %s",
-                iter->second->network_id(),
-                iter->second->pool_index(),
-                iter->second->height(),
-                block_item->commit_pool_index(),
-                block_item->commit_height(),
-                common::Encode::HexEncode(iter->second->hash()).c_str());
-
-        }
-
-        committed_heights_[block_item->commit_pool_index()].insert(block_item->commit_height());
-        ZJC_DEBUG("success add commit pool index: %u, height: %lu, this pool: %u, height: %lu", block_item->commit_pool_index(), block_item->commit_height(), block_item->pool_index(), block_item->height());
     }
 }
 

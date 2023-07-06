@@ -71,7 +71,7 @@ static const uint64_t kMessageTimeoutUs = 5000000lu;
 static const uint64_t kMessagePeriodUs = 500000lu;
 
 struct TransportMessage {
-    TransportMessage() : conn(nullptr), response(nullptr), tmp_ptr(nullptr), checked_block(false) {
+    TransportMessage() : conn(nullptr), response(nullptr), tmp_ptr(nullptr) {
         timeout = common::TimeUtils::TimestampUs() + kMessageTimeoutUs;
         prev_timestamp = common::TimeUtils::TimestampUs() + kMessagePeriodUs;
         memset(times, 0, sizeof(times));
@@ -85,7 +85,6 @@ struct TransportMessage {
     std::string msg_hash;
     std::shared_ptr<TransportMessage> response;
     void* tmp_ptr;
-    bool checked_block;
     uint64_t times[128];
     uint32_t times_idx;
     uint64_t timeout;

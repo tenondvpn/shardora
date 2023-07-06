@@ -63,8 +63,6 @@ public:
     void HandleMessage(MessagePtr& msg_ptr);
     MessagePtr GetMessageFromQueue(uint32_t thread_idx);
     void Destroy();
-    void BlockSaved(const block::protobuf::Block& block);
-
     void NewHttpServer(MessagePtr& msg_ptr) {
         http_server_message_queue_.push(msg_ptr);
     }
@@ -86,11 +84,8 @@ private:
     bool IsMessageUnique(uint64_t msg_hash);
     void InitThreadPriorityMessageQueues();
     uint8_t GetThreadIndex(MessagePtr& msg_ptr);
-    uint8_t GetTxThreadIndex(MessagePtr& msg_ptr);
     void HandleSyncBlockResponse(MessagePtr& msg_ptr);
     void SaveKeyValue(const transport::protobuf::Header& msg, db::DbWriteBatch& db_batch);
-    void CheckBlockCommitted(std::shared_ptr<block::protobuf::Block>& block_ptr);
-    void TimerCheckBlockCommitted();
     void CreateConsensusBlockMessage(
         std::shared_ptr<transport::TransportMessage>& new_msg_ptr,
         std::shared_ptr<block::protobuf::Block>& block_ptr);
