@@ -1598,7 +1598,6 @@ void BftManager::CheckMessageTimeout(uint8_t thread_index) {
         if (msg_ptr->prev_timestamp <= now_tm_us) {
             msg_ptr->prev_timestamp = now_tm_us + transport::kMessagePeriodUs;
             HandleMessage(msg_ptr);
-            continue;
         }
 
         ++iter;
