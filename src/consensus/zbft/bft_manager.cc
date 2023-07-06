@@ -604,7 +604,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         "commit gid: %s thread idx: %d, has sync: %d, txhash: %lu, "
         "member index: %d, other member index: %d, pool index: %d, "
         "elect height: %lu, local elect height: %lu",
-        header.zbft().pool_index();
+        header.zbft().pool_index(),
         common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
         common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
