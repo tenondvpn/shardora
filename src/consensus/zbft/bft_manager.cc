@@ -1404,7 +1404,7 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
     int res = kConsensusSuccess;
     auto& bft_queue = pools_with_zbfts_[bft_ptr->pool_index()];
     for (auto iter = bft_queue.begin(); iter != bft_queue.end(); ++iter) {
-        auto* tmp_bft = *iter;
+        auto tmp_bft = *iter;
         if (tmp_bft->height() != common::kInvalidUint64 &&
                 bft_ptr->pool_index() == tmp_bft->pool_index() &&
                 bft_ptr->height() <= tmp_bft->height()) {
@@ -1420,7 +1420,7 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
     bft_queue.push_back(bft_ptr);
     ZJC_DEBUG("thread idx: %d, add gid: %s, res: %d",
         bft_ptr->thread_index(),
-        common::Encode::HexEncode(gid).c_str(),
+        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
         res);
     return res;
 }
@@ -1470,7 +1470,7 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
         auto pre_bft = bft_ptr->pipeline_prev_zbft_ptr();
         bft_ptr->Destroy();
         bft_queue.erase(iter);
-        ZJC_DEBUG("remove bft gid: %s, thread_idx: %d", common::Encode::HexEncode(gid).c_str(), thread_idx);
+        ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
         if (pre_bft != nullptr && pre_bft->this_node_is_leader()) {
             ReConsensusBft(thread_idx, pre_bft);
         }
@@ -1487,10 +1487,10 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
 //                     SyncConsensusBlock()
         }
 
-        ZJC_DEBUG("can not remove bft gid: %s, %d, thread_idx: %d",
+        ZJC_DEBUG("can not remove bft gid: %s, %d, pool_index: %d",
             common::Encode::HexEncode(gid).c_str(),
             (bft_ptr->prepare_block() != nullptr),
-            thread_idx);
+            pool_index);
         // 
 //                 if (bft_ptr->should_timer_to_restart()) {
 //                     ReConsensusBft(thread_idx, bft_ptr);
@@ -1499,7 +1499,7 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
     } else {
         bft_ptr->Destroy();
         bft_queue.erase(iter);
-        ZJC_DEBUG("remove bft gid: %s, thread_idx: %d", common::Encode::HexEncode(gid).c_str(), thread_idx);
+        ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
     }
 }
 
