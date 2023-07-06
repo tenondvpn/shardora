@@ -1986,8 +1986,8 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
 
         if (bft_ptr == nullptr || bft_ptr->txs_ptr()->txs.empty() || !bft_ptr->BackupCheckLeaderValid(&bft_msg)) {
             // oppose
-            ZJC_ERROR("create bft ptr failed backup create consensus bft gid: %s, tx size: %d",
-                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), bft_ptr->txs_ptr()->txs.size());
+            ZJC_ERROR("create bft ptr failed backup create consensus bft gid: %s",
+                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
         } else {
             auto* new_bft_msg = msg_ptr->response->header.mutable_zbft();
             int prepare_res = bft_ptr->Prepare(false, new_bft_msg);
