@@ -943,26 +943,24 @@ void BftManager::ClearBft(const transport::MessagePtr& msg_ptr) {
             common::Encode::HexEncode(zbft.prepare_gid()).c_str(),
             common::Encode::HexEncode(zbft.precommit_gid()).c_str(),
             common::Encode::HexEncode(zbft.commit_gid()).c_str());
-        assert(false);
+        if (!zbft.precommit_gid().empty()) {
+            assert(false);
+        }
     }
     
     if (zbft.has_agree_precommit() && !zbft.agree_precommit()) {
         zbft.release_tx_bft();
-//         ZJC_DEBUG("not agree precommit.");
         auto prepare_bft = GetBft(from_zbft.pool_index(), from_zbft.prepare_gid());
-        if (prepare_bft == nullptr) {
-//             ZJC_DEBUG("not agree precommit prepare gid failed: %s", common::Encode::HexEncode(from_zbft.prepare_gid()).c_str());
+        if (prepare_bft != nullptr) {
+            RemoveBft(prepare_bft->pool_index(), prepare_bft->gid());
             return;
         }
 
-        RemoveBft(prepare_bft->pool_index(), prepare_bft->gid());
         auto precommit_bft = prepare_bft->pipeline_prev_zbft_ptr();
-        if (precommit_bft == nullptr) {
-            return;
+        if (precommit_bft != nullptr) {
+            assert(false);
+            RemoveBft(precommit_bft->pool_index(), precommit_bft->gid());
         }
-
-        assert(false);
-        RemoveBft(precommit_bft->pool_index(), precommit_bft->gid());
     }
 }
 
