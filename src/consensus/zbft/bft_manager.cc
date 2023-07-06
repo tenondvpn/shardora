@@ -599,10 +599,12 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     auto& elect_item = *elect_item_ptr;
-    ZJC_DEBUG("consensus message coming prepare gid: %s, precommit gid: %s, "
+    assert(common::GlobalInfo::Instance()->pools_with_thread()[header.zbft().pool_index()] == msg_ptr->thread_idx);
+    ZJC_DEBUG("consensus message coming pool index: %u, prepare gid: %s, precommit gid: %s, "
         "commit gid: %s thread idx: %d, has sync: %d, txhash: %lu, "
         "member index: %d, other member index: %d, pool index: %d, "
         "elect height: %lu, local elect height: %lu",
+        header.zbft().pool_index();
         common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
         common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
