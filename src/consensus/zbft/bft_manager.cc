@@ -1472,13 +1472,13 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
         bft_queue.erase(iter);
         ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
         if (pre_bft != nullptr && pre_bft->this_node_is_leader()) {
-            ReConsensusBft(thread_idx, pre_bft);
+            ReConsensusBft(pool_index, pre_bft);
         }
     } else if (bft_ptr->consensus_status() == kConsensusPreCommit) {
         if (bft_ptr->prepare_block() != nullptr &&
                 bft_ptr->prepare_block()->is_cross_block() &&
                 bft_ptr->this_node_is_leader()) {
-            ReConsensusBft(thread_idx, bft_ptr);
+            ReConsensusBft(pool_index, bft_ptr);
             return;
         }
 
