@@ -1519,41 +1519,9 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
         return;
     }
 
-    if (bft_ptr->consensus_status() == kConsensusPrepare) {
-        auto pre_bft = bft_ptr->pipeline_prev_zbft_ptr();
-        bft_ptr->Destroy();
-        bft_queue.erase(iter);
-        ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
-        if (pre_bft != nullptr && pre_bft->this_node_is_leader()) {
-            ReConsensusBft(pre_bft);
-        }
-    } else if (bft_ptr->consensus_status() == kConsensusPreCommit) {
-        if (bft_ptr->prepare_block() != nullptr &&
-                bft_ptr->prepare_block()->is_cross_block() &&
-                bft_ptr->this_node_is_leader()) {
-            ReConsensusBft(bft_ptr);
-            return;
-        }
-
-        if (bft_ptr->prepare_block() == nullptr) {
-            // TODO: sync this block from other node
-//                     SyncConsensusBlock()
-        }
-
-//         ZJC_DEBUG("can not remove bft gid: %s, %d, pool_index: %d",
-//             common::Encode::HexEncode(gid).c_str(),
-//             (bft_ptr->prepare_block() != nullptr),
-//             pool_index);
-        // 
-//                 if (bft_ptr->should_timer_to_restart()) {
-//                     ReConsensusBft(thread_idx, bft_ptr);
-//                     bft_ptr->set_should_timer_to_restart(false);
-//                 }
-    } else {
-        bft_ptr->Destroy();
-        bft_queue.erase(iter);
-        ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
-    }
+    bft_ptr->Destroy();
+    bft_queue.erase(iter);
+    ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
 }
 
 void BftManager::CheckMessageTimeout(uint8_t thread_index) {
@@ -2168,8 +2136,8 @@ int BftManager::LeaderHandleZbftMessage(
                         std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
-                    } else {
-                        ReConsensusBft(prev_ptr);
+//                     } else {
+//                         ReConsensusBft(prev_ptr);
 //                         prev_ptr->set_should_timer_to_restart(true);
                     }
                 }
@@ -2202,8 +2170,8 @@ int BftManager::LeaderHandleZbftMessage(
                         std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
-                    } else {
-                        ReConsensusBft(prev_ptr);
+//                     } else {
+//                         ReConsensusBft(prev_ptr);
 //                         prev_ptr->set_should_timer_to_restart(true);
 //                         ZJC_DEBUG("oppose use next prepare set_should_timer_to_restart");
                     }
@@ -2243,8 +2211,8 @@ int BftManager::LeaderHandleZbftMessage(
                         std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
-                    } else {
-                        ReConsensusBft(prev_ptr);
+//                     } else {
+//                         ReConsensusBft(prev_ptr);
 //                         prev_ptr->set_should_timer_to_restart(true);
                     }
                     ZJC_ERROR("commit call oppose now.");
