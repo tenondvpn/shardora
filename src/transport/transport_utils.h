@@ -11,6 +11,7 @@
 #include <functional>
 
 #include "common/log.h"
+#include "common/time_utils.h"
 #include "tnet/tcp_interface.h"
 #include "protos/address.pb.h"
 #include "protos/transport.pb.h"
