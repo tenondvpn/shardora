@@ -1997,16 +1997,18 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             if (bft_ptr != nullptr) {
                 RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
             }
-        } else {
-            auto* new_bft_msg = msg_ptr->response->header.mutable_zbft();
-            int prepare_res = bft_ptr->Prepare(false, new_bft_msg);
-            if (prepare_res != kConsensusSuccess) {
-                ZJC_ERROR("prepare failed gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-            }
 
-            ZJC_DEBUG("success create bft ptr backup create consensus bft gid: %s",
-                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+            return;
         }
+
+        auto* new_bft_msg = msg_ptr->response->header.mutable_zbft();
+        int prepare_res = bft_ptr->Prepare(false, new_bft_msg);
+        if (prepare_res != kConsensusSuccess) {
+            ZJC_ERROR("prepare failed gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+        }
+
+        ZJC_DEBUG("success create bft ptr backup create consensus bft gid: %s",
+            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
 #ifdef ZJC_UNITTEST
         if (test_for_prepare_evil_) {
             ZJC_ERROR("1 bft backup prepare failed! not agree bft gid: %s",
