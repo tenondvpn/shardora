@@ -1422,8 +1422,8 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
     }
 
     bft_queue.push_back(bft_ptr);
-    ZJC_DEBUG("thread idx: %d, add gid: %s, res: %d",
-        bft_ptr->thread_index(),
+    ZJC_DEBUG("pool idx: %d, add gid: %s, res: %d",
+        bft_ptr->pool_index(),
         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
         res);
     return res;
@@ -1433,7 +1433,6 @@ ZbftPtr BftManager::GetBft(uint32_t pool_index, const std::string& gid) {
     auto& bft_queue = pools_with_zbfts_[pool_index];
     for (auto iter = bft_queue.begin(); iter != bft_queue.end(); ++iter) {
         if ((*iter)->gid() == gid) {
-            (*iter)->ClearTime();
             return *iter;
         }
     }
@@ -1449,6 +1448,7 @@ void BftManager::RemoveBftWithBlockHash(uint32_t pool_index, const std::string& 
         }
 
         if ((*iter)->prepare_block()->hash() == hash) {
+            ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode((*iter)->gid()).c_str(), pool_index);
             bft_queue.erase(iter);
             break;
         }
@@ -1748,8 +1748,8 @@ int BftManager::CheckPrecommit(
 
         auto bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.precommit_gid());
         if (bft_ptr == nullptr) {
-            ZJC_DEBUG("failed get precommit gid: %s",
-                common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+            ZJC_DEBUG("failed get precommit bft_msg.pool_index(): %u, gid: %s",
+                bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
             break;
         }
 
