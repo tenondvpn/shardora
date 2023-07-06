@@ -1492,14 +1492,12 @@ ZbftPtr BftManager::CreateBftPtr(
 }
 
 int BftManager::AddBft(ZbftPtr& bft_ptr) {
-    int res = kConsensusSuccess;
     auto& bft_queue = pools_with_zbfts_[bft_ptr->pool_index()];
     for (auto iter = bft_queue.begin(); iter != bft_queue.end(); ++iter) {
         auto tmp_bft = *iter;
         if (tmp_bft->gid() == bft_ptr->gid()) {
             assert(false);
-            res = kConsensusError;
-            break;
+            return kConsensusError;
         }
 
         if (tmp_bft->height() != common::kInvalidUint64 &&
@@ -1509,8 +1507,7 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
                 bft_ptr->height(), tmp_bft->height(),
                 bft_ptr->pool_index(), common::Encode::HexEncode(bft_ptr->gid()).c_str());
             bft_ptr->set_prepare_block(nullptr);
-            res = kConsensusError;
-            break;
+            return kConsensusError;
         }
     }
 
@@ -1519,7 +1516,7 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
         bft_ptr->pool_index(),
         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
         res);
-    return res;
+    return kConsensusSuccess;
 }
 
 ZbftPtr BftManager::GetBft(uint32_t pool_index, const std::string& gid) {
@@ -2031,8 +2028,8 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
             bft_ptr->txs_ptr()->txs.size());
-        if (!bft_ptr->local_prepare_hash().empty()) {
-            ZJC_DEBUG("backup create consensus bft prepare hash: %s, prehash: %s, leader prehash: %s, pre height: %lu, leader pre height: %lu, gid: %s, tx size: %d",
+        if (bft_ptr->local_prepare_hash().empty()) {
+            ZJC_DEBUG("failed backup create consensus bft prepare hash: %s, prehash: %s, leader prehash: %s, pre height: %lu, leader pre height: %lu, gid: %s, tx size: %d",
                 common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
                 common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
                 common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
@@ -2043,13 +2040,14 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
 //             if (!bft_msg.prepare_hash().empty() && bft_ptr->prepare_block()->prehash() != bft_msg.prepare_hash()) {
 //                 assert(false);
 //             }
-            msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
+            return;
         }
 
         if (AddBft(bft_ptr) != kConsensusSuccess) {
-            msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
+            return;
         }
 
+        msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
         bft_ptr->set_consensus_status(kConsensusPrepare);
