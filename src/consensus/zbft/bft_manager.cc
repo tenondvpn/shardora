@@ -823,6 +823,7 @@ void BftManager::HandleSyncConsensusBlock(
         bft_msg.set_sync_block(true);
         bft_msg.set_precommit_gid(req_bft_msg.precommit_gid());
         bft_msg.set_pool_index(bft_ptr->pool_index());
+        ZJC_DEBUG("gid: %s, set pool index: %u", common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
         bft_msg.set_member_index(elect_item.local_node_member_index);
         bft_msg.set_elect_height(elect_item.elect_height);
         assert(elect_item.elect_height > 0);
@@ -903,6 +904,7 @@ void BftManager::SyncConsensusBlock(
     bft_msg.set_sync_block(true);
     bft_msg.set_precommit_gid(bft_gid);
     bft_msg.set_pool_index(pool_index);
+    ZJC_DEBUG("gid: %s, set pool index: %u", common::Encode::HexEncode(bft_gid).c_str(), pool_index);
     bft_msg.set_member_index(elect_item.local_node_member_index);
     bft_msg.set_elect_height(elect_item.elect_height);
     assert(elect_item.elect_height > 0);
@@ -1883,11 +1885,12 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         }
     }
 
-    ZJC_DEBUG("has prepare: %d, prepare gid: %s, precommit gid: %s, commit gid: %s",
+    ZJC_DEBUG("has prepare: %d, prepare gid: %s, precommit gid: %s, commit gid: %s, set pool index: %u",
         bft_msg.has_prepare_gid(),
         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
         common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
-        common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
+        common::Encode::HexEncode(bft_msg.commit_gid()).c_str(),
+        bft_msg.pool_index());
     msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_msg.pool_index());
     if (bft_msg.has_prepare_gid() && !bft_msg.prepare_gid().empty()) {
         msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
@@ -2070,6 +2073,7 @@ int BftManager::LeaderHandleZbftMessage(
                 LeaderCallPrecommit(elect_item, bft_ptr, msg_ptr);
                 if (!msg_ptr->response->header.mutable_zbft()->has_pool_index()) {
                     msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
+                    ZJC_DEBUG("gid: %s, set pool index: %u", common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
                 }
                 msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             } else if (res == kConsensusOppose) {
@@ -2098,6 +2102,7 @@ int BftManager::LeaderHandleZbftMessage(
                 msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
                 msg_ptr->response->header.mutable_zbft()->set_oppose_prepare_gid(bft_msg.prepare_gid());
                 msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
+                ZJC_DEBUG("gid: %s, set pool index: %u", common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
                 auto prev_ptr = bft_ptr->pipeline_prev_zbft_ptr();
                 bft_ptr->set_consensus_status(kConsensusFailed);
                 RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
@@ -2151,6 +2156,7 @@ int BftManager::LeaderHandleZbftMessage(
             if (bft_ptr->AddPrecommitOpposeNode(member_ptr->id) == kConsensusOppose) {
                 msg_ptr->response->header.mutable_zbft()->set_agree_commit(false);
                 msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
+                ZJC_DEBUG("gid: %s, set pool index: %u", common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
                 auto prev_ptr = bft_ptr->pipeline_prev_zbft_ptr();
                 bft_ptr->set_consensus_status(kConsensusFailed);
                 RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
