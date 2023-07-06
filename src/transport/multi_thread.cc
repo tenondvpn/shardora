@@ -255,7 +255,6 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
             }
             
             auto new_msg_ptr = std::make_shared<transport::TransportMessage>();
-            new_msg_ptr->checked_block = true;
             CreateConsensusBlockMessage(new_msg_ptr, block_item);
         }
     }
