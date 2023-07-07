@@ -1530,9 +1530,9 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
                 bft_ptr->pool_index() == tmp_bft->pool_index() &&
                 bft_ptr->height() <= tmp_bft->height()) {
             if (bft_ptr->height() == tmp_bft->height()) {
+                ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(tmp_bft->gid()).c_str(), bft_ptr->pool_index());
                 tmp_bft->Destroy();
                 bft_queue.erase(iter++);
-                ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode((*iter)->gid()).c_str(), pool_index);
                 continue;
             } else {
                 ZJC_DEBUG("elect height error: %u, %lu %lu, %s, %s",
