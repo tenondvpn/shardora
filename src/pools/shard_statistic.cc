@@ -675,8 +675,8 @@ int ShardStatistic::StatisticWithHeights(
                     tmp_iter->second += niter->second.tx_count;
                 }
 
-//                 ZJC_DEBUG("pool: %u, height: %lu, id: %s, tx_count: %u",
-//                     pool_idx, hiter->first, common::Encode::HexEncode(niter->first).c_str(), node_count_map[niter->first]);
+                ZJC_DEBUG("pool: %u, height: %lu, id: %s, tx_count: %u",
+                    pool_idx, hiter->first, common::Encode::HexEncode(niter->first).c_str(), node_count_map[niter->first]);
                 if (elect_height == now_elect_height_) {
                     auto liter = lof_map.find(niter->second.leader_index);
                     if (liter == lof_map.end()) {
