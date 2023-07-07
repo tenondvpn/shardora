@@ -472,7 +472,7 @@ bool BlsDkg::VerifySekkeyValid(
     uint32_t changed_idx = 0;
     libff::alt_bn128_G2 new_val = GetVerifyG2FromDb(peer_index, &changed_idx);
     if (new_val == libff::alt_bn128_G2::zero()) {
-        assert(false);
+//         assert(false);
         return false;
     }
 
