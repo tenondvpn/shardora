@@ -77,6 +77,7 @@ void KeyValueSync::AddSyncElectBlock(
 }
 
 void KeyValueSync::ConsensusTimerMessage(uint8_t thread_idx) {
+    auto now_tm_us = common::TimeUtils::TimestampUs();
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     ZJC_DEBUG("KeyValueSync called timer: %lu, thread_idx: %lu", now_tm_ms, thread_idx);
     PopKvMessage(thread_idx);
