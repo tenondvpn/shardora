@@ -1809,7 +1809,7 @@ int BftManager::LeaderPrepare(
             bft_ptr->thread_index(),
             common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
             bft_ptr->prepare_block() == nullptr ? "" : common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
-            elect_item.elect_height.
+            elect_item.elect_height,
             msg_ptr->header.hash64());
         network::Route::Instance()->Send(msg_ptr);
 #endif
