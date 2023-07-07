@@ -11,22 +11,6 @@ Processor* Processor::Instance() {
     return &ins;
 }
 
-void Processor::RegisterProcessor(uint32_t type, MessageProcessor processor) {
-    assert(type < common::kLegoMaxMessageTypeCount);
-    message_processor_[type] = processor;
-}
-
-void Processor::HandleMessage(MessagePtr& msg_ptr) {
-    auto& message = msg_ptr->header;
-    assert(message.type() < common::kLegoMaxMessageTypeCount);
-    if (message_processor_[message.type()] == nullptr) {
-        assert(false);
-        return;
-    }
-
-    (message_processor_[message.type()])(msg_ptr);
-}
-
 Processor::Processor() {}
 
 Processor::~Processor() {}
