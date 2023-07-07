@@ -1794,13 +1794,13 @@ int BftManager::LeaderPrepare(
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     if (prepare_msg_ptr == nullptr) {
+        transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header, msg_ptr->thread_idx);
         if (!LeaderSignMessage(msg_ptr)) {
             return kConsensusError;
         }
 #ifdef ZJC_UNITTEST
         now_msg_[msg_ptr->thread_idx] = msg_ptr;
 #else
-        transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header, msg_ptr->thread_idx);
         ZJC_DEBUG("cross block use pipeline: %d, this node is leader and start bft: %s,"
             "pool index: %d, thread index: %d, prepare hash: %s, pre hash: %s, "
             "elect height: %lu, hash64: %lu",
