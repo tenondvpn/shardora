@@ -157,7 +157,7 @@ void TxPool::GetTx(
         res_map[iter->second->tx_hash] = iter->second;
         ZJC_DEBUG("success get local transfer to tx %u, %s",
             pool_index_, common::Encode::HexEncode(iter->second->tx_hash).c_str());
-        src_prio_map.erase(iter++);
+        iter = src_prio_map.erase(iter);
         if (res_map.size() >= count) {
             return;
         }

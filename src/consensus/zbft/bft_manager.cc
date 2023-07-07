@@ -916,7 +916,7 @@ void BftManager::RemoveWaitingBlock(uint32_t pool_index, uint64_t height) {
             block_ptr->pool_index(),
             block_ptr->height(),
             common::Encode::HexEncode(block_ptr->hash()).c_str());
-        block_map.erase(iter++);
+        iter = block_map.erase(iter);
         // check bls sign
         auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pool_index];
         if (block_agg_valid_func_(thread_idx, *block_ptr)) {

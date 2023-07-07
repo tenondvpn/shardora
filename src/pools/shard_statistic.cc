@@ -157,7 +157,7 @@ void ShardStatistic::HandleStatisticBlock(
                             cross_shard_map_[height_idx].erase(cross_iter);
                         }
 
-                        node_height_count_map_[height_idx].erase(iter++);
+                        iter = node_height_count_map_[height_idx].erase(iter);
                         ZJC_DEBUG("erase handled height pool: %u, height: %lu, handled_height: %lu",
                             height_idx, iter->first, elect_statistic.heights().heights(height_idx));
                         continue;

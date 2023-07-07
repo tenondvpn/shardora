@@ -556,7 +556,7 @@ void KeyValueSync::CheckSyncTimeout() {
     for (auto iter = synced_map_.begin(); iter != synced_map_.end();) {
         if (iter->second->sync_times >= kSyncMaxRetryTimes) {
             added_key_set_.erase(iter->second->key);
-            synced_map_.erase(iter++);
+            iter = synced_map_.erase(iter);
             continue;
         }
 
@@ -566,7 +566,7 @@ void KeyValueSync::CheckSyncTimeout() {
         }
 
         prio_sync_queue_[iter->second->priority].push(iter->second);
-        synced_map_.erase(iter++);
+        iter = synced_map_.erase(iter);
     }
 }
 
