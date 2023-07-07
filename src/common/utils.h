@@ -70,7 +70,7 @@ enum MessageType {
     kPoolTimerMessage = 11,
     kInitMessage = 12,
     // max (message) type
-    kLegoMaxMessageTypeCount = 1000,
+    kLegoMaxMessageTypeCount = 16,
 };
 
 enum CommonErrorCode {
