@@ -408,6 +408,11 @@ void NetworkInit::RotationLeaderCallback(uint8_t thread_idx, const std::vector<i
         return;
     }
 
+    auto invalid_leader_pool_size = common::kInvalidPoolIndex / rotation->rotations.size();
+    if (max_invalid_mod_count < invalid_leader_pool_size) {
+        return;
+    }
+
     BroadcastInvalidPools(thread_idx, rotation, max_invalid_mod_idx);
 }
 
