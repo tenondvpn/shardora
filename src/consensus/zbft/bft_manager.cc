@@ -903,13 +903,18 @@ void BftManager::AddWaitingBlock(const transport::MessagePtr& msg_ptr) {
 
 void BftManager::RemoveWaitingBlock(uint32_t pool_index, uint64_t height) {
     auto& block_map = waiting_blocks_[pool_index];
-    for (auto iter = block_map.begin(); iter != block_map.end(); ++iter) {
+    auto iter = block_map.begin();
+    while (iter != block_map.end()) {
         if (iter->first > height) {
             break;
         }
 
         auto block_ptr = iter->second;
-        block_map.erase(iter);
+        ZJC_DEBUG("remove new block pool: %u, height: %lu, hash: %s",
+            block_ptr->pool_index(),
+            block_ptr->height(),
+            common::Encode::HexEncode(block_ptr->hash()).c_str());
+        block_map.erase(iter++);
         // check bls sign
         auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pool_index];
         if (block_agg_valid_func_(thread_idx, *block_ptr)) {
