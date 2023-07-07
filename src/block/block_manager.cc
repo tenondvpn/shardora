@@ -479,16 +479,18 @@ void BlockManager::HandleNormalToTx(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
 //     ZJC_DEBUG("new normal to block coming.");
-    if (tx.storages_size() != 1) {
-        ZJC_WARN("normal to txs storages invalid.");
-        return;
-    }
-
     std::string to_txs_str;
-    if (!prefix_db_->GetTemporaryKv(tx.storages(0).val_hash(), &to_txs_str)) {
-        ZJC_WARN("normal to get val hash failed: %s",
-            common::Encode::HexEncode(tx.storages(0).val_hash()).c_str());
-        return;
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        ZJC_DEBUG("get normal to tx key: %s", tx.storages(i).key().c_str());
+        if (tx.storages(i).key() != protos::kNormalTos) {
+            continue;
+        }
+
+        if (!prefix_db_->GetTemporaryKv(tx.storages(0).val_hash(), &to_txs_str)) {
+            ZJC_WARN("normal to get val hash failed: %s",
+                common::Encode::HexEncode(tx.storages(0).val_hash()).c_str());
+            return;
+        }
     }
 
     pools::protobuf::ToTxMessage to_txs;
