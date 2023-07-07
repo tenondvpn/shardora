@@ -252,6 +252,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
 
 bool ClickHouseClient::CreateTransactionTable() {
     std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhouseTransTableName + " ( "
+        "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
         "`shard_id` UInt32 COMMENT 'shard_id' CODEC(T64, LZ4), "
         "`pool_index` UInt32 COMMENT 'pool_index' CODEC(T64, LZ4), "
         "`height` UInt64 COMMENT 'height' CODEC(T64, LZ4), "
@@ -297,6 +298,7 @@ bool ClickHouseClient::CreateTransactionTable() {
 
 bool ClickHouseClient::CreateBlockTable() {
     std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhouseBlockTableName + " ( "
+        "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
         "`shard_id` UInt32 COMMENT 'shard_id' CODEC(T64, LZ4), "
         "`pool_index` UInt32 COMMENT 'pool_index' CODEC(T64, LZ4), "
         "`height` UInt64 COMMENT 'height' CODEC(T64, LZ4), "
@@ -341,6 +343,7 @@ bool ClickHouseClient::CreateAccountTable() {
 
 bool ClickHouseClient::CreateAccountKeyValueTable() {
     std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhouseAccountKvTableName + " ( "
+        "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
         "`from` String COMMENT 'prehash' CODEC(LZ4), "
         "`to` String COMMENT 'prehash' CODEC(LZ4), "
         "`type` UInt32 COMMENT 'type' CODEC(T64, LZ4), "
@@ -359,6 +362,7 @@ bool ClickHouseClient::CreateAccountKeyValueTable() {
 
 bool ClickHouseClient::CreateStatisticTable() {
     std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhouseStatisticTableName + " ( "
+        "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
         "`time` UInt64 COMMENT 'time' CODEC(LZ4), "
         "`all_zjc` UInt64 COMMENT 'zjc' CODEC(LZ4), "
         "`all_address` UInt32 COMMENT 'address' CODEC(T64, LZ4), "
@@ -379,6 +383,7 @@ bool ClickHouseClient::CreateStatisticTable() {
 
 bool ClickHouseClient::CreatePrivateKeyTable() {
     std::string create_cmd = std::string("CREATE TABLE if not exists private_key_table ( "
+        "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
         "`seckey` String COMMENT 'seckey' CODEC(LZ4), "
         "`ecn_prikey` String COMMENT 'ecn_prikey' CODEC(LZ4), "
         "`date` UInt32 COMMENT 'date' CODEC(T64, LZ4) "

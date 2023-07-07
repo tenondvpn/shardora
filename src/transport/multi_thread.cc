@@ -248,14 +248,16 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
         if (block_item->ParseFromString(iter->value()) &&
                 (iter->has_height() || !block_item->hash().empty())) {
             if (prefix_db_->BlockExists(block_item->hash())) {
-                ZJC_DEBUG("block hash exists not has sync value res: %s", common::Encode::HexEncode(block_item->hash()).c_str());
+                ZJC_DEBUG("block hash exists not has sync value res: %s",
+                    common::Encode::HexEncode(block_item->hash()).c_str());
                 continue;
             }
 
             if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
                     block_item->network_id() + network::kConsensusWaitingShardOffset !=
                     common::GlobalInfo::Instance()->network_id()) {
-                ZJC_DEBUG("sync response coming net error:  %u, %u, %u", block_item->network_id(), msg_ptr->header.src_sharding_id(), common::GlobalInfo::Instance()->network_id());
+                ZJC_DEBUG("sync response coming net error:  %u, %u, %u",
+                    block_item->network_id(), msg_ptr->header.src_sharding_id(), common::GlobalInfo::Instance()->network_id());
                 continue;
             }
             
