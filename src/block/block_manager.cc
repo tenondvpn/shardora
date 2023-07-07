@@ -482,7 +482,7 @@ void BlockManager::HandleNormalToTx(
     std::string to_txs_str;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         ZJC_DEBUG("get normal to tx key: %s", tx.storages(i).key().c_str());
-        if (tx.storages(i).key() != protos::kNormalTos) {
+        if (tx.storages(i).key() != protos::kNormalToShards) {
             continue;
         }
 
