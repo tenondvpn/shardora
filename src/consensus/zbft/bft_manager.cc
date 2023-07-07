@@ -1520,7 +1520,7 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
     auto& bft_queue = pools_with_zbfts_[bft_ptr->pool_index()];
     auto iter = bft_queue.begin();
     while (iter != bft_queue.end()) {
-        auto tmp_bft = *iter;
+        ZbftPtr tmp_bft = *iter;
         if (tmp_bft->gid() == bft_ptr->gid()) {
             assert(false);
             return kConsensusError;
@@ -1532,7 +1532,7 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
             if (bft_ptr->height() == tmp_bft->height()) {
                 ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(tmp_bft->gid()).c_str(), bft_ptr->pool_index());
                 tmp_bft->Destroy();
-                bft_queue.erase(iter++);
+                iter = bft_queue.erase(iter);
                 continue;
             } else {
                 ZJC_DEBUG("elect height error: %u, %lu %lu, %s, %s",
@@ -1671,7 +1671,6 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
             break;
         }
     }
-    
 }
 
 void BftManager::ReConsensusBft(ZbftPtr& bft_ptr) {
