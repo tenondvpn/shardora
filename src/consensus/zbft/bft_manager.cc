@@ -1799,6 +1799,19 @@ int BftManager::LeaderPrepare(
 #ifdef ZJC_UNITTEST
         now_msg_[msg_ptr->thread_idx] = msg_ptr;
 #else
+        transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header, msg_ptr->thread_idx);
+        ZJC_DEBUG("cross block use pipeline: %d, this node is leader and start bft: %s,"
+            "pool index: %d, thread index: %d, prepare hash: %s, pre hash: %s, tx size: %d, "
+            "elect height: %lu, hash64: %lu",
+            (prepare_msg_ptr != nullptr),
+            common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+            bft_ptr->pool_index(),
+            bft_ptr->thread_index(),
+            common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+            bft_ptr->prepare_block() == nullptr ? "" : common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
+            txs_ptr->txs.size(),
+            elect_item.elect_height.
+            msg_ptr->header.hash64());
         network::Route::Instance()->Send(msg_ptr);
 #endif
         bft_ptr->AfterNetwork();
