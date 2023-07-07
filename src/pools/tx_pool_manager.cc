@@ -227,7 +227,12 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
             for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
                 double res = tx_pool_[i].CheckLeaderValid(get_factor);
                 if (get_factor) {
-                    factors[i] = res;
+                    if (res > 0) {
+                        factors[i] = 1.0;
+                    } else {
+                        factors[i] = res;
+                    }
+
                     ZJC_DEBUG("get_factor: %d, get invalid pool factor pool: %d, factor: %f",
                         get_factor, i, res);
                 }
@@ -290,7 +295,7 @@ void TxPoolManager::CheckLeaderValid(
         average += factors[i];
     }
 
-    if (average <= (double)(factors.size()) * 0.1) {
+    if (average <= 0.0) {
         // all leader invalid
         if (latest_leader_count_ <= 2) {
             invalid_pools->push_back(-1);
