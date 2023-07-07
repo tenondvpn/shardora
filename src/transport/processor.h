@@ -11,12 +11,12 @@ class Processor {
 public:
     static Processor* Instance();
 
-    inline void Processor::RegisterProcessor(uint32_t type, MessageProcessor processor) {
+    inline void RegisterProcessor(uint32_t type, MessageProcessor processor) {
         assert(type < common::kLegoMaxMessageTypeCount);
         message_processor_[type] = processor;
     }
 
-    inline void Processor::HandleMessage(MessagePtr& msg_ptr) {
+    inline void HandleMessage(MessagePtr& msg_ptr) {
         auto& message = msg_ptr->header;
         assert(message.type() < common::kLegoMaxMessageTypeCount);
         if (message_processor_[message.type()] == nullptr) {
