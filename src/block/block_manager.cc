@@ -491,6 +491,8 @@ void BlockManager::HandleNormalToTx(
                 common::Encode::HexEncode(tx.storages(0).val_hash()).c_str());
             return;
         }
+
+        break;
     }
 
     pools::protobuf::ToTxMessage to_txs;
@@ -1552,6 +1554,8 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
     }
 
     if (latest_timeblock_height_ <= consensused_timeblock_height_) {
+        ZJC_WARN("latest_timeblock_height_ <= consensused_timeblock_height_: %lu, %lu",
+            latest_timeblock_height_, consensused_timeblock_height_);
         return;
     }
 
