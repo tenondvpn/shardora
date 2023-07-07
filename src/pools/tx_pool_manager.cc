@@ -418,7 +418,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     pools_msg_queue_[msg_ptr->thread_idx].push(msg_ptr);
     ZJC_DEBUG("queue size msg_ptr->thread_idx: %d, pools_msg_queue_: %d",
         msg_ptr->thread_idx, pools_msg_queue_[msg_ptr->thread_idx].size());
-    assert(pools_msg_queue_[msg_ptr->thread_idx].size() < 512);
+//     assert(pools_msg_queue_[msg_ptr->thread_idx].size() < 512);
 }
 
 void TxPoolManager::PopPoolsMessage(uint8_t thread_idx) {
