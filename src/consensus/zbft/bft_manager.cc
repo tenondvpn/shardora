@@ -1518,7 +1518,8 @@ ZbftPtr BftManager::CreateBftPtr(
 
 int BftManager::AddBft(ZbftPtr& bft_ptr) {
     auto& bft_queue = pools_with_zbfts_[bft_ptr->pool_index()];
-    for (auto iter = bft_queue.begin(); iter != bft_queue.end(); ++iter) {
+    auto iter = bft_queue.begin();
+    while (iter != bft_queue.end()) {
         auto tmp_bft = *iter;
         if (tmp_bft->gid() == bft_ptr->gid()) {
             assert(false);
@@ -1530,7 +1531,9 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
                 bft_ptr->height() <= tmp_bft->height()) {
             if (bft_ptr->height() == tmp_bft->height()) {
                 tmp_bft->Destroy();
-                bft_queue.erase(iter);
+                bft_queue.erase(iter++);
+                ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode((*iter)->gid()).c_str(), pool_index);
+                continue;
             } else {
                 ZJC_DEBUG("elect height error: %u, %lu %lu, %s, %s",
                     bft_ptr->pool_index(), bft_ptr->height(), tmp_bft->height(),
@@ -1540,6 +1543,8 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
                 return kConsensusError;
             }
         }
+
+        ++iter;
     }
 
     bft_queue.push_back(bft_ptr);
