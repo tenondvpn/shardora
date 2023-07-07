@@ -1528,11 +1528,8 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
         if (tmp_bft->height() != common::kInvalidUint64 &&
                 bft_ptr->pool_index() == tmp_bft->pool_index() &&
                 bft_ptr->height() <= tmp_bft->height()) {
-            ZJC_ERROR("block height error: %lu, %lu, pool: %u, gid: %s",
-                bft_ptr->height(), tmp_bft->height(),
-                bft_ptr->pool_index(), common::Encode::HexEncode(bft_ptr->gid()).c_str());
-            bft_ptr->set_prepare_block(nullptr);
-            return kConsensusError;
+            bft_ptr->Destroy();
+            bft_queue.erase(iter);
         }
     }
 
@@ -1563,6 +1560,7 @@ void BftManager::RemoveBftWithBlockHash(uint32_t pool_index, const std::string& 
 
         if ((*iter)->prepare_block()->hash() == hash) {
             ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode((*iter)->gid()).c_str(), pool_index);
+            (*iter)->Destroy();
             bft_queue.erase(iter);
             break;
         }
