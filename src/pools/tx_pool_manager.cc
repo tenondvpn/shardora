@@ -206,7 +206,7 @@ void TxPoolManager::FlushHeightTree() {
 
 void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    ZJC_DEBUG("tx pool manager called timer: %lu", now_tm_ms);
+    ZJC_DEBUG("tx pool manager called timer: %lu, thread_idx: %lu", now_tm_ms, thread_idx);
     PopPoolsMessage(thread_idx);
     if (prev_sync_height_tree_tm_ms_ < now_tm_ms) {
         FlushHeightTree();
@@ -276,7 +276,7 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
         ZJC_DEBUG("TxPoolManager handle message use time: %lu", (etime - now_tm_ms));
     }
 
-    ZJC_DEBUG("end tx pool manager called timer: %lu", now_tm_ms);
+    ZJC_DEBUG("end tx pool manager called timer: %lu, thread_idx: %u", now_tm_ms, thread_idx);
     tick_.CutOff(
         100000lu,
         std::bind(&TxPoolManager::ConsensusTimerMessage, this, std::placeholders::_1));
@@ -411,9 +411,9 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // just one thread
     assert(msg_ptr->thread_idx < common::kMaxThreadCount);
     pools_msg_queue_[msg_ptr->thread_idx].push(msg_ptr);
-    assert(pools_msg_queue_[msg_ptr->thread_idx].size() < 512);
     ZJC_DEBUG("queue size msg_ptr->thread_idx: %d, pools_msg_queue_: %d",
         msg_ptr->thread_idx, pools_msg_queue_[msg_ptr->thread_idx].size());
+    assert(pools_msg_queue_[msg_ptr->thread_idx].size() < 512);
 }
 
 void TxPoolManager::PopPoolsMessage(uint8_t thread_idx) {

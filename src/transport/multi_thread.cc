@@ -63,31 +63,31 @@ void ThreadHandler::HandleMessage() {
                 ZJC_INFO("over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
             }
             ZJC_DEBUG("over message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
-        }
 
-        if (thread_idx_ + 1 < common::GlobalInfo::Instance()->message_handler_thread_count()) {
-            auto btime = common::TimeUtils::TimestampUs();
-            auto msg_ptr = std::make_shared<transport::TransportMessage>();
-            msg_ptr->thread_idx = thread_idx_;
-            msg_ptr->header.set_type(common::kConsensusTimerMessage);
-//             ZJC_INFO("kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
-            if (common::TimeUtils::TimestampUs() - btime > 10000lu) {
-                ZJC_DEBUG("timer message handled msg hash: %lu, thread idx: %d, use time: %lu", thread_timer_hash_64, msg_ptr->thread_idx, (common::TimeUtils::TimestampUs() - btime));
-            }
-
-            msg_ptr->times[msg_ptr->times_idx++] = btime;
-            Processor::Instance()->HandleMessage(msg_ptr);
-            auto etime = common::TimeUtils::TimestampUs();
-            if (etime - btime > 100000) {
-                std::string t;
-                for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
-                    t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
+            if (thread_idx_ + 1 < common::GlobalInfo::Instance()->message_handler_thread_count()) {
+                auto btime = common::TimeUtils::TimestampUs();
+                auto msg_ptr = std::make_shared<transport::TransportMessage>();
+                msg_ptr->thread_idx = thread_idx_;
+                msg_ptr->header.set_type(common::kConsensusTimerMessage);
+    //             ZJC_INFO("kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
+                if (common::TimeUtils::TimestampUs() - btime > 10000lu) {
+                    ZJC_DEBUG("timer message handled msg hash: %lu, thread idx: %d, use time: %lu", thread_timer_hash_64, msg_ptr->thread_idx, (common::TimeUtils::TimestampUs() - btime));
                 }
 
-                ZJC_INFO("kConsensusTimerMessage over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
+                msg_ptr->times[msg_ptr->times_idx++] = btime;
+                Processor::Instance()->HandleMessage(msg_ptr);
+                auto etime = common::TimeUtils::TimestampUs();
+                if (etime - btime > 100000) {
+                    std::string t;
+                    for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
+                        t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
+                    }
+
+                    ZJC_INFO("kConsensusTimerMessage over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
+                }
+                ZJC_DEBUG("timer over message handled msg hash: %lu, thread idx: %d", thread_timer_hash_64, msg_ptr->thread_idx);
+                ++thread_timer_hash_64;
             }
-            ZJC_DEBUG("timer over message handled msg hash: %lu, thread idx: %d", thread_timer_hash_64, msg_ptr->thread_idx);
-            ++thread_timer_hash_64;
         }
 
         std::unique_lock<std::mutex> lock(wait_mutex_);
