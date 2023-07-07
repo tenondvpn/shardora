@@ -1596,6 +1596,10 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
         return;
     }
 
+    if (bft_ptr->consensus_status() == kConsensusPreCommit && !bft_ptr->this_node_is_leader()) {
+        return;
+    }
+
     bft_ptr->Destroy();
     bft_queue.erase(iter);
     ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
