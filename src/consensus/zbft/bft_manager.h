@@ -188,7 +188,7 @@ private:
         uint32_t leader_idx,
         const ElectItem& elect_item);
     void AddWaitingBlock(const transport::MessagePtr& msg_ptr);
-    void RemoveWaitingBlock(uint32_t pool_index, const std::string& prehash);
+    void RemoveWaitingBlock(uint32_t pool_index, uint64_t height);
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
@@ -315,7 +315,7 @@ private:
     block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
     std::deque<ZbftPtr> pools_with_zbfts_[common::kInvalidPoolIndex];
     std::deque<transport::MessagePtr> backup_prapare_msg_queue_[common::kMaxThreadCount];
-    std::unordered_map<std::string, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
+    std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {

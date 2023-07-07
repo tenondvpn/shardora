@@ -884,7 +884,7 @@ void BftManager::HandleSyncConsensusBlock(
 void BftManager::AddWaitingBlock(const transport::MessagePtr& msg_ptr) {
     auto& req_bft_msg = msg_ptr->header.zbft();
     auto& block_map = waiting_blocks_[req_bft_msg.block().pool_index()];
-    auto iter = block_map.find(req_bft_msg.block().hash());
+    auto iter = block_map.find(req_bft_msg.block().height());
     if (iter != block_map.end()) {
         return;
     }
@@ -894,39 +894,43 @@ void BftManager::AddWaitingBlock(const transport::MessagePtr& msg_ptr) {
     }
 
     auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
-    block_map[req_bft_msg.block().hash()] = block_ptr;
+    block_map[req_bft_msg.block().height()] = block_ptr;
+    ZJC_DEBUG("add new block pool: %u, height: %lu, hash: %s",
+        block_ptr->pool_index(),
+        block_ptr->height(),
+        common::Encode::HexEncode(block_ptr->hash()).c_str());
 }
 
-void BftManager::RemoveWaitingBlock(uint32_t pool_index, const std::string& prehash) {
+void BftManager::RemoveWaitingBlock(uint32_t pool_index, uint64_t height) {
     auto& block_map = waiting_blocks_[pool_index];
-    auto iter = block_map.find(prehash);
-    if (iter == block_map.end()) {
-        return;
-    }
-    
-    auto block_ptr = iter->second;
-    block_map.erase(iter);
-    // check bls sign
-    auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pool_index];
-    if (block_agg_valid_func_(thread_idx, *block_ptr)) {
-        auto db_batch = std::make_shared<db::DbWriteBatch>();
-        auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block_ptr, db_batch);
-        new_block_cache_callback_(
-            thread_idx,
-            queue_item_ptr->block_ptr,
-            *queue_item_ptr->db_batch);
-        block_mgr_->ConsensusAddBlock(thread_idx, queue_item_ptr);
-        pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
-        ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s, "
-            "precommit_bitmap size: %u",
-            block_ptr->network_id(),
-            block_ptr->pool_index(),
-            block_ptr->height(),
-            common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str(),
-            block_ptr->precommit_bitmap_size());
-        // remove bft
-        RemoveBftWithBlockHash(thread_idx, block_ptr->hash());
-        RemoveWaitingBlock(pool_index, block_ptr->prehash());
+    for (auto iter = block_map.begin(); iter != block_map.end(); ++iter) {
+        if (iter->first > height) {
+            break;
+        }
+
+        auto block_ptr = iter->second;
+        block_map.erase(iter);
+        // check bls sign
+        auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pool_index];
+        if (block_agg_valid_func_(thread_idx, *block_ptr)) {
+            auto db_batch = std::make_shared<db::DbWriteBatch>();
+            auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block_ptr, db_batch);
+            new_block_cache_callback_(
+                thread_idx,
+                queue_item_ptr->block_ptr,
+                *queue_item_ptr->db_batch);
+            block_mgr_->ConsensusAddBlock(thread_idx, queue_item_ptr);
+            pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
+            ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s, "
+                "precommit_bitmap size: %u",
+                block_ptr->network_id(),
+                block_ptr->pool_index(),
+                block_ptr->height(),
+                common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str(),
+                block_ptr->precommit_bitmap_size());
+            // remove bft
+            RemoveBftWithBlockHash(thread_idx, block_ptr->hash());
+        }
     }
 }
 
