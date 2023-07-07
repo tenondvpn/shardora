@@ -1305,7 +1305,8 @@ bool BftManager::VerifyLeaderIdValid(const ElectItem& elect_item, const transpor
             msg_hash,
             mem_ptr->pubkey,
             msg_ptr->header.sign()) != security::kSecuritySuccess) {
-        assert(false);
+        ZJC_DEBUG("verify leader sign failed: %s", common::Encode::HexEncode(mem_ptr->id).c_str());
+        //assert(false);
         return false;
     }
 
