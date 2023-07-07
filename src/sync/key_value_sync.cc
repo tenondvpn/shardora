@@ -66,11 +66,11 @@ void KeyValueSync::AddSyncHeight(
 void KeyValueSync::AddSyncElectBlock(
         uint8_t thread_idx,
         uint32_t network_id,
-        uint32_t pool_idx,
+        uint32_t elect_network_id,
         uint64_t height,
         uint32_t priority) {
     assert(priority <= kSyncHighest);
-    auto item = std::make_shared<SyncItem>(network_id, pool_idx, height, priority, kElectBlock);
+    auto item = std::make_shared<SyncItem>(network_id, elect_network_id, height, priority, kElectBlock);
     item_queues_[thread_idx].push(item);
     ZJC_DEBUG("block height add new sync item key: %s, priority: %u",
         item->key.c_str(), item->priority);
@@ -384,7 +384,8 @@ void KeyValueSync::ResponseElectBlock(
         return;
     }
 
-    auto& shard_set = shard_with_elect_height_[network_id];
+    auto elect_network_id = sync_item.pool_idx();
+    auto& shard_set = shard_with_elect_height_[elect_network_id];
     auto iter = shard_set.rbegin();
     std::vector<uint64_t> valid_elect_heights;
     uint64_t min_height = 1;
@@ -397,11 +398,11 @@ void KeyValueSync::ResponseElectBlock(
         block::protobuf::Block block;
         if (!prefix_db_->GetBlockWithHeight(
                 network::kRootCongressNetworkId,
-                sync_item.pool_idx(),
+                elect_network_id % common::kImmutablePoolSize,
                 elect_height,
                 &block)) {
             ZJC_DEBUG("block invalid network: %u, pool: %lu, height: %lu",
-                network::kRootCongressNetworkId, network_id % common::kImmutablePoolSize, elect_height);
+                network::kRootCongressNetworkId, elect_network_id % common::kImmutablePoolSize, elect_height);
             return;
         }
 

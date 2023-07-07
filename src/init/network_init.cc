@@ -1321,7 +1321,7 @@ bool NetworkInit::BlockBlsAggSignatureValid(uint8_t thread_idx, const block::pro
        kv_sync_->AddSyncElectBlock(
            thread_idx,
            network::kRootCongressNetworkId,
-           block.network_id() % common::kImmutablePoolSize,
+           block.network_id(),
            block.electblock_height(),
            sync::kSyncHigh);
         return false;
