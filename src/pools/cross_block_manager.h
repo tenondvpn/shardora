@@ -42,7 +42,15 @@ public:
 
 private:
     void Ticking(uint8_t thread_idx) {
+        auto now_tm_ms = common::TimeUtils::TimestampMs();
+        ZJC_DEBUG("CrossBlockManager called timer: %lu, thread_idx: %lu", now_tm_ms, thread_idx);
         CheckCrossSharding(thread_idx);
+        auto etime = common::TimeUtils::TimestampMs();
+        if (etime - now_tm_ms >= 10) {
+            ZJC_DEBUG("CrossBlockManager handle message use time: %lu", (etime - now_tm_ms));
+        }
+
+        ZJC_DEBUG("end CrossBlockManager called timer: %lu, thread_idx: %u", now_tm_ms, thread_idx);
         tick_.CutOff(
             10000000lu,
             std::bind(&CrossBlockManager::Ticking, this, std::placeholders::_1));

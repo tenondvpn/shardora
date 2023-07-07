@@ -341,6 +341,7 @@ tnet::TcpConnection* TcpTransport::GetConnection(
 
 void TcpTransport::EraseConn(uint8_t thread_idx) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
+    ZJC_DEBUG("TcpTransport called timer: %lu, thread_idx: %lu", now_tm_ms, thread_idx);
     // delay to release
     common::AutoSpinLock guard(erase_conns_mutex_);
     while (!erase_conns_.empty()) {
@@ -353,6 +354,13 @@ void TcpTransport::EraseConn(uint8_t thread_idx) {
 
         break;
     }
+
+    auto etime = common::TimeUtils::TimestampMs();
+    if (etime - now_tm_ms >= 10) {
+        ZJC_DEBUG("TcpTransport handle message use time: %lu", (etime - now_tm_ms));
+    }
+
+    ZJC_DEBUG("end TcpTransport called timer: %lu, thread_idx: %u", now_tm_ms, thread_idx);
 
     erase_conn_tick_.CutOff(
         kEraseConnPeriod,

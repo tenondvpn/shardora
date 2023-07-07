@@ -50,17 +50,20 @@ void BlsManager::TimerMessage(uint8_t thread_idx) {
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) >=
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
+        auto now_tm_ms = common::TimeUtils::TimestampMs();
+        ZJC_DEBUG("TimerMessage called timer: %lu, thread_idx: %lu", now_tm_ms, thread_idx);
         PopFinishMessage(thread_idx);
-        auto now_tm_ms = common::TimeUtils::TimestampUs();
         auto tmp_bls = waiting_bls_;
         if (tmp_bls != nullptr) {
             tmp_bls->TimerMessage(thread_idx);
         }
 
-        auto etime = common::TimeUtils::TimestampUs();
-        if (etime - now_tm_ms >= 10000lu) {
+        auto etime = common::TimeUtils::TimestampMs();
+        if (etime - now_tm_ms >= 10) {
             ZJC_DEBUG("BlsManager handle message use time: %lu", (etime - now_tm_ms));
         }
+
+        ZJC_DEBUG("end BlsManager called timer: %lu, thread_idx: %u", now_tm_ms, thread_idx);
 
         ZJC_DEBUG("bls_dkg called!");
     } else {

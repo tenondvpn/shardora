@@ -77,7 +77,8 @@ void KeyValueSync::AddSyncElectBlock(
 }
 
 void KeyValueSync::ConsensusTimerMessage(uint8_t thread_idx) {
-    auto now_tm_us = common::TimeUtils::TimestampUs();
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    ZJC_DEBUG("KeyValueSync called timer: %lu, thread_idx: %lu", now_tm_ms, thread_idx);
     PopKvMessage(thread_idx);
     PopItems();
     CheckSyncItem(thread_idx);
@@ -86,10 +87,12 @@ void KeyValueSync::ConsensusTimerMessage(uint8_t thread_idx) {
         CheckSyncTimeout();
     }
 
-    auto etime = common::TimeUtils::TimestampUs();
-    if (etime - now_tm_us >= 10000lu) {
-        ZJC_DEBUG("KeyValueSync handle message use time: %lu", (etime - now_tm_us));
+    auto etime = common::TimeUtils::TimestampMs();
+    if (etime - now_tm_ms >= 10) {
+        ZJC_DEBUG("KeyValueSync handle message use time: %lu", (etime - now_tm_ms));
     }
+
+    ZJC_DEBUG("end KeyValueSync called timer: %lu, thread_idx: %u", now_tm_ms, thread_idx);
 
     tick_.CutOff(
         100000lu,
