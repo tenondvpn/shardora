@@ -1528,8 +1528,17 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
         if (tmp_bft->height() != common::kInvalidUint64 &&
                 bft_ptr->pool_index() == tmp_bft->pool_index() &&
                 bft_ptr->height() <= tmp_bft->height()) {
-            bft_ptr->Destroy();
-            bft_queue.erase(iter);
+            if (bft_ptr->height() == tmp_bft->height()) {
+                tmp_bft->Destroy();
+                bft_queue.erase(iter);
+            } else {
+                ZJC_DEBUG("elect height error: %u, %lu %lu, %s, %s",
+                    bft_ptr->pool_index(), bft_ptr->height(), tmp_bft->height(),
+                    common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+                    common::Encode::HexEncode(tmp_bft->gid()).c_str());
+                assert(false);
+                return kConsensusError;
+            }
         }
     }
 
