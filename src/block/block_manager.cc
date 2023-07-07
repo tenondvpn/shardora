@@ -99,7 +99,6 @@ void BlockManager::ConsensusTimerMessage(uint8_t thread_idx) {
         CreateStatisticTx(thread_idx);
     }
 
-    auto now_tm_ms = now_tm / 1000;
     if (!leader_statistic_txs_.empty() && prev_retry_create_statistic_tx_ms_ < now_tm_ms) {
         if (leader_statistic_txs_.size() >= 4) {
             leader_statistic_txs_.erase(leader_statistic_txs_.begin());
