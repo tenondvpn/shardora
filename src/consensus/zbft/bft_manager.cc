@@ -1539,7 +1539,7 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
                     bft_ptr->pool_index(), bft_ptr->height(), tmp_bft->height(),
                     common::Encode::HexEncode(bft_ptr->gid()).c_str(),
                     common::Encode::HexEncode(tmp_bft->gid()).c_str());
-                assert(false);
+//                 assert(false);
                 return kConsensusError;
             }
         }
