@@ -255,7 +255,8 @@ void BftManager::SetThreadItem(
 
         thread_item->prev_index = 0;
         thread_set[j] = thread_item;  // ptr change, multi-thread safe
-        ZJC_DEBUG("thread: %d handle pools: %s", j, thread_debug_str.c_str());
+        ZJC_DEBUG("local_node_pool_mod_num: %d, leader_count: %d, thread: %d handle pools: %s",
+            local_node_pool_mod_num, leader_count, j, thread_debug_str.c_str());
     }
 }
 

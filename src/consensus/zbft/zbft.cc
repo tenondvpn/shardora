@@ -685,7 +685,8 @@ bool Zbft::verify_bls_precommit_agg_sign(
 
 bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
     if (prepare_block_ == nullptr) {
-        assert(false);
+        ZJC_ERROR("prepare_block_ == nullptr: gid: %s",
+            common::Encode::HexEncode(gid()).c_str());
         return false;
     }
 
