@@ -686,7 +686,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (header.zbft().leader_idx() >= 0) {
         BackupHandleZbftMessage(msg_ptr->thread_idx, elect_item, msg_ptr);
         if (!header.zbft().prepare_gid().empty()) {
-            if (!msg_ptr->response->header.has_zbft() || !msg_ptr->response->header.zbft().agree_precommit()) {
+            if (!msg_ptr->response->header.has_zbft() || !msg_ptr->response->header.zbft().has_agree_precommit()) {
                 // timer to re-handle the message
                 if (msg_ptr->timeout > now_ms * 1000lu) {
                     backup_prapare_msg_queue_[msg_ptr->thread_idx].push_back(msg_ptr);
@@ -2016,7 +2016,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         bft_msg.pool_index());
     msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_msg.pool_index());
     if (bft_msg.has_prepare_gid() && !bft_msg.prepare_gid().empty()) {
-        msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
+        msg_ptr->response->header.mutable_zbft()->clear_agree_precommit();
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
@@ -2091,10 +2091,11 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         }
 
         if (AddBft(bft_ptr) != kConsensusSuccess) {
-            return;
+            msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
+        } else {
+            msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
         }
 
-        msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
         bft_ptr->set_consensus_status(kConsensusPrepare);
