@@ -19,12 +19,13 @@ public:
     inline void HandleMessage(MessagePtr& msg_ptr) {
         auto& message = msg_ptr->header;
         assert(message.type() < common::kLegoMaxMessageTypeCount);
-        if (message_processor_[message.type()] == nullptr) {
+        auto handler = message_processor_[message.type()];
+        if (handler == nullptr) {
             assert(false);
             return;
         }
 
-        (message_processor_[message.type()])(msg_ptr);
+        handler(msg_ptr);
     }
 
 private:
