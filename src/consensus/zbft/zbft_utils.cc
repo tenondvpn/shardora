@@ -42,6 +42,10 @@ std::string GetTxMessageHash(const block::protobuf::BlockTx& tx_info) {
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
         message.append(tx_info.storages(i).key());
         message.append(tx_info.storages(i).val_hash());
+        ZJC_DEBUG("add tx key: %s, %s, value: %s",
+            tx_info.storages(i).key().c_str(),
+            common::Encode::HexEncode(tx_info.storages(i).key()).c_str(),
+            common::Encode::HexEncode(tx_info.storages(i).val_hash()).c_str());
     }
 
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {

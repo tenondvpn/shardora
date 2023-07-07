@@ -226,16 +226,19 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
 }
 
 void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
+    ZJC_DEBUG("sync response coming.");
     if ((uint32_t)msg_ptr->header.src_sharding_id() != common::GlobalInfo::Instance()->network_id() &&
             (uint32_t)msg_ptr->header.src_sharding_id() + network::kConsensusWaitingShardOffset !=
             common::GlobalInfo::Instance()->network_id() &&
             (uint32_t)msg_ptr->header.src_sharding_id() !=
             common::GlobalInfo::Instance()->network_id() + network::kConsensusWaitingShardOffset) {
+        ZJC_DEBUG("sync response coming net error: %u, %u", msg_ptr->header.src_sharding_id(), common::GlobalInfo::Instance()->network_id());
         return;
     }
 
     auto& sync_msg = msg_ptr->header.sync_proto();
     if (!sync_msg.has_sync_value_res()) {
+        ZJC_DEBUG("not has sync value res.");
         return;
     }
 
@@ -245,12 +248,14 @@ void MultiThreadHandler::HandleSyncBlockResponse(MessagePtr& msg_ptr) {
         if (block_item->ParseFromString(iter->value()) &&
                 (iter->has_height() || !block_item->hash().empty())) {
             if (prefix_db_->BlockExists(block_item->hash())) {
+                ZJC_DEBUG("block hash exists not has sync value res: %s", common::Encode::HexEncode(block_item->hash()).c_str());
                 continue;
             }
 
             if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
                     block_item->network_id() + network::kConsensusWaitingShardOffset !=
                     common::GlobalInfo::Instance()->network_id()) {
+                ZJC_DEBUG("sync response coming net error:  %u, %u, %u", block_item->network_id(), msg_ptr->header.src_sharding_id(), common::GlobalInfo::Instance()->network_id());
                 continue;
             }
             
