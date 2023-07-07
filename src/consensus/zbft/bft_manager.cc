@@ -213,6 +213,7 @@ void BftManager::OnNewElectBlock(
     elect_item.common_pk = common_pk;
     elect_item.sec_key = sec_key;
     auto new_idx = (elect_item_idx_ + 1) % 2;
+    elect_items_[new_idx].reset();
     elect_items_[new_idx] = elect_item_ptr;
     ZJC_DEBUG("new elect block local leader index: %d, leader_count: %d, thread_count_: %d, elect height: %lu, member size: %d",
         local_node_pool_mod_num, elect_item.leader_count, thread_count_, elect_item.elect_height, members->size());
