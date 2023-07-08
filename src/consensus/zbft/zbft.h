@@ -154,12 +154,11 @@ public:
     }
 
     const std::string& local_prepare_hash() const {
-        return prepare_hash_;
+        return prepare_block_->hash();
     }
 
     void set_prepare_hash(const std::string& prepare_hash) {
-        prepare_hash_ = prepare_hash;
-        bls_mgr_->GetLibffHash(prepare_hash_, &g1_prepare_hash_);
+        bls_mgr_->GetLibffHash(prepare_hash, &g1_prepare_hash_);
     }
 
     void set_precoimmit_hash() {
@@ -168,10 +167,10 @@ public:
         }
 
         prepare_block_->set_is_cross_block(true);
-        precommit_hash_ = GetBlockHash(*prepare_block_);
-        prepare_block_->set_hash(precommit_hash_);
-        bls_mgr_->GetLibffHash(precommit_hash_, &g1_precommit_hash_);
-        ZJC_DEBUG("reset block hash: %s", common::Encode::HexEncode(precommit_hash_).c_str());
+        auto precommit_hash = GetBlockHash(*prepare_block_);
+        prepare_block_->set_hash(precommit_hash);
+        bls_mgr_->GetLibffHash(precommit_hash, &g1_precommit_hash_);
+        ZJC_DEBUG("reset block hash: %s", common::Encode::HexEncode(precommit_hash).c_str());
     }
 
     uint32_t leader_index() const {
@@ -216,14 +215,13 @@ public:
     void set_prepare_block(std::shared_ptr<block::protobuf::Block> prepare_block) {
         prepare_block_ = prepare_block;
         if (prepare_block_ != nullptr) {
-            precommit_hash_ = prepare_block_->hash();
+            auto& precommit_hash = prepare_block_->hash();
             ZJC_DEBUG("set block hash: %s, gid: %s",
-                common::Encode::HexEncode(precommit_hash_).c_str(),
+                common::Encode::HexEncode(precommit_hash).c_str(),
                 common::Encode::HexEncode(gid()).c_str());
-            prepare_hash_ = precommit_hash_;
-            bls_mgr_->GetLibffHash(precommit_hash_, &g1_precommit_hash_);
+            bls_mgr_->GetLibffHash(precommit_hash, &g1_precommit_hash_);
             CreateCommitVerifyHash();
-            ZJC_DEBUG("reset block hash: %s", common::Encode::HexEncode(precommit_hash_).c_str());
+            ZJC_DEBUG("reset block hash: %s", common::Encode::HexEncode(precommit_hash).c_str());
         }
     }
 
@@ -490,7 +488,6 @@ protected:
     uint32_t min_oppose_member_count_{ 0 };
     common::Bitmap precommit_bitmap_{ common::kEachShardMaxNodeCount };
     uint32_t consensus_status_{ kConsensusInit };
-    std::string prepare_hash_;
     std::shared_ptr<block::protobuf::Block> prepare_block_{ nullptr };
     std::unordered_set<std::string> precommit_oppose_set_;
     std::unordered_set<std::string> commit_aggree_set_;
@@ -504,7 +501,6 @@ protected:
     libff::alt_bn128_G1 backup_commit_signs_[common::kEachShardMaxNodeCount] = { libff::alt_bn128_G1::zero() };
     std::shared_ptr<libff::alt_bn128_G1> bls_precommit_agg_sign_{ nullptr };
     std::shared_ptr<libff::alt_bn128_G1> bls_commit_agg_sign_{ nullptr };
-    std::string precommit_hash_;
     uint32_t prepare_verify_failed_count_{ 0 };
     libff::alt_bn128_Fr local_sec_key_{ libff::alt_bn128_Fr::zero() };
     libff::alt_bn128_G2 common_pk_{ libff::alt_bn128_G2::zero() };

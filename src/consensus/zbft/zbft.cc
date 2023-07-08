@@ -95,6 +95,8 @@ int Zbft::ChangeLeader(
         }
 
         zjc_block.set_hash(GetBlockHash(zjc_block));
+        bls_mgr_->GetLibffHash(zjc_block.hash(), &g1_precommit_hash_);
+        CreateCommitVerifyHash();
         ZJC_DEBUG("success change bft leader called gid: %s, leader_idx: %d, elect_height: %lu, block hash: %s",
             common::Encode::HexEncode(gid()).c_str(), leader_idx, elect_height,
             common::Encode::HexEncode(zjc_block.hash()).c_str());
@@ -469,7 +471,7 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
             libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X).c_str(),
             common::Encode::HexEncode(sign_precommit_hash).c_str(),
             common::Encode::HexEncode(precommit_bls_agg_verify_hash_).c_str(),
-            common::Encode::HexEncode(prepare_hash_).c_str());
+            common::Encode::HexEncode(prepare_block_->hash()).c_str());
 
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
 //         if (times_[times_index_ - 1] - times_[times_index_ - 2] > 10000) {
@@ -501,7 +503,6 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
 void Zbft::CreatePrecommitVerifyHash() {
     uint32_t t = min_aggree_member_count_;
     uint32_t n = members_ptr_->size();
-//     ZJC_DEBUG("precommit get pk verify hash begin.");
     if (bls_mgr_->GetVerifyHash(
             t,
             n,
@@ -510,9 +511,6 @@ void Zbft::CreatePrecommitVerifyHash() {
             &precommit_bls_agg_verify_hash_) != bls::kBlsSuccess) {
         ZJC_ERROR("get precommit hash failed!");
     }
-//     ZJC_DEBUG("precommit get pk verify hash end: %s, hash: %s",
-//         common::Encode::HexEncode(precommit_bls_agg_verify_hash_).c_str(),
-//         common::Encode::HexEncode(prepare_hash_).c_str());
 }
 
 void Zbft::CreateCommitVerifyHash() {
@@ -609,7 +607,7 @@ int Zbft::LeaderCreateCommitAggSign() {
             common::Encode::HexEncode(prepare_block_->bls_agg_sign_x()).c_str(),
             common::Encode::HexEncode(sign_commit_hash).c_str(),
             common::Encode::HexEncode(commit_bls_agg_verify_hash_).c_str(),
-            common::Encode::HexEncode(precommit_hash_).c_str());
+            common::Encode::HexEncode(prepare_block_->hash()).c_str());
     } catch (...) {
         return kConsensusError;
     }
@@ -718,7 +716,7 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
                 libBLS::ThresholdUtils::fieldElementToString(agg_sign.X).c_str(),
                 common::Encode::HexEncode(sign_commit_hash).c_str(),
                 common::Encode::HexEncode(commit_bls_agg_verify_hash_).c_str(),
-                common::Encode::HexEncode(precommit_hash_).c_str());
+                common::Encode::HexEncode(prepare_block_->hash()).c_str());
             assert(!commit_bls_agg_verify_hash_.empty());
             return false;
         }
@@ -732,7 +730,7 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
                 libBLS::ThresholdUtils::fieldElementToString(agg_sign.X).c_str(),
                 common::Encode::HexEncode(sign_commit_hash).c_str(),
                 common::Encode::HexEncode(precommit_bls_agg_verify_hash_).c_str(),
-                common::Encode::HexEncode(prepare_hash_).c_str());
+                common::Encode::HexEncode(prepare_block_->hash()).c_str());
             assert(!precommit_bls_agg_verify_hash_.empty());
             return false;
         }
