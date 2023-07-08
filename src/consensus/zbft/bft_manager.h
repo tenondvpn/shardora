@@ -313,7 +313,7 @@ private:
     uint32_t max_consensus_sharding_id_ = 3;
     uint64_t first_timeblock_timestamp_ = 0;
     block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
-    std::deque<ZbftPtr> pools_with_zbfts_[common::kInvalidPoolIndex];
+    std::vector<ZbftPtr> pools_with_zbfts_[common::kInvalidPoolIndex];
     std::deque<transport::MessagePtr> backup_prapare_msg_queue_[common::kMaxThreadCount];
     std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
 

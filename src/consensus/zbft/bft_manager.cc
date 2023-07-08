@@ -1589,26 +1589,26 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
     auto& bft_queue = pools_with_zbfts_[pool_index];
     ZJC_DEBUG("try to remove bft gid: %s, pool_index: %d, now size: %u",
         common::Encode::HexEncode(gid).c_str(), pool_index, bft_queue.size());
-    if (bft_queue.empty()) {
-        return;
-    }
-
-    auto bft_ptr = bft_queue.back();
-    if (bft_ptr->gid() != gid) {
-        return;
-    }
-
-    if (bft_ptr->consensus_status() == kConsensusPreCommit) {
-        if (bft_ptr->this_node_is_leader()) {
-            ReConsensusBft(bft_ptr);
+    for (auto iter = bft_queue.begin(); iter != bft_queue.end(); ++iter) {
+        auto& bft_ptr = *iter;
+        if (bft_ptr->gid() != gid) {
+            continue;
         }
 
-        return;
-    }
+        auto next_iter = iter;
+        ++next_iter;
+        if (bft_ptr->consensus_status() == kConsensusPreCommit && next_iter == bft_queue.end()) {
+            if (bft_ptr->this_node_is_leader()) {
+                ReConsensusBft(bft_ptr);
+            }
+        } else {
+            bft_ptr->Destroy();
+            bft_queue.erase(iter);
+            ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
+        }
 
-    bft_ptr->Destroy();
-    bft_queue.pop_back();
-    ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
+        break;
+    }
 }
 
 void BftManager::CheckMessageTimeout(uint8_t thread_index) {
@@ -1650,10 +1650,10 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
 
         auto& bft_queue = pools_with_zbfts_[pool_index];
         if (bft_queue.empty()) {
-            return;
+            continue;
         }
 
-        auto bft_ptr = bft_queue.back();
+        auto bft_ptr = *bft_queue.rbegin();
         if (bft_ptr->pool_mod_num() >= 0 && bft_ptr->pool_mod_num() < elect_item_ptr->leader_count) {
             auto valid_leader_idx = elect_item_ptr->mod_with_leader_index[bft_ptr->pool_mod_num()];
             if (valid_leader_idx >= elect_item_ptr->members->size()) {
@@ -1676,11 +1676,9 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
             }
         }
 
-        if (!bft_ptr->timeout(now_timestamp_us)) {
-            continue;
+        if (bft_ptr->timeout(now_timestamp_us)) {
+            RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
         }
-
-        RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
     }
 }
 
