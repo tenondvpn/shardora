@@ -101,7 +101,7 @@ private:
         ZbftPtr& prev_bft,
         const transport::MessagePtr& prepare_msg_ptr);
     void RemoveBft(uint32_t pool_index, const std::string& gid);
-    void RemoveBftWithBlockHash(uint32_t pool_index, const std::string& hash);
+    void RemoveBftWithBlockHeight(uint32_t pool_index, uint64_t height);
     int LeaderPrepare(
         const ElectItem& elect_item,
         ZbftPtr& bft_ptr,

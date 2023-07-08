@@ -780,7 +780,7 @@ void BftManager::HandleSyncConsensusBlock(
                 common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str(),
                 common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
                 block_ptr->precommit_bitmap_size());
-            RemoveBftWithBlockHash(msg_ptr->thread_idx, block_ptr->hash());
+            RemoveBftWithBlockHeight(block_ptr->pool_index(), block_ptr->height());
             RemoveWaitingBlock(block_ptr->pool_index(), block_ptr->height());
         } else {
             if (bft_ptr->prepare_block() == nullptr) {
@@ -2606,6 +2606,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
     RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
     assert(bft_ptr->prepare_block()->precommit_bitmap_size() == zjc_block->precommit_bitmap_size());
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    RemoveBftWithBlockHeight(zjc_block->pool_index(), zjc_block->height());
     RemoveWaitingBlock(zjc_block->pool_index(), zjc_block->height());
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tps_tm_us_ == 0) {
