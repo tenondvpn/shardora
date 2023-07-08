@@ -1587,13 +1587,14 @@ void BftManager::RemoveBftWithBlockHash(uint32_t pool_index, const std::string& 
 
 void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
     auto& bft_queue = pools_with_zbfts_[pool_index];
-    ZbftPtr bft_ptr{ nullptr };
+    ZJC_DEBUG("try to remove bft gid: %s, pool_index: %d, now size: %u",
+        common::Encode::HexEncode(gid).c_str(), pool_index, bft_queue.size());
     auto iter = bft_queue.rbegin();
     if (iter == bft_queue->rend()) {
         return;
     }
 
-    bft_ptr = *iter;
+    auto bft_ptr = *iter;
     if (bft_ptr->gid() != gid) {
         return;
     }
@@ -2238,6 +2239,7 @@ int BftManager::LeaderHandleZbftMessage(
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
                     } else {
+                        ZJC_DEBUG("ReConsensusBft not use next prepare: %s", common::Encode::HexEncode(prev_ptr->gid()).c_str());
                         ReConsensusBft(prev_ptr);
                     }
                 }
@@ -2271,6 +2273,7 @@ int BftManager::LeaderHandleZbftMessage(
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
                     } else {
+                        ZJC_DEBUG("ReConsensusBft not use next prepare: %s", common::Encode::HexEncode(prev_ptr->gid()).c_str());
                         ReConsensusBft(prev_ptr);
                     }
                 } else {
@@ -2310,6 +2313,7 @@ int BftManager::LeaderHandleZbftMessage(
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
                     } else {
+                        ZJC_DEBUG("ReConsensusBft not use next prepare: %s", common::Encode::HexEncode(prev_ptr->gid()).c_str());
                         ReConsensusBft(prev_ptr);
                     }
                     ZJC_ERROR("commit call oppose now.");
@@ -2410,6 +2414,7 @@ int BftManager::LeaderCallPrecommit(
         bft_vec[0] = next_prepare_bft;
         ZJC_DEBUG("use next prepare.");
     } else {
+        ZJC_DEBUG("direct precommit not use next prepare: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
         ZJC_DEBUG("use g1_precommit_hash prepare hash: %s, gid: %s",
             common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
             common::Encode::HexEncode(bft_ptr->gid()).c_str());
