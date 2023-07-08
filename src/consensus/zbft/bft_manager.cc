@@ -1593,8 +1593,7 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
         return;
     }
 
-    auto iter = bft_queue.back();
-    auto bft_ptr = *iter;
+    auto bft_ptr = bft_queue.back();
     if (bft_ptr->gid() != gid) {
         return;
     }
@@ -1654,7 +1653,7 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
             return;
         }
 
-        auto bft_ptr = *bft_queue.back();
+        auto bft_ptr = bft_queue.back();
         if (bft_ptr->pool_mod_num() >= 0 && bft_ptr->pool_mod_num() < elect_item_ptr->leader_count) {
             auto valid_leader_idx = elect_item_ptr->mod_with_leader_index[bft_ptr->pool_mod_num()];
             if (valid_leader_idx >= elect_item_ptr->members->size()) {
