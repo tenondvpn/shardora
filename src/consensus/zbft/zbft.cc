@@ -821,6 +821,12 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
         zjc_block.set_is_cross_block(true);
     }
 
+    std::string change_leader_invalid_hashs;
+    pools_mgr_->GetHeightInvalidChangeLeaderHashs(zjc_block.pool_index(), zjc_block.height(), &change_leader_invalid_hashs);
+    if (!change_leader_invalid_hashs.empty()) {
+        zjc_block.set_change_leader_invalid_hashs(change_leader_invalid_hashs);
+    }
+
     zjc_block.set_hash(GetBlockHash(zjc_block));
     tx_bft.set_prepare_final_hash(zjc_block.hash());
     tx_bft.set_height(zjc_block.height());

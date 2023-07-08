@@ -448,6 +448,13 @@ int BftManager::ChangePrecommitBftLeader(
         return kConsensusError;
     }
 
+    if (bft_ptr->prepare_block() != nullptr) {
+        pools_mgr_->AddChangeLeaderInvalidHash(
+            bft_ptr->pool_index(),
+            bft_ptr->prepare_block()->height(),
+            bft_ptr->prepare_block()->hash());
+    }
+
     return kConsensusSuccess;
 }
 
@@ -1596,7 +1603,11 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
         return;
     }
 
-    if (bft_ptr->consensus_status() == kConsensusPreCommit && !bft_ptr->this_node_is_leader()) {
+    if (bft_ptr->consensus_status() == kConsensusPreCommit) {
+        if (bft_ptr->this_node_is_leader()) {
+            ReConsensusBft(bft_ptr);
+        }
+
         return;
     }
 
@@ -1678,6 +1689,7 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
 }
 
 void BftManager::ReConsensusBft(ZbftPtr& bft_ptr) {
+    assert(bft_ptr->consensus_status() == kConsensusPreCommit);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[bft_ptr->pool_index()];
     auto elect_item_ptr = elect_items_[elect_item_idx_];
@@ -2230,9 +2242,8 @@ int BftManager::LeaderHandleZbftMessage(
                         std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
-//                     } else {
-//                         ReConsensusBft(prev_ptr);
-//                         prev_ptr->set_should_timer_to_restart(true);
+                    } else {
+                        ReConsensusBft(prev_ptr);
                     }
                 }
             }
@@ -2264,10 +2275,8 @@ int BftManager::LeaderHandleZbftMessage(
                         std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
-//                     } else {
-//                         ReConsensusBft(prev_ptr);
-//                         prev_ptr->set_should_timer_to_restart(true);
-//                         ZJC_DEBUG("oppose use next prepare set_should_timer_to_restart");
+                    } else {
+                        ReConsensusBft(prev_ptr);
                     }
                 } else {
                     assert(bft_msg.precommit_gid().empty());
@@ -2305,9 +2314,8 @@ int BftManager::LeaderHandleZbftMessage(
                         std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
                         bft_vec[0] = next_prepare_bft;
                         ZJC_DEBUG("oppose use next prepare.");
-//                     } else {
-//                         ReConsensusBft(prev_ptr);
-//                         prev_ptr->set_should_timer_to_restart(true);
+                    } else {
+                        ReConsensusBft(prev_ptr);
                     }
                     ZJC_ERROR("commit call oppose now.");
                 }

@@ -68,6 +68,8 @@ static const std::string kNodeVerificationVectorPrefix = "ah\x01";
 static const std::string kNodeLocalElectPosPrefix = "ai\x01";
 static const std::string kCrossCheckHeightPrefix = "aj\x01";
 static const std::string kElectHeightWithBlsCommonPkPrefix = "ak\x01";
+static const std::string kBftInvalidHeightHashs = "al\x01";
+static const std::string kTempBftInvalidHeightHashs = "am\x01";
 
 class PrefixDb {
 public:
@@ -1441,6 +1443,136 @@ public:
         }
 
         ZJC_DEBUG("get elect height prev info success: %u, %lu", des_shard, height);
+        return true;
+    }
+
+    void SaveHeightInvalidHashs(
+            uint32_t shard_id,
+            uint32_t pool_index,
+            uint64_t height,
+            const std::set<std::string>& hashs) {
+        std::string key;
+        key.reserve(128);
+        key.append(kBftInvalidHeightHashs);
+        key.append((char*)&shard_id, sizeof(shard_id));
+        key.append((char*)&pool_index, sizeof(pool_index));
+        key.append((char*)&height, sizeof(height));
+        std::string val;
+        for (auto iter = hashs.begin(); iter != hashs.end(); ++iter) {
+            val += *iter;
+        }
+
+        auto st = db_->Put(key, val);
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+
+        ZJC_DEBUG("save height invalid hashs success: %u, %u, %lu, %s",
+            shard_id, pool_index, height, common::Encode::HexEncode(val).c_str());
+    }
+
+    void SaveHeightInvalidHashs(
+            uint32_t shard_id,
+            uint32_t pool_index,
+            uint64_t height,
+            const std::set<std::string>& hashs,
+            db::DbWriteBatch& db_batch) {
+        std::string key;
+        key.reserve(128);
+        key.append(kBftInvalidHeightHashs);
+        key.append((char*)&shard_id, sizeof(shard_id));
+        key.append((char*)&pool_index, sizeof(pool_index));
+        key.append((char*)&height, sizeof(height));
+        std::string val;
+        for (auto iter = hashs.begin(); iter != hashs.end(); ++iter) {
+            val += *iter;
+        }
+
+        db_batch.Put(key, val);
+        ZJC_DEBUG("save height invalid hashs success: %u, %u, %lu, %s",
+            shard_id, pool_index, height, common::Encode::HexEncode(val).c_str());
+    }
+
+    bool GetHeightInvalidHashs(
+            uint32_t shard_id,
+            uint32_t pool_index,
+            uint64_t height,
+            std::set<std::string>* hashs) {
+        std::string key;
+        key.reserve(128);
+        key.append(kBftInvalidHeightHashs);
+        key.append((char*)&shard_id, sizeof(shard_id));
+        key.append((char*)&pool_index, sizeof(pool_index));
+        key.append((char*)&height, sizeof(height));
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            ZJC_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
+            return false;
+        }
+
+        auto count = val.size() / 32;
+        for (uint32_t i = 0; i < count; ++i) {
+            std::string tmp_hash(val.c_str() + i * 32, 32);
+            hashs->insert(tmp_hash);
+        }
+
+        ZJC_DEBUG("get height invalid hashs success: %u, %u, %lu, %s",
+            shard_id, pool_index, height, common::Encode::HexEncode(val).c_str());
+        return true;
+    }
+
+    void SaveTempHeightInvalidHashs(
+            uint32_t shard_id,
+            uint32_t pool_index,
+            uint64_t height,
+            const std::set<std::string>& hashs) {
+        std::string key;
+        key.reserve(128);
+        key.append(kTempBftInvalidHeightHashs);
+        key.append((char*)&shard_id, sizeof(shard_id));
+        key.append((char*)&pool_index, sizeof(pool_index));
+        key.append((char*)&height, sizeof(height));
+        std::string val;
+        for (auto iter = hashs.begin(); iter != hashs.end(); ++iter) {
+            val += *iter;
+        }
+
+        auto st = db_->Put(key, val);
+        if (!st.ok()) {
+            ZJC_FATAL("write db failed!");
+        }
+
+        ZJC_DEBUG("save height invalid hashs success: %u, %u, %lu, %s",
+            shard_id, pool_index, height, common::Encode::HexEncode(val).c_str());
+    }
+
+    bool GetTempHeightInvalidHashs(
+            uint32_t shard_id,
+            uint32_t pool_index,
+            uint64_t height,
+            std::set<std::string>* hashs) {
+        std::string key;
+        key.reserve(128);
+        key.append(kTempBftInvalidHeightHashs);
+        key.append((char*)&shard_id, sizeof(shard_id));
+        key.append((char*)&pool_index, sizeof(pool_index));
+        key.append((char*)&height, sizeof(height));
+        std::string val;
+        auto st = db_->Get(key, &val);
+        if (!st.ok()) {
+            ZJC_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
+            return false;
+        }
+
+        auto count = val.size() / 32;
+        for (uint32_t i = 0; i < count; ++i) {
+            std::string tmp_hash(val.c_str() + i * 32, 32);
+            hashs->insert(tmp_hash);
+        }
+
+        ZJC_DEBUG("get height invalid hashs success: %u, %u, %lu, %s",
+            shard_id, pool_index, height, common::Encode::HexEncode(val).c_str());
         return true;
     }
 

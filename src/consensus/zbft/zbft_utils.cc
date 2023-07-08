@@ -83,6 +83,10 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
     msg.append((char*)&elect_height, sizeof(elect_height));
     uint32_t leader_idx = block.leader_index();
     msg.append((char*)&leader_idx, sizeof(leader_idx));
+    if (block.has_change_leader_invalid_hashs()) {
+        msg.append(block.change_leader_invalid_hashs());
+    }
+
     bool is_cross_block = block.is_cross_block();
     msg.append((char*)&is_cross_block, sizeof(is_cross_block));
 

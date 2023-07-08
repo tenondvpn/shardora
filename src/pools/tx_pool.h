@@ -93,6 +93,64 @@ public:
         return latest_hash_;
     }
 
+    void GetHeightInvalidChangeLeaderHashs(uint64_t height, std::string* hashs) {
+        auto iter = change_leader_invalid_hashs_.find(height);
+        if (iter == change_leader_invalid_hashs_.end()) {
+            return;
+        }
+
+        for (auto hiter = iter->second.begin(); hiter != iter->second.end(); ++hiter) {
+            *hashs += *hiter;
+        }
+    }
+
+    void AddChangeLeaderInvalidHash(uint64_t height, const std::string& hash) {
+        if (height != latest_height_) {
+            return;
+        }
+
+        auto iter = change_leader_invalid_hashs_.find(height);
+        if (iter == change_leader_invalid_hashs_.end()) {
+            change_leader_invalid_hashs_[height] = std::set<std::string>();
+            iter = change_leader_invalid_hashs_.find(height);
+        }
+
+        iter->second.insert(hash);
+        SaveTempBftInvalidHashs(height, iter->second);
+    }
+
+    void SaveTempBftInvalidHashs(uint64_t height, const std::set<std::string>& hashs) {
+        uint32_t network_id = common::GlobalInfo::Instance()->network_id();
+        if (network_id == common::kInvalidUint32) {
+            return;
+        }
+
+        if (network_id >= network::kConsensusWaitingShardBeginNetworkId &&
+            network_id < network::kConsensusWaitingShardEndNetworkId) {
+            network_id -= network::kConsensusWaitingShardOffset;
+        }
+        
+        prefix_db_->SaveTempHeightInvalidHashs(network_id, pool_index_, height, hashs);
+    }
+
+    void InitGetTempBftInvalidHashs() {
+        uint32_t network_id = common::GlobalInfo::Instance()->network_id();
+        if (network_id == common::kInvalidUint32) {
+            return;
+        }
+
+        if (network_id >= network::kConsensusWaitingShardBeginNetworkId &&
+            network_id < network::kConsensusWaitingShardEndNetworkId) {
+            network_id -= network::kConsensusWaitingShardOffset;
+        }
+
+        std::set<std::string> hashs;
+        prefix_db_->GetTempHeightInvalidHashs(network_id, pool_index_, latest_height_ + 1, &hashs);
+        if (!hashs.empty()) {
+            change_leader_invalid_hashs_[latest_height_ + 1] = hashs;
+        }
+    }
+
     uint64_t UpdateLatestInfo(uint8_t thread_idx, uint64_t height, const std::string& hash) {
         if (height_tree_ptr_ == nullptr) {
             InitHeightTree();
@@ -107,7 +165,7 @@ public:
         if (latest_height_ == common::kInvalidUint64 || latest_height_ < height) {
             latest_height_ = height;
             latest_hash_ = hash;
-            
+            InitGetTempBftInvalidHashs();
         }
 
         if (to_sync_max_height_ == common::kInvalidUint64 || to_sync_max_height_ < latest_height_) {
@@ -213,6 +271,7 @@ private:
                 synced_height_ = pool_info.synced_height();
                 prev_synced_height_ = synced_height_;
                 to_sync_max_height_ = latest_height_;
+                InitGetTempBftInvalidHashs();
                 ZJC_DEBUG("init latest pool info shard: %u, pool %lu, init height: %lu",
                     network_id, pool_index_, latest_height_);
             }
@@ -241,6 +300,7 @@ private:
     std::map<std::string, TxItemPtr> universal_prio_map_;
     uint64_t latest_height_ = common::kInvalidUint64;
     std::string latest_hash_;
+    std::unordered_map<uint64_t, std::set<std::string>> change_leader_invalid_hashs_;
     std::shared_ptr<HeightTreeLevel> height_tree_ptr_ = nullptr;
     uint32_t pool_index_ = common::kInvalidPoolIndex;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
