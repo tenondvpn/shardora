@@ -1426,7 +1426,6 @@ pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) 
         }
 
         if (leader && shard_statistic_tx->tx_ptr->time_valid > now_tm) {
-            ZJC_DEBUG("leader get statistic tx time invalid.");
             return nullptr;
         }
 
