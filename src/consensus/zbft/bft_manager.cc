@@ -786,41 +786,39 @@ void BftManager::HandleSyncConsensusBlock(
                 ZJC_DEBUG("receive block hash: %s, status: %d",
                     common::Encode::HexEncode(block_hash).c_str(),
                     bft_ptr->consensus_status());
-                if (block_hash == bft_ptr->local_prepare_hash()) {
-                    // check bls sign
-                    if (!block_agg_valid_func_(msg_ptr->thread_idx, req_bft_msg.block())) {
-                        ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
-                            req_bft_msg.block().network_id(),
-                            req_bft_msg.block().pool_index(),
-                            req_bft_msg.block().height(),
-                            common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
-                        //assert(false);
-                        return;
-                    }
+                // check bls sign
+                if (!block_agg_valid_func_(msg_ptr->thread_idx, req_bft_msg.block())) {
+                    ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+                        req_bft_msg.block().network_id(),
+                        req_bft_msg.block().pool_index(),
+                        req_bft_msg.block().height(),
+                        common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
+                    //assert(false);
+                    return;
+                }
 
-                    bft_ptr->set_prepare_block(std::make_shared<block::protobuf::Block>(req_bft_msg.block()));
+                bft_ptr->set_prepare_block(std::make_shared<block::protobuf::Block>(req_bft_msg.block()));
 //                     SaveKeyValue(msg_ptr->header);
-                    if (bft_ptr->consensus_status() == kConsensusCommited) {
-                        HandleLocalCommitBlock(msg_ptr, bft_ptr);
-                        ZJC_DEBUG("commited  receive block hash: %s",
-                            common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
-                    }
+                if (bft_ptr->consensus_status() == kConsensusCommited) {
+                    HandleLocalCommitBlock(msg_ptr, bft_ptr);
+                    ZJC_DEBUG("commited  receive block hash: %s",
+                        common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
+                }
 
-                    ZJC_DEBUG("receive block hash: %s, gid: %s",
-                        common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
-                        common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str());
-                    auto prev_bft = bft_ptr->pipeline_prev_zbft_ptr();
-                    if (prev_bft != nullptr) {
-                        ZJC_DEBUG("receive pre block hash: %s, gid: %s, status: %d",
-                            common::Encode::HexEncode(prev_bft->prepare_block()->hash()).c_str(),
-                            common::Encode::HexEncode(prev_bft->gid()).c_str(),
-                            prev_bft->consensus_status());
-                        if (prev_bft->consensus_status() == kConsensusCommited ||
-                                prev_bft->consensus_status() == kConsensusPreCommit) {
-                            HandleLocalCommitBlock(msg_ptr, prev_bft);
-                            ZJC_DEBUG("prev commited receive block hash: %s",
-                                common::Encode::HexEncode(prev_bft->prepare_block()->hash()).c_str());
-                        }
+                ZJC_DEBUG("receive block hash: %s, gid: %s",
+                    common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
+                    common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str());
+                auto prev_bft = bft_ptr->pipeline_prev_zbft_ptr();
+                if (prev_bft != nullptr) {
+                    ZJC_DEBUG("receive pre block hash: %s, gid: %s, status: %d",
+                        common::Encode::HexEncode(prev_bft->prepare_block()->hash()).c_str(),
+                        common::Encode::HexEncode(prev_bft->gid()).c_str(),
+                        prev_bft->consensus_status());
+                    if (prev_bft->consensus_status() == kConsensusCommited ||
+                            prev_bft->consensus_status() == kConsensusPreCommit) {
+                        HandleLocalCommitBlock(msg_ptr, prev_bft);
+                        ZJC_DEBUG("prev commited receive block hash: %s",
+                            common::Encode::HexEncode(prev_bft->prepare_block()->hash()).c_str());
                     }
                 }
             }
