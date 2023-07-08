@@ -742,7 +742,8 @@ void BftManager::HandleSyncConsensusBlock(
     if (req_bft_msg.has_block()) {
         // verify and add new block
         if (bft_ptr == nullptr) {
-            if (!req_bft_msg.block().is_cross_block()) {
+            if (!req_bft_msg.block().is_cross_block() &&
+                    req_bft_msg.block().height() > pools_mgr_->latest_height(req_bft_msg.block().pool_index())) {
                 AddWaitingBlock(msg_ptr);
                 return;
             }
