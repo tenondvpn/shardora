@@ -43,10 +43,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
     }
 
     if (txs_item == nullptr) {
-        if (pool_index == common::kRootChainPoolIndex) {
-            ZJC_DEBUG("now statistic 1 leader now get root pool index.");
-        }
-
         txs_item = GetStatisticTx(pool_index, true);
     }
 
