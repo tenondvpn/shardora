@@ -1558,18 +1558,16 @@ ZbftPtr BftManager::GetBft(uint32_t pool_index, const std::string& gid) {
     return nullptr;
 }
 
-void BftManager::RemoveBftWithBlockHash(uint32_t pool_index, const std::string& hash) {
+void BftManager::RemoveBftWithBlockHeight(uint32_t pool_index, uint64_t height) {
     auto& bft_queue = pools_with_zbfts_[pool_index];
-    for (auto iter = bft_queue.begin(); iter != bft_queue.end(); ++iter) {
-        if ((*iter)->prepare_block() == nullptr) {
-            continue;
-        }
-
-        if ((*iter)->prepare_block()->hash() == hash) {
+    auto iter = bft_queue.begin();
+    while(iter != bft_queue.end()) {
+        if ((*iter)->prepare_block() == nullptr || (*iter)->prepare_block()->height() <= height) {
             ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode((*iter)->gid()).c_str(), pool_index);
             (*iter)->Destroy();
-            bft_queue.erase(iter);
-            break;
+            iter == bft_queue.erase(iter);
+        } else {
+            ++iter;
         }
     }
 }
