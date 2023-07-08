@@ -600,23 +600,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 break;
             }
 
-            if (elect_item_ptr->change_leader_time_valid < now_ms) {
-                ZJC_DEBUG("must change new elect, elect height error: %lu, %lu, %lu, "
-                    "prepare gid: %s, precommit gid: %s, commit gid: %s thread idx: %d, "
-                    "has sync: %d, txhash: %lu,",
-                    header.zbft().elect_height(),
-                    elect_item_ptr->elect_height,
-                    old_elect_item->elect_height,
-                    common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
-                    common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
-                    common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
-                    msg_ptr->thread_idx,
-                    header.zbft().has_sync_block(),
-                    header.hash64());
-                elect_item_ptr = nullptr;
-                break;
-            }
-
             elect_item_ptr = old_elect_item;
         }
 
