@@ -115,13 +115,13 @@ void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
             }
         }
 
-        ZJC_DEBUG("cross success sync mising heights pool: %u, height: %lu, "
-            "max height: %lu, des max height: %lu, sync_count: %d",
-            0,
-            0,
-            cross_pools_[0].latest_height(),
-            ex_height,
-            sync_count);
+//         ZJC_DEBUG("cross success sync mising heights pool: %u, height: %lu, "
+//             "max height: %lu, des max height: %lu, sync_count: %d",
+//             0,
+//             0,
+//             cross_pools_[0].latest_height(),
+//             ex_height,
+//             sync_count);
         return;
     }
 
@@ -138,17 +138,17 @@ void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
                 common::kRootChainPoolIndex,
                 cross_synced_max_heights_[prev_cross_sync_index_],
                 sync::kSyncHigh);
-            ZJC_DEBUG("max cross success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
-                prev_cross_sync_index_,
-                res, cross_pools_[prev_cross_sync_index_].latest_height(),
-                cross_synced_max_heights_[prev_synced_pool_index_]);
+//             ZJC_DEBUG("max cross success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+//                 prev_cross_sync_index_,
+//                 res, cross_pools_[prev_cross_sync_index_].latest_height(),
+//                 cross_synced_max_heights_[prev_synced_pool_index_]);
         }
 
         if (res > 0) {
-            ZJC_DEBUG("cross success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
-                prev_cross_sync_index_,
-                res, cross_pools_[prev_cross_sync_index_].latest_height(),
-                cross_synced_max_heights_[prev_synced_pool_index_]);
+//             ZJC_DEBUG("cross success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+//                 prev_cross_sync_index_,
+//                 res, cross_pools_[prev_cross_sync_index_].latest_height(),
+//                 cross_synced_max_heights_[prev_synced_pool_index_]);
             ++prev_cross_sync_index_;
             return;
         }
@@ -165,17 +165,17 @@ void TxPoolManager::SyncCrossPool(uint8_t thread_idx) {
                 common::kRootChainPoolIndex,
                 cross_synced_max_heights_[prev_cross_sync_index_],
                 sync::kSyncHigh);
-            ZJC_DEBUG("max cross success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
-                prev_cross_sync_index_,
-                res, cross_pools_[prev_cross_sync_index_].latest_height(),
-                cross_synced_max_heights_[prev_synced_pool_index_]);
+//             ZJC_DEBUG("max cross success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+//                 prev_cross_sync_index_,
+//                 res, cross_pools_[prev_cross_sync_index_].latest_height(),
+//                 cross_synced_max_heights_[prev_synced_pool_index_]);
         }
 
         if (res > 0) {
-            ZJC_DEBUG("cross success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
-                prev_cross_sync_index_,
-                res, cross_pools_[prev_cross_sync_index_].latest_height(),
-                cross_synced_max_heights_[prev_synced_pool_index_]);
+//             ZJC_DEBUG("cross success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+//                 prev_cross_sync_index_,
+//                 res, cross_pools_[prev_cross_sync_index_].latest_height(),
+//                 cross_synced_max_heights_[prev_synced_pool_index_]);
             ++prev_cross_sync_index_;
             return;
         }
@@ -198,7 +198,7 @@ void TxPoolManager::FlushHeightTree() {
         }
     }
 
-    ZJC_DEBUG("success call FlushHeightTree");
+//     ZJC_DEBUG("success call FlushHeightTree");
     if (!db_->Put(db_batch).ok()) {
         ZJC_FATAL("write db failed!");
     }
@@ -232,8 +232,8 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
                         factors[i] = res;
                     }
 
-                    ZJC_DEBUG("get_factor: %d, get invalid pool factor pool: %d, factor: %f",
-                        get_factor, i, res);
+//                     ZJC_DEBUG("get_factor: %d, get invalid pool factor pool: %d, factor: %f",
+//                         get_factor, i, res);
                 }
             }
 
@@ -333,18 +333,18 @@ void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) 
                 synced_max_heights_[prev_synced_pool_index_]) {
             SyncBlockWithMaxHeights(
                 thread_idx, prev_synced_pool_index_, synced_max_heights_[prev_synced_pool_index_]);
-            ZJC_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
-                prev_synced_pool_index_,
-                res, tx_pool_[prev_synced_pool_index_].latest_height(),
-                synced_max_heights_[prev_synced_pool_index_]);
+//             ZJC_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+//                 prev_synced_pool_index_,
+//                 res, tx_pool_[prev_synced_pool_index_].latest_height(),
+//                 synced_max_heights_[prev_synced_pool_index_]);
         }
 
-        if (res > 0) {
-            ZJC_DEBUG("success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
-                prev_synced_pool_index_,
-                res, tx_pool_[prev_synced_pool_index_].latest_height(),
-                synced_max_heights_[prev_synced_pool_index_]);
-        }
+//         if (res > 0) {
+//             ZJC_DEBUG("success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+//                 prev_synced_pool_index_,
+//                 res, tx_pool_[prev_synced_pool_index_].latest_height(),
+//                 synced_max_heights_[prev_synced_pool_index_]);
+//         }
     }
 
     for (prev_synced_pool_index_ = 0;
@@ -355,18 +355,18 @@ void TxPoolManager::SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms) 
                 synced_max_heights_[prev_synced_pool_index_]) {
             SyncBlockWithMaxHeights(
                 thread_idx, prev_synced_pool_index_, synced_max_heights_[prev_synced_pool_index_]);
-            ZJC_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
-                prev_synced_pool_index_,
-                res, tx_pool_[prev_synced_pool_index_].latest_height(),
-                synced_max_heights_[prev_synced_pool_index_]);
+//             ZJC_DEBUG("max success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+//                 prev_synced_pool_index_,
+//                 res, tx_pool_[prev_synced_pool_index_].latest_height(),
+//                 synced_max_heights_[prev_synced_pool_index_]);
         }
 
-        if (res > 0) {
-            ZJC_DEBUG("success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
-                prev_synced_pool_index_,
-                res, tx_pool_[prev_synced_pool_index_].latest_height(),
-                synced_max_heights_[prev_synced_pool_index_]);
-        }
+//         if (res > 0) {
+//             ZJC_DEBUG("success sync mising heights pool: %u, height: %lu, max height: %lu, des max height: %lu",
+//                 prev_synced_pool_index_,
+//                 res, tx_pool_[prev_synced_pool_index_].latest_height(),
+//                 synced_max_heights_[prev_synced_pool_index_]);
+//         }
     }
 }
 
@@ -414,8 +414,8 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // just one thread
     assert(msg_ptr->thread_idx < common::kMaxThreadCount);
     pools_msg_queue_[msg_ptr->thread_idx].push(msg_ptr);
-    ZJC_DEBUG("queue size msg_ptr->thread_idx: %d, pools_msg_queue_: %d",
-        msg_ptr->thread_idx, pools_msg_queue_[msg_ptr->thread_idx].size());
+//     ZJC_DEBUG("queue size msg_ptr->thread_idx: %d, pools_msg_queue_: %d",
+//         msg_ptr->thread_idx, pools_msg_queue_[msg_ptr->thread_idx].size());
 //     assert(pools_msg_queue_[msg_ptr->thread_idx].size() < 512);
 }
 
@@ -463,7 +463,7 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
 
             auto pool_index = common::GetAddressPoolIndex(tx_msg.to()) % common::kImmutablePoolSize;
             msg_queues_[pool_index].push(msg_ptr);
-            ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
+//             ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
             break;
         }
         case pools::protobuf::kContractExcute:
@@ -472,13 +472,13 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
         case pools::protobuf::kConsensusLocalTos: {
             auto pool_index = common::GetAddressPoolIndex(tx_msg.to());
             msg_queues_[pool_index].push(msg_ptr);
-            ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
+//             ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
             break;
         }
         case pools::protobuf::kRootCross: {
             auto pool_index = common::GetAddressPoolIndex(tx_msg.to());
             msg_queues_[pool_index].push(msg_ptr);
-            ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
+//             ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
             break;
         }
         default:
@@ -551,7 +551,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             msg,
             msg_ptr->thread_idx);
         transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
-        ZJC_DEBUG("response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
+//         ZJC_DEBUG("response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
     } else {
         auto& heights = msg_ptr->header.sync_heights().heights();
         if (heights.size() != common::kInvalidPoolIndex) {
@@ -615,11 +615,11 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                     }
                 } while (0);
                 
-                ZJC_DEBUG("get response pool heights: %s, cross pool heights: %s, update_height: %lu, "
-                    "cross_synced_max_heights_[i]: %lu, cross_pools_[i].latest_height(): %lu, cross_heights[i]: %lu",
-                    sync_debug.c_str(), cross_debug.c_str(), update_height,
-                    cross_synced_max_heights_[i], cross_pools_[i].latest_height(),
-                    cross_heights[i]);
+//                 ZJC_DEBUG("get response pool heights: %s, cross pool heights: %s, update_height: %lu, "
+//                     "cross_synced_max_heights_[i]: %lu, cross_pools_[i].latest_height(): %lu, cross_heights[i]: %lu",
+//                     sync_debug.c_str(), cross_debug.c_str(), update_height,
+//                     cross_synced_max_heights_[i], cross_pools_[i].latest_height(),
+//                     cross_heights[i]);
                 if (update_height != common::kInvalidUint64) {
                     cross_synced_max_heights_[i] = cross_heights[i];
                     if (max_cross_pools_size_ == 1) {
@@ -631,7 +631,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             }
         }
 
-        ZJC_DEBUG("get response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
+//         ZJC_DEBUG("get response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
     }
 }
 
@@ -713,8 +713,8 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
 
     prefix_db_->SaveAddressPubkey(msg_ptr->address_info->addr(), tx_msg.pubkey());
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-    ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
-    ZJC_DEBUG("success add elect tx has verify g2: %d", tx_msg.has_key());
+//     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
+//     ZJC_DEBUG("success add elect tx has verify g2: %d", tx_msg.has_key());
 }
 
 bool TxPoolManager::SaveNodeVerfiyVec(
@@ -752,7 +752,6 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& tx_msg = header.tx_proto();
     if (tx_msg.has_key() && tx_msg.key().size() > 0) {
-        ZJC_DEBUG("call contract key must empty.");
         ZJC_DEBUG("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
         return;
     }
@@ -916,8 +915,8 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-    ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
-    ZJC_DEBUG("success push tx: %s, %lu", common::Encode::HexEncode(tx_msg.gid()).c_str(), msg_ptr->header.hash64());
+//     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
+//     ZJC_DEBUG("success push tx: %s, %lu", common::Encode::HexEncode(tx_msg.gid()).c_str(), msg_ptr->header.hash64());
 }
 
 void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr) {
@@ -964,15 +963,15 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-    ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
-    ZJC_INFO("address balance success: %lu, transfer amount: %lu, "
-        "prepayment: %lu, default call contract gas: %lu, gas price: %lu, conract bytes: %s",
-        msg_ptr->address_info->balance(),
-        tx_msg.amount(),
-        tx_msg.contract_prepayment(),
-        default_gas,
-        tx_msg.gas_price(),
-        common::Encode::HexEncode(tx_msg.contract_code()).c_str());
+//     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
+//     ZJC_INFO("address balance success: %lu, transfer amount: %lu, "
+//         "prepayment: %lu, default call contract gas: %lu, gas price: %lu, conract bytes: %s",
+//         msg_ptr->address_info->balance(),
+//         tx_msg.amount(),
+//         tx_msg.contract_prepayment(),
+//         default_gas,
+//         tx_msg.gas_price(),
+//         common::Encode::HexEncode(tx_msg.contract_code()).c_str());
 }
 
 void TxPoolManager::PopTxs(uint32_t pool_index) {
@@ -992,7 +991,7 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
         }
 
         DispatchTx(pool_index, msg_ptr);
-        ZJC_DEBUG("success pop tx: %s, %lu", common::Encode::HexEncode(tx_msg.gid()).c_str(), msg_ptr->header.hash64());
+//         ZJC_DEBUG("success pop tx: %s, %lu", common::Encode::HexEncode(tx_msg.gid()).c_str(), msg_ptr->header.hash64());
     }
 }
 
@@ -1015,12 +1014,12 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
     }
 
     tx_pool_[pool_index].AddTx(tx_ptr);
-    ZJC_DEBUG("success add local transfer to tx %u, %s, gid: %s, from pk: %s, to: %s",
-        pool_index,
-        common::Encode::HexEncode(tx_ptr->tx_hash).c_str(),
-        common::Encode::HexEncode(tx_ptr->gid).c_str(),
-        common::Encode::HexEncode(msg_ptr->header.tx_proto().pubkey()).c_str(),
-        common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
+//     ZJC_DEBUG("success add local transfer to tx %u, %s, gid: %s, from pk: %s, to: %s",
+//         pool_index,
+//         common::Encode::HexEncode(tx_ptr->tx_hash).c_str(),
+//         common::Encode::HexEncode(tx_ptr->gid).c_str(),
+//         common::Encode::HexEncode(msg_ptr->header.tx_proto().pubkey()).c_str(),
+//         common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
 }
 
 void TxPoolManager::GetTx(
