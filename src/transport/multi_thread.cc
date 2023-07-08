@@ -40,9 +40,10 @@ void ThreadHandler::Join() {
 
 void ThreadHandler::HandleMessage() {
     uint64_t thread_timer_hash_64 = common::Random::RandomUint64();
+    static const uint32_t kMaxHandleMessageCount = 16u;
     while (!destroy_) {
         uint32_t count = 0;
-        while (!destroy_) {
+        while (count++ < kMaxHandleMessageCount) {
             auto msg_ptr = msg_handler_->GetMessageFromQueue(thread_idx_);
             if (!msg_ptr) {
                 break;
@@ -61,26 +62,6 @@ void ThreadHandler::HandleMessage() {
                 }
 
                 ZJC_INFO("over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
-            }
-
-            if (thread_idx_ + 1 < common::GlobalInfo::Instance()->message_handler_thread_count()) {
-                auto btime = common::TimeUtils::TimestampUs();
-                auto msg_ptr = std::make_shared<transport::TransportMessage>();
-                msg_ptr->thread_idx = thread_idx_;
-                msg_ptr->header.set_type(common::kConsensusTimerMessage);
-                //             ZJC_INFO("kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
-                msg_ptr->times[msg_ptr->times_idx++] = btime;
-                Processor::Instance()->HandleMessage(msg_ptr);
-                auto etime = common::TimeUtils::TimestampUs();
-                if (etime - btime > 100000) {
-                    std::string t;
-                    for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
-                        t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
-                    }
-
-                    ZJC_INFO("kConsensusTimerMessage over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
-                }
-                ++thread_timer_hash_64;
             }
         }
 
@@ -102,6 +83,10 @@ void ThreadHandler::HandleMessage() {
                 ZJC_INFO("kConsensusTimerMessage over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
             }
             ++thread_timer_hash_64;
+        }
+
+        if (count >= kMaxHandleMessageCount) {
+            continue;
         }
         
         std::unique_lock<std::mutex> lock(wait_mutex_);
@@ -219,8 +204,8 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
 
     threads_message_queues_[queue_idx][priority].push(msg_ptr);
     wait_con_[queue_idx % all_thread_count_].notify_one();
-//     ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, priority: %d, thread queue size: %u",
-//         msg_ptr->header.hash64(), queue_idx, priority, threads_message_queues_[queue_idx][priority].size());
+    ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, priority: %d, thread queue size: %u",
+        msg_ptr->header.hash64(), queue_idx, priority, threads_message_queues_[queue_idx][priority].size());
 }
 
 uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
