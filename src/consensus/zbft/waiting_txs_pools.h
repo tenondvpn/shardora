@@ -20,8 +20,19 @@ public:
     ~WaitingTxsPools();
     void TxOver(std::shared_ptr<Zbft>& zbft_ptr) {}
     void TxRecover(std::shared_ptr<Zbft>& zbft_ptr);
-    uint64_t latest_height(uint32_t pool_index) const;
-    std::string latest_hash(uint32_t pool_index) const;
+
+    uint64_t latest_height(uint32_t pool_index) const {
+        return pool_mgr_->latest_height(pool_index);
+    }
+
+    std::string latest_hash(uint32_t pool_index) const {
+        return pool_mgr_->latest_hash(pool_index);
+    }
+
+    void GetHeightInvalidChangeLeaderHashs(uint32_t pool_index, uint64_t height, std::string* hashs) {
+        return pool_mgr_->GetHeightInvalidChangeLeaderHashs(pool_index, height, hashs);
+    }
+
     std::shared_ptr<WaitingTxsItem> LeaderGetValidTxs(uint32_t pool_index);
     std::shared_ptr<WaitingTxsItem> GetToTxs(uint32_t pool_index, bool leader);
     std::shared_ptr<WaitingTxsItem> GetStatisticTx(uint32_t pool_index, bool leader);

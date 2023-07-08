@@ -23,14 +23,6 @@ void WaitingTxsPools::TxRecover(std::shared_ptr<Zbft>& zbft_ptr) {
     pool_mgr_->TxRecover(tx_ptr->pool_index, tx_ptr->txs);
 }
 
-uint64_t WaitingTxsPools::latest_height(uint32_t pool_index) const {
-    return pool_mgr_->latest_height(pool_index);
-}
-
-std::string WaitingTxsPools::latest_hash(uint32_t pool_index) const {
-    return pool_mgr_->latest_hash(pool_index);
-}
-
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool_index) {
     ZJC_DEBUG("0 leader now get pool index: %d", pool_index);
     std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(pool_index);
