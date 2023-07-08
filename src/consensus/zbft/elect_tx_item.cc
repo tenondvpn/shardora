@@ -75,9 +75,8 @@ int ElectTxItem::HandleTx(
 
             pools::protobuf::PoolStatisticItem tmp_statistic;
             if (max_elect_height != now_elect_height) {
-                ZJC_WARN("old elect coming max_elect_height: %lu, now_elect_height: %lu",
+                ZJC_DEBUG("old elect coming max_elect_height: %lu, now_elect_height: %lu",
                     max_elect_height, now_elect_height);
-                assert(false);
                 return kConsensusError;
             }
 
