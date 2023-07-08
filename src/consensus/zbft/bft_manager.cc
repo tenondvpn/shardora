@@ -439,17 +439,17 @@ int BftManager::ChangePrecommitBftLeader(
     if (bft_ptr->elect_height() > elect_item.elect_height) {
         return kConsensusSuccess;
     }
-
-    if (bft_ptr->ChangeLeader(
-            leader_idx,
-            elect_item.leader_count,
-            elect_item.elect_height,
-            elect_item.members,
-            elect_item.common_pk,
-            elect_item.sec_key) != kConsensusSuccess) {
-        ZJC_ERROR("bft init failed!");
-        return kConsensusError;
-    }
+// 
+//     if (bft_ptr->ChangeLeader(
+//             leader_idx,
+//             elect_item.leader_count,
+//             elect_item.elect_height,
+//             elect_item.members,
+//             elect_item.common_pk,
+//             elect_item.sec_key) != kConsensusSuccess) {
+//         ZJC_ERROR("bft init failed!");
+//         return kConsensusError;
+//     }
 
     if (bft_ptr->prepare_block() != nullptr) {
         pools_mgr_->AddChangeLeaderInvalidHash(
@@ -1651,9 +1651,8 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
             } else {
                 if (bft_ptr->leader_index() != valid_leader_idx &&
                         elect_item_ptr->change_leader_time_valid < now_ms &&
-                    bft_ptr->consensus_status() == kConsensusPreCommit) {
+                        bft_ptr->consensus_status() == kConsensusPreCommit) {
                     ChangePrecommitBftLeader(bft_ptr, valid_leader_idx, *elect_item_ptr);
-                    continue;
                 }
             }
         } else {
