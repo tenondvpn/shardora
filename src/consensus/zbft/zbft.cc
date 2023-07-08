@@ -709,6 +709,10 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
     }
 
     if (prepare_block_->is_cross_block()) {
+        if (commit_bls_agg_verify_hash_.empty()) {
+            CreateCommitVerifyHash();
+        }
+
         if (sign_commit_hash != commit_bls_agg_verify_hash_) {
             ZJC_ERROR("backup verify leader precommit agg sign failed! signx: %s, %s: %s, %s",
                 libBLS::ThresholdUtils::fieldElementToString(agg_sign.X).c_str(),
@@ -719,6 +723,10 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
             return false;
         }
     } else {
+        if (precommit_bls_agg_verify_hash_.empty()) {
+            CreatePrecommitVerifyHash();
+        }
+
         if (sign_commit_hash != precommit_bls_agg_verify_hash_) {
             ZJC_ERROR("backup verify leader precommit agg sign failed! signx: %s, %s: %s, %s",
                 libBLS::ThresholdUtils::fieldElementToString(agg_sign.X).c_str(),
