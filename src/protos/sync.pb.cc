@@ -227,8 +227,10 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::sync::protobuf::SyncHeightItem, pool_idx_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::sync::protobuf::SyncHeightItem, height_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::sync::protobuf::SyncHeightItem, tag_),
   1,
   0,
+  2,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::sync::protobuf::FlushDbItem, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::sync::protobuf::FlushDbItem, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -288,12 +290,12 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 7, sizeof(::zjchain::sync::protobuf::SyncItem)},
   { 9, 15, sizeof(::zjchain::sync::protobuf::SyncInfo)},
-  { 16, 23, sizeof(::zjchain::sync::protobuf::SyncHeightItem)},
-  { 25, 33, sizeof(::zjchain::sync::protobuf::FlushDbItem)},
-  { 36, 44, sizeof(::zjchain::sync::protobuf::SyncValueRequest)},
-  { 47, 57, sizeof(::zjchain::sync::protobuf::SyncResItem)},
-  { 62, 69, sizeof(::zjchain::sync::protobuf::SyncValueResponse)},
-  { 71, 78, sizeof(::zjchain::sync::protobuf::SyncMessage)},
+  { 16, 24, sizeof(::zjchain::sync::protobuf::SyncHeightItem)},
+  { 27, 35, sizeof(::zjchain::sync::protobuf::FlushDbItem)},
+  { 38, 46, sizeof(::zjchain::sync::protobuf::SyncValueRequest)},
+  { 49, 59, sizeof(::zjchain::sync::protobuf::SyncResItem)},
+  { 64, 71, sizeof(::zjchain::sync::protobuf::SyncValueResponse)},
+  { 73, 80, sizeof(::zjchain::sync::protobuf::SyncMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -331,24 +333,25 @@ void AddDescriptorsImpl() {
       "\n\021protos/sync.proto\022\025zjchain.sync.protob"
       "uf\"&\n\010SyncItem\022\013\n\003key\030\001 \001(\014\022\r\n\005value\030\002 \001"
       "(\014\":\n\010SyncInfo\022.\n\005items\030\001 \003(\0132\037.zjchain."
-      "sync.protobuf.SyncItem\"2\n\016SyncHeightItem"
-      "\022\020\n\010pool_idx\030\001 \001(\r\022\016\n\006height\030\002 \001(\004\"I\n\013Fl"
-      "ushDbItem\022\025\n\rmax_vec_index\030\001 \001(\004\022\022\n\nmax_"
-      "height\030\002 \001(\004\022\017\n\007heights\030\003 \003(\004\"l\n\020SyncVal"
-      "ueRequest\022\022\n\nnetwork_id\030\001 \001(\r\022\014\n\004keys\030\002 "
-      "\003(\014\0226\n\007heights\030\003 \003(\0132%.zjchain.sync.prot"
-      "obuf.SyncHeightItem\"_\n\013SyncResItem\022\013\n\003ke"
-      "y\030\001 \001(\014\022\r\n\005value\030\002 \001(\014\022\022\n\nnetwork_id\030\003 \001"
-      "(\r\022\020\n\010pool_idx\030\004 \001(\r\022\016\n\006height\030\005 \001(\004\"X\n\021"
-      "SyncValueResponse\022\022\n\nnetwork_id\030\001 \001(\r\022/\n"
-      "\003res\030\002 \003(\0132\".zjchain.sync.protobuf.SyncR"
-      "esItem\"\220\001\n\013SyncMessage\022\?\n\016sync_value_req"
-      "\030\001 \001(\0132\'.zjchain.sync.protobuf.SyncValue"
-      "Request\022@\n\016sync_value_res\030\002 \001(\0132(.zjchai"
-      "n.sync.protobuf.SyncValueResponse"
+      "sync.protobuf.SyncItem\"\?\n\016SyncHeightItem"
+      "\022\020\n\010pool_idx\030\001 \001(\r\022\016\n\006height\030\002 \001(\004\022\013\n\003ta"
+      "g\030\003 \001(\r\"I\n\013FlushDbItem\022\025\n\rmax_vec_index\030"
+      "\001 \001(\004\022\022\n\nmax_height\030\002 \001(\004\022\017\n\007heights\030\003 \003"
+      "(\004\"l\n\020SyncValueRequest\022\022\n\nnetwork_id\030\001 \001"
+      "(\r\022\014\n\004keys\030\002 \003(\014\0226\n\007heights\030\003 \003(\0132%.zjch"
+      "ain.sync.protobuf.SyncHeightItem\"_\n\013Sync"
+      "ResItem\022\013\n\003key\030\001 \001(\014\022\r\n\005value\030\002 \001(\014\022\022\n\nn"
+      "etwork_id\030\003 \001(\r\022\020\n\010pool_idx\030\004 \001(\r\022\016\n\006hei"
+      "ght\030\005 \001(\004\"X\n\021SyncValueResponse\022\022\n\nnetwor"
+      "k_id\030\001 \001(\r\022/\n\003res\030\002 \003(\0132\".zjchain.sync.p"
+      "rotobuf.SyncResItem\"\220\001\n\013SyncMessage\022\?\n\016s"
+      "ync_value_req\030\001 \001(\0132\'.zjchain.sync.proto"
+      "buf.SyncValueRequest\022@\n\016sync_value_res\030\002"
+      " \001(\0132(.zjchain.sync.protobuf.SyncValueRe"
+      "sponse"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 713);
+      descriptor, 726);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/sync.proto", &protobuf_RegisterTypes);
 }
@@ -900,6 +903,7 @@ void SyncHeightItem::InitAsDefaultInstance() {
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int SyncHeightItem::kPoolIdxFieldNumber;
 const int SyncHeightItem::kHeightFieldNumber;
+const int SyncHeightItem::kTagFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 SyncHeightItem::SyncHeightItem()
@@ -915,15 +919,15 @@ SyncHeightItem::SyncHeightItem(const SyncHeightItem& from)
       _has_bits_(from._has_bits_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&height_, &from.height_,
-    static_cast<size_t>(reinterpret_cast<char*>(&pool_idx_) -
-    reinterpret_cast<char*>(&height_)) + sizeof(pool_idx_));
+    static_cast<size_t>(reinterpret_cast<char*>(&tag_) -
+    reinterpret_cast<char*>(&height_)) + sizeof(tag_));
   // @@protoc_insertion_point(copy_constructor:zjchain.sync.protobuf.SyncHeightItem)
 }
 
 void SyncHeightItem::SharedCtor() {
   ::memset(&height_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&pool_idx_) -
-      reinterpret_cast<char*>(&height_)) + sizeof(pool_idx_));
+      reinterpret_cast<char*>(&tag_) -
+      reinterpret_cast<char*>(&height_)) + sizeof(tag_));
 }
 
 SyncHeightItem::~SyncHeightItem() {
@@ -955,10 +959,10 @@ void SyncHeightItem::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 3u) {
+  if (cached_has_bits & 7u) {
     ::memset(&height_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&pool_idx_) -
-        reinterpret_cast<char*>(&height_)) + sizeof(pool_idx_));
+        reinterpret_cast<char*>(&tag_) -
+        reinterpret_cast<char*>(&height_)) + sizeof(tag_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -1002,6 +1006,20 @@ bool SyncHeightItem::MergePartialFromCodedStream(
         break;
       }
 
+      // optional uint32 tag = 3;
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
+          set_has_tag();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &tag_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -1039,6 +1057,11 @@ void SyncHeightItem::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->height(), output);
   }
 
+  // optional uint32 tag = 3;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->tag(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -1064,6 +1087,11 @@ void SyncHeightItem::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->height(), target);
   }
 
+  // optional uint32 tag = 3;
+  if (cached_has_bits & 0x00000004u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->tag(), target);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -1081,7 +1109,7 @@ size_t SyncHeightItem::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 3u) {
+  if (_has_bits_[0 / 32] & 7u) {
     // optional uint64 height = 2;
     if (has_height()) {
       total_size += 1 +
@@ -1094,6 +1122,13 @@ size_t SyncHeightItem::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt32Size(
           this->pool_idx());
+    }
+
+    // optional uint32 tag = 3;
+    if (has_tag()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->tag());
     }
 
   }
@@ -1125,12 +1160,15 @@ void SyncHeightItem::MergeFrom(const SyncHeightItem& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 3u) {
+  if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
       height_ = from.height_;
     }
     if (cached_has_bits & 0x00000002u) {
       pool_idx_ = from.pool_idx_;
+    }
+    if (cached_has_bits & 0x00000004u) {
+      tag_ = from.tag_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -1162,6 +1200,7 @@ void SyncHeightItem::InternalSwap(SyncHeightItem* other) {
   using std::swap;
   swap(height_, other->height_);
   swap(pool_idx_, other->pool_idx_);
+  swap(tag_, other->tag_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }

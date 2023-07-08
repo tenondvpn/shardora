@@ -36,7 +36,7 @@ namespace protobuf_protos_2fdht_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fdht_2eproto ::google::protobuf::internal::SCCInfo<8> scc_info_DhtMessage;
 }  // namespace protobuf_protos_2fdht_2eproto
 namespace protobuf_protos_2felect_2eproto {
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<8> scc_info_ElectMessage;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto ::google::protobuf::internal::SCCInfo<6> scc_info_ElectMessage;
 }  // namespace protobuf_protos_2felect_2eproto
 namespace protobuf_protos_2finit_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2finit_2eproto ::google::protobuf::internal::SCCInfo<3> scc_info_InitMessage;

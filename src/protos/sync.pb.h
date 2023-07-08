@@ -458,18 +458,28 @@ class SyncHeightItem : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::uint32 pool_idx() const;
   void set_pool_idx(::google::protobuf::uint32 value);
 
+  // optional uint32 tag = 3;
+  bool has_tag() const;
+  void clear_tag();
+  static const int kTagFieldNumber = 3;
+  ::google::protobuf::uint32 tag() const;
+  void set_tag(::google::protobuf::uint32 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.sync.protobuf.SyncHeightItem)
  private:
   void set_has_pool_idx();
   void clear_has_pool_idx();
   void set_has_height();
   void clear_has_height();
+  void set_has_tag();
+  void clear_has_tag();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::uint64 height_;
   ::google::protobuf::uint32 pool_idx_;
+  ::google::protobuf::uint32 tag_;
   friend struct ::protobuf_protos_2fsync_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -1417,6 +1427,30 @@ inline void SyncHeightItem::set_height(::google::protobuf::uint64 value) {
   set_has_height();
   height_ = value;
   // @@protoc_insertion_point(field_set:zjchain.sync.protobuf.SyncHeightItem.height)
+}
+
+// optional uint32 tag = 3;
+inline bool SyncHeightItem::has_tag() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void SyncHeightItem::set_has_tag() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void SyncHeightItem::clear_has_tag() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void SyncHeightItem::clear_tag() {
+  tag_ = 0u;
+  clear_has_tag();
+}
+inline ::google::protobuf::uint32 SyncHeightItem::tag() const {
+  // @@protoc_insertion_point(field_get:zjchain.sync.protobuf.SyncHeightItem.tag)
+  return tag_;
+}
+inline void SyncHeightItem::set_tag(::google::protobuf::uint32 value) {
+  set_has_tag();
+  tag_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.sync.protobuf.SyncHeightItem.tag)
 }
 
 // -------------------------------------------------------------------

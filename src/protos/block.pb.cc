@@ -790,27 +790,25 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::Block, bls_agg_sign_x_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::Block, bls_agg_sign_y_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::Block, leader_index_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::Block, commit_pool_index_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::Block, commit_height_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::Block, change_leader_invalid_hashs_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::Block, is_cross_block_),
-  4,
   5,
+  6,
   0,
   1,
-  10,
-  6,
+  11,
   7,
   8,
   9,
+  10,
   ~0u,
   ~0u,
-  12,
+  13,
   2,
   3,
-  13,
-  11,
   14,
-  15,
+  4,
+  12,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::ConsensusToTxsItem, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::ConsensusToTxsItem, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -1119,34 +1117,34 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 0, 8, sizeof(::zjchain::block::protobuf::StorageItem)},
   { 11, 19, sizeof(::zjchain::block::protobuf::TransferItem)},
   { 22, 42, sizeof(::zjchain::block::protobuf::BlockTx)},
-  { 57, 80, sizeof(::zjchain::block::protobuf::Block)},
-  { 98, 105, sizeof(::zjchain::block::protobuf::ConsensusToTxsItem)},
-  { 107, 113, sizeof(::zjchain::block::protobuf::ConsensusToTxs)},
-  { 114, 124, sizeof(::zjchain::block::protobuf::GetTxBlockRequest)},
-  { 129, 135, sizeof(::zjchain::block::protobuf::GetTxBlockResponse)},
-  { 136, 144, sizeof(::zjchain::block::protobuf::AccountHeightRequest)},
-  { 147, 155, sizeof(::zjchain::block::protobuf::AccountHeightResponse)},
-  { 158, 166, sizeof(::zjchain::block::protobuf::AccountAttrRequest)},
-  { 169, 178, sizeof(::zjchain::block::protobuf::AccountAttrResponse)},
-  { 182, 192, sizeof(::zjchain::block::protobuf::UpdateVpnCountRequest)},
-  { 197, 204, sizeof(::zjchain::block::protobuf::VpnCountItem)},
-  { 206, 212, sizeof(::zjchain::block::protobuf::UpdateVpnCountResponse)},
-  { 213, 223, sizeof(::zjchain::block::protobuf::GetAccountInitInfoRequest)},
-  { 228, 237, sizeof(::zjchain::block::protobuf::GetAccountInitInfoResponse)},
-  { 241, 248, sizeof(::zjchain::block::protobuf::UpdateVpnActiveRequest)},
-  { 250, 258, sizeof(::zjchain::block::protobuf::AdRewardRequest)},
-  { 261, 269, sizeof(::zjchain::block::protobuf::ElectStatisticInfo)},
-  { 272, 280, sizeof(::zjchain::block::protobuf::StatisticInfo)},
-  { 283, 289, sizeof(::zjchain::block::protobuf::RefreshPoolHeightRequest)},
-  { 290, 296, sizeof(::zjchain::block::protobuf::RefreshPoolHeightResponse)},
-  { 297, 303, sizeof(::zjchain::block::protobuf::GetAccountShardRequest)},
-  { 304, 311, sizeof(::zjchain::block::protobuf::GetAccountShardReponse)},
-  { 313, 319, sizeof(::zjchain::block::protobuf::CrossShardingTosMessage)},
-  { 320, 326, sizeof(::zjchain::block::protobuf::CrossShardingStatisticMessage)},
-  { 327, 333, sizeof(::zjchain::block::protobuf::ElectBlockMessage)},
-  { 334, 343, sizeof(::zjchain::block::protobuf::ShardToTxMessage)},
-  { 347, 356, sizeof(::zjchain::block::protobuf::StatisticTxMessage)},
-  { 360, 383, sizeof(::zjchain::block::protobuf::BlockMessage)},
+  { 57, 79, sizeof(::zjchain::block::protobuf::Block)},
+  { 96, 103, sizeof(::zjchain::block::protobuf::ConsensusToTxsItem)},
+  { 105, 111, sizeof(::zjchain::block::protobuf::ConsensusToTxs)},
+  { 112, 122, sizeof(::zjchain::block::protobuf::GetTxBlockRequest)},
+  { 127, 133, sizeof(::zjchain::block::protobuf::GetTxBlockResponse)},
+  { 134, 142, sizeof(::zjchain::block::protobuf::AccountHeightRequest)},
+  { 145, 153, sizeof(::zjchain::block::protobuf::AccountHeightResponse)},
+  { 156, 164, sizeof(::zjchain::block::protobuf::AccountAttrRequest)},
+  { 167, 176, sizeof(::zjchain::block::protobuf::AccountAttrResponse)},
+  { 180, 190, sizeof(::zjchain::block::protobuf::UpdateVpnCountRequest)},
+  { 195, 202, sizeof(::zjchain::block::protobuf::VpnCountItem)},
+  { 204, 210, sizeof(::zjchain::block::protobuf::UpdateVpnCountResponse)},
+  { 211, 221, sizeof(::zjchain::block::protobuf::GetAccountInitInfoRequest)},
+  { 226, 235, sizeof(::zjchain::block::protobuf::GetAccountInitInfoResponse)},
+  { 239, 246, sizeof(::zjchain::block::protobuf::UpdateVpnActiveRequest)},
+  { 248, 256, sizeof(::zjchain::block::protobuf::AdRewardRequest)},
+  { 259, 267, sizeof(::zjchain::block::protobuf::ElectStatisticInfo)},
+  { 270, 278, sizeof(::zjchain::block::protobuf::StatisticInfo)},
+  { 281, 287, sizeof(::zjchain::block::protobuf::RefreshPoolHeightRequest)},
+  { 288, 294, sizeof(::zjchain::block::protobuf::RefreshPoolHeightResponse)},
+  { 295, 301, sizeof(::zjchain::block::protobuf::GetAccountShardRequest)},
+  { 302, 309, sizeof(::zjchain::block::protobuf::GetAccountShardReponse)},
+  { 311, 317, sizeof(::zjchain::block::protobuf::CrossShardingTosMessage)},
+  { 318, 324, sizeof(::zjchain::block::protobuf::CrossShardingStatisticMessage)},
+  { 325, 331, sizeof(::zjchain::block::protobuf::ElectBlockMessage)},
+  { 332, 341, sizeof(::zjchain::block::protobuf::ShardToTxMessage)},
+  { 345, 354, sizeof(::zjchain::block::protobuf::StatisticTxMessage)},
+  { 358, 381, sizeof(::zjchain::block::protobuf::BlockMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -1218,7 +1216,7 @@ void AddDescriptorsImpl() {
       "rageItem\022:\n\014contract_txs\030\014 \003(\0132$.zjchain"
       ".block.protobuf.TransferItem\022\033\n\023contract"
       "_prepayment\030\r \001(\004\022\025\n\rcontract_code\030\016 \001(\014"
-      "\022\026\n\016contract_input\030\017 \001(\014\"\266\003\n\005Block\022\022\n\nne"
+      "\022\026\n\016contract_input\030\017 \001(\014\"\251\003\n\005Block\022\022\n\nne"
       "twork_id\030\001 \001(\r\022\022\n\npool_index\030\002 \001(\r\022\017\n\007pr"
       "ehash\030\003 \001(\014\022\014\n\004hash\030\004 \001(\014\022\017\n\007version\030\005 \001"
       "(\r\022\016\n\006height\030\006 \001(\004\022\032\n\022consistency_random"
@@ -1227,96 +1225,95 @@ void AddDescriptorsImpl() {
       "\n \003(\004\0220\n\007tx_list\030\013 \003(\0132\037.zjchain.block.p"
       "rotobuf.BlockTx\022\021\n\ttimestamp\030\014 \001(\004\022\026\n\016bl"
       "s_agg_sign_x\030\r \001(\014\022\026\n\016bls_agg_sign_y\030\016 \001"
-      "(\014\022\024\n\014leader_index\030\017 \001(\004\022\031\n\021commit_pool_"
-      "index\030\020 \001(\r\022\025\n\rcommit_height\030\021 \001(\004\022\035\n\016is"
-      "_cross_block\030\022 \001(\010:\005false\"1\n\022ConsensusTo"
-      "TxsItem\022\n\n\002to\030\001 \001(\014\022\017\n\007balance\030\002 \001(\004\"I\n\016"
-      "ConsensusToTxs\0227\n\003tos\030\001 \003(\0132*.zjchain.bl"
-      "ock.protobuf.ConsensusToTxsItem\"n\n\021GetTx"
-      "BlockRequest\022\016\n\006tx_gid\030\001 \001(\014\022\022\n\nblock_ha"
-      "sh\030\002 \001(\014\022\014\n\004from\030\003 \001(\010\022\016\n\006height\030\004 \001(\004\022\027"
-      "\n\017account_address\030\005 \001(\014\"#\n\022GetTxBlockRes"
-      "ponse\022\r\n\005block\030\001 \001(\014\"J\n\024AccountHeightReq"
-      "uest\022\024\n\014account_addr\030\001 \001(\014\022\r\n\005index\030\002 \001("
-      "\003\022\r\n\005count\030\003 \001(\005\"L\n\025AccountHeightRespons"
-      "e\022\017\n\007heights\030\001 \003(\004\022\024\n\014account_addr\030\002 \001(\014"
-      "\022\014\n\004type\030\003 \001(\014\"G\n\022AccountAttrRequest\022\017\n\007"
-      "account\030\001 \001(\014\022\020\n\010attr_key\030\002 \001(\014\022\016\n\006heigh"
-      "t\030\003 \001(\004\"W\n\023AccountAttrResponse\022\017\n\007accoun"
-      "t\030\001 \001(\014\022\020\n\010attr_key\030\002 \001(\014\022\016\n\006height\030\003 \001("
-      "\004\022\r\n\005block\030\004 \001(\014\"h\n\025UpdateVpnCountReques"
-      "t\022\024\n\014account_hash\030\001 \001(\004\022\n\n\002ip\030\002 \001(\014\022\016\n\006o"
-      "ld_ip\030\003 \001(\014\022\013\n\003uid\030\004 \001(\014\022\020\n\010just_set\030\005 \001"
-      "(\010\")\n\014VpnCountItem\022\n\n\002ip\030\001 \001(\014\022\r\n\005count\030"
-      "\002 \001(\r\"Q\n\026UpdateVpnCountResponse\0227\n\tvpn_n"
-      "odes\030\001 \003(\0132$.zjchain.block.protobuf.VpnC"
-      "ountItem\"e\n\031GetAccountInitInfoRequest\022\n\n"
-      "\002id\030\001 \001(\014\022\r\n\005count\030\002 \001(\r\022\016\n\006height\030\003 \001(\004"
-      "\022\016\n\006net_id\030\004 \001(\004\022\r\n\005index\030\005 \001(\004\"\177\n\032GetAc"
-      "countInitInfoResponse\022\017\n\007balance\030\001 \001(\004\0221"
-      "\n\nblock_list\030\002 \003(\0132\035.zjchain.block.proto"
-      "buf.Block\022\n\n\002id\030\003 \001(\014\022\021\n\tmax_index\030\004 \001(\004"
-      "\"0\n\026UpdateVpnActiveRequest\022\n\n\002id\030\001 \001(\014\022\n"
-      "\n\002ip\030\002 \001(\014\">\n\017AdRewardRequest\022\n\n\002id\030\001 \001("
-      "\014\022\022\n\nreward_key\030\002 \001(\014\022\013\n\003gid\030\003 \001(\014\"V\n\022El"
-      "ectStatisticInfo\022\024\n\014elect_height\030\001 \001(\004\022\025"
-      "\n\rsucc_tx_count\030\002 \003(\r\022\023\n\013lof_leaders\030\003 \003"
-      "(\r\"\204\001\n\rStatisticInfo\022\030\n\020timeblock_height"
-      "\030\001 \001(\004\022\024\n\014all_tx_count\030\002 \001(\r\022C\n\017elect_st"
-      "atistic\030\003 \003(\0132*.zjchain.block.protobuf.E"
-      "lectStatisticInfo\"+\n\030RefreshPoolHeightRe"
-      "quest\022\017\n\007heights\030\001 \003(\004\",\n\031RefreshPoolHei"
-      "ghtResponse\022\017\n\007heights\030\001 \003(\004\"$\n\026GetAccou"
-      "ntShardRequest\022\n\n\002id\030\001 \001(\014\"6\n\026GetAccount"
-      "ShardReponse\022\n\n\002id\030\001 \001(\014\022\020\n\010shard_id\030\002 \001"
-      "(\r\"G\n\027CrossShardingTosMessage\022,\n\005block\030\001"
-      " \001(\0132\035.zjchain.block.protobuf.Block\"M\n\035C"
-      "rossShardingStatisticMessage\022,\n\005block\030\001 "
-      "\001(\0132\035.zjchain.block.protobuf.Block\"A\n\021El"
-      "ectBlockMessage\022,\n\005block\030\001 \001(\0132\035.zjchain"
-      ".block.protobuf.Block\"\212\001\n\020ShardToTxMessa"
-      "ge\0225\n\006to_txs\030\001 \003(\0132%.zjchain.pools.proto"
-      "buf.ShardToTxItem\022\022\n\nleader_idx\030\002 \001(\r\022\024\n"
-      "\014elect_height\030\003 \001(\004\022\025\n\rleader_to_idx\030\004 \001"
-      "(\005\"\221\001\n\022StatisticTxMessage\022:\n\tstatistic\030\001"
-      " \001(\0132\'.zjchain.pools.protobuf.StatisticT"
-      "xItem\022\022\n\nleader_idx\030\002 \001(\r\022\024\n\014elect_heigh"
-      "t\030\003 \001(\004\022\025\n\rleader_to_idx\030\004 \001(\005\"\342\t\n\014Block"
-      "Message\022<\n\tblock_req\030\001 \001(\0132).zjchain.blo"
-      "ck.protobuf.GetTxBlockRequest\022=\n\tblock_r"
-      "es\030\002 \001(\0132*.zjchain.block.protobuf.GetTxB"
-      "lockResponse\022@\n\nheight_req\030\003 \001(\0132,.zjcha"
-      "in.block.protobuf.AccountHeightRequest\022A"
-      "\n\nheight_res\030\004 \001(\0132-.zjchain.block.proto"
-      "buf.AccountHeightResponse\022@\n\014acc_attr_re"
-      "q\030\005 \001(\0132*.zjchain.block.protobuf.Account"
-      "AttrRequest\022A\n\014acc_attr_res\030\006 \001(\0132+.zjch"
-      "ain.block.protobuf.AccountAttrResponse\022A"
-      "\n\nup_vpn_req\030\007 \001(\0132-.zjchain.block.proto"
-      "buf.UpdateVpnCountRequest\022B\n\nup_vpn_res\030"
-      "\010 \001(\0132..zjchain.block.protobuf.UpdateVpn"
-      "CountResponse\022K\n\020account_init_req\030\t \001(\0132"
-      "1.zjchain.block.protobuf.GetAccountInitI"
-      "nfoRequest\022L\n\020account_init_res\030\n \001(\01322.z"
-      "jchain.block.protobuf.GetAccountInitInfo"
-      "Response\022F\n\016vpn_active_req\030\013 \001(\0132..zjcha"
-      "in.block.protobuf.UpdateVpnActiveRequest"
-      "\022>\n\rad_reward_req\030\014 \001(\0132\'.zjchain.block."
-      "protobuf.AdRewardRequest\022I\n\017ref_heights_"
-      "req\030\r \001(\01320.zjchain.block.protobuf.Refre"
-      "shPoolHeightRequest\022J\n\017ref_heights_res\030\016"
-      " \001(\01321.zjchain.block.protobuf.RefreshPoo"
-      "lHeightResponse\022E\n\racc_shard_req\030\017 \001(\0132."
-      ".zjchain.block.protobuf.GetAccountShardR"
-      "equest\022E\n\racc_shard_res\030\020 \001(\0132..zjchain."
-      "block.protobuf.GetAccountShardReponse\022:\n"
-      "\010shard_to\030\021 \001(\0132(.zjchain.block.protobuf"
-      ".ShardToTxMessage\022@\n\014statistic_tx\030\022 \001(\0132"
-      "*.zjchain.block.protobuf.StatisticTxMess"
-      "age"
+      "(\014\022\024\n\014leader_index\030\017 \001(\004\022#\n\033change_leade"
+      "r_invalid_hashs\030\020 \001(\014\022\035\n\016is_cross_block\030"
+      "\021 \001(\010:\005false\"1\n\022ConsensusToTxsItem\022\n\n\002to"
+      "\030\001 \001(\014\022\017\n\007balance\030\002 \001(\004\"I\n\016ConsensusToTx"
+      "s\0227\n\003tos\030\001 \003(\0132*.zjchain.block.protobuf."
+      "ConsensusToTxsItem\"n\n\021GetTxBlockRequest\022"
+      "\016\n\006tx_gid\030\001 \001(\014\022\022\n\nblock_hash\030\002 \001(\014\022\014\n\004f"
+      "rom\030\003 \001(\010\022\016\n\006height\030\004 \001(\004\022\027\n\017account_add"
+      "ress\030\005 \001(\014\"#\n\022GetTxBlockResponse\022\r\n\005bloc"
+      "k\030\001 \001(\014\"J\n\024AccountHeightRequest\022\024\n\014accou"
+      "nt_addr\030\001 \001(\014\022\r\n\005index\030\002 \001(\003\022\r\n\005count\030\003 "
+      "\001(\005\"L\n\025AccountHeightResponse\022\017\n\007heights\030"
+      "\001 \003(\004\022\024\n\014account_addr\030\002 \001(\014\022\014\n\004type\030\003 \001("
+      "\014\"G\n\022AccountAttrRequest\022\017\n\007account\030\001 \001(\014"
+      "\022\020\n\010attr_key\030\002 \001(\014\022\016\n\006height\030\003 \001(\004\"W\n\023Ac"
+      "countAttrResponse\022\017\n\007account\030\001 \001(\014\022\020\n\010at"
+      "tr_key\030\002 \001(\014\022\016\n\006height\030\003 \001(\004\022\r\n\005block\030\004 "
+      "\001(\014\"h\n\025UpdateVpnCountRequest\022\024\n\014account_"
+      "hash\030\001 \001(\004\022\n\n\002ip\030\002 \001(\014\022\016\n\006old_ip\030\003 \001(\014\022\013"
+      "\n\003uid\030\004 \001(\014\022\020\n\010just_set\030\005 \001(\010\")\n\014VpnCoun"
+      "tItem\022\n\n\002ip\030\001 \001(\014\022\r\n\005count\030\002 \001(\r\"Q\n\026Upda"
+      "teVpnCountResponse\0227\n\tvpn_nodes\030\001 \003(\0132$."
+      "zjchain.block.protobuf.VpnCountItem\"e\n\031G"
+      "etAccountInitInfoRequest\022\n\n\002id\030\001 \001(\014\022\r\n\005"
+      "count\030\002 \001(\r\022\016\n\006height\030\003 \001(\004\022\016\n\006net_id\030\004 "
+      "\001(\004\022\r\n\005index\030\005 \001(\004\"\177\n\032GetAccountInitInfo"
+      "Response\022\017\n\007balance\030\001 \001(\004\0221\n\nblock_list\030"
+      "\002 \003(\0132\035.zjchain.block.protobuf.Block\022\n\n\002"
+      "id\030\003 \001(\014\022\021\n\tmax_index\030\004 \001(\004\"0\n\026UpdateVpn"
+      "ActiveRequest\022\n\n\002id\030\001 \001(\014\022\n\n\002ip\030\002 \001(\014\">\n"
+      "\017AdRewardRequest\022\n\n\002id\030\001 \001(\014\022\022\n\nreward_k"
+      "ey\030\002 \001(\014\022\013\n\003gid\030\003 \001(\014\"V\n\022ElectStatisticI"
+      "nfo\022\024\n\014elect_height\030\001 \001(\004\022\025\n\rsucc_tx_cou"
+      "nt\030\002 \003(\r\022\023\n\013lof_leaders\030\003 \003(\r\"\204\001\n\rStatis"
+      "ticInfo\022\030\n\020timeblock_height\030\001 \001(\004\022\024\n\014all"
+      "_tx_count\030\002 \001(\r\022C\n\017elect_statistic\030\003 \003(\013"
+      "2*.zjchain.block.protobuf.ElectStatistic"
+      "Info\"+\n\030RefreshPoolHeightRequest\022\017\n\007heig"
+      "hts\030\001 \003(\004\",\n\031RefreshPoolHeightResponse\022\017"
+      "\n\007heights\030\001 \003(\004\"$\n\026GetAccountShardReques"
+      "t\022\n\n\002id\030\001 \001(\014\"6\n\026GetAccountShardReponse\022"
+      "\n\n\002id\030\001 \001(\014\022\020\n\010shard_id\030\002 \001(\r\"G\n\027CrossSh"
+      "ardingTosMessage\022,\n\005block\030\001 \001(\0132\035.zjchai"
+      "n.block.protobuf.Block\"M\n\035CrossShardingS"
+      "tatisticMessage\022,\n\005block\030\001 \001(\0132\035.zjchain"
+      ".block.protobuf.Block\"A\n\021ElectBlockMessa"
+      "ge\022,\n\005block\030\001 \001(\0132\035.zjchain.block.protob"
+      "uf.Block\"\212\001\n\020ShardToTxMessage\0225\n\006to_txs\030"
+      "\001 \003(\0132%.zjchain.pools.protobuf.ShardToTx"
+      "Item\022\022\n\nleader_idx\030\002 \001(\r\022\024\n\014elect_height"
+      "\030\003 \001(\004\022\025\n\rleader_to_idx\030\004 \001(\005\"\221\001\n\022Statis"
+      "ticTxMessage\022:\n\tstatistic\030\001 \001(\0132\'.zjchai"
+      "n.pools.protobuf.StatisticTxItem\022\022\n\nlead"
+      "er_idx\030\002 \001(\r\022\024\n\014elect_height\030\003 \001(\004\022\025\n\rle"
+      "ader_to_idx\030\004 \001(\005\"\342\t\n\014BlockMessage\022<\n\tbl"
+      "ock_req\030\001 \001(\0132).zjchain.block.protobuf.G"
+      "etTxBlockRequest\022=\n\tblock_res\030\002 \001(\0132*.zj"
+      "chain.block.protobuf.GetTxBlockResponse\022"
+      "@\n\nheight_req\030\003 \001(\0132,.zjchain.block.prot"
+      "obuf.AccountHeightRequest\022A\n\nheight_res\030"
+      "\004 \001(\0132-.zjchain.block.protobuf.AccountHe"
+      "ightResponse\022@\n\014acc_attr_req\030\005 \001(\0132*.zjc"
+      "hain.block.protobuf.AccountAttrRequest\022A"
+      "\n\014acc_attr_res\030\006 \001(\0132+.zjchain.block.pro"
+      "tobuf.AccountAttrResponse\022A\n\nup_vpn_req\030"
+      "\007 \001(\0132-.zjchain.block.protobuf.UpdateVpn"
+      "CountRequest\022B\n\nup_vpn_res\030\010 \001(\0132..zjcha"
+      "in.block.protobuf.UpdateVpnCountResponse"
+      "\022K\n\020account_init_req\030\t \001(\01321.zjchain.blo"
+      "ck.protobuf.GetAccountInitInfoRequest\022L\n"
+      "\020account_init_res\030\n \001(\01322.zjchain.block."
+      "protobuf.GetAccountInitInfoResponse\022F\n\016v"
+      "pn_active_req\030\013 \001(\0132..zjchain.block.prot"
+      "obuf.UpdateVpnActiveRequest\022>\n\rad_reward"
+      "_req\030\014 \001(\0132\'.zjchain.block.protobuf.AdRe"
+      "wardRequest\022I\n\017ref_heights_req\030\r \001(\01320.z"
+      "jchain.block.protobuf.RefreshPoolHeightR"
+      "equest\022J\n\017ref_heights_res\030\016 \001(\01321.zjchai"
+      "n.block.protobuf.RefreshPoolHeightRespon"
+      "se\022E\n\racc_shard_req\030\017 \001(\0132..zjchain.bloc"
+      "k.protobuf.GetAccountShardRequest\022E\n\racc"
+      "_shard_res\030\020 \001(\0132..zjchain.block.protobu"
+      "f.GetAccountShardReponse\022:\n\010shard_to\030\021 \001"
+      "(\0132(.zjchain.block.protobuf.ShardToTxMes"
+      "sage\022@\n\014statistic_tx\030\022 \001(\0132*.zjchain.blo"
+      "ck.protobuf.StatisticTxMessage"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 4363);
+      descriptor, 4350);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/block.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fpools_2eproto::AddDescriptors();
@@ -2867,8 +2864,7 @@ const int Block::kTimestampFieldNumber;
 const int Block::kBlsAggSignXFieldNumber;
 const int Block::kBlsAggSignYFieldNumber;
 const int Block::kLeaderIndexFieldNumber;
-const int Block::kCommitPoolIndexFieldNumber;
-const int Block::kCommitHeightFieldNumber;
+const int Block::kChangeLeaderInvalidHashsFieldNumber;
 const int Block::kIsCrossBlockFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
@@ -2902,9 +2898,13 @@ Block::Block(const Block& from)
   if (from.has_bls_agg_sign_y()) {
     bls_agg_sign_y_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.bls_agg_sign_y_);
   }
+  change_leader_invalid_hashs_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_change_leader_invalid_hashs()) {
+    change_leader_invalid_hashs_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.change_leader_invalid_hashs_);
+  }
   ::memcpy(&network_id_, &from.network_id_,
-    static_cast<size_t>(reinterpret_cast<char*>(&is_cross_block_) -
-    reinterpret_cast<char*>(&network_id_)) + sizeof(is_cross_block_));
+    static_cast<size_t>(reinterpret_cast<char*>(&leader_index_) -
+    reinterpret_cast<char*>(&network_id_)) + sizeof(leader_index_));
   // @@protoc_insertion_point(copy_constructor:zjchain.block.protobuf.Block)
 }
 
@@ -2913,9 +2913,10 @@ void Block::SharedCtor() {
   hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   bls_agg_sign_x_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   bls_agg_sign_y_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  change_leader_invalid_hashs_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&network_id_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&is_cross_block_) -
-      reinterpret_cast<char*>(&network_id_)) + sizeof(is_cross_block_));
+      reinterpret_cast<char*>(&leader_index_) -
+      reinterpret_cast<char*>(&network_id_)) + sizeof(leader_index_));
 }
 
 Block::~Block() {
@@ -2928,6 +2929,7 @@ void Block::SharedDtor() {
   hash_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   bls_agg_sign_x_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   bls_agg_sign_y_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  change_leader_invalid_hashs_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void Block::SetCachedSize(int size) const {
@@ -2953,7 +2955,7 @@ void Block::Clear() {
   precommit_bitmap_.Clear();
   tx_list_.Clear();
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 15u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
       prehash_.ClearNonDefaultToEmptyNoArena();
     }
@@ -2966,16 +2968,19 @@ void Block::Clear() {
     if (cached_has_bits & 0x00000008u) {
       bls_agg_sign_y_.ClearNonDefaultToEmptyNoArena();
     }
+    if (cached_has_bits & 0x00000010u) {
+      change_leader_invalid_hashs_.ClearNonDefaultToEmptyNoArena();
+    }
   }
-  if (cached_has_bits & 240u) {
+  if (cached_has_bits & 224u) {
     ::memset(&network_id_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&consistency_random_) -
-        reinterpret_cast<char*>(&network_id_)) + sizeof(consistency_random_));
+        reinterpret_cast<char*>(&height_) -
+        reinterpret_cast<char*>(&network_id_)) + sizeof(height_));
   }
-  if (cached_has_bits & 65280u) {
-    ::memset(&electblock_height_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&is_cross_block_) -
-        reinterpret_cast<char*>(&electblock_height_)) + sizeof(is_cross_block_));
+  if (cached_has_bits & 32512u) {
+    ::memset(&consistency_random_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&leader_index_) -
+        reinterpret_cast<char*>(&consistency_random_)) + sizeof(leader_index_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -3196,38 +3201,22 @@ bool Block::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint32 commit_pool_index = 16;
+      // optional bytes change_leader_invalid_hashs = 16;
       case 16: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(128u /* 128 & 0xFF */)) {
-          set_has_commit_pool_index();
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, &commit_pool_index_)));
+            static_cast< ::google::protobuf::uint8>(130u /* 130 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_change_leader_invalid_hashs()));
         } else {
           goto handle_unusual;
         }
         break;
       }
 
-      // optional uint64 commit_height = 17;
+      // optional bool is_cross_block = 17 [default = false];
       case 17: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(136u /* 136 & 0xFF */)) {
-          set_has_commit_height();
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
-                 input, &commit_height_)));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
-      // optional bool is_cross_block = 18 [default = false];
-      case 18: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(144u /* 144 & 0xFF */)) {
           set_has_is_cross_block();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -3266,12 +3255,12 @@ void Block::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 network_id = 1;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000020u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->network_id(), output);
   }
 
   // optional uint32 pool_index = 2;
-  if (cached_has_bits & 0x00000020u) {
+  if (cached_has_bits & 0x00000040u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->pool_index(), output);
   }
 
@@ -3288,27 +3277,27 @@ void Block::SerializeWithCachedSizes(
   }
 
   // optional uint32 version = 5;
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000800u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(5, this->version(), output);
   }
 
   // optional uint64 height = 6;
-  if (cached_has_bits & 0x00000040u) {
+  if (cached_has_bits & 0x00000080u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(6, this->height(), output);
   }
 
   // optional uint64 consistency_random = 7;
-  if (cached_has_bits & 0x00000080u) {
+  if (cached_has_bits & 0x00000100u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(7, this->consistency_random(), output);
   }
 
   // optional uint64 electblock_height = 8;
-  if (cached_has_bits & 0x00000100u) {
+  if (cached_has_bits & 0x00000200u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(8, this->electblock_height(), output);
   }
 
   // optional uint64 timeblock_height = 9;
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000400u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(9, this->timeblock_height(), output);
   }
 
@@ -3328,7 +3317,7 @@ void Block::SerializeWithCachedSizes(
   }
 
   // optional uint64 timestamp = 12;
-  if (cached_has_bits & 0x00001000u) {
+  if (cached_has_bits & 0x00002000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(12, this->timestamp(), output);
   }
 
@@ -3345,23 +3334,19 @@ void Block::SerializeWithCachedSizes(
   }
 
   // optional uint64 leader_index = 15;
-  if (cached_has_bits & 0x00002000u) {
+  if (cached_has_bits & 0x00004000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(15, this->leader_index(), output);
   }
 
-  // optional uint32 commit_pool_index = 16;
-  if (cached_has_bits & 0x00000800u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(16, this->commit_pool_index(), output);
+  // optional bytes change_leader_invalid_hashs = 16;
+  if (cached_has_bits & 0x00000010u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      16, this->change_leader_invalid_hashs(), output);
   }
 
-  // optional uint64 commit_height = 17;
-  if (cached_has_bits & 0x00004000u) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt64(17, this->commit_height(), output);
-  }
-
-  // optional bool is_cross_block = 18 [default = false];
-  if (cached_has_bits & 0x00008000u) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(18, this->is_cross_block(), output);
+  // optional bool is_cross_block = 17 [default = false];
+  if (cached_has_bits & 0x00001000u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(17, this->is_cross_block(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3380,12 +3365,12 @@ void Block::SerializeWithCachedSizes(
 
   cached_has_bits = _has_bits_[0];
   // optional uint32 network_id = 1;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000020u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->network_id(), target);
   }
 
   // optional uint32 pool_index = 2;
-  if (cached_has_bits & 0x00000020u) {
+  if (cached_has_bits & 0x00000040u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->pool_index(), target);
   }
 
@@ -3404,27 +3389,27 @@ void Block::SerializeWithCachedSizes(
   }
 
   // optional uint32 version = 5;
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000800u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(5, this->version(), target);
   }
 
   // optional uint64 height = 6;
-  if (cached_has_bits & 0x00000040u) {
+  if (cached_has_bits & 0x00000080u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(6, this->height(), target);
   }
 
   // optional uint64 consistency_random = 7;
-  if (cached_has_bits & 0x00000080u) {
+  if (cached_has_bits & 0x00000100u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(7, this->consistency_random(), target);
   }
 
   // optional uint64 electblock_height = 8;
-  if (cached_has_bits & 0x00000100u) {
+  if (cached_has_bits & 0x00000200u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(8, this->electblock_height(), target);
   }
 
   // optional uint64 timeblock_height = 9;
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000400u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(9, this->timeblock_height(), target);
   }
 
@@ -3441,7 +3426,7 @@ void Block::SerializeWithCachedSizes(
   }
 
   // optional uint64 timestamp = 12;
-  if (cached_has_bits & 0x00001000u) {
+  if (cached_has_bits & 0x00002000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(12, this->timestamp(), target);
   }
 
@@ -3460,23 +3445,20 @@ void Block::SerializeWithCachedSizes(
   }
 
   // optional uint64 leader_index = 15;
-  if (cached_has_bits & 0x00002000u) {
+  if (cached_has_bits & 0x00004000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(15, this->leader_index(), target);
   }
 
-  // optional uint32 commit_pool_index = 16;
-  if (cached_has_bits & 0x00000800u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(16, this->commit_pool_index(), target);
+  // optional bytes change_leader_invalid_hashs = 16;
+  if (cached_has_bits & 0x00000010u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        16, this->change_leader_invalid_hashs(), target);
   }
 
-  // optional uint64 commit_height = 17;
-  if (cached_has_bits & 0x00004000u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(17, this->commit_height(), target);
-  }
-
-  // optional bool is_cross_block = 18 [default = false];
-  if (cached_has_bits & 0x00008000u) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(18, this->is_cross_block(), target);
+  // optional bool is_cross_block = 17 [default = false];
+  if (cached_has_bits & 0x00001000u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(17, this->is_cross_block(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3545,6 +3527,13 @@ size_t Block::ByteSizeLong() const {
           this->bls_agg_sign_y());
     }
 
+    // optional bytes change_leader_invalid_hashs = 16;
+    if (has_change_leader_invalid_hashs()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->change_leader_invalid_hashs());
+    }
+
     // optional uint32 network_id = 1;
     if (has_network_id()) {
       total_size += 1 +
@@ -3566,6 +3555,8 @@ size_t Block::ByteSizeLong() const {
           this->height());
     }
 
+  }
+  if (_has_bits_[8 / 32] & 32512u) {
     // optional uint64 consistency_random = 7;
     if (has_consistency_random()) {
       total_size += 1 +
@@ -3573,8 +3564,6 @@ size_t Block::ByteSizeLong() const {
           this->consistency_random());
     }
 
-  }
-  if (_has_bits_[8 / 32] & 65280u) {
     // optional uint64 electblock_height = 8;
     if (has_electblock_height()) {
       total_size += 1 +
@@ -3596,11 +3585,9 @@ size_t Block::ByteSizeLong() const {
           this->version());
     }
 
-    // optional uint32 commit_pool_index = 16;
-    if (has_commit_pool_index()) {
-      total_size += 2 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->commit_pool_index());
+    // optional bool is_cross_block = 17 [default = false];
+    if (has_is_cross_block()) {
+      total_size += 2 + 1;
     }
 
     // optional uint64 timestamp = 12;
@@ -3615,18 +3602,6 @@ size_t Block::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::UInt64Size(
           this->leader_index());
-    }
-
-    // optional uint64 commit_height = 17;
-    if (has_commit_height()) {
-      total_size += 2 +
-        ::google::protobuf::internal::WireFormatLite::UInt64Size(
-          this->commit_height());
-    }
-
-    // optional bool is_cross_block = 18 [default = false];
-    if (has_is_cross_block()) {
-      total_size += 2 + 1;
     }
 
   }
@@ -3678,43 +3653,41 @@ void Block::MergeFrom(const Block& from) {
       bls_agg_sign_y_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.bls_agg_sign_y_);
     }
     if (cached_has_bits & 0x00000010u) {
-      network_id_ = from.network_id_;
+      set_has_change_leader_invalid_hashs();
+      change_leader_invalid_hashs_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.change_leader_invalid_hashs_);
     }
     if (cached_has_bits & 0x00000020u) {
-      pool_index_ = from.pool_index_;
+      network_id_ = from.network_id_;
     }
     if (cached_has_bits & 0x00000040u) {
-      height_ = from.height_;
+      pool_index_ = from.pool_index_;
     }
     if (cached_has_bits & 0x00000080u) {
-      consistency_random_ = from.consistency_random_;
+      height_ = from.height_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
-  if (cached_has_bits & 65280u) {
+  if (cached_has_bits & 32512u) {
     if (cached_has_bits & 0x00000100u) {
-      electblock_height_ = from.electblock_height_;
+      consistency_random_ = from.consistency_random_;
     }
     if (cached_has_bits & 0x00000200u) {
-      timeblock_height_ = from.timeblock_height_;
+      electblock_height_ = from.electblock_height_;
     }
     if (cached_has_bits & 0x00000400u) {
-      version_ = from.version_;
+      timeblock_height_ = from.timeblock_height_;
     }
     if (cached_has_bits & 0x00000800u) {
-      commit_pool_index_ = from.commit_pool_index_;
+      version_ = from.version_;
     }
     if (cached_has_bits & 0x00001000u) {
-      timestamp_ = from.timestamp_;
+      is_cross_block_ = from.is_cross_block_;
     }
     if (cached_has_bits & 0x00002000u) {
-      leader_index_ = from.leader_index_;
+      timestamp_ = from.timestamp_;
     }
     if (cached_has_bits & 0x00004000u) {
-      commit_height_ = from.commit_height_;
-    }
-    if (cached_has_bits & 0x00008000u) {
-      is_cross_block_ = from.is_cross_block_;
+      leader_index_ = from.leader_index_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -3754,6 +3727,8 @@ void Block::InternalSwap(Block* other) {
     GetArenaNoVirtual());
   bls_agg_sign_y_.Swap(&other->bls_agg_sign_y_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
+  change_leader_invalid_hashs_.Swap(&other->change_leader_invalid_hashs_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
   swap(network_id_, other->network_id_);
   swap(pool_index_, other->pool_index_);
   swap(height_, other->height_);
@@ -3761,11 +3736,9 @@ void Block::InternalSwap(Block* other) {
   swap(electblock_height_, other->electblock_height_);
   swap(timeblock_height_, other->timeblock_height_);
   swap(version_, other->version_);
-  swap(commit_pool_index_, other->commit_pool_index_);
+  swap(is_cross_block_, other->is_cross_block_);
   swap(timestamp_, other->timestamp_);
   swap(leader_index_, other->leader_index_);
-  swap(commit_height_, other->commit_height_);
-  swap(is_cross_block_, other->is_cross_block_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }

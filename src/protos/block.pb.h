@@ -964,6 +964,21 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::std::string* release_bls_agg_sign_y();
   void set_allocated_bls_agg_sign_y(::std::string* bls_agg_sign_y);
 
+  // optional bytes change_leader_invalid_hashs = 16;
+  bool has_change_leader_invalid_hashs() const;
+  void clear_change_leader_invalid_hashs();
+  static const int kChangeLeaderInvalidHashsFieldNumber = 16;
+  const ::std::string& change_leader_invalid_hashs() const;
+  void set_change_leader_invalid_hashs(const ::std::string& value);
+  #if LANG_CXX11
+  void set_change_leader_invalid_hashs(::std::string&& value);
+  #endif
+  void set_change_leader_invalid_hashs(const char* value);
+  void set_change_leader_invalid_hashs(const void* value, size_t size);
+  ::std::string* mutable_change_leader_invalid_hashs();
+  ::std::string* release_change_leader_invalid_hashs();
+  void set_allocated_change_leader_invalid_hashs(::std::string* change_leader_invalid_hashs);
+
   // optional uint32 network_id = 1;
   bool has_network_id() const;
   void clear_network_id();
@@ -1013,12 +1028,12 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::uint32 version() const;
   void set_version(::google::protobuf::uint32 value);
 
-  // optional uint32 commit_pool_index = 16;
-  bool has_commit_pool_index() const;
-  void clear_commit_pool_index();
-  static const int kCommitPoolIndexFieldNumber = 16;
-  ::google::protobuf::uint32 commit_pool_index() const;
-  void set_commit_pool_index(::google::protobuf::uint32 value);
+  // optional bool is_cross_block = 17 [default = false];
+  bool has_is_cross_block() const;
+  void clear_is_cross_block();
+  static const int kIsCrossBlockFieldNumber = 17;
+  bool is_cross_block() const;
+  void set_is_cross_block(bool value);
 
   // optional uint64 timestamp = 12;
   bool has_timestamp() const;
@@ -1033,20 +1048,6 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   static const int kLeaderIndexFieldNumber = 15;
   ::google::protobuf::uint64 leader_index() const;
   void set_leader_index(::google::protobuf::uint64 value);
-
-  // optional uint64 commit_height = 17;
-  bool has_commit_height() const;
-  void clear_commit_height();
-  static const int kCommitHeightFieldNumber = 17;
-  ::google::protobuf::uint64 commit_height() const;
-  void set_commit_height(::google::protobuf::uint64 value);
-
-  // optional bool is_cross_block = 18 [default = false];
-  bool has_is_cross_block() const;
-  void clear_is_cross_block();
-  static const int kIsCrossBlockFieldNumber = 18;
-  bool is_cross_block() const;
-  void set_is_cross_block(bool value);
 
   // @@protoc_insertion_point(class_scope:zjchain.block.protobuf.Block)
  private:
@@ -1076,10 +1077,8 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   void clear_has_bls_agg_sign_y();
   void set_has_leader_index();
   void clear_has_leader_index();
-  void set_has_commit_pool_index();
-  void clear_has_commit_pool_index();
-  void set_has_commit_height();
-  void clear_has_commit_height();
+  void set_has_change_leader_invalid_hashs();
+  void clear_has_change_leader_invalid_hashs();
   void set_has_is_cross_block();
   void clear_has_is_cross_block();
 
@@ -1092,6 +1091,7 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::internal::ArenaStringPtr hash_;
   ::google::protobuf::internal::ArenaStringPtr bls_agg_sign_x_;
   ::google::protobuf::internal::ArenaStringPtr bls_agg_sign_y_;
+  ::google::protobuf::internal::ArenaStringPtr change_leader_invalid_hashs_;
   ::google::protobuf::uint32 network_id_;
   ::google::protobuf::uint32 pool_index_;
   ::google::protobuf::uint64 height_;
@@ -1099,11 +1099,9 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::uint64 electblock_height_;
   ::google::protobuf::uint64 timeblock_height_;
   ::google::protobuf::uint32 version_;
-  ::google::protobuf::uint32 commit_pool_index_;
+  bool is_cross_block_;
   ::google::protobuf::uint64 timestamp_;
   ::google::protobuf::uint64 leader_index_;
-  ::google::protobuf::uint64 commit_height_;
-  bool is_cross_block_;
   friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -6022,13 +6020,13 @@ inline void BlockTx::set_allocated_contract_input(::std::string* contract_input)
 
 // optional uint32 network_id = 1;
 inline bool Block::has_network_id() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void Block::set_has_network_id() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void Block::clear_has_network_id() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void Block::clear_network_id() {
   network_id_ = 0u;
@@ -6046,13 +6044,13 @@ inline void Block::set_network_id(::google::protobuf::uint32 value) {
 
 // optional uint32 pool_index = 2;
 inline bool Block::has_pool_index() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void Block::set_has_pool_index() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void Block::clear_has_pool_index() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void Block::clear_pool_index() {
   pool_index_ = 0u;
@@ -6202,13 +6200,13 @@ inline void Block::set_allocated_hash(::std::string* hash) {
 
 // optional uint32 version = 5;
 inline bool Block::has_version() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 inline void Block::set_has_version() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00000800u;
 }
 inline void Block::clear_has_version() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 inline void Block::clear_version() {
   version_ = 0u;
@@ -6226,13 +6224,13 @@ inline void Block::set_version(::google::protobuf::uint32 value) {
 
 // optional uint64 height = 6;
 inline bool Block::has_height() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void Block::set_has_height() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void Block::clear_has_height() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void Block::clear_height() {
   height_ = GOOGLE_ULONGLONG(0);
@@ -6250,13 +6248,13 @@ inline void Block::set_height(::google::protobuf::uint64 value) {
 
 // optional uint64 consistency_random = 7;
 inline bool Block::has_consistency_random() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void Block::set_has_consistency_random() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void Block::clear_has_consistency_random() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void Block::clear_consistency_random() {
   consistency_random_ = GOOGLE_ULONGLONG(0);
@@ -6274,13 +6272,13 @@ inline void Block::set_consistency_random(::google::protobuf::uint64 value) {
 
 // optional uint64 electblock_height = 8;
 inline bool Block::has_electblock_height() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
 inline void Block::set_has_electblock_height() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000200u;
 }
 inline void Block::clear_has_electblock_height() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000200u;
 }
 inline void Block::clear_electblock_height() {
   electblock_height_ = GOOGLE_ULONGLONG(0);
@@ -6298,13 +6296,13 @@ inline void Block::set_electblock_height(::google::protobuf::uint64 value) {
 
 // optional uint64 timeblock_height = 9;
 inline bool Block::has_timeblock_height() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void Block::set_has_timeblock_height() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void Block::clear_has_timeblock_height() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void Block::clear_timeblock_height() {
   timeblock_height_ = GOOGLE_ULONGLONG(0);
@@ -6382,13 +6380,13 @@ Block::tx_list() const {
 
 // optional uint64 timestamp = 12;
 inline bool Block::has_timestamp() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 inline void Block::set_has_timestamp() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00002000u;
 }
 inline void Block::clear_has_timestamp() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 inline void Block::clear_timestamp() {
   timestamp_ = GOOGLE_ULONGLONG(0);
@@ -6538,13 +6536,13 @@ inline void Block::set_allocated_bls_agg_sign_y(::std::string* bls_agg_sign_y) {
 
 // optional uint64 leader_index = 15;
 inline bool Block::has_leader_index() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00004000u) != 0;
 }
 inline void Block::set_has_leader_index() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00004000u;
 }
 inline void Block::clear_has_leader_index() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00004000u;
 }
 inline void Block::clear_leader_index() {
   leader_index_ = GOOGLE_ULONGLONG(0);
@@ -6560,63 +6558,81 @@ inline void Block::set_leader_index(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:zjchain.block.protobuf.Block.leader_index)
 }
 
-// optional uint32 commit_pool_index = 16;
-inline bool Block::has_commit_pool_index() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+// optional bytes change_leader_invalid_hashs = 16;
+inline bool Block::has_change_leader_invalid_hashs() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
-inline void Block::set_has_commit_pool_index() {
-  _has_bits_[0] |= 0x00000800u;
+inline void Block::set_has_change_leader_invalid_hashs() {
+  _has_bits_[0] |= 0x00000010u;
 }
-inline void Block::clear_has_commit_pool_index() {
-  _has_bits_[0] &= ~0x00000800u;
+inline void Block::clear_has_change_leader_invalid_hashs() {
+  _has_bits_[0] &= ~0x00000010u;
 }
-inline void Block::clear_commit_pool_index() {
-  commit_pool_index_ = 0u;
-  clear_has_commit_pool_index();
+inline void Block::clear_change_leader_invalid_hashs() {
+  change_leader_invalid_hashs_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_change_leader_invalid_hashs();
 }
-inline ::google::protobuf::uint32 Block::commit_pool_index() const {
-  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.Block.commit_pool_index)
-  return commit_pool_index_;
+inline const ::std::string& Block::change_leader_invalid_hashs() const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.Block.change_leader_invalid_hashs)
+  return change_leader_invalid_hashs_.GetNoArena();
 }
-inline void Block::set_commit_pool_index(::google::protobuf::uint32 value) {
-  set_has_commit_pool_index();
-  commit_pool_index_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.Block.commit_pool_index)
+inline void Block::set_change_leader_invalid_hashs(const ::std::string& value) {
+  set_has_change_leader_invalid_hashs();
+  change_leader_invalid_hashs_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.Block.change_leader_invalid_hashs)
+}
+#if LANG_CXX11
+inline void Block::set_change_leader_invalid_hashs(::std::string&& value) {
+  set_has_change_leader_invalid_hashs();
+  change_leader_invalid_hashs_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.block.protobuf.Block.change_leader_invalid_hashs)
+}
+#endif
+inline void Block::set_change_leader_invalid_hashs(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_change_leader_invalid_hashs();
+  change_leader_invalid_hashs_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.block.protobuf.Block.change_leader_invalid_hashs)
+}
+inline void Block::set_change_leader_invalid_hashs(const void* value, size_t size) {
+  set_has_change_leader_invalid_hashs();
+  change_leader_invalid_hashs_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.block.protobuf.Block.change_leader_invalid_hashs)
+}
+inline ::std::string* Block::mutable_change_leader_invalid_hashs() {
+  set_has_change_leader_invalid_hashs();
+  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.Block.change_leader_invalid_hashs)
+  return change_leader_invalid_hashs_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* Block::release_change_leader_invalid_hashs() {
+  // @@protoc_insertion_point(field_release:zjchain.block.protobuf.Block.change_leader_invalid_hashs)
+  if (!has_change_leader_invalid_hashs()) {
+    return NULL;
+  }
+  clear_has_change_leader_invalid_hashs();
+  return change_leader_invalid_hashs_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Block::set_allocated_change_leader_invalid_hashs(::std::string* change_leader_invalid_hashs) {
+  if (change_leader_invalid_hashs != NULL) {
+    set_has_change_leader_invalid_hashs();
+  } else {
+    clear_has_change_leader_invalid_hashs();
+  }
+  change_leader_invalid_hashs_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), change_leader_invalid_hashs);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.Block.change_leader_invalid_hashs)
 }
 
-// optional uint64 commit_height = 17;
-inline bool Block::has_commit_height() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
-}
-inline void Block::set_has_commit_height() {
-  _has_bits_[0] |= 0x00004000u;
-}
-inline void Block::clear_has_commit_height() {
-  _has_bits_[0] &= ~0x00004000u;
-}
-inline void Block::clear_commit_height() {
-  commit_height_ = GOOGLE_ULONGLONG(0);
-  clear_has_commit_height();
-}
-inline ::google::protobuf::uint64 Block::commit_height() const {
-  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.Block.commit_height)
-  return commit_height_;
-}
-inline void Block::set_commit_height(::google::protobuf::uint64 value) {
-  set_has_commit_height();
-  commit_height_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.Block.commit_height)
-}
-
-// optional bool is_cross_block = 18 [default = false];
+// optional bool is_cross_block = 17 [default = false];
 inline bool Block::has_is_cross_block() const {
-  return (_has_bits_[0] & 0x00008000u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void Block::set_has_is_cross_block() {
-  _has_bits_[0] |= 0x00008000u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void Block::clear_has_is_cross_block() {
-  _has_bits_[0] &= ~0x00008000u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void Block::clear_is_cross_block() {
   is_cross_block_ = false;

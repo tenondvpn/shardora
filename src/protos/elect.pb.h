@@ -30,7 +30,6 @@
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/unknown_field_set.h>
-#include "protos/block.pb.h"
 // @@protoc_insertion_point(includes)
 #define PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2felect_2eproto 
 
@@ -39,7 +38,7 @@ namespace protobuf_protos_2felect_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[16];
+  static const ::google::protobuf::internal::ParseTable schema[14];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -67,12 +66,6 @@ extern PrevMemberInfoDefaultTypeInternal _PrevMemberInfo_default_instance_;
 class PrevMembers;
 class PrevMembersDefaultTypeInternal;
 extern PrevMembersDefaultTypeInternal _PrevMembers_default_instance_;
-class SyncElectBlockRequest;
-class SyncElectBlockRequestDefaultTypeInternal;
-extern SyncElectBlockRequestDefaultTypeInternal _SyncElectBlockRequest_default_instance_;
-class SyncElectBlockResponse;
-class SyncElectBlockResponseDefaultTypeInternal;
-extern SyncElectBlockResponseDefaultTypeInternal _SyncElectBlockResponse_default_instance_;
 class SyncNodeStokeItem;
 class SyncNodeStokeItemDefaultTypeInternal;
 extern SyncNodeStokeItemDefaultTypeInternal _SyncNodeStokeItem_default_instance_;
@@ -108,8 +101,6 @@ template<> ::zjchain::elect::protobuf::ElectMessage* Arena::CreateMaybeMessage<:
 template<> ::zjchain::elect::protobuf::LeaderRotationMessage* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::LeaderRotationMessage>(Arena*);
 template<> ::zjchain::elect::protobuf::PrevMemberInfo* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::PrevMemberInfo>(Arena*);
 template<> ::zjchain::elect::protobuf::PrevMembers* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::PrevMembers>(Arena*);
-template<> ::zjchain::elect::protobuf::SyncElectBlockRequest* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::SyncElectBlockRequest>(Arena*);
-template<> ::zjchain::elect::protobuf::SyncElectBlockResponse* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::SyncElectBlockResponse>(Arena*);
 template<> ::zjchain::elect::protobuf::SyncNodeStokeItem* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::SyncNodeStokeItem>(Arena*);
 template<> ::zjchain::elect::protobuf::SyncNodeStokeRequest* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::SyncNodeStokeRequest>(Arena*);
 template<> ::zjchain::elect::protobuf::SyncNodeStokeResItem* Arena::CreateMaybeMessage<::zjchain::elect::protobuf::SyncNodeStokeResItem>(Arena*);
@@ -2113,247 +2104,6 @@ class SyncNodeStokeResponse : public ::google::protobuf::Message /* @@protoc_ins
 };
 // -------------------------------------------------------------------
 
-class SyncElectBlockRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.elect.protobuf.SyncElectBlockRequest) */ {
- public:
-  SyncElectBlockRequest();
-  virtual ~SyncElectBlockRequest();
-
-  SyncElectBlockRequest(const SyncElectBlockRequest& from);
-
-  inline SyncElectBlockRequest& operator=(const SyncElectBlockRequest& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  #if LANG_CXX11
-  SyncElectBlockRequest(SyncElectBlockRequest&& from) noexcept
-    : SyncElectBlockRequest() {
-    *this = ::std::move(from);
-  }
-
-  inline SyncElectBlockRequest& operator=(SyncElectBlockRequest&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-  #endif
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const SyncElectBlockRequest& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const SyncElectBlockRequest* internal_default_instance() {
-    return reinterpret_cast<const SyncElectBlockRequest*>(
-               &_SyncElectBlockRequest_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    13;
-
-  void Swap(SyncElectBlockRequest* other);
-  friend void swap(SyncElectBlockRequest& a, SyncElectBlockRequest& b) {
-    a.Swap(&b);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline SyncElectBlockRequest* New() const final {
-    return CreateMaybeMessage<SyncElectBlockRequest>(NULL);
-  }
-
-  SyncElectBlockRequest* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<SyncElectBlockRequest>(arena);
-  }
-  void CopyFrom(const ::google::protobuf::Message& from) final;
-  void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const SyncElectBlockRequest& from);
-  void MergeFrom(const SyncElectBlockRequest& from);
-  void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input) final;
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const final;
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(SyncElectBlockRequest* other);
-  private:
-  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
-  }
-  inline void* MaybeArenaPtr() const {
-    return NULL;
-  }
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional uint64 min_elect_height = 2;
-  bool has_min_elect_height() const;
-  void clear_min_elect_height();
-  static const int kMinElectHeightFieldNumber = 2;
-  ::google::protobuf::uint64 min_elect_height() const;
-  void set_min_elect_height(::google::protobuf::uint64 value);
-
-  // optional uint32 sharding_id = 1;
-  bool has_sharding_id() const;
-  void clear_sharding_id();
-  static const int kShardingIdFieldNumber = 1;
-  ::google::protobuf::uint32 sharding_id() const;
-  void set_sharding_id(::google::protobuf::uint32 value);
-
-  // @@protoc_insertion_point(class_scope:zjchain.elect.protobuf.SyncElectBlockRequest)
- private:
-  void set_has_sharding_id();
-  void clear_has_sharding_id();
-  void set_has_min_elect_height();
-  void clear_has_min_elect_height();
-
-  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::HasBits<1> _has_bits_;
-  mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::uint64 min_elect_height_;
-  ::google::protobuf::uint32 sharding_id_;
-  friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
-};
-// -------------------------------------------------------------------
-
-class SyncElectBlockResponse : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.elect.protobuf.SyncElectBlockResponse) */ {
- public:
-  SyncElectBlockResponse();
-  virtual ~SyncElectBlockResponse();
-
-  SyncElectBlockResponse(const SyncElectBlockResponse& from);
-
-  inline SyncElectBlockResponse& operator=(const SyncElectBlockResponse& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  #if LANG_CXX11
-  SyncElectBlockResponse(SyncElectBlockResponse&& from) noexcept
-    : SyncElectBlockResponse() {
-    *this = ::std::move(from);
-  }
-
-  inline SyncElectBlockResponse& operator=(SyncElectBlockResponse&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-  #endif
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const SyncElectBlockResponse& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const SyncElectBlockResponse* internal_default_instance() {
-    return reinterpret_cast<const SyncElectBlockResponse*>(
-               &_SyncElectBlockResponse_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    14;
-
-  void Swap(SyncElectBlockResponse* other);
-  friend void swap(SyncElectBlockResponse& a, SyncElectBlockResponse& b) {
-    a.Swap(&b);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline SyncElectBlockResponse* New() const final {
-    return CreateMaybeMessage<SyncElectBlockResponse>(NULL);
-  }
-
-  SyncElectBlockResponse* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<SyncElectBlockResponse>(arena);
-  }
-  void CopyFrom(const ::google::protobuf::Message& from) final;
-  void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const SyncElectBlockResponse& from);
-  void MergeFrom(const SyncElectBlockResponse& from);
-  void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input) final;
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const final;
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(SyncElectBlockResponse* other);
-  private:
-  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
-  }
-  inline void* MaybeArenaPtr() const {
-    return NULL;
-  }
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // repeated .zjchain.block.protobuf.Block block_list = 1;
-  int block_list_size() const;
-  void clear_block_list();
-  static const int kBlockListFieldNumber = 1;
-  ::zjchain::block::protobuf::Block* mutable_block_list(int index);
-  ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::Block >*
-      mutable_block_list();
-  const ::zjchain::block::protobuf::Block& block_list(int index) const;
-  ::zjchain::block::protobuf::Block* add_block_list();
-  const ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::Block >&
-      block_list() const;
-
-  // @@protoc_insertion_point(class_scope:zjchain.elect.protobuf.SyncElectBlockResponse)
- private:
-
-  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::HasBits<1> _has_bits_;
-  mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::Block > block_list_;
-  friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
-};
-// -------------------------------------------------------------------
-
 class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.elect.protobuf.ElectMessage) */ {
  public:
   ElectMessage();
@@ -2396,7 +2146,7 @@ class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_ElectMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    13;
 
   void Swap(ElectMessage* other);
   friend void swap(ElectMessage& a, ElectMessage& b) {
@@ -2562,30 +2312,6 @@ class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::zjchain::elect::protobuf::SyncNodeStokeResponse* mutable_sync_stoke_res();
   void set_allocated_sync_stoke_res(::zjchain::elect::protobuf::SyncNodeStokeResponse* sync_stoke_res);
 
-  // optional .zjchain.elect.protobuf.SyncElectBlockRequest elect_block_req = 11;
-  bool has_elect_block_req() const;
-  void clear_elect_block_req();
-  static const int kElectBlockReqFieldNumber = 11;
-  private:
-  const ::zjchain::elect::protobuf::SyncElectBlockRequest& _internal_elect_block_req() const;
-  public:
-  const ::zjchain::elect::protobuf::SyncElectBlockRequest& elect_block_req() const;
-  ::zjchain::elect::protobuf::SyncElectBlockRequest* release_elect_block_req();
-  ::zjchain::elect::protobuf::SyncElectBlockRequest* mutable_elect_block_req();
-  void set_allocated_elect_block_req(::zjchain::elect::protobuf::SyncElectBlockRequest* elect_block_req);
-
-  // optional .zjchain.elect.protobuf.SyncElectBlockResponse elect_block_res = 12;
-  bool has_elect_block_res() const;
-  void clear_elect_block_res();
-  static const int kElectBlockResFieldNumber = 12;
-  private:
-  const ::zjchain::elect::protobuf::SyncElectBlockResponse& _internal_elect_block_res() const;
-  public:
-  const ::zjchain::elect::protobuf::SyncElectBlockResponse& elect_block_res() const;
-  ::zjchain::elect::protobuf::SyncElectBlockResponse* release_elect_block_res();
-  ::zjchain::elect::protobuf::SyncElectBlockResponse* mutable_elect_block_res();
-  void set_allocated_elect_block_res(::zjchain::elect::protobuf::SyncElectBlockResponse* elect_block_res);
-
   // optional int32 member_index = 4;
   bool has_member_index() const;
   void clear_member_index();
@@ -2615,10 +2341,6 @@ class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   void clear_has_sync_stoke_req();
   void set_has_sync_stoke_res();
   void clear_has_sync_stoke_res();
-  void set_has_elect_block_req();
-  void clear_has_elect_block_req();
-  void set_has_elect_block_res();
-  void clear_has_elect_block_res();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -2632,8 +2354,6 @@ class ElectMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::zjchain::elect::protobuf::LeaderRotationMessage* leader_rotation_;
   ::zjchain::elect::protobuf::SyncNodeStokeRequest* sync_stoke_req_;
   ::zjchain::elect::protobuf::SyncNodeStokeResponse* sync_stoke_res_;
-  ::zjchain::elect::protobuf::SyncElectBlockRequest* elect_block_req_;
-  ::zjchain::elect::protobuf::SyncElectBlockResponse* elect_block_res_;
   ::google::protobuf::int32 member_index_;
   friend struct ::protobuf_protos_2felect_2eproto::TableStruct;
 };
@@ -4716,89 +4436,6 @@ inline void SyncNodeStokeResponse::set_now_tm_height(::google::protobuf::uint64 
 
 // -------------------------------------------------------------------
 
-// SyncElectBlockRequest
-
-// optional uint32 sharding_id = 1;
-inline bool SyncElectBlockRequest::has_sharding_id() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void SyncElectBlockRequest::set_has_sharding_id() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void SyncElectBlockRequest::clear_has_sharding_id() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void SyncElectBlockRequest::clear_sharding_id() {
-  sharding_id_ = 0u;
-  clear_has_sharding_id();
-}
-inline ::google::protobuf::uint32 SyncElectBlockRequest::sharding_id() const {
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.SyncElectBlockRequest.sharding_id)
-  return sharding_id_;
-}
-inline void SyncElectBlockRequest::set_sharding_id(::google::protobuf::uint32 value) {
-  set_has_sharding_id();
-  sharding_id_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.SyncElectBlockRequest.sharding_id)
-}
-
-// optional uint64 min_elect_height = 2;
-inline bool SyncElectBlockRequest::has_min_elect_height() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void SyncElectBlockRequest::set_has_min_elect_height() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void SyncElectBlockRequest::clear_has_min_elect_height() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void SyncElectBlockRequest::clear_min_elect_height() {
-  min_elect_height_ = GOOGLE_ULONGLONG(0);
-  clear_has_min_elect_height();
-}
-inline ::google::protobuf::uint64 SyncElectBlockRequest::min_elect_height() const {
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.SyncElectBlockRequest.min_elect_height)
-  return min_elect_height_;
-}
-inline void SyncElectBlockRequest::set_min_elect_height(::google::protobuf::uint64 value) {
-  set_has_min_elect_height();
-  min_elect_height_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.elect.protobuf.SyncElectBlockRequest.min_elect_height)
-}
-
-// -------------------------------------------------------------------
-
-// SyncElectBlockResponse
-
-// repeated .zjchain.block.protobuf.Block block_list = 1;
-inline int SyncElectBlockResponse::block_list_size() const {
-  return block_list_.size();
-}
-inline ::zjchain::block::protobuf::Block* SyncElectBlockResponse::mutable_block_list(int index) {
-  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.SyncElectBlockResponse.block_list)
-  return block_list_.Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::Block >*
-SyncElectBlockResponse::mutable_block_list() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.elect.protobuf.SyncElectBlockResponse.block_list)
-  return &block_list_;
-}
-inline const ::zjchain::block::protobuf::Block& SyncElectBlockResponse::block_list(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.SyncElectBlockResponse.block_list)
-  return block_list_.Get(index);
-}
-inline ::zjchain::block::protobuf::Block* SyncElectBlockResponse::add_block_list() {
-  // @@protoc_insertion_point(field_add:zjchain.elect.protobuf.SyncElectBlockResponse.block_list)
-  return block_list_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::Block >&
-SyncElectBlockResponse::block_list() const {
-  // @@protoc_insertion_point(field_list:zjchain.elect.protobuf.SyncElectBlockResponse.block_list)
-  return block_list_;
-}
-
-// -------------------------------------------------------------------
-
 // ElectMessage
 
 // optional .zjchain.elect.protobuf.ElectBlock elect_block = 1;
@@ -4977,13 +4614,13 @@ inline void ElectMessage::set_allocated_waiting_nodes(::zjchain::elect::protobuf
 
 // optional int32 member_index = 4;
 inline bool ElectMessage::has_member_index() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
 inline void ElectMessage::set_has_member_index() {
-  _has_bits_[0] |= 0x00000800u;
+  _has_bits_[0] |= 0x00000200u;
 }
 inline void ElectMessage::clear_has_member_index() {
-  _has_bits_[0] &= ~0x00000800u;
+  _has_bits_[0] &= ~0x00000200u;
 }
 inline void ElectMessage::clear_member_index() {
   member_index_ = 0;
@@ -5363,129 +5000,9 @@ inline void ElectMessage::set_allocated_sync_stoke_res(::zjchain::elect::protobu
   // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.ElectMessage.sync_stoke_res)
 }
 
-// optional .zjchain.elect.protobuf.SyncElectBlockRequest elect_block_req = 11;
-inline bool ElectMessage::has_elect_block_req() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
-}
-inline void ElectMessage::set_has_elect_block_req() {
-  _has_bits_[0] |= 0x00000200u;
-}
-inline void ElectMessage::clear_has_elect_block_req() {
-  _has_bits_[0] &= ~0x00000200u;
-}
-inline void ElectMessage::clear_elect_block_req() {
-  if (elect_block_req_ != NULL) elect_block_req_->Clear();
-  clear_has_elect_block_req();
-}
-inline const ::zjchain::elect::protobuf::SyncElectBlockRequest& ElectMessage::_internal_elect_block_req() const {
-  return *elect_block_req_;
-}
-inline const ::zjchain::elect::protobuf::SyncElectBlockRequest& ElectMessage::elect_block_req() const {
-  const ::zjchain::elect::protobuf::SyncElectBlockRequest* p = elect_block_req_;
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.ElectMessage.elect_block_req)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::elect::protobuf::SyncElectBlockRequest*>(
-      &::zjchain::elect::protobuf::_SyncElectBlockRequest_default_instance_);
-}
-inline ::zjchain::elect::protobuf::SyncElectBlockRequest* ElectMessage::release_elect_block_req() {
-  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.ElectMessage.elect_block_req)
-  clear_has_elect_block_req();
-  ::zjchain::elect::protobuf::SyncElectBlockRequest* temp = elect_block_req_;
-  elect_block_req_ = NULL;
-  return temp;
-}
-inline ::zjchain::elect::protobuf::SyncElectBlockRequest* ElectMessage::mutable_elect_block_req() {
-  set_has_elect_block_req();
-  if (elect_block_req_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::elect::protobuf::SyncElectBlockRequest>(GetArenaNoVirtual());
-    elect_block_req_ = p;
-  }
-  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.ElectMessage.elect_block_req)
-  return elect_block_req_;
-}
-inline void ElectMessage::set_allocated_elect_block_req(::zjchain::elect::protobuf::SyncElectBlockRequest* elect_block_req) {
-  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
-    delete elect_block_req_;
-  }
-  if (elect_block_req) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
-    if (message_arena != submessage_arena) {
-      elect_block_req = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, elect_block_req, submessage_arena);
-    }
-    set_has_elect_block_req();
-  } else {
-    clear_has_elect_block_req();
-  }
-  elect_block_req_ = elect_block_req;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.ElectMessage.elect_block_req)
-}
-
-// optional .zjchain.elect.protobuf.SyncElectBlockResponse elect_block_res = 12;
-inline bool ElectMessage::has_elect_block_res() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
-}
-inline void ElectMessage::set_has_elect_block_res() {
-  _has_bits_[0] |= 0x00000400u;
-}
-inline void ElectMessage::clear_has_elect_block_res() {
-  _has_bits_[0] &= ~0x00000400u;
-}
-inline void ElectMessage::clear_elect_block_res() {
-  if (elect_block_res_ != NULL) elect_block_res_->Clear();
-  clear_has_elect_block_res();
-}
-inline const ::zjchain::elect::protobuf::SyncElectBlockResponse& ElectMessage::_internal_elect_block_res() const {
-  return *elect_block_res_;
-}
-inline const ::zjchain::elect::protobuf::SyncElectBlockResponse& ElectMessage::elect_block_res() const {
-  const ::zjchain::elect::protobuf::SyncElectBlockResponse* p = elect_block_res_;
-  // @@protoc_insertion_point(field_get:zjchain.elect.protobuf.ElectMessage.elect_block_res)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::elect::protobuf::SyncElectBlockResponse*>(
-      &::zjchain::elect::protobuf::_SyncElectBlockResponse_default_instance_);
-}
-inline ::zjchain::elect::protobuf::SyncElectBlockResponse* ElectMessage::release_elect_block_res() {
-  // @@protoc_insertion_point(field_release:zjchain.elect.protobuf.ElectMessage.elect_block_res)
-  clear_has_elect_block_res();
-  ::zjchain::elect::protobuf::SyncElectBlockResponse* temp = elect_block_res_;
-  elect_block_res_ = NULL;
-  return temp;
-}
-inline ::zjchain::elect::protobuf::SyncElectBlockResponse* ElectMessage::mutable_elect_block_res() {
-  set_has_elect_block_res();
-  if (elect_block_res_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::elect::protobuf::SyncElectBlockResponse>(GetArenaNoVirtual());
-    elect_block_res_ = p;
-  }
-  // @@protoc_insertion_point(field_mutable:zjchain.elect.protobuf.ElectMessage.elect_block_res)
-  return elect_block_res_;
-}
-inline void ElectMessage::set_allocated_elect_block_res(::zjchain::elect::protobuf::SyncElectBlockResponse* elect_block_res) {
-  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
-    delete elect_block_res_;
-  }
-  if (elect_block_res) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
-    if (message_arena != submessage_arena) {
-      elect_block_res = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, elect_block_res, submessage_arena);
-    }
-    set_has_elect_block_res();
-  } else {
-    clear_has_elect_block_res();
-  }
-  elect_block_res_ = elect_block_res;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.elect.protobuf.ElectMessage.elect_block_res)
-}
-
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
-// -------------------------------------------------------------------
-
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
