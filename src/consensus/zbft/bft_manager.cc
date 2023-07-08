@@ -360,7 +360,7 @@ ZbftPtr BftManager::Start(
     auto& elect_item = *elect_item_ptr;
     auto& thread_set = elect_item.thread_set;
     auto thread_item = thread_set[thread_index];
-    if (thread_item == nullptr) {
+    if (thread_item == nullptr || thread_item->pools.empty()) {
         return nullptr;
     }
 
