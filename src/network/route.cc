@@ -232,7 +232,6 @@ void Route::RouteByUniversal(const transport::MessagePtr& msg_ptr) {
 
     if (header.has_broadcast()) {
         // choose limit nodes to broadcast from universal
-        ZJC_DEBUG("now send to des net.");
         universal_dht->SendToDesNetworkNodes(msg_ptr);
     } else {
         universal_dht->SendToClosestNode(msg_ptr);
