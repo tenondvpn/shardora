@@ -1588,15 +1588,13 @@ void BftManager::RemoveBftWithBlockHash(uint32_t pool_index, const std::string& 
 void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
     auto& bft_queue = pools_with_zbfts_[pool_index];
     ZbftPtr bft_ptr{ nullptr };
-    auto iter = bft_queue.begin();
-    for (; iter != bft_queue.end(); ++iter) {
-        if ((*iter)->gid() == gid) {
-            bft_ptr = *iter;
-            break;
-        }
+    auto iter = bft_queue.rbegin();
+    if (iter == bft_queue->rend()) {
+        return;
     }
 
-    if (bft_ptr == nullptr) {
+    bft_ptr = *iter;
+    if (bft_ptr->gid() != gid) {
         return;
     }
 
