@@ -1507,7 +1507,8 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
+            ZJC_DEBUG("get height invalid hashs failed: %u, %u, %lu, %s",
+                shard_id, pool_index, height, common::Encode::HexEncode(val).c_str());
             return false;
         }
 
@@ -1561,7 +1562,8 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_DEBUG("get elect height prev info failed: %u, %lu", des_shard, height);
+            ZJC_DEBUG("get height invalid hashs failed: %u, %u, %lu, %s",
+                shard_id, pool_index, height, common::Encode::HexEncode(val).c_str());
             return false;
         }
 
