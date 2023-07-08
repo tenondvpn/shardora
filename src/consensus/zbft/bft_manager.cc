@@ -401,6 +401,9 @@ ZbftPtr BftManager::Start(
         }
     } else {
         txs_ptr = txs_pools_->LeaderGetValidTxs(prev_bft->pool_index());
+        if (txs_ptr == nullptr) {
+            ZJC_DEBUG("leader start bft get next failed pool: %u, thread idx: %d", prev_bft->pool_index(), thread_index);
+        }
     }
 
     if (txs_ptr == nullptr) {
