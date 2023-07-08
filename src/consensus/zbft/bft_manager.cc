@@ -417,7 +417,8 @@ ZbftPtr BftManager::Start(
         return nullptr;
     }
 
-    ZJC_DEBUG("leader start bft success, thread: %d", thread_index);
+    ZJC_DEBUG("leader start bft success, thread: %d, pool: %d, bft size: %u",
+        thread_index, zbft_ptr->pool_index(), pools_with_zbfts_[zbft_ptr->pool_index()].size());
     return zbft_ptr;
 }
 
