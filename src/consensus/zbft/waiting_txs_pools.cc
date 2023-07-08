@@ -24,7 +24,6 @@ void WaitingTxsPools::TxRecover(std::shared_ptr<Zbft>& zbft_ptr) {
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool_index) {
-    ZJC_DEBUG("0 leader now get pool index: %d", pool_index);
     std::shared_ptr<WaitingTxsItem> txs_item = GetSingleTx(pool_index);
     if (txs_item == nullptr) {
         txs_item = wtxs[pool_index].LeaderGetValidTxs();
@@ -38,17 +37,9 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool
 }
 
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index) {
-    if (pool_index == common::kRootChainPoolIndex) {
-        ZJC_DEBUG("0 leader now get root pool index.");
-    }
-
     std::shared_ptr<WaitingTxsItem> txs_item = nullptr;
     if (pool_index == common::kRootChainPoolIndex) {
         txs_item = GetTimeblockTx(pool_index, true);
-    }
-
-    if (pool_index == common::kRootChainPoolIndex) {
-        ZJC_DEBUG("1 leader now get root pool index.");
     }
 
     if (txs_item == nullptr) {
@@ -57,9 +48,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetSingleTx(uint32_t pool_index
         }
 
         txs_item = GetStatisticTx(pool_index, true);
-        if (pool_index == common::kRootChainPoolIndex) {
-            ZJC_DEBUG("success statistic 1 leader now get root pool index.");
-        }
     }
 
     if (txs_item == nullptr) {
@@ -165,10 +153,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(uint32_t pool_in
         if (pool_index != common::kRootChainPoolIndex) {
             return nullptr;
         }
-
-        if (leader) {
-            ZJC_DEBUG("leader get statistic tx now.");
-        }
     } else {
         if (pool_index != 0) {
             return nullptr;
@@ -194,10 +178,6 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetStatisticTx(uint32_t pool_in
         txs_item->tx_type = pools::protobuf::kStatistic;
         ZJC_DEBUG("1 success get statistic tx %u, %d", pool_index, leader);
         return txs_item;
-    }
-
-    if (leader) {
-        ZJC_DEBUG("0 leader failed get statistic tx.");
     }
 
     return nullptr;
