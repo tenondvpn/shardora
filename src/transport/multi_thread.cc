@@ -320,6 +320,11 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx) {
     for (uint32_t i = 0; i < all_thread_count_; ++i) {
         if (i % all_thread_count_ == thread_idx) {
             for (uint32_t j = kTransportPrioritySystem; j < kTransportPriorityMaxCount; ++j) {
+                while (threads_message_queues_[i][j].size() >= 512) {
+                    MessagePtr msg_obj;
+                    threads_message_queues_[i][j].pop(&msg_obj);
+                }
+
                 if (threads_message_queues_[i][j].size() > 0) {
                     MessagePtr msg_obj;
                     threads_message_queues_[i][j].pop(&msg_obj);
