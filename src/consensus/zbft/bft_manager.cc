@@ -366,17 +366,21 @@ ZbftPtr BftManager::Start(
 
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
     if (prev_bft == nullptr) {
-        auto begin_index = thread_item->prev_index;
-        for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
-            auto pool_idx = thread_item->pools[thread_item->prev_index];
-            if (!pools_with_zbfts_[pool_idx].empty()) {
-                continue;
-            }
+        txs_ptr = txs_pools_->LeaderGetValidTxs(common::kRootChainPoolIndex);
+        if (txs_ptr == nullptr) {
+            // now leader create zbft ptr and start consensus
+            auto begin_index = thread_item->prev_index;
+            for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
+                auto pool_idx = thread_item->pools[thread_item->prev_index];
+                if (!pools_with_zbfts_[pool_idx].empty()) {
+                    continue;
+                }
 
-            txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
-            if (txs_ptr != nullptr) {
-                // now leader create zbft ptr and start consensus
-                break;
+                txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
+                if (txs_ptr != nullptr) {
+                    // now leader create zbft ptr and start consensus
+                    break;
+                }
             }
         }
 
