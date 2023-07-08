@@ -88,6 +88,12 @@ int Zbft::ChangeLeader(
         zjc_block.set_electblock_height(elect_height_);
         assert(elect_height_ >= 1);
         zjc_block.set_leader_index(leader_index_);
+        std::string change_leader_invalid_hashs;
+        pools_mgr_->GetHeightInvalidChangeLeaderHashs(zjc_block.pool_index(), zjc_block.height(), &change_leader_invalid_hashs);
+        if (!change_leader_invalid_hashs.empty()) {
+            zjc_block.set_change_leader_invalid_hashs(change_leader_invalid_hashs);
+        }
+
         zjc_block.set_hash(GetBlockHash(zjc_block));
         ZJC_DEBUG("success change bft leader called gid: %s, leader_idx: %d, elect_height: %lu, block hash: %s",
             common::Encode::HexEncode(gid()).c_str(), leader_idx, elect_height,
