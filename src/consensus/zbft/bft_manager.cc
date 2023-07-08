@@ -1589,11 +1589,11 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
     auto& bft_queue = pools_with_zbfts_[pool_index];
     ZJC_DEBUG("try to remove bft gid: %s, pool_index: %d, now size: %u",
         common::Encode::HexEncode(gid).c_str(), pool_index, bft_queue.size());
-    auto iter = bft_queue.rbegin();
-    if (iter == bft_queue->rend()) {
+    if (bft_queue.empty()) {
         return;
     }
 
+    auto iter = bft_queue.back();
     auto bft_ptr = *iter;
     if (bft_ptr->gid() != gid) {
         return;
@@ -1608,7 +1608,7 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
     }
 
     bft_ptr->Destroy();
-    bft_queue.erase(iter);
+    bft_queue.pop_back();
     ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
 }
 
