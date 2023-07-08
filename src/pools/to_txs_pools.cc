@@ -547,7 +547,6 @@ bool ToTxsPools::StatisticTos(const pools::protobuf::ShardToTxItem& leader_to_he
     for (uint32_t pool_idx = 0; pool_idx < common::kImmutablePoolSize; ++pool_idx) {
         uint64_t min_height = has_statistic_height_[pool_idx] + 1;
         uint64_t max_height = leader_to_heights.heights(pool_idx);
-        ZJC_DEBUG("StatisticTos pool: %u, min: %lu, max: %lu", pool_idx, min_height, max_height);
         if (!PreStatisticTos(pool_idx, min_height, max_height)) {
             return false;
         }
@@ -581,15 +580,15 @@ int ToTxsPools::CreateToTxWithHeights(
                 pool_consensus_heihgts_[pool_idx]);
             return kPoolsError;
         }
-
-        if (max_height > 0) {
-            ZJC_DEBUG("sharding_id: %u, pool: %d, min_height: %lu, max_height: %lu",
-                sharding_id, pool_idx, min_height, max_height);
-        }
+// 
+//         if (max_height > 0) {
+//             ZJC_DEBUG("sharding_id: %u, pool: %d, min_height: %lu, max_height: %lu",
+//                 sharding_id, pool_idx, min_height, max_height);
+//         }
 
         auto pool_iter = network_txs_pools_.find(pool_idx);
         if (pool_iter == network_txs_pools_.end()) {
-            ZJC_DEBUG("find pool index: %u failed!", pool_idx);
+//             ZJC_DEBUG("find pool index: %u failed!", pool_idx);
             continue;
         }
 

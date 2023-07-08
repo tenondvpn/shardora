@@ -61,11 +61,6 @@ void BlsManager::TimerMessage(uint8_t thread_idx) {
         if (etime - now_tm_ms >= 10) {
             ZJC_DEBUG("BlsManager handle message use time: %lu", (etime - now_tm_ms));
         }
-    } else {
-        ZJC_DEBUG("valid nodes count invalid: %u, %u",
-            network::DhtManager::Instance()->valid_count(
-                common::GlobalInfo::Instance()->network_id()),
-            common::GlobalInfo::Instance()->sharding_min_nodes_count());
     }
 
     tick_.CutOff(100000lu, std::bind(&BlsManager::TimerMessage, this, std::placeholders::_1));
