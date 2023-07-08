@@ -69,7 +69,6 @@ int BlockManager::Init(
 
 void BlockManager::ConsensusTimerMessage(uint8_t thread_idx) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    ZJC_DEBUG("BlockManager called timer: %lu, thread_idx: %lu", now_tm_ms, thread_idx);
     auto now_tm = common::TimeUtils::TimestampUs();
     if (now_tm > prev_to_txs_tm_us_ + 1000000) {
         if (leader_to_txs_.size() >= 4) {
@@ -119,8 +118,6 @@ void BlockManager::ConsensusTimerMessage(uint8_t thread_idx) {
     if (etime - now_tm_ms >= 10) {
         ZJC_DEBUG("BlockManager handle message use time: %lu", (etime - now_tm_ms));
     }
-
-    ZJC_DEBUG("end BlockManager called timer: %lu, thread_idx: %u", now_tm_ms, thread_idx);
 
     test_sync_block_tick_.CutOff(100000lu, std::bind(&BlockManager::ConsensusTimerMessage, this, std::placeholders::_1));
 }

@@ -96,8 +96,6 @@ void VssManager::ConsensusTimerMessage(uint8_t thread_idx) {
             common::GlobalInfo::Instance()->network_id()) >=
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
         auto now_tm_ms = common::TimeUtils::TimestampMs();
-        ZJC_DEBUG("VssManager called timer: %lu, thread_idx: %lu", now_tm_ms, thread_idx);
-
         PopVssMessage(thread_idx);
         auto now_tm_us = common::TimeUtils::TimestampUs();
         if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
@@ -110,8 +108,6 @@ void VssManager::ConsensusTimerMessage(uint8_t thread_idx) {
         if (etime - now_tm_ms >= 10) {
             ZJC_DEBUG("VssManager handle message use time: %lu", (etime - now_tm_ms));
         }
-
-        ZJC_DEBUG("end VssManager called timer: %lu, thread_idx: %u", now_tm_ms, thread_idx);
     }
 
     tick_.CutOff(
