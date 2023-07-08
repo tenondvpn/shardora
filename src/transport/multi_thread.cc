@@ -160,6 +160,10 @@ int32_t MultiThreadHandler::GetPriority(int32_t msg_type) {
 
 void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
     if (common::kConsensusMessage == msg_ptr->header.type()) {
+        if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
+            return;
+        }
+
         if ((uint32_t)msg_ptr->header.src_sharding_id() != common::GlobalInfo::Instance()->network_id() &&
                 (uint32_t)msg_ptr->header.src_sharding_id() + network::kConsensusWaitingShardOffset !=
                 common::GlobalInfo::Instance()->network_id() &&
