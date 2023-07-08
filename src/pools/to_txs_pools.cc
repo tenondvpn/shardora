@@ -265,7 +265,7 @@ void ToTxsPools::HandleRootCreateAddress(
         return;
     }
 
-    ZJC_DEBUG("success add root create address: sharding: %u, pool: %u", sharding_id, pool_index);
+    ZJC_DEBUG("success add root create address: %s sharding: %u, pool: %u", common::Encode::HexEncode(tx.to()).c_str(), sharding_id, pool_index);
     AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "");
 }
 
