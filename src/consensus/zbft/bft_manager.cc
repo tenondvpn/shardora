@@ -929,7 +929,7 @@ void BftManager::RemoveWaitingBlock(uint32_t pool_index, uint64_t height) {
                 common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str(),
                 block_ptr->precommit_bitmap_size());
             // remove bft
-            RemoveBftWithBlockHash(thread_idx, block_ptr->hash());
+            RemoveBftWithBlockHeight(block_ptr->pool_index(), block_ptr->height());
         }
     }
 }
