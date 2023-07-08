@@ -367,7 +367,7 @@ ZbftPtr BftManager::Start(
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
     if (prev_bft == nullptr) {
         if (thread_item->pools[thread_item->pools.size() - 1] == common::kRootChainPoolIndex) {
-            if (pools_with_zbfts_[pool_idx].empty()) {
+            if (pools_with_zbfts_[common::kRootChainPoolIndex].empty()) {
                 txs_ptr = txs_pools_->LeaderGetValidTxs(common::kRootChainPoolIndex);
             }
         }
