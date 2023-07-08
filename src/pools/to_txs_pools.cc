@@ -92,6 +92,7 @@ bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_
         uint32_t consistent_pool_index = common::kInvalidPoolIndex;
         for (int32_t i = 0; i < tx_list.size(); ++i) {
             if (tx_list[i].status() != consensus::kConsensusSuccess) {
+                assert(false);
                 continue;
             }
 
@@ -255,6 +256,7 @@ void ToTxsPools::HandleRootCreateAddress(
             auto* data = (const uint32_t*)tx.storages(i).val_hash().c_str();
             sharding_id = data[0];
             pool_index  = data[1];
+            break;
         }
     }
 
@@ -319,11 +321,6 @@ void ToTxsPools::HandleNormalToTx(
         return;
     }
 
-    auto local_net = common::GlobalInfo::Instance()->network_id();
-    if (local_net >= network::kConsensusShardEndNetworkId) {
-        local_net -= network::kConsensusShardEndNetworkId;
-    }
-
     auto heights_ptr = std::make_shared<pools::protobuf::ShardToTxItem>();
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
         if (tx_info.storages(i).key() == protos::kNormalToShards) {
@@ -358,6 +355,15 @@ void ToTxsPools::HandleNormalToTx(
     }
 
     if (heights_ptr == nullptr) {
+        return;
+    }
+
+    auto local_net = common::GlobalInfo::Instance()->network_id();
+    if (local_net >= network::kConsensusShardEndNetworkId) {
+        local_net -= network::kConsensusWaitingShardOffset;
+    }
+
+    if (local_net != heights.sharding_id()) {
         return;
     }
 

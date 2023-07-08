@@ -516,6 +516,7 @@ void BlockManager::HandleNormalToTx(
             ZJC_WARN("sharding invalid: %lu, %lu.",
                 to_txs.to_heights().sharding_id(),
                 common::GlobalInfo::Instance()->network_id());
+            assert(false);
             return;
         }
 
