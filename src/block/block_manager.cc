@@ -70,7 +70,7 @@ int BlockManager::Init(
 void BlockManager::ConsensusTimerMessage(uint8_t thread_idx) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     auto now_tm = common::TimeUtils::TimestampUs();
-    if (now_tm > prev_to_txs_tm_us_ + 1000000) {
+    if (now_tm > prev_to_txs_tm_us_ + 5000000) {
         if (leader_to_txs_.size() >= 4) {
             leader_to_txs_.erase(leader_to_txs_.begin());
         }
