@@ -733,16 +733,21 @@ void BftManager::HandleSyncConsensusBlock(
         const transport::MessagePtr& msg_ptr) {
     auto& req_bft_msg = msg_ptr->header.zbft();
     auto bft_ptr = GetBft(req_bft_msg.pool_index(), req_bft_msg.precommit_gid());
-    ZJC_DEBUG("sync consensus block coming: %s, hash: %s, is cross block: %d, hash64: %lu",
+    ZJC_DEBUG("sync consensus block coming: %s, pool: %u, height: %lu, hash: %s, is cross block: %d, hash64: %lu, bft_ptr == nullptr: %d, latest: %lu",
         common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
+        req_bft_msg.block().pool_index(),
+        req_bft_msg.block().height(),
         common::Encode::HexEncode(req_bft_msg.block().hash()).c_str(),
         req_bft_msg.block().is_cross_block(),
-        msg_ptr->header.hash64());
+        msg_ptr->header.hash64(),
+        (bft_ptr == nullptr),
+        pools_mgr_->latest_height(req_bft_msg.block().pool_index()));
     if (req_bft_msg.has_block()) {
         // verify and add new block
         if (bft_ptr == nullptr) {
             if (!req_bft_msg.block().is_cross_block() &&
-                    req_bft_msg.block().height() > pools_mgr_->latest_height(req_bft_msg.block().pool_index())) {
+                    (req_bft_msg.block().height() > pools_mgr_->latest_height(req_bft_msg.block().pool_index()) || 
+                        pools_mgr_->latest_height(req_bft_msg.block().pool_index()) == common::kInvalidUint64)) {
                 AddWaitingBlock(msg_ptr);
                 return;
             }
@@ -1968,21 +1973,6 @@ int BftManager::CheckPrecommit(
             break;
         }
 
-        if (bft_ptr->prepare_block() == nullptr) {
-            // sync from other nodes
-//             bft_ptr->set_prepare_hash(bft_msg.prepare_hash());
-//             bft_ptr->CreatePrecommitVerifyHash();
-//             ZJC_DEBUG("use leader prepare hash: %s, precommit gid: %s",
-//                 common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
-//                 common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-//             bft_ptr->set_prepare_block(nullptr);
-//             SyncConsensusBlock(
-//                 elect_item,
-//                 msg_ptr->thread_idx,
-//                 bft_ptr->pool_index(),
-//                 bft_msg.precommit_gid());
-        }
-
         ZJC_DEBUG("Backup CheckPrecommit: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
 #ifdef ZJC_UNITTEST
         if (test_for_precommit_evil_) {
@@ -2194,19 +2184,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         msg_ptr->response->header.mutable_zbft()->set_agree_commit(false);
         auto precommit_bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.precommit_gid());
         if (precommit_bft_ptr != nullptr) {
-            if (BackupPrecommit(precommit_bft_ptr, msg_ptr) != kConsensusSuccess) {
-                // sync block from others
-                precommit_bft_ptr->set_prepare_hash(bft_msg.prepare_hash());
-                precommit_bft_ptr->CreatePrecommitVerifyHash();
-                ZJC_DEBUG("1 use leader prepare hash: %s",
-                    common::Encode::HexEncode(bft_msg.prepare_hash()).c_str());
-                precommit_bft_ptr->set_prepare_block(nullptr);
-//                 SyncConsensusBlock(
-//                     elect_item,
-//                     msg_ptr->thread_idx,
-//                     precommit_bft_ptr->pool_index(),
-//                     precommit_bft_ptr->gid());
-            } else {
+            if (BackupPrecommit(precommit_bft_ptr, msg_ptr) == kConsensusSuccess) {
                 msg_ptr->response->header.mutable_zbft()->set_agree_commit(true);
             }
         } else {
