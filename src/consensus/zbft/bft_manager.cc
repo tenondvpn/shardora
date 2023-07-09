@@ -799,9 +799,9 @@ void BftManager::HandleSyncConsensusBlock(
                 if (bft_ptr->consensus_status() == kConsensusLeaderWaitingBlock) {
                     if (block_hash == bft_ptr->leader_waiting_prepare_hash()) {
                         bft_ptr->set_prepare_block(std::make_shared<block::protobuf::Block>(req_bft_msg.block()));
+                        ReConsensusPrepareBft(elect_item, bft_ptr);
                     }
 
-                    ReConsensusPrepareBft(elect_item, bft_ptr);
                     return;
                 }
                 ZJC_DEBUG("receive block hash: %s, status: %d",
