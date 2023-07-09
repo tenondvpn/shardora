@@ -170,7 +170,7 @@ int ShardNetwork<DhtType>::JoinShard(uint8_t thread_idx) {
         unversal_dht->local_node()->public_port,
         unversal_dht->local_node()->pubkey_str,
         unversal_dht->local_node()->id);
-    dht::DhtKeyManager dht_key(sharding_id_, security_->GetPublicKey());
+    dht::DhtKeyManager dht_key(sharding_id_, security_->GetAddress());
     local_node->dht_key = dht_key.StrKey();
     local_node->dht_key_hash = common::Hash::Hash64(dht_key.StrKey());
     elect_dht_ = std::make_shared<DhtType>(local_node);

@@ -233,7 +233,7 @@ int BaseDht::Bootstrap(
 
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto& msg = msg_ptr->header;
-        DhtKeyManager dhtkey(local_node_->sharding_id, boot_nodes[i]->pubkey_str);
+        DhtKeyManager dhtkey(local_node_->sharding_id, boot_nodes[i]->id);
         DhtProto::CreateBootstrapRequest(
             local_node_->sharding_id,
             security_->GetPublicKey(),
@@ -409,7 +409,8 @@ void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    DhtKeyManager dhtkey(header.src_sharding_id(), dht_msg.bootstrap_req().pubkey());
+    auto id = security_->GetAddress(dht_msg.bootstrap_req().pubkey());
+    DhtKeyManager dhtkey(header.src_sharding_id(), id);
     transport::protobuf::Header msg;
     DhtProto::CreateBootstrapResponse(
         local_node_->sharding_id,
@@ -553,7 +554,8 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         }
     }
 
-    DhtKeyManager dhtkey(header.src_sharding_id(), dht_msg.refresh_neighbors_req().pubkey());
+    auto id = security_->GetAddress(dht_msg.refresh_neighbors_req().pubkey());
+    DhtKeyManager dhtkey(header.src_sharding_id(), id);
     auto close_nodes = DhtFunction::GetClosestNodes(
         tmp_dht,
         dhtkey.StrKey(),
@@ -632,7 +634,8 @@ void BaseDht::Connect(
     connect_timeout_map_[peer_int] = now_tm_ms + kConnectTimeoutMs;
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
-    DhtKeyManager dhtkey(src_sharding_id, des_pubkey);
+    auto id = security_->GetAddress(des_pubkey);
+    DhtKeyManager dhtkey(src_sharding_id, id);
     if (DhtProto::CreateConnectRequest(
             response,
             local_node_,
