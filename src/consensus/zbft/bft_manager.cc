@@ -2573,11 +2573,11 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
         sign.X = libff::alt_bn128_Fq(common::Encode::HexEncode(block.bls_agg_sign_x()).c_str());
         sign.Y = libff::alt_bn128_Fq(common::Encode::HexEncode(block.bls_agg_sign_y()).c_str());
         sign.Z = libff::alt_bn128_Fq::one();
-        bool check_res = libBLS::Bls::Verification(g1_hash, sign, common_pk);
         ZJC_DEBUG("verification agg sign hash: %s, signx: %s, common pk x: %s",
             common::Encode::HexEncode(block.hash()).c_str(),
             common::Encode::HexEncode(block.bls_agg_sign_x()).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0).c_str());
+        bool check_res = libBLS::Bls::Verification(g1_hash, sign, common_pk);
         if (!check_res) {
             assert(check_res);
             return;

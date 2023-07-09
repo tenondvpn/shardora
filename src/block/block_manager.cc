@@ -1289,7 +1289,8 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     auto& heights = shard_to.to_txs(0);
     std::string str_heights;
     for (int32_t i = 0; i < heights.heights_size(); ++i) {
-        str_heights += std::to_string(heights.heights(i)) + " ";
+        str_heights += std::to_string(i) + "_" + std::to_string(heights.heights(i)) + " ";
+
     }
 
     ZJC_DEBUG("to tx message coming: %lu, elect height: %lu, heights: %s",
