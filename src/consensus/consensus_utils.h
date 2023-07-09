@@ -80,7 +80,6 @@ enum BftStatus {
     kConsensusStepTimeout = 8,
     kConsensusSyncBlock = 9,
     kConsensusFailed = 10,
-    kConsensusLeaderWaitingBlock = 11,
 };
 
 enum BftRole {
@@ -94,6 +93,7 @@ enum BftLeaderCheckStatus {
     kConsensusAgree = 2,
     kConsensusHandled = 3,
     kConsensusReChallenge = 4,
+    kConsensusLeaderWaitingBlock = 5,
 };
 
 static const uint32_t kMaxTxCount = 256u;

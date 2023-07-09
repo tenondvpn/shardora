@@ -796,6 +796,14 @@ void BftManager::HandleSyncConsensusBlock(
         } else {
             if (bft_ptr->prepare_block() == nullptr) {
                 auto block_hash = GetBlockHash(req_bft_msg.block());
+                if (bft_ptr->consensus_status() == kConsensusLeaderWaitingBlock) {
+                    if (block_hash == bft_ptr->leader_waiting_prepare_hash()) {
+                        bft_ptr->set_prepare_block(std::make_shared<block::protobuf::Block>(req_bft_msg.block()));
+                    }
+
+                    ReConsensusPrepareBft(elect_item, bft_ptr);
+                    return;
+                }
                 ZJC_DEBUG("receive block hash: %s, status: %d",
                     common::Encode::HexEncode(block_hash).c_str(),
                     bft_ptr->consensus_status());
@@ -855,11 +863,11 @@ void BftManager::HandleSyncConsensusBlock(
             ZJC_WARN("get key value failed, sync block failed!");
             return;
         }
-
-        if (!bft_ptr->prepare_block()->has_bls_agg_sign_y() ||
-                !bft_ptr->prepare_block()->has_bls_agg_sign_x()) {
-            return;
-        }
+// 
+//         if (!bft_ptr->prepare_block()->has_bls_agg_sign_y() ||
+//                 !bft_ptr->prepare_block()->has_bls_agg_sign_x()) {
+//             return;
+//         }
 
         msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
         dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
@@ -1716,6 +1724,36 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
     }
 }
 
+void BftManager::ReConsensusPrepareBft(const ElectItem& elect_item, ZbftPtr& bft_ptr) {
+    assert(bft_ptr->consensus_status() == kConsensusPreCommit);
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[bft_ptr->pool_index()];
+    SetDefaultResponse(msg_ptr);
+    std::vector<ZbftPtr> zbft_vec = { nullptr, nullptr, nullptr };
+    msg_ptr->tmp_ptr = &zbft_vec;
+    std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
+    ZJC_DEBUG("use g1_precommit_hash prepare hash: %s, gid: %s",
+        common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
+        common::Encode::HexEncode(bft_ptr->gid()).c_str());
+    msg_ptr->header.mutable_zbft()->set_agree_precommit(true);
+    msg_ptr->header.mutable_zbft()->set_agree_commit(true);
+    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    LeaderCallPrecommit(elect_item, bft_ptr, msg_ptr);
+    msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
+    ZJC_DEBUG("LeaderCallPrecommit success gid: %s",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str());
+    zbft_vec[0] = nullptr;
+    zbft_vec[1] = bft_ptr;
+    common::BftMemberPtr mem_ptr = nullptr;
+    CreateResponseMessage(
+        elect_item,
+        false,
+        zbft_vec,
+        msg_ptr,
+        mem_ptr);
+    bft_ptr->AfterNetwork();
+}
+
 void BftManager::ReConsensusBft(ZbftPtr& bft_ptr) {
     assert(bft_ptr->consensus_status() == kConsensusPreCommit);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -2216,7 +2254,7 @@ int BftManager::LeaderHandleZbftMessage(
             bft_msg.agree_precommit(),
             common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
             common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
-        if (bft_msg.agree_precommit() && bft_msg.prepare_hash() == bft_ptr->local_prepare_hash()) {
+        if (bft_msg.agree_precommit()) {
             libff::alt_bn128_G1 sign;
             try {
                 sign.X = libff::alt_bn128_Fq(bft_msg.bls_sign_x().c_str());
@@ -2237,11 +2275,19 @@ int BftManager::LeaderHandleZbftMessage(
                 res,
                 bft_msg.member_index(),
                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-            if (res == kConsensusAgree) {
+            if (res == kConsensusLeaderWaitingBlock) {
+                ZJC_DEBUG("invalid block and sync from other hash: %s, gid: %s",
+                    common::Encode::HexEncode(bft_ptr->leader_waiting_prepare_hash()).c_str(),
+                    common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+                SyncConsensusBlock(
+                    elect_item,
+                    msg_ptr->thread_idx,
+                    bft_ptr->pool_index(),
+                    bft_msg.prepare_gid());
+            } else if (res == kConsensusAgree) {
                 msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
                 if (bft_ptr->prepare_block() == nullptr) {
-                    ZJC_DEBUG("invalid block and sync from other hash: %s, gid: %s",
-                        common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+                    ZJC_DEBUG("invalid block and sync from other gid: %s",
                         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
                     assert(false);
                 }
@@ -2275,6 +2321,8 @@ int BftManager::LeaderHandleZbftMessage(
                         ReConsensusBft(prev_ptr);
                     }
                 }
+            } else {
+                assert(false);
             }
         } else {
             if (bft_ptr->AddPrepareOpposeNode(member_ptr->id) == kConsensusOppose) {
