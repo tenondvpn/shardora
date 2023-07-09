@@ -335,6 +335,12 @@ ZbftPtr BftManager::Start(
     }
 #endif
 
+    if (prev_bft == nullptr) {
+        if (now_bft_count_ >= kMaxBftCount) {
+            return;
+        }
+    }
+
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (elect_item_ptr == nullptr) {
         return nullptr;
@@ -1605,6 +1611,7 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
     }
 
     bft_queue.push_back(bft_ptr);
+    ++now_bft_count_;
     ZJC_DEBUG("success add bft pool idx: %d, add gid: %s",
         bft_ptr->pool_index(),
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
@@ -1630,6 +1637,7 @@ void BftManager::RemoveBftWithBlockHeight(uint32_t pool_index, uint64_t height) 
             ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode((*iter)->gid()).c_str(), pool_index);
             (*iter)->Destroy();
             iter == bft_queue.erase(iter);
+            --now_bft_count_;
         } else {
             ++iter;
         }
@@ -1654,6 +1662,7 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
             }
         } else {
             bft_ptr->Destroy();
+            --now_bft_count_;
             bft_queue.erase(iter);
             ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
         }

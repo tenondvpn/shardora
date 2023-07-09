@@ -277,6 +277,7 @@ private:
         const transport::MessagePtr& msg_ptr);
 
     static const uint32_t kCheckTimeoutPeriodMilli = 1000lu;
+    static const uint32_t kMaxBftCount = 32u;
 
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
@@ -317,6 +318,7 @@ private:
     std::vector<ZbftPtr> pools_with_zbfts_[common::kInvalidPoolIndex];
     std::deque<transport::MessagePtr> backup_prapare_msg_queue_[common::kMaxThreadCount];
     std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
+    volatile int32_t now_bft_count_ = 0;
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {
