@@ -1191,6 +1191,8 @@ void BftManager::CreateResponseMessage(
                 auto broadcast = msg_ptr->response->header.mutable_broadcast();
             }
 
+            dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
+            msg_ptr->response->header.set_des_dht_key(dht_key.StrKey());
             assert(msg_ptr->response->header.has_broadcast());
             if (!LeaderSignMessage(msg_ptr->response)) {
                 return;
