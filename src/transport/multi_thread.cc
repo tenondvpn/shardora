@@ -323,11 +323,13 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx) {
                 while (threads_message_queues_[i][j].size() >= 512) {
                     MessagePtr msg_obj;
                     threads_message_queues_[i][j].pop(&msg_obj);
+                    ZJC_DEBUG("pop invalid message hash: %u", msg_obj->header.hash64());
                 }
 
                 if (threads_message_queues_[i][j].size() > 0) {
                     MessagePtr msg_obj;
                     threads_message_queues_[i][j].pop(&msg_obj);
+                    ZJC_DEBUG("pop valid message hash: %u", msg_obj->header.hash64());
                     return msg_obj;
                 }
             }
