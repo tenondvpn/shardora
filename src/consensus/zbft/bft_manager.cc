@@ -2593,7 +2593,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
                 return;
             }
         } catch (std::exception& e) {
-            assert(check_res);
+            assert(false);
             return;
         }
     }
