@@ -2321,8 +2321,6 @@ int BftManager::LeaderHandleZbftMessage(
                         ReConsensusBft(prev_ptr);
                     }
                 }
-            } else {
-                assert(false);
             }
         } else {
             if (bft_ptr->AddPrepareOpposeNode(member_ptr->id) == kConsensusOppose) {
