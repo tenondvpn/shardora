@@ -1249,7 +1249,7 @@ void BftManager::CreateResponseMessage(
                     msg_ptr->header.hash64(),
                     0,
                     0,
-                    leader_member->public_ip.c_str(), leader_member->public_port);
+                    to_ip.c_str(), leader_member->public_port);
 //                 if (res == transport::kTransportSuccess) {
 //                     break;
 //                 }
