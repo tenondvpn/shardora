@@ -80,6 +80,7 @@ enum BftStatus {
     kConsensusStepTimeout = 8,
     kConsensusSyncBlock = 9,
     kConsensusFailed = 10,
+    kConsensusLeaderWaitingBlock = 11,
 };
 
 enum BftRole {

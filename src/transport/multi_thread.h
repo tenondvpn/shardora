@@ -95,7 +95,7 @@ private:
     std::queue<std::shared_ptr<protobuf::Header>> local_queue_;
     std::vector<ThreadHandlerPtr> thread_vec_;
     bool inited_{ false };
-    common::UniqueSet<uint64_t, 256, 16> unique_message_sets_;
+    common::UniqueSet<uint64_t, 10240, 64> unique_message_sets_;
     common::ThreadSafeQueue<MessagePtr>** threads_message_queues_;
     common::ThreadSafeQueue<MessagePtr> http_server_message_queue_;
     common::ThreadSafeQueue<SavedBlockQueueItemPtr> saved_block_queue_;

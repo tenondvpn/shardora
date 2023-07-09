@@ -309,6 +309,13 @@ int Zbft::LeaderPrecommitOk(
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
         //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
         leader_handled_precommit_ = true;
+        if (prepare_block_->hash() != tx_prepare.prepare_final_hash()) {
+            prepare_block_ = nullptr;
+            leader_waiting_prepare_hash_ = tx_prepare.prepare_final_hash();
+            set_consensus_status(kConsensusLeaderWaitingBlock);
+            return kConsensusLeaderWaitingBlock;
+        }
+
         return kConsensusAgree;
     }
 

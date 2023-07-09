@@ -473,6 +473,10 @@ public:
         return pool_index_mod_num_;
     }
 
+    const std::string& leader_waiting_prepare_hash() const {
+        return leader_waiting_prepare_hash_;
+    }
+
 protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
@@ -530,6 +534,7 @@ protected:
     zjcvm::ZjchainHost zjc_host;
     bool should_timer_to_restart_ = false;
     int32_t pool_index_mod_num_ = -1;
+    std::string leader_waiting_prepare_hash_;
 
     DISALLOW_COPY_AND_ASSIGN(Zbft);
 public:
