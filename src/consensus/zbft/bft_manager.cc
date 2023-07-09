@@ -1158,13 +1158,7 @@ void BftManager::CreateResponseMessage(
             elect_item.local_node_member_index);
         msg_ptr->response->header.mutable_zbft()->set_elect_height(elect_height);
         assert(elect_item.elect_height > 0);
-        if (response_to_leader) {
-            //assert(msg_ptr->response->header.mutable_zbft()->member_index() != 0);
-            msg_ptr->response->header.mutable_zbft()->set_leader_idx(-1);
-            if (!SetBackupEcdhData(msg_ptr->response, mem_ptr)) {
-                return;
-            }
-        } else {
+        if (!response_to_leader) {
             if (msg_ptr->thread_idx == 0) {
                 auto& thread_set = elect_item.thread_set;
                 auto thread_item = thread_set[msg_ptr->thread_idx];
@@ -1186,9 +1180,6 @@ void BftManager::CreateResponseMessage(
             }
 
             msg_ptr->response->header.mutable_zbft()->set_leader_idx(elect_item.local_node_member_index);
-            if (!LeaderSignMessage(msg_ptr->response)) {
-                return;
-            }
         }
 
 #ifdef ZJC_UNITTEST
@@ -1201,6 +1192,10 @@ void BftManager::CreateResponseMessage(
             }
 
             assert(msg_ptr->response->header.has_broadcast());
+            if (!LeaderSignMessage(msg_ptr->response)) {
+                return;
+            }
+
             network::Route::Instance()->Send(msg_ptr->response);
             ZJC_DEBUG("leader broadcast bft message prepare gid: %s, hash64: %lu",
                 common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
@@ -1210,6 +1205,11 @@ void BftManager::CreateResponseMessage(
                 msg_ptr->header.src_sharding_id(),
                 (*elect_item.members)[msg_ptr->header.zbft().leader_idx()]->pubkey);
             msg_ptr->response->header.set_des_dht_key(dht_key.StrKey());
+            msg_ptr->response->header.mutable_zbft()->set_leader_idx(-1);
+            if (!SetBackupEcdhData(msg_ptr->response, mem_ptr)) {
+                return;
+            }
+
             network::Route::Instance()->Send(msg_ptr->response);
 //             int32_t try_times = 0;
 //             while (try_times++ < 3) {
