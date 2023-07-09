@@ -2558,6 +2558,10 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
     // TODO: for test
     {
         auto& block = *bft_ptr->prepare_block();
+        if (block.bls_agg_sign_x().empty()) {
+            return;
+        }
+
         assert(block.hash() == GetBlockHash(block));
         auto g1_hash = libBLS::Bls::Hashing(block.hash());
         libff::alt_bn128_G2 common_pk = libff::alt_bn128_G2::zero();
@@ -2582,8 +2586,13 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
             common::Encode::HexEncode(block.hash()).c_str(),
             common::Encode::HexEncode(block.bls_agg_sign_x()).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0).c_str());
-        bool check_res = libBLS::Bls::Verification(g1_hash, sign, common_pk);
-        if (!check_res) {
+        try {
+            bool check_res = libBLS::Bls::Verification(g1_hash, sign, common_pk);
+            if (!check_res) {
+                assert(check_res);
+                return;
+            }
+        } catch (std::exception& e) {
             assert(check_res);
             return;
         }
