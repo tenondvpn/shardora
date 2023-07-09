@@ -1208,7 +1208,7 @@ void BftManager::CreateResponseMessage(
         } else {
             dht::DhtKeyManager dht_key(
                 msg_ptr->header.src_sharding_id(),
-                (*elect_item.members)[msg_ptr->header.zbft().leader_idx()].id);
+                (*elect_item.members)[msg_ptr->header.zbft().leader_idx()]->pubkey);
             msg_ptr->response->header.set_des_dht_key(dht_key.StrKey());
             network::Route::Instance()->Send(msg_ptr->response);
 //             int32_t try_times = 0;
