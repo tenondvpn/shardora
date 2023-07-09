@@ -1215,7 +1215,7 @@ void BftManager::CreateResponseMessage(
                     auto nodes = dht_ptr->readonly_hash_sort_dht();
                     for (auto iter = nodes->begin(); iter != nodes->end(); ++iter) {
                         if ((*iter)->id == leader_member->id) {
-                            leader_member->public_ip = common::IpToUint32((*iter)->public_ip);
+                            leader_member->public_ip = common::IpToUint32((*iter)->public_ip.c_str());
                             leader_member->public_port = (*iter)->public_port;
                             break;
                         }
@@ -1230,11 +1230,12 @@ void BftManager::CreateResponseMessage(
             if (leader_member->public_ip == 0 || leader_member->public_port == 0) {
                 network::Route::Instance()->Send(msg_ptr->response);
             } else {
+                auto to_ip = common::Uint32ToIp(leader_member->public_ip);
                 transport::TcpTransport::Instance()->Send(
                     msg_ptr->thread_idx,
-                    common::Uint32ToIp(leader_member->public_ip),
+                    to_ip,
                     leader_member->public_port,
-                    msg_ptr->response);
+                    msg_ptr->response->header);
             }
 //             int32_t try_times = 0;
 //             while (try_times++ < 3) {
