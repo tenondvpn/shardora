@@ -579,7 +579,7 @@ ZbftPtr BftManager::StartBft(
 void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("message coming msg hash: %lu", msg_ptr->header.hash64());
     auto& header = msg_ptr->header;
-    if (header.has_zbft() && header.zbft().leader_idx() < 0) {
+    if (header.has_zbft() && header.zbft().leader_idx() < 0 && !msg_ptr->header.zbft().sync_block()) {
         dht::DhtKeyManager dht_key(
             msg_ptr->header.src_sharding_id(),
             security_ptr_->GetPublicKey());
