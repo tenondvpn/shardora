@@ -1209,13 +1209,13 @@ void BftManager::CreateResponseMessage(
                 leader_member->pubkey);
             msg_ptr->response->header.set_des_dht_key(dht_key.StrKey());
             msg_ptr->response->header.mutable_zbft()->set_leader_idx(-1);
-            if (leader_member->public_ip.empty() || leader_member->public_port == 0) {
+            if (leader_member->public_ip == 0 || leader_member->public_port == 0) {
                 auto dht_ptr = network::DhtManager::Instance()->GetDht(msg_ptr->header.src_sharding_id());
                 if (dht_ptr != nullptr) {
                     auto nodes = dht_ptr->readonly_hash_sort_dht();
                     for (auto iter = nodes->begin(); iter != nodes->end(); ++iter) {
                         if ((*iter)->id == leader_member->id) {
-                            leader_member->public_ip = (*iter)->public_ip;
+                            leader_member->public_ip = common::IpToUint32((*iter)->public_ip);
                             leader_member->public_port = (*iter)->public_port;
                             break;
                         }
@@ -1227,12 +1227,12 @@ void BftManager::CreateResponseMessage(
                 return;
             }
 
-            if (leader_member->public_ip.empty() || leader_member->public_port == 0) {
+            if (leader_member->public_ip == 0 || leader_member->public_port == 0) {
                 network::Route::Instance()->Send(msg_ptr->response);
             } else {
                 transport::TcpTransport::Instance()->Send(
                     msg_ptr->thread_idx,
-                    leader_member->public_ip,
+                    common::Uint32ToIp(leader_member->public_ip),
                     leader_member->public_port,
                     msg_ptr->response);
             }
