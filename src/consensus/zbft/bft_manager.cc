@@ -1203,16 +1203,17 @@ void BftManager::CreateResponseMessage(
                 common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
                 msg_ptr->response->header.hash64());
         } else {
+            auto leader_member = (*elect_item.members)[msg_ptr->header.zbft().leader_idx()];
             dht::DhtKeyManager dht_key(
                 msg_ptr->header.src_sharding_id(),
                 leader_member->pubkey);
             msg_ptr->response->header.set_des_dht_key(dht_key.StrKey());
             msg_ptr->response->header.mutable_zbft()->set_leader_idx(-1);
-            auto leader_member = (*elect_item.members)[msg_ptr->header.zbft().leader_idx()];
             if (leader_member->public_ip.empty() || leader_member->public_port == 0) {
                 auto dht_ptr = network::DhtManager::Instance()->GetDht(msg_ptr->header.src_sharding_id());
                 if (dht_ptr != nullptr) {
-                    for (auto iter = dht_ptr->begin(); iter != dht_ptr->end(); ++iter) {
+                    auto nodes = dht_ptr->readonly_hash_sort_dht();
+                    for (auto iter = nodes->begin(); iter != nodes->end(); ++iter) {
                         if ((*iter)->id == leader_member->id) {
                             leader_member->public_ip = (*iter)->public_ip;
                             leader_member->public_port = (*iter)->public_port;
