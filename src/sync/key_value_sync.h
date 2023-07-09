@@ -146,6 +146,8 @@ private:
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> kv_msg_queue_;
     std::set<uint64_t> shard_with_elect_height_[network::kConsensusShardEndNetworkId];
     uint64_t elect_net_heights_map_[network::kConsensusShardEndNetworkId] = { 0 };
+    std::unordered_set<std::string> synced_keys_;
+    std::deque<std::string> timeout_queue_;
 
     DISALLOW_COPY_AND_ASSIGN(KeyValueSync);
 };

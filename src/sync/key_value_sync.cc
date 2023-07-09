@@ -139,6 +139,10 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
                 continue;
             }
 
+            if (synced_keys_.find(item->key) != synced_keys_.end()) {
+                continue;
+            }
+
             auto iter = sync_dht_map.find(item->network_id);
             if (iter == sync_dht_map.end()) {
                 sync_dht_map[item->network_id] = sync::protobuf::SyncMessage();
@@ -546,6 +550,13 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             synced_map_.erase(tmp_iter);
         } else {
 //             assert(false);
+        }
+
+        synced_keys_.insert(key);
+        timeout_queue_.push_back(key);
+        if (timeout_queue_.size() >= 10240) {
+            synced_keys_.erase(timeout_queue_.front());
+            timeout_queue_.pop_front();
         }
 
         ZJC_DEBUG("block response coming: %s, sync map size: %u",
