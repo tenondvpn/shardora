@@ -1977,6 +1977,7 @@ int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg
             // sync block from neighbor nodes
             ZJC_ERROR("backup commit block failed should sync gid: %s",
                 common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
+            RemoveBft(bft_msg.pool_index(), bft_msg.gid());
             return kConsensusError;
         }
     } while (0);
