@@ -577,7 +577,7 @@ ZbftPtr BftManager::StartBft(
 }
 
 void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
-//     ZJC_DEBUG("message coming msg hash: %lu", msg_ptr->header.hash64());
+    ZJC_DEBUG("message coming msg hash: %lu", msg_ptr->header.hash64());
     auto& header = msg_ptr->header;
     assert(header.type() == common::kConsensusMessage);
     if (msg_ptr->header.zbft().sync_block() && msg_ptr->header.zbft().has_block()) {
@@ -1204,9 +1204,9 @@ void BftManager::CreateResponseMessage(
 
             assert(msg_ptr->response->header.has_broadcast());
             network::Route::Instance()->Send(msg_ptr->response);
-//             ZJC_DEBUG("leader broadcast bft message prepare gid: %s, hash64: %lu",
-//                 common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
-//                 msg_ptr->response->header.hash64());
+            ZJC_DEBUG("leader broadcast bft message prepare gid: %s, hash64: %lu",
+                common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
+                msg_ptr->response->header.hash64());
         } else {
             int32_t try_times = 0;
             while (try_times++ < 3) {
@@ -1214,12 +1214,12 @@ void BftManager::CreateResponseMessage(
                     msg_ptr->thread_idx,
                     msg_ptr->conn,
                     msg_ptr->response->header);
-//                 ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d",
-//                     common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
-//                     msg_ptr->response->header.hash64(),
-//                     msg_ptr->header.hash64(),
-//                     res,
-//                     try_times);
+                ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d",
+                    common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
+                    msg_ptr->response->header.hash64(),
+                    msg_ptr->header.hash64(),
+                    res,
+                    try_times);
                 if (res == transport::kTransportSuccess) {
                     break;
                 }

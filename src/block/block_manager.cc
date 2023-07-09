@@ -1035,6 +1035,7 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
         msg_ptr->header.block_proto().statistic_tx().leader_to_idx(),
         height_str.c_str());
     if (msg_ptr->header.block_proto().statistic_tx().elect_height() < latest_elect_height_) {
+        ZJC_DEBUG("elect height error: %lu, %lu", msg_ptr->header.block_proto().statistic_tx().elect_height(), latest_elect_height_);
         return;
     }
 
@@ -1061,6 +1062,7 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
 
     if (statistic_item->shard_statistic_tx != nullptr &&
             statistic_item->leader_to_index >= msg_ptr->header.block_proto().statistic_tx().leader_to_idx()) {
+        ZJC_DEBUG("leader index error: %u, %u", statistic_item->leader_to_index, msg_ptr->header.block_proto().statistic_tx().leader_to_idx());
         return;
     }
 
