@@ -1975,8 +1975,7 @@ int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg
             HandleLocalCommitBlock(msg_ptr, bft_ptr);
         } else {
             // sync block from neighbor nodes
-            ZJC_ERROR("backup commit block failed should sync: %s, gid: %s",
-                common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+            ZJC_ERROR("backup commit block failed should sync gid: %s",
                 common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
             return kConsensusError;
         }
