@@ -1065,8 +1065,6 @@ void BftManager::SetDefaultResponse(const transport::MessagePtr& msg_ptr) {
     msg_ptr->response->thread_idx = msg_ptr->thread_idx;
     auto net_id = common::GlobalInfo::Instance()->network_id();
     msg_ptr->response->header.set_src_sharding_id(net_id);
-    dht::DhtKeyManager dht_key(net_id);
-    msg_ptr->response->header.set_des_dht_key(dht_key.StrKey());
     msg_ptr->response->header.set_type(common::kConsensusMessage);
     transport::TcpTransport::Instance()->SetMessageHash(
         msg_ptr->response->header,
@@ -1208,22 +1206,27 @@ void BftManager::CreateResponseMessage(
                 common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
                 msg_ptr->response->header.hash64());
         } else {
-            int32_t try_times = 0;
-            while (try_times++ < 3) {
-                int res = transport::TcpTransport::Instance()->Send(
-                    msg_ptr->thread_idx,
-                    msg_ptr->conn,
-                    msg_ptr->response->header);
-                ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d",
-                    common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
-                    msg_ptr->response->header.hash64(),
-                    msg_ptr->header.hash64(),
-                    res,
-                    try_times);
-                if (res == transport::kTransportSuccess) {
-                    break;
-                }
-            }
+            dht::DhtKeyManager dht_key(
+                msg_ptr->header.src_sharding_id(),
+                (*elect_item.members[msg_ptr->header.zbft().leader_idx()]).id);
+            msg_ptr->response->header.set_des_dht_key(dht_key.StrKey());
+            network::Route::Instance()->Send(msg_ptr->response);
+//             int32_t try_times = 0;
+//             while (try_times++ < 3) {
+//                 int res = transport::TcpTransport::Instance()->Send(
+//                     msg_ptr->thread_idx,
+//                     msg_ptr->conn,
+//                     msg_ptr->response->header);
+//                 ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d",
+//                     common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
+//                     msg_ptr->response->header.hash64(),
+//                     msg_ptr->header.hash64(),
+//                     res,
+//                     try_times);
+//                 if (res == transport::kTransportSuccess) {
+//                     break;
+//                 }
+//             }
         }
 #endif
     } else {
