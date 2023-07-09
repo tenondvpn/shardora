@@ -337,7 +337,7 @@ ZbftPtr BftManager::Start(
 
     if (prev_bft == nullptr) {
         if (now_bft_count_ >= kMaxBftCount) {
-            return;
+            return nullptr;
         }
     }
 

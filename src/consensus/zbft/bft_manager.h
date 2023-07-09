@@ -277,7 +277,7 @@ private:
         const transport::MessagePtr& msg_ptr);
 
     static const uint32_t kCheckTimeoutPeriodMilli = 1000lu;
-    static const uint32_t kMaxBftCount = 32u;
+    static const int32_t kMaxBftCount = 32;
 
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<consensus::ContractGasPrepayment> gas_prepayment_ = nullptr;
