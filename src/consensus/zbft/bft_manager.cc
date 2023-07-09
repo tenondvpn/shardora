@@ -1229,6 +1229,12 @@ void BftManager::CreateResponseMessage(
 
             if (leader_member->public_ip == 0 || leader_member->public_port == 0) {
                 network::Route::Instance()->Send(msg_ptr->response);
+                ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d",
+                    common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
+                    msg_ptr->response->header.hash64(),
+                    msg_ptr->header.hash64(),
+                    0,
+                    0);
             } else {
                 auto to_ip = common::Uint32ToIp(leader_member->public_ip);
                 transport::TcpTransport::Instance()->Send(
@@ -1236,13 +1242,6 @@ void BftManager::CreateResponseMessage(
                     to_ip,
                     leader_member->public_port,
                     msg_ptr->response->header);
-            }
-//             int32_t try_times = 0;
-//             while (try_times++ < 3) {
-//                 int res = transport::TcpTransport::Instance()->Send(
-//                     msg_ptr->thread_idx,
-//                     msg_ptr->conn,
-//                     msg_ptr->response->header);
                 ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d, %s:%u",
                     common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
                     msg_ptr->response->header.hash64(),
@@ -1250,6 +1249,14 @@ void BftManager::CreateResponseMessage(
                     0,
                     0,
                     to_ip.c_str(), leader_member->public_port);
+            }
+//             int32_t try_times = 0;
+//             while (try_times++ < 3) {
+//                 int res = transport::TcpTransport::Instance()->Send(
+//                     msg_ptr->thread_idx,
+//                     msg_ptr->conn,
+//                     msg_ptr->response->header);
+                
 //                 if (res == transport::kTransportSuccess) {
 //                     break;
 //                 }
