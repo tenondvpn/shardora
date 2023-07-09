@@ -582,10 +582,13 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (header.has_zbft() && header.zbft().leader_idx() < 0 && !msg_ptr->header.zbft().sync_block()) {
         dht::DhtKeyManager dht_key(
             msg_ptr->header.src_sharding_id(),
-            security_ptr_->GetPublicKey());
+            security_ptr_->GetAddress());
         if (msg_ptr->header.des_dht_key() != dht_key.StrKey()) {
             network::Route::Instance()->Send(msg_ptr);
-            ZJC_DEBUG("backup message resend to leader by latest node.");
+            ZJC_DEBUG("backup message resend to leader by latest node net: %u, id: %s, des dht: %s, local: %s",
+                msg_ptr->header.src_sharding_id(), common::Encode::HexEncode(security_ptr_->GetAddress()).c_str(),
+                common::Encode::HexEncode(msg_ptr->header.des_dht_key()).c_str(),
+                common::Encode::HexEncode(dht_key.StrKey()).c_str());
             return;
         }
     }
@@ -1229,8 +1232,8 @@ void BftManager::CreateResponseMessage(
         } else {
             auto leader_member = (*elect_item.members)[msg_ptr->header.zbft().leader_idx()];
             dht::DhtKeyManager dht_key(
-                msg_ptr->header.src_sharding_id(),
-                leader_member->pubkey);
+                common::GlobalInfo::Instance()->network_id(),
+                leader_member->id);
             msg_ptr->response->header.set_des_dht_key(dht_key.StrKey());
             msg_ptr->response->header.mutable_zbft()->set_leader_idx(-1);
             if (leader_member->public_ip == 0 || leader_member->public_port == 0) {
