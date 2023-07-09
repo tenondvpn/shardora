@@ -2108,28 +2108,28 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
         msg_ptr->response->header.mutable_zbft()->set_agree_commit(false);
         auto precommit_bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.precommit_gid());
-        if (precommit_bft_ptr == nullptr) {
+        if (precommit_bft_ptr != nullptr) {
+            if (BackupPrecommit(precommit_bft_ptr, msg_ptr) != kConsensusSuccess) {
+                // sync block from others
+                precommit_bft_ptr->set_prepare_hash(bft_msg.prepare_hash());
+                precommit_bft_ptr->CreatePrecommitVerifyHash();
+                ZJC_DEBUG("1 use leader prepare hash: %s",
+                    common::Encode::HexEncode(bft_msg.prepare_hash()).c_str());
+                precommit_bft_ptr->set_prepare_block(nullptr);
+                SyncConsensusBlock(
+                    elect_item,
+                    msg_ptr->thread_idx,
+                    precommit_bft_ptr->pool_index(),
+                    precommit_bft_ptr->gid());
+            } else {
+                msg_ptr->response->header.mutable_zbft()->set_agree_commit(true);
+            }
+        } else {
             ZJC_DEBUG("get precommit gid failed: %s",
                 common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-            return;
         }
 
-        if (BackupPrecommit(precommit_bft_ptr, msg_ptr) != kConsensusSuccess) {
-            // sync block from others
-            precommit_bft_ptr->set_prepare_hash(bft_msg.prepare_hash());
-            precommit_bft_ptr->CreatePrecommitVerifyHash();
-            ZJC_DEBUG("1 use leader prepare hash: %s",
-                common::Encode::HexEncode(bft_msg.prepare_hash()).c_str());
-            precommit_bft_ptr->set_prepare_block(nullptr);
-            SyncConsensusBlock(
-                elect_item,
-                msg_ptr->thread_idx,
-                precommit_bft_ptr->pool_index(),
-                precommit_bft_ptr->gid());
-            return;
-        }
 
-        msg_ptr->response->header.mutable_zbft()->set_agree_commit(true);
         CheckCommit(msg_ptr, false);
         return;
     }
