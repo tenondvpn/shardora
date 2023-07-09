@@ -16,7 +16,7 @@ Node::Node(
         const std::string& in_pubkey_str,
         const std::string& in_id) {
     sharding_id = in_sharding_id;
-    DhtKeyManager dhtkey(sharding_id, in_pubkey_str);
+    DhtKeyManager dhtkey(sharding_id, in_id);
     dht_key = dhtkey.StrKey();
     dht_key_hash = common::Hash::Hash64(dht_key);
     public_ip = in_public_ip;
