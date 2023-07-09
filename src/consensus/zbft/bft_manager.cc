@@ -1217,12 +1217,12 @@ void BftManager::CreateResponseMessage(
 //                     msg_ptr->thread_idx,
 //                     msg_ptr->conn,
 //                     msg_ptr->response->header);
-//                 ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d",
-//                     common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
-//                     msg_ptr->response->header.hash64(),
-//                     msg_ptr->header.hash64(),
-//                     res,
-//                     try_times);
+                ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d",
+                    common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
+                    msg_ptr->response->header.hash64(),
+                    msg_ptr->header.hash64(),
+                    res,
+                    0);
 //                 if (res == transport::kTransportSuccess) {
 //                     break;
 //                 }

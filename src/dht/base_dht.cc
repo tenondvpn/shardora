@@ -325,6 +325,7 @@ void BaseDht::SendToClosestNode(const transport::MessagePtr& msg_ptr) {
         closest_node->public_ip,
         closest_node->public_port,
         message);
+    ZJC_DEBUG("send to closest node: %s:%u", closest_node->public_ip.c_str(), closest_node->public_port);
 }
 
 NodePtr BaseDht::FindNodeDirect(transport::protobuf::Header& message) {
