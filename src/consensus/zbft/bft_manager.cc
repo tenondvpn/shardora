@@ -1221,7 +1221,7 @@ void BftManager::CreateResponseMessage(
                     common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
                     msg_ptr->response->header.hash64(),
                     msg_ptr->header.hash64(),
-                    res,
+                    0,
                     0);
 //                 if (res == transport::kTransportSuccess) {
 //                     break;
