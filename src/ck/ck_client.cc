@@ -1,5 +1,7 @@
 #include "ck/ck_client.h"
 
+#include <google/protobuf/util/json_util.h>
+
 #include "common/encode.h"
 #include "common/global_info.h"
 #include "common/time_utils.h"
@@ -175,12 +177,13 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
 
             std::string val;
             if (prefix_db_->GetTemporaryKv(tx_list[i].storages(j).val_hash(), &val)) {
-//                 attr_account->Append(common::Encode::HexEncode(tx_list[i].from()));
-//                 attr_tx_type->Append(tx_list[i].step());
-//                 attr_to->Append(common::Encode::HexEncode(tx_list[i].to()));
-//                 attr_shard_id->Append(block_item->network_id());
-//                 attr_key->Append(common::Encode::HexEncode(tx_list[i].storages(j).val_hash()));
-                attr_value->Append(common::Encode::HexEncode(val));
+                std::string json_str;
+                auto st = google::protobuf::util::MessageToJsonString(val, &json_str);
+                if (st.ok()) {
+                    attr_value->Append(json_str);
+                } else {
+                    attr_value->Append(common::Encode::HexEncode(val));
+                }
             } else {
                 attr_value->Append(common::Encode::HexEncode(tx_list[i].storages(j).val_hash()));
             }
