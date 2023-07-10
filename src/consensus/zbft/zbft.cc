@@ -464,11 +464,23 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
 
 void Zbft::LeaderResetPrepareBitmap(const std::string& prepare_hash) {
     if (prepare_block_ == nullptr || bls_precommit_agg_sign_ == nullptr) {
+        ZJC_DEBUG("set prepare bitmap failed: %d, %d",
+            (prepare_block_ == nullptr), (bls_precommit_agg_sign_ == nullptr));
         return;
     }
 
     auto iter = prepare_block_map_.find(prepare_hash);
     if (iter == prepare_block_map_.end()) {
+        return;
+    }
+
+    LeaderResetPrepareBitmap(iter->second);
+}
+
+void Zbft::LeaderResetPrepareBitmap(std::shared_ptr<LeaderPrepareItem>& prepare_item) {
+    if (prepare_block_ == nullptr || bls_precommit_agg_sign_ == nullptr) {
+        ZJC_DEBUG("set prepare bitmap failed: %d, %d",
+            (prepare_block_ == nullptr), (bls_precommit_agg_sign_ == nullptr));
         return;
     }
 
@@ -478,12 +490,6 @@ void Zbft::LeaderResetPrepareBitmap(const std::string& prepare_hash) {
     prepare_block_->set_bls_agg_sign_y(
         common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->Y)));
-    if (prepare_block_ != nullptr) {
-        LeaderResetPrepareBitmap(iter->second);
-    }
-}
-
-void Zbft::LeaderResetPrepareBitmap(std::shared_ptr<LeaderPrepareItem>& prepare_item) {
     prepare_bitmap_ = prepare_item->prepare_bitmap_;
     prepare_bitmap_.inversion(members_ptr_->size());
     assert(prepare_bitmap_.valid_count() == member_count_ - min_aggree_member_count_);
