@@ -85,8 +85,7 @@ enum BftStatus : int32_t {
     kConsensusAgree = 13,
     kConsensusHandled = 14,
     kConsensusReChallenge = 15,
-    kConsensusLeaderWaitingBlock = 16W,
-
+    kConsensusLeaderWaitingBlock = 16,
 };
 
 enum BftRole {
