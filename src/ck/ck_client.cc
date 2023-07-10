@@ -177,13 +177,19 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
 
             std::string val;
             if (prefix_db_->GetTemporaryKv(tx_list[i].storages(j).val_hash(), &val)) {
-                std::string json_str;
-                auto st = google::protobuf::util::MessageToJsonString(val, &json_str);
-                if (st.ok()) {
-                    attr_value->Append(json_str);
-                } else {
-                    attr_value->Append(common::Encode::HexEncode(val));
+                if (tx_list[i].storages(j).key() == protos::kElectNodeAttrElectBlock) {
+                    elect::protobuf::ElectBlock elect_block;
+                    if (elect_block.ParseFromString(val)) {
+                        std::string json_str;
+                        auto st = google::protobuf::util::MessageToJsonString(elect_block, &json_str);
+                        if (st.ok()) {
+                            attr_value->Append(json_str);
+                            continue;
+                        }
+                    }
                 }
+                    
+                attr_value->Append(common::Encode::HexEncode(val));
             } else {
                 attr_value->Append(common::Encode::HexEncode(tx_list[i].storages(j).val_hash()));
             }
