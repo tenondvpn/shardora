@@ -756,19 +756,6 @@ void BftManager::HandleSyncConsensusBlock(
     if (req_bft_msg.has_block()) {
         // verify and add new block
         if (bft_ptr == nullptr) {
-            if (!req_bft_msg.block().is_cross_block() &&
-                    (req_bft_msg.block().height() > pools_mgr_->latest_height(req_bft_msg.block().pool_index()) || 
-                        pools_mgr_->latest_height(req_bft_msg.block().pool_index()) == common::kInvalidUint64)) {
-                AddWaitingBlock(msg_ptr);
-                return;
-            }
-
-            if (req_bft_msg.block().network_id() != common::GlobalInfo::Instance()->network_id() &&
-                    req_bft_msg.block().network_id() + network::kConsensusWaitingShardOffset !=
-                    common::GlobalInfo::Instance()->network_id()) {
-                return;
-            }
-
             if (!req_bft_msg.block().has_bls_agg_sign_x() || !req_bft_msg.block().has_bls_agg_sign_y()) {
                 ZJC_DEBUG("not has agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
                     req_bft_msg.block().network_id(),
@@ -786,6 +773,20 @@ void BftManager::HandleSyncConsensusBlock(
                     req_bft_msg.block().height(),
                     common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
                 //assert(false);
+                return;
+            }
+
+            if (!req_bft_msg.block().is_cross_block() &&
+                    (req_bft_msg.block().height() > pools_mgr_->latest_height(req_bft_msg.block().pool_index()) || 
+                        pools_mgr_->latest_height(req_bft_msg.block().pool_index()) == common::kInvalidUint64)) {
+                AddWaitingBlock(msg_ptr);
+                RemoveWaitingBlock(block_ptr->pool_index(), req_bft_msg.block().height() - 1);
+                return;
+            }
+
+            if (req_bft_msg.block().network_id() != common::GlobalInfo::Instance()->network_id() &&
+                    req_bft_msg.block().network_id() + network::kConsensusWaitingShardOffset !=
+                    common::GlobalInfo::Instance()->network_id()) {
                 return;
             }
 
