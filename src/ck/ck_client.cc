@@ -173,7 +173,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
             attr_to->Append(common::Encode::HexEncode(tx_list[i].to()));
             attr_shard_id->Append(block_item->network_id());
             attr_key->Append(common::Encode::HexEncode(tx_list[i].storages(j).key()));
-            attr_value->Append(common::Encode::HexEncode(tx_list[i].storages(j).val_hash()));
+//             attr_value->Append(common::Encode::HexEncode(tx_list[i].storages(j).val_hash()));
 
             std::string val;
             if (prefix_db_->GetTemporaryKv(tx_list[i].storages(j).val_hash(), &val)) {
