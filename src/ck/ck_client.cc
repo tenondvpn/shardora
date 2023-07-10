@@ -172,7 +172,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
             attr_tx_type->Append(tx_list[i].step());
             attr_to->Append(common::Encode::HexEncode(tx_list[i].to()));
             attr_shard_id->Append(block_item->network_id());
-            attr_key->Append(common::Encode::HexEncode(tx_list[i].storages(j).key()));
+//             attr_key->Append(common::Encode::HexEncode(tx_list[i].storages(j).key()));
 //             attr_value->Append(common::Encode::HexEncode(tx_list[i].storages(j).val_hash()));
 
             std::string val;
@@ -199,7 +199,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
         }
     }
 
-    ZJC_DEBUG("add new ck block block_shard_id: %d, block_height: %lu", block_item->network_id(), block_item->height());
+    ZJC_INFO("add new ck block block_shard_id: %d, block_height: %lu", block_item->network_id(), block_item->height());
 
     blocks.AppendColumn("shard_id", block_shard_id);
     blocks.AppendColumn("pool_index", block_pool_index);
