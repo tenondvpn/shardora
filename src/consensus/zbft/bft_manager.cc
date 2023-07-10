@@ -780,7 +780,7 @@ void BftManager::HandleSyncConsensusBlock(
                     (req_bft_msg.block().height() > pools_mgr_->latest_height(req_bft_msg.block().pool_index()) || 
                         pools_mgr_->latest_height(req_bft_msg.block().pool_index()) == common::kInvalidUint64)) {
                 AddWaitingBlock(msg_ptr);
-                RemoveWaitingBlock(block_ptr->pool_index(), req_bft_msg.block().height() - 1);
+                RemoveWaitingBlock(req_bft_msg.block().pool_index(), req_bft_msg.block().height() - 1);
                 return;
             }
 
