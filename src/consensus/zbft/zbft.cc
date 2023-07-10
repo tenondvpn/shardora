@@ -306,6 +306,7 @@ int Zbft::LeaderPrecommitOk(
             prepare_block_ = nullptr;
             leader_waiting_prepare_hash_ = tx_prepare.prepare_final_hash();
             set_prepare_hash(leader_waiting_prepare_hash_);
+            CreatePrecommitVerifyHash();
             status =  kConsensusLeaderWaitingBlock;
         }
 
