@@ -446,7 +446,7 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
             libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X).c_str(),
             common::Encode::HexEncode(sign_precommit_hash).c_str(),
             common::Encode::HexEncode(precommit_bls_agg_verify_hash_).c_str(),
-            common::Encode::HexEncode(prepare_block_->hash()).c_str());
+            common::Encode::HexEncode(gid()).c_str());
         if (prepare_block_ != nullptr) {
             LeaderResetPrepareBitmap(iter->second);
         }
