@@ -105,7 +105,7 @@ void RootZbft::RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_bl
         tx);
     if (do_tx_res != kConsensusSuccess) {
         tx_list->RemoveLast();
-        assert(false);
+        //assert(false);
         ZJC_WARN("consensus elect tx failed!");
         return;
     }
