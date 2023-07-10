@@ -378,7 +378,7 @@ bool ClickHouseClient::CreateAccountKeyValueTable() {
         ") "
         "ENGINE = ReplacingMergeTree "
         "PARTITION BY(shard_id) "
-        "ORDER BY(type, key, from, to, value) "
+        "ORDER BY(type, key, from, to) "
         "SETTINGS index_granularity = 8192;";
     clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(common::GlobalInfo::Instance()->ck_port()));
     ck_client.Execute(create_cmd);

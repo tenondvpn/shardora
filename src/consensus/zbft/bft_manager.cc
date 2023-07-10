@@ -558,7 +558,7 @@ ZbftPtr BftManager::StartBft(
     if (prepare_msg_ptr != nullptr) {
         ZJC_DEBUG("use pipeline: %d, this node is leader and start bft: %s,"
             "pool index: %d, thread index: %d, prepare hash: %s, pre hash: %s, tx size: %d,"
-            "msg tx size: %u, elect height: %lu",
+            "msg tx size: %u, elect height: %lu, prebft: %s",
             (prepare_msg_ptr != nullptr),
             common::Encode::HexEncode(bft_ptr->gid()).c_str(),
             bft_ptr->pool_index(),
@@ -567,11 +567,13 @@ ZbftPtr BftManager::StartBft(
             bft_ptr->prepare_block() == nullptr ? "" : common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
             txs_ptr->txs.size(),
             prepare_msg_ptr->header.zbft().tx_bft().tx_hash_list_size(),
-            elect_item.elect_height);
+            elect_item.elect_height,
+            prev_bft == nullptr ? "" : common::Encode::HexEncode(prev_bft->gid()).c_str());
         assert(prepare_msg_ptr->header.zbft().tx_bft().tx_hash_list_size() > 0);
     } else {
         ZJC_DEBUG("use pipeline: %d, this node is leader and start bft: %s,"
-            "pool index: %d, thread index: %d, prepare hash: %s, pre hash: %s, tx size: %d, elect height: %lu",
+            "pool index: %d, thread index: %d, prepare hash: %s, pre hash: %s, "
+            "tx size: %d, elect height: %lu, prebft: %s",
             (prepare_msg_ptr != nullptr),
             common::Encode::HexEncode(bft_ptr->gid()).c_str(),
             bft_ptr->pool_index(),
@@ -579,8 +581,10 @@ ZbftPtr BftManager::StartBft(
             common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
             bft_ptr->prepare_block() == nullptr ? "" : common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
             txs_ptr->txs.size(),
-            elect_item.elect_height);
+            elect_item.elect_height,
+            prev_bft == nullptr ? "" : common::Encode::HexEncode(prev_bft->gid()).c_str());
     }
+
     return bft_ptr;
 }
 
@@ -1658,18 +1662,18 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
             continue;
         }
 
-        auto next_iter = iter;
-        ++next_iter;
-        if (bft_ptr->consensus_status() == kConsensusPreCommit && next_iter == bft_queue.end()) {
-            if (bft_ptr->this_node_is_leader()) {
-                ReConsensusBft(bft_ptr);
-            }
-        } else {
+//         auto next_iter = iter;
+//         ++next_iter;
+//         if (bft_ptr->consensus_status() == kConsensusPreCommit && next_iter == bft_queue.end()) {
+//             if (bft_ptr->this_node_is_leader()) {
+//                 ReConsensusBft(bft_ptr);
+//             }
+//         } else {
             bft_ptr->Destroy();
             --now_bft_count_;
             bft_queue.erase(iter);
             ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
-        }
+//         }
 
         break;
     }
@@ -2468,6 +2472,8 @@ int BftManager::LeaderCallPrecommit(
                 common::Encode::HexEncode(prev_ptr->local_prepare_hash()).c_str(),
                 common::Encode::HexEncode(bft_ptr->gid()).c_str());
         }
+    } else {
+        ZJC_DEBUG("bft not has prev bft: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
     }
 
     std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
@@ -2641,6 +2647,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
     {
         auto& block = *bft_ptr->prepare_block();
         if (block.bls_agg_sign_x().empty()) {
+            ZJC_DEBUG("not has bls agg sign: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
             return;
         }
 
