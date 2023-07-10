@@ -2237,7 +2237,7 @@ int BftManager::LeaderHandleZbftMessage(
         ZJC_DEBUG("has prepare  now leader handle gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
         auto bft_ptr = LeaderGetZbft(msg_ptr, elect_item, bft_msg.prepare_gid());
         if (bft_ptr == nullptr) {
-            ZJC_ERROR("prepare get bft failed: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+            ZJC_DEBUG("prepare get bft failed: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             return kConsensusError;
         }
 
