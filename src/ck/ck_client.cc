@@ -11,8 +11,9 @@ namespace ck {
 ClickHouseClient::ClickHouseClient(
         const std::string& host,
         const std::string& user,
-        const std::string& passwd) {
-    CreateTable(true);
+        const std::string& passwd,
+        std::shared_ptr<db::Db> db_ptr) {
+    CreateTable(true, db_ptr);
 }
 
 ClickHouseClient::~ClickHouseClient() {}
@@ -397,7 +398,8 @@ bool ClickHouseClient::CreatePrivateKeyTable() {
     return true;
 }
 
-bool ClickHouseClient::CreateTable(bool statistic) try {
+bool ClickHouseClient::CreateTable(bool statistic, std::shared_ptr<db::Db> db_ptr) try {
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db_ptr);
     CreateTransactionTable();
     CreateBlockTable();
     CreateAccountTable();

@@ -51,7 +51,7 @@ int BlockManager::Init(
         db_, local_id, max_consensus_sharding_id_, pools_mgr_);
     block_agg_valid_func_ = block_agg_valid_func;
     if (common::GlobalInfo::Instance()->for_ck_server()) {
-        ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "");
+        ck_client_ = std::make_shared<ck::ClickHouseClient>("127.0.0.1", "", "", db);
         ZJC_DEBUG("support ck");
     }
 
