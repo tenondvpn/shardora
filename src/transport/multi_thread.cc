@@ -55,7 +55,7 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->times[msg_ptr->times_idx++] = btime;
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
-            if (etime - btime > 100000) {
+            if (etime - btime > 200000) {
                 std::string t;
                 for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
@@ -74,7 +74,7 @@ void ThreadHandler::HandleMessage() {
             msg_ptr->times[msg_ptr->times_idx++] = btime;
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
-            if (etime - btime > 100000) {
+            if (etime - btime > 200000) {
                 std::string t;
                 for (uint32_t i = 1; i < msg_ptr->times_idx; ++i) {
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
