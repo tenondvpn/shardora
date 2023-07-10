@@ -68,6 +68,8 @@ public:
     bool BackupCheckLeaderValid(const zbft::protobuf::ZbftMessage* bft_msg);
     void Destroy();
     void AfterNetwork();
+    void LeaderResetPrepareBitmap(const std::string& prepare_hash);
+    void LeaderResetPrepareBitmap(std::shared_ptr<LeaderPrepareItem>& prepare_item);
 
     uint32_t pool_index() const {
         return txs_ptr_->pool_index;

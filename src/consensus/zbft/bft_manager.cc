@@ -335,12 +335,6 @@ ZbftPtr BftManager::Start(
     }
 #endif
 
-    if (prev_bft == nullptr) {
-        if (now_bft_count_ >= kMaxBftCount) {
-            return nullptr;
-        }
-    }
-
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (elect_item_ptr == nullptr) {
         return nullptr;
@@ -375,6 +369,14 @@ ZbftPtr BftManager::Start(
         if (thread_item->pools[thread_item->pools.size() - 1] == common::kRootChainPoolIndex) {
             if (pools_with_zbfts_[common::kRootChainPoolIndex].empty()) {
                 txs_ptr = txs_pools_->LeaderGetValidTxs(common::kRootChainPoolIndex);
+            }
+
+            if (txs_ptr == nullptr) {
+                if (prev_bft == nullptr) {
+                    if (now_bft_count_ >= kMaxBftCount) {
+                        return nullptr;
+                    }
+                }
             }
         }
 
@@ -813,6 +815,7 @@ void BftManager::HandleSyncConsensusBlock(
                 if (bft_ptr->consensus_status() == kConsensusLeaderWaitingBlock) {
                     if (block_hash == bft_ptr->leader_waiting_prepare_hash()) {
                         bft_ptr->set_prepare_block(std::make_shared<block::protobuf::Block>(req_bft_msg.block()));
+                        bft_ptr->LeaderResetPrepareBitmap(block_hash);
                         ReConsensusPrepareBft(elect_item, bft_ptr);
                     }
 

@@ -301,21 +301,22 @@ int Zbft::LeaderPrecommitOk(
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
     if ((uint32_t)valid_count >= min_aggree_member_count_) {
+        auto status = kConsensusPreCommit;
+        if (prepare_block_->hash() != tx_prepare.prepare_final_hash()) {
+            prepare_block_ = nullptr;
+            leader_waiting_prepare_hash_ = tx_prepare.prepare_final_hash();
+            set_prepare_hash(leader_waiting_prepare_hash_);
+            status =  kConsensusLeaderWaitingBlock;
+        }
+
+        set_consensus_status(status);
         if (LeaderPrecommitAggSign(tx_prepare.prepare_final_hash()) != kConsensusSuccess) {
             ZJC_ERROR("create bls precommit agg sign failed!");
             return kConsensusOppose;
         }
-
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
         //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
         leader_handled_precommit_ = true;
-        if (prepare_block_->hash() != tx_prepare.prepare_final_hash()) {
-            prepare_block_ = nullptr;
-            leader_waiting_prepare_hash_ = tx_prepare.prepare_final_hash();
-            set_consensus_status(kConsensusLeaderWaitingBlock);
-            return kConsensusLeaderWaitingBlock;
-        }
-
         return kConsensusAgree;
     }
 
@@ -480,25 +481,10 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
             common::Encode::HexEncode(sign_precommit_hash).c_str(),
             common::Encode::HexEncode(precommit_bls_agg_verify_hash_).c_str(),
             common::Encode::HexEncode(prepare_block_->hash()).c_str());
-
-        // times_[times_index_++] = common::TimeUtils::TimestampUs();
-//         if (times_[times_index_ - 1] - times_[times_index_ - 2] > 10000) {
-//             ZJC_DEBUG("bls_precommit_agg_sign_->to_affine_coordinates use time: %lu", (times_[times_index_ - 1] - times_[times_index_ - 2]));
-//         }
-        // times_[times_index_ - 2] = times_[times_index_ - 1];
-        //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-        prepare_bitmap_ = iter->second->prepare_bitmap_;
-        prepare_bitmap_.inversion(n);
-        assert(prepare_bitmap_.valid_count() == member_count_ - min_aggree_member_count_);
-        auto& bitmap_data = prepare_bitmap_.data();
-        prepare_block_->clear_precommit_bitmap();
-        for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
-            prepare_block_->add_precommit_bitmap(bitmap_data[i]);
+        if (prepare_block_ != nullptr) {
+            LeaderResetPrepareBitmap(iter->second);
         }
 
-        // times_[times_index_++] = common::TimeUtils::TimestampUs();
-        //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-        set_consensus_status(kConsensusPreCommit);
         valid_index_ = iter->second->valid_index;
     } catch (std::exception& e) {
         ZJC_ERROR("catch bls exception: %s", e.what());
@@ -506,6 +492,28 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
     }
 
     return kConsensusSuccess;
+}
+
+void Zbft::LeaderResetPrepareBitmap(const std::string& prepare_hash) {
+    auto iter = prepare_block_map_.find(prpare_hash);
+    if (iter == prepare_block_map_.end()) {
+        return;
+    }
+
+    if (prepare_block_ != nullptr) {
+        LeaderResetPrepareBitmap(iter->second);
+    }
+}
+
+void Zbft::LeaderResetPrepareBitmap(std::shared_ptr<LeaderPrepareItem>& prepare_item) {
+    prepare_bitmap_ = prepare_item->prepare_bitmap_;
+    prepare_bitmap_.inversion(n);
+    assert(prepare_bitmap_.valid_count() == member_count_ - min_aggree_member_count_);
+    auto& bitmap_data = prepare_bitmap_.data();
+    prepare_block_->clear_precommit_bitmap();
+    for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
+        prepare_block_->add_precommit_bitmap(bitmap_data[i]);
+    }
 }
 
 void Zbft::CreatePrecommitVerifyHash() {
