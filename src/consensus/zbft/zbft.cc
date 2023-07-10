@@ -301,16 +301,18 @@ int Zbft::LeaderPrecommitOk(
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
     if ((uint32_t)valid_count >= min_aggree_member_count_) {
-        int32_t status = kConsensusPreCommit;
+        int32_t res = kConsensusAgree;
         if (prepare_block_->hash() != tx_prepare.prepare_final_hash()) {
             prepare_block_ = nullptr;
             leader_waiting_prepare_hash_ = tx_prepare.prepare_final_hash();
             set_prepare_hash(leader_waiting_prepare_hash_);
             CreatePrecommitVerifyHash();
-            status =  kConsensusLeaderWaitingBlock;
+            res =  kConsensusLeaderWaitingBlock;
+            set_consensus_status(kConsensusLeaderWaitingBlock);
+        } else {
+            set_consensus_status(kConsensusPreCommit);
         }
 
-        set_consensus_status(status);
         if (LeaderPrecommitAggSign(tx_prepare.prepare_final_hash()) != kConsensusSuccess) {
             ZJC_ERROR("create bls precommit agg sign failed!");
             return kConsensusOppose;
@@ -318,7 +320,7 @@ int Zbft::LeaderPrecommitOk(
         // times_[times_index_++] = common::TimeUtils::TimestampUs();
         //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
         leader_handled_precommit_ = true;
-        return kConsensusAgree;
+        return res;
     }
 
     if (PrepareHashNotConsensus()) {
