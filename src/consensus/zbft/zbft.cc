@@ -398,43 +398,15 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
     }
 
     try {
-        // times_[times_index_++] = common::TimeUtils::TimestampUs();
-        //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
-        // times_[times_index_++] = common::TimeUtils::TimestampUs();
-        //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-
         std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
         libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
-        // times_[times_index_++] = common::TimeUtils::TimestampUs();
-        //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-
         bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(
             bls_instance.SignatureRecover(
             all_signs,
             lagrange_coeffs));
         bls_precommit_agg_sign_->to_affine_coordinates();
-        prepare_block_->set_bls_agg_sign_x(
-            common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X)));
-        prepare_block_->set_bls_agg_sign_y(
-            common::Encode::HexDecode(
-            libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->Y)));
-        // times_[times_index_++] = common::TimeUtils::TimestampUs();
-//         if (times_[times_index_ - 1] - times_[times_index_ - 2] >= 10000) {
-//             ZJC_DEBUG("SignatureRecover use time %lu us", (times_[times_index_ - 1] - times_[times_index_ - 2]));
-//         }
-
-        // times_[times_index_ - 2] = times_[times_index_ - 1];
-        //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-
-
-        // times_[times_index_++] = common::TimeUtils::TimestampUs();
-        //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
         std::string sign_precommit_hash;
-        // times_[times_index_++] = common::TimeUtils::TimestampUs();
-        //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
         if (bls_mgr_->GetVerifyHash(
                 t,
                 n,
@@ -452,13 +424,6 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
             //assert(false);
             return kConsensusError;
         }
-
-        // times_[times_index_++] = common::TimeUtils::TimestampUs();
-//         if (times_[times_index_ - 1] - times_[times_index_ - 2] > 10000) {
-//             ZJC_DEBUG("get verify hash use time: %lu", (times_[times_index_ - 1] - times_[times_index_ - 2]));
-//         }
-        // times_[times_index_ - 2] = times_[times_index_ - 1];
-        //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
 
         if (sign_precommit_hash != precommit_bls_agg_verify_hash_) {
             common_pk_.to_affine_coordinates();
@@ -495,11 +460,21 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
 }
 
 void Zbft::LeaderResetPrepareBitmap(const std::string& prepare_hash) {
+    if (prepare_block_ == nullptr || bls_precommit_agg_sign_ == nullptr) {
+        return;
+    }
+
     auto iter = prepare_block_map_.find(prepare_hash);
     if (iter == prepare_block_map_.end()) {
         return;
     }
 
+    prepare_block_->set_bls_agg_sign_x(
+        common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->X)));
+    prepare_block_->set_bls_agg_sign_y(
+        common::Encode::HexDecode(
+            libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->Y)));
     if (prepare_block_ != nullptr) {
         LeaderResetPrepareBitmap(iter->second);
     }
