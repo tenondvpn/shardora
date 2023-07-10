@@ -183,14 +183,17 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
                         std::string json_str;
                         auto st = google::protobuf::util::MessageToJsonString(elect_block, &json_str);
                         if (st.ok()) {
+                            attr_key->Append(tx_list[i].storages(j).key());
                             attr_value->Append(json_str);
                             continue;
                         }
                     }
                 }
                     
+                attr_key->Append(common::Encode::HexEncode(tx_list[i].storages(j).key()));
                 attr_value->Append(common::Encode::HexEncode(val));
             } else {
+                attr_key->Append(common::Encode::HexEncode(tx_list[i].storages(j).key()));
                 attr_value->Append(common::Encode::HexEncode(tx_list[i].storages(j).val_hash()));
             }
         }
