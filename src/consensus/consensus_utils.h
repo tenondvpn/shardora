@@ -68,7 +68,7 @@ enum ConsensusErrorCode {
     kConsensusElectNodeExists = 50,
 };
 
-enum BftStatus {
+enum BftStatus : int32_t {
     kConsensusInit = 0,
     kConsensusPrepare = 1,
     kConsensusPreCommit = 2,
@@ -80,20 +80,18 @@ enum BftStatus {
     kConsensusStepTimeout = 8,
     kConsensusSyncBlock = 9,
     kConsensusFailed = 10,
+    kConsensusWaitingBackup = 11,
+    kConsensusOppose = 12,
+    kConsensusAgree = 13,
+    kConsensusHandled = 14,
+    kConsensusReChallenge = 15,
+    kConsensusLeaderWaitingBlock = 16W,
+
 };
 
 enum BftRole {
     kConsensusRootCongress = 0,
     kConsensusShard = 1,
-};
-
-enum BftLeaderCheckStatus {
-    kConsensusWaitingBackup = 0,
-    kConsensusOppose = 1,
-    kConsensusAgree = 2,
-    kConsensusHandled = 3,
-    kConsensusReChallenge = 4,
-    kConsensusLeaderWaitingBlock = 5,
 };
 
 static const uint32_t kMaxTxCount = 256u;
