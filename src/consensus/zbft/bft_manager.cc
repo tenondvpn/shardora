@@ -1155,7 +1155,7 @@ void BftManager::CreateResponseMessage(
                 precommit_gid = precommit_bft->gid();
                 if (precommit_bft->pipeline_prev_zbft_ptr() != nullptr) {
                     commit_gid = precommit_bft->pipeline_prev_zbft_ptr()->gid();
-                    precommit_bft->set_prev_bft_ptr(nullptr);
+//                     precommit_bft->set_prev_bft_ptr(nullptr);
                 }
             }
 
