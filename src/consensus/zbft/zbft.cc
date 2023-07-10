@@ -786,11 +786,12 @@ int Zbft::LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg) {
         return kConsensusError;
     }
 
-    if (LeaderPrecommitOk(
-            res_tx_bft,
-            leader_index_,
-            bn_sign,
-            leader_mem_ptr_->id) != bls::kBlsSuccess) {
+    auto res = LeaderPrecommitOk(
+        res_tx_bft,
+        leader_index_,
+        bn_sign,
+        leader_mem_ptr_->id);
+    if (res != kConsensusWaitingBackup) {
         ZJC_ERROR("leader call LeaderPrecommitOk failed!");
         return kConsensusError;
     }
