@@ -2478,9 +2478,9 @@ int BftManager::LeaderCallPrecommit(
     }
 
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    if (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] > 20000lu) {
-        ZJC_INFO("%d use time: %lu", msg_ptr->times_idx, (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2]));
-    }
+//     if (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] > 20000lu) {
+//         ZJC_INFO("%d use time: %lu", msg_ptr->times_idx, (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2]));
+//     }
     if (next_prepare_bft != nullptr) {
         bft_vec[0] = next_prepare_bft;
         ZJC_DEBUG("use next prepare.");
