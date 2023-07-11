@@ -96,7 +96,7 @@ private:
     std::vector<ThreadHandlerPtr> thread_vec_;
     bool inited_{ false };
     common::UniqueSet<uint64_t, 10240, 64> unique_message_sets_;
-    common::ThreadSafeQueue<MessagePtr>** threads_message_queues_;
+    common::ThreadSafeQueue<MessagePtr>* threads_message_queues_;
     common::ThreadSafeQueue<MessagePtr> http_server_message_queue_;
     common::ThreadSafeQueue<SavedBlockQueueItemPtr> saved_block_queue_;
     std::condition_variable* wait_con_ = nullptr;
