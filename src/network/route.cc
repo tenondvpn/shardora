@@ -64,7 +64,7 @@ int Route::Send(const transport::MessagePtr& msg_ptr) {
         if (message.has_broadcast()) {
             assert(message.broadcast().bloomfilter_size() < 64);
 //             broadcast_->Broadcasting(msg_ptr->thread_idx, dht_ptr, msg_ptr);
-            ZJC_DEBUG("broadcast: %lu", header_ptr->header.hash64());
+            ZJC_DEBUG("0 broadcast: %lu, now size: %u", header_ptr->header.hash64(), broadcast_queue_[msg_ptr->thread_idx].size());
             broadcast_queue_[msg_ptr->thread_idx].push(msg_ptr);
             broadcast_con_.notify_one();
         } else {
@@ -107,8 +107,8 @@ void Route::HandleMessage(const transport::MessagePtr& header_ptr) {
 
     if (header.has_broadcast()) {
 //         Broadcast(header_ptr->thread_idx, header_ptr);
-        ZJC_DEBUG("broadcast: %lu", header_ptr->header.hash64());
         auto tmp_ptr = std::make_shared<transport::TransportMessage>(*header_ptr);
+        ZJC_DEBUG("1 broadcast: %lu, now size: %u", header_ptr->header.hash64(), broadcast_queue_[header_ptr->thread_idx].size());
         broadcast_queue_[header_ptr->thread_idx].push(tmp_ptr);
         broadcast_con_.notify_one();
     }

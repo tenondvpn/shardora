@@ -214,7 +214,7 @@ void FilterBroadcast::Send(
             nodes[i]->public_ip,
             nodes[i]->public_port,
             msg_ptr->header);
-        BROAD_DEBUG("random send to: %s:%d, txhash: %lu, res: %u",
+        BROAD_DEBUG("broadcast random send to: %s:%d, txhash: %lu, res: %u",
             nodes[i]->public_ip.c_str(),
             nodes[i]->public_port,
             msg_ptr->header.hash64(),
@@ -252,7 +252,7 @@ void FilterBroadcast::LayerSend(
             broad_param->set_layer_right(GetLayerRight(src_right, message));
         }
 
-        BROAD_DEBUG("layer send to: %s:%d, txhash: %lu", nodes[i]->public_ip.c_str(), nodes[i]->public_port, msg_ptr->header.hash64());
+        BROAD_DEBUG("broadcast layer send to: %s:%d, txhash: %lu", nodes[i]->public_ip.c_str(), nodes[i]->public_port, msg_ptr->header.hash64());
         transport::TcpTransport::Instance()->Send(
             thread_idx,
             nodes[i]->public_ip,
