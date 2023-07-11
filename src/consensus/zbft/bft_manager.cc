@@ -1662,19 +1662,18 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
             continue;
         }
 
-//         auto next_iter = iter;
-//         ++next_iter;
-//         if (bft_ptr->consensus_status() == kConsensusPreCommit && next_iter == bft_queue.end()) {
-//             if (bft_ptr->this_node_is_leader()) {
-//                 ReConsensusBft(bft_ptr);
-//             }
-//         } else {
+        auto next_iter = iter;
+        ++next_iter;
+        if (bft_ptr->consensus_status() == kConsensusPreCommit) {
+            removed_precommited_bfts_[pool_index].push(bft_ptr);
+            precommited_bft_map_[pool_index][gid] = bft_ptr;
+        } else {
             bft_ptr->Destroy();
-            --now_bft_count_;
-            bft_queue.erase(iter);
-            ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
-//         }
+        }
 
+        --now_bft_count_;
+        bft_queue.erase(iter);
+        ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
         break;
     }
 }
@@ -1714,6 +1713,17 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
     for (uint32_t pool_index = 0; pool_index < common::kInvalidPoolIndex; ++pool_index) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_index] != thread_idx) {
             continue;
+        }
+
+        if (!removed_precommited_bfts_[pool_index].empty()) {
+            auto rmed_bft = removed_precommited_bfts_[pool_index].front();
+            if (rmed_bft->precommited_timeout(now_timestamp_us)) {
+                removed_precommited_bfts_[pool_index].pop();
+                auto rm_iter = precommited_bft_map_[pool_index].find(rmed_bft->gid());
+                if (rm_iter != precommited_bft_map_[pool_index].end()) {
+                    precommited_bft_map_[pool_index].erase(rm_iter);
+                }
+            }
         }
 
         auto& bft_queue = pools_with_zbfts_[pool_index];
@@ -2038,6 +2048,15 @@ int BftManager::CheckPrecommit(
     return kConsensusSuccess;
 }
 
+ZbftPtr BftManager::GetRemovedPrecommitBft(uint32_t pool_index, const std::string& gid) {
+    auto iter = precommited_bft_map_[pool_index].find(gid);
+    if (iter == precommited_bft_map_[pool_index].end()) {
+        return nullptr;
+    }
+
+    return iter->second;
+}
+
 int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg) {
     auto& bft_msg = msg_ptr->header.zbft();
     if (!bft_msg.has_commit_gid() || bft_msg.commit_gid().empty()) {
@@ -2048,7 +2067,11 @@ int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg
     auto bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.commit_gid());
     if (bft_ptr == nullptr) {
 //         assert(false);
-        return kConsensusError;
+        bft_ptr = GetRemovedPrecommitBft(bft_msg.pool_index(), bft_msg.commit_gid());
+        if (bft_ptr == nullptr) {
+            ZJC_DEBUG("backup failed get CheckCommit: %s", common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
+            return kConsensusError;
+        }
     }
 
     do {

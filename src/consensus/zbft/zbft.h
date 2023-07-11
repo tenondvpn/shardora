@@ -143,10 +143,6 @@ public:
         return consensus_status_;
     }
 
-    void reset_timeout() {
-        timeout_ = common::TimeUtils::TimestampUs() + kBftTimeout;
-    }
-
     uint32_t member_count() {
         return member_count_;
     }
@@ -443,8 +439,20 @@ public:
         return prepare_block_->height();
     }
 
+    void reset_timeout() {
+        timeout_ = common::TimeUtils::TimestampUs();
+    }
+
     bool timeout(uint64_t now_tm) const {
-        if (timeout_ < now_tm) {
+        if (timeout_ + kBftTimeout < now_tm) {
+            return true;
+        }
+
+        return false;
+    }
+
+    bool precommited_timeout(uint64_t now_tm) const {
+        if (timeout_ + kRemovePrecommitedBftTimeUs < now_tm) {
             return true;
         }
 

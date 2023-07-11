@@ -190,6 +190,7 @@ private:
     void AddWaitingBlock(const transport::MessagePtr& msg_ptr);
     void RemoveWaitingBlock(uint32_t pool_index, uint64_t height);
     void ReConsensusPrepareBft(const ElectItem& elect_item, ZbftPtr& bft_ptr);
+    ZbftPtr GetRemovedPrecommitBft(uint32_t pool_index, const std::string& gid);
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
@@ -316,6 +317,8 @@ private:
     uint64_t first_timeblock_timestamp_ = 0;
     block::BlockAggValidCallback block_agg_valid_func_ = nullptr;
     std::vector<ZbftPtr> pools_with_zbfts_[common::kInvalidPoolIndex];
+    std::unordered_map<std::string, ZbftPtr> precommited_bft_map_[common::kInvalidPoolIndex];
+    std::queue<ZbftPtr> removed_precommited_bfts_[common::kInvalidPoolIndex];
     std::deque<transport::MessagePtr> backup_prapare_msg_queue_[common::kMaxThreadCount];
     std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
     volatile int32_t now_bft_count_ = 0;
