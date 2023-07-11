@@ -327,7 +327,7 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
             msg_hash,
             mem_ptr->pubkey,
             msg_ptr->header.sign()) != security::kSecuritySuccess) {
-        assert(false);
+        //assert(false);
         return;
     }
 
