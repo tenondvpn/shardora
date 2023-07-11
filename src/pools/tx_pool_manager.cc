@@ -415,6 +415,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     assert(msg_ptr->thread_idx < common::kMaxThreadCount);
     auto& tx_msg = msg_ptr->header.tx_proto();
     if (tx_msg.step() == pools::protobuf::kNormalFrom) {
+        msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
         if (security_->Verify(
                 msg_ptr->msg_hash,
                 tx_msg.pubkey(),
