@@ -487,6 +487,14 @@ public:
         return leader_waiting_prepare_hash_;
     }
 
+    transport::MessagePtr reconsensus_msg_ptr() {
+        return reconsensus_msg_ptr_;
+    }
+
+    void set_reconsensus_msg_ptr(transport::MessagePtr msg_ptr) {
+        reconsensus_msg_ptr_ = msg_ptr;
+    }
+
 protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
@@ -545,6 +553,7 @@ protected:
     bool should_timer_to_restart_ = false;
     int32_t pool_index_mod_num_ = -1;
     std::string leader_waiting_prepare_hash_;
+    transport::MessagePtr reconsensus_msg_ptr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(Zbft);
 public:

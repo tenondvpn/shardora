@@ -1781,6 +1781,17 @@ void BftManager::ReConsensusPrepareBft(const ElectItem& elect_item, ZbftPtr& bft
 
 void BftManager::ReConsensusBft(ZbftPtr& bft_ptr) {
     assert(bft_ptr->consensus_status() == kConsensusPreCommit);
+    auto tmp_msg_ptr = bft_ptr->reconsensus_msg_ptr();
+    if (tmp_msg_ptr != nullptr) {
+        transport::TcpTransport::Instance()->SetMessageHash(tmp_msg_ptr->header);
+        if (!LeaderSignMessage(tmp_msg_ptr)) {
+            return;
+        }
+
+        network::Route::Instance()->Send(tmp_msg_ptr);
+        return;
+    }
+
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[bft_ptr->pool_index()];
     auto elect_item_ptr = elect_items_[elect_item_idx_];
@@ -1839,6 +1850,7 @@ void BftManager::ReConsensusBft(ZbftPtr& bft_ptr) {
         zbft_vec,
         msg_ptr,
         mem_ptr);
+    bft_ptr->set_reconsensus_msg_ptr(msg_ptr->response);
     bft_ptr->AfterNetwork();
 }
 
