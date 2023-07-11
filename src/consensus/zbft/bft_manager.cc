@@ -808,7 +808,7 @@ void BftManager::HandleSyncConsensusBlock(
             }
 
             auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
-            if (elect_item.elect_height < block_ptr->elect_height()) {
+            if (elect_item.elect_height < block_ptr->electblock_height()) {
                 waiting_agg_verify_blocks_[block_ptr->pool_index()][block_ptr->height()] = block_ptr;
                 return;
             }
