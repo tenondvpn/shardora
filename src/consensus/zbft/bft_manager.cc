@@ -290,11 +290,12 @@ void BftManager::RotationLeader(
         int32_t leader_mod_num,
         uint64_t elect_height,
         uint32_t new_leader_idx) {
-    auto elect_item_ptr = elect_items_[elect_item_idx_];
-    if (elect_item_ptr->elect_height != elect_height) {
+    auto old_elect_item_ptr = elect_items_[elect_item_idx_];
+    if (old_elect_item_ptr->elect_height != elect_height) {
         return;
     }
 
+    auto elect_item_ptr = std::make_shared<ElectItem>(*old_elect_item_ptr);
     auto old_leader_idx = elect_item_ptr->mod_with_leader_index[leader_mod_num];
     if (old_leader_idx == new_leader_idx) {
         return;
@@ -319,6 +320,8 @@ void BftManager::RotationLeader(
 
     elect_item_ptr->mod_with_leader_index[leader_mod_num] = new_leader_idx;
     assert(new_leader_idx < elect_item_ptr->members->size());
+    elect_items_[elect_item_idx_].reset();
+    elect_items_[elect_item_idx_] = elect_item_ptr;
     ZJC_INFO("rotation leader success: %d, %lu, old_leader_idx: %u, new leader idx: %u, local index: %d",
         leader_mod_num, elect_height, old_leader_idx, new_leader_idx, elect_item_ptr->local_node_member_index);
 }
