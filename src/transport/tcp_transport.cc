@@ -210,6 +210,7 @@ int TcpTransport::Send(
         SetMessageHash(message, thread_idx);
     }
 
+    ZJC_DEBUG("send message hash64: %lu", message.hash64());
     message.SerializeToString(&msg);
     if (tcp_conn->Send(msg) != 0) {
         FreeConnection(thread_idx, tcp_conn->PeerIp(), tcp_conn->PeerPort());
@@ -245,6 +246,7 @@ int TcpTransport::Send(
         return kTransportError;
     }
 
+    ZJC_DEBUG("send message hash64: %lu", message.hash64());
     return kTransportSuccess;
 }
 
