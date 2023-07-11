@@ -227,7 +227,7 @@ public:
             }
 
             if (checked_count_ < kLeaderLofFactorCount) {
-                ZJC_DEBUG("checked_count_: %d, kLeaderLofFactorCount: %d, factor: %f", checked_count_, kLeaderLofFactorCount, factor);
+                ZJC_DEBUG("checked_count_: %d, kLeaderLofFactorCount: %d, factor: %f, all_finish_tx_count_: %u, all_tx_count_: %u", checked_count_, kLeaderLofFactorCount, factor, all_finish_tx_count_, all_tx_count_);
                 factor = 1.0;
             }
 
