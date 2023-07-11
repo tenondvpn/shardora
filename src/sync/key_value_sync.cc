@@ -374,7 +374,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     msg.set_type(common::kSyncMessage);
     transport::TcpTransport::Instance()->SetMessageHash(msg, msg_ptr->thread_idx);
     transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
-    ZJC_DEBUG("sync response ok des: %u", msg_ptr->header.src_sharding_id());
+    ZJC_DEBUG("sync response ok des: %u, hash64: %lu", msg_ptr->header.src_sharding_id(), msg.hash64());
 }
 
 void KeyValueSync::ResponseElectBlock(
