@@ -1518,10 +1518,6 @@ ZbftPtr BftManager::CreateBftPtr(
     }
 
     auto precommit_ptr = GetBft(bft_msg.pool_index(), bft_msg.precommit_gid());
-    if (precommit_ptr == nullptr) {
-        precommit_ptr = GetRemovedPrecommitBft(bft_msg.pool_index(), bft_msg.precommit_gid());
-    }
-
     if (txs_ptr != nullptr && precommit_ptr != nullptr) {
         for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
             if (precommit_ptr->txs_ptr()->txs.find(iter->first) !=
