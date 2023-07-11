@@ -232,8 +232,8 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
                         factors[i] = res;
                     }
 
-//                     ZJC_DEBUG("get_factor: %d, get invalid pool factor pool: %d, factor: %f",
-//                         get_factor, i, res);
+                    ZJC_DEBUG("kLeaderLofFactorCount get_factor: %d, get invalid pool factor pool: %d, factor: %f",
+                        get_factor, i, res);
                 }
             }
 
@@ -248,12 +248,6 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
             }
 
             prev_check_leader_valid_ms_ = now_tm_ms + kCheckLeaderLofPeriod;
-        }
-        else {
-            ZJC_DEBUG("kLeaderLofFactorCount invalid dht node count: %u, %u",
-                network::DhtManager::Instance()->valid_count(
-                common::GlobalInfo::Instance()->network_id()),
-                common::GlobalInfo::Instance()->sharding_min_nodes_count());
         }
     }
 
