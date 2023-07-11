@@ -1075,8 +1075,8 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
     auto now_time_ms = common::TimeUtils::TimestampMs();
     if (statistic_item->shard_statistic_tx != nullptr &&
             statistic_item->shard_statistic_tx->tx_ptr->in_consensus &&
-            statistic_item->shard_statistic_tx->tx_ptr->timeout > now_time_ms) {
-        ZJC_DEBUG("statistic txs sharding not consensus yet: %u, %u, %lu",
+            statistic_item->shard_statistic_tx->timeout > now_time_ms) {
+        ZJC_DEBUG("statistic txs sharding not consensus yet: %u, %u, %lu, timeout: %lu, now: %lu",
             statistic_item->leader_idx,
             statistic_item->leader_to_index,
             msg_ptr->header.block_proto().statistic_tx().elect_height());
@@ -1118,10 +1118,10 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
             tx_ptr->tx_hash = statistic_hash;
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             statistic_item->shard_statistic_tx = tx_ptr;
-            ZJC_DEBUG("success add statistic tx: %s, statistic elect height: %lu, heights: %s",
+            ZJC_DEBUG("success add statistic tx: %s, statistic elect height: %lu, heights: %s, timeout: %lu, kStatisticTimeoutMs: %lu, now: %lu",
                 common::Encode::HexEncode(statistic_hash).c_str(),
                 msg_ptr->header.block_proto().statistic_tx().elect_height(),
-                height_str.c_str());
+                height_str.c_str(), tx_ptr->timeout, kStatisticTimeoutMs, common::TimeUtils::TimestampMs());
         }
     }
 
@@ -1330,7 +1330,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     auto now_time_ms = common::TimeUtils::TimestampMs();
     if (tmp_tx != nullptr &&
             tmp_tx->tx_ptr->in_consensus &&
-            tmp_tx->tx_ptr->timeout > now_time_ms) {
+            tmp_tx->timeout > now_time_ms) {
         ZJC_DEBUG("to txs sharding not consensus yet");
         return;
     }
