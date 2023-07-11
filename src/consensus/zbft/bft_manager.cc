@@ -2224,7 +2224,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             SyncConsensusBlock(
                 elect_item,
                 msg_ptr->thread_idx,
-                bft_ptr->pool_index(),
+                bft_msg.pool_index(),
                 bft_msg.precommit_gid());
             return;
         }
