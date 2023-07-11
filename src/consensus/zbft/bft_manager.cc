@@ -1783,7 +1783,8 @@ void BftManager::ReConsensusBft(ZbftPtr& bft_ptr) {
     assert(bft_ptr->consensus_status() == kConsensusPreCommit);
     auto tmp_msg_ptr = bft_ptr->reconsensus_msg_ptr();
     if (tmp_msg_ptr != nullptr) {
-        transport::TcpTransport::Instance()->SetMessageHash(tmp_msg_ptr->header);
+        transport::TcpTransport::Instance()->SetMessageHash(
+            tmp_msg_ptr->header, tmp_msg_ptr->thread_idx);
         if (!LeaderSignMessage(tmp_msg_ptr)) {
             return;
         }
