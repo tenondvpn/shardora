@@ -370,7 +370,7 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
     }
 }
 
-void NetworkInit::RotationLeaderCallback(uint8_t thread_idx, const std::vector<int32_t>& invalid_pools) {
+void NetworkInit::RotationLeaderCallback(uint8_t thread_idx, const std::vector<std::pair<uint32_t, uint32_t>>& invalid_pools) {
     auto rotation = rotation_leaders_;
     if (rotation == nullptr) {
         return;
@@ -384,36 +384,21 @@ void NetworkInit::RotationLeaderCallback(uint8_t thread_idx, const std::vector<i
         return;
     }
 
-    if (invalid_pools.size() == 1 && invalid_pools[0] == -1) {
-        for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
+    uint32_t invalid_leader_mods[rotation->rotations.size()] = { 0 };
+    std::pair<uint32_t, uint32_t> tx_counts[rotation->rotations.size()];
+    for (uint32_t i = 0; i < invalid_pools.size(); ++i) {
+        auto mod_idx = i % rotation->rotations.size();
+        tx_counts[mod_idx].first += invalid_pools[i].first;
+        tx_counts[mod_idx].second += invalid_pools[i].second;
+    }
+
+    for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
+        if (tx_counts[i].first < 1000 &&
+                tx_counts[i].second > 0 &&
+                (tx_counts[i].second / 3) > tx_counts[i].first) {
             BroadcastInvalidPools(thread_idx, rotation, i);
         }
-
-        return;
     }
-
-    uint32_t max_invalid_mod_count = 0;
-    int32_t max_invalid_mod_idx = -1;
-    uint32_t invalid_leader_mods[rotation->rotations.size()] = { 0 };
-    for (uint32_t i = 0; i < invalid_pools.size(); ++i) {
-        auto& tmp_mod = invalid_leader_mods[invalid_pools[i] % rotation->rotations.size()];
-        ++tmp_mod;
-        if (tmp_mod > max_invalid_mod_count) {
-            max_invalid_mod_count = tmp_mod;
-            max_invalid_mod_idx = invalid_pools[i] % rotation->rotations.size();
-        }
-    }
-
-    if (max_invalid_mod_idx == -1) {
-        return;
-    }
-
-    auto invalid_leader_pool_size = common::kInvalidPoolIndex / rotation->rotations.size();
-    if (max_invalid_mod_count < invalid_leader_pool_size * 2 /3) {
-        return;
-    }
-
-    BroadcastInvalidPools(thread_idx, rotation, max_invalid_mod_idx);
 }
 
 void NetworkInit::HandleAddrReq(const transport::MessagePtr& msg_ptr) {

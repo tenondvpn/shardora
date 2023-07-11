@@ -223,26 +223,18 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
             }
 
             std::vector<double> factors(common::kInvalidPoolIndex);
+            std::vector<std::pair<uint32_t, uint32_t>> invalid_pools;
             for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-                double res = tx_pool_[i].CheckLeaderValid(get_factor);
+                uint32_t finish_count = 0;
+                uint32_t tx_count = 0;
+                double res = tx_pool_[i].CheckLeaderValid(get_factor, &finish_count, &tx_count);
                 if (get_factor) {
-                    if (res > 0) {
-                        factors[i] = 1.0;
-                    } else {
-                        factors[i] = res;
-                    }
-
-                    ZJC_DEBUG("kLeaderLofFactorCount get_factor: %d, get invalid pool factor pool: %d, factor: %f",
-                        get_factor, i, res);
+                    invalid_pools.push_back(std::make_pair(finish_count, tx_count));
                 }
             }
 
             if (get_factor) {
-                std::vector<int32_t> invalid_pools;
-                invalid_pools.reserve(64);
-                CheckLeaderValid(factors, &invalid_pools);
-                ZJC_DEBUG("invalid_pools.size(): %d", invalid_pools.size());
-                if (!invalid_pools.empty() && rotatition_leader_cb_ != nullptr) {
+                if (rotatition_leader_cb_ != nullptr) {
                     rotatition_leader_cb_(thread_idx, invalid_pools);
                 }
             }

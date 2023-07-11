@@ -186,9 +186,6 @@ private:
     void SyncMinssingHeights(uint8_t thread_idx, uint64_t now_tm_ms);
     void SyncBlockWithMaxHeights(uint8_t thread_idx, uint32_t pool_idx, uint64_t height);
     void CheckLeaderValid(const std::vector<double>& factors, std::vector<int32_t>* invalid_pools);
-    void BroadcastInvalidPools(
-        uint8_t thread_idx,
-        const std::vector<int32_t>& invalid_pools);
     bool SaveNodeVerfiyVec(
         const std::string& id,
         const bls::protobuf::JoinElectInfo& join_info,

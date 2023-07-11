@@ -216,7 +216,7 @@ public:
         }
     }
 
-    double CheckLeaderValid(bool get_factor) {
+    double CheckLeaderValid(bool get_factor, uint32_t* finished_count, uint32_t* tx_count) {
         all_finish_tx_count_ += finish_tx_count_;
         double factor = 0.0;
         if (get_factor) {
@@ -226,17 +226,12 @@ public:
                 factor = 1.0;
             }
 
-            if (checked_count_ < kLeaderLofFactorCount) {
-                ZJC_DEBUG("checked_count_: %d, kLeaderLofFactorCount: %d, factor: %f, all_finish_tx_count_: %u, all_tx_count_: %u", checked_count_, kLeaderLofFactorCount, factor, all_finish_tx_count_, all_tx_count_);
-                factor = 1.0;
-            }
-
-            checked_count_ = 0;
+            *finished_count = all_finish_tx_count_;
+            *tx_count = all_tx_count_;
             all_tx_count_ = 0;
             all_finish_tx_count_ = 0;
         }
 
-        ++checked_count_;
         all_tx_count_ += gid_map_.size();
         finish_tx_count_ = 0;
         return factor;
