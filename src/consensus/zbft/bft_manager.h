@@ -190,6 +190,7 @@ private:
     void AddWaitingBlock(const transport::MessagePtr& msg_ptr);
     void RemoveWaitingBlock(uint32_t pool_index, uint64_t height);
     void ReConsensusPrepareBft(const ElectItem& elect_item, ZbftPtr& bft_ptr);
+    void HandleSyncedBlock(uint8_t thread_idx, std::shared_ptr<block::protobuf::Block>& block_ptr);
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
@@ -314,6 +315,7 @@ private:
     std::deque<transport::MessagePtr> backup_prapare_msg_queue_[common::kMaxThreadCount];
     std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
     volatile int32_t now_bft_count_ = 0;
+    std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_agg_verify_blocks_[common::kInvalidPoolIndex];
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {

@@ -609,13 +609,13 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     assert(header.type() == common::kConsensusMessage);
+    auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (msg_ptr->header.zbft().sync_block() && msg_ptr->header.zbft().has_block()) {
-        ElectItem elect_item;
+        ElectItem& elect_item = *elect_item_ptr;
         return HandleSyncConsensusBlock(elect_item, msg_ptr);
     }
 
     auto now_ms = common::TimeUtils::TimestampMs();
-    auto elect_item_ptr = elect_items_[elect_item_idx_];
     assert(common::GlobalInfo::Instance()->pools_with_thread()[header.zbft().pool_index()] == msg_ptr->thread_idx);
     do
     {
@@ -746,6 +746,42 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
 }
 
+void BftManager::HandleSyncedBlock(uint8_t thread_idx, std::shared_ptr<block::protobuf::Block>& block_ptr) {
+    if (!block_ptr->is_cross_block() &&
+            (block_ptr->height() > pools_mgr_->latest_height(block_ptr->pool_index()) ||
+            pools_mgr_->latest_height(block_ptr->pool_index()) == common::kInvalidUint64)) {
+        AddWaitingBlock(msg_ptr);
+        RemoveWaitingBlock(block_ptr->pool_index(), block_ptr->height() - 1);
+        return;
+    }
+
+    if (block_ptr->network_id() != common::GlobalInfo::Instance()->network_id() &&
+        block_ptr->network_id() + network::kConsensusWaitingShardOffset !=
+        common::GlobalInfo::Instance()->network_id()) {
+        return;
+    }
+
+    auto db_batch = std::make_shared<db::DbWriteBatch>();
+    auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block_ptr, db_batch);
+    new_block_cache_callback_(
+        msg_ptr->thread_idx,
+        queue_item_ptr->block_ptr,
+        *queue_item_ptr->db_batch);
+    block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
+    pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
+    // remove bft
+    ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s,"
+        " precommit_gid: %s, precommit_bitmap size: %u",
+        block_ptr->network_id(),
+        block_ptr->pool_index(),
+        block_ptr->height(),
+        common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str(),
+        common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
+        block_ptr->precommit_bitmap_size());
+    RemoveBftWithBlockHeight(block_ptr->pool_index(), block_ptr->height());
+    RemoveWaitingBlock(block_ptr->pool_index(), block_ptr->height());
+}
+
 void BftManager::HandleSyncConsensusBlock(
         const ElectItem& elect_item,
         const transport::MessagePtr& msg_ptr) {
@@ -772,6 +808,12 @@ void BftManager::HandleSyncConsensusBlock(
                 return;
             }
 
+            auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
+            if (elect_item.elect_height < req_bft_msg.block().elect_height()) {
+                waiting_agg_verify_blocks_[req_bft_msg.block().pool_index()][req_bft_msg.block().height] = block_ptr;
+                return;
+            }
+
             // check bls sign
             if (!block_agg_valid_func_(msg_ptr->thread_idx, req_bft_msg.block())) {
                 ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
@@ -783,40 +825,7 @@ void BftManager::HandleSyncConsensusBlock(
                 return;
             }
 
-            if (!req_bft_msg.block().is_cross_block() &&
-                    (req_bft_msg.block().height() > pools_mgr_->latest_height(req_bft_msg.block().pool_index()) || 
-                        pools_mgr_->latest_height(req_bft_msg.block().pool_index()) == common::kInvalidUint64)) {
-                AddWaitingBlock(msg_ptr);
-                RemoveWaitingBlock(req_bft_msg.block().pool_index(), req_bft_msg.block().height() - 1);
-                return;
-            }
-
-            if (req_bft_msg.block().network_id() != common::GlobalInfo::Instance()->network_id() &&
-                    req_bft_msg.block().network_id() + network::kConsensusWaitingShardOffset !=
-                    common::GlobalInfo::Instance()->network_id()) {
-                return;
-            }
-
-            auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
-            auto db_batch = std::make_shared<db::DbWriteBatch>();
-            auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block_ptr, db_batch);
-            new_block_cache_callback_(
-                msg_ptr->thread_idx,
-                queue_item_ptr->block_ptr,
-                *queue_item_ptr->db_batch);
-            block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
-            pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
-            // remove bft
-            ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s,"
-                " precommit_gid: %s, precommit_bitmap size: %u",
-                block_ptr->network_id(),
-                block_ptr->pool_index(),
-                block_ptr->height(),
-                common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str(),
-                common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
-                block_ptr->precommit_bitmap_size());
-            RemoveBftWithBlockHeight(block_ptr->pool_index(), block_ptr->height());
-            RemoveWaitingBlock(block_ptr->pool_index(), block_ptr->height());
+            HandleSyncedBlock(msg_ptr->thread_idx, block_ptr);
         } else {
             if (bft_ptr->prepare_block() == nullptr) {
                 auto block_hash = GetBlockHash(req_bft_msg.block());
@@ -1718,6 +1727,26 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
     for (uint32_t pool_index = 0; pool_index < common::kInvalidPoolIndex; ++pool_index) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_index] != thread_idx) {
             continue;
+        }
+
+        auto& waiting_agg_block_map = waiting_agg_verify_blocks_[pool_index];
+        auto witer = waiting_agg_block_map.begin();
+        while (witer != waiting_agg_block_map.end()) {
+            if (witer->second->electblock_height() > elect_item_ptr->elect_height) {
+                break;
+            }
+
+            if (!block_agg_valid_func_(thread_idx, *witer->second)) {
+                ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+                    witer->second->network_id(),
+                    witer->second->pool_index(),
+                    witer->second->height(),
+                    common::Encode::HexEncode(GetBlockHash(*witer->second)).c_str());
+            } else {
+                HandleSyncedBlock(thread_idx, witer->second);
+            }
+
+            witer = waiting_agg_block_map.erase(witer);
         }
 
         auto& bft_queue = pools_with_zbfts_[pool_index];
