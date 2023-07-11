@@ -449,17 +449,17 @@ int BftManager::ChangePrecommitBftLeader(
     if (bft_ptr->elect_height() > elect_item.elect_height) {
         return kConsensusSuccess;
     }
-// 
-//     if (bft_ptr->ChangeLeader(
-//             leader_idx,
-//             elect_item.leader_count,
-//             elect_item.elect_height,
-//             elect_item.members,
-//             elect_item.common_pk,
-//             elect_item.sec_key) != kConsensusSuccess) {
-//         ZJC_ERROR("bft init failed!");
-//         return kConsensusError;
-//     }
+
+    if (bft_ptr->ChangeLeader(
+            leader_idx,
+            elect_item.leader_count,
+            elect_item.elect_height,
+            elect_item.members,
+            elect_item.common_pk,
+            elect_item.sec_key) != kConsensusSuccess) {
+        ZJC_ERROR("bft init failed!");
+        return kConsensusError;
+    }
 
     if (bft_ptr->prepare_block() != nullptr) {
         pools_mgr_->AddChangeLeaderInvalidHash(
@@ -2198,6 +2198,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
         } else {
             msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
+            bft_ptr->set_prepare_msg_ptr(msg_ptr);
         }
 
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();

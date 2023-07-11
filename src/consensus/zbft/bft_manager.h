@@ -190,7 +190,6 @@ private:
     void AddWaitingBlock(const transport::MessagePtr& msg_ptr);
     void RemoveWaitingBlock(uint32_t pool_index, uint64_t height);
     void ReConsensusPrepareBft(const ElectItem& elect_item, ZbftPtr& bft_ptr);
-    ZbftPtr GetRemovedPrecommitBft(uint32_t pool_index, const std::string& gid);
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
