@@ -826,6 +826,7 @@ void BftManager::HandleSyncConsensusBlock(
 
                     return;
                 }
+
                 ZJC_DEBUG("receive block hash: %s, status: %d",
                     common::Encode::HexEncode(block_hash).c_str(),
                     bft_ptr->consensus_status());
@@ -836,7 +837,7 @@ void BftManager::HandleSyncConsensusBlock(
                         req_bft_msg.block().pool_index(),
                         req_bft_msg.block().height(),
                         common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
-                    //assert(false);
+                    assert(false);
                     return;
                 }
 
@@ -2220,6 +2221,11 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         if (precommit_bft_ptr == nullptr) {
             ZJC_DEBUG("get precommit gid failed: %s",
                 common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+            SyncConsensusBlock(
+                elect_item,
+                msg_ptr->thread_idx,
+                bft_ptr->pool_index(),
+                bft_msg.precommit_gid());
             return;
         }
 
