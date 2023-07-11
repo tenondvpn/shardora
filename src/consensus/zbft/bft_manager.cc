@@ -2217,16 +2217,17 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
         msg_ptr->response->header.mutable_zbft()->set_agree_commit(false);
         auto precommit_bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.precommit_gid());
-        if (precommit_bft_ptr != nullptr) {
-            if (BackupPrecommit(precommit_bft_ptr, msg_ptr) == kConsensusSuccess) {
-                msg_ptr->response->header.mutable_zbft()->set_agree_commit(true);
-            }
-        } else {
+        if (precommit_bft_ptr == nullptr) {
             ZJC_DEBUG("get precommit gid failed: %s",
                 common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+            return;
         }
 
+        if (BackupPrecommit(precommit_bft_ptr, msg_ptr) != kConsensusSuccess) {
+            return;
+        }
 
+        msg_ptr->response->header.mutable_zbft()->set_agree_commit(true);
         CheckCommit(msg_ptr, false);
         return;
     }
