@@ -426,6 +426,7 @@ void TxPoolManager::PopPoolsMessage(uint8_t thread_idx) {
 }
 
 void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
+    ZJC_DEBUG("success handle message hash64: %lu", msg_ptr->header.hash64());
     auto& header = msg_ptr->header;
     if (header.has_tx_proto()) {
         auto& tx_msg = header.tx_proto();
