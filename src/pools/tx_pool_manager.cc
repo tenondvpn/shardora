@@ -406,7 +406,8 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // just one thread
     assert(msg_ptr->thread_idx < common::kMaxThreadCount);
     pools_msg_queue_[msg_ptr->thread_idx].push(msg_ptr);
-//     ZJC_DEBUG("queue size msg_ptr->thread_idx: %d, pools_msg_queue_: %d",
+    ZJC_DEBUG("success add message hash64: %lu", msg_ptr->header.hash64());
+    //     ZJC_DEBUG("queue size msg_ptr->thread_idx: %d, pools_msg_queue_: %d",
 //         msg_ptr->thread_idx, pools_msg_queue_[msg_ptr->thread_idx].size());
 //     assert(pools_msg_queue_[msg_ptr->thread_idx].size() < 512);
 }
