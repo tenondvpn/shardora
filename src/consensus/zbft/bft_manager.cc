@@ -2243,9 +2243,12 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
     if (bft_msg.has_commit_gid() && !bft_msg.commit_gid().empty()) {
         auto commit_bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.commit_gid());
         if (commit_bft_ptr == nullptr) {
-            ZJC_ERROR("get commit bft failed: %s",
-                common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
-            return;
+            commit_bft_ptr = GetRemovedPrecommitBft(bft_msg.pool_index(), bft_msg.commit_gid());
+            if (commit_bft_ptr == nullptr) {
+                ZJC_ERROR("get commit bft failed: %s",
+                    common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
+                return;
+            }
         }
 
         if (BackupCommit(commit_bft_ptr, msg_ptr) != kConsensusSuccess) {

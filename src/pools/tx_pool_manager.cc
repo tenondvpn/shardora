@@ -413,18 +413,6 @@ std::shared_ptr<address::protobuf::AddressInfo> TxPoolManager::GetAddressInfo(
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // just one thread
     assert(msg_ptr->thread_idx < common::kMaxThreadCount);
-    auto& tx_msg = msg_ptr->header.tx_proto();
-    if (tx_msg.step() == pools::protobuf::kNormalFrom) {
-        msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
-        if (security_->Verify(
-                msg_ptr->msg_hash,
-                tx_msg.pubkey(),
-                msg_ptr->header.sign()) != security::kSecuritySuccess) {
-            ZJC_WARN("verify signature failed!");
-            return;
-        }
-    }
-
     pools_msg_queue_[msg_ptr->thread_idx].push(msg_ptr);
 //     ZJC_DEBUG("queue size msg_ptr->thread_idx: %d, pools_msg_queue_: %d",
 //         msg_ptr->thread_idx, pools_msg_queue_[msg_ptr->thread_idx].size());
@@ -858,7 +846,9 @@ void TxPoolManager::HandleSetContractPrepayment(const transport::MessagePtr& msg
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-    ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
+    ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d",
+        msg_ptr->address_info->pool_index(),
+        msg_queues_[msg_ptr->address_info->pool_index()].size());
 }
 
 bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
@@ -991,16 +981,16 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
     while (msg_queues_[pool_index].size() > 0 && ++count < kPopMessageCountEachTime) {
         transport::MessagePtr msg_ptr = nullptr;
         msg_queues_[pool_index].pop(&msg_ptr);
-//         auto& tx_msg = msg_ptr->header.tx_proto();
-//         if (tx_msg.step() == pools::protobuf::kNormalFrom) {
-//             if (security_->Verify(
-//                     msg_ptr->msg_hash,
-//                     tx_msg.pubkey(),
-//                     msg_ptr->header.sign()) != security::kSecuritySuccess) {
-//                 ZJC_WARN("verify signature failed!");
-//                 continue;
-//             }
-//         }
+        auto& tx_msg = msg_ptr->header.tx_proto();
+        if (tx_msg.step() == pools::protobuf::kNormalFrom) {
+            if (security_->Verify(
+                    msg_ptr->msg_hash,
+                    tx_msg.pubkey(),
+                    msg_ptr->header.sign()) != security::kSecuritySuccess) {
+                ZJC_WARN("verify signature failed!");
+                continue;
+            }
+        }
 
         DispatchTx(pool_index, msg_ptr);
 //         ZJC_DEBUG("success pop tx: %s, %lu", common::Encode::HexEncode(tx_msg.gid()).c_str(), msg_ptr->header.hash64());
