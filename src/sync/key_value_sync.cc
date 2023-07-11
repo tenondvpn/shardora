@@ -398,7 +398,7 @@ void KeyValueSync::ResponseElectBlock(
         min_height = *iter;
     }
 
-    uint64_t elect_height = elect_net_heights_map_[network_id];
+    uint64_t elect_height = elect_net_heights_map_[elect_network_id];
     while (elect_height > min_height) {
         block::protobuf::Block block;
         if (!prefix_db_->GetBlockWithHeight(
