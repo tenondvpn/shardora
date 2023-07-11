@@ -748,9 +748,6 @@ void BftManager::HandleSyncConsensusBlock(
         const transport::MessagePtr& msg_ptr) {
     auto& req_bft_msg = msg_ptr->header.zbft();
     auto bft_ptr = GetBft(req_bft_msg.pool_index(), req_bft_msg.precommit_gid());
-    if (bft_ptr == nullptr) {
-        bft_ptr = GetRemovedPrecommitBft(req_bft_msg.pool_index(), req_bft_msg.precommit_gid());
-    }
     ZJC_DEBUG("sync consensus block coming: %s, pool: %u, height: %lu, hash: %s, is cross block: %d, hash64: %lu, bft_ptr == nullptr: %d, latest: %lu",
         common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
         req_bft_msg.block().pool_index(),
