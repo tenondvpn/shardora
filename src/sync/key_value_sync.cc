@@ -372,6 +372,7 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
     dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
     msg.set_des_dht_key(dht_key.StrKey());
     msg.set_type(common::kSyncMessage);
+    transport::TcpTransport::Instance()->SetMessageHash(msg, msg_ptr->thread_idx);
     transport::TcpTransport::Instance()->Send(msg_ptr->thread_idx, msg_ptr->conn, msg);
     ZJC_DEBUG("sync response ok des: %u", msg_ptr->header.src_sharding_id());
 }
@@ -559,8 +560,8 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             timeout_queue_.pop_front();
         }
 
-        ZJC_DEBUG("block response coming: %s, sync map size: %u",
-            key.c_str(), synced_map_.size());
+        ZJC_DEBUG("block response coming: %s, sync map size: %u, hash64: %lu",
+            key.c_str(), synced_map_.size(), msg_ptr->header.hash64());
     }
 }
 
