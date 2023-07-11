@@ -2549,7 +2549,7 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
     if (!bft_msg.agree_precommit()) {
         ZJC_DEBUG("BackupPrecommit gid: %s",
             common::Encode::HexEncode(bft_ptr->gid()).c_str());
-        return kConsensusSuccess;
+        return kConsensusError;
     }
 
 #ifdef ZJC_UNITTEST
