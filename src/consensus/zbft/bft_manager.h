@@ -187,7 +187,7 @@ private:
         ZbftPtr& bft_ptr,
         uint32_t leader_idx,
         const ElectItem& elect_item);
-    void AddWaitingBlock(const transport::MessagePtr& msg_ptr);
+    void AddWaitingBlock(std::shared_ptr<block::protobuf::Block>& block_ptr);
     void RemoveWaitingBlock(uint32_t pool_index, uint64_t height);
     void ReConsensusPrepareBft(const ElectItem& elect_item, ZbftPtr& bft_ptr);
     void HandleSyncedBlock(uint8_t thread_idx, std::shared_ptr<block::protobuf::Block>& block_ptr);

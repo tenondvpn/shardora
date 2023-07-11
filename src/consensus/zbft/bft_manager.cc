@@ -750,7 +750,7 @@ void BftManager::HandleSyncedBlock(uint8_t thread_idx, std::shared_ptr<block::pr
     if (!block_ptr->is_cross_block() &&
             (block_ptr->height() > pools_mgr_->latest_height(block_ptr->pool_index()) ||
             pools_mgr_->latest_height(block_ptr->pool_index()) == common::kInvalidUint64)) {
-        AddWaitingBlock(msg_ptr);
+        AddWaitingBlock(block_ptr);
         RemoveWaitingBlock(block_ptr->pool_index(), block_ptr->height() - 1);
         return;
     }
@@ -764,19 +764,18 @@ void BftManager::HandleSyncedBlock(uint8_t thread_idx, std::shared_ptr<block::pr
     auto db_batch = std::make_shared<db::DbWriteBatch>();
     auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(block_ptr, db_batch);
     new_block_cache_callback_(
-        msg_ptr->thread_idx,
+        thread_idx,
         queue_item_ptr->block_ptr,
         *queue_item_ptr->db_batch);
-    block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
+    block_mgr_->ConsensusAddBlock(thread_idx, queue_item_ptr);
     pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
     // remove bft
     ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s,"
-        " precommit_gid: %s, precommit_bitmap size: %u",
+        " precommit_bitmap size: %u",
         block_ptr->network_id(),
         block_ptr->pool_index(),
         block_ptr->height(),
         common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str(),
-        common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
         block_ptr->precommit_bitmap_size());
     RemoveBftWithBlockHeight(block_ptr->pool_index(), block_ptr->height());
     RemoveWaitingBlock(block_ptr->pool_index(), block_ptr->height());
@@ -809,8 +808,8 @@ void BftManager::HandleSyncConsensusBlock(
             }
 
             auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
-            if (elect_item.elect_height < req_bft_msg.block().elect_height()) {
-                waiting_agg_verify_blocks_[req_bft_msg.block().pool_index()][req_bft_msg.block().height] = block_ptr;
+            if (elect_item.elect_height < block_ptr->elect_height()) {
+                waiting_agg_verify_blocks_[block_ptr->pool_index()][block_ptr->height()] = block_ptr;
                 return;
             }
 
@@ -930,20 +929,18 @@ void BftManager::HandleSyncConsensusBlock(
     }
 }
 
-void BftManager::AddWaitingBlock(const transport::MessagePtr& msg_ptr) {
-    auto& req_bft_msg = msg_ptr->header.zbft();
-    auto& block_map = waiting_blocks_[req_bft_msg.block().pool_index()];
-    auto iter = block_map.find(req_bft_msg.block().height());
+void BftManager::AddWaitingBlock(std::shared_ptr<block::protobuf::Block>& block_ptr) {
+    auto& block_map = waiting_blocks_[block_ptr->pool_index()];
+    auto iter = block_map.find(block_ptr->height());
     if (iter != block_map.end()) {
         return;
     }
 
-    if (prefix_db_->BlockExists(req_bft_msg.block().hash())) {
+    if (prefix_db_->BlockExists(block_ptr->hash())) {
         return;
     }
 
-    auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
-    block_map[req_bft_msg.block().height()] = block_ptr;
+    block_map[block_ptr->height()] = block_ptr;
     ZJC_DEBUG("add new block pool: %u, height: %lu, hash: %s",
         block_ptr->pool_index(),
         block_ptr->height(),
