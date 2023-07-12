@@ -859,7 +859,12 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
         return false;
     }
 
-    if (msg_ptr->address_info->sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+    auto local_shard = common::GlobalInfo::Instance()->network_id();
+    if (local_shard >= network::kConsensusShardEndNetworkId) {
+        local_shard -= network::kConsensusWaitingShardOffset;
+    }
+
+    if (msg_ptr->address_info->sharding_id() != local_shard) {
         ZJC_WARN("sharding error id: %s, shard: %d, local shard: %d",
             common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
             msg_ptr->address_info->sharding_id(),
