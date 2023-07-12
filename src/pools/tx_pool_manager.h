@@ -88,6 +88,7 @@ public:
 
                     if ((*members)[i]->id == security_->GetAddress()) {
                         member_index_ = i;
+                        ZJC_DEBUG("local member index is: %lu", member_index_);
                     }
                 }
             }
