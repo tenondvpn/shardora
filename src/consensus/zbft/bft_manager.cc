@@ -621,13 +621,13 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     {
         if (elect_item_ptr->elect_height != header.zbft().elect_height()) {
             auto old_elect_item = elect_items_[(elect_item_idx_ + 1) % 2];
-            if (old_elect_item->elect_height != header.zbft().elect_height()) {
+            if (old_elect_item == nullptr || old_elect_item->elect_height != header.zbft().elect_height()) {
                 ZJC_DEBUG("elect height error: %lu, %lu, %lu, "
                     "prepare gid: %s, precommit gid: %s, commit gid: %s thread idx: %d, "
                     "has sync: %d, txhash: %lu,",
                     header.zbft().elect_height(),
                     elect_item_ptr->elect_height,
-                    old_elect_item->elect_height,
+                    old_elect_item == nullptr ? 0 : old_elect_item->elect_height,
                     common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
                     common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
                     common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
