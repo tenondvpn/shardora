@@ -448,6 +448,12 @@ void BlockManager::HandleStatisticTx(
 
             auto iter = leader_statistic_txs_.find(elect_statistic.elect_height());
             if (iter != leader_statistic_txs_.end()) {
+                if (latest_shard_statistic_tx_ != nullptr &&
+                        latest_shard_statistic_tx_.get() == iter->second->shard_statistic_tx.get()) {
+                    latest_shard_statistic_tx_ = nullptr;
+                    statistic_message_ = nullptr;
+                }
+
                 iter->second->shard_statistic_tx = nullptr;
                 ZJC_DEBUG("erase statistic elect height: %lu, net: %u, hash: %s, latest_shard_statistic_tx_ = null: %d",
                     elect_statistic.elect_height(),
