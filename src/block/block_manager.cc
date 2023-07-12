@@ -441,8 +441,7 @@ void BlockManager::HandleStatisticTx(
                 continue;
             }
 
-            if (latest_shard_statistic_tx_ != nullptr &&
-                    latest_shard_statistic_tx_->tx_hash == block_tx.storages(i).val_hash()) {
+            if (latest_timeblock_height_ == consensused_timeblock_height_) {
                 latest_shard_statistic_tx_ = nullptr;
                 statistic_message_ = nullptr;
             }
