@@ -2786,7 +2786,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
 void BftManager::LeaderBroadcastBlock(
         uint8_t thread_index,
         const std::shared_ptr<block::protobuf::Block>& block) {
-    BroadcastWaitingBlock(thread_index, block);
+//     BroadcastWaitingBlock(thread_index, block);
     if (block->pool_index() == common::kRootChainPoolIndex) {
         if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
             BroadcastBlock(thread_index, network::kNodeNetworkId, block);
