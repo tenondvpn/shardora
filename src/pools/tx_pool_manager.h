@@ -80,6 +80,7 @@ public:
             if (latest_elect_height_ > elect_height) {
                 latest_elect_height_ = elect_height;
                 latest_leader_count_ = 0;
+                member_index_ = common::kInvalidUint32;
                 for (uint32_t i = 0; i < members->size(); ++i) {
                     if ((*members)[i]->pool_index_mod_num >= 0) {
                         ++latest_leader_count_;
