@@ -247,25 +247,42 @@ void Universal::OnNewElectBlock(
     auto uni_net = UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
     auto dht_ptr = uni_net->readonly_hash_sort_dht();
     auto des_dht = DhtManager::Instance()->GetDht(sharding_id);
-    if (des_dht != nullptr) {
-        for (auto iter = dht_ptr->begin(); iter < dht_ptr->end(); ++iter) {
-            auto node = *iter;
-            if (new_item->id_set.find((*iter)->id) != new_item->id_set.end()) {
+    std::set<std::string> old_id_set;
+    for (auto iter = dht_ptr->begin(); iter < dht_ptr->end(); ++iter) {
+        auto node = *iter;
+        old_id_set.insert(node->id);
+        if (new_item->id_set.find((*iter)->id) != new_item->id_set.end()) {
+            if (des_dht != nullptr) {
                 des_dht->UniversalJoin(*iter);
-                auto tmp_shard_id = dht::DhtKeyManager::DhtKeyGetNetId((*iter)->dht_key);
-                if (tmp_shard_id == waiting_shard_id) {
-                    uni_net->Drop((*iter));
-                    ZJC_DEBUG("drop universal nodes network %u node: %s:%u, %s",
-                        tmp_shard_id,
-                        (*iter)->public_ip.c_str(),
-                        (*iter)->public_port,
-                        common::Encode::HexEncode((*iter)->id).c_str());
-                }
                 ZJC_DEBUG("expand nodes join network %u add new node: %s:%u, %s",
                     sharding_id,
                     (*iter)->public_ip.c_str(),
                     (*iter)->public_port,
                     common::Encode::HexEncode((*iter)->id).c_str());
+            }
+
+            auto tmp_shard_id = dht::DhtKeyManager::DhtKeyGetNetId((*iter)->dht_key);
+            if (tmp_shard_id != sharding_id &&
+                    tmp_shard_id != network::kUniversalNetworkId &&
+                    tmp_shard_id != network::kNodeNetworkId) {
+                uni_net->Drop((*iter));
+                ZJC_DEBUG("drop universal nodes network %u node: %s:%u, %s",
+                    tmp_shard_id,
+                    (*iter)->public_ip.c_str(),
+                    (*iter)->public_port,
+                    common::Encode::HexEncode((*iter)->id).c_str());
+            }
+        }
+    }
+
+    if (des_dht != nullptr) {
+        for (auto iter = old_id_set.begin(); iter != old_id_set.end(); ++iter) {
+            auto fiter = new_item->id_set.find(*iter);
+            if (fiter == new_item->id_set.end()) {
+                des_dht->Drop(*iter);
+                ZJC_DEBUG("drop nodes network %u node: %s",
+                    sharding_id,
+                    common::Encode::HexEncode((*iter)).c_str());
             }
         }
     }

@@ -544,7 +544,7 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         auto& closest_nodes = dht_;
         for (auto iter = closest_nodes.begin(); iter != closest_nodes.end(); ++iter) {
             if (bloomfilter->Contain((*iter)->dht_key_hash)) {
-                ZJC_DEBUG("res refresh neighbers filter: %s:%u", common::Encode::HexEncode((*iter)->dht_key).c_str());
+//                 ZJC_DEBUG("res refresh neighbers filter: %s:%u", common::Encode::HexEncode((*iter)->dht_key).c_str());
                 continue;
             }
 
@@ -576,10 +576,10 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         local_node_->dht_key,
         close_nodes,
         res);
-    DHT_DEBUG("refresh neighbors to %s:%d size: %d",
-        msg_ptr->conn->PeerIp().c_str(),
-        msg_ptr->conn->PeerPort(),
-        close_nodes.size());
+//     DHT_DEBUG("refresh neighbors to %s:%d size: %d",
+//         msg_ptr->conn->PeerIp().c_str(),
+//         msg_ptr->conn->PeerPort(),
+//         close_nodes.size());
     msg_ptr->conn->Send(res.SerializeAsString());
 }
 
@@ -590,9 +590,9 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
 
     auto& header = msg_ptr->header;
     auto& dht_msg = header.dht_proto();
-    DHT_DEBUG("refresh neighbors respose from %s:%d",
-        msg_ptr->conn->PeerIp().c_str(),
-        msg_ptr->conn->PeerPort());
+//     DHT_DEBUG("refresh neighbors respose from %s:%d",
+//         msg_ptr->conn->PeerIp().c_str(),
+//         msg_ptr->conn->PeerPort());
     if (!dht_msg.has_refresh_neighbors_res()) {
         return;
     }
@@ -657,8 +657,8 @@ void BaseDht::Connect(
             des_ip,
             des_port,
             msg);
-        DHT_DEBUG("connect to: %s:%d, %lu, %lu, %lu", des_ip.c_str(),
-            des_port, peer_int, connect_timeout_map_[peer_int], now_tm_ms);
+//         DHT_DEBUG("connect to: %s:%d, %lu, %lu, %lu", des_ip.c_str(),
+//             des_port, peer_int, connect_timeout_map_[peer_int], now_tm_ms);
     }
 }
 
