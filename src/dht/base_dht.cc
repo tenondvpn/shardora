@@ -544,8 +544,10 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         auto& closest_nodes = dht_;
         for (auto iter = closest_nodes.begin(); iter != closest_nodes.end(); ++iter) {
             if (bloomfilter->Contain((*iter)->dht_key_hash)) {
+                ZJC_DEBUG("res refresh neighbers filter: %s:%u", common::Encode::HexEncode((*iter)->dht_key).c_str());
                 continue;
             }
+
             tmp_dht.push_back((*iter));
         }
 
@@ -605,8 +607,6 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
             header.src_sharding_id(),
             false);
     }
-
-    DHT_DEBUG("refresh neighbors success size: %d", res_nodes.size());
 }
 
 void BaseDht::Connect(
@@ -833,27 +833,14 @@ void BaseDht::RefreshNeighbors(uint8_t thread_idx) {
         msg.set_des_dht_key(dht_key.StrKey());
         msg.set_type(common::kDhtMessage);
         auto* dht_msg = msg.mutable_dht_proto();
-        auto refresh_neighbors = dht_msg->mutable_refresh_neighbors_req();
-        refresh_neighbors->set_count(32);
-        common::BloomFilter bloom_filter(
-            kRefreshNeighborsBloomfilterBitCount,
-            kRefreshNeighborsBloomfilterHashCount);
-        auto& closest_nodes = dht_;
-        for (auto iter = closest_nodes.begin(); iter != closest_nodes.end(); ++iter) {
-            bloomfilter->Add((*iter)->dht_key_hash);
-        }
-
-        auto& bloom_data = bloom_filter.data();
-        for (uint32_t i = 0; i < bloom_data.size(); ++i) {
-            refresh_neighbors->add_bloomfilter(bloom_data[i]);
-        }
-
+        auto timer_req = dht_msg->mutable_timer();
+        timer_req->set_tm_milli(common::TimeUtils::TimestampMs());
         transport::TcpTransport::Instance()->Send(
             thread_idx,
             node->public_ip,
             node->public_port,
             msg);
-        ZJC_DEBUG("refresh neighbors now %s:%d!", node->public_ip.c_str(), node->public_port);
+//         ZJC_DEBUG("refresh neighbors now %s:%d!", node->public_ip.c_str(), node->public_port);
     }
 
     refresh_neighbors_tick_.CutOff(
