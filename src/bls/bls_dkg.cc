@@ -562,7 +562,7 @@ bool BlsDkg::CheckRecomputeG2s(
         bls::protobuf::JoinElectBlsInfo& verfy_final_vals) {
     bls::protobuf::JoinElectInfo join_info;
     if (!prefix_db_->GetNodeVerificationVector(id, &join_info)) {
-//         ZJC_DEBUG("failed get verifcaton handle kElectJoin tx: %s", common::Encode::HexEncode(id).c_str());
+        ZJC_DEBUG("failed get verifcaton handle kElectJoin tx: %s", common::Encode::HexEncode(id).c_str());
         return false;
     }
 
@@ -623,12 +623,12 @@ bool BlsDkg::CheckRecomputeG2s(
             libBLS::ThresholdUtils::fieldElementToString(verify_g2s.Z.c1)));
         auto verified_val = verfy_final_vals.SerializeAsString();
         prefix_db_->SaveVerifiedG2s(local_member_index_, id, i + 1, verfy_final_vals);
-//         ZJC_DEBUG("success save verified g2: %u, peer: %d, t: %d, %s, %s",
-//             local_member_index_,
-//             join_info.member_idx(),
-//             i + 1,
-//             common::Encode::HexEncode(id).c_str(),
-//             libBLS::ThresholdUtils::fieldElementToString(verify_g2s.X.c0).c_str());
+        ZJC_DEBUG("success save verified g2: %u, peer: %d, t: %d, %s, %s",
+            local_member_index_,
+            join_info.member_idx(),
+            i + 1,
+            common::Encode::HexEncode(id).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(verify_g2s.X.c0).c_str());
     }
 
     return true;
