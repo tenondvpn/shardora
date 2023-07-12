@@ -392,9 +392,7 @@ void NetworkInit::RotationLeaderCallback(uint8_t thread_idx, const std::vector<s
     }
 
     for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
-        if (tx_counts[i].first < 1000 &&
-                tx_counts[i].second > 0 &&
-                (tx_counts[i].second / 3) > tx_counts[i].first) {
+        if (tx_counts[i].first == 0 && tx_counts[i].second > 0) {
             BroadcastInvalidPools(thread_idx, rotation, i);
         }
     }
