@@ -244,7 +244,6 @@ void Universal::OnNewElectBlock(
 
     sharding_latest_height_map_[sharding_id] = new_item;
     auto uni_net = UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
-    std::vector<dht::NodePtr> nodes;
     auto dht_ptr = uni_net->readonly_hash_sort_dht();
     auto des_dht = DhtManager::Instance()->GetDht(sharding_id);
     if (des_dht != nullptr) {
@@ -252,7 +251,25 @@ void Universal::OnNewElectBlock(
             auto node = *iter;
             if (new_item->id_set.find((*iter)->id) != new_item->id_set.end()) {
                 des_dht->UniversalJoin(*iter);
+                uni_net->Drop((*iter)->id);
                 ZJC_DEBUG("expand nodes join network %u add new node: %s:%u, %s",
+                    sharding_id,
+                    (*iter)->public_ip.c_str(),
+                    (*iter)->public_port,
+                    common::Encode::HexEncode((*iter)->id).c_str());
+            }
+        }
+    }
+
+    auto waiting_shard_id = sharding_id + network::kConsensusWaitingShardOffset;
+    auto wait_dht = DhtManager::Instance()->GetDht(waiting_shard_id);
+    if (wait_dht != nullptr) {
+        auto dht_ptr = uni_net->readonly_hash_sort_dht();
+        for (auto iter = dht_ptr->begin(); iter < dht_ptr->end(); ++iter) {
+            auto node = *iter;
+            if (new_item->id_set.find((*iter)->id) != new_item->id_set.end()) {
+                wait_dht->Drop((*iter)->id);
+                ZJC_DEBUG("drop nodes join network %u add new node: %s:%u, %s",
                     sharding_id,
                     (*iter)->public_ip.c_str(),
                     (*iter)->public_port,
