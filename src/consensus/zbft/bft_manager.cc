@@ -2192,8 +2192,9 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
 
         auto* new_bft_msg = msg_ptr->response->header.mutable_zbft();
         int prepare_res = bft_ptr->Prepare(false, new_bft_msg);
-        if (prepare_res != kConsensusSuccess) {
+        if (prepare_res != kConsensusSuccess || bft_ptr->prepare_block() == nullptr) {
             ZJC_ERROR("prepare failed gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+            return;
         }
 
         ZJC_DEBUG("success create bft ptr backup create consensus bft gid: %s",
