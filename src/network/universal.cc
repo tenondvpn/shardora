@@ -243,6 +243,7 @@ void Universal::OnNewElectBlock(
     }
 
     sharding_latest_height_map_[sharding_id] = new_item;
+    auto waiting_shard_id = sharding_id + network::kConsensusWaitingShardOffset;
     auto uni_net = UniversalManager::Instance()->GetUniversal(network::kUniversalNetworkId);
     auto dht_ptr = uni_net->readonly_hash_sort_dht();
     auto des_dht = DhtManager::Instance()->GetDht(sharding_id);
@@ -251,7 +252,15 @@ void Universal::OnNewElectBlock(
             auto node = *iter;
             if (new_item->id_set.find((*iter)->id) != new_item->id_set.end()) {
                 des_dht->UniversalJoin(*iter);
-                uni_net->Drop((*iter)->id);
+                auto tmp_shard_id = dht::DhtKeyManager::DhtKeyGetNetId((*iter)->dht_key);
+                if (tmp_shard_id == waiting_shard_id) {
+                    uni_net->Drop((*iter));
+                    ZJC_DEBUG("drop universal nodes network %u node: %s:%u, %s",
+                        tmp_shard_id,
+                        (*iter)->public_ip.c_str(),
+                        (*iter)->public_port,
+                        common::Encode::HexEncode((*iter)->id).c_str());
+                }
                 ZJC_DEBUG("expand nodes join network %u add new node: %s:%u, %s",
                     sharding_id,
                     (*iter)->public_ip.c_str(),
@@ -261,7 +270,6 @@ void Universal::OnNewElectBlock(
         }
     }
 
-    auto waiting_shard_id = sharding_id + network::kConsensusWaitingShardOffset;
     auto wait_dht = DhtManager::Instance()->GetDht(waiting_shard_id);
     if (wait_dht != nullptr) {
         auto dht_ptr = uni_net->readonly_hash_sort_dht();
@@ -269,7 +277,7 @@ void Universal::OnNewElectBlock(
             auto node = *iter;
             if (new_item->id_set.find((*iter)->id) != new_item->id_set.end()) {
                 wait_dht->Drop((*iter)->id);
-                ZJC_DEBUG("drop nodes join network %u add new node: %s:%u, %s",
+                ZJC_DEBUG("drop nodes network %u node: %s:%u, %s",
                     sharding_id,
                     (*iter)->public_ip.c_str(),
                     (*iter)->public_port,
