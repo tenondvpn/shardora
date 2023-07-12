@@ -77,7 +77,7 @@ public:
         if (sharding_id == common::GlobalInfo::Instance()->network_id() ||
                 sharding_id + network::kConsensusWaitingShardOffset ==
                 common::GlobalInfo::Instance()->network_id()) {
-            if (latest_elect_height_ > elect_height) {
+            if (latest_elect_height_ < elect_height) {
                 latest_elect_height_ = elect_height;
                 latest_leader_count_ = 0;
                 member_index_ = common::kInvalidUint32;
