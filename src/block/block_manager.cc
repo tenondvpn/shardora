@@ -243,6 +243,15 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     if (msg_ptr->header.has_block()) {
         auto& header = msg_ptr->header;
+        auto local_net = common::GlobalInfo::Instance()->network_id();
+        if (local_net >= network::kConsensusShardEndNetworkId) {
+            local_net -= network::kConsensusWaitingShardOffset;
+        }
+
+        if (header.block().network_id() == local_net) {
+            return;
+        }
+
         auto block_ptr = std::make_shared<block::protobuf::Block>(header.block());
         if (block_agg_valid_func_(msg_ptr->thread_idx, *block_ptr)) {
             // just one thread
