@@ -1068,6 +1068,8 @@ void NetworkInit::AddBlockItemToCache(
         uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
+    assert(!prefix_db_->BlockExists(block->hash()));
+    assert(!prefix_db_->BlockExists(block->network_id(), block->pool_index(), block->height()));
     const auto& tx_list = block->tx_list();
     if (tx_list.empty()) {
         assert(false);
