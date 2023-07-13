@@ -325,6 +325,7 @@ int Zbft::LeaderPrecommitOk(
 
     if (PrepareHashNotConsensus()) {
         ZJC_ERROR("prepare hash not consensus failed: %s", common::Encode::HexEncode(gid()).c_str());
+        assert(false);
         return kConsensusOppose;
     }
 
