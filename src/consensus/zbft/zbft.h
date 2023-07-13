@@ -338,7 +338,7 @@ public:
     }
 
     bool PrepareHashNotConsensus() {
-        if (consensus_prepare_all_count_ - consensus_prepare_max_count_ > min_oppose_member_count_) {
+        if (consensus_prepare_all_count_  > min_oppose_member_count_ + consensus_prepare_max_count_) {
             return true;
         }
 
