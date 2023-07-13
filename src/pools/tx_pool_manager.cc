@@ -609,11 +609,11 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                     }
                 } while (0);
                 
-//                 ZJC_DEBUG("get response pool heights: %s, cross pool heights: %s, update_height: %lu, "
-//                     "cross_synced_max_heights_[i]: %lu, cross_pools_[i].latest_height(): %lu, cross_heights[i]: %lu",
-//                     sync_debug.c_str(), cross_debug.c_str(), update_height,
-//                     cross_synced_max_heights_[i], cross_pools_[i].latest_height(),
-//                     cross_heights[i]);
+                ZJC_DEBUG("get response pool heights: %s, cross pool heights: %s, update_height: %lu, "
+                    "cross_synced_max_heights_[i]: %lu, cross_pools_[i].latest_height(): %lu, cross_heights[i]: %lu",
+                    sync_debug.c_str(), cross_debug.c_str(), update_height,
+                    cross_synced_max_heights_[i], cross_pools_[i].latest_height(),
+                    cross_heights[i]);
                 if (update_height != common::kInvalidUint64) {
                     cross_synced_max_heights_[i] = cross_heights[i];
                     if (max_cross_pools_size_ == 1) {
@@ -625,7 +625,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
             }
         }
 
-//         ZJC_DEBUG("get response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
+        ZJC_DEBUG("get response pool heights: %s, cross pool heights: %s", sync_debug.c_str(), cross_debug.c_str());
     }
 }
 

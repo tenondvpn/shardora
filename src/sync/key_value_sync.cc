@@ -579,6 +579,7 @@ void KeyValueSync::CheckSyncTimeout() {
             continue;
         }
 
+        added_key_set_.erase(iter->second->key);
         prio_sync_queue_[iter->second->priority].push(iter->second);
         iter = synced_map_.erase(iter);
     }
