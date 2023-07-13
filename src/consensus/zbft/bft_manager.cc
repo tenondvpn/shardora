@@ -2103,7 +2103,6 @@ int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg
             }
         }
 
-        bft_ptr->set_consensus_status(kConsensusCommited);
         if (bft_ptr->prepare_block() != nullptr) {
             ZJC_DEBUG("success backup CheckCommit: %s", common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
             HandleLocalCommitBlock(msg_ptr, bft_ptr);
@@ -2516,7 +2515,6 @@ int BftManager::LeaderCallPrecommit(
         const transport::MessagePtr& msg_ptr) {
     auto prev_ptr = bft_ptr->pipeline_prev_zbft_ptr();
     if (prev_ptr != nullptr) {
-        prev_ptr->set_consensus_status(kConsensusCommited);
         if (prev_ptr->prepare_block() != nullptr) {
             HandleLocalCommitBlock(msg_ptr, prev_ptr);
         } else {
@@ -2948,7 +2946,6 @@ int BftManager::LeaderCallCommit(
         return kConsensusError;
     }
 
-    bft_ptr->set_consensus_status(kConsensusCommited);
     if (bft_ptr->prepare_block() != nullptr) {
         HandleLocalCommitBlock(msg_ptr, bft_ptr);
     } else {
@@ -3011,7 +3008,6 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
         return kConsensusError;
     }
 
-    bft_ptr->set_consensus_status(kConsensusCommited);
     HandleLocalCommitBlock(msg_ptr, bft_ptr);
     return kConsensusSuccess;
 }
