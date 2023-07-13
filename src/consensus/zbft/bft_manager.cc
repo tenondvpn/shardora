@@ -838,6 +838,7 @@ void BftManager::HandleSyncConsensusBlock(
                     return;
                 }
 
+                assert(false);
                 ZJC_DEBUG("receive block hash: %s, status: %d",
                     common::Encode::HexEncode(block_hash).c_str(),
                     bft_ptr->consensus_status());
