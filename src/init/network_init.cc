@@ -1068,8 +1068,28 @@ void NetworkInit::AddBlockItemToCache(
         uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
-    assert(!prefix_db_->BlockExists(block->hash()));
-    assert(!prefix_db_->BlockExists(block->network_id(), block->pool_index(), block->height()));
+    if (prefix_db_->BlockExists(block->hash())) {
+        ZJC_DEBUG("failed cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
+            block->network_id(),
+            block->pool_index(),
+            block->height(),
+            block->tx_list_size(),
+            common::Encode::HexEncode(block->hash()).c_str());
+        assert(false);
+        return;
+    }
+
+    if (prefix_db_->BlockExists(block->network_id(), block->pool_index(), block->height())) {
+        ZJC_DEBUG("failed cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
+            block->network_id(),
+            block->pool_index(),
+            block->height(),
+            block->tx_list_size(),
+            common::Encode::HexEncode(block->hash()).c_str());
+        assert(false);
+        return;
+    }
+
     const auto& tx_list = block->tx_list();
     if (tx_list.empty()) {
         assert(false);
