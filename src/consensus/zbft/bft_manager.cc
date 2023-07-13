@@ -1652,7 +1652,8 @@ void BftManager::RemoveBftWithBlockHeight(uint32_t pool_index, uint64_t height) 
     auto iter = bft_queue.begin();
     while(iter != bft_queue.end()) {
         if ((*iter)->prepare_block() == nullptr || (*iter)->prepare_block()->height() <= height) {
-            ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode((*iter)->gid()).c_str(), pool_index);
+            ZJC_DEBUG("remove bft gid: %s, pool_index: %d",
+                common::Encode::HexEncode((*iter)->gid()).c_str(), pool_index);
             (*iter)->Destroy();
             iter == bft_queue.erase(iter);
             --now_bft_count_;
@@ -2977,7 +2978,6 @@ int BftManager::LeaderCallCommit(
 int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("BackupCommit gid: %s",
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
-    bft_ptr->set_consensus_status(kConsensusCommited);
     if (bft_ptr->prepare_block() == nullptr) {
         ZJC_DEBUG("prepare block null, BackupCommit gid: %s",
             common::Encode::HexEncode(bft_ptr->gid()).c_str());
@@ -3008,10 +3008,10 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
     }
 
     if (!bft_ptr->set_bls_commit_agg_sign(sign)) {
-        RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
         return kConsensusError;
     }
 
+    bft_ptr->set_consensus_status(kConsensusCommited);
     HandleLocalCommitBlock(msg_ptr, bft_ptr);
     return kConsensusSuccess;
 }
