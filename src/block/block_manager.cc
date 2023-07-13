@@ -250,11 +250,11 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
         if (header.block().network_id() == local_net) {
             ZJC_DEBUG("network block failed cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
-                block->network_id(),
-                block->pool_index(),
-                block->height(),
-                block->tx_list_size(),
-                common::Encode::HexEncode(block->hash()).c_str());
+                header.block().network_id(),
+                header.block().pool_index(),
+                header.block().height(),
+                header.block().tx_list_size(),
+                common::Encode::HexEncode(header.block().hash()).c_str());
             return;
         }
 
