@@ -1075,7 +1075,7 @@ void NetworkInit::AddBlockItemToCache(
             block->height(),
             block->tx_list_size(),
             common::Encode::HexEncode(block->hash()).c_str());
-        assert(false);
+//         assert(false);
         return;
     }
 
@@ -1086,7 +1086,7 @@ void NetworkInit::AddBlockItemToCache(
             block->height(),
             block->tx_list_size(),
             common::Encode::HexEncode(block->hash()).c_str());
-        assert(false);
+//         assert(false);
         return;
     }
 
