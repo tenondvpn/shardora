@@ -246,7 +246,7 @@ int TcpTransport::Send(
         return kTransportError;
     }
 
-    ZJC_DEBUG("send message hash64: %lu", message.hash64());
+    ZJC_DEBUG("send message %s:%u, hash64: %lu", des_ip.c_str(), des_port, message.hash64());
     return kTransportSuccess;
 }
 
