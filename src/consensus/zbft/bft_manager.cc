@@ -1574,10 +1574,19 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
                 bft_ptr->pool_index() == tmp_bft->pool_index() &&
                 bft_ptr->height() <= tmp_bft->height()) {
             if (bft_ptr->height() == tmp_bft->height()) {
-                ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(tmp_bft->gid()).c_str(), bft_ptr->pool_index());
-                tmp_bft->Destroy();
-                iter = bft_queue.erase(iter);
-                continue;
+                if (tmp_bft->consensus_status() == kConsensusPrepare) {
+                    ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(tmp_bft->gid()).c_str(), bft_ptr->pool_index());
+                    tmp_bft->Destroy();
+                    iter = bft_queue.erase(iter);
+                    continue;
+                }
+
+                ZJC_DEBUG("elect height error: %u, %lu %lu, %s, %s, status error: %d",
+                    bft_ptr->pool_index(), bft_ptr->height(), tmp_bft->height(),
+                    common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+                    common::Encode::HexEncode(tmp_bft->gid()).c_str(),
+                    tmp_bft->consensus_status());
+                return kConsensusError;
             } else {
                 ZJC_DEBUG("elect height error: %u, %lu %lu, %s, %s",
                     bft_ptr->pool_index(), bft_ptr->height(), tmp_bft->height(),
