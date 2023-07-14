@@ -156,12 +156,12 @@ uint64_t VssManager::GetConsensusFinalRandom() {
     }
 
     if (max_count_random_ != 0) {
-        ZJC_DEBUG("return max test epoch random: %lu", epoch_random_);
+        ZJC_DEBUG("return max test epoch random: %lu", max_count_random_);
         return max_count_random_;
     }
 
     if (prev_max_count_random_ != 0) {
-        ZJC_DEBUG("return prev test epoch random: %lu", epoch_random_);
+        ZJC_DEBUG("return prev test epoch random: %lu", prev_max_count_random_);
         return prev_max_count_random_;
     }
 
