@@ -1747,7 +1747,7 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
 }
 
 void BftManager::ReConsensusPrepareBft(const ElectItem& elect_item, ZbftPtr& bft_ptr) {
-    assert(bft_ptr->consensus_status() == kConsensusPreCommit);
+    assert(bft_ptr->consensus_status() == kConsensusLeaderWaitingBlock);
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[bft_ptr->pool_index()];
     SetDefaultResponse(msg_ptr);
