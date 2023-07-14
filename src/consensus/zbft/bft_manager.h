@@ -191,6 +191,7 @@ private:
     void RemoveWaitingBlock(uint32_t pool_index, uint64_t height);
     void ReConsensusPrepareBft(const ElectItem& elect_item, ZbftPtr& bft_ptr);
     void HandleSyncedBlock(uint8_t thread_idx, std::shared_ptr<block::protobuf::Block>& block_ptr);
+    void ReConsensusChangedLeaderBft(ZbftPtr& bft_ptr);
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);

@@ -128,6 +128,7 @@ public:
     }
 
     void set_precommit_bitmap(const std::vector<uint64_t>& bitmap_data) {
+        assert(bitmap_data.size() == common::kEachShardMaxNodeCount / 64);
         precommit_bitmap_ = common::Bitmap(bitmap_data);
     }
 
@@ -503,6 +504,23 @@ public:
         prepare_msg_ptr_ = msg_ptr;
     }
 
+    void ChangeLeader(uint32_t new_leader_idx, uint64_t elect_height) {
+        changed_leader_new_index_ = new_leader_idx;
+        changed_leader_elect_height_ = elect_height;
+    }
+
+    bool IsChangedLeader() const {
+        return changed_leader_new_index_ == local_member_index_;
+    }
+
+    uint64_t changed_leader_elect_height() const {
+        return changed_leader_elect_height_;
+    }
+
+    uint32_t changed_leader_new_index() const {
+        return changed_leader_new_index_;
+    }
+
 protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
@@ -563,6 +581,8 @@ protected:
     std::string leader_waiting_prepare_hash_;
     transport::MessagePtr reconsensus_msg_ptr_ = nullptr;
     transport::MessagePtr prepare_msg_ptr_ = nullptr;
+    uint32_t changed_leader_new_index_ = common::kInvalidUint32;
+    uint64_t changed_leader_elect_height_ = common::kInvalidUint64;
 
     DISALLOW_COPY_AND_ASSIGN(Zbft);
 public:
