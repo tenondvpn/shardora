@@ -73,7 +73,7 @@ private:
     uint64_t prev_max_count_random_{ 0 };
     int64_t begin_time_us_{ 0 };
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
-    ElectItem elect_item_[2];
+    std::shared_ptr<ElectItem> elect_item_[2] = { nullptr };
     uint32_t elect_valid_index_ = 0;
 
     uint64_t first_offset_ = 0;

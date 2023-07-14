@@ -38,6 +38,7 @@ struct ElectItem {
     uint32_t local_index;
     uint32_t member_count;
     uint64_t elect_height;
+    bool this_node_is_leader;
 };
 
 }  // namespace vss

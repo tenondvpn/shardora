@@ -122,22 +122,38 @@ void VssManager::OnNewElectBlock(
     if (sharding_id == network::kRootCongressNetworkId &&
             common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         auto index = (elect_valid_index_ + 1) % 2;
-        elect_item_[index].members = members;
-        elect_item_[index].local_index = elect::kInvalidMemberIndex;
+        auto elect_item_ptr = std::make_shared<ElectItem>();
+        elect_item_ptr->members = members;
+        elect_item_ptr->local_index = elect::kInvalidMemberIndex;
         for (uint32_t i = 0; i < members->size(); ++i) {
             if ((*members)[i]->id == security_ptr_->GetAddress()) {
-                elect_item_[index].local_index = i;
+                elect_item_ptr->local_index = i;
+                if ((*members)[i]->pool_index_mod_num >= 0) {
+                    elect_item_ptr->this_node_is_leader = true;
+                }
                 break;
             }
         }        
         
-        elect_item_[index].member_count = members->size();
-        elect_item_[index].elect_height = elect_height;
+        elect_item_ptr->member_count = members->size();
+        elect_item_ptr->elect_height = elect_height;
+        elect_item_[index].reset();
+        elect_item_[index] = elect_item_ptr;
         elect_valid_index_ = index;
     }
 }
 
 uint64_t VssManager::GetConsensusFinalRandom() {
+    // TODO: test now
+    auto elect_item_ptr = elect_item_[elect_valid_index_];
+    if (elect_item_ptr == nullptr) {
+        return epoch_random_;
+    }
+
+    if (elect_item_ptr->this_node_is_leader) {
+        return epoch_random_;
+    }
+
     if (max_count_random_ != 0) {
         return max_count_random_;
     }
@@ -175,8 +191,12 @@ void VssManager::ClearAll() {
 
 uint64_t VssManager::GetAllVssValid() {
     uint64_t final_random = 0;
-    auto& elect_item = elect_item_[elect_valid_index_];
-    for (uint32_t i = 0; i < elect_item.member_count; ++i) {
+    auto elect_item_ptr = elect_item_[elect_valid_index_];
+    if (elect_item_ptr == nullptr) {
+        return;
+    }
+
+    for (uint32_t i = 0; i < elect_item_ptr->member_count; ++i) {
         if (other_randoms_[i].IsRandomValid()) {
             final_random ^= other_randoms_[i].GetFinalRandomNum();
         }
@@ -243,7 +263,8 @@ bool VssManager::IsVssThirdPeriodsHandleMessage() {
 }
 
 void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
-    if (elect_item_[elect_valid_index_].members == nullptr) {
+    auto elect_item_ptr = elect_item_[elect_valid_index_];
+    if (elect_item_ptr == nullptr || elect_item_ptr->members == nullptr) {
         return;
     }
 
@@ -274,8 +295,7 @@ void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
     vss_msg.set_random_hash(local_random_.GetHash());
     vss_msg.set_tm_height(prev_tm_height_);
     vss_msg.set_elect_height(prev_elect_height_);
-    auto& elect_item = elect_item_[elect_valid_index_];
-    vss_msg.set_member_index(elect_item.local_index);
+    vss_msg.set_member_index(elect_item_ptr->local_index);
     vss_msg.set_type(kVssRandomHash);
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     std::string message_hash;
@@ -298,6 +318,11 @@ void VssManager::BroadcastFirstPeriodHash(uint8_t thread_idx) {
 }
 
 void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
+    auto elect_item_ptr = elect_item_[elect_valid_index_];
+    if (elect_item_ptr == nullptr) {
+        return;
+    }
+
     if (first_try_times_ <= 0) {
         return;
     }
@@ -329,8 +354,7 @@ void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
     vss_msg.set_random(local_random_.GetFinalRandomNum());
     vss_msg.set_tm_height(prev_tm_height_);
     vss_msg.set_elect_height(prev_elect_height_);
-    auto& elect_item = elect_item_[elect_valid_index_];
-    vss_msg.set_member_index(elect_item.local_index);
+    vss_msg.set_member_index(elect_item_ptr->local_index);
     vss_msg.set_type(kVssRandom);
     std::string message_hash;
     protos::GetProtoHash(msg, &message_hash);
@@ -353,6 +377,11 @@ void VssManager::BroadcastSecondPeriodRandom(uint8_t thread_idx) {
 }
 
 void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
+    auto elect_item_ptr = elect_item_[elect_valid_index_];
+    if (elect_item_ptr == nullptr) {
+        return;
+    }
+
     if (first_try_times_ <= 0) {
         return;
     }
@@ -385,8 +414,7 @@ void VssManager::BroadcastThirdPeriodRandom(uint8_t thread_idx) {
     vss_msg.set_tm_height(prev_tm_height_);
     vss_msg.set_elect_height(prev_elect_height_);
     vss_msg.set_type(kVssFinalRandom);
-    auto& elect_item = elect_item_[elect_valid_index_];
-    vss_msg.set_member_index(elect_item.local_index);
+    vss_msg.set_member_index(elect_item_ptr->local_index);
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     std::string message_hash;
     protos::GetProtoHash(msg, &message_hash);
@@ -427,6 +455,11 @@ void VssManager::PopVssMessage(uint8_t thread_idx) {
 }
 
 void VssManager::HandleVssMessage(const transport::MessagePtr& msg_ptr) {
+    auto elect_item_ptr = elect_item_[elect_valid_index_];
+    if (elect_item_ptr == nullptr) {
+        return;
+    }
+
     auto& header = msg_ptr->header;
     assert(header.type() == common::kVssMessage);
     ZJC_DEBUG("vss message coming.");
@@ -444,13 +477,12 @@ void VssManager::HandleVssMessage(const transport::MessagePtr& msg_ptr) {
 
     // must verify message signature, to avoid evil node
     auto& vss_msg = header.vss_proto();
-    auto& elect_item = elect_item_[elect_valid_index_];
-    if (vss_msg.member_index() >= elect_item.member_count) {
+    if (vss_msg.member_index() >= elect_item_ptr->member_count) {
         ZJC_ERROR("member index invalid.");
         return;
     }
 
-    auto& pubkey = (*elect_item.members)[vss_msg.member_index()]->pubkey;
+    auto& pubkey = (*elect_item_ptr->members)[vss_msg.member_index()]->pubkey;
     std::string message_hash;
     protos::GetProtoHash(header, &message_hash);
     if (security_ptr_->Verify(message_hash, pubkey, header.sign()) != security::kSecuritySuccess) {
@@ -474,32 +506,40 @@ void VssManager::HandleVssMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void VssManager::HandleFirstPeriodHash(const protobuf::VssMessage& vss_msg) {
+    auto elect_item_ptr = elect_item_[elect_valid_index_];
+    if (elect_item_ptr == nullptr) {
+        return;
+    }
+
     if (!IsVssFirstPeriodsHandleMessage()) {
         ZJC_DEBUG("invalid first period message.");
         return;
     }
 
-    auto& elect_item = elect_item_[elect_valid_index_];
-    auto& id = (*elect_item.members)[vss_msg.member_index()]->id;
+    auto& id = (*elect_item_ptr->members)[vss_msg.member_index()]->id;
     other_randoms_[vss_msg.member_index()].SetHash(id, vss_msg.random_hash());
     ZJC_DEBUG("HandleFirstPeriodHash: %s, %llu",
         common::Encode::HexEncode(id).c_str(), vss_msg.random_hash());
 }
 
 void VssManager::HandleSecondPeriodRandom(const protobuf::VssMessage& vss_msg) {
+    auto elect_item_ptr = elect_item_[elect_valid_index_];
+    if (elect_item_ptr == nullptr || elect_item_ptr->members == nullptr) {
+        return;
+    }
+
     if (!IsVssSecondPeriodsHandleMessage()) {
         ZJC_DEBUG("invalid second period message.");
         return;
     }
 
 
-    auto& elect_item = elect_item_[elect_valid_index_];
-    if (vss_msg.member_index() >= elect_item.members->size()) {
-        ZJC_WARN("invalid member index: %u, %u", vss_msg.member_index(), elect_item.members->size());
+    if (vss_msg.member_index() >= elect_item_ptr->members->size()) {
+        ZJC_WARN("invalid member index: %u, %u", vss_msg.member_index(), elect_item_ptr->members->size());
         return;
     }
 
-    auto& id = (*elect_item.members)[vss_msg.member_index()]->id;
+    auto& id = (*elect_item_ptr->members)[vss_msg.member_index()]->id;
     other_randoms_[vss_msg.member_index()].SetFinalRandomNum(id, vss_msg.random());
     ZJC_DEBUG("HandleSecondPeriodRandom: %s, %llu",
         common::Encode::HexEncode(id).c_str(), vss_msg.random());
@@ -525,16 +565,19 @@ void VssManager::SetConsensusFinalRandomNum(const std::string& id, uint64_t fina
         max_count_ = count_iter->second;
         max_count_random_ = final_random_num;
     }
-
 }
 
 void VssManager::HandleThirdPeriodRandom(const protobuf::VssMessage& vss_msg) {
-    auto& elect_item = elect_item_[elect_valid_index_];
-    if (vss_msg.member_index() >= elect_item.members->size()) {
+    auto elect_item_ptr = elect_item_[elect_valid_index_];
+    if (elect_item_ptr == nullptr || elect_item_ptr->members == nullptr) {
         return;
     }
 
-    auto& id = (*elect_item.members)[vss_msg.member_index()]->id;
+    if (vss_msg.member_index() >= elect_item_ptr->members->size()) {
+        return;
+    }
+
+    auto& id = (*elect_item_ptr->members)[vss_msg.member_index()]->id;
     if (!IsVssThirdPeriodsHandleMessage()) {
         ZJC_ERROR("not IsVssThirdPeriodsHandleMessage, id: %s",
             common::Encode::HexEncode(id).c_str());
