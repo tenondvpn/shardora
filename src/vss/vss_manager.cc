@@ -30,9 +30,9 @@ void VssManager::OnTimeBlock(
         uint64_t tm_block_tm,
         uint64_t tm_height,
         uint64_t epoch_random) {
-    auto& elect_item = elect_item_[elect_valid_index_];
-    if (elect_item.members == nullptr) {
-        return;
+    auto elect_item_ptr = elect_item_[elect_valid_index_];
+    if (elect_item_ptr == nullptr || elect_item_ptr->members == nullptr) {
+        return epoch_random_;
     }
 
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
@@ -47,7 +47,7 @@ void VssManager::OnTimeBlock(
             return;
         }
 
-        if (elect_item_[elect_valid_index_].local_index == elect::kInvalidMemberIndex) {
+        if (elect_item_ptr->local_index == elect::kInvalidMemberIndex) {
             ZJC_ERROR("not elected.");
             return;
         }
@@ -56,7 +56,7 @@ void VssManager::OnTimeBlock(
     ClearAll();
     local_random_.OnTimeBlock(tm_block_tm);
     ZJC_DEBUG("OnTimeBlock comming tm_block_tm: %lu, tm_height: %lu, elect_height: %lu, epoch_random: %lu, local hash: %lu",
-    tm_block_tm, tm_height, elect_item.elect_height, epoch_random, local_random_.GetHash());
+    tm_block_tm, tm_height, elect_item_ptr->elect_height, epoch_random, local_random_.GetHash());
     epoch_random_ = epoch_random;
     latest_tm_block_tm_ = tm_block_tm;
     prev_tm_height_ = tm_height;
@@ -193,7 +193,7 @@ uint64_t VssManager::GetAllVssValid() {
     uint64_t final_random = 0;
     auto elect_item_ptr = elect_item_[elect_valid_index_];
     if (elect_item_ptr == nullptr) {
-        return;
+        return final_random;
     }
 
     for (uint32_t i = 0; i < elect_item_ptr->member_count; ++i) {
@@ -470,7 +470,7 @@ void VssManager::HandleVssMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    if (elect_item_[elect_valid_index_].local_index == elect::kInvalidMemberIndex) {
+    if (elect_item_ptr->local_index == elect::kInvalidMemberIndex) {
         ZJC_ERROR("not elected.");
         return;
     }
