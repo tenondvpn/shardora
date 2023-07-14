@@ -33,7 +33,8 @@ struct ElectItem {
         : members(nullptr),
         local_index(elect::kInvalidMemberIndex),
         member_count(0),
-        elect_height(0) {}
+        elect_height(0),
+        this_node_is_leader(false) {}
     common::MembersPtr members;
     uint32_t local_index;
     uint32_t member_count;
