@@ -32,7 +32,7 @@ void VssManager::OnTimeBlock(
         uint64_t epoch_random) {
     auto elect_item_ptr = elect_item_[elect_valid_index_];
     if (elect_item_ptr == nullptr || elect_item_ptr->members == nullptr) {
-        return epoch_random_;
+        return;
     }
 
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId &&
