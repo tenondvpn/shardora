@@ -151,17 +151,21 @@ uint64_t VssManager::GetConsensusFinalRandom() {
     }
 
     if (elect_item_ptr->this_node_is_leader) {
+        ZJC_DEBUG("return leader test epoch random: %lu", epoch_random_);
         return epoch_random_;
     }
 
     if (max_count_random_ != 0) {
+        ZJC_DEBUG("return max test epoch random: %lu", epoch_random_);
         return max_count_random_;
     }
 
     if (prev_max_count_random_ != 0) {
+        ZJC_DEBUG("return prev test epoch random: %lu", epoch_random_);
         return prev_max_count_random_;
     }
 
+    ZJC_DEBUG("return def test epoch random: %lu", epoch_random_);
     return epoch_random_;
 }
 
