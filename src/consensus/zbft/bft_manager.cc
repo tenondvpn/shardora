@@ -2248,8 +2248,8 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                 uint32_t invalid_hash_len = tmp_bft->prepare_block()->change_leader_invalid_hashs().size() / 32;
                 for (uint32_t i = 0; i < invalid_hash_len; ++i, pos += 32) {
                     if (memcmp(
-                            tmp_bft->prepare_block()->change_leader_invalid_hashs().c_str() + pos,
-                            tmp_bft->prepare_block()->hash().c_str(), 32) == 0) {
+                        tmp_bft->prepare_block()->change_leader_invalid_hashs().c_str() + pos,
+                        tmp_bft->prepare_block()->hash().c_str(), 32) == 0) {
                         invalid_hash_found = true;
                         break;
                     }
@@ -2266,53 +2266,53 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                     tmp_bft->changed_leader_new_index(),
                     tmp_bft->changed_leader_elect_height());
             }
+        }
 
-            ZJC_DEBUG("success create bft ptr backup create consensus bft gid: %s",
-                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+        ZJC_DEBUG("success create bft ptr backup create consensus bft gid: %s",
+            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
 #ifdef ZJC_UNITTEST
-            if (test_for_prepare_evil_) {
-                ZJC_ERROR("1 bft backup prepare failed! not agree bft gid: %s",
-                    common::Encode::HexEncode(bft_ptr->gid()).c_str());
-                return;
-            }
-#endif
-            ZJC_DEBUG("backup create consensus bft prepare hash: %s, gid: %s, tx size: %d",
-                common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-                bft_ptr->txs_ptr()->txs.size());
-            if (bft_ptr->local_prepare_hash().empty()) {
-                ZJC_DEBUG("failed backup create consensus bft prepare hash: %s, prehash: %s, leader prehash: %s, pre height: %lu, leader pre height: %lu, gid: %s, tx size: %d",
-                    common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-                    common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
-                    common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
-                    bft_ptr->prepare_block()->height(),
-                    bft_msg.prepare_height(),
-                    common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-                    bft_ptr->txs_ptr()->txs.size());
-                //             if (!bft_msg.prepare_hash().empty() && bft_ptr->prepare_block()->prehash() != bft_msg.prepare_hash()) {
-                //                 assert(false);
-                //             }
-                return;
-            }
-
-            if (AddBft(bft_ptr) != kConsensusSuccess) {
-                msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
-            }
-            else {
-                msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
-                bft_ptr->set_prepare_msg_ptr(msg_ptr);
-            }
-
-            //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-            //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-            bft_ptr->set_consensus_status(kConsensusPrepare);
-            std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
-            bft_vec[0] = bft_ptr;
-            //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-            //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-            ZJC_DEBUG("BackupPrepare success: %s", common::Encode::HexEncode(bft_vec[0]->gid()).c_str());
+        if (test_for_prepare_evil_) {
+            ZJC_ERROR("1 bft backup prepare failed! not agree bft gid: %s",
+                common::Encode::HexEncode(bft_ptr->gid()).c_str());
             return;
         }
+#endif
+        ZJC_DEBUG("backup create consensus bft prepare hash: %s, gid: %s, tx size: %d",
+            common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+            bft_ptr->txs_ptr()->txs.size());
+        if (bft_ptr->local_prepare_hash().empty()) {
+            ZJC_DEBUG("failed backup create consensus bft prepare hash: %s, prehash: %s, leader prehash: %s, pre height: %lu, leader pre height: %lu, gid: %s, tx size: %d",
+                common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+                common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
+                common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
+                bft_ptr->prepare_block()->height(),
+                bft_msg.prepare_height(),
+                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+                bft_ptr->txs_ptr()->txs.size());
+            //             if (!bft_msg.prepare_hash().empty() && bft_ptr->prepare_block()->prehash() != bft_msg.prepare_hash()) {
+            //                 assert(false);
+            //             }
+            return;
+        }
+
+        if (AddBft(bft_ptr) != kConsensusSuccess) {
+            msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
+        }
+        else {
+            msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
+            bft_ptr->set_prepare_msg_ptr(msg_ptr);
+        }
+
+        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
+        bft_ptr->set_consensus_status(kConsensusPrepare);
+        std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
+        bft_vec[0] = bft_ptr;
+        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
+        ZJC_DEBUG("BackupPrepare success: %s", common::Encode::HexEncode(bft_vec[0]->gid()).c_str());
+        return;
     }
 
     if (bft_msg.has_precommit_gid() && !bft_msg.precommit_gid().empty()) {
