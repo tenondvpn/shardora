@@ -1747,7 +1747,10 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
 }
 
 void BftManager::ReConsensusPrepareBft(const ElectItem& elect_item, ZbftPtr& bft_ptr) {
-    assert(bft_ptr->consensus_status() == kConsensusLeaderWaitingBlock);
+    if (bft_ptr->consensus_status() != kConsensusLeaderWaitingBlock) {
+        return;
+    }
+
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[bft_ptr->pool_index()];
     SetDefaultResponse(msg_ptr);
@@ -2530,8 +2533,8 @@ int BftManager::LeaderCallPrecommit(
         }
     }
 
+    bft_ptr->set_consensus_status(kConsensusPreCommit);
     bft_ptr->reset_timeout();
-//     bft_ptr->set_consensus_status(kConsensusCommit);
     bft_vec[1] = bft_ptr;
     ZJC_DEBUG("LeaderCallPrecommit success gid: %s",
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
