@@ -1475,9 +1475,9 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
         }
 
         if (shard_elect_tx_[i] == nullptr) {
-            if (tx_hash.empty() && (pool_index == 2 || pool_index == 3)) {
-                ZJC_DEBUG("failed get elect tx: %u", pool_index);
-            }
+//             if (tx_hash.empty() && (pool_index == 2 || pool_index == 3)) {
+//                 ZJC_DEBUG("failed get elect tx: %u", pool_index);
+//             }
             continue;
         }
 
