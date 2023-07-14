@@ -1676,9 +1676,10 @@ void BftManager::ReConsensusChangedLeaderBft(ZbftPtr& bft_ptr) {
         }
     }
 
+    auto prev_bft = bft_ptr->pipeline_prev_zbft_ptr();
     auto next_prepare_bft = Start(
         msg_ptr->thread_idx,
-        bft_ptr->pipeline_prev_zbft_ptr(),
+        prev_bft,
         msg_ptr->response);
     if (next_prepare_bft == nullptr) {
         return;
@@ -2227,12 +2228,12 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             }
 
             if (tmp_bft->prepare_block()->height() == bft_ptr->prepare_block()->height()) {
-                if (tmp_bft->leader_index() == bft_msg.leader_index()) {
+                if (tmp_bft->leader_index() == bft_msg.leader_idx()) {
                     assert(false);
                     return;
                 }
 
-                if (tmp_bft->changed_leader_new_index() != bft_msg.leader_index()) {
+                if (tmp_bft->changed_leader_new_index() != bft_msg.leader_idx()) {
                     assert(false);
                     return;
                 }
