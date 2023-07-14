@@ -850,8 +850,7 @@ void BftManager::HandleSyncConsensusBlock(
             return;
         }
 
-        if (bft_ptr->consensus_status() != kConsensusCommited &&
-                bft_ptr->consensus_status() != kConsensusPreCommit) {
+        if (bft_ptr->consensus_status() != kConsensusPrepare) {
             return;
         }
 
@@ -860,11 +859,6 @@ void BftManager::HandleSyncConsensusBlock(
             ZJC_WARN("get key value failed, sync block failed!");
             return;
         }
-// 
-//         if (!bft_ptr->prepare_block()->has_bls_agg_sign_y() ||
-//                 !bft_ptr->prepare_block()->has_bls_agg_sign_x()) {
-//             return;
-//         }
 
         msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
         dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
