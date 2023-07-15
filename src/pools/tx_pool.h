@@ -64,7 +64,7 @@ public:
             auto& txhash = tx_hash_list[i];
             auto iter = gid_map_.find(txhash);
             if (iter == gid_map_.end()) {
-                ZJC_DEBUG("failed get tx %u, %s", pool_index_, common::Encode::HexEncode(txhash).c_str());
+                ZJC_INFO("failed get tx %u, %s", pool_index_, common::Encode::HexEncode(txhash).c_str());
                 return nullptr;
             }
 
