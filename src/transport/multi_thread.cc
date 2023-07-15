@@ -44,6 +44,7 @@ void ThreadHandler::HandleMessage() {
     while (!destroy_) {
         uint32_t count = 0;
         while (count++ < kMaxHandleMessageCount) {
+            ZJC_INFO("start message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             auto msg_ptr = msg_handler_->GetMessageFromQueue(thread_idx_);
             if (!msg_ptr) {
                 break;
@@ -63,6 +64,7 @@ void ThreadHandler::HandleMessage() {
 
                 ZJC_INFO("over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
             }
+            ZJC_INFO("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
         }
 
         if (thread_idx_ + 1 < common::GlobalInfo::Instance()->message_handler_thread_count()) {
@@ -70,7 +72,7 @@ void ThreadHandler::HandleMessage() {
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->thread_idx = thread_idx_;
             msg_ptr->header.set_type(common::kConsensusTimerMessage);
-            //             ZJC_INFO("kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
+            ZJC_INFO("start kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             msg_ptr->times[msg_ptr->times_idx++] = btime;
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
@@ -82,6 +84,7 @@ void ThreadHandler::HandleMessage() {
 
                 ZJC_INFO("kConsensusTimerMessage over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
             }
+            ZJC_INFO("end kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             ++thread_timer_hash_64;
         }
 
