@@ -740,7 +740,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_ERROR("get bls failed: %lu, %u, %s",
+            ZJC_DEBUG("get bls failed: %lu, %u, %s",
                 elect_height,
                 sharding_id,
                 common::Encode::HexEncode(security_ptr->GetAddress()).c_str());
