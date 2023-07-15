@@ -771,13 +771,11 @@ void BftManager::HandleSyncedBlock(uint8_t thread_idx, std::shared_ptr<block::pr
     block_mgr_->ConsensusAddBlock(thread_idx, queue_item_ptr);
     pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
     // remove bft
-    ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s,"
-        " precommit_bitmap size: %u",
+    ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
         block_ptr->network_id(),
         block_ptr->pool_index(),
         block_ptr->height(),
-        common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str(),
-        block_ptr->precommit_bitmap_size());
+        common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str());
     RemoveBftWithBlockHeight(block_ptr->pool_index(), block_ptr->height());
     RemoveWaitingBlock(block_ptr->pool_index(), block_ptr->height());
 }
@@ -930,13 +928,11 @@ void BftManager::RemoveWaitingBlock(uint32_t pool_index, uint64_t height) {
                 *queue_item_ptr->db_batch);
             block_mgr_->ConsensusAddBlock(thread_idx, queue_item_ptr);
             pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
-            ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s, "
-                "precommit_bitmap size: %u",
+            ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s"
                 block_ptr->network_id(),
                 block_ptr->pool_index(),
                 block_ptr->height(),
-                common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str(),
-                block_ptr->precommit_bitmap_size());
+                common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str());
             // remove bft
             RemoveBftWithBlockHeight(block_ptr->pool_index(), block_ptr->height());
         }
@@ -2076,14 +2072,6 @@ int BftManager::CheckPrecommit(
         }
         //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
-        std::vector<uint64_t> bitmap_data;
-        for (int32_t i = 0; i < bft_msg.bitmap_size(); ++i) {
-            bitmap_data.push_back(bft_msg.bitmap(i));
-        }
-
-        assert(bitmap_data.size() * 64 == common::kEachShardMaxNodeCount);
-        bft_ptr->set_prepare_bitmap(bitmap_data);
         bft_ptr->set_consensus_status(kConsensusPreCommit);
         backup_agree_commit = true;
         std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
@@ -2663,14 +2651,7 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
     }
 #endif
 
-    std::vector<uint64_t> bitmap_data;
-    for (int32_t i = 0; i < bft_msg.bitmap_size(); ++i) {
-        auto data = bft_msg.bitmap(i);
-        bitmap_data.push_back(data);
-    }
-
     bft_ptr->set_precoimmit_hash();
-    bft_ptr->set_prepare_bitmap(bitmap_data);
     libff::alt_bn128_G1 sign;
     try {
         sign.X = libff::alt_bn128_Fq(bft_msg.bls_sign_x().c_str());
@@ -2755,12 +2736,6 @@ int BftManager::LeaderCommit(
 void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto& zjc_block = bft_ptr->prepare_block();
-//     const auto& prepare_bitmap_data = bft_ptr->prepare_bitmap().data();
-//     for (uint32_t i = 0; i < prepare_bitmap_data.size(); ++i) {
-//         zjc_block->add_precommit_bitmap(prepare_bitmap_data[i]);
-//     }
-
-        // for test
     // TODO: for test
     {
         auto& block = *bft_ptr->prepare_block();
@@ -2825,7 +2800,6 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
         zjc_block->tx_list());
     bft_ptr->set_consensus_status(kConsensusCommited);
     RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
-    assert(bft_ptr->prepare_block()->precommit_bitmap_size() == zjc_block->precommit_bitmap_size());
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     RemoveBftWithBlockHeight(zjc_block->pool_index(), zjc_block->height());
     RemoveWaitingBlock(zjc_block->pool_index(), zjc_block->height());
@@ -3056,12 +3030,6 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
         return kConsensusSuccess;
     }
 
-    std::vector<uint64_t> bitmap_data;
-    for (int32_t i = 0; i < bft_msg.commit_bitmap_size(); ++i) {
-        bitmap_data.push_back(bft_msg.commit_bitmap(i));
-    }
-
-    bft_ptr->set_precommit_bitmap(bitmap_data);
     libff::alt_bn128_G1 sign;
     try {
         sign.X = libff::alt_bn128_Fq(bft_msg.bls_sign_x().c_str());
