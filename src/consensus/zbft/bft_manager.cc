@@ -2190,7 +2190,11 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                         continue;
                     }
                     
-                    assert(false);
+                    ZJC_DEBUG("bft consensus status error: %u, %s, height: %lu",
+                        tmp_bft->consensus_status(),
+                        common::Encode::HexEncode(tmp_bft->prepare_block()->gid()).c_str(),
+                        tmp_bft->prepare_block()->height());
+//                     assert(false);
                     return;
                 }
 
@@ -2214,7 +2218,6 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                 }
 
                 if (!invalid_hash_found) {
-                    assert(false);
                     return;
                 }
 
