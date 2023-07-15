@@ -442,6 +442,33 @@ ZbftPtr BftManager::Start(
     return zbft_ptr;
 }
 
+bool BftManager::CheckChangedLeaderBftsValid(
+        uint32_t pool_index,
+        uint64_t height,
+        const std::string& gid) {
+    if (changed_leader_pools_height_[pool_index] == nullptr) {
+        return true;
+    }
+
+    if (changed_leader_pools_height_[pool_index]->gid() == gid) {
+        return true;
+    }
+
+    if (changed_leader_pools_height_[pool_index]->prepare_block() == nullptr) {
+        return true;
+    }
+
+    if (changed_leader_pools_height_[pool_index]->prepare_block()->height() < height) {
+        return true;
+    }
+
+    if (changed_leader_pools_height_[pool_index]->consensus_status() == kConsensusPrepare) {
+        return true;
+    }
+
+    return false;
+}
+
 int BftManager::ChangePrecommitBftLeader(
         ZbftPtr& bft_ptr,
         uint32_t leader_idx,
@@ -804,6 +831,30 @@ void BftManager::HandleSyncConsensusBlock(
                 }
 
                 assert(false);
+            } else {
+                if (bft_ptr->consensus_status() == kConsensusPreCommit) {
+                    // check bls sign
+                    if (!block_agg_valid_func_(msg_ptr->thread_idx, req_bft_msg.block())) {
+                        ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+                            req_bft_msg.block().network_id(),
+                            req_bft_msg.block().pool_index(),
+                            req_bft_msg.block().height(),
+                            common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
+                        //assert(false);
+                        return;
+                    }
+
+                    if (!CheckChangedLeaderBftsValid(
+                            req_bft_msg.block().pool_index(),
+                            req_bft_msg.block().height(),
+                            bft_ptr->gid())) {
+                        return;
+                    }
+
+                    auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
+                    bft_ptr->set_prepare_block(block_ptr);
+                    HandleLocalCommitBlock(msg_ptr, bft_ptr);
+                }
             }
         }
     } else {
@@ -2226,6 +2277,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                     common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
                     tmp_bft->changed_leader_new_index(),
                     tmp_bft->changed_leader_elect_height());
+                changed_leader_pools_height_[bft_ptr->pool_index()] = bft_ptr;
             }
 
             ++iter;

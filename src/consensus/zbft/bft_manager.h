@@ -192,6 +192,7 @@ private:
     void ReConsensusPrepareBft(const ElectItem& elect_item, ZbftPtr& bft_ptr);
     void HandleSyncedBlock(uint8_t thread_idx, std::shared_ptr<block::protobuf::Block>& block_ptr);
     void ReConsensusChangedLeaderBft(ZbftPtr& bft_ptr);
+    bool CheckChangedLeaderBftsValid(uint32_t pool, uint64_t height, const std::string& gid);
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
@@ -317,6 +318,7 @@ private:
     std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
     volatile int32_t now_bft_count_ = 0;
     std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_agg_verify_blocks_[common::kInvalidPoolIndex];
+    ZbftPtr changed_leader_pools_height_[common::kInvalidPoolIndex] = { nullptr };
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {
