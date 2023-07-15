@@ -2205,12 +2205,9 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                 }
 
                 bool invalid_hash_found = false;
-                uint32_t pos = 0;
-                uint32_t invalid_hash_len = tmp_bft->prepare_block()->change_leader_invalid_hashs().size() / 32;
-                for (uint32_t i = 0; i < invalid_hash_len; ++i, pos += 32) {
-                    if (memcmp(
-                            tmp_bft->prepare_block()->change_leader_invalid_hashs().c_str() + pos,
-                            tmp_bft->prepare_block()->hash().c_str(), 32) == 0) {
+                for (int32_t i = 0; i < tmp_bft->prepare_block()->change_leader_invalid_hashs_size(); ++i) {
+                    if (tmp_bft->prepare_block()->change_leader_invalid_hashs(i) ==
+                            tmp_bft->prepare_block()->hash()) {
                         invalid_hash_found = true;
                         break;
                     }

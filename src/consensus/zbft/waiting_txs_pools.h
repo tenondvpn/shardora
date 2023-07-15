@@ -29,7 +29,10 @@ public:
         return pool_mgr_->latest_hash(pool_index);
     }
 
-    void GetHeightInvalidChangeLeaderHashs(uint32_t pool_index, uint64_t height, std::string* hashs) {
+    void GetHeightInvalidChangeLeaderHashs(
+            uint32_t pool_index,
+            uint64_t height,
+            std::vector<std::string>& hashs) {
         return pool_mgr_->GetHeightInvalidChangeLeaderHashs(pool_index, height, hashs);
     }
 
