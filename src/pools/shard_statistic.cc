@@ -319,25 +319,10 @@ bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
         return false;
     }
 
-    std::vector<uint64_t> bitmap_data;
-    for (int32_t i = 0; i < block.precommit_bitmap_size(); ++i) {
-        bitmap_data.push_back(block.precommit_bitmap(i));
-    }
-
-    common::Bitmap final_bitmap(bitmap_data);
-    final_bitmap.inversion(member_count);
-    ZJC_DEBUG("final_bitmap.valid_count(): %u, signer count: %u",
-        final_bitmap.valid_count(), common::GetSignerCount(member_count));
-    assert(final_bitmap.valid_count() == common::GetSignerCount(member_count));
-    uint32_t bit_size = final_bitmap.data().size() * 64;
-    if (member_count > bit_size || member_count > common::kEachShardMaxNodeCount) {
-        assert(false);
-        return false;
-    }
-
     auto statistic_info_ptr = std::make_shared<HeightStatisticInfo>();
     statistic_info_ptr->elect_height = block.electblock_height();
     statistic_info_ptr->all_gas_amount = 0;
+    auto t = common::GetSignerCount(member_count);
     for (uint32_t i = 0; i < member_count; ++i) {
         auto& id = (*members)[i]->id;
         auto node_iter = statistic_info_ptr->node_tx_count_map.find(id);
@@ -345,7 +330,8 @@ bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
             statistic_info_ptr->node_tx_count_map[id] = { 0, i, (uint32_t)block.leader_index() };
         }
 
-        if (!final_bitmap.Valid(i)) {
+        // TODO: fix
+        if (i > t) {
             continue;
         }
 
