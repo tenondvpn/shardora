@@ -93,14 +93,14 @@ public:
         return latest_hash_;
     }
 
-    void GetHeightInvalidChangeLeaderHashs(uint64_t height, std::string* hashs) {
+    void GetHeightInvalidChangeLeaderHashs(uint64_t height, std::vector<std::string>&hashs) {
         auto iter = change_leader_invalid_hashs_.find(height);
         if (iter == change_leader_invalid_hashs_.end()) {
             return;
         }
 
         for (auto hiter = iter->second.begin(); hiter != iter->second.end(); ++hiter) {
-            *hashs += *hiter;
+            hashs.push_back(*hiter);
         }
     }
 

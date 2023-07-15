@@ -166,7 +166,10 @@ public:
         tx_pool_[pool_index].AddChangeLeaderInvalidHash(height, hash);
     }
 
-    void GetHeightInvalidChangeLeaderHashs(uint32_t pool_index, uint64_t height, std::string* hashs) {
+    void GetHeightInvalidChangeLeaderHashs(
+            uint32_t pool_index,
+            uint64_t height,
+            std::vector<std::string>& hashs) {
         tx_pool_[pool_index].GetHeightInvalidChangeLeaderHashs(height, hashs);
     }
 
