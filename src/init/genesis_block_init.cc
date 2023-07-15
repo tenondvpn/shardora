@@ -52,21 +52,6 @@ int GenesisBlockInit::CreateGenesisBlocks(
     }
 
     auto root_t = common::GetSignerCount(root_genesis_nodes.size());
-    for (uint32_t i = 0; i < root_t; ++i) {
-        root_bitmap_.Set(i);
-    }
-
-    auto valid_count = root_bitmap_.valid_count();
-    root_bitmap_.inversion(root_genesis_nodes.size());
-    std::cout << root_genesis_nodes.size() << ":" << root_t << ", "
-        << root_bitmap_.valid_count() << ", valid count old: " << valid_count << std::endl;
-    assert(root_bitmap_.valid_count() == (root_genesis_nodes.size() - root_t));
-    auto shard_t = common::GetSignerCount(cons_genesis_nodes.size());
-    for (uint32_t i = 0; i < shard_t; ++i) {
-        shard_bitmap_.Set(i);
-    }
-
-    shard_bitmap_.inversion(cons_genesis_nodes.size());
     if (net_id == network::kRootCongressNetworkId) {
         common::GlobalInfo::Instance()->set_network_id(network::kRootCongressNetworkId);
     } else {
@@ -467,11 +452,6 @@ int GenesisBlockInit::CreateElectBlock(
     tenon_block->set_prehash(root_pre_hash);
     tenon_block->set_version(common::kTransactionVersion);
     tenon_block->set_pool_index(shard_netid);
-    const auto& bitmap_data = root_bitmap_.data();
-    for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
-        tenon_block->add_precommit_bitmap(bitmap_data[i]);
-    }
-
     tenon_block->set_network_id(network::kRootCongressNetworkId);
     tenon_block->set_is_cross_block(true);
     tenon_block->set_electblock_height(1);
@@ -567,11 +547,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tenon_block->set_pool_index(common::kRootChainPoolIndex);
         tenon_block->set_height(root_single_block_height++);
         tenon_block->set_electblock_height(1);
-        const auto& bitmap_data = root_bitmap_.data();
-        for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
-            tenon_block->add_precommit_bitmap(bitmap_data[i]);
-        }
-
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_is_cross_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
@@ -643,11 +618,6 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tenon_block->set_version(common::kTransactionVersion);
         tenon_block->set_pool_index(common::kRootChainPoolIndex);
         tenon_block->set_electblock_height(1);
-        const auto& bitmap_data = root_bitmap_.data();
-        for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
-            tenon_block->add_precommit_bitmap(bitmap_data[i]);
-        }
-
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
         tenon_block->set_is_cross_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
@@ -884,11 +854,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         tenon_block->set_version(common::kTransactionVersion);
         tenon_block->set_pool_index(iter->first);
         tenon_block->set_height(0);
-        const auto& bitmap_data = root_bitmap_.data();
-        for (uint32_t tmp_i = 0; tmp_i < bitmap_data.size(); ++tmp_i) {
-            tenon_block->add_precommit_bitmap(bitmap_data[tmp_i]);
-        }
-
         tenon_block->set_timeblock_height(0);
         tenon_block->set_electblock_height(1);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
@@ -1169,11 +1134,6 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         tenon_block->set_electblock_height(1);
         tenon_block->set_height(pool_height[pool_index] + 1);
         pool_height[pool_index] = pool_height[pool_index] + 1;
-        const auto& bitmap_data = root_bitmap_.data();
-        for (uint32_t tmp_i = 0; tmp_i < bitmap_data.size(); ++tmp_i) {
-            tenon_block->add_precommit_bitmap(bitmap_data[tmp_i]);
-        }
-
         tenon_block->set_timeblock_height(0);
         tenon_block->set_electblock_height(1);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
@@ -1295,11 +1255,6 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         tenon_block->set_version(common::kTransactionVersion);
         tenon_block->set_pool_index(iter->first);
         tenon_block->set_height(0);
-        const auto& bitmap_data = root_bitmap_.data();
-        for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
-            tenon_block->add_precommit_bitmap(bitmap_data[i]);
-        }
-
         tenon_block->set_timeblock_height(0);
         tenon_block->set_electblock_height(1);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
