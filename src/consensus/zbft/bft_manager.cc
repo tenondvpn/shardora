@@ -1722,7 +1722,8 @@ void BftManager::ReConsensusChangedLeaderBft(ZbftPtr& bft_ptr) {
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (elect_item_ptr->elect_height != bft_ptr->changed_leader_elect_height()) {
         elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
-        if (elect_item_ptr->elect_height != bft_ptr->changed_leader_elect_height()) {
+        if (elect_item_ptr == nullptr ||
+                elect_item_ptr->elect_height != bft_ptr->changed_leader_elect_height()) {
             ZJC_DEBUG("elect height error: %lu, %lu, %lu",
                 bft_ptr->changed_leader_elect_height(),
                 elect_items_[elect_item_idx_]->elect_height,
