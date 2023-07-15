@@ -91,10 +91,6 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     auto attr_value = std::make_shared<clickhouse::ColumnString>();
 
     std::string bitmap_str;
-    for (int32_t i = 0; i < block_item->precommit_bitmap_size(); ++i) {
-        bitmap_str += std::to_string(block_item->precommit_bitmap(i)) + ",";
-    }
-
     std::string commit_bitmap_str;
     block_shard_id->Append(block_item->network_id());
     block_pool_index->Append(block_item->pool_index());
