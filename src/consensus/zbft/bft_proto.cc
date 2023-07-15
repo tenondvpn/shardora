@@ -37,11 +37,6 @@ bool BftProto::LeaderCreatePrepare(
     bft_msg.set_elect_height(bft_ptr->elect_height());
     auto prev_btr = bft_ptr->pipeline_prev_zbft_ptr();
     if (prev_btr != nullptr) {
-        const auto& bitmap_data = prev_btr->prepare_bitmap().data();
-        for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
-            bft_msg.add_bitmap(bitmap_data[i]);
-        }
-
         auto& bls_precommit_sign = prev_btr->bls_precommit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
@@ -110,11 +105,6 @@ bool BftProto::LeaderCreatePreCommit(
     bft_msg.set_agree_commit(agree);
     bft_msg.set_elect_height(bft_ptr->elect_height());
     if (agree) {
-        const auto& bitmap_data = bft_ptr->prepare_bitmap().data();
-        for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
-            bft_msg.add_bitmap(bitmap_data[i]);
-        }
-
         auto& bls_precommit_sign = bft_ptr->bls_precommit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
@@ -168,11 +158,6 @@ bool BftProto::LeaderCreateCommit(
 //     ZJC_DEBUG("gid: %s, set pool index: %u", common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
     bft_msg.set_agree_commit(agree);
     bft_msg.set_elect_height(bft_ptr->elect_height());
-    const auto& bitmap_data = bft_ptr->prepare_bitmap().data();
-    for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
-        bft_msg.add_bitmap(bitmap_data[i]);
-    }
-
     if (agree) {
         auto& bls_commit_sign = bft_ptr->bls_commit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->X));
