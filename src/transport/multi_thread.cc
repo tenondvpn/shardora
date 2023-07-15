@@ -49,7 +49,7 @@ void ThreadHandler::HandleMessage() {
                 break;
             }
 
-            ZJC_INFO("start message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
+            ZJC_DEBUG("start message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
             msg_ptr->thread_idx = thread_idx_;
             auto btime = common::TimeUtils::TimestampUs();
@@ -64,7 +64,7 @@ void ThreadHandler::HandleMessage() {
 
                 ZJC_INFO("over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
             }
-            ZJC_INFO("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
+            ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
         }
 
         if (thread_idx_ + 1 < common::GlobalInfo::Instance()->message_handler_thread_count()) {
@@ -72,7 +72,7 @@ void ThreadHandler::HandleMessage() {
             auto msg_ptr = std::make_shared<transport::TransportMessage>();
             msg_ptr->thread_idx = thread_idx_;
             msg_ptr->header.set_type(common::kConsensusTimerMessage);
-            ZJC_INFO("start kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
+            ZJC_DEBUG("start kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             msg_ptr->times[msg_ptr->times_idx++] = btime;
             Processor::Instance()->HandleMessage(msg_ptr);
             auto etime = common::TimeUtils::TimestampUs();
@@ -84,7 +84,7 @@ void ThreadHandler::HandleMessage() {
 
                 ZJC_INFO("kConsensusTimerMessage over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
             }
-            ZJC_INFO("end kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
+            ZJC_DEBUG("end kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             ++thread_timer_hash_64;
         }
 

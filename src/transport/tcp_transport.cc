@@ -370,7 +370,7 @@ std::string TcpTransport::GetHeaderHashForSign(const transport::protobuf::Header
     assert(message.hash64());
     assert(message.hash64() != 0);
     std::string msg_for_hash;
-    msg_for_hash.reserve(1024 * 1024);
+    msg_for_hash.reserve(3 * 1024 * 1024);
     msg_for_hash.append(message.des_dht_key());
     uint64_t hash64 = message.hash64();
     msg_for_hash.append(std::string((char*)&hash64, sizeof(hash64)));
