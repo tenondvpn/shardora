@@ -2192,7 +2192,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                     
                     ZJC_DEBUG("bft consensus status error: %u, %s, height: %lu",
                         tmp_bft->consensus_status(),
-                        common::Encode::HexEncode(tmp_bft->prepare_block()->gid()).c_str(),
+                        common::Encode::HexEncode(tmp_bft->gid()).c_str(),
                         tmp_bft->prepare_block()->height());
 //                     assert(false);
                     return;
