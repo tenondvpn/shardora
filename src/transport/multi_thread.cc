@@ -44,12 +44,12 @@ void ThreadHandler::HandleMessage() {
     while (!destroy_) {
         uint32_t count = 0;
         while (count++ < kMaxHandleMessageCount) {
-            ZJC_INFO("start message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             auto msg_ptr = msg_handler_->GetMessageFromQueue(thread_idx_);
             if (!msg_ptr) {
                 break;
             }
 
+            ZJC_INFO("start message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             msg_ptr->header.set_hop_count(msg_ptr->header.hop_count() + 1);
             msg_ptr->thread_idx = thread_idx_;
             auto btime = common::TimeUtils::TimestampUs();
