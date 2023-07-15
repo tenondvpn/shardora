@@ -798,7 +798,7 @@ void BftManager::HandleSyncConsensusBlock(
             return;
         }
 
-        bft_ptr == GetBftWithHash(req_bft_msg.pool_index(), req_bft_msg.block().hash());
+        bft_ptr = GetBftWithHash(req_bft_msg.pool_index(), req_bft_msg.block().hash());
     }
 
     ZJC_DEBUG("sync consensus block coming: %s, pool: %u, height: %lu, "
