@@ -2182,11 +2182,6 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             }
 
             if (tmp_bft->prepare_block()->height() == bft_ptr->prepare_block()->height()) {
-                if (tmp_bft->leader_index() == bft_msg.leader_idx()) {
-                    assert(false);
-                    return;
-                }
-
                 if (tmp_bft->consensus_status() == kConsensusPrepare) {
                     if (tmp_bft->pipeline_prev_zbft_ptr() == nullptr ||
                             tmp_bft->pipeline_prev_zbft_ptr()->gid() == bft_msg.precommit_gid()) {
