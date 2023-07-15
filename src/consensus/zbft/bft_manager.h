@@ -89,6 +89,7 @@ public:
 private:
     int AddBft(ZbftPtr& bft_ptr);
     ZbftPtr GetBft(uint32_t pool_index, const std::string& gid);
+    ZbftPtr GetBftWithHash(uint32_t pool_index, const std::string& hash);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
     ZbftPtr Start(

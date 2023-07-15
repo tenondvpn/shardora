@@ -773,11 +773,34 @@ void BftManager::HandleSyncedBlock(uint8_t thread_idx, std::shared_ptr<block::pr
     RemoveWaitingBlock(block_ptr->pool_index(), block_ptr->height());
 }
 
+ZbftPtr BftManager::GetBftWithHash(uint32_t pool_index, const std::string& hash) {
+    auto& bft_queue = pools_with_zbfts_[pool_index];
+    for (auto iter = bft_queue.begin(); iter != bft_queue.end(); ++iter) {
+        if ((*iter)->prepare_block() == nullptr) {
+            continue;
+        }
+
+        if ((*iter)->prepare_block()->hash() == hash) {
+            return *iter;
+        }
+    }
+
+    return nullptr;
+}
+
 void BftManager::HandleSyncConsensusBlock(
         const ElectItem& elect_item,
         const transport::MessagePtr& msg_ptr) {
     auto& req_bft_msg = msg_ptr->header.zbft();
     auto bft_ptr = GetBft(req_bft_msg.pool_index(), req_bft_msg.precommit_gid());
+    if (bft_ptr == nullptr) {
+        if (!req_bft_msg.has_block()) {
+            return;
+        }
+
+        bft_ptr == GetBftWithHash(req_bft_msg.pool_index(), req_bft_msg.block().hash());
+    }
+
     ZJC_DEBUG("sync consensus block coming: %s, pool: %u, height: %lu, hash: %s, is cross block: %d, hash64: %lu, bft_ptr == nullptr: %d, latest: %lu",
         common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
         req_bft_msg.block().pool_index(),
