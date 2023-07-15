@@ -43,14 +43,13 @@ message Block {
     optional uint64 consistency_random = 7;
     optional uint64 electblock_height = 8;
     optional uint64 timeblock_height = 9;
-    repeated uint64 precommit_bitmap = 10;
-    repeated BlockTx tx_list = 11;
-    optional uint64 timestamp = 12;
-    optional bytes bls_agg_sign_x = 13;
-    optional bytes bls_agg_sign_y = 14;
-    optional uint64 leader_index = 15;
-    optional bytes change_leader_invalid_hashs = 16;
-    optional bool is_cross_block = 17 [default=false];  // not pipelined commit
+    repeated BlockTx tx_list = 10;
+    optional uint64 timestamp = 11;
+    optional bytes bls_agg_sign_x = 12;
+    optional bytes bls_agg_sign_y = 13;
+    optional uint64 leader_index = 14;
+    optional bytes change_leader_invalid_hashs = 15;
+    optional bool is_cross_block = 16 [default=false];  // not pipelined commit
 }
 
 message ConsensusToTxsItem {
