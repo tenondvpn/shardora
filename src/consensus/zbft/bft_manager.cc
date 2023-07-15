@@ -928,7 +928,7 @@ void BftManager::RemoveWaitingBlock(uint32_t pool_index, uint64_t height) {
                 *queue_item_ptr->db_batch);
             block_mgr_->ConsensusAddBlock(thread_idx, queue_item_ptr);
             pools_mgr_->TxOver(block_ptr->pool_index(), block_ptr->tx_list());
-            ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s"
+            ZJC_DEBUG("sync block message net: %u, pool: %u, height: %lu, block hash: %s",
                 block_ptr->network_id(),
                 block_ptr->pool_index(),
                 block_ptr->height(),
