@@ -801,15 +801,17 @@ void BftManager::HandleSyncConsensusBlock(
         bft_ptr = GetBftWithHash(req_bft_msg.pool_index(), req_bft_msg.block().hash());
     }
 
-    ZJC_DEBUG("sync consensus block coming: %s, pool: %u, height: %lu, "
-        "hash: %s, is cross block: %d, hash64: %lu, bft_ptr == nullptr: %d, latest: %lu",
-        common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
+    ZJC_DEBUG("sync consensus block coming pool: %u, height: %lu, "
+        "hash: %s, is cross block: %d, hash64: %lu, bft_ptr == nullptr: %d,"
+        " status: %d, gid: %s, latest: %lu",
         req_bft_msg.block().pool_index(),
         req_bft_msg.block().height(),
         common::Encode::HexEncode(req_bft_msg.block().hash()).c_str(),
         req_bft_msg.block().is_cross_block(),
         msg_ptr->header.hash64(),
         (bft_ptr == nullptr),
+        bft_ptr == nullptr ? -1 : bft_ptr->consensus_status(),
+        common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
         pools_mgr_->latest_height(req_bft_msg.block().pool_index()));
     if (req_bft_msg.has_block()) {
         // verify and add new block
@@ -878,6 +880,25 @@ void BftManager::HandleSyncConsensusBlock(
                     auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
                     bft_ptr->set_prepare_block(block_ptr);
                     HandleLocalCommitBlock(msg_ptr, bft_ptr);
+                } else {
+                    auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
+                    if (elect_item.elect_height < block_ptr->electblock_height()) {
+                        waiting_agg_verify_blocks_[block_ptr->pool_index()][block_ptr->height()] = block_ptr;
+                        return;
+                    }
+
+                    // check bls sign
+                    if (!block_agg_valid_func_(msg_ptr->thread_idx, req_bft_msg.block())) {
+                        ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+                            req_bft_msg.block().network_id(),
+                            req_bft_msg.block().pool_index(),
+                            req_bft_msg.block().height(),
+                            common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
+                        //assert(false);
+                        return;
+                    }
+
+                    HandleSyncedBlock(msg_ptr->thread_idx, block_ptr);
                 }
             }
         }
