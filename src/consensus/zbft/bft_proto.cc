@@ -42,7 +42,6 @@ bool BftProto::LeaderCreatePrepare(
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
 //         assert(bft_ptr->prepare_block()->prehash() == prev_btr->local_prepare_hash());
 //         assert(bft_ptr->prepare_block()->height() == prev_btr->height() + 1);
-        bft_msg.set_prepare_hash(prev_btr->prepare_block()->hash());
     }
 
     return true;
@@ -108,7 +107,6 @@ bool BftProto::LeaderCreatePreCommit(
         auto& bls_precommit_sign = bft_ptr->bls_precommit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
-        bft_msg.set_prepare_hash(bft_ptr->prepare_block()->hash());
     }
 
     return true;

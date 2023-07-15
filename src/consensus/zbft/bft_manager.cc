@@ -801,7 +801,8 @@ void BftManager::HandleSyncConsensusBlock(
         bft_ptr == GetBftWithHash(req_bft_msg.pool_index(), req_bft_msg.block().hash());
     }
 
-    ZJC_DEBUG("sync consensus block coming: %s, pool: %u, height: %lu, hash: %s, is cross block: %d, hash64: %lu, bft_ptr == nullptr: %d, latest: %lu",
+    ZJC_DEBUG("sync consensus block coming: %s, pool: %u, height: %lu, "
+        "hash: %s, is cross block: %d, hash64: %lu, bft_ptr == nullptr: %d, latest: %lu",
         common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
         req_bft_msg.block().pool_index(),
         req_bft_msg.block().height(),
