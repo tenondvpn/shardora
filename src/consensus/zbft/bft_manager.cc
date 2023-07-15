@@ -2195,7 +2195,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                 }
 
                 if (tmp_bft->changed_leader_new_index() != bft_msg.leader_idx()) {
-                    assert(false);
+//                     assert(false);
                     return;
                 }
 
