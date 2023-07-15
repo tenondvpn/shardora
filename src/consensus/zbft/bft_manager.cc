@@ -2226,8 +2226,9 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                     common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
                     tmp_bft->changed_leader_new_index(),
                     tmp_bft->changed_leader_elect_height());
-                ++iter;
             }
+
+            ++iter;
         }
 
         ZJC_DEBUG("success create bft ptr backup create consensus bft gid: %s",
