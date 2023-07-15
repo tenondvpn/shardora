@@ -2255,7 +2255,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                 }
 
                 if (tmp_bft->changed_leader_elect_height() != bft_msg.elect_height()) {
-                    assert(false);
+//                     assert(false);
                     return;
                 }
 

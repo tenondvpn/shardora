@@ -1309,7 +1309,9 @@ void NetworkInit::HandleElectionBlock(
     }
 }
 
-bool NetworkInit::BlockBlsAggSignatureValid(uint8_t thread_idx, const block::protobuf::Block& block) try {
+bool NetworkInit::BlockBlsAggSignatureValid(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block) try {
     if (block.bls_agg_sign_x().empty() || block.bls_agg_sign_y().empty()) {
         return false;
     }
