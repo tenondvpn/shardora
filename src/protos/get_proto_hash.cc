@@ -56,13 +56,6 @@ static void GetZbftHash(
         msg_for_hash.append((char*)&net_id, sizeof(net_id));
     }
 
-    if (zbft_msg.bitmap_size() > 0) {
-        for (int32_t i = 0; i < zbft_msg.bitmap_size(); ++i) {
-            uint64_t data = zbft_msg.bitmap(i);
-            msg_for_hash.append((char*)&data, sizeof(data));
-        }
-    }
-
     if (zbft_msg.has_agree_precommit()) {
         bool agree_precommit = zbft_msg.agree_precommit();
         msg_for_hash.append((char*)&agree_precommit, sizeof(agree_precommit));
@@ -121,13 +114,6 @@ static void GetZbftHash(
 
     if (zbft_msg.has_bls_sign_y()) {
         msg_for_hash.append(zbft_msg.bls_sign_y());
-    }
-
-    if (zbft_msg.commit_bitmap_size() > 0) {
-        for (int32_t i = 0; i < zbft_msg.commit_bitmap_size(); ++i) {
-            uint64_t data = zbft_msg.commit_bitmap(i);
-            msg_for_hash.append((char*)&data, sizeof(data));
-        }
     }
 
     if (zbft_msg.has_prepare_hash()) {
