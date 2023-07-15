@@ -453,17 +453,6 @@ int BftManager::ChangePrecommitBftLeader(
         return kConsensusSuccess;
     }
 
-//     if (bft_ptr->ChangeLeader(
-//             leader_idx,
-//             elect_item.leader_count,
-//             elect_item.elect_height,
-//             elect_item.members,
-//             elect_item.common_pk,
-//             elect_item.sec_key) != kConsensusSuccess) {
-//         ZJC_ERROR("bft init failed!");
-//         return kConsensusError;
-//     }
-
     bft_ptr->ChangeLeader(leader_idx, elect_item.elect_height);
     if (bft_ptr->prepare_block() != nullptr) {
         pools_mgr_->AddChangeLeaderInvalidHash(
@@ -497,11 +486,6 @@ ZbftPtr BftManager::StartBft(
         const transport::MessagePtr& prepare_msg_ptr) {
     ZbftPtr bft_ptr = nullptr;
     auto msg_ptr = prepare_msg_ptr;
-    if (msg_ptr != nullptr) {
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-    }
-
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         bft_ptr = std::make_shared<RootZbft>(
             account_mgr_,
@@ -520,19 +504,12 @@ ZbftPtr BftManager::StartBft(
             tm_block_mgr_);
     }
 
-    if (msg_ptr != nullptr) {
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-    }
-
-    if (InitZbftPtr(elect_item.local_node_member_index, elect_item, bft_ptr) != kConsensusSuccess) {
+    if (InitZbftPtr(
+            elect_item.local_node_member_index,
+            elect_item,
+            bft_ptr) != kConsensusSuccess) {
         ZJC_ERROR("InitZbftPtr failed!");
         return nullptr;
-    }
-
-    if (msg_ptr != nullptr) {
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     }
 
     auto& gid = bft_gids_[txs_ptr->thread_index];
@@ -540,20 +517,9 @@ ZbftPtr BftManager::StartBft(
     tmp_gid[0] = bft_gids_index_[txs_ptr->thread_index]++;
     bft_ptr->set_gid(gid);
     bft_ptr->set_network_id(common::GlobalInfo::Instance()->network_id());
-    // bft_ptr->set_randm_num(vss::VssManager::Instance()->EpochRandom());
     bft_ptr->set_member_count(elect_item.member_size);
-    if (msg_ptr != nullptr) {
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-    }
-
     bft_ptr->set_prev_bft_ptr(prev_bft);
     int leader_pre = LeaderPrepare(elect_item, bft_ptr, prepare_msg_ptr);
-    if (msg_ptr != nullptr) {
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-    }
-
     if (leader_pre != kConsensusSuccess) {
         ZJC_ERROR("leader prepare failed!");
         return nullptr;
@@ -1535,14 +1501,11 @@ ZbftPtr BftManager::CreateBftPtr(
         }
     }
 
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     if (InitZbftPtr(bft_msg.leader_idx(), elect_item, bft_ptr) != kConsensusSuccess) {
 //         assert(false);
         return nullptr;
     }
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
+
     bft_ptr->set_gid(bft_msg.prepare_gid());
     bft_ptr->set_network_id(bft_msg.net_id());
     bft_ptr->set_member_count(elect_item.member_size);
@@ -2205,9 +2168,11 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         }
 
         auto& pools_bft_vec = pools_with_zbfts_[bft_msg.pool_index()];
-        for (auto iter = pools_bft_vec.begin(); iter != pools_bft_vec.end(); ++iter) {
+        auto iter = pools_bft_vec.begin();
+        while (iter != pools_bft_vec.end()) {
             auto tmp_bft = *iter;
             if (tmp_bft->prepare_block() == nullptr) {
+                ++iter;
                 continue;
             }
 
@@ -2218,6 +2183,18 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
 
             if (tmp_bft->prepare_block()->height() == bft_ptr->prepare_block()->height()) {
                 if (tmp_bft->leader_index() == bft_msg.leader_idx()) {
+                    assert(false);
+                    return;
+                }
+
+                if (tmp_bft->consensus_status() == kConsensusPrepare) {
+                    if (tmp_bft->pipeline_prev_zbft_ptr() == nullptr ||
+                            tmp_bft->pipeline_prev_zbft_ptr()->gid() == bft_msg.precommit_gid()) {
+                        tmp_bft->Destroy();
+                        iter = pools_bft_vec.erase(iter);
+                        continue;
+                    }
+                    
                     assert(false);
                     return;
                 }
@@ -2237,8 +2214,8 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                 uint32_t invalid_hash_len = tmp_bft->prepare_block()->change_leader_invalid_hashs().size() / 32;
                 for (uint32_t i = 0; i < invalid_hash_len; ++i, pos += 32) {
                     if (memcmp(
-                        tmp_bft->prepare_block()->change_leader_invalid_hashs().c_str() + pos,
-                        tmp_bft->prepare_block()->hash().c_str(), 32) == 0) {
+                            tmp_bft->prepare_block()->change_leader_invalid_hashs().c_str() + pos,
+                            tmp_bft->prepare_block()->hash().c_str(), 32) == 0) {
                         invalid_hash_found = true;
                         break;
                     }
@@ -2254,6 +2231,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                     common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
                     tmp_bft->changed_leader_new_index(),
                     tmp_bft->changed_leader_elect_height());
+                ++iter;
             }
         }
 
