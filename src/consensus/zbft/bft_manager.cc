@@ -2082,6 +2082,7 @@ int BftManager::CheckPrecommit(
             bitmap_data.push_back(bft_msg.bitmap(i));
         }
 
+        assert(bitmap_data.size() * 64 == common::kEachShardMaxNodeCount);
         bft_ptr->set_prepare_bitmap(bitmap_data);
         bft_ptr->set_consensus_status(kConsensusPreCommit);
         backup_agree_commit = true;

@@ -176,22 +176,6 @@ public:
         return leader_index_;
     }
 
-    void set_prepare_bitmap(const std::vector<uint64_t>& bitmap_data) {
-        if (prepare_block_ != nullptr) {
-            prepare_block_->clear_precommit_bitmap();
-            for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
-                prepare_block_->add_precommit_bitmap(bitmap_data[i]);
-            }
-        }
-
-        prepare_bitmap_ = common::Bitmap(bitmap_data);
-        assert(prepare_bitmap_.valid_count() == member_count_ - min_aggree_member_count_);
-    }
-
-    const common::Bitmap& prepare_bitmap() const {
-        return prepare_bitmap_;
-    }
-
     bool set_bls_precommit_agg_sign(const libff::alt_bn128_G1& agg_sign, const std::string& sign_hash);
     bool verify_bls_precommit_agg_sign(const libff::alt_bn128_G1& agg_sign, const std::string& sign_hash);
 
@@ -557,7 +541,6 @@ protected:
     int32_t handle_last_error_code_{ 0 };
     std::string handle_last_error_msg_;
     std::unordered_map<std::string, std::shared_ptr<LeaderPrepareItem>> prepare_block_map_;
-    common::Bitmap prepare_bitmap_;
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<WaitingTxsItem> txs_ptr_ = nullptr;
     std::shared_ptr<consensus::WaitingTxsPools> pools_mgr_ = nullptr;

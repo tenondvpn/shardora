@@ -490,14 +490,6 @@ void Zbft::LeaderResetPrepareBitmap(std::shared_ptr<LeaderPrepareItem>& prepare_
     prepare_block_->set_bls_agg_sign_y(
         common::Encode::HexDecode(
             libBLS::ThresholdUtils::fieldElementToString(bls_precommit_agg_sign_->Y)));
-    prepare_bitmap_ = prepare_item->prepare_bitmap_;
-    prepare_bitmap_.inversion(members_ptr_->size());
-    assert(prepare_bitmap_.valid_count() == member_count_ - min_aggree_member_count_);
-    auto& bitmap_data = prepare_bitmap_.data();
-    prepare_block_->clear_precommit_bitmap();
-    for (uint32_t i = 0; i < bitmap_data.size(); ++i) {
-        prepare_block_->add_precommit_bitmap(bitmap_data[i]);
-    }
 }
 
 void Zbft::CreatePrecommitVerifyHash() {
