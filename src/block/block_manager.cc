@@ -1548,6 +1548,7 @@ void BlockManager::OnTimeBlock(
     }
 
     latest_timeblock_height_ = latest_time_block_height;
+    latest_timeblock_tm_sec_ = lastest_time_block_tm;
     CreateStatisticTx(thread_idx);
 }
 

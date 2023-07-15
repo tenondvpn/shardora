@@ -207,6 +207,7 @@ private:
     DbBlockCallback new_block_callback_ = nullptr;
     std::shared_ptr<pools::ShardStatistic> statistic_mgr_ = nullptr;
     uint64_t latest_timeblock_height_ = 0;
+    uint64_t latest_timeblock_tm_sec_ = 0;
     uint64_t consensused_timeblock_height_ = 0;
     std::unordered_map<uint32_t, std::map<
         uint64_t,

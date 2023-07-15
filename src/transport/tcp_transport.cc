@@ -370,7 +370,7 @@ std::string TcpTransport::GetHeaderHashForSign(const transport::protobuf::Header
     assert(message.hash64());
     assert(message.hash64() != 0);
     std::string msg_for_hash;
-    msg_for_hash.reserve(message.ByteSizeLong() + 64);
+    msg_for_hash.reserve(1024 * 1024);
     msg_for_hash.append(message.des_dht_key());
     uint64_t hash64 = message.hash64();
     msg_for_hash.append(std::string((char*)&hash64, sizeof(hash64)));
@@ -380,7 +380,7 @@ std::string TcpTransport::GetHeaderHashForSign(const transport::protobuf::Header
     msg_for_hash.append(std::string((char*)&type, sizeof(type)));
     int32_t version = message.version();
     msg_for_hash.append(std::string((char*)&version, sizeof(version)));
-//     protos::GetProtoHash(message, &msg_for_hash);
+    protos::GetProtoHash(message, &msg_for_hash);
     return common::Hash::keccak256(msg_for_hash);
 }
 

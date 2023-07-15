@@ -87,7 +87,12 @@ pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader, uint32_t pool_ind
         auto& tx_info = *tmblock_tx_ptr_->msg_ptr->header.mutable_tx_proto();
         char data[16];
         uint64_t* u64_data = (uint64_t*)data;
+        uint64_t now_tm_sec = now_tm_us / 1000000lu;
         uint64_t new_time_block_tm = latest_time_block_tm_ + common::kTimeBlockCreatePeriodSeconds;
+        while (new_time_block_tm < now_tm_sec && now_tm_sec - new_time_block_tm >= 30lu) {
+            new_time_block_tm += common::kTimeBlockCreatePeriodSeconds;
+        }
+
         u64_data[0] = new_time_block_tm;
         u64_data[1] = vss_mgr_->GetConsensusFinalRandom();
         tx_info.set_value(std::string(data, sizeof(data)));
