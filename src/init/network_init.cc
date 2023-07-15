@@ -1310,6 +1310,10 @@ void NetworkInit::HandleElectionBlock(
 }
 
 bool NetworkInit::BlockBlsAggSignatureValid(uint8_t thread_idx, const block::protobuf::Block& block) try {
+    if (block.bls_agg_sign_x().empty() || block.bls_agg_sign_y().empty()) {
+        return false;
+    }
+
     auto block_hash = consensus::GetBlockHash(block);
     if (block_hash != block.hash()) {
         assert(false);
@@ -1358,7 +1362,6 @@ bool NetworkInit::BlockBlsAggSignatureValid(uint8_t thread_idx, const block::pro
         common::Encode::HexEncode(block.hash()).c_str(),
         common::Encode::HexEncode(block.bls_agg_sign_x()).c_str(),
         common::Encode::HexEncode(block.bls_agg_sign_y()).c_str());
-    assert(false);
     return false;
 }
 
