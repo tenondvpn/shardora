@@ -222,12 +222,12 @@ int tx_main(int argc, char** argv) {
             security->SetPrivateKey(from_prikey);
             continue;
         }
-
+/*
         uint32_t* tmp_data = (uint32_t*)to.c_str();
         if (common::Random::RandomInt32() % 10 < 3) {
             tmp_data[0] = common::Random::RandomInt16();
         }
-
+*/
         auto tx_msg_ptr = CreateTransactionWithAttr(
             security,
             gid,
@@ -255,7 +255,7 @@ int tx_main(int argc, char** argv) {
 //         }
 
 //         std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << ", tx hash: " << tx_msg_ptr->header.hash64() << std::endl;
-        if (pos % 10 == 0) {
+        if (pos % 1 == 0) {
             ++prikey_pos;
             from_prikey = prikeys[prikey_pos % prikeys.size()];
             security->SetPrivateKey(from_prikey);
