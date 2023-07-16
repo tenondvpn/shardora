@@ -322,8 +322,15 @@ void BftManager::RotationLeader(
     assert(new_leader_idx < elect_item_ptr->members->size());
     elect_items_[elect_item_idx_].reset();
     elect_items_[elect_item_idx_] = elect_item_ptr;
-    ZJC_INFO("rotation leader success: %d, %lu, old_leader_idx: %u, new leader idx: %u, local index: %d",
-        leader_mod_num, elect_height, old_leader_idx, new_leader_idx, elect_item_ptr->local_node_member_index);
+    ZJC_INFO("rotation leader success: %d, %lu, old_leader_idx: %u, "
+        "new leader idx: %u, local index: %d, "
+        "now_ms: %lu, leader valid: %lu, change valid: %lu, invalid: %lu",
+        leader_mod_num, elect_height, old_leader_idx, new_leader_idx,
+        elect_item_ptr->local_node_member_index,
+        common::TimeUtils::TimestampMs(),
+        elect_item_ptr->time_valid,
+        elect_item_ptr->change_leader_time_valid,
+        elect_item_ptr->invalid_time);
 }
 
 ZbftPtr BftManager::Start(
@@ -673,6 +680,12 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
     
         if (!elect_item_ptr->bls_valid) {
+            elect_item_ptr = nullptr;
+            break;
+        }
+
+        if (elect_item_ptr->invalid_time < now_ms) {
+            ZJC_DEBUG("elect item time invalid");
             elect_item_ptr = nullptr;
             break;
         }
@@ -2252,7 +2265,6 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             return;
         }
 
-        auto bft_ptr = CreateBftPtr(elect_item, msg_ptr);
         auto now_ms = common::TimeUtils::TimestampMs();
         auto now_elect_item = elect_items_[elect_item_idx_];
         if (now_elect_item->change_leader_time_valid <= now_ms &&
@@ -2261,12 +2273,11 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
                 now_elect_item->elect_height,
                 elect_item.elect_height);
-            if (bft_ptr != nullptr) {
-                RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
-                bft_ptr = nullptr;
-            }
+            msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
+            return;
         }
 
+        auto bft_ptr = CreateBftPtr(elect_item, msg_ptr);
         if (bft_ptr == nullptr ||
                 bft_ptr->txs_ptr() == nullptr ||
                 bft_ptr->txs_ptr()->txs.empty()) {
