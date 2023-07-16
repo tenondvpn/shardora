@@ -708,7 +708,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     int res = kConsensusSuccess;
     if (header.zbft().leader_idx() >= 0) {
-        if (header.zbft().has_commit_gid()) {
+        if (header.zbft().has_commit_gid() && !header.zbft().commit_gid().empty()) {
             auto commit_bft = GetBft(header.zbft().pool_index(), header.zbft().commit_gid());
             if (commit_bft == nullptr) {
                 SyncConsensusBlock(
