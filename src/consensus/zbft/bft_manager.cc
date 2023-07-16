@@ -430,7 +430,7 @@ ZbftPtr BftManager::Start(
     }
 
     txs_ptr->thread_index = thread_index;
-    if (waiting_change_elect) {
+    if (txs_ptr->tx_type == pools::protobuf::kNormalFrom && waiting_change_elect) {
         txs_ptr->tx_type = pools::protobuf::kChangeLeaderTxs;
     }
 
@@ -1573,7 +1573,8 @@ ZbftPtr BftManager::CreateBftPtr(
     }
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    if (elect_items_[elect_item_idx_]->time_valid > now_tm_ms) {
+    if (txs_ptr->tx_type == pools::protobuf::kNormalFrom &&
+            elect_items_[elect_item_idx_]->time_valid > now_tm_ms) {
         txs_ptr->tx_type = pools::protobuf::kChangeLeaderTxs;
     }
 
