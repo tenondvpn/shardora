@@ -204,7 +204,7 @@ void BftManager::OnNewElectBlock(
         }
     }
 
-    if (elect_item.local_node_member_index >= members->size()) {
+    if (elect_item.local_node_member_index >= (int32_t)members->size()) {
         return;
     }
 

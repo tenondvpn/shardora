@@ -71,7 +71,7 @@ private:
     void HandleAddrRes(const transport::MessagePtr& msg_ptr);
     void HandleLeaderPools(const transport::MessagePtr& msg_ptr);
     void GetAddressShardingId(uint8_t thread_idx);
-    void RotationLeaderCallback(uint8_t thread_idx, const std::vector<std::pair<uint32_t, uint32_t>>& invalid_pools);
+    void RotationLeaderCallback(uint8_t thread_idx, const std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>>& invalid_pools);
     void CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req);
     bool BlockBlsAggSignatureValid(uint8_t thread_idx, const block::protobuf::Block& block);
     void BroadcastInvalidPools(

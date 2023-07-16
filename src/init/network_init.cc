@@ -369,7 +369,7 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
     }
 }
 
-void NetworkInit::RotationLeaderCallback(uint8_t thread_idx, const std::vector<std::pair<uint32_t, uint32_t>>& invalid_pools) {
+void NetworkInit::RotationLeaderCallback(uint8_t thread_idx, const std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>>& invalid_pools) {
     auto rotation = rotation_leaders_;
     if (rotation == nullptr) {
         return;
@@ -384,16 +384,26 @@ void NetworkInit::RotationLeaderCallback(uint8_t thread_idx, const std::vector<s
     }
 
     uint32_t invalid_leader_mods[rotation->rotations.size()] = { 0 };
-    std::pair<uint32_t, uint32_t> tx_counts[rotation->rotations.size()];
-    for (uint32_t i = 0; i < invalid_pools.size(); ++i) {
-        auto mod_idx = i % rotation->rotations.size();
-        tx_counts[mod_idx].first += invalid_pools[i].first;
-        tx_counts[mod_idx].second += invalid_pools[i].second;
-        ZJC_DEBUG("pool: %u, handled: %u, all: %u", i, invalid_pools[i].first, invalid_pools[i].second);
+    for (uint32_t pool = 0; pool < invalid_pools.size(); ++pool) {
+        auto& invalid_pool = invalid_pools[i];
+        std::pair<uint32_t, uint32_t> tx_counts[rotation->rotations.size()];
+        for (uint32_t i = 0; i < invalid_pool.size(); ++i) {
+            auto mod_idx = i % rotation->rotations.size();
+            tx_counts[mod_idx].first += invalid_pools[i].first;
+            tx_counts[mod_idx].second += invalid_pools[i].second;
+        }
+
+        for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
+            if (tx_counts[i].first <= (tx_counts[i].second / 100) && tx_counts[i].second > 0) {
+                ++invalid_leader_mods[i];
+                ZJC_DEBUG("pool mod num: %u, handled: %u, all: %u, count: %u",
+                    i, tx_counts[i].first, tx_counts[i].second, invalid_leader_mods[i]);
+            }
+        }
     }
 
     for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
-        if (tx_counts[i].first <= (tx_counts[i].second / 100) && tx_counts[i].second > 0) {
+        if (invalid_leader_mods[i] + 1 >= pools::kCaculateLeaderLofPeriod / pools::kCheckLeaderLofPeriod) {
             BroadcastInvalidPools(thread_idx, rotation, i);
         }
     }

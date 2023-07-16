@@ -244,7 +244,8 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
                     if (invalid_pools_.size() > kCaculateLeaderLofPeriod / kCheckLeaderLofPeriod) {
                         invalid_pools_.pop_front();
                     }
-//                     rotatition_leader_cb_(thread_idx, invalid_pools);
+
+                    rotatition_leader_cb_(thread_idx, invalid_pools_);
                 }
             }
 
