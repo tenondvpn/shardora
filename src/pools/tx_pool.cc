@@ -237,9 +237,9 @@ void TxPool::RemoveTx(const std::string& gid) {
         universal_prio_map_.erase(universal_prio_iter);
     }
 
-    ZJC_INFO("remove tx success gid: %s, tx hash: %s",
-        common::Encode::HexEncode(giter->second->gid).c_str(),
-        common::Encode::HexEncode(giter->second->tx_hash).c_str());
+//     ZJC_DEBUG("remove tx success gid: %s, tx hash: %s",
+//         common::Encode::HexEncode(giter->second->gid).c_str(),
+//         common::Encode::HexEncode(giter->second->tx_hash).c_str());
     gid_map_.erase(giter);
 }
 
