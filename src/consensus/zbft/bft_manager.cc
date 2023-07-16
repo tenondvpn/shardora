@@ -1900,6 +1900,10 @@ void BftManager::ReConsensusPrepareBft(const ElectItem& elect_item, ZbftPtr& bft
         return;
     }
 
+    if (elect_item.local_node_member_index >= elect_item.members->size()) {
+        return;
+    }
+
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[bft_ptr->pool_index()];
     SetDefaultResponse(msg_ptr);
