@@ -385,12 +385,12 @@ void NetworkInit::RotationLeaderCallback(uint8_t thread_idx, const std::deque<st
 
     uint32_t invalid_leader_mods[rotation->rotations.size()] = { 0 };
     for (uint32_t pool = 0; pool < invalid_pools.size(); ++pool) {
-        auto& invalid_pool = invalid_pools[i];
+        auto& invalid_pool = invalid_pools[pool];
         std::pair<uint32_t, uint32_t> tx_counts[rotation->rotations.size()];
         for (uint32_t i = 0; i < invalid_pool.size(); ++i) {
             auto mod_idx = i % rotation->rotations.size();
-            tx_counts[mod_idx].first += invalid_pools[i].first;
-            tx_counts[mod_idx].second += invalid_pools[i].second;
+            tx_counts[mod_idx].first += invalid_pool[i].first;
+            tx_counts[mod_idx].second += invalid_pool[i].second;
         }
 
         for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
