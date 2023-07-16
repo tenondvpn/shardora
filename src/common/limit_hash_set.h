@@ -44,6 +44,11 @@ public:
         return true;
     }
 
+    void Reset() {
+        item_queue_.clear();
+        item_set_.clear();
+    }
+
 private:
     uint32_t max_size_{ 0 };
     std::deque<Type> item_queue_;

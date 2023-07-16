@@ -344,7 +344,9 @@ ZbftPtr BftManager::Start(
     }
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
+    bool waiting_change_elect = false;
     if (elect_item_ptr->time_valid > now_tm_ms) {
+        waiting_change_elect = true;
         auto item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
         if (item_ptr == nullptr) {
             return nullptr;
@@ -428,6 +430,10 @@ ZbftPtr BftManager::Start(
     }
 
     txs_ptr->thread_index = thread_index;
+    if (waiting_change_elect) {
+        txs_ptr->type = pools::protobuf::kChangeLeaderTxs;
+    }
+
     auto zbft_ptr = StartBft(elect_item, txs_ptr, prev_bft, prepare_msg_ptr);
     if (zbft_ptr == nullptr) {
         for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
@@ -702,6 +708,17 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     int res = kConsensusSuccess;
     if (header.zbft().leader_idx() >= 0) {
+        if (header.zbft().has_commit_gid()) {
+            auto commit_bft = GetBft(header.zbft().pool_index(), header.zbft().commit_gid());
+            if (commit_bft == nullptr) {
+                SyncConsensusBlock(
+                    elect_item,
+                    msg_ptr->thread_idx,
+                    header.zbft().pool_index(),
+                    header.zbft().commit_gid());
+            }
+        }
+
         BackupHandleZbftMessage(msg_ptr->thread_idx, elect_item, msg_ptr);
         if (!header.zbft().prepare_gid().empty()) {
             if (!msg_ptr->response->header.has_zbft() || !msg_ptr->response->header.zbft().has_agree_precommit()) {
@@ -715,6 +732,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 }
             }
         }
+
     } else {
         LeaderHandleZbftMessage(elect_item, msg_ptr);
     }
@@ -1045,14 +1063,8 @@ void BftManager::SyncConsensusBlock(
     dht::BaseDhtPtr dht = network::DhtManager::Instance()->GetDht(
         common::GlobalInfo::Instance()->network_id());
     dht::DhtPtr readobly_dht = dht->readonly_hash_sort_dht();
-    std::vector<uint32_t> pos_vec;
-    uint32_t idx = 0;
-    for (uint32_t i = 0; i < readobly_dht->size(); ++i) {
-        pos_vec.push_back(i);
-    }
-
-    if (pos_vec.size() > kSyncFromOtherCount) {
-        std::random_shuffle(pos_vec.begin(), pos_vec.end());
+    if (readobly_dht->empty()) {
+        return;
     }
 
     transport::protobuf::Header msg;
@@ -1068,17 +1080,16 @@ void BftManager::SyncConsensusBlock(
     bft_msg.set_member_index(elect_item.local_node_member_index);
     bft_msg.set_elect_height(elect_item.elect_height);
     assert(elect_item.elect_height > 0);
-    for (uint32_t i = 0; i < pos_vec.size() && i < kSyncFromOtherCount; ++i) {
-        transport::TcpTransport::Instance()->Send(
-            thread_idx,
-            (*readobly_dht)[pos_vec[i]]->public_ip,
-            (*readobly_dht)[pos_vec[i]]->public_port,
-            msg);
-        ZJC_DEBUG("send sync block %s:%d bft gid: %s",
-            (*readobly_dht)[pos_vec[i]]->public_ip.c_str(),
-            (*readobly_dht)[pos_vec[i]]->public_port,
-            common::Encode::HexEncode(bft_gid).c_str());
-    }
+    auto tmp_pos = common::Random::RandomUint32() % readobly_dht->size();
+    transport::TcpTransport::Instance()->Send(
+        thread_idx,
+        (*readobly_dht)[tmp_pos]->public_ip,
+        (*readobly_dht)[tmp_pos]->public_port,
+        msg);
+    ZJC_DEBUG("send sync block %s:%d bft gid: %s",
+        (*readobly_dht)[tmp_pos]->public_ip.c_str(),
+        (*readobly_dht)[tmp_pos]->public_port,
+        common::Encode::HexEncode(bft_gid).c_str());
 }
 
 void BftManager::ClearBft(const transport::MessagePtr& msg_ptr) {
@@ -1559,6 +1570,11 @@ ZbftPtr BftManager::CreateBftPtr(
     
     if (txs_ptr == nullptr) {
         return nullptr;
+    }
+
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    if (elect_items_[elect_item_idx_]->time_valid > now_tm_ms) {
+        txs_ptr->type = pools::protobuf::kChangeLeaderTxs;
     }
 
     txs_ptr->thread_index = msg_ptr->thread_idx;
@@ -2221,9 +2237,6 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
     msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_msg.pool_index());
     if (bft_msg.has_prepare_gid() && !bft_msg.prepare_gid().empty()) {
         msg_ptr->response->header.mutable_zbft()->clear_agree_precommit();
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
         if (CheckPrecommit(elect_item, msg_ptr) != kConsensusSuccess) {
             ZJC_DEBUG("check precommit failed precommit gid: %s",
                 common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());

@@ -20,6 +20,7 @@ enum StepType {
     kCreateLibrary = 14;
     kCross = 15;
     kRootCross = 16;
+    kChangeLeaderTxs = 17;
 }
 
 message ToTxHeights {
