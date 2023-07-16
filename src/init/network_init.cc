@@ -315,7 +315,7 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    if (pools.mod_num() >= rotation->rotations.size()) {
+    if (pools.mod_num() >= (int32_t)rotation->rotations.size()) {
         assert(false);
         return;
     }
