@@ -204,7 +204,11 @@ void BftManager::OnNewElectBlock(
         }
     }
 
-    if (elect_item.local_node_member_index >= (int32_t)members->size()) {
+    if (elect_item.local_node_member_index >= members->size()) {
+        auto new_idx = (elect_item_idx_ + 1) % 2;
+        elect_items_[new_idx].reset();
+        elect_items_[new_idx] = elect_item_ptr;
+        elect_item_idx_ = new_idx;
         return;
     }
 
@@ -297,13 +301,13 @@ void BftManager::RotationLeader(
 
     auto elect_item_ptr = std::make_shared<ElectItem>(*old_elect_item_ptr);
     auto old_leader_idx = elect_item_ptr->mod_with_leader_index[leader_mod_num];
-    if (old_leader_idx == new_leader_idx) {
+    if (old_leader_idx == (int32_t)new_leader_idx) {
         return;
     }
 
     (*elect_item_ptr->members)[old_leader_idx]->pool_index_mod_num = -1;
     (*elect_item_ptr->members)[new_leader_idx]->pool_index_mod_num = leader_mod_num;
-    if (elect_item_ptr->local_node_member_index == old_leader_idx) {
+    if ((int32_t)elect_item_ptr->local_node_member_index == old_leader_idx) {
         for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
             elect_item_ptr->thread_set[i] = nullptr;
         }
@@ -1418,7 +1422,7 @@ bool BftManager::VerifyLeaderIdValid(const ElectItem& elect_item, const transpor
     }
 
     auto mod_num = msg_ptr->header.zbft().pool_index() % elect_item.leader_count;
-    if (elect_item.mod_with_leader_index[mod_num] != msg_ptr->header.zbft().member_index()) {
+    if (elect_item.mod_with_leader_index[mod_num] != (int32_t)msg_ptr->header.zbft().member_index()) {
         //assert(false);
         return false;
     }
@@ -1860,13 +1864,13 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
         auto bft_ptr = *bft_queue.rbegin();
         if (bft_ptr->pool_mod_num() >= 0 && bft_ptr->pool_mod_num() < elect_item_ptr->leader_count) {
             auto valid_leader_idx = elect_item_ptr->mod_with_leader_index[bft_ptr->pool_mod_num()];
-            if (valid_leader_idx >= elect_item_ptr->members->size()) {
+            if (valid_leader_idx >= (int32_t)elect_item_ptr->members->size()) {
                 ZJC_DEBUG("invalid leader index %u, mod num: %d, gid: %s",
                     valid_leader_idx, bft_ptr->pool_mod_num(),
                     common::Encode::HexEncode(bft_ptr->gid()).c_str());
                 assert(false);
             } else {
-                if (bft_ptr->leader_index() != valid_leader_idx &&
+                if ((int32_t)bft_ptr->leader_index() != valid_leader_idx &&
                         elect_item_ptr->change_leader_time_valid < now_ms &&
                         bft_ptr->timeout(now_timestamp_us) &&
                         bft_ptr->consensus_status() == kConsensusPreCommit) {
@@ -2322,7 +2326,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                     return;
                 }
 
-                if (tmp_bft->changed_leader_new_index() != bft_msg.leader_idx()) {
+                if ((int32_t)tmp_bft->changed_leader_new_index() != bft_msg.leader_idx()) {
 //                     assert(false);
                     return;
                 }
