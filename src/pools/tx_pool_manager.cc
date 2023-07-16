@@ -600,7 +600,7 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
 
             cross_debug += std::to_string(cross_heights[i]) + " ";
             if (cross_heights[i] != common::kInvalidUint64) {
-                uint64_t update_height = common::kInvalidUint64;
+                uint64_t update_height = cross_pools_[i].latest_height();
                 do {
                     if (cross_pools_[i].latest_height() == common::kInvalidUint64 &&
                             cross_synced_max_heights_[i] < cross_heights[i]) {
@@ -624,13 +624,11 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                     sync_debug.c_str(), cross_debug.c_str(), update_height,
                     cross_synced_max_heights_[i], cross_pools_[i].latest_height(),
                     cross_heights[i]);
-                if (update_height != common::kInvalidUint64) {
-                    cross_synced_max_heights_[i] = cross_heights[i];
-                    if (max_cross_pools_size_ == 1) {
-                        cross_block_mgr_->UpdateMaxHeight(network::kRootCongressNetworkId, cross_heights[i]);
-                    } else {
-                        cross_block_mgr_->UpdateMaxHeight(i + network::kConsensusShardBeginNetworkId, cross_heights[i]);
-                    }
+                cross_synced_max_heights_[i] = cross_heights[i];
+                if (max_cross_pools_size_ == 1) {
+                    cross_block_mgr_->UpdateMaxHeight(network::kRootCongressNetworkId, update_height);
+                } else {
+                    cross_block_mgr_->UpdateMaxHeight(i + network::kConsensusShardBeginNetworkId, update_height);
                 }
             }
         }
