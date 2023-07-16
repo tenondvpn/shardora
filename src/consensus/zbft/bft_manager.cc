@@ -443,8 +443,13 @@ ZbftPtr BftManager::Start(
         return nullptr;
     }
 
-    ZJC_DEBUG("leader start bft success, thread: %d, pool: %d, bft size: %u",
-        thread_index, zbft_ptr->pool_index(), pools_with_zbfts_[zbft_ptr->pool_index()].size());
+    ZJC_DEBUG("leader start bft success, thread: %d, pool: %d, bft size: %u, "
+        "waiting_change_elect: %d,thread_item->pools.size(): %d, "
+        "elect_item_ptr->elect_height: %lu",
+        thread_index, zbft_ptr->pool_index(),
+        pools_with_zbfts_[zbft_ptr->pool_index()].size(),
+        waiting_change_elect, thread_item->pools.size(),
+        elect_item_ptr->elect_height);
     return zbft_ptr;
 }
 
