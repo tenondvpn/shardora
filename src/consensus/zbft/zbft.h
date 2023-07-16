@@ -487,6 +487,10 @@ public:
     }
 
     bool IsChangedLeader() const {
+        if (changed_leader_new_index_ == common::kInvalidUint32 ||
+                local_member_index_ == common::kInvalidUint32) {
+            return false;
+        }
         return changed_leader_new_index_ == local_member_index_;
     }
 
@@ -529,7 +533,7 @@ protected:
     uint32_t prepare_verify_failed_count_{ 0 };
     libff::alt_bn128_Fr local_sec_key_{ libff::alt_bn128_Fr::zero() };
     libff::alt_bn128_G2 common_pk_{ libff::alt_bn128_G2::zero() };
-    uint32_t local_member_index_ = -1;
+    uint32_t local_member_index_ = common::kInvalidUint32;
     std::map<uint64_t, std::set<uint32_t>> vss_random_map_;
     int32_t handle_last_error_code_{ 0 };
     std::string handle_last_error_msg_;
