@@ -431,7 +431,7 @@ ZbftPtr BftManager::Start(
 
     txs_ptr->thread_index = thread_index;
     if (waiting_change_elect) {
-        txs_ptr->type = pools::protobuf::kChangeLeaderTxs;
+        txs_ptr->tx_type = pools::protobuf::kChangeLeaderTxs;
     }
 
     auto zbft_ptr = StartBft(elect_item, txs_ptr, prev_bft, prepare_msg_ptr);
@@ -1574,7 +1574,7 @@ ZbftPtr BftManager::CreateBftPtr(
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (elect_items_[elect_item_idx_]->time_valid > now_tm_ms) {
-        txs_ptr->type = pools::protobuf::kChangeLeaderTxs;
+        txs_ptr->tx_type = pools::protobuf::kChangeLeaderTxs;
     }
 
     txs_ptr->thread_index = msg_ptr->thread_idx;
