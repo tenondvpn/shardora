@@ -1,5 +1,7 @@
 #pragma once
 
+#include <deque>
+
 #include "common/encode.h"
 #include "common/hash.h"
 #include "common/lof.h"
