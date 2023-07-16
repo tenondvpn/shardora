@@ -498,10 +498,6 @@ int BftManager::ChangePrecommitBftLeader(
         ZbftPtr& bft_ptr,
         uint32_t leader_idx,
         const ElectItem& elect_item) {
-    if (bft_ptr->changed_leader_new_index() == leader_idx) {
-        return kConsensusSuccess;
-    }
-
     ZJC_DEBUG("now change precommit leader: %s, leader idx: %d, old elect height: %lu, elect height: %lu",
         common::Encode::HexEncode(bft_ptr->gid()).c_str(), leader_idx, bft_ptr->elect_height(), elect_item.elect_height);
     // pre-commit timeout and changed new leader
@@ -1879,8 +1875,9 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
                             elect_item_ptr->change_leader_time_valid < now_ms &&
                             bft_ptr->timeout(now_timestamp_us) &&
                             bft_ptr->consensus_status() == kConsensusPreCommit) {
-                        ChangePrecommitBftLeader(bft_ptr, valid_leader_idx, *elect_item_ptr);
-                        break;
+                        if (bft_ptr->changed_leader_new_index() != leader_idx) {
+                            ChangePrecommitBftLeader(bft_ptr, valid_leader_idx, *elect_item_ptr);
+                        }
                     }
                 }
             } else {
@@ -1892,7 +1889,9 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
 
             if (bft_ptr->timeout(now_timestamp_us)) {
                 RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
-            } else {
+            }
+
+            if (bft_ptr->consensus_status() != kConsensusPrepare) {
                 break;
             }
         }
