@@ -67,6 +67,7 @@ void TimeBlockManager::CreateTimeBlockTx() {
     tx_info.set_gas_price(common::kBuildinTransactionGasPrice);
     tx_info.set_key(protos::kAttrTimerBlock);
     tmblock_tx_ptr_ = create_tm_tx_cb_(msg_ptr);
+    ZJC_INFO("success create timeblock gid: %s", common::Encode::HexEncode(gid).c_str());
 }
 
 pools::TxItemPtr TimeBlockManager::tmblock_tx_ptr(bool leader, uint32_t pool_index) {

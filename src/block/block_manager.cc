@@ -604,8 +604,10 @@ void BlockManager::RootHandleNormalToTx(
         msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
         msg_ptr->thread_idx = thread_idx;
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_DEBUG("create new address %s, amount: %lu",
-            common::Encode::HexEncode(tos_item.des()).c_str(), tos_item.amount());
+        ZJC_INFO("create new address %s, amount: %lu, gid: %s",
+            common::Encode::HexEncode(tos_item.des()).c_str(),
+            tos_item.amount(),
+            common::Encode::HexEncode(gid).c_str());
     }
 }
 
@@ -727,7 +729,7 @@ void BlockManager::HandleLocalNormalToTx(
         tx->set_gid(gid);
         msg_ptr->thread_idx = thread_idx;
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_DEBUG("success add local transfer tx tos hash: %s, heights_hash: %s, gid: %s",
+        ZJC_INFO("success add local transfer tx tos hash: %s, heights_hash: %s, gid: %s",
             common::Encode::HexEncode(tos_hash).c_str(),
             common::Encode::HexEncode(heights_hash).c_str(),
             common::Encode::HexEncode(gid).c_str());
@@ -968,6 +970,7 @@ void BlockManager::AddMiningToken(
         tx->set_gid(gid);
         msg_ptr->thread_idx = thread_idx;
         pools_mgr_->HandleMessage(msg_ptr);
+        ZJC_INFO("success create kConsensusLocalTos gid: %s", common::Encode::HexEncode(gid).c_str());
     }
 }
 
@@ -1139,10 +1142,13 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
             tx_ptr->tx_hash = statistic_hash;
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             statistic_item->shard_statistic_tx = tx_ptr;
-            ZJC_DEBUG("success add statistic tx: %s, statistic elect height: %lu, heights: %s, timeout: %lu, kStatisticTimeoutMs: %lu, now: %lu",
+            ZJC_INFO("success add statistic tx: %s, statistic elect height: %lu, "
+                "heights: %s, timeout: %lu, kStatisticTimeoutMs: %lu, now: %lu, gid: %s",
                 common::Encode::HexEncode(statistic_hash).c_str(),
                 msg_ptr->header.block_proto().statistic_tx().elect_height(),
-                height_str.c_str(), tx_ptr->timeout, kStatisticTimeoutMs, common::TimeUtils::TimestampMs());
+                height_str.c_str(), tx_ptr->timeout,
+                kStatisticTimeoutMs, common::TimeUtils::TimestampMs(),
+                common::Encode::HexEncode(gid).c_str());
         }
     }
 
@@ -1168,7 +1174,9 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
             tx_ptr->tx_hash = cross_hash;
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
             statistic_item->cross_statistic_tx = tx_ptr;
-            ZJC_DEBUG("success add cross tx: %s", common::Encode::HexEncode(cross_hash).c_str());
+            ZJC_INFO("success add cross tx: %s, gid: %s",
+                common::Encode::HexEncode(cross_hash).c_str(),
+                common::Encode::HexEncode(gid).c_str());
         }
     }
 
@@ -1236,8 +1244,9 @@ void BlockManager::RootCreateCrossTx(
     tx->set_value(hash);
     msg_ptr->thread_idx = thread_idx;
     pools_mgr_->HandleMessage(msg_ptr);
-    ZJC_DEBUG("create cross tx %s",
-        common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str());
+    ZJC_INFO("create cross tx %s, gid: %s",
+        common::Encode::HexEncode(msg_ptr->address_info->addr()).c_str(),
+        common::Encode::HexEncode(gid).c_str());
 }
 
 void BlockManager::HandleStatisticBlock(
@@ -1301,7 +1310,7 @@ void BlockManager::HandleStatisticBlock(
     shard_elect_tx->tx_ptr->time_valid += kElectValidTimeout;
     shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + kElectTimeout;
     shard_elect_tx_[block.network_id()] = shard_elect_tx;
-    ZJC_DEBUG("success add elect tx: %u, %lu, gid: %s, statistic elect height: %lu",
+    ZJC_INFO("success add elect tx: %u, %lu, gid: %s, statistic elect height: %lu",
         block.network_id(), block.timeblock_height(),
         common::Encode::HexEncode(gid).c_str(),
         elect_statistic.elect_height());
@@ -1408,8 +1417,10 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     leader_to_txs->to_tx = to_txs_ptr;
     to_txs_ptr->success = true;
     to_txs_ptr->leader_to_index = shard_to.leader_to_idx();
-    ZJC_DEBUG("success add txs: %s, leader idx: %u, leader to index: %d",
-        common::Encode::HexEncode(tos_hashs).c_str(), shard_to.leader_idx(), shard_to.leader_to_idx());
+    ZJC_INFO("success add txs: %s, leader idx: %u, leader to index: %d, gid: %s",
+        common::Encode::HexEncode(tos_hashs).c_str(),
+        shard_to.leader_idx(), shard_to.leader_to_idx(),
+        common::Encode::HexEncode(gid).c_str());
     if (all_valid) {
         leader_to_txs->to_txs_msg = nullptr;
     }
