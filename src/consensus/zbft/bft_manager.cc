@@ -331,6 +331,7 @@ void BftManager::RotationLeader(
         elect_item_ptr->time_valid,
         elect_item_ptr->change_leader_time_valid,
         elect_item_ptr->invalid_time);
+    assert(false);
 }
 
 ZbftPtr BftManager::Start(
