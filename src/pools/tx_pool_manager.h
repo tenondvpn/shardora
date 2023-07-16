@@ -173,7 +173,6 @@ public:
         tx_pool_[pool_index].GetHeightInvalidChangeLeaderHashs(height, hashs);
     }
 
-
     void InitCrossPools();
 
 private:
@@ -238,6 +237,8 @@ private:
     common::Tick tick_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> pools_msg_queue_[common::kMaxThreadCount];
     RotationLeaderCallback rotatition_leader_cb_ = nullptr;
+    std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>> invalid_pools_;
+    uint64_t prev_elect_height_ = common::kInvalidUint64;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

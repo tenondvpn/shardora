@@ -389,6 +389,7 @@ void NetworkInit::RotationLeaderCallback(uint8_t thread_idx, const std::vector<s
         auto mod_idx = i % rotation->rotations.size();
         tx_counts[mod_idx].first += invalid_pools[i].first;
         tx_counts[mod_idx].second += invalid_pools[i].second;
+        ZJC_DEBUG("pool: %u, handled: %u, all: %u", i, invalid_pools[i].first, invalid_pools[i].second);
     }
 
     for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {

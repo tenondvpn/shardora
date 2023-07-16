@@ -686,12 +686,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             elect_item_ptr = nullptr;
             break;
         }
-
-        if (elect_item_ptr->invalid_time < now_ms) {
-            ZJC_DEBUG("elect item time invalid");
-            elect_item_ptr = nullptr;
-            break;
-        }
     } while (0);
 
     if (elect_item_ptr == nullptr) {
