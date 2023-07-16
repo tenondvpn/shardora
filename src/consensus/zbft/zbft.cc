@@ -752,7 +752,7 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
         zjc_block.pool_index(),
         zjc_block.height(),
         change_leader_invalid_hashs);
-    for (int32_t i = 0; i < change_leader_invalid_hashs.size(); ++i) {
+    for (uint32_t i = 0; i < change_leader_invalid_hashs.size(); ++i) {
         zjc_block.add_change_leader_invalid_hashs(change_leader_invalid_hashs[i]);
     }
 
