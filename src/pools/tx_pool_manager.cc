@@ -36,7 +36,7 @@ TxPoolManager::TxPoolManager(
 
     ZJC_INFO("TxPoolManager init success: %d", common::kInvalidPoolIndex);
     InitCrossPools();
-    pop_message_thread_ = std::make_shared<std::thread>(std::bind(&TxPoolManager::PopPoolsMessage, this));
+    pop_message_thread_ = std::make_shared<std::thread>(&TxPoolManager::PopPoolsMessage, this);
     tick_.CutOff(
         10000lu,
         std::bind(&TxPoolManager::ConsensusTimerMessage, this, std::placeholders::_1));
@@ -46,6 +46,7 @@ TxPoolManager::TxPoolManager(
 }
 
 TxPoolManager::~TxPoolManager() {
+    destroy_ = true;
     FlushHeightTree();
     if (tx_pool_ != nullptr) {
         delete []tx_pool_;
@@ -431,7 +432,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void TxPoolManager::PopPoolsMessage() {
-    while (true) {
+    while (!destroy_) {
         for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
             while (pools_msg_queue_[i].size() > 0) {
                 transport::MessagePtr msg_ptr = nullptr;

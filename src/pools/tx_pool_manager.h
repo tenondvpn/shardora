@@ -244,6 +244,7 @@ private:
     std::shared_ptr<std::thread> pop_message_thread_ = nullptr;
     std::condition_variable pop_tx_con_;
     std::mutex pop_tx_mu_;
+    volatile bool destroy_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };
