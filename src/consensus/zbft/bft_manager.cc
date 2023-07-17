@@ -2942,10 +2942,22 @@ void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
         }
     }
 
-    if (!msg.has_zbft() || msg.zbft().invalid_bfts_size() <= 0) {
+    if (msg.invalid_bfts_size() <= 0) {
         return;
     }
 
+    auto elect_item_ptr = std::make_shared<ElectItem>(*old_elect_item);
+    auto& elect_item = *elect_item_ptr;
+    msg.mutable_zbft()->set_member_index(elect_item.local_node_member_index);
+    msg.mutable_zbft()->set_elect_height(elect_item.elect_height);
+    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
+    std::string sign;
+    if (security_ptr_->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
+        assert(false);
+        return false;
+    }
+
+    msg.set_sign(sign);
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     auto* brdcast = msg.mutable_broadcast();
     network::Route::Instance()->Send(msg_ptr);

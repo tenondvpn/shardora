@@ -422,6 +422,10 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    if (header.invalid_bfts_size() > 0) {
+        return;
+    }
+
     assert(msg_ptr->thread_idx < common::kMaxThreadCount);
     pools_msg_queue_[msg_ptr->thread_idx].push(msg_ptr);
     pop_tx_con_.notify_one();
