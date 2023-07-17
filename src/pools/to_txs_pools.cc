@@ -94,7 +94,7 @@ bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_
             if (tx_list[i].status() != consensus::kConsensusSuccess) {
                 ZJC_INFO("tx status error: %d, gid: %s, net: %u, pool: %u, height: %lu, hash: %s",
                     tx_list[i].status(), common::Encode::HexEncode(tx_list[i].gid()).c_str(),
-                    block.network_id(), block.pool_index(), block..height(),
+                    block.network_id(), block.pool_index(), block.height(),
                     common::Encode::HexEncode(block.hash()).c_str());
                 assert(false);
                 continue;
