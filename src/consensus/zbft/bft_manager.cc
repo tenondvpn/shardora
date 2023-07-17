@@ -335,7 +335,7 @@ void BftManager::RotationLeader(
         elect_item_ptr->time_valid,
         elect_item_ptr->change_leader_time_valid,
         elect_item_ptr->invalid_time);
-    assert(false);
+//     assert(false);
 }
 
 ZbftPtr BftManager::Start(
@@ -386,14 +386,6 @@ ZbftPtr BftManager::Start(
         if (thread_item->pools[thread_item->pools.size() - 1] == common::kRootChainPoolIndex) {
             if (pools_with_zbfts_[common::kRootChainPoolIndex].empty()) {
                 txs_ptr = txs_pools_->LeaderGetValidTxs(common::kRootChainPoolIndex);
-            }
-
-            if (txs_ptr == nullptr) {
-                if (prev_bft == nullptr) {
-                    if (now_bft_count_ >= kMaxBftCount) {
-                        return nullptr;
-                    }
-                }
             }
         }
 
@@ -1693,7 +1685,6 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
     }
 
     bft_queue.push_back(bft_ptr);
-    ++now_bft_count_;
     ZJC_DEBUG("success add bft pool idx: %d, add gid: %s",
         bft_ptr->pool_index(),
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
@@ -1720,7 +1711,6 @@ void BftManager::RemoveBftWithBlockHeight(uint32_t pool_index, uint64_t height) 
                 common::Encode::HexEncode((*iter)->gid()).c_str(), pool_index);
             (*iter)->Destroy();
             iter == bft_queue.erase(iter);
-            --now_bft_count_;
         } else {
             ++iter;
         }
@@ -1731,23 +1721,32 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
     auto& bft_queue = pools_with_zbfts_[pool_index];
     ZJC_DEBUG("try to remove bft gid: %s, pool_index: %d, now size: %u",
         common::Encode::HexEncode(gid).c_str(), pool_index, bft_queue.size());
+    auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pool_index];
     for (auto iter = bft_queue.begin(); iter != bft_queue.end(); ++iter) {
         auto& bft_ptr = *iter;
         if (bft_ptr->gid() != gid) {
             continue;
         }
 
-        auto next_iter = iter;
-        ++next_iter;
         if (bft_ptr->consensus_status() == kConsensusPreCommit) {
             if (bft_ptr->this_node_is_leader()) {
                 ReConsensusBft(bft_ptr);
             } else if (bft_ptr->IsChangedLeader()) {
                 ReConsensusChangedLeaderBft(bft_ptr);
             }
+        } else if (bft_ptr->consensus_status() == kConsensusPrepare) {
+            if (bft_ptr->this_node_is_leader()) {
+                bft_ptr->Destroy();
+                bft_queue.erase(iter);
+                ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
+            } else {
+                removed_prepare_bfts_queue_[thread_idx].push(bft_ptr);
+                removed_prepare_bfts_[thread_idx][gid] = bft_ptr;
+                ZJC_DEBUG("remove preapre bft gid: %s, pool_index: %d, now size: %lu",
+                    common::Encode::HexEncode(gid).c_str(), pool_index, removed_prepare_bfts_queue_[thread_idx].size());
+            }
         } else {
             bft_ptr->Destroy();
-            --now_bft_count_;
             bft_queue.erase(iter);
             ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
         }
@@ -2305,92 +2304,6 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             return;
         }
 
-        auto& pools_bft_vec = pools_with_zbfts_[bft_msg.pool_index()];
-        auto iter = pools_bft_vec.begin();
-        while (iter != pools_bft_vec.end()) {
-            auto tmp_bft = *iter;
-            if (tmp_bft->prepare_block() == nullptr) {
-                ++iter;
-                continue;
-            }
-
-            if (tmp_bft->pool_index() != bft_ptr->pool_index()) {
-                assert(false);
-                return;
-            }
-
-            if (tmp_bft->prepare_block()->height() == bft_ptr->prepare_block()->height()) {
-                if (tmp_bft->consensus_status() == kConsensusPrepare) {
-                    if (tmp_bft->pipeline_prev_zbft_ptr() == nullptr ||
-                            tmp_bft->pipeline_prev_zbft_ptr()->gid() == bft_msg.precommit_gid()) {
-                        ZJC_DEBUG("remove bft gid: %s, pool_index: %d",
-                            common::Encode::HexEncode(tmp_bft->gid()).c_str(),
-                            tmp_bft->pool_index());
-                        tmp_bft->Destroy();
-                        iter = pools_bft_vec.erase(iter);
-                        continue;
-                    }
-                    
-                    ZJC_DEBUG("bft consensus status error: %u, %s, height: %lu",
-                        tmp_bft->consensus_status(),
-                        common::Encode::HexEncode(tmp_bft->gid()).c_str(),
-                        tmp_bft->prepare_block()->height());
-//                     assert(false);
-                    msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
-                    return;
-                }
-
-                if ((int32_t)tmp_bft->changed_leader_new_index() != bft_msg.leader_idx()) {
-//                     assert(false);
-                    ZJC_DEBUG("bft consensus status error: %u, %s, height: %lu, "
-                        "tmp_bft->changed_leader_new_index() != bft_msg.leader_idx()",
-                        tmp_bft->consensus_status(),
-                        common::Encode::HexEncode(tmp_bft->gid()).c_str(),
-                        tmp_bft->prepare_block()->height(),
-                        tmp_bft->changed_leader_new_index(), bft_msg.leader_idx());
-                    return;
-                }
-
-                if (tmp_bft->changed_leader_elect_height() != bft_msg.elect_height()) {
-                    ZJC_DEBUG("bft consensus status error: %u, %s, height: %lu, "
-                        "tmp_bft->changed_leader_elect_height() != bft_msg.elect_height()",
-                        tmp_bft->consensus_status(),
-                        common::Encode::HexEncode(tmp_bft->gid()).c_str(),
-                        tmp_bft->prepare_block()->height(),
-                        tmp_bft->changed_leader_elect_height(), bft_msg.elect_height());
-                    return;
-                }
-
-                bool invalid_hash_found = false;
-                for (int32_t i = 0; i < tmp_bft->prepare_block()->change_leader_invalid_hashs_size(); ++i) {
-                    if (tmp_bft->prepare_block()->change_leader_invalid_hashs(i) ==
-                            tmp_bft->prepare_block()->hash()) {
-                        invalid_hash_found = true;
-                        break;
-                    }
-                }
-
-                if (!invalid_hash_found) {
-                    ZJC_DEBUG("bft consensus status error: %u, %s, height: %lu, "
-                        "invalid_hash_found: false",
-                        tmp_bft->consensus_status(),
-                        common::Encode::HexEncode(tmp_bft->gid()).c_str(),
-                        tmp_bft->prepare_block()->height());
-                    msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
-                    return;
-                }
-
-                ZJC_DEBUG("backup success change leader and start new bft: %s, "
-                    "change leader idx: %u, elect height: %lu",
-                    common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-                    tmp_bft->changed_leader_new_index(),
-                    tmp_bft->changed_leader_elect_height());
-                changed_leader_pools_height_[bft_ptr->pool_index()] = bft_ptr;
-            }
-
-            ++iter;
-        }
-
         ZJC_DEBUG("success create bft ptr backup create consensus bft gid: %s",
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
 #ifdef ZJC_UNITTEST
@@ -2405,7 +2318,8 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
             bft_ptr->txs_ptr()->txs.size());
         if (bft_ptr->local_prepare_hash().empty()) {
-            ZJC_DEBUG("failed backup create consensus bft prepare hash: %s, prehash: %s, leader prehash: %s, pre height: %lu, leader pre height: %lu, gid: %s, tx size: %d",
+            ZJC_DEBUG("failed backup create consensus bft prepare hash: %s, prehash: %s, "
+                "leader prehash: %s, pre height: %lu, leader pre height: %lu, gid: %s, tx size: %d",
                 common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
                 common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
                 common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
@@ -2444,9 +2358,14 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         msg_ptr->response->header.mutable_zbft()->set_agree_commit(false);
         auto precommit_bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.precommit_gid());
         if (precommit_bft_ptr == nullptr) {
-            ZJC_DEBUG("get precommit gid failed: %s",
-                common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-            return;
+            auto iter = removed_prepare_bfts_[msg_ptr->thread_idx].find(bft_msg.precommit_gid());
+            if (iter != removed_prepare_bfts_[msg_ptr->thread_idx].end()) {
+                precommit_bft_ptr = iter->second;
+            } else {
+                ZJC_DEBUG("get precommit gid failed: %s",
+                    common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+                return;
+            }
         }
 
         if (BackupPrecommit(precommit_bft_ptr, msg_ptr) != kConsensusSuccess) {

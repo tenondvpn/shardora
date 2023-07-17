@@ -62,8 +62,8 @@ void ThreadHandler::HandleMessage() {
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
                 }
 
-                ZJC_INFO("over handle message: %d use: %lu us, all: %s, thread: %d",
-                    msg_ptr->header.type(), (etime - btime), t.c_str(), thread_idx_);
+                ZJC_INFO("over handle message: %d, thread: %d use: %lu us, all: %s",
+                    msg_ptr->header.type(), thread_idx_, (etime - btime), t.c_str());
             }
             ZJC_DEBUG("end message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
         }
@@ -83,7 +83,7 @@ void ThreadHandler::HandleMessage() {
                     t += std::to_string(msg_ptr->times[i] - msg_ptr->times[i - 1]) + " ";
                 }
 
-                ZJC_INFO("kConsensusTimerMessage over handle message: %d use: %lu us, all: %s", msg_ptr->header.type(), (etime - btime), t.c_str());
+                ZJC_INFO("kConsensusTimerMessage over handle message: %d, thread: %d use: %lu us, all: %s", msg_ptr->header.type(), thread_idx_,(etime - btime), t.c_str());
             }
             ZJC_DEBUG("end kConsensusTimerMessage message handled msg hash: %lu, thread idx: %d", msg_ptr->header.hash64(), msg_ptr->thread_idx);
             ++thread_timer_hash_64;
