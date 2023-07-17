@@ -57,7 +57,6 @@ static const int64_t kChangeLeaderTimePeriodSec = 30l;
 static const uint32_t kSyncFromOtherCount = 1u;
 static const uint64_t kElectBlockValidTimeMs = 10000lu;
 static const uint64_t kRemovePrecommitedBftTimeUs = common::kRotationPeriod;
-static const uint64_t kTimeBlockValidOffsetSeconds = 30;
 
 class WaitingTxsItem;
 struct ZbftItem {
