@@ -150,12 +150,12 @@ public:
     }
 
     void set_prepare_hash(const std::string& prepare_hash) {
-        preapre_hash_ = prepare_hash;
+        prepare_hash_ = prepare_hash;
         bls_mgr_->GetLibffHash(prepare_hash, &g1_prepare_hash_);
     }
 
-    const std::string& preapre_hash() const {
-        return preapre_hash_;
+    const std::string& prepare_hash() const {
+        return prepare_hash_;
     }
 
     void set_precoimmit_hash() {
@@ -568,7 +568,7 @@ protected:
     transport::MessagePtr prepare_msg_ptr_ = nullptr;
     uint32_t changed_leader_new_index_ = common::kInvalidUint32;
     uint64_t changed_leader_elect_height_ = common::kInvalidUint64;
-    std::string preapre_hash_;
+    std::string prepare_hash_;
 
     DISALLOW_COPY_AND_ASSIGN(Zbft);
 public:
