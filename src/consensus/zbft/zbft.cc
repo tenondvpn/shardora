@@ -730,8 +730,7 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
 //     ZJC_DEBUG("add new block: %lu", zjc_block.height());
     zjc_block.set_timestamp(common::TimeUtils::TimestampMs());
     auto now_tm_sec = common::TimeUtils::TimestampSeconds();
-    if (txs_ptr_->tx_type != pools::protobuf::kNormalFrom &&
-            txs_ptr_->tx_type != pools::protobuf::kChangeLeaderTxs) {
+    if (txs_ptr_->tx_type != pools::protobuf::kNormalFrom) {
         zjc_block.set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
     }
 
