@@ -1428,6 +1428,11 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     auto rbegin = leader_to_txs_.rbegin();
     if (rbegin != leader_to_txs_.rend()) {
         latest_to_tx_ = rbegin->second;
+        ZJC_INFO("set success add txs: %s, leader idx: %u, leader to index: %d, gid: %s",
+            common::Encode::HexEncode(tos_hashs).c_str(),
+            shard_to.leader_idx(), shard_to.leader_to_idx(),
+            common::Encode::HexEncode(gid).c_str());
+        assert(latest_to_tx_->to_tx != nullptr);
     }
 }
 
