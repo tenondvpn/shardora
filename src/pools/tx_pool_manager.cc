@@ -922,7 +922,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
                 msg_ptr->header.sign()) != security::kSecuritySuccess) {
             ZJC_DEBUG("verify signature failed!");
             assert(false);
-            continue;
+            return;
         }
     }
 
@@ -931,7 +931,6 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
-    auto& tx_msg = msg_ptr->header.tx_proto();
     if (msg_ptr->address_info->balance() <
             tx_msg.amount() + tx_msg.contract_prepayment() +
             consensus::kTransferGas * tx_msg.gas_price()) {
