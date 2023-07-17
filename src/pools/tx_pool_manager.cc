@@ -209,7 +209,6 @@ void TxPoolManager::FlushHeightTree() {
 
 void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-//     PopPoolsMessage(thread_idx);
     if (prev_sync_height_tree_tm_ms_ < now_tm_ms) {
         FlushHeightTree();
         prev_sync_height_tree_tm_ms_ = now_tm_ms + kFlushHeightTreePeriod;
@@ -434,7 +433,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
 void TxPoolManager::PopPoolsMessage() {
     while (!destroy_) {
-        for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
+        for (uint8_t i = 0; i < common::kMaxThreadCount; ++i) {
             while (pools_msg_queue_[i].size() > 0) {
                 transport::MessagePtr msg_ptr = nullptr;
                 if (!pools_msg_queue_[i].pop(&msg_ptr)) {
@@ -915,6 +914,18 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
 }
 
 void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
+    auto& tx_msg = msg_ptr->header.tx_proto();
+    if (tx_msg.step() == pools::protobuf::kNormalFrom) {
+        if (security_->Verify(
+                msg_ptr->msg_hash,
+                tx_msg.pubkey(),
+                msg_ptr->header.sign()) != security::kSecuritySuccess) {
+            ZJC_DEBUG("verify signature failed!");
+            assert(false);
+            continue;
+        }
+    }
+
     if (!UserTxValid(msg_ptr)) {
         assert(false);
         return;
@@ -936,7 +947,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 //     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
-//     ZJC_DEBUG("success push tx: %s, %lu", common::Encode::HexEncode(tx_msg.gid()).c_str(), msg_ptr->header.hash64());
+    ZJC_DEBUG("success push tx: %s, %lu", common::Encode::HexEncode(tx_msg.gid()).c_str(), msg_ptr->header.hash64());
 }
 
 void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr) {
@@ -999,16 +1010,16 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
     while (msg_queues_[pool_index].size() > 0 && ++count < kPopMessageCountEachTime) {
         transport::MessagePtr msg_ptr = nullptr;
         msg_queues_[pool_index].pop(&msg_ptr);
-        auto& tx_msg = msg_ptr->header.tx_proto();
-        if (tx_msg.step() == pools::protobuf::kNormalFrom) {
-            if (security_->Verify(
-                    msg_ptr->msg_hash,
-                    tx_msg.pubkey(),
-                    msg_ptr->header.sign()) != security::kSecuritySuccess) {
-                ZJC_WARN("verify signature failed!");
-                continue;
-            }
-        }
+//         auto& tx_msg = msg_ptr->header.tx_proto();
+//         if (tx_msg.step() == pools::protobuf::kNormalFrom) {
+//             if (security_->Verify(
+//                     msg_ptr->msg_hash,
+//                     tx_msg.pubkey(),
+//                     msg_ptr->header.sign()) != security::kSecuritySuccess) {
+//                 ZJC_WARN("verify signature failed!");
+//                 continue;
+//             }
+//         }
 
         DispatchTx(pool_index, msg_ptr);
 //         ZJC_DEBUG("success pop tx: %s, %lu", common::Encode::HexEncode(tx_msg.gid()).c_str(), msg_ptr->header.hash64());
