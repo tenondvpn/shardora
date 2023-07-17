@@ -278,6 +278,7 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     CheckMessageTimeout(msg_ptr->thread_idx);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+    BroadcastInvalidGids(msg_ptr->thread_idx);
 #endif
 }
 
@@ -1737,6 +1738,10 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
                 // invalid gid and broadcast it
             }
         } else {
+            if (bft_ptr->consensus_status() == kConsensusPrepare) {
+                removed_preapare_gid_with_hash_[pool_index].Insert(gid, bft_ptr);
+            }
+
             bft_ptr->Destroy();
             bft_queue.erase(iter);
             ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
@@ -2326,8 +2331,7 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
 
         if (AddBft(bft_ptr) != kConsensusSuccess) {
             msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
-        }
-        else {
+        } else {
             msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
             bft_ptr->set_prepare_msg_ptr(msg_ptr);
         }
@@ -2349,9 +2353,13 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         msg_ptr->response->header.mutable_zbft()->set_agree_commit(false);
         auto precommit_bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.precommit_gid());
         if (precommit_bft_ptr == nullptr) {
-            ZJC_DEBUG("get precommit gid failed: %s",
-                common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-            return;
+            if (!removed_preapare_gid_with_hash_[bft_msg.pool_index()].Get(
+                    bft_msg.precommit_gid(),
+                    &precommit_bft_ptr)) {
+                ZJC_DEBUG("get precommit gid failed: %s",
+                    common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+                return;
+            }
         }
 
         if (BackupPrecommit(precommit_bft_ptr, msg_ptr) != kConsensusSuccess) {
@@ -2895,6 +2903,36 @@ void BftManager::LeaderBroadcastBlock(
     default:
         break;
     }
+}
+
+void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    msg_ptr->thread_idx = thread_idx;
+    auto& msg = msg_ptr->header;
+    msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    msg.set_type(common::kConsensusMessage);
+    dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
+    msg.set_des_dht_key(dht_key.StrKey());
+    for (uint32_t pool_index = 0; pool_index < common::kInvalidPoolIndex; ++pool_index) {
+        if (common::GlobalInfo::Instance()->pools_with_thread()[pool_index] != thread_idx) {
+            continue;
+        }
+
+        if (bft_ptr->timeout(now_timestamp_us) && bft_ptr->consensus_status() == kConsensusPreCommit) {
+            auto invalid_bfts = msg.mutable_zbft()->add_invalid_bfts();
+            invalid_bfts->set_pool_index(iter->second.first);
+            invalid_bfts->set_gid(iter->first);
+            invalid_bfts->set_hash(iter->second.second);
+            ZJC_DEBUG("success broadcast invalid gids to pool: %u, gid: %s, hash: %s",
+                iter->second.first,
+                common::Encode::HexEncode(iter->first).c_str(),
+                common::Encode::HexEncode(iter->second.second).c_str());
+        }
+    }
+
+    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
+    auto* brdcast = msg.mutable_broadcast();
+    network::Route::Instance()->Send(msg_ptr);
 }
 
 void BftManager::BroadcastBlock(
