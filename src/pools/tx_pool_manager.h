@@ -1,7 +1,9 @@
 #pragma once
 
 #include <bitset>
+#include <condition_variable>
 #include <memory>
+#include <mutex>
 
 #include "common/bitmap.h"
 #include "common/thread_safe_queue.h"
