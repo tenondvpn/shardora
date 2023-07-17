@@ -202,7 +202,7 @@ void ElectManager::ElectedToConsensusShard(
 
             prev_elected_ids_ = now_elected_ids_;
             if (Join(thread_idx, elect_block.shard_network_id()) != kElectSuccess) {
-                ELECT_ERROR("join elected network failed![%u]", elect_block.shard_network_id());
+                ELECT_WARN("join elected network failed![%u]", elect_block.shard_network_id());
             } else {
                 ELECT_INFO("join new election shard network: %u", elect_block.shard_network_id());
             }

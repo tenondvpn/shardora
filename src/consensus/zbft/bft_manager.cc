@@ -675,7 +675,9 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         if (elect_item_ptr->local_node_member_index == header.zbft().member_index()) {
             //assert(false);
             elect_item_ptr = nullptr;
-            break;
+            ZJC_DEBUG("node member index invalid: %u, %u",
+                elect_item_ptr->local_node_member_index == header.zbft().member_index());
+            return;
         }
 
         if (header.zbft().has_sync_block() && header.zbft().sync_block()) {
@@ -684,7 +686,8 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     
         if (!elect_item_ptr->bls_valid) {
             elect_item_ptr = nullptr;
-            break;
+            ZJC_DEBUG("node member index bls invalid");
+            return;
         }
     } while (0);
 
@@ -692,6 +695,8 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         if (header.zbft().leader_idx() >= 0 && !header.zbft().prepare_gid().empty()) {
             // timer to re-handle the message
             if (msg_ptr->timeout > now_ms * 1000lu) {
+                ZJC_DEBUG("0 push prepare message : %s, hash64: %lu",
+                    common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(), header.hash64());
                 backup_prapare_msg_queue_[msg_ptr->thread_idx].push_back(msg_ptr);
                 if (backup_prapare_msg_queue_[msg_ptr->thread_idx].size() > 16) {
                     backup_prapare_msg_queue_[msg_ptr->thread_idx].pop_front();
@@ -739,6 +744,8 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             if (!msg_ptr->response->header.has_zbft() || !msg_ptr->response->header.zbft().has_agree_precommit()) {
                 // timer to re-handle the message
                 if (msg_ptr->timeout > now_ms * 1000lu) {
+                    ZJC_DEBUG("0 push prepare message : %s, hash64: %lu",
+                        common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(), header.hash64());
                     backup_prapare_msg_queue_[msg_ptr->thread_idx].push_back(msg_ptr);
                     if (backup_prapare_msg_queue_[msg_ptr->thread_idx].size() > 16) {
                         backup_prapare_msg_queue_[msg_ptr->thread_idx].pop_front();
@@ -2316,6 +2323,9 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                 if (tmp_bft->consensus_status() == kConsensusPrepare) {
                     if (tmp_bft->pipeline_prev_zbft_ptr() == nullptr ||
                             tmp_bft->pipeline_prev_zbft_ptr()->gid() == bft_msg.precommit_gid()) {
+                        ZJC_DEBUG("remove bft gid: %s, pool_index: %d",
+                            common::Encode::HexEncode(tmp_bft->gid()).c_str(),
+                            tmp_bft->pool_index());
                         tmp_bft->Destroy();
                         iter = pools_bft_vec.erase(iter);
                         continue;
@@ -2326,16 +2336,28 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                         common::Encode::HexEncode(tmp_bft->gid()).c_str(),
                         tmp_bft->prepare_block()->height());
 //                     assert(false);
+                    msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
                     return;
                 }
 
                 if ((int32_t)tmp_bft->changed_leader_new_index() != bft_msg.leader_idx()) {
 //                     assert(false);
+                    ZJC_DEBUG("bft consensus status error: %u, %s, height: %lu, "
+                        "tmp_bft->changed_leader_new_index() != bft_msg.leader_idx()",
+                        tmp_bft->consensus_status(),
+                        common::Encode::HexEncode(tmp_bft->gid()).c_str(),
+                        tmp_bft->prepare_block()->height(),
+                        tmp_bft->changed_leader_new_index(), bft_msg.leader_idx());
                     return;
                 }
 
                 if (tmp_bft->changed_leader_elect_height() != bft_msg.elect_height()) {
-//                     assert(false);
+                    ZJC_DEBUG("bft consensus status error: %u, %s, height: %lu, "
+                        "tmp_bft->changed_leader_elect_height() != bft_msg.elect_height()",
+                        tmp_bft->consensus_status(),
+                        common::Encode::HexEncode(tmp_bft->gid()).c_str(),
+                        tmp_bft->prepare_block()->height(),
+                        tmp_bft->changed_leader_elect_height(), bft_msg.elect_height());
                     return;
                 }
 
@@ -2349,6 +2371,12 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
                 }
 
                 if (!invalid_hash_found) {
+                    ZJC_DEBUG("bft consensus status error: %u, %s, height: %lu, "
+                        "invalid_hash_found: false",
+                        tmp_bft->consensus_status(),
+                        common::Encode::HexEncode(tmp_bft->gid()).c_str(),
+                        tmp_bft->prepare_block()->height());
+                    msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
                     return;
                 }
 
@@ -2623,14 +2651,14 @@ ZbftPtr BftManager::LeaderGetZbft(
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
     if (bft_ptr == nullptr) {
-//         ZJC_DEBUG("leader get bft gid failed[%s], hash64: %lu",
-//             common::Encode::HexEncode(bft_gid).c_str(), msg_ptr->header.hash64());
+        ZJC_DEBUG("leader get bft gid failed[%s], hash64: %lu",
+            common::Encode::HexEncode(bft_gid).c_str(), msg_ptr->header.hash64());
         return nullptr;
     }
 
     if (!bft_ptr->this_node_is_leader()) {
-//         ZJC_DEBUG("not valid leader get bft gid failed[%s]",
-//             common::Encode::HexEncode(bft_gid).c_str());
+        ZJC_DEBUG("not valid leader get bft gid failed[%s]",
+            common::Encode::HexEncode(bft_gid).c_str());
         return nullptr;
     }
 
