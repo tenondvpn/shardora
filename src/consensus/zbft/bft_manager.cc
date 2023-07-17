@@ -1733,6 +1733,8 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
                 ReConsensusBft(bft_ptr);
             } else if (bft_ptr->IsChangedLeader()) {
                 ReConsensusChangedLeaderBft(bft_ptr);
+            } else {
+                // invalid gid and broadcast it
             }
         } else {
             bft_ptr->Destroy();
