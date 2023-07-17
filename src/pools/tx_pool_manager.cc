@@ -36,6 +36,7 @@ TxPoolManager::TxPoolManager(
 
     ZJC_INFO("TxPoolManager init success: %d", common::kInvalidPoolIndex);
     InitCrossPools();
+    pop_message_thread_ = std::make_shared<std::thread>(std::bind(&TxPoolManager::PopPoolsMessage, this));
     tick_.CutOff(
         10000lu,
         std::bind(&TxPoolManager::ConsensusTimerMessage, this, std::placeholders::_1));
@@ -206,7 +207,7 @@ void TxPoolManager::FlushHeightTree() {
 
 void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    PopPoolsMessage(thread_idx);
+//     PopPoolsMessage(thread_idx);
     if (prev_sync_height_tree_tm_ms_ < now_tm_ms) {
         FlushHeightTree();
         prev_sync_height_tree_tm_ms_ = now_tm_ms + kFlushHeightTreePeriod;
@@ -414,25 +415,37 @@ std::shared_ptr<address::protobuf::AddressInfo> TxPoolManager::GetAddressInfo(
 
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // just one thread
+    auto& header = msg_ptr->header;
+    if (header.has_sync_heights()) {
+        HandleSyncPoolsMaxHeight(msg_ptr);
+        return;
+    }
+
     assert(msg_ptr->thread_idx < common::kMaxThreadCount);
     pools_msg_queue_[msg_ptr->thread_idx].push(msg_ptr);
+    pop_tx_con_.notify_one();
     ZJC_DEBUG("success add message hash64: %lu", msg_ptr->header.hash64());
     //     ZJC_DEBUG("queue size msg_ptr->thread_idx: %d, pools_msg_queue_: %d",
 //         msg_ptr->thread_idx, pools_msg_queue_[msg_ptr->thread_idx].size());
 //     assert(pools_msg_queue_[msg_ptr->thread_idx].size() < 512);
 }
 
-void TxPoolManager::PopPoolsMessage(uint8_t thread_idx) {
-    for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
-        while (pools_msg_queue_[i].size() > 0) {
-            transport::MessagePtr msg_ptr = nullptr;
-            if (!pools_msg_queue_[i].pop(&msg_ptr)) {
-                break;
-            }
+void TxPoolManager::PopPoolsMessage() {
+    while (true) {
+        for (int32_t i = 0; i < common::kMaxThreadCount; ++i) {
+            while (pools_msg_queue_[i].size() > 0) {
+                transport::MessagePtr msg_ptr = nullptr;
+                if (!pools_msg_queue_[i].pop(&msg_ptr)) {
+                    break;
+                }
 
-            msg_ptr->thread_idx = thread_idx;
-            HandlePoolsMessage(msg_ptr);
+                msg_ptr->thread_idx = -1;
+                HandlePoolsMessage(msg_ptr);
+            }
         }
+
+        std::unique_lock<std::mutex> lock(pop_tx_mu_);
+        pop_tx_con_.wait_for(lock, std::chrono::milliseconds(10));
     }
 }
 
@@ -490,10 +503,6 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             assert(false);
             break;
         }
-    }
-
-    if (header.has_sync_heights()) {
-        HandleSyncPoolsMaxHeight(msg_ptr);
     }
 }
 

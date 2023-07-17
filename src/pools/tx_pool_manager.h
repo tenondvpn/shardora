@@ -239,6 +239,9 @@ private:
     RotationLeaderCallback rotatition_leader_cb_ = nullptr;
     std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>> invalid_pools_;
     uint64_t prev_elect_height_ = common::kInvalidUint64;
+    std::shared_ptr<std::thread> pop_message_thread_ = nullptr;
+    std::condition_variable pop_tx_con_;
+    std::mutex pop_tx_mu_;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };
