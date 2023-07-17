@@ -195,7 +195,7 @@ private:
     void ReConsensusChangedLeaderBft(ZbftPtr& bft_ptr);
     bool CheckChangedLeaderBftsValid(uint32_t pool, uint64_t height, const std::string& gid);
     int PrecommitWithRemovedPrepareBft(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
-    void BroadcastInvalidGids();
+    void BroadcastInvalidGids(uint8_t thread_idx);
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
@@ -320,6 +320,7 @@ private:
     std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
     std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_agg_verify_blocks_[common::kInvalidPoolIndex];
     ZbftPtr changed_leader_pools_height_[common::kInvalidPoolIndex] = { nullptr };
+    common::LimitHashMap<std::string, ZbftPtr> removed_preapare_gid_with_hash_[common::kInvalidPoolIndex] = { 64 };
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {
