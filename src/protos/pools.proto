@@ -115,6 +115,12 @@ message SyncPoolsMaxHeight {
     repeated uint64 cross_heights = 3;
 }
 
+message InvalidBftMessage {
+    optional uint32 pool_index = 1;
+    optional bytes gid = 2;
+    optional bytes hash = 3;
+}
+
 message TxMessage {
     optional uint32 version = 1;
     optional bytes gid = 2;

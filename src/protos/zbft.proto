@@ -12,12 +12,6 @@ message TxBft {
     optional pools.protobuf.StepType tx_type = 5 [default=kNormalFrom];
 }
 
-message InvalidBftMessage {
-    optional uint32 pool_index = 1;
-    optional bytes gid = 2;
-    optional bytes hash = 3;
-}
-
 message ZbftMessage {
     optional bytes prepare_gid = 1;
     optional bytes precommit_gid = 2;
@@ -40,5 +34,4 @@ message ZbftMessage {
     optional bool sync_block = 19;
     repeated uint32 ips = 20;
     optional bytes oppose_prepare_gid = 21;
-    repeated InvalidBftMessage invalid_bfts = 22;
 }

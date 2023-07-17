@@ -2916,7 +2916,7 @@ void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
     msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
     msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
-    msg.set_type(common::kConsensusMessage);
+    msg.set_type(common::kPoolsMessage);
     dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
     msg.set_des_dht_key(dht_key.StrKey());
     for (uint32_t pool_index = 0; pool_index < common::kInvalidPoolIndex; ++pool_index) {
@@ -2931,7 +2931,7 @@ void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
 
         auto bft_ptr = *bft_queue.rbegin();
         if (bft_ptr->timeout(now_timestamp_us) && bft_ptr->consensus_status() == kConsensusPreCommit) {
-            auto invalid_bfts = msg.mutable_zbft()->add_invalid_bfts();
+            auto invalid_bfts = msg.add_invalid_bfts();
             invalid_bfts->set_pool_index(pool_index);
             invalid_bfts->set_gid(bft_ptr->gid());
             invalid_bfts->set_hash(bft_ptr->prepare_block()->hash());
