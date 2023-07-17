@@ -12,6 +12,7 @@ namespace common {
 template<class KeyType, class ValueType>
 class LimitHashMap {
 public:
+    LimitHashMap() : max_size_(64) {}
     LimitHashMap(uint32_t max_size) : max_size_(max_size) {}
     ~LimitHashMap() {}
     bool KeyExists(const KeyType& key) {
