@@ -2906,6 +2906,12 @@ void BftManager::LeaderBroadcastBlock(
 }
 
 void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
+    auto now_timestamp_us = common::TimeUtils::TimestampUs();
+    if (prev_broadcast_invalid_gid_tm_[thread_idx] > now_timestamp_us) {
+        return;
+    }
+
+    prev_broadcast_invalid_gid_tm_[thread_idx] = now_timestamp_us + 10000000lu;
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     msg_ptr->thread_idx = thread_idx;
     auto& msg = msg_ptr->header;
@@ -2913,7 +2919,6 @@ void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
     msg.set_type(common::kConsensusMessage);
     dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
     msg.set_des_dht_key(dht_key.StrKey());
-    auto now_timestamp_us = common::TimeUtils::TimestampUs();
     for (uint32_t pool_index = 0; pool_index < common::kInvalidPoolIndex; ++pool_index) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_index] != thread_idx) {
             continue;
