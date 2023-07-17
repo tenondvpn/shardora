@@ -1425,13 +1425,14 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
         leader_to_txs->to_txs_msg = nullptr;
     }
 
-    auto rbegin = leader_to_txs_.rbegin();
-    if (rbegin != leader_to_txs_.rend()) {
+    auto rbegin = leader_to_txs_.begin();
+    if (rbegin != leader_to_txs_.end()) {
         latest_to_tx_ = rbegin->second;
-        ZJC_INFO("set success add txs: %s, leader idx: %u, leader to index: %d, gid: %s",
+        ZJC_INFO("set success add txs: %s, leader idx: %u, leader to index: %d, gid: %s, elect height: %lu",
             common::Encode::HexEncode(tos_hashs).c_str(),
             shard_to.leader_idx(), shard_to.leader_to_idx(),
-            common::Encode::HexEncode(gid).c_str());
+            common::Encode::HexEncode(gid).c_str(),
+            rbegin->first);
         assert(latest_to_tx_->to_tx != nullptr);
     }
 }
@@ -1568,7 +1569,7 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
     }
 
     if (!leader) {
-        ZJC_DEBUG("backup get to tx failed!");
+        ZJC_DEBUG("backup get to tx failed elect height: %lu", latest_to_tx_->elect_height);
     }
     return nullptr;
 }
