@@ -2946,7 +2946,7 @@ void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
         return;
     }
 
-    auto elect_item_ptr = std::make_shared<ElectItem>(*old_elect_item);
+    auto elect_item_ptr = elect_items_[elect_item_idx_];
     auto& elect_item = *elect_item_ptr;
     msg.mutable_zbft()->set_member_index(elect_item.local_node_member_index);
     msg.mutable_zbft()->set_elect_height(elect_item.elect_height);
@@ -2954,7 +2954,7 @@ void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
     std::string sign;
     if (security_ptr_->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
         assert(false);
-        return false;
+        return;
     }
 
     msg.set_sign(sign);
