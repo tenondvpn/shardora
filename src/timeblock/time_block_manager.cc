@@ -32,14 +32,6 @@ void TimeBlockManager::Init(
     account_mgr_ = account_mgr;
 }
 
-uint64_t TimeBlockManager::LatestTimestamp() {
-    return latest_time_block_tm_;
-}
-
-uint64_t TimeBlockManager::LatestTimestampHeight() {
-    return latest_time_block_height_;
-}
-
 TimeBlockManager::TimeBlockManager() {}
 
 TimeBlockManager::~TimeBlockManager() {}
