@@ -625,8 +625,10 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     msg.set_sign(sign);
     msg_ptr->thread_idx = thread_idx;
     network::Route::Instance()->Send(msg_ptr);
-    ZJC_DEBUG("success send join elect request transaction: %u, join: %u",
-        des_sharding_id_, join_info.shard_id());
+    ZJC_DEBUG("success send join elect request transaction: %u, join: %u, gid: %s, hash64: %lu",
+        des_sharding_id_, join_info.shard_id(),
+        common::Encode::HexEncode(gid).c_str(),
+        msg.hash64());
 }
 
 void NetworkInit::CreateContribution(bls::protobuf::VerifyVecBrdReq* bls_verify_req) {

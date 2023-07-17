@@ -726,7 +726,8 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
     prefix_db_->SaveAddressPubkey(msg_ptr->address_info->addr(), tx_msg.pubkey());
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 //     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
-//     ZJC_DEBUG("success add elect tx has verify g2: %d", tx_msg.has_key());
+    ZJC_DEBUG("success add elect tx has verify g2: %d, gid: %s, hash64: %lu",
+        tx_msg.has_key(), common::Encode::HexEncode(tx_msg.gid()).c_str(), header.hash64());
 }
 
 bool TxPoolManager::SaveNodeVerfiyVec(
