@@ -2913,20 +2913,26 @@ void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
     msg.set_type(common::kConsensusMessage);
     dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
     msg.set_des_dht_key(dht_key.StrKey());
+    auto now_timestamp_us = common::TimeUtils::TimestampUs();
     for (uint32_t pool_index = 0; pool_index < common::kInvalidPoolIndex; ++pool_index) {
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_index] != thread_idx) {
             continue;
         }
 
+        if (bft_queue.empty()) {
+            continue;
+        }
+
+        auto bft_ptr = *bft_queue.rbegin();
         if (bft_ptr->timeout(now_timestamp_us) && bft_ptr->consensus_status() == kConsensusPreCommit) {
             auto invalid_bfts = msg.mutable_zbft()->add_invalid_bfts();
-            invalid_bfts->set_pool_index(iter->second.first);
-            invalid_bfts->set_gid(iter->first);
-            invalid_bfts->set_hash(iter->second.second);
+            invalid_bfts->set_pool_index(pool_index);
+            invalid_bfts->set_gid(bft_ptr->gid());
+            invalid_bfts->set_hash(bft_ptr->prepare_block()->hash());
             ZJC_DEBUG("success broadcast invalid gids to pool: %u, gid: %s, hash: %s",
-                iter->second.first,
-                common::Encode::HexEncode(iter->first).c_str(),
-                common::Encode::HexEncode(iter->second.second).c_str());
+                pool_index,
+                common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+                common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
         }
     }
 
