@@ -318,8 +318,6 @@ private:
     std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_blocks_[common::kInvalidPoolIndex];
     std::map<uint64_t, std::shared_ptr<block::protobuf::Block>> waiting_agg_verify_blocks_[common::kInvalidPoolIndex];
     ZbftPtr changed_leader_pools_height_[common::kInvalidPoolIndex] = { nullptr };
-    std::unordered_map<std::string, ZbftPtr> removed_prepare_bfts_[common::kMaxThreadCount];
-    std::queue<ZbftPtr> removed_prepare_bfts_queue_[common::kMaxThreadCount];
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {

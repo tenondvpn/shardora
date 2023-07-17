@@ -28,20 +28,13 @@ bool BftProto::LeaderCreatePrepare(
     bft_msg.set_prepare_gid(bft_ptr->gid());
     bft_msg.set_precommit_gid(precommit_gid);
     bft_msg.set_commit_gid(commit_gid);
-//     ZJC_DEBUG("leader prepare: %s, precommit: %s, commit: %s",
-//         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-//         common::Encode::HexEncode(precommit_gid).c_str(),
-//         common::Encode::HexEncode(commit_gid).c_str());
     bft_msg.set_pool_index(bft_ptr->pool_index());
-//     ZJC_DEBUG("gid: %s, set pool index: %u", common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
     bft_msg.set_elect_height(bft_ptr->elect_height());
     auto prev_btr = bft_ptr->pipeline_prev_zbft_ptr();
     if (prev_btr != nullptr) {
         auto& bls_precommit_sign = prev_btr->bls_precommit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
-//         assert(bft_ptr->prepare_block()->prehash() == prev_btr->local_prepare_hash());
-//         assert(bft_ptr->prepare_block()->height() == prev_btr->height() + 1);
     }
 
     return true;
@@ -94,12 +87,7 @@ bool BftProto::LeaderCreatePreCommit(
     bft_msg.set_leader_idx(leader_idx);
     bft_msg.set_precommit_gid(bft_ptr->gid());
     bft_msg.set_commit_gid(commit_gid);
-//     ZJC_DEBUG("leader precommit: %s, precommit: %s, commit: %s",
-//         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-//         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-//         common::Encode::HexEncode(commit_gid).c_str());
     bft_msg.set_pool_index(bft_ptr->pool_index());
-//     ZJC_DEBUG("gid: %s, set pool index: %u", common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
     bft_msg.set_agree_precommit(agree);
     bft_msg.set_agree_commit(agree);
     bft_msg.set_elect_height(bft_ptr->elect_height());
@@ -107,7 +95,6 @@ bool BftProto::LeaderCreatePreCommit(
         auto& bls_precommit_sign = bft_ptr->bls_precommit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
-        bft_msg.set_prepare_hash(bft_ptr->prepare_hash());
     }
 
     return true;
@@ -154,7 +141,6 @@ bool BftProto::LeaderCreateCommit(
     bft_msg.set_leader_idx(leader_idx);
     bft_msg.set_commit_gid(bft_ptr->gid());
     bft_msg.set_pool_index(bft_ptr->pool_index());
-//     ZJC_DEBUG("gid: %s, set pool index: %u", common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
     bft_msg.set_agree_commit(agree);
     bft_msg.set_elect_height(bft_ptr->elect_height());
     if (agree) {
