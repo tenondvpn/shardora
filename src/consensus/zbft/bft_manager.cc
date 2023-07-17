@@ -1874,7 +1874,7 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
                         elect_item_ptr->change_leader_time_valid < now_ms &&
                         bft_ptr->timeout(now_timestamp_us) &&
                         bft_ptr->consensus_status() == kConsensusPreCommit) {
-                    if (bft_ptr->changed_leader_new_index() != valid_leader_idx) {
+                    if ((int32_t)bft_ptr->changed_leader_new_index() != valid_leader_idx) {
                         ChangePrecommitBftLeader(bft_ptr, valid_leader_idx, *elect_item_ptr);
                     }
                 }
