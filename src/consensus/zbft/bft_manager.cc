@@ -2919,6 +2919,7 @@ void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
             continue;
         }
 
+        auto& bft_queue = pools_with_zbfts_[pool_index];
         if (bft_queue.empty()) {
             continue;
         }
@@ -2934,6 +2935,10 @@ void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
                 common::Encode::HexEncode(bft_ptr->gid()).c_str(),
                 common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str());
         }
+    }
+
+    if (!msg.has_zbft() || msg.zbft().invalid_bfts_size() <= 0) {
+        return;
     }
 
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
