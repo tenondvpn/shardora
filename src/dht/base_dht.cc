@@ -257,7 +257,7 @@ int BaseDht::Bootstrap(
                 boot_nodes[i]->public_ip.c_str(),
                 boot_nodes[i]->public_port);
         } else {
-            DHT_ERROR("bootstrap from %s:%d success\n",
+            DHT_DEBUG("bootstrap from %s:%d success\n",
                 boot_nodes[i]->public_ip.c_str(),
                 boot_nodes[i]->public_port);
         }

@@ -1526,11 +1526,23 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
 
 
 pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
+    if (!leader) {
+        ZJC_DEBUG("backup get to tx coming!");
+    }
+
     if (latest_to_tx_ == nullptr) {
+        if (!leader) {
+            ZJC_DEBUG("backup get to tx failed, latest_to_tx_ == nullptr!");
+        }
+
         return nullptr;
     }
 
     if (pool_index != 0) {
+        if (!leader) {
+            ZJC_DEBUG("backup get to tx failed, pool_index != 0!");
+        }
+
         return nullptr;
     }
 
@@ -1546,6 +1558,13 @@ pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
         return tmp_to_txs->tx_ptr;
     }
 
+    if (tmp_to_txs != nullptr) {
+        ZJC_DEBUG("get to tx failed in_consensus: %d", tmp_to_txs->tx_ptr->in_consensus);
+    }
+
+    if (!leader) {
+        ZJC_DEBUG("backup get to tx failed!");
+    }
     return nullptr;
 }
 
