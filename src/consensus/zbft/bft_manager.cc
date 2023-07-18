@@ -1326,8 +1326,10 @@ void BftManager::CreateResponseMessage(
             }
 
             network::Route::Instance()->Send(msg_ptr->response);
-            ZJC_DEBUG("leader broadcast bft message prepare gid: %s, hash64: %lu",
+            ZJC_DEBUG("leader broadcast bft message prepare gid: %s, precommit: %s, commit: %s, hash64: %lu",
                 common::Encode::HexEncode(msg_ptr->response->header.zbft().prepare_gid()).c_str(),
+                common::Encode::HexEncode(msg_ptr->response->header.zbft().precommit_gid()).c_str(),
+                common::Encode::HexEncode(msg_ptr->response->header.zbft().commit_gid()).c_str(),
                 msg_ptr->response->header.hash64());
         } else {
             auto leader_member = (*elect_item.members)[msg_ptr->header.zbft().leader_idx()];

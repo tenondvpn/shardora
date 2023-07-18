@@ -324,20 +324,18 @@ bool MultiThreadHandler::IsMessageUnique(uint64_t msg_hash) {
 MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx) {
     for (uint32_t i = 0; i < all_thread_count_; ++i) {
         if (i % all_thread_count_ == thread_idx) {
-//             for (uint32_t j = kTransportPrioritySystem; j < kTransportPriorityMaxCount; ++j) {
-                while (threads_message_queues_[i].size() >= 512) {
-                    MessagePtr msg_obj;
-                    threads_message_queues_[i].pop(&msg_obj);
-                    ZJC_DEBUG("pop invalid message hash: %u", msg_obj->header.hash64());
-                }
-
-                if (threads_message_queues_[i].size() > 0) {
-                    MessagePtr msg_obj;
-                    threads_message_queues_[i].pop(&msg_obj);
-                    ZJC_DEBUG("pop valid message hash: %u", msg_obj->header.hash64());
-                    return msg_obj;
-                }
-//             }
+//                 while (threads_message_queues_[i].size() >= 512) {
+//                     MessagePtr msg_obj;
+//                     threads_message_queues_[i].pop(&msg_obj);
+//                     ZJC_DEBUG("pop invalid message hash: %u", msg_obj->header.hash64());
+//                 }
+// 
+            if (threads_message_queues_[i].size() > 0) {
+                MessagePtr msg_obj;
+                threads_message_queues_[i].pop(&msg_obj);
+                ZJC_DEBUG("pop valid message hash: %u", msg_obj->header.hash64());
+                return msg_obj;
+            }
         }
     }
 
