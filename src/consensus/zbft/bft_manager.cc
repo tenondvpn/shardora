@@ -1745,8 +1745,8 @@ void BftManager::RemoveBftWithBlockHeight(uint32_t pool_index, uint64_t height) 
 
 void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
     auto& bft_queue = pools_with_zbfts_[pool_index];
-    ZJC_DEBUG("try to remove bft gid: %s, pool_index: %d, now size: %u",
-        common::Encode::HexEncode(gid).c_str(), pool_index, bft_queue.size());
+//     ZJC_DEBUG("try to remove bft gid: %s, pool_index: %d, now size: %u",
+//         common::Encode::HexEncode(gid).c_str(), pool_index, bft_queue.size());
     auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pool_index];
     for (auto iter = bft_queue.begin(); iter != bft_queue.end(); ++iter) {
         auto& bft_ptr = *iter;
