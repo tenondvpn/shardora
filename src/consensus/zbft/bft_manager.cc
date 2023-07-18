@@ -1759,15 +1759,12 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
                 ReConsensusBft(bft_ptr);
             } else if (bft_ptr->IsChangedLeader()) {
                 ReConsensusChangedLeaderBft(bft_ptr);
-            } else {
-                // invalid gid and broadcast it
             }
         } else {
             if (bft_ptr->consensus_status() == kConsensusPrepare) {
                 if (!bft_ptr->this_node_is_leader()) {
                     break;
                 }
-//                     removed_preapare_gid_with_hash_[pool_index].Insert(gid, bft_ptr);
             }
 
             bft_ptr->Destroy();
