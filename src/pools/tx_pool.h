@@ -113,6 +113,11 @@ public:
         if (iter == change_leader_invalid_hashs_.end()) {
             change_leader_invalid_hashs_[height] = std::set<std::string>();
             iter = change_leader_invalid_hashs_.find(height);
+        } else {
+            auto exists_iter = iter->second.find(hash);
+            if (exists_iter != iter->second.end()) {
+                return;
+            }
         }
 
         iter->second.insert(hash);

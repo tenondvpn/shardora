@@ -391,9 +391,7 @@ ZbftPtr BftManager::Start(
     }
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
-    bool waiting_change_elect = false;
     if (elect_item_ptr->time_valid > now_tm_ms) {
-        waiting_change_elect = true;
         auto item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
         if (item_ptr == nullptr) {
             return nullptr;
@@ -475,15 +473,24 @@ ZbftPtr BftManager::Start(
             iter->second->in_consensus = false;
         }
 
+        ZJC_DEBUG("leader start bft failed, thread: %d, pool: %d, bft size: %u, "
+            "thread_item->pools.size(): %d, "
+            "elect_item_ptr->elect_height: %lu,elect_item_ptr->time_valid: %lu now_tm_ms: %lu",
+            thread_index, txs_ptr->pool_index,
+            pools_with_zbfts_[txs_ptr->pool_index].size(),
+            thread_item->pools.size(),
+            elect_item_ptr->elect_height,
+            elect_item_ptr->time_valid,
+            now_tm_ms);
         return nullptr;
     }
 
     ZJC_DEBUG("leader start bft success, thread: %d, pool: %d, bft size: %u, "
-        "waiting_change_elect: %d,thread_item->pools.size(): %d, "
+        thread_item->pools.size(): %d, "
         "elect_item_ptr->elect_height: %lu,elect_item_ptr->time_valid: %lu now_tm_ms: %lu",
         thread_index, zbft_ptr->pool_index(),
         pools_with_zbfts_[zbft_ptr->pool_index()].size(),
-        waiting_change_elect, thread_item->pools.size(),
+        thread_item->pools.size(),
         elect_item_ptr->elect_height,
         elect_item_ptr->time_valid,
         now_tm_ms);
@@ -1279,6 +1286,12 @@ void BftManager::CreateResponseMessage(
         }
     }
         
+    if (msg_ptr->response->header.zbft().prepare_gid().empty() &&
+            msg_ptr->response->header.zbft().precommit_gid().empty() &&
+            msg_ptr->response->header.zbft().commit_gid().empty()) {
+        return;
+    }
+
     if (msg_ptr->response->header.has_zbft()) {
         assert(msg_ptr->response->header.zbft().has_pool_index());
         msg_ptr->response->header.mutable_zbft()->set_member_index(
@@ -1897,29 +1910,29 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
         }
 
         auto bft_ptr = *bft_queue.rbegin();
-        if (bft_ptr->pool_mod_num() >= 0 && bft_ptr->pool_mod_num() < elect_item_ptr->leader_count) {
-            auto valid_leader_idx = elect_item_ptr->mod_with_leader_index[bft_ptr->pool_mod_num()];
-            if (valid_leader_idx >= (int32_t)elect_item_ptr->members->size()) {
-                ZJC_DEBUG("invalid leader index %u, mod num: %d, gid: %s",
-                    valid_leader_idx, bft_ptr->pool_mod_num(),
-                    common::Encode::HexEncode(bft_ptr->gid()).c_str());
-                assert(false);
-            } else {
-                if ((int32_t)bft_ptr->leader_index() != valid_leader_idx &&
-                        elect_item_ptr->change_leader_time_valid < now_ms &&
-                        bft_ptr->timeout(now_timestamp_us) &&
-                        bft_ptr->consensus_status() == kConsensusPreCommit) {
-                    if ((int32_t)bft_ptr->changed_leader_new_index() != valid_leader_idx) {
-                        ChangePrecommitBftLeader(bft_ptr, valid_leader_idx, *elect_item_ptr);
-                    }
-                }
-            }
-        } else {
-            ZJC_DEBUG("pool mod invalid: %u, leader size: %u", bft_ptr->pool_mod_num(), elect_item_ptr->leader_count);
-            if (bft_ptr->pool_mod_num() < 0) {
-                assert(false);
-            }
-        }
+//         if (bft_ptr->pool_mod_num() >= 0 && bft_ptr->pool_mod_num() < elect_item_ptr->leader_count) {
+//             auto valid_leader_idx = elect_item_ptr->mod_with_leader_index[bft_ptr->pool_mod_num()];
+//             if (valid_leader_idx >= (int32_t)elect_item_ptr->members->size()) {
+//                 ZJC_DEBUG("invalid leader index %u, mod num: %d, gid: %s",
+//                     valid_leader_idx, bft_ptr->pool_mod_num(),
+//                     common::Encode::HexEncode(bft_ptr->gid()).c_str());
+//                 assert(false);
+//             } else {
+//                 if ((int32_t)bft_ptr->leader_index() != valid_leader_idx &&
+//                         elect_item_ptr->change_leader_time_valid < now_ms &&
+//                         bft_ptr->timeout(now_timestamp_us) &&
+//                         bft_ptr->consensus_status() == kConsensusPreCommit) {
+//                     if ((int32_t)bft_ptr->changed_leader_new_index() != valid_leader_idx) {
+//                         ChangePrecommitBftLeader(bft_ptr, valid_leader_idx, *elect_item_ptr);
+//                     }
+//                 }
+//             }
+//         } else {
+//             ZJC_DEBUG("pool mod invalid: %u, leader size: %u", bft_ptr->pool_mod_num(), elect_item_ptr->leader_count);
+//             if (bft_ptr->pool_mod_num() < 0) {
+//                 assert(false);
+//             }
+//         }
 
         if (bft_ptr->timeout(now_timestamp_us)) {
             RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
@@ -1974,6 +1987,7 @@ void BftManager::ReConsensusBft(ZbftPtr& bft_ptr) {
             return;
         }
 
+        bft_ptr->reset_timeout();
         network::Route::Instance()->Send(tmp_msg_ptr);
         return;
     }
