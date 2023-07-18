@@ -323,6 +323,7 @@ private:
     ZbftPtr changed_leader_pools_height_[common::kInvalidPoolIndex] = { nullptr };
     common::LimitHashMap<std::string, ZbftPtr> removed_preapare_gid_with_hash_[common::kInvalidPoolIndex];
     uint64_t prev_broadcast_invalid_gid_tm_[common::kMaxThreadCount] = { 0 };
+    volatile bool pools_rotationed_[common::kInvalidPoolIndex] = { false };
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {
