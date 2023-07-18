@@ -448,7 +448,7 @@ void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
 
     auto& mem_ptr = (*latest_members_)[msg_ptr->header.zbft().member_index()];
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
-    if (security_ptr_->Verify(
+    if (security_->Verify(
             msg_hash,
             mem_ptr->pubkey,
             msg_ptr->header.sign()) != security::kSecuritySuccess) {
