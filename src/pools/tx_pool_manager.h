@@ -42,7 +42,9 @@ public:
         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list);
     void TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs);
     void PopTxs(uint32_t pool_index);
-    void SetTimeout(uint32_t pool_index) {}
+    void InitCrossPools();
+    void BftCheckInvalidGids(uint32_t pool_index, std::vector<std::shared_ptr<InvalidGidItem>>& items);
+
     void OnNewCrossBlock(
             uint8_t thread_idx,
             const std::shared_ptr<block::protobuf::Block>& block_item) {
@@ -177,8 +179,6 @@ public:
         tx_pool_[pool_index].GetHeightInvalidChangeLeaderHashs(height, hashs);
     }
 
-    void InitCrossPools();
-
 private:
     void DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& addr);
@@ -203,7 +203,6 @@ private:
     void PopPoolsMessage();
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);
     void HandleInvalidGids(const transport::MessagePtr& msg_ptr);
-    void BftCheckInvalidGids(uint32_t pool_index, std::vector<std::shared_ptr<InvalidGidItem>>& items);
 
     static const uint32_t kPopMessageCountEachTime = 64u;
     static const uint64_t kFlushHeightTreePeriod = 60000lu;

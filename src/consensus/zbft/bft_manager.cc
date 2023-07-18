@@ -294,7 +294,7 @@ void BftManager::CheckInvalidGids(uint8_t thread_idx) {
 
             for (auto iter = items.begin(); iter != items.end(); ++iter) {
                 auto& invalid_gid_item = *iter;
-                if (invalid_gid_item->prepare_hashs.size() == prepare_hashs->precommit_hashs.size()) {
+                if (invalid_gid_item->prepare_hashs.size() == invalid_gid_item->precommit_hashs.size()) {
                     continue;
                 }
 
