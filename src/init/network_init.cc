@@ -369,7 +369,9 @@ void NetworkInit::HandleLeaderPools(const transport::MessagePtr& msg_ptr) {
     }
 }
 
-void NetworkInit::RotationLeaderCallback(uint8_t thread_idx, const std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>>& invalid_pools) {
+void NetworkInit::RotationLeaderCallback(
+        uint8_t thread_idx,
+        const std::deque<std::shared_ptr<std::vector<std::pair<uint32_t, uint32_t>>>>& invalid_pools) {
     auto rotation = rotation_leaders_;
     if (rotation == nullptr) {
         return;
@@ -383,7 +385,7 @@ void NetworkInit::RotationLeaderCallback(uint8_t thread_idx, const std::deque<st
         return;
     }
 
-    uint32_t invalid_leader_mods[rotation->rotations.size()] = { 0 };
+    uint64_t invalid_leader_mods[rotation->rotations.size()] = { 0 };
     for (uint32_t pool = 0; pool < invalid_pools.size(); ++pool) {
         auto& invalid_pool = *(invalid_pools[pool]);
         std::pair<uint32_t, uint32_t> tx_counts[rotation->rotations.size()];
@@ -396,14 +398,16 @@ void NetworkInit::RotationLeaderCallback(uint8_t thread_idx, const std::deque<st
         for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
             if (tx_counts[i].first <= (tx_counts[i].second / 100) && tx_counts[i].second > 0) {
                 ++invalid_leader_mods[i];
-                ZJC_DEBUG("pool mod num: %u, handled: %u, all: %u, count: %u",
-                    i, tx_counts[i].first, tx_counts[i].second, invalid_leader_mods[i]);
+                ZJC_DEBUG("pool mod num: %u, handled: %u, all: %u, count: %lu, need: %lu",
+                    i, tx_counts[i].first, tx_counts[i].second,
+                    invalid_leader_mods[i],
+                    (pools::kCaculateLeaderLofPeriod / pools::kCheckLeaderLofPeriod));
             }
         }
     }
 
     for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
-        if (invalid_leader_mods[i] + 1 >= pools::kCaculateLeaderLofPeriod / pools::kCheckLeaderLofPeriod) {
+        if (invalid_leader_mods[i] + 2 >= (pools::kCaculateLeaderLofPeriod / pools::kCheckLeaderLofPeriod)) {
             BroadcastInvalidPools(thread_idx, rotation, i);
         }
     }
