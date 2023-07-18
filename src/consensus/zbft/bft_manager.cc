@@ -302,6 +302,10 @@ void BftManager::CheckInvalidGids(uint8_t thread_idx) {
                     continue;
                 }
 
+                ZJC_DEBUG("success add invalid hash: %u, %lu, %s",
+                    invalid_gid_item->max_pool_index,
+                    invalid_gid_item->max_pool_height,
+                    common::Encode::HexEncode(invalid_gid_item->max_precommit_hash).c_str())
                 pools_mgr_->AddChangeLeaderInvalidHash(
                     invalid_gid_item->max_pool_index,
                     invalid_gid_item->max_pool_height,

@@ -434,6 +434,7 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
+    ZJC_DEBUG("invalid gid coming: %lu", msg_ptr->header.hash64());
     if (latest_members_ == nullptr) {
         return;
     }
@@ -524,6 +525,12 @@ void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
         auto precommit_iter = invalid_gid_item->precommit_hashs.find(precommit_hash);
         if (precommit_iter != invalid_gid_item->precommit_hashs.end()) {
             ++precommit_iter->second;
+            ZJC_DEBUG("invalid gid coming, gid: %s, precommit hash: %s, "
+                "prepare hash: %s, pool: %u, count: %u, t: %u",
+                common::Encode::HexDecode(invalid_bfts[i].gid()).c_str(),
+                common::Encode::HexDecode(precommit_hash).c_str(),
+                common::Encode::HexDecode(invalid_bfts[i].hash()).c_str(),
+                precommit_iter->second, t);
             if (precommit_iter->second >= t) {
                 invalid_gid_item->max_precommit_hash = precommit_hash;
                 invalid_gid_queues_[invalid_gid_item->max_pool_index].push(invalid_gid_item);

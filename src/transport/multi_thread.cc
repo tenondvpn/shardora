@@ -203,20 +203,25 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
         HandleSyncBlockResponse(msg_ptr);
     }
 
+    auto priority = GetMessagePriority(msg_ptr);
     auto queue_idx = GetThreadIndex(msg_ptr);
     if (queue_idx == consensus_thread_count_ &&
-            threads_message_queues_[queue_idx].size() >= kMaxMessageReserveCount) {
+            threads_message_queues_[queue_idx][priority].size() >= kMaxMessageReserveCount) {
         ZJC_WARN("message extend max: %u", kMaxMessageReserveCount);
         return;
     }
 
-    threads_message_queues_[queue_idx].push(msg_ptr);
+    threads_message_queues_[queue_idx][priority].push(msg_ptr);
     wait_con_[queue_idx % all_thread_count_].notify_one();
     ZJC_DEBUG("queue size message push success: %lu, queue_idx: %d, priority: %d, thread queue size: %u, net: %u, type: %d",
         msg_ptr->header.hash64(), queue_idx, priority,
-        threads_message_queues_[queue_idx].size(),
+        threads_message_queues_[queue_idx][priority].size(),
         common::GlobalInfo::Instance()->network_id(),
         msg_ptr->header.type());
+}
+
+uint32_t MultiThreadHandler::GetMessagePriority(MessagePtr& msg_ptr) {
+    return kTransportPriorityHigh;
 }
 
 uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
@@ -297,11 +302,12 @@ void MultiThreadHandler::CreateConsensusBlockMessage(
     *bft_msg.mutable_block() = *block_item;
     auto queue_idx = GetThreadIndex(new_msg_ptr);
     transport::TcpTransport::Instance()->SetMessageHash(new_msg_ptr->header, queue_idx);
-    threads_message_queues_[queue_idx].push(new_msg_ptr);
+    auto priority = kTransportPriorityHigh;
+    threads_message_queues_[queue_idx][priority].push(new_msg_ptr);
     ZJC_DEBUG("create sync block message: %d, index: %d, queue_idx: %d, hash64: %lu, block hash: %s, size: %u",
         queue_idx, block_item->pool_index(), queue_idx, new_msg_ptr->header.hash64(),
         common::Encode::HexEncode(block_item->hash()).c_str(),
-        threads_message_queues_[queue_idx].size());
+        threads_message_queues_[queue_idx][priority].size());
     wait_con_[queue_idx % all_thread_count_].notify_one();
 }
 
@@ -324,17 +330,14 @@ bool MultiThreadHandler::IsMessageUnique(uint64_t msg_hash) {
 MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx) {
     for (uint32_t i = 0; i < all_thread_count_; ++i) {
         if (i % all_thread_count_ == thread_idx) {
-//                 while (threads_message_queues_[i].size() >= 512) {
-//                     MessagePtr msg_obj;
-//                     threads_message_queues_[i].pop(&msg_obj);
-//                     ZJC_DEBUG("pop invalid message hash: %u", msg_obj->header.hash64());
-//                 }
-// 
-            if (threads_message_queues_[i].size() > 0) {
-                MessagePtr msg_obj;
-                threads_message_queues_[i].pop(&msg_obj);
-                ZJC_DEBUG("pop valid message hash: %u", msg_obj->header.hash64());
-                return msg_obj;
+            for (uint32_t pri = kTransportPrioritySystem; pri < kTransportPriorityMaxCount; ++pri) {
+                if (threads_message_queues_[i][pri].size() > 0) {
+                    MessagePtr msg_obj;
+                    threads_message_queues_[i][pri].pop(&msg_obj);
+                    ZJC_DEBUG("pop valid message hash: %u", msg_obj->header.hash64());
+                    return msg_obj;
+                }
+
             }
         }
     }
@@ -361,9 +364,9 @@ void MultiThreadHandler::Join() {
     }
     thread_vec_.clear();
     inited_ = false;
-//     for (uint32_t i = 0; i < all_thread_count_; ++i) {
-//         delete[] threads_message_queues_[i];
-//     }
+    for (uint32_t i = 0; i < all_thread_count_; ++i) {
+        delete[] threads_message_queues_[i];
+    }
 
     delete[] threads_message_queues_;
     delete[] wait_con_;
@@ -371,11 +374,11 @@ void MultiThreadHandler::Join() {
 }
 
 void MultiThreadHandler::InitThreadPriorityMessageQueues() {
-    threads_message_queues_ = new common::ThreadSafeQueue<MessagePtr>[all_thread_count_];
-//     for (uint32_t i = 0; i < all_thread_count_; ++i) {
-//         threads_message_queues_[i] =
-//             new common::ThreadSafeQueue<MessagePtr>[kTransportPriorityMaxCount];
-//     }
+    threads_message_queues_ = new *common::ThreadSafeQueue<MessagePtr>[all_thread_count_];
+    for (uint32_t i = 0; i < all_thread_count_; ++i) {
+        threads_message_queues_[i] =
+            new common::ThreadSafeQueue<MessagePtr>[kTransportPriorityMaxCount];
+    }
 }
 
 }  // namespace transport
