@@ -2955,7 +2955,9 @@ void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
         }
 
         auto bft_ptr = *bft_queue.rbegin();
-        if (bft_ptr->timeout(now_timestamp_us) && bft_ptr->consensus_status() == kConsensusPreCommit) {
+        if (bft_ptr->timeout(now_timestamp_us) &&
+                (bft_ptr->consensus_status() == kConsensusPreCommit ||
+                 bft_ptr->consensus_status() == kConsensusPrepare)) {
             auto invalid_bfts = msg.add_invalid_bfts();
             invalid_bfts->set_pool_index(pool_index);
             invalid_bfts->set_gid(bft_ptr->gid());
