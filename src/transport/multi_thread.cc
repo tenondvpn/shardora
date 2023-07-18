@@ -369,7 +369,7 @@ void MultiThreadHandler::Join() {
 }
 
 void MultiThreadHandler::InitThreadPriorityMessageQueues() {
-    threads_message_queues_ = new (common::ThreadSafeQueue<MessagePtr>*)[all_thread_count_];
+    threads_message_queues_ = new common::ThreadSafeQueue<MessagePtr>*[all_thread_count_];
     for (uint32_t i = 0; i < all_thread_count_; ++i) {
         threads_message_queues_[i] =
             new common::ThreadSafeQueue<MessagePtr>[kTransportPriorityMaxCount];
