@@ -178,7 +178,7 @@ struct CrossShardItem {
 };
 
 struct InvalidGidItem {
-    InvalidGidItem() : valid(false), max_pool_index_count(0) {}
+    InvalidGidItem() : max_pool_index_count(0), max_pool_height_count(0) {}
     std::set<std::string> checked_members;
     std::string gid;
     std::map<uint32_t, uint32_t> pool_index;

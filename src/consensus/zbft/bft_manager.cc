@@ -293,10 +293,15 @@ void BftManager::CheckInvalidGids(uint8_t thread_idx) {
             }
 
             for (auto iter = items.begin(); iter != items.end(); ++iter) {
+                auto& invalid_gid_item = *iter;
+                if (invalid_gid_item->prepare_hashs.size() == prepare_hashs->precommit_hashs.size()) {
+                    continue;
+                }
+
                 pools_mgr_->AddChangeLeaderInvalidHash(
-                    (*iter)->max_pool_index,
-                    (*iter)->max_pool_height,
-                    (*iter)->max_precommit_hash);
+                    invalid_gid_item->max_pool_index,
+                    invalid_gid_item->max_pool_height,
+                    invalid_gid_item->max_precommit_hash);
             }
         }
     }
