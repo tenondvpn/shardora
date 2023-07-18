@@ -30,7 +30,7 @@ bool BftProto::LeaderCreatePrepare(
     bft_msg.set_commit_gid(commit_gid);
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_elect_height(bft_ptr->elect_height());
-    bft_msg->mutable_tx_bft()->set_tx_type(bft_ptr->tx_ptr()->tx_type);
+    bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
     auto prev_btr = bft_ptr->pipeline_prev_zbft_ptr();
     if (prev_btr != nullptr) {
         auto& bls_precommit_sign = prev_btr->bls_precommit_agg_sign();
@@ -51,7 +51,7 @@ bool BftProto::BackupCreatePrepare(
     bft_msg.set_prepare_gid(bft_ptr->gid());
     bft_msg.set_precommit_gid(precommit_gid);
     bft_msg.set_prepare_hash(bft_ptr->local_prepare_hash());
-    bft_msg->mutable_tx_bft()->set_tx_type(bft_ptr->tx_ptr()->tx_type);
+    bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
     if (bft_ptr->txs_ptr()->txs.empty()) {
         bft_msg.set_agree_precommit(false);
     }
@@ -92,7 +92,7 @@ bool BftProto::LeaderCreatePreCommit(
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_agree_precommit(agree);
     bft_msg.set_agree_commit(agree);
-    bft_msg->mutable_tx_bft()->set_tx_type(bft_ptr->tx_ptr()->tx_type);
+    bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
     bft_msg.set_elect_height(bft_ptr->elect_height());
     if (agree) {
         auto& bls_precommit_sign = bft_ptr->bls_precommit_agg_sign();
@@ -110,7 +110,7 @@ bool BftProto::BackupCreatePreCommit(
     auto& bft_msg = *msg.mutable_zbft();
     bft_msg.set_leader_idx(-1);
     bft_msg.set_precommit_gid(bft_ptr->gid());
-    bft_msg->mutable_tx_bft()->set_tx_type(bft_ptr->tx_ptr()->tx_type);
+    bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
     std::string bls_sign_x;
     std::string bls_sign_y;
     if (bls_mgr->Sign(
@@ -146,7 +146,7 @@ bool BftProto::LeaderCreateCommit(
     bft_msg.set_commit_gid(bft_ptr->gid());
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_agree_commit(agree);
-    bft_msg->mutable_tx_bft()->set_tx_type(bft_ptr->tx_ptr()->tx_type);
+    bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
     bft_msg.set_elect_height(bft_ptr->elect_height());
     if (agree) {
         auto& bls_commit_sign = bft_ptr->bls_commit_agg_sign();
