@@ -177,6 +177,14 @@ struct CrossShardItem {
     uint32_t des_shard;
 };
 
+struct InvalidGidItem {
+    std::set<std::string> checked_members;
+    std::string gid;
+    std::map<uint32_t, uint32_t> pool_index;
+    std::map<std::string, uint32_t> precommit_hashs;
+    std::map<std::string, uint32_t> prepare_hashs;
+};
+
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {
     std::string message;
     message.reserve(tx_info.ByteSizeLong());

@@ -202,6 +202,7 @@ private:
     void FlushHeightTree();
     void PopPoolsMessage();
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);
+    void HandleInvalidGids(const transport::MessagePtr& msg_ptr);
 
     static const uint32_t kPopMessageCountEachTime = 64u;
     static const uint64_t kFlushHeightTreePeriod = 60000lu;
@@ -248,6 +249,7 @@ private:
     std::condition_variable pop_tx_con_;
     std::mutex pop_tx_mu_;
     volatile bool destroy_ = false;
+    std::unordered_map<std::string, std::shared_ptr<InvalidGidItem>> invalid_gids_;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

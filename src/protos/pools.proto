@@ -119,6 +119,7 @@ message InvalidBftMessage {
     optional uint32 pool_index = 1;
     optional bytes gid = 2;
     optional bytes hash = 3;
+    optional bool precommit = 4;
 }
 
 message TxMessage {

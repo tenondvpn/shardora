@@ -416,6 +416,7 @@ std::shared_ptr<address::protobuf::AddressInfo> TxPoolManager::GetAddressInfo(
 
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // just one thread
+    ZJC_DEBUG("success add message hash64: %lu", msg_ptr->header.hash64());
     auto& header = msg_ptr->header;
     if (header.has_sync_heights()) {
         HandleSyncPoolsMaxHeight(msg_ptr);
@@ -423,16 +424,89 @@ void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     }
 
     if (header.invalid_bfts_size() > 0) {
+        HandleInvalidGids(msg_ptr);
         return;
     }
 
     assert(msg_ptr->thread_idx < common::kMaxThreadCount);
     pools_msg_queue_[msg_ptr->thread_idx].push(msg_ptr);
     pop_tx_con_.notify_one();
-    ZJC_DEBUG("success add message hash64: %lu", msg_ptr->header.hash64());
-    //     ZJC_DEBUG("queue size msg_ptr->thread_idx: %d, pools_msg_queue_: %d",
-//         msg_ptr->thread_idx, pools_msg_queue_[msg_ptr->thread_idx].size());
-//     assert(pools_msg_queue_[msg_ptr->thread_idx].size() < 512);
+}
+
+void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
+    if (latest_members_ == nullptr) {
+        return;
+    }
+
+    if (msg_ptr->header.zbft().elect_height() != latest_elect_height_) {
+        return;
+    }
+
+    if (msg_ptr->header.zbft().member_index() >= latest_members_->size()) {
+        return;
+    }
+
+    auto& mem_ptr = (*latest_members_)[msg_ptr->header.zbft().member_index()];
+    auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
+    if (security_ptr_->Verify(
+            msg_hash,
+            mem_ptr->pubkey,
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        ZJC_DEBUG("verify leader sign failed: %s", common::Encode::HexEncode(mem_ptr->id).c_str());
+        return;
+    }
+
+    auto& invalid_bfts = msg_ptr->header.invalid_bfts();
+    std::shared_ptr<InvalidGidItem> invalid_gid_item = nullptr;
+    for (int32_t i = 0; i < invalid_bfts.size(); ++i) {
+        auto iter = invalid_gids_.find(invalid_bfts[i].gid());
+        if (iter == invalid_gids_.end()) {
+            invalid_gid_item = std::make_shared<InvalidGidItem>();
+            invalid_gids_[invalid_bfts[i].gid()] = invalid_gid_item;
+        } else {
+            invalid_gid_item = iter->second;
+        }
+
+        auto exists_iter = invalid_gid_item->checked_members.find(mem_ptr->id);
+        if (exists_iter != invalid_gid_item->checked_members.end()) {
+            continue;
+        }
+
+        invalid_gid_item->checked_members.insert(mem_ptr->id);
+        auto pool_iter = invalid_gid_item->pool_index.find(invalid_bfts[i].pool_index());
+        if (pool_iter != invalid_gid_item->pool_index.end()) {
+            ++pool_iter->second;
+        } else {
+            invalid_gid_item->pool_index[invalid_bfts[i].pool_index()] = 1;
+        }
+
+        if (invalid_bfts[i].precommit()) {
+            auto precommit_iter = invalid_gid_item->precommit_hashs.find(invalid_bfts[i].hash());
+            if (precommit_iter != invalid_gid_item->precommit_hashs.end()) {
+                ++precommit_iter->second;
+            } else{
+                invalid_gid_item->precommit_hashs[invalid_bfts[i].hash()] = 1;
+            }
+        } else {
+            auto prepare_iter = invalid_gid_item->prepare_hashs.find(invalid_bfts[i].hash());
+            if (prepare_iter != invalid_gid_item->prepare_hashs.end()) {
+                ++prepare_iter->second;
+            } else {
+                invalid_gid_item->prepare_hashs[invalid_bfts[i].hash()] = 1;
+            }
+
+            auto tmp_hash = invalid_bfts[i].hash();
+            bool is_cross_block = true;
+            tmp_hash.append((char*)&is_cross_block, sizeof(is_cross_block));
+            tmp_hash = common::Hash::keccak256(tmp_hash);
+            auto precommit_iter = invalid_gid_item->precommit_hashs.find(tmp_hash);
+            if (precommit_iter != invalid_gid_item->precommit_hashs.end()) {
+                ++precommit_iter->second;
+            } else{
+                invalid_gid_item->precommit_hashs[tmp_hash] = 1;
+            }
+        }
+    }
 }
 
 void TxPoolManager::PopPoolsMessage() {

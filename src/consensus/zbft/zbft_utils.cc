@@ -93,7 +93,7 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
     bool is_cross_block = block.is_cross_block();
     if (is_cross_block) {
         tmp_hash.append((char*)&is_cross_block, sizeof(is_cross_block));
-        tmp_hash = common::Hash::keccak256(msg);
+        tmp_hash = common::Hash::keccak256(tmp_hash);
     }
 
     ZJC_DEBUG("block.prehash(): %s, height: %lu,pool_idx: %u, sharding_id: %u, vss_random: %lu, "
