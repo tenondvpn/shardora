@@ -279,7 +279,27 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
     CheckMessageTimeout(msg_ptr->thread_idx);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     BroadcastInvalidGids(msg_ptr->thread_idx);
+    CheckInvalidGids(msg_ptr->thread_idx);
 #endif
+}
+
+void BftManager::CheckInvalidGids(uint8_t thread_idx) {
+    for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
+        if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
+            std::vector<std::shared_ptr<InvalidGidItem>> items;
+            pools_mgr_->BftCheckInvalidGids(pool_idx, items);
+            if (items.empty()) {
+                continue;
+            }
+
+            for (auto iter = items.begin(); iter != items.end(); ++iter) {
+                pools_mgr_->AddChangeLeaderInvalidHash(
+                    (*iter)->max_pool_index,
+                    (*iter)->max_pool_height,
+                    (*iter)->max_precommit_hash);
+            }
+        }
+    }
 }
 
 void BftManager::PopAllPoolTxs(uint8_t thread_index) {
@@ -495,12 +515,12 @@ int BftManager::ChangePrecommitBftLeader(
     }
 
     bft_ptr->ChangeLeader(leader_idx, elect_item.elect_height);
-    if (bft_ptr->prepare_block() != nullptr) {
-        pools_mgr_->AddChangeLeaderInvalidHash(
-            bft_ptr->pool_index(),
-            bft_ptr->prepare_block()->height(),
-            bft_ptr->prepare_block()->hash());
-    }
+//     if (bft_ptr->prepare_block() != nullptr) {
+//         pools_mgr_->AddChangeLeaderInvalidHash(
+//             bft_ptr->pool_index(),
+//             bft_ptr->prepare_block()->height(),
+//             bft_ptr->prepare_block()->hash());
+//     }
 
     return kConsensusSuccess;
 }
@@ -2935,6 +2955,8 @@ void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
             invalid_bfts->set_pool_index(pool_index);
             invalid_bfts->set_gid(bft_ptr->gid());
             invalid_bfts->set_hash(bft_ptr->prepare_block()->hash());
+            invalid_bfts->set_height(bft_ptr->prepare_block()->height());
+            invalid_bfts->set_height(bft_ptr->prepare_block()->is_cross_block());
             ZJC_DEBUG("success broadcast invalid gids to pool: %u, gid: %s, hash: %s",
                 pool_index,
                 common::Encode::HexEncode(bft_ptr->gid()).c_str(),

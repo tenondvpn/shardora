@@ -178,11 +178,18 @@ struct CrossShardItem {
 };
 
 struct InvalidGidItem {
+    InvalidGidItem() : valid(false), max_pool_index_count(0) {}
     std::set<std::string> checked_members;
     std::string gid;
     std::map<uint32_t, uint32_t> pool_index;
+    std::map<uint64_t, uint32_t> heights;
     std::map<std::string, uint32_t> precommit_hashs;
     std::map<std::string, uint32_t> prepare_hashs;
+    uint32_t max_pool_index_count;
+    uint32_t max_pool_index;
+    uint32_t max_pool_height_count;
+    uint32_t max_pool_height;
+    std::string max_precommit_hash;
 };
 
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {

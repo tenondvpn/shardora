@@ -203,6 +203,7 @@ private:
     void PopPoolsMessage();
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);
     void HandleInvalidGids(const transport::MessagePtr& msg_ptr);
+    void BftCheckInvalidGids(uint32_t pool_index, std::vector<std::shared_ptr<InvalidGidItem>>& items);
 
     static const uint32_t kPopMessageCountEachTime = 64u;
     static const uint64_t kFlushHeightTreePeriod = 60000lu;
@@ -250,6 +251,7 @@ private:
     std::mutex pop_tx_mu_;
     volatile bool destroy_ = false;
     std::unordered_map<std::string, std::shared_ptr<InvalidGidItem>> invalid_gids_;
+    common::ThreadSafeQueue<std::shared_ptr<InvalidGidItem>> invalid_gid_queues_[common::kInvalidPoolIndex];
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

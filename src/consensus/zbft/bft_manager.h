@@ -196,6 +196,7 @@ private:
     bool CheckChangedLeaderBftsValid(uint32_t pool, uint64_t height, const std::string& gid);
     int PrecommitWithRemovedPrepareBft(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
     void BroadcastInvalidGids(uint8_t thread_idx);
+    void CheckInvalidGids(uint8_t thread_idx);
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
