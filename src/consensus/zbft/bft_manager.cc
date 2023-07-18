@@ -486,7 +486,7 @@ ZbftPtr BftManager::Start(
     }
 
     ZJC_DEBUG("leader start bft success, thread: %d, pool: %d, bft size: %u, "
-        thread_item->pools.size(): %d, "
+        "thread_item->pools.size(): %d, "
         "elect_item_ptr->elect_height: %lu,elect_item_ptr->time_valid: %lu now_tm_ms: %lu",
         thread_index, zbft_ptr->pool_index(),
         pools_with_zbfts_[zbft_ptr->pool_index()].size(),
