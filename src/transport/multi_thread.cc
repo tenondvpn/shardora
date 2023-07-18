@@ -153,7 +153,30 @@ void MultiThreadHandler::Destroy() {
 int32_t MultiThreadHandler::GetPriority(const transport::protobuf::Header& msg) {
     switch (msg.type()) {
     case common::kConsensusMessage:
+        if (msg.zbft().tx_bft().tx_type() != pools::protobuf::kNormalFrom &&
+                msg.zbft().tx_bft().tx_type() != pools::protobuf::kNormalTo) {
+            return kTransportPrioritySystem;
+        }
+
+        if (msg.zbft().pool_index() == common::kImmutablePoolSize) {
+            return kTransportPriorityHighest;
+        }
+
+        if (!msg.zbft().commit_gid().empty()) {
+            return kTransportPriorityHighest;
+        }
+       
+        if (!msg.zbft().precommit_gid().empty()) {
+            return kTransportPriorityHigh;
+        }
+
+        return kTransportPriorityMiddle;
+    case common::kPoolsMessage:
+        return kTransportPriorityHigh;
+    case common::kInitMessage:
         return kTransportPriorityHighest;
+    case common::kBlsMessage:
+        return kTransportPrioritySystem;
     case common::kElectMessage:
     case common::kVssMessage:
         return kTransportPriorityHigh;
