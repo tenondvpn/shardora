@@ -89,7 +89,6 @@ private:
     void CreateConsensusBlockMessage(
         std::shared_ptr<transport::TransportMessage>& new_msg_ptr,
         std::shared_ptr<block::protobuf::Block>& block_ptr);
-    uint32_t GetMessagePriority(MessagePtr& msg_ptr);
 
     static const int kQueueObjectCount = 1024 * 1024;
 

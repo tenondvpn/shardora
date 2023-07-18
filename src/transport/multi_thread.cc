@@ -203,7 +203,6 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
         HandleSyncBlockResponse(msg_ptr);
     }
 
-    auto priority = GetMessagePriority(msg_ptr);
     auto queue_idx = GetThreadIndex(msg_ptr);
     if (queue_idx == consensus_thread_count_ &&
             threads_message_queues_[queue_idx][priority].size() >= kMaxMessageReserveCount) {
@@ -218,10 +217,6 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
         threads_message_queues_[queue_idx][priority].size(),
         common::GlobalInfo::Instance()->network_id(),
         msg_ptr->header.type());
-}
-
-uint32_t MultiThreadHandler::GetMessagePriority(MessagePtr& msg_ptr) {
-    return kTransportPriorityHigh;
 }
 
 uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
@@ -302,7 +297,7 @@ void MultiThreadHandler::CreateConsensusBlockMessage(
     *bft_msg.mutable_block() = *block_item;
     auto queue_idx = GetThreadIndex(new_msg_ptr);
     transport::TcpTransport::Instance()->SetMessageHash(new_msg_ptr->header, queue_idx);
-    auto priority = kTransportPriorityHigh;
+    uint32_t priority = GetPriority(msg_ptr->header.type());
     threads_message_queues_[queue_idx][priority].push(new_msg_ptr);
     ZJC_DEBUG("create sync block message: %d, index: %d, queue_idx: %d, hash64: %lu, block hash: %s, size: %u",
         queue_idx, block_item->pool_index(), queue_idx, new_msg_ptr->header.hash64(),
@@ -374,7 +369,7 @@ void MultiThreadHandler::Join() {
 }
 
 void MultiThreadHandler::InitThreadPriorityMessageQueues() {
-    threads_message_queues_ = new *common::ThreadSafeQueue<MessagePtr>[all_thread_count_];
+    threads_message_queues_ = new (common::ThreadSafeQueue<MessagePtr>*)[all_thread_count_];
     for (uint32_t i = 0; i < all_thread_count_; ++i) {
         threads_message_queues_[i] =
             new common::ThreadSafeQueue<MessagePtr>[kTransportPriorityMaxCount];
