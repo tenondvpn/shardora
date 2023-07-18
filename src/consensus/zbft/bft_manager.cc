@@ -2979,6 +2979,8 @@ void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
     auto& elect_item = *elect_item_ptr;
     msg.mutable_zbft()->set_member_index(elect_item.local_node_member_index);
     msg.mutable_zbft()->set_elect_height(elect_item.elect_height);
+    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
+    auto* brdcast = msg.mutable_broadcast();
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg);
     std::string sign;
     if (security_ptr_->Sign(msg_hash, &sign) != security::kSecuritySuccess) {
@@ -2987,8 +2989,6 @@ void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
     }
 
     msg.set_sign(sign);
-    transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
-    auto* brdcast = msg.mutable_broadcast();
     network::Route::Instance()->Send(msg_ptr);
 }
 

@@ -367,7 +367,7 @@ void TcpTransport::EraseConn(uint8_t thread_idx) {
 }
 
 std::string TcpTransport::GetHeaderHashForSign(const transport::protobuf::Header& message) {
-    assert(message.hash64());
+    assert(message.has_hash64());
     assert(message.hash64() != 0);
     std::string msg_for_hash;
     msg_for_hash.reserve(3 * 1024 * 1024);
