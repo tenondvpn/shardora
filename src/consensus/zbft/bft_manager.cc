@@ -285,8 +285,8 @@ void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 
 void BftManager::CheckInvalidGids(uint8_t thread_idx) {
     for (uint32_t pool_idx = 0; pool_idx < common::kInvalidPoolIndex; ++pool_idx) {
-        if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_index) {
-            std::vector<std::shared_ptr<InvalidGidItem>> items;
+        if (common::GlobalInfo::Instance()->pools_with_thread()[pool_idx] == thread_idx) {
+            std::vector<std::shared_ptr<pools::InvalidGidItem>> items;
             pools_mgr_->BftCheckInvalidGids(pool_idx, items);
             if (items.empty()) {
                 continue;
