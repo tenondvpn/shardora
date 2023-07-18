@@ -153,6 +153,7 @@ void MultiThreadHandler::Destroy() {
 int32_t MultiThreadHandler::GetPriority(const transport::protobuf::Header& msg) {
     switch (msg.type()) {
     case common::kConsensusMessage:
+        ZJC_DEBUG("get consensus message tx type: %d", msg.zbft().tx_bft().tx_type());
         if (msg.zbft().tx_bft().tx_type() != pools::protobuf::kNormalFrom &&
                 msg.zbft().tx_bft().tx_type() != pools::protobuf::kNormalTo) {
             return kTransportPrioritySystem;
