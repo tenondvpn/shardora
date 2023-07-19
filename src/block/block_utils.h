@@ -51,14 +51,20 @@ struct HeightItem {
 static const std::string kCreateGenesisNetwrokAccount = common::Encode::HexDecode(
     "b5be6f0090e4f5d40458258ed9adf843324c0327145c48b55091f33673d2d5a4");
 
+static const uint64_t kStopConsensusTimeoutMs = 30000lu;
+
 struct BlockTxsItem {
-    BlockTxsItem() : tx_ptr(nullptr), tx_count(0), success(false), leader_to_index(-1) {}
+    BlockTxsItem() : tx_ptr(nullptr), tx_count(0), success(false), leader_to_index(-1) {
+        stop_consensus_timeout = common::TimeUtils::TimestampMs() + kStopConsensusTimeoutMs;
+    }
+
     pools::TxItemPtr tx_ptr;
     std::string tx_hash;
     uint32_t tx_count;
     uint64_t timeout;
     bool success;
     int32_t leader_to_index;
+    uint64_t stop_consensus_timeout;
 };
 
 typedef std::shared_ptr<block::protobuf::Block> BlockPtr;
@@ -71,10 +77,14 @@ struct BlockToDbItem {
 };
 
 struct LeaderWithToTxItem {
+    LeaderWithToTxItem() {
+        stop_consensus_timeout = common::TimeUtils::TimestampMs() + kStopConsensusTimeoutMs;
+    }
     std::shared_ptr<BlockTxsItem> to_tx;
     uint64_t elect_height;
     uint32_t leader_idx;
     transport::MessagePtr to_txs_msg;
+    uint64_t stop_consensus_timeout;
 };
 
 
