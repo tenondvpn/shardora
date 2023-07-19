@@ -1714,7 +1714,7 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
                 bft_ptr->pool_index() == tmp_bft->pool_index() &&
                 bft_ptr->height() <= tmp_bft->height()) {
             if (bft_ptr->height() == tmp_bft->height()) {
-                if (tmp_bft->consensus_status() == kConsensusPrepare) {
+                if (tmp_bft->consensus_status() == kConsensusPrepare && tmp_bft->gid() < bft_ptr->gid()) {
                     ZJC_DEBUG("remove bft gid: %s, pool_index: %d",
                         common::Encode::HexEncode(tmp_bft->gid()).c_str(),
                         bft_ptr->pool_index());

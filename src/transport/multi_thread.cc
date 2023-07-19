@@ -174,12 +174,12 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
         }
        
         if (!msg.zbft().precommit_gid().empty()) {
-            msg_ptr->timeout = common::TimeUtils::TimestampMs() + 2 * kConsensusMessageTimeoutMs;
+            msg_ptr->handle_timeout = common::TimeUtils::TimestampMs() + 2 * kHandledTimeoutMs;
             return kTransportPriorityHigh;
         }
 
         if (!msg.zbft().prepare_gid().empty()) {
-            msg_ptr->timeout = common::TimeUtils::TimestampMs() + kConsensusMessageTimeoutMs;
+            msg_ptr->handle_timeout = common::TimeUtils::TimestampMs() + kHandledTimeoutMs;
             return kTransportPriorityMiddle;
         }
 
@@ -366,8 +366,8 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx) {
                 if (threads_message_queues_[i][pri].size() > 0) {
                     MessagePtr msg_obj;
                     threads_message_queues_[i][pri].pop(&msg_obj);
-                    if (msg_obj->timeout < now_tm_ms) {
-                        ZJC_DEBUG("remove timeout invalid message hash: %u", msg_obj->header.hash64());
+                    if (msg_obj->handle_timeout < now_tm_ms) {
+                        ZJC_DEBUG("remove handle timeout invalid message hash: %u", msg_obj->header.hash64());
                         continue;
                     }
 

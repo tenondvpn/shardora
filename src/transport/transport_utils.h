@@ -67,12 +67,14 @@ enum TcpConnnectionType {
     kRemoveClient = 3,
 };
 
-static const uint64_t kConsensusMessageTimeoutMs = 5000lu;
+static const uint64_t kConsensusMessageTimeoutUs = 5000000lu;
+static const uint64_t kHandledTimeoutMs = 5000lu;
 static const uint64_t kMessagePeriodUs = 1500000lu;
 
 struct TransportMessage {
     TransportMessage() : conn(nullptr), response(nullptr), tmp_ptr(nullptr), retry(false) {
-        timeout = common::kInvalidUint64;
+        timeout = common::TimeUtils::TimestampUs() + kConsensusMessageTimeoutUs;
+        handle_timeout = common::kInvalidUint64;
         prev_timestamp = common::TimeUtils::TimestampUs() + kMessagePeriodUs;
         memset(times, 0, sizeof(times));
         times_idx = 0;
@@ -88,6 +90,7 @@ struct TransportMessage {
     bool retry;
     uint64_t times[128];
     uint32_t times_idx;
+    uint64_t handle_timeout;
     uint64_t timeout;
     uint64_t prev_timestamp;
 };
