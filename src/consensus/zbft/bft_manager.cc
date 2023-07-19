@@ -306,6 +306,15 @@ void BftManager::CheckInvalidGids(uint8_t thread_idx) {
                     invalid_gid_item->max_pool_index,
                     invalid_gid_item->max_pool_height,
                     invalid_gid_item->max_precommit_hash);
+                auto& bft_queue = pools_with_zbfts_[pool_idx];
+                auto iter = bft_queue.begin();
+                while (iter != bft_queue.end()) {
+                    if ((*iter)->gid() == invalid_gid_item->gid) {
+                        iter = bft_queue.erase(iter);
+                    } else {
+                        ++iter;
+                    }
+                }
             }
         }
     }
@@ -1714,7 +1723,8 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
                 bft_ptr->pool_index() == tmp_bft->pool_index() &&
                 bft_ptr->height() <= tmp_bft->height()) {
             if (bft_ptr->height() == tmp_bft->height()) {
-                if (tmp_bft->consensus_status() == kConsensusPrepare) {
+                if (tmp_bft->consensus_status() == kConsensusPrepare &&
+                        tmp_bft->leader_index() == bft_ptr->leader_index()) {
                     ZJC_DEBUG("remove bft gid: %s, pool_index: %d",
                         common::Encode::HexEncode(tmp_bft->gid()).c_str(),
                         bft_ptr->pool_index());
