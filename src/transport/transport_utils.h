@@ -67,12 +67,12 @@ enum TcpConnnectionType {
     kRemoveClient = 3,
 };
 
-static const uint64_t kMessageTimeoutUs = 5000000lu;
+static const uint64_t kConsensusMessageTimeoutMs = 5000lu;
 static const uint64_t kMessagePeriodUs = 1500000lu;
 
 struct TransportMessage {
     TransportMessage() : conn(nullptr), response(nullptr), tmp_ptr(nullptr), retry(false) {
-        timeout = common::TimeUtils::TimestampUs() + kMessageTimeoutUs;
+        timeout = common::kInvalidUint64;
         prev_timestamp = common::TimeUtils::TimestampUs() + kMessagePeriodUs;
         memset(times, 0, sizeof(times));
         times_idx = 0;

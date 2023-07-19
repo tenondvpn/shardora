@@ -150,7 +150,8 @@ void MultiThreadHandler::Destroy() {
     inited_ = false;
 }
 
-int32_t MultiThreadHandler::GetPriority(const transport::protobuf::Header& msg) {
+int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
+    auto& msg = msg_ptr->header;
     switch (msg.type()) {
     case common::kConsensusMessage:
         ZJC_DEBUG("get consensus message tx type: %d", msg.zbft().tx_bft().tx_type());
@@ -171,6 +172,7 @@ int32_t MultiThreadHandler::GetPriority(const transport::protobuf::Header& msg) 
             return kTransportPriorityHigh;
         }
 
+        msg_ptr->timeout = common::TimeUtils::TimestampUs() + kConsensusMessageTimeoutMs;
         return kTransportPriorityMiddle;
     case common::kPoolsMessage:
         return kTransportPriorityHigh;
@@ -347,16 +349,21 @@ bool MultiThreadHandler::IsMessageUnique(uint64_t msg_hash) {
 }
  
 MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx) {
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
     for (uint32_t i = 0; i < all_thread_count_; ++i) {
         if (i % all_thread_count_ == thread_idx) {
             for (uint32_t pri = kTransportPrioritySystem; pri < kTransportPriorityMaxCount; ++pri) {
                 if (threads_message_queues_[i][pri].size() > 0) {
                     MessagePtr msg_obj;
                     threads_message_queues_[i][pri].pop(&msg_obj);
+                    if (msg_obj->timeout < now_tm_ms) {
+                        ZJC_DEBUG("remove timeout invalid message hash: %u", msg_obj->header.hash64());
+                        continue;
+                    }
+
                     ZJC_DEBUG("pop valid message hash: %u", msg_obj->header.hash64());
                     return msg_obj;
                 }
-
             }
         }
     }
