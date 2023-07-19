@@ -307,12 +307,12 @@ void BftManager::CheckInvalidGids(uint8_t thread_idx) {
                     invalid_gid_item->max_pool_height,
                     invalid_gid_item->max_precommit_hash);
                 auto& bft_queue = pools_with_zbfts_[pool_idx];
-                auto iter = bft_queue.begin();
-                while (iter != bft_queue.end()) {
-                    if ((*iter)->gid() == invalid_gid_item->gid) {
-                        iter = bft_queue.erase(iter);
+                auto queue_iter = bft_queue.begin();
+                while (queue_iter != bft_queue.end()) {
+                    if ((*queue_iter)->gid() == invalid_gid_item->gid) {
+                        queue_iter = bft_queue.erase(queue_iter);
                     } else {
-                        ++iter;
+                        ++queue_iter;
                     }
                 }
             }
