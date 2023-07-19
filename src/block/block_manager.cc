@@ -1565,6 +1565,7 @@ bool BlockManager::ShouldStopConsensus() {
         }
     }
 
+
     return false;
 }
 
