@@ -183,10 +183,6 @@ void BftManager::OnNewElectBlock(
         return;
     }
 
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        pools_rotationed_[i] = false;
-    }
-
     auto elect_item_ptr = std::make_shared<ElectItem>();
     auto& elect_item = *elect_item_ptr;
     elect_item.members = members;
@@ -369,12 +365,6 @@ void BftManager::RotationLeader(
         elect_item_ptr->time_valid,
         elect_item_ptr->change_leader_time_valid,
         elect_item_ptr->invalid_time);
-//     assert(false);
-    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        if (i % elect_item_ptr->leader_count == (uint32_t)leader_mod_num) {
-            pools_rotationed_[i] = true;
-        }
-    }
 }
 
 ZbftPtr BftManager::Start(
@@ -2974,10 +2964,6 @@ void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
     dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
     msg.set_des_dht_key(dht_key.StrKey());
     for (uint32_t pool_index = 0; pool_index < common::kInvalidPoolIndex; ++pool_index) {
-        if (!pools_rotationed_[pool_index]) {
-            continue;
-        }
-
         if (common::GlobalInfo::Instance()->pools_with_thread()[pool_index] != thread_idx) {
             continue;
         }
@@ -2991,6 +2977,12 @@ void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
         if (bft_ptr->timeout(now_timestamp_us) &&
                 (bft_ptr->consensus_status() == kConsensusPreCommit ||
                  bft_ptr->consensus_status() == kConsensusPrepare)) {
+            auto iter = broadcasted_gids_[thread_idx].find(bft_ptr->gid());
+            if (iter != broadcasted_gids_[thread_idx].end()) {
+                continue;
+            }
+
+            broadcasted_gids_[thread_idx].insert(bft_ptr->gid());
             auto invalid_bfts = msg.add_invalid_bfts();
             invalid_bfts->set_pool_index(pool_index);
             invalid_bfts->set_gid(bft_ptr->gid());
