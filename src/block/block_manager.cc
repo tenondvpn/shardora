@@ -1542,7 +1542,7 @@ bool BlockManager::ShouldStopConsensus() {
     auto& cross_statistic_tx = latest_cross_statistic_tx_;
     if (cross_statistic_tx != nullptr) {
         if (cross_statistic_tx->stop_consensus_timeout > now_tm_ms) {
-            ZJC_DEBUG("shard cross tx stop consensus timeout: %lu, %lu", shard_statistic_tx->stop_consensus_timeout, now_tm_ms);
+            ZJC_DEBUG("shard cross tx stop consensus timeout: %lu, %lu", cross_statistic_tx->stop_consensus_timeout, now_tm_ms);
             return true;
         }
     }
