@@ -1128,6 +1128,7 @@ void NetworkInit::AddBlockItemToCache(
             block->pool_index(),
             block->height(),
             block->hash(),
+            block->prehash(),
             db_batch);
     }
     

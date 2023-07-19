@@ -464,6 +464,7 @@ int GenesisBlockInit::CreateElectBlock(
         tenon_block->pool_index(),
         tenon_block->height(),
         tenon_block->hash(),
+        tenon_block->prehash(),
         db_batch);
 
     prefix_db_->SaveLatestElectBlock(ec_block, db_batch);
@@ -560,6 +561,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
             tenon_block->pool_index(),
             tenon_block->height(),
             tenon_block->hash(),
+            tenon_block->prehash(),
             db_batch);
 
         AddBlockItemToCache(tenon_block, db_batch);
@@ -634,6 +636,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
             tenon_block->pool_index(),
             tenon_block->height(),
             tenon_block->hash(),
+            tenon_block->prehash(),
             db_batch);
 
         prefix_db_->SaveLatestTimeBlock(tenon_block->height(), db_batch);
@@ -869,6 +872,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             tenon_block->pool_index(),
             tenon_block->height(),
             tenon_block->hash(),
+            tenon_block->prehash(),
             db_batch);
 
         AddBlockItemToCache(tenon_block, db_batch);
@@ -1154,6 +1158,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             tenon_block->pool_index(),
             tenon_block->height(),
             tenon_block->hash(),
+            tenon_block->prehash(),
             db_batch);
         AddBlockItemToCache(tenon_block, db_batch);
         block_mgr_->GenesisNewBlock(0, tenon_block);
@@ -1270,6 +1275,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             tenon_block->pool_index(),
             tenon_block->height(),
             tenon_block->hash(),
+            tenon_block->prehash(),
             db_batch);
         AddBlockItemToCache(tenon_block, db_batch);
         block_mgr_->GenesisNewBlock(0, tenon_block);

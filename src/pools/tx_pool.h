@@ -160,7 +160,11 @@ public:
         }
     }
 
-    uint64_t UpdateLatestInfo(uint8_t thread_idx, uint64_t height, const std::string& hash) {
+    uint64_t UpdateLatestInfo(
+            uint8_t thread_idx,
+            uint64_t height,
+            const std::string& hash,
+            const std::string& prehash) {
         if (height_tree_ptr_ == nullptr) {
             InitHeightTree();
         }
