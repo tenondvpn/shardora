@@ -521,6 +521,8 @@ void BlockManager::HandleNormalToTx(
     auto iter = leader_to_txs_.find(to_txs.elect_height());
     if (iter != leader_to_txs_.end()) {
         if (latest_to_tx_ != nullptr && iter->second->to_tx->tx_hash == latest_to_tx_->to_tx->tx_hash) {
+            ZJC_DEBUG("success handle normal to tx hash: %s",
+                common::Encode::HexEncode(iter->second->to_tx->tx_hash).c_str());
             latest_to_tx_ = nullptr;
         }
 
