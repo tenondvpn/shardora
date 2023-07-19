@@ -460,7 +460,7 @@ ZbftPtr BftManager::Start(
         return nullptr;
     }
 
-    if (txs_ptr->tx_type = pools::protobuf::kNormalFrom) {
+    if (txs_ptr->tx_type == pools::protobuf::kNormalFrom) {
         if (block_mgr_->ShouldStopConsensus()) {
             ZJC_DEBUG("should stop consensus.");
             return nullptr;
@@ -1644,7 +1644,7 @@ ZbftPtr BftManager::CreateBftPtr(
         return nullptr;
     }
 
-    if (txs_ptr->tx_type = pools::protobuf::kNormalFrom) {
+    if (txs_ptr->tx_type == pools::protobuf::kNormalFrom) {
         if (block_mgr_->ShouldStopConsensus()) {
             ZJC_DEBUG("should stop consensus.");
             return nullptr;
