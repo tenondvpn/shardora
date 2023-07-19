@@ -64,16 +64,16 @@ void BaseDht::UniversalJoin(const NodePtr& node) {
 int BaseDht::Join(NodePtr& node) {
     if (node_join_cb_ != nullptr) {
         if (node_join_cb_(node) != kDhtSuccess) {
-//             DHT_ERROR("check callback join node failed! %s, %d, sharding id: %d",
-//                 common::Encode::HexEncode(node->id).c_str(), node->join_way, local_node_->sharding_id);
+            DHT_ERROR("check callback join node failed! %s, %d, sharding id: %d",
+                common::Encode::HexEncode(node->id).c_str(), node->join_way, local_node_->sharding_id);
             return kDhtError;
         }
     }
 
     int res = CheckJoin(node);
     if (res != kDhtSuccess) {
-//         DHT_ERROR("CheckJoin join node failed! %s, res: %d",
-//             common::Encode::HexEncode(node->id).c_str(), res);
+        DHT_ERROR("CheckJoin join node failed! %s, res: %d",
+            common::Encode::HexEncode(node->id).c_str(), res);
         return res;
     }
 
