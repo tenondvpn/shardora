@@ -470,7 +470,8 @@ void BlockManager::HandleStatisticTx(
                 }
 
                 iter->second->shard_statistic_tx = nullptr;
-                ZJC_DEBUG("erase statistic elect height: %lu, net: %u, hash: %s, latest_shard_statistic_tx_ = null: %d",
+                ZJC_DEBUG("success erase statistic tx statistic elect height "
+                    ": %lu, net: %u, hash: %s, latest_shard_statistic_tx_ = null: %d",
                     elect_statistic.elect_height(),
                     net_id,
                     common::Encode::HexEncode(block_tx.storages(i).val_hash()).c_str(),
@@ -1147,6 +1148,7 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
             tx_ptr->tx_ptr->in_consensus = false;
             tx_ptr->tx_hash = statistic_hash;
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
+            tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
             statistic_item->shard_statistic_tx = tx_ptr;
             ZJC_INFO("success add statistic tx: %s, statistic elect height: %lu, "
                 "heights: %s, timeout: %lu, kStatisticTimeoutMs: %lu, now: %lu, gid: %s",
@@ -1179,6 +1181,7 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
             tx_ptr->tx_ptr->in_consensus = false;
             tx_ptr->tx_hash = cross_hash;
             tx_ptr->timeout = common::TimeUtils::TimestampMs() + kStatisticTimeoutMs;
+            tx_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
             statistic_item->cross_statistic_tx = tx_ptr;
             ZJC_INFO("success add cross tx: %s, gid: %s",
                 common::Encode::HexEncode(cross_hash).c_str(),
@@ -1190,8 +1193,6 @@ void BlockManager::StatisticWithLeaderHeights(const transport::MessagePtr& msg_p
     if (riter != leader_statistic_txs_.rend() && riter->second->shard_statistic_tx != nullptr) {
         latest_shard_statistic_tx_ = riter->second->shard_statistic_tx;
         latest_cross_statistic_tx_ = riter->second->cross_statistic_tx;
-        latest_shard_statistic_tx_->stop_consensus_timeout = common::TimeUtils::TimestampMs() + kStopConsensusTimeoutMs;
-        latest_cross_statistic_tx_->stop_consensus_timeout = common::TimeUtils::TimestampMs() + kStopConsensusTimeoutMs;
         ZJC_DEBUG("success set statistic tx statistic elect height: %lu, statistic: %d, cross: %d, tx hash: %s",
             msg_ptr->header.block_proto().statistic_tx().elect_height(),
             (latest_shard_statistic_tx_ != nullptr),
@@ -1317,7 +1318,7 @@ void BlockManager::HandleStatisticBlock(
     shard_elect_tx->tx_ptr = create_elect_tx_cb_(new_msg_ptr);
     shard_elect_tx->tx_ptr->time_valid += kElectValidTimeout;
     shard_elect_tx->timeout = common::TimeUtils::TimestampMs() + kElectTimeout;
-    shard_elect_tx->stop_consensus_timeout = common::TimeUtils::TimestampMs() + kStopConsensusTimeoutMs;
+    shard_elect_tx->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
     shard_elect_tx_[block.network_id()] = shard_elect_tx;
     ZJC_INFO("success add elect tx: %u, %lu, gid: %s, statistic elect height: %lu",
         block.network_id(), block.timeblock_height(),
@@ -1423,7 +1424,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     to_txs_ptr->tx_ptr->time_valid += kToValidTimeout;
     to_txs_ptr->tx_hash = gid;
     to_txs_ptr->timeout = now_time_ms + kToTimeoutMs;
-    to_txs_ptr->stop_consensus_timeout = common::TimeUtils::TimestampMs() + kStopConsensusTimeoutMs;
+    to_txs_ptr->stop_consensus_timeout = tx_ptr->timeout + kStopConsensusTimeoutMs;
     leader_to_txs->to_tx = to_txs_ptr;
     to_txs_ptr->success = true;
     to_txs_ptr->leader_to_index = shard_to.leader_to_idx();
