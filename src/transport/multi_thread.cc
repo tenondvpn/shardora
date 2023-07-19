@@ -154,7 +154,12 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
     auto& msg = msg_ptr->header;
     switch (msg.type()) {
     case common::kConsensusMessage:
-        ZJC_DEBUG("get consensus message tx type: %d", msg.zbft().tx_bft().tx_type());
+        ZJC_DEBUG("get consensus message tx type: %d, prepare: %s, precommit: %s, commit: %s, has_sync: %d",
+            msg.zbft().tx_bft().tx_type(),
+            common::Encode::HexEncode(msg.zbft().prepare_gid()).c_str(),
+            common::Encode::HexEncode(msg.zbft().precommit_gid()).c_str(),
+            common::Encode::HexEncode(msg.zbft().commit_gid()).c_str(),
+            msg.zbft().sync_block());
         if (msg.zbft().tx_bft().tx_type() != pools::protobuf::kNormalFrom &&
                 msg.zbft().tx_bft().tx_type() != pools::protobuf::kNormalTo) {
             return kTransportPrioritySystem;
@@ -172,8 +177,12 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
             return kTransportPriorityHigh;
         }
 
-        msg_ptr->timeout = common::TimeUtils::TimestampUs() + kConsensusMessageTimeoutMs;
-        return kTransportPriorityMiddle;
+        if (!msg.zbft().prepare_gid().empty()) {
+            msg_ptr->timeout = common::TimeUtils::TimestampUs() + kConsensusMessageTimeoutMs;
+            return kTransportPriorityMiddle;
+        }
+
+        return kTransportPriorityLow;
     case common::kPoolsMessage:
         return kTransportPriorityHigh;
     case common::kInitMessage:
