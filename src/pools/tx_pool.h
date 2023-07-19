@@ -101,6 +101,8 @@ public:
 
         for (auto hiter = iter->second.begin(); hiter != iter->second.end(); ++hiter) {
             hashs.push_back(*hiter);
+            ZJC_DEBUG("success get invalid hash pool: %u, height: %lu, hash: %s",
+                pool_index_, height, common::Encode::HexEncode(*hiter).c_str());
         }
     }
 
@@ -120,6 +122,8 @@ public:
             }
         }
 
+        ZJC_DEBUG("success add invalid hash pool: %u, height: %lu, hash: %s",
+            pool_index_, height, common::Encode::HexEncode(hash).c_str());
         iter->second.insert(hash);
         SaveTempBftInvalidHashs(height, iter->second);
     }
