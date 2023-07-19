@@ -80,7 +80,7 @@ private:
     typedef std::shared_ptr<SavedBlockQueueItem> SavedBlockQueueItemPtr;
     void Join();
     int StartTcpServer();
-    int32_t GetPriority(const transport::protobuf::Header& msg);
+    int32_t GetPriority(MessagePtr& msg_ptr);
     bool IsMessageUnique(uint64_t msg_hash);
     void InitThreadPriorityMessageQueues();
     uint8_t GetThreadIndex(MessagePtr& msg_ptr);
