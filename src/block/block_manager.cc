@@ -1538,9 +1538,9 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
 bool BlockManager::ShouldStopConsensus() {
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     auto tmp_to_txs = latest_to_tx_;
-    if (tmp_to_txs != nullptr) {
-        if (tmp_to_txs->stop_consensus_timeout < now_tm_ms) {
-            ZJC_DEBUG("to tx stop consensus timeout: %lu, %lu", tmp_to_txs->stop_consensus_timeout, now_tm_ms);
+    if (tmp_to_txs != nullptr && tmp_to_txs->to_tx != nullptr) {
+        if (tmp_to_txs->to_tx->stop_consensus_timeout < now_tm_ms) {
+            ZJC_DEBUG("to tx stop consensus timeout: %lu, %lu", tmp_to_txs->to_tx->stop_consensus_timeout, now_tm_ms);
             return true;
         }
     }

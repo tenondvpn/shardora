@@ -77,14 +77,10 @@ struct BlockToDbItem {
 };
 
 struct LeaderWithToTxItem {
-    LeaderWithToTxItem() {
-        stop_consensus_timeout = common::TimeUtils::TimestampMs() + kStopConsensusTimeoutMs;
-    }
     std::shared_ptr<BlockTxsItem> to_tx;
     uint64_t elect_height;
     uint32_t leader_idx;
     transport::MessagePtr to_txs_msg;
-    uint64_t stop_consensus_timeout;
 };
 
 
