@@ -106,6 +106,7 @@ struct ElectItem {
         time_valid = common::TimeUtils::TimestampMs() + kElectBlockValidTimeMs;
         change_leader_time_valid = time_valid + kElectBlockValidTimeMs;
         invalid_time = time_valid + common::kRotationPeriod / 1000lu;
+        stop_consensus_timeout = change_leader_time_valid = kElectBlockValidTimeMs;
         for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
             thread_set[i] = nullptr;
         }
@@ -129,6 +130,7 @@ struct ElectItem {
     uint64_t time_valid;
     uint64_t change_leader_time_valid;
     uint64_t invalid_time;
+    uint64_t stop_consensus_timeout;
     volatile int32_t mod_with_leader_index[256];
 };
 

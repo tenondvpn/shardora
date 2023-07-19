@@ -1485,8 +1485,7 @@ pools::TxItemPtr BlockManager::GetStatisticTx(uint32_t pool_index, bool leader) 
 }
 
 pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string& tx_hash) {
-    for (uint32_t i = network::kRootCongressNetworkId;
-            i <= max_consensus_sharding_id_; ++i) {
+    for (uint32_t i = network::kRootCongressNetworkId; i <= max_consensus_sharding_id_; ++i) {
         if (i % common::kImmutablePoolSize != pool_index) {
             continue;
         }
@@ -1530,6 +1529,40 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
     return nullptr;
 }
 
+bool BlockManager::ShouldStopConsensus() {
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
+    auto tmp_to_txs = latest_to_tx_;
+    if (tmp_to_txs != nullptr) {
+        if (tmp_to_txs->tx_ptr->stop_consensus_timeout > now_tm_ms) {
+            return true;
+        }
+    }
+
+    auto& cross_statistic_tx = latest_cross_statistic_tx_;
+    if (cross_statistic_tx != nullptr) {
+        if (cross_statistic_tx->tx_ptr->stop_consensus_timeout > now_tm_ms) {
+            return true;
+        }
+    }
+
+    auto shard_statistic_tx = latest_shard_statistic_tx_;
+    if (shard_statistic_tx != nullptr) {
+        if (shard_statistic_tx->tx_ptr->stop_consensus_timeout > now_tm_ms) {
+            return true;
+        }
+    }
+
+    for (uint32_t i = network::kRootCongressNetworkId; i <= max_consensus_sharding_id_; ++i) {
+        auto shard_elect_tx = shard_elect_tx_[i];
+        if (shard_elect_tx != nullptr) {
+            if (shard_elect_tx->tx_ptr->stop_consensus_timeout > now_tm_ms) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
 
 pools::TxItemPtr BlockManager::GetToTx(uint32_t pool_index, bool leader) {
     if (!leader) {

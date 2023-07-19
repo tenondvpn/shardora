@@ -174,6 +174,7 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
         }
        
         if (!msg.zbft().precommit_gid().empty()) {
+            msg_ptr->timeout = common::TimeUtils::TimestampMs() + 2 * kConsensusMessageTimeoutMs;
             return kTransportPriorityHigh;
         }
 

@@ -371,6 +371,11 @@ ZbftPtr BftManager::Start(
         uint8_t thread_index,
         ZbftPtr& prev_bft,
         const transport::MessagePtr& prepare_msg_ptr) {
+    if (block_mgr_->ShouldStopConsensus()) {
+        ZJC_DEBUG("should stop consensus.");
+        return nullptr;
+    }
+
 #ifndef ZJC_UNITTEST
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) <
@@ -721,6 +726,11 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     if (elect_item_ptr == nullptr) {
         if (header.zbft().leader_idx() >= 0 && !header.zbft().prepare_gid().empty()) {
+            if (block_mgr_->ShouldStopConsensus()) {
+                ZJC_DEBUG("backup should stop consensus.");
+                return;
+            }
+
             // timer to re-handle the message
             if (msg_ptr->timeout > now_ms * 1000lu) {
                 ZJC_DEBUG("0 push prepare message : %s, hash64: %lu",
@@ -756,6 +766,11 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     int res = kConsensusSuccess;
     if (header.zbft().leader_idx() >= 0) {
+        if (block_mgr_->ShouldStopConsensus()) {
+            ZJC_DEBUG("backup should stop consensus.");
+            return;
+        }
+
         if (header.zbft().has_commit_gid() && !header.zbft().commit_gid().empty()) {
             auto commit_bft = GetBft(header.zbft().pool_index(), header.zbft().commit_gid());
             if (commit_bft == nullptr) {

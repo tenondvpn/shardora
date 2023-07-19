@@ -100,6 +100,7 @@ public:
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBatch& db_batch);
     void ChangeLeader(int32_t mod_num, common::BftMemberPtr& mem_ptr);
+    bool ShouldStopConsensus();
 
 private:
     void HandleAllNewBlock(uint8_t thread_idx);
