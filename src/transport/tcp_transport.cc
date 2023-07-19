@@ -136,9 +136,9 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
                 from_port);
         }
         
-        if (!conn->PeerIp().empty() && conn->PeerPort() != 0) {
-            CreateDropNodeMessage(conn->PeerIp(), conn->PeerPort());
-        }
+//         if (!conn->PeerIp().empty() && conn->PeerPort() != 0) {
+//             CreateDropNodeMessage(conn->PeerIp(), conn->PeerPort());
+//         }
 
         packet.Free();
         return false;
