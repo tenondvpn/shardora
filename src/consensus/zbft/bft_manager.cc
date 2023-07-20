@@ -1717,6 +1717,10 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
 
 ZbftPtr BftManager::GetBft(uint32_t pool_index, const std::string& gid) {
     auto& bft_ptr = pools_with_zbfts_[pool_index];
+    if (bft_ptr == nullptr) {
+        return nullptr;
+    }
+
     if (bft_ptr->gid() == gid) {
         return bft_ptr;
     }
