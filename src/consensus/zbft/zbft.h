@@ -159,13 +159,13 @@ public:
     }
 
     void set_precoimmit_hash() {
-        if (prepare_block_ == nullptr) {
+        if (prepare_hash_.empty() || prepare_block_ == nullptr || prepare_block_->is_commited_block()) {
             return;
         }
 
-        prepare_block_->set_is_commited_block(true);
-        auto precommit_hash = GetBlockHash(*prepare_block_);
+        auto precommit_hash = GetCommitedBlockHash(prepare_hash_);
         prepare_block_->set_hash(precommit_hash);
+        prepare_block_->set_is_commited_block(true);
         bls_mgr_->GetLibffHash(precommit_hash, &g1_precommit_hash_);
         ZJC_DEBUG("reset block hash: %s", common::Encode::HexEncode(precommit_hash).c_str());
     }
