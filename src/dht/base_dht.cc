@@ -236,7 +236,7 @@ int BaseDht::Drop(const std::string& ip, uint16_t port) {
             return lhs->id_hash < rhs->id_hash;
         });
     auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
-    readonly_hash_sort_dht_.swap(tmp_dht_ptr;
+    readonly_hash_sort_dht_ = tmp_dht_ptr;
     DHT_DEBUG("success drop node: %s:%d", ip.c_str(), port);
     return kDhtSuccess;
 }
