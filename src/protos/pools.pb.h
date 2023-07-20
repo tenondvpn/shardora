@@ -40,7 +40,7 @@ namespace protobuf_protos_2fpools_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[14];
+  static const ::google::protobuf::internal::ParseTable schema[15];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -62,6 +62,9 @@ extern CrossShardStatisticItemDefaultTypeInternal _CrossShardStatisticItem_defau
 class ElectStatistic;
 class ElectStatisticDefaultTypeInternal;
 extern ElectStatisticDefaultTypeInternal _ElectStatistic_default_instance_;
+class InvalidBftMessage;
+class InvalidBftMessageDefaultTypeInternal;
+extern InvalidBftMessageDefaultTypeInternal _InvalidBftMessage_default_instance_;
 class JoinElectNode;
 class JoinElectNodeDefaultTypeInternal;
 extern JoinElectNodeDefaultTypeInternal _JoinElectNode_default_instance_;
@@ -101,6 +104,7 @@ template<> ::zjchain::pools::protobuf::AreaInfo* Arena::CreateMaybeMessage<::zjc
 template<> ::zjchain::pools::protobuf::CrossShardStatistic* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::CrossShardStatistic>(Arena*);
 template<> ::zjchain::pools::protobuf::CrossShardStatisticItem* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::CrossShardStatisticItem>(Arena*);
 template<> ::zjchain::pools::protobuf::ElectStatistic* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::ElectStatistic>(Arena*);
+template<> ::zjchain::pools::protobuf::InvalidBftMessage* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::InvalidBftMessage>(Arena*);
 template<> ::zjchain::pools::protobuf::JoinElectNode* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::JoinElectNode>(Arena*);
 template<> ::zjchain::pools::protobuf::PoolLatestInfo* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::PoolLatestInfo>(Arena*);
 template<> ::zjchain::pools::protobuf::PoolStatisticItem* Arena::CreateMaybeMessage<::zjchain::pools::protobuf::PoolStatisticItem>(Arena*);
@@ -2157,6 +2161,176 @@ class SyncPoolsMaxHeight : public ::google::protobuf::Message /* @@protoc_insert
 };
 // -------------------------------------------------------------------
 
+class InvalidBftMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.pools.protobuf.InvalidBftMessage) */ {
+ public:
+  InvalidBftMessage();
+  virtual ~InvalidBftMessage();
+
+  InvalidBftMessage(const InvalidBftMessage& from);
+
+  inline InvalidBftMessage& operator=(const InvalidBftMessage& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  InvalidBftMessage(InvalidBftMessage&& from) noexcept
+    : InvalidBftMessage() {
+    *this = ::std::move(from);
+  }
+
+  inline InvalidBftMessage& operator=(InvalidBftMessage&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const InvalidBftMessage& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const InvalidBftMessage* internal_default_instance() {
+    return reinterpret_cast<const InvalidBftMessage*>(
+               &_InvalidBftMessage_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    13;
+
+  void Swap(InvalidBftMessage* other);
+  friend void swap(InvalidBftMessage& a, InvalidBftMessage& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline InvalidBftMessage* New() const final {
+    return CreateMaybeMessage<InvalidBftMessage>(NULL);
+  }
+
+  InvalidBftMessage* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<InvalidBftMessage>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const InvalidBftMessage& from);
+  void MergeFrom(const InvalidBftMessage& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(InvalidBftMessage* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional bytes gid = 2;
+  bool has_gid() const;
+  void clear_gid();
+  static const int kGidFieldNumber = 2;
+  const ::std::string& gid() const;
+  void set_gid(const ::std::string& value);
+  #if LANG_CXX11
+  void set_gid(::std::string&& value);
+  #endif
+  void set_gid(const char* value);
+  void set_gid(const void* value, size_t size);
+  ::std::string* mutable_gid();
+  ::std::string* release_gid();
+  void set_allocated_gid(::std::string* gid);
+
+  // optional bytes hash = 3;
+  bool has_hash() const;
+  void clear_hash();
+  static const int kHashFieldNumber = 3;
+  const ::std::string& hash() const;
+  void set_hash(const ::std::string& value);
+  #if LANG_CXX11
+  void set_hash(::std::string&& value);
+  #endif
+  void set_hash(const char* value);
+  void set_hash(const void* value, size_t size);
+  ::std::string* mutable_hash();
+  ::std::string* release_hash();
+  void set_allocated_hash(::std::string* hash);
+
+  // optional uint32 pool_index = 1;
+  bool has_pool_index() const;
+  void clear_pool_index();
+  static const int kPoolIndexFieldNumber = 1;
+  ::google::protobuf::uint32 pool_index() const;
+  void set_pool_index(::google::protobuf::uint32 value);
+
+  // optional bool precommit = 4;
+  bool has_precommit() const;
+  void clear_precommit();
+  static const int kPrecommitFieldNumber = 4;
+  bool precommit() const;
+  void set_precommit(bool value);
+
+  // optional uint64 height = 5;
+  bool has_height() const;
+  void clear_height();
+  static const int kHeightFieldNumber = 5;
+  ::google::protobuf::uint64 height() const;
+  void set_height(::google::protobuf::uint64 value);
+
+  // @@protoc_insertion_point(class_scope:zjchain.pools.protobuf.InvalidBftMessage)
+ private:
+  void set_has_pool_index();
+  void clear_has_pool_index();
+  void set_has_gid();
+  void clear_has_gid();
+  void set_has_hash();
+  void clear_has_hash();
+  void set_has_precommit();
+  void clear_has_precommit();
+  void set_has_height();
+  void clear_has_height();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::internal::ArenaStringPtr gid_;
+  ::google::protobuf::internal::ArenaStringPtr hash_;
+  ::google::protobuf::uint32 pool_index_;
+  bool precommit_;
+  ::google::protobuf::uint64 height_;
+  friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.pools.protobuf.TxMessage) */ {
  public:
   TxMessage();
@@ -2199,7 +2373,7 @@ class TxMessage : public ::google::protobuf::Message /* @@protoc_insertion_point
                &_TxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    14;
 
   void Swap(TxMessage* other);
   friend void swap(TxMessage& a, TxMessage& b) {
@@ -4279,6 +4453,214 @@ SyncPoolsMaxHeight::mutable_cross_heights() {
 
 // -------------------------------------------------------------------
 
+// InvalidBftMessage
+
+// optional uint32 pool_index = 1;
+inline bool InvalidBftMessage::has_pool_index() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void InvalidBftMessage::set_has_pool_index() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void InvalidBftMessage::clear_has_pool_index() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void InvalidBftMessage::clear_pool_index() {
+  pool_index_ = 0u;
+  clear_has_pool_index();
+}
+inline ::google::protobuf::uint32 InvalidBftMessage::pool_index() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.InvalidBftMessage.pool_index)
+  return pool_index_;
+}
+inline void InvalidBftMessage::set_pool_index(::google::protobuf::uint32 value) {
+  set_has_pool_index();
+  pool_index_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.InvalidBftMessage.pool_index)
+}
+
+// optional bytes gid = 2;
+inline bool InvalidBftMessage::has_gid() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void InvalidBftMessage::set_has_gid() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void InvalidBftMessage::clear_has_gid() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void InvalidBftMessage::clear_gid() {
+  gid_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_gid();
+}
+inline const ::std::string& InvalidBftMessage::gid() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.InvalidBftMessage.gid)
+  return gid_.GetNoArena();
+}
+inline void InvalidBftMessage::set_gid(const ::std::string& value) {
+  set_has_gid();
+  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.InvalidBftMessage.gid)
+}
+#if LANG_CXX11
+inline void InvalidBftMessage::set_gid(::std::string&& value) {
+  set_has_gid();
+  gid_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.pools.protobuf.InvalidBftMessage.gid)
+}
+#endif
+inline void InvalidBftMessage::set_gid(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_gid();
+  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.pools.protobuf.InvalidBftMessage.gid)
+}
+inline void InvalidBftMessage::set_gid(const void* value, size_t size) {
+  set_has_gid();
+  gid_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.pools.protobuf.InvalidBftMessage.gid)
+}
+inline ::std::string* InvalidBftMessage::mutable_gid() {
+  set_has_gid();
+  // @@protoc_insertion_point(field_mutable:zjchain.pools.protobuf.InvalidBftMessage.gid)
+  return gid_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* InvalidBftMessage::release_gid() {
+  // @@protoc_insertion_point(field_release:zjchain.pools.protobuf.InvalidBftMessage.gid)
+  if (!has_gid()) {
+    return NULL;
+  }
+  clear_has_gid();
+  return gid_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void InvalidBftMessage::set_allocated_gid(::std::string* gid) {
+  if (gid != NULL) {
+    set_has_gid();
+  } else {
+    clear_has_gid();
+  }
+  gid_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), gid);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.InvalidBftMessage.gid)
+}
+
+// optional bytes hash = 3;
+inline bool InvalidBftMessage::has_hash() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void InvalidBftMessage::set_has_hash() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void InvalidBftMessage::clear_has_hash() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void InvalidBftMessage::clear_hash() {
+  hash_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_hash();
+}
+inline const ::std::string& InvalidBftMessage::hash() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.InvalidBftMessage.hash)
+  return hash_.GetNoArena();
+}
+inline void InvalidBftMessage::set_hash(const ::std::string& value) {
+  set_has_hash();
+  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.InvalidBftMessage.hash)
+}
+#if LANG_CXX11
+inline void InvalidBftMessage::set_hash(::std::string&& value) {
+  set_has_hash();
+  hash_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.pools.protobuf.InvalidBftMessage.hash)
+}
+#endif
+inline void InvalidBftMessage::set_hash(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_hash();
+  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.pools.protobuf.InvalidBftMessage.hash)
+}
+inline void InvalidBftMessage::set_hash(const void* value, size_t size) {
+  set_has_hash();
+  hash_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.pools.protobuf.InvalidBftMessage.hash)
+}
+inline ::std::string* InvalidBftMessage::mutable_hash() {
+  set_has_hash();
+  // @@protoc_insertion_point(field_mutable:zjchain.pools.protobuf.InvalidBftMessage.hash)
+  return hash_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* InvalidBftMessage::release_hash() {
+  // @@protoc_insertion_point(field_release:zjchain.pools.protobuf.InvalidBftMessage.hash)
+  if (!has_hash()) {
+    return NULL;
+  }
+  clear_has_hash();
+  return hash_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void InvalidBftMessage::set_allocated_hash(::std::string* hash) {
+  if (hash != NULL) {
+    set_has_hash();
+  } else {
+    clear_has_hash();
+  }
+  hash_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), hash);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.InvalidBftMessage.hash)
+}
+
+// optional bool precommit = 4;
+inline bool InvalidBftMessage::has_precommit() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void InvalidBftMessage::set_has_precommit() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void InvalidBftMessage::clear_has_precommit() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void InvalidBftMessage::clear_precommit() {
+  precommit_ = false;
+  clear_has_precommit();
+}
+inline bool InvalidBftMessage::precommit() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.InvalidBftMessage.precommit)
+  return precommit_;
+}
+inline void InvalidBftMessage::set_precommit(bool value) {
+  set_has_precommit();
+  precommit_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.InvalidBftMessage.precommit)
+}
+
+// optional uint64 height = 5;
+inline bool InvalidBftMessage::has_height() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void InvalidBftMessage::set_has_height() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void InvalidBftMessage::clear_has_height() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void InvalidBftMessage::clear_height() {
+  height_ = GOOGLE_ULONGLONG(0);
+  clear_has_height();
+}
+inline ::google::protobuf::uint64 InvalidBftMessage::height() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.InvalidBftMessage.height)
+  return height_;
+}
+inline void InvalidBftMessage::set_height(::google::protobuf::uint64 value) {
+  set_has_height();
+  height_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.InvalidBftMessage.height)
+}
+
+// -------------------------------------------------------------------
+
 // TxMessage
 
 // optional uint32 version = 1;
@@ -4891,6 +5273,8 @@ inline void TxMessage::set_allocated_contract_input(::std::string* contract_inpu
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

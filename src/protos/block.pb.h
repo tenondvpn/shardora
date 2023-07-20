@@ -1023,12 +1023,12 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::uint32 version() const;
   void set_version(::google::protobuf::uint32 value);
 
-  // optional bool is_cross_block = 16 [default = false];
-  bool has_is_cross_block() const;
-  void clear_is_cross_block();
-  static const int kIsCrossBlockFieldNumber = 16;
-  bool is_cross_block() const;
-  void set_is_cross_block(bool value);
+  // optional bool is_commited_block = 16 [default = false];
+  bool has_is_commited_block() const;
+  void clear_is_commited_block();
+  static const int kIsCommitedBlockFieldNumber = 16;
+  bool is_commited_block() const;
+  void set_is_commited_block(bool value);
 
   // optional uint64 timestamp = 11;
   bool has_timestamp() const;
@@ -1072,8 +1072,8 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   void clear_has_bls_agg_sign_y();
   void set_has_leader_index();
   void clear_has_leader_index();
-  void set_has_is_cross_block();
-  void clear_has_is_cross_block();
+  void set_has_is_commited_block();
+  void clear_has_is_commited_block();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -1091,7 +1091,7 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::uint64 electblock_height_;
   ::google::protobuf::uint64 timeblock_height_;
   ::google::protobuf::uint32 version_;
-  bool is_cross_block_;
+  bool is_commited_block_;
   ::google::protobuf::uint64 timestamp_;
   ::google::protobuf::uint64 leader_index_;
   friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
@@ -6589,28 +6589,28 @@ Block::mutable_change_leader_invalid_hashs() {
   return &change_leader_invalid_hashs_;
 }
 
-// optional bool is_cross_block = 16 [default = false];
-inline bool Block::has_is_cross_block() const {
+// optional bool is_commited_block = 16 [default = false];
+inline bool Block::has_is_commited_block() const {
   return (_has_bits_[0] & 0x00000800u) != 0;
 }
-inline void Block::set_has_is_cross_block() {
+inline void Block::set_has_is_commited_block() {
   _has_bits_[0] |= 0x00000800u;
 }
-inline void Block::clear_has_is_cross_block() {
+inline void Block::clear_has_is_commited_block() {
   _has_bits_[0] &= ~0x00000800u;
 }
-inline void Block::clear_is_cross_block() {
-  is_cross_block_ = false;
-  clear_has_is_cross_block();
+inline void Block::clear_is_commited_block() {
+  is_commited_block_ = false;
+  clear_has_is_commited_block();
 }
-inline bool Block::is_cross_block() const {
-  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.Block.is_cross_block)
-  return is_cross_block_;
+inline bool Block::is_commited_block() const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.Block.is_commited_block)
+  return is_commited_block_;
 }
-inline void Block::set_is_cross_block(bool value) {
-  set_has_is_cross_block();
-  is_cross_block_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.Block.is_cross_block)
+inline void Block::set_is_commited_block(bool value) {
+  set_has_is_commited_block();
+  is_commited_block_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.Block.is_commited_block)
 }
 
 // -------------------------------------------------------------------

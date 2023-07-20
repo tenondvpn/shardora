@@ -45,6 +45,7 @@ namespace protobuf_protos_2fnetwork_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fnetwork_2eproto ::google::protobuf::internal::SCCInfo<3> scc_info_NetworkMessage;
 }  // namespace protobuf_protos_2fnetwork_2eproto
 namespace protobuf_protos_2fpools_2eproto {
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_InvalidBftMessage;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_SyncPoolsMaxHeight;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_ToTxHeights;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fpools_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_TxMessage;
@@ -60,7 +61,7 @@ namespace protobuf_protos_2fvss_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fvss_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_VssMessage;
 }  // namespace protobuf_protos_2fvss_2eproto
 namespace protobuf_protos_2fzbft_2eproto {
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fzbft_2eproto ::google::protobuf::internal::SCCInfo<3> scc_info_ZbftMessage;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fzbft_2eproto ::google::protobuf::internal::SCCInfo<2> scc_info_ZbftMessage;
 }  // namespace protobuf_protos_2fzbft_2eproto
 namespace zjchain {
 namespace transport {
@@ -104,8 +105,8 @@ static void InitDefaultsHeader() {
   ::zjchain::transport::protobuf::Header::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<19> scc_info_Header =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 19, InitDefaultsHeader}, {
+::google::protobuf::internal::SCCInfo<20> scc_info_Header =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 20, InitDefaultsHeader}, {
       &protobuf_protos_2ftransport_2eproto::scc_info_BroadcastParam.base,
       &protobuf_protos_2fnetwork_2eproto::scc_info_NetworkMessage.base,
       &protobuf_protos_2fdht_2eproto::scc_info_DhtMessage.base,
@@ -124,7 +125,8 @@ static void InitDefaultsHeader() {
       &protobuf_protos_2fblock_2eproto::scc_info_ElectBlockMessage.base,
       &protobuf_protos_2finit_2eproto::scc_info_InitMessage.base,
       &protobuf_protos_2fpools_2eproto::scc_info_SyncPoolsMaxHeight.base,
-      &protobuf_protos_2fblock_2eproto::scc_info_Block.base,}};
+      &protobuf_protos_2fblock_2eproto::scc_info_Block.base,
+      &protobuf_protos_2fpools_2eproto::scc_info_InvalidBftMessage.base,}};
 
 void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_BroadcastParam.base);
@@ -199,6 +201,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, init_proto_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, sync_heights_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, block_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::transport::protobuf::Header, invalid_bfts_),
   22,
   0,
   23,
@@ -226,10 +229,11 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   19,
   20,
   21,
+  ~0u,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 19, sizeof(::zjchain::transport::protobuf::BroadcastParam)},
-  { 33, 65, sizeof(::zjchain::transport::protobuf::Header)},
+  { 33, 66, sizeof(::zjchain::transport::protobuf::Header)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -272,7 +276,7 @@ void AddDescriptorsImpl() {
       "layer\030\010 \001(\r:\0011\022\016\n\006header\030\t \001(\014\022\014\n\004body\030\n"
       " \001(\014\022\023\n\013net_crossed\030\013 \001(\010\022\023\n\013bloomfilter"
       "\030\014 \003(\004\022\024\n\tevil_rate\030\r \001(\002:\0010\022\036\n\023ign_bloo"
-      "mfilter_hop\030\016 \001(\r:\0011\"\372\t\n\006Header\022\027\n\017src_s"
+      "mfilter_hop\030\016 \001(\r:\0011\"\273\n\n\006Header\022\027\n\017src_s"
       "harding_id\030\001 \001(\005\022\023\n\013des_dht_key\030\002 \001(\014\022\024\n"
       "\thop_count\030\003 \001(\r:\0010\022\r\n\005debug\030\004 \001(\014\022\016\n\006ha"
       "sh64\030\005 \001(\004\022\014\n\004type\030\006 \001(\r\022=\n\tbroadcast\030\007 "
@@ -304,10 +308,12 @@ void AddDescriptorsImpl() {
       "init.protobuf.InitMessage\022@\n\014sync_height"
       "s\030\032 \001(\0132*.zjchain.pools.protobuf.SyncPoo"
       "lsMaxHeight\022,\n\005block\030\033 \001(\0132\035.zjchain.blo"
-      "ck.protobuf.Block"
+      "ck.protobuf.Block\022\?\n\014invalid_bfts\030\034 \003(\0132"
+      ").zjchain.pools.protobuf.InvalidBftMessa"
+      "ge"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1857);
+      descriptor, 1922);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/transport.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fnetwork_2eproto::AddDescriptors();
@@ -1206,6 +1212,9 @@ void Header::clear_block() {
   if (block_ != NULL) block_->Clear();
   clear_has_block();
 }
+void Header::clear_invalid_bfts() {
+  invalid_bfts_.Clear();
+}
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int Header::kSrcShardingIdFieldNumber;
 const int Header::kDesDhtKeyFieldNumber;
@@ -1234,6 +1243,7 @@ const int Header::kElectBlockFieldNumber;
 const int Header::kInitProtoFieldNumber;
 const int Header::kSyncHeightsFieldNumber;
 const int Header::kBlockFieldNumber;
+const int Header::kInvalidBftsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Header::Header()
@@ -1246,7 +1256,8 @@ Header::Header()
 Header::Header(const Header& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
-      _has_bits_(from._has_bits_) {
+      _has_bits_(from._has_bits_),
+      invalid_bfts_(from.invalid_bfts_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   des_dht_key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.has_des_dht_key()) {
@@ -1420,6 +1431,7 @@ void Header::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  invalid_bfts_.Clear();
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
@@ -1870,6 +1882,18 @@ bool Header::MergePartialFromCodedStream(
         break;
       }
 
+      // repeated .zjchain.pools.protobuf.InvalidBftMessage invalid_bfts = 28;
+      case 28: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(226u /* 226 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+                input, add_invalid_bfts()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -2052,6 +2076,15 @@ void Header::SerializeWithCachedSizes(
   if (cached_has_bits & 0x00200000u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       27, this->_internal_block(), output);
+  }
+
+  // repeated .zjchain.pools.protobuf.InvalidBftMessage invalid_bfts = 28;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->invalid_bfts_size()); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      28,
+      this->invalid_bfts(static_cast<int>(i)),
+      output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2248,6 +2281,14 @@ void Header::SerializeWithCachedSizes(
         27, this->_internal_block(), deterministic, target);
   }
 
+  // repeated .zjchain.pools.protobuf.InvalidBftMessage invalid_bfts = 28;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->invalid_bfts_size()); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        28, this->invalid_bfts(static_cast<int>(i)), deterministic, target);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -2265,6 +2306,17 @@ size_t Header::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
+  // repeated .zjchain.pools.protobuf.InvalidBftMessage invalid_bfts = 28;
+  {
+    unsigned int count = static_cast<unsigned int>(this->invalid_bfts_size());
+    total_size += 2UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          this->invalid_bfts(static_cast<int>(i)));
+    }
+  }
+
   if (_has_bits_[0 / 32] & 255u) {
     // optional bytes des_dht_key = 2;
     if (has_des_dht_key()) {
@@ -2489,6 +2541,7 @@ void Header::MergeFrom(const Header& from) {
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
+  invalid_bfts_.MergeFrom(from.invalid_bfts_);
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
@@ -2610,6 +2663,7 @@ void Header::Swap(Header* other) {
 }
 void Header::InternalSwap(Header* other) {
   using std::swap;
+  CastToBase(&invalid_bfts_)->InternalSwap(CastToBase(&other->invalid_bfts_));
   des_dht_key_.Swap(&other->des_dht_key_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   debug_.Swap(&other->debug_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),

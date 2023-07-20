@@ -259,7 +259,7 @@ int tx_main(int argc, char** argv) {
             ++prikey_pos;
             from_prikey = prikeys[prikey_pos % prikeys.size()];
             security->SetPrivateKey(from_prikey);
-            usleep(100000);
+            usleep(10000);
         }
     }
 

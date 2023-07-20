@@ -437,6 +437,18 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
 
   // accessors -------------------------------------------------------
 
+  // repeated .zjchain.pools.protobuf.InvalidBftMessage invalid_bfts = 28;
+  int invalid_bfts_size() const;
+  void clear_invalid_bfts();
+  static const int kInvalidBftsFieldNumber = 28;
+  ::zjchain::pools::protobuf::InvalidBftMessage* mutable_invalid_bfts(int index);
+  ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::InvalidBftMessage >*
+      mutable_invalid_bfts();
+  const ::zjchain::pools::protobuf::InvalidBftMessage& invalid_bfts(int index) const;
+  ::zjchain::pools::protobuf::InvalidBftMessage* add_invalid_bfts();
+  const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::InvalidBftMessage >&
+      invalid_bfts() const;
+
   // optional bytes des_dht_key = 2;
   bool has_des_dht_key() const;
   void clear_des_dht_key();
@@ -805,6 +817,7 @@ class Header : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::InvalidBftMessage > invalid_bfts_;
   ::google::protobuf::internal::ArenaStringPtr des_dht_key_;
   ::google::protobuf::internal::ArenaStringPtr debug_;
   ::google::protobuf::internal::ArenaStringPtr sign_;
@@ -2621,6 +2634,33 @@ inline void Header::set_allocated_block(::zjchain::block::protobuf::Block* block
   }
   block_ = block;
   // @@protoc_insertion_point(field_set_allocated:zjchain.transport.protobuf.Header.block)
+}
+
+// repeated .zjchain.pools.protobuf.InvalidBftMessage invalid_bfts = 28;
+inline int Header::invalid_bfts_size() const {
+  return invalid_bfts_.size();
+}
+inline ::zjchain::pools::protobuf::InvalidBftMessage* Header::mutable_invalid_bfts(int index) {
+  // @@protoc_insertion_point(field_mutable:zjchain.transport.protobuf.Header.invalid_bfts)
+  return invalid_bfts_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::InvalidBftMessage >*
+Header::mutable_invalid_bfts() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.transport.protobuf.Header.invalid_bfts)
+  return &invalid_bfts_;
+}
+inline const ::zjchain::pools::protobuf::InvalidBftMessage& Header::invalid_bfts(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.transport.protobuf.Header.invalid_bfts)
+  return invalid_bfts_.Get(index);
+}
+inline ::zjchain::pools::protobuf::InvalidBftMessage* Header::add_invalid_bfts() {
+  // @@protoc_insertion_point(field_add:zjchain.transport.protobuf.Header.invalid_bfts)
+  return invalid_bfts_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::zjchain::pools::protobuf::InvalidBftMessage >&
+Header::invalid_bfts() const {
+  // @@protoc_insertion_point(field_list:zjchain.transport.protobuf.Header.invalid_bfts)
+  return invalid_bfts_;
 }
 
 #ifdef __GNUC__
