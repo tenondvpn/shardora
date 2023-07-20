@@ -1997,6 +1997,7 @@ void BftManager::BackupSendPrepareMessage(const ElectItem& elect_item, const tra
     header.set_hop_count(0);
     bft_msg.set_leader_idx(-1);
     bft_msg.set_prepare_gid(gid);
+    bft_msg.set_member_index(elect_item.local_node_member_index);
     if (agree) {
         auto& bft_ptr = pools_with_zbfts_[pool_index];
         assert(bft_ptr != nullptr);
@@ -2087,6 +2088,7 @@ void BftManager::BackupSendPrecommitMessage(
     header.set_hop_count(0);
    
     bft_msg.set_leader_idx(-1);
+    bft_msg.set_member_index(elect_item.local_node_member_index);
     bft_msg.set_precommit_gid(gid);
     if (agree) {
         auto& bft_ptr = pools_with_zbfts_[pool_index];
