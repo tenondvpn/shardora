@@ -2381,7 +2381,8 @@ void BftManager::LeaderHandleZbftMessage(
         if (res == kConsensusAgree) {
             LeaderSendPrecommitMessage(elect_item, msg_ptr, true);
         } else if (res == kConsensusOppose) {
-            LeaderSendPrecommitMessage(elect_item, msg_ptr, false);
+            assert(false);
+//             LeaderSendPrecommitMessage(elect_item, msg_ptr, false);
         } else {
             // waiting
         }
