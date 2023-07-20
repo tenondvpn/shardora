@@ -172,6 +172,10 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
         if (!msg.zbft().commit_gid().empty()) {
             return kTransportPriorityHighest;
         }
+
+        if (!msg.zbft().prepare_gid().empty() && msg.zbft().leader_idx() < 0) {
+            return kTransportPriorityHighest;
+        }
        
         if (!msg.zbft().precommit_gid().empty()) {
             msg_ptr->handle_timeout = common::TimeUtils::TimestampMs() + 2 * kHandledTimeoutMs;
