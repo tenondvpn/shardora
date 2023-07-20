@@ -1675,7 +1675,7 @@ ZbftPtr BftManager::CreateBftPtr(
 
 int BftManager::AddBft(ZbftPtr& bft_ptr) {
     auto& tmp_bft = pools_with_zbfts_[bft_ptr->pool_index()];
-    if (tmp_bft->gid() == bft_ptr->gid()) {
+    if (tmp_bft != nullptr && tmp_bft->gid() == bft_ptr->gid()) {
         assert(false);
         return kConsensusError;
     }
