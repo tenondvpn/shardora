@@ -2357,7 +2357,6 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         }
 
         msg_ptr->response->header.mutable_zbft()->set_agree_commit(true);
-        CheckCommit(msg_ptr, false);
         return;
     }
 
