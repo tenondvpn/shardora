@@ -1254,9 +1254,11 @@ void BftManager::BackupHandleZbftMessage(
         } else {
             if (!msg_ptr->header.zbft().prepare_gid().empty()) {
                 // timer to re-handle the message
-                if (msg_ptr->timeout > now_ms * 1000lu) {
+                auto now_us = common::TimeUtils::TimestampUs();
+                if (msg_ptr->timeout > now_us) {
                     ZJC_DEBUG("0 push prepare message : %s, hash64: %lu",
-                        common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(), header.hash64());
+                        common::Encode::HexEncode(msg_ptr->header.zbft().prepare_gid()).c_str(),
+                        msg_ptr->header.hash64());
                     backup_prapare_msg_queue_[msg_ptr->thread_idx].push_back(msg_ptr);
                     if (backup_prapare_msg_queue_[msg_ptr->thread_idx].size() > 16) {
                         backup_prapare_msg_queue_[msg_ptr->thread_idx].pop_front();
@@ -1672,39 +1674,39 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
 }
 
 void BftManager::ReConsensusPrepareBft(const ElectItem& elect_item, ZbftPtr& bft_ptr) {
-    if (bft_ptr->consensus_status() != kConsensusLeaderWaitingBlock) {
-        return;
-    }
-
-    if (elect_item.local_node_member_index >= elect_item.members->size()) {
-        return;
-    }
-
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[bft_ptr->pool_index()];
-    SetDefaultResponse(msg_ptr);
-    std::vector<ZbftPtr> zbft_vec = { nullptr, nullptr, nullptr };
-    msg_ptr->tmp_ptr = &zbft_vec;
-    std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
-    ZJC_DEBUG("use g1_precommit_hash prepare hash: %s, gid: %s",
-        common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
-        common::Encode::HexEncode(bft_ptr->gid()).c_str());
-    msg_ptr->header.mutable_zbft()->set_agree_precommit(true);
-    msg_ptr->header.mutable_zbft()->set_agree_commit(true);
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    LeaderCallPrecommit(elect_item, bft_ptr, msg_ptr);
-    ZJC_DEBUG("LeaderCallPrecommit success gid: %s",
-        common::Encode::HexEncode(bft_ptr->gid()).c_str());
-    zbft_vec[0] = nullptr;
-    zbft_vec[1] = bft_ptr;
-    common::BftMemberPtr mem_ptr = nullptr;
-    CreateResponseMessage(
-        elect_item,
-        false,
-        zbft_vec,
-        msg_ptr,
-        mem_ptr);
-    bft_ptr->AfterNetwork();
+//     if (bft_ptr->consensus_status() != kConsensusLeaderWaitingBlock) {
+//         return;
+//     }
+// 
+//     if (elect_item.local_node_member_index >= elect_item.members->size()) {
+//         return;
+//     }
+// 
+//     auto msg_ptr = std::make_shared<transport::TransportMessage>();
+//     msg_ptr->thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[bft_ptr->pool_index()];
+//     SetDefaultResponse(msg_ptr);
+//     std::vector<ZbftPtr> zbft_vec = { nullptr, nullptr, nullptr };
+//     msg_ptr->tmp_ptr = &zbft_vec;
+//     std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
+//     ZJC_DEBUG("use g1_precommit_hash prepare hash: %s, gid: %s",
+//         common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
+//         common::Encode::HexEncode(bft_ptr->gid()).c_str());
+//     msg_ptr->header.mutable_zbft()->set_agree_precommit(true);
+//     msg_ptr->header.mutable_zbft()->set_agree_commit(true);
+//     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+//     LeaderCallPrecommit(elect_item, bft_ptr, msg_ptr);
+//     ZJC_DEBUG("LeaderCallPrecommit success gid: %s",
+//         common::Encode::HexEncode(bft_ptr->gid()).c_str());
+//     zbft_vec[0] = nullptr;
+//     zbft_vec[1] = bft_ptr;
+//     common::BftMemberPtr mem_ptr = nullptr;
+//     CreateResponseMessage(
+//         elect_item,
+//         false,
+//         zbft_vec,
+//         msg_ptr,
+//         mem_ptr);
+//     bft_ptr->AfterNetwork();
 }
 
 void BftManager::ReConsensusBft(ZbftPtr& bft_ptr) {
