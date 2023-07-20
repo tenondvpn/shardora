@@ -418,7 +418,7 @@ ZbftPtr BftManager::Start(
         if (pools_with_zbfts_[common::kRootChainPoolIndex] != nullptr) {
             auto bft_ptr = pools_with_zbfts_[common::kRootChainPoolIndex];
             if (!bft_ptr->this_node_is_leader()) {
-                if (bft_ptr->timeout()) {
+                if (bft_ptr->timeout(now_tm_ms * 1000lu)) {
                     LeaderRemoveTimeoutPrepareBft(bft_ptr);
                 }
             }
@@ -1754,7 +1754,7 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
         }
 
         bft_ptr->Destroy();
-        pools_with_zbfts_[pool_index] = nullptr
+        pools_with_zbfts_[pool_index] = nullptr;
         ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
     }
 }
