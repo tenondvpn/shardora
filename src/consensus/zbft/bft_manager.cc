@@ -1794,8 +1794,7 @@ int BftManager::LeaderPrepare(
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     msg_ptr->thread_idx = bft_ptr->thread_index();
-    auto* new_bft_msg = header.mutable_zbft();
-    int res = bft_ptr->Prepare(true, new_bft_msg);
+    int res = bft_ptr->Prepare(true);
     if (res != kConsensusSuccess) {
         return kConsensusError;
     }
@@ -1822,6 +1821,7 @@ int BftManager::LeaderPrepare(
         return kConsensusError;
     }
 
+    auto* new_bft_msg = header.mutable_zbft();
     new_bft_msg->set_member_index(elect_item.local_node_member_index);
     new_bft_msg->set_elect_height(elect_item.elect_height);
     if (commited_bft_ptr != nullptr) {
@@ -1930,8 +1930,6 @@ int BftManager::CheckPrecommit(
         //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
         bft_ptr->set_consensus_status(kConsensusPreCommit);
         backup_agree_commit = true;
-        std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
-        bft_vec[1] = bft_ptr;
     } while (0);
 
     ZJC_DEBUG("Backup CheckPrecommit: %s, aggree commit: %d",
@@ -1994,7 +1992,6 @@ void BftManager::BackupSendPrepareMessage(const ElectItem& elect_item, const tra
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     header.set_type(common::kConsensusMessage);
     header.set_hop_count(0);
-   
     bft_msg.set_leader_idx(-1);
     bft_msg.set_prepare_gid(gid);
     if (agree) {
