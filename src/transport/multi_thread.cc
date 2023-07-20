@@ -367,11 +367,11 @@ MessagePtr MultiThreadHandler::GetMessageFromQueue(uint32_t thread_idx) {
                     MessagePtr msg_obj;
                     threads_message_queues_[i][pri].pop(&msg_obj);
                     if (msg_obj->handle_timeout < now_tm_ms) {
-                        ZJC_DEBUG("remove handle timeout invalid message hash: %u", msg_obj->header.hash64());
+                        ZJC_DEBUG("remove handle timeout invalid message hash: %lu", msg_obj->header.hash64());
                         continue;
                     }
 
-                    ZJC_DEBUG("pop valid message hash: %u", msg_obj->header.hash64());
+                    ZJC_DEBUG("pop valid message hash: %lu", msg_obj->header.hash64());
                     return msg_obj;
                 }
             }
