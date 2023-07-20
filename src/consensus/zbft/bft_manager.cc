@@ -1598,20 +1598,6 @@ ZbftPtr BftManager::CreateBftPtr(
         ZJC_ERROR("invalid consensus, txs not equal to leader.");
         txs_ptr = nullptr;
     }
-
-    auto precommit_ptr = GetBft(bft_msg.pool_index(), bft_msg.precommit_gid());
-    if (txs_ptr != nullptr && precommit_ptr != nullptr) {
-        for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
-            if (precommit_ptr->txs_ptr()->txs.find(iter->first) !=
-                    precommit_ptr->txs_ptr()->txs.end()) {
-                txs_ptr = nullptr;
-                ZJC_DEBUG("tx invalid: %s, gid: %s",
-                    common::Encode::HexEncode(iter->first).c_str(),
-                    common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-                break;
-            }
-        }
-    }
     
     if (txs_ptr == nullptr) {
         return nullptr;
@@ -1645,21 +1631,6 @@ ZbftPtr BftManager::CreateBftPtr(
             tm_block_mgr_);
     }
     
-    if (precommit_ptr != nullptr && precommit_ptr->prepare_block() != nullptr) {
-        bft_ptr->set_prev_bft_ptr(precommit_ptr);
-        ZJC_DEBUG("backup set precommit gid: %s, pre hash: %s, gid: %s",
-            common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
-            common::Encode::HexEncode(precommit_ptr->prepare_block()->hash()).c_str(),
-            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-        if (bft_msg.has_prepare_height()) {
-            assert(bft_msg.prepare_height() == precommit_ptr->prepare_block()->height());
-        }
-
-        if (bft_msg.has_prepare_hash()) {
-            assert(bft_msg.prepare_hash() == precommit_ptr->prepare_block()->hash());
-        }
-    }
-
     if (InitZbftPtr(bft_msg.leader_idx(), elect_item, bft_ptr) != kConsensusSuccess) {
 //         assert(false);
         return nullptr;
@@ -2290,15 +2261,6 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
     msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_msg.pool_index());
     if (bft_msg.has_prepare_gid() && !bft_msg.prepare_gid().empty()) {
         msg_ptr->response->header.mutable_zbft()->clear_agree_precommit();
-        if (CheckPrecommit(elect_item, msg_ptr) != kConsensusSuccess) {
-            ZJC_DEBUG("check precommit failed precommit gid: %s",
-                common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-            msg_ptr->response->header.mutable_zbft()->set_prepare_gid(bft_msg.prepare_gid());
-            msg_ptr->response->header.mutable_zbft()->set_precommit_gid(bft_msg.precommit_gid());
-            msg_ptr->response->header.mutable_zbft()->set_agree_commit(false);
-            return;
-        }
-
         auto now_ms = common::TimeUtils::TimestampMs();
         auto now_elect_item = elect_items_[elect_item_idx_];
         if (now_elect_item->change_leader_time_valid <= now_ms &&
