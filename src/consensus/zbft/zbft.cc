@@ -493,7 +493,7 @@ int Zbft::LeaderCreateCommitAggSign() {
             return kConsensusError;
         }
 
-        if (prepare_block_->is_cross_block()) {
+        if (prepare_block_->is_commited_block()) {
             if (sign_commit_hash != commit_bls_agg_verify_hash_) {
                 ZJC_ERROR("leader verify leader commit agg sign failed!");
                 assert(!commit_bls_agg_verify_hash_.empty());
@@ -619,7 +619,7 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
         return false;
     }
 
-    if (prepare_block_->is_cross_block()) {
+    if (prepare_block_->is_commited_block()) {
         if (commit_bls_agg_verify_hash_.empty()) {
             CreateCommitVerifyHash();
         }
@@ -731,11 +731,7 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
         return kConsensusNoNewTxs;
     }
 
-    if (txs_ptr_->tx_type != pools::protobuf::kNormalFrom ||
-            txs_ptr_->pool_index == common::kRootChainPoolIndex) {
-        zjc_block.set_is_cross_block(true);
-    }
-
+    zjc_block.set_is_commited_block(false);
     std::vector<std::string> change_leader_invalid_hashs;
     pools_mgr_->GetHeightInvalidChangeLeaderHashs(
         zjc_block.pool_index(),
