@@ -1789,7 +1789,6 @@ int BftManager::LeaderPrepare(
         const ElectItem& elect_item,
         ZbftPtr& bft_ptr,
         ZbftPtr commited_bft_ptr) {
-    zbft::protobuf::ZbftMessage bft_msg;
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     msg_ptr->thread_idx = bft_ptr->thread_index();
@@ -1810,12 +1809,10 @@ int BftManager::LeaderPrepare(
     header.set_type(common::kConsensusMessage);
     header.set_hop_count(0);
 
-    auto broad_param = msg.mutable_broadcast();
+    auto broad_param = header.mutable_broadcast();
     auto& bft_msg = *header.mutable_zbft();
-    bft_msg.set_leader_idx(leader_idx);
+    bft_msg.set_leader_idx(elect_item.local_node_member_index);
     bft_msg.set_prepare_gid(bft_ptr->gid());
-    bft_msg.set_precommit_gid(precommit_gid);
-    bft_msg.set_commit_gid(commit_gid);
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_elect_height(bft_ptr->elect_height());
     bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
@@ -1983,7 +1980,7 @@ void BftManager::BackupSendPrepareMessage(const ElectItem& elect_item, const tra
     auto& gid = leader_msg_ptr->header.zbft().prepare_gid();
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
-    msg_ptr->thread_idx = bft_ptr->thread_index();
+    msg_ptr->thread_idx = leader_msg_ptr->thread_idx;
     auto& bft_msg = *header.mutable_zbft();
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     header.set_type(common::kConsensusMessage);
@@ -1998,7 +1995,7 @@ void BftManager::BackupSendPrepareMessage(const ElectItem& elect_item, const tra
         bft_msg.set_agree_precommit(true);
         std::string bls_sign_x;
         std::string bls_sign_y;
-        if (bls_mgr->Sign(
+        if (bls_mgr_->Sign(
                 bft_ptr->min_aggree_member_count(),
                 bft_ptr->member_count(),
                 bft_ptr->local_sec_key(),
@@ -2083,14 +2080,14 @@ void BftManager::BackupSendPrecommitMessage(const ElectItem& elect_item, const t
         bft_msg.set_agree_commit(true);
         std::string bls_sign_x;
         std::string bls_sign_y;
-        if (bls_mgr->Sign(
+        if (bls_mgr_->Sign(
                 bft_ptr->min_aggree_member_count(),
                 bft_ptr->member_count(),
                 bft_ptr->local_sec_key(),
                 bft_ptr->g1_precommit_hash(),
                 &bls_sign_x,
                 &bls_sign_y) != bls::kBlsSuccess) {
-            return false;
+            return;
         }
 
         bft_msg.set_bls_sign_x(bls_sign_x);
@@ -2185,8 +2182,7 @@ int BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mess
         // oppose
         ZJC_ERROR("create bft ptr failed backup create consensus bft gid: %s",
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-        BackupSendPrepareMessage(elect_item, msg_ptr, false);
-        return;
+        return kConsensusOppose;
     }
 
     int prepare_res = bft_ptr->Prepare(false);
@@ -2230,7 +2226,6 @@ int BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mess
 
     bft_ptr->set_prepare_msg_ptr(msg_ptr);
     bft_ptr->set_consensus_status(kConsensusPrepare);
-    ZJC_DEBUG("BackupPrepare success: %s", common::Encode::HexEncode(bft_vec[0]->gid()).c_str());
     BackupSendPrepareMessage(elect_item, msg_ptr, true);
     return kConsensusAgree;
 }
@@ -2245,9 +2240,6 @@ void BftManager::LeaderSendPrecommitMessage(const ElectItem& elect_item, const t
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     header.set_type(common::kConsensusMessage);
     header.set_hop_count(0);
-    bft_msg.set_member_index(
-        elect_item.local_node_member_index);
-    bft_msg.set_elect_height(elect_height);
     assert(elect_item.elect_height > 0);
     if (msg_ptr->thread_idx == 0) {
         auto& thread_set = elect_item.thread_set;
@@ -2274,10 +2266,11 @@ void BftManager::LeaderSendPrecommitMessage(const ElectItem& elect_item, const t
     }
 
     bft_msg.clear_prepare_gid();
-    bft_msg.set_leader_idx(leader_idx);
-    bft_ptr = pools_with_zbfts_[pool_index];
+    bft_msg.set_leader_idx(elect_item.local_node_member_index);
+    auto& bft_ptr = pools_with_zbfts_[pool_index];
     bft_msg.set_precommit_gid(bft_ptr->gid());
     bft_msg.set_pool_index(pool_index);
+    bft_msg.set_member_index(elect_item.local_node_member_index);
     bft_msg.set_agree_precommit(agree);
     bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
     bft_msg.set_elect_height(bft_ptr->elect_height());
@@ -2312,9 +2305,6 @@ void BftManager::LeaderSendCommitMessage(const ElectItem& elect_item, const tran
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     header.set_type(common::kConsensusMessage);
     header.set_hop_count(0);
-    bft_msg.set_member_index(
-        elect_item.local_node_member_index);
-    bft_msg.set_elect_height(elect_height);
     assert(elect_item.elect_height > 0);
     if (msg_ptr->thread_idx == 0) {
         auto& thread_set = elect_item.thread_set;
@@ -2341,11 +2331,12 @@ void BftManager::LeaderSendCommitMessage(const ElectItem& elect_item, const tran
     }
 
     bft_msg.clear_prepare_gid();
-    bft_msg.set_leader_idx(leader_idx);
-    bft_ptr = pools_with_zbfts_[pool_index];
+    bft_msg.set_leader_idx(elect_item.local_node_member_index);
+    auto& bft_ptr = pools_with_zbfts_[pool_index];
     bft_msg.set_commit_gid(bft_ptr->gid());
     bft_msg.set_pool_index(pool_index);
     bft_msg.set_agree_commit(agree);
+    bft_msg.set_member_index(elect_item.local_node_member_index);
     bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
     bft_msg.set_elect_height(bft_ptr->elect_height());
     if (agree) {
@@ -2413,7 +2404,7 @@ void BftManager::LeaderHandleZbftMessage(
 }
 
 int BftManager::LeaderHandlePrepare(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr) {
-    ZJC_DEBUG("has prepare  now leader handle gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+    ZJC_DEBUG("has prepare  now leader handle gid: %s", common::Encode::HexEncode(msg_ptr->header.zbft().prepare_gid()).c_str());
     auto bft_ptr = LeaderGetZbft(msg_ptr, elect_item, bft_msg.prepare_gid());
     if (bft_ptr == nullptr) {
         ZJC_DEBUG("prepare get bft failed: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
@@ -2674,7 +2665,13 @@ int BftManager::LeaderCommit(
         sign,
         member_ptr->id);
     if (res == kConsensusAgree) {
-        LeaderCallCommit(elect_item, msg_ptr, bft_ptr);
+        if (bft_ptr->prepare_block() != nullptr) {
+            HandleLocalCommitBlock(msg_ptr, bft_ptr);
+        } else {
+            assert(false);
+            return kConsensusError;
+        }
+
         return kConsensusAgree;
     }
 
@@ -2986,33 +2983,6 @@ void BftManager::BroadcastLocalTosBlock(
             assert(false);
         }
     }
-}
-
-int BftManager::LeaderCallCommit(
-        const ElectItem& elect_item,
-        const transport::MessagePtr& msg_ptr,
-        ZbftPtr& bft_ptr) {
-    ZJC_DEBUG("leader commit called: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
-    // check pre-commit multi sign and leader commit
-    auto res = BftProto::LeaderCreateCommit(
-        elect_item.local_node_member_index,
-        bft_ptr,
-        true,
-        msg_ptr->response->header);
-    if (!res) {
-        ZJC_ERROR("leader create commit message failed!");
-        return kConsensusError;
-    }
-
-    if (bft_ptr->prepare_block() != nullptr) {
-        HandleLocalCommitBlock(msg_ptr, bft_ptr);
-    } else {
-        assert(false);
-        return kConsensusError;
-    }
-    
-    Start(msg_ptr->thread_idx, bft_ptr->prepare_block());
-    return kConsensusSuccess;
 }
 
 int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr) {

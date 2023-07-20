@@ -24,10 +24,6 @@ public:
     void RootDefaultTx(block::protobuf::Block& zjc_block);
     void RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block);
     void RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_block);
-    int RootBackupCheckPrepare(
-        const transport::MessagePtr& msg_ptr,
-        int32_t* invalid_tx_idx,
-        std::string* prepare);
 
 private:
 

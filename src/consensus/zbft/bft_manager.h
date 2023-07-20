@@ -121,10 +121,6 @@ private:
         const ElectItem& elect_item,
         ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr);
-    int LeaderCallCommit(
-        const ElectItem& elect_item,
-        const transport::MessagePtr& msg_ptr,
-        ZbftPtr& bft_ptr);
     ZbftPtr CreateBftPtr(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
     void BackupHandleZbftMessage(
         uint8_t thread_index,

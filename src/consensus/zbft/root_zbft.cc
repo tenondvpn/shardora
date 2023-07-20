@@ -116,37 +116,6 @@ void RootZbft::RootCreateElectConsensusShardBlock(block::protobuf::Block& zjc_bl
     // check after this shard statistic block coming
 }
 
-int RootZbft::RootBackupCheckPrepare(
-        const transport::MessagePtr& msg_ptr,
-        int32_t* invalid_tx_idx,
-    std::string* prepare) {
-    auto& tx_bft = msg_ptr->header.zbft().tx_bft();
-//     std::vector<pools::TxItemPtr> tx_vec;
-//     for (int32_t i = 0; i < tx_bft.ltx_prepare().gid_size(); ++i) {
-//         pools::TxItemPtr local_tx_info = pools_mgr_->GetTx(
-//             pool_index(),
-//             tx_bft.ltx_prepare().gid(i));
-//         if (local_tx_info == nullptr) {
-//             continue;
-//         }
-// 
-//         tx_vec.push_back(local_tx_info);
-//     }
-
-    auto& tx_map = txs_ptr_->txs;
-    if (tx_map.empty()) {
-        return kConsensusInvalidPackage;
-    }
-
-    if (DoTransaction() != kConsensusSuccess) {
-        return kConsensusInvalidPackage;
-    }
-
-    res_tx_bft.clear_block();
-    *prepare = res_tx_bft.SerializeAsString();
-    return kConsensusSuccess;
-}
-
 };  // namespace consensus
 
 };  // namespace zjchain
