@@ -638,29 +638,16 @@ ZbftPtr BftManager::StartBft(
         return nullptr;
     }
 
-        ZJC_DEBUG("this node is leader and start bft: %s,"
-            "pool index: %d, thread index: %d, prepare hash: %s, pre hash: %s,"
-            "msg tx size: %u, elect height: %lu",
-            common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-            bft_ptr->pool_index(),
-            bft_ptr->thread_index(),
-            common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-            bft_ptr->prepare_block() == nullptr ? "" : common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
-            txs_ptr->txs.size(),
-            elect_item.elect_height);
-    } else {
-        ZJC_DEBUG("this node is leader and start bft: %s,"
-            "pool index: %d, thread index: %d, prepare hash: %s, pre hash: %s, "
-            "tx size: %d, elect height: %lu",
-            common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-            bft_ptr->pool_index(),
-            bft_ptr->thread_index(),
-            common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-            bft_ptr->prepare_block() == nullptr ? "" : common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
-            txs_ptr->txs.size(),
-            elect_item.elect_height);
-    }
-
+    ZJC_DEBUG("this node is leader and start bft: %s,"
+        "pool index: %d, thread index: %d, prepare hash: %s, pre hash: %s, "
+        "tx size: %d, elect height: %lu",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+        bft_ptr->pool_index(),
+        bft_ptr->thread_index(),
+        common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+        bft_ptr->prepare_block() == nullptr ? "" : common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
+        txs_ptr->txs.size(),
+        elect_item.elect_height);
     return bft_ptr;
 }
 
