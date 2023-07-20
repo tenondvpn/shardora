@@ -199,10 +199,10 @@ private:
     void BroadcastInvalidGids(uint8_t thread_idx);
     void CheckInvalidGids(uint8_t thread_idx);
     void LeaderRemoveTimeoutPrepareBft(ZbftPtr& bft_ptr);
-    void BackupSendPrepareMessage(const ElectItem& elect_item, MessagePtr& leader_msg_ptr, bool agree);
-    void BackupSendPrecommitMessage(const ElectItem& elect_item, MessagePtr& leader_msg_ptr, bool agree);
-    void LeaderSendPrecommitMessage(const ElectItem& elect_item, MessagePtr& leader_msg_ptr, bool agree);
-    void LeaderSendCommitMessage(const ElectItem& elect_item, MessagePtr& leader_msg_ptr, bool agree);
+    void BackupSendPrepareMessage(const ElectItem& elect_item, transport::MessagePtr& leader_msg_ptr, bool agree);
+    void BackupSendPrecommitMessage(const ElectItem& elect_item, transport::MessagePtr& leader_msg_ptr, bool agree);
+    void LeaderSendPrecommitMessage(const ElectItem& elect_item, transport::MessagePtr& leader_msg_ptr, bool agree);
+    void LeaderSendCommitMessage(const ElectItem& elect_item, transport::MessagePtr& leader_msg_ptr, bool agree);
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);

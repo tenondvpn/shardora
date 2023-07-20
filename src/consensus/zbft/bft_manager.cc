@@ -2239,7 +2239,7 @@ int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg
     return kConsensusSuccess;
 }
 
-void BftManager::BackupSendPrepareMessage(const ElectItem& elect_item, MessagePtr& leader_msg_ptr, bool agree) {
+void BftManager::BackupSendPrepareMessage(const ElectItem& elect_item, transport::MessagePtr& leader_msg_ptr, bool agree) {
     auto pool_index = leader_msg_ptr->header.zbft().pool_index();
     auto& gid = leader_msg_ptr->header.zbft().prepare_gid();
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -2324,7 +2324,7 @@ void BftManager::BackupSendPrepareMessage(const ElectItem& elect_item, MessagePt
     }
 }
 
-void BftManager::BackupSendPrecommitMessage(const ElectItem& elect_item, MessagePtr& leader_msg_ptr, bool agree) {
+void BftManager::BackupSendPrecommitMessage(const ElectItem& elect_item, transport::MessagePtr& leader_msg_ptr, bool agree) {
     auto pool_index = leader_msg_ptr->header.zbft().pool_index();
     auto& gid = leader_msg_ptr->header.zbft().prepare_gid();
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -2501,7 +2501,7 @@ int BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mess
     return kConsensusAgree;
 }
 
-void BftManager::LeaderSendPrecommitMessage(const ElectItem& elect_item, MessagePtr& leader_msg_ptr, bool agree) {
+void BftManager::LeaderSendPrecommitMessage(const ElectItem& elect_item, transport::MessagePtr& leader_msg_ptr, bool agree) {
     auto pool_index = leader_msg_ptr->header.zbft().pool_index();
     auto& gid = leader_msg_ptr->header.zbft().prepare_gid();
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -2568,7 +2568,7 @@ void BftManager::LeaderSendPrecommitMessage(const ElectItem& elect_item, Message
         header.hash64());
 }
 
-void BftManager::LeaderSendCommitMessage(const ElectItem& elect_item, MessagePtr& leader_msg_ptr, bool agree) {
+void BftManager::LeaderSendCommitMessage(const ElectItem& elect_item, transport::MessagePtr& leader_msg_ptr, bool agree) {
     auto pool_index = leader_msg_ptr->header.zbft().pool_index();
     auto& gid = leader_msg_ptr->header.zbft().prepare_gid();
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
