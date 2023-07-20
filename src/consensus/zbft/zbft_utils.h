@@ -70,7 +70,6 @@ struct LeaderPrepareItem {
     std::unordered_set<std::string> precommit_aggree_set_;
     common::Bitmap prepare_bitmap_{ common::kEachShardMaxNodeCount };
     libff::alt_bn128_G1 backup_precommit_signs_[common::kEachShardMaxNodeCount];
-    std::unordered_map<uint64_t, uint32_t> height_count_map;
     std::vector<uint32_t> valid_index;
 };
 

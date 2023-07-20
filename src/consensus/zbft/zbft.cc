@@ -137,7 +137,7 @@ int Zbft::BackupCheckPrepare(int32_t* invalid_tx_idx) {
 }
 
 int Zbft::LeaderPrecommitOk(
-        const zbft::protobuf::TxBft& tx_prepare,
+        const std::string& prepare_hash,
         uint32_t index,
         const libff::alt_bn128_G1& backup_sign,
         const std::string& id) {
@@ -155,16 +155,15 @@ int Zbft::LeaderPrecommitOk(
     auto valid_count = SetPrepareBlock(
         id,
         index,
-        tx_prepare.prepare_final_hash(),
-        tx_prepare.height(),
+        prepare_hash,
         backup_sign);
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
     if ((uint32_t)valid_count >= min_aggree_member_count_) {
         int32_t res = kConsensusAgree;
-        if (prepare_block_->hash() != tx_prepare.prepare_final_hash()) {
+        if (prepare_block_->hash() != prepare_hash) {
             prepare_block_ = nullptr;
-            leader_waiting_prepare_hash_ = tx_prepare.prepare_final_hash();
+            leader_waiting_prepare_hash_ = prepare_hash;
             set_prepare_hash(leader_waiting_prepare_hash_);
             CreatePrecommitVerifyHash();
             res =  kConsensusLeaderWaitingBlock;
@@ -173,7 +172,7 @@ int Zbft::LeaderPrecommitOk(
             set_consensus_status(kConsensusPreCommit);
         }
 
-        if (LeaderPrecommitAggSign(tx_prepare.prepare_final_hash()) != kConsensusSuccess) {
+        if (LeaderPrecommitAggSign(prepare_hash) != kConsensusSuccess) {
             ZJC_ERROR("create bls precommit agg sign failed!");
             return kConsensusOppose;
         }
@@ -604,7 +603,7 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
     return true;
 }
 
-int Zbft::LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg) {
+int Zbft::LeaderCallTransaction() {
     if (DoTransaction() != kConsensusSuccess) {
         ZJC_ERROR("leader do transaction failed!");
         return kConsensusError;
@@ -622,7 +621,7 @@ int Zbft::LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg) {
     }
 
     auto res = LeaderPrecommitOk(
-        res_tx_bft,
+        prepare_hash_,
         leader_index_,
         bn_sign,
         leader_mem_ptr_->id);

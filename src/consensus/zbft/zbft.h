@@ -338,7 +338,6 @@ public:
             item->precommit_aggree_set_.insert(id);
             item->prepare_bitmap_.Set(index);
             item->backup_precommit_signs_[index] = sign;
-            item->height_count_map[height] = 1;
             prepare_block_map_[prepare_hash] = item;
             if (consensus_prepare_max_count_ == 0) {
                 consensus_prepare_max_count_ = 1;
@@ -350,13 +349,6 @@ public:
             iter->second->precommit_aggree_set_.insert(id);
             iter->second->prepare_bitmap_.Set(index);
             iter->second->backup_precommit_signs_[index] = sign;
-            auto hiter = iter->second->height_count_map.find(height);
-            if (hiter == iter->second->height_count_map.end()) {
-                iter->second->height_count_map[height] = 1;
-            } else {
-                ++hiter->second;
-            }
-
             if (iter->second->precommit_aggree_set_.size() > consensus_prepare_max_count_) {
                 consensus_prepare_max_count_ = iter->second->precommit_aggree_set_.size();
             }
