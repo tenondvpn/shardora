@@ -121,78 +121,19 @@ int Zbft::Prepare(bool leader) {
 
 int Zbft::LeaderCreatePrepare() {
     local_member_index_ = leader_index_;
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
-    if (LeaderCallTransaction(bft_msg) != kConsensusSuccess) {
+    if (LeaderCallTransaction() != kConsensusSuccess) {
         return kConsensusError;
     }
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
-    //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
 
-    zbft::protobuf::TxBft& tx_bft = *bft_msg->mutable_tx_bft();
-    auto& tx_map = txs_ptr_->txs;
-    for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
-        tx_bft.add_tx_hash_list(iter->first);
-    }
-    
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
-    //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-    bft_msg->mutable_tx_bft()->release_block();
     return kConsensusSuccess;
 }
 
 int Zbft::BackupCheckPrepare(int32_t* invalid_tx_idx) {
-    auto& tx_bft = *bft_msg->mutable_tx_bft();
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
     if (DoTransaction() != kConsensusSuccess) {
         return kConsensusInvalidPackage;
     }
 
-    // times_[times_index_++] = common::TimeUtils::TimestampUs();
-    //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
-    tx_bft.release_block();
-    //assert(!tx_bft.has_block());
     return kConsensusSuccess;
-}
-
-bool Zbft::BackupCheckLeaderValid(const zbft::protobuf::ZbftMessage* bft_msg) {
-//     if (members_ptr_ == nullptr ||
-//             common_pk_ == libff::alt_bn128_G2::zero() ||
-//             local_sec_key_ == libff::alt_bn128_Fr::zero()) {
-//         if (members != nullptr) {
-//             ZJC_ERROR("get members failed!. bft_msg.member_index(): %d, members->size(): %d, "
-//                 "common_pk_ == libff::alt_bn128_G2::zero(), local_sec_key_ == libff::alt_bn128_Fr::zero()",
-//                 bft_msg->member_index(), members->size(),
-//                 (common_pk_ == libff::alt_bn128_G2::zero()),
-//                 (local_sec_key_ == libff::alt_bn128_Fr::zero()));
-//         } else {
-//             ZJC_ERROR("get members failed!: %lu, net id: %d",
-//                 local_elect_height,
-//                 common::GlobalInfo::Instance()->network_id());
-//         }
-//         return false;
-//     }
-// 
-//     for (uint32_t i = 0; i < members->size(); ++i) {
-//         if ((*members)[i]->id == security_ptr_->GetAddress()) {
-//             local_member_index_ = i;
-//             break;
-//         }
-//     }
-// 
-//     if (local_member_index_ == elect::kInvalidMemberIndex) {
-//         ZJC_ERROR("get local member failed!.");
-//         return false;
-//     }
-// 
-//     leader_mem_ptr_ = (*members)[bft_msg->member_index()];
-//     if (!leader_mem_ptr_) {
-//         ZJC_ERROR("get leader failed!.");
-//         return false;
-//     }
-
-//     ZJC_DEBUG("backup check leader success elect height: %lu, local_member_index_: %lu, gid: %s",
-//         elect_height_, local_member_index_, common::Encode::HexEncode(gid_).c_str());
-    return true;
 }
 
 int Zbft::LeaderPrecommitOk(

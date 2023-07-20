@@ -56,7 +56,6 @@ public:
         uint32_t index,
         const libff::alt_bn128_G1& backup_sign,
         const std::string& id);
-    bool BackupCheckLeaderValid(const zbft::protobuf::ZbftMessage* bft_msg);
     void Destroy();
     void AfterNetwork();
     void LeaderResetPrepareBitmap(const std::string& prepare_hash);
