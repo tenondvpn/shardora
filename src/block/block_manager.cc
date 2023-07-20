@@ -93,7 +93,7 @@ void BlockManager::ConsensusTimerMessage(uint8_t thread_idx) {
     HandleAllNewBlock(thread_idx);
     auto tmp_to_tx_leader = to_tx_leader_;
     if (tmp_to_tx_leader != nullptr && local_id_ == tmp_to_tx_leader->id) {
-//         ZJC_DEBUG("now leader create to and statistic message.");
+        ZJC_DEBUG("now leader create to and statistic message.");
         CreateToTx(thread_idx);
         CreateStatisticTx(thread_idx);
     }
@@ -1641,14 +1641,14 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
     // check this node is leader
     auto tmp_to_tx_leader = to_tx_leader_;
     if (tmp_to_tx_leader == nullptr) {
-//         ZJC_DEBUG("leader null");
+        ZJC_DEBUG("leader null");
         return;
     }
 
     if (local_id_ != tmp_to_tx_leader->id) {
-//         ZJC_DEBUG("not leader local_id_: %s, to tx leader: %s",
-//             common::Encode::HexEncode(local_id_).c_str(),
-//             common::Encode::HexEncode(tmp_to_tx_leader->id).c_str());
+        ZJC_DEBUG("not leader local_id_: %s, to tx leader: %s",
+            common::Encode::HexEncode(local_id_).c_str(),
+            common::Encode::HexEncode(tmp_to_tx_leader->id).c_str());
         return;
     }
 
@@ -1658,8 +1658,8 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
     }
 
     if (latest_timeblock_height_ <= consensused_timeblock_height_) {
-//         ZJC_WARN("latest_timeblock_height_ <= consensused_timeblock_height_: %lu, %lu",
-//             latest_timeblock_height_, consensused_timeblock_height_);
+        ZJC_WARN("latest_timeblock_height_ <= consensused_timeblock_height_: %lu, %lu",
+            latest_timeblock_height_, consensused_timeblock_height_);
         return;
     }
 

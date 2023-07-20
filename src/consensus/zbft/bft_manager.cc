@@ -2557,12 +2557,6 @@ int BftManager::LeaderCallPrecommit(
         ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr) {
     std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-//     if (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] > 20000lu) {
-//         ZJC_INFO("%d use time: %lu", msg_ptr->times_idx, (msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2]));
-//     }
-
     bft_ptr->set_precoimmit_hash();
     ZJC_DEBUG("use g1_precommit_hash prepare hash: %s, gid: %s",
         common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
