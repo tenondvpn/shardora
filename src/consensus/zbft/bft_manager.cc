@@ -2017,13 +2017,14 @@ void BftManager::BackupSendPrepareMessage(const ElectItem& elect_item, const tra
         bft_msg.set_agree_precommit(false);
     }
 
-    auto leader_member = (*elect_item.members)[msg_ptr->header.zbft().leader_idx()];
+    auto leader_member = (*elect_item.members)[leader_msg_ptr->header.zbft().leader_idx()];
     dht::DhtKeyManager dht_key(
         common::GlobalInfo::Instance()->network_id(),
         leader_member->id);
     header.set_des_dht_key(dht_key.StrKey());
     if (leader_member->public_ip == 0 || leader_member->public_port == 0) {
-        auto dht_ptr = network::DhtManager::Instance()->GetDht(msg_ptr->header.src_sharding_id());
+        auto dht_ptr = network::DhtManager::Instance()->GetDht(
+            leader_msg_ptr->header.src_sharding_id());
         if (dht_ptr != nullptr) {
             auto nodes = dht_ptr->readonly_hash_sort_dht();
             for (auto iter = nodes->begin(); iter != nodes->end(); ++iter) {
@@ -2106,13 +2107,14 @@ void BftManager::BackupSendPrecommitMessage(
         bft_msg.set_agree_commit(false);
     }
 
-    auto leader_member = (*elect_item.members)[msg_ptr->header.zbft().leader_idx()];
+    auto leader_member = (*elect_item.members)[leader_msg_ptr->header.zbft().leader_idx()];
     dht::DhtKeyManager dht_key(
         common::GlobalInfo::Instance()->network_id(),
         leader_member->id);
     header.set_des_dht_key(dht_key.StrKey());
     if (leader_member->public_ip == 0 || leader_member->public_port == 0) {
-        auto dht_ptr = network::DhtManager::Instance()->GetDht(msg_ptr->header.src_sharding_id());
+        auto dht_ptr = network::DhtManager::Instance()->GetDht(
+            leader_msg_ptr->header.src_sharding_id());
         if (dht_ptr != nullptr) {
             auto nodes = dht_ptr->readonly_hash_sort_dht();
             for (auto iter = nodes->begin(); iter != nodes->end(); ++iter) {
