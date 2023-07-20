@@ -2036,7 +2036,8 @@ void BftManager::BackupSendPrepareMessage(const ElectItem& elect_item, const tra
             }
         }
     }
-            
+
+    transport::TcpTransport::Instance()->SetMessageHash(header, leader_msg_ptr->header.zbft().leader_idx());
     if (!SetBackupEcdhData(msg_ptr, leader_member)) {
         return;
     }
@@ -2127,6 +2128,7 @@ void BftManager::BackupSendPrecommitMessage(
         }
     }
             
+    transport::TcpTransport::Instance()->SetMessageHash(header, leader_msg_ptr->header.zbft().leader_idx());
     if (!SetBackupEcdhData(msg_ptr, leader_member)) {
         return;
     }
