@@ -42,13 +42,11 @@ public:
         const common::MembersPtr& members_ptr,
         const libff::alt_bn128_G2& common_pk,
         const libff::alt_bn128_Fr& local_sec_key);
-    int Prepare(bool leader, zbft::protobuf::ZbftMessage* bft_msg);
-    int LeaderCreatePrepare(zbft::protobuf::ZbftMessage* bft_msg);
-    int BackupCheckPrepare(
-        zbft::protobuf::ZbftMessage* bft_msg,
-        int32_t* invalid_tx_idx);
-    int DoTransaction(zbft::protobuf::TxBft& ltx_msg);
-    int LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg);
+    int Prepare(bool leader);
+    int LeaderCreatePrepare();
+    int BackupCheckPrepare(int32_t* invalid_tx_idx);
+    int DoTransaction();
+    int LeaderCallTransaction();
     int LeaderPrecommitOk(
         const zbft::protobuf::TxBft& tx_prepare,
         uint32_t index,

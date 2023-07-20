@@ -150,7 +150,6 @@ private:
     void SetDefaultResponse(const transport::MessagePtr& msg_ptr);
     bool SetBackupEcdhData(transport::MessagePtr& msg_ptr, common::BftMemberPtr& mem_ptr);
     bool LeaderSignMessage(transport::MessagePtr& msg_ptr);
-    void ClearBft(const transport::MessagePtr& msg_ptr);
     ZbftPtr LeaderGetZbft(
         const transport::MessagePtr& msg_ptr,
         const ElectItem& elect_item,

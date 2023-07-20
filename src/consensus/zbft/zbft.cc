@@ -94,9 +94,9 @@ void Zbft::Destroy() {
     }
 }
 
-int Zbft::Prepare(bool leader, zbft::protobuf::ZbftMessage* bft_msg) {
+int Zbft::Prepare(bool leader) {
     if (leader) {
-        return LeaderCreatePrepare(bft_msg);
+        return LeaderCreatePrepare();
     }
 
     if (txs_ptr_->txs.empty()) {
@@ -110,7 +110,7 @@ int Zbft::Prepare(bool leader, zbft::protobuf::ZbftMessage* bft_msg) {
     }
 
     int32_t invalid_tx_idx = -1;
-    int res = BackupCheckPrepare(bft_msg, &invalid_tx_idx);
+    int res = BackupCheckPrepare(&invalid_tx_idx);
     if (res != kConsensusSuccess) {
         ZJC_ERROR("backup prepare failed: %d", res);
         return res;
@@ -119,7 +119,7 @@ int Zbft::Prepare(bool leader, zbft::protobuf::ZbftMessage* bft_msg) {
     return kConsensusSuccess;
 }
 
-int Zbft::LeaderCreatePrepare(zbft::protobuf::ZbftMessage* bft_msg) {
+int Zbft::LeaderCreatePrepare() {
     local_member_index_ = leader_index_;
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     if (LeaderCallTransaction(bft_msg) != kConsensusSuccess) {
@@ -140,12 +140,10 @@ int Zbft::LeaderCreatePrepare(zbft::protobuf::ZbftMessage* bft_msg) {
     return kConsensusSuccess;
 }
 
-int Zbft::BackupCheckPrepare(
-        zbft::protobuf::ZbftMessage* bft_msg,
-        int32_t* invalid_tx_idx) {
+int Zbft::BackupCheckPrepare(int32_t* invalid_tx_idx) {
     auto& tx_bft = *bft_msg->mutable_tx_bft();
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
-    if (DoTransaction(tx_bft) != kConsensusSuccess) {
+    if (DoTransaction() != kConsensusSuccess) {
         return kConsensusInvalidPackage;
     }
 
@@ -666,8 +664,7 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
 }
 
 int Zbft::LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg) {
-    auto& res_tx_bft = *bft_msg->mutable_tx_bft();
-    if (DoTransaction(res_tx_bft) != kConsensusSuccess) {
+    if (DoTransaction() != kConsensusSuccess) {
         ZJC_ERROR("leader do transaction failed!");
         return kConsensusError;
     }
@@ -696,7 +693,7 @@ int Zbft::LeaderCallTransaction(zbft::protobuf::ZbftMessage* bft_msg) {
     return kConsensusSuccess;
 }
 
-int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
+int Zbft::DoTransaction() {
     std::string pool_hash = pools_mgr_->latest_hash(txs_ptr_->pool_index);
     uint64_t pool_height = pools_mgr_->latest_height(txs_ptr_->pool_index);
     if (pool_hash.empty() || pool_height == common::kInvalidUint64) {
@@ -740,9 +737,6 @@ int Zbft::DoTransaction(zbft::protobuf::TxBft& tx_bft) {
     }
 
     zjc_block.set_hash(GetBlockHash(zjc_block));
-    tx_bft.set_prepare_final_hash(zjc_block.hash());
-    tx_bft.set_height(zjc_block.height());
-    tx_bft.set_tx_type(txs_ptr_->tx_type);
     ZJC_DEBUG("pool index: %d, height: %lu, prehash: %s, hash: %s",
         pool_index(),
         zjc_block.height(),
