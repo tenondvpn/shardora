@@ -267,9 +267,8 @@ void BftManager::SetThreadItem(
 
 void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 #ifndef ZJC_UNITTEST
-    transport::MessagePtr prepare_msg_ptr = nullptr;
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    Start(msg_ptr->thread_idx, prepare_msg_ptr);
+    Start(msg_ptr->thread_idx, nullptr);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     PopAllPoolTxs(msg_ptr->thread_idx);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -374,7 +373,7 @@ void BftManager::RotationLeader(
 
 ZbftPtr BftManager::Start(
         uint8_t thread_index,
-        const transport::MessagePtr& prepare_msg_ptr) {
+        ZbftPtr commited_bft_ptr) {
 #ifndef ZJC_UNITTEST
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) <
@@ -495,7 +494,7 @@ ZbftPtr BftManager::Start(
     }
 
     txs_ptr->thread_index = thread_index;
-    auto zbft_ptr = StartBft(elect_item, txs_ptr, prepare_msg_ptr);
+    auto zbft_ptr = StartBft(elect_item, txs_ptr, commited_bft_ptr);
     if (zbft_ptr == nullptr) {
         for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
             iter->second->in_consensus = false;
@@ -599,9 +598,8 @@ int BftManager::InitZbftPtr(int32_t leader_idx, const ElectItem& elect_item, Zbf
 ZbftPtr BftManager::StartBft(
         const ElectItem& elect_item,
         std::shared_ptr<WaitingTxsItem>& txs_ptr,
-        const transport::MessagePtr& prepare_msg_ptr) {
+        ZbftPtr commited_bft_ptr) {
     ZbftPtr bft_ptr = nullptr;
-    auto msg_ptr = prepare_msg_ptr;
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         bft_ptr = std::make_shared<RootZbft>(
             account_mgr_,
@@ -634,31 +632,26 @@ ZbftPtr BftManager::StartBft(
     bft_ptr->set_gid(gid);
     bft_ptr->set_network_id(common::GlobalInfo::Instance()->network_id());
     bft_ptr->set_member_count(elect_item.member_size);
-    int leader_pre = LeaderPrepare(elect_item, bft_ptr, prepare_msg_ptr);
+    int leader_pre = LeaderPrepare(elect_item, bft_ptr, commited_bft_ptr);
     if (leader_pre != kConsensusSuccess) {
         ZJC_ERROR("leader prepare failed!");
         return nullptr;
     }
 
-    if (prepare_msg_ptr != nullptr) {
-        ZJC_DEBUG("use pipeline: %d, this node is leader and start bft: %s,"
-            "pool index: %d, thread index: %d, prepare hash: %s, pre hash: %s, tx size: %d,"
+        ZJC_DEBUG("this node is leader and start bft: %s,"
+            "pool index: %d, thread index: %d, prepare hash: %s, pre hash: %s,"
             "msg tx size: %u, elect height: %lu",
-            (prepare_msg_ptr != nullptr),
             common::Encode::HexEncode(bft_ptr->gid()).c_str(),
             bft_ptr->pool_index(),
             bft_ptr->thread_index(),
             common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
             bft_ptr->prepare_block() == nullptr ? "" : common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
             txs_ptr->txs.size(),
-            prepare_msg_ptr->header.zbft().tx_bft().tx_hash_list_size(),
             elect_item.elect_height);
-        assert(prepare_msg_ptr->header.zbft().tx_bft().tx_hash_list_size() > 0);
     } else {
-        ZJC_DEBUG("use pipeline: %d, this node is leader and start bft: %s,"
+        ZJC_DEBUG("this node is leader and start bft: %s,"
             "pool index: %d, thread index: %d, prepare hash: %s, pre hash: %s, "
             "tx size: %d, elect height: %lu",
-            (prepare_msg_ptr != nullptr),
             common::Encode::HexEncode(bft_ptr->gid()).c_str(),
             bft_ptr->pool_index(),
             bft_ptr->thread_index(),
@@ -775,9 +768,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& elect_item = *elect_item_ptr;
     assert(header.zbft().elect_height() > 0);
     assert(header.zbft().has_member_index());
-    SetDefaultResponse(msg_ptr);
-    std::vector<ZbftPtr> zbft_vec = { nullptr, nullptr, nullptr };
-    msg_ptr->tmp_ptr = &zbft_vec;
     auto& members = elect_item.members;
     if (header.zbft().member_index() >= members->size()) {
         return;
@@ -805,42 +795,9 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         BackupHandleZbftMessage(msg_ptr->thread_idx, elect_item, msg_ptr);
-        if (!header.zbft().prepare_gid().empty()) {
-            if (!msg_ptr->response->header.has_zbft() || !msg_ptr->response->header.zbft().has_agree_precommit()) {
-                // timer to re-handle the message
-                if (msg_ptr->timeout > now_ms * 1000lu) {
-                    ZJC_DEBUG("0 push prepare message : %s, hash64: %lu",
-                        common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(), header.hash64());
-                    backup_prapare_msg_queue_[msg_ptr->thread_idx].push_back(msg_ptr);
-                    if (backup_prapare_msg_queue_[msg_ptr->thread_idx].size() > 16) {
-                        backup_prapare_msg_queue_[msg_ptr->thread_idx].pop_front();
-                    }
-                    return;
-                }
-            }
-        }
     } else {
         LeaderHandleZbftMessage(elect_item, msg_ptr);
     }
-
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    CreateResponseMessage(
-        elect_item,
-        header.zbft().leader_idx() >= 0,
-        zbft_vec,
-        msg_ptr,
-        mem_ptr);
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-//     ClearBft(msg_ptr);
-    msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    if (zbft_vec[0] != nullptr) {
-        zbft_vec[0]->AfterNetwork();
-    } 
-    
-    if (zbft_vec[1] != nullptr) {
-        zbft_vec[1]->AfterNetwork();
-    }
-
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
 }
 
@@ -1228,7 +1185,6 @@ void BftManager::SetDefaultResponse(const transport::MessagePtr& msg_ptr) {
 void BftManager::CreateResponseMessage(
         const ElectItem& elect_item,
         bool response_to_leader,
-        const std::vector<ZbftPtr>& zbft_vec,
         const transport::MessagePtr& msg_ptr,
         common::BftMemberPtr& mem_ptr) {
     auto elect_height = elect_item.elect_height;
@@ -1238,10 +1194,6 @@ void BftManager::CreateResponseMessage(
             elect_height = zbft_vec[0]->elect_height();
             auto* new_bft_msg = msg_ptr->response->header.mutable_zbft();
             std::string precommit_gid = "";
-            if (zbft_vec[1] != nullptr) {
-                precommit_gid = zbft_vec[1]->gid();
-            }
-
             bool res = BftProto::BackupCreatePrepare(
                 bls_mgr_,
                 zbft_vec[0],
@@ -1529,7 +1481,68 @@ void BftManager::BackupHandleZbftMessage(
         }
     }
 
-    BackupPrepare(elect_item, msg_ptr);
+    auto& bft_msg = msg_ptr->header.zbft();
+    if (bft_msg.has_commit_gid() && !bft_msg.commit_gid().empty()) {
+        auto commit_bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.commit_gid());
+        if (commit_bft_ptr == nullptr) {
+            ZJC_ERROR("get commit bft failed: %s",
+                common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
+            assert(false);
+        } else {
+            if (BackupCommit(commit_bft_ptr, msg_ptr) != kConsensusSuccess) {
+                ZJC_ERROR("backup commit bft failed: %s",
+                    common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
+                assert(false);
+            }
+        }
+    }
+
+    if (!bft_msg.prepare_gid().empty()) {
+        int res = BackupPrepare(elect_item, msg_ptr);
+        if (res == kConsensusOppose) {
+            BackupSendPrepareMessage(elect_item, msg_ptr, false);
+        } else if (res == kConsensusAgree) {
+            BackupSendPrepareMessage(elect_item, msg_ptr, true);
+            pools_with_zbfts_[bft_msg.pool_index()]->AfterNetwork();
+        } else {
+            if (!msg_ptr->header.zbft().prepare_gid().empty()) {
+                // timer to re-handle the message
+                if (msg_ptr->timeout > now_ms * 1000lu) {
+                    ZJC_DEBUG("0 push prepare message : %s, hash64: %lu",
+                        common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(), header.hash64());
+                    backup_prapare_msg_queue_[msg_ptr->thread_idx].push_back(msg_ptr);
+                    if (backup_prapare_msg_queue_[msg_ptr->thread_idx].size() > 16) {
+                        backup_prapare_msg_queue_[msg_ptr->thread_idx].pop_front();
+                    }
+                }
+            }
+        }
+    }
+
+    if (!bft_msg.precommit_gid().empty()) {
+        ZJC_DEBUG("handle precommit gid: %s",
+            common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+        msg_ptr->response->header.mutable_zbft()->set_agree_commit(false);
+        auto precommit_bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.precommit_gid());
+        if (precommit_bft_ptr == nullptr) {
+            if (!removed_preapare_gid_with_hash_[bft_msg.pool_index()].Get(
+                    bft_msg.precommit_gid(),
+                    &precommit_bft_ptr)) {
+                ZJC_DEBUG("get precommit gid failed: %s",
+                    common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+                return;
+            }
+        }
+
+        int res = BackupPrecommit(precommit_bft_ptr, msg_ptr);
+        if (res == kConsensusOppose) {
+            BackupSendPrecommitMessage(elect_item, msg_ptr, false);
+        } else if (res == kConsensusAgree) {
+            BackupSendPrecommitMessage(elect_item, msg_ptr, true);
+            pools_with_zbfts_[bft_msg.pool_index()]->AfterNetwork();
+        } else {
+        }
+    }
 }
 
 bool BftManager::VerifyBackupIdValid(
@@ -1777,47 +1790,47 @@ void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
 }
 
 void BftManager::ReConsensusChangedLeaderBft(ZbftPtr& bft_ptr) {
-    auto msg_ptr = std::make_shared<transport::TransportMessage>();
-    msg_ptr->thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[bft_ptr->pool_index()];
-    auto elect_item_ptr = elect_items_[elect_item_idx_];
-    if (elect_item_ptr->elect_height != bft_ptr->changed_leader_elect_height()) {
-        elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
-        if (elect_item_ptr == nullptr ||
-                elect_item_ptr->elect_height != bft_ptr->changed_leader_elect_height()) {
-            ZJC_DEBUG("elect height error: %lu, %lu, %lu",
-                bft_ptr->changed_leader_elect_height(),
-                elect_items_[elect_item_idx_]->elect_height,
-                elect_items_[(elect_item_idx_ + 1) % 2]->elect_height);
-            return;
-        }
-    }
-
-    auto next_prepare_bft = Start(
-        msg_ptr->thread_idx,
-        msg_ptr->response);
-    if (next_prepare_bft == nullptr) {
-        return;
-    }
-
-    SetDefaultResponse(msg_ptr);
-    std::vector<ZbftPtr> zbft_vec = { nullptr, nullptr, nullptr };
-    msg_ptr->tmp_ptr = &zbft_vec;
-    auto elect_item = *elect_item_ptr;
-    std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
-    ZJC_DEBUG("LeaderCallPrecommit success gid: %s",
-        common::Encode::HexEncode(next_prepare_bft->gid()).c_str());
-    zbft_vec[0] = next_prepare_bft;
-    common::BftMemberPtr mem_ptr = nullptr;
-    CreateResponseMessage(
-        elect_item,
-        false,
-        zbft_vec,
-        msg_ptr,
-        mem_ptr);
-    next_prepare_bft->AfterNetwork();
-    if (zbft_vec[1] != nullptr) {
-        zbft_vec[1]->AfterNetwork();
-    }
+//     auto msg_ptr = std::make_shared<transport::TransportMessage>();
+//     msg_ptr->thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[bft_ptr->pool_index()];
+//     auto elect_item_ptr = elect_items_[elect_item_idx_];
+//     if (elect_item_ptr->elect_height != bft_ptr->changed_leader_elect_height()) {
+//         elect_item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
+//         if (elect_item_ptr == nullptr ||
+//                 elect_item_ptr->elect_height != bft_ptr->changed_leader_elect_height()) {
+//             ZJC_DEBUG("elect height error: %lu, %lu, %lu",
+//                 bft_ptr->changed_leader_elect_height(),
+//                 elect_items_[elect_item_idx_]->elect_height,
+//                 elect_items_[(elect_item_idx_ + 1) % 2]->elect_height);
+//             return;
+//         }
+//     }
+// 
+//     auto next_prepare_bft = Start(
+//         msg_ptr->thread_idx,
+//         msg_ptr->response);
+//     if (next_prepare_bft == nullptr) {
+//         return;
+//     }
+// 
+//     SetDefaultResponse(msg_ptr);
+//     std::vector<ZbftPtr> zbft_vec = { nullptr, nullptr, nullptr };
+//     msg_ptr->tmp_ptr = &zbft_vec;
+//     auto elect_item = *elect_item_ptr;
+//     std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
+//     ZJC_DEBUG("LeaderCallPrecommit success gid: %s",
+//         common::Encode::HexEncode(next_prepare_bft->gid()).c_str());
+//     zbft_vec[0] = next_prepare_bft;
+//     common::BftMemberPtr mem_ptr = nullptr;
+//     CreateResponseMessage(
+//         elect_item,
+//         false,
+//         zbft_vec,
+//         msg_ptr,
+//         mem_ptr);
+//     next_prepare_bft->AfterNetwork();
+//     if (zbft_vec[1] != nullptr) {
+//         zbft_vec[1]->AfterNetwork();
+//     }
 }
 
 void BftManager::CheckMessageTimeout(uint8_t thread_index) {
@@ -2029,34 +2042,16 @@ void BftManager::ReConsensusBft(ZbftPtr& bft_ptr) {
 int BftManager::LeaderPrepare(
         const ElectItem& elect_item,
         ZbftPtr& bft_ptr,
-        const transport::MessagePtr& prepare_msg_ptr) {
+        ZbftPtr commited_bft_ptr) {
     zbft::protobuf::ZbftMessage bft_msg;
-    auto msg_ptr = prepare_msg_ptr;
-    if (msg_ptr == nullptr) {
-        msg_ptr = std::make_shared<transport::TransportMessage>();
-    }
-
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-
-    auto& header = (msg_ptr->response != nullptr && msg_ptr->response->header.has_zbft()) ? 
-        msg_ptr->response->header : msg_ptr->header;
-    if (!header.has_hash64()) {
-        transport::TcpTransport::Instance()->SetMessageHash(header, bft_ptr->thread_index());
-    }
-
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
-
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& header = msg_ptr->header;
     msg_ptr->thread_idx = bft_ptr->thread_index();
     auto* new_bft_msg = header.mutable_zbft();
     int res = bft_ptr->Prepare(true, new_bft_msg);
     if (res != kConsensusSuccess) {
         return kConsensusError;
     }
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //msg_ptr->times[msg_ptr->times_idx - 2] = msg_ptr->times[msg_ptr->times_idx - 1];
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
     res = AddBft(bft_ptr);
     if (res != kConsensusSuccess) {
@@ -2064,65 +2059,57 @@ int BftManager::LeaderPrepare(
         return res;
     }
 
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-    if (prepare_msg_ptr == nullptr) {
-        header.set_src_sharding_id(bft_ptr->network_id());
-        dht::DhtKeyManager dht_key(bft_ptr->network_id());
-        header.set_des_dht_key(dht_key.StrKey());
-        header.set_type(common::kConsensusMessage);
-        header.set_hop_count(0);
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-        auto msg_res = BftProto::LeaderCreatePrepare(
-            elect_item.local_node_member_index,
-            bft_ptr,
-            "",
-            "",
-            header,
-            new_bft_msg);
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-        if (!msg_res) {
-            assert(false);
-            return kConsensusError;
-        }
+    header.set_src_sharding_id(bft_ptr->network_id());
+    dht::DhtKeyManager dht_key(bft_ptr->network_id());
+    header.set_des_dht_key(dht_key.StrKey());
+    header.set_type(common::kConsensusMessage);
+    header.set_hop_count(0);
+    auto msg_res = BftProto::LeaderCreatePrepare(
+        elect_item.local_node_member_index,
+        bft_ptr,
+        "",
+        "",
+        header,
+        new_bft_msg);
+    if (!msg_res) {
+        assert(false);
+        return kConsensusError;
     }
 
     new_bft_msg->set_member_index(elect_item.local_node_member_index);
     new_bft_msg->set_elect_height(elect_item.elect_height);
+    if (commited_bft_ptr != nullptr) {
+        new_bft_msg->set_commit_gid(commited_bft_ptr->gid());
+        auto& bls_commit_sign = commited_bft_ptr->bls_commit_agg_sign();
+        new_bft_msg->set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->X));
+        new_bft_msg->set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->Y));
+    }
+
     assert(elect_item.elect_height > 0);
     bft_ptr->reset_timeout();
     bft_ptr->set_consensus_status(kConsensusPrepare);
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-    if (prepare_msg_ptr == nullptr) {
-        transport::TcpTransport::Instance()->SetMessageHash(msg_ptr->header, msg_ptr->thread_idx);
-        if (!LeaderSignMessage(msg_ptr)) {
-            return kConsensusError;
-        }
-#ifdef ZJC_UNITTEST
-        now_msg_[msg_ptr->thread_idx] = msg_ptr;
-#else
-        ZJC_DEBUG("cross block use pipeline: %d, this node is leader and start bft: %s,"
-            "pool index: %d, thread index: %d, prepare hash: %s, pre hash: %s, "
-            "elect height: %lu, hash64: %lu",
-            (prepare_msg_ptr != nullptr),
-            common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-            bft_ptr->pool_index(),
-            bft_ptr->thread_index(),
-            common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-            bft_ptr->prepare_block() == nullptr ? "" : common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
-            elect_item.elect_height,
-            msg_ptr->header.hash64());
-        network::Route::Instance()->Send(msg_ptr);
-#endif
-        bft_ptr->AfterNetwork();
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //msg_ptr->times[msg_ptr->times_idx - 2] = msg_ptr->times[msg_ptr->times_idx - 1];
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
+    transport::TcpTransport::Instance()->SetMessageHash(header, msg_ptr->thread_idx);
+    if (!LeaderSignMessage(msg_ptr)) {
+        return kConsensusError;
     }
 
+#ifdef ZJC_UNITTEST
+    now_msg_[msg_ptr->thread_idx] = msg_ptr;
+#else
+    ZJC_DEBUG("this node is leader and start bft: %s,"
+        "pool index: %d, thread index: %d, prepare hash: %s, pre hash: %s, "
+        "elect height: %lu, hash64: %lu",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+        bft_ptr->pool_index(),
+        bft_ptr->thread_index(),
+        common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+        bft_ptr->prepare_block() == nullptr ? "" : common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
+        elect_item.elect_height,
+        msg_ptr->header.hash64());
+    network::Route::Instance()->Send(msg_ptr);
+#endif
+
+    bft_ptr->AfterNetwork();
     return kConsensusSuccess;
 }
 
@@ -2252,26 +2239,187 @@ int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg
     return kConsensusSuccess;
 }
 
-void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr) {
-    auto& bft_msg = msg_ptr->header.zbft();
-    if (bft_msg.has_agree_commit() && !bft_msg.agree_commit()) {
-        assert(false);
+void BftManager::BackupSendPrepareMessage(const ElectItem& elect_item, MessagePtr& leader_msg_ptr, bool agree) {
+    auto pool_index = leader_msg_ptr->header.zbft().pool_index();
+    auto& gid = leader_msg_ptr->header.zbft().prepare_gid();
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& header = msg_ptr->header;
+    msg_ptr->thread_idx = bft_ptr->thread_index();
+    auto& bft_msg = *header.mutable_zbft();
+    header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    header.set_type(common::kConsensusMessage);
+    header.set_hop_count(0);
+   
+    bft_msg.set_leader_idx(-1);
+    bft_msg.set_prepare_gid(gid);
+    if (agree) {
+        auto& bft_ptr = pools_with_zbfts_[pool_index];
+        assert(bft_ptr != nullptr);
+        bft_msg.set_prepare_hash(bft_ptr->prepare_hash());
+        bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
+        bft_msg.set_agree_precommit(true);
+        std::string bls_sign_x;
+        std::string bls_sign_y;
+        if (bls_mgr->Sign(
+                bft_ptr->min_aggree_member_count(),
+                bft_ptr->member_count(),
+                bft_ptr->local_sec_key(),
+                bft_ptr->g1_prepare_hash(),
+                &bls_sign_x,
+                &bls_sign_y) != bls::kBlsSuccess) {
+            return;
+        }
+
+        bft_msg.set_bls_sign_x(bls_sign_x);
+        bft_msg.set_bls_sign_y(bls_sign_y);
+    } else {
+        bft_msg.set_agree_precommit(false);
+    }
+
+    auto leader_member = (*elect_item.members)[msg_ptr->header.zbft().leader_idx()];
+    dht::DhtKeyManager dht_key(
+        common::GlobalInfo::Instance()->network_id(),
+        leader_member->id);
+    header.set_des_dht_key(dht_key.StrKey());
+    if (leader_member->public_ip == 0 || leader_member->public_port == 0) {
+        auto dht_ptr = network::DhtManager::Instance()->GetDht(msg_ptr->header.src_sharding_id());
+        if (dht_ptr != nullptr) {
+            auto nodes = dht_ptr->readonly_hash_sort_dht();
+            for (auto iter = nodes->begin(); iter != nodes->end(); ++iter) {
+                if ((*iter)->id == leader_member->id) {
+                    leader_member->public_ip = common::IpToUint32((*iter)->public_ip.c_str());
+                    leader_member->public_port = (*iter)->public_port;
+                    break;
+                }
+            }
+        }
+    }
+            
+    if (!SetBackupEcdhData(msg_ptr->response, mem_ptr)) {
         return;
     }
 
-    if (bft_msg.has_agree_precommit() && !bft_msg.agree_precommit()) {
-        if (bft_msg.has_agree_commit()) {
-            CheckCommit(msg_ptr, true);
+    if (leader_member->public_ip == 0 || leader_member->public_port == 0) {
+        network::Route::Instance()->Send(msg_ptr);
+        ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d",
+            common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+            header.hash64(),
+            leader_msg_ptr->header.hash64(),
+            0,
+            0);
+    } else {
+        auto to_ip = common::Uint32ToIp(leader_member->public_ip);
+        transport::TcpTransport::Instance()->Send(
+            msg_ptr->thread_idx,
+            to_ip,
+            leader_member->public_port,
+            header);
+        ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d, %s:%u",
+            common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+            header.hash64(),
+            leader_msg_ptr->header.hash64(),
+            0,
+            0,
+            to_ip.c_str(), leader_member->public_port);
+    }
+}
+
+void BftManager::BackupSendPrecommitMessage(const ElectItem& elect_item, MessagePtr& leader_msg_ptr, bool agree) {
+    auto pool_index = leader_msg_ptr->header.zbft().pool_index();
+    auto& gid = leader_msg_ptr->header.zbft().prepare_gid();
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& header = msg_ptr->header;
+    msg_ptr->thread_idx = bft_ptr->thread_index();
+    auto& bft_msg = *header.mutable_zbft();
+    header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    header.set_type(common::kConsensusMessage);
+    header.set_hop_count(0);
+   
+    bft_msg.set_leader_idx(-1);
+    bft_msg.set_precommit_gid(bft_ptr->gid());
+    if (agree) {
+        auto& bft_ptr = pools_with_zbfts_[pool_index];
+        assert(bft_ptr != nullptr);
+        bft_msg.set_prepare_hash(bft_ptr->prepare_hash());
+        bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
+        bft_msg.set_agree_commit(true);
+        std::string bls_sign_x;
+        std::string bls_sign_y;
+        if (bls_mgr->Sign(
+                bft_ptr->min_aggree_member_count(),
+                bft_ptr->member_count(),
+                bft_ptr->local_sec_key(),
+                bft_ptr->g1_precommit_hash(),
+                &bls_sign_x,
+                &bls_sign_y) != bls::kBlsSuccess) {
+            return false;
         }
 
+        bft_msg.set_bls_sign_x(bls_sign_x);
+        bft_msg.set_bls_sign_y(bls_sign_y);
+    } else {
+        bft_msg.set_agree_commit(false);
+    }
+
+    auto leader_member = (*elect_item.members)[msg_ptr->header.zbft().leader_idx()];
+    dht::DhtKeyManager dht_key(
+        common::GlobalInfo::Instance()->network_id(),
+        leader_member->id);
+    header.set_des_dht_key(dht_key.StrKey());
+    if (leader_member->public_ip == 0 || leader_member->public_port == 0) {
+        auto dht_ptr = network::DhtManager::Instance()->GetDht(msg_ptr->header.src_sharding_id());
+        if (dht_ptr != nullptr) {
+            auto nodes = dht_ptr->readonly_hash_sort_dht();
+            for (auto iter = nodes->begin(); iter != nodes->end(); ++iter) {
+                if ((*iter)->id == leader_member->id) {
+                    leader_member->public_ip = common::IpToUint32((*iter)->public_ip.c_str());
+                    leader_member->public_port = (*iter)->public_port;
+                    break;
+                }
+            }
+        }
+    }
+            
+    if (!SetBackupEcdhData(msg_ptr->response, mem_ptr)) {
+        return;
+    }
+
+    if (leader_member->public_ip == 0 || leader_member->public_port == 0) {
+        network::Route::Instance()->Send(msg_ptr);
+        ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d",
+            common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+            header.hash64(),
+            leader_msg_ptr->header.hash64(),
+            0,
+            0);
+    } else {
+        auto to_ip = common::Uint32ToIp(leader_member->public_ip);
+        transport::TcpTransport::Instance()->Send(
+            msg_ptr->thread_idx,
+            to_ip,
+            leader_member->public_port,
+            header);
+        ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d, %s:%u",
+            common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+            header.hash64(),
+            leader_msg_ptr->header.hash64(),
+            0,
+            0,
+            to_ip.c_str(), leader_member->public_port);
+    }
+}
+
+int BftManager::BackupPrepare(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr) {
+    auto& bft_msg = msg_ptr->header.zbft();
+    if (bft_msg.has_agree_precommit() && !bft_msg.agree_precommit()) {
         ZJC_DEBUG("precommit failed, remove all prepare gid; %s, precommit gid: %s, commit gid: %s",
             common::Encode::HexEncode(bft_msg.oppose_prepare_gid()).c_str(),
             common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
             common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
-        auto prepare_bft = GetBft(bft_msg.pool_index(), bft_msg.oppose_prepare_gid());
+        auto& prepare_bft = pools_with_zbfts_[bft_msg.pool_index()];
         if (prepare_bft != nullptr) {
-            prepare_bft->set_consensus_status(kConsensusFailed);
-            RemoveBft(prepare_bft->pool_index(), prepare_bft->gid());
+            prepare_bft->Destroy();
+            pools_with_zbfts_[bft_msg.pool_index()] = nullptr;
         }
     }
 
@@ -2282,235 +2430,334 @@ void BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mes
         common::Encode::HexEncode(bft_msg.commit_gid()).c_str(),
         bft_msg.pool_index());
     msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_msg.pool_index());
-    if (bft_msg.has_prepare_gid() && !bft_msg.prepare_gid().empty()) {
-        msg_ptr->response->header.mutable_zbft()->clear_agree_precommit();
-        auto now_ms = common::TimeUtils::TimestampMs();
-        auto now_elect_item = elect_items_[elect_item_idx_];
-        if (now_elect_item->change_leader_time_valid <= now_ms &&
-                now_elect_item->elect_height != elect_item.elect_height) {
-            ZJC_ERROR("BackupPrepare failed %s invalid elect height: %lu, %lu",
-                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-                now_elect_item->elect_height,
-                elect_item.elect_height);
-            msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
-            return;
-        }
+    msg_ptr->response->header.mutable_zbft()->clear_agree_precommit();
+    auto now_ms = common::TimeUtils::TimestampMs();
+    auto now_elect_item = elect_items_[elect_item_idx_];
+    if (now_elect_item->change_leader_time_valid <= now_ms &&
+            now_elect_item->elect_height != elect_item.elect_height) {
+        ZJC_ERROR("BackupPrepare failed %s invalid elect height: %lu, %lu",
+            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+            now_elect_item->elect_height,
+            elect_item.elect_height);
+        return kConsensusOppose;
+    }
 
-        auto bft_ptr = CreateBftPtr(elect_item, msg_ptr);
-        if (bft_ptr == nullptr ||
-                bft_ptr->txs_ptr() == nullptr ||
-                bft_ptr->txs_ptr()->txs.empty()) {
-            // oppose
-            ZJC_ERROR("create bft ptr failed backup create consensus bft gid: %s",
-                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-            return;
-        }
-
-        auto* new_bft_msg = msg_ptr->response->header.mutable_zbft();
-        int prepare_res = bft_ptr->Prepare(false, new_bft_msg);
-        if (prepare_res != kConsensusSuccess || bft_ptr->prepare_block() == nullptr) {
-            ZJC_ERROR("prepare failed gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-            return;
-        }
-
-        ZJC_DEBUG("success create bft ptr backup create consensus bft gid: %s",
+    auto bft_ptr = CreateBftPtr(elect_item, msg_ptr);
+    if (bft_ptr == nullptr ||
+            bft_ptr->txs_ptr() == nullptr ||
+            bft_ptr->txs_ptr()->txs.empty()) {
+        // oppose
+        ZJC_ERROR("create bft ptr failed backup create consensus bft gid: %s",
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+        BackupSendPrepareMessage(elect_item, msg_ptr, false);
+        return;
+    }
+
+    auto* new_bft_msg = msg_ptr->response->header.mutable_zbft();
+    int prepare_res = bft_ptr->Prepare(false, new_bft_msg);
+    if (prepare_res != kConsensusSuccess || bft_ptr->prepare_block() == nullptr) {
+        ZJC_ERROR("prepare failed gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+        return kConsensusOppose;
+    }
+
+    ZJC_DEBUG("success create bft ptr backup create consensus bft gid: %s",
+        common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
 #ifdef ZJC_UNITTEST
-        if (test_for_prepare_evil_) {
-            ZJC_ERROR("1 bft backup prepare failed! not agree bft gid: %s",
-                common::Encode::HexEncode(bft_ptr->gid()).c_str());
-            return;
-        }
+    if (test_for_prepare_evil_) {
+        ZJC_ERROR("1 bft backup prepare failed! not agree bft gid: %s",
+            common::Encode::HexEncode(bft_ptr->gid()).c_str());
+        return kConsensusOppose;
+    }
 #endif
-        ZJC_DEBUG("backup create consensus bft prepare hash: %s, gid: %s, tx size: %d",
+    ZJC_DEBUG("backup create consensus bft prepare hash: %s, gid: %s, tx size: %d",
+        common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+        common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+        bft_ptr->txs_ptr()->txs.size());
+    if (bft_ptr->local_prepare_hash().empty()) {
+        ZJC_DEBUG("failed backup create consensus bft prepare hash: %s, prehash: %s, "
+            "leader prehash: %s, pre height: %lu, leader pre height: %lu, gid: %s, tx size: %d",
             common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+            common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
+            common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
+            bft_ptr->prepare_block()->height(),
+            bft_msg.prepare_height(),
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
             bft_ptr->txs_ptr()->txs.size());
-        if (bft_ptr->local_prepare_hash().empty()) {
-            ZJC_DEBUG("failed backup create consensus bft prepare hash: %s, prehash: %s, "
-                "leader prehash: %s, pre height: %lu, leader pre height: %lu, gid: %s, tx size: %d",
-                common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-                common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
-                common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
-                bft_ptr->prepare_block()->height(),
-                bft_msg.prepare_height(),
-                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-                bft_ptr->txs_ptr()->txs.size());
-            //             if (!bft_msg.prepare_hash().empty() && bft_ptr->prepare_block()->prehash() != bft_msg.prepare_hash()) {
-            //                 assert(false);
-            //             }
-            return;
-        }
-
-        if (AddBft(bft_ptr) != kConsensusSuccess) {
-            msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
-        } else {
-            msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
-            bft_ptr->set_prepare_msg_ptr(msg_ptr);
-        }
-
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-        bft_ptr->set_consensus_status(kConsensusPrepare);
-        std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
-        bft_vec[0] = bft_ptr;
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-        ZJC_DEBUG("BackupPrepare success: %s", common::Encode::HexEncode(bft_vec[0]->gid()).c_str());
-        return;
+        //             if (!bft_msg.prepare_hash().empty() && bft_ptr->prepare_block()->prehash() != bft_msg.prepare_hash()) {
+        //                 assert(false);
+        //             }
+        return kConsensusOppose;
     }
 
-    if (bft_msg.has_precommit_gid() && !bft_msg.precommit_gid().empty()) {
-        ZJC_DEBUG("handle precommit gid: %s",
-            common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-        msg_ptr->response->header.mutable_zbft()->set_agree_commit(false);
-        auto precommit_bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.precommit_gid());
-        if (precommit_bft_ptr == nullptr) {
-            if (!removed_preapare_gid_with_hash_[bft_msg.pool_index()].Get(
-                    bft_msg.precommit_gid(),
-                    &precommit_bft_ptr)) {
-                ZJC_DEBUG("get precommit gid failed: %s",
-                    common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-                return;
-            }
-        }
-
-        if (BackupPrecommit(precommit_bft_ptr, msg_ptr) != kConsensusSuccess) {
-            return;
-        }
-
-        msg_ptr->response->header.mutable_zbft()->set_agree_commit(true);
-        return;
+    if (AddBft(bft_ptr) != kConsensusSuccess) {
+        return kConsensusOppose;
     }
 
-    if (bft_msg.has_commit_gid() && !bft_msg.commit_gid().empty()) {
-        auto commit_bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.commit_gid());
-        if (commit_bft_ptr == nullptr) {
-            ZJC_ERROR("get commit bft failed: %s",
-                common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
-            return;
-        }
-
-        if (BackupCommit(commit_bft_ptr, msg_ptr) != kConsensusSuccess) {
-            ZJC_ERROR("backup commit bft failed: %s",
-                common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
-            return;
-        }
-    }
+    msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
+    bft_ptr->set_prepare_msg_ptr(msg_ptr);
+    bft_ptr->set_consensus_status(kConsensusPrepare);
+    ZJC_DEBUG("BackupPrepare success: %s", common::Encode::HexEncode(bft_vec[0]->gid()).c_str());
+    BackupSendPrepareMessage(elect_item, msg_ptr, true);
+    return kConsensusAgree;
 }
 
-int BftManager::LeaderHandleZbftMessage(
+void BftManager::LeaderSendPrecommitMessage(const ElectItem& elect_item, MessagePtr& leader_msg_ptr, bool agree) {
+    auto pool_index = leader_msg_ptr->header.zbft().pool_index();
+    auto& gid = leader_msg_ptr->header.zbft().prepare_gid();
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& header = msg_ptr->header;
+    msg_ptr->thread_idx = leader_msg_ptr->thread_idx;
+    auto& bft_msg = *header.mutable_zbft();
+    header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    header.set_type(common::kConsensusMessage);
+    header.set_hop_count(0);
+    bft_msg.set_member_index(
+        elect_item.local_node_member_index);
+    bft_msg.set_elect_height(elect_height);
+    assert(elect_item.elect_height > 0);
+    if (msg_ptr->thread_idx == 0) {
+        auto& thread_set = elect_item.thread_set;
+        auto thread_item = thread_set[msg_ptr->thread_idx];
+        if (thread_item != nullptr && !thread_item->synced_ip) {
+            if (thread_item->valid_ip_count * 10 / 9 >= (int32_t)elect_item.members->size()) {
+                for (uint32_t i = 0; i < elect_item.members->size(); ++i) {
+                    bft_msg.add_ips(thread_item->member_ips[i]);
+                    thread_item->all_members_ips[i][thread_item->member_ips[i]] = 1;
+                    if (elect_item.leader_count <= 8) {
+                        (*elect_item.members)[i]->public_ip = thread_item->member_ips[i];
+                        ZJC_DEBUG("leader member set ip %d, %u", i, (*elect_item.members)[i]->public_ip);
+                    }
+                }
+
+                thread_item->synced_ip = true;
+            }
+        }
+    }
+
+    bft_msg.set_leader_idx(elect_item.local_node_member_index);
+    if (!header.has_broadcast()) {
+        auto broadcast = header.mutable_broadcast();
+    }
+
+    bft_msg.clear_prepare_gid();
+    bft_msg.set_leader_idx(leader_idx);
+    bft_ptr = pools_with_zbfts_[pool_index];
+    bft_msg.set_precommit_gid(bft_ptr->gid());
+    bft_msg.set_pool_index(pool_index);
+    bft_msg.set_agree_precommit(agree);
+    bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
+    bft_msg.set_elect_height(bft_ptr->elect_height());
+    if (agree) {
+        auto& bls_precommit_sign = bft_ptr->bls_precommit_agg_sign();
+        bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
+        bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
+    }
+
+    dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
+    header.set_des_dht_key(dht_key.StrKey());
+    assert(header.has_broadcast());
+    if (!LeaderSignMessage(msg_ptr)) {
+        return;
+    }
+
+    network::Route::Instance()->Send(msg_ptr);
+    ZJC_DEBUG("leader broadcast bft message prepare gid: %s, precommit: %s, commit: %s, hash64: %lu",
+        common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+        common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
+        common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+        header.hash64());
+}
+
+void BftManager::LeaderSendCommitMessage(const ElectItem& elect_item, MessagePtr& leader_msg_ptr, bool agree) {
+    auto pool_index = leader_msg_ptr->header.zbft().pool_index();
+    auto& gid = leader_msg_ptr->header.zbft().prepare_gid();
+    auto msg_ptr = std::make_shared<transport::TransportMessage>();
+    auto& header = msg_ptr->header;
+    msg_ptr->thread_idx = leader_msg_ptr->thread_idx;
+    auto& bft_msg = *header.mutable_zbft();
+    header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
+    header.set_type(common::kConsensusMessage);
+    header.set_hop_count(0);
+    bft_msg.set_member_index(
+        elect_item.local_node_member_index);
+    bft_msg.set_elect_height(elect_height);
+    assert(elect_item.elect_height > 0);
+    if (msg_ptr->thread_idx == 0) {
+        auto& thread_set = elect_item.thread_set;
+        auto thread_item = thread_set[msg_ptr->thread_idx];
+        if (thread_item != nullptr && !thread_item->synced_ip) {
+            if (thread_item->valid_ip_count * 10 / 9 >= (int32_t)elect_item.members->size()) {
+                for (uint32_t i = 0; i < elect_item.members->size(); ++i) {
+                    bft_msg.add_ips(thread_item->member_ips[i]);
+                    thread_item->all_members_ips[i][thread_item->member_ips[i]] = 1;
+                    if (elect_item.leader_count <= 8) {
+                        (*elect_item.members)[i]->public_ip = thread_item->member_ips[i];
+                        ZJC_DEBUG("leader member set ip %d, %u", i, (*elect_item.members)[i]->public_ip);
+                    }
+                }
+
+                thread_item->synced_ip = true;
+            }
+        }
+    }
+
+    bft_msg.set_leader_idx(elect_item.local_node_member_index);
+    if (!header.has_broadcast()) {
+        auto broadcast = header.mutable_broadcast();
+    }
+
+    bft_msg.clear_prepare_gid();
+    bft_msg.set_leader_idx(leader_idx);
+    bft_ptr = pools_with_zbfts_[pool_index];
+    bft_msg.set_commit_gid(bft_ptr->gid());
+    bft_msg.set_pool_index(pool_index);
+    bft_msg.set_agree_commit(agree);
+    bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
+    bft_msg.set_elect_height(bft_ptr->elect_height());
+    if (agree) {
+        auto& bls_precommit_sign = bft_ptr->bls_precommit_agg_sign();
+        bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
+        bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
+    }
+
+    dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
+    header.set_des_dht_key(dht_key.StrKey());
+    assert(header.has_broadcast());
+    if (!LeaderSignMessage(msg_ptr)) {
+        return;
+    }
+
+    network::Route::Instance()->Send(msg_ptr);
+    ZJC_DEBUG("leader broadcast bft message prepare gid: %s, precommit: %s, commit: %s, hash64: %lu",
+        common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+        common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
+        common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+        header.hash64());
+}
+
+void BftManager::LeaderHandleZbftMessage(
         const ElectItem& elect_item,
         const transport::MessagePtr& msg_ptr) {
     auto& bft_msg = msg_ptr->header.zbft();
-    if (bft_msg.has_prepare_gid() && !bft_msg.prepare_gid().empty()) {
-        ZJC_DEBUG("has prepare  now leader handle gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-        auto bft_ptr = LeaderGetZbft(msg_ptr, elect_item, bft_msg.prepare_gid());
-        if (bft_ptr == nullptr) {
-            ZJC_DEBUG("prepare get bft failed: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-            return kConsensusError;
-        }
-
-        auto& member_ptr = (*bft_ptr->members_ptr())[bft_msg.member_index()];
-        ZJC_DEBUG("has prepare  now leader handle gid: %s, agree precommit: %d, prepare hash: %s, local hash: %s",
-            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-            bft_msg.agree_precommit(),
-            common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
-            common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
-        if (bft_msg.agree_precommit()) {
-            libff::alt_bn128_G1 sign;
-            try {
-                sign.X = libff::alt_bn128_Fq(bft_msg.bls_sign_x().c_str());
-                sign.Y = libff::alt_bn128_Fq(bft_msg.bls_sign_y().c_str());
-                sign.Z = libff::alt_bn128_Fq::one();
-            } catch (std::exception& e) {
-                ZJC_ERROR("get invalid bls sign.");
-                return kConsensusError;
-            }
-
-            auto& tx_bft = bft_msg.tx_bft();
-            int res = bft_ptr->LeaderPrecommitOk(
-                tx_bft,
-                bft_msg.member_index(),
-                sign,
-                member_ptr->id);
-            ZJC_DEBUG("LeaderHandleZbftMessage res: %d, mem: %d, precommit gid: %s",
-                res,
-                bft_msg.member_index(),
-                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-            if (res == kConsensusLeaderWaitingBlock) {
-                ZJC_DEBUG("invalid block and sync from other hash: %s, gid: %s",
-                    common::Encode::HexEncode(bft_ptr->leader_waiting_prepare_hash()).c_str(),
-                    common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-                SyncConsensusBlock(
-                    elect_item,
-                    msg_ptr->thread_idx,
-                    bft_ptr->pool_index(),
-                    bft_msg.prepare_gid());
-            } else if (res == kConsensusAgree) {
-                msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-                if (bft_ptr->prepare_block() == nullptr) {
-                    ZJC_DEBUG("invalid block and sync from other gid: %s",
-                        common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
-                    assert(false);
-                }
-
-                msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
-                msg_ptr->response->header.mutable_zbft()->set_agree_commit(true);
-                msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-                LeaderCallPrecommit(elect_item, bft_ptr, msg_ptr);
-                if (!msg_ptr->response->header.mutable_zbft()->has_pool_index()) {
-                    msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
-                    ZJC_DEBUG("gid: %s, set pool index: %u", common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
-                }
-                msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-            } else if (res == kConsensusOppose) {
-                msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
-                msg_ptr->response->header.mutable_zbft()->set_oppose_prepare_gid(bft_msg.prepare_gid());
-                msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
-            }
+    if (!bft_msg.prepare_gid().empty()) {
+        int res = LeaderHandlePrepare(elect_item, msg_ptr);
+        if (res == kConsensusAgree) {
+            LeaderSendPrecommitMessage(elect_item, msg_ptr, true);
+        } else if (res == kConsensusOppose) {
+            LeaderSendPrecommitMessage(elect_item, msg_ptr, false);
         } else {
-            if (bft_ptr->AddPrepareOpposeNode(member_ptr->id) == kConsensusOppose) {
-                msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
-                msg_ptr->response->header.mutable_zbft()->set_oppose_prepare_gid(bft_msg.prepare_gid());
-                msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
-                ZJC_DEBUG("gid: %s, set pool index: %u", common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
-                bft_ptr->set_consensus_status(kConsensusFailed);
-                RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
-                ZJC_ERROR("precommit call oppose now step: %d, gid: %s, prepare hash: %s,"
-                    " precommit gid: %s, agree commit: %d",
-                    bft_ptr->txs_ptr()->tx_type,
-                    common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-                    common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
-                    common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
-                    bft_msg.agree_commit());
-//                 assert(false);
-                // just all consensus rollback
-            }
+            // waiting
         }
-
-        return kConsensusSuccess;
     }
 
-    if (bft_msg.has_precommit_gid() && !bft_msg.precommit_gid().empty()) {
-        ZJC_DEBUG("has precommit now leader handle gid: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+    if (!bft_msg.precommit_gid().empty()) {
+        ZJC_DEBUG("has precommit now leader handle gid: %s",
+            common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
         auto bft_ptr = LeaderGetZbft(msg_ptr, elect_item, bft_msg.precommit_gid());
         if (bft_ptr == nullptr) {
 //             ZJC_ERROR("precommit get bft failed: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-            return kConsensusError;
+            return;
         }
 
         auto& member_ptr = (*bft_ptr->members_ptr())[bft_msg.member_index()];
         if (bft_msg.agree_commit()) {
-            LeaderCommit(elect_item, bft_ptr, msg_ptr);
+            if (LeaderCommit(elect_item, bft_ptr, msg_ptr) == kConsensusAgree) {
+                auto next_ptr = Start(msg_ptr->thread_idx, bft_ptr);
+                if (next_ptr == nullptr) {
+                    LeaderSendCommitMessage(elect_item, msg_ptr, true);
+                }
+            }
         } else {
             if (bft_ptr->AddPrecommitOpposeNode(member_ptr->id) == kConsensusOppose) {
-                msg_ptr->response->header.mutable_zbft()->set_agree_commit(false);
-                msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
-                ZJC_DEBUG("gid: %s, set pool index: %u", common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
-                bft_ptr->set_consensus_status(kConsensusFailed);
-                RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
+                ZJC_ERROR("gid: %s, set pool index: %u",
+                    common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+                    bft_ptr->pool_index());
+                assert(false);
             }
+        }
+    }
+}
+
+int BftManager::LeaderHandlePrepare(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr) {
+    ZJC_DEBUG("has prepare  now leader handle gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+    auto bft_ptr = LeaderGetZbft(msg_ptr, elect_item, bft_msg.prepare_gid());
+    if (bft_ptr == nullptr) {
+        ZJC_DEBUG("prepare get bft failed: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+        return kConsensusError;
+    }
+
+    auto& member_ptr = (*bft_ptr->members_ptr())[bft_msg.member_index()];
+    ZJC_DEBUG("has prepare  now leader handle gid: %s, agree precommit: %d, prepare hash: %s, local hash: %s",
+        common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+        bft_msg.agree_precommit(),
+        common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
+        common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
+    if (bft_msg.agree_precommit()) {
+        libff::alt_bn128_G1 sign;
+        try {
+            sign.X = libff::alt_bn128_Fq(bft_msg.bls_sign_x().c_str());
+            sign.Y = libff::alt_bn128_Fq(bft_msg.bls_sign_y().c_str());
+            sign.Z = libff::alt_bn128_Fq::one();
+        } catch (std::exception& e) {
+            ZJC_ERROR("get invalid bls sign.");
+            return kConsensusError;
+        }
+
+        auto& tx_bft = bft_msg.tx_bft();
+        int res = bft_ptr->LeaderPrecommitOk(
+            tx_bft,
+            bft_msg.member_index(),
+            sign,
+            member_ptr->id);
+        ZJC_DEBUG("LeaderHandleZbftMessage res: %d, mem: %d, precommit gid: %s",
+            res,
+            bft_msg.member_index(),
+            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+        if (res == kConsensusLeaderWaitingBlock) {
+            ZJC_DEBUG("invalid block and sync from other hash: %s, gid: %s",
+                common::Encode::HexEncode(bft_ptr->leader_waiting_prepare_hash()).c_str(),
+                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+            SyncConsensusBlock(
+                elect_item,
+                msg_ptr->thread_idx,
+                bft_ptr->pool_index(),
+                bft_msg.prepare_gid());
+        } else if (res == kConsensusAgree) {
+            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+            if (bft_ptr->prepare_block() == nullptr) {
+                ZJC_DEBUG("invalid block and sync from other gid: %s",
+                    common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+                assert(false);
+            }
+
+            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+            if (LeaderCallPrecommit(elect_item, bft_ptr, msg_ptr) != kConsensusSuccess) {
+                return kConsensusError;
+            }
+
+            msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
+            return kConsensusAgree;
+        } else if (res == kConsensusOppose) {
+            msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
+            msg_ptr->response->header.mutable_zbft()->set_oppose_prepare_gid(bft_msg.prepare_gid());
+            msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
+            return kConsensusOppose;
+        }
+    } else {
+        if (bft_ptr->AddPrepareOpposeNode(member_ptr->id) == kConsensusOppose) {
+            msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
+            msg_ptr->response->header.mutable_zbft()->set_oppose_prepare_gid(bft_msg.prepare_gid());
+            msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
+            ZJC_DEBUG("gid: %s, set pool index: %u", common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
+            bft_ptr->set_consensus_status(kConsensusFailed);
+            ZJC_ERROR("precommit call oppose now step: %d, gid: %s, prepare hash: %s,"
+                " precommit gid: %s, agree commit: %d",
+                bft_ptr->txs_ptr()->tx_type,
+                common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+                common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+                common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
+                bft_msg.agree_commit());
+            return kConsensusOppose;
         }
     }
 
@@ -2579,7 +2826,6 @@ int BftManager::LeaderCallPrecommit(
         const ElectItem& elect_item,
         ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr) {
-    std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
     bft_ptr->set_precoimmit_hash();
     ZJC_DEBUG("use g1_precommit_hash prepare hash: %s, gid: %s",
         common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
@@ -2605,7 +2851,6 @@ int BftManager::LeaderCallPrecommit(
 
     bft_ptr->set_consensus_status(kConsensusPreCommit);
     bft_ptr->reset_timeout();
-    bft_vec[1] = bft_ptr;
     ZJC_DEBUG("LeaderCallPrecommit success gid: %s",
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
     return kConsensusSuccess;
@@ -2637,21 +2882,19 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
         sign.Z = libff::alt_bn128_Fq::one();
     } catch (std::exception& e) {
         ZJC_ERROR("get invalid bls sign.");
-        return kConsensusError;
+        return kConsensusOppose;
     }
 
     if (!bft_ptr->verify_bls_precommit_agg_sign(
             sign,
             bft_ptr->precommit_bls_agg_verify_hash())) {
         ZJC_ERROR("backup verify leader agg sign failed.");
-        return kConsensusError;
+        return kConsensusOppose;
     }
 
     bft_ptr->set_consensus_status(kConsensusPreCommit);
-    std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
-    bft_vec[1] = bft_ptr;
     ZJC_DEBUG("BackupPrecommit success: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
-    return kConsensusSuccess;
+    return kConsensusAgree;
 }
 
 int BftManager::LeaderCommit(
@@ -2704,6 +2947,7 @@ int BftManager::LeaderCommit(
         member_ptr->id);
     if (res == kConsensusAgree) {
         LeaderCallCommit(elect_item, msg_ptr, bft_ptr);
+        return kConsensusAgree;
     }
 
     ZJC_DEBUG("LeaderCommit coming gid: %s, res: %d",
@@ -3035,26 +3279,11 @@ int BftManager::LeaderCallCommit(
     if (bft_ptr->prepare_block() != nullptr) {
         HandleLocalCommitBlock(msg_ptr, bft_ptr);
     } else {
-        // sync block from neighbor nodes
-        // if (bft_ptr->pool_index() == common::kImmutablePoolSize) {
-        //     sync::KeyValueSync::Instance()->AddSyncHeight(
-        //         network::kRootCongressNetworkId,
-        //         bft_ptr->pool_index(),
-        //         bft_ptr->prepare_latest_height(),
-        //         sync::kSyncHighest);
-        // } else {
-        //     sync::KeyValueSync::Instance()->AddSyncHeight(
-        //         bft_ptr->network_id(),
-        //         bft_ptr->pool_index(),
-        //         bft_ptr->prepare_latest_height(),
-        //         sync::kSyncHighest);
-        // }
-        ZJC_DEBUG("leader should sync block now gid: %s",
-            common::Encode::HexEncode(bft_ptr->gid()).c_str());
         assert(false);
-        return kConsensusSuccess;
+        return kConsensusError;
     }
     
+    Start(msg_ptr->thread_idx, bft_ptr->prepare_block());
     return kConsensusSuccess;
 }
 

@@ -94,18 +94,18 @@ private:
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
     ZbftPtr Start(
         uint8_t thread_index,
-        const transport::MessagePtr& prepare_msg_ptr);
+        ZbftPtr commited_bft_ptr);
     ZbftPtr StartBft(
         const ElectItem& elect_item,
         std::shared_ptr<WaitingTxsItem>& txs_ptr,
-        const transport::MessagePtr& prepare_msg_ptr);
+        ZbftPtr commited_bft_ptr);
     void RemoveBft(uint32_t pool_index, const std::string& gid);
     void RemoveBftWithBlockHeight(uint32_t pool_index, uint64_t height);
     int LeaderPrepare(
         const ElectItem& elect_item,
         ZbftPtr& bft_ptr,
-        const transport::MessagePtr& prepare_msg_ptr);
-    int LeaderHandleZbftMessage(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
+        ZbftPtr commited_bft_ptr);
+    void LeaderHandleZbftMessage(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
     int BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int LeaderCommit(
         const ElectItem& elect_item,
@@ -114,6 +114,9 @@ private:
     int BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     void CheckTimeout(uint8_t thread_index);
     void CheckMessageTimeout(uint8_t thread_index);
+    int LeaderHandlePrepare(
+        const ElectItem& elect_item,
+        const transport::MessagePtr& msg_ptr);
     int LeaderCallPrecommit(
         const ElectItem& elect_item,
         ZbftPtr& bft_ptr,
@@ -127,7 +130,7 @@ private:
         uint8_t thread_index,
         const ElectItem& elect_item,
         const transport::MessagePtr& msg_ptr);
-    void BackupPrepare(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
+    int BackupPrepare(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
     bool IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info);
     void HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
     int InitZbftPtr(int32_t leader_idx, const ElectItem& elect_item, ZbftPtr& bft_ptr);
@@ -196,6 +199,10 @@ private:
     void BroadcastInvalidGids(uint8_t thread_idx);
     void CheckInvalidGids(uint8_t thread_idx);
     void LeaderRemoveTimeoutPrepareBft(ZbftPtr& bft_ptr);
+    void BackupSendPrepareMessage(const ElectItem& elect_item, MessagePtr& leader_msg_ptr, bool agree);
+    void BackupSendPrecommitMessage(const ElectItem& elect_item, MessagePtr& leader_msg_ptr, bool agree);
+    void LeaderSendPrecommitMessage(const ElectItem& elect_item, MessagePtr& leader_msg_ptr, bool agree);
+    void LeaderSendCommitMessage(const ElectItem& elect_item, MessagePtr& leader_msg_ptr, bool agree);
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);

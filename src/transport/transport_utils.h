@@ -86,7 +86,6 @@ struct TransportMessage {
     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
     std::string msg_hash;
     std::shared_ptr<TransportMessage> response;
-    void* tmp_ptr;
     bool retry;
     uint64_t times[128];
     uint32_t times_idx;
