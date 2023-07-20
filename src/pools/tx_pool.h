@@ -185,8 +185,21 @@ public:
             to_sync_max_height_ = latest_height_;
         }
 
+        if (height > synced_height_) {
+            checked_height_with_prehash_[height] = prehash;
+        }
+
         if (synced_height_ + 1 == height) {
             synced_height_ = height;
+            auto iter = checked_height_with_prehash_.begin();
+            while (iter != checked_height_with_prehash_.end()) {
+                if (iter->first < synced_height_) {
+                    iter = checked_height_with_prehash_.erase(iter);
+                } else {
+                    ++iter;
+                }
+            }
+
             UpdateSyncedHeight();
             if (prev_synced_height_ < synced_height_) {
                 prev_synced_height_ = synced_height_;
@@ -198,6 +211,15 @@ public:
         ZJC_DEBUG("pool index: %d, new height: %lu, new synced height: %lu, prev_synced_height_: %lu, to_sync_max_height_: %lu, latest height: %lu",
             pool_index_, height, synced_height_, prev_synced_height_, to_sync_max_height_, latest_height_);
         return synced_height_;
+    }
+
+    bool is_next_block_checked(uint64_t height, const std::string& hash) {
+        auto iter = checked_height_with_prehash_.find(height + 1);
+        if (iter != checked_height_with_prehash_.end()) {
+            return iter->second == hash;
+        }
+
+        return false;
     }
 
     void SyncBlock(uint8_t thread_idx) {
@@ -322,6 +344,7 @@ private:
     uint32_t all_tx_count_ = 0;
     uint32_t checked_count_ = 0;
     volatile uint32_t finish_tx_count_ = 0;
+    std::map<uint64_t, std::string> checked_height_with_prehash_;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };

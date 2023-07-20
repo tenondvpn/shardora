@@ -180,6 +180,10 @@ public:
         tx_pool_[pool_index].GetHeightInvalidChangeLeaderHashs(height, hashs);
     }
 
+    bool is_next_block_checked(uint32_t pool_index, uint64_t height, const std::string& hash) {
+        return tx_pool_[pool_index].is_next_block_checked(height, hash);
+    }
+
 private:
     void DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_ptr);
     std::shared_ptr<address::protobuf::AddressInfo> GetAddressInfo(const std::string& addr);

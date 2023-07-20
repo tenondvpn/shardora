@@ -429,6 +429,9 @@ ZbftPtr BftManager::Start(
         for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
             auto pool_idx = thread_item->pools[thread_item->prev_index];
             if (!pools_with_zbfts_[pool_idx].empty()) {
+                if (pool_idx == 2) {
+                    ZJC_DEBUG("pool index 2 is not empty: %s", common::Encode::HexEncode(pools_with_zbfts_[pool_idx].begin()->second->gid()).c_str());
+                }
                 continue;
             }
 
@@ -445,6 +448,9 @@ ZbftPtr BftManager::Start(
                 thread_item->prev_index < begin_index; ++thread_item->prev_index) {
             auto pool_idx = thread_item->pools[thread_item->prev_index];
             if (!pools_with_zbfts_[pool_idx].empty()) {
+                if (pool_idx == 2) {
+                    ZJC_DEBUG("pool index 2 is not empty: %s", common::Encode::HexEncode(pools_with_zbfts_[pool_idx].begin()->second->gid()).c_str());
+                }
                 continue;
             }
 
