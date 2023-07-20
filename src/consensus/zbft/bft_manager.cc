@@ -2055,7 +2055,8 @@ void BftManager::BackupSendPrepareMessage(const ElectItem& elect_item, const tra
             to_ip,
             leader_member->public_port,
             header);
-        ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d, %s:%u",
+        ZJC_DEBUG("backup direct send bft message prepare gid: %s, "
+            "hash64: %lu, src hash64: %lu, res: %d, try_times: %d, %s:%u",
             common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
             header.hash64(),
             leader_msg_ptr->header.hash64(),
@@ -2065,7 +2066,10 @@ void BftManager::BackupSendPrepareMessage(const ElectItem& elect_item, const tra
     }
 }
 
-void BftManager::BackupSendPrecommitMessage(const ElectItem& elect_item, const transport::MessagePtr& leader_msg_ptr, bool agree) {
+void BftManager::BackupSendPrecommitMessage(
+        const ElectItem& elect_item,
+        const transport::MessagePtr& leader_msg_ptr,
+        bool agree) {
     auto pool_index = leader_msg_ptr->header.zbft().pool_index();
     auto& gid = leader_msg_ptr->header.zbft().prepare_gid();
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -2077,7 +2081,7 @@ void BftManager::BackupSendPrecommitMessage(const ElectItem& elect_item, const t
     header.set_hop_count(0);
    
     bft_msg.set_leader_idx(-1);
-    bft_msg.set_precommit_gid(bft_ptr->gid());
+    bft_msg.set_precommit_gid(gid);
     if (agree) {
         auto& bft_ptr = pools_with_zbfts_[pool_index];
         assert(bft_ptr != nullptr);
@@ -2410,12 +2414,13 @@ void BftManager::LeaderHandleZbftMessage(
 }
 
 int BftManager::LeaderHandlePrepare(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr) {
+    auto& bft_msg = msg_ptr->header.zbft();
     ZJC_DEBUG("has prepare  now leader handle gid: %s",
-        common::Encode::HexEncode(msg_ptr->header.zbft().prepare_gid()).c_str());
-    auto bft_ptr = LeaderGetZbft(msg_ptr, elect_item, msg_ptr->header.zbft().prepare_gid());
+        common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+    auto bft_ptr = LeaderGetZbft(msg_ptr, elect_item, bft_msg.prepare_gid());
     if (bft_ptr == nullptr) {
         ZJC_DEBUG("prepare get bft failed: %s",
-            common::Encode::HexEncode(msg_ptr->header.zbft().prepare_gid()).c_str());
+            common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
         return kConsensusError;
     }
 
