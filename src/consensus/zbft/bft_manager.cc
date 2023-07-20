@@ -1814,8 +1814,7 @@ int BftManager::LeaderPrepare(
         bft_ptr,
         "",
         "",
-        header,
-        new_bft_msg);
+        header);
     if (!msg_res) {
         assert(false);
         return kConsensusError;
@@ -2195,8 +2194,7 @@ int BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mess
         return;
     }
 
-    auto* new_bft_msg = msg_ptr->response->header.mutable_zbft();
-    int prepare_res = bft_ptr->Prepare(false, new_bft_msg);
+    int prepare_res = bft_ptr->Prepare(false);
     if (prepare_res != kConsensusSuccess || bft_ptr->prepare_block() == nullptr) {
         ZJC_ERROR("prepare failed gid: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
         return kConsensusOppose;
@@ -2235,7 +2233,6 @@ int BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mess
         return kConsensusOppose;
     }
 
-    msg_ptr->response->header.mutable_zbft()->set_agree_precommit(true);
     bft_ptr->set_prepare_msg_ptr(msg_ptr);
     bft_ptr->set_consensus_status(kConsensusPrepare);
     ZJC_DEBUG("BackupPrepare success: %s", common::Encode::HexEncode(bft_vec[0]->gid()).c_str());
@@ -2480,16 +2477,10 @@ int BftManager::LeaderHandlePrepare(const ElectItem& elect_item, const transport
             msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             return kConsensusAgree;
         } else if (res == kConsensusOppose) {
-            msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
-            msg_ptr->response->header.mutable_zbft()->set_oppose_prepare_gid(bft_msg.prepare_gid());
-            msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
             return kConsensusOppose;
         }
     } else {
         if (bft_ptr->AddPrepareOpposeNode(member_ptr->id) == kConsensusOppose) {
-            msg_ptr->response->header.mutable_zbft()->set_agree_precommit(false);
-            msg_ptr->response->header.mutable_zbft()->set_oppose_prepare_gid(bft_msg.prepare_gid());
-            msg_ptr->response->header.mutable_zbft()->set_pool_index(bft_ptr->pool_index());
             ZJC_DEBUG("gid: %s, set pool index: %u", common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
             bft_ptr->set_consensus_status(kConsensusFailed);
             ZJC_ERROR("precommit call oppose now step: %d, gid: %s, prepare hash: %s,"
