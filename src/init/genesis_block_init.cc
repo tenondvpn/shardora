@@ -453,7 +453,7 @@ int GenesisBlockInit::CreateElectBlock(
     tenon_block->set_version(common::kTransactionVersion);
     tenon_block->set_pool_index(shard_netid);
     tenon_block->set_network_id(network::kRootCongressNetworkId);
-    tenon_block->set_is_cross_block(true);
+    tenon_block->set_is_commited_block(true);
     tenon_block->set_electblock_height(1);
     tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
     BlsAggSignBlock(root_genesis_nodes, tenon_block);
@@ -549,7 +549,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tenon_block->set_height(root_single_block_height++);
         tenon_block->set_electblock_height(1);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
-        tenon_block->set_is_cross_block(true);
+        tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
         BlsAggSignBlock(genesis_nodes, tenon_block);
         fputs((common::Encode::HexEncode(tenon_block->SerializeAsString()) + "\n").c_str(),
@@ -621,7 +621,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
         tenon_block->set_pool_index(common::kRootChainPoolIndex);
         tenon_block->set_electblock_height(1);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
-        tenon_block->set_is_cross_block(true);
+        tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
         BlsAggSignBlock(genesis_nodes, tenon_block);
         auto tmp_str = tenon_block->SerializeAsString();
@@ -860,7 +860,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         tenon_block->set_timeblock_height(0);
         tenon_block->set_electblock_height(1);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
-        tenon_block->set_is_cross_block(true);
+        tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
         BlsAggSignBlock(root_genesis_nodes, tenon_block);
         prehashes[i] = tenon_block->hash();
@@ -1141,7 +1141,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         tenon_block->set_timeblock_height(0);
         tenon_block->set_electblock_height(1);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
-        tenon_block->set_is_cross_block(true);
+        tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
         if (net_id == network::kRootCongressNetworkId) {
             BlsAggSignBlock(root_genesis_nodes, tenon_block);
@@ -1263,7 +1263,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         tenon_block->set_timeblock_height(0);
         tenon_block->set_electblock_height(1);
         tenon_block->set_network_id(common::GlobalInfo::Instance()->network_id());
-        tenon_block->set_is_cross_block(true);
+        tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
         BlsAggSignBlock(cons_genesis_nodes, tenon_block);
         pool_prev_hash_map[iter->first] = tenon_block->hash();

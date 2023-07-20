@@ -31,13 +31,6 @@ bool BftProto::LeaderCreatePrepare(
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_elect_height(bft_ptr->elect_height());
     bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
-    auto prev_btr = bft_ptr->pipeline_prev_zbft_ptr();
-    if (prev_btr != nullptr) {
-        auto& bls_precommit_sign = prev_btr->bls_precommit_agg_sign();
-        bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
-        bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
-    }
-
     return true;
 }
 

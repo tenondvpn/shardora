@@ -163,7 +163,7 @@ public:
             return;
         }
 
-        prepare_block_->set_is_cross_block(true);
+        prepare_block_->set_is_commited_block(true);
         auto precommit_hash = GetBlockHash(*prepare_block_);
         prepare_block_->set_hash(precommit_hash);
         bls_mgr_->GetLibffHash(precommit_hash, &g1_precommit_hash_);
@@ -210,12 +210,12 @@ public:
         return aggree_;
     }
 
-    bool is_cross_block() {
+    bool is_commited_block() {
         if (prepare_block_ == nullptr) {
             return false;
         }
 
-        return prepare_block_->is_cross_block();
+        return prepare_block_->is_commited_block();
     }
 
     void not_aggree() {
