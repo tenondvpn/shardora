@@ -2248,8 +2248,9 @@ int BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mess
     return kConsensusAgree;
 }
 
-void BftManager::LeaderSendPrecommitMessage(const ElectItem& elect_item, const transport::MessagePtr& leader_msg_ptr, bool agree) {
+void BftManager::LeaderSendPrecommitMessage(const transport::MessagePtr& leader_msg_ptr, bool agree) {
     auto pool_index = leader_msg_ptr->header.zbft().pool_index();
+    auto& bft_ptr = pools_with_zbfts_[pool_index];
     auto& gid = leader_msg_ptr->header.zbft().prepare_gid();
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
@@ -2258,6 +2259,7 @@ void BftManager::LeaderSendPrecommitMessage(const ElectItem& elect_item, const t
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     header.set_type(common::kConsensusMessage);
     header.set_hop_count(0);
+    auto& elect_item = *bft_ptr->elect_item_ptr();
     assert(elect_item.elect_height > 0);
     if (msg_ptr->thread_idx == 0) {
         auto& thread_set = elect_item.thread_set;
@@ -2285,7 +2287,6 @@ void BftManager::LeaderSendPrecommitMessage(const ElectItem& elect_item, const t
 
     bft_msg.clear_prepare_gid();
     bft_msg.set_leader_idx(elect_item.local_node_member_index);
-    auto& bft_ptr = pools_with_zbfts_[pool_index];
     bft_msg.set_precommit_gid(bft_ptr->gid());
     bft_msg.set_pool_index(pool_index);
     bft_msg.set_member_index(elect_item.local_node_member_index);
@@ -2313,8 +2314,9 @@ void BftManager::LeaderSendPrecommitMessage(const ElectItem& elect_item, const t
         header.hash64());
 }
 
-void BftManager::LeaderSendCommitMessage(const ElectItem& elect_item, const transport::MessagePtr& leader_msg_ptr, bool agree) {
+void BftManager::LeaderSendCommitMessage(const transport::MessagePtr& leader_msg_ptr, bool agree) {
     auto pool_index = leader_msg_ptr->header.zbft().pool_index();
+    auto& bft_ptr = pools_with_zbfts_[pool_index];
     auto& gid = leader_msg_ptr->header.zbft().prepare_gid();
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
@@ -2323,6 +2325,7 @@ void BftManager::LeaderSendCommitMessage(const ElectItem& elect_item, const tran
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     header.set_type(common::kConsensusMessage);
     header.set_hop_count(0);
+    auto& elect_item = *bft_ptr->elect_item_ptr();
     assert(elect_item.elect_height > 0);
     if (msg_ptr->thread_idx == 0) {
         auto& thread_set = elect_item.thread_set;
@@ -2350,7 +2353,6 @@ void BftManager::LeaderSendCommitMessage(const ElectItem& elect_item, const tran
 
     bft_msg.clear_prepare_gid();
     bft_msg.set_leader_idx(elect_item.local_node_member_index);
-    auto& bft_ptr = pools_with_zbfts_[pool_index];
     bft_msg.set_commit_gid(bft_ptr->gid());
     bft_msg.set_pool_index(pool_index);
     bft_msg.set_agree_commit(agree);
@@ -2406,7 +2408,7 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
             if (LeaderCommit(bft_ptr, msg_ptr) == kConsensusAgree) {
                 auto next_ptr = Start(msg_ptr->thread_idx, bft_ptr);
                 if (next_ptr == nullptr) {
-                    LeaderSendCommitMessage(*bft_ptr->elect_item_ptr(), msg_ptr, true);
+                    LeaderSendCommitMessage(msg_ptr, true);
                 }
             }
         } else {
