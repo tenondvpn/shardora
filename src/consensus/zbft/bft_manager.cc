@@ -1165,9 +1165,6 @@ void BftManager::ClearBft(const transport::MessagePtr& msg_ptr) {
         if (prepare_bft != nullptr) {
             RemoveBft(prepare_bft->pool_index(), prepare_bft->gid());
         }
-//         if (!zbft.precommit_gid().empty()) {
-//             assert(false);
-//         }
     }
     
     if (zbft.has_agree_precommit() && !zbft.agree_precommit()) {
@@ -1181,11 +1178,6 @@ void BftManager::ClearBft(const transport::MessagePtr& msg_ptr) {
         if (prepare_bft != nullptr) {
             RemoveBft(prepare_bft->pool_index(), prepare_bft->gid());
         }
-//         auto precommit_bft = prepare_bft->pipeline_prev_zbft_ptr();
-//         if (precommit_bft != nullptr) {
-//             assert(false);
-//             RemoveBft(precommit_bft->pool_index(), precommit_bft->gid());
-//         }
     }
 }
 
@@ -1243,15 +1235,6 @@ void BftManager::CreateResponseMessage(
             auto* new_bft_msg = msg_ptr->response->header.mutable_zbft();
             std::string precommit_gid;
             std::string commit_gid;
-            if (zbft_vec[0]->pipeline_prev_zbft_ptr() != nullptr) {
-                auto& precommit_bft = zbft_vec[0]->pipeline_prev_zbft_ptr();
-                precommit_gid = precommit_bft->gid();
-                if (precommit_bft->pipeline_prev_zbft_ptr() != nullptr) {
-                    commit_gid = precommit_bft->pipeline_prev_zbft_ptr()->gid();
-//                     precommit_bft->set_prev_bft_ptr(nullptr);
-                }
-            }
-
             auto msg_res = BftProto::LeaderCreatePrepare(
                 elect_item.local_node_member_index,
                 zbft_vec[0],
@@ -1265,10 +1248,6 @@ void BftManager::CreateResponseMessage(
         } else if (zbft_vec[1] != nullptr) {
             elect_height = zbft_vec[1]->elect_height();
             std::string commit_gid;
-            if (zbft_vec[1]->pipeline_prev_zbft_ptr() != nullptr) {
-                commit_gid = zbft_vec[1]->pipeline_prev_zbft_ptr()->gid();
-            }
-
             auto res = BftProto::LeaderCreatePreCommit(
                 elect_item.local_node_member_index,
                 zbft_vec[1],
