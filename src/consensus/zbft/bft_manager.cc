@@ -382,12 +382,14 @@ ZbftPtr BftManager::Start(
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) <
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
+        ZJC_DEBUG("thread idx error 0: %d", thread_index);
         return nullptr;
     }
 #endif
 
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (elect_item_ptr == nullptr) {
+        ZJC_DEBUG("thread idx error 1: %d", thread_index);
         return nullptr;
     }
 
@@ -395,11 +397,13 @@ ZbftPtr BftManager::Start(
     if (elect_item_ptr->time_valid > now_tm_ms) {
         auto item_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
         if (item_ptr == nullptr) {
+            ZJC_DEBUG("thread idx error 2: %d", thread_index);
             return nullptr;
         }
 
         elect_item_ptr = item_ptr;
         if (elect_item_ptr->time_valid > now_tm_ms) {
+            ZJC_DEBUG("thread idx error 3: %d", thread_index);
             return nullptr;
         }
     }
@@ -408,6 +412,7 @@ ZbftPtr BftManager::Start(
     auto& thread_set = elect_item.thread_set;
     auto thread_item = thread_set[thread_index];
     if (thread_item == nullptr || thread_item->pools.empty()) {
+        ZJC_DEBUG("thread idx error 4: %d", thread_index);
         return nullptr;
     }
 
@@ -456,12 +461,14 @@ ZbftPtr BftManager::Start(
     }
 
     if (txs_ptr == nullptr) {
+        ZJC_DEBUG("thread idx error 5: %d", thread_index);
         return nullptr;
     }
 
     if (txs_ptr->tx_type == pools::protobuf::kNormalFrom) {
         if (block_mgr_->ShouldStopConsensus()) {
             ZJC_DEBUG("should stop consensus.");
+            ZJC_DEBUG("thread idx error 6: %d", thread_index);
             return nullptr;
         }
     }
