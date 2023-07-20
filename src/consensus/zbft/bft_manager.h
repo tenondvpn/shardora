@@ -94,12 +94,10 @@ private:
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
     ZbftPtr Start(
         uint8_t thread_index,
-        ZbftPtr& prev_bft,
         const transport::MessagePtr& prepare_msg_ptr);
     ZbftPtr StartBft(
         const ElectItem& elect_item,
         std::shared_ptr<WaitingTxsItem>& txs_ptr,
-        ZbftPtr& prev_bft,
         const transport::MessagePtr& prepare_msg_ptr);
     void RemoveBft(uint32_t pool_index, const std::string& gid);
     void RemoveBftWithBlockHeight(uint32_t pool_index, uint64_t height);

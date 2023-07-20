@@ -268,9 +268,8 @@ void BftManager::SetThreadItem(
 void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 #ifndef ZJC_UNITTEST
     transport::MessagePtr prepare_msg_ptr = nullptr;
-    ZbftPtr prev_bft = nullptr;
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    Start(msg_ptr->thread_idx, prev_bft, prepare_msg_ptr);
+    Start(msg_ptr->thread_idx, prepare_msg_ptr);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     PopAllPoolTxs(msg_ptr->thread_idx);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -378,7 +377,6 @@ void BftManager::RotationLeader(
 
 ZbftPtr BftManager::Start(
         uint8_t thread_index,
-        ZbftPtr& prev_bft,
         const transport::MessagePtr& prepare_msg_ptr) {
 #ifndef ZJC_UNITTEST
     if (network::DhtManager::Instance()->valid_count(
@@ -418,51 +416,47 @@ ZbftPtr BftManager::Start(
     }
 
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
-    if (prev_bft == nullptr) {
-        if (thread_item->pools[thread_item->pools.size() - 1] == common::kRootChainPoolIndex) {
-            if (pools_with_zbfts_[common::kRootChainPoolIndex].empty()) {
-                txs_ptr = txs_pools_->LeaderGetValidTxs(common::kRootChainPoolIndex);
+    if (thread_item->pools[thread_item->pools.size() - 1] == common::kRootChainPoolIndex) {
+        if (pools_with_zbfts_[common::kRootChainPoolIndex].empty()) {
+            txs_ptr = txs_pools_->LeaderGetValidTxs(common::kRootChainPoolIndex);
+        }
+    }
+
+    auto begin_index = thread_item->prev_index;
+    if (txs_ptr == nullptr) {
+        // now leader create zbft ptr and start consensus
+        for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
+            auto pool_idx = thread_item->pools[thread_item->prev_index];
+            if (!pools_with_zbfts_[pool_idx].empty()) {
+                continue;
+            }
+
+            txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
+            if (txs_ptr != nullptr) {
+                // now leader create zbft ptr and start consensus
+                break;
             }
         }
+    }
 
-        auto begin_index = thread_item->prev_index;
-        if (txs_ptr == nullptr) {
-            // now leader create zbft ptr and start consensus
-            for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
-                auto pool_idx = thread_item->pools[thread_item->prev_index];
-                if (!pools_with_zbfts_[pool_idx].empty()) {
-                    continue;
-                }
+    if (txs_ptr == nullptr) {
+        for (thread_item->prev_index = 0;
+                thread_item->prev_index < begin_index; ++thread_item->prev_index) {
+            auto pool_idx = thread_item->pools[thread_item->prev_index];
+            if (!pools_with_zbfts_[pool_idx].empty()) {
+                continue;
+            }
 
-                txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
-                if (txs_ptr != nullptr) {
-                    // now leader create zbft ptr and start consensus
-                    break;
-                }
+            txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
+            if (txs_ptr != nullptr) {
+                // now leader create zbft ptr and start consensus
+                break;
             }
         }
+    }
 
-        if (txs_ptr == nullptr) {
-            for (thread_item->prev_index = 0;
-                    thread_item->prev_index < begin_index; ++thread_item->prev_index) {
-                auto pool_idx = thread_item->pools[thread_item->prev_index];
-                if (!pools_with_zbfts_[pool_idx].empty()) {
-                    continue;
-                }
-
-                txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
-                if (txs_ptr != nullptr) {
-                    // now leader create zbft ptr and start consensus
-                    break;
-                }
-            }
-        }
-
-        if (thread_item->pools.size() > 0) {
-            thread_item->prev_index = ++thread_item->prev_index % thread_item->pools.size();
-        }
-    } else {
-        txs_ptr = txs_pools_->LeaderGetValidTxs(prev_bft->pool_index());
+    if (thread_item->pools.size() > 0) {
+        thread_item->prev_index = ++thread_item->prev_index % thread_item->pools.size();
     }
 
     if (txs_ptr == nullptr) {
@@ -477,7 +471,7 @@ ZbftPtr BftManager::Start(
     }
 
     txs_ptr->thread_index = thread_index;
-    auto zbft_ptr = StartBft(elect_item, txs_ptr, prev_bft, prepare_msg_ptr);
+    auto zbft_ptr = StartBft(elect_item, txs_ptr, prepare_msg_ptr);
     if (zbft_ptr == nullptr) {
         for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
             iter->second->in_consensus = false;
@@ -574,7 +568,6 @@ int BftManager::InitZbftPtr(int32_t leader_idx, const ElectItem& elect_item, Zbf
 ZbftPtr BftManager::StartBft(
         const ElectItem& elect_item,
         std::shared_ptr<WaitingTxsItem>& txs_ptr,
-        ZbftPtr& prev_bft,
         const transport::MessagePtr& prepare_msg_ptr) {
     ZbftPtr bft_ptr = nullptr;
     auto msg_ptr = prepare_msg_ptr;
@@ -798,7 +791,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 }
             }
         }
-
     } else {
         LeaderHandleZbftMessage(elect_item, msg_ptr);
     }
@@ -1836,7 +1828,6 @@ void BftManager::ReConsensusChangedLeaderBft(ZbftPtr& bft_ptr) {
     auto prev_bft = bft_ptr->pipeline_prev_zbft_ptr();
     auto next_prepare_bft = Start(
         msg_ptr->thread_idx,
-        prev_bft,
         msg_ptr->response);
     if (next_prepare_bft == nullptr) {
         return;
@@ -2527,7 +2518,7 @@ int BftManager::LeaderHandleZbftMessage(
                 if (prev_ptr != nullptr) {
                     ZbftPtr next_prepare_bft = nullptr;
                     if (!prev_ptr->is_cross_block()) {
-                        next_prepare_bft = Start(msg_ptr->thread_idx, prev_ptr, msg_ptr->response);
+                        next_prepare_bft = Start(msg_ptr->thread_idx, msg_ptr->response);
                     }
 
                     if (next_prepare_bft != nullptr) {
@@ -2561,7 +2552,7 @@ int BftManager::LeaderHandleZbftMessage(
                     // precommit prev consensus
                     ZbftPtr next_prepare_bft = nullptr;
                     if (!prev_ptr->is_cross_block()) {
-                        next_prepare_bft = Start(msg_ptr->thread_idx, prev_ptr, msg_ptr->response);
+                        next_prepare_bft = Start(msg_ptr->thread_idx, msg_ptr->response);
                     }
 
                     if (next_prepare_bft != nullptr) {
@@ -2603,7 +2594,7 @@ int BftManager::LeaderHandleZbftMessage(
                 bft_ptr->set_consensus_status(kConsensusFailed);
                 RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
                 if (prev_ptr != nullptr) {
-                    ZbftPtr next_prepare_bft = Start(msg_ptr->thread_idx, prev_ptr, msg_ptr->response);
+                    ZbftPtr next_prepare_bft = Start(msg_ptr->thread_idx, msg_ptr->response);
                     if (next_prepare_bft != nullptr) {
                         std::vector<ZbftPtr>& bft_vec = *static_cast<std::vector<ZbftPtr>*>(msg_ptr->tmp_ptr);
                         bft_vec[0] = next_prepare_bft;
@@ -2700,7 +2691,7 @@ int BftManager::LeaderCallPrecommit(
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     ZbftPtr next_prepare_bft = nullptr;
     if (!bft_ptr->is_cross_block()) {
-        next_prepare_bft = Start(msg_ptr->thread_idx, bft_ptr, msg_ptr->response);
+        next_prepare_bft = Start(msg_ptr->thread_idx, msg_ptr->response);
     }
 
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();

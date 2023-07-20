@@ -398,14 +398,6 @@ public:
         return txs_ptr_;
     }
 
-    void set_prev_bft_ptr(std::shared_ptr<Zbft> zbft_ptr) {
-        pipeline_prev_zbft_ptr_ = zbft_ptr;
-    }
-
-    const std::shared_ptr<Zbft>& pipeline_prev_zbft_ptr() const {
-        return pipeline_prev_zbft_ptr_;
-    }
-
     bool is_synced_block() const {
         return is_synced_block_;
     }
@@ -552,7 +544,6 @@ protected:
     std::string commit_bls_agg_verify_hash_;
     libff::alt_bn128_G1 g1_prepare_hash_;
     libff::alt_bn128_G1 g1_precommit_hash_;
-    std::shared_ptr<Zbft> pipeline_prev_zbft_ptr_ = nullptr;
     bool is_synced_block_ = false;
     std::vector<uint32_t> valid_index_;
     uint32_t consensus_prepare_max_count_ = 0;

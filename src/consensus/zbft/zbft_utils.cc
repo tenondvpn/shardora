@@ -90,15 +90,15 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
     }
 
     auto tmp_hash = common::Hash::keccak256(msg);
-    bool is_cross_block = block.is_cross_block();
-    if (is_cross_block) {
-        tmp_hash.append((char*)&is_cross_block, sizeof(is_cross_block));
+    bool is_commited_block = block.is_commited_block();
+    if (is_commited_block) {
+        tmp_hash.append((char*)&is_commited_block, sizeof(is_commited_block));
         tmp_hash = common::Hash::keccak256(tmp_hash);
     }
 
     ZJC_DEBUG("block.prehash(): %s, height: %lu,pool_idx: %u, sharding_id: %u, vss_random: %lu, "
         "timeblock_height: %lu, elect_height: %lu, leader_idx: %u, get block hash: %s, tmp_hash: %s, msg: %s, "
-        "is_cross_block: %d",
+        "is_commited_block: %d",
         common::Encode::HexEncode(block.prehash()).c_str(),
         height,
         pool_idx,
@@ -110,7 +110,15 @@ std::string GetBlockHash(const block::protobuf::Block& block) {
         common::Encode::HexEncode(common::Hash::keccak256(msg)).c_str(),
         common::Encode::HexEncode(tmp_hash).c_str(),
         common::Encode::HexEncode(msg).c_str(),
-        is_cross_block);
+        is_commited_block);
+    return tmp_hash;
+}
+
+std::string GetCommitedBlockHash(const std::string& prepare_hash) {
+    auto tmp_hash = prepare_hash;
+    bool is_commited_block = true;
+    tmp_hash.append((char*)&is_commited_block, sizeof(is_commited_block));
+    tmp_hash = common::Hash::keccak256(tmp_hash);
     return tmp_hash;
 }
 
