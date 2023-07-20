@@ -290,7 +290,7 @@ int BlockManager::NetworkNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item) {
     if (block_item != nullptr) {
-        if (!block_item->is_cross_block()) {
+        if (!block_item->is_commited_block()) {
             ZJC_ERROR("not cross block coming: %s, signx: %s, net: %u, pool: %u, height: %lu",
                 common::Encode::HexEncode(block_item->hash()).c_str(),
                 common::Encode::HexEncode(block_item->bls_agg_sign_x()).c_str(),
