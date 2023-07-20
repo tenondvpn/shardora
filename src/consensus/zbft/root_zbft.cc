@@ -138,8 +138,7 @@ int RootZbft::RootBackupCheckPrepare(
         return kConsensusInvalidPackage;
     }
 
-    zbft::protobuf::TxBft res_tx_bft;
-    if (DoTransaction(res_tx_bft) != kConsensusSuccess) {
+    if (DoTransaction() != kConsensusSuccess) {
         return kConsensusInvalidPackage;
     }
 

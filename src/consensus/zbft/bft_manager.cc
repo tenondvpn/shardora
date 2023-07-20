@@ -2,7 +2,6 @@
 
 #include <cassert>
 
-#include "consensus/zbft/bft_proto.h"
 #include "consensus/zbft/root_zbft.h"
 #include "consensus/zbft/zbft.h"
 #include "consensus/zbft/zbft_utils.h"
@@ -1810,25 +1809,22 @@ int BftManager::LeaderPrepare(
     header.set_des_dht_key(dht_key.StrKey());
     header.set_type(common::kConsensusMessage);
     header.set_hop_count(0);
-    auto msg_res = BftProto::LeaderCreatePrepare(
-        elect_item.local_node_member_index,
-        bft_ptr,
-        "",
-        "",
-        header);
-    if (!msg_res) {
-        assert(false);
-        return kConsensusError;
-    }
 
-    auto* new_bft_msg = header.mutable_zbft();
-    new_bft_msg->set_member_index(elect_item.local_node_member_index);
-    new_bft_msg->set_elect_height(elect_item.elect_height);
+    auto broad_param = msg.mutable_broadcast();
+    auto& bft_msg = *header.mutable_zbft();
+    bft_msg.set_leader_idx(leader_idx);
+    bft_msg.set_prepare_gid(bft_ptr->gid());
+    bft_msg.set_precommit_gid(precommit_gid);
+    bft_msg.set_commit_gid(commit_gid);
+    bft_msg.set_pool_index(bft_ptr->pool_index());
+    bft_msg.set_elect_height(bft_ptr->elect_height());
+    bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
+    bft_msg.set_member_index(elect_item.local_node_member_index);
     if (commited_bft_ptr != nullptr) {
-        new_bft_msg->set_commit_gid(commited_bft_ptr->gid());
+        bft_msg.set_commit_gid(commited_bft_ptr->gid());
         auto& bls_commit_sign = commited_bft_ptr->bls_commit_agg_sign();
-        new_bft_msg->set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->X));
-        new_bft_msg->set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->Y));
+        bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->X));
+        bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->Y));
     }
 
     assert(elect_item.elect_height > 0);
