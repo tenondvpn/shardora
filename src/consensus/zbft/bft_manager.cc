@@ -1680,7 +1680,8 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
         return kConsensusError;
     }
 
-    if (tmp_bft->height() != common::kInvalidUint64 &&
+    if (tmp_bft != nullptr &&
+            tmp_bft->height() != common::kInvalidUint64 &&
             bft_ptr->pool_index() == tmp_bft->pool_index() &&
             bft_ptr->height() <= tmp_bft->height()) {
         if (bft_ptr->height() == tmp_bft->height()) {
