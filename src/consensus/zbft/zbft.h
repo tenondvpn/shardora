@@ -434,14 +434,6 @@ public:
         return false;
     }
 
-    void set_leader_pre_height(uint64_t height) {
-        leader_pre_height_ = height;
-    }
-
-    void set_leader_pre_hash(const std::string& hash) {
-        leader_pre_hash_ = hash;
-    }
-
     std::shared_ptr<db::DbWriteBatch> db_batch() {
         return db_batch_;
     }
