@@ -641,7 +641,7 @@ int Zbft::DoTransaction() {
         return kConsensusError;
     }
 
-    auto prepare_block = std::make_shared<block::protobuf::Block>(*(tx_bft.mutable_block()));
+    auto prepare_block = std::make_shared<block::protobuf::Block>();
     block::protobuf::Block& zjc_block = *prepare_block;
     zjc_block.set_pool_index(txs_ptr_->pool_index);
     zjc_block.set_prehash(pool_hash);

@@ -48,7 +48,7 @@ public:
     int DoTransaction();
     int LeaderCallTransaction();
     int LeaderPrecommitOk(
-        const zbft::protobuf::TxBft& tx_prepare,
+        const std::string& tx_prepare,
         uint32_t index,
         const libff::alt_bn128_G1& backup_sign,
         const std::string& id);
