@@ -482,7 +482,7 @@ public:
         return elect_item_ptr_;
     }
 
-    void set_elect_item_ptr(std::shared_ptr<ElectItem>& elect_item) {
+    void set_elect_item_ptr(const std::shared_ptr<ElectItem>& elect_item) {
         elect_item_ptr_ = elect_item;
     }
 

@@ -2579,7 +2579,7 @@ int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePt
     }
 
     if (bft_ptr->LeaderCommitOk(
-            elect_item.local_node_member_index,
+            bft_ptr->elect_item_ptr()->local_node_member_index,
             sign,
             security_ptr_->GetAddress()) != kConsensusWaitingBackup) {
         ZJC_ERROR("leader commit failed!");
@@ -2634,10 +2634,7 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
     return kConsensusAgree;
 }
 
-int BftManager::LeaderCommit(
-        const ElectItem& elect_item,
-        ZbftPtr& bft_ptr,
-        const transport::MessagePtr& msg_ptr) {
+int BftManager::LeaderCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("LeaderCommit coming gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
     auto& bft_msg = msg_ptr->header.zbft();
     if (!bft_ptr->this_node_is_leader()) {
