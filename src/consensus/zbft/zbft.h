@@ -329,7 +329,6 @@ public:
             const std::string& id,
             uint32_t index,
             const std::string& prepare_hash,
-            uint64_t height,
             const libff::alt_bn128_G1& sign) {
         auto iter = prepare_block_map_.find(prepare_hash);
         if (iter == prepare_block_map_.end()) {
