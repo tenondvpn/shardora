@@ -333,7 +333,6 @@ public:
         auto iter = prepare_block_map_.find(prepare_hash);
         if (iter == prepare_block_map_.end()) {
             auto item = std::make_shared<LeaderPrepareItem>();
-            item->height = height;
             item->precommit_aggree_set_.insert(id);
             item->prepare_bitmap_.Set(index);
             item->backup_precommit_signs_[index] = sign;
