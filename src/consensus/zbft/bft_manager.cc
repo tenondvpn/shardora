@@ -2443,7 +2443,7 @@ int BftManager::LeaderHandlePrepare(const ElectItem& elect_item, const transport
 
         auto& tx_bft = bft_msg.tx_bft();
         int res = bft_ptr->LeaderPrecommitOk(
-            tx_bft.prepare_hash(),
+            tx_bft.prepare_final_hash(),
             bft_msg.member_index(),
             sign,
             member_ptr->id);
