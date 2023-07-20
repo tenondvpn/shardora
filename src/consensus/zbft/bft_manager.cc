@@ -1726,6 +1726,10 @@ ZbftPtr BftManager::GetBft(uint32_t pool_index, const std::string& gid) {
 
 void BftManager::RemoveBftWithBlockHeight(uint32_t pool_index, uint64_t height) {
     auto& bft_ptr = pools_with_zbfts_[pool_index];
+    if (bft_ptr == nullptr) {
+        return;
+    }
+
     if (bft_ptr->prepare_block() == nullptr || bft_ptr->prepare_block()->height() <= height) {
         ZJC_DEBUG("remove bft gid: %s, pool_index: %d",
             common::Encode::HexEncode(bft_ptr->gid()).c_str(), pool_index);
@@ -1736,6 +1740,10 @@ void BftManager::RemoveBftWithBlockHeight(uint32_t pool_index, uint64_t height) 
 
 void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
     auto& bft_ptr = pools_with_zbfts_[pool_index];
+    if (bft_ptr == nullptr) {
+        return;
+    }
+
     auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pool_index];
     if (bft_ptr->gid() != gid) {
         return;
