@@ -879,6 +879,10 @@ void BftManager::HandleSyncedBlock(uint8_t thread_idx, std::shared_ptr<block::pr
 
 ZbftPtr BftManager::GetBftWithHash(uint32_t pool_index, const std::string& hash) {
     auto& bft_ptr = pools_with_zbfts_[pool_index];
+    if (bft_ptr == nullptr) {
+        return nullptr;
+    }
+
     if (bft_ptr->prepare_block() != nullptr && bft_ptr->prepare_block()->hash() == hash) {
         return bft_ptr;
     }
