@@ -1628,6 +1628,7 @@ void BlockManager::OnTimeBlock(
         uint64_t lastest_time_block_tm,
         uint64_t latest_time_block_height,
         uint64_t vss_random) {
+    ZJC_DEBUG("new timeblock coming: %lu, %lu", latest_timeblock_height_, latest_time_block_height);
     if (latest_timeblock_height_ >= latest_time_block_height) {
         return;
     }

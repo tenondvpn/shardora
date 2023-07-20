@@ -549,8 +549,6 @@ protected:
     uint32_t consensus_prepare_max_count_ = 0;
     uint32_t consensus_prepare_all_count_ = 0;
     uint64_t timeout_ = 0;
-    uint64_t leader_pre_height_ = 0;
-    std::string leader_pre_hash_;
     zjcvm::ZjchainHost zjc_host;
     bool should_timer_to_restart_ = false;
     int32_t pool_index_mod_num_ = -1;
