@@ -305,13 +305,10 @@ void BftManager::CheckInvalidGids(uint8_t thread_idx) {
                     invalid_gid_item->max_pool_index,
                     invalid_gid_item->max_pool_height,
                     invalid_gid_item->max_precommit_hash);
-                auto& bft_queue = pools_with_zbfts_[pool_idx];
-                auto queue_iter = bft_queue.begin();
-                while (queue_iter != bft_queue.end()) {
-                    if ((*queue_iter)->gid() == invalid_gid_item->gid) {
-                        queue_iter = bft_queue.erase(queue_iter);
-                    } else {
-                        ++queue_iter;
+                if (pools_with_zbfts_[pool_idx] != nullptr) {
+                    if (pools_with_zbfts_[pool_idx]->gid() == invalid_gid_item->gid) {
+                        pools_with_zbfts_[pool_idx]->Destroy();
+                        pools_with_zbfts_[pool_idx] = nullptr;
                     }
                 }
             }
@@ -418,9 +415,19 @@ ZbftPtr BftManager::Start(
 
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
     if (thread_item->pools[thread_item->pools.size() - 1] == common::kRootChainPoolIndex) {
-        if (pools_with_zbfts_[common::kRootChainPoolIndex].empty()) {
+        if (pools_with_zbfts_[common::kRootChainPoolIndex] != nullptr) {
+            auto bft_ptr = pools_with_zbfts_[pool_idx];
+            if (!bft_ptr->this_node_is_leader()) {
+                if (bft_ptr->timeout()) {
+                    LeaderRemoveTimeoutPrepareBft(bft_ptr);
+                }
+            }
+
+            txs_ptr = txs_pools_->LeaderGetValidTxs(common::kRootChainPoolIndex);
+        } else {
             txs_ptr = txs_pools_->LeaderGetValidTxs(common::kRootChainPoolIndex);
         }
+
     }
 
     auto begin_index = thread_item->prev_index;
@@ -428,11 +435,15 @@ ZbftPtr BftManager::Start(
         // now leader create zbft ptr and start consensus
         for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
             auto pool_idx = thread_item->pools[thread_item->prev_index];
-            if (!pools_with_zbfts_[pool_idx].empty()) {
-                if (pool_idx == 2) {
-                    ZJC_DEBUG("pool index 2 is not empty: %s", common::Encode::HexEncode((*pools_with_zbfts_[pool_idx].begin())->gid()).c_str());
+            if (pools_with_zbfts_[pool_idx] != nullptr) {
+                auto bft_ptr = pools_with_zbfts_[pool_idx];
+                if (bft_ptr->this_node_is_leader()) {
+                    continue;
                 }
-                continue;
+
+                if (bft_ptr->timeout()) {
+                    LeaderRemoveTimeoutPrepareBft(bft_ptr);
+                }
             }
 
             txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
@@ -447,11 +458,15 @@ ZbftPtr BftManager::Start(
         for (thread_item->prev_index = 0;
                 thread_item->prev_index < begin_index; ++thread_item->prev_index) {
             auto pool_idx = thread_item->pools[thread_item->prev_index];
-            if (!pools_with_zbfts_[pool_idx].empty()) {
-                if (pool_idx == 2) {
-                    ZJC_DEBUG("pool index 2 is not empty: %s", common::Encode::HexEncode((*pools_with_zbfts_[pool_idx].begin())->gid()).c_str());
+            if (pools_with_zbfts_[pool_idx] != nullptr) {
+                auto bft_ptr = pools_with_zbfts_[pool_idx];
+                if (bft_ptr->this_node_is_leader()) {
+                    continue;
                 }
-                continue;
+
+                if (bft_ptr->timeout()) {
+                    LeaderRemoveTimeoutPrepareBft(bft_ptr);
+                }
             }
 
             txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
@@ -486,11 +501,10 @@ ZbftPtr BftManager::Start(
             iter->second->in_consensus = false;
         }
 
-        ZJC_DEBUG("leader start bft failed, thread: %d, pool: %d, bft size: %u, "
+        ZJC_DEBUG("leader start bft failed, thread: %d, pool: %d, "
             "thread_item->pools.size(): %d, "
             "elect_item_ptr->elect_height: %lu,elect_item_ptr->time_valid: %lu now_tm_ms: %lu",
             thread_index, txs_ptr->pool_index,
-            pools_with_zbfts_[txs_ptr->pool_index].size(),
             thread_item->pools.size(),
             elect_item_ptr->elect_height,
             elect_item_ptr->time_valid,
@@ -498,16 +512,24 @@ ZbftPtr BftManager::Start(
         return nullptr;
     }
 
-    ZJC_DEBUG("leader start bft success, thread: %d, pool: %d, bft size: %u, "
+    ZJC_DEBUG("leader start bft success, thread: %d, pool: %d,"
         "thread_item->pools.size(): %d, "
         "elect_item_ptr->elect_height: %lu,elect_item_ptr->time_valid: %lu now_tm_ms: %lu",
         thread_index, zbft_ptr->pool_index(),
-        pools_with_zbfts_[zbft_ptr->pool_index()].size(),
         thread_item->pools.size(),
         elect_item_ptr->elect_height,
         elect_item_ptr->time_valid,
         now_tm_ms);
     return zbft_ptr;
+}
+
+void BftManager::LeaderRemoveTimeoutPrepareBft(ZbftPtr& bft_ptr) {
+    ZJC_DEBUG("remove bft gid: %s, pool_index: %d",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+        bft_ptr->pool_index());
+    pools_with_zbfts_[bft_ptr->pool_index()] = nullptr;
+    bft_ptr->Destroy();
+
 }
 
 bool BftManager::CheckChangedLeaderBftsValid(
@@ -856,14 +878,10 @@ void BftManager::HandleSyncedBlock(uint8_t thread_idx, std::shared_ptr<block::pr
 }
 
 ZbftPtr BftManager::GetBftWithHash(uint32_t pool_index, const std::string& hash) {
-    auto& bft_queue = pools_with_zbfts_[pool_index];
-    for (auto iter = bft_queue.begin(); iter != bft_queue.end(); ++iter) {
-        if ((*iter)->prepare_block() == nullptr) {
-            continue;
-        }
-
+    auto& bft_ptr = pools_with_zbfts_[pool_index];
+    if (bft_ptr->prepare_block() != nullptr) {
         if ((*iter)->prepare_block()->hash() == hash) {
-            return *iter;
+            return bft_ptr;
         }
     }
 
@@ -1658,48 +1676,41 @@ ZbftPtr BftManager::CreateBftPtr(
 }
 
 int BftManager::AddBft(ZbftPtr& bft_ptr) {
-    auto& bft_queue = pools_with_zbfts_[bft_ptr->pool_index()];
-    auto iter = bft_queue.begin();
-    while (iter != bft_queue.end()) {
-        ZbftPtr tmp_bft = *iter;
-        if (tmp_bft->gid() == bft_ptr->gid()) {
-            assert(false);
-            return kConsensusError;
-        }
-
-        if (tmp_bft->height() != common::kInvalidUint64 &&
-                bft_ptr->pool_index() == tmp_bft->pool_index() &&
-                bft_ptr->height() <= tmp_bft->height()) {
-            if (bft_ptr->height() == tmp_bft->height()) {
-                if (tmp_bft->consensus_status() == kConsensusPrepare) {
-                    ZJC_DEBUG("remove bft gid: %s, pool_index: %d",
-                        common::Encode::HexEncode(tmp_bft->gid()).c_str(),
-                        bft_ptr->pool_index());
-                    tmp_bft->Destroy();
-                    iter = bft_queue.erase(iter);
-                    continue;
-                }
-
-                ZJC_DEBUG("elect height error: %u, %lu %lu, %s, %s, status error: %d",
-                    bft_ptr->pool_index(), bft_ptr->height(), tmp_bft->height(),
-                    common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-                    common::Encode::HexEncode(tmp_bft->gid()).c_str(),
-                    tmp_bft->consensus_status());
-                return kConsensusError;
-            } else {
-                ZJC_DEBUG("elect height error: %u, %lu %lu, %s, %s",
-                    bft_ptr->pool_index(), bft_ptr->height(), tmp_bft->height(),
-                    common::Encode::HexEncode(bft_ptr->gid()).c_str(),
-                    common::Encode::HexEncode(tmp_bft->gid()).c_str());
-//                 assert(false);
-                return kConsensusError;
-            }
-        }
-
-        ++iter;
+    auto& tmp_bft = pools_with_zbfts_[bft_ptr->pool_index()];
+    if (tmp_bft->gid() == bft_ptr->gid()) {
+        assert(false);
+        return kConsensusError;
     }
 
-    bft_queue.push_back(bft_ptr);
+    if (tmp_bft->height() != common::kInvalidUint64 &&
+            bft_ptr->pool_index() == tmp_bft->pool_index() &&
+            bft_ptr->height() <= tmp_bft->height()) {
+        if (bft_ptr->height() == tmp_bft->height()) {
+            if (tmp_bft->consensus_status() == kConsensusPrepare) {
+                ZJC_DEBUG("remove bft gid: %s, pool_index: %d",
+                    common::Encode::HexEncode(tmp_bft->gid()).c_str(),
+                    bft_ptr->pool_index());
+                tmp_bft->Destroy();
+                pools_with_zbfts_[bft_ptr->pool_index()] = nullptr;
+                continue;
+            }
+
+            ZJC_DEBUG("elect height error: %u, %lu %lu, %s, %s, status error: %d",
+                bft_ptr->pool_index(), bft_ptr->height(), tmp_bft->height(),
+                common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+                common::Encode::HexEncode(tmp_bft->gid()).c_str(),
+                tmp_bft->consensus_status());
+            return kConsensusError;
+        } else {
+            ZJC_DEBUG("elect height error: %u, %lu %lu, %s, %s",
+                bft_ptr->pool_index(), bft_ptr->height(), tmp_bft->height(),
+                common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+                common::Encode::HexEncode(tmp_bft->gid()).c_str());
+            return kConsensusError;
+        }
+    }
+
+    pools_with_zbfts_[bft_ptr->pool_index()] = bft_ptr;
     ZJC_DEBUG("success add bft pool idx: %d, add gid: %s",
         bft_ptr->pool_index(),
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
@@ -1707,62 +1718,49 @@ int BftManager::AddBft(ZbftPtr& bft_ptr) {
 }
 
 ZbftPtr BftManager::GetBft(uint32_t pool_index, const std::string& gid) {
-    auto& bft_queue = pools_with_zbfts_[pool_index];
-    for (auto iter = bft_queue.begin(); iter != bft_queue.end(); ++iter) {
-        if ((*iter)->gid() == gid) {
-            return *iter;
-        }
+    auto& bft_ptr = pools_with_zbfts_[pool_index];
+    if (bft_ptr->gid() == gid) {
+        return bft_ptr;
     }
     
     return nullptr;
 }
 
 void BftManager::RemoveBftWithBlockHeight(uint32_t pool_index, uint64_t height) {
-    auto& bft_queue = pools_with_zbfts_[pool_index];
-    auto iter = bft_queue.begin();
-    while(iter != bft_queue.end()) {
-        if ((*iter)->prepare_block() == nullptr || (*iter)->prepare_block()->height() <= height) {
-            ZJC_DEBUG("remove bft gid: %s, pool_index: %d",
-                common::Encode::HexEncode((*iter)->gid()).c_str(), pool_index);
-            (*iter)->Destroy();
-            iter == bft_queue.erase(iter);
-        } else {
-            ++iter;
-        }
+    auto& bft_ptr = pools_with_zbfts_[pool_index];
+    if (bft_ptr->prepare_block() == nullptr || bft_ptr->prepare_block()->height() <= height) {
+        ZJC_DEBUG("remove bft gid: %s, pool_index: %d",
+            common::Encode::HexEncode((*iter)->gid()).c_str(), pool_index);
+        bft_ptr->Destroy();
+        pools_with_zbfts_[pool_index] = nullptr;
     }
 }
 
 void BftManager::RemoveBft(uint32_t pool_index, const std::string& gid) {
-    auto& bft_queue = pools_with_zbfts_[pool_index];
-//     ZJC_DEBUG("try to remove bft gid: %s, pool_index: %d, now size: %u",
-//         common::Encode::HexEncode(gid).c_str(), pool_index, bft_queue.size());
+    auto& bft_ptr = pools_with_zbfts_[pool_index];
     auto thread_idx = common::GlobalInfo::Instance()->pools_with_thread()[pool_index];
-    for (auto iter = bft_queue.begin(); iter != bft_queue.end(); ++iter) {
-        auto& bft_ptr = *iter;
-        if (bft_ptr->gid() != gid) {
-            continue;
-        }
-
-        if (bft_ptr->consensus_status() == kConsensusPreCommit) {
-            if (bft_ptr->this_node_is_leader()) {
-                ReConsensusBft(bft_ptr);
-            } else if (bft_ptr->IsChangedLeader()) {
-                ReConsensusChangedLeaderBft(bft_ptr);
-            }
-        } else {
-            if (bft_ptr->consensus_status() == kConsensusPrepare) {
-                if (!bft_ptr->this_node_is_leader()) {
-                    break;
-                }
-            }
-
-            bft_ptr->Destroy();
-            bft_queue.erase(iter);
-            ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
-        }
-
-        break;
+    if (bft_ptr->gid() != gid) {
+        continue;
     }
+
+    if (bft_ptr->consensus_status() == kConsensusPreCommit) {
+        if (bft_ptr->this_node_is_leader()) {
+            ReConsensusBft(bft_ptr);
+        } else if (bft_ptr->IsChangedLeader()) {
+            ReConsensusChangedLeaderBft(bft_ptr);
+        }
+    } else {
+        if (bft_ptr->consensus_status() == kConsensusPrepare) {
+            if (!bft_ptr->this_node_is_leader()) {
+                break;
+            }
+        }
+
+        bft_ptr->Destroy();
+        pools_with_zbfts_[pool_index] = nullptr
+        ZJC_DEBUG("remove bft gid: %s, pool_index: %d", common::Encode::HexEncode(gid).c_str(), pool_index);
+    }
+
 }
 
 void BftManager::ReConsensusChangedLeaderBft(ZbftPtr& bft_ptr) {
@@ -1866,8 +1864,7 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
             witer = waiting_agg_block_map.erase(witer);
         }
 
-        auto& bft_queue = pools_with_zbfts_[pool_index];
-        if (bft_queue.empty()) {
+        if (pools_with_zbfts_[pool_index] == nullptr) {
             continue;
         }
 
@@ -2845,8 +2842,7 @@ void BftManager::BroadcastInvalidGids(uint8_t thread_idx) {
             continue;
         }
 
-        auto& bft_queue = pools_with_zbfts_[pool_index];
-        if (bft_queue.empty()) {
+        if (pools_with_zbfts_[pool_index] == nullptr) {
             continue;
         }
 
