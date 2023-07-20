@@ -41,8 +41,8 @@ int BaseDht::Init(
             std::bind(&BaseDht::RefreshNeighbors, shared_from_this(), std::placeholders::_1));
     }
 
-    readonly_hash_sort_dht_.reset();
-    readonly_hash_sort_dht_ = std::make_shared<Dht>(dht_);
+    auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
+    readonly_hash_sort_dht_ = tmp_dht_ptr;
     return kDhtSuccess;
 }
 
@@ -113,8 +113,8 @@ int BaseDht::Join(NodePtr& node) {
         return lhs->id_hash < rhs->id_hash;
     });
         
-    readonly_hash_sort_dht_.reset();
-    readonly_hash_sort_dht_ = std::make_shared<Dht>(dht_);
+    auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
+    readonly_hash_sort_dht_ = tmp_dht_ptr;
     DHT_DEBUG("sharding: %u, join new node: %s:%d",
         local_node_->sharding_id,
         node->public_ip.c_str(),
@@ -166,8 +166,8 @@ int BaseDht::Drop(const std::vector<std::string>& ids) {
             [](const NodePtr& lhs, const NodePtr& rhs)->bool {
         return lhs->id_hash < rhs->id_hash;
     });
-    readonly_hash_sort_dht_.reset();
-    readonly_hash_sort_dht_ = std::make_shared<Dht>(dht_);
+    auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
+    readonly_hash_sort_dht_ = tmp_dht_ptr;
     return kDhtSuccess;
 }
 
@@ -194,8 +194,8 @@ int BaseDht::Drop(NodePtr& node) {
             [](const NodePtr& lhs, const NodePtr& rhs)->bool {
         return lhs->id_hash < rhs->id_hash;
     });
-    readonly_hash_sort_dht_.reset();
-    readonly_hash_sort_dht_ = std::make_shared<Dht>(dht_);
+    auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
+    readonly_hash_sort_dht_ = tmp_dht_ptr;
     auto miter = node_map_.find(node->dht_key_hash);
     if (miter != node_map_.end()) {
         assert(miter->second->id == node->id);
@@ -235,8 +235,8 @@ int BaseDht::Drop(const std::string& ip, uint16_t port) {
         [](const NodePtr& lhs, const NodePtr& rhs)->bool {
             return lhs->id_hash < rhs->id_hash;
         });
-    readonly_hash_sort_dht_.reset();
-    readonly_hash_sort_dht_ = std::make_shared<Dht>(dht_);
+    auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
+    readonly_hash_sort_dht_ = tmp_dht_ptr;
     DHT_DEBUG("success drop node: %s:%d", ip.c_str(), port);
     return kDhtSuccess;
 }
