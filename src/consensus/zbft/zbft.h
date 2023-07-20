@@ -478,6 +478,14 @@ public:
         return changed_leader_new_index_;
     }
 
+    std::shared_ptr<ElectItem> elect_item_ptr() {
+        return elect_item_ptr_;
+    }
+
+    void set_elect_item_ptr(std::shared_ptr<ElectItem>& elect_item) {
+        elect_item_ptr_ = elect_item;
+    }
+
 protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
@@ -537,6 +545,7 @@ protected:
     uint32_t changed_leader_new_index_ = common::kInvalidUint32;
     uint64_t changed_leader_elect_height_ = common::kInvalidUint64;
     std::string prepare_hash_;
+    std::shared_ptr<ElectItem> elect_item_ptr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(Zbft);
 public:

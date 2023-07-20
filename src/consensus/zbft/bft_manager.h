@@ -105,22 +105,16 @@ private:
         const ElectItem& elect_item,
         ZbftPtr& bft_ptr,
         ZbftPtr commited_bft_ptr);
-    void LeaderHandleZbftMessage(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
+    void LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr);
     int BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int LeaderCommit(
-        const ElectItem& elect_item,
         ZbftPtr& bft_ptr,
         const transport::MessagePtr& msg_ptr);
     int BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     void CheckTimeout(uint8_t thread_index);
     void CheckMessageTimeout(uint8_t thread_index);
-    int LeaderHandlePrepare(
-        const ElectItem& elect_item,
-        const transport::MessagePtr& msg_ptr);
-    int LeaderCallPrecommit(
-        const ElectItem& elect_item,
-        ZbftPtr& bft_ptr,
-        const transport::MessagePtr& msg_ptr);
+    int LeaderHandlePrepare(const transport::MessagePtr& msg_ptr);
+    int LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     ZbftPtr CreateBftPtr(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
     void BackupHandleZbftMessage(
         uint8_t thread_index,
@@ -148,7 +142,6 @@ private:
     bool LeaderSignMessage(transport::MessagePtr& msg_ptr);
     ZbftPtr LeaderGetZbft(
         const transport::MessagePtr& msg_ptr,
-        const ElectItem& elect_item,
         const std::string& gid);
     void SyncConsensusBlock(
         const ElectItem& elect_item,
