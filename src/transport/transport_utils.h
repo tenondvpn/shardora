@@ -72,7 +72,7 @@ static const uint64_t kHandledTimeoutMs = 5000lu;
 static const uint64_t kMessagePeriodUs = 1500000lu;
 
 struct TransportMessage {
-    TransportMessage() : conn(nullptr), response(nullptr), tmp_ptr(nullptr), retry(false) {
+    TransportMessage() : conn(nullptr), retry(false) {
         timeout = common::TimeUtils::TimestampUs() + kConsensusMessageTimeoutUs;
         handle_timeout = common::kInvalidUint64;
         prev_timestamp = common::TimeUtils::TimestampUs() + kMessagePeriodUs;
@@ -85,7 +85,6 @@ struct TransportMessage {
     uint8_t thread_idx = -1;
     std::shared_ptr<address::protobuf::AddressInfo> address_info = nullptr;
     std::string msg_hash;
-    std::shared_ptr<TransportMessage> response;
     bool retry;
     uint64_t times[128];
     uint32_t times_idx;
