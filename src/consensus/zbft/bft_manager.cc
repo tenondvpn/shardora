@@ -825,7 +825,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         if (bft_msgs == nullptr) {
-            assert(false);
             return;
         }
         for (int32_t i = 0; i < 3; ++i) {
