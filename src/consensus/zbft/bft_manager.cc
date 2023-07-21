@@ -1272,17 +1272,14 @@ void BftManager::BackupHandleZbftMessage(
     }
 
     if (!bft_msg.precommit_gid().empty()) {
-        ZJC_DEBUG("handle precommit gid: %s",
-            common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-        auto precommit_bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.precommit_gid());
-        if (precommit_bft_ptr == nullptr) {
-            if (!removed_preapare_gid_with_hash_[bft_msg.pool_index()].Get(
-                    bft_msg.precommit_gid(),
-                    &precommit_bft_ptr)) {
-                ZJC_DEBUG("get precommit gid failed: %s",
-                    common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-                return;
-            }
+        ZJC_DEBUG("handle precommit gid: %s, pool: %u",
+            common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
+            bft_msg.pool_index());
+        auto precommit_bft_ptr = pools_with_zbfts_[bft_msg.pool_index()];
+        if (precommit_bft_ptr == nullptr || precommit_bft_ptr->gid() != bft_msg.precommit_gid()) {
+            ZJC_DEBUG("get precommit gid failed: %s, pool: %u",
+                common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(), bft_msg.pool_index());
+            return;
         }
 
         int res = BackupPrecommit(precommit_bft_ptr, msg_ptr);
@@ -2516,7 +2513,7 @@ ZbftPtr BftManager::LeaderGetZbft(
         const std::string& bft_gid) {
     auto& bft_msg = msg_ptr->header.zbft();
     auto& bft_ptr = pools_with_zbfts_[bft_msg.pool_index()];
-    if (bft_ptr == nullptr) {
+    if (bft_ptr == nullptr || bft_ptr->gid() != bft_gid) {
         ZJC_DEBUG("leader get bft gid failed[%s], pool: %u, hash64: %lu",
             common::Encode::HexEncode(bft_gid).c_str(), bft_msg.pool_index(), msg_ptr->header.hash64());
         assert(false);
