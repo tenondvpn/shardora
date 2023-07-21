@@ -1245,7 +1245,7 @@ void BftManager::BackupHandleZbftMessage(
                 assert(false);
             }
 
-            auto& zjc_block = bft_ptr->prepare_block();
+            auto& zjc_block = commit_bft_ptr->prepare_block();
             if (zjc_block != nullptr) {
                 RemoveBftWithBlockHeight(zjc_block->pool_index(), zjc_block->height());
                 RemoveWaitingBlock(zjc_block->pool_index(), zjc_block->height());
