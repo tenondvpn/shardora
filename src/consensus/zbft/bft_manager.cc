@@ -1244,6 +1244,8 @@ void BftManager::BackupHandleZbftMessage(
                     common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
                 assert(false);
             }
+
+            RemoveBft(commit_bft_ptr->pool_index(), commit_bft_ptr->gid());
         }
     }
 
@@ -2416,6 +2418,8 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
                 if (next_ptr == nullptr) {
                     LeaderSendCommitMessage(msg_ptr, true);
                 }
+
+                RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
             }
         } else {
             if (bft_ptr->AddPrecommitOpposeNode(member_ptr->id) == kConsensusOppose) {
@@ -2775,7 +2779,6 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
         zjc_block->pool_index(),
         zjc_block->tx_list());
     bft_ptr->set_consensus_status(kConsensusCommited);
-    RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     RemoveBftWithBlockHeight(zjc_block->pool_index(), zjc_block->height());
     RemoveWaitingBlock(zjc_block->pool_index(), zjc_block->height());
