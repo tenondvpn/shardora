@@ -784,7 +784,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 if (commit_bft_ptr->consensus_status() == kConsensusPreCommit) {
                     if (BackupCommit(commit_bft_ptr, msg_ptr) != kConsensusSuccess) {
                         ZJC_ERROR("backup commit bft failed: %s",
-                            common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
+                            common::Encode::HexEncode(header.zbft().commit_gid()).c_str());
                         assert(false);
                     }
 
@@ -1291,6 +1291,7 @@ void BftManager::BackupHandleZbftMessage(
         }
     }
 
+    auto& bft_msg = msg_ptr->header.zbft();
     if (!bft_msg.prepare_gid().empty()) {
         int res = BackupPrepare(elect_item, msg_ptr);
         if (res == kConsensusOppose) {
