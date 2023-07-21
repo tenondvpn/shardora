@@ -1998,6 +1998,7 @@ void BftManager::BackupSendPrepareMessage(const ElectItem& elect_item, const tra
     bft_msg.set_leader_idx(-1);
     bft_msg.set_prepare_gid(gid);
     bft_msg.set_member_index(elect_item.local_node_member_index);
+    bft_msg.set_pool_index(pool_index);
     if (agree) {
         auto& bft_ptr = pools_with_zbfts_[pool_index];
         assert(bft_ptr != nullptr);
@@ -2086,7 +2087,8 @@ void BftManager::BackupSendPrecommitMessage(
     header.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
     header.set_type(common::kConsensusMessage);
     header.set_hop_count(0);
-   
+    bft_msg.set_pool_index(pool_index);
+
     bft_msg.set_leader_idx(-1);
     bft_msg.set_member_index(elect_item.local_node_member_index);
     bft_msg.set_precommit_gid(gid);
@@ -2513,7 +2515,15 @@ ZbftPtr BftManager::LeaderGetZbft(
         const transport::MessagePtr& msg_ptr,
         const std::string& bft_gid) {
     auto& bft_msg = msg_ptr->header.zbft();
-    auto bft_ptr = GetBft(bft_msg.pool_index(), bft_gid);
+    auto& bft_ptr = pools_with_zbfts_[bft_msg.pool_index()];
+    if (bft_ptr == nullptr) {
+        ZJC_DEBUG("leader get bft gid failed[%s], pool: %u, hash64: %lu",
+            common::Encode::HexEncode(bft_gid).c_str(), bft_msg.pool_index(), msg_ptr->header.hash64());
+        assert(false);
+        return nullptr;
+    }
+
+    assert(bft_ptr->gid() == bft_gid);
     //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
