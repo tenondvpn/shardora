@@ -2440,10 +2440,10 @@ ZbftPtr BftManager::LeaderGetZbft(
         return nullptr;
     }
 
-    if (bft_ptr->gid() == bft_gid) {
+    if (bft_ptr->gid() != bft_gid) {
         ZJC_DEBUG("leader get bft gid failed[%s], pool: %u, hash64: %lu",
             common::Encode::HexEncode(bft_gid).c_str(), bft_msg.pool_index(), msg_ptr->header.hash64());
-        assert(bft_ptr->gid() == bft_gid);
+        assert(false);
         return nullptr;
     }
 
