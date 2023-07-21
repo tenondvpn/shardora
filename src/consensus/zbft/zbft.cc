@@ -141,6 +141,7 @@ int Zbft::LeaderPrecommitOk(
         uint32_t index,
         const libff::alt_bn128_G1& backup_sign,
         const std::string& id) {
+    assert(prepare_hash.size() == 32);
 //     ZJC_DEBUG("leader precommit hash: %s, index: %d, gid: %s",
 //         common::Encode::HexEncode(tx_prepare.prepare_final_hash()).c_str(),
 //         index,
