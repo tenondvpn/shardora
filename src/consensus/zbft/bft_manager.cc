@@ -864,6 +864,11 @@ void BftManager::HandleSyncConsensusBlock(
     if (req_bft_msg.has_block()) {
         // verify and add new block
         if (bft_ptr == nullptr) {
+            if (!req_bft_msg.block().is_commited_block()) {
+                assert(false);
+                return;
+            }
+
             if (!req_bft_msg.block().has_bls_agg_sign_x() || !req_bft_msg.block().has_bls_agg_sign_y()) {
                 ZJC_DEBUG("not has agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
                     req_bft_msg.block().network_id(),
@@ -906,6 +911,11 @@ void BftManager::HandleSyncConsensusBlock(
 
                 assert(false);
             } else {
+                if (!req_bft_msg.block().is_commited_block()) {
+                    assert(false);
+                    return;
+                }
+
                 if (bft_ptr->consensus_status() == kConsensusPreCommit) {
                     // check bls sign
                     if (!block_agg_valid_func_(msg_ptr->thread_idx, req_bft_msg.block())) {
@@ -2276,9 +2286,9 @@ void BftManager::LeaderSendCommitMessage(const transport::MessagePtr& leader_msg
     bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
     bft_msg.set_elect_height(bft_ptr->elect_height());
     if (agree) {
-        auto& bls_precommit_sign = bft_ptr->bls_precommit_agg_sign();
-        bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->X));
-        bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_precommit_sign->Y));
+        auto& bls_commit_sign = bft_ptr->bls_commit_agg_sign();
+        bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->X));
+        bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->Y));
     }
 
     dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
@@ -2295,7 +2305,6 @@ void BftManager::LeaderSendCommitMessage(const transport::MessagePtr& leader_msg
         common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
         header.hash64());
-    bft_ptr->AfterNetwork();
 }
 
 void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
@@ -2944,6 +2953,7 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
     }
 
     if (!bft_ptr->set_bls_commit_agg_sign(sign)) {
+        ZJC_ERROR("set commit agg sign failed!");
         return kConsensusError;
     }
 

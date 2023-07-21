@@ -1085,6 +1085,11 @@ void NetworkInit::AddBlockItemToCache(
         uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
+    if (!block->is_commited_block()) {
+        assert(false);
+        return;
+    }
+
     if (prefix_db_->BlockExists(block->hash())) {
         ZJC_DEBUG("failed cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
             block->network_id(),
