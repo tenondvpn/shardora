@@ -1245,9 +1245,13 @@ void BftManager::BackupHandleZbftMessage(
                 assert(false);
             }
 
-            RemoveBft(commit_bft_ptr->pool_index(), commit_bft_ptr->gid());
-            RemoveBftWithBlockHeight(zjc_block->pool_index(), zjc_block->height());
-            RemoveWaitingBlock(zjc_block->pool_index(), zjc_block->height());
+            auto& zjc_block = bft_ptr->prepare_block();
+            if (zjc_block != nullptr) {
+                RemoveBftWithBlockHeight(zjc_block->pool_index(), zjc_block->height());
+                RemoveWaitingBlock(zjc_block->pool_index(), zjc_block->height());
+            }
+
+            RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
         }
     }
 
@@ -2325,9 +2329,13 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
                     LeaderSendCommitMessage(msg_ptr, true);
                 }
 
+                auto& zjc_block = bft_ptr->prepare_block();
+                if (zjc_block != nullptr) {
+                    RemoveBftWithBlockHeight(zjc_block->pool_index(), zjc_block->height());
+                    RemoveWaitingBlock(zjc_block->pool_index(), zjc_block->height());
+                }
+
                 RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
-                RemoveBftWithBlockHeight(zjc_block->pool_index(), zjc_block->height());
-                RemoveWaitingBlock(zjc_block->pool_index(), zjc_block->height());
             }
         } else {
             if (bft_ptr->AddPrecommitOpposeNode(member_ptr->id) == kConsensusOppose) {
