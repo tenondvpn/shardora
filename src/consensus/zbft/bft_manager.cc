@@ -831,8 +831,12 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 break;
             }
 
+            if (tmp_msg_ptr->handled) {
+                continue;
+            }
+
             BackupHandleZbftMessage(tmp_msg_ptr->thread_idx, elect_item_ptr, tmp_msg_ptr);
-            bft_msgs->msgs[i] = nullptr;
+            tmp_msg_ptr->handled = true;
         }
     } else {
         LeaderHandleZbftMessage(msg_ptr);
