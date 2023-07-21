@@ -2304,6 +2304,7 @@ void BftManager::LeaderSendPrecommitMessage(const transport::MessagePtr& leader_
     dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
     header.set_des_dht_key(dht_key.StrKey());
     assert(header.has_broadcast());
+    transport::TcpTransport::Instance()->SetMessageHash(header, msg_ptr->thread_idx);
     if (!LeaderSignMessage(msg_ptr)) {
         return;
     }
@@ -2370,6 +2371,7 @@ void BftManager::LeaderSendCommitMessage(const transport::MessagePtr& leader_msg
     dht::DhtKeyManager dht_key(msg_ptr->header.src_sharding_id());
     header.set_des_dht_key(dht_key.StrKey());
     assert(header.has_broadcast());
+    transport::TcpTransport::Instance()->SetMessageHash(header, msg_ptr->thread_idx);
     if (!LeaderSignMessage(msg_ptr)) {
         return;
     }
