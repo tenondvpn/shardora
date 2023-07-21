@@ -2315,6 +2315,7 @@ void BftManager::LeaderSendPrecommitMessage(const transport::MessagePtr& leader_
         common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
         header.hash64());
+    bft_ptr->AfterNetwork();
 }
 
 void BftManager::LeaderSendCommitMessage(const transport::MessagePtr& leader_msg_ptr, bool agree) {
@@ -2382,6 +2383,7 @@ void BftManager::LeaderSendCommitMessage(const transport::MessagePtr& leader_msg
         common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
         header.hash64());
+    bft_ptr->AfterNetwork();
 }
 
 void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
