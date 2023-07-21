@@ -2076,7 +2076,7 @@ void BftManager::BackupSendPrecommitMessage(
         const transport::MessagePtr& leader_msg_ptr,
         bool agree) {
     auto pool_index = leader_msg_ptr->header.zbft().pool_index();
-    auto& gid = leader_msg_ptr->header.zbft().prepare_gid();
+    auto& gid = leader_msg_ptr->header.zbft().precommit_gid();
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     msg_ptr->thread_idx = leader_msg_ptr->thread_idx;
@@ -2085,7 +2085,7 @@ void BftManager::BackupSendPrecommitMessage(
     header.set_type(common::kConsensusMessage);
     header.set_hop_count(0);
     bft_msg.set_pool_index(pool_index);
-
+    bft_msg.clear_prepare_gid();
     bft_msg.set_leader_idx(-1);
     bft_msg.set_member_index(elect_item.local_node_member_index);
     bft_msg.set_precommit_gid(gid);
@@ -2143,7 +2143,7 @@ void BftManager::BackupSendPrecommitMessage(
     if (leader_member->public_ip == 0 || leader_member->public_port == 0) {
         network::Route::Instance()->Send(msg_ptr);
         ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d",
-            common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+            common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
             header.hash64(),
             leader_msg_ptr->header.hash64(),
             0,
@@ -2156,7 +2156,7 @@ void BftManager::BackupSendPrecommitMessage(
             leader_member->public_port,
             header);
         ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d, %s:%u",
-            common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+            common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
             header.hash64(),
             leader_msg_ptr->header.hash64(),
             0,
