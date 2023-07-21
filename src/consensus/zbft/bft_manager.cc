@@ -772,18 +772,68 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             return;
         }
 
-        if (header.zbft().has_commit_gid() && !header.zbft().commit_gid().empty()) {
-            auto commit_bft = GetBft(header.zbft().pool_index(), header.zbft().commit_gid());
-            if (commit_bft == nullptr) {
+        if (!header.zbft().commit_gid().empty()) {
+            auto commit_bft_ptr = GetBft(header.zbft().pool_index(), header.zbft().commit_gid());
+            if (commit_bft_ptr == nullptr) {
                 SyncConsensusBlock(
                     elect_item,
                     msg_ptr->thread_idx,
                     header.zbft().pool_index(),
                     header.zbft().commit_gid());
+            } else {
+                if (commit_bft_ptr->consensus_status() == kConsensusPreCommit) {
+                    if (BackupCommit(commit_bft_ptr, msg_ptr) != kConsensusSuccess) {
+                        ZJC_ERROR("backup commit bft failed: %s",
+                            common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
+                        assert(false);
+                    }
+
+                    auto& zjc_block = commit_bft_ptr->prepare_block();
+                    if (zjc_block != nullptr) {
+                        RemoveBftWithBlockHeight(zjc_block->pool_index(), zjc_block->height());
+                        RemoveWaitingBlock(zjc_block->pool_index(), zjc_block->height());
+                    }
+
+                    RemoveBft(commit_bft_ptr->pool_index(), commit_bft_ptr->gid());
+                } else {
+                    std::shared_ptr<BftMessageInfo> bft_msgs = nullptr;
+                    if (!gid_with_msg_map_.Get(header.zbft().commit_gid(), &bft_msgs)) {
+                        return;
+                    }
+
+                    bft_msgs->msgs[2] = msg_ptr;
+                }
             }
         }
 
-        BackupHandleZbftMessage(msg_ptr->thread_idx, elect_item_ptr, msg_ptr);
+        std::shared_ptr<BftMessageInfo> bft_msgs = nullptr;
+        if (!header.zbft().prepare_gid().empty()) {
+            if (!gid_with_msg_map_.Get(header.zbft().prepare_gid(), &bft_msgs)) {
+                bft_msgs = std::make_shared<BftMessageInfo>();
+                gid_with_msg_map_.Insert(header.zbft().prepare_gid(), bft_msgs);
+            }
+
+            bft_msgs->msgs[0] = msg_ptr;
+        }
+
+        if (!header.zbft().precommit_gid().empty()) {
+            if (!gid_with_msg_map_.Get(header.zbft().precommit_gid(), &bft_msgs)) {
+                bft_msgs = std::make_shared<BftMessageInfo>();
+                gid_with_msg_map_.Insert(header.zbft().precommit_gid(), bft_msgs);
+            }
+
+            bft_msgs->msgs[1] = msg_ptr;
+        }
+
+        for (int32_t i = 0; i < 3; ++i) {
+            auto tmp_msg_ptr = bft_msgs->msgs[i];
+            if (tmp_msg_ptr == nullptr) {
+                break;
+            }
+
+            BackupHandleZbftMessage(tmp_msg_ptr->thread_idx, elect_item_ptr, tmp_msg_ptr);
+            bft_msgs->msgs[i] = nullptr;
+        }
     } else {
         LeaderHandleZbftMessage(msg_ptr);
     }
@@ -1238,31 +1288,6 @@ void BftManager::BackupHandleZbftMessage(
                     }
                 }
             }
-        }
-    }
-
-    auto& bft_msg = msg_ptr->header.zbft();
-    if (!bft_msg.commit_gid().empty()) {
-        auto commit_bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.commit_gid());
-        if (commit_bft_ptr == nullptr) {
-            ZJC_ERROR("get commit bft failed: %s, pool index: %u",
-                common::Encode::HexEncode(bft_msg.commit_gid()).c_str(),
-                bft_msg.pool_index());
-//             assert(false);
-        } else {
-            if (BackupCommit(commit_bft_ptr, msg_ptr) != kConsensusSuccess) {
-                ZJC_ERROR("backup commit bft failed: %s",
-                    common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
-                assert(false);
-            }
-
-            auto& zjc_block = commit_bft_ptr->prepare_block();
-            if (zjc_block != nullptr) {
-                RemoveBftWithBlockHeight(zjc_block->pool_index(), zjc_block->height());
-                RemoveWaitingBlock(zjc_block->pool_index(), zjc_block->height());
-            }
-
-            RemoveBft(commit_bft_ptr->pool_index(), commit_bft_ptr->gid());
         }
     }
 

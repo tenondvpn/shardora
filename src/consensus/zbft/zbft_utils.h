@@ -131,6 +131,16 @@ struct ElectItem {
     volatile int32_t mod_with_leader_index[256];
 };
 
+struct BftMessageInfo {
+    BftMessageInfo() {
+        for (int32_t i = 0; i < 3; ++i) {
+            msgs[i] = nullptr;
+        }
+    }
+
+    transport::MessagePtr msgs[3];
+};
+
 typedef std::function<void(
     uint8_t thread_idx,
     std::shared_ptr<block::protobuf::Block>& block,
