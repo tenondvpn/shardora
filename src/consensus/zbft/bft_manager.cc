@@ -2437,34 +2437,23 @@ ZbftPtr BftManager::LeaderGetZbft(
     auto& bft_msg = msg_ptr->header.zbft();
     auto& bft_ptr = pools_with_zbfts_[bft_msg.pool_index()];
     if (bft_ptr == nullptr || bft_ptr->gid() != bft_gid) {
+        return nullptr;
+    }
+
+    if (bft_ptr->gid() == bft_gid) {
         ZJC_DEBUG("leader get bft gid failed[%s], pool: %u, hash64: %lu",
             common::Encode::HexEncode(bft_gid).c_str(), bft_msg.pool_index(), msg_ptr->header.hash64());
-        assert(false);
+        assert(bft_ptr->gid() == bft_gid);
         return nullptr;
     }
 
-    assert(bft_ptr->gid() == bft_gid);
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
-    if (bft_ptr == nullptr) {
-        ZJC_DEBUG("leader get bft gid failed[%s], hash64: %lu",
-            common::Encode::HexEncode(bft_gid).c_str(), msg_ptr->header.hash64());
-        return nullptr;
-    }
-
+   
     if (!bft_ptr->this_node_is_leader()) {
         ZJC_DEBUG("not valid leader get bft gid failed[%s]",
             common::Encode::HexEncode(bft_gid).c_str());
         return nullptr;
     }
 
-//     ZJC_DEBUG("LeaderHandleZbftMessage precommit gid: %s, prepare gid: %s,"
-//         "agree precommit: %d, agree commit: %d",
-//         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-//         common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
-//         bft_msg.agree_precommit(),
-//         bft_msg.agree_commit());
     if (bft_ptr->members_ptr()->size() <= bft_msg.member_index()) {
         ZJC_ERROR("backup message member index invalid. %d", bft_msg.member_index());
         return nullptr;
@@ -2473,12 +2462,9 @@ ZbftPtr BftManager::LeaderGetZbft(
     auto& member_ptr = (*bft_ptr->members_ptr())[bft_msg.member_index()];
     if (!VerifyBackupIdValid(msg_ptr, member_ptr)) {
         ZJC_ERROR("verify backup valid error: %d!", bft_msg.member_index());
-//         assert(false);
         return nullptr;
     }
 
-    //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
     if (msg_ptr->thread_idx == 0) {
         auto& thread_set = bft_ptr->elect_item_ptr()->thread_set;
         auto thread_item = thread_set[msg_ptr->thread_idx];
