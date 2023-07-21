@@ -1251,7 +1251,7 @@ void BftManager::BackupHandleZbftMessage(
                 RemoveWaitingBlock(zjc_block->pool_index(), zjc_block->height());
             }
 
-            RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
+            RemoveBft(commit_bft_ptr->pool_index(), commit_bft_ptr->gid());
         }
     }
 
