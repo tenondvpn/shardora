@@ -2557,7 +2557,7 @@ int BftManager::BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& m
     if (!bft_ptr->verify_bls_precommit_agg_sign(
             sign,
             bft_ptr->precommit_bls_agg_verify_hash())) {
-        ZJC_ERROR("backup verify leader agg sign failed.");
+//         ZJC_ERROR("backup verify leader agg sign failed.");
         return kConsensusOppose;
     }
 
