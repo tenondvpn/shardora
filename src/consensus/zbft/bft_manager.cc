@@ -2316,7 +2316,8 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
         if (res == kConsensusAgree) {
             LeaderSendPrecommitMessage(msg_ptr, true);
         } else if (res == kConsensusOppose) {
-            assert(false);
+            RemoveBft(bft_msg.pool_index(), bft_msg.prepare_gid());
+//             assert(false);
 //             LeaderSendPrecommitMessage(elect_item, msg_ptr, false);
         } else {
             // waiting
