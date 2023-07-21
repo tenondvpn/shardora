@@ -2104,6 +2104,7 @@ void BftManager::BackupSendPrecommitMessage(
                 bft_ptr->g1_precommit_hash(),
                 &bls_sign_x,
                 &bls_sign_y) != bls::kBlsSuccess) {
+            assert(false);
             return;
         }
 
@@ -2135,6 +2136,7 @@ void BftManager::BackupSendPrecommitMessage(
             
     transport::TcpTransport::Instance()->SetMessageHash(header, leader_msg_ptr->header.zbft().leader_idx());
     if (!SetBackupEcdhData(msg_ptr, leader_member)) {
+        assert(false);
         return;
     }
 
@@ -2245,7 +2247,6 @@ int BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mess
 
     bft_ptr->set_prepare_msg_ptr(msg_ptr);
     bft_ptr->set_consensus_status(kConsensusPrepare);
-    BackupSendPrepareMessage(elect_item, msg_ptr, true);
     return kConsensusAgree;
 }
 
