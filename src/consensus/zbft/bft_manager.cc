@@ -1242,12 +1242,13 @@ void BftManager::BackupHandleZbftMessage(
     }
 
     auto& bft_msg = msg_ptr->header.zbft();
-    if (bft_msg.has_commit_gid() && !bft_msg.commit_gid().empty()) {
+    if (!bft_msg.commit_gid().empty()) {
         auto commit_bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.commit_gid());
         if (commit_bft_ptr == nullptr) {
-            ZJC_ERROR("get commit bft failed: %s",
-                common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
-            assert(false);
+            ZJC_ERROR("get commit bft failed: %s, pool index: %u",
+                common::Encode::HexEncode(bft_msg.commit_gid()).c_str(),
+                bft_msg.pool_index());
+//             assert(false);
         } else {
             if (BackupCommit(commit_bft_ptr, msg_ptr) != kConsensusSuccess) {
                 ZJC_ERROR("backup commit bft failed: %s",
@@ -2278,6 +2279,7 @@ void BftManager::LeaderSendCommitMessage(const transport::MessagePtr& leader_msg
     }
 
     bft_msg.clear_prepare_gid();
+    bft_msg.clear_precommit_gid();
     bft_msg.set_leader_idx(elect_item.local_node_member_index);
     bft_msg.set_commit_gid(bft_ptr->gid());
     bft_msg.set_pool_index(pool_index);
