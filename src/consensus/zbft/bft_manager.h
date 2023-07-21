@@ -128,16 +128,7 @@ private:
         const transport::MessagePtr& msg_ptr,
         common::BftMemberPtr& mem_ptr);
     bool VerifyLeaderIdValid(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
-    void CreateResponseMessage(
-        const ElectItem& elect_item,
-        bool response_to_leader,
-        const std::vector<ZbftPtr>& zbft_vec,
-        const transport::MessagePtr& msg_ptr,
-        common::BftMemberPtr& mem_ptr);
-    int CheckPrecommit(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
-    int CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg_sgin);
     bool CheckAggSignValid(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
-    void SetDefaultResponse(const transport::MessagePtr& msg_ptr);
     bool SetBackupEcdhData(transport::MessagePtr& msg_ptr, common::BftMemberPtr& mem_ptr);
     bool LeaderSignMessage(transport::MessagePtr& msg_ptr);
     ZbftPtr LeaderGetZbft(
@@ -183,7 +174,6 @@ private:
     void HandleSyncedBlock(uint8_t thread_idx, std::shared_ptr<block::protobuf::Block>& block_ptr);
     void ReConsensusChangedLeaderBft(ZbftPtr& bft_ptr);
     bool CheckChangedLeaderBftsValid(uint32_t pool, uint64_t height, const std::string& gid);
-    int PrecommitWithRemovedPrepareBft(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
     void BroadcastInvalidGids(uint8_t thread_idx);
     void CheckInvalidGids(uint8_t thread_idx);
     void LeaderRemoveTimeoutPrepareBft(ZbftPtr& bft_ptr);

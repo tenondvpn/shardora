@@ -1246,6 +1246,8 @@ void BftManager::BackupHandleZbftMessage(
             }
 
             RemoveBft(commit_bft_ptr->pool_index(), commit_bft_ptr->gid());
+            RemoveBftWithBlockHeight(zjc_block->pool_index(), zjc_block->height());
+            RemoveWaitingBlock(zjc_block->pool_index(), zjc_block->height());
         }
     }
 
@@ -1888,102 +1890,6 @@ bool BftManager::CheckAggSignValid(const transport::MessagePtr& msg_ptr, ZbftPtr
     return true;
 }
 
-int BftManager::CheckPrecommit(
-        const ElectItem& elect_item,
-        const transport::MessagePtr& msg_ptr) {
-    auto& bft_msg = msg_ptr->header.zbft();
-    bool backup_agree_commit = false;
-    do {
-        if (!bft_msg.has_precommit_gid() || bft_msg.precommit_gid().empty()) {
-            backup_agree_commit = true;
-            break;
-        }
-
-        auto bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.precommit_gid());
-        if (bft_ptr == nullptr) {
-            ZJC_DEBUG("failed get precommit bft_msg.pool_index(): %u, gid: %s",
-                bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-            break;
-        }
-
-        if (bft_ptr->leader_index() != bft_msg.member_index()) {
-            ZJC_DEBUG("leader changed failed CheckPrecommit: %s",
-                common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-            break;
-        }
-
-        ZJC_DEBUG("Backup CheckPrecommit: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-#ifdef ZJC_UNITTEST
-        if (test_for_precommit_evil_) {
-            ZJC_ERROR("1 bft backup precommit failed! not agree bft gid: %s",
-                common::Encode::HexEncode(bft_ptr->gid()).c_str());
-            break;
-        }
-#endif
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-
-        if (!CheckAggSignValid(msg_ptr, bft_ptr)) {
-            //assert(false);
-            ZJC_DEBUG("check agg sign failed backup agree commit: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-            break;
-        }
-        //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-        //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-        bft_ptr->set_consensus_status(kConsensusPreCommit);
-        backup_agree_commit = true;
-    } while (0);
-
-    ZJC_DEBUG("Backup CheckPrecommit: %s, aggree commit: %d",
-        common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
-        backup_agree_commit);
-    CheckCommit(msg_ptr, false);
-    if (!backup_agree_commit) {
-        ZJC_DEBUG("failed backup agree commit: %s",
-            common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-        return kConsensusError;
-    }
-
-    return kConsensusSuccess;
-}
-
-int BftManager::CheckCommit(const transport::MessagePtr& msg_ptr, bool check_agg) {
-    auto& bft_msg = msg_ptr->header.zbft();
-    if (!bft_msg.has_commit_gid() || bft_msg.commit_gid().empty()) {
-        return kConsensusSuccess;
-    }
-
-    ZJC_DEBUG("backup CheckCommit: %s", common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
-    auto bft_ptr = GetBft(bft_msg.pool_index(), bft_msg.commit_gid());
-    if (bft_ptr == nullptr) {
-//         assert(false);
-        return kConsensusError;
-    }
-
-    do {
-        if (check_agg) {
-            if (!CheckAggSignValid(msg_ptr, bft_ptr)) {
-                assert(false);
-                break;
-            }
-        }
-
-        if (bft_ptr->prepare_block() != nullptr) {
-            ZJC_DEBUG("success backup CheckCommit: %s", common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
-            HandleLocalCommitBlock(msg_ptr, bft_ptr);
-        } else {
-            // sync block from neighbor nodes
-            ZJC_ERROR("backup commit block failed should sync gid: %s",
-                common::Encode::HexEncode(bft_msg.commit_gid()).c_str());
-            RemoveBft(bft_msg.pool_index(), bft_msg.commit_gid());
-            return kConsensusError;
-        }
-    } while (0);
-    
-    // start new bft
-    return kConsensusSuccess;
-}
-
 void BftManager::BackupSendPrepareMessage(const ElectItem& elect_item, const transport::MessagePtr& leader_msg_ptr, bool agree) {
     auto pool_index = leader_msg_ptr->header.zbft().pool_index();
     auto& gid = leader_msg_ptr->header.zbft().prepare_gid();
@@ -2420,6 +2326,8 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
                 }
 
                 RemoveBft(bft_ptr->pool_index(), bft_ptr->gid());
+                RemoveBftWithBlockHeight(zjc_block->pool_index(), zjc_block->height());
+                RemoveWaitingBlock(zjc_block->pool_index(), zjc_block->height());
             }
         } else {
             if (bft_ptr->AddPrecommitOpposeNode(member_ptr->id) == kConsensusOppose) {
@@ -2780,8 +2688,6 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
         zjc_block->tx_list());
     bft_ptr->set_consensus_status(kConsensusCommited);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    RemoveBftWithBlockHeight(zjc_block->pool_index(), zjc_block->height());
-    RemoveWaitingBlock(zjc_block->pool_index(), zjc_block->height());
     auto now_tm_us = common::TimeUtils::TimestampUs();
     if (prev_tps_tm_us_ == 0) {
         prev_tps_tm_us_ = now_tm_us;
