@@ -2263,7 +2263,7 @@ void BftManager::LeaderSendPrecommitMessage(const transport::MessagePtr& leader_
     bft_msg.set_precommit_gid(bft_ptr->gid());
     bft_msg.set_pool_index(pool_index);
     bft_msg.set_member_index(elect_item.local_node_member_index);
-    bft_msg.set_agree_precommit(agree);
+    bft_msg.set_agree_commit(agree);
     bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
     bft_msg.set_elect_height(bft_ptr->elect_height());
     if (agree) {
@@ -2991,6 +2991,7 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
     if (!bft_msg.agree_commit()) {
         ZJC_ERROR("BackupCommit gid: %s",
             common::Encode::HexEncode(bft_ptr->gid()).c_str());
+        assert(false);
         return kConsensusSuccess;
     }
 
