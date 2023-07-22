@@ -286,62 +286,62 @@ bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
         common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
         common::GlobalInfo::Instance()->network_id() ==
         network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset);
-    if (block.electblock_height() == 0) {
-        ZJC_DEBUG("block elect height zero error");
-        return false;
-    }
-
-    if (block.pool_index() >= common::kInvalidPoolIndex) {
-        ZJC_ERROR("block po0l index error: %u", block.pool_index());
-        assert(false);
-        return false;
-    }
-
-    auto hiter = node_height_count_map_[block.pool_index()].find(block.height());
-    if (hiter != node_height_count_map_[block.pool_index()].end()) {
-        return true;
-    }
-
-    auto members = elect_mgr_->GetNetworkMembersWithHeight(
-        block.electblock_height(),
-        common::GlobalInfo::Instance()->network_id(),
-        nullptr,
-        nullptr);
-    if (members == nullptr) {
-        ZJC_WARN("get members failed, elect height: %lu, net: %u",
-            block.electblock_height(), common::GlobalInfo::Instance()->network_id());
-        return false;
-    }
-
-    uint32_t member_count = members->size();
-    if (members == nullptr || block.leader_index() >= members->size()) {
-        assert(false);
-        return false;
-    }
-
+//     if (block.electblock_height() == 0) {
+//         ZJC_DEBUG("block elect height zero error");
+//         return false;
+//     }
+// 
+//     if (block.pool_index() >= common::kInvalidPoolIndex) {
+//         ZJC_ERROR("block po0l index error: %u", block.pool_index());
+//         assert(false);
+//         return false;
+//     }
+// 
+//     auto hiter = node_height_count_map_[block.pool_index()].find(block.height());
+//     if (hiter != node_height_count_map_[block.pool_index()].end()) {
+//         return true;
+//     }
+// 
+//     auto members = elect_mgr_->GetNetworkMembersWithHeight(
+//         block.electblock_height(),
+//         common::GlobalInfo::Instance()->network_id(),
+//         nullptr,
+//         nullptr);
+//     if (members == nullptr) {
+//         ZJC_WARN("get members failed, elect height: %lu, net: %u",
+//             block.electblock_height(), common::GlobalInfo::Instance()->network_id());
+//         return false;
+//     }
+// 
+//     uint32_t member_count = members->size();
+//     if (members == nullptr || block.leader_index() >= members->size()) {
+//         assert(false);
+//         return false;
+//     }
+// 
     auto statistic_info_ptr = std::make_shared<HeightStatisticInfo>();
     statistic_info_ptr->elect_height = block.electblock_height();
     statistic_info_ptr->all_gas_amount = 0;
-    auto t = common::GetSignerCount(member_count);
-    for (uint32_t i = 0; i < member_count; ++i) {
-        auto& id = (*members)[i]->id;
-        auto node_iter = statistic_info_ptr->node_tx_count_map.find(id);
-        if (node_iter == statistic_info_ptr->node_tx_count_map.end()) {
-            statistic_info_ptr->node_tx_count_map[id] = { 0, i, (uint32_t)block.leader_index() };
-        }
-
-        // TODO: fix
-        if (i > t) {
-            continue;
-        }
-
-        statistic_info_ptr->node_tx_count_map[id].tx_count += block.tx_list_size();
-        ZJC_DEBUG("statistic tx count index: %u, id: %s, net: %u, pool: %u height: %lu, count: %u, all: %u",
-            i, common::Encode::HexEncode(id).c_str(),
-            block.network_id(), block.pool_index(),
-            block.height(), block.tx_list_size(),
-            statistic_info_ptr->node_tx_count_map[id].tx_count);
-    }
+//     auto t = common::GetSignerCount(member_count);
+//     for (uint32_t i = 0; i < member_count; ++i) {
+//         auto& id = (*members)[i]->id;
+//         auto node_iter = statistic_info_ptr->node_tx_count_map.find(id);
+//         if (node_iter == statistic_info_ptr->node_tx_count_map.end()) {
+//             statistic_info_ptr->node_tx_count_map[id] = { 0, i, (uint32_t)block.leader_index() };
+//         }
+// 
+//         // TODO: fix
+//         if (i > t) {
+//             continue;
+//         }
+// 
+//         statistic_info_ptr->node_tx_count_map[id].tx_count += block.tx_list_size();
+//         ZJC_DEBUG("statistic tx count index: %u, id: %s, net: %u, pool: %u height: %lu, count: %u, all: %u",
+//             i, common::Encode::HexEncode(id).c_str(),
+//             block.network_id(), block.pool_index(),
+//             block.height(), block.tx_list_size(),
+//             statistic_info_ptr->node_tx_count_map[id].tx_count);
+//     }
 
     for (int32_t i = 0; i < block.tx_list_size(); ++i) {
         HandleCrossShard(is_root, block, block.tx_list(i));
@@ -349,7 +349,6 @@ bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                 block.tx_list(i).step() == pools::protobuf::kContractCreate ||
                 block.tx_list(i).step() == pools::protobuf::kContractExcute ||
                 block.tx_list(i).step() == pools::protobuf::kJoinElect ||
-                block.tx_list(i).step() == pools::protobuf::kContractGasPrepayment ||
                 block.tx_list(i).step() == pools::protobuf::kContractGasPrepayment) {
             statistic_info_ptr->all_gas_amount += block.tx_list(i).gas_price() * block.tx_list(i).gas_used();
         }
@@ -649,33 +648,37 @@ int ShardStatistic::StatisticWithHeights(
             if (iter == height_node_count_map.end()) {
                 height_node_count_map[elect_height] = std::unordered_map<std::string, uint32_t>();
             }
-
-            auto& node_count_map = height_node_count_map[elect_height];
-            // epoch credit statistic
-            for (auto niter = hiter->second->node_tx_count_map.begin();
-                    niter != hiter->second->node_tx_count_map.end(); ++niter) {
-                auto tmp_iter = node_count_map.find(niter->first);
-                if (tmp_iter == node_count_map.end()) {
-                    node_count_map[niter->first] = niter->second.tx_count;
-                } else {
-                    tmp_iter->second += niter->second.tx_count;
-                }
-
-                ZJC_DEBUG("pool: %u, height: %lu, id: %s, tx_count: %u",
-                    pool_idx, hiter->first, common::Encode::HexEncode(niter->first).c_str(), node_count_map[niter->first]);
-                if (elect_height == now_elect_height_) {
-                    auto liter = lof_map.find(niter->second.leader_index);
-                    if (liter == lof_map.end()) {
-                        lof_map[niter->second.leader_index] = common::Point(
-                            now_elect_members->size(),
-                            (*now_elect_members)[niter->second.leader_index]->pool_index_mod_num,
-                            niter->second.leader_index);
-                    }
-
-                    lof_map[niter->second.leader_index][niter->second.member_index] +=
-                        niter->second.tx_count;
-                }
-            }
+// 
+//             auto& node_count_map = height_node_count_map[elect_height];
+//             // epoch credit statistic
+//             for (auto niter = hiter->second->node_tx_count_map.begin();
+//                     niter != hiter->second->node_tx_count_map.end(); ++niter) {
+//                 auto tmp_iter = node_count_map.find(niter->first);
+//                 if (tmp_iter == node_count_map.end()) {
+//                     node_count_map[niter->first] = niter->second.tx_count;
+//                 } else {
+//                     tmp_iter->second += niter->second.tx_count;
+//                 }
+// 
+//                 ZJC_DEBUG("pool: %u, height: %lu, id: %s, tx_count: %u, "
+//                     "elect_height: %lu, now_elect_height_: %lu",
+//                     pool_idx, hiter->first,
+//                     common::Encode::HexEncode(niter->first).c_str(),
+//                     node_count_map[niter->first],
+//                     elect_height, now_elect_height_);
+//                 if (elect_height == now_elect_height_) {
+//                     auto liter = lof_map.find(niter->second.leader_index);
+//                     if (liter == lof_map.end()) {
+//                         lof_map[niter->second.leader_index] = common::Point(
+//                             now_elect_members->size(),
+//                             (*now_elect_members)[niter->second.leader_index]->pool_index_mod_num,
+//                             niter->second.leader_index);
+//                     }
+// 
+//                     lof_map[niter->second.leader_index][niter->second.member_index] +=
+//                         niter->second.tx_count;
+//                 }
+//             }
 
             if (!hiter->second->node_stoke_map.empty() && !hiter->second->node_shard_map.empty()) {
                 auto eiter = join_elect_stoke_map.find(elect_height);
@@ -791,8 +794,8 @@ int ShardStatistic::StatisticWithHeights(
             str_for_hash.append((char*)&x1, sizeof(x1));
             str_for_hash.append((char*)&y1, sizeof(y1));
             debug_for_str += "xy: " + std::to_string(x1) + "-" + std::to_string(y1) + ",";
-//             ZJC_DEBUG("elect height: %lu, id: %s, tx count: %u",
-//                 hiter->first, common::Encode::HexEncode(id).c_str(), tx_count);
+            ZJC_DEBUG("elect height: %lu, id: %s, tx count: %u",
+                hiter->first, common::Encode::HexEncode(id).c_str(), tx_count);
         }
 
         statistic_item.set_elect_height(hiter->first);
