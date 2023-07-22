@@ -309,6 +309,7 @@ private:
     uint64_t prev_broadcast_invalid_gid_tm_[common::kMaxThreadCount] = { 0 };
     std::unordered_set<std::string> broadcasted_gids_[common::kMaxThreadCount];
     common::LimitHashMap<std::string, std::shared_ptr<BftMessageInfo>> gid_with_msg_map_ = { 256 };
+    uint64_t pools_prev_bft_timeout_[common::kInvalidPoolIndex] = { 0 };
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {

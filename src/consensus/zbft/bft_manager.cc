@@ -413,7 +413,8 @@ ZbftPtr BftManager::Start(
 
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
     if (thread_item->pools[thread_item->pools.size() - 1] == common::kRootChainPoolIndex) {
-        if (pools_with_zbfts_[common::kRootChainPoolIndex] != nullptr) {
+        if (pools_with_zbfts_[common::kRootChainPoolIndex] != nullptr &&
+                pools_prev_bft_timeout_[common::kRootChainPoolIndex] < now_tm_ms) {
             auto bft_ptr = pools_with_zbfts_[common::kRootChainPoolIndex];
             if (!bft_ptr->this_node_is_leader()) {
                 if (bft_ptr->timeout(now_tm_ms * 1000lu)) {
@@ -433,7 +434,8 @@ ZbftPtr BftManager::Start(
         // now leader create zbft ptr and start consensus
         for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
             auto pool_idx = thread_item->pools[thread_item->prev_index];
-            if (pools_with_zbfts_[pool_idx] != nullptr) {
+            if (pools_with_zbfts_[pool_idx] != nullptr &&
+                    pools_prev_bft_timeout_[pool_idx] < now_tm_ms) {
                 auto bft_ptr = pools_with_zbfts_[pool_idx];
                 if (bft_ptr->this_node_is_leader()) {
                     continue;
@@ -456,7 +458,8 @@ ZbftPtr BftManager::Start(
         for (thread_item->prev_index = 0;
                 thread_item->prev_index < begin_index; ++thread_item->prev_index) {
             auto pool_idx = thread_item->pools[thread_item->prev_index];
-            if (pools_with_zbfts_[pool_idx] != nullptr) {
+            if (pools_with_zbfts_[pool_idx] != nullptr &&
+                    pools_prev_bft_timeout_[pool_idx] < now_tm_ms) {
                 auto bft_ptr = pools_with_zbfts_[pool_idx];
                 if (bft_ptr->this_node_is_leader()) {
                     continue;
@@ -1907,6 +1910,7 @@ int BftManager::LeaderPrepare(
 #endif
 
     bft_ptr->AfterNetwork();
+    pools_prev_bft_timeout_[bft_ptr->pool_index()] = common::TimeUtils::TimestampMs() + 3000lu;
     return kConsensusSuccess;
 }
 
@@ -2646,6 +2650,7 @@ int BftManager::LeaderCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
     if (res == kConsensusAgree) {
         if (bft_ptr->prepare_block() != nullptr) {
             HandleLocalCommitBlock(msg_ptr, bft_ptr);
+            pools_prev_bft_timeout_[bft_ptr->pool_index()] = 0;
         } else {
             assert(false);
             return kConsensusError;
