@@ -652,8 +652,7 @@ int Zbft::DoTransaction() {
     zjc_block.set_height(pool_height + 1);
     assert(zjc_block.height() > 0);
 //     ZJC_DEBUG("add new block: %lu", zjc_block.height());
-    zjc_block.set_timestamp(common::TimeUtils::TimestampMs());
-    auto now_tm_sec = common::TimeUtils::TimestampSeconds();
+    zjc_block.set_timestamp(tm_block_mgr_->LatestTimestampHeight());
     if (txs_ptr_->tx_type != pools::protobuf::kNormalFrom) {
         zjc_block.set_timeblock_height(tm_block_mgr_->LatestTimestampHeight());
     }
