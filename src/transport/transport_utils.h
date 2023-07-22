@@ -68,7 +68,7 @@ enum TcpConnnectionType {
 };
 
 static const uint64_t kConsensusMessageTimeoutUs = 5000000lu;
-static const uint64_t kHandledTimeoutMs = 5000lu;
+static const uint64_t kHandledTimeoutMs = 10000lu;
 static const uint64_t kMessagePeriodUs = 1500000lu;
 
 struct TransportMessage {
