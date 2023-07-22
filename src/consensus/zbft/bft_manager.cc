@@ -1871,11 +1871,16 @@ int BftManager::LeaderPrepare(
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     msg_ptr->thread_idx = bft_ptr->thread_index();
+    ZJC_DEBUG("now leader call prepare: %s",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str());
     int res = bft_ptr->Prepare(true);
     if (res != kConsensusSuccess) {
+        assert(false);
         return kConsensusError;
     }
 
+    ZJC_DEBUG("now leader add bft: %s",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str());
     res = AddBft(bft_ptr);
     if (res != kConsensusSuccess) {
         ZJC_ERROR("AddBft failed[%u].", res);
@@ -1914,10 +1919,15 @@ int BftManager::LeaderPrepare(
     bft_ptr->reset_timeout();
     bft_ptr->set_consensus_status(kConsensusPrepare);
     transport::TcpTransport::Instance()->SetMessageHash(header, msg_ptr->thread_idx);
+    ZJC_DEBUG("now leader sign prepare: %s",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str());
     if (!LeaderSignMessage(msg_ptr)) {
+        assert(false);
         return kConsensusError;
     }
 
+    ZJC_DEBUG("now leader send prepare: %s",
+        common::Encode::HexEncode(bft_ptr->gid()).c_str());
 #ifdef ZJC_UNITTEST
     now_msg_[msg_ptr->thread_idx] = msg_ptr;
 #else

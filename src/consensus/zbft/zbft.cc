@@ -122,6 +122,7 @@ int Zbft::Prepare(bool leader) {
 int Zbft::LeaderCreatePrepare() {
     local_member_index_ = leader_index_;
     if (LeaderCallTransaction() != kConsensusSuccess) {
+        assert(false);
         return kConsensusError;
     }
 
