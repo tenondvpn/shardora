@@ -1546,6 +1546,7 @@ pools::TxItemPtr BlockManager::GetElectTx(uint32_t pool_index, const std::string
 }
 
 bool BlockManager::ShouldStopConsensus() {
+    return false;
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     auto tmp_to_txs = latest_to_tx_;
     if (tmp_to_txs != nullptr && tmp_to_txs->to_tx != nullptr) {
