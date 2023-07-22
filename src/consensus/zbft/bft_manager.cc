@@ -797,6 +797,9 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
                     auto& zjc_block = commit_bft_ptr->prepare_block();
                     if (zjc_block != nullptr) {
+                        ZJC_DEBUG("now remove gid with height: %s, %u, %lu",
+                            common::Encode::HexEncode(commit_bft_ptr->gid()).c_str(),
+                            zjc_block->pool_index(), zjc_block->height());
                         RemoveBftWithBlockHeight(zjc_block->pool_index(), zjc_block->height());
                         RemoveWaitingBlock(zjc_block->pool_index(), zjc_block->height());
                     }
@@ -2398,6 +2401,9 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
 
                 auto& zjc_block = bft_ptr->prepare_block();
                 if (zjc_block != nullptr) {
+                    ZJC_DEBUG("now remove gid with height: %s, %u, %lu",
+                        common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+                        zjc_block->pool_index(), zjc_block->height());
                     RemoveBftWithBlockHeight(zjc_block->pool_index(), zjc_block->height());
                     RemoveWaitingBlock(zjc_block->pool_index(), zjc_block->height());
                 }
