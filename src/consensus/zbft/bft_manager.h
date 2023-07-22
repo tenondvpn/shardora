@@ -118,7 +118,6 @@ private:
     ZbftPtr CreateBftPtr(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
     void BackupHandleZbftMessage(
         uint8_t thread_index,
-        const std::shared_ptr<ElectItem>& elect_item,
         const transport::MessagePtr& msg_ptr);
     int BackupPrepare(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
     bool IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info);

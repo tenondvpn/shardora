@@ -766,20 +766,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     int res = kConsensusSuccess;
     if (header.zbft().leader_idx() >= 0) {
-        auto& elect_item = *elect_item_ptr;
-        assert(header.zbft().elect_height() > 0);
-        assert(header.zbft().has_member_index());
-        auto& members = elect_item.members;
-        if (header.zbft().member_index() >= members->size()) {
-            return;
-        }
-
-        auto mem_ptr = (*members)[header.zbft().member_index()];
-        if (mem_ptr->bls_publick_key == libff::alt_bn128_G2::zero()) {
-            ZJC_DEBUG("invalid bls signature.");
-            return;
-        }
-
         std::shared_ptr<BftMessageInfo> bft_msgs = nullptr;
         if (!header.zbft().commit_gid().empty()) {
             auto commit_bft_ptr = GetBft(header.zbft().commit_pool_index(), header.zbft().commit_gid());
@@ -788,7 +774,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                     common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
                     header.zbft().commit_pool_index());
                 SyncConsensusBlock(
-                    elect_item,
+                    *elect_item_ptr,
                     msg_ptr->thread_idx,
                     header.zbft().commit_pool_index(),
                     header.zbft().commit_gid());
@@ -848,7 +834,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 continue;
             }
 
-            BackupHandleZbftMessage(tmp_msg_ptr->thread_idx, elect_item_ptr, tmp_msg_ptr);
+            BackupHandleZbftMessage(tmp_msg_ptr->thread_idx, tmp_msg_ptr);
             tmp_msg_ptr->handled = true;
         }
     } else {
@@ -907,13 +893,11 @@ void BftManager::HandleSyncConsensusBlock(
         const ElectItem& elect_item,
         const transport::MessagePtr& msg_ptr) {
     auto& req_bft_msg = msg_ptr->header.zbft();
-    auto bft_ptr = GetBft(req_bft_msg.pool_index(), req_bft_msg.precommit_gid());
-    if (bft_ptr == nullptr) {
+    auto bft_ptr = pools_with_zbfts_[req_bft_msg.pool_index()];
+    if (bft_ptr == nullptr || bft_ptr->gid() != req_bft_msg.precommit_gid()) {
         if (!req_bft_msg.has_block()) {
             return;
         }
-
-        bft_ptr = GetBftWithHash(req_bft_msg.pool_index(), req_bft_msg.block().hash());
     }
 
     ZJC_DEBUG("sync consensus block coming pool: %u, height: %lu, "
@@ -1273,8 +1257,27 @@ bool BftManager::VerifyLeaderIdValid(const ElectItem& elect_item, const transpor
 
 void BftManager::BackupHandleZbftMessage(
         uint8_t thread_index,
-        const std::shared_ptr<ElectItem>& elect_item_ptr,
         const transport::MessagePtr& msg_ptr) {
+    auto elect_item_ptr = elect_items_[elect_item_idx_];
+    if (elect_item_ptr->elect_height != msg_ptr->header.zbft().elect_height()) {
+        auto tmp_ptr = elect_items_[elect_item_idx_ + 1 % 2];
+        if (tmp_ptr == nullptr) {
+            ZJC_ERROR("elect height error: %lu, %lu",
+                elect_item_ptr->elect_height, msg_ptr->header.zbft().elect_height());
+            return;
+        }
+
+        if (tmp_ptr->elect_height != msg_ptr->header.zbft().elect_height()) {
+            ZJC_ERROR("elect height error: %lu, %lu, %lu",
+                elect_item_ptr->elect_height,
+                msg_ptr->header.zbft().elect_height(),
+                tmp_ptr->elect_height);
+            return;
+        }
+
+        elect_item_ptr = tmp_ptr;
+    }
+
     auto& elect_item = *elect_item_ptr;
     if (!VerifyLeaderIdValid(elect_item, msg_ptr)) {
         ZJC_ERROR("leader invalid!");
