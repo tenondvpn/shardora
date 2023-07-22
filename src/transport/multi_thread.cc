@@ -286,7 +286,7 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
         }
 
         assert(false);
-        return 256;
+        return consensus_thread_count_ + 1;
     default:
         return consensus_thread_count_;
     }
