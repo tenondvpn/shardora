@@ -20,7 +20,7 @@ message ZbftMessage {
     optional uint32 net_id = 5;
     optional bool agree_precommit = 6 [default=false];
     optional bool agree_commit = 7 [default=false];
-    optional uint32 pool_index = 8;
+    optional uint32 pool_index = 8 [default=4294967295];
     optional int32 error = 9;
     optional TxBft tx_bft = 10;
     optional uint32 member_index = 11;
@@ -34,5 +34,5 @@ message ZbftMessage {
     optional bool sync_block = 19;
     repeated uint32 ips = 20;
     optional bytes oppose_prepare_gid = 21;
-    optional uint32 commit_pool_index = 22;
+    optional uint32 commit_pool_index = 22 [default=4294967295];
 }

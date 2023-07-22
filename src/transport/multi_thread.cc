@@ -245,6 +245,11 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
     }
 
     auto queue_idx = GetThreadIndex(msg_ptr);
+    if (queue_idx > consensus_thread_count_) {
+        assert(false);
+        return;
+    }
+
     if (queue_idx == consensus_thread_count_ &&
             threads_message_queues_[queue_idx][priority].size() >= kMaxMessageReserveCount) {
         ZJC_WARN("message extend max: %u", kMaxMessageReserveCount);
@@ -272,7 +277,16 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
     case common::kInitMessage:
         return consensus_thread_count_;
     case common::kConsensusMessage:
-        return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.zbft().pool_index()];
+        if (msg_ptr->header.zbft().pool_index() != common::kInvalidUint32) {
+            return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.zbft().pool_index()];
+        }
+
+        if (msg_ptr->header.zbft().commit_pool_index() != common::kInvalidUint32) {
+            return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.zbft().commit_pool_index()];
+        }
+
+        assert(false);
+        return 256;
     default:
         return consensus_thread_count_;
     }
@@ -337,6 +351,11 @@ void MultiThreadHandler::CreateConsensusBlockMessage(
     assert(block_item->has_bls_agg_sign_y() && block_item->has_bls_agg_sign_x());
     *bft_msg.mutable_block() = *block_item;
     auto queue_idx = GetThreadIndex(new_msg_ptr);
+    if (queue_idx > consensus_thread_count_) {
+        assert(false);
+        return;
+    }
+
     transport::TcpTransport::Instance()->SetMessageHash(new_msg_ptr->header, queue_idx);
     uint32_t priority = GetPriority(new_msg_ptr);
     threads_message_queues_[queue_idx][priority].push(new_msg_ptr);
