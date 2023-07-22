@@ -1891,6 +1891,7 @@ int BftManager::LeaderPrepare(
     bft_msg.set_member_index(elect_item.local_node_member_index);
     if (commited_bft_ptr != nullptr) {
         bft_msg.set_commit_gid(commited_bft_ptr->gid());
+        bft_msg.set_agree_commit(true);
         bft_msg.set_commit_pool_index(commited_bft_ptr->pool_index());
         auto& bls_commit_sign = commited_bft_ptr->bls_commit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->X));
@@ -2263,7 +2264,7 @@ void BftManager::LeaderSendPrecommitMessage(const transport::MessagePtr& leader_
     bft_msg.set_precommit_gid(bft_ptr->gid());
     bft_msg.set_pool_index(pool_index);
     bft_msg.set_member_index(elect_item.local_node_member_index);
-    bft_msg.set_agree_commit(agree);
+    bft_msg.set_agree_precommit(agree);
     bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
     bft_msg.set_elect_height(bft_ptr->elect_height());
     if (agree) {
