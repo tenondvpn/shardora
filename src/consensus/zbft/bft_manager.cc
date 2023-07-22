@@ -396,11 +396,16 @@ ZbftPtr BftManager::Start(
             return nullptr;
         }
 
-        elect_item_ptr = item_ptr;
-        if (elect_item_ptr->time_valid > now_tm_ms) {
+        if (item_ptr->time_valid > now_tm_ms) {
             ZJC_DEBUG("thread idx error 3: %d", thread_index);
             return nullptr;
         }
+
+        ZJC_DEBUG("elect time valid use old new elect height: %lu, "
+            "old elect height: %lu, time valid: %l, now: %lu",
+            elect_item_ptr->elect_height, item_ptr->elect_height,
+            elect_item_ptr->time_valid, now_tm_ms);
+        elect_item_ptr = item_ptr;
     }
 
     auto& elect_item = *elect_item_ptr;
