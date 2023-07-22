@@ -34,4 +34,5 @@ message ZbftMessage {
     optional bool sync_block = 19;
     repeated uint32 ips = 20;
     optional bytes oppose_prepare_gid = 21;
+    optional uint32 commit_pool_index = 22;
 }

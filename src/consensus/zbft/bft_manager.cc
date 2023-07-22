@@ -782,12 +782,15 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
         std::shared_ptr<BftMessageInfo> bft_msgs = nullptr;
         if (!header.zbft().commit_gid().empty()) {
-            auto commit_bft_ptr = GetBft(header.zbft().pool_index(), header.zbft().commit_gid());
+            auto commit_bft_ptr = GetBft(header.zbft().commit_pool_index(), header.zbft().commit_gid());
             if (commit_bft_ptr == nullptr) {
+                ZJC_DEBUG("get commit gid failed: %s, pool: %u",
+                    common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+                    header.zbft().commit_pool_index());
                 SyncConsensusBlock(
                     elect_item,
                     msg_ptr->thread_idx,
-                    header.zbft().pool_index(),
+                    header.zbft().commit_pool_index(),
                     header.zbft().commit_gid());
             } else {
                 if (commit_bft_ptr->consensus_status() == kConsensusPreCommit) {
@@ -1885,6 +1888,7 @@ int BftManager::LeaderPrepare(
     bft_msg.set_member_index(elect_item.local_node_member_index);
     if (commited_bft_ptr != nullptr) {
         bft_msg.set_commit_gid(commited_bft_ptr->gid());
+        bft_msg.set_commit_pool_index(commited_bft_ptr->pool_index());
         auto& bls_commit_sign = commited_bft_ptr->bls_commit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->X));
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->Y));
@@ -2323,7 +2327,7 @@ void BftManager::LeaderSendCommitMessage(const transport::MessagePtr& leader_msg
     bft_msg.clear_precommit_gid();
     bft_msg.set_leader_idx(elect_item.local_node_member_index);
     bft_msg.set_commit_gid(bft_ptr->gid());
-    bft_msg.set_pool_index(pool_index);
+    bft_msg.set_commit_pool_index(bft_ptr->gid());
     bft_msg.set_agree_commit(agree);
     bft_msg.set_member_index(elect_item.local_node_member_index);
     bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
