@@ -534,7 +534,7 @@ bool Zbft::verify_bls_precommit_agg_sign(
             common::Encode::HexEncode(sign_commit_hash).c_str(),
             common::Encode::HexEncode(sign_hash).c_str(),
             common::Encode::HexEncode(prepare_hash_).c_str(),
-            common::Encode::HexEncode(gid).c_str());
+            common::Encode::HexEncode(gid()).c_str());
         return false;
     }
 
