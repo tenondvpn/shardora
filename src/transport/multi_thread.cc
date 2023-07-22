@@ -277,12 +277,8 @@ uint8_t MultiThreadHandler::GetThreadIndex(MessagePtr& msg_ptr) {
     case common::kInitMessage:
         return consensus_thread_count_;
     case common::kConsensusMessage:
-        if (msg_ptr->header.zbft().pool_index() != common::kInvalidUint32) {
+        if (msg_ptr->header.zbft().pool_index() < common::kInvalidPoolIndex) {
             return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.zbft().pool_index()];
-        }
-
-        if (msg_ptr->header.zbft().commit_pool_index() != common::kInvalidUint32) {
-            return common::GlobalInfo::Instance()->pools_with_thread()[msg_ptr->header.zbft().commit_pool_index()];
         }
 
         assert(false);

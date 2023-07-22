@@ -417,82 +417,86 @@ ZbftPtr BftManager::Start(
     }
 
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
-    if (thread_item->pools[thread_item->pools.size() - 1] == common::kRootChainPoolIndex) {
-        if (pools_prev_bft_timeout_[common::kRootChainPoolIndex] < now_tm_ms) {
-            if (pools_with_zbfts_[common::kRootChainPoolIndex] != nullptr) {
-                auto bft_ptr = pools_with_zbfts_[common::kRootChainPoolIndex];
-                if (!bft_ptr->this_node_is_leader()) {
+    if (commited_bft_ptr == nullptr) {
+        if (thread_item->pools[thread_item->pools.size() - 1] == common::kRootChainPoolIndex) {
+            if (pools_prev_bft_timeout_[common::kRootChainPoolIndex] < now_tm_ms) {
+                if (pools_with_zbfts_[common::kRootChainPoolIndex] != nullptr) {
+                    auto bft_ptr = pools_with_zbfts_[common::kRootChainPoolIndex];
+                    if (!bft_ptr->this_node_is_leader()) {
+                        if (bft_ptr->timeout(now_tm_ms * 1000lu)) {
+                            LeaderRemoveTimeoutPrepareBft(bft_ptr);
+                        }
+                    }
+
+                    txs_ptr = txs_pools_->LeaderGetValidTxs(common::kRootChainPoolIndex);
+                } else {
+                    txs_ptr = txs_pools_->LeaderGetValidTxs(common::kRootChainPoolIndex);
+                }
+            }
+        }
+
+        auto begin_index = thread_item->prev_index;
+        if (txs_ptr == nullptr) {
+            // now leader create zbft ptr and start consensus
+            for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
+                auto pool_idx = thread_item->pools[thread_item->prev_index];
+                if (pools_prev_bft_timeout_[pool_idx] >= now_tm_ms) {
+                    continue;
+                }
+
+                if (pools_with_zbfts_[pool_idx] != nullptr) {
+                    auto bft_ptr = pools_with_zbfts_[pool_idx];
+                    if (bft_ptr->this_node_is_leader()) {
+                        continue;
+                    }
+
                     if (bft_ptr->timeout(now_tm_ms * 1000lu)) {
                         LeaderRemoveTimeoutPrepareBft(bft_ptr);
                     }
                 }
 
-                txs_ptr = txs_pools_->LeaderGetValidTxs(common::kRootChainPoolIndex);
-            } else {
-                txs_ptr = txs_pools_->LeaderGetValidTxs(common::kRootChainPoolIndex);
+                txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
+                if (txs_ptr != nullptr) {
+                    // now leader create zbft ptr and start consensus
+                    break;
+                }
             }
         }
-    }
 
-    auto begin_index = thread_item->prev_index;
-    if (txs_ptr == nullptr) {
-        // now leader create zbft ptr and start consensus
-        for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
-            auto pool_idx = thread_item->pools[thread_item->prev_index];
-            if (pools_prev_bft_timeout_[pool_idx] >= now_tm_ms) {
-                continue;
-            }
-
-            if (pools_with_zbfts_[pool_idx] != nullptr) {
-                auto bft_ptr = pools_with_zbfts_[pool_idx];
-                if (bft_ptr->this_node_is_leader()) {
+        if (txs_ptr == nullptr) {
+            for (thread_item->prev_index = 0;
+                    thread_item->prev_index < begin_index; ++thread_item->prev_index) {
+                auto pool_idx = thread_item->pools[thread_item->prev_index];
+                if (pools_prev_bft_timeout_[pool_idx] >= now_tm_ms) {
                     continue;
                 }
 
-                if (bft_ptr->timeout(now_tm_ms * 1000lu)) {
-                    LeaderRemoveTimeoutPrepareBft(bft_ptr);
-                }
-            }
+                if (pools_with_zbfts_[pool_idx] != nullptr) {
+                    auto bft_ptr = pools_with_zbfts_[pool_idx];
+                    if (bft_ptr->this_node_is_leader()) {
+                        continue;
+                    }
 
-            txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
-            if (txs_ptr != nullptr) {
-                // now leader create zbft ptr and start consensus
-                break;
+                    if (bft_ptr->timeout(now_tm_ms * 1000lu)) {
+                        LeaderRemoveTimeoutPrepareBft(bft_ptr);
+                    }
+                }
+
+                txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
+                if (txs_ptr != nullptr) {
+                    // now leader create zbft ptr and start consensus
+                    break;
+                }
             }
         }
-    }
 
-    if (txs_ptr == nullptr) {
-        for (thread_item->prev_index = 0;
-                thread_item->prev_index < begin_index; ++thread_item->prev_index) {
-            auto pool_idx = thread_item->pools[thread_item->prev_index];
-            if (pools_prev_bft_timeout_[pool_idx] >= now_tm_ms) {
-                continue;
-            }
-
-            if (pools_with_zbfts_[pool_idx] != nullptr) {
-                auto bft_ptr = pools_with_zbfts_[pool_idx];
-                if (bft_ptr->this_node_is_leader()) {
-                    continue;
-                }
-
-                if (bft_ptr->timeout(now_tm_ms * 1000lu)) {
-                    LeaderRemoveTimeoutPrepareBft(bft_ptr);
-                }
-            }
-
-            txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
-            if (txs_ptr != nullptr) {
-                // now leader create zbft ptr and start consensus
-                break;
-            }
+        if (thread_item->pools.size() > 0) {
+            thread_item->prev_index = ++thread_item->prev_index % thread_item->pools.size();
         }
+    } else {
+        txs_ptr = txs_pools_->LeaderGetValidTxs(commited_bft_ptr->pool_index());
     }
-
-    if (thread_item->pools.size() > 0) {
-        thread_item->prev_index = ++thread_item->prev_index % thread_item->pools.size();
-    }
-
+    
     if (txs_ptr == nullptr) {
         ZJC_DEBUG("thread idx error 5: %d", thread_index);
         return nullptr;
@@ -778,14 +782,14 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     if (header.zbft().leader_idx() >= 0) {
         std::shared_ptr<BftMessageInfo> bft_msgs = nullptr;
         if (!header.zbft().commit_gid().empty()) {
-            auto commit_bft_ptr = GetBft(header.zbft().commit_pool_index(), header.zbft().commit_gid());
+            auto commit_bft_ptr = GetBft(header.zbft().pool_index(), header.zbft().commit_gid());
             if (commit_bft_ptr == nullptr) {
                 ZJC_DEBUG("get commit gid failed: %s, pool: %u",
                     common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
-                    header.zbft().commit_pool_index());
+                    header.zbft().pool_index());
                 SyncConsensusBlock(
                     msg_ptr->thread_idx,
-                    header.zbft().commit_pool_index(),
+                    header.zbft().pool_index(),
                     header.zbft().commit_gid());
             } else {
                 if (commit_bft_ptr->consensus_status() == kConsensusPreCommit) {
@@ -1901,7 +1905,6 @@ int BftManager::LeaderPrepare(
     if (commited_bft_ptr != nullptr) {
         bft_msg.set_commit_gid(commited_bft_ptr->gid());
         bft_msg.set_agree_commit(true);
-        bft_msg.set_commit_pool_index(commited_bft_ptr->pool_index());
         auto& bls_commit_sign = commited_bft_ptr->bls_commit_agg_sign();
         bft_msg.set_bls_sign_x(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->X));
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->Y));
@@ -2340,7 +2343,7 @@ void BftManager::LeaderSendCommitMessage(const transport::MessagePtr& leader_msg
     bft_msg.clear_precommit_gid();
     bft_msg.set_leader_idx(elect_item.local_node_member_index);
     bft_msg.set_commit_gid(bft_ptr->gid());
-    bft_msg.set_commit_pool_index(bft_ptr->pool_index());
+    bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_agree_commit(agree);
     bft_msg.set_member_index(elect_item.local_node_member_index);
     bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
