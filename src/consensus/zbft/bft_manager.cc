@@ -687,7 +687,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (msg_ptr->header.zbft().sync_block() && msg_ptr->header.zbft().has_block()) {
         ElectItem& elect_item = *elect_item_ptr;
-        return HandleSyncConsensusBlock(elect_item, msg_ptr);
+        return HandleSyncConsensusBlock(msg_ptr);
     }
 
 //     auto now_ms = common::TimeUtils::TimestampMs();
@@ -780,7 +780,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                     common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
                     header.zbft().commit_pool_index());
                 SyncConsensusBlock(
-                    *elect_item_ptr,
                     msg_ptr->thread_idx,
                     header.zbft().commit_pool_index(),
                     header.zbft().commit_gid());
@@ -895,9 +894,7 @@ ZbftPtr BftManager::GetBftWithHash(uint32_t pool_index, const std::string& hash)
     return nullptr;
 }
 
-void BftManager::HandleSyncConsensusBlock(
-        const ElectItem& elect_item,
-        const transport::MessagePtr& msg_ptr) {
+void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) {
     auto& req_bft_msg = msg_ptr->header.zbft();
     auto bft_ptr = pools_with_zbfts_[req_bft_msg.pool_index()];
     if (bft_ptr == nullptr || bft_ptr->gid() != req_bft_msg.precommit_gid()) {
@@ -920,6 +917,8 @@ void BftManager::HandleSyncConsensusBlock(
         pools_mgr_->latest_height(req_bft_msg.block().pool_index()));
     if (req_bft_msg.has_block()) {
         // verify and add new block
+        auto elect_item_ptr = elect_items_[elect_item_idx_];
+        auto& elect_item = *elect_item_ptr;
         if (bft_ptr == nullptr) {
             if (!req_bft_msg.block().is_commited_block()) {
                 assert(false);
@@ -1036,6 +1035,7 @@ void BftManager::HandleSyncConsensusBlock(
             return;
         }
 
+        auto& elect_item = *bft_ptr->elect_item_ptr();
         msg.set_src_sharding_id(common::GlobalInfo::Instance()->network_id());
         dht::DhtKeyManager dht_key(common::GlobalInfo::Instance()->network_id());
         msg.set_des_dht_key(dht_key.StrKey());
@@ -1153,7 +1153,6 @@ bool BftManager::AddSyncKeyValue(
 }
 
 void BftManager::SyncConsensusBlock(
-        const ElectItem& elect_item,
         uint8_t thread_idx,
         uint32_t pool_index,
         const std::string& bft_gid) {
@@ -1174,9 +1173,6 @@ void BftManager::SyncConsensusBlock(
     bft_msg.set_precommit_gid(bft_gid);
     bft_msg.set_pool_index(pool_index);
     ZJC_DEBUG("gid: %s, set pool index: %u", common::Encode::HexEncode(bft_gid).c_str(), pool_index);
-    bft_msg.set_member_index(elect_item.local_node_member_index);
-    bft_msg.set_elect_height(elect_item.elect_height);
-    assert(elect_item.elect_height > 0);
     auto tmp_pos = common::Random::RandomUint32() % readobly_dht->size();
     transport::TcpTransport::Instance()->Send(
         thread_idx,
@@ -2458,7 +2454,6 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
                 common::Encode::HexEncode(bft_ptr->leader_waiting_prepare_hash()).c_str(),
                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
             SyncConsensusBlock(
-                *bft_ptr->elect_item_ptr(),
                 msg_ptr->thread_idx,
                 bft_ptr->pool_index(),
                 bft_msg.prepare_gid());

@@ -134,13 +134,10 @@ private:
         const transport::MessagePtr& msg_ptr,
         const std::string& gid);
     void SyncConsensusBlock(
-        const ElectItem& elect_item,
         uint8_t thread_idx,
         uint32_t pool_index,
         const std::string& bft_gid);
-    void HandleSyncConsensusBlock(
-        const ElectItem& elect_item,
-        const transport::MessagePtr& msg_ptr);
+    void HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr);
     bool AddSyncKeyValue(transport::protobuf::Header* msg, const block::protobuf::Block& block);
     void SaveKeyValue(const transport::protobuf::Header& msg);
     void PopAllPoolTxs(uint8_t thread_index);
