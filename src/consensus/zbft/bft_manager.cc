@@ -1266,7 +1266,7 @@ void BftManager::BackupHandleZbftMessage(
         const transport::MessagePtr& msg_ptr) {
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (elect_item_ptr->elect_height != msg_ptr->header.zbft().elect_height()) {
-        auto tmp_ptr = elect_items_[elect_item_idx_ + 1 % 2];
+        auto tmp_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
         if (tmp_ptr == nullptr) {
             ZJC_ERROR("elect height error: %lu, %lu",
                 elect_item_ptr->elect_height, msg_ptr->header.zbft().elect_height());
