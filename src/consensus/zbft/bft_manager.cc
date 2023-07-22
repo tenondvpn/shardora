@@ -2327,7 +2327,7 @@ void BftManager::LeaderSendCommitMessage(const transport::MessagePtr& leader_msg
     bft_msg.clear_precommit_gid();
     bft_msg.set_leader_idx(elect_item.local_node_member_index);
     bft_msg.set_commit_gid(bft_ptr->gid());
-    bft_msg.set_commit_pool_index(bft_ptr->gid());
+    bft_msg.set_commit_pool_index(bft_ptr->pool_index());
     bft_msg.set_agree_commit(agree);
     bft_msg.set_member_index(elect_item.local_node_member_index);
     bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
