@@ -132,13 +132,14 @@ struct ElectItem {
 };
 
 struct BftMessageInfo {
-    BftMessageInfo() {
+    BftMessageInfo(const std::string& tmp_gid) : gid(tmp_gid) {
         for (int32_t i = 0; i < 3; ++i) {
             msgs[i] = nullptr;
         }
     }
 
     transport::MessagePtr msgs[3];
+    std::string gid;
 };
 
 typedef std::function<void(

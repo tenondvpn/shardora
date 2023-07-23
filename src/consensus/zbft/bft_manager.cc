@@ -810,7 +810,8 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
                     RemoveBft(commit_bft_ptr->pool_index(), commit_bft_ptr->gid());
                 } else {
-                    if (!gid_with_msg_map_.Get(header.zbft().commit_gid(), &bft_msgs)) {
+                    bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
+                    if (bft_msgs == nullptr || bft_msgs->gid() != header.zbft().commit_gid()) {
                         return;
                     }
 
@@ -820,18 +821,20 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         if (!header.zbft().prepare_gid().empty()) {
-            if (!gid_with_msg_map_.Get(header.zbft().prepare_gid(), &bft_msgs)) {
-                bft_msgs = std::make_shared<BftMessageInfo>();
-                gid_with_msg_map_.Insert(header.zbft().prepare_gid(), bft_msgs);
+            bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
+            if (bft_msgs == nullptr || header.zbft().prepare_gid() != bft_msgs->gid) {
+                bft_msgs = std::make_shared<BftMessageInfo>(header.zbft().prepare_gid());
+                gid_with_msg_map_[header.zbft().pool_index()] = bft_msgs;
             }
 
             bft_msgs->msgs[0] = msg_ptr;
         }
 
         if (!header.zbft().precommit_gid().empty()) {
-            if (!gid_with_msg_map_.Get(header.zbft().precommit_gid(), &bft_msgs)) {
-                bft_msgs = std::make_shared<BftMessageInfo>();
-                gid_with_msg_map_.Insert(header.zbft().precommit_gid(), bft_msgs);
+            bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
+            if (bft_msgs == nullptr || header.zbft().precommit_gid() != bft_msgs->gid) {
+                bft_msgs = std::make_shared<BftMessageInfo>(header.zbft().precommit_gid());
+                gid_with_msg_map_[header.zbft().pool_index()] = bft_msgs;
             }
 
             bft_msgs->msgs[1] = msg_ptr;
