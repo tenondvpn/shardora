@@ -672,11 +672,13 @@ ZbftPtr BftManager::StartBft(
 
 void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
-    ZJC_DEBUG("message coming msg hash: %lu, thread idx: %u, prepare: %s, precommit: %s, commit: %s",
+    ZJC_DEBUG("message coming msg hash: %lu, thread idx: %u, prepare: %s, "
+        "precommit: %s, commit: %s, pool index: %u",
         msg_ptr->header.hash64(), msg_ptr->thread_idx,
         common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
         common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
-        common::Encode::HexEncode(header.zbft().commit_gid()).c_str());
+        common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+        header.zbft().pool_index());
     if (header.has_zbft() && header.zbft().leader_idx() < 0 && !msg_ptr->header.zbft().sync_block()) {
         dht::DhtKeyManager dht_key(
             msg_ptr->header.src_sharding_id(),
