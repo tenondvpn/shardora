@@ -811,7 +811,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                     RemoveBft(commit_bft_ptr->pool_index(), commit_bft_ptr->gid());
                 } else {
                     bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
-                    if (bft_msgs == nullptr || bft_msgs->gid() != header.zbft().commit_gid()) {
+                    if (bft_msgs == nullptr || bft_msgs->gid != header.zbft().commit_gid()) {
                         return;
                     }
 
