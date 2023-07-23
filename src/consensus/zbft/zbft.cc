@@ -218,7 +218,9 @@ int Zbft::LeaderCommitOk(
         leader_handled_commit_ = true;
         ZJC_DEBUG("gid precommit agg sign: %s", common::Encode::HexEncode(gid()).c_str());
         if (LeaderCreateCommitAggSign() != kConsensusSuccess) {
-            ZJC_ERROR("leader create commit agg sign failed: %s", common::Encode::HexEncode(gid()).c_str());
+            ZJC_ERROR("leader create commit agg sign failed: %s",
+                common::Encode::HexEncode(gid()).c_str());
+            assert(false);
             return kConsensusOppose;
         }
 
@@ -435,16 +437,13 @@ int Zbft::LeaderCreateCommitAggSign() {
 
         if (prepare_block_->is_commited_block()) {
             if (sign_commit_hash != commit_bls_agg_verify_hash_) {
-                ZJC_ERROR("leader verify leader commit agg sign failed!");
+                ZJC_ERROR("leader verify leader commit agg sign failed: %s, %s",
+                    common::Encode::HexEncode(sign_commit_hash).c_str(), common::Encode::HexEncode(commit_bls_agg_verify_hash_).c_str());
                 assert(!commit_bls_agg_verify_hash_.empty());
                 return kConsensusError;
             }
         } else {
-            if (sign_commit_hash != precommit_bls_agg_verify_hash_) {
-                ZJC_ERROR("leader verify leader commit agg sign failed!");
-                assert(!precommit_bls_agg_verify_hash_.empty());
-                return kConsensusError;
-            }
+            assert(false);
         }
 
 //         ZJC_INFO("commit verify end,");
@@ -563,10 +562,6 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
     }
 
     if (prepare_block_->is_commited_block()) {
-        if (commit_bls_agg_verify_hash_.empty()) {
-            CreateCommitVerifyHash();
-        }
-
         if (sign_commit_hash != commit_bls_agg_verify_hash_) {
             ZJC_ERROR("backup verify leader precommit agg sign failed! signx: %s, %s: %s, %s",
                 libBLS::ThresholdUtils::fieldElementToString(agg_sign.X).c_str(),
@@ -577,19 +572,7 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
             return false;
         }
     } else {
-        if (precommit_bls_agg_verify_hash_.empty()) {
-            CreatePrecommitVerifyHash();
-        }
-
-        if (sign_commit_hash != precommit_bls_agg_verify_hash_) {
-            ZJC_ERROR("backup verify leader precommit agg sign failed! signx: %s, %s: %s, %s",
-                libBLS::ThresholdUtils::fieldElementToString(agg_sign.X).c_str(),
-                common::Encode::HexEncode(sign_commit_hash).c_str(),
-                common::Encode::HexEncode(precommit_bls_agg_verify_hash_).c_str(),
-                common::Encode::HexEncode(prepare_block_->hash()).c_str());
-            assert(!precommit_bls_agg_verify_hash_.empty());
-            return false;
-        }
+        assert(false);
     }
     
     auto tmp_sign = agg_sign;

@@ -157,6 +157,9 @@ public:
 
     void set_precoimmit_hash() {
         if (prepare_hash_.empty() || prepare_block_ == nullptr || prepare_block_->is_commited_block()) {
+            ZJC_DEBUG("set precommit hash failed: prepare hash: %s, prepare block null: %d",
+                common::Encode::HexEncode(prepare_hash_).c_str(), (prepare_block_ == nullptr));
+            assert(false);
             return;
         }
 
