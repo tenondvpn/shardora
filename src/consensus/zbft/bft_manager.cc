@@ -1350,6 +1350,7 @@ void BftManager::BackupHandleZbftMessage(
             BackupSendPrepareMessage(elect_item, msg_ptr, false);
         } else if (res == kConsensusAgree) {
             BackupSendPrepareMessage(elect_item, msg_ptr, true);
+            pools_with_zbfts_[bft_msg.pool_index()]->set_elect_item_ptr(elect_item_ptr);
             pools_with_zbfts_[bft_msg.pool_index()]->AfterNetwork();
         } else {
             if (!msg_ptr->header.zbft().prepare_gid().empty()) {
