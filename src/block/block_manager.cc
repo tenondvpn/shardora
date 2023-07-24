@@ -457,6 +457,12 @@ void BlockManager::HandleStatisticTx(
             }
 
             if (latest_timeblock_height_ == consensused_timeblock_height_) {
+                ZJC_DEBUG("latest_timeblock_height_ == consensused_timeblock_height_ success erase statistic tx statistic elect height "
+                    ": %lu, net: %u, hash: %s, latest_shard_statistic_tx_ = null: %d",
+                    elect_statistic.elect_height(),
+                    net_id,
+                    common::Encode::HexEncode(block_tx.storages(i).val_hash()).c_str(),
+                    (latest_shard_statistic_tx_ == nullptr));
                 latest_shard_statistic_tx_ = nullptr;
                 statistic_message_ = nullptr;
             }
