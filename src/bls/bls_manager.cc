@@ -189,7 +189,7 @@ int BlsManager::Sign(
     std::string sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign->Y);
     std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
     BLSPublicKeyShare pkey(local_sec_key, t, n);
-    auto pk = *pkey.getPublicKey();
+    libff::alt_bn128_G2& pk = *pkey.getPublicKey();
     std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
     BLS_DEBUG("sign t: %u, n: %u, , pk: %s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
         t, n,
@@ -220,7 +220,7 @@ int BlsManager::Sign(
     *sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
     std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
     BLSPublicKeyShare pkey(local_sec_key, t, n);
-    auto pk = *pkey.getPublicKey();
+    libff::alt_bn128_G2& pk = *pkey.getPublicKey();
     std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
     BLS_DEBUG("sign t: %u, , n: %u, , pk: %s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
         t, n, 
