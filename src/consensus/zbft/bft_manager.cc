@@ -2109,6 +2109,10 @@ void BftManager::BackupSendPrecommitMessage(
 
         bft_msg.set_bls_sign_x(bls_sign_x);
         bft_msg.set_bls_sign_y(bls_sign_y);
+        ZJC_DEBUG("backup success sign bls commit hash: %s, g1 hash: %s, gid: %s",
+            common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
+            common::Encode::HexEncode(bft_ptr->g1_precommit_hash()).c_str(),
+            common::Encode::HexEncode(bft_ptr->gid()).c_str());
     } else {
         bft_msg.set_agree_commit(false);
     }
