@@ -1285,7 +1285,11 @@ void NetworkInit::HandleElectionBlock(
                     leader_idx_map[(*members)[i]->pool_index_mod_num] = i;
                     rotation_leaders->rotation_used[i] = true;
                 } else {
-                    rotaton_members.push_back(i);
+                    if ((*members)[i]->bls_publick_key == libff::alt_bn128_G2::zero()) {
+                        rotation_leaders->rotation_used[i] = true;
+                    } else {
+                        rotaton_members.push_back(i);
+                    }
                 }
 
                 if ((*members)[i]->id == security_->GetAddress()) {
