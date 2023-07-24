@@ -1319,6 +1319,9 @@ void BftManager::BackupHandleZbftMessage(
         }
     }
     
+    if (elect_item_ptr->local_member->bls_publick_key == libff::alt_bn128_G2::zero()) {
+        return;
+    }
 
     auto& elect_item = *elect_item_ptr;
     if (!VerifyLeaderIdValid(elect_item, msg_ptr)) {
