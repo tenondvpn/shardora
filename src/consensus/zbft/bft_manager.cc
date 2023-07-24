@@ -2113,7 +2113,7 @@ void BftManager::BackupSendPrecommitMessage(
         bft_msg.set_bls_sign_y(bls_sign_y);
         ZJC_DEBUG("backup success sign bls commit hash: %s, g1 hash: %s, gid: %s",
             common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
-            libff::ThresholdUtils::fieldElementToString(bft_ptr->g1_precommit_hash()).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(bft_ptr->g1_precommit_hash()).c_str(),
             common::Encode::HexEncode(bft_ptr->gid()).c_str());
     } else {
         bft_msg.set_agree_commit(false);
@@ -2596,7 +2596,7 @@ int BftManager::LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePt
 
     ZJC_DEBUG("leader success sign bls commit hash: %s, g1 hash: %s, gid: %s",
         common::Encode::HexEncode(bft_ptr->prepare_block()->hash()).c_str(),
-        libff::ThresholdUtils::fieldElementToString(bft_ptr->g1_precommit_hash()).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(bft_ptr->g1_precommit_hash()).c_str(),
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
 
     if (bft_ptr->LeaderCommitOk(
