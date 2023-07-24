@@ -149,6 +149,10 @@ public:
     void set_prepare_hash(const std::string& prepare_hash) {
         prepare_hash_ = prepare_hash;
         bls_mgr_->GetLibffHash(prepare_hash, &g1_prepare_hash_);
+        ZJC_DEBUG("prepare block hash prepare hash: %s, gid: %s, sign msg: %s",
+            common::Encode::HexEncode(prepare_hash_).c_str(),
+            common::Encode::HexEncode(gid()).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(g1_prepare_hash_.X).c_str());
     }
 
     const std::string& prepare_hash() const {
@@ -167,10 +171,11 @@ public:
         prepare_block_->set_hash(precommit_hash);
         prepare_block_->set_is_commited_block(true);
         bls_mgr_->GetLibffHash(precommit_hash, &g1_precommit_hash_);
-        ZJC_DEBUG("reset block hash precommit hash:: %s, prepare hash: %s, gid: %s",
+        ZJC_DEBUG("reset block hash precommit hash:: %s, prepare hash: %s, gid: %s, sign msg: %s",
             common::Encode::HexEncode(precommit_hash).c_str(),
             common::Encode::HexEncode(prepare_hash_).c_str(),
-            common::Encode::HexEncode(gid()).c_str());
+            common::Encode::HexEncode(gid()).c_str(),
+            libBLS::ThresholdUtils::fieldElementToString(g1_precommit_hash_.X).c_str());
     }
 
     uint32_t leader_index() const {
@@ -199,13 +204,25 @@ public:
     void set_prepare_block(std::shared_ptr<block::protobuf::Block> prepare_block) {
         prepare_block_ = prepare_block;
         if (prepare_block_ != nullptr) {
-            auto& precommit_hash = prepare_block_->hash();
-            ZJC_DEBUG("set block hash: %s, gid: %s",
-                common::Encode::HexEncode(precommit_hash).c_str(),
-                common::Encode::HexEncode(gid()).c_str());
-            bls_mgr_->GetLibffHash(precommit_hash, &g1_precommit_hash_);
-            CreateCommitVerifyHash();
-            ZJC_DEBUG("reset block hash: %s", common::Encode::HexEncode(precommit_hash).c_str());
+            if (prepare_block_->is_commited_block()) {
+                auto& precommit_hash = prepare_block_->hash();
+                ZJC_DEBUG("set block hash: %s, gid: %s",
+                    common::Encode::HexEncode(precommit_hash).c_str(),
+                    common::Encode::HexEncode(gid()).c_str());
+                bls_mgr_->GetLibffHash(precommit_hash, &g1_precommit_hash_);
+                CreateCommitVerifyHash();
+                ZJC_DEBUG("reset block hash: %s", common::Encode::HexEncode(precommit_hash).c_str());
+            } else {
+                prepare_hash_ = GetBlockHash(*prepare_block_);
+                auto precommit_hash = GetCommitedBlockHash(prepare_hash_);
+                ZJC_DEBUG("set block hash: %s, gid: %s",
+                    common::Encode::HexEncode(precommit_hash).c_str(),
+                    common::Encode::HexEncode(gid()).c_str());
+                bls_mgr_->GetLibffHash(precommit_hash, &g1_precommit_hash_);
+                CreateCommitVerifyHash();
+                ZJC_DEBUG("reset block hash: %s", common::Encode::HexEncode(precommit_hash).c_str());
+            }
+            
         }
     }
 

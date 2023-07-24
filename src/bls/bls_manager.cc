@@ -189,10 +189,14 @@ int BlsManager::Sign(
     std::string sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign->Y);
     std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
     BLSPublicKeyShare pkey(local_sec_key, t, n);
+    auto pk = *pkey.getPublicKey();
     std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
-    BLS_DEBUG("sign t: %u, , n: %u, , pk: %s,%s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
-        t, n, strs->at(0).c_str(), strs->at(1).c_str(),
-        strs->at(2).c_str(), strs->at(3).c_str(), (sign_x).c_str(), (sign_y).c_str(),
+    BLS_DEBUG("sign t: %u, , n: %u, , pk: %s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
+        t, n,
+        libBLS::ThresholdUtils::fieldElementToString(pk.X).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(pk.Y).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(pk.Z).c_str(),
+        (sign_x).c_str(), (sign_y).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
@@ -216,10 +220,14 @@ int BlsManager::Sign(
     *sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
     std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
     BLSPublicKeyShare pkey(local_sec_key, t, n);
+    auto pk = *pkey.getPublicKey();
     std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
-    BLS_DEBUG("sign t: %u, , n: %u, , pk: %s,%s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
-        t, n, strs->at(0).c_str(), strs->at(1).c_str(),
-        strs->at(2).c_str(), strs->at(3).c_str(), (*sign_x).c_str(), (*sign_y).c_str(),
+    BLS_DEBUG("sign t: %u, , n: %u, , pk: %s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
+        t, n, 
+        libBLS::ThresholdUtils::fieldElementToString(pk.X).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(pk.Y).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(pk.Z).c_str(),
+        (*sign_x).c_str(), (*sign_y).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
@@ -253,12 +261,15 @@ int BlsManager::Verify(
     bn_sign.to_affine_coordinates();
     auto sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
     auto sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
-    BLS_DEBUG("verify t: %u, n: %u, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
-        t, n, (sign_x).c_str(), (sign_y).c_str(),
+    BLS_DEBUG("verify t: %u, n: %u, pk: %s,%s,%s sign x: %s, sign y: %s, sign msg: %s,%s,%s",
+        t, n,
+        libBLS::ThresholdUtils::fieldElementToString(pubkey.X).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(pubkey.Y).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(pubkey.Z).c_str(),
+        (sign_x).c_str(), (sign_y).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
-
     return BlsSign::Verify(t, n, sign, g1_hash, pubkey, verify_hash);
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
