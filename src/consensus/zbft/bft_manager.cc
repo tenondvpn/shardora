@@ -846,7 +846,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                         common::GlobalInfo::Instance()->network_id(),
                         header.zbft().pool_index(),
                         msg_ptr->header.zbft().tx_bft().height(),
-                        kSyncHighest);
+                        sync::kSyncHighest);
                 }
 
                 return;
