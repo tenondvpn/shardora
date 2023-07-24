@@ -1326,7 +1326,7 @@ void BftManager::BackupHandleZbftMessage(
             }
 
             if (tmp_ptr->elect_height != msg_ptr->header.zbft().elect_height()) {
-                ZJC_ERROR("elect height error: %lu, %lu, %lu",
+                ZJC_DEBUG("elect height error: %lu, %lu, %lu",
                     elect_item_ptr->elect_height,
                     msg_ptr->header.zbft().elect_height(),
                     tmp_ptr->elect_height);
