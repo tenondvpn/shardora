@@ -1750,6 +1750,10 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         return;
     }
 
+    if (latest_to_tx_ != nullptr && latest_to_tx_->timeout > now_tm_ms) {
+        return;
+    }
+
     ZJC_DEBUG("now create new to tx: %lu, now tm: %lu", prev_create_to_tx_ms_, now_tm_ms);
     prev_create_to_tx_ms_ = now_tm_ms + kCreateToTxPeriodMs;
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
