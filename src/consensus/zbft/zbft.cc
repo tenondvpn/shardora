@@ -367,7 +367,7 @@ void Zbft::CreatePrecommitVerifyHash() {
         ZJC_ERROR("get precommit hash failed!");
     }
 
-    ZJC_DEBUG("reset block hash prepare hash: %s, g1 prepare: %s, gid: %s",
+    ZJC_DEBUG("block hash prepare hash: %s, g1 prepare: %s, gid: %s",
         common::Encode::HexEncode(prepare_hash_).c_str(),
         common::Encode::HexEncode(precommit_bls_agg_verify_hash_).c_str(),
         common::Encode::HexEncode(gid()).c_str());
@@ -386,7 +386,7 @@ void Zbft::CreateCommitVerifyHash() {
         ZJC_ERROR("get commit hash failed!");
     }
 
-    ZJC_DEBUG("reset block hash prepare hash: %s, g1 prepare: %s, gid: %s",
+    ZJC_DEBUG("block hash precommit hash: %s, g1 precommit: %s, gid: %s",
         common::Encode::HexEncode(prepare_block_->hash()).c_str(),
         common::Encode::HexEncode(commit_bls_agg_verify_hash_).c_str(),
         common::Encode::HexEncode(gid()).c_str());
@@ -408,6 +408,43 @@ void Zbft::AfterNetwork() {
     if (consensus_status_ == kConsensusPreCommit) {
         CreateCommitVerifyHash();
     }
+}
+
+int BlsVerify(
+        uint32_t t,
+        uint32_t n,
+        const libff::alt_bn128_G2& pubkey,
+        const libff::alt_bn128_G1& sign,
+        const libff::alt_bn128_G1& g1_hash,
+        std::string* verify_hash) try {
+    if (pubkey == libff::alt_bn128_G2::zero()) {
+        auto sign_ptr = const_cast<libff::alt_bn128_G1*>(&sign);
+        sign_ptr->to_affine_coordinates();
+        auto sign_x = libBLS::ThresholdUtils::fieldElementToString(sign_ptr->X);
+        auto sign_y = libBLS::ThresholdUtils::fieldElementToString(sign_ptr->Y);
+        ZJC_ERROR("public key error: zero,msg sign x: %s, sign y: %s",
+            sign_x.c_str(),
+            sign_y.c_str());
+        return kConsensusError;
+    }
+
+    auto bn_sign = sign;
+    bn_sign.to_affine_coordinates();
+    auto sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
+    auto sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
+    ZJC_DEBUG("verify t: %u, n: %u, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
+        t, n, (sign_x).c_str(), (sign_y).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
+        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
+    if (BlsSign::Verify(t, n, sign, g1_hash, pubkey, verify_hash) == bls::kBlsSuccess) {
+        return kConsensusSuccess;
+    }
+
+    return kConsensusError;
+} catch (std::exception& e) {
+    ZJC_ERROR("catch error: %s", e.what());
+    return kConsensusError;
 }
 
 int Zbft::LeaderCreateCommitAggSign() {
@@ -448,10 +485,28 @@ int Zbft::LeaderCreateCommitAggSign() {
 
         if (prepare_block_->is_commited_block()) {
             if (sign_commit_hash != commit_bls_agg_verify_hash_) {
-                ZJC_ERROR("leader verify leader commit agg sign failed: %s, %s, gid: %s",
+                for (uint32_t i = 0; i < bit_size; ++i) {
+                    if (!precommit_bitmap_.Valid(i)) {
+                        continue;
+                    }
+
+                    std::string tmp_hash;
+                    ZJC_DEBUG("now check bls sign: %u, %s, gid: %s",
+                        i, common::Encode::HexEncode((*members_ptr_)[i]->id).c_str(),
+                        common::Encode::HexEncode(gid()).c_str());
+                    assert(BlsVerify(
+                        t,
+                        n,
+                        (*members_ptr_)[i]->bls_publick_key,
+                        backup_commit_signs_[i],
+                        g1_precommit_hash_,
+                        &tmp_hash) == kConsensusSuccess);
+                }
+
+                ZJC_ERROR("leader verify leader commit agg sign failed: %s, %s, gid: %s, t: %u, n: %u",
                     common::Encode::HexEncode(sign_commit_hash).c_str(),
                     common::Encode::HexEncode(commit_bls_agg_verify_hash_).c_str(),
-                    common::Encode::HexEncode(gid()).c_str());
+                    common::Encode::HexEncode(gid()).c_str(), t, n);
                 assert(!commit_bls_agg_verify_hash_.empty());
                 return kConsensusError;
             }
