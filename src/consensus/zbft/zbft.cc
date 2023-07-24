@@ -495,11 +495,8 @@ int Zbft::LeaderCreateCommitAggSign() {
                     ZJC_DEBUG("now check bls sign: %u, %s, gid: %s",
                         i, common::Encode::HexEncode((*members_ptr_)[i]->id).c_str(),
                         common::Encode::HexEncode(gid()).c_str());
-                    BLS_DEBUG("now check bls sign sign t: %u, , n: %u, , pk: %s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
+                    BLS_DEBUG("now check bls sign sign t: %u, n: %u, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
                         t, n,
-                        libBLS::ThresholdUtils::fieldElementToString((*members_ptr_)[i]->bls_publick_key.X).c_str(),
-                        libBLS::ThresholdUtils::fieldElementToString((*members_ptr_)[i]->bls_publick_key.Y).c_str(),
-                        libBLS::ThresholdUtils::fieldElementToString((*members_ptr_)[i]->bls_publick_key.Z).c_str(),
                         libBLS::ThresholdUtils::fieldElementToString(backup_commit_signs_[i].X).c_str(),
                         libBLS::ThresholdUtils::fieldElementToString(backup_commit_signs_[i].Y).c_str(),
                         libBLS::ThresholdUtils::fieldElementToString(g1_precommit_hash_.X).c_str(),
