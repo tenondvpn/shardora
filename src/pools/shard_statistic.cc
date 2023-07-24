@@ -444,6 +444,12 @@ int ShardStatistic::LeaderCreateStatisticHeights(pools::protobuf::StatisticTxIte
     assert(tx_heights_ptr_->heights_size() == common::kInvalidPoolIndex);
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         auto r_height_iter = node_height_count_map_[i].rbegin();
+        while (r_height_iter != node_height_count_map_[i].rend()) {
+            if (r_height_iter->second->elect_height >= now_elect_height_) {
+                continue;
+            }
+        }
+
         if (r_height_iter == node_height_count_map_[i].rend()) {
             heights += std::to_string(i) + "_" + std::to_string(tx_heights_ptr_->heights(i)) + "_a ";
             to_heights.add_heights(tx_heights_ptr_->heights(i));
