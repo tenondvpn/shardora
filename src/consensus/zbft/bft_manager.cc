@@ -293,10 +293,10 @@ void BftManager::CheckInvalidGids(uint8_t thread_idx) {
 
             for (auto iter = items.begin(); iter != items.end(); ++iter) {
                 auto& invalid_gid_item = *iter;
-                if (invalid_gid_item->prepare_hashs.size() == invalid_gid_item->precommit_hashs.size()) {
-                    continue;
-                }
-
+//                 if (invalid_gid_item->prepare_hashs.size() == invalid_gid_item->precommit_hashs.size()) {
+//                     continue;
+//                 }
+// 
                 ZJC_DEBUG("success add invalid hash: %u, %lu, %s",
                     invalid_gid_item->max_pool_index,
                     invalid_gid_item->max_pool_height,
@@ -309,6 +309,7 @@ void BftManager::CheckInvalidGids(uint8_t thread_idx) {
                     if (pools_with_zbfts_[pool_idx]->gid() == invalid_gid_item->gid) {
                         pools_with_zbfts_[pool_idx]->Destroy();
                         pools_with_zbfts_[pool_idx] = nullptr;
+                        ZJC_DEBUG("remove gid: %s", common::Encode::HexEncode(invalid_gid_item->gid).c_str());
                     }
                 }
             }

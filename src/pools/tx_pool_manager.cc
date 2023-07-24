@@ -527,13 +527,19 @@ void TxPoolManager::HandleInvalidGids(const transport::MessagePtr& msg_ptr) {
             ++precommit_iter->second;
             ZJC_DEBUG("invalid gid coming, gid: %s, precommit hash: %s, "
                 "prepare hash: %s, pool: %u, count: %u, t: %u",
-                common::Encode::HexDecode(invalid_bfts[i].gid()).c_str(),
-                common::Encode::HexDecode(precommit_hash).c_str(),
-                common::Encode::HexDecode(invalid_bfts[i].hash()).c_str(),
+                common::Encode::HexEncode(invalid_bfts[i].gid()).c_str(),
+                common::Encode::HexEncode(precommit_hash).c_str(),
+                common::Encode::HexEncode(invalid_bfts[i].hash()).c_str(),
                 precommit_iter->second, t);
             if (precommit_iter->second >= t) {
                 invalid_gid_item->max_precommit_hash = precommit_hash;
                 invalid_gid_queues_[invalid_gid_item->max_pool_index].push(invalid_gid_item);
+                ZJC_DEBUG("exceeded 2_3 invalid gid coming, gid: %s, precommit hash: %s, "
+                    "prepare hash: %s, pool: %u, count: %u, t: %u",
+                    common::Encode::HexEncode(invalid_bfts[i].gid()).c_str(),
+                    common::Encode::HexEncode(precommit_hash).c_str(),
+                    common::Encode::HexEncode(invalid_bfts[i].hash()).c_str(),
+                    precommit_iter->second, t);
             }
         } else{
             invalid_gid_item->precommit_hashs[precommit_hash] = 1;
