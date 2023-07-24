@@ -1,5 +1,7 @@
 #include "consensus/zbft/zbft.h"
 
+#include <libbls/bls/bls.h>
+
 #include "block/account_manager.h"
 #include "consensus/zbft/waiting_txs_pools.h"
 #include "contract/contract_utils.h"
