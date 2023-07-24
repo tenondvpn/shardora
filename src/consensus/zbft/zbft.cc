@@ -366,6 +366,12 @@ void Zbft::CreatePrecommitVerifyHash() {
             &precommit_bls_agg_verify_hash_) != bls::kBlsSuccess) {
         ZJC_ERROR("get precommit hash failed!");
     }
+
+    ZJC_DEBUG("reset block hash prepare hash: %s, g1 prepare: %s, gid: %s",
+        common::Encode::HexEncode(prepare_hash_).c_str(),
+        common::Encode::HexEncode(precommit_bls_agg_verify_hash_).c_str(),
+        common::Encode::HexEncode(gid()).c_str());
+
 }
 
 void Zbft::CreateCommitVerifyHash() {
@@ -379,6 +385,11 @@ void Zbft::CreateCommitVerifyHash() {
             &commit_bls_agg_verify_hash_) != bls::kBlsSuccess) {
         ZJC_ERROR("get commit hash failed!");
     }
+
+    ZJC_DEBUG("reset block hash prepare hash: %s, g1 prepare: %s, gid: %s",
+        common::Encode::HexEncode(prepare_block_->hash()).c_str(),
+        common::Encode::HexEncode(commit_bls_agg_verify_hash_).c_str(),
+        common::Encode::HexEncode(gid()).c_str());
 }
 
 void Zbft::AfterNetwork() {
@@ -437,8 +448,10 @@ int Zbft::LeaderCreateCommitAggSign() {
 
         if (prepare_block_->is_commited_block()) {
             if (sign_commit_hash != commit_bls_agg_verify_hash_) {
-                ZJC_ERROR("leader verify leader commit agg sign failed: %s, %s",
-                    common::Encode::HexEncode(sign_commit_hash).c_str(), common::Encode::HexEncode(commit_bls_agg_verify_hash_).c_str());
+                ZJC_ERROR("leader verify leader commit agg sign failed: %s, %s, gid: %s",
+                    common::Encode::HexEncode(sign_commit_hash).c_str(),
+                    common::Encode::HexEncode(commit_bls_agg_verify_hash_).c_str(),
+                    common::Encode::HexEncode(gid()).c_str());
                 assert(!commit_bls_agg_verify_hash_.empty());
                 return kConsensusError;
             }
@@ -455,11 +468,12 @@ int Zbft::LeaderCreateCommitAggSign() {
             common::Encode::HexDecode(
                 libBLS::ThresholdUtils::fieldElementToString(bls_commit_agg_sign_->Y)));
         set_consensus_status(kConsensusCommit);
-        ZJC_DEBUG("leader agg sign success! signx: %s, %s: %s, %s",
+        ZJC_DEBUG("leader agg sign success! signx: %s, %s: %s, %s, gid: %s",
             common::Encode::HexEncode(prepare_block_->bls_agg_sign_x()).c_str(),
             common::Encode::HexEncode(sign_commit_hash).c_str(),
             common::Encode::HexEncode(commit_bls_agg_verify_hash_).c_str(),
-            common::Encode::HexEncode(prepare_block_->hash()).c_str());
+            common::Encode::HexEncode(prepare_block_->hash()).c_str(),
+            common::Encode::HexEncode(gid()).c_str());
     } catch (...) {
         return kConsensusError;
     }
