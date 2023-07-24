@@ -1434,7 +1434,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     to_txs_ptr->tx_ptr = create_to_tx_cb_(new_msg_ptr);
     to_txs_ptr->tx_ptr->time_valid += kToValidTimeout;
     to_txs_ptr->tx_hash = gid;
-    to_txs_ptr->timeout = now_time_ms + kToTimeoutMs;
+    to_txs_ptr->timeout = now_time_ms + kToValidTimeout + kToTimeoutMs;
     to_txs_ptr->stop_consensus_timeout = to_txs_ptr->timeout + kStopConsensusTimeoutMs;
     leader_to_txs->to_tx = to_txs_ptr;
     to_txs_ptr->success = true;
