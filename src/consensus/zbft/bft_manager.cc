@@ -1135,7 +1135,7 @@ void BftManager::AddWaitingBlock(std::shared_ptr<block::protobuf::Block>& block_
         block_ptr->pool_index(),
         block_ptr->height(),
         common::Encode::HexEncode(block_ptr->hash()).c_str(),
-        block_map->size());
+        block_map.size());
 }
 
 void BftManager::RemoveWaitingBlock(uint32_t pool_index, uint64_t height) {
