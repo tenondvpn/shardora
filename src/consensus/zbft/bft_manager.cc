@@ -2003,7 +2003,7 @@ int BftManager::LeaderPrepare(
 #endif
 
     bft_ptr->AfterNetwork();
-    pools_prev_bft_timeout_[bft_ptr->pool_index()] = common::TimeUtils::TimestampMs() + 3000lu;
+    pools_prev_bft_timeout_[bft_ptr->pool_index()] = common::TimeUtils::TimestampMs() + 10000lu;
     return kConsensusSuccess;
 }
 
