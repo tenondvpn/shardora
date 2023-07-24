@@ -191,7 +191,7 @@ int BlsManager::Sign(
     BLSPublicKeyShare pkey(local_sec_key, t, n);
     auto pk = *pkey.getPublicKey();
     std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
-    BLS_DEBUG("sign t: %u, , n: %u, , pk: %s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
+    BLS_DEBUG("sign t: %u, n: %u, , pk: %s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
         t, n,
         libBLS::ThresholdUtils::fieldElementToString(pk.X).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(pk.Y).c_str(),
