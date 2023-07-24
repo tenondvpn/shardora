@@ -1330,7 +1330,7 @@ void BftManager::BackupHandleZbftMessage(
     if (!bft_msg.precommit_gid().empty()) {
         auto precommit_bft_ptr = pools_with_zbfts_[bft_msg.pool_index()];
         if (precommit_bft_ptr == nullptr) {
-            ZJC_ERROR("get precommit gid failed: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
+            ZJC_DEBUG("get precommit gid failed: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
             return;
         }
 
