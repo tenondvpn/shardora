@@ -437,7 +437,7 @@ int BlsVerify(
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
-    if (BlsSign::Verify(t, n, sign, g1_hash, pubkey, verify_hash) == bls::kBlsSuccess) {
+    if (bls::BlsSign::Verify(t, n, sign, g1_hash, pubkey, verify_hash) == bls::kBlsSuccess) {
         return kConsensusSuccess;
     }
 
