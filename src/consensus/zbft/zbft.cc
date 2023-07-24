@@ -599,7 +599,7 @@ bool Zbft::verify_bls_precommit_agg_sign(
     }
 
     if (sign_commit_hash != sign_hash) {
-        ZJC_ERROR("backup verify leader precommit agg sign failed! %s: %s, "
+        ZJC_DEBUG("backup verify leader precommit agg sign failed! %s: %s, "
             "prepare hash: %s, gid: %s",
             common::Encode::HexEncode(sign_commit_hash).c_str(),
             common::Encode::HexEncode(sign_hash).c_str(),

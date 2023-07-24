@@ -47,6 +47,7 @@ int BftManager::Init(
         std::shared_ptr<pools::TxPoolManager>& pool_mgr,
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
+        std::shared_ptr<sync::KeyValueSync>& kv_sync,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
         std::shared_ptr<db::Db>& db,
         BlockCallback block_cb,
@@ -62,6 +63,7 @@ int BftManager::Init(
     pools_mgr_ = pool_mgr;
     tm_block_mgr_ = tm_block_mgr;
     bls_mgr_ = bls_mgr;
+    kv_sync_ = kv_sync;
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     new_block_cache_callback_ = new_block_cache_callback;
@@ -837,6 +839,18 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             bft_msgs->msgs[0] = msg_ptr;
+            if (msg_ptr->header.zbft().tx_bft().height() != pools_mgr_->latest_height() + 1) {
+                if (msg_ptr->header.zbft().tx_bft().height() > pools_mgr_->latest_height() + 1) {
+                    kv_sync_->AddSyncHeight(
+                        msg_ptr->thread_idx,
+                        common::GlobalInfo::Instance()->network_id(),
+                        header.zbft().pool_index(),
+                        msg_ptr->header.zbft().tx_bft().height(),
+                        kSyncHighest);
+                }
+
+                return;
+            }
         }
 
         if (!header.zbft().precommit_gid().empty()) {
@@ -847,6 +861,10 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             bft_msgs->msgs[1] = msg_ptr;
+            if (bft_msgs->msgs[0] != nullptr &&
+                    bft_msgs->msgs[0]->header.zbft().tx_bft().height() != pools_mgr_->latest_height() + 1) {
+                return;
+            }
         }
 
         if (bft_msgs == nullptr) {
@@ -1954,6 +1972,7 @@ int BftManager::LeaderPrepare(
     auto broad_param = header.mutable_broadcast();
     auto& bft_msg = *header.mutable_zbft();
     zbft::protobuf::TxBft& tx_bft = *bft_msg.mutable_tx_bft();
+    tx_bft.set_height(bft_ptr->prepare_block()->height());
     auto& tx_map = bft_ptr->txs_ptr()->txs;
     for (auto iter = tx_map.begin(); iter != tx_map.end(); ++iter) {
         tx_bft.add_tx_hash_list(iter->first);

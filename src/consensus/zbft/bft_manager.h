@@ -63,6 +63,7 @@ public:
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
+        std::shared_ptr<sync::KeyValueSync>& kv_sync,
         std::shared_ptr<db::Db>& db,
         BlockCallback block_cb,
         uint8_t thread_count,
@@ -279,6 +280,7 @@ private:
     std::shared_ptr<bls::BlsManager> bls_mgr_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    std::shared_ptr<sync::KeyValueSync> kv_sync_ = nullptr;
     uint8_t thread_count_ = 0;
     std::shared_ptr<WaitingTxsPools> txs_pools_ = nullptr;
     std::shared_ptr<timeblock::TimeBlockManager> tm_block_mgr_ = nullptr;
