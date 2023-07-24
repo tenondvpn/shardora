@@ -2,6 +2,8 @@
 
 #include <cassert>
 
+#include <libbls/tools/utils.h>
+
 #include "consensus/zbft/root_zbft.h"
 #include "consensus/zbft/zbft.h"
 #include "consensus/zbft/zbft_utils.h"
