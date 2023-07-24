@@ -679,12 +679,13 @@ ZbftPtr BftManager::StartBft(
 void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     ZJC_DEBUG("message coming msg hash: %lu, thread idx: %u, prepare: %s, "
-        "precommit: %s, commit: %s, pool index: %u",
+        "precommit: %s, commit: %s, pool index: %u, sync_block: %d",
         msg_ptr->header.hash64(), msg_ptr->thread_idx,
         common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
         common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
-        header.zbft().pool_index());
+        header.zbft().pool_index(),
+        msg_ptr->header.zbft().sync_block());
     if (header.has_zbft() && header.zbft().leader_idx() < 0 && !msg_ptr->header.zbft().sync_block()) {
         dht::DhtKeyManager dht_key(
             msg_ptr->header.src_sharding_id(),
@@ -849,15 +850,31 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         if (bft_msgs == nullptr) {
+            ZJC_DEBUG("bft_msgs == nullptr message coming msg hash: %lu, thread idx: %u, prepare: %s, "
+                "precommit: %s, commit: %s, pool index: %u, sync_block: %d",
+                msg_ptr->header.hash64(), msg_ptr->thread_idx,
+                common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+                common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
+                common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+                header.zbft().pool_index(),
+                msg_ptr->header.zbft().sync_block());
             return;
         }
         for (int32_t i = 0; i < 3; ++i) {
-            auto tmp_msg_ptr = bft_msgs->msgs[i];
+            auto& tmp_msg_ptr = bft_msgs->msgs[i];
             if (tmp_msg_ptr == nullptr) {
                 break;
             }
 
             if (tmp_msg_ptr->handled) {
+                ZJC_DEBUG("tmp_msg_ptr->handled message coming msg hash: %lu, thread idx: %u, prepare: %s, "
+                    "precommit: %s, commit: %s, pool index: %u, sync_block: %d",
+                    msg_ptr->header.hash64(), msg_ptr->thread_idx,
+                    common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+                    common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
+                    common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+                    header.zbft().pool_index(),
+                    msg_ptr->header.zbft().sync_block());
                 continue;
             }
 
@@ -1289,6 +1306,7 @@ void BftManager::BackupHandleZbftMessage(
         uint8_t thread_index,
         const transport::MessagePtr& msg_ptr) {
     auto elect_item_ptr = elect_items_[elect_item_idx_];
+    auto& header = msg_ptr->header;
     auto& bft_msg = msg_ptr->header.zbft();
     if (!bft_msg.precommit_gid().empty()) {
         auto precommit_bft_ptr = pools_with_zbfts_[bft_msg.pool_index()];
@@ -1320,6 +1338,14 @@ void BftManager::BackupHandleZbftMessage(
     }
     
     if (elect_item_ptr->local_member->bls_publick_key == libff::alt_bn128_G2::zero()) {
+        ZJC_DEBUG("elect_item_ptr->local_member->bls_publick_key message coming msg hash: %lu, thread idx: %u, prepare: %s, "
+            "precommit: %s, commit: %s, pool index: %u, sync_block: %d",
+            msg_ptr->header.hash64(), msg_ptr->thread_idx,
+            common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+            common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
+            common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+            header.zbft().pool_index(),
+            msg_ptr->header.zbft().sync_block());
         return;
     }
 

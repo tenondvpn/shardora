@@ -396,7 +396,7 @@ void NetworkInit::RotationLeaderCallback(
         }
 
         for (uint32_t i = 0; i < rotation->rotations.size(); ++i) {
-            if (tx_counts[i].first <= (tx_counts[i].second / 100) && tx_counts[i].second > 0) {
+            if (tx_counts[i].first == 0 && tx_counts[i].second > 0) {
                 ++invalid_leader_mods[i];
                 ZJC_DEBUG("pool mod num: %u, handled: %u, all: %u, count: %lu, need: %lu",
                     i, tx_counts[i].first, tx_counts[i].second,
