@@ -190,16 +190,15 @@ int BlsManager::Sign(
     std::string sec_key = libBLS::ThresholdUtils::fieldElementToString(local_sec_key);
     BLSPublicKeyShare pkey(local_sec_key, t, n);
     libff::alt_bn128_G2& pk = *pkey.getPublicKey();
-    std::shared_ptr< std::vector< std::string > > strs = pkey.toString();
-    BLS_DEBUG("sign t: %u, n: %u, , pk: %s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
-        t, n,
-        libBLS::ThresholdUtils::fieldElementToString(pk.X).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(pk.Y).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(pk.Z).c_str(),
-        (sign_x).c_str(), (sign_y).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
+//     BLS_DEBUG("sign t: %u, n: %u, , pk: %s,%s,%s, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
+//         t, n,
+//         libBLS::ThresholdUtils::fieldElementToString(pk.X).c_str(),
+//         libBLS::ThresholdUtils::fieldElementToString(pk.Y).c_str(),
+//         libBLS::ThresholdUtils::fieldElementToString(pk.Z).c_str(),
+//         (sign_x).c_str(), (sign_y).c_str(),
+//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
+//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
+//         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
     std::string verify_hash;
     assert(Verify(t, n, *pkey.getPublicKey(), *bn_sign, g1_hash, &verify_hash) == kBlsSuccess);
     return kBlsSuccess;
