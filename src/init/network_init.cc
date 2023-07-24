@@ -173,6 +173,7 @@ int NetworkInit::Init(int argc, char** argv) {
         security_,
         tm_block_mgr_,
         bls_mgr_,
+        kv_sync_,
         db_,
         nullptr,
         common::GlobalInfo::Instance()->message_handler_thread_count() - 1,

@@ -47,8 +47,8 @@ int BftManager::Init(
         std::shared_ptr<pools::TxPoolManager>& pool_mgr,
         std::shared_ptr<security::Security>& security_ptr,
         std::shared_ptr<timeblock::TimeBlockManager>& tm_block_mgr,
-        std::shared_ptr<sync::KeyValueSync>& kv_sync,
         std::shared_ptr<bls::BlsManager>& bls_mgr,
+        std::shared_ptr<sync::KeyValueSync>& kv_sync,
         std::shared_ptr<db::Db>& db,
         BlockCallback block_cb,
         uint8_t thread_count,
@@ -839,8 +839,8 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             bft_msgs->msgs[0] = msg_ptr;
-            if (msg_ptr->header.zbft().tx_bft().height() != pools_mgr_->latest_height() + 1) {
-                if (msg_ptr->header.zbft().tx_bft().height() > pools_mgr_->latest_height() + 1) {
+            if (msg_ptr->header.zbft().tx_bft().height() != pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
+                if (msg_ptr->header.zbft().tx_bft().height() > pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
                     kv_sync_->AddSyncHeight(
                         msg_ptr->thread_idx,
                         common::GlobalInfo::Instance()->network_id(),
@@ -862,7 +862,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
             bft_msgs->msgs[1] = msg_ptr;
             if (bft_msgs->msgs[0] != nullptr &&
-                    bft_msgs->msgs[0]->header.zbft().tx_bft().height() != pools_mgr_->latest_height() + 1) {
+                    bft_msgs->msgs[0]->header.zbft().tx_bft().height() != pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
                 return;
             }
         }
