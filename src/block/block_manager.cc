@@ -1750,7 +1750,7 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         return;
     }
 
-    if (latest_to_tx_ != nullptr && latest_to_tx_->timeout > now_tm_ms) {
+    if (latest_to_tx_ != nullptr && latest_to_tx_->to_tx->timeout > now_tm_ms) {
         return;
     }
 
