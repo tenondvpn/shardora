@@ -202,6 +202,7 @@ int Zbft::LeaderCommitOk(
 //         ZJC_DEBUG("leader_handled_commit_");
         return kConsensusHandled;
     }
+
 //     if (!prepare_bitmap_.Valid(index)) {
 //         ZJC_DEBUG("index invalid: %d", index);
 //         return kConsensusWaitingBackup;

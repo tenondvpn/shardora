@@ -1266,6 +1266,12 @@ bool BftManager::VerifyLeaderIdValid(const ElectItem& elect_item, const transpor
     }
 
     auto& mem_ptr = (*elect_item.members)[msg_ptr->header.zbft().member_index()];
+    if (mem_ptr->bls_publick_key == libff::alt_bn128_G2::zero()) {
+        ZJC_DEBUG("verify sign failed, backup invalid bls pk: %s",
+            common::Encode::HexEncode(mem_ptr->id).c_str());
+        return false;
+    }
+
     auto msg_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(msg_ptr->header);
     if (security_ptr_->Verify(
             msg_hash,
