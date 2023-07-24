@@ -1279,24 +1279,36 @@ void BftManager::BackupHandleZbftMessage(
         uint8_t thread_index,
         const transport::MessagePtr& msg_ptr) {
     auto elect_item_ptr = elect_items_[elect_item_idx_];
-    if (elect_item_ptr->elect_height != msg_ptr->header.zbft().elect_height()) {
-        auto tmp_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
-        if (tmp_ptr == nullptr) {
-            ZJC_ERROR("elect height error: %lu, %lu",
-                elect_item_ptr->elect_height, msg_ptr->header.zbft().elect_height());
+    auto& bft_msg = msg_ptr->header.zbft();
+    if (!bft_msg.precommit_gid().empty()) {
+        auto precommit_bft_ptr = pools_with_zbfts_[bft_msg.pool_index()];
+        if (precommit_bft_ptr == nullptr) {
+            ZJC_ERROR("get precommit gid failed: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
             return;
         }
 
-        if (tmp_ptr->elect_height != msg_ptr->header.zbft().elect_height()) {
-            ZJC_ERROR("elect height error: %lu, %lu, %lu",
-                elect_item_ptr->elect_height,
-                msg_ptr->header.zbft().elect_height(),
-                tmp_ptr->elect_height);
-            return;
-        }
+        elect_item_ptr = precommit_bft_ptr->elect_item_ptr();
+    } else {
+        if (elect_item_ptr->elect_height != msg_ptr->header.zbft().elect_height()) {
+            auto tmp_ptr = elect_items_[(elect_item_idx_ + 1) % 2];
+            if (tmp_ptr == nullptr) {
+                ZJC_ERROR("elect height error: %lu, %lu",
+                    elect_item_ptr->elect_height, msg_ptr->header.zbft().elect_height());
+                return;
+            }
 
-        elect_item_ptr = tmp_ptr;
+            if (tmp_ptr->elect_height != msg_ptr->header.zbft().elect_height()) {
+                ZJC_ERROR("elect height error: %lu, %lu, %lu",
+                    elect_item_ptr->elect_height,
+                    msg_ptr->header.zbft().elect_height(),
+                    tmp_ptr->elect_height);
+                return;
+            }
+
+            elect_item_ptr = tmp_ptr;
+        }
     }
+    
 
     auto& elect_item = *elect_item_ptr;
     if (!VerifyLeaderIdValid(elect_item, msg_ptr)) {
@@ -1331,7 +1343,6 @@ void BftManager::BackupHandleZbftMessage(
         }
     }
 
-    auto& bft_msg = msg_ptr->header.zbft();
     if (!bft_msg.prepare_gid().empty()) {
         int res = BackupPrepare(elect_item, msg_ptr);
         if (res == kConsensusOppose) {

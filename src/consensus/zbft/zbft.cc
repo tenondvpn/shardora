@@ -372,7 +372,6 @@ void Zbft::CreatePrecommitVerifyHash() {
         common::Encode::HexEncode(prepare_hash_).c_str(),
         common::Encode::HexEncode(precommit_bls_agg_verify_hash_).c_str(),
         common::Encode::HexEncode(gid()).c_str());
-
 }
 
 void Zbft::CreateCommitVerifyHash() {
