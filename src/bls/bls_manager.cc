@@ -255,11 +255,8 @@ int BlsManager::Verify(
     bn_sign.to_affine_coordinates();
     auto sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign.X);
     auto sign_y = libBLS::ThresholdUtils::fieldElementToString(bn_sign.Y);
-    BLS_DEBUG("verify t: %u, n: %u, pk: %s,%s,%s sign x: %s, sign y: %s, sign msg: %s,%s,%s",
+    BLS_DEBUG("verify t: %u, n: %u, sign x: %s, sign y: %s, sign msg: %s,%s,%s",
         t, n,
-        libBLS::ThresholdUtils::fieldElementToString(pubkey.X).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(pubkey.Y).c_str(),
-        libBLS::ThresholdUtils::fieldElementToString(pubkey.Z).c_str(),
         (sign_x).c_str(), (sign_y).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
