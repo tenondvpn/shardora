@@ -2559,7 +2559,7 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
         bft_msg.agree_precommit(),
         common::Encode::HexEncode(bft_msg.prepare_hash()).c_str(),
-        common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str());
+        common::Encode::HexEncode(bft_ptr->prepare_hash()).c_str());
     if (bft_msg.agree_precommit()) {
         libff::alt_bn128_G1 sign;
         try {
