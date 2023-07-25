@@ -1771,6 +1771,10 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
                 HandleSyncedBlock(thread_idx, block_ptr);
                 witer = waiting_agg_block_map.erase(witer);
             } else {
+                if (block_ptr->height() < pools_mgr_->latest_height(block_ptr->pool_index())) {
+                    break;
+                }
+
                 if (witer != waiting_agg_block_map.begin()) {
                     break;
                 }
