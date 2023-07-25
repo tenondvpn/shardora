@@ -1803,21 +1803,31 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
         auto& waiting_agg_block_map = waiting_agg_verify_blocks_[pool_index];
         auto witer = waiting_agg_block_map.begin();
         while (witer != waiting_agg_block_map.end()) {
-            if (witer->second->electblock_height() > elect_item_ptr->elect_height) {
+            auto& block_ptr = witer->second;
+            if (block_ptr->electblock_height() > elect_item_ptr->elect_height) {
                 break;
             }
 
-            if (!block_agg_valid_func_(thread_idx, *witer->second)) {
-                ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
-                    witer->second->network_id(),
-                    witer->second->pool_index(),
-                    witer->second->height(),
-                    common::Encode::HexEncode(GetBlockHash(*witer->second)).c_str());
+            if (pools_mgr_->is_next_block_checked(block_ptr->pool_index(), block_ptr->height(), block_ptr->hash())) {
+                HandleSyncedBlock(thread_idx, block_ptr);
+                witer = waiting_agg_block_map.erase(witer);
             } else {
-                HandleSyncedBlock(thread_idx, witer->second);
-            }
+                if (witer != waiting_agg_block_map.begin()) {
+                    break;
+                }
 
-            witer = waiting_agg_block_map.erase(witer);
+                if (!block_agg_valid_func_(thread_idx, *block_ptr)) {
+                    ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+                        block_ptr->network_id(),
+                        block_ptr->pool_index(),
+                        block_ptr->height(),
+                        common::Encode::HexEncode(GetBlockHash(*block_ptr)).c_str());
+                    break;
+                }
+
+                HandleSyncedBlock(thread_idx, block_ptr);
+                witer = waiting_agg_block_map.erase(witer);
+            }
         }
 
         if (pools_with_zbfts_[pool_index] == nullptr) {
@@ -2615,7 +2625,7 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
                 " precommit gid: %s, agree commit: %d",
                 bft_ptr->txs_ptr()->tx_type,
                 common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-                common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
+                common::Encode::HexEncode(bft_ptr->prepare_hash()).c_str(),
                 common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
                 bft_msg.agree_commit());
             return kConsensusOppose;
