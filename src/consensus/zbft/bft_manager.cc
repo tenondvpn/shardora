@@ -987,6 +987,7 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
                 return;
             }
 
+
             if (!req_bft_msg.block().has_bls_agg_sign_x() || !req_bft_msg.block().has_bls_agg_sign_y()) {
                 ZJC_DEBUG("not has agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
                     req_bft_msg.block().network_id(),
@@ -996,7 +997,24 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
                 return;
             }
 
+            if (GetBlockHash(req_bft_msg.block()) != req_bft_msg.block().hash()) {
+                return;
+            }
+
             auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
+            if (pools_mgr_->is_next_block_checked(
+                    block_ptr->pool_index(),
+                    block_ptr->height(),
+                    block_ptr->hash())) {
+                HandleSyncedBlock(msg_ptr->thread_idx, block_ptr);
+                return;
+            }
+
+            if (block_ptr->height() < pools_mgr_->latest_height(block_ptr->pool_index())) {
+                waiting_agg_verify_blocks_[block_ptr->pool_index()][block_ptr->height()] = block_ptr;
+                return;
+            }
+
             if (elect_item.elect_height < block_ptr->electblock_height()) {
                 waiting_agg_verify_blocks_[block_ptr->pool_index()][block_ptr->height()] = block_ptr;
                 return;
@@ -1029,6 +1047,10 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
 
                 assert(false);
             } else {
+                ZJC_ERROR("commited block with bft coming: %u, %lu, %s, gid: %s",
+                    req_bft_msg.block().pool_index(), req_bft_msg.block().height(),
+                    common::Encode::HexEncode(req_bft_msg.block().hash()).c_str(),
+                    common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str());
                 if (!req_bft_msg.block().is_commited_block()) {
                     assert(false);
                     return;
