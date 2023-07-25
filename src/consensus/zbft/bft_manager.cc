@@ -1772,11 +1772,13 @@ void BftManager::CheckTimeout(uint8_t thread_idx) {
                 witer = waiting_agg_block_map.erase(witer);
             } else {
                 if (block_ptr->height() < pools_mgr_->latest_height(block_ptr->pool_index())) {
-                    break;
+                    ++witer;
+                    continue;
                 }
 
                 if (witer != waiting_agg_block_map.begin()) {
-                    break;
+                    ++witer;
+                    continue;
                 }
 
                 if (!block_agg_valid_func_(thread_idx, *block_ptr)) {
