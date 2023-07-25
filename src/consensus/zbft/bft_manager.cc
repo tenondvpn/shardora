@@ -1048,6 +1048,8 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
 }
 
 void BftManager::HandleCommitedSyncBlock(uint8_t thread_idx, const zbft::protobuf::ZbftMessage& req_bft_msg) {
+    auto elect_item_ptr = elect_items_[elect_item_idx_];
+    auto& elect_item = *elect_item_ptr;
     ZJC_ERROR("commited block with bft coming: %u, %lu, %s, gid: %s",
         req_bft_msg.block().pool_index(), req_bft_msg.block().height(),
         common::Encode::HexEncode(req_bft_msg.block().hash()).c_str(),
