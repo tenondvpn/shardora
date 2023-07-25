@@ -982,56 +982,7 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
         auto elect_item_ptr = elect_items_[elect_item_idx_];
         auto& elect_item = *elect_item_ptr;
         if (bft_ptr == nullptr) {
-            if (!req_bft_msg.block().is_commited_block()) {
-                assert(false);
-                return;
-            }
-
-
-            if (!req_bft_msg.block().has_bls_agg_sign_x() || !req_bft_msg.block().has_bls_agg_sign_y()) {
-                ZJC_DEBUG("not has agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
-                    req_bft_msg.block().network_id(),
-                    req_bft_msg.block().pool_index(),
-                    req_bft_msg.block().height(),
-                    common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
-                return;
-            }
-
-            if (GetBlockHash(req_bft_msg.block()) != req_bft_msg.block().hash()) {
-                return;
-            }
-
-            auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
-            if (pools_mgr_->is_next_block_checked(
-                    block_ptr->pool_index(),
-                    block_ptr->height(),
-                    block_ptr->hash())) {
-                HandleSyncedBlock(msg_ptr->thread_idx, block_ptr);
-                return;
-            }
-
-            if (block_ptr->height() < pools_mgr_->latest_height(block_ptr->pool_index())) {
-                waiting_agg_verify_blocks_[block_ptr->pool_index()][block_ptr->height()] = block_ptr;
-                return;
-            }
-
-            if (elect_item.elect_height < block_ptr->electblock_height()) {
-                waiting_agg_verify_blocks_[block_ptr->pool_index()][block_ptr->height()] = block_ptr;
-                return;
-            }
-
-            // check bls sign
-            if (!block_agg_valid_func_(msg_ptr->thread_idx, req_bft_msg.block())) {
-                ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
-                    req_bft_msg.block().network_id(),
-                    req_bft_msg.block().pool_index(),
-                    req_bft_msg.block().height(),
-                    common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
-                //assert(false);
-                return;
-            }
-
-            HandleSyncedBlock(msg_ptr->thread_idx, block_ptr);
+            HandleCommitedSyncBlock(req_bft_msg);
         } else {
             if (bft_ptr->prepare_block() == nullptr) {
                 auto block_hash = GetBlockHash(req_bft_msg.block());
@@ -1047,57 +998,7 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
 
                 assert(false);
             } else {
-                ZJC_ERROR("commited block with bft coming: %u, %lu, %s, gid: %s",
-                    req_bft_msg.block().pool_index(), req_bft_msg.block().height(),
-                    common::Encode::HexEncode(req_bft_msg.block().hash()).c_str(),
-                    common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str());
-                if (!req_bft_msg.block().is_commited_block()) {
-                    assert(false);
-                    return;
-                }
-
-                if (bft_ptr->consensus_status() == kConsensusPreCommit) {
-                    // check bls sign
-                    if (!block_agg_valid_func_(msg_ptr->thread_idx, req_bft_msg.block())) {
-                        ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
-                            req_bft_msg.block().network_id(),
-                            req_bft_msg.block().pool_index(),
-                            req_bft_msg.block().height(),
-                            common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
-                        //assert(false);
-                        return;
-                    }
-
-                    if (!CheckChangedLeaderBftsValid(
-                            req_bft_msg.block().pool_index(),
-                            req_bft_msg.block().height(),
-                            bft_ptr->gid())) {
-                        return;
-                    }
-
-                    auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
-                    bft_ptr->set_prepare_block(block_ptr);
-                    HandleLocalCommitBlock(msg_ptr, bft_ptr);
-                } else {
-                    auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
-                    if (elect_item.elect_height < block_ptr->electblock_height()) {
-                        waiting_agg_verify_blocks_[block_ptr->pool_index()][block_ptr->height()] = block_ptr;
-                        return;
-                    }
-
-                    // check bls sign
-                    if (!block_agg_valid_func_(msg_ptr->thread_idx, req_bft_msg.block())) {
-                        ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
-                            req_bft_msg.block().network_id(),
-                            req_bft_msg.block().pool_index(),
-                            req_bft_msg.block().height(),
-                            common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
-                        //assert(false);
-                        return;
-                    }
-
-                    HandleSyncedBlock(msg_ptr->thread_idx, block_ptr);
-                }
+                HandleCommitedSyncBlock(req_bft_msg);
             }
         }
     } else {
@@ -1144,6 +1045,62 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
             common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str(),
             msg.hash64());
     }
+}
+
+void BftManager::HandleCommitedSyncBlock(const bft::protobuf::ZbftMessage& req_bft_msg) {
+    ZJC_ERROR("commited block with bft coming: %u, %lu, %s, gid: %s",
+        req_bft_msg.block().pool_index(), req_bft_msg.block().height(),
+        common::Encode::HexEncode(req_bft_msg.block().hash()).c_str(),
+        common::Encode::HexEncode(req_bft_msg.precommit_gid()).c_str());
+    if (!req_bft_msg.block().is_commited_block()) {
+        assert(false);
+        return;
+    }
+
+    if (!req_bft_msg.block().has_bls_agg_sign_x() || !req_bft_msg.block().has_bls_agg_sign_y()) {
+        ZJC_DEBUG("not has agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+            req_bft_msg.block().network_id(),
+            req_bft_msg.block().pool_index(),
+            req_bft_msg.block().height(),
+            common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
+        return;
+    }
+
+    if (GetBlockHash(req_bft_msg.block()) != req_bft_msg.block().hash()) {
+        return;
+    }
+
+    auto block_ptr = std::make_shared<block::protobuf::Block>(req_bft_msg.block());
+    if (pools_mgr_->is_next_block_checked(
+            block_ptr->pool_index(),
+            block_ptr->height(),
+            block_ptr->hash())) {
+        HandleSyncedBlock(msg_ptr->thread_idx, block_ptr);
+        return;
+    }
+
+    if (block_ptr->height() < pools_mgr_->latest_height(block_ptr->pool_index())) {
+        waiting_agg_verify_blocks_[block_ptr->pool_index()][block_ptr->height()] = block_ptr;
+        return;
+    }
+
+    if (elect_item.elect_height < block_ptr->electblock_height()) {
+        waiting_agg_verify_blocks_[block_ptr->pool_index()][block_ptr->height()] = block_ptr;
+        return;
+    }
+
+    // check bls sign
+    if (!block_agg_valid_func_(msg_ptr->thread_idx, req_bft_msg.block())) {
+        ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
+            req_bft_msg.block().network_id(),
+            req_bft_msg.block().pool_index(),
+            req_bft_msg.block().height(),
+            common::Encode::HexEncode(GetBlockHash(req_bft_msg.block())).c_str());
+        //assert(false);
+        return;
+    }
+
+    HandleSyncedBlock(msg_ptr->thread_idx, block_ptr);
 }
 
 void BftManager::AddWaitingBlock(std::shared_ptr<block::protobuf::Block>& block_ptr) {

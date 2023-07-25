@@ -178,6 +178,7 @@ private:
     void BackupSendPrecommitMessage(const ElectItem& elect_item, const transport::MessagePtr& leader_msg_ptr, bool agree);
     void LeaderSendPrecommitMessage(const transport::MessagePtr& leader_msg_ptr, bool agree);
     void LeaderSendCommitMessage(const transport::MessagePtr& leader_msg_ptr, bool agree);
+    void HandleCommitedSyncBlock();
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);
