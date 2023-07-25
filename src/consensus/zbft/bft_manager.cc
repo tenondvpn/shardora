@@ -982,7 +982,7 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
         auto elect_item_ptr = elect_items_[elect_item_idx_];
         auto& elect_item = *elect_item_ptr;
         if (bft_ptr == nullptr) {
-            HandleCommitedSyncBlock(req_bft_msg);
+            HandleCommitedSyncBlock(msg_ptr->thread_idx, req_bft_msg);
         } else {
             if (bft_ptr->prepare_block() == nullptr) {
                 auto block_hash = GetBlockHash(req_bft_msg.block());
@@ -998,7 +998,7 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
 
                 assert(false);
             } else {
-                HandleCommitedSyncBlock(req_bft_msg);
+                HandleCommitedSyncBlock(msg_ptr->thread_idx, req_bft_msg);
             }
         }
     } else {
@@ -1047,7 +1047,7 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
     }
 }
 
-void BftManager::HandleCommitedSyncBlock(const zbft::protobuf::ZbftMessage& req_bft_msg) {
+void BftManager::HandleCommitedSyncBlock(uint8_t thread_idx, const zbft::protobuf::ZbftMessage& req_bft_msg) {
     ZJC_ERROR("commited block with bft coming: %u, %lu, %s, gid: %s",
         req_bft_msg.block().pool_index(), req_bft_msg.block().height(),
         common::Encode::HexEncode(req_bft_msg.block().hash()).c_str(),
@@ -1075,7 +1075,7 @@ void BftManager::HandleCommitedSyncBlock(const zbft::protobuf::ZbftMessage& req_
             block_ptr->pool_index(),
             block_ptr->height(),
             block_ptr->hash())) {
-        HandleSyncedBlock(msg_ptr->thread_idx, block_ptr);
+        HandleSyncedBlock(thread_idx, block_ptr);
         return;
     }
 
@@ -1090,7 +1090,7 @@ void BftManager::HandleCommitedSyncBlock(const zbft::protobuf::ZbftMessage& req_
     }
 
     // check bls sign
-    if (!block_agg_valid_func_(msg_ptr->thread_idx, req_bft_msg.block())) {
+    if (!block_agg_valid_func_(thread_idx, req_bft_msg.block())) {
         ZJC_ERROR("failed check agg sign sync block message net: %u, pool: %u, height: %lu, block hash: %s",
             req_bft_msg.block().network_id(),
             req_bft_msg.block().pool_index(),
@@ -1100,7 +1100,7 @@ void BftManager::HandleCommitedSyncBlock(const zbft::protobuf::ZbftMessage& req_
         return;
     }
 
-    HandleSyncedBlock(msg_ptr->thread_idx, block_ptr);
+    HandleSyncedBlock(thread_idx, block_ptr);
 }
 
 void BftManager::AddWaitingBlock(std::shared_ptr<block::protobuf::Block>& block_ptr) {
