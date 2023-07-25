@@ -1047,7 +1047,7 @@ void BftManager::HandleSyncConsensusBlock(const transport::MessagePtr& msg_ptr) 
     }
 }
 
-void BftManager::HandleCommitedSyncBlock(const protos::protobuf::ZbftMessage& req_bft_msg) {
+void BftManager::HandleCommitedSyncBlock(const zbft::protobuf::ZbftMessage& req_bft_msg) {
     ZJC_ERROR("commited block with bft coming: %u, %lu, %s, gid: %s",
         req_bft_msg.block().pool_index(), req_bft_msg.block().height(),
         common::Encode::HexEncode(req_bft_msg.block().hash()).c_str(),
