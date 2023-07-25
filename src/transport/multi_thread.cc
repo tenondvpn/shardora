@@ -161,6 +161,10 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
             common::Encode::HexEncode(msg.zbft().precommit_gid()).c_str(),
             common::Encode::HexEncode(msg.zbft().commit_gid()).c_str(),
             msg.zbft().sync_block());
+        if (msg.zbft().sync_block()) {
+            return kTransportPriorityHighest;
+        }
+
         if (msg.zbft().tx_bft().tx_type() != pools::protobuf::kNormalFrom &&
                 msg.zbft().tx_bft().tx_type() != pools::protobuf::kNormalTo) {
             return kTransportPrioritySystem;
@@ -180,7 +184,7 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
         }
        
         if (!msg.zbft().precommit_gid().empty()) {
-//             msg_ptr->handle_timeout = common::TimeUtils::TimestampMs() + 2 * kHandledTimeoutMs;
+            msg_ptr->handle_timeout = common::TimeUtils::TimestampMs() + 2 * kHandledTimeoutMs;
             return kTransportPriorityHigh;
         }
 
