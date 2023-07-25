@@ -178,19 +178,18 @@ int32_t MultiThreadHandler::GetPriority(MessagePtr& msg_ptr) {
             return kTransportPriorityHighest;
         }
 
-        if (!msg.zbft().prepare_gid().empty() && msg.zbft().leader_idx() < 0) {
+        if (!msg.zbft().prepare_gid().empty()) {
             msg_ptr->handle_timeout = common::TimeUtils::TimestampMs() + 2 * kHandledTimeoutMs;
-            return kTransportPriorityHigh;
+            return kTransportPriorityMiddle;
         }
        
         if (!msg.zbft().precommit_gid().empty()) {
             msg_ptr->handle_timeout = common::TimeUtils::TimestampMs() + 2 * kHandledTimeoutMs;
-            return kTransportPriorityHigh;
-        }
+            if (msg.zbft().leader_idx() > 0) {
+                return kTransportPriorityLow;
+            }
 
-        if (!msg.zbft().prepare_gid().empty()) {
-            msg_ptr->handle_timeout = common::TimeUtils::TimestampMs() + kHandledTimeoutMs;
-            return kTransportPriorityMiddle;
+            return kTransportPriorityHigh;
         }
 
         return kTransportPriorityLow;
