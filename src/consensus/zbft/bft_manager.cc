@@ -504,7 +504,7 @@ ZbftPtr BftManager::Start(
     } else {
         if (commited_bft_ptr->elect_item_ptr().get() != elect_item_ptr.get()) {
             ZJC_DEBUG("leader changed.");
-            return;
+            return nullptr;
         }
 
         txs_ptr = txs_pools_->LeaderGetValidTxs(commited_bft_ptr->pool_index());
