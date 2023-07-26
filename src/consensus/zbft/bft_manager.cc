@@ -381,7 +381,7 @@ void BftManager::RotationLeader(
 ZbftPtr BftManager::Start(
         uint8_t thread_index,
         ZbftPtr commited_bft_ptr,
-        ZbftPtr& retry_bft_ptr) {
+        ZbftPtr retry_bft_ptr) {
 #ifndef ZJC_UNITTEST
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) <
@@ -2634,7 +2634,7 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
                 bft_msg.agree_commit());
             auto& invalid_set = bft_ptr->invalid_txs();
             if (!invalid_set.empty()) {
-                Start(bft_ptr->thread_idx(), nullptr, bft_ptr);
+                Start(bft_ptr->thread_index(), nullptr, bft_ptr);
             }
             return kConsensusOppose;
         }

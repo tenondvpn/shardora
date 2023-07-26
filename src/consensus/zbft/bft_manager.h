@@ -96,7 +96,7 @@ private:
     ZbftPtr Start(
         uint8_t thread_index,
         ZbftPtr commited_bft_ptr,
-        ZbftPtr& retry_bft_ptr);
+        ZbftPtr retry_bft_ptr);
     ZbftPtr StartBft(
         const std::shared_ptr<ElectItem>& elect_item,
         std::shared_ptr<WaitingTxsItem>& txs_ptr,
