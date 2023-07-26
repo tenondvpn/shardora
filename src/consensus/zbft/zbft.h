@@ -511,7 +511,7 @@ public:
 
     void AddInvalidTx(uint32_t index) {
         if (index >= kMaxTxCount) {
-            return true;
+            return;
         }
 
         ++invalid_prepare_txs_[index];

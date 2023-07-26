@@ -416,6 +416,12 @@ ZbftPtr BftManager::Start(
         elect_item_ptr = item_ptr;
     }
 
+    if (commited_bft_ptr != nullptr &&
+            commited_bft_ptr->elect_item_ptr().get() != elect_item_ptr.get()) {
+        ZJC_DEBUG("leader changed.");
+        return nullptr;
+    }
+
     auto& elect_item = *elect_item_ptr;
     auto& thread_set = elect_item.thread_set;
     auto thread_item = thread_set[thread_index];
@@ -470,6 +476,8 @@ ZbftPtr BftManager::Start(
 std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
         std::shared_ptr<PoolTxIndexItem>& thread_item,
         ZbftPtr& commited_bft_ptr) {
+    std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
+    auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (commited_bft_ptr == nullptr) {
         if (thread_item->pools[thread_item->pools.size() - 1] == common::kRootChainPoolIndex) {
             if (pools_prev_bft_timeout_[common::kRootChainPoolIndex] < now_tm_ms) {
@@ -552,11 +560,6 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
             thread_item->prev_index = ++thread_item->prev_index % thread_item->pools.size();
         }
     } else {
-        if (commited_bft_ptr->elect_item_ptr().get() != elect_item_ptr.get()) {
-            ZJC_DEBUG("leader changed.");
-            return nullptr;
-        }
-
         txs_ptr = txs_pools_->LeaderGetValidTxs(commited_bft_ptr->pool_index());
     }
 
