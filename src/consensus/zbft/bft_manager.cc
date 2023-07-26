@@ -433,6 +433,8 @@ ZbftPtr BftManager::Start(
                     if (!bft_ptr->this_node_is_leader()) {
                         if (bft_ptr->timeout(now_tm_ms * 1000lu)) {
                             LeaderRemoveTimeoutPrepareBft(bft_ptr);
+                        } else {
+                            continue;
                         }
                     }
 
@@ -460,6 +462,8 @@ ZbftPtr BftManager::Start(
 
                     if (bft_ptr->timeout(now_tm_ms * 1000lu)) {
                         LeaderRemoveTimeoutPrepareBft(bft_ptr);
+                    } else {
+                        continue;
                     }
                 }
 
@@ -487,6 +491,8 @@ ZbftPtr BftManager::Start(
 
                     if (bft_ptr->timeout(now_tm_ms * 1000lu)) {
                         LeaderRemoveTimeoutPrepareBft(bft_ptr);
+                    } else {
+                        continue;
                     }
                 }
 
