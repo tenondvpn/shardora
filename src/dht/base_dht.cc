@@ -63,6 +63,11 @@ void BaseDht::UniversalJoin(const NodePtr& node) {
 }
 
 int BaseDht::Join(NodePtr& node) {
+    DHT_DEBUG("sharding: %u, now try join new node: %s:%d",
+        local_node_->sharding_id,
+        node->public_ip.c_str(),
+        node->public_port);
+
     if (node_join_cb_ != nullptr) {
         if (node_join_cb_(node) != kDhtSuccess) {
             DHT_DEBUG("check callback join node failed! %s, %d, sharding id: %d",
