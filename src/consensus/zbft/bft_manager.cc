@@ -857,7 +857,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 if (bft_msgs != nullptr) {
                     for (int32_t i = 0; i < 3; ++i) {
                         if (bft_msgs->msgs[i] != nullptr) {
-                            old_height = bft_msgs->msgs[0]->header.zbft().tx_bft().height();
+                            old_height = bft_msgs->msgs[i]->header.zbft().tx_bft().height();
                             break;
                         }
                     }
