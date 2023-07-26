@@ -580,6 +580,8 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
                 continue;
             }
 
+            ZJC_DEBUG("res refresh neighbers new node: %s:%u",
+                (*iter)->public_ip.c_str(), (*iter)->public_port);
             tmp_dht.push_back((*iter));
         }
 
@@ -631,6 +633,8 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
 
     const auto& res_nodes = dht_msg.refresh_neighbors_res().nodes();
     for (int32_t i = 0; i < res_nodes.size(); ++i) {
+        ZJC_DEBUG("connect neighbers new node: %s:%u",
+            res_nodes[i].public_ip().c_str(), res_nodes[i].public_port());
         Connect(
             msg_ptr->thread_idx,
             res_nodes[i].public_ip(),
