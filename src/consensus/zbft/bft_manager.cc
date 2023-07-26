@@ -433,12 +433,11 @@ ZbftPtr BftManager::Start(
                     if (!bft_ptr->this_node_is_leader()) {
                         if (bft_ptr->timeout(now_tm_ms * 1000lu)) {
                             LeaderRemoveTimeoutPrepareBft(bft_ptr);
-                        } else {
-                            continue;
+                            txs_ptr = txs_pools_->LeaderGetValidTxs(common::kRootChainPoolIndex);
                         }
+                    } else {
+                        txs_ptr = txs_pools_->LeaderGetValidTxs(common::kRootChainPoolIndex);
                     }
-
-                    txs_ptr = txs_pools_->LeaderGetValidTxs(common::kRootChainPoolIndex);
                 } else {
                     txs_ptr = txs_pools_->LeaderGetValidTxs(common::kRootChainPoolIndex);
                 }
@@ -460,11 +459,11 @@ ZbftPtr BftManager::Start(
                         continue;
                     }
 
-                    if (bft_ptr->timeout(now_tm_ms * 1000lu)) {
-                        LeaderRemoveTimeoutPrepareBft(bft_ptr);
-                    } else {
+                    if (!bft_ptr->timeout(now_tm_ms * 1000lu)) {
                         continue;
                     }
+
+                    LeaderRemoveTimeoutPrepareBft(bft_ptr);
                 }
 
                 txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
@@ -489,11 +488,11 @@ ZbftPtr BftManager::Start(
                         continue;
                     }
 
-                    if (bft_ptr->timeout(now_tm_ms * 1000lu)) {
-                        LeaderRemoveTimeoutPrepareBft(bft_ptr);
-                    } else {
+                    if (!bft_ptr->timeout(now_tm_ms * 1000lu)) {
                         continue;
                     }
+
+                    LeaderRemoveTimeoutPrepareBft(bft_ptr);
                 }
 
                 txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
