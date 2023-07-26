@@ -2629,17 +2629,17 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
                 bft_msg.agree_commit());
             auto& invalid_set = bft_ptr->invalid_txs();
             if (!invalid_set.empty()) {
-                auto& txs_ptr = bft_ptr->txs_ptr();
+                auto& txs_map = bft_ptr->txs_ptr()->txs;
                 uint8_t index = 0;
-                auto iter = txs_ptr->begin();
-                while (iter != txs_ptr->end()) {
+                auto iter = txs_map.begin();
+                while (iter != txs_map.end()) {
                     auto invalid_iter = invalid_set.find(index);
                     if (invalid_iter != invalid_set.end()) {
                         pools_mgr_->RemoveTx(bft_ptr->pool_index(), iter->first);
                         ZJC_DEBUG("add invalid tx: %d, %s",
                             index,
                             common::Encode::HexEncode(iter->first).c_str());
-                        iter = txs_ptr->erase(iter);
+                        iter = txs_map.erase(iter);
                     } else {
                         ++iter;
                     }
