@@ -271,7 +271,7 @@ void BftManager::SetThreadItem(
 void BftManager::ConsensusTimerMessage(const transport::MessagePtr& msg_ptr) {
 #ifndef ZJC_UNITTEST
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
-    Start(msg_ptr->thread_idx, nullptr);
+    Start(msg_ptr->thread_idx, nullptr, nullptr);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     PopAllPoolTxs(msg_ptr->thread_idx);
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -380,7 +380,8 @@ void BftManager::RotationLeader(
 
 ZbftPtr BftManager::Start(
         uint8_t thread_index,
-        ZbftPtr commited_bft_ptr) {
+        ZbftPtr commited_bft_ptr,
+        ZbftPtr& retry_bft_ptr) {
 #ifndef ZJC_UNITTEST
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) <
@@ -430,7 +431,15 @@ ZbftPtr BftManager::Start(
         return nullptr;
     }
 
-    std::shared_ptr<WaitingTxsItem> txs_ptr = get_txs_ptr(thread_item, commited_bft_ptr);
+    std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
+    if (retry_bft_ptr != nullptr) {
+        txs_ptr = retry_bft_ptr->txs_ptr();
+    }
+
+    if (txs_ptr == nullptr) {
+        txs_ptr = get_txs_ptr(thread_item, commited_bft_ptr);
+    }
+
     if (txs_ptr == nullptr) {
         ZJC_DEBUG("thread idx error 5: %d", thread_index);
         return nullptr;
@@ -445,7 +454,7 @@ ZbftPtr BftManager::Start(
     }
 
     txs_ptr->thread_index = thread_index;
-    auto zbft_ptr = StartBft(elect_item_ptr, txs_ptr, commited_bft_ptr);
+    auto zbft_ptr = StartBft(elect_item_ptr, txs_ptr, commited_bft_ptr, retry_bft_ptr);
     if (zbft_ptr == nullptr) {
         for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
             iter->second->in_consensus = false;
@@ -642,7 +651,8 @@ int BftManager::InitZbftPtr(int32_t leader_idx, const ElectItem& elect_item, Zbf
 ZbftPtr BftManager::StartBft(
         const std::shared_ptr<ElectItem>& elect_item_ptr,
         std::shared_ptr<WaitingTxsItem>& txs_ptr,
-        ZbftPtr commited_bft_ptr) {
+        ZbftPtr commited_bft_ptr,
+        ZbftPtr& retry_bft_ptr) {
     ZbftPtr bft_ptr = nullptr;
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         bft_ptr = std::make_shared<RootZbft>(
@@ -678,7 +688,7 @@ ZbftPtr BftManager::StartBft(
     bft_ptr->set_gid(gid);
     bft_ptr->set_network_id(common::GlobalInfo::Instance()->network_id());
     bft_ptr->set_member_count(elect_item.member_size);
-    int leader_pre = LeaderPrepare(elect_item, bft_ptr, commited_bft_ptr);
+    int leader_pre = LeaderPrepare(elect_item, bft_ptr, commited_bft_ptr, retry_bft_ptr);
     if (leader_pre != kConsensusSuccess) {
         ZJC_ERROR("leader prepare failed!");
         return nullptr;
@@ -1956,7 +1966,8 @@ void BftManager::ReConsensusBft(ZbftPtr& bft_ptr) {
 int BftManager::LeaderPrepare(
         const ElectItem& elect_item,
         ZbftPtr& bft_ptr,
-        ZbftPtr commited_bft_ptr) {
+        ZbftPtr& commited_bft_ptr,
+        ZbftPtr& retry_bft_ptr) {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& header = msg_ptr->header;
     msg_ptr->thread_idx = bft_ptr->thread_index();
@@ -2513,7 +2524,7 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
         auto& member_ptr = (*bft_ptr->members_ptr())[bft_msg.member_index()];
         if (bft_msg.agree_commit()) {
             if (LeaderCommit(bft_ptr, msg_ptr) == kConsensusAgree) {
-                auto next_ptr = Start(msg_ptr->thread_idx, bft_ptr);
+                auto next_ptr = Start(msg_ptr->thread_idx, bft_ptr, nullptr);
                 if (next_ptr == nullptr) {
                     LeaderSendCommitMessage(msg_ptr, true);
                 }
@@ -2621,6 +2632,10 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
                 common::Encode::HexEncode(bft_ptr->prepare_hash()).c_str(),
                 common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
                 bft_msg.agree_commit());
+            auto& invalid_set = bft_ptr->invalid_txs();
+            if (!invalid_set.empty()) {
+                Start(bft_ptr->thread_idx(), nullptr, bft_ptr);
+            }
             return kConsensusOppose;
         }
     }
