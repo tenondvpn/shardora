@@ -863,10 +863,14 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                     }
                 }
                 
-                if (msg_ptr->header.zbft().tx_bft().height() > old_height) {
+                if (msg_ptr->header.zbft().tx_bft().height() >= old_height) {
                     bft_msgs = std::make_shared<BftMessageInfo>(header.zbft().prepare_gid());
                     gid_with_msg_map_[header.zbft().pool_index()] = bft_msgs;
                 } else {
+                    ZJC_DEBUG("gid oldest for old: %s, %lu, %lu",
+                        common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+                        msg_ptr->header.zbft().tx_bft().height(),
+                        old_height);
                     return;
                 }
             }

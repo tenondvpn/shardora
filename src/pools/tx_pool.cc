@@ -130,6 +130,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
 
     gid_map_[tx_ptr->gid] = tx_ptr;
     timeout_txs_.push(tx_ptr->gid);
+    oldest_timestamp_ = prio_map_.begin()->second->time_valid;
     return kPoolsSuccess;
 }
 
@@ -241,6 +242,11 @@ void TxPool::RemoveTx(const std::string& gid) {
 //         common::Encode::HexEncode(giter->second->gid).c_str(),
 //         common::Encode::HexEncode(giter->second->tx_hash).c_str());
     gid_map_.erase(giter);
+    if (!prio_map_.empty()) {
+        oldest_timestamp_ = prio_map_.begin()->second->time_valid;
+    } else {
+        oldest_timestamp_ = 0;
+    }
 }
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
