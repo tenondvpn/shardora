@@ -34,5 +34,5 @@ message ZbftMessage {
     optional bool sync_block = 19;
     repeated uint32 ips = 20;
     optional bytes oppose_prepare_gid = 21;
-    repeated uint8 invaid_txs = 22;
+    repeated uint32 invaid_txs = 22;
 }
