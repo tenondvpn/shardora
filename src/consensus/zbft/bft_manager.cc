@@ -2016,6 +2016,13 @@ int BftManager::LeaderPrepare(
         bft_msg.set_bls_sign_y(libBLS::ThresholdUtils::fieldElementToString(bls_commit_sign->Y));
     }
 
+    if (retry_bft_ptr != nullptr) {
+        auto invalid_set = retry_bft_ptr->invalid_txs();
+        for (auto iter = invalid_set.begin(); iter != invalid_set.end(); ++iter) {
+            bft_msg.add_invaid_txs(*iter);
+        }
+    }
+
     assert(elect_item.elect_height > 0);
     bft_ptr->reset_timeout();
     bft_ptr->set_consensus_status(kConsensusPrepare);
