@@ -49,6 +49,7 @@ public:
     void TxRecover(std::map<std::string, TxItemPtr>& txs);
     void CheckTimeoutTx();
     uint32_t SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms);
+    void RemoveTx(const std::string& gid);
 
     void FlushHeightTree(db::DbWriteBatch& db_batch) {
         if (height_tree_ptr_ != nullptr) {
@@ -58,10 +59,16 @@ public:
 
     std::shared_ptr<consensus::WaitingTxsItem> GetTx(
             const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
+            const std::set<uint8_t>& leader_invalid_tx,
             std::vector<uint8_t>* invalid_txs) {
         auto txs_items = std::make_shared<consensus::WaitingTxsItem>();
         auto& tx_map = txs_items->txs;
         for (int32_t i = 0; i < tx_hash_list.size(); ++i) {
+            auto invalid_tx_iter = leader_invalid_tx.find(i);
+            if (invalid_tx_iter != leader_invalid_tx.end()) {
+                continue;
+            }
+
             auto& txhash = tx_hash_list[i];
             auto iter = gid_map_.find(txhash);
             if (iter == gid_map_.end()) {
@@ -287,7 +294,6 @@ private:
         std::map<std::string, TxItemPtr>& res_map,
         uint32_t count);
     void InitHeightTree();
-    void RemoveTx(const std::string& gid);
     void InitLatestInfo() {
         pools::protobuf::PoolLatestInfo pool_info;
         uint32_t network_id = common::GlobalInfo::Instance()->network_id();

@@ -2020,6 +2020,10 @@ int BftManager::LeaderPrepare(
         auto invalid_set = retry_bft_ptr->invalid_txs();
         for (auto iter = invalid_set.begin(); iter != invalid_set.end(); ++iter) {
             bft_msg.add_invaid_txs(*iter);
+            pools_mgr_->RemoveTx(retry_bft_ptr->pool_index(), bft_msg.tx_bft().tx_hash_list(*iter));
+            ZJC_DEBUG("add invalid tx: %d, %s",
+                *iter,
+                common::Encode::HexEncode(bft_msg.tx_bft().tx_hash_list(*iter)).c_str());
         }
     }
 
