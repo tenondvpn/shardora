@@ -783,7 +783,7 @@ int BaseDht::CheckJoin(NodePtr& node) {
         }
     }
 
-    if (node->public_ip == "0.0.0.0" /*|| common::IsVlanIp(node->public_ip)*/) {
+    if (node->public_ip == "0.0.0.0" || common::IsVlanIp(node->public_ip)) {
         ZJC_DEBUG("ip invalid: %s, is vlan ip: %d",
             node->public_ip.c_str(), common::IsVlanIp(node->public_ip));
         return kDhtIpInvalid;
