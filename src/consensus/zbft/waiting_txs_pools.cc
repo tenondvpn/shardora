@@ -214,8 +214,9 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::GetToTxs(uint32_t pool_index, b
 std::shared_ptr<WaitingTxsItem> WaitingTxsPools::FollowerGetTxs(
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
-        uint8_t thread_idx) {
-    auto txs_item = wtxs[pool_index].FollowerGetTxs(tx_hash_list);
+        uint8_t thread_idx,
+        std::vector<uint8_t>* invalid_txs) {
+    auto txs_item = wtxs[pool_index].FollowerGetTxs(tx_hash_list, invalid_txs);
     if (txs_item != nullptr) {
         txs_item->pool_index = pool_index;
         return txs_item;

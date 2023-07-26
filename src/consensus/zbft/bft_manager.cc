@@ -1393,9 +1393,10 @@ void BftManager::BackupHandleZbftMessage(
     }
 
     if (!bft_msg.prepare_gid().empty()) {
-        int res = BackupPrepare(elect_item, msg_ptr);
+        std::vector<uint8_t> invalid_txs;
+        int res = BackupPrepare(elect_item, msg_ptr, &invalid_txs);
         if (res == kConsensusOppose) {
-            BackupSendPrepareMessage(elect_item, msg_ptr, false);
+            BackupSendPrepareMessage(elect_item, msg_ptr, false, invalid_txs);
         } else if (res == kConsensusAgree) {
             BackupSendPrepareMessage(elect_item, msg_ptr, true);
             pools_with_zbfts_[bft_msg.pool_index()]->set_elect_item_ptr(elect_item_ptr);
@@ -1474,7 +1475,8 @@ bool BftManager::VerifyBackupIdValid(
 
 ZbftPtr BftManager::CreateBftPtr(
         const ElectItem& elect_item,
-        const transport::MessagePtr& msg_ptr) {
+        const transport::MessagePtr& msg_ptr,
+        std::vector<uint8_t>* invalid_txs) {
     auto& bft_msg = msg_ptr->header.zbft();
     std::vector<uint64_t> bloom_data;
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
@@ -1514,17 +1516,11 @@ ZbftPtr BftManager::CreateBftPtr(
             txs_ptr = txs_pools_->FollowerGetTxs(
                 bft_msg.pool_index(),
                 bft_msg.tx_bft().tx_hash_list(),
-                msg_ptr->thread_idx);
+                msg_ptr->thread_idx,
+                invalid_txs);
             if (txs_ptr == nullptr) {
-                PopAllPoolTxs(msg_ptr->thread_idx);
-                txs_ptr = txs_pools_->FollowerGetTxs(
-                    bft_msg.pool_index(),
-                    bft_msg.tx_bft().tx_hash_list(),
-                    msg_ptr->thread_idx);
-                if (txs_ptr == nullptr) {
-                    ZJC_ERROR("invalid consensus kNormal, txs not equal to leader. pool_index: %d, gid: %s, tx size: %u",
-                        bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), bft_msg.tx_bft().tx_hash_list_size());
-                }
+                ZJC_ERROR("invalid consensus kNormal, txs not equal to leader. pool_index: %d, gid: %s, tx size: %u",
+                    bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), bft_msg.tx_bft().tx_hash_list_size());
             }
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
@@ -2061,7 +2057,11 @@ bool BftManager::CheckAggSignValid(const transport::MessagePtr& msg_ptr, ZbftPtr
     return true;
 }
 
-void BftManager::BackupSendPrepareMessage(const ElectItem& elect_item, const transport::MessagePtr& leader_msg_ptr, bool agree) {
+void BftManager::BackupSendPrepareMessage(
+        const ElectItem& elect_item,
+        const transport::MessagePtr& leader_msg_ptr,
+        bool agree,
+        const std::vector<uint8_t>& invalid_txs) {
     auto pool_index = leader_msg_ptr->header.zbft().pool_index();
     auto& gid = leader_msg_ptr->header.zbft().prepare_gid();
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -2097,6 +2097,11 @@ void BftManager::BackupSendPrepareMessage(const ElectItem& elect_item, const tra
         bft_msg.set_bls_sign_y(bls_sign_y);
     } else {
         bft_msg.set_agree_precommit(false);
+        if (!invalid_txs.empty()) {
+            for (uint32_t i = 0; i < invalid_txs.size(); ++i) {
+                bft_msg.add_invaid_txs(invalid_txs[i]);
+            }
+        }
     }
 
     auto leader_member = (*elect_item.members)[leader_msg_ptr->header.zbft().leader_idx()];
@@ -2248,7 +2253,10 @@ void BftManager::BackupSendPrecommitMessage(
     }
 }
 
-int BftManager::BackupPrepare(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr) {
+int BftManager::BackupPrepare(
+        const ElectItem& elect_item,
+        const transport::MessagePtr& msg_ptr,
+        std::vector<uint8_t>* invalid_txs) {
     auto& bft_msg = msg_ptr->header.zbft();
     if (bft_msg.has_agree_precommit() && !bft_msg.agree_precommit()) {
         ZJC_DEBUG("precommit failed, remove all prepare gid; %s, precommit gid: %s, commit gid: %s",
@@ -2279,7 +2287,7 @@ int BftManager::BackupPrepare(const ElectItem& elect_item, const transport::Mess
         return kConsensusOppose;
     }
 
-    auto bft_ptr = CreateBftPtr(elect_item, msg_ptr);
+    auto bft_ptr = CreateBftPtr(elect_item, msg_ptr, invalid_txs);
     if (bft_ptr == nullptr ||
             bft_ptr->txs_ptr() == nullptr ||
             bft_ptr->txs_ptr()->txs.empty()) {

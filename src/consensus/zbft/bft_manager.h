@@ -116,11 +116,17 @@ private:
     void CheckMessageTimeout(uint8_t thread_index);
     int LeaderHandlePrepare(const transport::MessagePtr& msg_ptr);
     int LeaderCallPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
-    ZbftPtr CreateBftPtr(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
+    ZbftPtr CreateBftPtr(
+        const ElectItem& elect_item,
+        const transport::MessagePtr& msg_ptr,
+        std::vector<uint8_t>* invalid_txs);
     void BackupHandleZbftMessage(
         uint8_t thread_index,
         const transport::MessagePtr& msg_ptr);
-    int BackupPrepare(const ElectItem& elect_item, const transport::MessagePtr& msg_ptr);
+    int BackupPrepare(
+        const ElectItem& elect_item,
+        const transport::MessagePtr& msg_ptr,
+        std::vector<uint8_t>* invalid_txs);
     bool IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info);
     void HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, ZbftPtr& bft_ptr);
     int InitZbftPtr(int32_t leader_idx, const ElectItem& elect_item, ZbftPtr& bft_ptr);
@@ -174,8 +180,15 @@ private:
     void BroadcastInvalidGids(uint8_t thread_idx);
     void CheckInvalidGids(uint8_t thread_idx);
     void LeaderRemoveTimeoutPrepareBft(ZbftPtr& bft_ptr);
-    void BackupSendPrepareMessage(const ElectItem& elect_item, const transport::MessagePtr& leader_msg_ptr, bool agree);
-    void BackupSendPrecommitMessage(const ElectItem& elect_item, const transport::MessagePtr& leader_msg_ptr, bool agree);
+    void BackupSendPrepareMessage(
+        const ElectItem& elect_item,
+        const transport::MessagePtr& leader_msg_ptr,
+        bool agree,
+        const std::vector<uint8_t>& invalid_txs);
+    void BackupSendPrecommitMessage(
+        const ElectItem& elect_item,
+        const transport::MessagePtr& leader_msg_ptr,
+        bool agree);
     void LeaderSendPrecommitMessage(const transport::MessagePtr& leader_msg_ptr, bool agree);
     void LeaderSendCommitMessage(const transport::MessagePtr& leader_msg_ptr, bool agree);
     void HandleCommitedSyncBlock(uint8_t thread_idx, const zbft::protobuf::ZbftMessage& req_bft_msg);
