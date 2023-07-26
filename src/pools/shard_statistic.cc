@@ -377,8 +377,8 @@ bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                     ZJC_DEBUG("kJoinElect add new elect node: %s, shard: %u, pool: %u, height: %lu",
                         common::Encode::HexEncode(block.tx_list(i).from()).c_str(),
                         join_info.shard_id(),
-                        block->pool_index(),
-                        block->height());
+                        block.pool_index(),
+                        block.height());
                 }
             }
         }
