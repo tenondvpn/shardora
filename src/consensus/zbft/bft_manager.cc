@@ -1398,7 +1398,7 @@ void BftManager::BackupHandleZbftMessage(
         if (res == kConsensusOppose) {
             BackupSendPrepareMessage(elect_item, msg_ptr, false, invalid_txs);
         } else if (res == kConsensusAgree) {
-            BackupSendPrepareMessage(elect_item, msg_ptr, true);
+            BackupSendPrepareMessage(elect_item, msg_ptr, true, invalid_txs);
             pools_with_zbfts_[bft_msg.pool_index()]->set_elect_item_ptr(elect_item_ptr);
             pools_with_zbfts_[bft_msg.pool_index()]->AfterNetwork();
         } else {
