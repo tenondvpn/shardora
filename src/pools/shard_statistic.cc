@@ -363,17 +363,22 @@ bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
                 if (block.tx_list(i).storages(storage_idx).key() == protos::kJoinElectVerifyG2) {
                     std::string val;
                     if (!prefix_db_->GetTemporaryKv(block.tx_list(i).storages(storage_idx).val_hash(), &val)) {
+                        assert(false);
                         break;
                     }
 
                     bls::protobuf::JoinElectInfo join_info;
                     if (!join_info.ParseFromString(val)) {
+                        assert(false);
                         break;
                     }
 
                     statistic_info_ptr->node_shard_map[block.tx_list(i).from()] = join_info.shard_id();
-                    ZJC_DEBUG("kJoinElect add new elect node: %s, shard: %u",
-                        common::Encode::HexEncode(block.tx_list(i).from()).c_str(), join_info.shard_id());
+                    ZJC_DEBUG("kJoinElect add new elect node: %s, shard: %u, pool: %u, height: %lu",
+                        common::Encode::HexEncode(block.tx_list(i).from()).c_str(),
+                        join_info.shard_id(),
+                        block->pool_index(),
+                        block->height());
                 }
             }
         }
