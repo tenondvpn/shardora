@@ -653,6 +653,7 @@ void BaseDht::Connect(
         int32_t src_sharding_id,
         bool response) {
     if (des_ip == "0.0.0.0" || des_port == 0) {
+        ZJC_DEBUG("des_ip == 0.0.0.0 || des_port == 0");
         return;
     }
 
@@ -661,6 +662,7 @@ void BaseDht::Connect(
     auto iter = connect_timeout_map_.find(peer_int);
     if (iter != connect_timeout_map_.end()) {
         if (iter->second >= now_tm_ms) {
+            ZJC_DEBUG("iter->second >= now_tm_ms: %lu, %lu", iter->second, now_tm_ms);
             return;
         }
     }
@@ -682,8 +684,9 @@ void BaseDht::Connect(
         std::string sign;
         transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
         if (security_->Sign(
-            transport::TcpTransport::Instance()->GetHeaderHashForSign(msg),
-            &sign) != security::kSecuritySuccess) {
+                transport::TcpTransport::Instance()->GetHeaderHashForSign(msg),
+                &sign) != security::kSecuritySuccess) {
+            ZJC_DEBUG("sign error");
             return;
         }
 
@@ -693,23 +696,26 @@ void BaseDht::Connect(
             des_ip,
             des_port,
             msg);
-//         DHT_DEBUG("connect to: %s:%d, %lu, %lu, %lu", des_ip.c_str(),
-//             des_port, peer_int, connect_timeout_map_[peer_int], now_tm_ms);
+        DHT_DEBUG("connect to: %s:%d, %lu, %lu, %lu", des_ip.c_str(),
+            des_port, peer_int, connect_timeout_map_[peer_int], now_tm_ms);
     }
 }
 
 void BaseDht::ProcessConnectRequest(const transport::MessagePtr& msg_ptr) {
     if (!is_universal_) {
+        ZJC_DEBUG("not universal");
         return;
     }
 
     auto& header = msg_ptr->header;
     auto& dht_msg = header.dht_proto();
     if (header.des_dht_key() != local_node_->dht_key) {
+        ZJC_DEBUG("header.des_dht_key() != local_node_->dht_key");
         return;
     }
 
     if (!dht_msg.has_connect_req()) {
+        ZJC_DEBUG("!dht_msg.has_connect_req()");
         return;
     }
 
