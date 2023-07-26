@@ -192,6 +192,9 @@ private:
     void LeaderSendPrecommitMessage(const transport::MessagePtr& leader_msg_ptr, bool agree);
     void LeaderSendCommitMessage(const transport::MessagePtr& leader_msg_ptr, bool agree);
     void HandleCommitedSyncBlock(uint8_t thread_idx, const zbft::protobuf::ZbftMessage& req_bft_msg);
+    std::shared_ptr<WaitingTxsItem> get_txs_ptr(
+        std::shared_ptr<PoolTxIndexItem>& thread_item,
+        ZbftPtr& commited_bft_ptr);
 
     pools::TxItemPtr CreateFromTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<FromTxItem>(msg_ptr, account_mgr_, security_ptr_);

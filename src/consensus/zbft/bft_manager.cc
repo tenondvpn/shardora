@@ -424,7 +424,52 @@ ZbftPtr BftManager::Start(
         return nullptr;
     }
 
-    std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
+    std::shared_ptr<WaitingTxsItem> txs_ptr = get_txs_ptr(thread_item, commited_bft_ptr);
+    if (txs_ptr == nullptr) {
+        ZJC_DEBUG("thread idx error 5: %d", thread_index);
+        return nullptr;
+    }
+
+    if (txs_ptr->tx_type == pools::protobuf::kNormalFrom) {
+        if (block_mgr_->ShouldStopConsensus()) {
+            ZJC_DEBUG("should stop consensus.");
+            ZJC_DEBUG("thread idx error 6: %d", thread_index);
+            return nullptr;
+        }
+    }
+
+    txs_ptr->thread_index = thread_index;
+    auto zbft_ptr = StartBft(elect_item_ptr, txs_ptr, commited_bft_ptr);
+    if (zbft_ptr == nullptr) {
+        for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
+            iter->second->in_consensus = false;
+        }
+
+        ZJC_DEBUG("leader start bft failed, thread: %d, pool: %d, "
+            "thread_item->pools.size(): %d, "
+            "elect_item_ptr->elect_height: %lu,elect_item_ptr->time_valid: %lu now_tm_ms: %lu",
+            thread_index, txs_ptr->pool_index,
+            thread_item->pools.size(),
+            elect_item_ptr->elect_height,
+            elect_item_ptr->time_valid,
+            now_tm_ms);
+        return nullptr;
+    }
+
+    ZJC_DEBUG("leader start bft success, thread: %d, pool: %d,"
+        "thread_item->pools.size(): %d, "
+        "elect_item_ptr->elect_height: %lu,elect_item_ptr->time_valid: %lu now_tm_ms: %lu",
+        thread_index, zbft_ptr->pool_index(),
+        thread_item->pools.size(),
+        elect_item_ptr->elect_height,
+        elect_item_ptr->time_valid,
+        now_tm_ms);
+    return zbft_ptr;
+}
+
+std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
+        std::shared_ptr<PoolTxIndexItem>& thread_item,
+        ZbftPtr& commited_bft_ptr) {
     if (commited_bft_ptr == nullptr) {
         if (thread_item->pools[thread_item->pools.size() - 1] == common::kRootChainPoolIndex) {
             if (pools_prev_bft_timeout_[common::kRootChainPoolIndex] < now_tm_ms) {
@@ -514,47 +559,8 @@ ZbftPtr BftManager::Start(
 
         txs_ptr = txs_pools_->LeaderGetValidTxs(commited_bft_ptr->pool_index());
     }
-    
-    if (txs_ptr == nullptr) {
-        ZJC_DEBUG("thread idx error 5: %d", thread_index);
-        return nullptr;
-    }
 
-    if (txs_ptr->tx_type == pools::protobuf::kNormalFrom) {
-        if (block_mgr_->ShouldStopConsensus()) {
-            ZJC_DEBUG("should stop consensus.");
-            ZJC_DEBUG("thread idx error 6: %d", thread_index);
-            return nullptr;
-        }
-    }
-
-    txs_ptr->thread_index = thread_index;
-    auto zbft_ptr = StartBft(elect_item_ptr, txs_ptr, commited_bft_ptr);
-    if (zbft_ptr == nullptr) {
-        for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
-            iter->second->in_consensus = false;
-        }
-
-        ZJC_DEBUG("leader start bft failed, thread: %d, pool: %d, "
-            "thread_item->pools.size(): %d, "
-            "elect_item_ptr->elect_height: %lu,elect_item_ptr->time_valid: %lu now_tm_ms: %lu",
-            thread_index, txs_ptr->pool_index,
-            thread_item->pools.size(),
-            elect_item_ptr->elect_height,
-            elect_item_ptr->time_valid,
-            now_tm_ms);
-        return nullptr;
-    }
-
-    ZJC_DEBUG("leader start bft success, thread: %d, pool: %d,"
-        "thread_item->pools.size(): %d, "
-        "elect_item_ptr->elect_height: %lu,elect_item_ptr->time_valid: %lu now_tm_ms: %lu",
-        thread_index, zbft_ptr->pool_index(),
-        thread_item->pools.size(),
-        elect_item_ptr->elect_height,
-        elect_item_ptr->time_valid,
-        now_tm_ms);
-    return zbft_ptr;
+    return txs_ptr;
 }
 
 void BftManager::LeaderRemoveTimeoutPrepareBft(ZbftPtr& bft_ptr) {
@@ -2596,8 +2602,14 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
             return kConsensusOppose;
         }
     } else {
+        for (int32_t i = 0; i < bft_msg.invaid_txs_size(); ++i) {
+            bft_ptr->AddInvalidTx(bft_msg.invaid_txs(i));
+        }
+
         if (bft_ptr->AddPrepareOpposeNode(member_ptr->id) == kConsensusOppose) {
-            ZJC_DEBUG("gid: %s, set pool index: %u", common::Encode::HexEncode(bft_ptr->gid()).c_str(), bft_ptr->pool_index());
+            ZJC_DEBUG("gid: %s, set pool index: %u",
+                common::Encode::HexEncode(bft_ptr->gid()).c_str(),
+                bft_ptr->pool_index());
             bft_ptr->set_consensus_status(kConsensusFailed);
             ZJC_ERROR("precommit call oppose now step: %d, gid: %s, prepare hash: %s,"
                 " precommit gid: %s, agree commit: %d",

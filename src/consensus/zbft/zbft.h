@@ -509,6 +509,21 @@ public:
         elect_item_ptr_ = elect_item;
     }
 
+    void AddInvalidTx(uint32_t index) {
+        if (index >= kMaxTxCount) {
+            return true;
+        }
+
+        ++invalid_prepare_txs_[index];
+        if (invalid_prepare_txs_[index] >= min_oppose_member_count_) {
+            invalid_txs_.insert(index);
+        }
+    }
+
+    const std::set<uint8_t>& invalid_txs() const {
+        return invalid_txs_;
+    }
+
 protected:
     std::shared_ptr<block::AccountManager> account_mgr_ = nullptr;
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
@@ -569,6 +584,8 @@ protected:
     uint64_t changed_leader_elect_height_ = common::kInvalidUint64;
     std::string prepare_hash_;
     std::shared_ptr<ElectItem> elect_item_ptr_ = nullptr;
+    uint8_t invalid_prepare_txs_[kMaxTxCount] = { 0 };
+    std::set<uint8_t> invalid_txs_;
 
     DISALLOW_COPY_AND_ASSIGN(Zbft);
 public:
