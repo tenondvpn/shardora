@@ -95,20 +95,17 @@ private:
     void ConsensusTimerMessage(const transport::MessagePtr& msg_ptr);
     ZbftPtr Start(
         uint8_t thread_index,
-        ZbftPtr commited_bft_ptr,
-        ZbftPtr retry_bft_ptr);
+        ZbftPtr commited_bft_ptr);
     ZbftPtr StartBft(
         const std::shared_ptr<ElectItem>& elect_item,
         std::shared_ptr<WaitingTxsItem>& txs_ptr,
-        ZbftPtr commited_bft_ptr,
-        ZbftPtr& retry_bft_ptr);
+        ZbftPtr commited_bft_ptr);
     void RemoveBft(uint32_t pool_index, const std::string& gid);
     void RemoveBftWithBlockHeight(uint32_t pool_index, uint64_t height);
     int LeaderPrepare(
         const ElectItem& elect_item,
         ZbftPtr& bft_ptr,
-        ZbftPtr& commited_bft_ptr,
-        ZbftPtr& retry_bft_ptr);
+        ZbftPtr& commited_bft_ptr);
     void LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr);
     int BackupPrecommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_ptr);
     int LeaderCommit(
