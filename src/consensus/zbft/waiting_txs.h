@@ -25,9 +25,8 @@ public:
 
     std::shared_ptr<WaitingTxsItem> FollowerGetTxs(
             const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
-            const std::set<uint8_t>& leader_invalid_tx,
             std::vector<uint8_t>* invalid_txs) {
-        txs_items_ = pools_mgr_->GetTx(pool_index_, tx_hash_list, leader_invalid_tx, invalid_txs);
+        txs_items_ = pools_mgr_->GetTx(pool_index_, tx_hash_list, invalid_txs);
         if (txs_items_ != nullptr && txs_items_->txs.empty()) {
             txs_items_ = nullptr;
         }

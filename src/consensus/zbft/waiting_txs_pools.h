@@ -46,7 +46,6 @@ public:
         uint32_t pool_index,
         const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
         uint8_t thread_idx,
-        const std::set<uint8_t>& leader_invalid_tx,
         std::vector<uint8_t>* invalid_txs);
 
 private:

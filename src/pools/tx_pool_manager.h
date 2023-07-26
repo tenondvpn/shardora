@@ -114,9 +114,8 @@ public:
     std::shared_ptr<consensus::WaitingTxsItem> GetTx(
             uint32_t pool_index,
             const google::protobuf::RepeatedPtrField<std::string>& tx_hash_list,
-            const std::set<uint8_t>& leader_invalid_tx,
             std::vector<uint8_t>* invalid_txs) {
-        return tx_pool_[pool_index].GetTx(tx_hash_list, leader_invalid_tx, invalid_txs);
+        return tx_pool_[pool_index].GetTx(tx_hash_list, invalid_txs);
     }
 
     void RegisterCreateTxFunction(uint32_t type, CreateConsensusItemFunction func) {

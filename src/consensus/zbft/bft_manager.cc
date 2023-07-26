@@ -1522,20 +1522,22 @@ ZbftPtr BftManager::CreateBftPtr(
         } else {
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
-            std::set<uint8_t> leader_invalid_txs;
-            for (int32_t i = 0; i < bft_msg.invaid_txs_size(); ++i) {
-                leader_invalid_txs.insert(bft_msg.invaid_txs(i));
-            }
-
             txs_ptr = txs_pools_->FollowerGetTxs(
                 bft_msg.pool_index(),
                 bft_msg.tx_bft().tx_hash_list(),
                 msg_ptr->thread_idx,
-                leader_invalid_txs,
-                invalid_txs);
+                nullptr);
             if (txs_ptr == nullptr) {
-                ZJC_ERROR("invalid consensus kNormal, txs not equal to leader. pool_index: %d, gid: %s, tx size: %u",
-                    bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), bft_msg.tx_bft().tx_hash_list_size());
+                PopAllPoolTxs(msg_ptr->thread_idx);
+                txs_ptr = txs_pools_->FollowerGetTxs(
+                    bft_msg.pool_index(),
+                    bft_msg.tx_bft().tx_hash_list(),
+                    msg_ptr->thread_idx,
+                    invalid_txs);
+                if (txs_ptr == nullptr) {
+                    ZJC_ERROR("invalid consensus kNormal, txs not equal to leader. pool_index: %d, gid: %s, tx size: %u",
+                        bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), bft_msg.tx_bft().tx_hash_list_size());
+                }
             }
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
