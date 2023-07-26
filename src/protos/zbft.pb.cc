@@ -122,17 +122,18 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::zbft::protobuf::ZbftMessage, sync_block_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::zbft::protobuf::ZbftMessage, ips_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::zbft::protobuf::ZbftMessage, oppose_prepare_gid_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::zbft::protobuf::ZbftMessage, invaid_txs_),
   0,
   1,
   2,
-  19,
-  10,
-  13,
-  14,
-  11,
-  12,
-  8,
   18,
+  10,
+  12,
+  13,
+  19,
+  11,
+  8,
+  15,
   3,
   16,
   4,
@@ -140,13 +141,14 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   17,
   6,
   9,
-  15,
+  14,
   ~0u,
   7,
+  ~0u,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 10, sizeof(::zjchain::zbft::protobuf::TxBft)},
-  { 15, 41, sizeof(::zjchain::zbft::protobuf::ZbftMessage)},
+  { 15, 42, sizeof(::zjchain::zbft::protobuf::ZbftMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -181,23 +183,24 @@ void AddDescriptorsImpl() {
       "ock.protobuf.Block\022\032\n\022prepare_final_hash"
       "\030\002 \001(\014\022\016\n\006height\030\003 \001(\004\022\024\n\014tx_hash_list\030\004"
       " \003(\014\022>\n\007tx_type\030\005 \001(\0162 .zjchain.pools.pr"
-      "otobuf.StepType:\013kNormalFrom\"\211\004\n\013ZbftMes"
+      "otobuf.StepType:\013kNormalFrom\"\251\004\n\013ZbftMes"
       "sage\022\023\n\013prepare_gid\030\001 \001(\014\022\025\n\rprecommit_g"
       "id\030\002 \001(\014\022\022\n\ncommit_gid\030\003 \001(\014\022\026\n\nleader_i"
       "dx\030\004 \001(\005:\002-1\022\016\n\006net_id\030\005 \001(\r\022\036\n\017agree_pr"
       "ecommit\030\006 \001(\010:\005false\022\033\n\014agree_commit\030\007 \001"
-      "(\010:\005false\022\022\n\npool_index\030\010 \001(\r\022\r\n\005error\030\t"
-      " \001(\005\022,\n\006tx_bft\030\n \001(\0132\034.zjchain.zbft.prot"
-      "obuf.TxBft\022\024\n\014member_index\030\013 \001(\r\022\027\n\017back"
-      "up_enc_data\030\014 \001(\014\022\024\n\014elect_height\030\r \001(\004\022"
-      "\022\n\nbls_sign_x\030\016 \001(\014\022\022\n\nbls_sign_y\030\017 \001(\014\022"
-      "\026\n\016prepare_height\030\020 \001(\004\022\024\n\014prepare_hash\030"
-      "\021 \001(\014\022,\n\005block\030\022 \001(\0132\035.zjchain.block.pro"
-      "tobuf.Block\022\022\n\nsync_block\030\023 \001(\010\022\013\n\003ips\030\024"
-      " \003(\r\022\032\n\022oppose_prepare_gid\030\025 \001(\014"
+      "(\010:\005false\022\036\n\npool_index\030\010 \001(\r:\n429496729"
+      "5\022\r\n\005error\030\t \001(\005\022,\n\006tx_bft\030\n \001(\0132\034.zjcha"
+      "in.zbft.protobuf.TxBft\022\024\n\014member_index\030\013"
+      " \001(\r\022\027\n\017backup_enc_data\030\014 \001(\014\022\024\n\014elect_h"
+      "eight\030\r \001(\004\022\022\n\nbls_sign_x\030\016 \001(\014\022\022\n\nbls_s"
+      "ign_y\030\017 \001(\014\022\026\n\016prepare_height\030\020 \001(\004\022\024\n\014p"
+      "repare_hash\030\021 \001(\014\022,\n\005block\030\022 \001(\0132\035.zjcha"
+      "in.block.protobuf.Block\022\022\n\nsync_block\030\023 "
+      "\001(\010\022\013\n\003ips\030\024 \003(\r\022\032\n\022oppose_prepare_gid\030\025"
+      " \001(\014\022\022\n\ninvaid_txs\030\026 \003(\r"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 792);
+      descriptor, 824);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/zbft.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fblock_2eproto::AddDescriptors();
@@ -679,6 +682,7 @@ const int ZbftMessage::kBlockFieldNumber;
 const int ZbftMessage::kSyncBlockFieldNumber;
 const int ZbftMessage::kIpsFieldNumber;
 const int ZbftMessage::kOpposePrepareGidFieldNumber;
+const int ZbftMessage::kInvaidTxsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ZbftMessage::ZbftMessage()
@@ -692,7 +696,8 @@ ZbftMessage::ZbftMessage(const ZbftMessage& from)
   : ::google::protobuf::Message(),
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_),
-      ips_(from.ips_) {
+      ips_(from.ips_),
+      invaid_txs_(from.invaid_txs_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   prepare_gid_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.has_prepare_gid()) {
@@ -737,8 +742,8 @@ ZbftMessage::ZbftMessage(const ZbftMessage& from)
     block_ = NULL;
   }
   ::memcpy(&net_id_, &from.net_id_,
-    static_cast<size_t>(reinterpret_cast<char*>(&leader_idx_) -
-    reinterpret_cast<char*>(&net_id_)) + sizeof(leader_idx_));
+    static_cast<size_t>(reinterpret_cast<char*>(&pool_index_) -
+    reinterpret_cast<char*>(&net_id_)) + sizeof(pool_index_));
   // @@protoc_insertion_point(copy_constructor:zjchain.zbft.protobuf.ZbftMessage)
 }
 
@@ -752,9 +757,10 @@ void ZbftMessage::SharedCtor() {
   prepare_hash_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   oppose_prepare_gid_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&tx_bft_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&member_index_) -
-      reinterpret_cast<char*>(&tx_bft_)) + sizeof(member_index_));
+      reinterpret_cast<char*>(&prepare_height_) -
+      reinterpret_cast<char*>(&tx_bft_)) + sizeof(prepare_height_));
   leader_idx_ = -1;
+  pool_index_ = 4294967295u;
 }
 
 ZbftMessage::~ZbftMessage() {
@@ -796,6 +802,7 @@ void ZbftMessage::Clear() {
   (void) cached_has_bits;
 
   ips_.Clear();
+  invaid_txs_.Clear();
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
@@ -835,14 +842,15 @@ void ZbftMessage::Clear() {
   }
   if (cached_has_bits & 64512u) {
     ::memset(&net_id_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&sync_block_) -
-        reinterpret_cast<char*>(&net_id_)) + sizeof(sync_block_));
+        reinterpret_cast<char*>(&member_index_) -
+        reinterpret_cast<char*>(&net_id_)) + sizeof(member_index_));
   }
   if (cached_has_bits & 983040u) {
     ::memset(&elect_height_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&member_index_) -
-        reinterpret_cast<char*>(&elect_height_)) + sizeof(member_index_));
+        reinterpret_cast<char*>(&prepare_height_) -
+        reinterpret_cast<char*>(&elect_height_)) + sizeof(prepare_height_));
     leader_idx_ = -1;
+    pool_index_ = 4294967295u;
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -950,7 +958,7 @@ bool ZbftMessage::MergePartialFromCodedStream(
         break;
       }
 
-      // optional uint32 pool_index = 8;
+      // optional uint32 pool_index = 8 [default = 4294967295];
       case 8: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(64u /* 64 & 0xFF */)) {
@@ -1137,6 +1145,25 @@ bool ZbftMessage::MergePartialFromCodedStream(
         break;
       }
 
+      // repeated uint32 invaid_txs = 22;
+      case 22: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(176u /* 176 & 0xFF */)) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 2, 176u, input, this->mutable_invaid_txs())));
+        } else if (
+            static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(178u /* 178 & 0xFF */)) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, this->mutable_invaid_txs())));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -1183,7 +1210,7 @@ void ZbftMessage::SerializeWithCachedSizes(
   }
 
   // optional int32 leader_idx = 4 [default = -1];
-  if (cached_has_bits & 0x00080000u) {
+  if (cached_has_bits & 0x00040000u) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->leader_idx(), output);
   }
 
@@ -1193,22 +1220,22 @@ void ZbftMessage::SerializeWithCachedSizes(
   }
 
   // optional bool agree_precommit = 6 [default = false];
-  if (cached_has_bits & 0x00002000u) {
+  if (cached_has_bits & 0x00001000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(6, this->agree_precommit(), output);
   }
 
   // optional bool agree_commit = 7 [default = false];
-  if (cached_has_bits & 0x00004000u) {
+  if (cached_has_bits & 0x00002000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(7, this->agree_commit(), output);
   }
 
-  // optional uint32 pool_index = 8;
-  if (cached_has_bits & 0x00000800u) {
+  // optional uint32 pool_index = 8 [default = 4294967295];
+  if (cached_has_bits & 0x00080000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(8, this->pool_index(), output);
   }
 
   // optional int32 error = 9;
-  if (cached_has_bits & 0x00001000u) {
+  if (cached_has_bits & 0x00000800u) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(9, this->error(), output);
   }
 
@@ -1219,7 +1246,7 @@ void ZbftMessage::SerializeWithCachedSizes(
   }
 
   // optional uint32 member_index = 11;
-  if (cached_has_bits & 0x00040000u) {
+  if (cached_has_bits & 0x00008000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(11, this->member_index(), output);
   }
 
@@ -1264,7 +1291,7 @@ void ZbftMessage::SerializeWithCachedSizes(
   }
 
   // optional bool sync_block = 19;
-  if (cached_has_bits & 0x00008000u) {
+  if (cached_has_bits & 0x00004000u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(19, this->sync_block(), output);
   }
 
@@ -1278,6 +1305,12 @@ void ZbftMessage::SerializeWithCachedSizes(
   if (cached_has_bits & 0x00000080u) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
       21, this->oppose_prepare_gid(), output);
+  }
+
+  // repeated uint32 invaid_txs = 22;
+  for (int i = 0, n = this->invaid_txs_size(); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(
+      22, this->invaid_txs(i), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1317,7 +1350,7 @@ void ZbftMessage::SerializeWithCachedSizes(
   }
 
   // optional int32 leader_idx = 4 [default = -1];
-  if (cached_has_bits & 0x00080000u) {
+  if (cached_has_bits & 0x00040000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(4, this->leader_idx(), target);
   }
 
@@ -1327,22 +1360,22 @@ void ZbftMessage::SerializeWithCachedSizes(
   }
 
   // optional bool agree_precommit = 6 [default = false];
-  if (cached_has_bits & 0x00002000u) {
+  if (cached_has_bits & 0x00001000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(6, this->agree_precommit(), target);
   }
 
   // optional bool agree_commit = 7 [default = false];
-  if (cached_has_bits & 0x00004000u) {
+  if (cached_has_bits & 0x00002000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(7, this->agree_commit(), target);
   }
 
-  // optional uint32 pool_index = 8;
-  if (cached_has_bits & 0x00000800u) {
+  // optional uint32 pool_index = 8 [default = 4294967295];
+  if (cached_has_bits & 0x00080000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(8, this->pool_index(), target);
   }
 
   // optional int32 error = 9;
-  if (cached_has_bits & 0x00001000u) {
+  if (cached_has_bits & 0x00000800u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(9, this->error(), target);
   }
 
@@ -1354,7 +1387,7 @@ void ZbftMessage::SerializeWithCachedSizes(
   }
 
   // optional uint32 member_index = 11;
-  if (cached_has_bits & 0x00040000u) {
+  if (cached_has_bits & 0x00008000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(11, this->member_index(), target);
   }
 
@@ -1404,7 +1437,7 @@ void ZbftMessage::SerializeWithCachedSizes(
   }
 
   // optional bool sync_block = 19;
-  if (cached_has_bits & 0x00008000u) {
+  if (cached_has_bits & 0x00004000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(19, this->sync_block(), target);
   }
 
@@ -1418,6 +1451,10 @@ void ZbftMessage::SerializeWithCachedSizes(
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         21, this->oppose_prepare_gid(), target);
   }
+
+  // repeated uint32 invaid_txs = 22;
+  target = ::google::protobuf::internal::WireFormatLite::
+    WriteUInt32ToArray(22, this->invaid_txs_, target);
 
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
@@ -1442,6 +1479,15 @@ size_t ZbftMessage::ByteSizeLong() const {
       UInt32Size(this->ips_);
     total_size += 2 *
                   ::google::protobuf::internal::FromIntSize(this->ips_size());
+    total_size += data_size;
+  }
+
+  // repeated uint32 invaid_txs = 22;
+  {
+    size_t data_size = ::google::protobuf::internal::WireFormatLite::
+      UInt32Size(this->invaid_txs_);
+    total_size += 2 *
+                  ::google::protobuf::internal::FromIntSize(this->invaid_txs_size());
     total_size += data_size;
   }
 
@@ -1525,13 +1571,6 @@ size_t ZbftMessage::ByteSizeLong() const {
           this->net_id());
     }
 
-    // optional uint32 pool_index = 8;
-    if (has_pool_index()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->pool_index());
-    }
-
     // optional int32 error = 9;
     if (has_error()) {
       total_size += 1 +
@@ -1554,6 +1593,13 @@ size_t ZbftMessage::ByteSizeLong() const {
       total_size += 2 + 1;
     }
 
+    // optional uint32 member_index = 11;
+    if (has_member_index()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->member_index());
+    }
+
   }
   if (_has_bits_[16 / 32] & 983040u) {
     // optional uint64 elect_height = 13;
@@ -1570,18 +1616,18 @@ size_t ZbftMessage::ByteSizeLong() const {
           this->prepare_height());
     }
 
-    // optional uint32 member_index = 11;
-    if (has_member_index()) {
-      total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::UInt32Size(
-          this->member_index());
-    }
-
     // optional int32 leader_idx = 4 [default = -1];
     if (has_leader_idx()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
           this->leader_idx());
+    }
+
+    // optional uint32 pool_index = 8 [default = 4294967295];
+    if (has_pool_index()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->pool_index());
     }
 
   }
@@ -1613,6 +1659,7 @@ void ZbftMessage::MergeFrom(const ZbftMessage& from) {
   (void) cached_has_bits;
 
   ips_.MergeFrom(from.ips_);
+  invaid_txs_.MergeFrom(from.invaid_txs_);
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
@@ -1659,19 +1706,19 @@ void ZbftMessage::MergeFrom(const ZbftMessage& from) {
       net_id_ = from.net_id_;
     }
     if (cached_has_bits & 0x00000800u) {
-      pool_index_ = from.pool_index_;
-    }
-    if (cached_has_bits & 0x00001000u) {
       error_ = from.error_;
     }
-    if (cached_has_bits & 0x00002000u) {
+    if (cached_has_bits & 0x00001000u) {
       agree_precommit_ = from.agree_precommit_;
     }
-    if (cached_has_bits & 0x00004000u) {
+    if (cached_has_bits & 0x00002000u) {
       agree_commit_ = from.agree_commit_;
     }
-    if (cached_has_bits & 0x00008000u) {
+    if (cached_has_bits & 0x00004000u) {
       sync_block_ = from.sync_block_;
+    }
+    if (cached_has_bits & 0x00008000u) {
+      member_index_ = from.member_index_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -1683,10 +1730,10 @@ void ZbftMessage::MergeFrom(const ZbftMessage& from) {
       prepare_height_ = from.prepare_height_;
     }
     if (cached_has_bits & 0x00040000u) {
-      member_index_ = from.member_index_;
+      leader_idx_ = from.leader_idx_;
     }
     if (cached_has_bits & 0x00080000u) {
-      leader_idx_ = from.leader_idx_;
+      pool_index_ = from.pool_index_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -1717,6 +1764,7 @@ void ZbftMessage::Swap(ZbftMessage* other) {
 void ZbftMessage::InternalSwap(ZbftMessage* other) {
   using std::swap;
   ips_.InternalSwap(&other->ips_);
+  invaid_txs_.InternalSwap(&other->invaid_txs_);
   prepare_gid_.Swap(&other->prepare_gid_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   precommit_gid_.Swap(&other->precommit_gid_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
@@ -1736,15 +1784,15 @@ void ZbftMessage::InternalSwap(ZbftMessage* other) {
   swap(tx_bft_, other->tx_bft_);
   swap(block_, other->block_);
   swap(net_id_, other->net_id_);
-  swap(pool_index_, other->pool_index_);
   swap(error_, other->error_);
   swap(agree_precommit_, other->agree_precommit_);
   swap(agree_commit_, other->agree_commit_);
   swap(sync_block_, other->sync_block_);
+  swap(member_index_, other->member_index_);
   swap(elect_height_, other->elect_height_);
   swap(prepare_height_, other->prepare_height_);
-  swap(member_index_, other->member_index_);
   swap(leader_idx_, other->leader_idx_);
+  swap(pool_index_, other->pool_index_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
