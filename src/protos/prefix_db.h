@@ -1279,7 +1279,8 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_ERROR("write db failed!");
+            ZJC_DEBUG("get data from db failed local_member_idx: %u, valid_t: %u, id: %s",
+                local_member_idx, valid_t, common::Encode::HexEncode(id).c_str());
             return false;
         }
 
