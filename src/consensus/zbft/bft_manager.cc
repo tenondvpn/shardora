@@ -854,12 +854,15 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
             if (bft_msgs == nullptr || header.zbft().prepare_gid() != bft_msgs->gid) {
                 uint64_t old_height = 0;
-                for (int32_t i = 0; i < 3; ++i) {
-                    if (bft_msgs->msgs[i] != nullptr) {
-                        old_height = bft_msgs->msgs[0]->header.zbft().tx_bft().height();
-                        break;
+                if (bft_msgs != nullptr) {
+                    for (int32_t i = 0; i < 3; ++i) {
+                        if (bft_msgs->msgs[i] != nullptr) {
+                            old_height = bft_msgs->msgs[0]->header.zbft().tx_bft().height();
+                            break;
+                        }
                     }
                 }
+                
                 if (msg_ptr->header.zbft().tx_bft().height() > old_height) {
                     bft_msgs = std::make_shared<BftMessageInfo>(header.zbft().prepare_gid());
                     gid_with_msg_map_[header.zbft().pool_index()] = bft_msgs;
