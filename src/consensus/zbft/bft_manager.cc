@@ -2652,7 +2652,7 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
                     auto invalid_iter = invalid_set.find(index);
                     if (invalid_iter != invalid_set.end()) {
                         pools_mgr_->RemoveTx(bft_ptr->pool_index(), iter->first);
-                        ZJC_DEBUG("add invalid tx: %d, %s",
+                        ZJC_DEBUG("remove invalid tx: %d, %s",
                             index,
                             common::Encode::HexEncode(iter->first).c_str());
                         iter = txs_map.erase(iter);
@@ -2663,6 +2663,9 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
                     ++index;
                 }
 
+                ZJC_DEBUG("remove bft gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str())
+                pools_with_zbfts_[bft_ptr->thread_index()] = nullptr;
+                bft_ptr->Destroy();
                 Start(bft_ptr->thread_index(), nullptr);
             }
 
