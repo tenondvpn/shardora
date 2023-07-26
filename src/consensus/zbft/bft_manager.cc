@@ -2663,7 +2663,7 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
                     ++index;
                 }
 
-                ZJC_DEBUG("remove bft gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str())
+                ZJC_DEBUG("remove bft gid: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
                 pools_with_zbfts_[bft_ptr->thread_index()] = nullptr;
                 bft_ptr->Destroy();
                 Start(bft_ptr->thread_index(), nullptr);
