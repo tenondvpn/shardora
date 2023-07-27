@@ -1252,8 +1252,8 @@ void TxPoolManager::GetMinValidTxCount() {
 
         if (tx_pool_[i].oldest_timestamp() > 0) {
             tm_queue_.push(PoolsTmPrioItem(i, tx_pool_[i].oldest_timestamp()));
-            if (tx_pool_[i].oldest_timestamp < min_tm) {
-                min_tm = tx_pool_[i].oldest_timestamp;
+            if (tx_pool_[i].oldest_timestamp() < min_tm) {
+                min_tm = tx_pool_[i].oldest_timestamp();
             }
         }
 
