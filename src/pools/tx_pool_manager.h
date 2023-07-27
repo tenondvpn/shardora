@@ -267,9 +267,8 @@ private:
     common::ThreadSafeQueue<std::shared_ptr<InvalidGidItem>> invalid_gid_queues_[common::kInvalidPoolIndex];
     uint32_t min_valid_tx_count_ = 1;
     uint64_t min_valid_timestamp_ = 0;
+    uint64_t min_timestamp_ = common::kInvalidUint64;
     uint64_t prev_get_valid_tm_ms_ = 0;
-    std::priority_queue<PoolsCountPrioItem> count_queue_;
-    std::priority_queue<PoolsTmPrioItem> tm_queue_;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

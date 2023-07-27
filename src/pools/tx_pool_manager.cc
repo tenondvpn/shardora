@@ -1205,15 +1205,16 @@ void TxPoolManager::GetTx(
         count = common::kSingleBlockMaxTransactions;
     }
     
-    ZJC_DEBUG("get tx tm: %lu, min tm: %lu, dec: %ld, count: %u, min count: %u",
-        tx_pool_[pool_index].oldest_timestamp(), min_valid_timestamp_,
-        ((int64_t)min_valid_timestamp_ - (int64_t)tx_pool_[pool_index].oldest_timestamp()),
-        tx_pool_[pool_index].tx_size(), min_valid_tx_count_);
+//     ZJC_DEBUG("get tx tm: %lu, min tm: %lu, dec: %ld, count: %u, min count: %u",
+//         tx_pool_[pool_index].oldest_timestamp(), min_valid_timestamp_,
+//         ((int64_t)min_valid_timestamp_ - (int64_t)tx_pool_[pool_index].oldest_timestamp()),
+//         tx_pool_[pool_index].tx_size(), min_valid_tx_count_);
     if (min_valid_timestamp_ != 0 && tx_pool_[pool_index].oldest_timestamp() > min_valid_timestamp_) {
         return;
     }
 
-    if (tx_pool_[pool_index].tx_size() < min_valid_tx_count_) {
+    if (tx_pool_[pool_index].tx_size() < min_valid_tx_count_ &&
+            tx_pool_[pool_index].oldest_timestamp() > min_timestamp_) {
         return;
     }
 
@@ -1239,6 +1240,7 @@ void TxPoolManager::TxOver(
 void TxPoolManager::GetMinValidTxCount() {
     std::priority_queue<PoolsCountPrioItem> count_queue_;
     std::priority_queue<PoolsTmPrioItem> tm_queue_;
+    uint64_t min_tm = common::kInvalidUint64;
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         if (tx_pool_[i].tx_size() > 0) {
             count_queue_.push(PoolsCountPrioItem(i, tx_pool_[i].tx_size()));
@@ -1250,11 +1252,18 @@ void TxPoolManager::GetMinValidTxCount() {
 
         if (tx_pool_[i].oldest_timestamp() > 0) {
             tm_queue_.push(PoolsTmPrioItem(i, tx_pool_[i].oldest_timestamp()));
+            if (tx_pool_[i].oldest_timestamp < min_tm) {
+                min_tm = tx_pool_[i].oldest_timestamp;
+            }
         }
 
         if (tm_queue_.size() > kMinPoolsValidCount) {
             tm_queue_.pop();
         }
+    }
+
+    if (min_tm != common::kInvalidUint64) {
+        min_timestamp_ = min_tm;
     }
 
     if (count_queue_.size() < kMinPoolsValidCount) {

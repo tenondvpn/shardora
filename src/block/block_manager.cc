@@ -1439,7 +1439,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     leader_to_txs->to_tx = to_txs_ptr;
     to_txs_ptr->success = true;
     to_txs_ptr->leader_to_index = shard_to.leader_to_idx();
-    ZJC_INFO("success add txs: %s, leader idx: %u, leader to index: %d, gid: %s",
+    ZJC_DEBUG("success add txs: %s, leader idx: %u, leader to index: %d, gid: %s",
         common::Encode::HexEncode(tos_hashs).c_str(),
         shard_to.leader_idx(), shard_to.leader_to_idx(),
         common::Encode::HexEncode(gid).c_str());
@@ -1450,7 +1450,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     auto rbegin = leader_to_txs_.begin();
     if (rbegin != leader_to_txs_.end()) {
         latest_to_tx_ = rbegin->second;
-        ZJC_INFO("set success add txs: %s, leader idx: %u, leader to index: %d, gid: %s, elect height: %lu",
+        ZJC_DEBUG("set success add txs: %s, leader idx: %u, leader to index: %d, gid: %s, elect height: %lu",
             common::Encode::HexEncode(tos_hashs).c_str(),
             shard_to.leader_idx(), shard_to.leader_to_idx(),
             common::Encode::HexEncode(gid).c_str(),
@@ -1671,7 +1671,7 @@ void BlockManager::CreateStatisticTx(uint8_t thread_idx) {
     }
 
     if (latest_timeblock_height_ <= consensused_timeblock_height_) {
-        ZJC_WARN("latest_timeblock_height_ <= consensused_timeblock_height_: %lu, %lu",
+        ZJC_DEBUG("latest_timeblock_height_ <= consensused_timeblock_height_: %lu, %lu",
             latest_timeblock_height_, consensused_timeblock_height_);
         return;
     }
