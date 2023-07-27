@@ -213,12 +213,14 @@ private:
     void PopPoolsMessage();
     void HandlePoolsMessage(const transport::MessagePtr& msg_ptr);
     void HandleInvalidGids(const transport::MessagePtr& msg_ptr);
+    void GetMinValidTxCount();
 
     static const uint32_t kPopMessageCountEachTime = 64u;
     static const uint64_t kFlushHeightTreePeriod = 60000lu;
     static const uint64_t kSyncPoolsMaxHeightsPeriod = 3000lu;
     static const uint64_t kSyncMissingBlockPeriod = 3000lu;
     static const uint64_t kSyncCrossPeriod = 3000lu;
+    static const uint64_t kGetMinPeriod = 3000lu;
     double kGrubbsValidFactor = 3.217;  // 90%
     const double kInvalidLeaderRatio = 0.85;
 
@@ -261,6 +263,9 @@ private:
     volatile bool destroy_ = false;
     std::unordered_map<std::string, std::shared_ptr<InvalidGidItem>> invalid_gids_;
     common::ThreadSafeQueue<std::shared_ptr<InvalidGidItem>> invalid_gid_queues_[common::kInvalidPoolIndex];
+    uint32_t min_valid_tx_count_ = 1;
+    uint64_t min_valid_timestamp_ = 0;
+    uint64_t prev_get_valid_tm_ms_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

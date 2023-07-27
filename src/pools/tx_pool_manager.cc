@@ -214,6 +214,11 @@ void TxPoolManager::ConsensusTimerMessage(uint8_t thread_idx) {
         prev_sync_height_tree_tm_ms_ = now_tm_ms + kFlushHeightTreePeriod;
     }
 
+    if (prev_get_valid_tm_ms_ < now_tm_ms) {
+        prev_get_valid_tm_ms_ = now_tm_ms + kGetMinPeriod;
+        GetMinValidTxCount();
+    }
+
     if (prev_check_leader_valid_ms_ < now_tm_ms && member_index_ != common::kInvalidUint32) {
         if (network::DhtManager::Instance()->valid_count(
                 common::GlobalInfo::Instance()->network_id()) + 1 >=
@@ -416,7 +421,10 @@ std::shared_ptr<address::protobuf::AddressInfo> TxPoolManager::GetAddressInfo(
 
 void TxPoolManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
     // just one thread
-    ZJC_DEBUG("success add message hash64: %lu", msg_ptr->header.hash64());
+    ZJC_DEBUG("success add message hash64: %lu, thread idx: %u, msg size: %u",
+        msg_ptr->header.hash64(),
+        msg_ptr->thread_idx,
+        pools_msg_queue_[msg_ptr->thread_idx].size());
     auto& header = msg_ptr->header;
     if (header.has_sync_heights()) {
         HandleSyncPoolsMaxHeight(msg_ptr);
@@ -1069,7 +1077,8 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-//     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
+    ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d",
+        msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
     ZJC_DEBUG("success push tx: %s, %lu", common::Encode::HexEncode(tx_msg.gid()).c_str(), msg_ptr->header.hash64());
 }
 
@@ -1207,6 +1216,10 @@ void TxPoolManager::TxOver(
         const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
     assert(pool_index < common::kInvalidPoolIndex);
     return tx_pool_[pool_index].TxOver(tx_list);
+}
+
+void TxPoolManager::GetMinValidTxCount() {
+
 }
 
 }  // namespace pools
