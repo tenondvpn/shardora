@@ -1207,9 +1207,9 @@ void TxPoolManager::GetTx(
     
     ZJC_DEBUG("get tx tm: %lu, min tm: %lu, dec: %ld, count: %u, min count: %u",
         tx_pool_[pool_index].oldest_timestamp(), min_valid_timestamp_,
-        ((int64_t)tx_pool_[pool_index].oldest_timestamp() - (int64_t)min_valid_timestamp_),
+        ((int64_t)min_valid_timestamp_ - (int64_t)tx_pool_[pool_index].oldest_timestamp()),
         tx_pool_[pool_index].tx_size(), min_valid_tx_count_);
-    if (tx_pool_[pool_index].oldest_timestamp() < min_valid_timestamp_) {
+    if (tx_pool_[pool_index].oldest_timestamp() > min_valid_timestamp_) {
         return;
     }
 

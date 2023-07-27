@@ -206,7 +206,7 @@ struct PoolsTmPrioItem {
     uint64_t max_timestamp;
     uint32_t pool_index;
     bool operator<(const PoolsTmPrioItem& a) const {
-        return a.max_timestamp < max_timestamp;
+        return max_timestamp < a.max_timestamp;
     }
 };
 
