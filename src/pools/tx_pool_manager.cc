@@ -1205,8 +1205,9 @@ void TxPoolManager::GetTx(
         count = common::kSingleBlockMaxTransactions;
     }
     
-    ZJC_DEBUG("get tx tm: %lu, min tm: %lu, count: %u, min count: %u",
+    ZJC_DEBUG("get tx tm: %lu, min tm: %lu, dec: %l, count: %u, min count: %u",
         tx_pool_[pool_index].oldest_timestamp(), min_valid_timestamp_,
+        ((int64_t)tx_pool_[pool_index].oldest_timestamp() - (int64_t)min_valid_timestamp_),
         tx_pool_[pool_index].tx_size(), min_valid_tx_count_);
     if (tx_pool_[pool_index].oldest_timestamp() < min_valid_timestamp_) {
         return;
@@ -1217,6 +1218,10 @@ void TxPoolManager::GetTx(
     }
 
     tx_pool_[pool_index].GetTx(res_map, count);
+    ZJC_DEBUG("success get tx tm: %lu, min tm: %lu, dec: %l, count: %u, min count: %u, count: %u",
+        tx_pool_[pool_index].oldest_timestamp(), min_valid_timestamp_,
+        ((int64_t)tx_pool_[pool_index].oldest_timestamp() - (int64_t)min_valid_timestamp_),
+        tx_pool_[pool_index].tx_size(), min_valid_tx_count_, res_map.size());
 }
 
 void TxPoolManager::TxRecover(uint32_t pool_index, std::map<std::string, TxItemPtr>& recover_txs) {
