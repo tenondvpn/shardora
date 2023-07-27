@@ -1187,8 +1187,8 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
     }
 
     tx_pool_[pool_index].AddTx(tx_ptr);
-    ZJC_DEBUG("push queue index pool_index: %u, tx size: %d",
-        pool_index, tx_pool_[pool_index].tx_size());
+    ZJC_DEBUG("push queue index pool_index: %u, tx size: %d, latest tm: %lu",
+        pool_index, tx_pool_[pool_index].tx_size(), tx_pool_[pool_index].oldest_timestamp());
 //     ZJC_DEBUG("success add local transfer to tx %u, %s, gid: %s, from pk: %s, to: %s",
 //         pool_index,
 //         common::Encode::HexEncode(tx_ptr->tx_hash).c_str(),
