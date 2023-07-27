@@ -1205,6 +1205,9 @@ void TxPoolManager::GetTx(
         count = common::kSingleBlockMaxTransactions;
     }
     
+    ZJC_DEBUG("get tx tm: %lu, min tm: %lu, count: %u, min count: %u",
+        tx_pool_[pool_index].oldest_timestamp(), min_valid_timestamp_,
+        tx_pool_[pool_index].tx_size(), min_valid_tx_count_);
     if (tx_pool_[pool_index].oldest_timestamp() < min_valid_timestamp_) {
         return;
     }
