@@ -1240,12 +1240,18 @@ void TxPoolManager::GetMinValidTxCount() {
     std::priority_queue<PoolsCountPrioItem> count_queue_;
     std::priority_queue<PoolsTmPrioItem> tm_queue_;
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
-        count_queue_.push(PoolsCountPrioItem(i, tx_pool_[i].tx_size()));
+        if (tx_pool_[i].tx_size() > 0) {
+            count_queue_.push(PoolsCountPrioItem(i, tx_pool_[i].tx_size()));
+        }
+
         if (count_queue_.size() > kMinPoolsValidCount) {
             count_queue_.pop();
         }
 
-        tm_queue_.push(PoolsTmPrioItem(i, tx_pool_[i].oldest_timestamp()));
+        if (tx_pool_[i].oldest_timestamp() > 0) {
+            tm_queue_.push(PoolsTmPrioItem(i, tx_pool_[i].oldest_timestamp()));
+        }
+
         if (tm_queue_.size() > kMinPoolsValidCount) {
             tm_queue_.pop();
         }
