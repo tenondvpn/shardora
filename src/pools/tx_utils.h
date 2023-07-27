@@ -192,6 +192,24 @@ struct InvalidGidItem {
     std::string max_precommit_hash;
 };
 
+struct PoolsCountPrioItem {
+    PoolsCountPrioItem(uint32_t p, uint32_t c) : count(c), pool_index(p) {}
+    uint32_t count;
+    uint32_t pool_index;
+    bool operator<(const PoolsCountPrioItem& a) const {
+        return a.count < count;
+    }
+};
+
+struct PoolsTmPrioItem {
+    PoolsTmPrioItem(uint32_t p, uint64_t t) : max_timestamp(t), pool_index(p) {}
+    uint64_t max_timestamp;
+    uint32_t pool_index;
+    bool operator<(const PoolsTmPrioItem& a) const {
+        return a.max_timestamp < max_timestamp;
+    }
+};
+
 static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_info) {
     std::string message;
     message.reserve(tx_info.ByteSizeLong());

@@ -4,6 +4,7 @@
 #include <condition_variable>
 #include <memory>
 #include <mutex>
+#include <queue>
 
 #include "common/bitmap.h"
 #include "common/thread_safe_queue.h"
@@ -221,6 +222,7 @@ private:
     static const uint64_t kSyncMissingBlockPeriod = 3000lu;
     static const uint64_t kSyncCrossPeriod = 3000lu;
     static const uint64_t kGetMinPeriod = 3000lu;
+    static const uint32_t kMinPoolsValidCount = common::kInvalidPoolIndex / 3;
     double kGrubbsValidFactor = 3.217;  // 90%
     const double kInvalidLeaderRatio = 0.85;
 
@@ -266,6 +268,8 @@ private:
     uint32_t min_valid_tx_count_ = 1;
     uint64_t min_valid_timestamp_ = 0;
     uint64_t prev_get_valid_tm_ms_ = 0;
+    std::priority_queue<PoolsCountPrioItem> count_queue_;
+    std::priority_queue<PoolsTmPrioItem> tm_queue_;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };

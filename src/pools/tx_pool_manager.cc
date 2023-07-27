@@ -1077,8 +1077,8 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
     }
 
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
-    ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d",
-        msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
+//     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d",
+//         msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
     ZJC_DEBUG("success push tx: %s, %lu", common::Encode::HexEncode(tx_msg.gid()).c_str(), msg_ptr->header.hash64());
 }
 
@@ -1204,7 +1204,15 @@ void TxPoolManager::GetTx(
     if (count > common::kSingleBlockMaxTransactions) {
         count = common::kSingleBlockMaxTransactions;
     }
-       
+    
+    if (tx_pool_[pool_index].oldest_timestamp() < min_valid_timestamp_) {
+        return;
+    }
+
+    if (tx_pool_[pool_index].tx_size() < min_valid_tx_count_) {
+        return;
+    }
+
     tx_pool_[pool_index].GetTx(res_map, count);
 }
 
@@ -1221,7 +1229,20 @@ void TxPoolManager::TxOver(
 }
 
 void TxPoolManager::GetMinValidTxCount() {
+    for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
+        count_queue_.push(PoolsCountPrioItem(i, tx_pool_[i].tx_size()));
+        if (count_queue_.size() > kMinPoolsValidCount) {
+            count_queue_.pop();
+        }
 
+        tm_queue_.push(PoolsTmPrioItem(i, tx_pool_[i].oldest_timestamp()));
+        if (tm_queue_.size() > kMinPoolsValidCount) {
+            tm_queue_.pop();
+        }
+    }
+
+    min_valid_tx_count_ = count_queue_.top().count;
+    min_valid_timestamp_ = tm_queue_.top().max_timestamp;
 }
 
 }  // namespace pools
