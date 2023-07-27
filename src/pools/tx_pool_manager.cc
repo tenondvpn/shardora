@@ -1237,6 +1237,8 @@ void TxPoolManager::TxOver(
 }
 
 void TxPoolManager::GetMinValidTxCount() {
+    std::priority_queue<PoolsCountPrioItem> count_queue_;
+    std::priority_queue<PoolsTmPrioItem> tm_queue_;
     for (uint32_t i = 0; i < common::kInvalidPoolIndex; ++i) {
         count_queue_.push(PoolsCountPrioItem(i, tx_pool_[i].tx_size()));
         if (count_queue_.size() > kMinPoolsValidCount) {
