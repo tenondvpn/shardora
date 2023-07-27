@@ -1209,7 +1209,7 @@ void TxPoolManager::GetTx(
         tx_pool_[pool_index].oldest_timestamp(), min_valid_timestamp_,
         ((int64_t)min_valid_timestamp_ - (int64_t)tx_pool_[pool_index].oldest_timestamp()),
         tx_pool_[pool_index].tx_size(), min_valid_tx_count_);
-    if (tx_pool_[pool_index].oldest_timestamp() > min_valid_timestamp_) {
+    if (min_valid_timestamp_ != 0 && tx_pool_[pool_index].oldest_timestamp() > min_valid_timestamp_) {
         return;
     }
 
@@ -1257,7 +1257,7 @@ void TxPoolManager::GetMinValidTxCount() {
         }
     }
 
-    if (count_queue_.empty()) {
+    if (count_queue_.size() < kMinPoolsValidCount) {
         return;
     }
 
