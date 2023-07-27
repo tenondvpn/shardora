@@ -1257,6 +1257,10 @@ void TxPoolManager::GetMinValidTxCount() {
         }
     }
 
+    if (count_queue_.empty()) {
+        return;
+    }
+
     min_valid_tx_count_ = count_queue_.top().count;
     min_valid_timestamp_ = tm_queue_.top().max_timestamp;
 }
