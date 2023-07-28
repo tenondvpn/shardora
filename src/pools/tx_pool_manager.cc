@@ -720,19 +720,19 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
 
         auto& cross_heights = msg_ptr->header.sync_heights().cross_heights();
         for (int32_t i = 0; i < cross_heights.size(); ++i) {
-            if (max_cross_pools_size_ == 1) {
-                if (cross_heights.size() != 1) {
-                    assert(false);
-                    break;
-                }
-            } else {
-                if (cross_heights.size() != network::kConsensusWaitingShardOffset) {
-                    ZJC_ERROR("cross_heights error: %u, %u",
-                        cross_heights.size(), network::kConsensusWaitingShardOffset);
-                    assert(false);
-                    break;
-                }
-            }
+//             if (max_cross_pools_size_ == 1) {
+//                 if (cross_heights.size() != 1) {
+//                     assert(false);
+//                     break;
+//                 }
+//             } else {
+//                 if (cross_heights.size() != network::kConsensusWaitingShardOffset) {
+//                     ZJC_ERROR("cross_heights error: %u, %u",
+//                         cross_heights.size(), network::kConsensusWaitingShardOffset);
+//                     assert(false);
+//                     break;
+//                 }
+//             }
 
             cross_debug += std::to_string(cross_heights[i]) + " ";
             if (cross_heights[i] != common::kInvalidUint64) {
