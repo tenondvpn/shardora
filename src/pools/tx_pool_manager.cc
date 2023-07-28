@@ -727,6 +727,8 @@ void TxPoolManager::HandleSyncPoolsMaxHeight(const transport::MessagePtr& msg_pt
                 }
             } else {
                 if (cross_heights.size() != network::kConsensusWaitingShardOffset) {
+                    ZJC_ERROR("cross_heights error: %u, %u",
+                        cross_heights.size(), network::kConsensusWaitingShardOffset);
                     assert(false);
                     break;
                 }
