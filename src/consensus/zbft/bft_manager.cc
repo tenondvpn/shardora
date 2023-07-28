@@ -426,7 +426,7 @@ ZbftPtr BftManager::Start(
     auto& thread_set = elect_item.thread_set;
     auto thread_item = thread_set[thread_index];
     if (thread_item == nullptr || thread_item->pools.empty()) {
-        ZJC_DEBUG("thread idx error 4: %d", thread_index);
+//         ZJC_DEBUG("thread idx error 4: %d", thread_index);
         return nullptr;
     }
 
