@@ -4,13 +4,13 @@ pragma experimental ABIEncoderV2;
 import "./Heap.sol";
 import "./LibArrayForUint256Utils.sol";
 
-contract SellerContract{
+contract BuyerContractTest{
     enum State{ BothUncancel, BuyerCanceled, SellerCanceled, BothCancelled, SellerConfirmed, SystemCanceled} //吃单订单状态6种， 双方均未取消，买家取消，卖家取消，双方取消，卖家确认收款, 系统强制取消
     uint  minAmountThreshold;               //限制最小交易数量
     uint  maxSizeThreshold;                 //挂单列表允许的最大长度
     using Heap for Heap.Data;
-    Heap.Data priorityQueue;  //优先级由单价和订单号共同决定（单价越高优先级越高，单价相同时，订单号越小优先级越高）
-    address payable ownerAddress;
+    Heap.Data priorityQueue;  //优先级由单价和订单号共同决定（单价越低优先级越高，单价相同时，订单号越小优先级越高）
+    address payable public ownerAddress;
     uint8 loopValue;                //协助计算实际支付金额，卖家根据收款金额对应到订单 
     uint64 orderNo;                 //订单号，自增+2 (卖家挂单合约中订单号为偶数，买家挂单合约中订单号为奇数)
     mapping(uint64=>MakerOrder) public makerOrders;       //挂单列表，挂单订单号至挂单订单映射
@@ -20,7 +20,7 @@ contract SellerContract{
         priorityQueue.init(); 
         ownerAddress = payable(msg.sender);
         loopValue = 49;
-        orderNo  = 0;        //卖家挂单合约初始值为0， 买家挂单合约中初始值为1
+        orderNo  = 1;        //卖家挂单合约初始值为0， 买家挂单合约中初始值为1    //与卖家挂单中不同
         minAmountThreshold = _minAmountThreshold;          
         maxSizeThreshold = _maxSizeThreshold;     
     }
@@ -36,10 +36,10 @@ contract SellerContract{
         uint256[] takerOrderIds;       //吃单订单号列表
     }
     struct TakerOrder {
-        address payable makerAddress;   //ZJB 挂单个人钱包  冗余挂单地址(挂单移出后，卖家确认收款或取消订单时需要校验权限)
+        address payable makerAddress;   //ZJB 挂单个人钱包  冗余挂单地址(挂单移出后，买家取消订单时需要校验权限)
         address payable takerAddress;   //ZJB 吃单个人钱包
         string nickname;         //昵称
-        uint256 amount;          //交易金数量，即购买数量	
+        uint256 amount;          //交易金数量，即售出数量	
         uint256 totalValue;      //实际支付金额（不完全等于单价乘以购买数量）
         State  state;            //吃单状态, 共6种
         uint64 makerOrderId;     //挂单订单号
@@ -47,7 +47,7 @@ contract SellerContract{
     //创建一个新的挂单
     function addMakerOrder(uint64 price) payable public {
         address payable makerAddress = payable (msg.sender);
-        uint256 totalAmount = msg.value;  //卖家交易金和保证金, 即从个人钱包往合约地址ownerAddress转币
+        uint totalAmount = msg.value;
         uint size = priorityQueue.size();
         precondition4MakerOrder(price, totalAmount, size);
         removeMaxOrder(size);    
@@ -57,12 +57,12 @@ contract SellerContract{
         uint256[] memory takerOrderIdArray;         
         MakerOrder memory makerOrder = MakerOrder(makerAddress, nickname, creditScore, price, totalAmount, '', 100, 100, takerOrderIdArray);
         makerOrders[orderId] = makerOrder;          
-        priorityQueue.insertWithId(price, orderId); 
+        priorityQueue.insertWithId(pricePriorityInterconvert(price),orderId); //与卖家挂单中不同
     }   
     //创建吃单订单
     function addTakerOrder(uint64 makerOrderId) payable public {
         address payable takerAddress = payable (msg.sender);
-        uint256 amount = msg.value; //买家保证金数量
+        uint256 amount = msg.value; //卖家交易金+保证金数量
         MakerOrder storage makerOrder = makerOrders[makerOrderId];
         precondition4TakerOrder(makerOrder, amount);
         uint64 takerOrderId = generateNewOrderId(); 
@@ -70,7 +70,7 @@ contract SellerContract{
         uint256 totalValue = calculateTotalValue(makerOrder.price, amount);
         takerOrders[takerOrderId] = TakerOrder(makerOrder.makerAddress, takerAddress, nickname, amount, totalValue, State.BothUncancel, makerOrderId);
         LibArrayForUint256Utils.addValueRepeatedly(makerOrder.takerOrderIds, uint256(takerOrderId));
-        removeOrderIfNecessary(makerOrder, makerOrderId); //要触发自动赎回？（挂单总数量不变，但可售数量减少）
+        removeOrderIfNecessary(makerOrder, makerOrderId); //要触发自动赎回？（挂单总数量不变，但可购数量减少）
     }
     //卖家操作"确认收款"
     function sellerPaymentConfirm (uint64 takerOrderId) public {
@@ -80,16 +80,15 @@ contract SellerContract{
         precondition4PaymentConfirm(takerOrder);
         takerOrder.state = State.SellerConfirmed; 
         uint256 amount = takerOrder.amount;
-        transfer2Account(takerOrder.takerAddress, 2*amount);//往买家地址转交易金和保证金
-        if(makerOrder.price == 0){ //情况1：挂单完结，直接往往卖家地址转保证金 
-            transfer2Account(takerOrder.makerAddress, amount);
-        }else{                          //情况2：挂单未完结，需移除挂单中该吃单订单号，同时修改totalAmount
+        transfer2Account(takerOrder.takerAddress, amount / 2);//往卖家地址转保证金        //与卖家挂单中不同
+        transfer2Account(takerOrder.makerAddress, amount);    //往买家地址转交易金和保证金 //与卖家挂单中不同
+        if(makerOrder.price > 0){ //情况2：挂单未完结，移除挂单中该吃单订单号，同时修改totalAmount
             LibArrayForUint256Utils.removeByValue(makerOrder.takerOrderIds, uint256(takerOrderId));
-            makerOrder.totalAmount = makerOrder.totalAmount - amount; 
+            makerOrder.totalAmount = makerOrder.totalAmount - amount/2;  //与卖家挂单中不同
         }
         //删除之前，需将吃单订单同步到数据库？
         delete takerOrders[takerOrderId];
-        removeOrderIfNecessary(makerOrder, makerOrderId);//有可能会触发自动赎回（挂单总数量减少，可售数量增加）
+        removeOrderIfNecessary(makerOrder, makerOrderId);//有可能会触发自动赎回（挂单总数量减少，可购数量也减少）
     }
     //买家或卖家取消订单
     function cancelOrder (uint64 takerOrderId) public {
@@ -101,10 +100,10 @@ contract SellerContract{
         takerOrder.state = newState;
         if(newState == State.BothCancelled){
             uint256 amount = takerOrder.amount;
-            transfer2Account(takerOrder.takerAddress, amount);//往买家地址转保证金
-            if(makerOrder.price == 0){ //情况1：挂单已完结，则直接往卖家地址转交易金和保证金 
-                transfer2Account(takerOrder.makerAddress, 2*amount);
-            }else{                          //情况2：挂单未完结，需移除挂单中该吃单订单号
+            transfer2Account(takerOrder.takerAddress, amount);//往卖家地址转交易金和保证金
+            if(makerOrder.price == 0){ //情况1：挂单已完结，则直接往买家地址转保证金 
+                transfer2Account(takerOrder.makerAddress, amount/2);
+            }else{                     //情况2：挂单未完结，需移除挂单中该吃单订单号
                 LibArrayForUint256Utils.removeByValue(makerOrder.takerOrderIds, uint256(takerOrderId));
             }
             //删除之前，需将吃单订单同步到数据库？
@@ -137,23 +136,23 @@ contract SellerContract{
         require(totalAmount % minAmountThreshold == 0, "makerOrder:totalAmount should be size of minAmountThreshold");  //限制是最小数量的整数倍
         if(size >= maxSizeThreshold){
             Heap.Node memory head = priorityQueue.getMax();
-            uint64 maxPrice = head.priority;
-            require(price <= maxPrice, "makerOrder:price should less than or equal maxPrice"); //挂单列表已满时，新挂单的单价要小于等于队列中最高单价
+            uint64 minPrice = pricePriorityInterconvert(head.priority);    //与卖家挂单中不同
+            require(price >= minPrice, "makerOrder:price should greater than or equal minPrice");//挂单列表已满时，新挂单的单价要大于等于队列中最低单价
         }
     }
     //吃单前置条件检查
     function precondition4TakerOrder(MakerOrder storage makerOrder, uint256 amount) internal view {
         require(makerOrder.price > 0, "takerOrder:makerOrder is not exist");         
         require(makerOrder.makerAddress != msg.sender, "takerOrder:takerOrder and makerOrder should not be the same account"); 
-        require(amount >= minAmountThreshold / 2, "takerOrder:amount should greater than or equal minAmountThreshold/2"); 
-        require(amount % (minAmountThreshold / 2) == 0, "takerOrder:amount should be size of minAmountThreshold/2"); 
+        require(amount >= 2*minAmountThreshold, "takerOrder:amount should greater than or equal 2*minAmountThreshold"); //与卖家挂单中不同
+        require(amount % (minAmountThreshold) == 0, "takerOrder:amount should be size of minAmountThreshold"); //与卖家挂单中不同
         uint availableAmount = getAvailableAmount(makerOrder);
-        require(amount <= availableAmount, "takerOrder:amount is Insufficient");            
+        require(amount / 2 <= availableAmount, "takerOrder:amount is Insufficient");            //与卖家挂单中不同
     }
     //卖家确认收款前的条件检查
     function precondition4PaymentConfirm(TakerOrder storage takerOrder) internal view {
         require(takerOrder.amount > 0 , "confirm:takerOrder is not exist");      
-        require(takerOrder.makerAddress == msg.sender, "confirm:the caller is not the makerAddress"); 
+        require(takerOrder.takerAddress == msg.sender, "confirm:the caller is not the takerAddress"); //与卖家挂单中不同
         require(!isCompleted(takerOrder.state), "confirm:takerOrder is completed"); 
     }
     //买家或卖家取消订单前的条件检查
@@ -162,10 +161,10 @@ contract SellerContract{
         require(takerOrder.makerAddress == msg.sender || takerOrder.takerAddress == msg.sender, "cancelOrder:the caller should be makerAddress or takerAddress");
         State oldState = takerOrder.state; 
         require(State.BothUncancel == oldState || State.BuyerCanceled == oldState || State.SellerCanceled == oldState, "cancelOrder:the state should be BothUncancel or BuyerCanceled or SellerCanceled");//旧的取消状态只能3选1
-        if(takerOrder.takerAddress == msg.sender){  //调用者为买家，旧的取消状态只能是双方未取消或卖家已取消
+        if(takerOrder.makerAddress == msg.sender){  //调用者为买家，旧的取消状态只能是双方未取消或卖家已取消   //与卖家挂单中不同
             require(State.BothUncancel == oldState || State.SellerCanceled == oldState, "cancelOrder:the state should be BothUncancel or SellerCanceled");
         }
-        if(takerOrder.makerAddress == msg.sender){  //调用者为卖家，旧的取消状态只能是双方未取消或买家已取消
+        if(takerOrder.takerAddress == msg.sender){  //调用者为卖家，旧的取消状态只能是双方未取消或买家已取消   //与卖家挂单中不同
             require(State.BothUncancel == oldState || State.BuyerCanceled == oldState, "cancelOrder:the state should be BothUncancel or BuyerCanceled");
         }
     }
@@ -173,16 +172,16 @@ contract SellerContract{
     function newCancelState(TakerOrder storage takerOrder) internal view returns (State){
         State oldState = takerOrder.state;
         State newState;
-        if(oldState == State.BothUncancel && takerOrder.takerAddress == msg.sender){//旧的状态是双方未取消并且调用方是买家 
+        if(oldState == State.BothUncancel && takerOrder.makerAddress == msg.sender){//旧的状态是双方未取消并且调用方是买家    //与卖家挂单中不同
             newState = State.BuyerCanceled;   
         }
-        if(oldState == State.BothUncancel && takerOrder.makerAddress == msg.sender){//旧的状态是双方未取消并且调用方是卖家 
+        if(oldState == State.BothUncancel && takerOrder.takerAddress == msg.sender){//旧的状态是双方未取消并且调用方是卖家   //与卖家挂单中不同
             newState = State.SellerCanceled;   
         }
-        if(oldState == State.BuyerCanceled && takerOrder.makerAddress == msg.sender){//旧的状态是买家已取消并且调用方是卖家
+        if(oldState == State.BuyerCanceled && takerOrder.takerAddress == msg.sender){//旧的状态是买家已取消并且调用方是卖家   //与卖家挂单中不同 
             newState = State.BothCancelled;   
         }
-        if(oldState == State.SellerCanceled && takerOrder.takerAddress == msg.sender){//旧的状态是卖家已取消并且调用方是买家 
+        if(oldState == State.SellerCanceled && takerOrder.makerAddress == msg.sender){//旧的状态是卖家已取消并且调用方是买家  //与卖家挂单中不同
             newState = State.BothCancelled; 
         }
         return newState;
@@ -195,7 +194,7 @@ contract SellerContract{
     }
     //遍历挂单所有的吃单获取可售数量（根据未锁定数量，计算得到）
     function getAvailableAmount(MakerOrder storage makerOrder) internal view returns(uint){
-        return getUnlockedAmount(makerOrder)/2; 
+        return getUnlockedAmount(makerOrder); //与卖家挂单中不同 
     }
     //遍历挂单的所有未完结的吃单订单获取未锁定币数量
     function getUnlockedAmount(MakerOrder memory makerOrder)internal view returns(uint){
@@ -205,10 +204,10 @@ contract SellerContract{
             uint256 takerOrderId = takerOrderIds[i];
             TakerOrder storage takerOrder = takerOrders[uint64(takerOrderId)];
             if(!isCompleted(takerOrder.state)){
-                amountSum += takerOrder.amount;
+                amountSum += takerOrder.amount / 2; //与卖家挂单中不同 
             }
         }
-        return makerOrder.totalAmount - amountSum * 2;        
+        return makerOrder.totalAmount - amountSum;  //与卖家挂单中不同      
     }
     //判断吃单状态是否为已完结，true：已完结，false：未完结
     function isCompleted(State state) internal pure returns (bool) {
@@ -235,14 +234,14 @@ contract SellerContract{
                 return true;
             }
             uint256 availableAmount = getAvailableAmount(makerOrder);
-            if(availableAmount < minAmountThreshold / 2){//2、可购数量小于最小阈值的一半
+            if(availableAmount < minAmountThreshold){//2、可购数量小于最小阈值
                 return true;
             }
             //2.超过吃单截止时间 （3天）  block.timestamp(10分钟出一个块，后续再给)
         }
         return false;
     }
-    //挂单列表数量超过最大阈值, 删除优先级最高挂单(即单价最高，存在单价相同的话，删除更早的)
+    //挂单列表数量超过最大阈值, 删除优先级最高挂单(即单价最低，存在单价相同的话，删除更早的)
     function removeMaxOrder(uint size) internal {
         if(size >= maxSizeThreshold){   
             Heap.Node memory node = priorityQueue.extractMax();
@@ -268,5 +267,10 @@ contract SellerContract{
     //从合约地址往个人钱包转币
     function transfer2Account(address payable receiver, uint amount) internal {
         receiver.transfer(amount);  
+    }
+    //单价和优先队列的优先级互相转换    //与卖家挂单中不同
+    function pricePriorityInterconvert(uint64 priceOrPriority) internal pure returns (uint64){
+        priceOrPriority = type(uint64).max - priceOrPriority;
+        return priceOrPriority;
     }
 }
