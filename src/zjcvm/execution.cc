@@ -70,7 +70,8 @@ int Execution::execute(
     msg.gas = gas;
     msg.input_data = (uint8_t*)str_input.c_str();
     msg.input_size = str_input.size();
-    memcpy(msg.value.bytes, (char*)&value, sizeof(value));
+    msg.value.bytes[31] = 12;
+//     memcpy((char*)msg.value.bytes + 24, (char*)&value, sizeof(value));
 //     Uint64ToEvmcBytes32(msg.value, value);
     memcpy(
         msg.sender.bytes,
