@@ -8,6 +8,12 @@ var querystring = require('querystring');
 var http = require('http');
 var fs = require('fs');
 
+function hexToBytes(hex) {
+    for (var bytes = [], c = 0; c < hex.length; c += 2)
+        bytes.push(parseInt(hex.substr(c, 2), 16));
+    return bytes;
+}
+
 function PostCode(data) {
     var post_data = querystring.stringify(data);
     var post_options = {
