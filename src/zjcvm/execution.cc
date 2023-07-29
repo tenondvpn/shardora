@@ -70,10 +70,7 @@ int Execution::execute(
     msg.gas = gas;
     msg.input_data = (uint8_t*)str_input.c_str();
     msg.input_size = str_input.size();
-    memset(msg.value.bytes, 0, sizeof(msg.value.bytes));
     Uint64ToEvmcBytes32(msg.value, value);
-    auto tmp_val = EvmcBytes32ToUint64(msg.value);
-    assert(tmp_val == value);
     memcpy(
         msg.sender.bytes,
         from_address.c_str(),

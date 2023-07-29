@@ -94,9 +94,19 @@ evmc::uint256be ZjchainHost::get_balance(const evmc::address& addr) const noexce
     // don't use real balance
     auto iter = account_balance_.find(addr);
     if (iter == account_balance_.end()) {
+        ZJC_DEBUG("failed now get balace: %s, my: %s, origin: %s",
+            common::Encode::HexEncode(std::string(addr.bytes, 20)).c_str(),
+            common::Encode::HexEncode(my_address_).c_str(),
+            common::Encode::HexEncode(origin_address_).c_str());
         return {};
     }
 
+    auto val = EvmcBytes32ToUint64(iter->second);
+    ZJC_DEBUG("success now get balace: %s, my: %s, origin: %s, %lu",
+        common::Encode::HexEncode(std::string(addr.bytes, 20)).c_str(),
+        common::Encode::HexEncode(my_address_).c_str(),
+        common::Encode::HexEncode(origin_address_).c_str(),
+        val);
     return iter->second;
 }
 
@@ -272,7 +282,6 @@ void ZjchainHost::AddTmpAccountBalance(const std::string& address, uint64_t bala
     Uint64ToEvmcBytes32(tmp_val, balance);
     account_balance_[addr] = tmp_val;
 }
-
 
 int ZjchainHost::SaveKeyValue(
         const std::string& id,
