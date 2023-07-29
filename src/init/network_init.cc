@@ -1221,6 +1221,7 @@ void NetworkInit::HandleElectionBlock(
     ZJC_DEBUG("new elect block coming, net: %u, pool: %u, height: %lu",
         block->network_id(), block->pool_index(), block->height());
     auto elect_block = std::make_shared<elect::protobuf::ElectBlock>();
+    auto prev_elect_block = std::make_shared<elect::protobuf::ElectBlock>();
     for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
         if (block_tx.storages(i).key() == protos::kElectNodeAttrElectBlock) {
             std::string val;
@@ -1239,9 +1240,27 @@ void NetworkInit::HandleElectionBlock(
                 ZJC_FATAL("parse elect block failed!");
                 return;
             }
-
-            break;
         }
+
+        if (block_tx.storages(i).key() == protos::kShardElectionPrevInfo) {
+            std::string val;
+            if (!prefix_db_->GetTemporaryKv(block_tx.storages(i).val_hash(), &val)) {
+                ZJC_FATAL("elect block get temp kv from db failed!");
+                return;
+            }
+
+            if (!prev_elect_block->ParseFromString(val)) {
+                ZJC_FATAL("parse elect block failed!");
+                return;
+            }
+
+            std::string hash = protos::GetElectBlockHash(*prev_elect_block);
+            if (hash != block_tx.storages(i).val_hash()) {
+                ZJC_FATAL("parse elect block failed!");
+                return;
+            }
+        }
+
     }
 
     if (!elect_block->has_shard_network_id() ||
@@ -1251,7 +1270,12 @@ void NetworkInit::HandleElectionBlock(
         return;
     }
 
-    auto members = elect_mgr_->OnNewElectBlock(thread_idx, block->height(), elect_block, db_batch);
+    auto members = elect_mgr_->OnNewElectBlock(
+        thread_idx,
+        block->height(),
+        elect_block,
+        prev_elect_block,
+        db_batch);
     if (members == nullptr) {
         ZJC_ERROR("elect manager handle elect block failed!");
         return;

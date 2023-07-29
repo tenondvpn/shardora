@@ -489,9 +489,9 @@ void ElectTxItem::SetPrevElectInfo(
     }
 
     auto kv = block_tx.add_storages();
-    kv->set_key(kShardElectionPrevInfo);
+    kv->set_key(protos::kShardElectionPrevInfo);
     std::string val_hash = protos::GetElectBlockHash(prev_elect_block);
-    kv->set_value(val_hash);
+    kv->set_val_hash(val_hash);
     prefix_db_->SaveTemporaryKv(val_hash, prev_elect_block.SerializeAsString());
     return;
 }

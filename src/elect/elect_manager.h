@@ -50,6 +50,7 @@ public:
         uint8_t thread_idx,
         uint64_t height,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block,
+        const std::shared_ptr<elect::protobuf::ElectBlock>& prev_elect_block,
         db::DbWriteBatch& db_batch);
     std::shared_ptr<elect::protobuf::ElectBlock> GetLatestElectBlock(uint32_t sharding_id) {
         return elect_block_mgr_.GetLatestElectBlock(sharding_id);
@@ -93,6 +94,7 @@ private:
     bool ProcessPrevElectMembers(
         protobuf::ElectBlock& elect_block,
         bool* elected,
+        elect::protobuf::ElectBlock& prev_elect_block,
         db::DbWriteBatch& db_batch);
     void ProcessNewElectBlock(
         uint64_t height,

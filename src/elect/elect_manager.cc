@@ -122,6 +122,7 @@ common::MembersPtr ElectManager::OnNewElectBlock(
         uint8_t thread_idx,
         uint64_t height,
         const std::shared_ptr<elect::protobuf::ElectBlock>& elect_block_ptr,
+        const std::shared_ptr<elect::protobuf::ElectBlock>& prev_elect_block_ptr,
         db::DbWriteBatch& db_batch) {
     auto& elect_block = *elect_block_ptr;
     if (elect_block.shard_network_id() >= network::kConsensusShardEndNetworkId ||
@@ -136,7 +137,11 @@ common::MembersPtr ElectManager::OnNewElectBlock(
 
     bool elected = false;
     now_elected_ids_.clear();
-    bool cons_elect_valid = ProcessPrevElectMembers(elect_block, &elected, db_batch);
+    bool cons_elect_valid = ProcessPrevElectMembers(
+        elect_block,
+        &elected,
+        *prev_elect_block_ptr,
+        db_batch);
     ProcessNewElectBlock(height, elect_block, &elected);
     if (!cons_elect_valid && !elected) {
         if (common::GlobalInfo::Instance()->network_id() == elect_block.shard_network_id()) {
@@ -213,6 +218,7 @@ void ElectManager::ElectedToConsensusShard(
 bool ElectManager::ProcessPrevElectMembers(
         protobuf::ElectBlock& elect_block,
         bool* elected,
+        elect::protobuf::ElectBlock& prev_elect_block,
         db::DbWriteBatch& db_batch) {
     if (!elect_block.has_prev_members() || elect_block.prev_members().prev_elect_height() <= 0) {
         ELECT_DEBUG("not has prev members. has: %d. pre elect height: %lu, shard: %u, height: %lu",
@@ -224,7 +230,9 @@ bool ElectManager::ProcessPrevElectMembers(
         return false;
     }
 
-
+    if (prev_elect_block.in_size() <= 0) {
+        return false;
+    }
 
     auto& added_heights = added_height_[elect_block.shard_network_id()];
     if (added_heights.find(elect_block.prev_members().prev_elect_height()) != added_heights.end()) {
