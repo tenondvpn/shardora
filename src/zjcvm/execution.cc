@@ -66,7 +66,6 @@ int Execution::execute(
     int64_t gas = gas_limit;
     auto rev = EVMC_LATEST_STABLE_REVISION;
     auto create_gas = gas_limit;
-
     evmc_message msg{};
     msg.gas = gas;
     msg.input_data = (uint8_t*)str_input.c_str();
@@ -82,11 +81,15 @@ int Execution::execute(
         sizeof(msg.recipient.bytes));
     const uint8_t* exec_code_data = nullptr;
     size_t exec_code_size = 0;
+    ZJC_DEBUG("now call contract, msg sender: %s, mode: %d, from: %s, value: %lu, bytes_code: %s, input: %s",
+        common::Encode::HexEncode(std::string((char*)msg.sender.bytes, 20)).c_str(),
+        call_mode,
+        common::Encode::HexEncode(from_address).c_str(),
+        value,
+        common::Encode::HexEncode(bytes_code).c_str(),
+        common::Encode::HexEncode(str_input).c_str());
     if (call_mode == kJustCreate || call_mode == kCreateAndCall) {
-//         evmc_message create_msg{};
         msg.kind = EVMC_CREATE;
-//         create_msg.recipient = msg.recipient;
-//         create_msg.gas = create_gas;
         *out_res = evm_.execute(
             host,
             rev,
@@ -119,7 +122,6 @@ int Execution::execute(
         exec_code_size = bytes_code.size();
     }
 
-    ZJC_DEBUG("now call contract, msg sender: %s", common::Encode::HexEncode(std::string((char*)msg.sender.bytes, 20)).c_str());
     *out_res = evm_.execute(host, rev, msg, exec_code_data, exec_code_size);
 //     ZJC_INFO("execute res: %d", out_res->status_code);
     return kZjcvmSuccess;
