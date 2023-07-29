@@ -385,7 +385,7 @@ ZbftPtr BftManager::Start(
     if (network::DhtManager::Instance()->valid_count(
             common::GlobalInfo::Instance()->network_id()) <
             common::GlobalInfo::Instance()->sharding_min_nodes_count()) {
-        ZJC_DEBUG("thread idx error 0: %d", thread_index);
+//         ZJC_DEBUG("thread idx error 0: %d", thread_index);
         return nullptr;
     }
 #endif
