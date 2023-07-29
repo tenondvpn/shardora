@@ -382,6 +382,58 @@ bool GenesisBlockInit::CreateNodePrivateInfo(
     return true;
 }
 
+void GenesisBlockInit::SetPrevElectInfo(
+        const elect::protobuf::ElectBlock& elect_block,
+        block::protobuf::BlockTx& block_tx) {
+    block::protobuf::Block block_item;
+    auto res = prefix_db_->GetBlockWithHeight(
+        network::kRootCongressNetworkId,
+        elect_block.shard_network_id() % common::kImmutablePoolSize,
+        elect_block.prev_members().prev_elect_height(),
+        &block_item);
+    if (!res) {
+        ELECT_ERROR("get prev block error[%d][%d][%lu].",
+            network::kRootCongressNetworkId,
+            common::kRootChainPoolIndex,
+            elect_block.prev_members().prev_elect_height());
+        return;
+    }
+
+    if (block_item.tx_list_size() != 1) {
+        ELECT_ERROR("not has tx list size.");
+        assert(false);
+        return;
+    }
+
+    elect::protobuf::ElectBlock prev_elect_block;
+    bool ec_block_loaded = false;
+    for (int32_t i = 0; i < block_item.tx_list(0).storages_size(); ++i) {
+        if (block_item.tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
+            std::string val;
+            if (!prefix_db_->GetTemporaryKv(block_item.tx_list(0).storages(i).val_hash(), &val)) {
+                ZJC_ERROR("elect block get temp kv from db failed!");
+                return;
+            }
+
+            prev_elect_block.ParseFromString(val);
+            ec_block_loaded = true;
+            break;
+        }
+    }
+
+    if (!ec_block_loaded) {
+        assert(false);
+        return;
+    }
+
+    auto kv = block_tx.add_storages();
+    kv->set_key(kShardElectionPrevInfo);
+    std::string val_hash = protos::GetElectBlockHash(prev_elect_block);
+    kv->set_value(val_hash);
+    prefix_db_->SaveTemporaryKv(val_hash, prev_elect_block.SerializeAsString());
+    return;
+}
+
 int GenesisBlockInit::CreateElectBlock(
         uint32_t shard_netid,
         std::string& root_pre_hash,
@@ -414,6 +466,7 @@ int GenesisBlockInit::CreateElectBlock(
     }
 
     ec_block.set_shard_network_id(shard_netid);
+    ec_block.set_elect_height(tenon_block->height());
     if (prev_height != common::kInvalidUint64) {
         auto prev_members = ec_block.mutable_prev_members();
         for (uint32_t i = 0; i < genesis_nodes.size(); ++i) {
@@ -439,10 +492,10 @@ int GenesisBlockInit::CreateElectBlock(
         prefix_db_->SaveElectHeightCommonPk(shard_netid, prev_height, *prev_members, db_batch);
         auto st = db_->Put(db_batch);
         assert(st.ok());
+        SetPrevElectInfo(ec_block, *tx_info);
     }
 
     tenon_block->set_height(height);
-    ec_block.set_elect_height(tenon_block->height());
     auto storage = tx_info->add_storages();
     storage->set_key(protos::kElectNodeAttrElectBlock);
     std::string val = ec_block.SerializeAsString();

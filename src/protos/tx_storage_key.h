@@ -19,6 +19,7 @@ static const std::string kCreateContractCallerSharding = "__new_contract_user_sh
 static const std::string kCreateContractBytesCode = "__kCreateContractBytesCode";
 static const std::string kShardStatistic = "__shard_statistic";
 static const std::string kShardElection = "__shard_election";
+static const std::string kShardElectionPrevInfo = "__shard_elect_prev";
 static const std::string kElectNodeStoke = "__elect_node_stoke";
 static const std::string kElectJoinShard = "__elect_join_shard";
 static const std::string kShardCross = "__shard_cross";

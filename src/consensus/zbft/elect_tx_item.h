@@ -109,6 +109,9 @@ private:
         uint32_t min_tx_count,
         const pools::protobuf::ElectStatistic& elect_statistic,
         std::vector<NodeDetailPtr>& elect_nodes);
+    void SetPrevElectInfo(
+        const elect::protobuf::ElectBlock& elect_block,
+        block::protobuf::BlockTx& block_tx);
 
     static const uint32_t kFtsWeedoutDividRate = 10u;
     static const uint32_t kFtsNewElectJoinRate = 5u;

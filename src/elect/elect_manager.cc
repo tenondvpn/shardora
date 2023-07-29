@@ -224,45 +224,7 @@ bool ElectManager::ProcessPrevElectMembers(
         return false;
     }
 
-    block::protobuf::Block block_item;
-    if (block_mgr_->GetBlockWithHeight(
-            network::kRootCongressNetworkId,
-            elect_block.shard_network_id() % common::kImmutablePoolSize,
-            elect_block.prev_members().prev_elect_height(),
-            block_item) != block::kBlockSuccess) {
-        ELECT_ERROR("get prev block error[%d][%d][%lu].",
-            network::kRootCongressNetworkId,
-            common::kRootChainPoolIndex,
-            elect_block.prev_members().prev_elect_height());
-        return false;
-    }
 
-    if (block_item.tx_list_size() != 1) {
-        ELECT_ERROR("not has tx list size.");
-        assert(false);
-        return false;
-    }
-
-    elect::protobuf::ElectBlock prev_elect_block;
-    bool ec_block_loaded = false;
-    for (int32_t i = 0; i < block_item.tx_list(0).storages_size(); ++i) {
-        if (block_item.tx_list(0).storages(i).key() == protos::kElectNodeAttrElectBlock) {
-            std::string val;
-            if (!prefix_db_->GetTemporaryKv(block_item.tx_list(0).storages(i).val_hash(), &val)) {
-                ZJC_ERROR("elect block get temp kv from db failed!");
-                return false;
-            }
-
-            prev_elect_block.ParseFromString(val);
-            ec_block_loaded = true;
-            break;
-        }
-    }
-
-    if (!ec_block_loaded) {
-        assert(false);
-        return false;
-    }
 
     auto& added_heights = added_height_[elect_block.shard_network_id()];
     if (added_heights.find(elect_block.prev_members().prev_elect_height()) != added_heights.end()) {

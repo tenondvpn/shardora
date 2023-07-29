@@ -85,6 +85,9 @@ private:
     bool BlsAggSignBlock(
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
         std::shared_ptr<block::protobuf::Block>& block);
+    void SetPrevElectInfo(
+        const elect::protobuf::ElectBlock& elect_block,
+        block::protobuf::BlockTx& block_tx);
 
     std::map<uint32_t, std::string> pool_index_map_;
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;
