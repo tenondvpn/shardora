@@ -1259,8 +1259,9 @@ void NetworkInit::HandleElectionBlock(
                 ZJC_FATAL("parse elect block failed!");
                 return;
             }
-        }
 
+            ZJC_INFO("success get prev elect block.");
+        }
     }
 
     if (!elect_block->has_shard_network_id() ||

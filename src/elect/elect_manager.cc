@@ -231,9 +231,11 @@ bool ElectManager::ProcessPrevElectMembers(
     }
 
     if (prev_elect_block.in_size() <= 0) {
+        ZJC_DEBUG("prev elect block in size error.");
         return false;
     }
 
+    ZJC_DEBUG("now handle block in size success.");
     auto& added_heights = added_height_[elect_block.shard_network_id()];
     if (added_heights.find(elect_block.prev_members().prev_elect_height()) != added_heights.end()) {
         ELECT_ERROR("height has added: %lu", elect_block.prev_members().prev_elect_height());
@@ -280,17 +282,14 @@ bool ElectManager::ProcessPrevElectMembers(
     UpdatePrevElectMembers(shard_members_ptr, elect_block, elected, &pk_vec);
     auto common_pk = BLSPublicKey(std::make_shared<std::vector<std::string>>(pk_vec));
     bool local_node_is_super_leader = false;
-    {
-
-        for (auto iter = shard_members_ptr->begin(); iter != shard_members_ptr->end(); ++iter) {
-            ELECT_INFO("DDDDDDDDDD elect height: %lu, network: %d,"
-                "leader: %s, pool_index_mod_num: %d, valid pk: %d",
-                elect_block.prev_members().prev_elect_height(),
-                prev_elect_block.shard_network_id(),
-                common::Encode::HexEncode((*iter)->id).c_str(),
-                (*iter)->pool_index_mod_num,
-                ((*iter)->bls_publick_key == libff::alt_bn128_G2::zero()));
-        }
+    for (auto iter = shard_members_ptr->begin(); iter != shard_members_ptr->end(); ++iter) {
+        ELECT_INFO("DDDDDDDDDD elect height: %lu, network: %d,"
+            "leader: %s, pool_index_mod_num: %d, valid pk: %d",
+            elect_block.prev_members().prev_elect_height(),
+            prev_elect_block.shard_network_id(),
+            common::Encode::HexEncode((*iter)->id).c_str(),
+            (*iter)->pool_index_mod_num,
+            ((*iter)->bls_publick_key == libff::alt_bn128_G2::zero()));
     }
 
     if (*elected) {
