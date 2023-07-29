@@ -128,7 +128,7 @@ int Execution::execute(
     }
 
     *out_res = evm_.execute(host, rev, msg, exec_code_data, exec_code_size);
-//     ZJC_INFO("execute res: %d", out_res->status_code);
+    ZJC_DEBUG("execute res: %d", out_res->status_code);
     return kZjcvmSuccess;
 }
 
