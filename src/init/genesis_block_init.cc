@@ -465,6 +465,7 @@ int GenesisBlockInit::CreateElectBlock(
         in->set_pool_idx_mod_num(node_idx < expect_leader_count ? node_idx : -1);
     }
 
+    tenon_block->set_height(height);
     ec_block.set_shard_network_id(shard_netid);
     ec_block.set_elect_height(tenon_block->height());
     if (prev_height != common::kInvalidUint64) {
@@ -495,7 +496,6 @@ int GenesisBlockInit::CreateElectBlock(
         SetPrevElectInfo(ec_block, *tx_info);
     }
 
-    tenon_block->set_height(height);
     auto storage = tx_info->add_storages();
     storage->set_key(protos::kElectNodeAttrElectBlock);
     std::string val = ec_block.SerializeAsString();
