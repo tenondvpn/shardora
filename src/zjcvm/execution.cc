@@ -81,10 +81,11 @@ int Execution::execute(
         sizeof(msg.recipient.bytes));
     const uint8_t* exec_code_data = nullptr;
     size_t exec_code_size = 0;
-    ZJC_DEBUG("now call contract, msg sender: %s, mode: %d, from: %s, value: %lu, bytes_code: %s, input: %s",
+    ZJC_DEBUG("now call contract, msg sender: %s, mode: %d, from: %s, to: %s, value: %lu, bytes_code: %s, input: %s",
         common::Encode::HexEncode(std::string((char*)msg.sender.bytes, 20)).c_str(),
         call_mode,
         common::Encode::HexEncode(from_address).c_str(),
+        common::Encode::HexEncode(to_address).c_str(),
         value,
         common::Encode::HexEncode(bytes_code).c_str(),
         common::Encode::HexEncode(str_input).c_str());
