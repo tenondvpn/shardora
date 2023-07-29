@@ -338,11 +338,6 @@ bool ElectManager::ProcessPrevElectMembers(
     }
 
     local_node_is_super_leader_ = local_node_is_super_leader;
-    prefix_db_->SaveElectHeightCommonPk(
-        elect_block.shard_network_id(),
-        elect_block.prev_members().prev_elect_height(),
-        elect_block.prev_members(),
-        db_batch);
     return true;
 }
 

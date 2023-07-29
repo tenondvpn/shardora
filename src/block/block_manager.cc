@@ -918,6 +918,14 @@ void BlockManager::HandleElectTx(
                 shard_elect_tx_[elect_block.shard_network_id()] = nullptr;
                 ZJC_DEBUG("success erase elect tx: %u", elect_block.shard_network_id());
             }
+
+            if (elect_block.prev_members().prev_elect_height() > 0) {
+                prefix_db_->SaveElectHeightCommonPk(
+                    elect_block.shard_network_id(),
+                    elect_block.prev_members().prev_elect_height(),
+                    elect_block.prev_members(),
+                    db_batch);
+            }
         }
     }
 }
