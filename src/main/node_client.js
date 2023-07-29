@@ -180,6 +180,7 @@ function create_tx(to, amount, gas_limit, gas_price) {
 function new_contract(contract_bytes) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     const privateKeyBuf = Secp256k1.uint256("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971", 16)
+    var self_private_key = Secp256k1.uint256(privateKeyBuf, 16)
     var self_public_key = Secp256k1.generatePublicKeyFromPrivateKeyData(self_private_key)
     var pk_bytes = hexToBytes(self_public_key.x.toString(16) + self_public_key.y.toString(16))
     var address = keccak256(pk_bytes).toString('hex')
