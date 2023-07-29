@@ -95,7 +95,7 @@ evmc::uint256be ZjchainHost::get_balance(const evmc::address& addr) const noexce
     auto iter = account_balance_.find(addr);
     if (iter == account_balance_.end()) {
         ZJC_DEBUG("failed now get balace: %s, my: %s, origin: %s",
-            common::Encode::HexEncode(std::string(addr.bytes, 20)).c_str(),
+            common::Encode::HexEncode(std::string((char*)addr.bytes, 20)).c_str(),
             common::Encode::HexEncode(my_address_).c_str(),
             common::Encode::HexEncode(origin_address_).c_str());
         return {};
@@ -103,7 +103,7 @@ evmc::uint256be ZjchainHost::get_balance(const evmc::address& addr) const noexce
 
     auto val = EvmcBytes32ToUint64(iter->second);
     ZJC_DEBUG("success now get balace: %s, my: %s, origin: %s, %lu",
-        common::Encode::HexEncode(std::string(addr.bytes, 20)).c_str(),
+        common::Encode::HexEncode(std::string((char*)addr.bytes, 20)).c_str(),
         common::Encode::HexEncode(my_address_).c_str(),
         common::Encode::HexEncode(origin_address_).c_str(),
         val);
