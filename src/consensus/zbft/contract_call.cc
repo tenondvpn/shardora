@@ -185,7 +185,32 @@ int ContractCall::HandleTx(
 
             tmp_from_balance -= dec_amount;
             // change contract 's amount, now is contract 's new balance
-            block_tx.set_amount(static_cast<int64_t>(to_balance) + contract_balance_add);
+            auto new_contract_balance = static_cast<int64_t>(to_balance) + contract_balance_add;
+            if (!zjc_host.recorded_selfdestructs_.empty() && new_contract_balance > 0) {
+                auto trans_item = block_tx.add_contract_txs();
+                std::string destruct_from = std::string(
+                    (char*)zjc_host.recorded_selfdestructs_[0].selfdestructed.bytes,
+                    sizeof(zjc_host.recorded_selfdestructs_[0].selfdestructed.bytes));
+                std::string destruct_to = std::string(
+                    (char*)zjc_host.recorded_selfdestructs_[0].beneficiary.bytes,
+                    sizeof(zjc_host.recorded_selfdestructs_[0].beneficiary.bytes));
+                if (destruct_from != block_tx.to() || destruct_from == destruct_to) {
+                    block_tx.set_status(consensus::kConsensusAccountBalanceError);
+                    ZJC_ERROR("self destruct error not equal: %s, %s, beneficiary: %s",
+                        common::Encode::HexEncode(destruct_from).c_str(),
+                        common::Encode::HexEncode(block_tx.to()).c_str(),
+                        common::Encode::HexEncode(destruct_to).c_str());
+                    break;
+                }
+                
+                trans_item->set_from(destruct_from);
+                trans_item->set_to(destruct_to);
+                trans_item->set_amount(new_contract_balance);
+                new_contract_balance = 0;
+
+            }
+
+            block_tx.set_amount(new_contract_balance);
         } while (0);
     }
 
