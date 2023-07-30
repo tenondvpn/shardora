@@ -270,7 +270,7 @@ function CreatePhr() {
 
     {
         var recoverFunc = web3.eth.abi.encodeFunctionSignature('Recover()');
-        console.log("recoverFunc: " + ResAddFunc.substring(2));
+        console.log("recoverFunc: " + recoverFunc.substring(2));
     }
     // func code
     {
