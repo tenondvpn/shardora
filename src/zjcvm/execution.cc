@@ -39,14 +39,14 @@ void Execution::Init(std::shared_ptr<db::Db>& db) {
 
 	evmc_loader_error_code ec = EVMC_LOADER_UNSPECIFIED_ERROR;
     evm_ = evmc::VM{ evmc_load_and_configure("/root/zjchain/third_party/evmone/build/lib64/libevmone.so", &ec)};
-	if (ec != EVMC_LOADER_SUCCESS)
-	{
+	if (ec != EVMC_LOADER_SUCCESS) {
 		const auto error = evmc_last_error_msg();
 		if (error != nullptr)
 			std::cerr << error << "\n";
 		else
 			std::cerr << "Loading error " << ec << "\n";
-		return static_cast<int>(ec);
+        ZJC_FATAL("evm.set_option error.");
+        return;
 	}
 
     if (evm_.set_option("no", "0") != EVMC_SET_OPTION_SUCCESS) {
