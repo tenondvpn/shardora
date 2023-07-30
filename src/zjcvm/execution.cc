@@ -35,24 +35,24 @@ Execution* Execution::Instance() {
 void Execution::Init(std::shared_ptr<db::Db>& db) {
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
-//     evm_ = evmc::VM{ evmc_create_evmone()};
+    evm_ = evmc::VM{ evmc_create_evmone()};
 
-	evmc_loader_error_code ec = EVMC_LOADER_UNSPECIFIED_ERROR;
-    evm_ = evmc::VM{ evmc_load_and_configure("/root/zjchain/third_party/evmone/build/lib64/libevmone.so", &ec)};
-	if (ec != EVMC_LOADER_SUCCESS) {
-		const auto error = evmc_last_error_msg();
-		if (error != nullptr)
-			std::cerr << error << "\n";
-		else
-			std::cerr << "Loading error " << ec << "\n";
-        ZJC_FATAL("evm.set_option error.");
-        return;
-	}
-
-    if (evm_.set_option("trace", "0") != EVMC_SET_OPTION_SUCCESS) {
-        ZJC_FATAL("evm.set_option error.");
-        return;
-    }
+// 	evmc_loader_error_code ec = EVMC_LOADER_UNSPECIFIED_ERROR;
+//     evm_ = evmc::VM{ evmc_load_and_configure("/root/zjchain/third_party/evmone/build/lib64/libevmone.so", &ec)};
+// 	if (ec != EVMC_LOADER_SUCCESS) {
+// 		const auto error = evmc_last_error_msg();
+// 		if (error != nullptr)
+// 			std::cerr << error << "\n";
+// 		else
+// 			std::cerr << "Loading error " << ec << "\n";
+//         ZJC_FATAL("evm.set_option error.");
+//         return;
+// 	}
+// 
+//     if (evm_.set_option("trace", "0") != EVMC_SET_OPTION_SUCCESS) {
+//         ZJC_FATAL("evm.set_option error.");
+//         return;
+//     }
 
     uint32_t thread_count = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
     address_exists_set_ = new common::StringUniqueSet<256, 16>[thread_count];
@@ -88,8 +88,7 @@ int Execution::execute(
     msg.gas = gas;
     msg.input_data = (uint8_t*)str_input.c_str();
     msg.input_size = str_input.size();
-    msg.value = {{1, 0}};
-//     Uint64ToEvmcBytes32(msg.value, value);
+    Uint64ToEvmcBytes32(msg.value, value);
     memcpy(
         msg.sender.bytes,
         from_address.c_str(),
