@@ -49,7 +49,7 @@ void Execution::Init(std::shared_ptr<db::Db>& db) {
         return;
 	}
 
-    if (evm_.set_option("no", "0") != EVMC_SET_OPTION_SUCCESS) {
+    if (evm_.set_option("trace", "0") != EVMC_SET_OPTION_SUCCESS) {
         ZJC_FATAL("evm.set_option error.");
         return;
     }
