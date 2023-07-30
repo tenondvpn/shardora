@@ -59,6 +59,8 @@ public:
     };
 
     struct selfdestuct_record {
+        selfdestuct_record(evmc::address from, evmc::address to)
+            : selfdestructed(from), beneficiary(to) {}
         evmc::address selfdestructed;
         evmc::address beneficiary;
         bool operator==(const selfdestuct_record& other) const noexcept
@@ -109,7 +111,7 @@ public:
     evmc_tx_context tx_context_ = {};
     evmc::bytes32 block_hash_ = {};
     std::vector<log_record> recorded_logs_;
-    std::vector<selfdestuct_record> recorded_selfdestructs_;
+    std::shared_ptr<selfdestuct_record> recorded_selfdestructs_ = nullptr;
 
     std::string my_address_;
     uint64_t gas_price_{ 0 };

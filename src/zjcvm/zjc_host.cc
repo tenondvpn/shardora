@@ -167,7 +167,12 @@ bool ZjchainHost::selfdestruct(
     ZJC_DEBUG("selfdestruct called addr: %s, beneficiary: %s",
         common::Encode::HexEncode(std::string((char*)addr.bytes, 20)).c_str(),
         common::Encode::HexEncode(std::string((char*)beneficiary.bytes, 20)).c_str());
-    recorded_selfdestructs_.push_back({ addr, beneficiary });
+    if (recorded_selfdestructs_ != nullptr) {
+        assert(false);
+        return false;
+    }
+
+    recorded_selfdestructs_ = std::make_shared<selfdestuct_record>(addr, beneficiary);
     return true;
 }
 
