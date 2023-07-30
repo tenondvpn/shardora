@@ -3,7 +3,7 @@ pragma solidity >=0.7.0 <0.9.0;
 
 contract Phr {
     address[] public valid_aas;
-    address public owner;
+    address payable public owner;
 
     struct RidInfo {
         bytes pk;
