@@ -164,6 +164,9 @@ void ToTxsPools::HandleContractExecute(
             sharding_id = addr_info->sharding_id();
         }
 
+        ZJC_DEBUG("add contract execute to: %s, %lu",
+            common::Encode::HexEncode(tx.contract_txs(i).to()).c_str(),
+            tx.contract_txs(i).amount());
         AddTxToMap(
             block,
             tx.contract_txs(i).to(),
