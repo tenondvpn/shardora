@@ -30,7 +30,7 @@ contract Phr {
 
     constructor(address[] memory aas) {
         valid_aas = aas;
-        owner = msg.sender;
+        owner = payable(msg.sender);
     }
 
     function ResAdd(bytes32 rid, bytes memory pkDo, bytes memory ci) public {
