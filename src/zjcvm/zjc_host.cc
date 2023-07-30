@@ -164,7 +164,9 @@ size_t ZjchainHost::copy_code(
 bool ZjchainHost::selfdestruct(
         const evmc::address& addr,
         const evmc::address& beneficiary) noexcept {
-    ZJC_DEBUG("called 7");
+    ZJC_DEBUG("selfdestruct called addr: %s, beneficiary: %s",
+        common::Encode::HexEncode(std::string(addr.bytes, 20)).c_str(),
+        common::Encode::HexEncode(std::string(beneficiary.bytes, 20)).c_str());
     recorded_selfdestructs_.push_back({ addr, beneficiary });
     return true;
 }
