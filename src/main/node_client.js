@@ -197,7 +197,7 @@ function new_contract(contract_bytes) {
         6,
         gid,
         self_contract_address,
-        0,
+        10000000,
         10000000,
         1,
         contract_bytes,
