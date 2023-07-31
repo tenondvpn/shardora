@@ -239,24 +239,24 @@ int tx_main(int argc, char** argv) {
             10000000,
             ((uint32_t)(1000 - pos)) % 1000 + 1,
             3);
-//         if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
+        if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
+            std::cout << "send tcp client failed!" << std::endl;
+            return 1;
+        }
+//         if (transport::TcpTransport::Instance()->Send(0, "10.101.20.29", 21001, tx_msg_ptr->header) != 0) {
 //             std::cout << "send tcp client failed!" << std::endl;
 //             return 1;
 //         }
-        if (transport::TcpTransport::Instance()->Send(0, "10.101.20.29", 21001, tx_msg_ptr->header) != 0) {
-            std::cout << "send tcp client failed!" << std::endl;
-            return 1;
-        }
-
-        if (transport::TcpTransport::Instance()->Send(0, "10.101.20.30", 22001, tx_msg_ptr->header) != 0) {
-            std::cout << "send tcp client failed!" << std::endl;
-            return 1;
-        }
-
-        if (transport::TcpTransport::Instance()->Send(0, "10.101.20.31", 23001, tx_msg_ptr->header) != 0) {
-            std::cout << "send tcp client failed!" << std::endl;
-            return 1;
-        }
+// 
+//         if (transport::TcpTransport::Instance()->Send(0, "10.101.20.30", 22001, tx_msg_ptr->header) != 0) {
+//             std::cout << "send tcp client failed!" << std::endl;
+//             return 1;
+//         }
+// 
+//         if (transport::TcpTransport::Instance()->Send(0, "10.101.20.31", 23001, tx_msg_ptr->header) != 0) {
+//             std::cout << "send tcp client failed!" << std::endl;
+//             return 1;
+//         }
 
 //         std::cout << "from private key: " << common::Encode::HexEncode(from_prikey) << ", to: " << common::Encode::HexEncode(to) << ", tx hash: " << tx_msg_ptr->header.hash64() << std::endl;
         if (pos % 1 == 0) {
@@ -344,24 +344,24 @@ int one_tx_main(int argc, char** argv) {
         10000000,
         ((uint32_t)(1000 - pos)) % 1000 + 1,
         3);
-//     if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
+    if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
+        std::cout << "send tcp client failed!" << std::endl;
+        return 1;
+    }
+//     if (transport::TcpTransport::Instance()->Send(0, "10.101.20.29", 21001, tx_msg_ptr->header) != 0) {
 //         std::cout << "send tcp client failed!" << std::endl;
 //         return 1;
 //     }
-    if (transport::TcpTransport::Instance()->Send(0, "10.101.20.29", 21001, tx_msg_ptr->header) != 0) {
-        std::cout << "send tcp client failed!" << std::endl;
-        return 1;
-    }
-
-    if (transport::TcpTransport::Instance()->Send(0, "10.101.20.30", 22001, tx_msg_ptr->header) != 0) {
-        std::cout << "send tcp client failed!" << std::endl;
-        return 1;
-    }
-
-    if (transport::TcpTransport::Instance()->Send(0, "10.101.20.31", 23001, tx_msg_ptr->header) != 0) {
-        std::cout << "send tcp client failed!" << std::endl;
-        return 1;
-    }
+// 
+//     if (transport::TcpTransport::Instance()->Send(0, "10.101.20.30", 22001, tx_msg_ptr->header) != 0) {
+//         std::cout << "send tcp client failed!" << std::endl;
+//         return 1;
+//     }
+// 
+//     if (transport::TcpTransport::Instance()->Send(0, "10.101.20.31", 23001, tx_msg_ptr->header) != 0) {
+//         std::cout << "send tcp client failed!" << std::endl;
+//         return 1;
+//     }
 
 
     if (!db_ptr->Put("txcli_pos", std::to_string(pos)).ok()) {
