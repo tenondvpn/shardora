@@ -566,52 +566,53 @@ void BlockManager::HandleNormalToTx(
         if (!prefix_db_->GetTemporaryKv(tx.storages(0).val_hash(), &to_txs_str)) {
             ZJC_WARN("normal to get val hash failed: %s",
                 common::Encode::HexEncode(tx.storages(0).val_hash()).c_str());
-            return;
+            continue;
         }
 
-        break;
-    }
+        pools::protobuf::ToTxMessage to_txs;
+        if (!to_txs.ParseFromString(to_txs_str)) {
+            ZJC_WARN("parse to txs failed.");
+            continue;
+        }
 
-    pools::protobuf::ToTxMessage to_txs;
-    if (!to_txs.ParseFromString(to_txs_str)) {
-        ZJC_WARN("parse to txs failed.");
-        return;
-    }
-
-    auto iter = leader_to_txs_.find(to_txs.elect_height());
-    if (iter != leader_to_txs_.end()) {
-        if (latest_to_tx_ != nullptr && iter->second->to_tx->tx_hash == latest_to_tx_->to_tx->tx_hash) {
-            ZJC_DEBUG("set success add txs, success handle normal to tx hash: %s",
-                common::Encode::HexEncode(iter->second->to_tx->tx_hash).c_str());
+        if (to_txs.heights_hash() == latest_to_tx_->to_tx->tx_hash) {
             latest_to_tx_ = nullptr;
+            auto iter = leader_to_txs_.find(to_txs.elect_height());
+            if (iter != leader_to_txs_.end()) {
+                iter->second->to_tx = nullptr;
+            }
         }
 
-        iter->second->to_tx = nullptr;
-    }
+        if (tx.step() == pools::protobuf::kRootCreateAddressCrossSharding) {
+            if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
+                    common::GlobalInfo::Instance()->network_id() ==
+                    network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
+                ZJC_WARN("sharding step invalid: %u, %u, to hash: %s",
+                    to_txs.to_heights().sharding_id(),
+                    common::GlobalInfo::Instance()->network_id(),
+                    common::Encode::HexEncode(to_txs.heights_hash()).c_str());
+                continue;
+            }
+        }
 
-    if (tx.step() == pools::protobuf::kRootCreateAddressCrossSharding) {
-        if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId ||
-                common::GlobalInfo::Instance()->network_id() ==
-                network::kRootCongressNetworkId + network::kConsensusWaitingShardOffset) {
-            return;
+        if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
+            if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+                ZJC_WARN("sharding invalid: %u, %u, to hash: %s",
+                    to_txs.to_heights().sharding_id(),
+                    common::GlobalInfo::Instance()->network_id(),
+                    common::Encode::HexEncode(to_txs.heights_hash()).c_str());
+    //             assert(false);
+                continue;
+            }
+
+            ZJC_DEBUG("success add local transfer tx tos hash: %s", common::Encode::HexEncode(tx.storages(0).val_hash()).c_str());
+            HandleLocalNormalToTx(thread_idx, to_txs, tx.step(), tx.storages(0).val_hash());
+        } else {
+            RootHandleNormalToTx(thread_idx, block.height(), to_txs, db_batch);
         }
     }
 
-    if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
-        if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-            ZJC_WARN("sharding invalid: %u, %u, to hash: %s",
-                to_txs.to_heights().sharding_id(),
-                common::GlobalInfo::Instance()->network_id(),
-                common::Encode::HexEncode(to_txs.heights_hash()).c_str());
-//             assert(false);
-            return;
-        }
-
-        ZJC_DEBUG("success add local transfer tx tos hash: %s", common::Encode::HexEncode(tx.storages(0).val_hash()).c_str());
-        HandleLocalNormalToTx(thread_idx, to_txs, tx.step(), tx.storages(0).val_hash());
-    } else {
-        RootHandleNormalToTx(thread_idx, block.height(), to_txs, db_batch);
-    }
+    
 }
 
 void BlockManager::RootHandleNormalToTx(
