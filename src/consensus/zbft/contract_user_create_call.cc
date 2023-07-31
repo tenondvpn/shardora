@@ -60,12 +60,13 @@ int ContractUserCreateCall::HandleTx(
     if (call_res != kConsensusSuccess || res.status_code != EVMC_SUCCESS) {
         block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
         ZJC_DEBUG("create contract: %s failed, call_res: %d, "
-            "evmc res: %d, gas_used: %lu, gas price: %lu",
+            "evmc res: %d, gas_used: %lu, gas price: %lu, from_balance: %lu",
             common::Encode::HexEncode(block_tx.to()).c_str(),
             call_res,
             res.status_code,
             gas_used,
-            block_tx.gas_price());
+            block_tx.gas_price(),
+            from_balance);
     }
 
     if (res.gas_left > (int64_t)block_tx.gas_limit()) {
@@ -162,10 +163,7 @@ int ContractUserCreateCall::HandleTx(
         } while (0);
     }
 
-    if (block_tx.status() == kConsensusSuccess) {
-        from_balance = tmp_from_balance;
-    }
-
+    from_balance = tmp_from_balance;
     acc_balance_map[from] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
