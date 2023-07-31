@@ -854,12 +854,15 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
             tx_msg.pubkey(),
             msg_ptr->header.sign()) != security::kSecuritySuccess) {
         ZJC_DEBUG("verify signature failed address balance invalid: %lu, transfer amount: %lu, "
-            "prepayment: %lu, default call contract gas: %lu, txid: %s",
+            "prepayment: %lu, default call contract gas: %lu, txid: %s, msg hash: %s, pk: %s, sing: %s",
             msg_ptr->address_info->balance(),
             tx_msg.amount(),
             tx_msg.contract_prepayment(),
             consensus::kCallContractDefaultUseGas,
-            common::Encode::HexEncode(tx_msg.gid()).c_str());
+            common::Encode::HexEncode(tx_msg.gid()).c_str(),
+            common::Encode::HexEncode(msg_ptr->msg_hash).c_str(),
+            common::Encode::HexEncode(tx_msg.pubkey()).c_str(),
+            common::Encode::HexEncode(msg_ptr->header.sign()).c_str());
         assert(false);
         return;
     }
