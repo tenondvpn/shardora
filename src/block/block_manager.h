@@ -169,7 +169,7 @@ private:
     void HandleToTxMessage();
     void HandleStatisticTxMessage();
     std::shared_ptr<address::protobuf::AddressInfo> GetAccountInfo(const std::string& addr);
-    void AddWaitingCheckSignBlock(std::shared_ptr<block::protobuf::Block>& block_ptr);
+    void AddWaitingCheckSignBlock(const std::shared_ptr<block::protobuf::Block>& block_ptr);
     void CheckWaitingBlocks(uint32_t shard, uint64_t elect_height);
 
     static const uint64_t kCreateToTxPeriodMs = 10000lu;

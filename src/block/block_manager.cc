@@ -286,7 +286,8 @@ void BlockManager::GenesisNewBlock(
     AddNewBlock(thread_idx, block_item, db_batch);
 }
 
-void BlockManager::AddWaitingCheckSignBlock(std::shared_ptr<block::protobuf::Block>& block_ptr) {
+void BlockManager::AddWaitingCheckSignBlock(
+        const std::shared_ptr<block::protobuf::Block>& block_ptr) {
     auto net_iter = waiting_check_sign_blocks_.find(block_ptr->network_id());
     if (net_iter == waiting_check_sign_blocks_.end()) {
         waiting_check_sign_blocks_[block_ptr->network_id()] =
@@ -307,7 +308,7 @@ void BlockManager::AddWaitingCheckSignBlock(std::shared_ptr<block::protobuf::Blo
     }
 }
 
-void BlockManager::CheckWaitingBlocks(uint32_t shard, uint64_t elect_height) {
+void BlockManager::CheckWaitingBlocks(uint8_t thread_idx, uint32_t shard, uint64_t elect_height) {
     auto net_iter = waiting_check_sign_blocks_.find(shard);
     if (net_iter == waiting_check_sign_blocks_.end()) {
         return;
@@ -322,7 +323,8 @@ void BlockManager::CheckWaitingBlocks(uint32_t shard, uint64_t elect_height) {
         auto& block_item = height_iter->second.front();
         height_iter->second.pop();
         if (block_agg_valid_func_ != nullptr && !block_agg_valid_func_(thread_idx, *block_item)) {
-            ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, net: %u, pool: %u, height: %lu",
+            ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, "
+                "net: %u, pool: %u, height: %lu",
                 common::Encode::HexEncode(block_item->hash()).c_str(),
                 common::Encode::HexEncode(block_item->bls_agg_sign_x()).c_str(),
                 block_item->network_id(),
