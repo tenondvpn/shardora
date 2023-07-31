@@ -196,7 +196,9 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
     raw_result->gas_left = msg.gas;
     std::cout << "host called kind: " << msg.kind
         << ", from: " << common::Encode::HexEncode(params.from)
-        << ", to: " << common::Encode::HexEncode(params.to) << std::endl;
+        << ", to: " << common::Encode::HexEncode(params.to)
+        << ", amount: " << params.value
+        << std::endl;
     if (contract_mgr_->call(
             params,
             gas_price_,
@@ -206,7 +208,7 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
     } else {
         std::string id = std::string((char*)msg.code_address.bytes, sizeof(msg.code_address.bytes));
         auto acc_info = acc_mgr_->GetAccountInfo(thread_idx_, id);
-        if (acc_info == nullptr || acc_info->bytes_code().empty()) {
+        if (acc_info == nullptr) {
             evmc_res.status_code = EVMC_REVERT;
             ZJC_WARN("get call bytes code failed: %s, field: %s",
                 common::Encode::HexEncode(id).c_str(),
@@ -214,22 +216,27 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
             return evmc_res;
         }
 
-        ZJC_DEBUG("get call bytes code success: %s, field: %s",
-            common::Encode::HexEncode(id).c_str(),
-            protos::kFieldBytesCode.c_str());
-        ++depth_;
-        int res_status = zjcvm::Execution::Instance()->execute(
-            acc_info->bytes_code(),
-            params.data,
-            params.from,
-            params.to,
-            origin_address_,
-            params.apparent_value,
-            params.gas,
-            depth_,
-            zjcvm::kJustCall,
-            *this,
-            &evmc_res);
+        if (!acc_info->bytes_code().empty()) {
+            ZJC_DEBUG("get call bytes code success: %s, field: %s",
+                common::Encode::HexEncode(id).c_str(),
+                protos::kFieldBytesCode.c_str());
+            ++depth_;
+            int res_status = zjcvm::Execution::Instance()->execute(
+                acc_info->bytes_code(),
+                params.data,
+                params.from,
+                params.to,
+                origin_address_,
+                params.apparent_value,
+                params.gas,
+                depth_,
+                zjcvm::kJustCall,
+                *this,
+                &evmc_res);
+            if (res_status != consensus::kConsensusSuccess || evmc_res->status_code != EVMC_SUCCESS) {
+                return evmc_res;
+            }
+        }
     }
 
     if (params.value > 0) {
