@@ -38,7 +38,7 @@ contract Phr {
     }
 
     function Transfer(uint64 amount) public payable {
-        payable(msg.sender).transfer(amount)
+        payable(msg.sender).transfer(amount);
     }
 
     function ResAdd(bytes32 rid, bytes memory pkDo, bytes memory ci) public {
