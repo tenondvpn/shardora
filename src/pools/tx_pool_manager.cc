@@ -849,6 +849,21 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    if (security_->Verify(
+            msg_ptr->msg_hash,
+            tx_msg.pubkey(),
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        ZJC_DEBUG("verify signature failed address balance invalid: %lu, transfer amount: %lu, "
+            "prepayment: %lu, default call contract gas: %lu, txid: %s",
+            msg_ptr->address_info->balance(),
+            tx_msg.amount(),
+            tx_msg.contract_prepayment(),
+            consensus::kCallContractDefaultUseGas,
+            common::Encode::HexEncode(tx_msg.gid()).c_str());
+        assert(false);
+        return;
+    }
+
     prefix_db_->SaveAddressPubkey(msg_ptr->address_info->addr(), tx_msg.pubkey());
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
 //     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
@@ -953,6 +968,21 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    if (security_->Verify(
+            msg_ptr->msg_hash,
+            tx_msg.pubkey(),
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        ZJC_DEBUG("verify signature failed address balance invalid: %lu, transfer amount: %lu, "
+            "prepayment: %lu, default call contract gas: %lu, txid: %s",
+            msg_ptr->address_info->balance(),
+            tx_msg.amount(),
+            tx_msg.contract_prepayment(),
+            consensus::kCallContractDefaultUseGas,
+            common::Encode::HexEncode(tx_msg.gid()).c_str());
+        assert(false);
+        return;
+    }
+
     msg_queues_[msg_ptr->address_info->pool_index()].push(msg_ptr);
     ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", msg_ptr->address_info->pool_index(), msg_queues_[msg_ptr->address_info->pool_index()].size());
     //     ZJC_INFO("success add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
@@ -1025,6 +1055,21 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
     }
 
     msg_ptr->msg_hash = pools::GetTxMessageHash(tx_msg);
+    if (security_->Verify(
+            msg_ptr->msg_hash,
+            tx_msg.pubkey(),
+            msg_ptr->header.sign()) != security::kSecuritySuccess) {
+        ZJC_DEBUG("verify signature failed address balance invalid: %lu, transfer amount: %lu, "
+            "prepayment: %lu, default call contract gas: %lu, txid: %s",
+            msg_ptr->address_info->balance(),
+            tx_msg.amount(),
+            tx_msg.contract_prepayment(),
+            consensus::kCallContractDefaultUseGas,
+            common::Encode::HexEncode(tx_msg.gid()).c_str());
+        assert(false);
+        return;
+    }
+
     if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
         // avoid save gid different tx
         ZJC_DEBUG("tx msg hash exists: %s failed!",
