@@ -556,7 +556,9 @@ void BlockManager::HandleNormalToTx(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        ZJC_DEBUG("get normal to tx key: %s", tx.storages(i).key().c_str());
+        ZJC_DEBUG("get normal to tx key: %s, val: %s",
+            tx.storages(i).key().c_str(),
+            common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
         if (tx.storages(i).key() != protos::kNormalToShards) {
             continue;
         }
