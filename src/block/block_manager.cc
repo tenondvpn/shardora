@@ -364,7 +364,7 @@ int BlockManager::NetworkNewBlock(
             return kBlockVerifyAggSignFailed;
         }
 
-        CheckWaitingBlocks(block_item->network_id(), block_item->electblock_height());
+        CheckWaitingBlocks(thread_idx, block_item->network_id(), block_item->electblock_height());
         block_from_network_queue_.push(block_item);
     }
 
