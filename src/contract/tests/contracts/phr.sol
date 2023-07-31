@@ -37,6 +37,10 @@ contract Phr {
         selfdestruct(owner);
     }
 
+    function Transfer(uint64 amount) public payable {
+        payable(msg.sender).transfer(amount)
+    }
+
     function ResAdd(bytes32 rid, bytes memory pkDo, bytes memory ci) public {
         require(owner == msg.sender);
         require(!rids[rid].exists);
