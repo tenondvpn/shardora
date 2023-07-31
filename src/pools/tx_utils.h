@@ -243,7 +243,7 @@ static inline std::string GetTxMessageHash(const pools::protobuf::TxMessage& tx_
     if (tx_info.has_key()) {
         message.append(tx_info.key());
         if (tx_info.has_value()) {
-            message.append(tx_info.value());
+//             message.append(tx_info.value());
         }
     }
 
