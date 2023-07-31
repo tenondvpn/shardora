@@ -233,7 +233,7 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
                 zjcvm::kJustCall,
                 *this,
                 &evmc_res);
-            if (res_status != consensus::kConsensusSuccess || evmc_res->status_code != EVMC_SUCCESS) {
+            if (res_status != consensus::kConsensusSuccess || evmc_res.status_code != EVMC_SUCCESS) {
                 return evmc_res;
             }
         }
