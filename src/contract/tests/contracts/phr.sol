@@ -28,7 +28,7 @@ contract Phr {
     mapping(bytes32 => PolicyInfo[]) public rid_attrs;
     mapping(bytes32 => PidInfo) public pids;
 
-    constructor(address[] memory aas) {
+    constructor(address[] memory aas) payable {
         valid_aas = aas;
         owner = payable(msg.sender);
     }
