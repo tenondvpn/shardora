@@ -41,6 +41,10 @@ contract Phr {
         payable(msg.sender).transfer(amount);
     }
 
+    function TransferTo(address payable to, uint64 amount) public payable {
+        payable(to).transfer(amount);
+    }
+
     function ResAdd(bytes32 rid, bytes memory pkDo, bytes memory ci) public {
         require(owner == msg.sender);
         require(!rids[rid].exists);
