@@ -555,22 +555,13 @@ void BlockManager::HandleNormalToTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-//     ZJC_DEBUG("new normal to block coming.");
-    std::string to_txs_str;
-    ZJC_DEBUG("totx success add normal to tx gid coming: %s", common::Encode::HexEncode(tx.gid()).c_str());
-    if (latest_to_tx_ != nullptr && tx.gid() == latest_to_tx_->to_tx->tx_hash) {
-        ZJC_DEBUG("normal to tx gid coming: %s, des: %s",
-            common::Encode::HexEncode(tx.gid()).c_str(),
-            common::Encode::HexEncode(latest_to_tx_->to_tx->tx_hash).c_str());
-        latest_to_tx_ = nullptr;
-    }
-
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         ZJC_DEBUG("get normal to tx key: %s", tx.storages(i).key().c_str());
         if (tx.storages(i).key() != protos::kNormalToShards) {
             continue;
         }
 
+        std::string to_txs_str;
         if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &to_txs_str)) {
             ZJC_WARN("normal to get val hash failed: %s",
                 common::Encode::HexEncode(tx.storages(0).val_hash()).c_str());
@@ -585,7 +576,15 @@ void BlockManager::HandleNormalToTx(
 
         auto iter = leader_to_txs_.find(to_txs.elect_height());
         if (iter != leader_to_txs_.end()) {
-            iter->second->to_tx = nullptr;
+            if (iter->second.get() == latest_to_tx_.get()) {
+                ZJC_DEBUG("totx success add remve latest to tx: %s",
+                    common::Encode::HexEncode(iter->second->to_tx->tx_hash))
+                latest_to_tx_ = nullptr;
+            }
+
+            ZJC_DEBUG("totx success add elect height reset to tx: %s",
+                common::Encode::HexEncode(iter->second->to_tx->tx_hash))
+                iter->second->to_tx = nullptr;
             leader_to_txs_.erase(iter);
         }
 
