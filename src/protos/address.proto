@@ -26,4 +26,5 @@ message AddressInfo {
     optional int32 credit = 9 [default=0];
     repeated bls.protobuf.BlsPublicKey g2s = 10;
     optional uint32 elect_pos = 11 [default=4294967295];
+    optional bool destructed = 12;
 }

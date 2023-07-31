@@ -213,6 +213,8 @@ int ContractCall::HandleTx(
                     common::Encode::HexEncode(destruct_to).c_str(),
                     trans_item->amount(),
                     block_tx.status());
+                auto destruct_kv = block_tx.add_storages();
+                destruct_kv->set_key(protos::kContractDestruct);
             }
 
             block_tx.set_amount(new_contract_balance);

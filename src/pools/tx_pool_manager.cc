@@ -907,6 +907,11 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    if (msg_ptr->address_info->destructed()) {
+        ZJC_DEBUG("contract destructed: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+        return;
+    }
+
     auto from = security_->GetAddress(tx_msg.pubkey());
     if (msg_ptr->address_info->addr() == from) {
         ZJC_DEBUG("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());

@@ -315,6 +315,10 @@ void AccountManager::HandleContractExecuteTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
+    if (tx.status() != consensus::kConsensusSuccess) {
+        return;
+    }
+
     auto& account_id = GetTxValidAddress(tx);
     auto account_info = GetAccountInfo(thread_idx, account_id);
     if (account_info == nullptr) {
@@ -324,6 +328,12 @@ void AccountManager::HandleContractExecuteTx(
 
     if (account_info->latest_height() >= block.height()) {
         return;
+    }
+
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        if (tx.storages(i).key() == protos::kContractDestruct) {
+            account_info->set_destructed(true);
+        }
     }
 
     account_info->set_latest_height(block.height());

@@ -579,7 +579,7 @@ void BlockManager::HandleNormalToTx(
         auto iter = leader_to_txs_.find(to_txs.elect_height());
         if (iter != leader_to_txs_.end()) {
             if (iter->second.get() == latest_to_tx_.get()) {
-                ZJC_DEBUG("totx success add remve latest to tx: %s",
+                ZJC_DEBUG("totx success add remove latest to tx: %s",
                     common::Encode::HexEncode(iter->second->to_tx->tx_hash).c_str());
                 latest_to_tx_ = nullptr;
             }
@@ -612,7 +612,8 @@ void BlockManager::HandleNormalToTx(
                 continue;
             }
 
-            ZJC_DEBUG("success add local transfer tx tos hash: %s", common::Encode::HexEncode(tx.storages(0).val_hash()).c_str());
+            ZJC_DEBUG("success add local transfer tx tos hash: %s",
+                common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
             HandleLocalNormalToTx(thread_idx, to_txs, tx.step(), tx.storages(0).val_hash());
         } else {
             RootHandleNormalToTx(thread_idx, block.height(), to_txs, db_batch);
