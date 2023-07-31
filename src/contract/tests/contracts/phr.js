@@ -272,6 +272,19 @@ function CreatePhr() {
         var recoverFunc = web3.eth.abi.encodeFunctionSignature('Recover()');
         console.log("recoverFunc: " + recoverFunc.substring(2));
     }
+
+    {
+        var func = web3.eth.abi.encodeFunctionSignature('Transfer(uint64)');
+        var funcParam = web3.eth.abi.encodeParameters(['uint64'], [1000]);
+        console.log("Transfer func: " + func.substring(2) + funcParam.substring(2));
+    }
+
+    {
+        var func = web3.eth.abi.encodeFunctionSignature('TransferTo(address,uint64)');
+        var funcParam = web3.eth.abi.encodeParameters(['address', 'uint64'], [account1.address, 1000]);
+        console.log("TransferTo func: " + func.substring(2) + funcParam.substring(2));
+    }
+    
     // func code
     {
         var ResAddFunc = web3.eth.abi.encodeFunctionSignature('ResAdd(bytes32,bytes,bytes)');
