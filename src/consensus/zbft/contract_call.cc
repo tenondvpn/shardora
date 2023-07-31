@@ -207,7 +207,12 @@ int ContractCall::HandleTx(
                 trans_item->set_to(destruct_to);
                 trans_item->set_amount(new_contract_balance);
                 new_contract_balance = 0;
-
+                ZJC_ERROR("self destruct success %s, %s, beneficiary: %s, amount: %lu, status: %d",
+                    common::Encode::HexEncode(destruct_from).c_str(),
+                    common::Encode::HexEncode(block_tx.to()).c_str(),
+                    common::Encode::HexEncode(destruct_to).c_str(),
+                    trans_item->amount(),
+                    block_tx.status());
             }
 
             block_tx.set_amount(new_contract_balance);
