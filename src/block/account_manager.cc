@@ -268,7 +268,7 @@ void AccountManager::HandleCreateContract(
         }
     }
 
-    {
+    if (tx.status() == consensus::kConsensusSuccess) {
         auto account_info = GetAccountInfo(thread_idx, tx.to());
         if (account_info != nullptr) {
             assert(false);
