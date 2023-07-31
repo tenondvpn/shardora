@@ -234,50 +234,62 @@ void AccountManager::HandleCreateContract(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    auto& from_account_id = tx.from();
-    auto from_account_info = GetAccountInfo(thread_idx, from_account_id);
-    if (from_account_info == nullptr) {
-        assert(false);
-        return;
-    }
-
-    from_account_info->set_latest_height(block.height());
-    from_account_info->set_balance(tx.balance());
-    prefix_db_->AddAddressInfo(from_account_id, *from_account_info, db_batch);
-    ZJC_DEBUG("transfer from address new balance %s: %lu, height: %lu, pool: %u",
-        common::Encode::HexEncode(from_account_id).c_str(), tx.balance(),
-        block.height(), block.pool_index());
-
-    auto account_info = GetAccountInfo(thread_idx, tx.to());
-    if (account_info != nullptr) {
-        assert(false);
-        return;
-    }
-
-    for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
+    // handle from
+    {
+        auto account_info = GetAccountInfo(thread_idx, tx.from());
+        if (account_info == nullptr) {
+            ZJC_INFO("0 get address info failed create new address to this id: %s,"
+                "shard: %u, local shard: %u",
+                common::Encode::HexEncode(tx.from()).c_str(), block.network_id(),
+                common::GlobalInfo::Instance()->network_id());
             account_info = std::make_shared<address::protobuf::AddressInfo>();
-            auto& bytes_code = tx.storages(i).val_hash();
-            account_info->set_type(address::protobuf::kContract);
             account_info->set_pool_index(block.pool_index());
-            account_info->set_addr(tx.to());
+            account_info->set_addr(tx.from());
+            account_info->set_type(address::protobuf::kNormal);
             account_info->set_sharding_id(block.network_id());
             account_info->set_latest_height(block.height());
-            account_info->set_balance(tx.amount());
-            account_info->set_bytes_code(bytes_code);
-            address_map_[thread_idx].add(tx.to(), account_info);
-            prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
-            ZJC_INFO("1 get address info failed create new address to this id: %s,"
-                "shard: %u, local shard: %u",
-                common::Encode::HexEncode(tx.to()).c_str(), block.network_id(),
-                common::GlobalInfo::Instance()->network_id());
+            account_info->set_balance(tx.balance());
+            address_map_[thread_idx].add(tx.from(), account_info);
+            prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
+        } else {
+            account_info->set_latest_height(block.height());
+            account_info->set_balance(tx.balance());
+            prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
+        }
+    }
 
-            ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
-                common::Encode::HexEncode(tx.to()).c_str(),
-                tx.amount(),
-                block.network_id(),
-                block.pool_index());
-            break;
+    {
+        auto account_info = GetAccountInfo(thread_idx, tx.to());
+        if (account_info != nullptr) {
+            assert(false);
+            return;
+        }
+
+        for (int32_t i = 0; i < tx.storages_size(); ++i) {
+            if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
+                account_info = std::make_shared<address::protobuf::AddressInfo>();
+                auto& bytes_code = tx.storages(i).val_hash();
+                account_info->set_type(address::protobuf::kContract);
+                account_info->set_pool_index(block.pool_index());
+                account_info->set_addr(tx.to());
+                account_info->set_sharding_id(block.network_id());
+                account_info->set_latest_height(block.height());
+                account_info->set_balance(tx.amount());
+                account_info->set_bytes_code(bytes_code);
+                address_map_[thread_idx].add(tx.to(), account_info);
+                prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
+                ZJC_INFO("1 get address info failed create new address to this id: %s,"
+                    "shard: %u, local shard: %u",
+                    common::Encode::HexEncode(tx.to()).c_str(), block.network_id(),
+                    common::GlobalInfo::Instance()->network_id());
+
+                ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
+                    common::Encode::HexEncode(tx.to()).c_str(),
+                    tx.amount(),
+                    block.network_id(),
+                    block.pool_index());
+                break;
+            }
         }
     }
 }
