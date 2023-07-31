@@ -320,61 +320,34 @@ int ContractCall::SaveContractCreateInfo(
                 return kConsensusError;
             }
 
-            if (block_tx.to() == transfer_iter->first) {
-                contract_balance_add -= to_iter->second;
+            if (block_tx.to() != transfer_iter->first) {
+                assert(false);
+                return kConsensusError;
             }
 
-            if (block_tx.to() == to_iter->first) {
-                contract_balance_add += to_iter->second;
-            }
-
-            if (block_tx.from() == transfer_iter->first) {
-                caller_balance_add -= to_iter->second;
-            }
-
-            if (block_tx.from() == to_iter->first) {
-                caller_balance_add += to_iter->second;
-            }
-
-            if (to_iter->first != block_tx.to() && to_iter->first != block_tx.from()) {
-                // from and contract itself transfers direct
-                // transfer to other address by cross sharding transfer
-                auto trans_item = block_tx.add_contract_txs();
-                trans_item->set_from(transfer_iter->first);
-                trans_item->set_to(to_iter->first);
-                trans_item->set_amount(to_iter->second);
-                other_add += to_iter->second;
-            }
+            contract_balance_add -= to_iter->second;
+            // from and contract itself transfers direct
+            // transfer to other address by cross sharding transfer
+            auto trans_item = block_tx.add_contract_txs();
+            trans_item->set_from(transfer_iter->first);
+            trans_item->set_to(to_iter->first);
+            trans_item->set_amount(to_iter->second);
+            other_add += to_iter->second;
+            ZJC_DEBUG("contract call transfer from: %s, to: %s, amount: %lu",
+                common::Encode::HexEncode(transfer_iter->first).c_str(),
+                common::Encode::HexEncode(to_iter->first).c_str(),
+                to_iter->second);
         }
     }
 
-    if (caller_balance_add > 0 && contract_balance_add > 0) {
+    if (contract_balance_add > 0) {
         assert(false);
         return kConsensusError;
     }
 
-    if (contract_balance_add > 0) {
-        if (other_add + contract_balance_add != -caller_balance_add) {
-            assert(false);
-            return kConsensusError;
-        }
-    } else {
-        if (int64_t(block_tx.amount()) < -contract_balance_add) {
-            assert(false);
-            return kConsensusError;
-        }
-
-        if (caller_balance_add > 0) {
-            if (other_add + caller_balance_add != -contract_balance_add) {
-                assert(false);
-                return kConsensusError;
-            }
-        } else {
-            if (-(contract_balance_add + caller_balance_add) != other_add) {
-                assert(false);
-                return kConsensusError;
-            }
-        }
+    if (-contract_balance_add != other_add) {
+        assert(false);
+        return kConsensusError;
     }
 
     ZJC_DEBUG("user success call contract.");
