@@ -259,9 +259,10 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
                 }
             }
 
-            ZJC_DEBUG("contract transfer from: %s, to: %s, amount: %lu",
+            ZJC_DEBUG("contract transfer from: %s, to: %s, from_balance: %lu, amount: %lu",
                 common::Encode::HexEncode(from_str).c_str(),
                 common::Encode::HexEncode(dest_str).c_str(),
+                from_balance,
                 params.value);
         }
     }
