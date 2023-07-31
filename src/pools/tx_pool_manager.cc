@@ -1067,7 +1067,7 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
             consensus::kCallContractDefaultUseGas,
             common::Encode::HexEncode(tx_msg.gid()).c_str());
         assert(false);
-        return;
+        return false;
     }
 
     if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
