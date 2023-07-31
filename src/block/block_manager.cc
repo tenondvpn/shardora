@@ -557,7 +557,11 @@ void BlockManager::HandleNormalToTx(
         db::DbWriteBatch& db_batch) {
 //     ZJC_DEBUG("new normal to block coming.");
     std::string to_txs_str;
+    ZJC_DEBUG("totx success add normal to tx gid coming: %s", common::Encode::HexEncode(tx.gid()).c_str());
     if (latest_to_tx_ != nullptr && tx.gid() == latest_to_tx_->to_tx->tx_hash) {
+        ZJC_DEBUG("normal to tx gid coming: %s, des: %s",
+            common::Encode::HexEncode(tx.gid()).c_str(),
+            common::Encode::HexEncode(latest_to_tx_->to_tx->tx_hash).c_str());
         latest_to_tx_ = nullptr;
     }
 
@@ -1504,7 +1508,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     leader_to_txs->to_tx = to_txs_ptr;
     to_txs_ptr->success = true;
     to_txs_ptr->leader_to_index = shard_to.leader_to_idx();
-    ZJC_DEBUG("success add txs: %s, leader idx: %u, leader to index: %d, gid: %s",
+    ZJC_DEBUG("totx success add txs: %s, leader idx: %u, leader to index: %d, gid: %s",
         common::Encode::HexEncode(tos_hashs).c_str(),
         shard_to.leader_idx(), shard_to.leader_to_idx(),
         common::Encode::HexEncode(gid).c_str());
@@ -1815,7 +1819,9 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
         return;
     }
 
-    if (latest_to_tx_ != nullptr && latest_to_tx_->to_tx->timeout > now_tm_ms) {
+    if (latest_to_tx_ != nullptr &&
+            latest_to_tx_->to_tx != nullptr &&
+            latest_to_tx_->to_tx->timeout > now_tm_ms) {
         return;
     }
 
