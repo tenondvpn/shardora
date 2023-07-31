@@ -578,12 +578,12 @@ void BlockManager::HandleNormalToTx(
         if (iter != leader_to_txs_.end()) {
             if (iter->second.get() == latest_to_tx_.get()) {
                 ZJC_DEBUG("totx success add remve latest to tx: %s",
-                    common::Encode::HexEncode(iter->second->to_tx->tx_hash));
+                    common::Encode::HexEncode(iter->second->to_tx->tx_hash).c_str());
                 latest_to_tx_ = nullptr;
             }
 
             ZJC_DEBUG("totx success add elect height reset to tx: %s",
-                common::Encode::HexEncode(iter->second->to_tx->tx_hash));
+                common::Encode::HexEncode(iter->second->to_tx->tx_hash).c_str());
             iter->second->to_tx = nullptr;
             leader_to_txs_.erase(iter);
         }
