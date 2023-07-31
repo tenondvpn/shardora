@@ -234,6 +234,20 @@ void AccountManager::HandleCreateContract(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
+    auto& from_account_id = tx.from();
+    auto from_account_info = GetAccountInfo(thread_idx, from_account_id);
+    if (from_account_info == nullptr) {
+        assert(false);
+        return;
+    }
+
+    from_account_info->set_latest_height(block.height());
+    from_account_info->set_balance(tx.balance());
+    prefix_db_->AddAddressInfo(from_account_id, *from_account_info, db_batch);
+    ZJC_DEBUG("transfer from address new balance %s: %lu, height: %lu, pool: %u",
+        common::Encode::HexEncode(from_account_id).c_str(), tx.balance(),
+        block.height(), block.pool_index());
+
     auto account_info = GetAccountInfo(thread_idx, tx.to());
     if (account_info != nullptr) {
         assert(false);
@@ -399,11 +413,6 @@ void AccountManager::NewBlockWithTx(
         const std::shared_ptr<block::protobuf::Block>& block_item,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
-    if (tx.status() != consensus::kConsensusSuccess) {
-        assert(false);
-        return;
-    }
-
     switch (tx.step()) {
     case pools::protobuf::kRootCreateAddress:
         HandleRootCreateAddressTx(thread_idx, *block_item, tx, db_batch);
