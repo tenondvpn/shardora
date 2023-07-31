@@ -123,7 +123,7 @@ int Execution::execute(
                 common::Encode::HexEncode(bytes_code).c_str(),
                 common::Encode::HexEncode(from_address).c_str(),
                 common::Encode::HexEncode(to_address).c_str());
-            return out_res->status_code;
+            return kZjcvmSuccess;
         } else {
             const auto gas_used = msg.gas - out_res->gas_left;
             ZJC_DEBUG("out_res->status_code != EVMC_SUCCESS.nResult: %d, gas_used: %lu, gas limit: %lu, codes: %s",
