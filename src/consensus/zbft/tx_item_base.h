@@ -85,20 +85,23 @@ protected:
         auto iter = acc_balance_map.find(id);
         if (iter == acc_balance_map.end()) {
             auto acc_info = account_mgr_->GetAccountInfo(thread_idx, id);
-            if (acc_info->destructed()) {
-                ZJC_DEBUG("contract destructed: %s", common::Encode::HexEncode(id).c_str());
-                return consensus::kConsensusAccountNotExists;
-            }
-
             if (acc_info == nullptr) {
                 ZJC_DEBUG("account addres not exists[%s]", common::Encode::HexEncode(id).c_str());
                 return consensus::kConsensusAccountNotExists;
             }
 
+            if (acc_info->destructed()) {
+                ZJC_DEBUG("contract destructed: %s", common::Encode::HexEncode(id).c_str());
+                return consensus::kConsensusAccountNotExists;
+            }
+
             acc_balance_map[id] = acc_info->balance();
             *balance = acc_info->balance();
-        }
-        else {
+        } else {
+            if (iter->second == -1) {
+                return consensus::kConsensusAccountNotExists;
+            }
+
             *balance = iter->second;
         }
 

@@ -62,7 +62,7 @@ int ContractCall::HandleTx(
     if (balance_status != kConsensusSuccess) {
         block_tx.set_status(balance_status);
         // will never happen
-        assert(false);
+//         assert(false);
         return kConsensusSuccess;
     }
 
@@ -215,6 +215,7 @@ int ContractCall::HandleTx(
                     block_tx.status());
                 auto destruct_kv = block_tx.add_storages();
                 destruct_kv->set_key(protos::kContractDestruct);
+                acc_balance_map[block_tx.to()] = -1;
             }
 
             block_tx.set_amount(new_contract_balance);
@@ -223,7 +224,9 @@ int ContractCall::HandleTx(
 
     if (block_tx.status() == kConsensusSuccess) {
         from_balance = tmp_from_balance;
-        acc_balance_map[block_tx.to()] = block_tx.amount();
+        if (acc_balance_map[block_tx.to()] != -1) {
+            acc_balance_map[block_tx.to()] = block_tx.amount();
+        }
     }
 
     acc_balance_map["pre_" + block_tx.from()] = from_balance;
