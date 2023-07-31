@@ -599,9 +599,10 @@ void BlockManager::HandleNormalToTx(
 
     if (common::GlobalInfo::Instance()->network_id() != network::kRootCongressNetworkId) {
         if (to_txs.to_heights().sharding_id() != common::GlobalInfo::Instance()->network_id()) {
-            ZJC_WARN("sharding invalid: %lu, %lu.",
+            ZJC_WARN("sharding invalid: %u, %u, to hash: %s",
                 to_txs.to_heights().sharding_id(),
-                common::GlobalInfo::Instance()->network_id());
+                common::GlobalInfo::Instance()->network_id(),
+                common::Encode::HexEncode(to_txs.heights_hash()).c_str());
 //             assert(false);
             return;
         }
