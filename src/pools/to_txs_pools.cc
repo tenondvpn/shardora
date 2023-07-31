@@ -60,7 +60,7 @@ void ToTxsPools::NewBlock(const std::shared_ptr<block::protobuf::Block>& block_p
 }
 
 bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_t max_height) {
-    for (uint64_t height = min_height; height < max_height; ++height) {
+    for (uint64_t height = min_height; height <= max_height; ++height) {
         auto iter = added_heights_[pool_idx].find(height);
         std::shared_ptr<block::protobuf::Block> block_ptr = nullptr;
         if (iter == added_heights_[pool_idx].end()) {

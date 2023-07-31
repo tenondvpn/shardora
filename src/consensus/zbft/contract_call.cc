@@ -228,13 +228,14 @@ int ContractCall::HandleTx(
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
     ZJC_DEBUG("contract called %s, user: %s, prepament: %lu, "
-        "gas used: %lu, gas_price: %lu, status: %d",
+        "gas used: %lu, gas_price: %lu, status: %d, step: %d",
         common::Encode::HexEncode(block_tx.to()).c_str(),
         common::Encode::HexEncode(block_tx.from()).c_str(),
         from_balance,
         gas_used,
         block_tx.gas_price(),
-        block_tx.status());
+        block_tx.status(),
+        block_tx.step());
     return kConsensusSuccess;
 }
 
