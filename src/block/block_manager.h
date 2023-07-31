@@ -5,6 +5,7 @@
 #include "block/block_utils.h"
 #include "ck/ck_client.h"
 #include "common/config.h"
+#include "common/limit_hash_map.h"
 #include "common/node_members.h"
 #include "common/thread_safe_queue.h"
 #include "db/db.h"
@@ -165,11 +166,11 @@ private:
         const pools::protobuf::ElectStatistic& elect_statistic,
         db::DbWriteBatch& db_batch);
     void StatisticWithLeaderHeights(const transport::MessagePtr& msg_ptr, bool retry);
-    std::shared_ptr<LeaderWithToTxItem> GetValidLeaderShardTo();
-    bool LeaderSignatureValid(const transport::MessagePtr& msg_ptr);
     void HandleToTxMessage();
     void HandleStatisticTxMessage();
     std::shared_ptr<address::protobuf::AddressInfo> GetAccountInfo(const std::string& addr);
+    void AddWaitingCheckSignBlock(std::shared_ptr<block::protobuf::Block>& block_ptr);
+    void CheckWaitingBlocks(uint32_t shard, uint64_t elect_height);
 
     static const uint64_t kCreateToTxPeriodMs = 10000lu;
     static const uint64_t kRetryStatisticPeriod = 3000lu;
@@ -227,6 +228,7 @@ private:
     common::ThreadSafeQueue<std::shared_ptr<block::protobuf::Block>> block_from_network_queue_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> to_tx_msg_queue_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> statistic_tx_msg_queue_;
+    std::map<uint32_t, std::map<uint64_t, std::queue<std::shared_ptr<block::protobuf::Block>>>> waiting_check_sign_blocks_;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

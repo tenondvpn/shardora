@@ -286,6 +286,55 @@ void BlockManager::GenesisNewBlock(
     AddNewBlock(thread_idx, block_item, db_batch);
 }
 
+void BlockManager::AddWaitingCheckSignBlock(std::shared_ptr<block::protobuf::Block>& block_ptr) {
+    auto net_iter = waiting_check_sign_blocks_.find(block_ptr->network_id());
+    if (net_iter == waiting_check_sign_blocks_.end()) {
+        waiting_check_sign_blocks_[block_ptr->network_id()] =
+            std::map<uint64_t, std::queue<std::shared_ptr<block::protobuf::Block>>>();
+        net_iter = waiting_check_sign_blocks_.find(block_ptr->network_id());
+    }
+
+    auto elect_height_iter = net_iter->second.find(block_ptr->electblock_height());
+    if (elect_height_iter == net_iter->second.end()) {
+        net_iter->second[block_ptr->electblock_height()] =
+            std::queue<std::shared_ptr<block::protobuf::Block>>();
+        elect_height_iter = net_iter->second.find(block_ptr->electblock_height());
+    }
+
+    elect_height_iter->second.push(block_ptr);
+    if (elect_height_iter->second.size() >= 1024) {
+        elect_height_iter->second.pop();
+    }
+}
+
+void BlockManager::CheckWaitingBlocks(uint32_t shard, uint64_t elect_height) {
+    auto net_iter = waiting_check_sign_blocks_.find(shard);
+    if (net_iter == waiting_check_sign_blocks_.end()) {
+        return;
+    }
+
+    auto height_iter = net_iter->second.find(elect_height);
+    if (height_iter == net_iter->second.end()) {
+        return;
+    }
+
+    while (!height_iter->second.empty()) {
+        auto& block_item = height_iter->second.front();
+        height_iter->second.pop();
+        if (block_agg_valid_func_ != nullptr && !block_agg_valid_func_(thread_idx, *block_item)) {
+            ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, net: %u, pool: %u, height: %lu",
+                common::Encode::HexEncode(block_item->hash()).c_str(),
+                common::Encode::HexEncode(block_item->bls_agg_sign_x()).c_str(),
+                block_item->network_id(),
+                block_item->pool_index(),
+                block_item->height());
+            continue;
+        }
+
+        block_from_network_queue_.push(block_item);
+    }
+}
+
 int BlockManager::NetworkNewBlock(
         uint8_t thread_idx,
         const std::shared_ptr<block::protobuf::Block>& block_item) {
@@ -309,9 +358,11 @@ int BlockManager::NetworkNewBlock(
                 block_item->pool_index(),
                 block_item->height());
             //assert(false);
+            AddWaitingCheckSignBlock(block_item);
             return kBlockVerifyAggSignFailed;
         }
 
+        CheckWaitingBlocks(block_item->network_id(), block_item->electblock_height());
         block_from_network_queue_.push(block_item);
     }
 
