@@ -179,6 +179,10 @@ void AccountManager::HandleLocalToTx(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
+    if (tx.status() != consensus::kConsensusSuccess) {
+        return;
+    }
+
     std::string to_txs_str;
     for (int32_t i = 0; i < tx.storages_size(); ++i) {
         if (tx.storages(i).key() == protos::kConsensusLocalNormalTos) {
@@ -199,11 +203,13 @@ void AccountManager::HandleLocalToTx(
 
     block::protobuf::ConsensusToTxs to_txs;
     if (!to_txs.ParseFromString(to_txs_str)) {
+        assert(false);
         return;
     }
 
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         if (to_txs.tos(i).to().size() != security::kUnicastAddressLength) {
+            assert(false);
             continue;
         }
 

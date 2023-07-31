@@ -59,6 +59,10 @@ int ToTxLocalItem::HandleTx(
             ZJC_DEBUG("success add contract prepayment: %s, %lu",
                 common::Encode::HexEncode(to_txs.tos(i).des()).c_str(), to_balance);
         } else {
+            ZJC_ERROR("local to des invalid: %s, %u",
+                common::Encode::HexEncode(to_txs.tos(i).des()).c_str(),
+                to_txs.tos(i).des().size());
+            assert(false);
             continue;
         }
 
