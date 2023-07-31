@@ -162,6 +162,10 @@ void AccountManager::HandleNormalFromTx(
         return;
     }
 
+    if (account_info->latest_height() >= block.height()) {
+        return;
+    }
+
     account_info->set_latest_height(block.height());
     account_info->set_balance(tx.balance());
     prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
@@ -219,6 +223,10 @@ void AccountManager::HandleLocalToTx(
             address_map_[thread_idx].add(to_txs.tos(i).to(), account_info);
             prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
         } else {
+            if (account_info->latest_height() >= block.height()) {
+                return;
+            }
+
             account_info->set_latest_height(block.height());
             account_info->set_balance(to_txs.tos(i).balance());
             prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
@@ -252,9 +260,11 @@ void AccountManager::HandleCreateContract(
             address_map_[thread_idx].add(tx.from(), account_info);
             prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
         } else {
-            account_info->set_latest_height(block.height());
-            account_info->set_balance(tx.balance());
-            prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
+            if (account_info->latest_height() < block.height()) {
+                account_info->set_latest_height(block.height());
+                account_info->set_balance(tx.balance());
+                prefix_db_->AddAddressInfo(tx.from(), *account_info, db_batch);
+            }
         }
     }
 
@@ -303,6 +313,10 @@ void AccountManager::HandleContractExecuteTx(
     auto account_info = GetAccountInfo(thread_idx, account_id);
     if (account_info == nullptr) {
         assert(false);
+        return;
+    }
+
+    if (account_info->latest_height() >= block.height()) {
         return;
     }
 
@@ -410,6 +424,10 @@ void AccountManager::HandleJoinElectTx(
             common::GlobalInfo::Instance()->network_id());
 
     } else {
+        if (account_info->latest_height() >= block.height()) {
+            return;
+        }
+
         account_info->set_latest_height(block.height());
         account_info->set_balance(tx.balance());
         account_info->set_elect_pos(join_info.member_idx());
