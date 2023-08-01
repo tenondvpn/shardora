@@ -1,5 +1,6 @@
 #pragma once
 
+#include "contract/contract_manager.h"
 #include "http/http_server.h"
 #include "protos/prefix_db.h"
 #include "security/security.h"
