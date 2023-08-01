@@ -8,6 +8,7 @@
 #include "network/route.h"
 #include "pools/tx_utils.h"
 #include "protos/transport.pb.h"
+#include "zjcvm/zjc_host.h"
 
 namespace zjchain {
 
