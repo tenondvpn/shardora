@@ -350,9 +350,9 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         from,
         contract_addr,
         from,
-        to_balance,
+        0,
         prepayment,
-        prepayment,
+        0,
         zjcvm::kJustCall,
         zjc_host,
         &result);
