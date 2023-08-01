@@ -82,20 +82,23 @@ int ContractCall::HandleTx(
     zjc_host.AddTmpAccountBalance(
         block_tx.to(),
         to_balance);
-    evmc_result evmc_res = {};
-    evmc::Result res{ evmc_res };
-    int call_res = ContractExcute(msg_ptr->address_info, to_balance, zjc_host, block_tx, &res);
-    if (call_res != kConsensusSuccess || res.status_code != EVMC_SUCCESS) {
-        block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
-        ZJC_DEBUG("call contract failed, call_res: %d, evmc res: %d, bytes: %s, input: %s!",
-            call_res, res.status_code, common::Encode::HexEncode(msg_ptr->address_info->bytes_code()).c_str(),
-            common::Encode::HexEncode(block_tx.contract_input()).c_str());
-    }
+    if (block_tx.contract_input().size() >= protos::kContractBytesStartCode.size()) {
+        evmc_result evmc_res = {};
+        evmc::Result res{ evmc_res };
+        int call_res = ContractExcute(msg_ptr->address_info, to_balance, zjc_host, block_tx, &res);
+        if (call_res != kConsensusSuccess || res.status_code != EVMC_SUCCESS) {
+            block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
+            ZJC_DEBUG("call contract failed, call_res: %d, evmc res: %d, bytes: %s, input: %s!",
+                call_res, res.status_code, common::Encode::HexEncode(msg_ptr->address_info->bytes_code()).c_str(),
+                common::Encode::HexEncode(block_tx.contract_input()).c_str());
+        }
 
-    gas_used += block_tx.gas_limit() - res.gas_left;
-    if (res.gas_left > (int64_t)block_tx.gas_limit()) {
-        gas_used = block_tx.gas_limit();
+        gas_used += block_tx.gas_limit() - res.gas_left;
+        if (res.gas_left > (int64_t)block_tx.gas_limit()) {
+            gas_used = block_tx.gas_limit();
+        }
     }
+    
 
     if (from_balance > gas_used * block_tx.gas_price()) {
         from_balance -= gas_used * block_tx.gas_price();
@@ -226,6 +229,16 @@ int ContractCall::HandleTx(
         from_balance = tmp_from_balance;
         if (acc_balance_map[block_tx.to()] != -1) {
             acc_balance_map[block_tx.to()] = block_tx.amount();
+        }
+    }
+
+    if (block_tx.contract_input().size() < protos::kContractBytesStartCode.size()) {
+        if (from_balance > 0) {
+            auto trans_item = block_tx.add_contract_txs();
+            trans_item->set_from(block_tx.to());
+            trans_item->set_to(block_tx.from());
+            trans_item->set_amount(from_balance);
+            from_balance = 0;
         }
     }
 
