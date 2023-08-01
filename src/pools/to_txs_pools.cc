@@ -360,16 +360,7 @@ void ToTxsPools::HandleNormalToTx(
         }
 
         *heights_ptr = to_tx.to_heights();
-        auto local_net = common::GlobalInfo::Instance()->network_id();
-        if (local_net >= network::kConsensusShardEndNetworkId) {
-            local_net -= network::kConsensusWaitingShardOffset;
-        }
-
         auto& heights = *heights_ptr;
-        if (local_net != heights.sharding_id()) {
-            continue;
-        }
-
         heights.set_block_height(block.height());
         ZJC_DEBUG("new to tx coming: %lu, sharding id: %u", block.height(), heights.sharding_id());
         prefix_db_->SaveLatestToTxsHeights(heights);
