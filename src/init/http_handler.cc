@@ -297,7 +297,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     }
 
     std::string from = common::Encode::HexDecode(tmp_from);
-    std::string contract_addr = common::Encode::HexDecode(contract_addr);
+    std::string contract_addr = common::Encode::HexDecode(tmp_contract_addr);
     std::string input = common::Encode::HexDecode(tmp_input);
     uint64_t height = 0;
     uint64_t prepayment = 0;

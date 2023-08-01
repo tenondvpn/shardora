@@ -664,7 +664,7 @@ public:
         std::string val;
         auto st = db_->Get(key, &val);
         if (!st.ok()) {
-            ZJC_DEBUG("success save contract user prepayment failed: %s, %lu, %lu",
+            ZJC_DEBUG("get contract user prepayment failed: %s, %lu, %lu",
                 common::Encode::HexEncode(key).c_str(), *height, *prepayment);
             return false;
         }
