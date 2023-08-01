@@ -26,6 +26,10 @@ public:
             const block::protobuf::Block& block,
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
+        if (tx.status() != consensus::kConsensusSuccess) {
+            return;
+        }
+
         if (block.height() <= pools_max_heights_[block.pool_index()]) {
 //             assert(false);
             return;
@@ -141,7 +145,6 @@ public:
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
         if (tx.step() == pools::protobuf::kConsensusLocalTos) {
-            ZJC_DEBUG("called local consensus to set prepayment.");
             HandleLocalToTx(thread_idx, *block_item, tx, db_batch);
             return;
         }

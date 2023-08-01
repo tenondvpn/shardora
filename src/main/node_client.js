@@ -232,6 +232,24 @@ function call_contract(input, prikey) {
     PostCode(data);
 }
 
+// 设置预付费 prepayment > 0, 收回预付费 prepayment = 0
+function prepay_contract(prikey, prepayment) {
+    var contract_address = fs.readFileSync('contract_address', 'utf-8');
+    var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
+    var data = param_contract(
+        7,
+        gid,
+        contract_address,
+        0,
+        10000000,
+        1,
+        "",
+        "",
+        prepayment,
+        prikey);
+    PostCode(data);
+}
+
 // 普通交易和kv写入
 function do_transaction(to_addr, amount, gas_limit, gas_price, key, value) {
     var data = create_tx(to_addr, amount, gas_limit, gas_price);
@@ -267,4 +285,12 @@ if (args[0] == 3) {
 
 if (args[0] == 4) {
     call_contract("e645df43000000000000000000000000e252d01a37b85e2007ed3cc13797aa92496204a400000000000000000000000000000000000000000000000000000000000003e8", prikey);
+}
+
+if (args[0] == 5) {
+    prepay_contract(prikey, 1000);
+}
+
+if (args[0] == 6) {
+    prepay_contract(prikey, 0);
 }
