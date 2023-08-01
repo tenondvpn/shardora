@@ -51,7 +51,7 @@ class ZjchainHost : public evmc::Host {
 public:
     struct log_record {
         evmc::address creator;
-        bytes data;
+        std::string data;
         std::vector<evmc::bytes32> topics;
         bool operator==(const log_record& other) const noexcept {
             return creator == other.creator && data == other.data && topics == other.topics;

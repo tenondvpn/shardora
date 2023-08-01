@@ -15,6 +15,11 @@ message TransferItem {
     optional uint64 amount = 3;
 }
 
+message TxLog {
+    optional bytes data = 1;
+    repeated bytes topics = 2;
+}
+
 message BlockTx {
     optional bytes gid = 1;
     optional bytes from = 2;
@@ -31,6 +36,7 @@ message BlockTx {
     optional uint64 contract_prepayment = 13;
     optional bytes contract_code = 14;
     optional bytes contract_input = 15;
+    repeated TxLog events = 16;
 }
 
 message Block {

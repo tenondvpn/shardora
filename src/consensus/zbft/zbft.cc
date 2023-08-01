@@ -793,6 +793,18 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
             tx_list->RemoveLast();
             continue;
         }
+
+        if (auto event_iter = zjc_host.recorded_logs_.begin();
+                event_iter != zjc_host.recorded_logs_.end(); ++event_iter) {
+            auto log = block_tx.add_events();
+            log->set_data((*event_iter).data);
+            for (auto topic_iter = (*event_iter).topics.begin();
+                    topic_iter != (*event_iter).topics.end(); ++topic_iter) {
+                log->add_topics(std::string((*topic_iter).bytes, sizeof((*topic_iter).bytes)));
+            }
+        }
+
+        zjc_host.recorded_logs_.clear();
     }
 }
 

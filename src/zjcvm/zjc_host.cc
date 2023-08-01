@@ -285,18 +285,19 @@ void ZjchainHost::emit_log(const evmc::address& addr,
                 size_t data_size,
                 const evmc::bytes32 topics[],
                 size_t topics_count) noexcept {
-    ZJC_DEBUG("called 11");
-    std::string id((char*)addr.bytes, sizeof(addr.bytes));
-    std::string str_data((char*)data, data_size);
+#ifndef NDEBUG
     std::string topics_str;
     for (uint32_t i = 0; i < topics_count; ++i) {
-        topics_str += std::string((char*)topics[i].bytes, sizeof(topics[i].bytes)) + ", ";
+        topics_str += common::Encode::HexEncode(std::string((char*)topics[i].bytes, sizeof(topics[i].bytes))) + ", ";
     }
 
-    std::cout << "log called id: " << common::Encode::HexEncode(id)
-        << ", data: " << common::Encode::HexEncode(str_data)
-        << ", topics: " << common::Encode::HexEncode(topics_str) << std::endl;
-    recorded_logs_.push_back({ addr, {data, data_size}, {topics, topics + topics_count} });
+    ZJC_DEBUG("emit_log caller: %s, data: %s, topics: %s",
+        common::Encode::HexEncode(std::string((char*)addr.bytes, sizeof(addr.bytes))).c_str(),
+        common::Encode::HexEncode(std::string((char*)data, data_size)).c_str(),
+        topics_str.c_str());
+#endif
+
+    recorded_logs_.push_back({ addr, std::string((char*)data, data_size), {topics, topics + topics_count} });
 }
 
 void ZjchainHost::AddTmpAccountBalance(const std::string& address, uint64_t balance) {
