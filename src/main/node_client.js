@@ -84,6 +84,7 @@ function QueryContract(input) {
     var data = {
         "input": input,
         'address': contract_address,
+        'from': 'd9ec5aff3001dece14e1f4a35a39ed506bd6274a',
     };
 
     QueryPostCode('/query_contract', data);
