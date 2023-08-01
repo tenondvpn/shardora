@@ -330,84 +330,81 @@ void ToTxsPools::HandleNormalToTx(
 
     auto heights_ptr = std::make_shared<pools::protobuf::ShardToTxItem>();
     for (int32_t i = 0; i < tx_info.storages_size(); ++i) {
-        if (tx_info.storages(i).key() == protos::kNormalToShards) {
-            std::string to_txs_str;
-            if (!prefix_db_->GetTemporaryKv(tx_info.storages(i).val_hash(), &to_txs_str)) {
-                ZJC_WARN("get to tx heights failed: %s!",
-                    common::Encode::HexEncode(tx_info.storages(i).val_hash()).c_str());
-                continue;
-            }
-            
-            pools::protobuf::ToTxMessage to_tx;
-            if (!to_tx.ParseFromString(to_txs_str)) {
-                ZJC_WARN("parse from to txs message failed: %s",
-                    common::Encode::HexEncode(tx_info.storages(i).val_hash()).c_str());
-                assert(false);
-                continue;
-            }
-
-            ZJC_DEBUG("success get normal to key: %s, val: %s, sharding id: %u",
-                common::Encode::HexEncode(tx_info.storages(i).val_hash()).c_str(),
-                common::Encode::HexEncode(to_txs_str).c_str(),
-                to_tx.to_heights().sharding_id());
-            if (to_tx.to_heights().heights_size() != common::kImmutablePoolSize) {
-                ZJC_ERROR("invalid heights size: %d, %d",
-                    to_tx.to_heights().heights_size(), common::kImmutablePoolSize);
-                continue;
-            }
-
-            *heights_ptr = to_tx.to_heights();
-            break;
-        }
-    }
-
-    if (heights_ptr == nullptr) {
-        return;
-    }
-
-    auto local_net = common::GlobalInfo::Instance()->network_id();
-    if (local_net >= network::kConsensusShardEndNetworkId) {
-        local_net -= network::kConsensusWaitingShardOffset;
-    }
-
-    auto& heights = *heights_ptr;
-    if (local_net != heights.sharding_id()) {
-        return;
-    }
-
-    heights.set_block_height(block.height());
-    ZJC_DEBUG("new to tx coming: %lu, sharding id: %u", block.height(), heights.sharding_id());
-    prefix_db_->SaveLatestToTxsHeights(heights);
-    for (int32_t i = 0; i < heights.heights_size(); ++i) {
-        if (heights.heights(i) > has_statistic_height_[i]) {
-            has_statistic_height_[i] = heights.heights(i);
-        }
-
-        if (heights.heights(i) > pool_consensus_heihgts_[i]) {
-            pool_consensus_heihgts_[i] = heights.heights(i);
-            for (; pool_consensus_heihgts_[i] <= pool_max_heihgts_[i];
-                ++pool_consensus_heihgts_[i]) {
-            }
-        }
-
-        auto pool_iter = network_txs_pools_.find(i);
-        if (pool_iter == network_txs_pools_.end()) {
+        if (tx_info.storages(i).key() != protos::kNormalToShards) {
             continue;
         }
 
-        auto height_iter = pool_iter->second.begin();
-        while (height_iter != pool_iter->second.end()) {
-            if (height_iter->first > heights.heights(i)) {
-                break;
+        std::string to_txs_str;
+        if (!prefix_db_->GetTemporaryKv(tx_info.storages(i).val_hash(), &to_txs_str)) {
+            ZJC_WARN("get to tx heights failed: %s!",
+                common::Encode::HexEncode(tx_info.storages(i).val_hash()).c_str());
+            continue;
+        }
+            
+        pools::protobuf::ToTxMessage to_tx;
+        if (!to_tx.ParseFromString(to_txs_str)) {
+            ZJC_WARN("parse from to txs message failed: %s",
+                common::Encode::HexEncode(tx_info.storages(i).val_hash()).c_str());
+            assert(false);
+            continue;
+        }
+
+        ZJC_DEBUG("success get normal to key: %s, val: %s, sharding id: %u",
+            common::Encode::HexEncode(tx_info.storages(i).val_hash()).c_str(),
+            common::Encode::HexEncode(to_txs_str).c_str(),
+            to_tx.to_heights().sharding_id());
+        if (to_tx.to_heights().heights_size() != common::kImmutablePoolSize) {
+            ZJC_ERROR("invalid heights size: %d, %d",
+                to_tx.to_heights().heights_size(), common::kImmutablePoolSize);
+            continue;
+        }
+
+        *heights_ptr = to_tx.to_heights();
+        auto local_net = common::GlobalInfo::Instance()->network_id();
+        if (local_net >= network::kConsensusShardEndNetworkId) {
+            local_net -= network::kConsensusWaitingShardOffset;
+        }
+
+        auto& heights = *heights_ptr;
+        if (local_net != heights.sharding_id()) {
+            continue;
+        }
+
+        heights.set_block_height(block.height());
+        ZJC_DEBUG("new to tx coming: %lu, sharding id: %u", block.height(), heights.sharding_id());
+        prefix_db_->SaveLatestToTxsHeights(heights);
+        for (int32_t i = 0; i < heights.heights_size(); ++i) {
+            if (heights.heights(i) > has_statistic_height_[i]) {
+                has_statistic_height_[i] = heights.heights(i);
             }
 
-            ZJC_DEBUG("to block pool: %u, height: %lu, erase sharding: %u, pool: %u, height: %lu",
-                i, height_iter->first, heights.sharding_id(), i, height_iter->first);
-            pool_iter->second.erase(height_iter++);
-        }
-    }
+            if (heights.heights(i) > pool_consensus_heihgts_[i]) {
+                pool_consensus_heihgts_[i] = heights.heights(i);
+                for (; pool_consensus_heihgts_[i] <= pool_max_heihgts_[i];
+                    ++pool_consensus_heihgts_[i]) {
+                }
+            }
 
-    prev_to_heights_ = heights_ptr;
+            auto pool_iter = network_txs_pools_.find(i);
+            if (pool_iter == network_txs_pools_.end()) {
+                continue;
+            }
+
+            auto height_iter = pool_iter->second.begin();
+            while (height_iter != pool_iter->second.end()) {
+                if (height_iter->first > heights.heights(i)) {
+                    break;
+                }
+
+                ZJC_DEBUG("to block pool: %u, height: %lu, erase sharding: %u, pool: %u, height: %lu",
+                    i, height_iter->first, heights.sharding_id(), i, height_iter->first);
+                pool_iter->second.erase(height_iter++);
+            }
+        }
+
+        prev_to_heights_ = heights_ptr;
+        break;
+    }
 }
 
 void ToTxsPools::LoadLatestHeights() {
