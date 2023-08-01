@@ -81,6 +81,11 @@ int ContractUserCall::HandleTx(
     acc_balance_map[from] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);
+    ZJC_DEBUG("set contract prepayment called: %d, from: %s, to: %s, amount: %lu",
+        block_tx.status(),
+        common::Encode::HexEncode(block_tx.from()).c_str(),
+        common::Encode::HexEncode(block_tx.to()).c_str(),
+        block_tx.contract_code());
     return kConsensusSuccess;
 }
 
