@@ -267,6 +267,35 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
     ZJC_INFO("http transaction success %s, %s", frompk, to);
 }
 
+static void QueryContract(evhtp_request_t* req, void* data) {
+    ZJC_DEBUG("query contract coming.");
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+    const char* contract_addr = evhtp_kv_find(req->uri->query, "address");
+    const char* input = evhtp_kv_find(req->uri->query, "input");
+    if (contract_addr == nullptr) {
+        std::string res = common::StringUtil::Format(
+            "param invalid contract_addr valid: %d, input valid: %d",
+            (contract_addr != nullptr), (input != nullptr));
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        ZJC_INFO("query contract param error: %s.", res.c_str());
+        return;
+    }
+
+    http_handler->net_handler()->NewHttpServer(msg_ptr);
+    std::string res = std::string("ok");
+    evbuffer_add(req->buffer_out, res.c_str(), res.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+    ZJC_INFO("query contract success %s, %s", contract_addr, input);
+}
+
 HttpHandler::HttpHandler() {
     http_handler = this;
 }
@@ -280,6 +309,7 @@ void HttpHandler::Init(
     net_handler_ = net_handler;
     security_ptr_ = security_ptr;
     http_server.AddCallback("/transaction", HttpTransaction);
+    http_server.AddCallback("/query_contract", QueryContract);
 }
 
 };  // namespace init
