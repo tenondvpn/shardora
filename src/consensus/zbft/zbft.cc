@@ -800,7 +800,7 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
             log->set_data((*event_iter).data);
             for (auto topic_iter = (*event_iter).topics.begin();
                     topic_iter != (*event_iter).topics.end(); ++topic_iter) {
-                log->add_topics(std::string((*topic_iter).bytes, sizeof((*topic_iter).bytes)));
+                log->add_topics(std::string((char*)(*topic_iter).bytes, sizeof((*topic_iter).bytes)));
             }
         }
 
