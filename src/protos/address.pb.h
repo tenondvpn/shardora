@@ -285,6 +285,13 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::uint64 latest_height() const;
   void set_latest_height(::google::protobuf::uint64 value);
 
+  // optional bool destructed = 12;
+  bool has_destructed() const;
+  void clear_destructed();
+  static const int kDestructedFieldNumber = 12;
+  bool destructed() const;
+  void set_destructed(bool value);
+
   // optional uint32 elect_pos = 11 [default = 4294967295];
   bool has_elect_pos() const;
   void clear_elect_pos();
@@ -314,6 +321,8 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   void clear_has_credit();
   void set_has_elect_pos();
   void clear_has_elect_pos();
+  void set_has_destructed();
+  void clear_has_destructed();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -328,6 +337,7 @@ class AddressInfo : public ::google::protobuf::Message /* @@protoc_insertion_poi
   int type_;
   ::google::protobuf::int32 credit_;
   ::google::protobuf::uint64 latest_height_;
+  bool destructed_;
   ::google::protobuf::uint32 elect_pos_;
   friend struct ::protobuf_protos_2faddress_2eproto::TableStruct;
 };
@@ -714,13 +724,13 @@ AddressInfo::g2s() const {
 
 // optional uint32 elect_pos = 11 [default = 4294967295];
 inline bool AddressInfo::has_elect_pos() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void AddressInfo::set_has_elect_pos() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void AddressInfo::clear_has_elect_pos() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void AddressInfo::clear_elect_pos() {
   elect_pos_ = 4294967295u;
@@ -734,6 +744,30 @@ inline void AddressInfo::set_elect_pos(::google::protobuf::uint32 value) {
   set_has_elect_pos();
   elect_pos_ = value;
   // @@protoc_insertion_point(field_set:zjchain.address.protobuf.AddressInfo.elect_pos)
+}
+
+// optional bool destructed = 12;
+inline bool AddressInfo::has_destructed() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void AddressInfo::set_has_destructed() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void AddressInfo::clear_has_destructed() {
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline void AddressInfo::clear_destructed() {
+  destructed_ = false;
+  clear_has_destructed();
+}
+inline bool AddressInfo::destructed() const {
+  // @@protoc_insertion_point(field_get:zjchain.address.protobuf.AddressInfo.destructed)
+  return destructed_;
+}
+inline void AddressInfo::set_destructed(bool value) {
+  set_has_destructed();
+  destructed_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.address.protobuf.AddressInfo.destructed)
 }
 
 #ifdef __GNUC__

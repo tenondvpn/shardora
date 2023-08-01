@@ -39,7 +39,7 @@ namespace protobuf_protos_2fblock_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[31];
+  static const ::google::protobuf::internal::ParseTable schema[32];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -130,6 +130,9 @@ extern StorageItemDefaultTypeInternal _StorageItem_default_instance_;
 class TransferItem;
 class TransferItemDefaultTypeInternal;
 extern TransferItemDefaultTypeInternal _TransferItem_default_instance_;
+class TxLog;
+class TxLogDefaultTypeInternal;
+extern TxLogDefaultTypeInternal _TxLog_default_instance_;
 class UpdateVpnActiveRequest;
 class UpdateVpnActiveRequestDefaultTypeInternal;
 extern UpdateVpnActiveRequestDefaultTypeInternal _UpdateVpnActiveRequest_default_instance_;
@@ -174,6 +177,7 @@ template<> ::zjchain::block::protobuf::StatisticInfo* Arena::CreateMaybeMessage<
 template<> ::zjchain::block::protobuf::StatisticTxMessage* Arena::CreateMaybeMessage<::zjchain::block::protobuf::StatisticTxMessage>(Arena*);
 template<> ::zjchain::block::protobuf::StorageItem* Arena::CreateMaybeMessage<::zjchain::block::protobuf::StorageItem>(Arena*);
 template<> ::zjchain::block::protobuf::TransferItem* Arena::CreateMaybeMessage<::zjchain::block::protobuf::TransferItem>(Arena*);
+template<> ::zjchain::block::protobuf::TxLog* Arena::CreateMaybeMessage<::zjchain::block::protobuf::TxLog>(Arena*);
 template<> ::zjchain::block::protobuf::UpdateVpnActiveRequest* Arena::CreateMaybeMessage<::zjchain::block::protobuf::UpdateVpnActiveRequest>(Arena*);
 template<> ::zjchain::block::protobuf::UpdateVpnCountRequest* Arena::CreateMaybeMessage<::zjchain::block::protobuf::UpdateVpnCountRequest>(Arena*);
 template<> ::zjchain::block::protobuf::UpdateVpnCountResponse* Arena::CreateMaybeMessage<::zjchain::block::protobuf::UpdateVpnCountResponse>(Arena*);
@@ -486,6 +490,151 @@ class TransferItem : public ::google::protobuf::Message /* @@protoc_insertion_po
 };
 // -------------------------------------------------------------------
 
+class TxLog : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.block.protobuf.TxLog) */ {
+ public:
+  TxLog();
+  virtual ~TxLog();
+
+  TxLog(const TxLog& from);
+
+  inline TxLog& operator=(const TxLog& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  TxLog(TxLog&& from) noexcept
+    : TxLog() {
+    *this = ::std::move(from);
+  }
+
+  inline TxLog& operator=(TxLog&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const TxLog& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const TxLog* internal_default_instance() {
+    return reinterpret_cast<const TxLog*>(
+               &_TxLog_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    2;
+
+  void Swap(TxLog* other);
+  friend void swap(TxLog& a, TxLog& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline TxLog* New() const final {
+    return CreateMaybeMessage<TxLog>(NULL);
+  }
+
+  TxLog* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<TxLog>(arena);
+  }
+  void CopyFrom(const ::google::protobuf::Message& from) final;
+  void MergeFrom(const ::google::protobuf::Message& from) final;
+  void CopyFrom(const TxLog& from);
+  void MergeFrom(const TxLog& from);
+  void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) final;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const final;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(TxLog* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated bytes topics = 2;
+  int topics_size() const;
+  void clear_topics();
+  static const int kTopicsFieldNumber = 2;
+  const ::std::string& topics(int index) const;
+  ::std::string* mutable_topics(int index);
+  void set_topics(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_topics(int index, ::std::string&& value);
+  #endif
+  void set_topics(int index, const char* value);
+  void set_topics(int index, const void* value, size_t size);
+  ::std::string* add_topics();
+  void add_topics(const ::std::string& value);
+  #if LANG_CXX11
+  void add_topics(::std::string&& value);
+  #endif
+  void add_topics(const char* value);
+  void add_topics(const void* value, size_t size);
+  const ::google::protobuf::RepeatedPtrField< ::std::string>& topics() const;
+  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_topics();
+
+  // optional bytes data = 1;
+  bool has_data() const;
+  void clear_data();
+  static const int kDataFieldNumber = 1;
+  const ::std::string& data() const;
+  void set_data(const ::std::string& value);
+  #if LANG_CXX11
+  void set_data(::std::string&& value);
+  #endif
+  void set_data(const char* value);
+  void set_data(const void* value, size_t size);
+  ::std::string* mutable_data();
+  ::std::string* release_data();
+  void set_allocated_data(::std::string* data);
+
+  // @@protoc_insertion_point(class_scope:zjchain.block.protobuf.TxLog)
+ private:
+  void set_has_data();
+  void clear_has_data();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> topics_;
+  ::google::protobuf::internal::ArenaStringPtr data_;
+  friend struct ::protobuf_protos_2fblock_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.block.protobuf.BlockTx) */ {
  public:
   BlockTx();
@@ -528,7 +677,7 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
                &_BlockTx_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    3;
 
   void Swap(BlockTx* other);
   friend void swap(BlockTx& a, BlockTx& b) {
@@ -603,6 +752,18 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::zjchain::block::protobuf::TransferItem* add_contract_txs();
   const ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::TransferItem >&
       contract_txs() const;
+
+  // repeated .zjchain.block.protobuf.TxLog events = 16;
+  int events_size() const;
+  void clear_events();
+  static const int kEventsFieldNumber = 16;
+  ::zjchain::block::protobuf::TxLog* mutable_events(int index);
+  ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::TxLog >*
+      mutable_events();
+  const ::zjchain::block::protobuf::TxLog& events(int index) const;
+  ::zjchain::block::protobuf::TxLog* add_events();
+  const ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::TxLog >&
+      events() const;
 
   // optional bytes gid = 1;
   bool has_gid() const;
@@ -769,6 +930,7 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::StorageItem > storages_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::TransferItem > contract_txs_;
+  ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::TxLog > events_;
   ::google::protobuf::internal::ArenaStringPtr gid_;
   ::google::protobuf::internal::ArenaStringPtr from_;
   ::google::protobuf::internal::ArenaStringPtr to_;
@@ -828,7 +990,7 @@ class Block : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
                &_Block_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    3;
+    4;
 
   void Swap(Block* other);
   friend void swap(Block& a, Block& b) {
@@ -1140,7 +1302,7 @@ class ConsensusToTxsItem : public ::google::protobuf::Message /* @@protoc_insert
                &_ConsensusToTxsItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    5;
 
   void Swap(ConsensusToTxsItem* other);
   friend void swap(ConsensusToTxsItem& a, ConsensusToTxsItem& b) {
@@ -1272,7 +1434,7 @@ class ConsensusToTxs : public ::google::protobuf::Message /* @@protoc_insertion_
                &_ConsensusToTxs_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    6;
 
   void Swap(ConsensusToTxs* other);
   friend void swap(ConsensusToTxs& a, ConsensusToTxs& b) {
@@ -1389,7 +1551,7 @@ class GetTxBlockRequest : public ::google::protobuf::Message /* @@protoc_inserti
                &_GetTxBlockRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    7;
 
   void Swap(GetTxBlockRequest* other);
   friend void swap(GetTxBlockRequest& a, GetTxBlockRequest& b) {
@@ -1567,7 +1729,7 @@ class GetTxBlockResponse : public ::google::protobuf::Message /* @@protoc_insert
                &_GetTxBlockResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    8;
 
   void Swap(GetTxBlockResponse* other);
   friend void swap(GetTxBlockResponse& a, GetTxBlockResponse& b) {
@@ -1689,7 +1851,7 @@ class AccountHeightRequest : public ::google::protobuf::Message /* @@protoc_inse
                &_AccountHeightRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    9;
 
   void Swap(AccountHeightRequest* other);
   friend void swap(AccountHeightRequest& a, AccountHeightRequest& b) {
@@ -1831,7 +1993,7 @@ class AccountHeightResponse : public ::google::protobuf::Message /* @@protoc_ins
                &_AccountHeightResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    10;
 
   void Swap(AccountHeightResponse* other);
   friend void swap(AccountHeightResponse& a, AccountHeightResponse& b) {
@@ -1984,7 +2146,7 @@ class AccountAttrRequest : public ::google::protobuf::Message /* @@protoc_insert
                &_AccountAttrRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    11;
 
   void Swap(AccountAttrRequest* other);
   friend void swap(AccountAttrRequest& a, AccountAttrRequest& b) {
@@ -2134,7 +2296,7 @@ class AccountAttrResponse : public ::google::protobuf::Message /* @@protoc_inser
                &_AccountAttrResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    12;
 
   void Swap(AccountAttrResponse* other);
   friend void swap(AccountAttrResponse& a, AccountAttrResponse& b) {
@@ -2302,7 +2464,7 @@ class UpdateVpnCountRequest : public ::google::protobuf::Message /* @@protoc_ins
                &_UpdateVpnCountRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    13;
 
   void Swap(UpdateVpnCountRequest* other);
   friend void swap(UpdateVpnCountRequest& a, UpdateVpnCountRequest& b) {
@@ -2480,7 +2642,7 @@ class VpnCountItem : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_VpnCountItem_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    14;
 
   void Swap(VpnCountItem* other);
   friend void swap(VpnCountItem& a, VpnCountItem& b) {
@@ -2612,7 +2774,7 @@ class UpdateVpnCountResponse : public ::google::protobuf::Message /* @@protoc_in
                &_UpdateVpnCountResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    15;
 
   void Swap(UpdateVpnCountResponse* other);
   friend void swap(UpdateVpnCountResponse& a, UpdateVpnCountResponse& b) {
@@ -2729,7 +2891,7 @@ class GetAccountInitInfoRequest : public ::google::protobuf::Message /* @@protoc
                &_GetAccountInitInfoRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    16;
 
   void Swap(GetAccountInitInfoRequest* other);
   friend void swap(GetAccountInitInfoRequest& a, GetAccountInitInfoRequest& b) {
@@ -2891,7 +3053,7 @@ class GetAccountInitInfoResponse : public ::google::protobuf::Message /* @@proto
                &_GetAccountInitInfoResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    16;
+    17;
 
   void Swap(GetAccountInitInfoResponse* other);
   friend void swap(GetAccountInitInfoResponse& a, GetAccountInitInfoResponse& b) {
@@ -3046,7 +3208,7 @@ class UpdateVpnActiveRequest : public ::google::protobuf::Message /* @@protoc_in
                &_UpdateVpnActiveRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    17;
+    18;
 
   void Swap(UpdateVpnActiveRequest* other);
   friend void swap(UpdateVpnActiveRequest& a, UpdateVpnActiveRequest& b) {
@@ -3186,7 +3348,7 @@ class AdRewardRequest : public ::google::protobuf::Message /* @@protoc_insertion
                &_AdRewardRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    18;
+    19;
 
   void Swap(AdRewardRequest* other);
   friend void swap(AdRewardRequest& a, AdRewardRequest& b) {
@@ -3344,7 +3506,7 @@ class ElectStatisticInfo : public ::google::protobuf::Message /* @@protoc_insert
                &_ElectStatisticInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    19;
+    20;
 
   void Swap(ElectStatisticInfo* other);
   friend void swap(ElectStatisticInfo& a, ElectStatisticInfo& b) {
@@ -3484,7 +3646,7 @@ class StatisticInfo : public ::google::protobuf::Message /* @@protoc_insertion_p
                &_StatisticInfo_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    20;
+    21;
 
   void Swap(StatisticInfo* other);
   friend void swap(StatisticInfo& a, StatisticInfo& b) {
@@ -3621,7 +3783,7 @@ class RefreshPoolHeightRequest : public ::google::protobuf::Message /* @@protoc_
                &_RefreshPoolHeightRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    21;
+    22;
 
   void Swap(RefreshPoolHeightRequest* other);
   friend void swap(RefreshPoolHeightRequest& a, RefreshPoolHeightRequest& b) {
@@ -3738,7 +3900,7 @@ class RefreshPoolHeightResponse : public ::google::protobuf::Message /* @@protoc
                &_RefreshPoolHeightResponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    22;
+    23;
 
   void Swap(RefreshPoolHeightResponse* other);
   friend void swap(RefreshPoolHeightResponse& a, RefreshPoolHeightResponse& b) {
@@ -3855,7 +4017,7 @@ class GetAccountShardRequest : public ::google::protobuf::Message /* @@protoc_in
                &_GetAccountShardRequest_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    23;
+    24;
 
   void Swap(GetAccountShardRequest* other);
   friend void swap(GetAccountShardRequest& a, GetAccountShardRequest& b) {
@@ -3977,7 +4139,7 @@ class GetAccountShardReponse : public ::google::protobuf::Message /* @@protoc_in
                &_GetAccountShardReponse_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    24;
+    25;
 
   void Swap(GetAccountShardReponse* other);
   friend void swap(GetAccountShardReponse& a, GetAccountShardReponse& b) {
@@ -4109,7 +4271,7 @@ class CrossShardingTosMessage : public ::google::protobuf::Message /* @@protoc_i
                &_CrossShardingTosMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    25;
+    26;
 
   void Swap(CrossShardingTosMessage* other);
   friend void swap(CrossShardingTosMessage& a, CrossShardingTosMessage& b) {
@@ -4228,7 +4390,7 @@ class CrossShardingStatisticMessage : public ::google::protobuf::Message /* @@pr
                &_CrossShardingStatisticMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    26;
+    27;
 
   void Swap(CrossShardingStatisticMessage* other);
   friend void swap(CrossShardingStatisticMessage& a, CrossShardingStatisticMessage& b) {
@@ -4347,7 +4509,7 @@ class ElectBlockMessage : public ::google::protobuf::Message /* @@protoc_inserti
                &_ElectBlockMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    27;
+    28;
 
   void Swap(ElectBlockMessage* other);
   friend void swap(ElectBlockMessage& a, ElectBlockMessage& b) {
@@ -4466,7 +4628,7 @@ class ShardToTxMessage : public ::google::protobuf::Message /* @@protoc_insertio
                &_ShardToTxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    28;
+    29;
 
   void Swap(ShardToTxMessage* other);
   friend void swap(ShardToTxMessage& a, ShardToTxMessage& b) {
@@ -4613,7 +4775,7 @@ class StatisticTxMessage : public ::google::protobuf::Message /* @@protoc_insert
                &_StatisticTxMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    29;
+    30;
 
   void Swap(StatisticTxMessage* other);
   friend void swap(StatisticTxMessage& a, StatisticTxMessage& b) {
@@ -4762,7 +4924,7 @@ class BlockMessage : public ::google::protobuf::Message /* @@protoc_insertion_po
                &_BlockMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    30;
+    31;
 
   void Swap(BlockMessage* other);
   friend void swap(BlockMessage& a, BlockMessage& b) {
@@ -5421,6 +5583,145 @@ inline void TransferItem::set_amount(::google::protobuf::uint64 value) {
 
 // -------------------------------------------------------------------
 
+// TxLog
+
+// optional bytes data = 1;
+inline bool TxLog::has_data() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void TxLog::set_has_data() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void TxLog::clear_has_data() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void TxLog::clear_data() {
+  data_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_data();
+}
+inline const ::std::string& TxLog::data() const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.TxLog.data)
+  return data_.GetNoArena();
+}
+inline void TxLog::set_data(const ::std::string& value) {
+  set_has_data();
+  data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.TxLog.data)
+}
+#if LANG_CXX11
+inline void TxLog::set_data(::std::string&& value) {
+  set_has_data();
+  data_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.block.protobuf.TxLog.data)
+}
+#endif
+inline void TxLog::set_data(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_data();
+  data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.block.protobuf.TxLog.data)
+}
+inline void TxLog::set_data(const void* value, size_t size) {
+  set_has_data();
+  data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.block.protobuf.TxLog.data)
+}
+inline ::std::string* TxLog::mutable_data() {
+  set_has_data();
+  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.TxLog.data)
+  return data_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* TxLog::release_data() {
+  // @@protoc_insertion_point(field_release:zjchain.block.protobuf.TxLog.data)
+  if (!has_data()) {
+    return NULL;
+  }
+  clear_has_data();
+  return data_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void TxLog::set_allocated_data(::std::string* data) {
+  if (data != NULL) {
+    set_has_data();
+  } else {
+    clear_has_data();
+  }
+  data_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), data);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.TxLog.data)
+}
+
+// repeated bytes topics = 2;
+inline int TxLog::topics_size() const {
+  return topics_.size();
+}
+inline void TxLog::clear_topics() {
+  topics_.Clear();
+}
+inline const ::std::string& TxLog::topics(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.TxLog.topics)
+  return topics_.Get(index);
+}
+inline ::std::string* TxLog::mutable_topics(int index) {
+  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.TxLog.topics)
+  return topics_.Mutable(index);
+}
+inline void TxLog::set_topics(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.TxLog.topics)
+  topics_.Mutable(index)->assign(value);
+}
+#if LANG_CXX11
+inline void TxLog::set_topics(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.TxLog.topics)
+  topics_.Mutable(index)->assign(std::move(value));
+}
+#endif
+inline void TxLog::set_topics(int index, const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  topics_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:zjchain.block.protobuf.TxLog.topics)
+}
+inline void TxLog::set_topics(int index, const void* value, size_t size) {
+  topics_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:zjchain.block.protobuf.TxLog.topics)
+}
+inline ::std::string* TxLog::add_topics() {
+  // @@protoc_insertion_point(field_add_mutable:zjchain.block.protobuf.TxLog.topics)
+  return topics_.Add();
+}
+inline void TxLog::add_topics(const ::std::string& value) {
+  topics_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:zjchain.block.protobuf.TxLog.topics)
+}
+#if LANG_CXX11
+inline void TxLog::add_topics(::std::string&& value) {
+  topics_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:zjchain.block.protobuf.TxLog.topics)
+}
+#endif
+inline void TxLog::add_topics(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  topics_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:zjchain.block.protobuf.TxLog.topics)
+}
+inline void TxLog::add_topics(const void* value, size_t size) {
+  topics_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:zjchain.block.protobuf.TxLog.topics)
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+TxLog::topics() const {
+  // @@protoc_insertion_point(field_list:zjchain.block.protobuf.TxLog.topics)
+  return topics_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+TxLog::mutable_topics() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.block.protobuf.TxLog.topics)
+  return &topics_;
+}
+
+// -------------------------------------------------------------------
+
 // BlockTx
 
 // optional bytes gid = 1;
@@ -6004,6 +6305,36 @@ inline void BlockTx::set_allocated_contract_input(::std::string* contract_input)
   }
   contract_input_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), contract_input);
   // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.BlockTx.contract_input)
+}
+
+// repeated .zjchain.block.protobuf.TxLog events = 16;
+inline int BlockTx::events_size() const {
+  return events_.size();
+}
+inline void BlockTx::clear_events() {
+  events_.Clear();
+}
+inline ::zjchain::block::protobuf::TxLog* BlockTx::mutable_events(int index) {
+  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.BlockTx.events)
+  return events_.Mutable(index);
+}
+inline ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::TxLog >*
+BlockTx::mutable_events() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.block.protobuf.BlockTx.events)
+  return &events_;
+}
+inline const ::zjchain::block::protobuf::TxLog& BlockTx::events(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.BlockTx.events)
+  return events_.Get(index);
+}
+inline ::zjchain::block::protobuf::TxLog* BlockTx::add_events() {
+  // @@protoc_insertion_point(field_add:zjchain.block.protobuf.BlockTx.events)
+  return events_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::TxLog >&
+BlockTx::events() const {
+  // @@protoc_insertion_point(field_list:zjchain.block.protobuf.BlockTx.events)
+  return events_;
 }
 
 // -------------------------------------------------------------------
@@ -10633,6 +10964,8 @@ inline void BlockMessage::set_allocated_statistic_tx(::zjchain::block::protobuf:
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
