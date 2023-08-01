@@ -45,7 +45,7 @@ function PostCode(data) {
 function PostCode(path, data) {
     var post_data = querystring.stringify(data);
     var post_options = {
-        host: '10.101.20.29',
+        host: '127.0.0.1',
         port: '8781',
         path: path,
         method: 'POST',

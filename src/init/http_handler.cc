@@ -277,19 +277,88 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     evhtp_headers_add_header(req->headers_out, header1);
     evhtp_headers_add_header(req->headers_out, header2);
     evhtp_headers_add_header(req->headers_out, header3);
-    const char* contract_addr = evhtp_kv_find(req->uri->query, "address");
-    const char* input = evhtp_kv_find(req->uri->query, "input");
-    if (contract_addr == nullptr) {
+    const char* tmp_contract_addr = evhtp_kv_find(req->uri->query, "address");
+    const char* tmp_input = evhtp_kv_find(req->uri->query, "input");
+    const char* tmp_from = evhtp_kv_find(req->uri->query, "from");
+    if (tmp_contract_addr == nullptr) {
         std::string res = common::StringUtil::Format(
             "param invalid contract_addr valid: %d, input valid: %d",
-            (contract_addr != nullptr), (input != nullptr));
+            (tmp_contract_addr != nullptr), (tmp_input != nullptr), (tmp_from != nullptr));
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
         ZJC_INFO("query contract param error: %s.", res.c_str());
         return;
     }
 
-    std::string res = std::string("ok");
+    std::string from = common::Encode::HexDecode(tmp_from);
+    std::string contract_addr = common::Encode::HexDecode(contract_addr);
+    std::string input = common::Encode::HexDecode(tmp_input);
+    uint64_t height = 0;
+    uint64_t prepayment = 0;
+    auto res = prefix_db_->GetContractUserPrepayment(contract_addr, from, &height, prepayment);
+    if (!res) {
+        std::string res = "get from prepayment failed: " + std::string(tmp_from);
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        ZJC_INFO("query contract param error: %s.", res.c_str());
+        return;
+    }
+
+    auto contract_addr_info = prefix_db_->GetAddressInfo(from);
+    if (contract_addr_info == nullptr) {
+        std::string res = "get contract addr failed: " + std::string(tmp_contract_addr);
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        ZJC_INFO("query contract param error: %s.", res.c_str());
+        return;
+    }
+
+    zjcvm::ZjchainHost zjc_host;
+    zjc_host.tx_context_.tx_origin = evmc::address{};
+    zjc_host.tx_context_.block_coinbase = evmc::address{};
+    zjc_host.tx_context_.block_number = 0;
+    zjc_host.tx_context_.block_timestamp = 0;
+    uint64_t chanin_id = 0;
+    zjcvm::Uint64ToEvmcBytes32(
+        zjc_host.tx_context_.chain_id,
+        chanin_id);
+    zjc_host.thread_idx_ = 0;
+    zjc_host.contract_mgr_ = contract_mgr_;
+    zjc_host.acc_mgr_ = account_mgr_;
+    zjc_host.my_address_ = contract_addr;
+    zjc_host.tx_context_.block_gas_limit = prepayment;
+    // user caller prepayment 's gas
+    uint64_t from_balance = prepayment;
+    uint64_t to_balance = contract_addr_info->balance();
+    zjc_host.AddTmpAccountBalance(
+        from,
+        from_balance);
+    zjc_host.AddTmpAccountBalance(
+        contract_addr,
+        to_balance);
+    evmc_result evmc_res = {};
+    evmc::Result res{ evmc_res };
+    int exec_res = zjcvm::Execution::Instance()->execute(
+        contract_addr_info->bytes_code(),
+        input,
+        from,
+        contract_addr,
+        from,
+        to_balance,
+        prepayment,
+        0,
+        zjcvm::kJustCall,
+        zjc_host,
+        &res);
+    if (exec_res != zjcvm::kZjcvmSuccess || res.status_code != EVMC_SUCCESS) {
+        std::string res = "query contract failed: " + std::to_string(res.status_code);
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        ZJC_INFO("query contract error: %s.", res.c_str());
+        return;
+    }
+
+    std::string res = std::string("ok: ") + ;
     evbuffer_add(req->buffer_out, res.c_str(), res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
     ZJC_INFO("query contract success %s, %s", contract_addr, input);

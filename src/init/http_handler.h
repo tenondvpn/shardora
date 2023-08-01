@@ -1,6 +1,7 @@
 #pragma once
 
 #include "http/http_server.h"
+#include "protos/prefix_db.h"
 #include "security/security.h"
 #include "transport/multi_thread.h"
 #include "transport/transport_utils.h"
@@ -29,6 +30,7 @@ public:
 private:
     std::shared_ptr<security::Security> security_ptr_ = nullptr;
     transport::MultiThreadHandler* net_handler_ = nullptr;
+    std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(HttpHandler);
 };
