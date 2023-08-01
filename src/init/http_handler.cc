@@ -364,9 +364,9 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         return;
     }
 
-    std::string res = std::string("ok: ") +
+    std::string http_res = std::string("ok: ") +
         common::Encode::HexEncode(std::string(result.output_data, result.output_size));
-    evbuffer_add(req->buffer_out, res.c_str(), res.size());
+    evbuffer_add(req->buffer_out, http_res.c_str(), http_res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
     ZJC_INFO("query contract success %s, %s", contract_addr, input);
 }
