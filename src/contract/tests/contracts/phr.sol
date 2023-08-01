@@ -52,7 +52,7 @@ contract Phr {
         payable(to).transfer(amount);
     }
 
-    function TestEvent(address to, uint256 amount) external {
+    function TestEvent(address to, uint256 amount) public payable {
         emit NewTrade(block.timestamp, msg.sender, to, amount);
     }
 
