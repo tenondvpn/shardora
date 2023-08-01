@@ -42,6 +42,34 @@ function PostCode(data) {
     post_req.end();
 }
 
+function PostCode(path, data) {
+    var post_data = querystring.stringify(data);
+    var post_options = {
+        host: '10.101.20.29',
+        port: '8781',
+        path: path,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Length': Buffer.byteLength(post_data)
+        }
+    };
+
+    var post_req = http.request(post_options, function (res) {
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+            if (chunk != "ok") {
+                console.log('Response: ' + chunk + ", " + data);
+            } else {
+                console.log('Response: ' + chunk + ", " + data);
+            }
+        })
+    });
+
+    post_req.write(post_data);
+    post_req.end();
+}
+
 function GetValidHexString(uint256_bytes) {
     var str_res = uint256_bytes.toString(16)
     while (str_res.length < 64) {
@@ -49,6 +77,16 @@ function GetValidHexString(uint256_bytes) {
     }
 
     return str_res;
+}
+
+function QueryContract(input) {
+    var contract_address = fs.readFileSync('contract_address', 'utf-8');
+    var data = {
+        "input": input,
+        'address': contract_address,
+    };
+
+    PostCode('/query_contract', data);
 }
 
 function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract_bytes, input, prepay, prikey) {
@@ -298,4 +336,9 @@ if (args[0] == 6) {
 // 测试event
 if (args[0] == 7) {
     call_contract("2a1343a70000000000000000000000005f15294a1918633d4dd4ec47098a14d01c58e95700000000000000000000000000000000000000000000000000000000000003e8", prikey, 0);
+}
+
+// 测试合约查询
+if (args[0] == 8) {
+    QueryContract("2a1343a70000000000000000000000005f15294a1918633d4dd4ec47098a14d01c58e95700000000000000000000000000000000000000000000000000000000000003e8");
 }

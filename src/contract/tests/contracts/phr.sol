@@ -52,6 +52,12 @@ contract Phr {
         payable(to).transfer(amount);
     }
 
+    function TestQuery() public view returns(uint amount, bytes data) {
+        uint amount = 198734;
+        bytes data = "sdfasdfasdfasdfasdfadsfadsfasdfadfsdfadfadfsadfsdfasdfasdf";
+        return (amount, data);
+    }
+
     function TestEvent(address to, uint256 amount) public payable {
         emit NewTrade(block.timestamp, msg.sender, to, amount);
     }
