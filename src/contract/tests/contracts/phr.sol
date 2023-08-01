@@ -22,6 +22,13 @@ contract Phr {
         bool exists;
     }
 
+    event NewTrade(
+       uint256 indexed date,
+       address from,
+       address indexed to,
+       uint256 indexed amount
+       );
+
     mapping(bytes32 => RidInfo) public rids;
     mapping(bytes => mapping(bytes32 => bool)) public pk_attrs;
     mapping(bytes32 => mapping(bytes => bool)) public attr_pks;
@@ -43,6 +50,10 @@ contract Phr {
 
     function TransferTo(address payable to, uint64 amount) public payable {
         payable(to).transfer(amount);
+    }
+
+    function TestEvent(address to, uint256 amount) external {
+        emit NewTrade(block.timestamp, msg.sender, to, amount);
     }
 
     function ResAdd(bytes32 rid, bytes memory pkDo, bytes memory ci) public {
