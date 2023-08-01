@@ -17,7 +17,7 @@ function hexToBytes(hex) {
 function PostCode(data) {
     var post_data = querystring.stringify(data);
     var post_options = {
-        host: '10.101.20.29',
+        host: '127.0.0.1',
         port: '8781',
         path: '/transaction',
         method: 'POST',
@@ -42,7 +42,7 @@ function PostCode(data) {
     post_req.end();
 }
 
-function PostCode(path, data) {
+function QueryPostCode(path, data) {
     var post_data = querystring.stringify(data);
     var post_options = {
         host: '127.0.0.1',
@@ -86,7 +86,7 @@ function QueryContract(input) {
         'address': contract_address,
     };
 
-    PostCode('/query_contract', data);
+    QueryPostCode('/query_contract', data);
 }
 
 function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract_bytes, input, prepay, prikey) {
