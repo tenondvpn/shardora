@@ -8,6 +8,7 @@
 #include "network/route.h"
 #include "pools/tx_utils.h"
 #include "protos/transport.pb.h"
+#include "zjcvm/execution.h"
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
 
@@ -356,7 +357,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         zjc_host,
         &result);
     if (exec_res != zjcvm::kZjcvmSuccess || result.status_code != EVMC_SUCCESS) {
-        std::string res = "query contract failed: " + std::to_string(res.status_code);
+        std::string res = "query contract failed: " + std::to_string(result.status_code);
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
         ZJC_INFO("query contract error: %s.", res.c_str());
@@ -364,7 +365,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     }
 
     std::string res = std::string("ok: ") +
-        common::Encode::HexEncode(std::string(result->output_data, result->output_size));
+        common::Encode::HexEncode(std::string(result.output_data, result.output_size));
     evbuffer_add(req->buffer_out, res.c_str(), res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
     ZJC_INFO("query contract success %s, %s", contract_addr, input);
