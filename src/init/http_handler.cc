@@ -303,7 +303,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     uint64_t prepayment = 0;
     auto res = prefix_db->GetContractUserPrepayment(contract_addr, from, &height, &prepayment);
     if (!res) {
-        std::string res = "get from prepayment failed: " + std::string(tmp_from);
+        std::string res = "get from prepayment failed: " + std::string(tmp_contract_addr) + ", " + std::string(tmp_from);
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
         ZJC_INFO("query contract param error: %s.", res.c_str());
