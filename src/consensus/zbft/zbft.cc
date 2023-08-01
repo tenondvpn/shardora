@@ -794,7 +794,7 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
             continue;
         }
 
-        if (auto event_iter = zjc_host.recorded_logs_.begin();
+        for (auto event_iter = zjc_host.recorded_logs_.begin();
                 event_iter != zjc_host.recorded_logs_.end(); ++event_iter) {
             auto log = block_tx.add_events();
             log->set_data((*event_iter).data);

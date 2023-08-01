@@ -49,10 +49,10 @@ void Execution::Init(std::shared_ptr<db::Db>& db) {
 //         return;
 // 	}
 // 
-    if (evm_.set_option("trace", "0") != EVMC_SET_OPTION_SUCCESS) {
-        ZJC_FATAL("evm.set_option error.");
-        return;
-    }
+//     if (evm_.set_option("trace", "0") != EVMC_SET_OPTION_SUCCESS) {
+//         ZJC_FATAL("evm.set_option error.");
+//         return;
+//     }
 
     uint32_t thread_count = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
     address_exists_set_ = new common::StringUniqueSet<256, 16>[thread_count];
