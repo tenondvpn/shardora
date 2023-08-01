@@ -300,7 +300,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     std::string input = common::Encode::HexDecode(tmp_input);
     uint64_t height = 0;
     uint64_t prepayment = 0;
-    auto res = prefix_db->GetContractUserPrepayment(contract_addr, from, &height, prepayment);
+    auto res = prefix_db->GetContractUserPrepayment(contract_addr, from, &height, &prepayment);
     if (!res) {
         std::string res = "get from prepayment failed: " + std::string(tmp_from);
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
@@ -329,7 +329,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         chanin_id);
     zjc_host.thread_idx_ = 0;
     zjc_host.contract_mgr_ = contract_mgr;
-    zjc_host.acc_mgr_ = account_mgr_;
+    zjc_host.acc_mgr_ = nullptr;
     zjc_host.my_address_ = contract_addr;
     zjc_host.tx_context_.block_gas_limit = prepayment;
     // user caller prepayment 's gas
@@ -342,7 +342,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         contract_addr,
         to_balance);
     evmc_result evmc_res = {};
-    evmc::Result res{ evmc_res };
+    evmc::Result result{ evmc_res };
     int exec_res = zjcvm::Execution::Instance()->execute(
         contract_addr_info->bytes_code(),
         input,
@@ -354,8 +354,8 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         0,
         zjcvm::kJustCall,
         zjc_host,
-        &res);
-    if (exec_res != zjcvm::kZjcvmSuccess || res.status_code != EVMC_SUCCESS) {
+        &result);
+    if (exec_res != zjcvm::kZjcvmSuccess || result.status_code != EVMC_SUCCESS) {
         std::string res = "query contract failed: " + std::to_string(res.status_code);
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
@@ -364,7 +364,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     }
 
     std::string res = std::string("ok: ") +
-        common::Encode::HexEncode(std::string(->output_data, res->output_size));
+        common::Encode::HexEncode(std::string(result->output_data, result->output_size));
     evbuffer_add(req->buffer_out, res.c_str(), res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
     ZJC_INFO("query contract success %s, %s", contract_addr, input);
