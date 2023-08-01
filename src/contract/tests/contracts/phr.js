@@ -280,17 +280,17 @@ function CreatePhr() {
     }
 
     {
-        var topic = web3.utils.keccak256("TransferTo(address,uint64)");
         var func = web3.eth.abi.encodeFunctionSignature('TransferTo(address,uint64)');
         var funcParam = web3.eth.abi.encodeParameters(['address', 'uint64'], [account1.address, 1000]);
         console.log("TransferTo func: " + func.substring(2) + funcParam.substring(2));
-        console.log("TransferTo topic: " + topic.substring(2));
     }
 
     {
+        var topic = web3.utils.keccak256("TestEvent(address,uint256)");
         var func = web3.eth.abi.encodeFunctionSignature('TestEvent(address,uint256)');
         var funcParam = web3.eth.abi.encodeParameters(['address', 'uint256'], [account2.address, 1000]);
         console.log("TestEvent func: " + func.substring(2) + funcParam.substring(2));
+        console.log("TestEvent topic: " + topic.substring(2));
     }
 
     // func code
