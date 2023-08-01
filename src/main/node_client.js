@@ -214,15 +214,20 @@ function new_contract(contract_bytes, prikey) {
     })
 }
 
-// 调用合约
+// 调用合约, 收回预付费 input = ""
 function call_contract(input, prikey) {
     var contract_address = fs.readFileSync('contract_address', 'utf-8');
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
+    var amount = 0;
+    if (input != "") {
+        amount = 10000000;
+    }
+
     var data = param_contract(
         8,
         gid,
         contract_address,
-        10000000,
+        amount,
         10000000,
         1,
         "",
@@ -232,7 +237,7 @@ function call_contract(input, prikey) {
     PostCode(data);
 }
 
-// 设置预付费 prepayment > 0, 收回预付费 prepayment = 0
+// 设置预付费 prepayment > 0
 function prepay_contract(prikey, prepayment) {
     var contract_address = fs.readFileSync('contract_address', 'utf-8');
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
@@ -292,5 +297,5 @@ if (args[0] == 5) {
 }
 
 if (args[0] == 6) {
-    prepay_contract(prikey, 0);
+    call_contract("", prikey);
 }

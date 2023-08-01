@@ -85,7 +85,7 @@ int ContractUserCall::HandleTx(
         block_tx.status(),
         common::Encode::HexEncode(block_tx.from()).c_str(),
         common::Encode::HexEncode(block_tx.to()).c_str(),
-        block_tx.contract_code());
+        block_tx.contract_prepayment());
     return kConsensusSuccess;
 }
 
