@@ -286,7 +286,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     const char* tmp_contract_addr = evhtp_kv_find(req->uri->query, "address");
     const char* tmp_input = evhtp_kv_find(req->uri->query, "input");
     const char* tmp_from = evhtp_kv_find(req->uri->query, "from");
-    if (tmp_contract_addr == nullptr) {
+    if (tmp_contract_addr == nullptr || tmp_from == nullptr || tmp_input == nullptr) {
         std::string res = common::StringUtil::Format(
             "param invalid contract_addr valid: %d, input valid: %d",
             (tmp_contract_addr != nullptr), (tmp_input != nullptr), (tmp_from != nullptr));
