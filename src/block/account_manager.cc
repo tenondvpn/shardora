@@ -209,7 +209,7 @@ void AccountManager::HandleLocalToTx(
 
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         if (to_txs.tos(i).to().size() != security::kUnicastAddressLength) {
-            assert(false);
+            //assert(false);
             continue;
         }
 
