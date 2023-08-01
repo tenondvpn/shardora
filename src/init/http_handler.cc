@@ -9,12 +9,16 @@
 #include "pools/tx_utils.h"
 #include "protos/transport.pb.h"
 #include "zjcvm/zjc_host.h"
+#include "zjcvm/zjcvm_utils.h"
 
 namespace zjchain {
 
 namespace init {
 
 static HttpHandler* http_handler = nullptr;
+static std::shared_ptr<protos::PrefixDb> prefix_db = nullptr;
+std::shared_ptr<contract::ContractManager> contract_mgr = nullptr;
+
 enum HttpStatusCode : int32_t {
     kHttpSuccess = 0,
     kHttpError = 1,
@@ -296,7 +300,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     std::string input = common::Encode::HexDecode(tmp_input);
     uint64_t height = 0;
     uint64_t prepayment = 0;
-    auto res = prefix_db_->GetContractUserPrepayment(contract_addr, from, &height, prepayment);
+    auto res = prefix_db->GetContractUserPrepayment(contract_addr, from, &height, prepayment);
     if (!res) {
         std::string res = "get from prepayment failed: " + std::string(tmp_from);
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
@@ -305,7 +309,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         return;
     }
 
-    auto contract_addr_info = prefix_db_->GetAddressInfo(from);
+    auto contract_addr_info = prefix_db->GetAddressInfo(from);
     if (contract_addr_info == nullptr) {
         std::string res = "get contract addr failed: " + std::string(tmp_contract_addr);
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
@@ -324,7 +328,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         zjc_host.tx_context_.chain_id,
         chanin_id);
     zjc_host.thread_idx_ = 0;
-    zjc_host.contract_mgr_ = contract_mgr_;
+    zjc_host.contract_mgr_ = contract_mgr;
     zjc_host.acc_mgr_ = account_mgr_;
     zjc_host.my_address_ = contract_addr;
     zjc_host.tx_context_.block_gas_limit = prepayment;
@@ -359,7 +363,8 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         return;
     }
 
-    std::string res = std::string("ok: ") + ;
+    std::string res = std::string("ok: ") +
+        common::Encode::HexEncode(std::string(->output_data, res->output_size));
     evbuffer_add(req->buffer_out, res.c_str(), res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
     ZJC_INFO("query contract success %s, %s", contract_addr, input);
@@ -374,9 +379,13 @@ HttpHandler::~HttpHandler() {}
 void HttpHandler::Init(
         transport::MultiThreadHandler* net_handler,
         std::shared_ptr<security::Security>& security_ptr,
+        std::shared_ptr<protos::PrefixDb>& tmp_prefix_db,
+        std::shared_ptr<contract::ContractManager>& tmp_contract_mgr,
         http::HttpServer& http_server) {
     net_handler_ = net_handler;
     security_ptr_ = security_ptr;
+    prefix_db = tmp_prefix_db;
+    contract_mgr = tmp_contract_mgr;
     http_server.AddCallback("/transaction", HttpTransaction);
     http_server.AddCallback("/query_contract", QueryContract);
 }
