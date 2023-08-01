@@ -701,7 +701,7 @@ int NetworkInit::InitHttpServer() {
             return kInitError;
         }
 
-        http_handler_.Init(&net_handler_, security_, http_server_);
+        http_handler_.Init(&net_handler_, security_, prefix_db_, contract_mgr_, http_server_);
         http_server_.Start();
     }
 
