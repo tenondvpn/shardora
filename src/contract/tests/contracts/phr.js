@@ -284,7 +284,13 @@ function CreatePhr() {
         var funcParam = web3.eth.abi.encodeParameters(['address', 'uint64'], [account1.address, 1000]);
         console.log("TransferTo func: " + func.substring(2) + funcParam.substring(2));
     }
-    
+
+    {
+        var func = web3.eth.abi.encodeFunctionSignature('TestEvent(address,uint256)');
+        var funcParam = web3.eth.abi.encodeParameters(['address', 'uint256'], [account2.address, 1000]);
+        console.log("TestEvent func: " + func.substring(2) + funcParam.substring(2));
+    }
+
     // func code
     {
         var ResAddFunc = web3.eth.abi.encodeFunctionSignature('ResAdd(bytes32,bytes,bytes)');
