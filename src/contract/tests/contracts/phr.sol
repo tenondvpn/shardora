@@ -52,10 +52,9 @@ contract Phr {
         payable(to).transfer(amount);
     }
 
-    function TestQuery() public view returns(uint, bytes memory) {
-        uint amount = 198734;
-        bytes memory data = "sdfasdfasdfasdfasdfadsfadsfasdfadfsdfadfadfsadfsdfasdfasdf";
-        return (amount, data);
+    function TestQuery() public view returns(bytes memory) {
+        bytes memory data = "{ 'amount': 198734, 'tmp':  'sdfasdfasdfasdfasdfadsfadsfasdfadfsdfadfadfsadfsdfasdfasdf'}";
+        return data;
     }
 
     function TestEvent(address to, uint256 amount) public payable {
