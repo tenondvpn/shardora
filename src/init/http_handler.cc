@@ -310,7 +310,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         return;
     }
 
-    auto contract_addr_info = prefix_db->GetAddressInfo(from);
+    auto contract_addr_info = prefix_db->GetAddressInfo(contract_addr);
     if (contract_addr_info == nullptr) {
         std::string res = "get contract addr failed: " + std::string(tmp_contract_addr);
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
