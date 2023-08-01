@@ -289,7 +289,6 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         return;
     }
 
-    http_handler->net_handler()->NewHttpServer(msg_ptr);
     std::string res = std::string("ok");
     evbuffer_add(req->buffer_out, res.c_str(), res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
