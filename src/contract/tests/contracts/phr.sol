@@ -53,7 +53,7 @@ contract Phr {
     }
 
     function TestQuery() public view returns(bytes memory) {
-        bytes memory data = "{ 'amount': 198734, 'tmp':  'sdfasdfasdfasdfasdfadsfadsfasdfadfsdfadfadfsadfsdfasdfasdf'}";
+        bytes memory data = '{"amount": 198734, "tmp":  "sdfasdfasdfasdfasdfadsfadsfasdfadfsdfadfadfsadfsdfasdfasdf"}';
         return data;
     }
 
