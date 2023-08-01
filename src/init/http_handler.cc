@@ -364,11 +364,14 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         return;
     }
 
-    std::string http_res = std::string("ok: ") +
-        common::Encode::HexEncode(std::string((char*)result.output_data, result.output_size));
+    std::string qdata((char*)result.output_data, result.output_size);
+    evmc_bytes32 len_bytes;
+    memcpy(len_bytes.bytes, qdata.c_str() + 32, 32);
+    uint64_t len = zjcvm::EvmcBytes32ToUint64(len_bytes);
+    std::string http_res(qdata.c_str() + 64, len);
     evbuffer_add(req->buffer_out, http_res.c_str(), http_res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
-    ZJC_INFO("query contract success %s, %s", contract_addr, input);
+    ZJC_INFO("query contract success %s, %s, len: %lu", contract_addr, input, len);
 }
 
 HttpHandler::HttpHandler() {
