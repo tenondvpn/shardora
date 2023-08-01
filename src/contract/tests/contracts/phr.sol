@@ -62,7 +62,8 @@ contract Phr {
     }
 
     function howToUseIt() public view returns (string memory) {
-        return iToHex(abi.encodePacked(0x8977767));
+        bytes4 data = 0xa22cb465;
+        return iToHex(abi.encodePacked(data));
     }
 
     function iToHex(bytes memory buffer) public pure returns (string memory) {
