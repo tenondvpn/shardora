@@ -58,11 +58,9 @@ function QueryPostCode(path, data) {
     var post_req = http.request(post_options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
-            if (chunk != "ok") {
-                console.log('Response: ' + chunk + ", " + data);
-            } else {
-                console.log('Response: ' + chunk + ", " + data);
-            }
+            var json_res = JSON.parse(chunk)
+            console.log('amount: ' + json_res.amount + ", tmp: " + json_res.tmp);
+            console.log('Response: ' + chunk);
         })
     });
 
