@@ -286,6 +286,12 @@ function CreatePhr() {
     }
 
     {
+        var func = web3.eth.abi.encodeFunctionSignature('TestQuery()');
+        console.log("TestQuery func: " + func.substring(2));
+    }
+
+
+    {
         var topic = web3.utils.keccak256("NewTrade(uint256,address,address,uint256)");
         var func = web3.eth.abi.encodeFunctionSignature('TestEvent(address,uint256)');
         var funcParam = web3.eth.abi.encodeParameters(['address', 'uint256'], [account2.address, 1000]);
