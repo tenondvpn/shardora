@@ -215,14 +215,9 @@ function new_contract(contract_bytes, prikey) {
 }
 
 // 调用合约, 收回预付费 input = ""
-function call_contract(input, prikey) {
+function call_contract(input, prikey, amount) {
     var contract_address = fs.readFileSync('contract_address', 'utf-8');
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
-    var amount = 0;
-    if (input != "") {
-        amount = 10000000;
-    }
-
     var data = param_contract(
         8,
         gid,
@@ -281,15 +276,15 @@ if (args[0] == 1) {
 
 // 调用合约 phr.sol 的 ResAdd 函数
 if (args[0] == 2) {
-    call_contract("cfefc010", prikey);
+    call_contract("cfefc010", prikey, 10);
 }
 
 if (args[0] == 3) {
-    call_contract("348a2b9100000000000000000000000000000000000000000000000000000000000003e8", prikey);
+    call_contract("348a2b9100000000000000000000000000000000000000000000000000000000000003e8", prikey, 10);
 }
 
 if (args[0] == 4) {
-    call_contract("e645df43000000000000000000000000e252d01a37b85e2007ed3cc13797aa92496204a400000000000000000000000000000000000000000000000000000000000003e8", prikey);
+    call_contract("e645df43000000000000000000000000e252d01a37b85e2007ed3cc13797aa92496204a400000000000000000000000000000000000000000000000000000000000003e8", prikey, 10);
 }
 
 if (args[0] == 5) {
@@ -297,10 +292,10 @@ if (args[0] == 5) {
 }
 
 if (args[0] == 6) {
-    call_contract("", prikey);
+    call_contract("", prikey, 0);
 }
 
 // 测试event
 if (args[0] == 7) {
-    call_contract("2a1343a70000000000000000000000005f15294a1918633d4dd4ec47098a14d01c58e95700000000000000000000000000000000000000000000000000000000000003e8", prikey);
+    call_contract("2a1343a70000000000000000000000005f15294a1918633d4dd4ec47098a14d01c58e95700000000000000000000000000000000000000000000000000000000000003e8", prikey, 0);
 }
