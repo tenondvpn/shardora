@@ -86,7 +86,7 @@ enum GetHeightBlockType {
 enum JoinRootFlag {
     kRandom = 0,
     kJoinRoot = 1,
-    kNoTjoinRoot = 2,
+    kNotJoinRoot = 2,
 };
 
 enum ConsensusType {
