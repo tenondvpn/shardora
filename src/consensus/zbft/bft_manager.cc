@@ -1045,7 +1045,7 @@ void BftManager::HandleCommitedSyncBlock(uint8_t thread_idx, const zbft::protobu
     if (tmp_hash != req_bft_msg.block().hash()) {
         ZJC_DEBUG("block hash error: %s, %s",
             common::Encode::HexEncode(tmp_hash).c_str(),
-            common::Encode::HexEncode(req_bft_msg.block().hash()).c_str())
+            common::Encode::HexEncode(req_bft_msg.block().hash()).c_str());
         return;
     }
 
