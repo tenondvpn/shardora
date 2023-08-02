@@ -347,7 +347,7 @@ void TcpConnection::OnWrite() {
 
 bool TcpConnection::ConnectWithoutLock(uint32_t timeout) {
     if (tcp_state_ != kTcpNone) {
-//         ZJC_ERROR("bad state");
+        ZJC_ERROR("bad state");
         return false;
     }
 
@@ -372,8 +372,8 @@ bool TcpConnection::ConnectWithoutLock(uint32_t timeout) {
         return false;
     }
 
-    int optval = 1;
-    socket->SetOption(SO_REUSEPORT, &optval, sizeof(optval));
+//     int optval = 1;
+//     socket->SetOption(SO_REUSEPORT, &optval, sizeof(optval));
     int rc = socket->Connect();
     if (rc < 0) {
         ZJC_ERROR("connect failed");
@@ -384,6 +384,8 @@ bool TcpConnection::ConnectWithoutLock(uint32_t timeout) {
     if (rc == 0) {
         tcp_state_ = kTcpConnected;
     } else {
+        ZJC_DEBUG("connect status is kTcpConnecting.")
+        return false;
         tcp_state_ = kTcpConnecting;
 //         if (timeout != 0) {
 //             connect_timeout_tick_.CutOff(

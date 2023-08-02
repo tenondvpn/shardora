@@ -313,12 +313,6 @@ tnet::TcpConnection* TcpTransport::GetConnection(
         return nullptr;
     }
     
-    if (!tcp_conn->Connect(3u * 1000u * 1000u)) {
-        ZJC_DEBUG("failed connect send message %s:%d", ip.c_str(), port);
-        delete tcp_conn;
-        return nullptr;
-    }
-
     ZJC_DEBUG("success connect send message %s:%d", ip.c_str(), port);
     conn_map_[thread_idx][peer_spec] = tcp_conn;
     return tcp_conn;
