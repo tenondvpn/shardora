@@ -232,7 +232,7 @@ uint64_t KeyValueSync::SendSyncRequest(
     }
 
     if (nodes.empty()) {
-        nodes = *dht;
+        nodes = dht;
         ZJC_ERROR("network id[%d] not exists.", network_id);
 //         return 0;
     }
