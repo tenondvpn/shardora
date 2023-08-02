@@ -93,7 +93,7 @@ protected:
     void ProcessRefreshNeighborsRequest(const transport::MessagePtr& header);
     void ProcessRefreshNeighborsResponse(const transport::MessagePtr& header);
     void ProcessConnectRequest(const transport::MessagePtr& header);
-    void ProcessTimerRequest(const transport::MessagePtr& header);
+    void ProcessTimerRequest(uint8_t thread_idx);
     void RefreshNeighbors(uint8_t thread_idx);
     NodePtr FindNodeDirect(transport::protobuf::Header& message);
     void Connect(
