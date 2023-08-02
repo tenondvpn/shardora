@@ -688,8 +688,8 @@ void BaseDht::Connect(
             des_ip,
             des_port,
             msg);
-        DHT_DEBUG("connect to: %s:%d, %lu, %lu, %lu", des_ip.c_str(),
-            des_port, peer_int, connect_timeout_map_[peer_int], now_tm_ms);
+        DHT_DEBUG("connect to: %s:%d, %lu, %lu, %lu, hash: %lu", des_ip.c_str(),
+            des_port, peer_int, connect_timeout_map_[peer_int], now_tm_ms, msg.hash64());
     }
 }
 
@@ -702,12 +702,13 @@ void BaseDht::ProcessConnectRequest(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& dht_msg = header.dht_proto();
     if (header.des_dht_key() != local_node_->dht_key) {
-        ZJC_DEBUG("header.des_dht_key() != local_node_->dht_key");
+        ZJC_DEBUG("header.des_dht_key() != local_node_->dht_key : %lu",
+            msg_ptr->header.hash64());
         return;
     }
 
     if (!dht_msg.has_connect_req()) {
-        ZJC_DEBUG("!dht_msg.has_connect_req()");
+        ZJC_DEBUG("!dht_msg.has_connect_req(): %lu", msg_ptr->header.hash64());
         return;
     }
 
@@ -716,7 +717,7 @@ void BaseDht::ProcessConnectRequest(const transport::MessagePtr& msg_ptr) {
             sign_hash,
             dht_msg.connect_req().pubkey(),
             header.sign()) != security::kSecuritySuccess) {
-        DHT_ERROR("verifi signature failed!");
+        DHT_ERROR("verifi signature failed: %lu", msg_ptr->header.hash64());
         return;
     }
 
@@ -730,6 +731,11 @@ void BaseDht::ProcessConnectRequest(const transport::MessagePtr& msg_ptr) {
     msg_ptr->conn->SetPeerIp(dht_msg.connect_req().public_ip());
     msg_ptr->conn->SetPeerPort(dht_msg.connect_req().public_port());
     Join(node);
+    if (dht_msg.connect_req().is_response()) {
+        DHT_ERROR("process connect response success: %lu", msg_ptr->header.hash64());
+        return;
+    }
+
     Connect(
         msg_ptr->thread_idx,
         dht_msg.connect_req().public_ip(),
@@ -737,6 +743,7 @@ void BaseDht::ProcessConnectRequest(const transport::MessagePtr& msg_ptr) {
         dht_msg.connect_req().pubkey(),
         header.src_sharding_id(),
         true);
+    DHT_ERROR("process connect success: %lu", msg_ptr->header.hash64());
 }
 
 bool BaseDht::NodeValid(NodePtr& node) {
