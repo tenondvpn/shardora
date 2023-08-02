@@ -186,7 +186,6 @@ void DhtFunction::GetNetworkNodes(
     }
 }
 
-
 NodePtr DhtFunction::GetClosestNode(
         Dht& dht,
         const std::string& target,

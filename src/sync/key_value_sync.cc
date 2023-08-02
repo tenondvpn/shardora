@@ -232,8 +232,9 @@ uint64_t KeyValueSync::SendSyncRequest(
     }
 
     if (nodes.empty()) {
+        nodes = *dht;
         ZJC_ERROR("network id[%d] not exists.", network_id);
-        return 0;
+//         return 0;
     }
 
     uint32_t rand_pos = std::rand() % nodes.size();
