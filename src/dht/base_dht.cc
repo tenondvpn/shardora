@@ -949,7 +949,7 @@ void BaseDht::PrintDht(uint8_t thread_idx) {
         auto node = local_node();
         std::string debug_str;
         std::string res = common::StringUtil::Format(
-            "\ndht num: %d, local: %s, public ip: %s, public port: %u",
+            "dht num: %d, local: %s, public ip, %s, public port: %u",
             (readonly_dht->size() + 1),
             common::Encode::HexEncode(node->id).c_str(),
             node->public_ip.c_str(),
