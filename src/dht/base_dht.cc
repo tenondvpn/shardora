@@ -578,7 +578,8 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         auto& closest_nodes = dht_;
         for (auto iter = closest_nodes.begin(); iter != closest_nodes.end(); ++iter) {
             if (bloomfilter->Contain((*iter)->dht_key_hash)) {
-//                 ZJC_DEBUG("res refresh neighbers filter: %s:%u", common::Encode::HexEncode((*iter)->dht_key).c_str());
+                ZJC_DEBUG("res refresh neighbers filter: %s:%u, hash: %lu",
+                    common::Encode::HexEncode((*iter)->dht_key).c_str(), msg_ptr->header.hash64());
                 continue;
             }
 
@@ -599,6 +600,7 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         dhtkey.StrKey(),
         kRefreshNeighborsDefaultCount + 1);
     if (close_nodes.empty()) {
+        ZJC_DEBUG("res refresh neighbers filter empty %lu", msg_ptr->header.hash64());
         return;
     }
 
