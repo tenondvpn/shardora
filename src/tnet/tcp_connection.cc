@@ -8,7 +8,9 @@ namespace zjchain {
 
 namespace tnet {
 
-TcpConnection::TcpConnection(EventLoop& event_loop) : event_loop_(event_loop) {}
+TcpConnection::TcpConnection(EventLoop& event_loop) : event_loop_(event_loop) {
+    create_timestamp_ms_ = common::TimeUtils::TimestampMs();
+}
 
 TcpConnection::~TcpConnection() {
     if (socket_ != NULL) {
