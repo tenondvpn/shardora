@@ -48,7 +48,7 @@ public:
         uint8_t thread_idx,
         const std::string& ip,
         uint16_t port);
-    tnet::TcpConnection* CreateConnection(const std::string& ip, uint16_t port);
+//     tnet::TcpConnection* CreateConnection(const std::string& ip, uint16_t port);
     std::string GetHeaderHashForSign(const transport::protobuf::Header& message);
     void SetMessageHash(const transport::protobuf::Header& message, uint8_t thread_idx);
 
