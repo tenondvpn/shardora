@@ -649,6 +649,10 @@ void BaseDht::Connect(
         return;
     }
 
+    if (des_ip == local_node_->public_ip && des_ip == local_node_->public_port) {
+        return;
+    }
+
     auto peer_int = common::GetNodeConnectInt(des_ip, des_port);
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     auto iter = connect_timeout_map_.find(peer_int);
