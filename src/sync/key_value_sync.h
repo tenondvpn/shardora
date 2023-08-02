@@ -103,6 +103,10 @@ public:
         if (height > elect_net_heights_map_[sharding_id]) {
             elect_net_heights_map_[sharding_id] = height;
         }
+
+        if (sharding_id > max_sharding_id_) {
+            max_sharding_id_ = sharding_id;
+        }
     }
 
 private:
@@ -148,6 +152,7 @@ private:
     uint64_t elect_net_heights_map_[network::kConsensusShardEndNetworkId] = { 0 };
     std::unordered_set<std::string> synced_keys_;
     std::deque<std::string> timeout_queue_;
+    uint32_t max_sharding_id_ = network::kConsensusShardBeginNetworkId;
 
     DISALLOW_COPY_AND_ASSIGN(KeyValueSync);
 };
