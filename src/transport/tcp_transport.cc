@@ -295,9 +295,10 @@ tnet::TcpConnection* TcpTransport::GetConnection(
         if (iter->second->ShouldReconnect()) {
             common::AutoSpinLock guard(erase_conns_mutex_);
             erase_conns_.push_back(iter->second);
-            ZJC_DEBUG("remove connect: %s:%d", ip.c_str(), port);
+            ZJC_DEBUG("remove connect and reconnect send message %s:%d", ip.c_str(), port);
             conn_map_[thread_idx].erase(iter);
         } else {
+            ZJC_DEBUG("use exists connect send message %s:%d", ip.c_str(), port);
             return iter->second;
         }
     }
@@ -312,7 +313,7 @@ tnet::TcpConnection* TcpTransport::GetConnection(
         return nullptr;
     }
     
-    ZJC_DEBUG("success connect: %s:%d", ip.c_str(), port);
+    ZJC_DEBUG("success connect send message %s:%d", ip.c_str(), port);
     conn_map_[thread_idx][peer_spec] = tcp_conn;
     return tcp_conn;
 }
