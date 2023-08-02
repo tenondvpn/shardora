@@ -876,7 +876,7 @@ void BaseDht::RefreshNeighbors(uint8_t thread_idx) {
         auto* dht_msg = msg.mutable_dht_proto();
         auto timer_req = dht_msg->mutable_timer();
         timer_req->set_tm_milli(common::TimeUtils::TimestampMs());
-        transport::TcpTransport::Instance()->SetMessageHash(msg);
+        transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
         transport::TcpTransport::Instance()->Send(
             thread_idx,
             node->public_ip,
