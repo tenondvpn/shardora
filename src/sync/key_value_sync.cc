@@ -232,15 +232,17 @@ uint64_t KeyValueSync::SendSyncRequest(
     }
 
     if (nodes.empty()) {
-        for (uint32_t i = network::kRootCongressNetworkId; i < max_sharding_id_; ++i) {
+        for (uint32_t i = network::kRootCongressNetworkId; i <= max_sharding_id_; ++i) {
             dht::DhtFunction::GetNetworkNodes(dht, i, nodes);
             if (!nodes.empty()) {
                 break;
             }
         }
 
-        ZJC_ERROR("network id[%d] not exists.", network_id);
-//         return 0;
+        if (nodes.empty()) {
+            ZJC_ERROR("network id[%d] not exists.", network_id);
+            return 0;
+        }
     }
 
     uint32_t rand_pos = std::rand() % nodes.size();
