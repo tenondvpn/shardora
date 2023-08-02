@@ -903,7 +903,7 @@ void BaseDht::ProcessTimerRequest(uint8_t thread_idx) {
     auto node = (*dht_ptr)[rand_idx];
     transport::protobuf::Header msg;
     DhtProto::CreateRefreshNeighborsRequest(
-        tmp_dht,
+        *dht_ptr,
         local_node_,
         node->dht_key,
         msg);
