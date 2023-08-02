@@ -622,8 +622,6 @@ void BlockManager::HandleNormalToTx(
             RootHandleNormalToTx(thread_idx, block.height(), to_txs, db_batch);
         }
     }
-
-    
 }
 
 void BlockManager::RootHandleNormalToTx(

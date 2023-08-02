@@ -513,8 +513,8 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
         uint64_t cons_height = pool_consensus_heihgts_[i];
         while (cons_height > 0) {
             auto add_iter = added_heights_[i].find(cons_height);
-//             ZJC_INFO("invalid height, pool: %u, height: %lu", i, cons_height);
             if (add_iter == added_heights_[i].end()) {
+                ZJC_INFO("invalid height, pool: %u, height: %lu", i, cons_height);
                 return kPoolsError;
             }
 
