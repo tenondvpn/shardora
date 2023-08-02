@@ -281,7 +281,8 @@ void KeyValueSync::HandleMessage(const transport::MessagePtr& msg_ptr) {
 //         header.sync_proto().has_sync_value_req(),
 //         header.sync_proto().has_sync_value_res());
     kv_msg_queue_.push(msg_ptr);
-    ZJC_DEBUG("queue size kv_msg_queue_: %d", kv_msg_queue_.size());
+    ZJC_DEBUG("queue size kv_msg_queue_: %d, hash: %lu",
+        kv_msg_queue_.size(), msg_ptr->header.hash64());
     
 }
 
@@ -309,6 +310,7 @@ void KeyValueSync::HandleKvMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr) {
+    ZJC_DEBUG("handle sync value request hash: %lu", msg_ptr->header.hash64());
     auto& sync_msg = msg_ptr->header.sync_proto();
     assert(sync_msg.has_sync_value_req());
     transport::protobuf::Header msg;
@@ -338,11 +340,23 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
                     sync_msg.sync_value_req().heights(i).pool_idx(),
                     sync_msg.sync_value_req().heights(i).height(),
                     &block)) {
+                ZJC_DEBUG("handle sync value failed request hash: %lu, "
+                    "net: %u, pool: %u, height: %lu",
+                    network_id, 
+                    sync_msg.sync_value_req().heights(i).pool_idx(),
+                    sync_msg.sync_value_req().heights(i).height(),
+                    msg_ptr->header.hash64());
                 continue;
             }
 
 
             if (!AddSyncKeyValue(&msg, block, add_size)) {
+                ZJC_DEBUG("handle sync value add kv failed request hash: %lu, "
+                    "net: %u, pool: %u, height: %lu",
+                    network_id,
+                    sync_msg.sync_value_req().heights(i).pool_idx(),
+                    sync_msg.sync_value_req().heights(i).height(),
+                    msg_ptr->header.hash64());
                 continue;
             }
 
@@ -353,6 +367,12 @@ void KeyValueSync::ProcessSyncValueRequest(const transport::MessagePtr& msg_ptr)
             res->set_value(block.SerializeAsString());
             add_size += 16 + res->value().size();
             if (add_size >= kSyncPacketMaxSize) {
+                ZJC_DEBUG("handle sync value add_size failed request hash: %lu, "
+                    "net: %u, pool: %u, height: %lu",
+                    network_id,
+                    sync_msg.sync_value_req().heights(i).pool_idx(),
+                    sync_msg.sync_value_req().heights(i).height(),
+                    msg_ptr->header.hash64());
                 break;
             }
         } else if (sync_msg.sync_value_req().heights(i).tag() == kElectBlock) {
