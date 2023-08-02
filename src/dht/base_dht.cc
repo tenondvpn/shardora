@@ -418,12 +418,6 @@ void BaseDht::DhtDispatchMessage(const transport::MessagePtr& msg_ptr) {
         ProcessConnectRequest(msg_ptr);
         return;
     }
-
-    if (msg_ptr->header.dht_proto().has_timer()) {
-//         ZJC_DEBUG("has_timer");
-        ProcessTimerRequest(msg_ptr);
-        return;
-    }
 }
 
 void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
@@ -907,7 +901,7 @@ void BaseDht::ProcessTimerRequest(uint8_t thread_idx) {
 
     auto rand_idx = common::Random::RandomInt32() % dht_ptr->size();
     auto node = (*dht_ptr)[rand_idx];
-    auto& msg = msg_ptr->header;
+    transport::protobuf::Header msg;
     DhtProto::CreateRefreshNeighborsRequest(
         tmp_dht,
         local_node_,
