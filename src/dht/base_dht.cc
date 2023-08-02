@@ -582,8 +582,8 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
                 continue;
             }
 
-            ZJC_DEBUG("res refresh neighbers new node: %s:%u",
-                (*iter)->public_ip.c_str(), (*iter)->public_port);
+            ZJC_DEBUG("res refresh neighbers new node: %s:%u, hash: %lu",
+                (*iter)->public_ip.c_str(), (*iter)->public_port, msg_ptr->header.hash64());
             tmp_dht.push_back((*iter));
         }
 
@@ -599,10 +599,6 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         dhtkey.StrKey(),
         kRefreshNeighborsDefaultCount + 1);
     if (close_nodes.empty()) {
-//         ZJC_DEBUG("no close nodes all: %u, from: %s:%d!",
-//             dht_.size(),
-//             msg_ptr->conn->PeerIp().c_str(),
-//             msg_ptr->conn->PeerPort());
         return;
     }
 
@@ -612,10 +608,8 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
         local_node_->dht_key,
         close_nodes,
         res);
-//     DHT_DEBUG("refresh neighbors to %s:%d size: %d",
-//         msg_ptr->conn->PeerIp().c_str(),
-//         msg_ptr->conn->PeerPort(),
-//         close_nodes.size());
+    transport::TcpTransport::Instance()->SetMessageHash(res, msg_ptr->thread_idx);
+    ZJC_DEBUG("send refresh neighbers response hash: %lu", res.hash64());
     msg_ptr->conn->Send(res.SerializeAsString());
 }
 
@@ -626,9 +620,9 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
 
     auto& header = msg_ptr->header;
     auto& dht_msg = header.dht_proto();
-//     DHT_DEBUG("refresh neighbors respose from %s:%d",
-//         msg_ptr->conn->PeerIp().c_str(),
-//         msg_ptr->conn->PeerPort());
+    ZJC_DEBUG("receive refresh neighbers response hash: %lu, size: %u",
+        msg_ptr->header.hash64(),
+        dht_msg.refresh_neighbors_res().nodes_size());
     if (!dht_msg.has_refresh_neighbors_res()) {
         return;
     }
@@ -872,7 +866,7 @@ void BaseDht::RefreshNeighbors(uint8_t thread_idx) {
 
     auto dht_ptr = readonly_hash_sort_dht_;
     if (!dht_ptr->empty()) {
-        auto rand_idx = std::rand() % dht_ptr->size();
+        auto rand_idx = common::Random::RandomInt32() % dht_ptr->size();
         auto node = (*dht_ptr)[rand_idx];
         transport::protobuf::Header msg;
         msg.set_src_sharding_id(local_node_->sharding_id);
@@ -882,16 +876,18 @@ void BaseDht::RefreshNeighbors(uint8_t thread_idx) {
         auto* dht_msg = msg.mutable_dht_proto();
         auto timer_req = dht_msg->mutable_timer();
         timer_req->set_tm_milli(common::TimeUtils::TimestampMs());
+        transport::TcpTransport::Instance()->SetMessageHash(msg);
         transport::TcpTransport::Instance()->Send(
             thread_idx,
             node->public_ip,
             node->public_port,
             msg);
-//         ZJC_DEBUG("refresh neighbors now %s:%d!", node->public_ip.c_str(), node->public_port);
+        ZJC_DEBUG("refresh neighbors now %s:%d! hash: %lu",
+            node->public_ip.c_str(), node->public_port, msg.hash64());
     }
 
     refresh_neighbors_tick_.CutOff(
-        kRefreshNeighborPeriod + 100000,
+        kRefreshNeighborPeriod,
         std::bind(&BaseDht::RefreshNeighbors, shared_from_this(), std::placeholders::_1));
 }
 

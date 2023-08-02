@@ -105,7 +105,7 @@ protected:
         bool response);
     void PrintDht(uint8_t thread_idx);
 
-    static const uint32_t kRefreshNeighborPeriod = 3 * 1000 * 1000;
+    static const uint32_t kRefreshNeighborPeriod = 3 * 1000 * 1000u;
     static const uint32_t kHeartbeatMaxSendTimes = 5u;
     static const uint32_t kSendToClosestNodeCount = 3u;
     static const uint64_t kConnectTimeoutMs = 3000u;
