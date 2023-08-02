@@ -103,6 +103,7 @@ protected:
         const std::string& des_pubkey,
         int32_t src_sharding_id,
         bool response);
+    void PrintDht(uint8_t thread_idx);
 
     static const uint32_t kRefreshNeighborPeriod = 3 * 1000 * 1000;
     static const uint32_t kHeartbeatMaxSendTimes = 5u;
@@ -125,6 +126,7 @@ protected:
     std::unordered_map<uint64_t, uint64_t> connect_timeout_map_;
     bool is_universal_ = false;
     uint32_t valid_count_ = 0;
+    common::Tick tick_;
 
     DISALLOW_COPY_AND_ASSIGN(BaseDht);
 };

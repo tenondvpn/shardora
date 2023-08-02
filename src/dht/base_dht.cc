@@ -24,7 +24,9 @@ namespace zjchain {
 
 namespace dht {
 
-BaseDht::BaseDht(NodePtr& local_node) : local_node_(local_node) {}
+BaseDht::BaseDht(NodePtr& local_node) : local_node_(local_node) {
+    PrintDht(0);
+}
 
 BaseDht::~BaseDht() {}
 
@@ -941,6 +943,30 @@ void BaseDht::ProcessTimerRequest(const transport::MessagePtr& header) {
 //         local_node_->sharding_id);
 }
 
+void BaseDht::PrintDht(uint8_t thread_idx) {
+    dht::DhtPtr readonly_dht = readonly_hash_sort_dht();
+    auto node = local_node();
+    std::string debug_str;
+    std::string res = common::StringUtil::Format(
+        "\ndht num: %d, local: %s, public ip: %s, public port: %u",
+        (readonly_dht->size() + 1),
+        common::Encode::HexEncode(node->id).c_str(),
+        node->public_ip.c_str(),
+        node->public_port);
+    for (auto iter = readonly_dht->begin(); iter != readonly_dht->end(); ++iter) {
+        auto node = *iter;
+        assert(node != nullptr);
+        std::string tmp_res = common::StringUtil::Format(
+            "\n%s, %s:%u",
+            common::Encode::HexSubstr(node->id).c_str(),
+            node->public_ip.c_str(),
+            node->public_port);
+        res += tmp_res;
+    }
+
+    ZJC_DEBUG("%s", res.c_str());
+    tick_.CutOff(10000000lu, std::bind(&BaseDht::PrintDht, this, std::placeholders::_1));
+}
 
 }  // namespace dht
 
