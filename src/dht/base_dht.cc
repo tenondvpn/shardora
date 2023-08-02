@@ -37,11 +37,11 @@ int BaseDht::Init(
     security_ = security;
     bootstrap_response_cb_ = boot_cb;
     node_join_cb_ = node_join_cb;
-//     if (local_node_->sharding_id == 0) {
-//         refresh_neighbors_tick_.CutOff(
-//             kRefreshNeighborPeriod,
-//             std::bind(&BaseDht::RefreshNeighbors, shared_from_this(), std::placeholders::_1));
-//     }
+    if (local_node_->sharding_id == 0) {
+        refresh_neighbors_tick_.CutOff(
+            kRefreshNeighborPeriod,
+            std::bind(&BaseDht::RefreshNeighbors, shared_from_this(), std::placeholders::_1));
+    }
 
     auto tmp_dht_ptr = std::make_shared<Dht>(dht_);
     readonly_hash_sort_dht_ = tmp_dht_ptr;
