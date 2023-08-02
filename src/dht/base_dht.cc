@@ -964,7 +964,7 @@ void BaseDht::PrintDht(uint8_t thread_idx) {
         res += tmp_res;
     }
 
-    ZJC_DEBUG("%s", res.c_str());
+    ZJC_DEBUG("dht info sharding_id: %u, %s", node->sharding_id, res.c_str());
     tick_.CutOff(10000000lu, std::bind(&BaseDht::PrintDht, this, std::placeholders::_1));
 }
 
