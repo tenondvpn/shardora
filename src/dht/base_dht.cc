@@ -649,7 +649,7 @@ void BaseDht::Connect(
         return;
     }
 
-    if (des_ip == local_node_->public_ip && des_ip == local_node_->public_port) {
+    if (des_ip == local_node_->public_ip && des_port == local_node_->public_port) {
         return;
     }
 
