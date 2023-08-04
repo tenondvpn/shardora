@@ -384,8 +384,6 @@ bool TcpConnection::ConnectWithoutLock(uint32_t timeout) {
     if (rc == 0) {
         tcp_state_ = kTcpConnected;
     } else {
-        ZJC_DEBUG("connect status is kTcpConnecting.")
-        return false;
         tcp_state_ = kTcpConnecting;
 //         if (timeout != 0) {
 //             connect_timeout_tick_.CutOff(
