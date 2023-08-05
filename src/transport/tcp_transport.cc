@@ -260,7 +260,7 @@ int TcpTransport::Send(
     if (tcp_conn->Send(msg) != 0) {
         TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu]",
             des_ip.c_str(), des_port, message.hash64());
-        FreeConnection(thread_idx, des_ip, des_port);
+//         FreeConnection(thread_idx, des_ip, des_port);
         return kTransportError;
     }
 
