@@ -230,7 +230,10 @@ int TcpTransport::Send(
     if (tcp_conn->Send(msg) != 0) {
         auto* tmp_conn = static_cast<tnet::TcpConnection*>(tcp_conn);
         assert(tmp_conn != nullptr);
-        tmp_conn->Destroy(true);
+        if (tmp_conn->is_client()) {
+            tmp_conn->Destroy(true);
+        }
+
         return kTransportError;
     }
 
