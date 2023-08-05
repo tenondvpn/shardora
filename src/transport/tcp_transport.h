@@ -84,6 +84,7 @@ private:
     common::LimitHashSet<tnet::TcpConnection*> added_conns_{ 1024 };
     std::condition_variable output_con_;
     std::mutex output_mutex_;
+    std::mutex send_output_mutex_;
     uint64_t prev_erase_timestamp_ms_ = 0;
 };
 

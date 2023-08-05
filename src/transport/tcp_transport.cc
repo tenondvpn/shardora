@@ -242,6 +242,7 @@ int TcpTransport::Send(
         const std::string& des_ip,
         uint16_t des_port,
         const transport::protobuf::Header& message) {
+    std::lock_guard<std::mutex> g(send_output_mutex_);
     assert(thread_idx < common::kMaxThreadCount);
     auto tmpHeader = const_cast<transport::protobuf::Header*>(&message);
     tmpHeader->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
@@ -250,12 +251,29 @@ int TcpTransport::Send(
         SetMessageHash(message, thread_idx);
     }
 
-    auto output_item = std::make_shared<ClientItem>();
-    output_item->des_ip = des_ip;
-    output_item->port = des_port;
-    message.SerializeToString(&output_item->msg);
-    output_queues_[thread_idx].push(output_item);
-    output_con_.notify_one();
+    auto tcp_conn = GetConnection(des_ip, des_port);
+    if (tcp_conn == nullptr) {
+        TRANSPORT_ERROR("get tcp connection failed[%s][%d][hash64: %llu]",
+            des_ip.c_str(), des_port, message.hash64());
+        continue;
+    }
+
+    if (tcp_conn->Send(message.SerializeAsString()) != 0) {
+        TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu]",
+            des_ip.c_str(), des_port, message.hash64());
+        tcp_conn->Destroy(false);
+        continue;
+    }
+
+    ZJC_DEBUG("send message %s:%u, hash64: %lu, size: %u",
+        des_ip.c_str(), des_port, message.hash64());
+// 
+//     auto output_item = std::make_shared<ClientItem>();
+//     output_item->des_ip = des_ip;
+//     output_item->port = des_port;
+//     message.SerializeToString(&output_item->msg);
+//     output_queues_[thread_idx].push(output_item);
+//     output_con_.notify_one();
     return kTransportSuccess;
 }
 
