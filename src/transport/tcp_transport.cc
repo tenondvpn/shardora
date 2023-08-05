@@ -272,7 +272,7 @@ void TcpTransport::EraseConn(uint64_t now_tm_ms) {
     while (!erase_conns_.empty()) {
         auto from_item = erase_conns_.front();
         if (from_item->free_timeout_ms() <= now_tm_ms) {
-            std::string key = conn->PeerIp() + ":" + conn->PeerPort();
+            std::string key = from_item->PeerIp() + ":" + from_item->PeerPort();
             auto iter = from_conn_map_.find(key);
             if (iter != from_conn_map_.end()) {
                 from_conn_map_.erase(iter);
@@ -309,20 +309,19 @@ void TcpTransport::Output() {
                 auto tcp_conn = GetConnection(0, item_ptr->des_ip, item_ptr->port);
                 if (tcp_conn == nullptr) {
                     TRANSPORT_ERROR("get tcp connection failed[%s][%d][hash64: %llu]",
-                        item_ptr->des_ip.c_str(), item_ptr->port, message.hash64());
+                        item_ptr->des_ip.c_str(), item_ptr->port, 0);
                     continue;
                 }
 
                 if (tcp_conn->Send(item_ptr->msg) != 0) {
                     TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu]",
-                        item_ptr->des_ip.c_str(), item_ptr->port, message.hash64());
+                        item_ptr->des_ip.c_str(), item_ptr->port, 0);
                     FreeConnection(0, item_ptr->des_ip, item_ptr->port);
                     continue;
                 }
 
                 ZJC_DEBUG("send message %s:%u, hash64: %lu",
-                    item_ptr->des_ip.c_str(), item_ptr->port, message.hash64());
-                return kTransportSuccess;
+                    item_ptr->des_ip.c_str(), item_ptr->port, 0);
             }
         }
 
