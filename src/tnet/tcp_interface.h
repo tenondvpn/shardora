@@ -12,7 +12,6 @@ public:
     virtual void SetPeerPort(uint16_t port) = 0;
     virtual int Send(const std::string& data) = 0;
     virtual int Send(const char* data, int32_t len) = 0;
-    bool IsClient() const = 0;
 
 public:
     TcpInterface() {}
