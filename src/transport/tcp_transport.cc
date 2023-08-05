@@ -219,7 +219,9 @@ int TcpTransport::Send(
     ZJC_DEBUG("send message hash64: %lu", message.hash64());
     message.SerializeToString(&msg);
     if (tcp_conn->Send(msg) != 0) {
-        tcp_conn->Destroy(true);
+        auto* tmp_conn = static_cast<tnet::TcpConnection*>(tcp_conn);
+        assert(tmp_conn != nullptr);
+        tmp_conn->Destroy(true);
         return kTransportError;
     }
 
@@ -253,7 +255,7 @@ void TcpTransport::EraseConn(uint64_t now_tm_ms) {
     while (!erase_conns_.empty()) {
         auto from_item = erase_conns_.front();
         if (from_item->free_timeout_ms() <= now_tm_ms) {
-            std::string key = from_item->PeerIp() + ":" + from_item->PeerPort();
+            std::string key = from_item->PeerIp() + ":" + std::to_string(from_item->PeerPort());
             auto iter = from_conn_map_.find(key);
             if (iter != from_conn_map_.end()) {
                 from_conn_map_.erase(iter);
@@ -279,7 +281,7 @@ void TcpTransport::Output() {
         while (from_client_conn_queues_.size() > 0) {
             tnet::TcpConnection* conn = nullptr;
             from_client_conn_queues_.pop(&conn);
-            std::string key = conn->PeerIp() + ":" + conn->PeerPort();
+            std::string key = conn->PeerIp() + ":" + std::to_string(conn->PeerPort());
             from_conn_map_[key] = conn;
         }
 
