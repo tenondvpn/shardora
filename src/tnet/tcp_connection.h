@@ -129,6 +129,14 @@ public:
         return false;
     }
 
+    bool is_client() const { 
+        return is_client_;
+    }
+
+    void set_client() {
+        is_client_ = true;
+    }
+
 private:
     typedef std::deque<ByteBufferPtr> BufferList;
     typedef BufferList::const_iterator BufferListConstIter;
@@ -169,6 +177,7 @@ private:
     uint64_t free_timeout_ms_{ 0 };
     uint32_t max_count_{ 0 };
     uint64_t create_timestamp_ms_ = 0;
+    bool is_client_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(TcpConnection);
 };

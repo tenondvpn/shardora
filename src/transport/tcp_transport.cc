@@ -169,7 +169,7 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
     conn->SetPeerPort(from_port);
     msg_ptr->conn = conn;
     msg_handler_->HandleMessage(msg_ptr);
-    if (added_conns_.Push(conn)) {
+    if (!conn->is_client() && added_conns_.Push(conn)) {
         from_client_conn_queues_.push(conn);
     }
 
@@ -259,11 +259,13 @@ void TcpTransport::EraseConn(uint64_t now_tm_ms) {
     while (!erase_conns_.empty()) {
         auto from_item = erase_conns_.front();
         if (from_item->free_timeout_ms() <= now_tm_ms) {
-//             std::string key = from_item->PeerIp() + ":" + std::to_string(from_item->PeerPort());
-//             auto iter = from_conn_map_.find(key);
-//             if (iter != from_conn_map_.end()) {
-//                 from_conn_map_.erase(iter);
-//             }
+            if (!from_item->is_client()) {
+                std::string key = from_item->PeerIp() + ":" + std::to_string(from_item->PeerPort());
+                auto iter = from_conn_map_.find(key);
+                if (iter != from_conn_map_.end()) {
+                    from_conn_map_.erase(iter);
+                }
+            }
 
             delete from_item;
             erase_conns_.pop_front();
@@ -375,6 +377,7 @@ tnet::TcpConnection* TcpTransport::GetConnection(
         return nullptr;
     }
     
+    tcp_conn->set_client();
     ZJC_DEBUG("success connect send message %s:%d", ip.c_str(), port);
     conn_map_[peer_spec] = tcp_conn;
     return tcp_conn;
