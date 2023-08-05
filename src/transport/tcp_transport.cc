@@ -120,6 +120,7 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
     auto tcp_conn = dynamic_cast<tnet::TcpConnection*>(conn);
     if (conn->GetSocket() == nullptr) {
         packet.Free();
+        ZJC_DEBUG("message coming failed 0");
         return false;
     }
 
@@ -130,6 +131,7 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
         if (packet.PacketType() == tnet::CmdPacket::CT_TCP_NEW_CONNECTION) {
             // add connection
             packet.Free();
+            ZJC_DEBUG("message coming failed 1");
             return true;
         }
 
@@ -142,6 +144,7 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
 //         }
 
         packet.Free();
+        ZJC_DEBUG("message coming failed 2");
         return false;
     }
 
@@ -151,6 +154,7 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
     uint32_t len = 0;
     msg_packet->GetMessageEx(&data, &len);
     if (len >= kTcpBuffLength) {
+        ZJC_DEBUG("message coming failed 3");
         return false;
     }
 
@@ -159,6 +163,7 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
         TRANSPORT_ERROR("Message ParseFromString from string failed!"
             "[%s:%d][len: %d]",
             from_ip.c_str(), from_port, len);
+        ZJC_DEBUG("message coming failed 4");
         return false;
     }
 
