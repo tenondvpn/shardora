@@ -255,14 +255,14 @@ int TcpTransport::Send(
     if (tcp_conn == nullptr) {
         TRANSPORT_ERROR("get tcp connection failed[%s][%d][hash64: %llu]",
             des_ip.c_str(), des_port, message.hash64());
-        continue;
+        return kTransportError;
     }
 
     if (tcp_conn->Send(message.SerializeAsString()) != 0) {
         TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu]",
             des_ip.c_str(), des_port, message.hash64());
         tcp_conn->Destroy(false);
-        continue;
+        return kTransportError;
     }
 
     ZJC_DEBUG("send message %s:%u, hash64: %lu, size: %u",
