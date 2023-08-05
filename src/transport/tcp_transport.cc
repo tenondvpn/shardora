@@ -211,6 +211,7 @@ int TcpTransport::Send(
         tnet::TcpInterface* tcp_conn,
         const transport::protobuf::Header& message) {
     assert(message.broadcast().bloomfilter_size() < 64);
+    message.set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
     std::string msg;
     if (!message.has_hash64() || message.hash64() == 0) {
         SetMessageHash(message, thread_idx);
@@ -234,6 +235,7 @@ int TcpTransport::Send(
         uint16_t des_port,
         const transport::protobuf::Header& message) {
     assert(thread_idx < common::kMaxThreadCount);
+    message.set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
     std::string msg;
     assert(message.broadcast().bloomfilter_size() < 64);
     if (!message.has_hash64() || message.hash64() == 0) {
