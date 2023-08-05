@@ -243,14 +243,13 @@ int TcpTransport::Send(
         uint16_t des_port,
         const transport::protobuf::Header& message) {
     std::lock_guard<std::mutex> g(send_output_mutex_);
-    assert(thread_idx < common::kMaxThreadCount);
-    auto tmpHeader = const_cast<transport::protobuf::Header*>(&message);
-    tmpHeader->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
+    std::string msg;
     assert(message.broadcast().bloomfilter_size() < 64);
     if (!message.has_hash64() || message.hash64() == 0) {
         SetMessageHash(message, thread_idx);
     }
 
+    message.SerializeToString(&msg);
     auto tcp_conn = GetConnection(des_ip, des_port);
     if (tcp_conn == nullptr) {
         TRANSPORT_ERROR("get tcp connection failed[%s][%d][hash64: %llu]",
@@ -258,24 +257,55 @@ int TcpTransport::Send(
         return kTransportError;
     }
 
-    if (tcp_conn->Send(message.SerializeAsString()) != 0) {
+    if (tcp_conn->Send(msg) != 0) {
         TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu]",
             des_ip.c_str(), des_port, message.hash64());
-        tcp_conn->Destroy(false);
+        FreeConnection(thread_idx, des_ip, des_port);
         return kTransportError;
     }
 
-    ZJC_DEBUG("send message %s:%u, hash64: %lu, size: %u",
-        des_ip.c_str(), des_port, message.hash64());
-// 
-//     auto output_item = std::make_shared<ClientItem>();
-//     output_item->des_ip = des_ip;
-//     output_item->port = des_port;
-//     message.SerializeToString(&output_item->msg);
-//     output_queues_[thread_idx].push(output_item);
-//     output_con_.notify_one();
+    ZJC_DEBUG("send message %s:%u, hash64: %lu", des_ip.c_str(), des_port, message.hash64());
     return kTransportSuccess;
 }
+// int TcpTransport::Send(
+//         uint8_t thread_idx,
+//         const std::string& des_ip,
+//         uint16_t des_port,
+//         const transport::protobuf::Header& message) {
+//     std::lock_guard<std::mutex> g(send_output_mutex_);
+//     assert(thread_idx < common::kMaxThreadCount);
+//     auto tmpHeader = const_cast<transport::protobuf::Header*>(&message);
+//     tmpHeader->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
+//     assert(message.broadcast().bloomfilter_size() < 64);
+//     if (!message.has_hash64() || message.hash64() == 0) {
+//         SetMessageHash(message, thread_idx);
+//     }
+// 
+//     auto tcp_conn = GetConnection(des_ip, des_port);
+//     if (tcp_conn == nullptr) {
+//         TRANSPORT_ERROR("get tcp connection failed[%s][%d][hash64: %llu]",
+//             des_ip.c_str(), des_port, message.hash64());
+//         return kTransportError;
+//     }
+// 
+//     if (tcp_conn->Send(message.SerializeAsString()) != 0) {
+//         TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu]",
+//             des_ip.c_str(), des_port, message.hash64());
+//         tcp_conn->Destroy(false);
+//         return kTransportError;
+//     }
+// 
+//     ZJC_DEBUG("send message %s:%u, hash64: %lu, size: %u",
+//         des_ip.c_str(), des_port, message.hash64());
+// // 
+// //     auto output_item = std::make_shared<ClientItem>();
+// //     output_item->des_ip = des_ip;
+// //     output_item->port = des_port;
+// //     message.SerializeToString(&output_item->msg);
+// //     output_queues_[thread_idx].push(output_item);
+// //     output_con_.notify_one();
+//     return kTransportSuccess;
+// }
 
 
 void TcpTransport::EraseConn(uint64_t now_tm_ms) {
@@ -301,6 +331,7 @@ void TcpTransport::EraseConn(uint64_t now_tm_ms) {
 }
 
 void TcpTransport::Output() {
+    return;
     while (!destroy_) {
         auto now_tm_ms = common::TimeUtils::TimestampMs();
         if (prev_erase_timestamp_ms_ < now_tm_ms) {
