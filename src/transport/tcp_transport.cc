@@ -259,11 +259,11 @@ void TcpTransport::EraseConn(uint64_t now_tm_ms) {
     while (!erase_conns_.empty()) {
         auto from_item = erase_conns_.front();
         if (from_item->free_timeout_ms() <= now_tm_ms) {
-            std::string key = from_item->PeerIp() + ":" + std::to_string(from_item->PeerPort());
-            auto iter = from_conn_map_.find(key);
-            if (iter != from_conn_map_.end()) {
-                from_conn_map_.erase(iter);
-            }
+//             std::string key = from_item->PeerIp() + ":" + std::to_string(from_item->PeerPort());
+//             auto iter = from_conn_map_.find(key);
+//             if (iter != from_conn_map_.end()) {
+//                 from_conn_map_.erase(iter);
+//             }
 
             delete from_item;
             erase_conns_.pop_front();
