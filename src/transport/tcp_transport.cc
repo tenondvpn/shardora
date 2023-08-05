@@ -116,6 +116,7 @@ void TcpTransport::Stop() {
 }
 
 bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packet) {
+    ZJC_DEBUG("message coming");
     auto tcp_conn = dynamic_cast<tnet::TcpConnection*>(conn);
     if (conn->GetSocket() == nullptr) {
         packet.Free();
@@ -167,6 +168,7 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
 
     conn->SetPeerIp(from_ip);
     conn->SetPeerPort(from_port);
+    ZJC_DEBUG("message coming: %s:%d", from_ip.c_str(), from_port);
     msg_ptr->conn = conn;
     msg_handler_->HandleMessage(msg_ptr);
     if (!conn->is_client() && added_conns_.Push(conn)) {
@@ -238,7 +240,6 @@ int TcpTransport::Send(
     assert(thread_idx < common::kMaxThreadCount);
     auto tmpHeader = const_cast<transport::protobuf::Header*>(&message);
     tmpHeader->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
-    std::string msg;
     assert(message.broadcast().bloomfilter_size() < 64);
     if (!message.has_hash64() || message.hash64() == 0) {
         SetMessageHash(message, thread_idx);
@@ -348,6 +349,7 @@ tnet::TcpConnection* TcpTransport::GetConnection(
     auto from_iter = from_conn_map_.find(peer_spec);
     if (from_iter != from_conn_map_.end()) {
         if (!from_iter->second->ShouldReconnect()) {
+            ZJC_DEBUG("use exists client connect send message %s:%d", ip.c_str(), port);
             return from_iter->second;
         }
 
