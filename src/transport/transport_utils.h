@@ -12,9 +12,10 @@
 
 #include "common/log.h"
 #include "common/time_utils.h"
-#include "tnet/tcp_interface.h"
 #include "protos/address.pb.h"
 #include "protos/transport.pb.h"
+#include "tnet/tcp_interface.h"
+#include "tnet/tcp_connection.h"
 
 #define TRANSPORT_DEBUG(fmt, ...) ZJC_DEBUG("[transport]" fmt, ## __VA_ARGS__)
 #define TRANSPORT_INFO(fmt, ...) ZJC_INFO("[transport]" fmt, ## __VA_ARGS__)
