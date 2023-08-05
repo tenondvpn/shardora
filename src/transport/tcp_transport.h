@@ -48,11 +48,6 @@ public:
         const transport::protobuf::Header& message);
     int GetSocket();
     void FreeConnection(uint8_t thread_idx, const std::string& ip, uint16_t port);
-    tnet::TcpConnection* GetConnection(
-        uint8_t thread_idx,
-        const std::string& ip,
-        uint16_t port);
-//     tnet::TcpConnection* CreateConnection(const std::string& ip, uint16_t port);
     std::string GetHeaderHashForSign(const transport::protobuf::Header& message);
     void SetMessageHash(const transport::protobuf::Header& message, uint8_t thread_idx);
 
@@ -63,6 +58,9 @@ private:
     void EraseConn(uint64_t now_tm_ms);
     void CreateDropNodeMessage(const std::string& ip, uint16_t port);
     void Output();
+    tnet::TcpConnection* GetConnection(
+        const std::string& ip,
+        uint16_t port);
 
     static const uint64_t kEraseConnPeriod = 10000000lu;
     static const uint64_t kCheckEraseConnPeriodMs = 10000lu;
