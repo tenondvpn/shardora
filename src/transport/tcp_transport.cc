@@ -144,7 +144,7 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
 //         }
 
         packet.Free();
-        ZJC_DEBUG("message coming failed 2");
+        ZJC_DEBUG("message coming failed 2 type: %d", packet.PacketType());
         return false;
     }
 
