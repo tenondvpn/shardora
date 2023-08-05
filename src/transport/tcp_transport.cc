@@ -24,9 +24,6 @@ TcpTransport::TcpTransport() {
     }
 
     msg_random_ = common::Random::RandomString(32);
-    erase_conn_tick_.CutOff(
-        kEraseConnPeriod,
-        std::bind(&TcpTransport::EraseConn, this, std::placeholders::_1));
 }
 
 TcpTransport::~TcpTransport() {}
@@ -97,10 +94,12 @@ int TcpTransport::Start(bool hold) {
         return kTransportError;
     }
 
+    output_thread_ = std::make_shared<std::thread>(&TcpTransport::Output, this);
     return kTransportSuccess;
 }
 
 void TcpTransport::Stop() {
+    destroy_ = true;
     if (acceptor_ != nullptr) {
         acceptor_->Stop();
         acceptor_->Destroy();
@@ -110,12 +109,18 @@ void TcpTransport::Stop() {
         transport_->Stop();
         transport_->Destroy();
     }
+
+    if (output_thread_ != nullptr) {
+        output_thread_->join();
+    }
 }
 
 bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packet) {
+    ZJC_DEBUG("message coming");
     auto tcp_conn = dynamic_cast<tnet::TcpConnection*>(conn);
     if (conn->GetSocket() == nullptr) {
         packet.Free();
+        ZJC_DEBUG("message coming failed 0");
         return false;
     }
 
@@ -126,14 +131,12 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
         if (packet.PacketType() == tnet::CmdPacket::CT_TCP_NEW_CONNECTION) {
             // add connection
             packet.Free();
+            ZJC_DEBUG("message coming failed 1");
             return true;
         }
 
-        if (!(from_ip.empty() || from_port == 0)) {
-            FreeConnection(
-                server_thread_idx_,
-                from_ip,
-                from_port);
+        if (conn->is_client()) {
+            conn->Destroy(false);
         }
         
 //         if (!conn->PeerIp().empty() && conn->PeerPort() != 0) {
@@ -141,6 +144,7 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
 //         }
 
         packet.Free();
+        ZJC_DEBUG("message coming failed 2 type: %d", packet.PacketType());
         return false;
     }
 
@@ -150,6 +154,7 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
     uint32_t len = 0;
     msg_packet->GetMessageEx(&data, &len);
     if (len >= kTcpBuffLength) {
+        ZJC_DEBUG("message coming failed 3");
         return false;
     }
 
@@ -158,15 +163,23 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
         TRANSPORT_ERROR("Message ParseFromString from string failed!"
             "[%s:%d][len: %d]",
             from_ip.c_str(), from_port, len);
+        ZJC_DEBUG("message coming failed 4");
         return false;
+    }
+
+    if (msg_ptr->header.has_from_public_port()) {
+        from_port = msg_ptr->header.from_public_port();
     }
 
     conn->SetPeerIp(from_ip);
     conn->SetPeerPort(from_port);
+    ZJC_DEBUG("message coming: %s:%d", from_ip.c_str(), from_port);
     msg_ptr->conn = conn;
-//     std::cout << "handle client message: " << from_ip << ":" << from_port << ", " << conn->thread_idx() << std::endl;
     msg_handler_->HandleMessage(msg_ptr);
-//     AddClientConnection(tcp_conn);
+    if (!conn->is_client() && added_conns_.Push(conn)) {
+        from_client_conn_queues_.push(conn);
+    }
+
     packet.Free();
     return true;
 }
@@ -205,6 +218,8 @@ int TcpTransport::Send(
         tnet::TcpInterface* tcp_conn,
         const transport::protobuf::Header& message) {
     assert(message.broadcast().bloomfilter_size() < 64);
+    auto tmpHeader = const_cast<transport::protobuf::Header*>(&message);
+    tmpHeader->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
     std::string msg;
     if (!message.has_hash64() || message.hash64() == 0) {
         SetMessageHash(message, thread_idx);
@@ -213,7 +228,9 @@ int TcpTransport::Send(
     ZJC_DEBUG("send message hash64: %lu", message.hash64());
     message.SerializeToString(&msg);
     if (tcp_conn->Send(msg) != 0) {
-        FreeConnection(thread_idx, tcp_conn->PeerIp(), tcp_conn->PeerPort());
+        auto* tmp_conn = static_cast<tnet::TcpConnection*>(tcp_conn);
+        assert(tmp_conn != nullptr);
+        tmp_conn->Destroy(false);
         return kTransportError;
     }
 
@@ -225,46 +242,91 @@ int TcpTransport::Send(
         const std::string& des_ip,
         uint16_t des_port,
         const transport::protobuf::Header& message) {
-    std::string msg;
+    assert(thread_idx < common::kMaxThreadCount);
+    auto tmpHeader = const_cast<transport::protobuf::Header*>(&message);
+    tmpHeader->set_from_public_port(common::GlobalInfo::Instance()->config_public_port());
     assert(message.broadcast().bloomfilter_size() < 64);
     if (!message.has_hash64() || message.hash64() == 0) {
         SetMessageHash(message, thread_idx);
     }
 
-    message.SerializeToString(&msg);
-    auto tcp_conn = GetConnection(thread_idx, des_ip, des_port);
-    if (tcp_conn == nullptr) {
-        TRANSPORT_ERROR("get tcp connection failed[%s][%d][hash64: %llu]",
-            des_ip.c_str(), des_port, message.hash64());
-        return kTransportError;
-    }
-
-    if (tcp_conn->Send(msg) != 0) {
-        TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu]",
-            des_ip.c_str(), des_port, message.hash64());
-        FreeConnection(thread_idx, des_ip, des_port);
-        return kTransportError;
-    }
-
-    ZJC_DEBUG("send message %s:%u, hash64: %lu", des_ip.c_str(), des_port, message.hash64());
+    auto output_item = std::make_shared<ClientItem>();
+    output_item->des_ip = des_ip;
+    output_item->port = des_port;
+    message.SerializeToString(&output_item->msg);
+    output_queues_[thread_idx].push(output_item);
+    output_con_.notify_one();
     return kTransportSuccess;
+}
+
+
+void TcpTransport::EraseConn(uint64_t now_tm_ms) {
+    // delay to release
+    while (!erase_conns_.empty()) {
+        auto from_item = erase_conns_.front();
+        if (from_item->free_timeout_ms() <= now_tm_ms) {
+            if (!from_item->is_client()) {
+                std::string key = from_item->PeerIp() + ":" + std::to_string(from_item->PeerPort());
+                auto iter = from_conn_map_.find(key);
+                if (iter != from_conn_map_.end()) {
+                    from_conn_map_.erase(iter);
+                }
+            }
+
+            delete from_item;
+            erase_conns_.pop_front();
+            continue;
+        }
+
+        break;
+    }
+}
+
+void TcpTransport::Output() {
+    while (!destroy_) {
+        auto now_tm_ms = common::TimeUtils::TimestampMs();
+        if (prev_erase_timestamp_ms_ < now_tm_ms) {
+            EraseConn(now_tm_ms);
+            prev_erase_timestamp_ms_ = now_tm_ms + kCheckEraseConnPeriodMs;
+        }
+
+        while (from_client_conn_queues_.size() > 0) {
+            tnet::TcpConnection* conn = nullptr;
+            from_client_conn_queues_.pop(&conn);
+            std::string key = conn->PeerIp() + ":" + std::to_string(conn->PeerPort());
+            from_conn_map_[key] = conn;
+        }
+
+        for (uint32_t i = 0; i < common::kMaxThreadCount; ++i) {
+            while (output_queues_[i].size() > 0) {
+                std::shared_ptr<ClientItem> item_ptr = nullptr;
+                output_queues_[i].pop(&item_ptr);
+                auto tcp_conn = GetConnection(item_ptr->des_ip, item_ptr->port);
+                if (tcp_conn == nullptr) {
+                    TRANSPORT_ERROR("get tcp connection failed[%s][%d][hash64: %llu]",
+                        item_ptr->des_ip.c_str(), item_ptr->port, 0);
+                    continue;
+                }
+
+                if (tcp_conn->Send(item_ptr->msg) != 0) {
+                    TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu]",
+                        item_ptr->des_ip.c_str(), item_ptr->port, 0);
+                    tcp_conn->Destroy(false);
+                    continue;
+                }
+
+                ZJC_DEBUG("send message %s:%u, hash64: %lu, size: %u",
+                    item_ptr->des_ip.c_str(), item_ptr->port, 0, item_ptr->msg.size());
+            }
+        }
+
+        std::unique_lock<std::mutex> lock(output_mutex_);
+        output_con_.wait_for(lock, std::chrono::milliseconds(10));
+    }
 }
 
 int TcpTransport::GetSocket() {
     return socket_->GetFd();
-}
-
-void TcpTransport::FreeConnection(uint8_t thread_idx, const std::string& ip, uint16_t port) {
-    std::string peer_spec = ip + ":" + std::to_string(port);
-    auto iter = conn_map_[thread_idx].find(peer_spec);
-    if (iter != conn_map_[thread_idx].end()) {
-        iter->second->Destroy(true);
-        {
-            common::AutoSpinLock guard(erase_conns_mutex_);
-            erase_conns_.push_back(iter->second);
-        }
-        conn_map_[thread_idx].erase(iter);
-    }
 }
 
 // tnet::TcpConnection* TcpTransport::CreateConnection(const std::string& ip, uint16_t port) {
@@ -282,7 +344,6 @@ void TcpTransport::FreeConnection(uint8_t thread_idx, const std::string& ip, uin
 // }
 
 tnet::TcpConnection* TcpTransport::GetConnection(
-        uint8_t thread_idx,
         const std::string& ip,
         uint16_t port) {
     if (ip == "0.0.0.0" || port == 0) {
@@ -290,13 +351,23 @@ tnet::TcpConnection* TcpTransport::GetConnection(
     }
 
     std::string peer_spec = ip + ":" + std::to_string(port);
-    auto iter = conn_map_[thread_idx].find(peer_spec);
-    if (iter != conn_map_[thread_idx].end()) {
+    auto from_iter = from_conn_map_.find(peer_spec);
+    if (from_iter != from_conn_map_.end()) {
+        if (!from_iter->second->ShouldReconnect()) {
+            ZJC_DEBUG("use exists client connect send message %s:%d", ip.c_str(), port);
+            return from_iter->second;
+        }
+
+        erase_conns_.push_back(from_iter->second);
+        from_conn_map_.erase(from_iter);
+    }
+
+    auto iter = conn_map_.find(peer_spec);
+    if (iter != conn_map_.end()) {
         if (iter->second->ShouldReconnect()) {
-            common::AutoSpinLock guard(erase_conns_mutex_);
             erase_conns_.push_back(iter->second);
             ZJC_DEBUG("remove connect and reconnect send message %s:%d", ip.c_str(), port);
-            conn_map_[thread_idx].erase(iter);
+            conn_map_.erase(iter);
         } else {
             ZJC_DEBUG("use exists connect send message %s:%d", ip.c_str(), port);
             return iter->second;
@@ -313,58 +384,10 @@ tnet::TcpConnection* TcpTransport::GetConnection(
         return nullptr;
     }
     
+    tcp_conn->set_client();
     ZJC_DEBUG("success connect send message %s:%d", ip.c_str(), port);
-    conn_map_[thread_idx][peer_spec] = tcp_conn;
+    conn_map_[peer_spec] = tcp_conn;
     return tcp_conn;
-}
-
-// void TcpTransport::AddClientConnection(tnet::TcpConnection* conn) {
-//     std::string client_ip;
-//     uint16_t client_port;
-//     if (conn->GetSocket()->GetIpPort(&client_ip, &client_port) != 0) {
-//         return;
-//     }
-// 
-//     std::string peer_spec = client_ip + ":" + std::to_string(client_port);
-//     std::lock_guard<std::mutex> guard(conn_map_mutex_);
-//     auto iter = conn_map_.find(peer_spec);
-//     if (iter != conn_map_.end()) {
-//         if (iter->second == conn) {
-//             return;
-//         }
-// 
-//         iter->second->Destroy(true);
-//         std::lock_guard<std::mutex> guard(erase_conns_mutex_);
-//         erase_conns_.push_back(iter->second);
-//         conn_map_.erase(iter);
-//     }
-// 
-//     conn_map_[peer_spec] = conn;
-// }
-
-void TcpTransport::EraseConn(uint8_t thread_idx) {
-    auto now_tm_ms = common::TimeUtils::TimestampMs();
-    // delay to release
-    common::AutoSpinLock guard(erase_conns_mutex_);
-    while (!erase_conns_.empty()) {
-        auto from_item = erase_conns_.front();
-        if (from_item->free_timeout_ms() <= now_tm_ms) {
-            delete from_item;
-            erase_conns_.pop_front();
-            continue;
-        }
-
-        break;
-    }
-
-    auto etime = common::TimeUtils::TimestampMs();
-    if (etime - now_tm_ms >= 10) {
-        ZJC_DEBUG("TcpTransport handle message use time: %lu", (etime - now_tm_ms));
-    }
-
-    erase_conn_tick_.CutOff(
-        kEraseConnPeriod,
-        std::bind(&TcpTransport::EraseConn, this, std::placeholders::_1));
 }
 
 std::string TcpTransport::GetHeaderHashForSign(const transport::protobuf::Header& message) {
