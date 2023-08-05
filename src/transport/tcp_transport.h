@@ -71,7 +71,7 @@ private:
     tnet::TcpAcceptor* acceptor_{ nullptr };
     EncoderFactory encoder_factory_;
     tnet::ListenSocket* socket_{ nullptr };
-    std::unordered_map<std::string, tnet::TcpConnection*> conn_map_[common::kMaxThreadCount];
+    std::unordered_map<std::string, tnet::TcpConnection*> conn_map_;
     std::deque<tnet::TcpConnection*> erase_conns_;
     common::SpinMutex erase_conns_mutex_;
     common::Tick erase_conn_tick_;

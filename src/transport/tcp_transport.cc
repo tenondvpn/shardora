@@ -133,10 +133,7 @@ bool TcpTransport::OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packe
         }
 
         if (!(from_ip.empty() || from_port == 0)) {
-            FreeConnection(
-                server_thread_idx_,
-                from_ip,
-                from_port);
+            conn->Destroy(true);
         }
         
 //         if (!conn->PeerIp().empty() && conn->PeerPort() != 0) {
@@ -222,7 +219,7 @@ int TcpTransport::Send(
     ZJC_DEBUG("send message hash64: %lu", message.hash64());
     message.SerializeToString(&msg);
     if (tcp_conn->Send(msg) != 0) {
-        FreeConnection(thread_idx, tcp_conn->PeerIp(), tcp_conn->PeerPort());
+        tcp_conn->Destroy(true);
         return kTransportError;
     }
 
@@ -247,28 +244,12 @@ int TcpTransport::Send(
     message.SerializeToString(&output_item->msg);
     output_queues_[thread_idx].push(output_item);
     output_con_.notify_one();
-//     auto tcp_conn = GetConnection(thread_idx, des_ip, des_port);
-//     if (tcp_conn == nullptr) {
-//         TRANSPORT_ERROR("get tcp connection failed[%s][%d][hash64: %llu]",
-//             des_ip.c_str(), des_port, message.hash64());
-//         return kTransportError;
-//     }
-// 
-//     if (tcp_conn->Send(msg) != 0) {
-//         TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu]",
-//             des_ip.c_str(), des_port, message.hash64());
-//         FreeConnection(thread_idx, des_ip, des_port);
-//         return kTransportError;
-//     }
-// 
-//     ZJC_DEBUG("send message %s:%u, hash64: %lu", des_ip.c_str(), des_port, message.hash64());
     return kTransportSuccess;
 }
 
 
 void TcpTransport::EraseConn(uint64_t now_tm_ms) {
     // delay to release
-    common::AutoSpinLock guard(erase_conns_mutex_);
     while (!erase_conns_.empty()) {
         auto from_item = erase_conns_.front();
         if (from_item->free_timeout_ms() <= now_tm_ms) {
@@ -306,7 +287,7 @@ void TcpTransport::Output() {
             while (output_queues_[i].size() > 0) {
                 std::shared_ptr<ClientItem> item_ptr = nullptr;
                 output_queues_[i].pop(&item_ptr);
-                auto tcp_conn = GetConnection(0, item_ptr->des_ip, item_ptr->port);
+                auto tcp_conn = GetConnection(item_ptr->des_ip, item_ptr->port);
                 if (tcp_conn == nullptr) {
                     TRANSPORT_ERROR("get tcp connection failed[%s][%d][hash64: %llu]",
                         item_ptr->des_ip.c_str(), item_ptr->port, 0);
@@ -316,7 +297,7 @@ void TcpTransport::Output() {
                 if (tcp_conn->Send(item_ptr->msg) != 0) {
                     TRANSPORT_ERROR("send to tcp connection failed[%s][%d][hash64: %llu]",
                         item_ptr->des_ip.c_str(), item_ptr->port, 0);
-                    FreeConnection(0, item_ptr->des_ip, item_ptr->port);
+                    tcp_conn->Destroy(true);
                     continue;
                 }
 
@@ -334,20 +315,6 @@ int TcpTransport::GetSocket() {
     return socket_->GetFd();
 }
 
-void TcpTransport::FreeConnection(uint8_t thread_idx, const std::string& ip, uint16_t port) {
-    std::string peer_spec = ip + ":" + std::to_string(port);
-    auto iter = conn_map_[thread_idx].find(peer_spec);
-    if (iter != conn_map_[thread_idx].end()) {
-        iter->second->Destroy(true);
-        {
-            common::AutoSpinLock guard(erase_conns_mutex_);
-            erase_conns_.push_back(iter->second);
-        }
-
-        conn_map_[thread_idx].erase(iter);
-    }
-}
-
 // tnet::TcpConnection* TcpTransport::CreateConnection(const std::string& ip, uint16_t port) {
 //     if (ip == "0.0.0.0") {
 //         return nullptr;
@@ -363,7 +330,6 @@ void TcpTransport::FreeConnection(uint8_t thread_idx, const std::string& ip, uin
 // }
 
 tnet::TcpConnection* TcpTransport::GetConnection(
-        uint8_t thread_idx,
         const std::string& ip,
         uint16_t port) {
     if (ip == "0.0.0.0" || port == 0) {
@@ -377,16 +343,16 @@ tnet::TcpConnection* TcpTransport::GetConnection(
             return from_iter->second;
         }
 
+        erase_conns_.push_back(from_iter->second);
         from_conn_map_.erase(from_iter);
     }
 
-    auto iter = conn_map_[thread_idx].find(peer_spec);
-    if (iter != conn_map_[thread_idx].end()) {
+    auto iter = conn_map_.find(peer_spec);
+    if (iter != conn_map_.end()) {
         if (iter->second->ShouldReconnect()) {
-            common::AutoSpinLock guard(erase_conns_mutex_);
             erase_conns_.push_back(iter->second);
             ZJC_DEBUG("remove connect and reconnect send message %s:%d", ip.c_str(), port);
-            conn_map_[thread_idx].erase(iter);
+            conn_map_.erase(iter);
         } else {
             ZJC_DEBUG("use exists connect send message %s:%d", ip.c_str(), port);
             return iter->second;
@@ -404,33 +370,9 @@ tnet::TcpConnection* TcpTransport::GetConnection(
     }
     
     ZJC_DEBUG("success connect send message %s:%d", ip.c_str(), port);
-    conn_map_[thread_idx][peer_spec] = tcp_conn;
+    conn_map_[peer_spec] = tcp_conn;
     return tcp_conn;
 }
-
-// void TcpTransport::AddClientConnection(tnet::TcpConnection* conn) {
-//     std::string client_ip;
-//     uint16_t client_port;
-//     if (conn->GetSocket()->GetIpPort(&client_ip, &client_port) != 0) {
-//         return;
-//     }
-// 
-//     std::string peer_spec = client_ip + ":" + std::to_string(client_port);
-//     std::lock_guard<std::mutex> guard(conn_map_mutex_);
-//     auto iter = conn_map_.find(peer_spec);
-//     if (iter != conn_map_.end()) {
-//         if (iter->second == conn) {
-//             return;
-//         }
-// 
-//         iter->second->Destroy(true);
-//         std::lock_guard<std::mutex> guard(erase_conns_mutex_);
-//         erase_conns_.push_back(iter->second);
-//         conn_map_.erase(iter);
-//     }
-// 
-//     conn_map_[peer_spec] = conn;
-// }
 
 std::string TcpTransport::GetHeaderHashForSign(const transport::protobuf::Header& message) {
     assert(message.has_hash64());
