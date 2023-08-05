@@ -8,6 +8,7 @@
 
 #include "common/limit_hash_set.h"
 #include "common/spin_mutex.h"
+#include "common/thread_safe_queue.h"
 #include "tnet/socket/socket_factory.h"
 #include "tnet/socket/listen_socket.h"
 #include "tnet/tnet_transport.h"
