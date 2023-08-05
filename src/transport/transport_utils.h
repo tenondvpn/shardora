@@ -97,6 +97,18 @@ struct TransportMessage {
 typedef std::shared_ptr<TransportMessage> MessagePtr;
 typedef std::function<void(const transport::MessagePtr& message)> MessageProcessor;
 
+struct ClientItem {
+    std::string des_ip;
+    uint16_t port;
+    std::string msg;
+};
+
+struct ClientConnection {
+    std::string des_ip;
+    uint16_t port;
+    tnet::TcpConnection* conn;
+};
+
 static const uint32_t kMaxHops = 20u;
 static const uint32_t kMaxMessageReserveCount = 10240;
 static const uint32_t kBroadcastMaxRelayTimes = 2u;

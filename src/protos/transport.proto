@@ -59,4 +59,5 @@ message Header {
     optional pools.protobuf.SyncPoolsMaxHeight sync_heights = 26;
     optional block.protobuf.Block block = 27;
     repeated pools.protobuf.InvalidBftMessage invalid_bfts = 28;
+    optional uint32 from_public_port = 29;
 }
