@@ -42,8 +42,6 @@ void ToTxsPools::NewBlock(const std::shared_ptr<block::protobuf::Block>& block_p
         pool_max_heihgts_[block.pool_index()] = block.height();
     }
 
-    ZJC_DEBUG("to txs new block coming pool: %u, height: %lu, cons height: %lu",
-        block.pool_index(), block.height(), pool_consensus_heihgts_[block.pool_index()]);
     if (pool_consensus_heihgts_[block.pool_index()] + 1 == block.height()) {
         ++pool_consensus_heihgts_[block.pool_index()];
         for (; pool_consensus_heihgts_[block.pool_index()] <= pool_max_heihgts_[block.pool_index()];
@@ -56,6 +54,8 @@ void ToTxsPools::NewBlock(const std::shared_ptr<block::protobuf::Block>& block_p
         }
     }
 
+    ZJC_DEBUG("to txs new block coming pool: %u, height: %lu, cons height: %lu",
+        block.pool_index(), block.height(), pool_consensus_heihgts_[block.pool_index()]);
     added_heights_[block.pool_index()].insert(std::make_pair(block.height(), block_ptr));
 }
 
@@ -76,7 +76,7 @@ bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_
             }
         } else {
             block_ptr = iter->second;
-            added_heights_[pool_idx].erase(iter);
+//             added_heights_[pool_idx].erase(iter);
             has_statistic_height_[pool_idx] = height;
         }
 
@@ -369,10 +369,12 @@ void ToTxsPools::HandleNormalToTx(
                 has_statistic_height_[i] = heights.heights(i);
             }
 
+            RemoveCacheBlock(i, heights.heights(i));
             if (heights.heights(i) > pool_consensus_heihgts_[i]) {
                 pool_consensus_heihgts_[i] = heights.heights(i);
                 for (; pool_consensus_heihgts_[i] <= pool_max_heihgts_[i];
                     ++pool_consensus_heihgts_[i]) {
+                    RemoveCacheBlock(i, pool_consensus_heihgts_[i]);
                 }
             }
 
