@@ -67,7 +67,7 @@ private:
         const std::string& verify_hash,
         std::vector<bls::protobuf::JoinElectInfo>& verify_reqs);
     bool PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_t max_height);
-    void RemoveCacheBlock(uint32_t pool, uint64_t height) {
+    void RemoveCacheBlock(uint32_t pool_idx, uint64_t height) {
         auto iter = added_heights_[pool_idx].find(height);
         if (iter != added_heights_[pool_idx].end()) {
             added_heights_[pool_idx].erase(iter);
