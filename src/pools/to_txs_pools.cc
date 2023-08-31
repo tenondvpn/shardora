@@ -518,16 +518,16 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         uint64_t cons_height = pool_consensus_heihgts_[i];
         while (cons_height > 0) {
-            auto add_iter = valided_heights_[i].find(cons_height);
-            if (add_iter == valided_heights_[i].end()) {
+            auto exist_iter = valided_heights_[i].find(cons_height);
+            if (exist_iter == valided_heights_[i].end()) {
                 ZJC_INFO("invalid height, pool: %u, height: %lu", i, cons_height);
                 return kPoolsError;
             }
 
-            if (add_iter->second->timestamp() + common::kToPeriodMs > timeout) {
-                --cons_height;
-                continue;
-            }
+//             if (add_iter->second->timestamp() + common::kToPeriodMs > timeout) {
+//                 --cons_height;
+//                 continue;
+//             }
 
             valid = true;
             break;
