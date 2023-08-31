@@ -193,6 +193,84 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
                 attr_value->Append(common::Encode::HexEncode(tx_list[i].storages(j).val_hash()));
             }
         }
+
+        while (tx_list[i].step() == pools::protobuf::kConsensusLocalTos) {
+            ZJC_DEBUG("now handle local to txs.");
+            std::string to_txs_str;
+            auto& tx = tx_list[i];
+            for (int32_t i = 0; i < tx.storages_size(); ++i) {
+                if (tx.storages(i).key() == protos::kConsensusLocalNormalTos) {
+                    if (!prefix_db_->GetTemporaryKv(tx.storages(i).val_hash(), &to_txs_str)) {
+                        ZJC_DEBUG("handle local to tx failed get val hash error: %s",
+                            common::Encode::HexEncode(tx.storages(i).val_hash()).c_str());
+                        break;
+                    }
+
+                    break;
+                }
+            }
+
+            if (to_txs_str.empty()) {
+                ZJC_WARN("get local tos info failed!");
+                break;
+            }
+
+            block::protobuf::ConsensusToTxs to_txs;
+            if (!to_txs.ParseFromString(to_txs_str)) {
+                assert(false);
+                break;
+            }
+
+            ZJC_DEBUG("now handle local to txs: %d", to_txs.tos_size());
+            for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
+                if (to_txs.tos(i).to().size() != security::kUnicastAddressLength) {
+                    //assert(false);
+                    continue;
+                }
+                
+                ZJC_DEBUG("now handle local to txs: %s", common::Encode::HexEncode(to_txs.tos(i).to()).c_str());
+                shard_id->Append(block_item->network_id());
+                pool_index->Append(block_item->pool_index());
+                height->Append(block_item->height());
+                prehash->Append(common::Encode::HexEncode(block_item->prehash()));
+                hash->Append(common::Encode::HexEncode(block_item->hash()));
+                version->Append(block_item->version());
+                vss->Append(block_item->consistency_random());
+                elect_height->Append(block_item->electblock_height());
+                bitmap->Append(common::Encode::HexEncode(bitmap_str));
+                commit_bitmap->Append(common::Encode::HexEncode(commit_bitmap_str));
+                timestamp->Append(block_item->timestamp());
+                timeblock_height->Append(block_item->timeblock_height());
+                bls_agg_sign_x->Append(common::Encode::HexEncode(block_item->bls_agg_sign_x()));
+                bls_agg_sign_y->Append(common::Encode::HexEncode(block_item->bls_agg_sign_y()));
+                date->Append(common::MicTimestampToDate(block_item->timestamp()));
+                gid->Append(common::Encode::HexEncode(tx_list[i].gid()));
+                from->Append("");
+                from_pubkey->Append("");
+                from_sign->Append("");
+                to->Append(common::Encode::HexEncode(to_txs.tos(i).to()));
+                amount->Append(0);
+                gas_limit->Append(0);
+                gas_used->Append(0);
+                gas_price->Append(0);
+                type->Append(tx_list[i].step());
+                balance->Append(to_txs.tos(i).balance());
+                to_add->Append(true);
+                attrs->Append("");
+                status->Append(tx_list[i].status());
+                tx_hash->Append(common::Encode::HexEncode(tx_list[i].gid()));
+                call_contract_step->Append(tx_list[i].step());
+                storages->Append("");
+                transfers->Append("");
+
+                acc_account->Append(common::Encode::HexEncode(to_txs.tos(i).to()));
+                acc_shard_id->Append(block_item->network_id());
+                acc_pool_index->Append(block_item->pool_index());
+                acc_balance->Append(to_txs.tos(i).balance());
+            }
+
+            break;
+        }
     }
 
     ZJC_INFO("add new ck block block_shard_id: %d, block_height: %lu", block_item->network_id(), block_item->height());

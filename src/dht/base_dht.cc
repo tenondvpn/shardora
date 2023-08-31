@@ -921,8 +921,8 @@ void BaseDht::ProcessTimerRequest(uint8_t thread_idx) {
     transport::TcpTransport::Instance()->SetMessageHash(msg, thread_idx);
     std::string sign;
     if (security_->Sign(
-        transport::TcpTransport::Instance()->GetHeaderHashForSign(msg),
-        &sign) != security::kSecuritySuccess) {
+            transport::TcpTransport::Instance()->GetHeaderHashForSign(msg),
+            &sign) != security::kSecuritySuccess) {
         return;
     }
 

@@ -23,7 +23,7 @@ private:
     Hash() {}
     ~Hash() {}
 
-    static const uint32_t kHashSeedU32 = 5623453345u;
+    static const uint32_t kHashSeedU32 = 623453345u;
     static const uint64_t kHashSeed1 = 23456785675590ull;
     static const uint64_t kHashSeed2 = 45654789542344ull;
     static const uint64_t kHashSeed3 = 75464565745625ull;

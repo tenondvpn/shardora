@@ -100,12 +100,6 @@ static transport::MessagePtr CreateTransactionWithAttr(
     }
 
     transport::TcpTransport::Instance()->SetMessageHash(msg, 0);
-    std::cout << "tx from: " << common::Encode::HexEncode(security->GetAddress())
-        << " to: " << common::Encode::HexEncode(to)
-        << " gid: " << common::Encode::HexEncode(gid)
-        << " amount: " << amount
-        << " hash64: " << msg.hash64()
-        << std::endl;
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign;
     if (security->Sign(tx_hash, &sign) != security::kSecuritySuccess) {
@@ -113,6 +107,21 @@ static transport::MessagePtr CreateTransactionWithAttr(
         return nullptr;
     }
 
+//     std::string test_sign = common::Encode::HexDecode("24e113bf95efa71f9ac4fe941a00091a241cd55dfba119675aa5e48adf680c60") +
+//         common::Encode::HexDecode("4d74b3e55148ef7ecc4404f3514c94b0bd4a9ac9d207e7b5a9085e070db8231c") + "\0";
+//     std::string test_pk = common::Encode::HexDecode("04847869854f544cb4bdc20a32a2cb4c284e8f6eb43d3fd4fbe6c0fa130202e4dee60a2969442beadc9cf5dd8464ef98873a8cba950b9134058e6e1224de7b8d57");
+//     if (security->Verify(tx_hash, test_pk, test_sign) != security::kSecuritySuccess) {
+//         std::cout << "verify test sign failed!" << std::endl;
+//         assert(false);
+//         return nullptr;
+//     }
+
+    std::cout << "tx gid: " << common::Encode::HexEncode(new_tx->gid())
+        << " tx pukey: " << common::Encode::HexEncode(new_tx->pubkey())
+        << " tx to: " << common::Encode::HexEncode(new_tx->to())
+        << " tx hash: " << common::Encode::HexEncode(tx_hash)
+        << " tx sign: " << common::Encode::HexEncode(sign)
+        << std::endl;
     msg.set_sign(sign);
     assert(new_tx->gas_price() > 0);
     return msg_ptr;
@@ -206,28 +215,30 @@ int tx_main(int argc, char** argv) {
     }
 
     std::string gid = common::Random::RandomString(32);
-    std::string prikey = common::Encode::HexDecode("03e76ff611e362d392efe693fe3e55e0e8ad9ea1cac77450fa4e56b35594fe11");
+    std::string prikey = common::Encode::HexDecode("263960455acf4ad92ce0911de10d2f995c806e3e6d1c931f085752e65aca496c");
     std::string to = common::Encode::HexDecode("d9ec5aff3001dece14e1f4a35a39ed506bd6274b");
     uint32_t prikey_pos = 0;
-    auto from_prikey = prikeys[prikey_pos % prikeys.size()];
+    auto from_prikey = prikey;
     security->SetPrivateKey(from_prikey);
     uint64_t now_tm_us = common::TimeUtils::TimestampUs();
     uint32_t count = 0;
     for (; pos < common::kInvalidUint64 && !global_stop; ++pos) {
         uint64_t* gid_int = (uint64_t*)gid.data();
         gid_int[0] = pos;
-        if (addrs_map[from_prikey] == to) {
-            ++prikey_pos;
-            from_prikey = prikeys[prikey_pos % prikeys.size()];
-            security->SetPrivateKey(from_prikey);
-            continue;
-        }
+//         if (addrs_map[from_prikey] == to) {
+//             ++prikey_pos;
+//             from_prikey = prikeys[prikey_pos % prikeys.size()];
+//             security->SetPrivateKey(from_prikey);
+//             continue;
+//         }
 /*
         uint32_t* tmp_data = (uint32_t*)to.c_str();
         if (common::Random::RandomInt32() % 10 < 3) {
             tmp_data[0] = common::Random::RandomInt16();
         }
 */
+        std::cout << "tttt: " << std::endl;
+        gid = common::Encode::HexDecode("263960455acf4ad92ce0911de10d2f995c806e3e6d1c931f085752e65aca496c");
         auto tx_msg_ptr = CreateTransactionWithAttr(
             security,
             gid,
@@ -235,14 +246,15 @@ int tx_main(int argc, char** argv) {
             to,
             "",
             "",
-            100000,
-            10000000,
-            ((uint32_t)(1000 - pos)) % 1000 + 1,
+            1980,
+            10000,
+            1,
             3);
-        if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
-            std::cout << "send tcp client failed!" << std::endl;
-            return 1;
-        }
+        break;
+//         if (transport::TcpTransport::Instance()->Send(0, "127.0.0.1", 23001, tx_msg_ptr->header) != 0) {
+//             std::cout << "send tcp client failed!" << std::endl;
+//             return 1;
+//         }
 //         if (transport::TcpTransport::Instance()->Send(0, "10.101.20.29", 21001, tx_msg_ptr->header) != 0) {
 //             std::cout << "send tcp client failed!" << std::endl;
 //             return 1;

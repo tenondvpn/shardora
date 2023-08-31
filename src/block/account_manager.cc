@@ -238,7 +238,7 @@ void AccountManager::HandleLocalToTx(
             prefix_db_->AddAddressInfo(to_txs.tos(i).to(), *account_info, db_batch);
         }
 
-        ZJC_DEBUG("transfer to address new balance %s: %lu",
+        ZJC_INFO("transfer to address new balance %s: %lu",
             common::Encode::HexEncode(to_txs.tos(i).to()).c_str(), to_txs.tos(i).balance());
     }
 }
