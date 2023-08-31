@@ -97,6 +97,8 @@ private:
     uint64_t pool_consensus_heihgts_[common::kInvalidPoolIndex] = { 0 };
     uint64_t pool_max_heihgts_[common::kInvalidPoolIndex] = { 0 };
     std::unordered_map<uint64_t, std::shared_ptr<block::protobuf::Block>> added_heights_[common::kInvalidPoolIndex];
+    std::unordered_set<uint64_t> valided_heights_[common::kInvalidPoolIndex];
+    uint64_t erased_max_heights_[common::kInvalidPoolIndex] = { 0llu };
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     std::shared_ptr<pools::protobuf::ShardToTxItem> prev_to_heights_ = nullptr;
     uint64_t has_statistic_height_[common::kInvalidPoolIndex] = { 1 };

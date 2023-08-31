@@ -57,6 +57,7 @@ void ToTxsPools::NewBlock(const std::shared_ptr<block::protobuf::Block>& block_p
     ZJC_DEBUG("to txs new block coming pool: %u, height: %lu, cons height: %lu",
         block.pool_index(), block.height(), pool_consensus_heihgts_[block.pool_index()]);
     added_heights_[block.pool_index()].insert(std::make_pair(block.height(), block_ptr));
+    valided_heights_[block.pool_index()].insert(block.height());
 }
 
 bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_t max_height) {
@@ -76,7 +77,7 @@ bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_
             }
         } else {
             block_ptr = iter->second;
-//             added_heights_[pool_idx].erase(iter);
+            added_heights_[pool_idx].erase(iter);
             has_statistic_height_[pool_idx] = height;
         }
 
@@ -369,12 +370,15 @@ void ToTxsPools::HandleNormalToTx(
                 has_statistic_height_[i] = heights.heights(i);
             }
 
-            RemoveCacheBlock(i, heights.heights(i));
+            for (uint64_t erase_height = erased_max_heights_[i]; erase_height < heights.heights(i); ++erase_height) {
+                valided_heights_[i].erase(erase_height);
+            }
+
+            erased_max_heights_[i] = heights.heights(i) + 1;
             if (heights.heights(i) > pool_consensus_heihgts_[i]) {
                 pool_consensus_heihgts_[i] = heights.heights(i);
                 for (; pool_consensus_heihgts_[i] <= pool_max_heihgts_[i];
                     ++pool_consensus_heihgts_[i]) {
-                    RemoveCacheBlock(i, pool_consensus_heihgts_[i]);
                 }
             }
 
@@ -514,8 +518,8 @@ int ToTxsPools::LeaderCreateToHeights(pools::protobuf::ShardToTxItem& to_heights
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         uint64_t cons_height = pool_consensus_heihgts_[i];
         while (cons_height > 0) {
-            auto add_iter = added_heights_[i].find(cons_height);
-            if (add_iter == added_heights_[i].end()) {
+            auto add_iter = valided_heights_[i].find(cons_height);
+            if (add_iter == valided_heights_[i].end()) {
                 ZJC_INFO("invalid height, pool: %u, height: %lu", i, cons_height);
                 return kPoolsError;
             }
