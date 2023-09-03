@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <0.9.0;
 
-// 1. The pledged currency can only be recovered by the seller
-// 2. The manager can forcefully cancel the transaction and return the pledged coins to the seller.
-// 3. If the transaction is reported and the seller cannot redeem it, it will be locked,
+// 1. The seller can sell at most coins equal to the pledged quantity
+// 2. The pledged currency can only be recovered by the seller
+// 3. The manager can forcefully cancel the transaction and return the pledged coins to the seller.
+// 4. If the transaction is reported and the seller cannot redeem it, it will be locked,
 //    and the manager can release it according to the situation
 
 contract C2CSellOrder {
