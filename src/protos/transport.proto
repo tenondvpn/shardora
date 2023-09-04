@@ -11,6 +11,7 @@ import "protos/zbft.proto";
 import "protos/sync.proto";
 import "protos/vss.proto";
 import "protos/init.proto";
+import "protos/c2c.proto";
 package zjchain.transport.protobuf;
 
 message BroadcastParam {
