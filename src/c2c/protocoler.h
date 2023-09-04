@@ -1,7 +1,11 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "common/utils.h"
 #include "common/log.h"
+#include "db/db.h"
+#include "protos/c2c.pb.h"
 #include "protos/prefix_db.h"
 #include "transport/transport_utils.h"
 
@@ -11,7 +15,7 @@ namespace c2c {
 
 class Protocloler {
 public:
-    Protocloler(std::shared_ptr<protos::PrefixDb> prefix_db);
+    Protocloler(std::shared_ptr<db::Db> db);
     ~Protocloler();
 
 private:
@@ -23,6 +27,9 @@ private:
     void HandleGetOrders(const transport::MessagePtr& msg);
 
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    std::shared_ptr<db::Db> db_ = nullptr;
+    std::unordered_map<std::string, std::shared_ptr<c2c::protobuf::SellInfo>> sells_;
+    std::unordered_map<uint64_t, std::shared_ptr<c2c::protobuf::OrderInfo>> orders_;
 
     DISALLOW_COPY_AND_ASSIGN(Protocloler);
 };

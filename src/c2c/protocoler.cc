@@ -1,13 +1,12 @@
-#pragma once
-
-#include "common/utils.h"
-#include "common/log.h"
+#include "c2c/protocoler.h"
 
 namespace zjchain {
 
 namespace c2c {
 
-Protocloler::Protocloler(std::shared_ptr<protos::PrefixDb> prefix_db) : prefix_db_(prefix_db) {}
+Protocloler::Protocloler(std::shared_ptr<db::Db> db) : db_(db) {
+    prefix_db_ = std::make_shared<protos::PrefixDb>(db);
+}
 
 Protocloler::~Protocloler() {}
 
@@ -43,6 +42,11 @@ void Protocloler::HandleMessage(const transport::MessagePtr& msg) {
 
 void Protocloler::HandleNewSell(const transport::MessagePtr& msg) {
     auto& sell = msg->header.c2c().sell();
+    auto iter = sellers_.find(sell.seller());
+    if (iter != sellers_.end()) {
+        return;
+    }
+
 
 }
 
