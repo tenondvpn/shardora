@@ -17,6 +17,10 @@ public:
 private:
     void HandleMessage(const transport::MessagePtr& msg);
     void HandleNewSell(const transport::MessagePtr& msg);
+    void HandleNewOrder(const transport::MessagePtr& msg);
+    void HandleReport(const transport::MessagePtr& msg);
+    void HandleGetSells(const transport::MessagePtr& msg);
+    void HandleGetOrders(const transport::MessagePtr& msg);
 
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
 

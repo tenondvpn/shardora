@@ -2,10 +2,14 @@ syntax = "proto2";
 
 package zjchain.c2c.protobuf;
 
-enum OrderStatus {
+enum Status {
     kDefault = 0;
     kConfirmed = 1;
     kReported = 2;
+    kSellWaiting = 3;
+    kSellValid = 4;
+    kSellInvalid = 5;
+    kSellReleased = 6;
 }
 
 message SellInfo {
@@ -17,13 +21,14 @@ message SellInfo {
 	optional bytes receivable = 6;
     optional bool manager_released = 7;
     optional bool seller_released = 8;
+	optional Status status = 9;
 }
 
 message OrderInfo {
     optional SellInfo sell = 1;
 	optional bytes buyer = 2;
     optional uint64 order_id = 3;
-	optional OrderStatus status = 4;
+	optional Status status = 4;
 	optional uint64 amount = 5;
 	optional bytes reports_info = 6;
 }
@@ -34,6 +39,11 @@ message NewOrder {
 	optional bytes buyer = 3;
 }
 
+message ResponseOrder {
+    optional uint64 order_id = 1;
+    optional Status status = 2;
+}
+
 message NewSell {
 	optional bytes protocol_addr = 1;
 	optional bytes seller = 2;
@@ -42,10 +52,26 @@ message NewSell {
 	optional bytes receivable = 5;
 }
 
+message ResponseSell {
+    optional uint64 sell_id = 1;
+    optional Status status = 2;
+}
+
 message BuyerReport {
     optional uint64 order_id = 1;
 	optional bytes buyer = 2;
 	optional bytes reports_info = 3;
+}
+
+message GetSells {
+    optional uint64 sell_id = 1;
+	optional bytes seller = 2;
+    optional uint64 min_sell_id = 3;
+    optional uint32 cout = 4;
+}
+
+message GetOrders {
+    optional uint64 order_id = 1;
 }
 
 message C2cMessage {
@@ -54,4 +80,6 @@ message C2cMessage {
 	optional BuyerReport report = 3;
 	repeated SellInfo sells = 4;
 	repeated OrderInfo orders = 5;
+	repeated GetSells get_sell = 6;
+	repeated GetOrders get_order = 7;
 }
