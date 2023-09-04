@@ -51,8 +51,7 @@ message BuyerReport {
 message C2cMessage {
 	optional NewSell sell = 1;
 	optional NewOrder order = 2;
-	optional SellerConfirm confirm = 3;
-	optional BuyerReport report = 4;
-	repeated SellInfo sells = 5;
-	repeated OrderInfo orders = 6;
+	optional BuyerReport report = 3;
+	repeated SellInfo sells = 4;
+	repeated OrderInfo orders = 5;
 }
