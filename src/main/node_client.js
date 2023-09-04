@@ -17,7 +17,7 @@ function hexToBytes(hex) {
 function PostCode(data) {
     var post_data = querystring.stringify(data);
     var post_options = {
-        host: '127.0.0.1',
+        host: '82.156.224.174',
         port: '8781',
         path: '/transaction',
         method: 'POST',
@@ -45,7 +45,7 @@ function PostCode(data) {
 function QueryPostCode(path, data) {
     var post_data = querystring.stringify(data);
     var post_options = {
-        host: '127.0.0.1',
+        host: '82.156.224.174',
         port: '8781',
         path: path,
         method: 'POST',
