@@ -21,6 +21,8 @@
 
 namespace protobuf_protos_2fc2c_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fc2c_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_BuyerReport;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fc2c_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_GetOrders;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fc2c_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_GetSells;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fc2c_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_NewOrder;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fc2c_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_NewSell;
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fc2c_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_SellInfo;
@@ -44,16 +46,36 @@ class NewOrderDefaultTypeInternal {
   ::google::protobuf::internal::ExplicitlyConstructed<NewOrder>
       _instance;
 } _NewOrder_default_instance_;
+class ResponseOrderDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<ResponseOrder>
+      _instance;
+} _ResponseOrder_default_instance_;
 class NewSellDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<NewSell>
       _instance;
 } _NewSell_default_instance_;
+class ResponseSellDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<ResponseSell>
+      _instance;
+} _ResponseSell_default_instance_;
 class BuyerReportDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<BuyerReport>
       _instance;
 } _BuyerReport_default_instance_;
+class GetSellsDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<GetSells>
+      _instance;
+} _GetSells_default_instance_;
+class GetOrdersDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<GetOrders>
+      _instance;
+} _GetOrders_default_instance_;
 class C2cMessageDefaultTypeInternal {
  public:
   ::google::protobuf::internal::ExplicitlyConstructed<C2cMessage>
@@ -106,6 +128,20 @@ static void InitDefaultsNewOrder() {
 ::google::protobuf::internal::SCCInfo<0> scc_info_NewOrder =
     {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsNewOrder}, {}};
 
+static void InitDefaultsResponseOrder() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::zjchain::c2c::protobuf::_ResponseOrder_default_instance_;
+    new (ptr) ::zjchain::c2c::protobuf::ResponseOrder();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::zjchain::c2c::protobuf::ResponseOrder::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_ResponseOrder =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsResponseOrder}, {}};
+
 static void InitDefaultsNewSell() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -119,6 +155,20 @@ static void InitDefaultsNewSell() {
 
 ::google::protobuf::internal::SCCInfo<0> scc_info_NewSell =
     {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsNewSell}, {}};
+
+static void InitDefaultsResponseSell() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::zjchain::c2c::protobuf::_ResponseSell_default_instance_;
+    new (ptr) ::zjchain::c2c::protobuf::ResponseSell();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::zjchain::c2c::protobuf::ResponseSell::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_ResponseSell =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsResponseSell}, {}};
 
 static void InitDefaultsBuyerReport() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -134,6 +184,34 @@ static void InitDefaultsBuyerReport() {
 ::google::protobuf::internal::SCCInfo<0> scc_info_BuyerReport =
     {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsBuyerReport}, {}};
 
+static void InitDefaultsGetSells() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::zjchain::c2c::protobuf::_GetSells_default_instance_;
+    new (ptr) ::zjchain::c2c::protobuf::GetSells();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::zjchain::c2c::protobuf::GetSells::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_GetSells =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsGetSells}, {}};
+
+static void InitDefaultsGetOrders() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::zjchain::c2c::protobuf::_GetOrders_default_instance_;
+    new (ptr) ::zjchain::c2c::protobuf::GetOrders();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::zjchain::c2c::protobuf::GetOrders::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_GetOrders =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsGetOrders}, {}};
+
 static void InitDefaultsC2cMessage() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -145,24 +223,30 @@ static void InitDefaultsC2cMessage() {
   ::zjchain::c2c::protobuf::C2cMessage::InitAsDefaultInstance();
 }
 
-::google::protobuf::internal::SCCInfo<5> scc_info_C2cMessage =
-    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 5, InitDefaultsC2cMessage}, {
+::google::protobuf::internal::SCCInfo<7> scc_info_C2cMessage =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 7, InitDefaultsC2cMessage}, {
       &protobuf_protos_2fc2c_2eproto::scc_info_NewSell.base,
       &protobuf_protos_2fc2c_2eproto::scc_info_NewOrder.base,
       &protobuf_protos_2fc2c_2eproto::scc_info_BuyerReport.base,
       &protobuf_protos_2fc2c_2eproto::scc_info_SellInfo.base,
-      &protobuf_protos_2fc2c_2eproto::scc_info_OrderInfo.base,}};
+      &protobuf_protos_2fc2c_2eproto::scc_info_OrderInfo.base,
+      &protobuf_protos_2fc2c_2eproto::scc_info_GetSells.base,
+      &protobuf_protos_2fc2c_2eproto::scc_info_GetOrders.base,}};
 
 void InitDefaults() {
   ::google::protobuf::internal::InitSCC(&scc_info_SellInfo.base);
   ::google::protobuf::internal::InitSCC(&scc_info_OrderInfo.base);
   ::google::protobuf::internal::InitSCC(&scc_info_NewOrder.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_ResponseOrder.base);
   ::google::protobuf::internal::InitSCC(&scc_info_NewSell.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_ResponseSell.base);
   ::google::protobuf::internal::InitSCC(&scc_info_BuyerReport.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_GetSells.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_GetOrders.base);
   ::google::protobuf::internal::InitSCC(&scc_info_C2cMessage.base);
 }
 
-::google::protobuf::Metadata file_level_metadata[6];
+::google::protobuf::Metadata file_level_metadata[10];
 const ::google::protobuf::EnumDescriptor* file_level_enum_descriptors[1];
 
 const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
@@ -179,6 +263,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::SellInfo, receivable_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::SellInfo, manager_released_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::SellInfo, seller_released_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::SellInfo, status_),
   3,
   0,
   1,
@@ -187,6 +272,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   2,
   6,
   7,
+  8,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::OrderInfo, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::OrderInfo, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -215,6 +301,15 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   1,
   2,
   0,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::ResponseOrder, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::ResponseOrder, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::ResponseOrder, order_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::ResponseOrder, status_),
+  0,
+  1,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::NewSell, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::NewSell, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -230,6 +325,15 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   3,
   4,
   2,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::ResponseSell, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::ResponseSell, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::ResponseSell, sell_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::ResponseSell, status_),
+  0,
+  1,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::BuyerReport, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::BuyerReport, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -241,6 +345,26 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   2,
   0,
   1,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::GetSells, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::GetSells, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::GetSells, sell_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::GetSells, seller_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::GetSells, min_sell_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::GetSells, cout_),
+  1,
+  0,
+  2,
+  3,
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::GetOrders, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::GetOrders, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::GetOrders, order_id_),
+  0,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::C2cMessage, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::C2cMessage, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -251,27 +375,39 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::C2cMessage, report_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::C2cMessage, sells_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::C2cMessage, orders_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::C2cMessage, get_sell_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::c2c::protobuf::C2cMessage, get_order_),
   0,
   1,
   2,
   ~0u,
   ~0u,
+  ~0u,
+  ~0u,
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 13, sizeof(::zjchain::c2c::protobuf::SellInfo)},
-  { 21, 32, sizeof(::zjchain::c2c::protobuf::OrderInfo)},
-  { 38, 46, sizeof(::zjchain::c2c::protobuf::NewOrder)},
-  { 49, 59, sizeof(::zjchain::c2c::protobuf::NewSell)},
-  { 64, 72, sizeof(::zjchain::c2c::protobuf::BuyerReport)},
-  { 75, 85, sizeof(::zjchain::c2c::protobuf::C2cMessage)},
+  { 0, 14, sizeof(::zjchain::c2c::protobuf::SellInfo)},
+  { 23, 34, sizeof(::zjchain::c2c::protobuf::OrderInfo)},
+  { 40, 48, sizeof(::zjchain::c2c::protobuf::NewOrder)},
+  { 51, 58, sizeof(::zjchain::c2c::protobuf::ResponseOrder)},
+  { 60, 70, sizeof(::zjchain::c2c::protobuf::NewSell)},
+  { 75, 82, sizeof(::zjchain::c2c::protobuf::ResponseSell)},
+  { 84, 92, sizeof(::zjchain::c2c::protobuf::BuyerReport)},
+  { 95, 104, sizeof(::zjchain::c2c::protobuf::GetSells)},
+  { 108, 114, sizeof(::zjchain::c2c::protobuf::GetOrders)},
+  { 115, 127, sizeof(::zjchain::c2c::protobuf::C2cMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::c2c::protobuf::_SellInfo_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::c2c::protobuf::_OrderInfo_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::c2c::protobuf::_NewOrder_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::c2c::protobuf::_ResponseOrder_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::c2c::protobuf::_NewSell_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::c2c::protobuf::_ResponseSell_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::c2c::protobuf::_BuyerReport_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::c2c::protobuf::_GetSells_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::c2c::protobuf::_GetOrders_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::c2c::protobuf::_C2cMessage_default_instance_),
 };
 
@@ -290,39 +426,51 @@ void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 6);
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 10);
 }
 
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
       "\n\020protos/c2c.proto\022\024zjchain.c2c.protobuf"
-      "\"\257\001\n\010SellInfo\022\017\n\007sell_id\030\001 \001(\004\022\025\n\rprotoc"
+      "\"\335\001\n\010SellInfo\022\017\n\007sell_id\030\001 \001(\004\022\025\n\rprotoc"
       "ol_addr\030\002 \001(\014\022\016\n\006seller\030\003 \001(\014\022\025\n\rpledge_"
       "amount\030\004 \001(\004\022\r\n\005price\030\005 \001(\004\022\022\n\nreceivabl"
       "e\030\006 \001(\014\022\030\n\020manager_released\030\007 \001(\010\022\027\n\017sel"
-      "ler_released\030\010 \001(\010\"\263\001\n\tOrderInfo\022,\n\004sell"
-      "\030\001 \001(\0132\036.zjchain.c2c.protobuf.SellInfo\022\r"
-      "\n\005buyer\030\002 \001(\014\022\020\n\010order_id\030\003 \001(\004\0221\n\006statu"
-      "s\030\004 \001(\0162!.zjchain.c2c.protobuf.OrderStat"
-      "us\022\016\n\006amount\030\005 \001(\004\022\024\n\014reports_info\030\006 \001(\014"
-      "\":\n\010NewOrder\022\017\n\007sell_id\030\001 \001(\004\022\016\n\006amount\030"
-      "\002 \001(\004\022\r\n\005buyer\030\003 \001(\014\"c\n\007NewSell\022\025\n\rproto"
-      "col_addr\030\001 \001(\014\022\016\n\006seller\030\002 \001(\014\022\016\n\006amount"
-      "\030\003 \001(\004\022\r\n\005price\030\004 \001(\004\022\022\n\nreceivable\030\005 \001("
-      "\014\"D\n\013BuyerReport\022\020\n\010order_id\030\001 \001(\004\022\r\n\005bu"
-      "yer\030\002 \001(\014\022\024\n\014reports_info\030\003 \001(\014\"\373\001\n\nC2cM"
-      "essage\022+\n\004sell\030\001 \001(\0132\035.zjchain.c2c.proto"
-      "buf.NewSell\022-\n\005order\030\002 \001(\0132\036.zjchain.c2c"
-      ".protobuf.NewOrder\0221\n\006report\030\003 \001(\0132!.zjc"
-      "hain.c2c.protobuf.BuyerReport\022-\n\005sells\030\004"
-      " \003(\0132\036.zjchain.c2c.protobuf.SellInfo\022/\n\006"
-      "orders\030\005 \003(\0132\037.zjchain.c2c.protobuf.Orde"
-      "rInfo*:\n\013OrderStatus\022\014\n\010kDefault\020\000\022\016\n\nkC"
-      "onfirmed\020\001\022\r\n\tkReported\020\002"
+      "ler_released\030\010 \001(\010\022,\n\006status\030\t \001(\0162\034.zjc"
+      "hain.c2c.protobuf.Status\"\256\001\n\tOrderInfo\022,"
+      "\n\004sell\030\001 \001(\0132\036.zjchain.c2c.protobuf.Sell"
+      "Info\022\r\n\005buyer\030\002 \001(\014\022\020\n\010order_id\030\003 \001(\004\022,\n"
+      "\006status\030\004 \001(\0162\034.zjchain.c2c.protobuf.Sta"
+      "tus\022\016\n\006amount\030\005 \001(\004\022\024\n\014reports_info\030\006 \001("
+      "\014\":\n\010NewOrder\022\017\n\007sell_id\030\001 \001(\004\022\016\n\006amount"
+      "\030\002 \001(\004\022\r\n\005buyer\030\003 \001(\014\"O\n\rResponseOrder\022\020"
+      "\n\010order_id\030\001 \001(\004\022,\n\006status\030\002 \001(\0162\034.zjcha"
+      "in.c2c.protobuf.Status\"c\n\007NewSell\022\025\n\rpro"
+      "tocol_addr\030\001 \001(\014\022\016\n\006seller\030\002 \001(\014\022\016\n\006amou"
+      "nt\030\003 \001(\004\022\r\n\005price\030\004 \001(\004\022\022\n\nreceivable\030\005 "
+      "\001(\014\"M\n\014ResponseSell\022\017\n\007sell_id\030\001 \001(\004\022,\n\006"
+      "status\030\002 \001(\0162\034.zjchain.c2c.protobuf.Stat"
+      "us\"D\n\013BuyerReport\022\020\n\010order_id\030\001 \001(\004\022\r\n\005b"
+      "uyer\030\002 \001(\014\022\024\n\014reports_info\030\003 \001(\014\"N\n\010GetS"
+      "ells\022\017\n\007sell_id\030\001 \001(\004\022\016\n\006seller\030\002 \001(\014\022\023\n"
+      "\013min_sell_id\030\003 \001(\004\022\014\n\004cout\030\004 \001(\r\"\035\n\tGetO"
+      "rders\022\020\n\010order_id\030\001 \001(\004\"\341\002\n\nC2cMessage\022+"
+      "\n\004sell\030\001 \001(\0132\035.zjchain.c2c.protobuf.NewS"
+      "ell\022-\n\005order\030\002 \001(\0132\036.zjchain.c2c.protobu"
+      "f.NewOrder\0221\n\006report\030\003 \001(\0132!.zjchain.c2c"
+      ".protobuf.BuyerReport\022-\n\005sells\030\004 \003(\0132\036.z"
+      "jchain.c2c.protobuf.SellInfo\022/\n\006orders\030\005"
+      " \003(\0132\037.zjchain.c2c.protobuf.OrderInfo\0220\n"
+      "\010get_sell\030\006 \003(\0132\036.zjchain.c2c.protobuf.G"
+      "etSells\0222\n\tget_order\030\007 \003(\0132\037.zjchain.c2c"
+      ".protobuf.GetOrders*|\n\006Status\022\014\n\010kDefaul"
+      "t\020\000\022\016\n\nkConfirmed\020\001\022\r\n\tkReported\020\002\022\020\n\014kS"
+      "ellWaiting\020\003\022\016\n\nkSellValid\020\004\022\020\n\014kSellInv"
+      "alid\020\005\022\021\n\rkSellReleased\020\006"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 945);
+      descriptor, 1425);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/c2c.proto", &protobuf_RegisterTypes);
 }
@@ -341,15 +489,19 @@ struct StaticDescriptorInitializer {
 namespace zjchain {
 namespace c2c {
 namespace protobuf {
-const ::google::protobuf::EnumDescriptor* OrderStatus_descriptor() {
+const ::google::protobuf::EnumDescriptor* Status_descriptor() {
   protobuf_protos_2fc2c_2eproto::protobuf_AssignDescriptorsOnce();
   return protobuf_protos_2fc2c_2eproto::file_level_enum_descriptors[0];
 }
-bool OrderStatus_IsValid(int value) {
+bool Status_IsValid(int value) {
   switch (value) {
     case 0:
     case 1:
     case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
       return true;
     default:
       return false;
@@ -370,6 +522,7 @@ const int SellInfo::kPriceFieldNumber;
 const int SellInfo::kReceivableFieldNumber;
 const int SellInfo::kManagerReleasedFieldNumber;
 const int SellInfo::kSellerReleasedFieldNumber;
+const int SellInfo::kStatusFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 SellInfo::SellInfo()
@@ -397,8 +550,8 @@ SellInfo::SellInfo(const SellInfo& from)
     receivable_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.receivable_);
   }
   ::memcpy(&sell_id_, &from.sell_id_,
-    static_cast<size_t>(reinterpret_cast<char*>(&seller_released_) -
-    reinterpret_cast<char*>(&sell_id_)) + sizeof(seller_released_));
+    static_cast<size_t>(reinterpret_cast<char*>(&status_) -
+    reinterpret_cast<char*>(&sell_id_)) + sizeof(status_));
   // @@protoc_insertion_point(copy_constructor:zjchain.c2c.protobuf.SellInfo)
 }
 
@@ -407,8 +560,8 @@ void SellInfo::SharedCtor() {
   seller_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   receivable_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&sell_id_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&seller_released_) -
-      reinterpret_cast<char*>(&sell_id_)) + sizeof(seller_released_));
+      reinterpret_cast<char*>(&status_) -
+      reinterpret_cast<char*>(&sell_id_)) + sizeof(status_));
 }
 
 SellInfo::~SellInfo() {
@@ -459,6 +612,7 @@ void SellInfo::Clear() {
         reinterpret_cast<char*>(&seller_released_) -
         reinterpret_cast<char*>(&sell_id_)) + sizeof(seller_released_));
   }
+  status_ = 0;
   _has_bits_.Clear();
   _internal_metadata_.Clear();
 }
@@ -579,6 +733,26 @@ bool SellInfo::MergePartialFromCodedStream(
         break;
       }
 
+      // optional .zjchain.c2c.protobuf.Status status = 9;
+      case 9: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(72u /* 72 & 0xFF */)) {
+          int value;
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
+                 input, &value)));
+          if (::zjchain::c2c::protobuf::Status_IsValid(value)) {
+            set_status(static_cast< ::zjchain::c2c::protobuf::Status >(value));
+          } else {
+            mutable_unknown_fields()->AddVarint(
+                9, static_cast< ::google::protobuf::uint64>(value));
+          }
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -649,6 +823,12 @@ void SellInfo::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(8, this->seller_released(), output);
   }
 
+  // optional .zjchain.c2c.protobuf.Status status = 9;
+  if (cached_has_bits & 0x00000100u) {
+    ::google::protobuf::internal::WireFormatLite::WriteEnum(
+      9, this->status(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -708,6 +888,12 @@ void SellInfo::SerializeWithCachedSizes(
   // optional bool seller_released = 8;
   if (cached_has_bits & 0x00000080u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(8, this->seller_released(), target);
+  }
+
+  // optional .zjchain.c2c.protobuf.Status status = 9;
+  if (cached_has_bits & 0x00000100u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
+      9, this->status(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -781,6 +967,12 @@ size_t SellInfo::ByteSizeLong() const {
     }
 
   }
+  // optional .zjchain.c2c.protobuf.Status status = 9;
+  if (has_status()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::EnumSize(this->status());
+  }
+
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   SetCachedSize(cached_size);
   return total_size;
@@ -839,6 +1031,9 @@ void SellInfo::MergeFrom(const SellInfo& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
+  if (cached_has_bits & 0x00000100u) {
+    set_status(from.status());
+  }
 }
 
 void SellInfo::CopyFrom(const ::google::protobuf::Message& from) {
@@ -876,6 +1071,7 @@ void SellInfo::InternalSwap(SellInfo* other) {
   swap(price_, other->price_);
   swap(manager_released_, other->manager_released_);
   swap(seller_released_, other->seller_released_);
+  swap(status_, other->status_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
@@ -1041,7 +1237,7 @@ bool OrderInfo::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .zjchain.c2c.protobuf.OrderStatus status = 4;
+      // optional .zjchain.c2c.protobuf.Status status = 4;
       case 4: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(32u /* 32 & 0xFF */)) {
@@ -1049,8 +1245,8 @@ bool OrderInfo::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
                  input, &value)));
-          if (::zjchain::c2c::protobuf::OrderStatus_IsValid(value)) {
-            set_status(static_cast< ::zjchain::c2c::protobuf::OrderStatus >(value));
+          if (::zjchain::c2c::protobuf::Status_IsValid(value)) {
+            set_status(static_cast< ::zjchain::c2c::protobuf::Status >(value));
           } else {
             mutable_unknown_fields()->AddVarint(
                 4, static_cast< ::google::protobuf::uint64>(value));
@@ -1131,7 +1327,7 @@ void OrderInfo::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->order_id(), output);
   }
 
-  // optional .zjchain.c2c.protobuf.OrderStatus status = 4;
+  // optional .zjchain.c2c.protobuf.Status status = 4;
   if (cached_has_bits & 0x00000020u) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
       4, this->status(), output);
@@ -1182,7 +1378,7 @@ void OrderInfo::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(3, this->order_id(), target);
   }
 
-  // optional .zjchain.c2c.protobuf.OrderStatus status = 4;
+  // optional .zjchain.c2c.protobuf.Status status = 4;
   if (cached_has_bits & 0x00000020u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       4, this->status(), target);
@@ -1253,7 +1449,7 @@ size_t OrderInfo::ByteSizeLong() const {
           this->amount());
     }
 
-    // optional .zjchain.c2c.protobuf.OrderStatus status = 4;
+    // optional .zjchain.c2c.protobuf.Status status = 4;
     if (has_status()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->status());
@@ -1677,6 +1873,292 @@ void NewOrder::InternalSwap(NewOrder* other) {
 }
 
 ::google::protobuf::Metadata NewOrder::GetMetadata() const {
+  protobuf_protos_2fc2c_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fc2c_2eproto::file_level_metadata[kIndexInFileMessages];
+}
+
+
+// ===================================================================
+
+void ResponseOrder::InitAsDefaultInstance() {
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int ResponseOrder::kOrderIdFieldNumber;
+const int ResponseOrder::kStatusFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+ResponseOrder::ResponseOrder()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2fc2c_2eproto::scc_info_ResponseOrder.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:zjchain.c2c.protobuf.ResponseOrder)
+}
+ResponseOrder::ResponseOrder(const ResponseOrder& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::memcpy(&order_id_, &from.order_id_,
+    static_cast<size_t>(reinterpret_cast<char*>(&status_) -
+    reinterpret_cast<char*>(&order_id_)) + sizeof(status_));
+  // @@protoc_insertion_point(copy_constructor:zjchain.c2c.protobuf.ResponseOrder)
+}
+
+void ResponseOrder::SharedCtor() {
+  ::memset(&order_id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&status_) -
+      reinterpret_cast<char*>(&order_id_)) + sizeof(status_));
+}
+
+ResponseOrder::~ResponseOrder() {
+  // @@protoc_insertion_point(destructor:zjchain.c2c.protobuf.ResponseOrder)
+  SharedDtor();
+}
+
+void ResponseOrder::SharedDtor() {
+}
+
+void ResponseOrder::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* ResponseOrder::descriptor() {
+  ::protobuf_protos_2fc2c_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fc2c_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const ResponseOrder& ResponseOrder::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fc2c_2eproto::scc_info_ResponseOrder.base);
+  return *internal_default_instance();
+}
+
+
+void ResponseOrder::Clear() {
+// @@protoc_insertion_point(message_clear_start:zjchain.c2c.protobuf.ResponseOrder)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 3u) {
+    ::memset(&order_id_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&status_) -
+        reinterpret_cast<char*>(&order_id_)) + sizeof(status_));
+  }
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool ResponseOrder::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:zjchain.c2c.protobuf.ResponseOrder)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional uint64 order_id = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
+          set_has_order_id();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &order_id_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.c2c.protobuf.Status status = 2;
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
+          int value;
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
+                 input, &value)));
+          if (::zjchain::c2c::protobuf::Status_IsValid(value)) {
+            set_status(static_cast< ::zjchain::c2c::protobuf::Status >(value));
+          } else {
+            mutable_unknown_fields()->AddVarint(
+                2, static_cast< ::google::protobuf::uint64>(value));
+          }
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:zjchain.c2c.protobuf.ResponseOrder)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:zjchain.c2c.protobuf.ResponseOrder)
+  return false;
+#undef DO_
+}
+
+void ResponseOrder::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:zjchain.c2c.protobuf.ResponseOrder)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint64 order_id = 1;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(1, this->order_id(), output);
+  }
+
+  // optional .zjchain.c2c.protobuf.Status status = 2;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteEnum(
+      2, this->status(), output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:zjchain.c2c.protobuf.ResponseOrder)
+}
+
+::google::protobuf::uint8* ResponseOrder::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.c2c.protobuf.ResponseOrder)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint64 order_id = 1;
+  if (cached_has_bits & 0x00000001u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(1, this->order_id(), target);
+  }
+
+  // optional .zjchain.c2c.protobuf.Status status = 2;
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
+      2, this->status(), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:zjchain.c2c.protobuf.ResponseOrder)
+  return target;
+}
+
+size_t ResponseOrder::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:zjchain.c2c.protobuf.ResponseOrder)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  if (_has_bits_[0 / 32] & 3u) {
+    // optional uint64 order_id = 1;
+    if (has_order_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->order_id());
+    }
+
+    // optional .zjchain.c2c.protobuf.Status status = 2;
+    if (has_status()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::EnumSize(this->status());
+    }
+
+  }
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void ResponseOrder::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.c2c.protobuf.ResponseOrder)
+  GOOGLE_DCHECK_NE(&from, this);
+  const ResponseOrder* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const ResponseOrder>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.c2c.protobuf.ResponseOrder)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.c2c.protobuf.ResponseOrder)
+    MergeFrom(*source);
+  }
+}
+
+void ResponseOrder::MergeFrom(const ResponseOrder& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.c2c.protobuf.ResponseOrder)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
+      order_id_ = from.order_id_;
+    }
+    if (cached_has_bits & 0x00000002u) {
+      status_ = from.status_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
+}
+
+void ResponseOrder::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.c2c.protobuf.ResponseOrder)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void ResponseOrder::CopyFrom(const ResponseOrder& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.c2c.protobuf.ResponseOrder)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ResponseOrder::IsInitialized() const {
+  return true;
+}
+
+void ResponseOrder::Swap(ResponseOrder* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void ResponseOrder::InternalSwap(ResponseOrder* other) {
+  using std::swap;
+  swap(order_id_, other->order_id_);
+  swap(status_, other->status_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+::google::protobuf::Metadata ResponseOrder::GetMetadata() const {
   protobuf_protos_2fc2c_2eproto::protobuf_AssignDescriptorsOnce();
   return ::protobuf_protos_2fc2c_2eproto::file_level_metadata[kIndexInFileMessages];
 }
@@ -2109,6 +2591,292 @@ void NewSell::InternalSwap(NewSell* other) {
 
 // ===================================================================
 
+void ResponseSell::InitAsDefaultInstance() {
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int ResponseSell::kSellIdFieldNumber;
+const int ResponseSell::kStatusFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+ResponseSell::ResponseSell()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2fc2c_2eproto::scc_info_ResponseSell.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:zjchain.c2c.protobuf.ResponseSell)
+}
+ResponseSell::ResponseSell(const ResponseSell& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::memcpy(&sell_id_, &from.sell_id_,
+    static_cast<size_t>(reinterpret_cast<char*>(&status_) -
+    reinterpret_cast<char*>(&sell_id_)) + sizeof(status_));
+  // @@protoc_insertion_point(copy_constructor:zjchain.c2c.protobuf.ResponseSell)
+}
+
+void ResponseSell::SharedCtor() {
+  ::memset(&sell_id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&status_) -
+      reinterpret_cast<char*>(&sell_id_)) + sizeof(status_));
+}
+
+ResponseSell::~ResponseSell() {
+  // @@protoc_insertion_point(destructor:zjchain.c2c.protobuf.ResponseSell)
+  SharedDtor();
+}
+
+void ResponseSell::SharedDtor() {
+}
+
+void ResponseSell::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* ResponseSell::descriptor() {
+  ::protobuf_protos_2fc2c_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fc2c_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const ResponseSell& ResponseSell::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fc2c_2eproto::scc_info_ResponseSell.base);
+  return *internal_default_instance();
+}
+
+
+void ResponseSell::Clear() {
+// @@protoc_insertion_point(message_clear_start:zjchain.c2c.protobuf.ResponseSell)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 3u) {
+    ::memset(&sell_id_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&status_) -
+        reinterpret_cast<char*>(&sell_id_)) + sizeof(status_));
+  }
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool ResponseSell::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:zjchain.c2c.protobuf.ResponseSell)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional uint64 sell_id = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
+          set_has_sell_id();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &sell_id_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional .zjchain.c2c.protobuf.Status status = 2;
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
+          int value;
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
+                 input, &value)));
+          if (::zjchain::c2c::protobuf::Status_IsValid(value)) {
+            set_status(static_cast< ::zjchain::c2c::protobuf::Status >(value));
+          } else {
+            mutable_unknown_fields()->AddVarint(
+                2, static_cast< ::google::protobuf::uint64>(value));
+          }
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:zjchain.c2c.protobuf.ResponseSell)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:zjchain.c2c.protobuf.ResponseSell)
+  return false;
+#undef DO_
+}
+
+void ResponseSell::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:zjchain.c2c.protobuf.ResponseSell)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint64 sell_id = 1;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(1, this->sell_id(), output);
+  }
+
+  // optional .zjchain.c2c.protobuf.Status status = 2;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteEnum(
+      2, this->status(), output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:zjchain.c2c.protobuf.ResponseSell)
+}
+
+::google::protobuf::uint8* ResponseSell::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.c2c.protobuf.ResponseSell)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint64 sell_id = 1;
+  if (cached_has_bits & 0x00000001u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(1, this->sell_id(), target);
+  }
+
+  // optional .zjchain.c2c.protobuf.Status status = 2;
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
+      2, this->status(), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:zjchain.c2c.protobuf.ResponseSell)
+  return target;
+}
+
+size_t ResponseSell::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:zjchain.c2c.protobuf.ResponseSell)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  if (_has_bits_[0 / 32] & 3u) {
+    // optional uint64 sell_id = 1;
+    if (has_sell_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->sell_id());
+    }
+
+    // optional .zjchain.c2c.protobuf.Status status = 2;
+    if (has_status()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::EnumSize(this->status());
+    }
+
+  }
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void ResponseSell::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.c2c.protobuf.ResponseSell)
+  GOOGLE_DCHECK_NE(&from, this);
+  const ResponseSell* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const ResponseSell>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.c2c.protobuf.ResponseSell)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.c2c.protobuf.ResponseSell)
+    MergeFrom(*source);
+  }
+}
+
+void ResponseSell::MergeFrom(const ResponseSell& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.c2c.protobuf.ResponseSell)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
+      sell_id_ = from.sell_id_;
+    }
+    if (cached_has_bits & 0x00000002u) {
+      status_ = from.status_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
+}
+
+void ResponseSell::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.c2c.protobuf.ResponseSell)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void ResponseSell::CopyFrom(const ResponseSell& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.c2c.protobuf.ResponseSell)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ResponseSell::IsInitialized() const {
+  return true;
+}
+
+void ResponseSell::Swap(ResponseSell* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void ResponseSell::InternalSwap(ResponseSell* other) {
+  using std::swap;
+  swap(sell_id_, other->sell_id_);
+  swap(status_, other->status_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+::google::protobuf::Metadata ResponseSell::GetMetadata() const {
+  protobuf_protos_2fc2c_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fc2c_2eproto::file_level_metadata[kIndexInFileMessages];
+}
+
+
+// ===================================================================
+
 void BuyerReport::InitAsDefaultInstance() {
 }
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
@@ -2442,6 +3210,597 @@ void BuyerReport::InternalSwap(BuyerReport* other) {
 
 // ===================================================================
 
+void GetSells::InitAsDefaultInstance() {
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int GetSells::kSellIdFieldNumber;
+const int GetSells::kSellerFieldNumber;
+const int GetSells::kMinSellIdFieldNumber;
+const int GetSells::kCoutFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+GetSells::GetSells()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2fc2c_2eproto::scc_info_GetSells.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:zjchain.c2c.protobuf.GetSells)
+}
+GetSells::GetSells(const GetSells& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  seller_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_seller()) {
+    seller_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.seller_);
+  }
+  ::memcpy(&sell_id_, &from.sell_id_,
+    static_cast<size_t>(reinterpret_cast<char*>(&cout_) -
+    reinterpret_cast<char*>(&sell_id_)) + sizeof(cout_));
+  // @@protoc_insertion_point(copy_constructor:zjchain.c2c.protobuf.GetSells)
+}
+
+void GetSells::SharedCtor() {
+  seller_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::memset(&sell_id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&cout_) -
+      reinterpret_cast<char*>(&sell_id_)) + sizeof(cout_));
+}
+
+GetSells::~GetSells() {
+  // @@protoc_insertion_point(destructor:zjchain.c2c.protobuf.GetSells)
+  SharedDtor();
+}
+
+void GetSells::SharedDtor() {
+  seller_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+
+void GetSells::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* GetSells::descriptor() {
+  ::protobuf_protos_2fc2c_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fc2c_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const GetSells& GetSells::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fc2c_2eproto::scc_info_GetSells.base);
+  return *internal_default_instance();
+}
+
+
+void GetSells::Clear() {
+// @@protoc_insertion_point(message_clear_start:zjchain.c2c.protobuf.GetSells)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    seller_.ClearNonDefaultToEmptyNoArena();
+  }
+  if (cached_has_bits & 14u) {
+    ::memset(&sell_id_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&cout_) -
+        reinterpret_cast<char*>(&sell_id_)) + sizeof(cout_));
+  }
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool GetSells::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:zjchain.c2c.protobuf.GetSells)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional uint64 sell_id = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
+          set_has_sell_id();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &sell_id_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional bytes seller = 2;
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_seller()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint64 min_sell_id = 3;
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
+          set_has_min_sell_id();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &min_sell_id_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional uint32 cout = 4;
+      case 4: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(32u /* 32 & 0xFF */)) {
+          set_has_cout();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &cout_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:zjchain.c2c.protobuf.GetSells)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:zjchain.c2c.protobuf.GetSells)
+  return false;
+#undef DO_
+}
+
+void GetSells::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:zjchain.c2c.protobuf.GetSells)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint64 sell_id = 1;
+  if (cached_has_bits & 0x00000002u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(1, this->sell_id(), output);
+  }
+
+  // optional bytes seller = 2;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      2, this->seller(), output);
+  }
+
+  // optional uint64 min_sell_id = 3;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->min_sell_id(), output);
+  }
+
+  // optional uint32 cout = 4;
+  if (cached_has_bits & 0x00000008u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->cout(), output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:zjchain.c2c.protobuf.GetSells)
+}
+
+::google::protobuf::uint8* GetSells::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.c2c.protobuf.GetSells)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint64 sell_id = 1;
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(1, this->sell_id(), target);
+  }
+
+  // optional bytes seller = 2;
+  if (cached_has_bits & 0x00000001u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        2, this->seller(), target);
+  }
+
+  // optional uint64 min_sell_id = 3;
+  if (cached_has_bits & 0x00000004u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(3, this->min_sell_id(), target);
+  }
+
+  // optional uint32 cout = 4;
+  if (cached_has_bits & 0x00000008u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->cout(), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:zjchain.c2c.protobuf.GetSells)
+  return target;
+}
+
+size_t GetSells::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:zjchain.c2c.protobuf.GetSells)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  if (_has_bits_[0 / 32] & 15u) {
+    // optional bytes seller = 2;
+    if (has_seller()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->seller());
+    }
+
+    // optional uint64 sell_id = 1;
+    if (has_sell_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->sell_id());
+    }
+
+    // optional uint64 min_sell_id = 3;
+    if (has_min_sell_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->min_sell_id());
+    }
+
+    // optional uint32 cout = 4;
+    if (has_cout()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->cout());
+    }
+
+  }
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void GetSells::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.c2c.protobuf.GetSells)
+  GOOGLE_DCHECK_NE(&from, this);
+  const GetSells* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const GetSells>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.c2c.protobuf.GetSells)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.c2c.protobuf.GetSells)
+    MergeFrom(*source);
+  }
+}
+
+void GetSells::MergeFrom(const GetSells& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.c2c.protobuf.GetSells)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 15u) {
+    if (cached_has_bits & 0x00000001u) {
+      set_has_seller();
+      seller_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.seller_);
+    }
+    if (cached_has_bits & 0x00000002u) {
+      sell_id_ = from.sell_id_;
+    }
+    if (cached_has_bits & 0x00000004u) {
+      min_sell_id_ = from.min_sell_id_;
+    }
+    if (cached_has_bits & 0x00000008u) {
+      cout_ = from.cout_;
+    }
+    _has_bits_[0] |= cached_has_bits;
+  }
+}
+
+void GetSells::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.c2c.protobuf.GetSells)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void GetSells::CopyFrom(const GetSells& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.c2c.protobuf.GetSells)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool GetSells::IsInitialized() const {
+  return true;
+}
+
+void GetSells::Swap(GetSells* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void GetSells::InternalSwap(GetSells* other) {
+  using std::swap;
+  seller_.Swap(&other->seller_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  swap(sell_id_, other->sell_id_);
+  swap(min_sell_id_, other->min_sell_id_);
+  swap(cout_, other->cout_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+::google::protobuf::Metadata GetSells::GetMetadata() const {
+  protobuf_protos_2fc2c_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fc2c_2eproto::file_level_metadata[kIndexInFileMessages];
+}
+
+
+// ===================================================================
+
+void GetOrders::InitAsDefaultInstance() {
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int GetOrders::kOrderIdFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+GetOrders::GetOrders()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2fc2c_2eproto::scc_info_GetOrders.base);
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:zjchain.c2c.protobuf.GetOrders)
+}
+GetOrders::GetOrders(const GetOrders& from)
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
+      _has_bits_(from._has_bits_) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  order_id_ = from.order_id_;
+  // @@protoc_insertion_point(copy_constructor:zjchain.c2c.protobuf.GetOrders)
+}
+
+void GetOrders::SharedCtor() {
+  order_id_ = GOOGLE_ULONGLONG(0);
+}
+
+GetOrders::~GetOrders() {
+  // @@protoc_insertion_point(destructor:zjchain.c2c.protobuf.GetOrders)
+  SharedDtor();
+}
+
+void GetOrders::SharedDtor() {
+}
+
+void GetOrders::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ::google::protobuf::Descriptor* GetOrders::descriptor() {
+  ::protobuf_protos_2fc2c_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fc2c_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const GetOrders& GetOrders::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fc2c_2eproto::scc_info_GetOrders.base);
+  return *internal_default_instance();
+}
+
+
+void GetOrders::Clear() {
+// @@protoc_insertion_point(message_clear_start:zjchain.c2c.protobuf.GetOrders)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  order_id_ = GOOGLE_ULONGLONG(0);
+  _has_bits_.Clear();
+  _internal_metadata_.Clear();
+}
+
+bool GetOrders::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:zjchain.c2c.protobuf.GetOrders)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional uint64 order_id = 1;
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
+          set_has_order_id();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &order_id_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:zjchain.c2c.protobuf.GetOrders)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:zjchain.c2c.protobuf.GetOrders)
+  return false;
+#undef DO_
+}
+
+void GetOrders::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:zjchain.c2c.protobuf.GetOrders)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint64 order_id = 1;
+  if (cached_has_bits & 0x00000001u) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(1, this->order_id(), output);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:zjchain.c2c.protobuf.GetOrders)
+}
+
+::google::protobuf::uint8* GetOrders::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.c2c.protobuf.GetOrders)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint64 order_id = 1;
+  if (cached_has_bits & 0x00000001u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(1, this->order_id(), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:zjchain.c2c.protobuf.GetOrders)
+  return target;
+}
+
+size_t GetOrders::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:zjchain.c2c.protobuf.GetOrders)
+  size_t total_size = 0;
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  // optional uint64 order_id = 1;
+  if (has_order_id()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt64Size(
+        this->order_id());
+  }
+
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void GetOrders::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.c2c.protobuf.GetOrders)
+  GOOGLE_DCHECK_NE(&from, this);
+  const GetOrders* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const GetOrders>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.c2c.protobuf.GetOrders)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.c2c.protobuf.GetOrders)
+    MergeFrom(*source);
+  }
+}
+
+void GetOrders::MergeFrom(const GetOrders& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:zjchain.c2c.protobuf.GetOrders)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from.has_order_id()) {
+    set_order_id(from.order_id());
+  }
+}
+
+void GetOrders::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.c2c.protobuf.GetOrders)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void GetOrders::CopyFrom(const GetOrders& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:zjchain.c2c.protobuf.GetOrders)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool GetOrders::IsInitialized() const {
+  return true;
+}
+
+void GetOrders::Swap(GetOrders* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void GetOrders::InternalSwap(GetOrders* other) {
+  using std::swap;
+  swap(order_id_, other->order_id_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+}
+
+::google::protobuf::Metadata GetOrders::GetMetadata() const {
+  protobuf_protos_2fc2c_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fc2c_2eproto::file_level_metadata[kIndexInFileMessages];
+}
+
+
+// ===================================================================
+
 void C2cMessage::InitAsDefaultInstance() {
   ::zjchain::c2c::protobuf::_C2cMessage_default_instance_._instance.get_mutable()->sell_ = const_cast< ::zjchain::c2c::protobuf::NewSell*>(
       ::zjchain::c2c::protobuf::NewSell::internal_default_instance());
@@ -2456,6 +3815,8 @@ const int C2cMessage::kOrderFieldNumber;
 const int C2cMessage::kReportFieldNumber;
 const int C2cMessage::kSellsFieldNumber;
 const int C2cMessage::kOrdersFieldNumber;
+const int C2cMessage::kGetSellFieldNumber;
+const int C2cMessage::kGetOrderFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 C2cMessage::C2cMessage()
@@ -2470,7 +3831,9 @@ C2cMessage::C2cMessage(const C2cMessage& from)
       _internal_metadata_(NULL),
       _has_bits_(from._has_bits_),
       sells_(from.sells_),
-      orders_(from.orders_) {
+      orders_(from.orders_),
+      get_sell_(from.get_sell_),
+      get_order_(from.get_order_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.has_sell()) {
     sell_ = new ::zjchain::c2c::protobuf::NewSell(*from.sell_);
@@ -2529,6 +3892,8 @@ void C2cMessage::Clear() {
 
   sells_.Clear();
   orders_.Clear();
+  get_sell_.Clear();
+  get_order_.Clear();
   cached_has_bits = _has_bits_[0];
   if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
@@ -2618,6 +3983,30 @@ bool C2cMessage::MergePartialFromCodedStream(
         break;
       }
 
+      // repeated .zjchain.c2c.protobuf.GetSells get_sell = 6;
+      case 6: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(50u /* 50 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+                input, add_get_sell()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // repeated .zjchain.c2c.protobuf.GetOrders get_order = 7;
+      case 7: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(58u /* 58 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+                input, add_get_order()));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -2681,6 +4070,24 @@ void C2cMessage::SerializeWithCachedSizes(
       output);
   }
 
+  // repeated .zjchain.c2c.protobuf.GetSells get_sell = 6;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->get_sell_size()); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      6,
+      this->get_sell(static_cast<int>(i)),
+      output);
+  }
+
+  // repeated .zjchain.c2c.protobuf.GetOrders get_order = 7;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->get_order_size()); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      7,
+      this->get_order(static_cast<int>(i)),
+      output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
@@ -2733,6 +4140,22 @@ void C2cMessage::SerializeWithCachedSizes(
         5, this->orders(static_cast<int>(i)), deterministic, target);
   }
 
+  // repeated .zjchain.c2c.protobuf.GetSells get_sell = 6;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->get_sell_size()); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        6, this->get_sell(static_cast<int>(i)), deterministic, target);
+  }
+
+  // repeated .zjchain.c2c.protobuf.GetOrders get_order = 7;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->get_order_size()); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        7, this->get_order(static_cast<int>(i)), deterministic, target);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
@@ -2769,6 +4192,28 @@ size_t C2cMessage::ByteSizeLong() const {
       total_size +=
         ::google::protobuf::internal::WireFormatLite::MessageSize(
           this->orders(static_cast<int>(i)));
+    }
+  }
+
+  // repeated .zjchain.c2c.protobuf.GetSells get_sell = 6;
+  {
+    unsigned int count = static_cast<unsigned int>(this->get_sell_size());
+    total_size += 1UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          this->get_sell(static_cast<int>(i)));
+    }
+  }
+
+  // repeated .zjchain.c2c.protobuf.GetOrders get_order = 7;
+  {
+    unsigned int count = static_cast<unsigned int>(this->get_order_size());
+    total_size += 1UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          this->get_order(static_cast<int>(i)));
     }
   }
 
@@ -2824,6 +4269,8 @@ void C2cMessage::MergeFrom(const C2cMessage& from) {
 
   sells_.MergeFrom(from.sells_);
   orders_.MergeFrom(from.orders_);
+  get_sell_.MergeFrom(from.get_sell_);
+  get_order_.MergeFrom(from.get_order_);
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
@@ -2864,6 +4311,8 @@ void C2cMessage::InternalSwap(C2cMessage* other) {
   using std::swap;
   CastToBase(&sells_)->InternalSwap(CastToBase(&other->sells_));
   CastToBase(&orders_)->InternalSwap(CastToBase(&other->orders_));
+  CastToBase(&get_sell_)->InternalSwap(CastToBase(&other->get_sell_));
+  CastToBase(&get_order_)->InternalSwap(CastToBase(&other->get_order_));
   swap(sell_, other->sell_);
   swap(order_, other->order_);
   swap(report_, other->report_);
@@ -2892,11 +4341,23 @@ template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::c2c::protobuf::OrderInf
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::c2c::protobuf::NewOrder* Arena::CreateMaybeMessage< ::zjchain::c2c::protobuf::NewOrder >(Arena* arena) {
   return Arena::CreateInternal< ::zjchain::c2c::protobuf::NewOrder >(arena);
 }
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::c2c::protobuf::ResponseOrder* Arena::CreateMaybeMessage< ::zjchain::c2c::protobuf::ResponseOrder >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::c2c::protobuf::ResponseOrder >(arena);
+}
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::c2c::protobuf::NewSell* Arena::CreateMaybeMessage< ::zjchain::c2c::protobuf::NewSell >(Arena* arena) {
   return Arena::CreateInternal< ::zjchain::c2c::protobuf::NewSell >(arena);
 }
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::c2c::protobuf::ResponseSell* Arena::CreateMaybeMessage< ::zjchain::c2c::protobuf::ResponseSell >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::c2c::protobuf::ResponseSell >(arena);
+}
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::c2c::protobuf::BuyerReport* Arena::CreateMaybeMessage< ::zjchain::c2c::protobuf::BuyerReport >(Arena* arena) {
   return Arena::CreateInternal< ::zjchain::c2c::protobuf::BuyerReport >(arena);
+}
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::c2c::protobuf::GetSells* Arena::CreateMaybeMessage< ::zjchain::c2c::protobuf::GetSells >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::c2c::protobuf::GetSells >(arena);
+}
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::c2c::protobuf::GetOrders* Arena::CreateMaybeMessage< ::zjchain::c2c::protobuf::GetOrders >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::c2c::protobuf::GetOrders >(arena);
 }
 template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::c2c::protobuf::C2cMessage* Arena::CreateMaybeMessage< ::zjchain::c2c::protobuf::C2cMessage >(Arena* arena) {
   return Arena::CreateInternal< ::zjchain::c2c::protobuf::C2cMessage >(arena);

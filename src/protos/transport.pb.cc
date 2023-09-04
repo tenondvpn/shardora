@@ -30,7 +30,7 @@ namespace protobuf_protos_2fbls_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<5> scc_info_BlsMessage;
 }  // namespace protobuf_protos_2fbls_2eproto
 namespace protobuf_protos_2fc2c_2eproto {
-extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fc2c_2eproto ::google::protobuf::internal::SCCInfo<5> scc_info_C2cMessage;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fc2c_2eproto ::google::protobuf::internal::SCCInfo<7> scc_info_C2cMessage;
 }  // namespace protobuf_protos_2fc2c_2eproto
 namespace protobuf_protos_2fcontract_2eproto {
 extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fcontract_2eproto ::google::protobuf::internal::SCCInfo<2> scc_info_ContractMessage;
