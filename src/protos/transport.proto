@@ -60,4 +60,5 @@ message Header {
     optional block.protobuf.Block block = 27;
     repeated pools.protobuf.InvalidBftMessage invalid_bfts = 28;
     optional uint32 from_public_port = 29;
+    optional c2c.protobuf.C2cMessage c2c = 30;
 }

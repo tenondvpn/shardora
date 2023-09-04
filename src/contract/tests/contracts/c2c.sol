@@ -12,97 +12,240 @@ contract C2CSellOrder {
         bytes accountsReceivable;
         address payable addr;
         uint256 pledgeAmount;
-        mapping(address => bool) reports;
+        uint256 price;
         bool managerReleased;
         bool sellerReleased;
         bool exists;
+        bool reported;
+        uint256 orderId;
     }
 
-    public address owner;
+    uint256 orderId;
+    address public owner;
     uint256 public minExchangeValue;
-    uint256 public minReportCount
     mapping(address => SellOrder) public orders;
     mapping(address => bool) public valid_managers;
+    address[] all_sellers;
 
-    constructor(address[] memory managers, uint256 minAmount, uint256 minReport) payable {
+    constructor(address[] memory managers, uint256 minAmount) payable {
         uint arrayLength = managers.length;
         for (uint i=0; i<arrayLength; i++) {
             valid_managers[managers[i]] = true;
         }
 
-        minReportCount = minReport;
+        orderId = 0;
         valid_managers[msg.sender] = true;
         minExchangeValue = minAmount;
-        valid_managers = managers;
         owner = msg.sender;
     }
 
     function SetManager(address[] memory managers) public {
         require(owner == msg.sender);
+        require(!orders[msg.sender].exists);
         uint arrayLength = managers.length;
         for (uint i=0; i<arrayLength; i++) {
             valid_managers[managers[i]] = true;
         }
     }
 
-    function NewSellOrder(bytes memory receivable) public payable {
+    function NewSellOrder(bytes memory receivable, uint256 price) public payable {
         require(msg.value >= minExchangeValue);
         require(!orders[msg.sender].exists);
-        require(!valid_managers[msg.sender].exists);
+        require(!valid_managers[msg.sender]);
         orders[msg.sender] = SellOrder({
             accountsReceivable: receivable,
-            addr: msg.sender,
+            addr: payable(msg.sender),
             pledgeAmount: msg.value,
-            reportCount: 0,
+            price: price,
             managerReleased: false,
             sellerReleased: false,
-            exists: true
+            exists: true,
+            reported: false,
+            orderId: orderId,
         });
+
+        all_sellers.push(msg.sender);
+        orderId++;
+    }
+
+    function Confirm(address payable buyer, uint256 amount) public payable {
+        require(orders[msg.sender].exists);
+        require(!orders[msg.sender].managerReleased);
+        require(!orders[msg.sender].sellerReleased);
+        require(!orders[msg.sender].reported);
+        require(orders[msg.sender].pledgeAmount >= amount);
+        SellOrder memory order = orders[msg.sender];
+        order.pledgeAmount -= amount;
+        payable(buyer).transfer(amount);
+        if (order.pledgeAmount < minExchangeValue) {
+            if (order.pledgeAmount > 0) {
+                payable(msg.sender).transfer(order.pledgeAmount);
+            }
+
+            order.pledgeAmount = 0;
+            uint seller_len = all_sellers.length;
+            for (uint i = 0; i < seller_len; ++i) {
+                if (all_sellers[i] == msg.sender) {
+                    delete all_sellers[i];
+                    break;
+                }
+            }
+
+            delete orders[msg.sender];
+        }
     }
 
     function ManagerReleaseForce(address seller) public payable {
-        require(orders[msg.sender].exists);
+        require(orders[seller].exists);
         require(valid_managers[msg.sender]);
-        SellOrder order = orders[seller];
+        SellOrder memory order = orders[seller];
         require(order.addr == seller);
         payable(order.addr).transfer(order.pledgeAmount);
+        uint seller_len = all_sellers.length;
+        for (uint i = 0; i < seller_len; ++i) {
+            if (all_sellers[i] == seller) {
+                delete all_sellers[i];
+                break;
+            }
+        }
+
         delete orders[seller];
     }
 
     function ManagerRelease(address seller) public payable {
-        require(orders[msg.sender].exists);
+        require(orders[seller].exists);
         require(valid_managers[msg.sender]);
-        SellOrder order = orders[seller];
-        require(order.reports.length <= minReportCount);
+        SellOrder memory order = orders[seller];
+        require(!order.reported);
         order.managerReleased = true;
         if (order.sellerReleased) {
             payable(order.addr).transfer(order.pledgeAmount);
+            uint seller_len = all_sellers.length;
+            for (uint i = 0; i < seller_len; ++i) {
+                if (all_sellers[i] == seller) {
+                    delete all_sellers[i];
+                    break;
+                }
+            }
             delete orders[seller];
         }
     }
 
     function SellerRelease() public payable {
         require(orders[msg.sender].exists);
-        SellOrder order = orders[msg.sender];
+        SellOrder memory order = orders[msg.sender];
         order.sellerReleased = true;
         if (order.managerReleased) {
             payable(msg.sender).transfer(order.pledgeAmount);
+            uint seller_len = all_sellers.length;
+            for (uint i = 0; i < seller_len; ++i) {
+                if (all_sellers[i] == msg.sender) {
+                    delete all_sellers[i];
+                    break;
+                }
+            }
             delete orders[msg.sender];
         }
     }
 
     function Report(address seller) public {
         require(orders[seller].exists);
-        require(!orders[seller].reports[msg.sender]);
-        orders[seller].reports[msg.sender] = true;
+        require(!orders[seller].reported);
+        orders[seller].reported = true;
     }
 
-    function TestQuery() public view returns(bytes memory) {
-        bytes memory data = '{"amount": 198734, "tmp":  "sdfasdfasdfasdfasdfadsfadsfasdfadfsdfadfadfsadfsdfasdfasdf"}';
-        return data;
+    function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
+        uint len = 0;
+        for (uint i = 0; i < count; i++) {
+            len += arr[i].length;
+        }
+
+        bytes memory bret = new bytes(len);
+        uint k = 0;
+        for (uint i = 0; i < count; i++) {
+            for (uint j = 0; j < arr[i].length; j++) {
+                bret[k++] = arr[i][j];
+            }
+        }
+
+        return bret;
     }
 
-    function TestEvent(address to, uint256 amount) public payable {
-        emit NewTrade(block.timestamp, msg.sender, to, amount);
+    function ToHex(bytes memory buffer) public pure returns (bytes memory) {
+        bytes memory converted = new bytes(buffer.length * 2);
+        bytes memory _base = "0123456789abcdef";
+        for (uint256 i = 0; i < buffer.length; i++) {
+            converted[i * 2] = _base[uint8(buffer[i]) / _base.length];
+            converted[i * 2 + 1] = _base[uint8(buffer[i]) % _base.length];
+        }
+
+        return converted;
+    }
+
+    function toBytes(address a) public pure returns (bytes memory) {
+        return abi.encodePacked(a);
+    }
+
+    function u256ToBytes(uint256 x) public pure returns (bytes memory b) {
+        b = new bytes(32);
+        assembly { mstore(add(b, 32), x) }
+    }
+
+    function GetOrderJson(SellOrder memory order, bool last) public pure returns (bytes memory) {
+        bytes[] memory all_bytes = new bytes[](100);
+        uint filedCount = 0;
+        all_bytes[filedCount++] = '{"r":"';
+        all_bytes[filedCount++] = ToHex(order.accountsReceivable);
+        all_bytes[filedCount++] = '","a":"';
+        all_bytes[filedCount++] = ToHex(toBytes(order.addr));
+        all_bytes[filedCount++] = '","m":';
+        all_bytes[filedCount++] = ToHex(u256ToBytes(order.pledgeAmount));
+        all_bytes[filedCount++] = '","p":';
+        all_bytes[filedCount++] = ToHex(u256ToBytes(order.price));
+        bytes memory mr = 'false';
+        if (order.managerReleased) {
+            mr = 'true';
+        }
+
+        bytes memory sr = 'false';
+        if (order.sellerReleased) {
+            sr = 'true';
+        }
+
+        bytes memory rp = 'false';
+        if (order.reported) {
+            rp = 'true';
+        }
+
+        all_bytes[filedCount++] = '","mr":';
+        all_bytes[filedCount++] = mr;
+        all_bytes[filedCount++] = ',"sr":';
+        all_bytes[filedCount++] = sr;
+        all_bytes[filedCount++] = ',"rp":';
+        all_bytes[filedCount++] = rp;
+        all_bytes[filedCount++] = ',"o":"';
+        all_bytes[filedCount++] = ToHex(u256ToBytes(order.orderId));
+        all_bytes[filedCount++] = '","ha":"';
+        all_bytes[filedCount++] = ToHex(toBytes(order.holdAddr));
+        if (last) {
+            all_bytes[filedCount++] = '"}';
+        } else {
+            all_bytes[filedCount++] = '"},';
+        }
+        return bytesConcat(all_bytes, filedCount);
+    }
+
+    function GetOrdersJson() public view returns(bytes memory) {
+        bytes[] memory all_bytes = new bytes[](all_sellers.length + 2);
+        all_bytes[0] = '[';
+        uint arrayLength = all_sellers.length;
+        uint validLen = 0;
+        for (uint i=0; i<arrayLength; i++) {
+            all_bytes[i + 1] = GetOrderJson(orders[all_sellers[i]], (i == arrayLength));
+            ++validLen;
+        }
+
+        all_bytes[validLen] = ']';
+        return bytesConcat(all_bytes, validLen);
     }
 }

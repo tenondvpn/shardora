@@ -69,6 +69,7 @@ enum MessageType {
     kConsensusTimerMessage = 10,
     kPoolTimerMessage = 11,
     kInitMessage = 12,
+    kC2cMessage = 13,
     // max (message) type
     kLegoMaxMessageTypeCount = 16,
 };
