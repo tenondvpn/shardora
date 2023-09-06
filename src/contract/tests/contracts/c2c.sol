@@ -20,6 +20,14 @@ contract C2CSellOrder {
         uint256 orderId;
     }
 
+    event NewSellout(
+       address from,
+       bytes receivable,
+       uint256 price,
+       uint256 pledgeAmount,
+       uint256 orderId
+       );
+
     uint256 orderId;
     address public owner;
     uint256 public minExchangeValue;
@@ -65,6 +73,7 @@ contract C2CSellOrder {
         });
 
         all_sellers.push(msg.sender);
+        emit NewSellout(msg.sender, receivable, price, msg.value, orderId);
         orderId++;
     }
 
