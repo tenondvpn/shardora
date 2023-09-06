@@ -46,6 +46,10 @@ public:
         uint8_t thread_idx,
         tnet::TcpInterface* conn,
         const transport::protobuf::Header& message);
+    int Send(
+        uint8_t thread_idx,
+        tnet::TcpInterface* conn,
+        const std::string& message);
     int GetSocket();
     std::string GetHeaderHashForSign(const transport::protobuf::Header& message);
     void SetMessageHash(const transport::protobuf::Header& message, uint8_t thread_idx);

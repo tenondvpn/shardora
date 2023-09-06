@@ -14,25 +14,23 @@ enum Status {
 }
 
 message OrderInfo {
-    optional SellInfo sell = 1;
-	optional bytes buyer = 2;
-	optional Status status = 4;
-	optional uint64 amount = 5;
-	optional bytes reports_info = 6;
+	optional bytes buyer = 1;
+	optional Status status = 2;
+	optional uint64 amount = 3;
 }
 
 message SellInfo {
-	optional bytes protocol_addr = 2;
-	optional bytes seller = 3;
-	optional uint64 pledge_amount = 4;
-	optional uint64 price = 5;
-	optional bytes receivable = 6;
-    optional bool manager_released = 7;
-    optional bool seller_released = 8;
-	optional Status status = 9;
-    optional OrderInfo order_info = 10;
+	optional bytes protocol_addr = 1;
+	optional bytes seller = 2;
+	optional uint64 pledge_amount = 3;
+	optional uint64 price = 4;
+	optional bytes receivable = 5;
+    optional bool manager_released = 6;
+    optional bool seller_released = 7;
+	optional Status status = 8;
+    optional OrderInfo order_info = 9;
+	repeated bytes reports = 10;
 }
-
 
 message NewOrder {
 	optional bytes seller = 1;
@@ -50,16 +48,10 @@ message NewSell {
 
 message BuyerReport {
 	optional bytes seller = 1;
-	optional bytes buyer = 2;
-	optional bytes reports_info = 3;
+	optional bytes reports_info = 2;
 }
 
-message GetSells {
-	optional bytes seller = 1;
-    optional uint32 cout = 2;
-}
-
-message GetOrders {
+message GetSell {
 	optional bytes seller = 1;
 }
 
@@ -68,7 +60,5 @@ message C2cMessage {
 	optional NewOrder order = 2;
 	optional BuyerReport report = 3;
 	repeated SellInfo sells = 4;
-	repeated OrderInfo orders = 5;
-	repeated GetSells get_sell = 6;
-	repeated GetOrders get_order = 7;
+	repeated GetSell get_sell = 5;
 }

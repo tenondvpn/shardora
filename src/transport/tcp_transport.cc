@@ -262,6 +262,22 @@ int TcpTransport::Send(
     return kTransportSuccess;
 }
 
+int TcpTransport::Send(
+        uint8_t thread_idx,
+        tnet::TcpInterface* tcp_conn,
+        const std::string& message) {
+    if (tcp_conn->Send(message) != 0) {
+        auto* tmp_conn = static_cast<tnet::TcpConnection*>(tcp_conn);
+        assert(tmp_conn != nullptr);
+        if (tmp_conn->is_client()) {
+            tmp_conn->Destroy(true);
+        }
+
+        return kTransportError;
+    }
+
+    return kTransportSuccess;
+}
 
 void TcpTransport::EraseConn(uint64_t now_tm_ms) {
     // delay to release

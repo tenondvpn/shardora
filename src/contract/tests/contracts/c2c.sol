@@ -61,7 +61,7 @@ contract C2CSellOrder {
             sellerReleased: false,
             exists: true,
             reported: false,
-            orderId: orderId,
+            orderId: orderId
         });
 
         all_sellers.push(msg.sender);
@@ -225,8 +225,6 @@ contract C2CSellOrder {
         all_bytes[filedCount++] = rp;
         all_bytes[filedCount++] = ',"o":"';
         all_bytes[filedCount++] = ToHex(u256ToBytes(order.orderId));
-        all_bytes[filedCount++] = '","ha":"';
-        all_bytes[filedCount++] = ToHex(toBytes(order.holdAddr));
         if (last) {
             all_bytes[filedCount++] = '"}';
         } else {
@@ -239,13 +237,13 @@ contract C2CSellOrder {
         bytes[] memory all_bytes = new bytes[](all_sellers.length + 2);
         all_bytes[0] = '[';
         uint arrayLength = all_sellers.length;
-        uint validLen = 0;
+        uint validLen = 1;
         for (uint i=0; i<arrayLength; i++) {
             all_bytes[i + 1] = GetOrderJson(orders[all_sellers[i]], (i == arrayLength));
             ++validLen;
         }
 
         all_bytes[validLen] = ']';
-        return bytesConcat(all_bytes, validLen);
+        return bytesConcat(all_bytes, validLen + 1);
     }
 }

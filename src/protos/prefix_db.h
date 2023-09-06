@@ -13,6 +13,7 @@
 #include "protos/address.pb.h"
 #include "protos/block.pb.h"
 #include "protos/bls.pb.h"
+#include "protos/c2c.pb.h"
 #include "protos/elect.pb.h"
 #include "protos/init.pb.h"
 #include "protos/sync.pb.h"

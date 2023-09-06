@@ -110,11 +110,16 @@ static transport::MessagePtr CreateTransactionWithAttr(
 //     std::string test_sign = common::Encode::HexDecode("24e113bf95efa71f9ac4fe941a00091a241cd55dfba119675aa5e48adf680c60") +
 //         common::Encode::HexDecode("4d74b3e55148ef7ecc4404f3514c94b0bd4a9ac9d207e7b5a9085e070db8231c") + "\0";
 //     std::string test_pk = common::Encode::HexDecode("04847869854f544cb4bdc20a32a2cb4c284e8f6eb43d3fd4fbe6c0fa130202e4dee60a2969442beadc9cf5dd8464ef98873a8cba950b9134058e6e1224de7b8d57");
-//     if (security->Verify(tx_hash, test_pk, test_sign) != security::kSecuritySuccess) {
-//         std::cout << "verify test sign failed!" << std::endl;
-//         assert(false);
-//         return nullptr;
-//     }
+//     if (security->Verify(tx_hash, test_pk, test_sign) != security::kSecuritySuccess) {
+
+//         std::cout << "verify test sign failed!" << std::endl;
+
+//         assert(false);
+
+//         return nullptr;
+
+//     }
+
 
     std::cout << "tx gid: " << common::Encode::HexEncode(new_tx->gid())
         << " tx pukey: " << common::Encode::HexEncode(new_tx->pubkey())
