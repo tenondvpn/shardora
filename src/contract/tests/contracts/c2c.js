@@ -243,7 +243,7 @@ function call_contract(input) {
         gid,
         contract_address,
         0,
-        10000000,
+        100000,
         1,
         "",
         input,
