@@ -276,7 +276,7 @@ function CreatePhr() {
 
     {
         var func = web3.eth.abi.encodeFunctionSignature('NewSellOrder(bytes,uint256)');
-        var funcParam = web3.eth.abi.encodeParameters(['bytes', 'uint256'], ['0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', 1000]);
+        var funcParam = web3.eth.abi.encodeParameters(['bytes', 'uint256'], ['0x20ac5391ad70648f4ac6ee659e7709c0305c91c968c91b45018673ba5d1841e5', 1000000000000]);
         console.log("NewSellOrder func: " + func.substring(2) + funcParam.substring(2));
     }
 
