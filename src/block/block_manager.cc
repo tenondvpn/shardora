@@ -841,11 +841,7 @@ void BlockManager::AddNewBlock(
     }
 
     to_txs_pool_->NewBlock(block_item, db_batch);
-    if (ck_client_ != nullptr) {
-        ck_client_->AddNewBlock(block_item);
-        ZJC_DEBUG("add to ck.");
-    }
-
+    
     if (block_item->pool_index() == common::kRootChainPoolIndex) {
         if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
                 block_item->network_id() + network::kConsensusWaitingShardOffset !=
@@ -895,6 +891,11 @@ void BlockManager::AddNewBlock(
     auto st = db_->Put(db_batch);
     if (!st.ok()) {
         ZJC_FATAL("write block to db failed!");
+    }
+
+    if (ck_client_ != nullptr) {
+        ck_client_->AddNewBlock(block_item);
+        ZJC_DEBUG("add to ck.");
     }
 }
 

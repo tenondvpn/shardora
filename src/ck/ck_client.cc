@@ -170,8 +170,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
             acc_shard_id->Append(block_item->network_id());
             acc_pool_index->Append(block_item->pool_index());
             acc_balance->Append(tx_list[i].balance());
-        }
-        else {
+        } else {
             acc_account->Append(common::Encode::HexEncode(tx_list[i].from()));
             acc_shard_id->Append(block_item->network_id());
             acc_pool_index->Append(block_item->pool_index());
@@ -208,16 +207,6 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
                 attr_value->Append(common::Encode::HexEncode(tx_list[i].storages(j).val_hash()));
             }
         }
-
-        auto c2c_r = std::make_shared<clickhouse::ColumnString>();
-        auto c2c_seller = std::make_shared<clickhouse::ColumnString>();
-        auto c2c_all = std::make_shared<clickhouse::ColumnUInt64>();
-        auto c2c_now = std::make_shared<clickhouse::ColumnUInt64>();
-        auto c2c_mc = std::make_shared<clickhouse::ColumnUInt32>();
-        auto c2c_sc = std::make_shared<clickhouse::ColumnUInt32>();
-        auto c2c_report = std::make_shared<clickhouse::ColumnUInt32>();
-        auto c2c_order_id = std::make_shared<clickhouse::ColumnUInt64>();
-
 
         if (tx_list[i].step() == pools::protobuf::kContractExcute /*&& tx_list[i].to() == common::GlobalInfo::Instance()->c2c_to()*/) {
             nlohmann::json res;
