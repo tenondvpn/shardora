@@ -399,6 +399,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     ck_client.Insert(kClickhouseAccountTableName, accounts);
     ck_client.Insert(kClickhouseAccountKvTableName, account_attrs);
     ck_client.Insert(kClickhouseC2cTableName, c2cs);
+    ck_client.Execute(std::string("optimize TABLE ") + kClickhouseC2cTableName + " FINAL");
     return true;
 } catch (std::exception& e) {
     ZJC_ERROR("add new block failed[%s]", e.what());
