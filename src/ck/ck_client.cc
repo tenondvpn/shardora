@@ -5,6 +5,9 @@
 #include "common/encode.h"
 #include "common/global_info.h"
 #include "common/time_utils.h"
+#include "zjcvm/execution.h"
+#include "zjcvm/zjc_host.h"
+#include "zjcvm/zjcvm_utils.h"
 
 namespace zjchain {
 
@@ -14,7 +17,8 @@ ClickHouseClient::ClickHouseClient(
         const std::string& host,
         const std::string& user,
         const std::string& passwd,
-        std::shared_ptr<db::Db> db_ptr) {
+        std::shared_ptr<db::Db> db_ptr,
+        std::shared_ptr<contract::ContractManager> contract_mgr) : contract_mgr_(contract_mgr) {
     CreateTable(true, db_ptr);
 }
 
@@ -205,7 +209,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
         }
 
         if (tx_list[i].step() == pools::protobuf::kContractExcute /*&& tx_list[i].to() == common::GlobalInfo::Instance()->c2c_to()*/) {
-            QueryContract(tx_list[i].to())
+            QueryContract(tx_list[i].to());
         }
 
         while (tx_list[i].step() == pools::protobuf::kConsensusLocalTos) {
@@ -374,7 +378,7 @@ bool ClickHouseClient::QueryContract(const std::string& contract_addr) {
         zjc_host.tx_context_.chain_id,
         chanin_id);
     zjc_host.thread_idx_ = 0;
-    zjc_host.contract_mgr_ = contract_mgr;
+    zjc_host.contract_mgr_ = contract_mgr_;
     zjc_host.acc_mgr_ = nullptr;
     zjc_host.my_address_ = contract_addr;
     zjc_host.tx_context_.block_gas_limit = 10000000000lu;
@@ -395,7 +399,7 @@ bool ClickHouseClient::QueryContract(const std::string& contract_addr) {
     evmc::Result result{ evmc_res };
     int exec_res = zjcvm::Execution::Instance()->execute(
         contract_addr_info->bytes_code(),
-        input,
+        common::Encode::HexDecode("cdfd45bb"),
         from,
         contract_addr,
         from,
@@ -410,7 +414,7 @@ bool ClickHouseClient::QueryContract(const std::string& contract_addr) {
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
         ZJC_INFO("query contract error: %s.", res.c_str());
-        return;
+        return false;
     }
 
     std::string qdata((char*)result.output_data, result.output_size);
@@ -419,6 +423,7 @@ bool ClickHouseClient::QueryContract(const std::string& contract_addr) {
     uint64_t len = zjcvm::EvmcBytes32ToUint64(len_bytes);
     std::string http_res(qdata.c_str() + 64, len);
     std::cout << http_res << std::endl;
+    return true;
 }
 
 bool ClickHouseClient::CreateTransactionTable() {

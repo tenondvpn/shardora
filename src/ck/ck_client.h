@@ -2,9 +2,10 @@
 
 #include <clickhouse/client.h>
 
+#include "ck/ck_utils.h"
 #include "common/utils.h"
 #include "common/tick.h"
-#include "ck/ck_utils.h"
+#include "contract/contract_manager.h"
 #include "db/db.h"
 #include "protos/block.pb.h"
 #include "protos/prefix_db.h"
@@ -15,7 +16,7 @@ namespace ck {
 
 class ClickHouseClient {
 public:
-    ClickHouseClient(const std::string& host, const std::string& user, const std::string& passwd, std::shared_ptr<db::Db> db_ptr);
+    ClickHouseClient(const std::string& host, const std::string& user, const std::string& passwd, std::shared_ptr<db::Db> db_ptr, std::shared_ptr<contract::ContractManager> contract_mgr);
     ~ClickHouseClient();
     bool CreateTable(bool statistic, std::shared_ptr<db::Db> db_ptr);
     bool AddNewBlock(const std::shared_ptr<block::protobuf::Block>& block_item);
@@ -34,6 +35,7 @@ private:
 
     common::Tick statistic_tick_;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ClickHouseClient);
 };
