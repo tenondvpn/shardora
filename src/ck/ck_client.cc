@@ -221,6 +221,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
 
         if (tx_list[i].step() == pools::protobuf::kContractExcute /*&& tx_list[i].to() == common::GlobalInfo::Instance()->c2c_to()*/) {
             nlohmann::json res;
+            ZJC_DEBUG("now handle contract.");
             bool ret = QueryContract(tx_list[i].from(), tx_list[i].to(), &res);
             if (ret) {
                 for (auto iter = res.begin(); iter != res.end(); ++iter) {
@@ -434,6 +435,7 @@ bool ClickHouseClient::QueryContract(const std::string& from, const std::string&
     uint64_t from_balance = 10000000000lu;
     auto contract_addr_info = prefix_db_->GetAddressInfo(contract_addr);
     if (contract_addr_info == nullptr) {
+        ZJC_DEBUG("failed get contract.");
         return false;
     }
     uint64_t to_balance = contract_addr_info->balance();
@@ -469,8 +471,7 @@ bool ClickHouseClient::QueryContract(const std::string& from, const std::string&
     uint64_t len = zjcvm::EvmcBytes32ToUint64(len_bytes);
     std::string http_res(qdata.c_str() + 64, len);
     *res = nlohmann::json::parse(http_res);
-
-    std::cout << res->dump() << std::endl;
+    ZJC_DEBUG("success query contract: %s", res->dump().c_str());
     return true;
 }
 
