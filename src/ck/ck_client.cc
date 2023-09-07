@@ -209,7 +209,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
         }
 
         if (tx_list[i].step() == pools::protobuf::kContractExcute /*&& tx_list[i].to() == common::GlobalInfo::Instance()->c2c_to()*/) {
-            QueryContract(tx_list[i].to());
+            QueryContract(tx_list[i].from(), tx_list[i].to());
         }
 
         while (tx_list[i].step() == pools::protobuf::kConsensusLocalTos) {
@@ -367,7 +367,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     return false;
 }
 
-bool ClickHouseClient::QueryContract(const std::string& contract_addr) {
+bool ClickHouseClient::QueryContract(const std::string& from, std::string& contract_addr) {
     zjcvm::ZjchainHost zjc_host;
     zjc_host.tx_context_.tx_origin = evmc::address{};
     zjc_host.tx_context_.block_coinbase = evmc::address{};
@@ -411,8 +411,6 @@ bool ClickHouseClient::QueryContract(const std::string& contract_addr) {
         &result);
     if (exec_res != zjcvm::kZjcvmSuccess || result.status_code != EVMC_SUCCESS) {
         std::string res = "query contract failed: " + std::to_string(result.status_code);
-        evbuffer_add(req->buffer_out, res.c_str(), res.size());
-        evhtp_send_reply(req, EVHTP_RES_BADREQ);
         ZJC_INFO("query contract error: %s.", res.c_str());
         return false;
     }
