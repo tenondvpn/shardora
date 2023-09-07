@@ -624,7 +624,6 @@ bool ClickHouseClient::CreateC2cTable() {
         "`orderId` UInt64 COMMENT 'orderId' CODEC(LZ4) "
         ") "
         "ENGINE = ReplacingMergeTree "
-        "PARTITION BY(orderId) "
         "ORDER BY(orderId) "
         "PRIMARY KEY(orderId) "
         "SETTINGS index_granularity = 8192;";
