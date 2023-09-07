@@ -367,7 +367,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     return false;
 }
 
-bool ClickHouseClient::QueryContract(const std::string& from, std::string& contract_addr) {
+bool ClickHouseClient::QueryContract(const std::string& from, const std::string& contract_addr) {
     zjcvm::ZjchainHost zjc_host;
     zjc_host.tx_context_.tx_origin = evmc::address{};
     zjc_host.tx_context_.block_coinbase = evmc::address{};
