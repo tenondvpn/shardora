@@ -397,6 +397,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     c2cs.AppendColumn("schecked", c2c_sc);
     c2cs.AppendColumn("reported", c2c_report);
     c2cs.AppendColumn("orderId", c2c_order_id);
+    c2cs.AppendColumn("height", c2c_height);
 
     clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(common::GlobalInfo::Instance()->ck_port()));
     ck_client.Insert(kClickhouseTransTableName, trans);
