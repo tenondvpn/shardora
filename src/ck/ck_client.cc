@@ -217,12 +217,12 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
                     auto item = *iter;
                     c2c_r->Append(item["r"].get<std::string>());
                     c2c_seller->Append(item["a"].get<std::string>());
-                    auto all = item["m"].get<std::string>();
+                    auto all = common::Encode::HexDecode(item["m"].get<std::string>());
                     evmc_bytes32 bytes32;
                     memcpy(bytes32.bytes, all.c_str(), 32);
                     uint64_t a = zjcvm::EvmcBytes32ToUint64(bytes32);
                     c2c_all->Append(a);
-                    auto price = item["p"].get<std::string>();
+                    auto price = common::Encode::HexDecode(item["p"].get<std::string>());
                     memcpy(bytes32.bytes, price.c_str(), 32);
                     uint64_t p = zjcvm::EvmcBytes32ToUint64(bytes32);
                     c2c_now->Append(p);
@@ -232,7 +232,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
                     c2c_sc->Append(sr);
                     uint32_t rp = item["rp"].get<bool>();
                     c2c_report->Append(rp);
-                    auto order = item["o"].get<std::string>();
+                    auto order = common::Encode::HexDecode(item["o"].get<std::string>());
                     memcpy(bytes32.bytes, order.c_str(), 32);
                     uint64_t o = zjcvm::EvmcBytes32ToUint64(bytes32);
                     c2c_order_id->Append(o);
