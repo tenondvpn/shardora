@@ -624,6 +624,7 @@ bool ClickHouseClient::CreateC2cTable() {
         "`orderId` UInt64 COMMENT 'orderId' CODEC(LZ4) "
         ") "
         "ENGINE = ReplacingMergeTree "
+        "PARTITION BY(seller) "
         "ORDER BY(seller, orderId) "
         "SETTINGS index_granularity = 8192;";
         clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(common::GlobalInfo::Instance()->ck_port()));
