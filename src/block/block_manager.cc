@@ -36,7 +36,7 @@ int BlockManager::Init(
         std::shared_ptr<pools::TxPoolManager>& pools_mgr,
         std::shared_ptr<pools::ShardStatistic>& statistic_mgr,
         std::shared_ptr<security::Security>& security,
-        std::shared_ptr<contract::ContractManager> contract_mgr,
+        std::shared_ptr<contract::ContractManager>& contract_mgr,
         const std::string& local_id,
         DbBlockCallback new_block_callback,
         block::BlockAggValidCallback block_agg_valid_func) {
