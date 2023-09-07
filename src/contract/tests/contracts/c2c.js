@@ -29,6 +29,9 @@ function hexToBytes(hex) {
 }
 
 function init_private_key() {
+    //const privateKeyBuf = Secp256k1.uint256("b5b3128c236fcec044c303b54d55a97e20bf98b625fec1de6a2a0fffcd8c7cf7", 16)
+    //const privateKeyBuf = Secp256k1.uint256("1b2f993407b95324155ecbfcf2577e32174c8b66e5fdfa4da5677bccdc788763", 16)
+    //const privateKeyBuf = Secp256k1.uint256("1ef07e73ed6211e7b0a512bc6468419fbdcd9b345b49a3331b4c8f8070172a70", 16)
     //const privateKeyBuf = Secp256k1.uint256("373a3165ec09edea6e7a1c8cff21b06f5fb074386ece283927aef730c6d44596", 16)
     const privateKeyBuf = Secp256k1.uint256("fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971", 16)
     self_private_key = Secp256k1.uint256(privateKeyBuf, 16)

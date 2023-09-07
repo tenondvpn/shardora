@@ -622,7 +622,7 @@ bool ClickHouseClient::CreatePrivateKeyTable() {
 }
 
 bool ClickHouseClient::CreateC2cTable() {
-    std::string create_cmd = std::string("CREATE TABLE if not exists c2c_table ( "
+    std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhouseC2cTableName + " ( "
         "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
         "`seller` String COMMENT 'seller' CODEC(LZ4), "
         "`receivable` String COMMENT 'receivable' CODEC(LZ4), "
@@ -631,12 +631,12 @@ bool ClickHouseClient::CreateC2cTable() {
         "`mchecked` UInt32 COMMENT 'mchecked' CODEC(LZ4), "
         "`schecked` UInt32 COMMENT 'schecked' CODEC(LZ4), "
         "`reported` UInt32 COMMENT 'reported' CODEC(LZ4), "
-        "`orderId` UInt64 COMMENT 'orderId' CODEC(LZ4), "
+        "`orderId` UInt64 COMMENT 'orderId' CODEC(LZ4) "
         ") "
         "ENGINE = ReplacingMergeTree "
         "PARTITION BY(orderId) "
         "ORDER BY(orderId) "
-        "SETTINGS index_granularity = 8192;");
+        "SETTINGS index_granularity = 8192;";
     clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(common::GlobalInfo::Instance()->ck_port()));
     ck_client.Execute(create_cmd);
     return true;
