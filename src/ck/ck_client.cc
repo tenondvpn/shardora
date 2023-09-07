@@ -104,6 +104,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     auto c2c_sc = std::make_shared<clickhouse::ColumnUInt32>();
     auto c2c_report = std::make_shared<clickhouse::ColumnUInt32>();
     auto c2c_order_id = std::make_shared<clickhouse::ColumnUInt64>();
+    auto c2c_height = std::make_shared<clickhouse::ColumnUInt64>();
 
     std::string bitmap_str;
     std::string commit_bitmap_str;
@@ -236,6 +237,10 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
                     memcpy(bytes32.bytes, order.c_str(), 32);
                     uint64_t o = zjcvm::EvmcBytes32ToUint64(bytes32);
                     c2c_order_id->Append(o);
+                    auto height = common::Encode::HexDecode(item["h"].get<std::string>());
+                    memcpy(bytes32.bytes, height.c_str(), 32);
+                    uint64_t h = zjcvm::EvmcBytes32ToUint64(bytes32);
+                    c2c_height->Append(h);
                 }
             }
         }
@@ -623,6 +628,7 @@ bool ClickHouseClient::CreateC2cTable() {
         "`schecked` UInt32 COMMENT 'schecked' CODEC(LZ4), "
         "`reported` UInt32 COMMENT 'reported' CODEC(LZ4), "
         "`orderId` UInt64 COMMENT 'orderId' CODEC(LZ4), "
+        "`height` UInt64 COMMENT 'height' CODEC(LZ4), "
         "`update` DateTime DEFAULT now() COMMENT 'update' "
         ") "
         "ENGINE = ReplacingMergeTree "

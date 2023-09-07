@@ -18,6 +18,7 @@ contract C2CSellOrder {
         bool exists;
         bool reported;
         uint256 orderId;
+        uint256 height;
     }
 
     event NewSellout(
@@ -82,7 +83,8 @@ contract C2CSellOrder {
             sellerReleased: false,
             exists: true,
             reported: false,
-            orderId: orderId
+            orderId: orderId,
+            height: block.number
         });
 
         all_sellers.push(msg.sender);
@@ -99,6 +101,7 @@ contract C2CSellOrder {
         require(orders[msg.sender].pledgeAmount >= amount);
         SellOrder memory order = orders[msg.sender];
         order.pledgeAmount -= amount;
+        order.height = block.number;
         payable(buyer).transfer(amount);
         if (order.pledgeAmount < minExchangeValue) {
             if (order.pledgeAmount > 0) {
@@ -141,6 +144,7 @@ contract C2CSellOrder {
         SellOrder memory order = orders[seller];
         require(!order.reported);
         order.managerReleased = true;
+        order.height = block.number;
         if (order.sellerReleased) {
             payable(order.addr).transfer(order.pledgeAmount);
             uint seller_len = all_sellers.length;
@@ -158,6 +162,7 @@ contract C2CSellOrder {
         require(orders[msg.sender].exists);
         SellOrder memory order = orders[msg.sender];
         order.sellerReleased = true;
+        order.height = block.number;
         if (order.managerReleased) {
             payable(msg.sender).transfer(order.pledgeAmount);
             uint seller_len = all_sellers.length;
@@ -175,6 +180,7 @@ contract C2CSellOrder {
         require(orders[seller].exists);
         require(!orders[seller].reported);
         orders[seller].reported = true;
+        orders[seller].height = block.number;
     }
 
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
@@ -225,6 +231,8 @@ contract C2CSellOrder {
         all_bytes[filedCount++] = ToHex(u256ToBytes(order.pledgeAmount));
         all_bytes[filedCount++] = '","p":"';
         all_bytes[filedCount++] = ToHex(u256ToBytes(order.price));
+        all_bytes[filedCount++] = '","h":"';
+        all_bytes[filedCount++] = ToHex(u256ToBytes(order.height));
         bytes memory mr = 'false';
         if (order.managerReleased) {
             mr = 'true';
