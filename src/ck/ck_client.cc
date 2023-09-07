@@ -1,6 +1,7 @@
 #include "ck/ck_client.h"
 
 #include <google/protobuf/util/json_util.h>
+#include <json/json.hpp>
 
 #include "common/encode.h"
 #include "common/global_info.h"
@@ -208,8 +209,45 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
             }
         }
 
+        auto c2c_r = std::make_shared<clickhouse::ColumnString>();
+        auto c2c_seller = std::make_shared<clickhouse::ColumnString>();
+        auto c2c_all = std::make_shared<clickhouse::ColumnUInt64>();
+        auto c2c_now = std::make_shared<clickhouse::ColumnUInt64>();
+        auto c2c_mc = std::make_shared<clickhouse::ColumnUInt32>();
+        auto c2c_sc = std::make_shared<clickhouse::ColumnUInt32>();
+        auto c2c_report = std::make_shared<clickhouse::ColumnUInt32>();
+        auto c2c_order_id = std::make_shared<clickhouse::ColumnUInt64>();
+
+
         if (tx_list[i].step() == pools::protobuf::kContractExcute /*&& tx_list[i].to() == common::GlobalInfo::Instance()->c2c_to()*/) {
-            QueryContract(tx_list[i].from(), tx_list[i].to());
+            nlohmann::json res;
+            bool ret = QueryContract(tx_list[i].from(), tx_list[i].to(), &res);
+            if (ret) {
+                for (auto iter = res.begin(); iter != res.end(); ++iter) {
+                    auto item = *iter;
+                    c2c_r->Append(item["r"]..get<std::string>());
+                    c2c_seller->Append(item["a"]..get<std::string>());
+                    auto all = item["m"].get<std::string>();
+                    evmc_bytes32 bytes32;
+                    memcpy(bytes32.bytes, all.c_str(), 32);
+                    uint64_t a = zjcvm::EvmcBytes32ToUint64(bytes32);
+                    c2c_all->Append(a);
+                    auto price = item["p"].get<std::string>();
+                    memcpy(bytes32.bytes, price.c_str(), 32);
+                    uint64_t p = zjcvm::EvmcBytes32ToUint64(bytes32);
+                    c2c_now->Append(p);
+                    uint32_t mr = item["mr"].get<bool>();
+                    c2c_mc->Append(mr);
+                    uint32_t sr = item["sr"].get<bool>();
+                    c2c_sc->Append(sr);
+                    uint32_t rp = item["rp"].get<bool>();
+                    c2c_report->Append(rp);
+                    auto order = item["o"].get<std::string>();
+                    memcpy(bytes32.bytes, order.c_str(), 32);
+                    uint64_t o = zjcvm::EvmcBytes32ToUint64(bytes32);
+                    c2c_order_id->Append(o);
+                }
+            }
         }
 
         while (tx_list[i].step() == pools::protobuf::kConsensusLocalTos) {
@@ -356,18 +394,28 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     account_attrs.AppendColumn("to", attr_to);
     account_attrs.AppendColumn("type", attr_tx_type);
 
+    c2cs.AppendColumn("seller", c2c_seller);
+    c2cs.AppendColumn("all", c2c_all);
+    c2cs.AppendColumn("now", c2c_now);
+    c2cs.AppendColumn("receivable", c2c_r);
+    c2cs.AppendColumn("mchecked", c2c_mc);
+    c2cs.AppendColumn("schecked", c2c_sc);
+    c2cs.AppendColumn("reported", c2c_report);
+    c2cs.AppendColumn("orderId", c2c_order_id);
+
     clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(common::GlobalInfo::Instance()->ck_port()));
     ck_client.Insert(kClickhouseTransTableName, trans);
     ck_client.Insert(kClickhouseBlockTableName, blocks);
     ck_client.Insert(kClickhouseAccountTableName, accounts);
     ck_client.Insert(kClickhouseAccountKvTableName, account_attrs);
+    ck_client.Insert(kClickhouseC2cTableName, c2cs);
     return true;
 } catch (std::exception& e) {
     ZJC_ERROR("add new block failed[%s]", e.what());
     return false;
 }
 
-bool ClickHouseClient::QueryContract(const std::string& from, const std::string& contract_addr) {
+bool ClickHouseClient::QueryContract(const std::string& from, const std::string& contract_addr, nlohmann::json* res) {
     zjcvm::ZjchainHost zjc_host;
     zjc_host.tx_context_.tx_origin = evmc::address{};
     zjc_host.tx_context_.block_coinbase = evmc::address{};
@@ -420,7 +468,9 @@ bool ClickHouseClient::QueryContract(const std::string& from, const std::string&
     memcpy(len_bytes.bytes, qdata.c_str() + 32, 32);
     uint64_t len = zjcvm::EvmcBytes32ToUint64(len_bytes);
     std::string http_res(qdata.c_str() + 64, len);
-    std::cout << http_res << std::endl;
+    *res = nlohmann::json::parse(http_res);
+
+    std::cout << res->dump() << std::endl;
     return true;
 }
 

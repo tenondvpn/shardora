@@ -1,6 +1,7 @@
 #pragma once
 
 #include <clickhouse/client.h>
+#include <json/json.hpp>
 
 #include "ck/ck_utils.h"
 #include "common/utils.h"
@@ -31,7 +32,7 @@ private:
     bool CreateC2cTable();
     void Statistic();
     void TickStatistic();
-    bool QueryContract(const std::string& from, const std::string& contract_addr);
+    bool QueryContract(const std::string& from, const std::string& contract_addr, nlohmann::json* res);
 
     common::Tick statistic_tick_;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
