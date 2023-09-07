@@ -8,6 +8,7 @@
 #include "common/limit_hash_map.h"
 #include "common/node_members.h"
 #include "common/thread_safe_queue.h"
+#include "contract/contract_manager.h"
 #include "db/db.h"
 #include "network/network_utils.h"
 #include "pools/to_txs_pools.h"
@@ -39,6 +40,7 @@ public:
         std::shared_ptr<pools::TxPoolManager>& pools_mgr,
         std::shared_ptr<pools::ShardStatistic>& statistic_mgr,
         std::shared_ptr<security::Security>& security,
+        std::shared_ptr<contract::ContractManager>& contract_mgr,
         const std::string& local_id,
         DbBlockCallback new_block_callback,
         block::BlockAggValidCallback block_agg_valid_func);
@@ -229,6 +231,7 @@ private:
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> to_tx_msg_queue_;
     common::ThreadSafeQueue<std::shared_ptr<transport::TransportMessage>> statistic_tx_msg_queue_;
     std::map<uint32_t, std::map<uint64_t, std::queue<std::shared_ptr<block::protobuf::Block>>>> waiting_check_sign_blocks_;
+    std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(BlockManager);
 };

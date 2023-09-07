@@ -156,6 +156,7 @@ int NetworkInit::Init(int argc, char** argv) {
         pools_mgr_,
         shard_statistic_,
         security_,
+        contract_mgr_,
         security_->GetAddress(),
         new_db_cb,
         std::bind(&NetworkInit::BlockBlsAggSignatureValid, this, std::placeholders::_1, std::placeholders::_2));
