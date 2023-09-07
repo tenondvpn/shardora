@@ -1821,12 +1821,14 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (prev_create_to_tx_ms_ >= now_tm_ms) {
+        ZJC_DEBUG("prev_create_to_tx_ms_ >= now_tm_ms");
         return;
     }
 
     if (latest_to_tx_ != nullptr &&
             latest_to_tx_->to_tx != nullptr &&
             latest_to_tx_->to_tx->timeout > now_tm_ms) {
+        ZJC_DEBUG("latest_to_tx_ invalid");
         return;
     }
 
