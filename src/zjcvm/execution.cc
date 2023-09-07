@@ -54,9 +54,9 @@ void Execution::Init(std::shared_ptr<db::Db>& db) {
 //         return;
 //     }
 
-    uint32_t thread_count = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
-    address_exists_set_ = new common::StringUniqueSet<256, 16>[thread_count];
-    storage_map_ = new common::UniqueMap<std::string, std::string, 256, 16>[thread_count];
+    thread_count_ = common::GlobalInfo::Instance()->message_handler_thread_count() - 1;
+    address_exists_set_ = new common::StringUniqueSet<256, 16>[thread_count_];
+    storage_map_ = new common::UniqueMap<std::string, std::string, 256, 16>[thread_count_];
 }
 
 int Execution::execute(

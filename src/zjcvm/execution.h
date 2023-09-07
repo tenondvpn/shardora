@@ -33,6 +33,15 @@ public:
         evmc::Result* res);
 
     bool IsAddressExists(uint8_t thread_idx, const std::string& addr) {
+        if (thread_idx >= thread_count_) {
+            auto address_info = prefix_db_->GetAddressInfo(addr);
+            if (address_info != nullptr) {
+                return true;
+            }
+
+            return false;
+        }
+
         assert(thread_idx < common::kMaxThreadCount);
         if (address_exists_set_[thread_idx].exists(addr)) {
             return true;
@@ -49,6 +58,10 @@ public:
     }
 
     bool AddressWarm(uint8_t thread_idx, const evmc::address& addr) {
+        if (thread_idx >= thread_count_) {
+            return false;
+        }
+
         auto str_addr = std::string((char*)addr.bytes, sizeof(addr.bytes));
         assert(thread_idx < common::kMaxThreadCount);
         if (address_exists_set_[thread_idx].exists(str_addr)) {
@@ -62,6 +75,10 @@ public:
             uint8_t thread_idx,
             const evmc::address& addr,
             const evmc::bytes32& key) {
+        if (thread_idx >= thread_count_) {
+            return false;
+        }
+
         auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
             std::string((char*)key.bytes, sizeof(key.bytes));
         return storage_map_[thread_idx].exists(str_key);
@@ -101,6 +118,10 @@ public:
             const std::string& key,
             const std::string& val,
             db::DbWriteBatch& db_batch) {
+        if (thread_idx >= thread_count_) {
+            return;
+        }
+
         storage_map_[thread_idx].update(key, val);
         prefix_db_->SaveTemporaryKv(key, val, db_batch);
         ZJC_DEBUG("update storage: %s, %s", common::Encode::HexEncode(key).c_str(), common::Encode::HexEncode(val).c_str());
@@ -113,7 +134,7 @@ public:
         auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
             std::string((char*)key.bytes, sizeof(key.bytes));
         std::string val;
-        if (thread_idx >= common::kMaxThreadCount) {
+        if (thread_idx >= thread_count_) {
             prefix_db_->GetTemporaryKv(str_key, &val);
         } else {
             if (!storage_map_[thread_idx].get(str_key, &val)) {
@@ -148,11 +169,15 @@ public:
             std::string* val) {
         auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) + key;
         auto res = true;
-        if (!storage_map_[thread_idx].get(str_key, val)) {
-            // get from db and add to memory cache
-            res = prefix_db_->GetTemporaryKv(str_key, val);
-            if (res) {
-                storage_map_[thread_idx].add(str_key, *val);
+        if (thread_idx >= thread_count_) {
+            prefix_db_->GetTemporaryKv(str_key, val);
+        } else {
+            if (!storage_map_[thread_idx].get(str_key, val)) {
+                // get from db and add to memory cache
+                res = prefix_db_->GetTemporaryKv(str_key, val);
+                if (res) {
+                    storage_map_[thread_idx].add(str_key, *val);
+                }
             }
         }
 
@@ -169,6 +194,7 @@ private:
     common::UniqueMap<std::string, std::string, 256, 16>* storage_map_ = nullptr;
     std::shared_ptr<db::Db> db_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
+    uint8_t thread_count_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(Execution);
 };
