@@ -97,7 +97,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     auto c2c_now = std::make_shared<clickhouse::ColumnUInt64>();
     auto c2c_mc = std::make_shared<clickhouse::ColumnUInt32>();
     auto c2c_sc = std::make_shared<clickhouse::ColumnUInt32>();
-    auto c2c_r = std::make_shared<clickhouse::ColumnUInt32>();
+    auto c2c_report = std::make_shared<clickhouse::ColumnUInt32>();
     auto c2c_order_id = std::make_shared<clickhouse::ColumnUInt64>();
 
     std::string bitmap_str;

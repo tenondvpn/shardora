@@ -30,7 +30,7 @@ private:
     bool CreateC2cTable();
     void Statistic();
     void TickStatistic();
-    bool QueryContract();
+    bool QueryContract(const std::string& contract_addr);
 
     common::Tick statistic_tick_;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
