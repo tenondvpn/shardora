@@ -622,7 +622,7 @@ bool ClickHouseClient::CreateC2cTable() {
         "`mchecked` UInt32 COMMENT 'mchecked' CODEC(LZ4), "
         "`schecked` UInt32 COMMENT 'schecked' CODEC(LZ4), "
         "`reported` UInt32 COMMENT 'reported' CODEC(LZ4), "
-        "`orderId` UInt64 COMMENT 'orderId' CODEC(LZ4) "
+        "`orderId` UInt64 COMMENT 'orderId' CODEC(LZ4), "
         "`update` DateTime DEFAULT now() COMMENT 'update' "
         ") "
         "ENGINE = ReplacingMergeTree "
