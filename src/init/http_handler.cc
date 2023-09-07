@@ -328,7 +328,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     zjcvm::Uint64ToEvmcBytes32(
         zjc_host.tx_context_.chain_id,
         chanin_id);
-    zjc_host.thread_idx_ = 0;
+    zjc_host.thread_idx_ = common::kMaxThreadCount;
     zjc_host.contract_mgr_ = contract_mgr;
     zjc_host.acc_mgr_ = nullptr;
     zjc_host.my_address_ = contract_addr;

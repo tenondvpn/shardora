@@ -113,15 +113,18 @@ public:
         auto str_key = std::string((char*)addr.bytes, sizeof(addr.bytes)) +
             std::string((char*)key.bytes, sizeof(key.bytes));
         std::string val;
-        if (!storage_map_[thread_idx].get(str_key, &val)) {
-            // get from db and add to memory cache
-            if (prefix_db_->GetTemporaryKv(str_key, &val)) {
-                storage_map_[thread_idx].add(str_key, val);
+        if (thread_idx >= common::kMaxThreadCount) {
+            prefix_db_->GetTemporaryKv(str_key, &val);
+        } else {
+            if (!storage_map_[thread_idx].get(str_key, &val)) {
+                // get from db and add to memory cache
+                if (prefix_db_->GetTemporaryKv(str_key, &val)) {
+                    storage_map_[thread_idx].add(str_key, val);
+                }
             }
         }
 
         ZJC_DEBUG("get storage: %s, %s", common::Encode::HexEncode(str_key).c_str(), common::Encode::HexEncode(val).c_str());
-
         if (val.empty()) {
             return evmc::bytes32{};
         }
