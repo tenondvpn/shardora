@@ -27,6 +27,12 @@ contract C2CSellOrder {
        uint256 pledgeAmount,
        uint256 orderId
        );
+    event NewSelloutValue(
+       uint256 value
+       );
+    event NewSelloutLength(
+       uint256 value
+       );
 
     uint256 orderId;
     address public owner;
@@ -57,9 +63,16 @@ contract C2CSellOrder {
     }
 
     function NewSellOrder(bytes memory receivable, uint256 price) public payable {
+        emit NewSelloutValue(msg.value);
         require(msg.value >= minExchangeValue);
+        emit NewSellout(msg.sender, receivable, price, msg.value, orderId);
+
         require(!orders[msg.sender].exists);
+        emit NewSellout(msg.sender, receivable, price, msg.value, orderId);
+
         require(!valid_managers[msg.sender]);
+        emit NewSellout(msg.sender, receivable, price, msg.value, orderId);
+
         orders[msg.sender] = SellOrder({
             accountsReceivable: receivable,
             addr: payable(msg.sender),
@@ -73,6 +86,7 @@ contract C2CSellOrder {
         });
 
         all_sellers.push(msg.sender);
+        emit NewSelloutLength(all_sellers.length);
         emit NewSellout(msg.sender, receivable, price, msg.value, orderId);
         orderId++;
     }
@@ -207,9 +221,9 @@ contract C2CSellOrder {
         all_bytes[filedCount++] = ToHex(order.accountsReceivable);
         all_bytes[filedCount++] = '","a":"';
         all_bytes[filedCount++] = ToHex(toBytes(order.addr));
-        all_bytes[filedCount++] = '","m":';
+        all_bytes[filedCount++] = '","m":"';
         all_bytes[filedCount++] = ToHex(u256ToBytes(order.pledgeAmount));
-        all_bytes[filedCount++] = '","p":';
+        all_bytes[filedCount++] = '","p":"';
         all_bytes[filedCount++] = ToHex(u256ToBytes(order.price));
         bytes memory mr = 'false';
         if (order.managerReleased) {
@@ -248,7 +262,7 @@ contract C2CSellOrder {
         uint arrayLength = all_sellers.length;
         uint validLen = 1;
         for (uint i=0; i<arrayLength; i++) {
-            all_bytes[i + 1] = GetOrderJson(orders[all_sellers[i]], (i == arrayLength));
+            all_bytes[i + 1] = GetOrderJson(orders[all_sellers[i]], (i == arrayLength - 1));
             ++validLen;
         }
 

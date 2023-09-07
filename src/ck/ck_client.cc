@@ -27,6 +27,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     clickhouse::Block blocks;
     clickhouse::Block accounts;
     clickhouse::Block account_attrs;
+    clickhouse::Block c2cs;
     auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
     auto pool_index = std::make_shared<clickhouse::ColumnUInt32>();
     auto height = std::make_shared<clickhouse::ColumnUInt64>();
@@ -89,6 +90,15 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     auto attr_tx_type = std::make_shared<clickhouse::ColumnUInt32>();
     auto attr_key = std::make_shared<clickhouse::ColumnString>();
     auto attr_value = std::make_shared<clickhouse::ColumnString>();
+
+    auto c2c_r = std::make_shared<clickhouse::ColumnString>();
+    auto c2c_seller = std::make_shared<clickhouse::ColumnString>();
+    auto c2c_all = std::make_shared<clickhouse::ColumnUInt64>();
+    auto c2c_now = std::make_shared<clickhouse::ColumnUInt64>();
+    auto c2c_mc = std::make_shared<clickhouse::ColumnUInt32>();
+    auto c2c_sc = std::make_shared<clickhouse::ColumnUInt32>();
+    auto c2c_r = std::make_shared<clickhouse::ColumnUInt32>();
+    auto c2c_order_id = std::make_shared<clickhouse::ColumnUInt64>();
 
     std::string bitmap_str;
     std::string commit_bitmap_str;
@@ -192,6 +202,10 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
                 attr_key->Append(common::Encode::HexEncode(tx_list[i].storages(j).key()));
                 attr_value->Append(common::Encode::HexEncode(tx_list[i].storages(j).val_hash()));
             }
+        }
+
+        if (tx_list[i].step() == pools::protobuf::kContractExcute /*&& tx_list[i].to() == common::GlobalInfo::Instance()->c2c_to()*/) {
+            QueryContract(tx_list[i].to())
         }
 
         while (tx_list[i].step() == pools::protobuf::kConsensusLocalTos) {
@@ -349,6 +363,64 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     return false;
 }
 
+bool ClickHouseClient::QueryContract(const std::string& contract_addr) {
+    zjcvm::ZjchainHost zjc_host;
+    zjc_host.tx_context_.tx_origin = evmc::address{};
+    zjc_host.tx_context_.block_coinbase = evmc::address{};
+    zjc_host.tx_context_.block_number = 0;
+    zjc_host.tx_context_.block_timestamp = 0;
+    uint64_t chanin_id = 0;
+    zjcvm::Uint64ToEvmcBytes32(
+        zjc_host.tx_context_.chain_id,
+        chanin_id);
+    zjc_host.thread_idx_ = 0;
+    zjc_host.contract_mgr_ = contract_mgr;
+    zjc_host.acc_mgr_ = nullptr;
+    zjc_host.my_address_ = contract_addr;
+    zjc_host.tx_context_.block_gas_limit = 10000000000lu;
+    // user caller prepayment 's gas
+    uint64_t from_balance = 10000000000lu;
+    auto contract_addr_info = prefix_db_->GetAddressInfo(contract_addr);
+    if (contract_addr_info == nullptr) {
+        return false;
+    }
+    uint64_t to_balance = contract_addr_info->balance();
+    zjc_host.AddTmpAccountBalance(
+        from,
+        from_balance);
+    zjc_host.AddTmpAccountBalance(
+        contract_addr,
+        to_balance);
+    evmc_result evmc_res = {};
+    evmc::Result result{ evmc_res };
+    int exec_res = zjcvm::Execution::Instance()->execute(
+        contract_addr_info->bytes_code(),
+        input,
+        from,
+        contract_addr,
+        from,
+        0,
+        10000000000lu,
+        0,
+        zjcvm::kJustCall,
+        zjc_host,
+        &result);
+    if (exec_res != zjcvm::kZjcvmSuccess || result.status_code != EVMC_SUCCESS) {
+        std::string res = "query contract failed: " + std::to_string(result.status_code);
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        ZJC_INFO("query contract error: %s.", res.c_str());
+        return;
+    }
+
+    std::string qdata((char*)result.output_data, result.output_size);
+    evmc_bytes32 len_bytes;
+    memcpy(len_bytes.bytes, qdata.c_str() + 32, 32);
+    uint64_t len = zjcvm::EvmcBytes32ToUint64(len_bytes);
+    std::string http_res(qdata.c_str() + 64, len);
+    std::cout << http_res << std::endl;
+}
+
 bool ClickHouseClient::CreateTransactionTable() {
     std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhouseTransTableName + " ( "
         "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
@@ -496,6 +568,27 @@ bool ClickHouseClient::CreatePrivateKeyTable() {
     return true;
 }
 
+bool ClickHouseClient::CreateC2cTable() {
+    std::string create_cmd = std::string("CREATE TABLE if not exists c2c_table ( "
+        "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
+        "`seller` String COMMENT 'seller' CODEC(LZ4), "
+        "`receivable` String COMMENT 'receivable' CODEC(LZ4), "
+        "`all` UInt64 COMMENT 'all' CODEC(LZ4), "
+        "`now` UInt64 COMMENT 'now' CODEC(LZ4), "
+        "`mchecked` UInt32 COMMENT 'mchecked' CODEC(LZ4), "
+        "`schecked` UInt32 COMMENT 'schecked' CODEC(LZ4), "
+        "`reported` UInt32 COMMENT 'reported' CODEC(LZ4), "
+        "`orderId` UInt64 COMMENT 'orderId' CODEC(LZ4), "
+        ") "
+        "ENGINE = ReplacingMergeTree "
+        "PARTITION BY(orderId) "
+        "ORDER BY(orderId) "
+        "SETTINGS index_granularity = 8192;");
+    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(common::GlobalInfo::Instance()->ck_port()));
+    ck_client.Execute(create_cmd);
+    return true;
+}
+
 bool ClickHouseClient::CreateTable(bool statistic, std::shared_ptr<db::Db> db_ptr) try {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_ptr);
     CreateTransactionTable();
@@ -504,6 +597,7 @@ bool ClickHouseClient::CreateTable(bool statistic, std::shared_ptr<db::Db> db_pt
     CreateAccountKeyValueTable();
     CreateStatisticTable();
     CreatePrivateKeyTable();
+    CreateC2cTable();
     if (statistic) {
         statistic_tick_.CutOff(5000000l, std::bind(&ClickHouseClient::TickStatistic, this));
     }

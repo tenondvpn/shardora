@@ -27,8 +27,10 @@ private:
     bool CreateAccountKeyValueTable();
     bool CreateStatisticTable();
     bool CreatePrivateKeyTable();
+    bool CreateC2cTable();
     void Statistic();
     void TickStatistic();
+    bool QueryContract();
 
     common::Tick statistic_tick_;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
