@@ -623,11 +623,10 @@ bool ClickHouseClient::CreateC2cTable() {
         "`reported` UInt32 COMMENT 'reported' CODEC(LZ4), "
         "`orderId` UInt64 COMMENT 'orderId' CODEC(LZ4) "
         ") "
-        "ENGINE = MergeTree "
-        "ORDER BY(orderId) "
-        "PRIMARY KEY(orderId) "
+        "ENGINE = ReplacingMergeTree "
+        "ORDER BY(seller, orderId) "
         "SETTINGS index_granularity = 8192;";
-    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(common::GlobalInfo::Instance()->ck_port()));
+        clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(common::GlobalInfo::Instance()->ck_port()));
     ck_client.Execute(create_cmd);
     return true;
 }
