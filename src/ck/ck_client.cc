@@ -225,8 +225,8 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
             if (ret) {
                 for (auto iter = res.begin(); iter != res.end(); ++iter) {
                     auto item = *iter;
-                    c2c_r->Append(item["r"]..get<std::string>());
-                    c2c_seller->Append(item["a"]..get<std::string>());
+                    c2c_r->Append(item["r"].get<std::string>());
+                    c2c_seller->Append(item["a"].get<std::string>());
                     auto all = item["m"].get<std::string>();
                     evmc_bytes32 bytes32;
                     memcpy(bytes32.bytes, all.c_str(), 32);
