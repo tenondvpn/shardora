@@ -626,6 +626,7 @@ bool ClickHouseClient::CreateC2cTable() {
         "ENGINE = ReplacingMergeTree "
         "PARTITION BY(orderId) "
         "ORDER BY(orderId) "
+        "PRIMARY KEY(orderId) "
         "SETTINGS index_granularity = 8192;";
     clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(common::GlobalInfo::Instance()->ck_port()));
     ck_client.Execute(create_cmd);
