@@ -1077,7 +1077,7 @@ bool TxPoolManager::UserTxValid(const transport::MessagePtr& msg_ptr) {
 void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
     auto& tx_msg = msg_ptr->header.tx_proto();
     if (!UserTxValid(msg_ptr)) {
-        assert(false);
+//         assert(false);
         return;
     }
 
