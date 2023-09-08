@@ -19,6 +19,8 @@ contract C2CSellOrder {
         bool reported;
         uint256 orderId;
         uint256 height;
+        address buyer;
+        uint256 amount;
     }
 
     event NewSellout(
@@ -84,7 +86,9 @@ contract C2CSellOrder {
             exists: true,
             reported: false,
             orderId: orderId,
-            height: block.number
+            height: block.number,
+            buyer:msg.sender,
+            amount:0
         });
 
         all_sellers.push(msg.sender);
@@ -102,6 +106,8 @@ contract C2CSellOrder {
         SellOrder memory order = orders[msg.sender];
         order.pledgeAmount -= amount;
         order.height = block.number;
+        order.buyer = buyer;
+        order.amount = amount;
         payable(buyer).transfer(amount);
         if (order.pledgeAmount < minExchangeValue) {
             if (order.pledgeAmount > 0) {
@@ -227,12 +233,16 @@ contract C2CSellOrder {
         all_bytes[filedCount++] = ToHex(order.accountsReceivable);
         all_bytes[filedCount++] = '","a":"';
         all_bytes[filedCount++] = ToHex(toBytes(order.addr));
+        all_bytes[filedCount++] = '","b":"';
+        all_bytes[filedCount++] = ToHex(toBytes(order.buyer));
         all_bytes[filedCount++] = '","m":"';
         all_bytes[filedCount++] = ToHex(u256ToBytes(order.pledgeAmount));
         all_bytes[filedCount++] = '","p":"';
         all_bytes[filedCount++] = ToHex(u256ToBytes(order.price));
         all_bytes[filedCount++] = '","h":"';
         all_bytes[filedCount++] = ToHex(u256ToBytes(order.height));
+        all_bytes[filedCount++] = '","bm":"';
+        all_bytes[filedCount++] = ToHex(u256ToBytes(order.amount));
         bytes memory mr = 'false';
         if (order.managerReleased) {
             mr = 'true';

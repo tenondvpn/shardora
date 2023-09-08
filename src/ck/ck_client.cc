@@ -105,6 +105,8 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     auto c2c_report = std::make_shared<clickhouse::ColumnUInt32>();
     auto c2c_order_id = std::make_shared<clickhouse::ColumnUInt64>();
     auto c2c_height = std::make_shared<clickhouse::ColumnUInt64>();
+    auto c2c_buyer = std::make_shared<clickhouse::ColumnString>();
+    auto c2c_amount = std::make_shared<clickhouse::ColumnUInt64>();
 
     std::string bitmap_str;
     std::string commit_bitmap_str;
@@ -218,6 +220,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
                     auto item = *iter;
                     c2c_r->Append(item["r"].get<std::string>());
                     c2c_seller->Append(item["a"].get<std::string>());
+                    c2c_buyer->Append(item["b"].get<std::string>());
                     auto all = common::Encode::HexDecode(item["m"].get<std::string>());
                     evmc_bytes32 bytes32;
                     memcpy(bytes32.bytes, all.c_str(), 32);
@@ -241,6 +244,10 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
                     memcpy(bytes32.bytes, height.c_str(), 32);
                     uint64_t h = zjcvm::EvmcBytes32ToUint64(bytes32);
                     c2c_height->Append(h);
+                    auto amount = common::Encode::HexDecode(item["bm"].get<std::string>());
+                    memcpy(bytes32.bytes, amount.c_str(), 32);
+                    uint64_t am = zjcvm::EvmcBytes32ToUint64(bytes32);
+                    c2c_amount->Append(am);
                 }
             }
         }
@@ -398,6 +405,8 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     c2cs.AppendColumn("reported", c2c_report);
     c2cs.AppendColumn("orderId", c2c_order_id);
     c2cs.AppendColumn("height", c2c_height);
+    c2cs.AppendColumn("buyer", c2c_buyer);
+    c2cs.AppendColumn("amount", c2c_amount);
 
     clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(common::GlobalInfo::Instance()->ck_port()));
     ck_client.Insert(kClickhouseTransTableName, trans);
@@ -622,6 +631,8 @@ bool ClickHouseClient::CreateC2cTable() {
     std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhouseC2cTableName + " ( "
         "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
         "`seller` String COMMENT 'seller' CODEC(LZ4), "
+        "`buyer` String COMMENT 'buyer' CODEC(LZ4), "
+        "`amount` UInt64 COMMENT 'amount' CODEC(LZ4), "
         "`receivable` String COMMENT 'receivable' CODEC(LZ4), "
         "`all` UInt64 COMMENT 'all' CODEC(LZ4), "
         "`now` UInt64 COMMENT 'now' CODEC(LZ4), "
