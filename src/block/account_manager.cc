@@ -143,6 +143,7 @@ const std::string& AccountManager::GetTxValidAddress(const block::protobuf::Bloc
         return tx_info.to();
     case pools::protobuf::kJoinElect:
     case pools::protobuf::kNormalFrom:
+    case pools::protobuf::kContractGasPrepayment:
         return tx_info.from();
     default:
         assert(false);
@@ -174,6 +175,29 @@ void AccountManager::HandleNormalFromTx(
         block.height(), block.pool_index());
 }
 
+void AccountManager::HandleContractPrepayment(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
+    auto& account_id = GetTxValidAddress(tx);
+    auto account_info = GetAccountInfo(thread_idx, account_id);
+    if (account_info == nullptr) {
+        assert(false);
+        return;
+    }
+
+    if (account_info->latest_height() >= block.height()) {
+        return;
+    }
+
+    account_info->set_latest_height(block.height());
+    account_info->set_balance(tx.balance());
+    prefix_db_->AddAddressInfo(account_id, *account_info, db_batch);
+    ZJC_DEBUG("contract prepayment address new balance %s: %lu, height: %lu, pool: %u",
+        common::Encode::HexEncode(account_id).c_str(), tx.balance(),
+        block.height(), block.pool_index());
+}
 void AccountManager::HandleLocalToTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
@@ -477,6 +501,9 @@ void AccountManager::NewBlockWithTx(
         break;
     case pools::protobuf::kJoinElect:
         HandleJoinElectTx(thread_idx, *block_item, tx, db_batch);
+        break;
+    case pools::protobuf::kContractGasPrepayment:
+        HandleContractPrepayment(thread_idx, *block_item, tx, db_batch);
         break;
     default:
         break;

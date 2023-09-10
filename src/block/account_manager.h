@@ -67,6 +67,11 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
+    void HandleContractPrepayment(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
     void HandleCreateContract(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
