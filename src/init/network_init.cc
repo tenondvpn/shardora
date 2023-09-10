@@ -1157,6 +1157,7 @@ void NetworkInit::AddBlockItemToCache(
         case pools::protobuf::kNormalFrom:
         case pools::protobuf::kRootCreateAddress:
         case pools::protobuf::kJoinElect:
+        case pools::protobuf::kContractGasPrepayment:
             account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             break;
         case pools::protobuf::kConsensusLocalTos:
