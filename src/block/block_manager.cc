@@ -95,7 +95,6 @@ void BlockManager::ConsensusTimerMessage(uint8_t thread_idx) {
     HandleAllNewBlock(thread_idx);
     auto tmp_to_tx_leader = to_tx_leader_;
     if (tmp_to_tx_leader != nullptr && local_id_ == tmp_to_tx_leader->id) {
-        ZJC_DEBUG("now leader create to and statistic message.");
         CreateToTx(thread_idx);
         CreateStatisticTx(thread_idx);
     }
@@ -1811,25 +1810,21 @@ void BlockManager::CreateToTx(uint8_t thread_idx) {
     // check this node is leader
     auto tmp_to_tx_leader = to_tx_leader_;
     if (tmp_to_tx_leader == nullptr) {
-        ZJC_DEBUG("leader null");
         return;
     }
 
     if (local_id_ != tmp_to_tx_leader->id) {
-        ZJC_DEBUG("not leader");
         return;
     }
 
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (prev_create_to_tx_ms_ >= now_tm_ms) {
-        ZJC_DEBUG("prev_create_to_tx_ms_ >= now_tm_ms");
         return;
     }
 
     if (latest_to_tx_ != nullptr &&
             latest_to_tx_->to_tx != nullptr &&
             latest_to_tx_->to_tx->timeout > now_tm_ms) {
-        ZJC_DEBUG("latest_to_tx_ invalid");
         return;
     }
 
