@@ -39,12 +39,13 @@ contract C2CSellOrder {
 
     uint256 orderId;
     address public owner;
+    uint256 public minPlegementValue;
     uint256 public minExchangeValue;
     mapping(address => SellOrder) public orders;
     mapping(address => bool) public valid_managers;
     address[] all_sellers;
 
-    constructor(address[] memory managers, uint256 minAmount) payable {
+    constructor(address[] memory managers, uint256 minPlegement, uint256 minAmount) payable {
         uint arrayLength = managers.length;
         for (uint i=0; i<arrayLength; i++) {
             valid_managers[managers[i]] = true;
@@ -52,6 +53,7 @@ contract C2CSellOrder {
 
         orderId = 0;
         valid_managers[msg.sender] = true;
+        minPlegementValue = minPlegement;
         minExchangeValue = minAmount;
         owner = msg.sender;
     }
@@ -67,7 +69,7 @@ contract C2CSellOrder {
 
     function NewSellOrder(bytes memory receivable, uint256 price) public payable {
         emit NewSelloutValue(msg.value);
-        require(msg.value >= minExchangeValue);
+        require(msg.value >= minPlegementValue);
         emit NewSellout(msg.sender, receivable, price, msg.value, orderId);
 
         require(!orders[msg.sender].exists);
@@ -98,6 +100,7 @@ contract C2CSellOrder {
     }
 
     function Confirm(address payable buyer, uint256 amount) public payable {
+        require(amount >= minExchangeValue);
         require(orders[msg.sender].exists);
         require(!orders[msg.sender].managerReleased);
         require(!orders[msg.sender].sellerReleased);

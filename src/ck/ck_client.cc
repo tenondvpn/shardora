@@ -107,6 +107,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     auto c2c_height = std::make_shared<clickhouse::ColumnUInt64>();
     auto c2c_buyer = std::make_shared<clickhouse::ColumnString>();
     auto c2c_amount = std::make_shared<clickhouse::ColumnUInt64>();
+    auto c2c_contract_addr = std::make_shared<clickhouse::ColumnString>();
 
     std::string bitmap_str;
     std::string commit_bitmap_str;
@@ -248,6 +249,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
                     memcpy(bytes32.bytes, amount.c_str(), 32);
                     uint64_t am = zjcvm::EvmcBytes32ToUint64(bytes32);
                     c2c_amount->Append(am);
+                    c2c_contract_addr->Append(tx_list[i].to());
                 }
             }
         }
@@ -407,6 +409,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     c2cs.AppendColumn("height", c2c_height);
     c2cs.AppendColumn("buyer", c2c_buyer);
     c2cs.AppendColumn("amount", c2c_amount);
+    c2cs.AppendColumn("contract", c2c_contract_addr);
 
     clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(common::GlobalInfo::Instance()->ck_port()));
     ck_client.Insert(kClickhouseTransTableName, trans);
@@ -632,6 +635,7 @@ bool ClickHouseClient::CreateC2cTable() {
         "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
         "`seller` String COMMENT 'seller' CODEC(LZ4), "
         "`buyer` String COMMENT 'buyer' CODEC(LZ4), "
+        "`contract` String COMMENT 'contract' CODEC(LZ4), "
         "`amount` UInt64 COMMENT 'amount' CODEC(LZ4), "
         "`receivable` String COMMENT 'receivable' CODEC(LZ4), "
         "`all` UInt64 COMMENT 'all' CODEC(LZ4), "
