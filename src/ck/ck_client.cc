@@ -249,7 +249,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
                     memcpy(bytes32.bytes, amount.c_str(), 32);
                     uint64_t am = zjcvm::EvmcBytes32ToUint64(bytes32);
                     c2c_amount->Append(am);
-                    c2c_contract_addr->Append(tx_list[i].to());
+                    c2c_contract_addr->Append(common::Encode::HexEncode(tx_list[i].to()));
                 }
             }
         }
