@@ -292,8 +292,8 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
                 if (to_txs.tos(i).to().size() == security::kUnicastAddressLength * 2) {
                     auto contract = to_txs.tos(i).to().substr(0, 20);
                     auto user = to_txs.tos(i).to().substr(20, 20);
-                    prepay_contract->Append(contract);
-                    prepay_user->Append(user);
+                    prepay_contract->Append(common::Encode::HexEncode(contract));
+                    prepay_user->Append(common::Encode::HexEncode(user));
                     prepay_height->Append(block_item->height());
                     prepay_amount->Append(to_txs.tos(i).balance());
                 }
