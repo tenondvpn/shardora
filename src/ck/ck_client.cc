@@ -33,6 +33,7 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     clickhouse::Block accounts;
     clickhouse::Block account_attrs;
     clickhouse::Block c2cs;
+    clickhouse::Block prepay;
     auto shard_id = std::make_shared<clickhouse::ColumnUInt32>();
     auto pool_index = std::make_shared<clickhouse::ColumnUInt32>();
     auto height = std::make_shared<clickhouse::ColumnUInt64>();
@@ -108,6 +109,11 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     auto c2c_buyer = std::make_shared<clickhouse::ColumnString>();
     auto c2c_amount = std::make_shared<clickhouse::ColumnUInt64>();
     auto c2c_contract_addr = std::make_shared<clickhouse::ColumnString>();
+
+    auto prepay_contract = std::make_shared<clickhouse::ColumnString>();
+    auto prepay_user = std::make_shared<clickhouse::ColumnString>();
+    auto prepay_amount = std::make_shared<clickhouse::ColumnUInt64>();
+    auto prepay_height = std::make_shared<clickhouse::ColumnUInt64>();
 
     std::string bitmap_str;
     std::string commit_bitmap_str;
@@ -283,6 +289,15 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
 
             ZJC_DEBUG("now handle local to txs: %d", to_txs.tos_size());
             for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
+                if (to_txs.tos(i).to().size() == security::kUnicastAddressLength * 2) {
+                    auto contract = to_txs.tos(i).to().substr(0, 20);
+                    auto user = to_txs.tos(i).to().substr(20, 20);
+                    prepay_contract->Append(contract);
+                    prepay_user->Append(user);
+                    prepay_height->Append(block_item->height());
+                    prepay_amount->Append(to_txs.tos(i).balance());
+                }
+
                 if (to_txs.tos(i).to().size() != security::kUnicastAddressLength) {
                     //assert(false);
                     continue;
@@ -411,12 +426,18 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     c2cs.AppendColumn("amount", c2c_amount);
     c2cs.AppendColumn("contract", c2c_contract_addr);
 
+    prepay.AppendColumn("contract", prepay_contract);
+    prepay.AppendColumn("user", prepay_user);
+    prepay.AppendColumn("prepayment", prepay_amount);
+    prepay.AppendColumn("height", prepay_height);
+
     clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(common::GlobalInfo::Instance()->ck_port()));
     ck_client.Insert(kClickhouseTransTableName, trans);
     ck_client.Insert(kClickhouseBlockTableName, blocks);
     ck_client.Insert(kClickhouseAccountTableName, accounts);
     ck_client.Insert(kClickhouseAccountKvTableName, account_attrs);
     ck_client.Insert(kClickhouseC2cTableName, c2cs);
+    ck_client.Insert(kClickhousePrepaymentTableName, prepay);
     ck_client.Execute(std::string("optimize TABLE ") + kClickhouseC2cTableName + " FINAL");
     return true;
 } catch (std::exception& e) {
@@ -656,6 +677,25 @@ bool ClickHouseClient::CreateC2cTable() {
     return true;
 }
 
+bool ClickHouseClient::CreatePrepaymentTable() {
+    std::string create_cmd = std::string("CREATE TABLE if not exists ") + kClickhousePrepaymentTableName + " ( "
+        "`id` UInt64 COMMENT 'id' CODEC(T64, LZ4), "
+        "`contract` String COMMENT 'contract' CODEC(LZ4), "
+        "`user` String COMMENT 'user' CODEC(LZ4), "
+        "`prepayment` UInt64 COMMENT 'prepayment' CODEC(LZ4), "
+        "`height` UInt64 COMMENT 'height' CODEC(LZ4), "
+        "`update` DateTime DEFAULT now() COMMENT 'update' "
+        ") "
+        "ENGINE = ReplacingMergeTree "
+        "PARTITION BY(contract) "
+        "ORDER BY(contract, user) "
+        "SETTINGS index_granularity = 8192;";
+    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost("127.0.0.1").SetPort(common::GlobalInfo::Instance()->ck_port()));
+    ck_client.Execute(create_cmd);
+    return true;
+}
+
+
 bool ClickHouseClient::CreateTable(bool statistic, std::shared_ptr<db::Db> db_ptr) try {
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_ptr);
     CreateTransactionTable();
@@ -665,6 +705,7 @@ bool ClickHouseClient::CreateTable(bool statistic, std::shared_ptr<db::Db> db_pt
     CreateStatisticTable();
     CreatePrivateKeyTable();
     CreateC2cTable();
+    CreatePrepaymentTable();
     if (statistic) {
         statistic_tick_.CutOff(5000000l, std::bind(&ClickHouseClient::TickStatistic, this));
     }
