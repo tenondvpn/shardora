@@ -30,6 +30,7 @@ private:
     bool CreateStatisticTable();
     bool CreatePrivateKeyTable();
     bool CreateC2cTable();
+    bool CreatePrepaymentTable();
     void Statistic();
     void TickStatistic();
     bool QueryContract(const std::string& from, const std::string& contract_addr, nlohmann::json* res);
