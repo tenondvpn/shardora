@@ -100,11 +100,16 @@ contract C2CSellOrder {
     }
 
     function Confirm(address payable buyer, uint256 amount) public payable {
+        emit NewSelloutValue(amount);
+        emit NewSelloutValue(minExchangeValue);
+
         require(amount >= minExchangeValue);
         require(orders[msg.sender].exists);
         require(!orders[msg.sender].managerReleased);
         require(!orders[msg.sender].sellerReleased);
         require(!orders[msg.sender].reported);
+        emit NewSelloutValue(orders[msg.sender].pledgeAmount);
+
         require(orders[msg.sender].pledgeAmount >= amount);
         SellOrder memory order = orders[msg.sender];
         order.pledgeAmount -= amount;
@@ -127,7 +132,11 @@ contract C2CSellOrder {
             }
 
             delete orders[msg.sender];
+        } else {
+            orders[msg.sender] = order;
         }
+
+        emit NewSelloutValue(order.pledgeAmount);
     }
 
     function ManagerReleaseForce(address seller) public payable {
@@ -164,6 +173,8 @@ contract C2CSellOrder {
                 }
             }
             delete orders[seller];
+        } else {
+            orders[msg.sender] = order;
         }
     }
 
@@ -182,6 +193,8 @@ contract C2CSellOrder {
                 }
             }
             delete orders[msg.sender];
+        } else {
+            orders[msg.sender] = order;
         }
     }
 
