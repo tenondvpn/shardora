@@ -379,7 +379,7 @@ int ContractCall::ContractExcute(
         tx.from(),
         tx.to(),
         tx.from(),
-        contract_balance,
+        tx.amount(),
         tx.gas_limit(),
         0,
         zjcvm::kJustCall,

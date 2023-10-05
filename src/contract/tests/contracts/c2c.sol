@@ -72,7 +72,10 @@ contract C2CSellOrder {
         require(msg.value >= minPlegementValue);
         emit NewSellout(msg.sender, receivable, price, msg.value, orderId);
 
-        require(!orders[msg.sender].exists);
+        if (orders[msg.sender].exists) {
+            require(orders[msg.sender].managerReleased);
+        }
+
         emit NewSellout(msg.sender, receivable, price, msg.value, orderId);
 
         require(!valid_managers[msg.sender]);
@@ -144,7 +147,7 @@ contract C2CSellOrder {
         require(valid_managers[msg.sender]);
         SellOrder memory order = orders[seller];
         require(order.addr == seller);
-        payable(order.addr).transfer(order.pledgeAmount);
+        require(order.managerReleased);
         uint seller_len = all_sellers.length;
         for (uint i = 0; i < seller_len; ++i) {
             if (all_sellers[i] == seller) {
@@ -157,25 +160,39 @@ contract C2CSellOrder {
     }
 
     function ManagerRelease(address seller) public payable {
+        emit NewSelloutValue(1);
+
         require(orders[seller].exists);
+        emit NewSelloutValue(2);
+
         require(valid_managers[msg.sender]);
+        emit NewSelloutValue(3);
+
         SellOrder memory order = orders[seller];
-        require(!order.reported);
+        emit NewSelloutValue(4);
+
+        require(order.addr == seller);
+        emit NewSelloutValue(5);
+
+        require(!order.managerReleased);
+        emit NewSelloutValue(6);
+
         order.managerReleased = true;
         order.height = block.number;
-        if (order.sellerReleased) {
+        if (order.pledgeAmount > 0) {
+            emit NewSelloutValue(address(this).balance);
+            emit NewSelloutValue(order.pledgeAmount);
             payable(order.addr).transfer(order.pledgeAmount);
-            uint seller_len = all_sellers.length;
-            for (uint i = 0; i < seller_len; ++i) {
-                if (all_sellers[i] == seller) {
-                    delete all_sellers[i];
-                    break;
-                }
-            }
-            delete orders[seller];
-        } else {
-            orders[msg.sender] = order;
+            order.pledgeAmount = 0;
+            emit NewSelloutValue(7);
+
         }
+            
+        emit NewSelloutValue(8);
+
+        orders[seller] = order;
+        emit NewSelloutValue(9);
+
     }
 
     function SellerRelease() public payable {

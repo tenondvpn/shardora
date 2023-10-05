@@ -575,10 +575,14 @@ void TxPoolManager::PopPoolsMessage() {
 }
 
 void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
-    ZJC_DEBUG("success handle message hash64: %lu", msg_ptr->header.hash64());
     auto& header = msg_ptr->header;
     if (header.has_tx_proto()) {
         auto& tx_msg = header.tx_proto();
+        ZJC_DEBUG("success handle message hash64: %lu, from: %s, to: %s, type: %d",
+            msg_ptr->header.hash64(),
+            common::Encode::HexEncode(tx_msg.pubkey()).c_str(),
+            common::Encode::HexEncode(tx_msg.to()).c_str(),
+            tx_msg.step());
         switch (tx_msg.step()) {
         case pools::protobuf::kJoinElect:
             HandleElectTx(msg_ptr);
