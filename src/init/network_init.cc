@@ -573,9 +573,9 @@ void NetworkInit::InitLocalNetworkId() {
 }
 
 void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
-    if (common::GlobalInfo::Instance()->for_ck_server()) {
-        return;
-    }
+    // if (common::GlobalInfo::Instance()->for_ck_server()) {
+    //     return;
+    // }
 
     if (common::GlobalInfo::Instance()->network_id() < network::kConsensusShardEndNetworkId) {
         return;
