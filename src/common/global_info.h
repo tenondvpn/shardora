@@ -130,6 +130,10 @@ public:
         return join_root_;
     }
 
+    std::string ck_host() const {
+        return ck_host_;
+    }
+
     uint16_t ck_port() const {
         return ck_port_;
     }
@@ -169,6 +173,7 @@ private:
     uint8_t now_thread_idx_ = 0;
     uint8_t message_handler_thread_count_ = 4;
     bool for_ck_server_ = false;
+    std::string ck_host_ = "127.0.0.1";
     uint16_t ck_port_ = 9000;
     uint32_t each_shard_max_members_ = 1024u;
     uint32_t sharding_min_nodes_count_ = 2u;

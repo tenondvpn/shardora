@@ -942,7 +942,13 @@ void TxPoolManager::HandleContractExcute(const transport::MessagePtr& msg_ptr) {
     }
 
     if (prepayment < tx_msg.amount() + tx_msg.gas_limit() * tx_msg.gas_price()) {
-        ZJC_DEBUG("failed add contract call. %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+        ZJC_DEBUG("failed add contract call. %s, prepayment: %lu, tx_msg.amount(): %lu, tx_msg.gas_limit(): %lu, tx_msg.gas_price(): %lu, all: %lu",
+            common::Encode::HexEncode(tx_msg.to()).c_str(),
+            prepayment,
+            tx_msg.amount(),
+            tx_msg.gas_limit(),
+            tx_msg.gas_price(),
+            (tx_msg.amount() + tx_msg.gas_limit() * tx_msg.gas_price()));
         return;
     }
 
