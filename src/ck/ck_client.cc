@@ -549,6 +549,11 @@ bool ClickHouseClient::CreateTransactionTable() {
         "PARTITION BY(shard_id, date) "
         "ORDER BY(pool_index,height,type,from,to) "
         "SETTINGS index_granularity = 8192;";
+    printf("create table now [%s][%d][%s][%d]\n",
+        common::GlobalInfo::Instance()->ck_host().c_str(),
+        common::GlobalInfo::Instance()->ck_host(),
+        common::GlobalInfo::Instance()->ck_user().c_str(),
+        common::GlobalInfo::Instance()->ck_pass().c_str());
     clickhouse::Client ck_client(clickhouse::ClientOptions().
         SetHost(common::GlobalInfo::Instance()->ck_host()).
         SetPort(common::GlobalInfo::Instance()->ck_port()).
