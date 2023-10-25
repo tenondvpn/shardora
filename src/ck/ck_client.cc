@@ -431,7 +431,11 @@ bool ClickHouseClient::AddNewBlock(const std::shared_ptr<block::protobuf::Block>
     prepay.AppendColumn("prepayment", prepay_amount);
     prepay.AppendColumn("height", prepay_height);
 
-    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost(common::GlobalInfo::Instance()->ck_host()).SetPort(common::GlobalInfo::Instance()->ck_port()));
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client.Insert(kClickhouseTransTableName, trans);
     ck_client.Insert(kClickhouseBlockTableName, blocks);
     ck_client.Insert(kClickhouseAccountTableName, accounts);
@@ -545,7 +549,11 @@ bool ClickHouseClient::CreateTransactionTable() {
         "PARTITION BY(shard_id, date) "
         "ORDER BY(pool_index,height,type,from,to) "
         "SETTINGS index_granularity = 8192;";
-    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost(common::GlobalInfo::Instance()->ck_host()).SetPort(common::GlobalInfo::Instance()->ck_port()));
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client.Execute(create_cmd);
     return true;
 }
@@ -574,7 +582,11 @@ bool ClickHouseClient::CreateBlockTable() {
         "PARTITION BY(shard_id, date) "
         "ORDER BY(pool_index,height) "
         "SETTINGS index_granularity = 8192;";
-    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost(common::GlobalInfo::Instance()->ck_host()).SetPort(common::GlobalInfo::Instance()->ck_port()));
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client.Execute(create_cmd);
     return true;
 }
@@ -590,7 +602,11 @@ bool ClickHouseClient::CreateAccountTable() {
         "PARTITION BY(shard_id) "
         "ORDER BY(id,pool_index) "
         "SETTINGS index_granularity = 8192;";
-    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost(common::GlobalInfo::Instance()->ck_host()).SetPort(common::GlobalInfo::Instance()->ck_port()));
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client.Execute(create_cmd);
     return true;
 }
@@ -609,7 +625,11 @@ bool ClickHouseClient::CreateAccountKeyValueTable() {
         "PARTITION BY(shard_id) "
         "ORDER BY(type, key, from, to) "
         "SETTINGS index_granularity = 8192;";
-    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost(common::GlobalInfo::Instance()->ck_host()).SetPort(common::GlobalInfo::Instance()->ck_port()));
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client.Execute(create_cmd);
     return true;
 }
@@ -630,7 +650,11 @@ bool ClickHouseClient::CreateStatisticTable() {
         "PARTITION BY(date) "
         "ORDER BY(time) "
         "SETTINGS index_granularity = 8192;";
-    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost(common::GlobalInfo::Instance()->ck_host()).SetPort(common::GlobalInfo::Instance()->ck_port()));
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client.Execute(create_cmd);
     return true;
 }
@@ -646,7 +670,11 @@ bool ClickHouseClient::CreatePrivateKeyTable() {
         "PARTITION BY(date) "
         "ORDER BY(seckey) "
         "SETTINGS index_granularity = 8192;");
-    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost(common::GlobalInfo::Instance()->ck_host()).SetPort(common::GlobalInfo::Instance()->ck_port()));
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client.Execute(create_cmd);
     return true;
 }
@@ -672,7 +700,11 @@ bool ClickHouseClient::CreateC2cTable() {
         "PARTITION BY(seller) "
         "ORDER BY(seller, orderId) "
         "SETTINGS index_granularity = 8192;";
-        clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost(common::GlobalInfo::Instance()->ck_host()).SetPort(common::GlobalInfo::Instance()->ck_port()));
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client.Execute(create_cmd);
     return true;
 }
@@ -690,7 +722,11 @@ bool ClickHouseClient::CreatePrepaymentTable() {
         "PARTITION BY(contract) "
         "ORDER BY(contract, user) "
         "SETTINGS index_granularity = 8192;";
-    clickhouse::Client ck_client(clickhouse::ClientOptions().SetHost(common::GlobalInfo::Instance()->ck_host()).SetPort(common::GlobalInfo::Instance()->ck_port()));
+    clickhouse::Client ck_client(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client.Execute(create_cmd);
     return true;
 }

@@ -138,6 +138,14 @@ public:
         return ck_port_;
     }
 
+    std::string ck_user() const {
+        return ck_user_;
+    }
+
+    std::string ck_pass() const {
+        return ck_pass_;
+    }
+
     const std::set<uint32_t>* thread_with_pools() const {
         return thread_with_pools_;
     }
@@ -175,6 +183,8 @@ private:
     bool for_ck_server_ = false;
     std::string ck_host_ = "127.0.0.1";
     uint16_t ck_port_ = 9000;
+    std::string ck_user_ = "default";
+    std::string ck_pass_ = "";
     uint32_t each_shard_max_members_ = 1024u;
     uint32_t sharding_min_nodes_count_ = 2u;
     int32_t join_root_ = common::kRandom;

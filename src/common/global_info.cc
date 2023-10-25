@@ -67,6 +67,8 @@ int GlobalInfo::Init(const common::Config& config) {
     config.Get("zjchain", "missing_node", missing_node_);
     config.Get("zjchain", "ck_port", ck_port_);
     config.Get("zjchain", "ck_host", ck_host_);
+    config.Get("zjchain", "ck_user", ck_user_);
+    config.Get("zjchain", "ck_pass", ck_pass_);
 
     auto bft_thread = message_handler_thread_count_ - 1;
     thread_with_pools_ = new std::set<uint32_t>[bft_thread];
