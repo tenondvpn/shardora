@@ -765,7 +765,11 @@ void ClickHouseClient::TickStatistic() {
 void ClickHouseClient::Statistic() try {
     std::string cmd = "select count(*) as cnt from zjc_ck_transaction_table;";
     uint32_t all_transactions = 0;
-    clickhouse::Client ck_client0(clickhouse::ClientOptions().SetHost(common::GlobalInfo::Instance()->ck_host()).SetPort(common::GlobalInfo::Instance()->ck_port()));
+    clickhouse::Client ck_client0(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client0.Select(cmd, [&all_transactions](const clickhouse::Block& ck_block) {
         if (ck_block.GetRowCount() > 0) {
             all_transactions = (*ck_block[0]->As<clickhouse::ColumnUInt64>())[0];
@@ -774,7 +778,11 @@ void ClickHouseClient::Statistic() try {
 
     cmd = "select count(*) from zjc_ck_account_table;";
     uint32_t all_address = 0;
-    clickhouse::Client ck_client1(clickhouse::ClientOptions().SetHost(common::GlobalInfo::Instance()->ck_host()).SetPort(common::GlobalInfo::Instance()->ck_port()));
+    clickhouse::Client ck_client1(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client1.Select(cmd, [&all_address](const clickhouse::Block& ck_block) {
         if (ck_block.GetRowCount() > 0) {
             all_address = (*ck_block[0]->As<clickhouse::ColumnUInt64>())[0];
@@ -783,7 +791,11 @@ void ClickHouseClient::Statistic() try {
 
     cmd = "select sum(balance) from zjc_ck_account_table;";
     uint64_t sum_balance = 0;
-    clickhouse::Client ck_client2(clickhouse::ClientOptions().SetHost(common::GlobalInfo::Instance()->ck_host()).SetPort(common::GlobalInfo::Instance()->ck_port()));
+    clickhouse::Client ck_client2(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client2.Select(cmd, [&sum_balance](const clickhouse::Block& ck_block) {
         if (ck_block.GetRowCount() > 0) {
             sum_balance = (*ck_block[0]->As<clickhouse::ColumnUInt64>())[0];
@@ -792,7 +804,11 @@ void ClickHouseClient::Statistic() try {
 
     cmd = "select count(*) from zjc_ck_account_key_value_table where type = 4 and key = '5f5f636279746573636f6465'";
     uint32_t all_contracts = 0;
-    clickhouse::Client ck_client3(clickhouse::ClientOptions().SetHost(common::GlobalInfo::Instance()->ck_host()).SetPort(common::GlobalInfo::Instance()->ck_port()));
+    clickhouse::Client ck_client3(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client3.Select(cmd, [&all_contracts](const clickhouse::Block& ck_block) {
         if (ck_block.GetRowCount() > 0) {
             all_contracts = (*ck_block[0]->As<clickhouse::ColumnUInt64>())[0];
@@ -824,7 +840,11 @@ void ClickHouseClient::Statistic() try {
     statistics.AppendColumn("all_nodes", st_nodes);
     statistics.AppendColumn("all_waiting_nodes", st_wnodes);
     statistics.AppendColumn("date", st_date);
-    clickhouse::Client ck_client4(clickhouse::ClientOptions().SetHost(common::GlobalInfo::Instance()->ck_host()).SetPort(common::GlobalInfo::Instance()->ck_port()));
+    clickhouse::Client ck_client4(clickhouse::ClientOptions().
+        SetHost(common::GlobalInfo::Instance()->ck_host()).
+        SetPort(common::GlobalInfo::Instance()->ck_port()).
+        SetUser(common::GlobalInfo::Instance()->ck_user()).
+        SetPassword(common::GlobalInfo::Instance()->ck_pass()));
     ck_client4.Insert(kClickhouseStatisticTableName, statistics);
 } catch (std::exception& e) {
     ZJC_ERROR("add new block failed[%s]", e.what());
