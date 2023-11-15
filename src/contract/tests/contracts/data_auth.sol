@@ -113,9 +113,9 @@ contract DataAuthorization {
     function GetItemJson(AuthorizationInfo memory item, bool last) public pure returns (bytes memory) {
         bytes[] memory all_bytes = new bytes[](100);
         uint filedCount = 0;
-        all_bytes[filedCount++] = '{"r":"';
-        all_bytes[filedCount++] = ToHex(item.authInfo);
-        all_bytes[filedCount++] = '","a":"';
+        all_bytes[filedCount++] = '{"r":';
+        all_bytes[filedCount++] = item.authInfo;
+        all_bytes[filedCount++] = ',"a":"';
         all_bytes[filedCount++] = ToHex(toBytes(item.author));
         all_bytes[filedCount++] = '","o":"';
         all_bytes[filedCount++] = ToHex(u256ToBytes(item.authId));
