@@ -403,7 +403,6 @@ function QueryPostCode(path, data) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
             var json_res = JSON.parse(chunk)
-            console.log('amount: ' + json_res.amount + ", tmp: " + json_res.tmp);
             console.log('Response: ' + chunk);
         })
     });

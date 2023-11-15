@@ -48,7 +48,7 @@ contract DataAuthorization {
     // 数据确权
     function Authorization(bytes memory authInfo) public payable {
         // 必须是数据管理员
-        require(!valid_managers[msg.sender]);
+        require(valid_managers[msg.sender]);
         authorizations[authId] = AuthorizationInfo({
             authInfo: authInfo,
             author: msg.sender,
