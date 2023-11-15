@@ -117,7 +117,7 @@ contract DataAuthorization {
         all_bytes[filedCount++] = ToHex(item.authInfo);
         all_bytes[filedCount++] = '","a":"';
         all_bytes[filedCount++] = ToHex(toBytes(item.author));
-        all_bytes[filedCount++] = ',"o":"';
+        all_bytes[filedCount++] = '","o":"';
         all_bytes[filedCount++] = ToHex(u256ToBytes(item.authId));
         if (last) {
             all_bytes[filedCount++] = '"}';
