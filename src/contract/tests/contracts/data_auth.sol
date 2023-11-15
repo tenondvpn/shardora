@@ -28,7 +28,6 @@ contract DataAuthorization {
     // 新增数据管理员
     function AddManager(address[] memory managers) public {
         require(owner == msg.sender);
-        require(!orders[msg.sender].exists);
         uint arrayLength = managers.length;
         for (uint i=0; i<arrayLength; i++) {
             valid_managers[managers[i]] = true;
@@ -38,7 +37,6 @@ contract DataAuthorization {
     // 删除数据管理员
     function RemoveManager(address[] memory managers) public {
         require(owner == msg.sender);
-        require(!orders[msg.sender].exists);
         uint arrayLength = managers.length;
         for (uint i=0; i<arrayLength; i++) {
             if (valid_managers[managers[i]]) {
@@ -73,13 +71,6 @@ contract DataAuthorization {
 
         all_bytes[validLen] = ']';
         return bytesConcat(all_bytes, validLen + 1);
-    }
-
-    function Report(address seller) public {
-        require(orders[seller].exists);
-        require(!orders[seller].reported);
-        orders[seller].reported = true;
-        orders[seller].height = block.number;
     }
 
     function bytesConcat(bytes[] memory arr, uint count) public pure returns (bytes memory){
