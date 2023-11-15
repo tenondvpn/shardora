@@ -54,7 +54,7 @@ contract DataAuthorization {
         authorizations[authId] = AuthorizationInfo({
             authInfo: authInfo,
             author: msg.sender,
-            authId: authId,
+            authId: authId
         });
 
         authId++;
