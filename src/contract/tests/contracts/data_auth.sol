@@ -60,9 +60,9 @@ contract DataAuthorization {
 
     // 获取确权详情
     function GetAuthJson() public view returns(bytes memory) {
-        bytes[] memory all_bytes = new bytes[](authorizations.length + 2);
+        bytes[] memory all_bytes = new bytes[](orderId + 2);
         all_bytes[0] = '[';
-        uint arrayLength = authorizations.length;
+        uint arrayLength = orderId;
         uint validLen = 1;
         for (uint i=0; i<arrayLength; i++) {
             all_bytes[i + 1] = GetItemJson(authorizations[i], (i == arrayLength - 1));
