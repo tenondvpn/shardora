@@ -328,6 +328,64 @@ function GetConstructorParams(args) {
     return cons_codes.substring(2);
 }
 
+function GetAddManagerParams(args) {
+    if (args.length < 2) {
+        return;
+    }
+
+    var addrs = [];
+    for (var i = 1; i < args.length; ++i) {
+        if (args[i].length != 42) {
+            return null;
+        }
+
+        if (!args[i].startsWith("0x")) {
+            return null;
+        }
+
+        addrs.push(args[i]);
+    }
+    var func = web3.eth.abi.encodeFunctionSignature('AddManager(address[])');
+    var funcParam = web3.eth.abi.encodeParameters(['address[]'], [addrs]);
+    console.log("AddManager func: " + func.substring(2) + funcParam.substring(2));
+    return func.substring(2) + funcParam.substring(2);
+}
+
+function GetRemoveManagerParams(args) {
+    if (args.length < 2) {
+        return;
+    }
+
+    var addrs = [];
+    for (var i = 1; i < args.length; ++i) {
+        if (args[i].length != 42) {
+            return null;
+        }
+
+        if (!args[i].startsWith("0x")) {
+            return null;
+        }
+
+        addrs.push(args[i]);
+    }
+    
+    var func = web3.eth.abi.encodeFunctionSignature('RemoveManager(address[])');
+    var funcParam = web3.eth.abi.encodeParameters(['address[]'], [addrs]);
+    console.log("RemoveManager func: " + func.substring(2) + funcParam.substring(2));
+    return func.substring(2) + funcParam.substring(2);
+}
+
+function GetAuthorizationParams(args) {
+    if (args.length < 2) {
+        return;
+    }
+
+    var func = web3.eth.abi.encodeFunctionSignature('Authorization(bytes)');
+    var funcParam = web3.eth.abi.encodeParameters(['bytes'], ['0x' + str_to_hex(args[1])]);
+    console.log("Authorization func: " + func.substring(2) + funcParam.substring(2));
+    return func.substring(2) + funcParam.substring(2);
+}
+
 function QueryPostCode(path, data) {
     var post_data = querystring.stringify(data);
     var post_options = {
@@ -375,13 +433,9 @@ init_private_key();
 const args = process.argv.slice(2)
 
 console.log("args type: " + args[0] + ", size: " + args.length);
-// 创建参数
-if (args[0] == 0) {
-    CreatePhr();
-}
 
 // 创建链上数据身份
-if (args[0] == 1) {
+if (args[0] == 0) {
     var cons_cods = GetConstructorParams(args);
     if (cons_cods == null) {
         console.log("创建数据身份失败，输入的初始管理员错误: " + process.argv);
@@ -392,22 +446,47 @@ if (args[0] == 1) {
     new_contract(contract_bytes + cons_cods);
 }
 
+// 调用确权预置quota
+if (args[0] == 1) {
+    Prepayment(1000000000);
+}
+
 // 增加数据管理员
 if (args[0] == 2) {
-    call_contract(args[1], args[2]);
+    var add_cods = GetAddManagerParams(args);
+    if (add_cods == null) {
+        console.log("添加管理员失败，输入的初始管理员错误: " + process.argv);
+        return;
+    }
+
+    call_contract(add_cods, 0);
 }
 
 // 删除数据管理员
 if (args[0] == 3) {
-    CreatePhr();
+    var remove_cods = GetRemoveManagerParams(args);
+    if (remove_cods == null) {
+        console.log("添加管理员失败，输入的初始管理员错误: " + process.argv);
+        return;
+    }
+    
+    call_contract(remove_cods, 0);
 }
 
 // 确权
 if (args[0] == 4) {
-    Prepayment(args[1]);
+    var auth_cods = GetAuthorizationParams(args);
+    if (auth_cods == null) {
+        console.log("确权失败，输入的确权参数错误: " + process.argv);
+        return;
+    }
+    
+    call_contract(auth_cods, 0);
 }
 
 // 读取确权列表
 if (args[0] == 5) {
-    QueryContract("", prikey, 0);
+    var func = web3.eth.abi.encodeFunctionSignature('GetAuthJson()');
+    console.log("GetAuthJson func: " + func.substring(2));
+    QueryContract(func.substring(2));
 }
