@@ -348,7 +348,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         contract_addr_info->bytes_code(),
         input,
         from,
-        contract_addr,;
+        contract_addr,
         from,
         0,
         prepayment,
