@@ -23,7 +23,8 @@ int32_t WebSocketServer::Init(const char* ip, uint16_t port, WebsocketCloseCallb
     server_.set_close_handler(websocketpp::lib::bind(
         &WebSocketServer::OnClose,
         this,
-        websocketpp::lib::placeholders::_1));
+        websocketpp::lib::placeholder
+        s::_1));
     server_.set_message_handler(websocketpp::lib::bind(
         &WebSocketServer::OnMessage,
         this,

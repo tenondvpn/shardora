@@ -1158,6 +1158,12 @@ void TxPoolManager::HandleCreateContractTx(const transport::MessagePtr& msg_ptr)
         return;
     }
 
+    auto contract_info = GetAddressInfo(tx_msg.to());
+    if (contract_info != nullptr) {
+        ZJC_WARN("contract address exists: %s", common::Encode::HexEncode(tx_msg.to()).c_str());
+        return;
+    }
+
     if (msg_ptr->address_info->balance() <
             tx_msg.amount() + tx_msg.contract_prepayment() +
             default_gas * tx_msg.gas_price()) {

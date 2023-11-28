@@ -28,6 +28,13 @@ int ContractUserCreateCall::HandleTx(
         return kConsensusSuccess;
     }
 
+    auto contract_info = account_mgr_->GetAccountInfo(thread_idx, block_tx.to());
+    if (contract_info != nullptr) {
+        block_tx.set_status(kConsensusAccountExists);
+        return kConsensusSuccess;
+    }
+
+
     if (block_tx.gas_price() * block_tx.gas_limit() > from_balance) {
         block_tx.set_status(kConsensusOutOfGas);
         return kConsensusSuccess;
