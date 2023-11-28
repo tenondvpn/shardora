@@ -109,7 +109,7 @@ public:
             const address::protobuf::AddressInfo& addr_info,
             db::DbWriteBatch& db_batch) {
         db_batch.Put(kAddressPrefix + addr, addr_info.SerializeAsString());
-//         ZJC_INFO("success add addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
+        ZJC_INFO("success add addr: %s", common::Encode::HexEncode(kAddressPrefix + addr).c_str());
     }
 
     void AddAddressInfo(const std::string& addr, const std::string& val) {
