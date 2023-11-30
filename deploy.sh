@@ -92,38 +92,7 @@ clickhouse-client -q "drop table zjc_ck_account_table"
 clickhouse-client -q "drop table zjc_ck_block_table"
 clickhouse-client -q "drop table zjc_ck_statistic_table"
 clickhouse-client -q "drop table zjc_ck_transaction_table"
+
+cp /root/deploy/zjchain@.service /etc/systemd/system/zjchain@.service
+sudo systemctl daemon-reload
 exit 0
-
-cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 &
-sleep 3
-
-cd /root/zjnodes/r2/ && nohup ./zjchain -f 0 -g 0 &
-cd /root/zjnodes/r3/ && nohup ./zjchain -f 0 -g 0 &
-cd /root/zjnodes/r4/ && nohup ./zjchain -f 0 -g 0 &
-#cd /root/zjnodes/r5/ && nohup ./zjchain -f 0 -g 0 &
-#cd /root/zjnodes/r6/ && nohup ./zjchain -f 0 -g 0 &
-#cd /root/zjnodes/r7/ && nohup ./zjchain -f 0 -g 0 &
-cd /root/zjnodes/s1/ && nohup ./zjchain -f 0 -g 0 &
-cd /root/zjnodes/s2/ && nohup ./zjchain -f 0 -g 0 &
-cd /root/zjnodes/s3/ && nohup ./zjchain -f 0 -g 0 &
-cd /root/zjnodes/s4/ && nohup ./zjchain -f 0 -g 0 &
-#cd /root/zjnodes/s5/ && nohup ./zjchain -f 0 -g 0 &
-#cd /root/zjnodes/s6/ && nohup ./zjchain -f 0 -g 0 &
-#cd /root/zjnodes/s7/ && nohup ./zjchain -f 0 -g 0 &
-#cd /root/zjnodes/s8/ && nohup ./zjchain -f 0 -g 0 &
-#cd /root/zjnodes/s9/ && nohup ./zjchain -f 0 -g 0 &
-#cd /root/zjnodes/s10/ && nohup ./zjchain -f 0 -g 0 &
-
-exit 0
-cd /root/n2 &&  rm -rf db ./log/* && nohup ./zjc2 -f 0 -g 0 &
-cd /root/n3 &&  rm -rf db ./log/* && nohup ./zjc3 -f 0 -g 0 &
-cd /root/n4 &&  rm -rf db ./log/* && nohup ./zjc4 -f 0 -g 0 &
-sleep 3
-cd /root/zjnodes/s11/ && nohup ./zjchain -f 0 -g 0 &
-cd /root/zjnodes/s12/ && nohup ./zjchain -f 0 -g 0 &
-cd /root/zjnodes/s13/ && nohup ./zjchain -f 0 -g 0 &
-cd /root/zjnodes/s14/ && nohup ./zjchain -f 0 -g 0 &
-cd /root/zjnodes/s15/ && nohup ./zjchain -f 0 -g 0 &
-cd /root/zjnodes/s16/ && nohup ./zjchain -f 0 -g 0 &
-cd /root/zjnodes/s17/ && nohup ./zjchain -f 0 -g 0 &
-cd /root/zjnodes/s18/ && nohup ./zjchain -f 0 -g 0 &
