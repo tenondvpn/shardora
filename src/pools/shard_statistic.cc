@@ -759,6 +759,9 @@ int ShardStatistic::StatisticWithHeights(
             common::GlobalInfo::Instance()->network_id(),
             nullptr,
             nullptr);
+        if (members == nullptr) {
+             continue;
+        }
 //         ZJC_DEBUG("now get network members: %u, size: %u, height: %lu",
 //             common::GlobalInfo::Instance()->network_id(), members->size(), hiter->first);
         str_for_hash.reserve(1024 * 1024);

@@ -50,7 +50,7 @@ function init_private_key() {
 function PostCode(data) {
     var post_data = querystring.stringify(data);
     var post_options = {
-        host: '82.156.224.174',
+        host: '10.38.9.69',
         port: '8781',
         path: '/transaction',
         method: 'POST',
@@ -311,7 +311,7 @@ function CreatePhr() {
 function QueryPostCode(path, data) {
     var post_data = querystring.stringify(data);
     var post_options = {
-        host: '82.156.224.174',
+        host: '10.38.9.69',
         port: '8781',
         path: path,
         method: 'POST',
