@@ -3,6 +3,7 @@ Description=ZJChain node %i Deamon
 
 [Service]
 Environment="idx=%i"
+Environment="LD_LIBRARY_PATH=/root/install/lib64:/usr/local/lib:/usr/local/gcc-8.3.0/lib64/"
 Restart=always
 RestartSec=5
 Type=forking

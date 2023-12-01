@@ -1,7 +1,6 @@
 #!/bin/bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/
 # ps -ef | grep zjchain | awk -F' ' '{print $2}' | xargs kill -9
-sh stop.sh
 
 sudo systemctl start zjchain@r1.service &
 sleep 3
