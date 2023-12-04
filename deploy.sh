@@ -11,6 +11,7 @@ fi
 
 sh build.sh a $1
 cp -r ./zjnodes /root
+cp -r ./deploy /root
 
 rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db
 mkdir -p /root/zjnodes/zjchain/log
@@ -100,4 +101,4 @@ clickhouse-client -q "drop table zjc_ck_transaction_table"
 # cd /root/zjnodes/s3/ && nohup ./zjchain -f 0 -g 0 &
 
 # start nodes with daemon
-sh ./deploy/start.sh
+cd /root/deploy && sh start.sh
