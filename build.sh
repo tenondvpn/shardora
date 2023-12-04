@@ -1,7 +1,13 @@
 # configure
 export CC=/usr/local/gcc-8.3.0/bin/gcc
 export CXX=/usr/local/gcc-8.3.0/bin/g++
-TARGET=Debug
+TARGET=Release
+
+if test "$2" = "Debug"
+then
+	TARGET=Debug
+fi
+
 mkdir -p cbuild_$TARGET
 cd cbuild_$TARGET
 # CMAKE_BUILD_TYPE:
