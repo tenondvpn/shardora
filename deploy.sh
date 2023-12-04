@@ -1,7 +1,15 @@
 #!/bin/bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/
 ps -ef | grep zjchain | awk -F' ' '{print $2}' | xargs kill -9
-sh build.sh a
+
+# $1 = Debug/Release
+TARGET=Release
+if test $1 = "Debug"
+then
+	TARGET=Debug
+fi
+
+sh build.sh a $1
 cp -r ./zjnodes /root
 
 rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db
@@ -32,28 +40,16 @@ mkdir -p /root/zjnodes/r5/log
 mkdir -p /root/zjnodes/r6/log
 mkdir -p /root/zjnodes/r7/log
 
-cp -rf ./cbuild_Release/zjchain /root/zjnodes/zjchain
-cp -rf ./cbuild_Release/zjchain /root/zjnodes/s1
-cp -rf ./cbuild_Release/zjchain /root/zjnodes/s2
-cp -rf ./cbuild_Release/zjchain /root/zjnodes/s3
-cp -rf ./cbuild_Release/zjchain /root/zjnodes/s4
-cp -rf ./cbuild_Release/zjchain /root/zjnodes/s5
-#cp -rf ./cbuild_Release/zjchain /root/zjnodes/s6
-#cp -rf ./cbuild_Release/zjchain /root/zjnodes/s7
-#cp -rf ./cbuild_Release/zjchain /root/zjnodes/s8
-#cp -rf ./cbuild_Release/zjchain /root/zjnodes/s9
-#cp -rf ./cbuild_Release/zjchain /root/zjnodes/s10
-#cp -rf ./cbuild_Release/zjchain /root/zjnodes/s11
-#cp -rf ./cbuild_Release/zjchain /root/zjnodes/s12
-#cp -rf ./cbuild_Release/zjchain /root/zjnodes/s13
-#cp -rf ./cbuild_Release/zjchain /root/zjnodes/s14
-#cp -rf ./cbuild_Release/zjchain /root/zjnodes/s15
-#cp -rf ./cbuild_Release/zjchain /root/zjnodes/s16
-#cp -rf ./cbuild_Release/zjchain /root/zjnodes/s17
-#cp -rf ./cbuild_Release/zjchain /root/zjnodes/s18
-cp -rf ./cbuild_Release/zjchain /root/zjnodes/r1
-cp -rf ./cbuild_Release/zjchain /root/zjnodes/r2
-cp -rf ./cbuild_Release/zjchain /root/zjnodes/r3
+cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
+cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s1
+cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s2
+cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s3
+cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s4
+cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s5
+
+cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r1
+cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r2
+cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r3
 #cp -rf ./cbuild_Release/zjchain /root/zjnodes/r4
 #cp -rf ./cbuild_Release/zjchain /root/zjnodes/r5
 #cp -rf ./cbuild_Release/zjchain /root/zjnodes/r6
