@@ -103,16 +103,5 @@ clickhouse-client -q "drop table zjc_ck_transaction_table"
 # cd /root/zjnodes/s2/ && nohup ./zjchain -f 0 -g 0 &
 # cd /root/zjnodes/s3/ && nohup ./zjchain -f 0 -g 0 &
 
-cp /root/deploy/zjchain@.service /etc/systemd/system/zjchain@.service
-sudo systemctl daemon-reload
-
-sudo systemctl start zjchain@r1.service &
-sleep 5
-
-sudo systemctl start zjchain@r2.service
-sudo systemctl start zjchain@r3.service
-sudo systemctl start zjchain@s1.service
-sudo systemctl start zjchain@s2.service
-sudo systemctl start zjchain@s3.service
-
-sleep 3
+# start nodes with daemon
+sh deploy/start.sh
