@@ -16,7 +16,7 @@ cd cbuild_$TARGET
 #   Release:            -O3 -DNDEBUG
 #   RelWithDebInfo:     -O2 -g -DNDEBUG
 #   MinSizeRel:         -Os -DNDEBUG
-cmake .. -DCMAKE_BUILD_TYPE=$TARGET -DOPENSSL_ROOT_DIR=./third_party/depends/include/ -DCMAKE_INSTALL_PREFIX=~/zjchain
+cmake .. -DCMAKE_BUILD_TYPE=$TARGET -DOPENSSL_ROOT_DIR=./third_party/depends/include/ -DCMAKE_INSTALL_PREFIX=~/zjchain -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 if [[ $1 == "" ]];
 then
     make -j3
