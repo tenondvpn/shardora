@@ -1,6 +1,8 @@
 #pragma once
 
+#include <_types/_uint64_t.h>
 #include <map>
+#include <unordered_map>
 #include <vector>
 
 #include <dkg/dkg.h>
@@ -35,24 +37,30 @@ public:
         std::shared_ptr<db::Db>& db);
     ~GenesisBlockInit();
     int CreateGenesisBlocks(
-        uint32_t net_id,
+        const GenisisNetworkType& net_type,
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
-        const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes);
-
+        const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards);
 private:
+    std::unordered_map<std::string, uint64_t> GetGenesisAccountBalanceMap(
+        const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
+        const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards);
     int CreateRootGenesisBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
-        const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes);
+        const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
+        std::unordered_map<std::string, uint64_t> genesis_acount_balance_map);
     int CreateShardGenesisBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
-        uint32_t net_id);
+        uint32_t net_id,
+        std::unordered_map<std::string, uint64_t> genesis_acount_balance_map);
     int CreateShardNodesBlocks(
         std::unordered_map<uint32_t, std::string>& pool_prev_hash_map,
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id,
-        pools::protobuf::StatisticTxItem& init_heights);
+        pools::protobuf::StatisticTxItem& init_heights,
+        std::unordered_map<std::string, uint64_t> genesis_acount_balance_map); // 节点对应的余额
+    uint32_t GetNetworkIdOfGenesisAddress(const std::string& address);
     void InitGenesisAccount();
     void GenerateRootAccounts();
     int GenerateRootSingleBlock(

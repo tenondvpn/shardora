@@ -68,6 +68,13 @@ struct GenisisNodeInfo {
 };
 
 typedef std::shared_ptr<GenisisNodeInfo> GenisisNodeInfoPtr;
+typedef std::vector<GenisisNodeInfoPtr> GenisisNodeInfoPtrVector;
+
+// GenisisNetworkType 创世纪网络类型
+enum class GenisisNetworkType {
+    RootNetwork = 0,
+    ShardNetwork,
+};
 
 }  // namespace init
 

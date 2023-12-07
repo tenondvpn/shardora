@@ -1010,7 +1010,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         }
 
         if (genesis_block.CreateGenesisBlocks(
-                GenisisNetworkType::RootNetwork,
+                Gene,
                 root_genesis_nodes,
                 cons_genesis_nodes) != 0) {
             return kInitError;
@@ -1079,9 +1079,9 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         }
 
         if (genesis_block.CreateGenesisBlocks(
-                GenisisNetworkType::ShardNetwork,
-                root_genesis_nodes,
-                cons_genesis_nodes) != 0) {
+            network::kConsensusShardBeginNetworkId,
+            root_genesis_nodes,
+            cons_genesis_nodes) != 0) {
             return kInitError;
         }
 

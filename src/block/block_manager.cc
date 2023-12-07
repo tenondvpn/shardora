@@ -411,6 +411,9 @@ void BlockManager::GenesisAddAllAccount(
     // one block must be one consensus pool
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         auto& account_id = account_mgr_->GetTxValidAddress(tx_list[i]);
+        if (account_id == "") {
+            continue;
+        } 
         auto account_info = std::make_shared<address::protobuf::AddressInfo>();
         account_info->set_pool_index(common::GetAddressPoolIndex(account_id));
         account_info->set_addr(account_id);
@@ -839,9 +842,11 @@ void BlockManager::AddNewBlock(
         return;
     }
 
+    // db_batch 并没有用，只是更新下 to_txs_pool 的状态，如高度
     to_txs_pool_->NewBlock(block_item, db_batch);
     
     if (block_item->pool_index() == common::kRootChainPoolIndex) {
+        // TODO 怎么处理，创世纪块的时候没有 common::GlobalInfo::Instance()->network_id() 啊
         if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
                 block_item->network_id() + network::kConsensusWaitingShardOffset !=
                 common::GlobalInfo::Instance()->network_id()) {

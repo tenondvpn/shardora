@@ -39,6 +39,7 @@ int AccountManager::Init(
     return kBlockSuccess;
 }
 
+// Root 网络中每个 pool 都有个 address
 void AccountManager::CreatePoolsAddressInfo() {
     root_pool_address_info_ = std::make_shared<address::protobuf::AddressInfo>();
     root_pool_address_info_->set_pubkey("");
