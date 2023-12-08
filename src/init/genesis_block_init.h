@@ -52,7 +52,7 @@ private:
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id,
         std::unordered_map<std::string, uint64_t> genesis_acount_balance_map);
-    int PrepareCreateGenesisBlocks();
+    void PrepareCreateGenesisBlocks();
     int CreateShardNodesBlocks(
         std::unordered_map<uint32_t, std::string>& pool_prev_hash_map,
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
