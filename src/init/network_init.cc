@@ -1,6 +1,5 @@
 #include "init/network_init.h"
 
-#include <_types/_uint32_t.h>
 #include <functional>
 
 #include "block/block_manager.h"
