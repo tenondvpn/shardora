@@ -260,6 +260,7 @@ int BaseDht::Bootstrap(
             continue;
         }
 
+        // 构造一条 bootstrap message
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto& msg = msg_ptr->header;
         DhtKeyManager dhtkey(local_node_->sharding_id, boot_nodes[i]->id);
@@ -420,6 +421,7 @@ void BaseDht::DhtDispatchMessage(const transport::MessagePtr& msg_ptr) {
     }
 }
 
+// 处理 bootstrap transportmessage
 void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
     auto& header = msg_ptr->header;
     auto& dht_msg = header.dht_proto();
@@ -428,6 +430,7 @@ void BaseDht::ProcessBootstrapRequest(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    // 验证消息签名
     std::string sign_hash = transport::TcpTransport::Instance()->GetHeaderHashForSign(header);
     if (security_->Verify(
             sign_hash,
