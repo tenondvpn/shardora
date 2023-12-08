@@ -512,6 +512,10 @@ int GenesisBlockInit::CreateElectBlock(
         FILE* root_gens_init_block_file,
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes) {
+    if (genesis_nodes.size() == 0) {
+        return kInitSuccess;
+    }
+    
     // ??? 不应该是 pool_index 吗，为什么是 shard_netid
     auto account_info = account_mgr_->pools_address_info(shard_netid);
     auto tenon_block = std::make_shared<block::protobuf::Block>();
