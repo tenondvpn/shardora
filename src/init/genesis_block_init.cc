@@ -58,22 +58,17 @@ int GenesisBlockInit::CreateGenesisBlocks(
     }    
     
     int res = kInitSuccess;
-    std::shared_ptr<security::Security> security = nullptr;
-    std::shared_ptr<sync::KeyValueSync> kv_sync = nullptr;
-    pools_mgr_ = std::make_shared<pools::TxPoolManager>(security, db_, kv_sync, nullptr);
-    std::shared_ptr<pools::ShardStatistic> statistic_mgr = nullptr;
-    std::shared_ptr<contract::ContractManager> ct_mgr = nullptr;
-    account_mgr_->Init(1, db_, pools_mgr_);
-    block_mgr_->Init(account_mgr_, db_, pools_mgr_, statistic_mgr, security, ct_mgr, "", nullptr, nullptr);
-
-    std::unordered_map<std::string, uint64_t> genesis_acount_balance_map;
-
-    // 事先计算每个节点分配的余额
-    genesis_acount_balance_map = GetGenesisAccountBalanceMap(root_genesis_nodes, cons_genesis_nodes_of_shards);
+    
     
     // 创建创世纪块
     if (net_type == GenisisNetworkType::RootNetwork) {
         common::GlobalInfo::Instance()->set_network_id(network::kRootCongressNetworkId);
+
+        PrepareCreateGenesisBlocks();
+
+        std::unordered_map<std::string, uint64_t> genesis_acount_balance_map;
+        genesis_acount_balance_map = GetGenesisAccountBalanceMap(root_genesis_nodes, cons_genesis_nodes_of_shards);
+
         res = CreateRootGenesisBlocks(root_genesis_nodes,
                                       cons_genesis_nodes_of_shards,
                                       genesis_acount_balance_map);
@@ -82,6 +77,12 @@ int GenesisBlockInit::CreateGenesisBlocks(
             uint32_t net_id = i + network::kConsensusShardBeginNetworkId;
             // 为了兼容下游调用，设置一下 GlobalInfo
             common::GlobalInfo::Instance()->set_network_id(net_id);
+
+            PrepareCreateGenesisBlocks();
+
+            std::unordered_map<std::string, uint64_t> genesis_acount_balance_map;
+            genesis_acount_balance_map = GetGenesisAccountBalanceMap(root_genesis_nodes, cons_genesis_nodes_of_shards);
+            
             res = CreateShardGenesisBlocks(root_genesis_nodes,
                                            cons_genesis_nodes_of_shards[i],
                                            net_id,
@@ -192,6 +193,16 @@ int GenesisBlockInit::CreateGenesisBlocks(
     assert(res == kInitSuccess);
     return res;
 }
+
+int GenesisBlockInit::PrepareCreateGenesisBlocks() {
+        std::shared_ptr<security::Security> security = nullptr;
+        std::shared_ptr<sync::KeyValueSync> kv_sync = nullptr;
+        pools_mgr_ = std::make_shared<pools::TxPoolManager>(security, db_, kv_sync, nullptr);
+        std::shared_ptr<pools::ShardStatistic> statistic_mgr = nullptr;
+        std::shared_ptr<contract::ContractManager> ct_mgr = nullptr;
+        account_mgr_->Init(1, db_, pools_mgr_);
+        block_mgr_->Init(account_mgr_, db_, pools_mgr_, statistic_mgr, security, ct_mgr, "", nullptr, nullptr);    
+};
 
 
 bool GenesisBlockInit::CheckRecomputeG2s(
