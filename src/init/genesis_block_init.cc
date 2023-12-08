@@ -1,5 +1,6 @@
 #include "init/genesis_block_init.h"
 
+#include <_types/_uint32_t.h>
 #include <cmath>
 #include <vector>
 
@@ -43,66 +44,63 @@ GenesisBlockInit::GenesisBlockInit(
 GenesisBlockInit::~GenesisBlockInit() {}
 
 int GenesisBlockInit::CreateGenesisBlocks(
-        const GenisisNetworkType& net_type,
-        const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
-        const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards) {
-    if (net_type == GenisisNetworkType::RootNetwork) {
-        CreateNodePrivateInfo(network::kRootCongressNetworkId, 1llu, root_genesis_nodes);
-
-
-    }
-    // 循环遍历 shard net_id 执行
-    for (uint32_t i = 0; i < cons_genesis_nodes_of_shards.size(); i++) {
-        uint32_t net_id = i + network::kConsensusShardBeginNetworkId;
-        CreateNodePrivateInfo(net_id, 1llu, cons_genesis_nodes_of_shards[i]);
-    }    
-    
+    const GenisisNetworkType& net_type,
+    const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
+    const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards) {
     int res = kInitSuccess;
-    
-    
-    // 创建创世纪块
+    std::vector<std::string> prikeys;
+    // 实现计算一下每个节点账户要分配的余额
+    std::unordered_map<std::string, uint64_t> genesis_acount_balance_map;
+    genesis_acount_balance_map = GetGenesisAccountBalanceMap(root_genesis_nodes, cons_genesis_nodes_of_shards);
+
     if (net_type == GenisisNetworkType::RootNetwork) {
+        // 构建 root 创世网络
+        CreateNodePrivateInfo(network::kRootCongressNetworkId, 1llu, root_genesis_nodes);
+        for (uint32_t i = 0; i < cons_genesis_nodes_of_shards.size(); i++) {
+            uint32_t net_id = i + network::kConsensusShardBeginNetworkId;
+            CreateNodePrivateInfo(net_id, 1llu, cons_genesis_nodes_of_shards[i]);
+        }
+        
         common::GlobalInfo::Instance()->set_network_id(network::kRootCongressNetworkId);
-
         PrepareCreateGenesisBlocks();
-
-        std::unordered_map<std::string, uint64_t> genesis_acount_balance_map;
-        genesis_acount_balance_map = GetGenesisAccountBalanceMap(root_genesis_nodes, cons_genesis_nodes_of_shards);
-
         res = CreateRootGenesisBlocks(root_genesis_nodes,
                                       cons_genesis_nodes_of_shards,
                                       genesis_acount_balance_map);
-    } else {
-        for (uint32_t i = 0; i < cons_genesis_nodes_of_shards.size(); i++) {
-            uint32_t net_id = i + network::kConsensusShardBeginNetworkId;
-            // 为了兼容下游调用，设置一下 GlobalInfo
-            common::GlobalInfo::Instance()->set_network_id(net_id);
 
-            PrepareCreateGenesisBlocks();
-
-            std::unordered_map<std::string, uint64_t> genesis_acount_balance_map;
-            genesis_acount_balance_map = GetGenesisAccountBalanceMap(root_genesis_nodes, cons_genesis_nodes_of_shards);
-            
-            res = CreateShardGenesisBlocks(root_genesis_nodes,
-                                           cons_genesis_nodes_of_shards[i],
-                                           net_id,
-                                           genesis_acount_balance_map);    
-        }
-    }
-
-    std::vector<std::string> prikeys;
-    if (net_type == GenisisNetworkType::RootNetwork) {
         for (uint32_t i = 0; i < root_genesis_nodes.size(); ++i) {
             prikeys.push_back(root_genesis_nodes[i]->prikey);
-        }
+        }       
     } else {
-        for (auto cons_genesis_nodes : cons_genesis_nodes_of_shards) {
-            for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
-                prikeys.push_back(cons_genesis_nodes[i]->prikey);
+        // 构建某 shard 创世网络
+        uint32_t shard_node_net_id = 0;
+        std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;
+        for (uint32_t i = 0; i < cons_genesis_nodes_of_shards.size(); i++) {
+            if (cons_genesis_nodes_of_shards[i].size() != 0) {
+                shard_node_net_id = i + network::kConsensusShardBeginNetworkId;
+                cons_genesis_nodes = cons_genesis_nodes_of_shards[i];
+                break;
             }
         }
-    }
+        if (shard_node_net_id == 0 || cons_genesis_nodes.size() == 0) {
+            return kInitError;
+        }
 
+         
+        CreateNodePrivateInfo(shard_node_net_id, 1llu, cons_genesis_nodes);
+        common::GlobalInfo::Instance()->set_network_id(shard_node_net_id);
+        PrepareCreateGenesisBlocks();            
+        res = CreateShardGenesisBlocks(root_genesis_nodes,
+                                       cons_genesis_nodes,
+                                       shard_node_net_id,
+                                       genesis_acount_balance_map);
+
+        
+        for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
+            prikeys.push_back(cons_genesis_nodes[i]->prikey);
+        }
+    }
+    
+    // 计算 bls 相关信息
     for (uint32_t k = 0; k < prikeys.size(); ++k) {
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
         secptr->SetPrivateKey(prikeys[k]);
