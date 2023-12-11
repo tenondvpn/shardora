@@ -220,10 +220,6 @@ int NetworkInit::Init(int argc, char** argv) {
     }
 
     inited_ = true;
-
-    std::shared_ptr<std::thread> test_thread = std::make_shared<std::thread>(&NetworkInit::testScript, this);
-    test_thread->join();
-    
     
     cmd_.Run();
     return kInitSuccess;
