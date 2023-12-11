@@ -231,7 +231,6 @@ int NetworkInit::testScript() {
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     transport::protobuf::Header& msg = msg_ptr->header;
 
-    init::HttpHandler* http_handler;
     std::string gid = "8476fcc1b0077380fe894cecb072a24f914b053bb10c94948eea5b399d061249";
     std::string from_pk = "042702ef617e594b27fac7cba1953470ee2f9774cfb73b44a43d866b36c61900351e5b41f1143be2031a6b632c34cbe37ac4e8a40c925395e44c40b99e2f6e85fc";
     std::string to = "d9ec5aff3001dece14e1f4a35a39ed506bd6274a";
@@ -243,7 +242,7 @@ int NetworkInit::testScript() {
     std::string sign_s = "4b4b589ed78b9a3ee081fd83784d398cd1329506f91dd7aca8fe98e41c2e4cf3";
     int32_t des_net_id = 3;
     
-    auto from = http_handler->security_ptr()->GetAddress(from_pk);
+    auto from = http_handler_.security_ptr()->GetAddress(from_pk);
     
     dht::DhtKeyManager dht_key(des_net_id);
     msg.set_src_sharding_id(des_net_id);
@@ -276,7 +275,7 @@ int NetworkInit::testScript() {
 
     msg.set_sign(sign);
 
-    http_handler->net_handler()->NewHttpServer(msg_ptr);
+    http_handler_.net_handler()->NewHttpServer(msg_ptr);
     
     return 0;   
 }
