@@ -44,6 +44,9 @@ GenesisBlockInit::GenesisBlockInit(
 
 GenesisBlockInit::~GenesisBlockInit() {}
 
+// CreateGenesisBlocks 给所有的 net 中所有的 pool 创建创世块
+// 并创建创世账户（root 创世账户、shard 创世账户、root pool 账户、节点账户）
+// 并创建选举块数据
 int GenesisBlockInit::CreateGenesisBlocks(
     const GenisisNetworkType& net_type,
     const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
@@ -54,8 +57,8 @@ int GenesisBlockInit::CreateGenesisBlocks(
     std::unordered_map<std::string, uint64_t> genesis_acount_balance_map;
     genesis_acount_balance_map = GetGenesisAccountBalanceMap(root_genesis_nodes, cons_genesis_nodes_of_shards);
 
-    if (net_type == GenisisNetworkType::RootNetwork) {
-        // 构建 root 创世网络
+    if (net_type == GenisisNetworkType::RootNetwork) { // 构造 root 创世网络
+        // 生成节点私有数据，如 bls
         CreateNodePrivateInfo(network::kRootCongressNetworkId, 1llu, root_genesis_nodes);
         for (uint32_t i = 0; i < cons_genesis_nodes_of_shards.size(); i++) {
             uint32_t net_id = i + network::kConsensusShardBeginNetworkId;
@@ -71,8 +74,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
         for (uint32_t i = 0; i < root_genesis_nodes.size(); ++i) {
             prikeys.push_back(root_genesis_nodes[i]->prikey);
         }       
-    } else {
-        // 构建某 shard 创世网络
+    } else { // 构建某 shard 创世网络
         uint32_t shard_node_net_id = 0;
         std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;
         for (uint32_t i = 0; i < cons_genesis_nodes_of_shards.size(); i++) {
@@ -861,15 +863,14 @@ std::string GenesisBlockInit::GetValidPoolBaseAddr(uint32_t pool_index) {
     return account_mgr_->pools_address_info(pool_index)->addr();
 }
 
-// CreateRootGenesisBlocks 为 root 网络的 256 个 pool 创建创世块
+// CreateRootGenesisBlocks 为 root 网络的每个 pool 生成创世块
 int GenesisBlockInit::CreateRootGenesisBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
         std::unordered_map<std::string, uint64_t> genesis_acount_balance_map) {
     // 256 个 root 创世账号
     GenerateRootAccounts();
-    // 256 个 创世账号
-    // InitGenesisAccount();
+    // 256 x shard_num 个 shard 创世账号
     InitShardGenesisAccount();
     uint64_t genesis_account_balance = 0llu;
     uint64_t all_balance = 0llu;
@@ -885,25 +886,19 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     
     // 为创世账户在 root 网络中创建创世块
     // 创世块中包含：创建初始账户，以及节点选举类型的交易
-    // 共生成 256 个块，每个块上分别有 64 个 shard 的创世交易
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         // 用于聚合不同 net_id 的交易，供创建账户使用
         std::map<uint32_t, block::protobuf::BlockTx*> net_tx_map_for_account; 
         auto tenon_block = std::make_shared<block::protobuf::Block>();
-        // 创建区块，打包交易
         auto tx_list = tenon_block->mutable_tx_list();
-        // root 账户地址
         auto iter = root_account_with_pool_index_map_.find(i);
-        // address root 账户地址
         std::string address = iter->second;
         {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
             tx_info->set_from("");
-            // 将 tx hash 分配到对应的 pool 的账户地址中
-            // 256 个账户也是通过 hash 分配到 256 pool 当中的
+            // 每个 root 账户地址都对应一个 pool 账户，先把创世账户中涉及到的 pool 账户创建出来
             tx_info->set_to(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
-            // amount 是 0，只是为了创建账户
             tx_info->set_amount(0);
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
@@ -923,13 +918,13 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             net_tx_map_for_account.insert(std::make_pair(network::kConsensusShardBeginNetworkId, tx_info));
         }
 
-        // 向 root 账户转账
+        // 创建 root 创世账户
         {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
             tx_info->set_from("");
             tx_info->set_to(address);
-            tx_info->set_amount(genesis_account_balance);
+            tx_info->set_amount(genesis_account_balance); // 余额 0 即可
             tx_info->set_balance(genesis_account_balance);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
@@ -1029,16 +1024,17 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         // 持久化块中涉及的庄户信息，统一创建块当中的账户们到 shard 3
         // 包括 root 创世账户，shard 创世账户，root 和 shard 节点账户
 
-        // 这里将 block 中涉及的账户信息，都插入到 db kv 当中，其实和 CreateShartGenesisBlocks 中对于 shard 创世账户的持久化重复了，但是 kv 没关系
+        // 这里将 block 中涉及的账户信息，在不同的 network 中创建
+        // 其实和 CreateShartGenesisBlocks 中对于 shard 创世账户的持久化部分重复了，但由于是 kv 所以没有影响
         for (auto it = net_tx_map_for_account.begin(); it != net_tx_map_for_account.end(); ++it) {
             uint32_t net_id = it->first;
             auto tx = it->second;
             block_mgr_->GenesisAddOneAccount(net_id, *tx, tenon_block->height(), db_batch);
         }
-        // block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
-        // 打包块，并处理块中不同类型的交易(在这里主要是持久化 JoinElect 交易)
+        // 打包块，并处理块中不同类型的交易
         block_mgr_->GenesisNewBlock(0, tenon_block);
         // 处理选举交易（??? 这里没有和 GenesisNewBlock 重复吗）
+        // TODO 感觉重复，可实验
         for (uint32_t i = 0; i < root_genesis_nodes.size(); ++i) {
             for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
                 if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
