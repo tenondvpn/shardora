@@ -129,6 +129,7 @@ add_executable(wsc ${MAIN_DIR}/ws_cli.cc)
 add_executable(tnets ${MAIN_DIR}/tnet_svr.cc)
 add_executable(tnetc ${MAIN_DIR}/tnet_cli.cc)
 add_executable(txcli ${MAIN_DIR}/tx_cli.cc)
+add_executable(txcli ${MAIN_DIR}/test.cc)
 
 set(LINK_ARGS
     init
