@@ -241,6 +241,12 @@ int NetworkInit::testScript() {
     std::string sign_r = "74dc67830f7687c7845accba8de82929fcdd3c47b77bf504a81ab50acd5ffaa0";
     std::string sign_s = "4b4b589ed78b9a3ee081fd83784d398cd1329506f91dd7aca8fe98e41c2e4cf3";
     int32_t des_net_id = 3;
+
+    gid = common::Encode::HexDecode(gid);
+    from_pk = common::Encode::HexDecode(from_pk);
+    to = common::Encode::HexDecode(to);
+    sign_r = common::Encode::HexDecode(sign_r);
+    sign_s = common::Encode::HexDecode(sign_s);
     
     auto from = http_handler_.security_ptr()->GetAddress(from_pk);
     
