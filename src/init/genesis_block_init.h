@@ -62,6 +62,7 @@ private:
         std::unordered_map<std::string, uint64_t> genesis_acount_balance_map); // 节点对应的余额
     uint32_t GetNetworkIdOfGenesisAddress(const std::string& address);
     void InitGenesisAccount();
+    void InitShardGenesisAccount();
     void GenerateRootAccounts();
     int GenerateRootSingleBlock(
         const std::vector<GenisisNodeInfoPtr>& genesis_nodes,
@@ -98,6 +99,7 @@ private:
         block::protobuf::BlockTx& block_tx);
 
     std::map<uint32_t, std::string> pool_index_map_;
+    std::map<uint32_t, std::map<uint32_t, std::string>> net_pool_index_map_; // net => (pool => addr)
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;
     common::Bitmap root_bitmap_{ common::kEachShardMaxNodeCount };
     common::Bitmap shard_bitmap_{ common::kEachShardMaxNodeCount };

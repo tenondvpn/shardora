@@ -1,6 +1,8 @@
 #include "init/genesis_block_init.h"
 
+#include <_types/_uint32_t.h>
 #include <cmath>
+#include <utility>
 #include <vector>
 
 #include <libbls/tools/utils.h>
@@ -867,7 +869,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     // 256 个 root 创世账号
     GenerateRootAccounts();
     // 256 个 创世账号
-    InitGenesisAccount();
+    // InitGenesisAccount();
+    InitShardGenesisAccount();
     uint64_t genesis_account_balance = 0llu;
     uint64_t all_balance = 0llu;
     pools::protobuf::StatisticTxItem init_heights;
@@ -879,17 +882,18 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     for (std::vector<GenisisNodeInfoPtr> nodes : cons_genesis_nodes_of_shards) {
         all_cons_genesis_nodes.insert(all_cons_genesis_nodes.end(), nodes.begin(), nodes.end());
     }
-
+    
     // 为创世账户在 root 网络中创建创世块
     // 创世块中包含：创建初始账户，以及节点选举类型的交易
+    // 共生成 256 个块，每个块上分别有 64 个 shard 的创世交易
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
+        // 用于聚合不同 net_id 的交易，供创建账户使用
+        std::map<uint32_t, block::protobuf::BlockTx*> net_tx_map_for_account; 
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         // 创建区块，打包交易
         auto tx_list = tenon_block->mutable_tx_list();
         // root 账户地址
         auto iter = root_account_with_pool_index_map_.find(i);
-        // shard 账户地址
-        auto shard_iter = pool_index_map_.find(i);
         // address root 账户地址
         std::string address = iter->second;
         {
@@ -904,8 +908,9 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
+            net_tx_map_for_account.insert(std::make_pair(network::kConsensusShardBeginNetworkId, tx_info));
         }
-        // ??? 为啥又来一遍，另外直接转账不行吗
+        // TODO 一样，可以试试删掉这个
         {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
@@ -915,6 +920,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
+            net_tx_map_for_account.insert(std::make_pair(network::kConsensusShardBeginNetworkId, tx_info));
         }
 
         // 向 root 账户转账
@@ -927,18 +933,27 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             tx_info->set_balance(genesis_account_balance);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
+            net_tx_map_for_account.insert(std::make_pair(network::kConsensusShardBeginNetworkId, tx_info));
         }
-        // 向 shard 账户转账
-        {
-            auto tx_info = tx_list->Add();
-            tx_info->set_gid(common::CreateGID(""));
-            tx_info->set_from("");
-            tx_info->set_to(shard_iter->second);
-            tx_info->set_amount(genesis_account_balance);
-            tx_info->set_balance(genesis_account_balance);
-            tx_info->set_gas_limit(0);
-            tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
+
+        for (auto shard_iter = net_pool_index_map_.begin(); shard_iter != net_pool_index_map_.end(); ++shard_iter) {
+            std::map<uint32_t, std::string> pool_map = shard_iter->second;
+            auto pool_iter = pool_map.find(i);
+            if (pool_iter != pool_map.end()) {
+                std::string shard_acc_address = pool_iter->second;
+                // 向 shard 账户转账，root 网络中的账户余额不重要，主要是记录下此 block 的 shard 信息即可
+                auto tx_info = tx_list->Add();
+                tx_info->set_gid(common::CreateGID(""));
+                tx_info->set_from("");
+                tx_info->set_to(shard_acc_address);
+                tx_info->set_amount(genesis_account_balance);
+                tx_info->set_balance(genesis_account_balance);
+                tx_info->set_gas_limit(0);
+                tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
+                net_tx_map_for_account.insert(std::make_pair(shard_iter->first, tx_info));
+            }
         }
+
 
         for (uint32_t member_idx = 0; member_idx < root_genesis_nodes.size(); ++member_idx) {
             // 将 root 节点的选举交易打包到对应的 pool 块中
@@ -956,6 +971,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 storage->set_key(protos::kJoinElectVerifyG2);
                 storage->set_val_hash(root_genesis_nodes[member_idx]->check_hash);
                 storage->set_val_size(33);
+                net_tx_map_for_account.insert(std::make_pair(network::kConsensusShardBeginNetworkId, join_elect_tx_info));
             }
         }
 
@@ -975,6 +991,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 storage->set_key(protos::kJoinElectVerifyG2);
                 storage->set_val_hash(all_cons_genesis_nodes[member_idx]->check_hash);
                 storage->set_val_size(33);
+                net_tx_map_for_account.insert(std::make_pair(network::kConsensusShardBeginNetworkId, join_elect_tx_info));
             }
         }    
         
@@ -1011,7 +1028,14 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
 
         // 持久化块中涉及的庄户信息，统一创建块当中的账户们到 shard 3
         // 包括 root 创世账户，shard 创世账户，root 和 shard 节点账户
-        block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
+
+        // 这里将 block 中涉及的账户信息，都插入到 db kv 当中，其实和 CreateShartGenesisBlocks 中对于 shard 创世账户的持久化重复了，但是 kv 没关系
+        for (auto it = net_tx_map_for_account.begin(); it != net_tx_map_for_account.end(); ++it) {
+            uint32_t net_id = it->first;
+            auto tx = it->second;
+            block_mgr_->GenesisAddOneAccount(net_id, *tx, tenon_block->height(), db_batch);
+        }
+        // block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
         // 打包块，并处理块中不同类型的交易(在这里主要是持久化 JoinElect 交易)
         block_mgr_->GenesisNewBlock(0, tenon_block);
         // 处理选举交易（??? 这里没有和 GenesisNewBlock 重复吗）
@@ -1357,68 +1381,64 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         uint32_t net_id,
         std::unordered_map<std::string, uint64_t> genesis_acount_balance_map) {
     // shard 账户
-    InitGenesisAccount();
-    // 每个账户分配余额
-    uint64_t genesis_account_balance = common::kGenesisFoundationMaxZjc / pool_index_map_.size();
+    // InitGenesisAccount();
+    InitShardGenesisAccount();
+    std::map<uint32_t, std::string> pool_acc_map;
+    auto it = net_pool_index_map_.find(net_id);
+    if (it != net_pool_index_map_.end()) {
+        pool_acc_map = it->second;
+    } else {
+        return kInitError; 
+    }
+     
+    // 每个账户分配余额，只有 shard3 中的合法账户会被分配
+    uint64_t genesis_account_balance = 0;
+    if (net_id == network::kConsensusShardBeginNetworkId) {
+        genesis_account_balance = common::kGenesisFoundationMaxZjc / pool_acc_map.size();    
+    }
+    
     uint64_t all_balance = 0llu;
     pools::protobuf::StatisticTxItem init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
-    pool_index_map_[common::kRootChainPoolIndex] = common::kRootPoolsAddress;
+    pool_acc_map[common::kRootChainPoolIndex] = common::kRootPoolsAddress;
     
     uint32_t idx = 0;
     // 给每个账户在 net_id 网络中创建块，并分配到不同的 pool 当中
-    // TODO 创世账户平均分配到所有 shard 中
-    for (auto iter = pool_index_map_.begin(); iter != pool_index_map_.end(); ++iter, ++idx) {
+    for (auto iter = pool_acc_map.begin(); iter != pool_acc_map.end(); ++iter, ++idx) {
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
         std::string address = iter->second;
 
-        uint32_t dest_net_id = GetNetworkIdOfGenesisAddress(address);
-        // TODO ??? 不是所有 shard 的 pool 都有以下交易，所以是否要给个默认的创世交易？
-        // TODO 如果 net_id == shard3 才有以下交易，否则只有上述默认交易
         auto tx_info = tx_list->Add();
         tx_info->set_gid(common::CreateGID(""));
-        tx_info->set_from("");
+        // ??? from 涉及的账户并不会被在 shard 中创建，那这句的目的是？
+        if (idx < common::kImmutablePoolSize) {
+            tx_info->set_from(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
+        } else {
+            tx_info->set_from(address);
+        }
+
         tx_info->set_to("");
         tx_info->set_amount(0);
         tx_info->set_balance(0);
         tx_info->set_gas_limit(0);
         tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-        
-        // 创世账户只分配到 shard3 中
-        if (net_id == dest_net_id) {
-            // ??? 为什么要发过去再发回来，PoolBaseAddr 和 address 的区别是什么
-            // 这条交易想必是为了生成 from 账户用的
+
+        if (idx < common::kImmutablePoolSize) {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
-            if (idx < common::kImmutablePoolSize) {
-                tx_info->set_from(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
-            } else {
-                tx_info->set_from(address);
+            tx_info->set_from("");
+            tx_info->set_to(address);
+
+            if (net_id == network::kConsensusShardBeginNetworkId && iter->first == common::kImmutablePoolSize - 1) {
+                genesis_account_balance += common::kGenesisFoundationMaxZjc % common::kImmutablePoolSize;
             }
 
-            tx_info->set_to("");
-            tx_info->set_amount(0);
-            tx_info->set_balance(0);
+            tx_info->set_amount(genesis_account_balance);
+            tx_info->set_balance(genesis_account_balance);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-
-            if (idx < common::kImmutablePoolSize) {
-                auto tx_info = tx_list->Add();
-                tx_info->set_gid(common::CreateGID(""));
-                tx_info->set_from("");
-                tx_info->set_to(address);
-
-                if (iter->first == common::kImmutablePoolSize - 1) {
-                    genesis_account_balance += common::kGenesisFoundationMaxZjc % common::kImmutablePoolSize;
-                }
-
-                tx_info->set_amount(genesis_account_balance);
-                tx_info->set_balance(genesis_account_balance);
-                tx_info->set_gas_limit(0);
-                tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-            }            
-        }
+        }            
         
         tenon_block->set_prehash("");
         tenon_block->set_version(common::kTransactionVersion);
@@ -1426,7 +1446,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         tenon_block->set_height(0);
         tenon_block->set_timeblock_height(0);
         tenon_block->set_electblock_height(1);
-        tenon_block->set_network_id(dest_net_id);
+        tenon_block->set_network_id(net_id);
         tenon_block->set_is_commited_block(true);
         tenon_block->set_hash(consensus::GetBlockHash(*tenon_block));
         BlsAggSignBlock(cons_genesis_nodes, tenon_block);
@@ -1445,10 +1465,10 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             db_batch);
         AddBlockItemToCache(tenon_block, db_batch);
         block_mgr_->GenesisNewBlock(0, tenon_block);
-        block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
+        block_mgr_->GenesisAddAllAccount(net_id, tenon_block, db_batch);
         db_->Put(db_batch);
 
-        if (net_id == dest_net_id) {
+        if (net_id == network::kConsensusShardBeginNetworkId) {
             auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
             if (account_ptr == nullptr) {
                 ZJC_FATAL("get address failed! [%s]", common::Encode::HexEncode(address).c_str());
@@ -1504,6 +1524,31 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
 // TODO 目前默认是 shard 3
 uint32_t GenesisBlockInit::GetNetworkIdOfGenesisAddress(const std::string& address) {
     return network::kConsensusShardBeginNetworkId;
+}
+
+// InitShardGenesisAccount 初始化所有 shard 所有 pool 的创世账号，共 64 x 256 个
+void GenesisBlockInit::InitShardGenesisAccount() {
+    static bool hasRunOnce = false;
+
+    if (!hasRunOnce) {
+        for (uint32_t net_id = network::kConsensusShardBeginNetworkId; net_id <= network::kConsensusShardEndNetworkId; net_id++) {
+            // 除了 shard3，其他 shard 的创世账户都是一些随机假账户
+        
+            if (net_id == network::kConsensusShardBeginNetworkId) {
+                InitGenesisAccount();
+                net_pool_index_map_.insert(std::make_pair(net_id, pool_index_map_));
+            } else {
+                std::map<uint32_t, std::string> tmp_pool_map_;
+                for (uint32_t pool_id = 0; pool_id < 256; pool_id++) {       
+                    tmp_pool_map_.insert(std::make_pair(pool_id, common::Encode::HexDecode(common::Random::RandomString(20))));
+
+                }
+                net_pool_index_map_.insert(std::make_pair(net_id, tmp_pool_map_));
+            }
+        }    
+    }
+
+    hasRunOnce = true;
 }
 
 void GenesisBlockInit::InitGenesisAccount() {
@@ -2027,36 +2072,6 @@ void GenesisBlockInit::GenerateRootAccounts() {
         root_account_with_pool_index_map_.insert(std::make_pair(254, common::Encode::HexDecode("dd17e73b5eb219b4954508e64fc856f4e258c0d3")));
         root_account_with_pool_index_map_.insert(std::make_pair(255, common::Encode::HexDecode("bfd4a5f7b6a23a59aea7e161ab8421dd2fdc3801")));
     }
-
-//     security::Curve curve;
-//     std::map<std::string, std::string> pri_pub_map;
-//     while (root_account_with_pool_index_map_.size() < common::kImmutablePoolSize) {
-//         std::string prikey_str = common::Random::RandomString(32);
-//         security::PrivateKey prikey(prikey_str);
-//         security::PublicKey pubkey(curve, prikey);
-//         std::string pubkey_str;
-//         pubkey.Serialize(pubkey_str, false);
-//         // std::string prikey_str;
-//         // prikey.Serialize(prikey_str);
-
-//         std::string address = security::Secp256k1::Instance()->ToAddressWithPublicKey(curve, pubkey_str);
-//         auto pool_index = common::GetAddressPoolIndex(address);
-//         auto iter = root_account_with_pool_index_map_.find(pool_index);
-//         if (iter != root_account_with_pool_index_map_.end()) {
-//             continue;
-//         }
-
-//         root_account_with_pool_index_map_.insert(std::make_pair(pool_index, address));
-//         pri_pub_map[address] = prikey_str;
-//     }
-
-//     for (auto iter = pool_index_map_.begin(); iter != pool_index_map_.end(); ++iter) {
-//         std::cout << common::Encode::HexEncode(iter->second) << "\t" << common::Encode::HexEncode(pri_pub_map[iter->second]) << std::endl;
-//     }
-
-//     for (auto iter = root_account_with_pool_index_map_.begin(); iter != root_account_with_pool_index_map_.end(); ++iter) {
-//         std::cout << "root_account_with_pool_index_map_.insert(std::make_pair(" << iter->first << ", common::Encode::HexDecode(\"" << common::Encode::HexEncode(iter->second) << "\")));" << std::endl;
-//    }
 }
 
 };  // namespace init

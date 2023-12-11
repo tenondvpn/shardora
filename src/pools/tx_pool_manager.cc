@@ -1095,6 +1095,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    // 转账交易，验证签名
     if (tx_msg.step() == pools::protobuf::kNormalFrom) {
         if (security_->Verify(
                 msg_ptr->msg_hash,
@@ -1113,6 +1114,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
     }
 
 
+    // 验证账户余额是否足够
     if (msg_ptr->address_info->balance() <
             tx_msg.amount() + tx_msg.contract_prepayment() +
             consensus::kTransferGas * tx_msg.gas_price()) {
@@ -1243,6 +1245,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
         return;
     }
 
+    // 交易池增加 msg 中的交易
     tx_pool_[pool_index].AddTx(tx_ptr);
     ZJC_DEBUG("push queue index pool_index: %u, tx size: %d, latest tm: %lu",
         pool_index, tx_pool_[pool_index].tx_size(), tx_pool_[pool_index].oldest_timestamp());
