@@ -234,8 +234,8 @@ int NetworkInit::testScript() {
     std::string gid = "8476fcc1b0077380fe894cecb072a24f914b053bb10c94948eea5b399d061249";
     std::string from_pk = "042702ef617e594b27fac7cba1953470ee2f9774cfb73b44a43d866b36c61900351e5b41f1143be2031a6b632c34cbe37ac4e8a40c925395e44c40b99e2f6e85fc";
     std::string to = "d9ec5aff3001dece14e1f4a35a39ed506bd6274a";
-    uint64_t amount = 10000000000000;
-    uint64_t gas_limit = 100000;
+    uint64_t amount = 10000000000000ull;
+    uint64_t gas_limit = 100000ul;
     uint64_t gas_price = 1;
     uint64_t sign_v = 0;
     std::string sign_r = "74dc67830f7687c7845accba8de82929fcdd3c47b77bf504a81ab50acd5ffaa0";
@@ -268,6 +268,9 @@ int NetworkInit::testScript() {
     new_tx->set_amount(amount);
     new_tx->set_gas_limit(gas_limit);
     new_tx->set_gas_price(gas_price);
+
+    uint64_t pepay_val = 0;
+    new_tx->set_contract_prepayment(pepay_val);
     
 
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
