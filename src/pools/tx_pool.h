@@ -317,6 +317,7 @@ private:
                 network_id,
                 pool_index_,
                 &pool_info)) {
+            // 根据数据库更新内存中的 tx_pool 状态
             if (latest_height_ == common::kInvalidUint64 || latest_height_ < pool_info.height()) {
                 latest_height_ = pool_info.height();
                 latest_hash_ = pool_info.hash();

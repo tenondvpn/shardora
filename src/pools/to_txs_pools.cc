@@ -38,6 +38,7 @@ void ToTxsPools::NewBlock(const std::shared_ptr<block::protobuf::Block>& block_p
         return;
     }
 
+    // 更新 pool 的 max height
     if (block.height() > pool_max_heihgts_[block.pool_index()]) {
         pool_max_heihgts_[block.pool_index()] = block.height();
     }

@@ -837,6 +837,7 @@ void BlockManager::AddNewBlock(
         block_item->electblock_height());
     // TODO: check all block saved success
     assert(block_item->electblock_height() >= 1);
+    // block 两条信息持久化
     if (!prefix_db_->SaveBlock(*block_item, db_batch)) {
         ZJC_DEBUG("block saved: %lu", block_item->height());
         return;
@@ -844,9 +845,9 @@ void BlockManager::AddNewBlock(
 
     // db_batch 并没有用，只是更新下 to_txs_pool 的状态，如高度
     to_txs_pool_->NewBlock(block_item, db_batch);
-    
+
+    // 当前节点和 block 分配的 shard 不同，要跨分片交易
     if (block_item->pool_index() == common::kRootChainPoolIndex) {
-        // TODO 怎么处理，创世纪块的时候没有 common::GlobalInfo::Instance()->network_id() 啊
         if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
                 block_item->network_id() + network::kConsensusWaitingShardOffset !=
                 common::GlobalInfo::Instance()->network_id()) {
@@ -859,6 +860,7 @@ void BlockManager::AddNewBlock(
         return;
     }
 
+    // 处理交易信息
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         switch (tx_list[i].step()) {
         case pools::protobuf::kRootCreateAddressCrossSharding:
@@ -903,11 +905,13 @@ void BlockManager::AddNewBlock(
     }
 }
 
+// HandleJoinElectTx 持久化 JoinElect 交易相关信息
 void BlockManager::HandleJoinElectTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
+    // 存放了一个 from => balance 的映射
     prefix_db_->SaveElectNodeStoke(
         tx.from(),
         block.electblock_height(),
@@ -921,6 +925,7 @@ void BlockManager::HandleJoinElectTx(
                 break;
             }
 
+            // 解析参与选举的信息
             bls::protobuf::JoinElectInfo join_info;
             if (!join_info.ParseFromString(val)) {
                 assert(false);
@@ -950,6 +955,7 @@ void BlockManager::HandleJoinElectTx(
             }
 
             auto check_hash = common::Hash::keccak256(str_for_hash);
+            // 验证交易是否合法
             if (check_hash != tx.storages(i).val_hash()) {
                 assert(false);
                 break;

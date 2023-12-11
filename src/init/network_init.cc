@@ -90,12 +90,14 @@ int NetworkInit::Init(int argc, char** argv) {
 
     common::Ip::Instance();
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
+    // 随机数
     vss_mgr_ = std::make_shared<vss::VssManager>(security_);
     kv_sync_ = std::make_shared<sync::KeyValueSync>();
     gas_prepayment_ = std::make_shared<consensus::ContractGasPrepayment>(
         common::GlobalInfo::Instance()->message_handler_thread_count() - 1,
         db_);
     zjcvm::Execution::Instance()->Init(db_);
+    
     InitLocalNetworkId();
     ZJC_DEBUG("id: %s, init sharding id: %u",
         common::Encode::HexEncode(security_->GetAddress()).c_str(),
@@ -545,7 +547,7 @@ void NetworkInit::InitLocalNetworkId() {
 
     elect::ElectBlockManager elect_block_mgr;
     // 加载最新的选举块到 cache
-    // 从最新的选举块中，获取 node 所在 shard_id
+    // 从最新的选举块中，获取 node 所在 shard_id(对于种子节点，创世的时候已经写入这部分信息了)
     elect_block_mgr.Init(db_);
     for (uint32_t sharding_id = network::kRootCongressNetworkId;
             sharding_id < network::kConsensusShardEndNetworkId; ++sharding_id) {
@@ -557,6 +559,7 @@ void NetworkInit::InitLocalNetworkId() {
         auto& in = block_ptr->in();
         for (int32_t member_idx = 0; member_idx < in.size(); ++member_idx) {
             auto id = security_->GetAddress(in[member_idx].pubkey());
+            // 如果本 node pubkey 与 elect block 当中记录的相同，则分配到对应的 sharding
             if (id == security_->GetAddress()) {
                 ZJC_DEBUG("should join network: %u", sharding_id);
                 des_sharding_id_ = sharding_id;

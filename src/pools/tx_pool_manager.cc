@@ -37,9 +37,11 @@ TxPoolManager::TxPoolManager(
     ZJC_INFO("TxPoolManager init success: %d", common::kInvalidPoolIndex);
     InitCrossPools();
     pop_message_thread_ = std::make_shared<std::thread>(&TxPoolManager::PopPoolsMessage, this);
+    // 每 10ms 会共识一次时间块
     tick_.CutOff(
         10000lu,
         std::bind(&TxPoolManager::ConsensusTimerMessage, this, std::placeholders::_1));
+    // 注册 kPoolsMessage 的回调函数
     network::Route::Instance()->RegisterMessage(
         common::kPoolsMessage,
         std::bind(&TxPoolManager::HandleMessage, this, std::placeholders::_1));
@@ -77,14 +79,16 @@ void TxPoolManager::InitCrossPools() {
     }
 
     if (local_is_root) {
-        cross_pools_ = new CrossPool[network::kConsensusWaitingShardOffset];
+        cross_pools_ = new CrossPool[network::kConsensusWaitingShardOffset]; // shard 分片的个数
         for (uint32_t i = network::kConsensusShardBeginNetworkId;
                 i < network::kConsensusShardEndNetworkId; ++i) {
+            // root 对 每个 shard 都有一个 cross pool，pool index == 256
             cross_pools_[i - network::kConsensusShardBeginNetworkId].Init(i, db_, kv_sync_);
         }
 
         max_cross_pools_size_ = network::kConsensusWaitingShardOffset;
     } else {
+        // 非 root 节点，只有一个 cross pool，目标 root net，pool index 256
         cross_pools_ = new CrossPool[1];
         cross_pools_[0].Init(network::kRootCongressNetworkId, db_, kv_sync_);
     }

@@ -1006,15 +1006,14 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             tenon_block->hash(),
             tenon_block->prehash(),
             db_batch);
-        // ??? 和 UpdateLatestInfo 差不多啊，冗余了吧
+        // ??? 和 UpdateLatestInfo 差不多啊
         AddBlockItemToCache(tenon_block, db_batch);
 
-        // 持久化块中涉及的庄户信息，统一创建块当中的账户们到 shard 3
-        // 包括 root 创世账户，shard 创世账户，root 和 shard 节点账户
+        // 创建块当中的账户们到 shard 3，这里是默认的，增加 shard 后也不需要修改
         block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
-        // 打包块，并处理块中不同类型的交易(在这里主要是持久化 JoinElect 交易)
+        // 打包块，并处理块中不同类型的交易
         block_mgr_->GenesisNewBlock(0, tenon_block);
-        // 处理选举交易（??? 这里没有和 GenesisNewBlock 重复吗）
+        // 处理选举交易
         for (uint32_t i = 0; i < root_genesis_nodes.size(); ++i) {
             for (int32_t tx_idx = 0; tx_idx < tenon_block->tx_list_size(); ++tx_idx) {
                 if (tenon_block->tx_list(tx_idx).step() == pools::protobuf::kJoinElect) {
@@ -1026,7 +1025,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         db_->Put(db_batch);
         init_heights.add_heights(0);
 
-        // 获取该 pool 对应的 root 账户，做一些余额校验，这里 root 账户中余额其实是 0
+        // 获取该 pool 对应的 root 账户，做一些余额校验
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
             ZJC_FATAL("get address info failed! [%s]",
