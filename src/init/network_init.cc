@@ -267,7 +267,7 @@ int NetworkInit::testScript() {
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign = sign_r + sign_s + "0";// http_handler->security_ptr()->GetSign(sign_r, sign_s, sign_v);
     sign[64] = char(sign_v);
-    if (http_handler->security_ptr()->Verify(
+    if (http_handler_.security_ptr()->Verify(
             tx_hash, from_pk, sign) != security::kSecuritySuccess) {
 
         return -1;
