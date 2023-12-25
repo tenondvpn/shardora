@@ -76,6 +76,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
     } else { // 构建某 shard 创世网络
         uint32_t shard_node_net_id = 0;
         std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;
+        // TODO 这种写法是每个 shard 单独的 shell 命令，不适用，需要改
         for (uint32_t i = 0; i < cons_genesis_nodes_of_shards.size(); i++) {
             if (cons_genesis_nodes_of_shards[i].size() != 0) {
                 shard_node_net_id = i + network::kConsensusShardBeginNetworkId;
