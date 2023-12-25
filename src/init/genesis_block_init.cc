@@ -1,5 +1,6 @@
 #include "init/genesis_block_init.h"
 
+#include <_types/_uint32_t.h>
 #include <cmath>
 #include <utility>
 #include <vector>
@@ -52,7 +53,7 @@ int GenesisBlockInit::CreateGenesisBlocks(
     const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards) {
     int res = kInitSuccess;
     std::vector<std::string> prikeys;
-    // 实现计算一下每个节点账户要分配的余额
+    // 事先计算一下每个节点账户要分配的余额
     std::unordered_map<std::string, uint64_t> genesis_acount_balance_map;
     genesis_acount_balance_map = GetGenesisAccountBalanceMap(root_genesis_nodes, cons_genesis_nodes_of_shards);
 
@@ -887,7 +888,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     // 创世块中包含：创建初始账户，以及节点选举类型的交易
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
         // 用于聚合不同 net_id 的交易，供创建账户使用
-        std::map<uint32_t, block::protobuf::BlockTx*> net_tx_map_for_account; 
+        std::map<block::protobuf::BlockTx*, uint32_t> tx2net_map_for_account; 
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
         auto iter = root_account_with_pool_index_map_.find(i);
@@ -902,7 +903,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-            net_tx_map_for_account.insert(std::make_pair(network::kConsensusShardBeginNetworkId, tx_info));
+            tx2net_map_for_account.insert(std::make_pair(tx_info, network::kConsensusShardBeginNetworkId));
         }
         // TODO 一样，可以试试删掉这个
         {
@@ -914,7 +915,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-            net_tx_map_for_account.insert(std::make_pair(network::kConsensusShardBeginNetworkId, tx_info));
+            tx2net_map_for_account.insert(std::make_pair(tx_info, network::kConsensusShardBeginNetworkId));
         }
 
         // 创建 root 创世账户
@@ -927,7 +928,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             tx_info->set_balance(genesis_account_balance);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-            net_tx_map_for_account.insert(std::make_pair(network::kConsensusShardBeginNetworkId, tx_info));
+            tx2net_map_for_account.insert(std::make_pair(tx_info, network::kConsensusShardBeginNetworkId));
         }
 
         for (auto shard_iter = net_pool_index_map_.begin(); shard_iter != net_pool_index_map_.end(); ++shard_iter) {
@@ -944,7 +945,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 tx_info->set_balance(genesis_account_balance);
                 tx_info->set_gas_limit(0);
                 tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-                net_tx_map_for_account.insert(std::make_pair(shard_iter->first, tx_info));
+                tx2net_map_for_account.insert(std::make_pair(tx_info, network::kConsensusShardBeginNetworkId));
             }
         }
 
@@ -965,7 +966,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 storage->set_key(protos::kJoinElectVerifyG2);
                 storage->set_val_hash(root_genesis_nodes[member_idx]->check_hash);
                 storage->set_val_size(33);
-                net_tx_map_for_account.insert(std::make_pair(network::kConsensusShardBeginNetworkId, join_elect_tx_info));
+                tx2net_map_for_account.insert(std::make_pair(join_elect_tx_info, network::kConsensusShardBeginNetworkId));
             }
         }
 
@@ -985,7 +986,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 storage->set_key(protos::kJoinElectVerifyG2);
                 storage->set_val_hash(all_cons_genesis_nodes[member_idx]->check_hash);
                 storage->set_val_size(33);
-                net_tx_map_for_account.insert(std::make_pair(network::kConsensusShardBeginNetworkId, join_elect_tx_info));
+                tx2net_map_for_account.insert(std::make_pair(join_elect_tx_info, network::kConsensusShardBeginNetworkId));
             }
         }    
         
@@ -1025,12 +1026,13 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
 
         // 这里将 block 中涉及的账户信息，在不同的 network 中创建
         // 其实和 CreateShartGenesisBlocks 中对于 shard 创世账户的持久化部分重复了，但由于是 kv 所以没有影响
-        for (auto it = net_tx_map_for_account.begin(); it != net_tx_map_for_account.end(); ++it) {
-            uint32_t net_id = it->first;
-            auto tx = it->second;
+        for (auto it = tx2net_map_for_account.begin(); it != tx2net_map_for_account.end(); ++it) {
+            auto tx = it->first;
+            uint32_t net_id = it->second;
+            
             block_mgr_->GenesisAddOneAccount(net_id, *tx, tenon_block->height(), db_batch);
         }
-        // 打包块，并处理块中不同类型的交易
+        // 出块，并处理块中不同类型的交易
         block_mgr_->GenesisNewBlock(0, tenon_block);
         // 处理选举交易（??? 这里没有和 GenesisNewBlock 重复吗）
         // TODO 感觉重复，可实验
@@ -1063,6 +1065,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     }
 
     // 选举 root leader，选举 shard leader
+    // 每次 ElectBlock 出块会生效前一个选举块
     FILE* root_gens_init_block_file = fopen("./root_blocks", "w");
     if (CreateElectBlock(
             network::kRootCongressNetworkId,
@@ -1088,11 +1091,11 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
         return kInitError;
     }
 
-    // ??? 这也应该是 pool_index，其实就是选了 root network 的 pool 2 和 pool 3 ?
+    // 这也应该是 pool_index，其实就是选了 root network 的 pool 2 和 pool 3 ?
     pool_prev_hash_map[network::kRootCongressNetworkId] = prehashes[network::kRootCongressNetworkId];
     init_heights.set_heights(network::kRootCongressNetworkId, 2);
 
-    // ??? prehashes 不是 pool 当中前一个块的 hash 吗，为什么是 prehashes[network_id] 而不是 prehashes[pool_index]
+    // prehashes 不是 pool 当中前一个块的 hash 吗，为什么是 prehashes[network_id] 而不是 prehashes[pool_index]
     for (uint32_t i = 0; i < cons_genesis_nodes_of_shards.size(); i++) {
         uint32_t net_id = i + network::kConsensusShardBeginNetworkId;
         GenisisNodeInfoPtrVector genesis_nodes = cons_genesis_nodes_of_shards[i];

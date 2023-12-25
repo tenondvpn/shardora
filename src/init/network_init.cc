@@ -1058,6 +1058,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         }
 
         
+
         uint32_t shard_num = network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId+1;
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(shard_num);
         
