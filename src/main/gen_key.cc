@@ -11,6 +11,7 @@ int main(int argc, char** argv) {
 
     pubkey.FromPrivateKey(curve, prikey);
     std::cout << zjchain::common::Encode::HexEncode(pubkey.str_pubkey()) << std::endl;
+    std::cout << zjchain::common::Encode::HexEncode(pubkey.str_pubkey_uncompressed()) << std::endl;
     
     return 0;
 }
