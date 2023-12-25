@@ -419,9 +419,9 @@ void BlockManager::GenesisAddOneAccount(uint32_t des_sharding_id,
                                         const uint64_t& latest_height,
                                         db::DbWriteBatch& db_batch) {
     auto& account_id = account_mgr_->GetTxValidAddress(tx);
-    if (account_id == "") {
-        return;
-    }
+    // if (account_id == "") {
+    //     return;
+    // }
     auto account_info = std::make_shared<address::protobuf::AddressInfo>();
     account_info->set_pool_index(common::GetAddressPoolIndex(account_id));
     account_info->set_addr(account_id);
