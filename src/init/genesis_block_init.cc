@@ -1406,20 +1406,37 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         auto tx_list = tenon_block->mutable_tx_list();
         std::string address = iter->second;
 
-        auto tx_info = tx_list->Add();
-        tx_info->set_gid(common::CreateGID(""));
-        // ??? from 涉及的账户并不会被在 shard 中创建，那这句的目的是？
-        if (idx < common::kImmutablePoolSize) {
-            tx_info->set_from(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
-        } else {
-            tx_info->set_from(address);
+        {
+            auto tx_info = tx_list->Add();
+            tx_info->set_gid(common::CreateGID(""));
+            if (idx < common::kImmutablePoolSize) {
+                tx_info->set_from(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
+            } else {
+                tx_info->set_from(address);
+            }
+
+            tx_info->set_to("");
+            tx_info->set_amount(0);
+            tx_info->set_balance(0);
+            tx_info->set_gas_limit(0);
+            tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
         }
 
-        tx_info->set_to("");
-        tx_info->set_amount(0);
-        tx_info->set_balance(0);
-        tx_info->set_gas_limit(0);
-        tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
+        {
+            auto tx_info = tx_list->Add();
+            tx_info->set_gid(common::CreateGID(""));
+            if (idx < common::kImmutablePoolSize) {
+                tx_info->set_from(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
+            } else {
+                tx_info->set_from(address);
+            }
+
+            tx_info->set_to("");
+            tx_info->set_amount(0);
+            tx_info->set_balance(0);
+            tx_info->set_gas_limit(0);
+            tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
+        }
 
         if (idx < common::kImmutablePoolSize) {
             auto tx_info = tx_list->Add();
