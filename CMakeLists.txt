@@ -129,6 +129,7 @@ add_executable(wsc ${MAIN_DIR}/ws_cli.cc)
 add_executable(tnets ${MAIN_DIR}/tnet_svr.cc)
 add_executable(tnetc ${MAIN_DIR}/tnet_cli.cc)
 add_executable(txcli ${MAIN_DIR}/tx_cli.cc)
+add_executable(gen-key ${MAIN_DIR}/gen_key.cc)
 
 set(LINK_ARGS
     init
@@ -171,6 +172,7 @@ target_link_libraries(wss websocket common tcmalloc pthread gmp)
 target_link_libraries(tnetc transport common tcmalloc pthread gmp)
 target_link_libraries(tnets transport common tcmalloc pthread gmp)
 target_link_libraries(txcli security transport common tcmalloc pthread gmp)
+target_link_libraries(gen-key ${LINK_ARGS})
 
 include_directories(SYSTEM ${SRC_DIR})
 
