@@ -434,10 +434,7 @@ void BlockManager::GenesisAddOneAccount(uint32_t des_sharding_id,
               account_info->balance(),
               des_sharding_id);
     
-    prefix_db_->AddAddressInfo(account_info->addr(), *account_info, db_batch);
-    if (account_id == common::kRootPoolsAddress) {
-        std::cout << "addr: " << account_info->addr().c_str() << std::endl;
-    }    
+    prefix_db_->AddAddressInfo(account_info->addr(), *account_info, db_batch);    
 }
 
 void BlockManager::HandleCrossTx(

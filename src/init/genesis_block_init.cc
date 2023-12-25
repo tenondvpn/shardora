@@ -1406,23 +1406,26 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         auto tx_list = tenon_block->mutable_tx_list();
         std::string address = iter->second;
-
+        
+        // from
         {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
+            tx_info->set_from("");
             if (idx < common::kImmutablePoolSize) {
-                tx_info->set_from(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
+                tx_info->set_to(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
             } else {
-                tx_info->set_from(address);
+                // 单独创建 0x000...000
+                tx_info->set_to(address);
             }
-
-            tx_info->set_to("");
+            
             tx_info->set_amount(0);
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
         }
 
+        // to
         {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
