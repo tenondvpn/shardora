@@ -172,7 +172,7 @@ target_link_libraries(wss websocket common tcmalloc pthread gmp)
 target_link_libraries(tnetc transport common tcmalloc pthread gmp)
 target_link_libraries(tnets transport common tcmalloc pthread gmp)
 target_link_libraries(txcli security transport common tcmalloc pthread gmp)
-target_link_libraries(gen-key security common)
+target_link_libraries(gen-key ${LINK_ARGS})
 
 include_directories(SYSTEM ${SRC_DIR})
 
