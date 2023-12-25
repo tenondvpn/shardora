@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
     zjchain::security::PrivateKey prikey(argv[0]);
 
     pubkey.FromPrivateKey(curve, prikey);
-    std::cout << pubkey.str_pubkey_uncompressed() << std::endl;
+    std::cout << pubkey.str_pubkey_uncompressed().c_str() << std::endl;
     
     return 0;
 }

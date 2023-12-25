@@ -69,4 +69,3 @@ if [[ $1 == "gen-key" ]];
 then
     make -j3 gen-key
 fi
-
