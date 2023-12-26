@@ -1001,7 +1001,12 @@ int NetworkInit::ParseParams(int argc, char** argv, common::ParserArgs& parser_a
     parser_arg.AddArgType('U', "gen_root", common::kNoValue);
     parser_arg.AddArgType('S', "gen_shard", common::kNoValue);
     parser_arg.AddArgType('1', "root_nodes", common::kMaybeValue);
-    parser_arg.AddArgType('2', "shard_nodes", common::kMaybeValue);
+
+    for (uint32_t arg_i = network::kConsensusShardBeginNetworkId-1; arg_i < network::kConsensusShardEndNetworkId; arg_i++) {
+        std::string arg_shard = std::to_string(arg_i);
+        std::string name = "shard_nodes" + arg_shard;
+        parser_arg.AddArgType(arg_shard[0], name.c_str(), common::kMaybeValue);
+    }
 
     std::string tmp_params = "";
     for (int i = 1; i < argc; i++) {
