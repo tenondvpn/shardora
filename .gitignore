@@ -16,3 +16,4 @@ third_party/bin/
 third_party/evmone*
 third_party/include
 src/contract/tests/contracts/*.bin
+.cache
