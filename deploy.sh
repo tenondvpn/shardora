@@ -47,6 +47,7 @@ cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s2
 cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s3
 cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s4
 cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s5
+cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s6
 
 cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r1
 cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r2
@@ -56,8 +57,8 @@ cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r3
 #cp -rf ./cbuild_Release/zjchain /root/zjnodes/r6
 #cp -rf ./cbuild_Release/zjchain /root/zjnodes/r7
 
-cd /root/zjnodes/zjchain && ./zjchain -U -1 67dfdd4d49509691369225e9059934675dea440d123aa8514441aa6788354016:127.0.0.1:1,356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe:127.0.0.1:2,a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee:127.0.0.1:2 -2 e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269:127.0.0.1:3,b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0:127.0.0.1:4,0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995:127.0.0.1:5
-cd /root/zjnodes/zjchain && ./zjchain -S -1 67dfdd4d49509691369225e9059934675dea440d123aa8514441aa6788354016:127.0.0.1:1,356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe:127.0.0.1:2,a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee:127.0.0.1:2 -2 e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269:127.0.0.1:3,b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0:127.0.0.1:4,0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995:127.0.0.1:5
+cd /root/zjnodes/zjchain && ./zjchain -U -1 67dfdd4d49509691369225e9059934675dea440d123aa8514441aa6788354016:127.0.0.1:1,356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe:127.0.0.1:2,a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee:127.0.0.1:2 -2 e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269:127.0.0.1:3,b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0:127.0.0.1:4,0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995:127.0.0.1:5 -3 1cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995:127.0.0.1:6,2bad2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995:127.0.0.1:7,a650b81a130c2188eb8cdba08c3fe414e4887b940d91c7827afee5c702644967:127.0.0.1:8
+cd /root/zjnodes/zjchain && ./zjchain -S -1 67dfdd4d49509691369225e9059934675dea440d123aa8514441aa6788354016:127.0.0.1:1,356bcb89a431c911f4a57109460ca071701ec58983ec91781a6bd73bde990efe:127.0.0.1:2,a094b020c107852505385271bf22b4ab4b5211e0c50b7242730ff9a9977a77ee:127.0.0.1:2 -2 e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269:127.0.0.1:3,b16e3d5523d61f0b0ccdf1586aeada079d02ccf15da9e7f2667cb6c4168bb5f0:127.0.0.1:4,0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995:127.0.0.1:5 -3 1cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995:127.0.0.1:6,2bad2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db995:127.0.0.1:7,a650b81a130c2188eb8cdba08c3fe414e4887b940d91c7827afee5c702644967:127.0.0.1:8
 
 cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/r1/db
 cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/r2/db
@@ -71,7 +72,7 @@ cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s2/db
 cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s3/db
 cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/s4/db
 cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/s5/db
-#cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s6/db
+cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s6/db
 #cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s7/db
 #cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s8/db
 #cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s9/db
@@ -99,6 +100,9 @@ cd /root/zjnodes/r3/ && nohup ./zjchain -f 0 -g 0 &
 cd /root/zjnodes/s1/ && nohup ./zjchain -f 0 -g 0 &
 cd /root/zjnodes/s2/ && nohup ./zjchain -f 0 -g 0 &
 cd /root/zjnodes/s3/ && nohup ./zjchain -f 0 -g 0 &
+cd /root/zjnodes/s4/ && nohup ./zjchain -f 0 -g 0 &
+cd /root/zjnodes/s5/ && nohup ./zjchain -f 0 -g 0 &
+cd /root/zjnodes/s6/ && nohup ./zjchain -f 0 -g 0 &
 
 # start nodes with daemon
 cd /root/deploy && sh start.sh
