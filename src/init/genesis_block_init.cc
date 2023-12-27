@@ -1246,6 +1246,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
     // valid_ids 为所有节点（包括 root 和 shard）address
 
     uint64_t all_balance = 0llu;
+    uint64_t expect_all_balance = 0;
     // 统计每个 pool 的链长度
     std::map<uint32_t, uint64_t> pool_height;
     for (uint32_t i = 0; i < common::kImmutablePoolSize; ++i) {
@@ -1267,6 +1268,7 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         auto balance_iter = genesis_acount_balance_map.find(*iter);
         if (balance_iter != genesis_acount_balance_map.end()) {
             genesis_account_balance = balance_iter->second;
+            expect_all_balance += genesis_account_balance;
         }
         
         // // 最后一个节点分配剩余余额
@@ -1362,9 +1364,9 @@ int GenesisBlockInit::CreateShardNodesBlocks(
         init_heights.set_heights(pool_index, tenon_block->height());
     }
 
-    if (all_balance != common::kGenesisShardingNodesMaxZjc) {
-        ZJC_FATAL("all_balance != common::kGenesisFoundationMaxTenon failed! [%lu][%llu]",
-            all_balance, common::kGenesisShardingNodesMaxZjc);
+    if (all_balance != expect_all_balance) {
+        ZJC_FATAL("all_balance != expect_all_balance failed! [%lu][%llu]",
+            all_balance, expect_all_balance);
         return kInitError;
     }
     return kInitSuccess;
