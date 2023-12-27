@@ -898,12 +898,6 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     pools::protobuf::StatisticTxItem init_heights;
     std::unordered_map<uint32_t, std::string> pool_prev_hash_map;
     std::string prehashes[common::kImmutablePoolSize]; // 256
-
-    // concatenating all cons_genesis_nodes for root network
-    std::vector<GenisisNodeInfoPtr> all_cons_genesis_nodes;
-    for (std::vector<GenisisNodeInfoPtr> nodes : cons_genesis_nodes_of_shards) {
-        all_cons_genesis_nodes.insert(all_cons_genesis_nodes.end(), nodes.begin(), nodes.end());
-    }
     
     // 为创世账户在 root 网络中创建创世块
     // 创世块中包含：创建初始账户，以及节点选举类型的交易
@@ -924,6 +918,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             tx_info->set_balance(0);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
+            // root 网络的 pool addr 账户创建在 shard3?
             tx2net_map_for_account.insert(std::make_pair(tx_info, network::kConsensusShardBeginNetworkId));
         }
         // TODO 一样，可以试试删掉这个
@@ -949,11 +944,13 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             tx_info->set_balance(genesis_account_balance);
             tx_info->set_gas_limit(0);
             tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
+            // root 创世账户也创建在 shard3?
             tx2net_map_for_account.insert(std::make_pair(tx_info, network::kConsensusShardBeginNetworkId));
         }
 
         for (auto shard_iter = net_pool_index_map_.begin(); shard_iter != net_pool_index_map_.end(); ++shard_iter) {
             std::map<uint32_t, std::string> pool_map = shard_iter->second;
+            uint32_t net_id = shard_iter->first;
             auto pool_iter = pool_map.find(i);
             if (pool_iter != pool_map.end()) {
                 std::string shard_acc_address = pool_iter->second;
@@ -966,7 +963,8 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 tx_info->set_balance(genesis_account_balance);
                 tx_info->set_gas_limit(0);
                 tx_info->set_step(pools::protobuf::kConsensusCreateGenesisAcount);
-                tx2net_map_for_account.insert(std::make_pair(tx_info, network::kConsensusShardBeginNetworkId));
+                // shard 创世账户创建在对应的 net
+                tx2net_map_for_account.insert(std::make_pair(tx_info, net_id));
             }
         }
 
@@ -987,30 +985,36 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
                 storage->set_key(protos::kJoinElectVerifyG2);
                 storage->set_val_hash(root_genesis_nodes[member_idx]->check_hash);
                 storage->set_val_size(33);
+                // root 节点选举涉及账户分配到 shard3 网络
                 tx2net_map_for_account.insert(std::make_pair(join_elect_tx_info, network::kConsensusShardBeginNetworkId));
             }
         }
 
-        for (uint32_t member_idx = 0; member_idx < all_cons_genesis_nodes.size(); ++member_idx) {
-            // 同理，shard 节点的选举交易也打包到对应的 pool 块中
-            if (common::GetAddressPoolIndex(all_cons_genesis_nodes[member_idx]->id) == i) {
-                auto join_elect_tx_info = tx_list->Add();
-                join_elect_tx_info->set_step(pools::protobuf::kJoinElect);
-                join_elect_tx_info->set_from(all_cons_genesis_nodes[member_idx]->id);
-                join_elect_tx_info->set_to("");
-                join_elect_tx_info->set_amount(0);
-                join_elect_tx_info->set_gas_limit(0);
-                join_elect_tx_info->set_gas_used(0);
-                join_elect_tx_info->set_balance(0);
-                join_elect_tx_info->set_status(0);
-                auto storage = join_elect_tx_info->add_storages();
-                storage->set_key(protos::kJoinElectVerifyG2);
-                storage->set_val_hash(all_cons_genesis_nodes[member_idx]->check_hash);
-                storage->set_val_size(33);
-                tx2net_map_for_account.insert(std::make_pair(join_elect_tx_info, network::kConsensusShardBeginNetworkId));
+        for (uint32_t k = 0; k < cons_genesis_nodes_of_shards.size(); k++) {
+            uint32_t net_id = k + network::kConsensusShardBeginNetworkId;
+            auto cons_genesis_nodes = cons_genesis_nodes_of_shards[k];
+            
+            for (uint32_t member_idx = 0; member_idx < cons_genesis_nodes.size(); ++member_idx) {
+                // 同理，shard 节点的选举交易也打包到对应的 pool 块中
+                if (common::GetAddressPoolIndex(cons_genesis_nodes[member_idx]->id) == i) {
+                    auto join_elect_tx_info = tx_list->Add();
+                    join_elect_tx_info->set_step(pools::protobuf::kJoinElect);
+                    join_elect_tx_info->set_from(cons_genesis_nodes[member_idx]->id);
+                    join_elect_tx_info->set_to("");
+                    join_elect_tx_info->set_amount(0);
+                    join_elect_tx_info->set_gas_limit(0);
+                    join_elect_tx_info->set_gas_used(0);
+                    join_elect_tx_info->set_balance(0);
+                    join_elect_tx_info->set_status(0);
+                    auto storage = join_elect_tx_info->add_storages();
+                    storage->set_key(protos::kJoinElectVerifyG2);
+                    storage->set_val_hash(cons_genesis_nodes[member_idx]->check_hash);
+                    storage->set_val_size(33);
+                    // 选举交易涉及账户分配到对应 shard
+                    tx2net_map_for_account.insert(std::make_pair(join_elect_tx_info, net_id));
+                }
             }
-        }    
-        
+        }
 
         tenon_block->set_prehash("");
         tenon_block->set_version(common::kTransactionVersion);
@@ -1158,6 +1162,12 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
     int res = GenerateRootSingleBlock(root_genesis_nodes, root_gens_init_block_file, &root_pool_height);
     if (res == kInitSuccess) {
         init_heights.add_heights(root_pool_height);
+        
+        std::vector<GenisisNodeInfoPtr> all_cons_genesis_nodes;
+        for (std::vector<GenisisNodeInfoPtr> nodes : cons_genesis_nodes_of_shards) {
+            all_cons_genesis_nodes.insert(all_cons_genesis_nodes.end(), nodes.begin(), nodes.end());
+        }
+
         // 在 root 网络中为所有节点创建块
         CreateShardNodesBlocks(
             pool_prev_hash_map,
@@ -1294,11 +1304,6 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             genesis_account_balance = balance_iter->second;
             expect_all_balance += genesis_account_balance;
         }
-        
-        // // 最后一个节点分配剩余余额
-        // if (idx + 1 == (int32_t)valid_ids.size()) {
-        //     genesis_account_balance += common::kGenesisShardingNodesMaxZjc % valid_ids.size();
-        // }
 
         // 添加创建节点账户交易，节点账户用于选举
         {
