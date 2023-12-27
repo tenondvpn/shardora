@@ -1,5 +1,6 @@
 #include "init/network_init.h"
 
+#include <_types/_uint32_t.h>
 #include <functional>
 
 #include "block/block_manager.h"
@@ -1000,7 +1001,8 @@ int NetworkInit::ParseParams(int argc, char** argv, common::ParserArgs& parser_a
     parser_arg.AddArgType('V', "vpn_vip_level", common::kNoValue);
     parser_arg.AddArgType('U', "gen_root", common::kNoValue);
     parser_arg.AddArgType('S', "gen_shard", common::kNoValue);
-    parser_arg.AddArgType('1', "root_nodes", common::kMaybeValue);
+    parser_arg.AddArgType('N', "networks", common::kMaybeValue);
+    parser_arg.AddArgType('1', "root_nodes", common::kMaybeValue);    
 
     for (uint32_t arg_i = network::kConsensusShardBeginNetworkId-1; arg_i < network::kConsensusShardEndNetworkId; arg_i++) {
         std::string arg_shard = std::to_string(arg_i);
@@ -1028,6 +1030,26 @@ int NetworkInit::ParseParams(int argc, char** argv, common::ParserArgs& parser_a
 }
 
 int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
+    std::set<uint32_t> valid_net_ids_set;
+    std::string valid_arg_i_value;
+    
+    if (!parser_arg.Has("N")) {
+        return kInitError;
+    }
+    
+    if (parser_arg.Get("N", valid_arg_i_value) != common::kParseSuccess) {
+        return kInitError;
+    }
+    common::Split<2048> nodes_split(valid_arg_i_value.c_str(), ',', valid_arg_i_value.size());
+    for (uint32_t i = 0; i < nodes_split.Count(); ++i) {
+        uint32_t arg_i = static_cast<uint32_t>(std::stoul(nodes_split[i]));
+        valid_net_ids_set.insert(arg_i + 1);
+    }
+
+    if (valid_net_ids_set.size() == 0) {
+        return kInitError;
+    } 
+    
     if (parser_arg.Has("U")) {
         auto db = std::make_shared<db::Db>();
         if (!db->Init("./root_db")) {
@@ -1039,6 +1061,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
+
         if (parser_arg.Has("1")) {
             std::string value;
             if (parser_arg.Get("1", value) != common::kParseSuccess) {
@@ -1048,7 +1071,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
             common::Split<2048> nodes_split(value.c_str(), ',', value.size());
             for (uint32_t i = 0; i < nodes_split.Count(); ++i) {
                 common::Split<> node_info(nodes_split[i], ':', nodes_split.SubLen(i));
-                if (node_info.Count() != 3) {
+                if (node_info.Count() != 1) {
                     continue;
                 }
 
@@ -1080,7 +1103,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
                 common::Split<2048> nodes_split(value.c_str(), ',', value.size());
                 for (uint32_t i = 0; i < nodes_split.Count(); ++i) {
                     common::Split<> node_info(nodes_split[i], ':', nodes_split.SubLen(i));
-                    if (node_info.Count() != 3) {
+                    if (node_info.Count() != 1) {
                         continue;
                     }
 
@@ -1100,7 +1123,8 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         if (genesis_block.CreateGenesisBlocks(
                 GenisisNetworkType::RootNetwork,
                 root_genesis_nodes,
-                cons_genesis_nodes_of_shards) != 0) {
+                cons_genesis_nodes_of_shards,
+                valid_net_ids_set) != 0) {
             return kInitError;
         }
 
@@ -1110,7 +1134,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
     if (parser_arg.Has("S")) {
         ZJC_DEBUG("save shard db: shard_db");
         auto db = std::make_shared<db::Db>();
-        if (!db->Init("./shard_db")) {
+        if (!db->Init("./shard_db_" + valid_arg_i_value)) {
             INIT_ERROR("init db failed!");
             return kInitError;
         }
@@ -1119,6 +1143,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
+        
         if (parser_arg.Has("1")) {
             std::string value;
             if (parser_arg.Get("1", value) != common::kParseSuccess) {
@@ -1149,7 +1174,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         for (uint32_t arg_i = network::kConsensusShardBeginNetworkId-1; arg_i < network::kConsensusShardEndNetworkId; arg_i++) {
             std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;
             std::string arg_shard = std::to_string(arg_i);
-            
+
             if (parser_arg.Has(arg_shard)) {
                 std::string value;
                 if (parser_arg.Get(arg_shard, value) != common::kParseSuccess) {
@@ -1178,7 +1203,8 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         if (genesis_block.CreateGenesisBlocks(
                 GenisisNetworkType::ShardNetwork,
                 root_genesis_nodes,
-                cons_genesis_nodes_of_shards) != 0) {
+                cons_genesis_nodes_of_shards,
+                valid_net_ids_set) != 0) {
             return kInitError;
         }
 
