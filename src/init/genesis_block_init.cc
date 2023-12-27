@@ -50,14 +50,14 @@ int GenesisBlockInit::CreateGenesisBlocks(
     const GenisisNetworkType& net_type,
     const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
     const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards) {
-    int res = kInitSuccess;
-    std::vector<std::string> prikeys;
+    int res = kInitSuccess;    
     // 事先计算一下每个节点账户要分配的余额
     std::unordered_map<std::string, uint64_t> genesis_acount_balance_map;
     genesis_acount_balance_map = GetGenesisAccountBalanceMap(root_genesis_nodes, cons_genesis_nodes_of_shards);
 
     if (net_type == GenisisNetworkType::RootNetwork) { // 构造 root 创世网络
         // 生成节点私有数据，如 bls
+        std::vector<std::string> prikeys;
         CreateNodePrivateInfo(network::kRootCongressNetworkId, 1llu, root_genesis_nodes);
         for (uint32_t i = 0; i < cons_genesis_nodes_of_shards.size(); i++) {
             uint32_t net_id = i + network::kConsensusShardBeginNetworkId;
@@ -72,14 +72,15 @@ int GenesisBlockInit::CreateGenesisBlocks(
 
         for (uint32_t i = 0; i < root_genesis_nodes.size(); ++i) {
             prikeys.push_back(root_genesis_nodes[i]->prikey);
-        }       
+        }
+
+        ComputeG2sForNodes(prikeys);
     } else { // 构建某 shard 创世网络
-        uint32_t shard_node_net_id = 0;
-        std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;
         // TODO 这种写法是每个 shard 单独的 shell 命令，不适用，需要改
         for (uint32_t i = 0; i < cons_genesis_nodes_of_shards.size(); i++) {
-            shard_node_net_id = i + network::kConsensusShardBeginNetworkId;
-            cons_genesis_nodes = cons_genesis_nodes_of_shards[i];
+            std::vector<std::string> prikeys;
+            uint32_t shard_node_net_id = i + network::kConsensusShardBeginNetworkId;
+            std::vector<GenisisNodeInfoPtr> cons_genesis_nodes = cons_genesis_nodes_of_shards[i];
 
             if (shard_node_net_id == 0 || cons_genesis_nodes.size() == 0) {
                 continue;
@@ -91,15 +92,22 @@ int GenesisBlockInit::CreateGenesisBlocks(
             res = CreateShardGenesisBlocks(root_genesis_nodes,
                                            cons_genesis_nodes,
                                            shard_node_net_id,
-                                           genesis_acount_balance_map);
+                                           genesis_acount_balance_map,
+                                           i == 0); // root 节点账户创建在第一个 shard 网络
             assert(res == kInitSuccess);
 
             for (uint32_t i = 0; i < cons_genesis_nodes.size(); ++i) {
                 prikeys.push_back(cons_genesis_nodes[i]->prikey);
             }
+
+            ComputeG2sForNodes(prikeys);
         }
     }
     
+    return res;
+}
+
+void GenesisBlockInit::ComputeG2sForNodes(const std::vector<std::string>& prikeys) {
     // 计算 bls 相关信息
     for (uint32_t k = 0; k < prikeys.size(); ++k) {
         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
@@ -188,8 +196,6 @@ int GenesisBlockInit::CreateGenesisBlocks(
     }
 
     db_->ClearPrefix("db_for_gid_");
-    assert(res == kInitSuccess);
-    return res;
 }
 
 void GenesisBlockInit::PrepareCreateGenesisBlocks() {
@@ -1372,11 +1378,19 @@ int GenesisBlockInit::CreateShardNodesBlocks(
     return kInitSuccess;
 }
 
+// CreateShardGenesisBlocks 为某 shard 网络创建创世块
+// params: 
+// root_genesis_nodes root 网络的创世节点
+// cons_genesis_nodes 目标 shard 网络的创世节点
+// net_id 网络 ID
+// genesis_acount_balance_map 节点账户分配余额表
+// consider_root 是否为 root 节点创建对应交易(有可能 root 节点账户已经创建在其他 shard 中了)
 int GenesisBlockInit::CreateShardGenesisBlocks(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id,
-        std::unordered_map<std::string, uint64_t> genesis_acount_balance_map) {
+        std::unordered_map<std::string, uint64_t> genesis_acount_balance_map,
+        bool consider_root) {
     // shard 账户
     // InitGenesisAccount();
     InitShardGenesisAccount();

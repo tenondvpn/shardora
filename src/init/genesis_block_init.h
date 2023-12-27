@@ -40,6 +40,7 @@ public:
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards);
 private:
+    void GenesisBlockInit::ComputeG2sForNodes(const std::vector<std::string>& prikeys);
     std::unordered_map<std::string, uint64_t> GetGenesisAccountBalanceMap(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards);
@@ -51,7 +52,8 @@ private:
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtr>& cons_genesis_nodes,
         uint32_t net_id,
-        std::unordered_map<std::string, uint64_t> genesis_acount_balance_map);
+        std::unordered_map<std::string, uint64_t> genesis_acount_balance_map,
+        bool consider_root);
     void PrepareCreateGenesisBlocks();
     int CreateShardNodesBlocks(
         std::unordered_map<uint32_t, std::string>& pool_prev_hash_map,
