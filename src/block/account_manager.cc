@@ -52,14 +52,15 @@ void AccountManager::CreatePoolsAddressInfo() {
     root_pool_address_info_->set_latest_height(0);
     uint32_t i = 0;
     std::unordered_set<uint32_t> pool_idx_set;
-    // 这只是为了随机分配个 addr 给 pool，但这个 addr 必须和 pool 之间有 GetAddressPoolIndex 的关系，所以遍历着去找 
+    // 这只是为了随机分配个 addr 给 pool，但这个 addr 必须和 pool 之间有 GetAddressPoolIndex 的关系，所以遍历着去找
+    // pool_address_info_ 中存有 257 个 pool address
     for (uint32_t i = 0; i < common::kInvalidUint32; ++i) {
         std::string addr = common::kRootPoolsAddress;
         uint32_t* tmp_data = (uint32_t*)addr.data();
         tmp_data[0] = i;
         auto pool_idx = common::GetAddressPoolIndex(addr);
 
-        if (pool_idx_set.size() >= common::kImmutablePoolSize) {
+        if (pool_idx_set.size() > common::kImmutablePoolSize) {
             break;
         }
 
