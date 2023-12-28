@@ -1152,7 +1152,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
             common::Split<2048> nodes_split(value.c_str(), ',', value.size());
             for (uint32_t i = 0; i < nodes_split.Count(); ++i) {
                 common::Split<> node_info(nodes_split[i], ':', nodes_split.SubLen(i));
-                if (node_info.Count() != 3) {
+                if (node_info.Count() != 1) {
                     continue;
                 }
 
@@ -1183,7 +1183,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
                 common::Split<2048> nodes_split(value.c_str(), ',', value.size());
                 for (uint32_t i = 0; i < nodes_split.Count(); ++i) {
                     common::Split<> node_info(nodes_split[i], ':', nodes_split.SubLen(i));
-                    if (node_info.Count() != 3) {
+                    if (node_info.Count() != 1) {
                         continue;
                     }
 
