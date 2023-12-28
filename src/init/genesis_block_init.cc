@@ -666,6 +666,7 @@ int GenesisBlockInit::GenerateRootSingleBlock(
     GenerateRootAccounts();
     uint64_t root_single_block_height = 0llu;
     // for root single block chain
+    // 呃，这个账户不是已经创建了么
     auto root_pool_addr = common::kRootPoolsAddress;
     std::string root_pre_hash;
     {
@@ -822,7 +823,10 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
 
         AddBlockItemToCache(tenon_block, db_batch);
         // 同步 root_gens_init_block_file 中 block 中的账户和 block
-        block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
+        // 无非就是各节点账户，上文中已经加过了，这里不好区分 root_blocks 不同 shard 的账户
+        // block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
+
+        // 选举块、时间块无论 shard 都是要全网同步的
         block_mgr_->GenesisNewBlock(0, tenon_block);
         for (int32_t i = 0; i < tenon_block->tx_list_size(); ++i) {
             for (int32_t j = 0; j < tenon_block->tx_list(i).storages_size(); ++j) {
