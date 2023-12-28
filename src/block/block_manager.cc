@@ -1370,7 +1370,8 @@ void BlockManager::HandleStatisticBlock(
         ZJC_INFO("create_elect_tx_cb_ == nullptr");
         return;
     }
-   
+
+    // 时间粒度一个 epoch, 10min 一个选举块
     if (prefix_db_->ExistsStatisticedShardingHeight(
             block.network_id(),
             block.timeblock_height())) {

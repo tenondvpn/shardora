@@ -1033,7 +1033,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
     std::string valid_arg_i_value;
     
     if (!parser_arg.Has("N")) {
-        return kInitError;
+        return -1;
     }
     
     if (parser_arg.Get("N", valid_arg_i_value) != common::kParseSuccess) {
