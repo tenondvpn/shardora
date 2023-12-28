@@ -101,6 +101,7 @@ private:
         block::protobuf::BlockTx& block_tx);
 
     std::map<uint32_t, std::string> pool_index_map_;
+    std::map<uint32_t, std::string> pool_index_map2_;
     std::map<uint32_t, std::map<uint32_t, std::string>> net_pool_index_map_; // net => (pool => addr)
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;
     common::Bitmap root_bitmap_{ common::kEachShardMaxNodeCount };
