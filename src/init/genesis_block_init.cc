@@ -934,7 +934,7 @@ int GenesisBlockInit::CreateRootGenesisBlocks(
             tx2net_map_for_account.insert(std::make_pair(tx_info, network::kConsensusShardBeginNetworkId));
         }
 
-        // 创建 root 创世账户
+        // 创建 root 创世账户，貌似没什么用
         {
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
