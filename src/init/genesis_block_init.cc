@@ -1376,7 +1376,13 @@ int GenesisBlockInit::CreateShardNodesBlocks(
             }
         }
 
-        block_mgr_->GenesisAddAllAccount(net_id, tenon_block, db_batch);
+        // root 网络节点账户状态都在 shard3 中
+        if (net_id == network::kRootCongressNetworkId) {
+            block_mgr_->GenesisAddAllAccount(network::kConsensusShardBeginNetworkId, tenon_block, db_batch);
+        } else {
+            block_mgr_->GenesisAddAllAccount(net_id, tenon_block, db_batch);
+        }
+        
         db_->Put(db_batch);
         auto account_ptr = account_mgr_->GetAcountInfoFromDb(address);
         if (account_ptr == nullptr) {
@@ -1427,9 +1433,8 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     uint64_t genesis_account_balance = 0;
     if (net_id == network::kConsensusShardBeginNetworkId) {
         genesis_account_balance = common::kGenesisFoundationMaxZjc / pool_acc_map.size();
-        // kRootPoolsAddress 被分配到 shard3
-        pool_acc_map[common::kRootChainPoolIndex] = common::kRootPoolsAddress;
     }
+    pool_acc_map[common::kRootChainPoolIndex] = common::kRootPoolsAddress;
     
     uint64_t all_balance = 0llu;
     pools::protobuf::StatisticTxItem init_heights;
@@ -1447,6 +1452,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
             auto tx_info = tx_list->Add();
             tx_info->set_gid(common::CreateGID(""));
             tx_info->set_from("");
+            // TODO 这里不用区分啊，一样的，后面修改看看
             if (idx < common::kImmutablePoolSize) {
                 tx_info->set_to(GetValidPoolBaseAddr(common::GetAddressPoolIndex(address)));
             } else {
