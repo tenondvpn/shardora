@@ -1436,7 +1436,7 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
     // 每个账户分配余额，只有 shard3 中的合法账户会被分配
     uint64_t genesis_account_balance = 0;
     // if (net_id == network::kConsensusShardBeginNetworkId) {
-    genesis_account_balance = common::kGenesisFoundationMaxZjc / 2 / pool_acc_map.size(); // 两个分片
+    genesis_account_balance = common::kGenesisFoundationMaxZjc / pool_acc_map.size(); // 两个分片
     // }
     pool_acc_map[common::kRootChainPoolIndex] = common::kRootPoolsAddress;
     
