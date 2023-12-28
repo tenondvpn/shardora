@@ -1595,7 +1595,7 @@ void GenesisBlockInit::InitShardGenesisAccount() {
     static bool hasRunOnce = false;
 
     if (!hasRunOnce) {
-        for (uint32_t net_id = network::kConsensusShardBeginNetworkId; net_id <= network::kConsensusShardEndNetworkId; net_id++) {
+        for (uint32_t net_id = network::kConsensusShardBeginNetworkId; net_id < network::kConsensusShardEndNetworkId; net_id++) {
             // 除了 shard3，其他 shard 的创世账户都是一些随机假账户
         
             if (net_id == network::kConsensusShardBeginNetworkId) {

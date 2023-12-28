@@ -1086,10 +1086,10 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
 
         
 
-        uint32_t shard_num = network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId+1;
+        uint32_t shard_num = network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId;
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(shard_num);
         
-        for (uint32_t arg_i = network::kConsensusShardBeginNetworkId-1; arg_i < network::kConsensusShardEndNetworkId; arg_i++) {
+        for (uint32_t arg_i = network::kConsensusShardBeginNetworkId-1; arg_i < network::kConsensusShardEndNetworkId-1; arg_i++) {
             std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;
             std::string arg_shard = std::to_string(arg_i);
 
@@ -1167,10 +1167,10 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         }
 
         
-        uint32_t shard_num = network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId+1;
+        uint32_t shard_num = network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId;
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(shard_num);
 
-        for (uint32_t arg_i = network::kConsensusShardBeginNetworkId-1; arg_i < network::kConsensusShardEndNetworkId; arg_i++) {
+        for (uint32_t arg_i = network::kConsensusShardBeginNetworkId-1; arg_i < network::kConsensusShardEndNetworkId-1; arg_i++) {
             std::vector<GenisisNodeInfoPtr> cons_genesis_nodes;
             std::string arg_shard = std::to_string(arg_i);
 
