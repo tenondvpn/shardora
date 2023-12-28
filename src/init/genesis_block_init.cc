@@ -1435,9 +1435,9 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
      
     // 每个账户分配余额，只有 shard3 中的合法账户会被分配
     uint64_t genesis_account_balance = 0;
-    if (net_id == network::kConsensusShardBeginNetworkId) {
-        genesis_account_balance = common::kGenesisFoundationMaxZjc / pool_acc_map.size();
-    }
+    // if (net_id == network::kConsensusShardBeginNetworkId) {
+    genesis_account_balance = common::kGenesisFoundationMaxZjc / 2 / pool_acc_map.size(); // 两个分片
+    // }
     pool_acc_map[common::kRootChainPoolIndex] = common::kRootPoolsAddress;
     
     uint64_t all_balance = 0llu;
@@ -1551,9 +1551,9 @@ int GenesisBlockInit::CreateShardGenesisBlocks(
 
         all_balance += account_ptr->balance();    
 
-        if (net_id != network::kConsensusShardBeginNetworkId) {
-            all_balance = common::kGenesisFoundationMaxZjc;
-        }
+        // if (net_id != network::kConsensusShardBeginNetworkId) {
+        //     all_balance = common::kGenesisFoundationMaxZjc;
+        // }
         
         init_heights.add_heights(0);
     }
@@ -1603,10 +1603,12 @@ void GenesisBlockInit::InitShardGenesisAccount() {
                 net_pool_index_map_.insert(std::make_pair(net_id, pool_index_map_));
             } else {
                 std::map<uint32_t, std::string> tmp_pool_map_;
-                for (uint32_t pool_id = 0; pool_id < 256; pool_id++) {       
+                for (uint32_t pool_id = 0; pool_id < 255; pool_id++) {       
                     tmp_pool_map_.insert(std::make_pair(pool_id, common::Encode::HexDecode(common::Random::RandomString(20))));
 
                 }
+                // for test
+                tmp_pool_map_.insert(std::make_pair(255, "431be10b3a0e46f8a46686c6b0c29bc743f715fa"));
                 net_pool_index_map_.insert(std::make_pair(net_id, tmp_pool_map_));
             }
         }    
@@ -1872,7 +1874,8 @@ void GenesisBlockInit::InitGenesisAccount() {
         pool_index_map_.insert(std::make_pair(252, common::Encode::HexDecode("00932c2f58ecdda87c8a9288225f9d367a09ef2f")));
         pool_index_map_.insert(std::make_pair(253, common::Encode::HexDecode("e509d43e3f3d7187c7bc84baa027a332e6f3312e")));
         pool_index_map_.insert(std::make_pair(254, common::Encode::HexDecode("e6e619f55e6c5d47aab07a4d0ebb5aff62a4a315")));
-        pool_index_map_.insert(std::make_pair(255, common::Encode::HexDecode("431be10b3a0e46f8a46686c6b0c29bc743f715fa")));
+        // pool_index_map_.insert(std::make_pair(255, common::Encode::HexDecode("431be10b3a0e46f8a46686c6b0c29bc743f715fa")));
+        pool_index_map_.insert(std::make_pair(255, common::Encode::HexDecode("ba8b2c92b2282ca589397e933dfe15da6b940d7c")));
     }
 
 }
