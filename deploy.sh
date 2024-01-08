@@ -10,8 +10,8 @@ then
 fi
 
 sh build.sh a $TARGET
-cp -r ./zjnodes /root
-cp -r ./deploy /root
+sudo cp -rf ./zjnodes /root
+sudo cp -rf ./deploy /root
 
 rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db
 mkdir -p /root/zjnodes/zjchain/log
