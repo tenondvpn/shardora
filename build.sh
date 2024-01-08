@@ -64,8 +64,3 @@ then
     make -j3 wss
     make -j3 wsc
 fi
-
-if [[ $1 == "gen-key" ]];
-then
-    make -j3 gen-key
-fi
