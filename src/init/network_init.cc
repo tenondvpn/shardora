@@ -1,8 +1,6 @@
 #include "init/network_init.h"
 
 #include <functional>
-#include <yaml-cpp/node/node.h>
-#include <yaml-cpp/node/parse.h>
 
 #include "block/block_manager.h"
 #include "common/global_info.h"
