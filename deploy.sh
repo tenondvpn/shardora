@@ -9,7 +9,7 @@ then
 	TARGET=Debug
 fi
 
-sh build.sh a $1
+sh build.sh a $TARGET
 cp -r ./zjnodes /root
 cp -r ./deploy /root
 
@@ -41,18 +41,18 @@ mkdir -p /root/zjnodes/r5/log
 mkdir -p /root/zjnodes/r6/log
 mkdir -p /root/zjnodes/r7/log
 
-cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
-cp -f ./conf/genesis.yml /root/zjnodes/zjchain/genesis.yml
-cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s1
-cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s2
-cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s3
-cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s4
-cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s5
-cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s6
+sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
+sudo cp -f ./conf/genesis.yml /root/zjnodes/zjchain/genesis.yml
+sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s1
+sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s2
+sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s3
+sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s4
+sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s5
+sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s6
 
-cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r1
-cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r2
-cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r3
+sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r1
+sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r2
+sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r3
 #cp -rf ./cbuild_Release/zjchain /root/zjnodes/r4
 #cp -rf ./cbuild_Release/zjchain /root/zjnodes/r5
 #cp -rf ./cbuild_Release/zjchain /root/zjnodes/r6

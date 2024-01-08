@@ -1118,7 +1118,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         uint32_t net_id = static_cast<uint32_t>(std::stoul(net_id_str));
         // shard3 创世时需要 root 节点参与
         if (net_id == network::kConsensusShardBeginNetworkId) {
-            valid_net_ids_set.insert(network::kConsensusShardBeginNetworkId);
+            valid_net_ids_set.insert(network::kRootCongressNetworkId);
         }
         valid_net_ids_set.insert(net_id);
 
