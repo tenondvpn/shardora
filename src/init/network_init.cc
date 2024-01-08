@@ -999,9 +999,8 @@ int NetworkInit::ParseParams(int argc, char** argv, common::ParserArgs& parser_a
     parser_arg.AddArgType('i', "id", common::kMaybeValue);
     parser_arg.AddArgType('V', "vpn_vip_level", common::kNoValue);
     parser_arg.AddArgType('U', "gen_root", common::kNoValue);
-    parser_arg.AddArgType('S', "gen_shard", common::kNoValue);
-    parser_arg.AddArgType('N', "networks", common::kMaybeValue);
-    parser_arg.AddArgType('1', "root_nodes", common::kMaybeValue);    
+    parser_arg.AddArgType('S', "gen_shard", common::kMaybeValue);
+    // parser_arg.AddArgType('1', "root_nodes", common::kMaybeValue);    
 
     for (uint32_t arg_i = network::kConsensusShardBeginNetworkId-1; arg_i < network::kConsensusShardEndNetworkId; arg_i++) {
         std::string arg_shard = std::to_string(arg_i);
@@ -1031,28 +1030,21 @@ int NetworkInit::ParseParams(int argc, char** argv, common::ParserArgs& parser_a
 int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
     std::set<uint32_t> valid_net_ids_set;
     std::string valid_arg_i_value;
-    
-    if (!parser_arg.Has("N")) {
-        return -1;
-    }
-    
-    if (parser_arg.Get("N", valid_arg_i_value) != common::kParseSuccess) {
-        return kInitError;
-    }
-    common::Split<2048> nodes_split(valid_arg_i_value.c_str(), ',', valid_arg_i_value.size());
-    for (uint32_t i = 0; i < nodes_split.Count(); ++i) {
-        uint32_t arg_i = static_cast<uint32_t>(std::stoul(nodes_split[i]));
-        valid_net_ids_set.insert(arg_i + 1);
-    }
-
-    if (valid_net_ids_set.size() == 0) {
-        return kInitError;
-    }
 
     // Parse genesis.yml config file
     YAML::Node genesis_config = YAML::LoadFile("./genesis.yml");
     
     if (parser_arg.Has("U")) {
+        valid_net_ids_set.clear();
+        valid_net_ids_set.insert(network::kRootCongressNetworkId);
+        for (uint32_t net_i = 0; net_i < genesis_config["shards"].size(); net_i++) {
+            valid_net_ids_set.insert(genesis_config["shards"][net_i]["net_id"].as<uint32_t>());
+        }
+
+        if (valid_net_ids_set.size() == 0) {
+            return kInitError;
+        }
+        
         auto db = std::make_shared<db::Db>();
         if (!db->Init("./root_db")) {
             INIT_ERROR("init db failed!");
@@ -1118,9 +1110,25 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
     }
 
     if (parser_arg.Has("S")) {
+        std::string net_id_str;
+        if (parser_arg.Get("S", net_id_str) != common::kParseSuccess) {
+            return kInitError;
+        }
+
+        uint32_t net_id = static_cast<uint32_t>(std::stoul(net_id_str));
+        // shard3 创世时需要 root 节点参与
+        if (net_id == network::kConsensusShardBeginNetworkId) {
+            valid_net_ids_set.insert(network::kConsensusShardBeginNetworkId);
+        }
+        valid_net_ids_set.insert(net_id);
+
+        if (valid_net_ids_set.size() == 0) {
+            return kInitError;
+        }
+        
         ZJC_DEBUG("save shard db: shard_db");
         auto db = std::make_shared<db::Db>();
-        if (!db->Init("./shard_db_" + valid_arg_i_value)) {
+        if (!db->Init("./shard_db_" + net_id_str)) {
             INIT_ERROR("init db failed!");
             return kInitError;
         }
