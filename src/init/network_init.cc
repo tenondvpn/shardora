@@ -1056,6 +1056,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         account_mgr_ = std::make_shared<block::AccountManager>();
         block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
+        genesis_block.SetGenesisConfig(genesis_config);
         
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);
@@ -1100,6 +1101,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         account_mgr_ = std::make_shared<block::AccountManager>();
         block_mgr_ = std::make_shared<block::BlockManager>(net_handler_);
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
+        genesis_block.SetGenesisConfig(genesis_config);
 
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
         std::vector<GenisisNodeInfoPtrVector> cons_genesis_nodes_of_shards(network::kConsensusShardEndNetworkId-network::kConsensusShardBeginNetworkId);

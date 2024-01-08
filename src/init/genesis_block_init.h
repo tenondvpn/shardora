@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <dkg/dkg.h>
+#include <yaml-cpp/node/node.h>
 
 #include "common/bitmap.h"
 #include "common/utils.h"
@@ -40,6 +41,13 @@ public:
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
         const std::vector<GenisisNodeInfoPtrVector>& cons_genesis_nodes_of_shards,
         const std::set<uint32_t>& valid_net_ids_set);
+    inline void SetGenesisConfig(const YAML::Node& genesis_config) {
+        genesis_config_ = genesis_config;
+    }
+
+    const YAML::Node GenesisConfig() const {
+        return genesis_config_;
+    }
 private:
     std::unordered_map<std::string, uint64_t> GetGenesisAccountBalanceMap(
         const std::vector<GenisisNodeInfoPtr>& root_genesis_nodes,
@@ -63,7 +71,7 @@ private:
         pools::protobuf::StatisticTxItem& init_heights,
         std::unordered_map<std::string, uint64_t> genesis_acount_balance_map); // 节点对应的余额
     uint32_t GetNetworkIdOfGenesisAddress(const std::string& address);
-    void InitGenesisAccount();
+    const std::map<uint32_t, std::string> GetGenesisAccount(uint32_t net_id);
     void InitShardGenesisAccount();
     void GenerateRootAccounts();
     int GenerateRootSingleBlock(
@@ -100,8 +108,6 @@ private:
         const elect::protobuf::ElectBlock& elect_block,
         block::protobuf::BlockTx& block_tx);
 
-    std::map<uint32_t, std::string> pool_index_map_;
-    std::map<uint32_t, std::string> pool_index_map2_;
     std::map<uint32_t, std::map<uint32_t, std::string>> net_pool_index_map_; // net => (pool => addr)
     std::map<uint32_t, std::string> root_account_with_pool_index_map_;
     common::Bitmap root_bitmap_{ common::kEachShardMaxNodeCount };
@@ -112,7 +118,8 @@ private:
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     std::shared_ptr<pools::TxPoolManager> pools_mgr_ = nullptr;
     libff::alt_bn128_G2 common_pk_[16] = { libff::alt_bn128_G2::zero() };
-
+    YAML::Node genesis_config_;
+    
     DISALLOW_COPY_AND_ASSIGN(GenesisBlockInit);
 };
 
