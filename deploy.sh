@@ -53,10 +53,7 @@ sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s6
 sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r1
 sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r2
 sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r3
-#cp -rf ./cbuild_Release/zjchain /root/zjnodes/r4
-#cp -rf ./cbuild_Release/zjchain /root/zjnodes/r5
-#cp -rf ./cbuild_Release/zjchain /root/zjnodes/r6
-#cp -rf ./cbuild_Release/zjchain /root/zjnodes/r7
+
 
 cd /root/zjnodes/zjchain && ./zjchain -U
 cd /root/zjnodes/zjchain && ./zjchain -S 3
@@ -65,28 +62,14 @@ cd /root/zjnodes/zjchain && ./zjchain -S 4
 cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/r1/db
 cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/r2/db
 cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/r3/db
-#cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/r4/db
-#cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/r5/db
-#cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/r6/db
-#cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/r7/db
+
 cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/s1/db
 cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/s2/db
 cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/s3/db
 cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/s4/db
 cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/s5/db
 cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/s6/db
-#cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s7/db
-#cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s8/db
-#cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s9/db
-#cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s10/db
-#cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s11/db
-#cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s12/db
-#cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s13/db
-#cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s14/db
-#cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s15/db
-#cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s16/db
-#cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s17/db
-#cp -rf /root/zjnodes/zjchain/shard_db /root/zjnodes/s18/db
+
 clickhouse-client -q "drop table zjc_ck_account_key_value_table"
 clickhouse-client -q "drop table zjc_ck_account_table"
 clickhouse-client -q "drop table zjc_ck_block_table"
