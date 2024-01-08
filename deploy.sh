@@ -42,6 +42,7 @@ mkdir -p /root/zjnodes/r6/log
 mkdir -p /root/zjnodes/r7/log
 
 cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
+cp -f ./conf/genesis.yml /root/zjnodes/zjchain/genesis.yml
 cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s1
 cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s2
 cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s3

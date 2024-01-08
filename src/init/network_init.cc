@@ -1,6 +1,8 @@
 #include "init/network_init.h"
 
 #include <functional>
+#include <yaml-cpp/node/node.h>
+#include <yaml-cpp/node/parse.h>
 
 #include "block/block_manager.h"
 #include "common/global_info.h"
@@ -29,6 +31,7 @@
 #include "transport/tcp_transport.h"
 #include "transport/transport_utils.h"
 #include "zjcvm/execution.h"
+#include "yaml-cpp/yaml.h"
 
 namespace zjchain {
 
@@ -1047,7 +1050,10 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
 
     if (valid_net_ids_set.size() == 0) {
         return kInitError;
-    } 
+    }
+
+    // Parse genesis.yml config file
+    YAML::Node genesis_config = YAML::LoadFile("./genesis.yml");
     
     if (parser_arg.Has("U")) {
         auto db = std::make_shared<db::Db>();
@@ -1061,28 +1067,46 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
         init::GenesisBlockInit genesis_block(account_mgr_, block_mgr_, db);
         std::vector<GenisisNodeInfoPtr> root_genesis_nodes;
 
-        if (parser_arg.Has("1")) {
-            std::string value;
-            if (parser_arg.Get("1", value) != common::kParseSuccess) {
-                return kInitError;
-            }
-
-            common::Split<2048> nodes_split(value.c_str(), ',', value.size());
-            for (uint32_t i = 0; i < nodes_split.Count(); ++i) {
-                common::Split<> node_info(nodes_split[i], ':', nodes_split.SubLen(i));
-                if (node_info.Count() != 1) {
-                    continue;
+        // TODO
+        if (genesis_config["root"]) {
+            auto root_config = genesis_config["root"];
+            if (root_config["sks"]) {
+                for (uint32_t i = 0; i < root_config["sks"].size(); i++) {
+                    std::string sk = root_config["sks"][i].as<std::string>();
+                    auto node_ptr = std::make_shared<GenisisNodeInfo>();
+                    node_ptr->prikey = common::Encode::HexDecode(sk);
+                    std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
+                    secptr->SetPrivateKey(node_ptr->prikey);
+                    node_ptr->pubkey = secptr->GetPublicKey();
+                    node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
+                    root_genesis_nodes.push_back(node_ptr);                    
                 }
-
-                auto node_ptr = std::make_shared<GenisisNodeInfo>();
-                node_ptr->prikey = common::Encode::HexDecode(node_info[0]);
-                std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
-                secptr->SetPrivateKey(node_ptr->prikey);
-                node_ptr->pubkey = secptr->GetPublicKey();
-                node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
-                root_genesis_nodes.push_back(node_ptr);
             }
         }
+        // END 
+
+        // if (parser_arg.Has("1")) {
+        //     std::string value;
+        //     if (parser_arg.Get("1", value) != common::kParseSuccess) {
+        //         return kInitError;
+        //     }
+
+        //     common::Split<2048> nodes_split(value.c_str(), ',', value.size());
+        //     for (uint32_t i = 0; i < nodes_split.Count(); ++i) {
+        //         common::Split<> node_info(nodes_split[i], ':', nodes_split.SubLen(i));
+        //         if (node_info.Count() != 1) {
+        //             continue;
+        //         }
+
+        //         auto node_ptr = std::make_shared<GenisisNodeInfo>();
+        //         node_ptr->prikey = common::Encode::HexDecode(node_info[0]);
+        //         std::shared_ptr<security::Security> secptr = std::make_shared<security::Ecdsa>();
+        //         secptr->SetPrivateKey(node_ptr->prikey);
+        //         node_ptr->pubkey = secptr->GetPublicKey();
+        //         node_ptr->id = secptr->GetAddress(node_ptr->pubkey);
+        //         root_genesis_nodes.push_back(node_ptr);
+        //     }
+        // }
 
         
 
