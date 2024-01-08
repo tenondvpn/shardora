@@ -1623,7 +1623,7 @@ const std::map<uint32_t, std::string> GenesisBlockInit::GetGenesisAccount(uint32
 
     for (uint32_t i = 0; i < shard_config["accounts"].size(); i++) {
         std::string account_id = shard_config["accounts"][i].as<std::string>();
-        pool_index_map.insert(std::make_pair(0, common::Encode::HexDecode(account_id)));
+        pool_index_map.insert(std::make_pair(i, common::Encode::HexDecode(account_id)));
     }
     return pool_index_map;
 }
@@ -1631,7 +1631,7 @@ const std::map<uint32_t, std::string> GenesisBlockInit::GetGenesisAccount(uint32
 void GenesisBlockInit::GenerateRootAccounts() {
     for (uint32_t i = 0; i < genesis_config_["root"]["accounts"].size(); i++) {
         std::string account_id = genesis_config_["root"]["accounts"][i].as<std::string>();
-        root_account_with_pool_index_map_.insert(std::make_pair(0, common::Encode::HexDecode(account_id)));
+        root_account_with_pool_index_map_.insert(std::make_pair(i, common::Encode::HexDecode(account_id)));
     }
 }
 
