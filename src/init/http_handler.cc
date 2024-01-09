@@ -406,7 +406,7 @@ static void QueryAccount(evhtp_request_t* req, void* data) {
     }
 
     std::string json_str;
-    auto st = google::protobuf::util::MessageToJsonString(addr_info, &json_str);
+    auto st = google::protobuf::util::MessageToJsonString(*addr_info, &json_str);
     if (!st.ok()) {
         std::string res = "json parse failed: " + addr;
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
