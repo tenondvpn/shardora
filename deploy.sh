@@ -13,7 +13,7 @@ sh build.sh a $TARGET
 sudo cp -rf ./zjnodes /root
 sudo cp -rf ./deploy /root
 
-rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db
+rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db*
 mkdir -p /root/zjnodes/zjchain/log
 mkdir -p /root/zjnodes/s1/log
 mkdir -p /root/zjnodes/s2/log
