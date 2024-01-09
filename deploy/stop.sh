@@ -1,10 +1,8 @@
 #!/bin/bash
 
 # ps -ef | grep zjchain | awk -F' ' '{print $2}' | xargs kill -9
+services=("r1" "r2" "r3" "s1" "s2" "s3" "s4" "s5" "s6" "s7" "s8" "s9" "s10" "s11")
 
-sudo systemctl stop zjchain@r1.service
-sudo systemctl stop zjchain@r2.service
-sudo systemctl stop zjchain@r3.service
-sudo systemctl stop zjchain@s1.service
-sudo systemctl stop zjchain@s2.service
-sudo systemctl stop zjchain@s3.service
+for service in "${services[@]}"; do
+  sudo systemctl stop "zjchain@${service}.service"
+done
