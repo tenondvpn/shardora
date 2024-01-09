@@ -38,7 +38,6 @@ public:
     void Destroy();
 
 private:
-    int testScript();
     int InitConfigWithArgs(int argc, char** argv);
     int ParseParams(int argc, char** argv, common::ParserArgs& parser_arg);
     int ResetConfig(common::ParserArgs& parser_arg);
