@@ -462,7 +462,6 @@ async function test_contracts() {
         AddDataAuth(self_account_id, data_id, "2", randomOfArr(net_port[from_shard]));
         await sleep(5000);
         GetAuthData(self_account_id, data_id, randomOfArr(net_port[query_shard]), function(res) {
-            // console.log(res);
             if (testcases[i].query_suc) {   
                 assert.ok(res["data"].length == 2, i.toString() + ": " + "fail: " + res["data"])
             } else {
