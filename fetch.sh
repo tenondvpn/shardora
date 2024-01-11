@@ -12,5 +12,6 @@ newip="$1"
 services=("${@:2}")
 
 for service in "${services[@]}"; do
-	sed -i "s/10.101.20.35/${newip}/g" "zjnodes/${service}/conf/zjchain.conf"
+	# 除了 bootstrap 那一行其余都执行替换
+	sed -i "/bootstrap/!s/10.101.20.35/${newip}/g" "zjnodes/${service}/conf/zjchain.conf"
 done
