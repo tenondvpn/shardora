@@ -105,4 +105,4 @@ clickhouse-client -q "drop table zjc_ck_transaction_table"
 # cd /root/zjnodes/s11/ && nohup ./zjchain -f 0 -g 0 &
 
 # start nodes with daemon
-cd /root/deploy && sh start.sh
+cd /root/deploy && sh start.sh r1 r2 r3 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11
