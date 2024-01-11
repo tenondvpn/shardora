@@ -108,12 +108,10 @@ clickhouse-client -q "drop table zjc_ck_transaction_table"
 # 35
 cd /root/deploy && sh start.sh r1
 sleep 3
-
-# 36
 cd /root/deploy && sh start.sh r2 r3
 
 # 35
-cd /root/deploy && sh start.sh s1 s4 s5 s6 s7
+cd /root/deploy && sh start.sh s1 s4 s5 s6 s7 
 
 # 36
 cd /root/deploy && sh start.sh s2 s3 s8 s9 s10 s11
