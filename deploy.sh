@@ -2,6 +2,7 @@
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/
 
 sh ./genesis.sh "$1"
+cp -f fetch.sh /root && cd /root
 
 # cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 &
 # sleep 3
