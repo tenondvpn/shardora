@@ -55,11 +55,12 @@ function sk_to_account(sk) {
     return address;
 }
 
-function PostCode(data, from_port) {
+function PostCode(data, from_node) {
+	node = parseFromNode(from_node);
     var post_data = querystring.stringify(data);
     var post_options = {
-        host: HOST,
-        port: from_port,
+        host: node["ip"],
+        port: node["port"],
         path: '/transaction',
         method: 'POST',
         headers: {
@@ -166,7 +167,6 @@ function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract
 
 function create_tx(to, amount, gas_limit, gas_price, prepay, tx_type) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
-    console.log(gid);
     var frompk = '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16);
     const MAX_UINT32 = 0xFFFFFFFF;
     var amount_buf = new Buffer(8);
@@ -222,7 +222,7 @@ function create_tx(to, amount, gas_limit, gas_price, prepay, tx_type) {
     }
 }
 
-function new_contract(data_id, account_id, contract_bytes, from_port) {
+function new_contract(data_id, account_id, contract_bytes, from_node) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var contract_address = get_contract_address(data_id, account_id);
     var data = param_contract(
@@ -235,7 +235,7 @@ function new_contract(data_id, account_id, contract_bytes, from_port) {
         contract_bytes,
         "",
         1000000000);
-    PostCode(data, from_port);
+    PostCode(data, from_node);
 }
 
 function get_contract_address(data_id, account_id) {
@@ -244,7 +244,7 @@ function get_contract_address(data_id, account_id) {
     return kechash.slice(kechash.length - 40, kechash.length);
 }
 
-function call_contract(account_id, data_id, input, amount, from_port) {
+function call_contract(account_id, data_id, input, amount, from_node) {
     contract_address = get_contract_address(data_id, account_id);
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var data = param_contract(
@@ -257,12 +257,12 @@ function call_contract(account_id, data_id, input, amount, from_port) {
         "",
         input,
         0);
-    PostCode(data, from_port);
+    PostCode(data, from_node);
 }
 
-function Transfer(to_addr, amount, gas_limit, gas_price, from_port) {
+function Transfer(to_addr, amount, gas_limit, gas_price, from_node) {
     var data = create_tx(to_addr, amount, gas_limit, gas_price, 0, 0);
-    PostCode(data, from_port);
+    PostCode(data, from_node);
 }
 
 
@@ -278,11 +278,12 @@ function GetAuthorizationParams(data) {
     return func.substring(2) + funcParam.substring(2);
 }
 
-function QueryPostCode(path, data, from_port, callback) {
+function QueryPostCode(path, data, from_node, callback) {
+	var node = parseFromNode(from_node);
     var post_data = querystring.stringify(data);
     var post_options = {
-        host: '10.101.20.35',
-        port: from_port,
+        host: node["ip"],
+        port: node["port"],
         path: path,
         method: 'POST',
         headers: {
@@ -307,7 +308,7 @@ function QueryPostCode(path, data, from_port, callback) {
     post_req.end();
 }
 
-function QueryContract(account_id, data_id, input, from_port, callback) {
+function QueryContract(account_id, data_id, input, from_node, callback) {
     var contract_address = get_contract_address(data_id, account_id);
     var data = {
         "input": input,
@@ -315,23 +316,32 @@ function QueryContract(account_id, data_id, input, from_port, callback) {
         'from': account_id,
     };
 
-    return QueryPostCode('/query_contract', data, from_port, callback);
+    return QueryPostCode('/query_contract', data, from_node, callback);
 }
 
-function QueryAccount(account_id, from_port, callback) {
+function QueryAccount(account_id, from_node, callback) {
     var data = {
         "address": account_id,
     }
 
-    return QueryPostCode('/query_account', data, from_port, callback);
+    return QueryPostCode('/query_account', data, from_node, callback);
 }
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function parseFromNode(from_node) {
+	var [from_ip, from_port_str] = from_node.split(":");
+	var from_port = parseInt(from_port_str, 10);
+	return {
+		"ip": from_ip,
+		"port": from_port,
+	}
+}
 
-function CreateDataAuth(account_id, data_id, data, from_port) {
+
+function CreateDataAuth(account_id, data_id, data, from_node) {
     var cons_cods = GetConstructorParams(account_id, data_id, data);
     if (cons_cods == null) {
         console.log("创建数据身份失败，输入的初始管理员错误: " + process.argv);
@@ -339,24 +349,24 @@ function CreateDataAuth(account_id, data_id, data, from_port) {
     }
 
 	var contract_bytes = CONTRACT_CODE;
-    new_contract(data_id, account_id, contract_bytes + cons_cods, from_port);
+    new_contract(data_id, account_id, contract_bytes + cons_cods, from_node);
 }
 
-function AddDataAuth(account_id, data_id, data, from_port) {
+function AddDataAuth(account_id, data_id, data, from_node) {
     var auth_cods = GetAuthorizationParams(data);
     if (auth_cods == null) {
         console.log("确权失败，输入的确权参数错误: " + process.argv);
         return;
     }
     
-    call_contract(account_id, data_id, auth_cods, 0, from_port);
+    call_contract(account_id, data_id, auth_cods, 0, from_node);
 }
 
-function GetAuthData(account_id, data_id, from_port, callback) {
+function GetAuthData(account_id, data_id, from_node, callback) {
     var func = web3.eth.abi.encodeFunctionSignature('GetAuthJson(uint32,uint32)');
     var funcParam = web3.eth.abi.encodeParameters(['uint32', 'uint32'], [0, 10]);
     // console.log("GetAuthJson func: " + func.substring(2));
-    return QueryContract(account_id, data_id, func.substring(2)+funcParam.substring(2), from_port, callback);
+    return QueryContract(account_id, data_id, func.substring(2)+funcParam.substring(2), from_node, callback);
 }
 
 /**
@@ -432,15 +442,25 @@ var testcases_transfer = [
     }
 ]
 
+var shard4_nodes = ["10.101.20.35:8784",
+					"10.101.20.35:8785",
+					"10.101.20.35:8786",
+					"10.101.20.35:8787",
+					"10.101.20.35:8788",
+					"10.101.20.35:8789",
+					"10.101.20.35:8790",
+					"10.101.20.35:8791"];
+var shard3_nodes = ["10.101.20.35:8781",
+					"10.101.20.35:8782",
+					"10.101.20.35:8783"];
+var root_nodes = ["10.101.20.35:8001",
+				  "10.101.20.35:8002",
+				  "10.101.20.35:8003"];
 
-var shard3_port = [8781, 8782, 8783];
-var shard4_port = [8784, 8785, 8786, 8787, 8788, 8789, 8790, 8791];
-var root_port = [8001, 8002, 8003];
-
-var net_port = {
-    2: root_port,
-    3: shard3_port,
-    4: shard4_port,  
+var net_node = {
+    2: root_nodes,
+    3: shard3_nodes,
+    4: shard4_nodes,  
 }
 
 
@@ -457,12 +477,11 @@ async function test_contracts() {
         var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)))
         var data_id = i.toString() + gid;
 
-        CreateDataAuth(self_account_id, data_id, "1", randomOfArr(net_port[from_shard]));
+        CreateDataAuth(self_account_id, data_id, "1", randomOfArr(net_node[from_shard]));
         await sleep(5000);
-        AddDataAuth(self_account_id, data_id, "2", randomOfArr(net_port[from_shard]));
+        AddDataAuth(self_account_id, data_id, "2", randomOfArr(net_node[from_shard]));
         await sleep(5000);
-        GetAuthData(self_account_id, data_id, randomOfArr(net_port[query_shard]), function(res) {
-            // console.log(res);
+        GetAuthData(self_account_id, data_id, randomOfArr(net_node[query_shard]), function(res) {
             if (testcases[i].query_suc) {   
                 assert.ok(res["data"].length == 2, i.toString() + ": " + "fail: " + res["data"])
             } else {
@@ -494,12 +513,12 @@ async function test_transfers() {
         var to_balance = 0;
 
         // 查询 to 账户原始信息
-        QueryAccount(to_addr, randomOfArr(net_port[2]), function(res) {
+        QueryAccount(to_addr, randomOfArr(net_node[2]), function(res) {
             // 账户已经存在
             if (res != '') {
                 assert.ok(!need_create, i.toString() + ": " + "fail: addr already exists");
                 var shard_id = res['shardingId'];
-                QueryAccount(sk_to_account(sk1_shard3), randomOfArr(net_port[shard_id]), function(res2) {
+                QueryAccount(sk_to_account(sk1_shard3), randomOfArr(net_node[shard_id]), function(res2) {
                     if (res2 != '') {
                         to_balance = res2['balance'];
                     }
@@ -513,11 +532,11 @@ async function test_transfers() {
         // 转账
 
         var amount = testcases_transfer[i].amount;
-        Transfer(to_addr, amount, 100000, 1, randomOfArr(net_port[from_shard]));
+        Transfer(to_addr, amount, 100000, 1, randomOfArr(net_node[from_shard]));
         await sleep(10000);
 
         // 再查询
-        QueryAccount(to_addr, randomOfArr(net_port[2]), function(res) {
+        QueryAccount(to_addr, randomOfArr(net_node[2]), function(res) {
             // 账户已经存在
             if (create_ok) {
                 assert.ok(res == '', i.toString() + ": " + "fail: account should create ok");
@@ -530,7 +549,7 @@ async function test_transfers() {
             }
 
             var shard_id = res['shardingId'];
-            QueryAccount(sk_to_account(sk1_shard3), randomOfArr(net_port[shard_id]), function(res2) {
+            QueryAccount(sk_to_account(sk1_shard3), randomOfArr(net_node[shard_id]), function(res2) {
                 if (res2 != '') {
                     var new_to_balance = res2['balance'];
                     assert.equal(new_to_balance, to_balance + amount, i.toString() + ": " + "fail: balance not equal");
@@ -544,10 +563,12 @@ async function test_transfers() {
 }
 
 async function main() {
-    // 测试合约执行、合约查询
-    await test_contracts();
-    // 测试跨分片转账
-    await test_transfers();
+	for (var i = 0; i < 10; ++i) {
+		// 测试合约执行、合约查询
+		await test_contracts();
+		// 测试跨分片转账
+		await test_transfers();
+	}
 }
 
 main();
