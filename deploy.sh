@@ -1,8 +1,19 @@
 #!/bin/bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/
 
-sh ./genesis.sh "$1"
-cp -f fetch.sh /root && cd /root
+mode=$1
+
+localip="127.0.0.1"
+if [[ "\$2" != "" ]]; then
+    localip="\$2"
+fi
+
+# 生成创世块数据
+sh ./genesis.sh $mode
+
+# 替换
+cp -f fetch.sh /root
+cd /root && sh -x fetch.sh 127.0.0.1 "${localip}" r1 r2 r3 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11
 
 # cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 &
 # sleep 3
