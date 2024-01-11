@@ -49,13 +49,24 @@ The key fields are:
 sh ./genesis.sh
 ```
 
-This will create genesis data into db folders. The distribution of shards is in the genesis.sh file, edit it if you want to change the mapping of different nodes to shards. 
+This will create genesis data into db folders. The distribution of shards is in the genesis.sh file, edit it if you want to change the mapping of different nodes to shards.
 
 ## 3. copy genesis data to other servers
 
+On the server where the genesis data has been create. We should replace the 127.0.0.1 to real ip in the config files. A tool has been offered.
 ```
-sh -x fetch.sh 10.101.20.36 r1 r2 r3 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11
+sh -x fetch.sh 127.0.0.1 10.101.20.35 r1 r2 r3 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11
 ```
+
+For the other server, fetch the data from the initial server and replace the ips.
+
+```
+sh -x fetch.sh 10.101.20.35 10.101.20.36 r1 r2 r3 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11
+```
+
+- arg1: source ip where to get data
+- arg2: this ip
+- arg3..: nodes whose config file need to change the from ip to this ip
 
 The command will scp genesis data from the initial server, while changing the ips in the config files automatically. For example, if your genesis data is build in 10.101.20.35, the command will copy the data from it and replace "10.101.20.35" to your local ip for all config files.
 Of course, you can also upload the genesis data and edit the ips in the config files manually.
