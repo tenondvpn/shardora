@@ -6,7 +6,17 @@ grep "new from add new to sharding" ./log/zjchain.log | grep "pool: 0" | awk -F'
 
 # Genesis nodes deployment
 
-## 1. write zjchain.conf for node
+## Deploy on multiple servers
+
+### 1. create genesis data
+
+```
+sh ./genesis.sh Release
+```
+
+This will create genesis data into db folders. The distribution of shards is in the genesis.sh file, edit it if you want to change the mapping of different nodes to shards.
+
+### 2. write zjchain.conf for node to deploy
 
 ```
 [db]
@@ -43,32 +53,33 @@ The key fields are:
 - prikey: private key of node account
 - http_port: start a http server if http_port is not 0
 
-## 2. create genesis data
+Basically, We should replace the 127.0.0.1 to real ip in the zjchain.conf. A tool has been offered.
 
-```
-sh ./genesis.sh
-```
-
-This will create genesis data into db folders. The distribution of shards is in the genesis.sh file, edit it if you want to change the mapping of different nodes to shards.
-
-## 3. copy genesis data to other servers
-
-On the server where the genesis data has been create. We should replace the 127.0.0.1 to real ip in the config files. A tool has been offered.
 ```
 sh -x fetch.sh 127.0.0.1 10.101.20.35 r1 r2 r3 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11
 ```
 
-For the other server, fetch the data from the initial server and replace the ips.
+- arg1: source ip to be replaced
+- arg2: this ip
+- arg3..: nodes whose config file need to replace the source ip to this ip
 
-```
+Or you can do it manually.
+
+## 3. copy genesis data to other servers and edit zjchain.conf
+
+The fetch.sh can also fetch genesis data from the source server to local server, and replace the ips.
+
+
+``` 
 sh -x fetch.sh 10.101.20.35 10.101.20.36 r1 r2 r3 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11
 ```
 
-- arg1: source ip where to get data
-- arg2: this ip
-- arg3..: nodes whose config file need to change the from ip to this ip
+This will fetch the genesis data from 10.101.20.35 to 10.101.20.36, and modify zjchain.conf files for nodes
 
-The command will scp genesis data from the initial server, while changing the ips in the config files automatically. For example, if your genesis data is build in 10.101.20.35, the command will copy the data from it and replace "10.101.20.35" to your local ip for all config files.
+The command will 
+1. scp genesis data from the initial server, 
+2. replace the ips in the zjchain.conf config files. 
+
 Of course, you can also upload the genesis data and edit the ips in the config files manually.
 
 ## 4. start or stop nodes
