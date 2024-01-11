@@ -167,7 +167,6 @@ function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract
 
 function create_tx(to, amount, gas_limit, gas_price, prepay, tx_type) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
-    console.log(gid);
     var frompk = '04' + self_public_key.x.toString(16) + self_public_key.y.toString(16);
     const MAX_UINT32 = 0xFFFFFFFF;
     var amount_buf = new Buffer(8);
@@ -455,8 +454,8 @@ var shard3_nodes = ["10.101.20.36:8781",
 					"10.101.20.33:8782",
 					"10.101.20.32:8783"];
 var root_nodes = ["10.101.20.35:8001",
-				  "10.101.20.35:8002",
-				  "10.101.20.35:8003"];
+				  "10.101.20.30:8002",
+				  "10.101.20.30:8003"];
 
 var net_node = {
     2: root_nodes,

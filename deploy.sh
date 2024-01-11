@@ -24,8 +24,11 @@ sh ./genesis.sh "$1"
 # start nodes with daemon
 # 35
 cd /root/deploy && sh start.sh r1
-sleep 3
+sleep3
+
+#30
 cd /root/deploy && sh start.sh r2 r3
+
 
 # 36 #3 #4
 cd /root/deploy && sh start.sh s1 s4 s5
@@ -39,6 +42,7 @@ cd /root/deploy && sh start.sh s3 s8 s9
 
 # 31
 cd /root/deploy && sh start.sh s10 s11
+
 
 
 
