@@ -42,7 +42,7 @@ set(LINK_YAML )
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(LIB_DIR ${DEP_DIR}/libs/linux)
     set(LINK_UUID uuid)
-	set(LINK_YAML yaml-cpp)
+    set(LINK_YAML yaml-cpp)
     find_package(OpenSSL REQUIRED)
     include_directories(${OPENSSL_INCLUDE_DIR})
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
@@ -161,7 +161,7 @@ set(LINK_ARGS
     ${LINK_RT}
     ${LINK_ANDROID_LOG}
     ${CFLIB}
-	${LINK_YAML}
+    ${LINK_YAML}
     pthread
     gmp
 )
