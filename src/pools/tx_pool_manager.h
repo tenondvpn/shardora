@@ -141,6 +141,7 @@ public:
         return tx_pool_[pool_index].AddTx(tx_ptr);
     }
 
+    // UpdateLatestInfo 当某个 pool 出块后，更新此 shard 的 pool_mgr 状态
     void UpdateLatestInfo(
             uint8_t thread_idx,
             uint32_t sharding_id,
@@ -155,6 +156,7 @@ public:
             return;
         }
 
+        // 更新 pool_mgr 全局状态
         if (height > synced_max_heights_[pool_index]) {
             synced_max_heights_[pool_index] = height;
         }
@@ -162,6 +164,7 @@ public:
         pools::protobuf::PoolLatestInfo pool_info;
         pool_info.set_height(height);
         pool_info.set_hash(hash);
+        // 更新对应 pool 的最新状态，主要是高度信息和哈希值
         uint64_t synced_height = tx_pool_[pool_index].UpdateLatestInfo(thread_idx, height, hash, prehash);
         pool_info.set_synced_height(synced_height);
         prefix_db_->SaveLatestPoolInfo(sharding_id, pool_index, pool_info, db_batch);

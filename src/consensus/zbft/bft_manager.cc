@@ -430,6 +430,7 @@ ZbftPtr BftManager::Start(
         return nullptr;
     }
 
+    // 获取交易池中的待处理交易
     std::shared_ptr<WaitingTxsItem> txs_ptr = get_txs_ptr(thread_item, commited_bft_ptr);
     if (txs_ptr == nullptr) {
 //         ZJC_DEBUG("thread idx error 5: %d", thread_index);
@@ -678,6 +679,7 @@ ZbftPtr BftManager::StartBft(
     bft_ptr->set_gid(gid);
     bft_ptr->set_network_id(common::GlobalInfo::Instance()->network_id());
     bft_ptr->set_member_count(elect_item.member_size);
+    // LeaderPrepare 中会调用到 DoTransaction，本地执行块内交易
     int leader_pre = LeaderPrepare(elect_item, bft_ptr, commited_bft_ptr);
     if (leader_pre != kConsensusSuccess) {
         ZJC_ERROR("leader prepare failed!");

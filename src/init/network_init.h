@@ -24,6 +24,7 @@
 #include "timeblock/time_block_manager.h"
 #include "transport/multi_thread.h"
 #include "vss/vss_manager.h"
+#include <yaml-cpp/node/node.h>
 
 namespace zjchain {
 
@@ -46,6 +47,7 @@ private:
     int InitSecurity();
     int CheckJoinWaitingPool();
     int GenesisCmd(common::ParserArgs& parser_arg);
+    void GetNetworkNodesFromConf(const YAML::Node&, std::vector<GenisisNodeInfoPtr>&, std::vector<GenisisNodeInfoPtrVector>&);
     void AddBlockItemToCache(
         uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,

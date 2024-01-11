@@ -102,6 +102,10 @@ public:
         uint32_t des_sharding_id,
         const std::shared_ptr<block::protobuf::Block>& block_item,
         db::DbWriteBatch& db_batch);
+    void GenesisAddOneAccount(uint32_t des_sharding_id,
+                              const block::protobuf::BlockTx& tx,
+                              const uint64_t& latest_height,
+                              db::DbWriteBatch& db_batch);
     void ChangeLeader(int32_t mod_num, common::BftMemberPtr& mem_ptr);
     bool ShouldStopConsensus();
 

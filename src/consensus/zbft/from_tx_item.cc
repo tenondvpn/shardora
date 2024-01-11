@@ -26,19 +26,21 @@ int FromTxItem::HandleTx(
     }
 
     do  {
-        gas_used = consensus::kTransferGas;
+        gas_used = consensus::kTransferGas; // 转账交易费计算
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
             // TODO(): check key exists and reserve gas
             gas_used += (block_tx.storages(i).key().size() + msg_ptr->header.tx_proto().value().size()) *
                 consensus::kKeyValueStorageEachBytes;
         }
 
+        // 余额不足
         if (from_balance < block_tx.gas_limit()  * block_tx.gas_price()) {
             block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
             ZJC_DEBUG("balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), block_tx.gas_price());
             break;
         }
 
+        // gas limit 设置小了
         if (block_tx.gas_limit() < gas_used) {
             block_tx.set_status(consensus::kConsensusUserSetGasLimitError);
             ZJC_DEBUG("1 balance error: %lu, %lu, %lu", from_balance, block_tx.gas_limit(), gas_used);
@@ -47,6 +49,7 @@ int FromTxItem::HandleTx(
     } while (0);
 
     if (block_tx.status() == kConsensusSuccess) {
+        // 要转的金额 + 交易费
         uint64_t dec_amount = block_tx.amount() + gas_used * block_tx.gas_price();
         if (from_balance >= gas_used * block_tx.gas_price()) {
             if (from_balance >= dec_amount) {
@@ -70,6 +73,7 @@ int FromTxItem::HandleTx(
         }
     }
 
+    // 剪掉来源账户的金额
     acc_balance_map[from] = from_balance;
     block_tx.set_balance(from_balance);
     block_tx.set_gas_used(gas_used);

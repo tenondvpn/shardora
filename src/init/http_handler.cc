@@ -12,6 +12,8 @@
 #include "zjcvm/zjc_host.h"
 #include "zjcvm/zjcvm_utils.h"
 
+#include <google/protobuf/util/json_util.h>
+
 namespace zjchain {
 
 namespace init {
@@ -374,6 +376,49 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     ZJC_INFO("query contract success %s, %s, len: %lu", contract_addr, input, len);
 }
 
+static void QueryAccount(evhtp_request_t* req, void* data) {
+    ZJC_DEBUG("query account.");
+    auto header1 = evhtp_header_new("Access-Control-Allow-Origin", "*", 0, 0);
+    auto header2 = evhtp_header_new("Access-Control-Allow-Methods", "POST", 0, 0);
+    auto header3 = evhtp_header_new(
+        "Access-Control-Allow-Headers",
+        "x-requested-with,content-type", 0, 0);
+    evhtp_headers_add_header(req->headers_out, header1);
+    evhtp_headers_add_header(req->headers_out, header2);
+    evhtp_headers_add_header(req->headers_out, header3);
+
+    const char* tmp_addr = evhtp_kv_find(req->uri->query, "address");
+    if (tmp_addr == nullptr) {
+        std::string res = common::StringUtil::Format("param address is null");
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    std::string addr = common::Encode::HexDecode(tmp_addr);
+
+    auto addr_info = prefix_db->GetAddressInfo(addr);
+    if (addr_info == nullptr) {
+        std::string res = "get address failed: " + addr;
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    std::string json_str;
+    auto st = google::protobuf::util::MessageToJsonString(*addr_info, &json_str);
+    if (!st.ok()) {
+        std::string res = "json parse failed: " + addr;
+        evbuffer_add(req->buffer_out, res.c_str(), res.size());
+        evhtp_send_reply(req, EVHTP_RES_BADREQ);
+        return;
+    }
+
+    evbuffer_add(req->buffer_out, json_str.c_str(), json_str.size());
+    evhtp_send_reply(req, EVHTP_RES_OK);
+    return;
+}
+
 HttpHandler::HttpHandler() {
     http_handler = this;
 }
@@ -392,6 +437,7 @@ void HttpHandler::Init(
     contract_mgr = tmp_contract_mgr;
     http_server.AddCallback("/transaction", HttpTransaction);
     http_server.AddCallback("/query_contract", QueryContract);
+    http_server.AddCallback("/query_account", QueryAccount);
 }
 
 };  // namespace init

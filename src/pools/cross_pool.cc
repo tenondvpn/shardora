@@ -22,7 +22,7 @@ void CrossPool::Init(
         std::shared_ptr<sync::KeyValueSync>& kv_sync) {
     des_sharding_id_ = des_sharding_id;
     kv_sync_ = kv_sync;
-    pool_index_ = common::kRootChainPoolIndex;
+    pool_index_ = common::kRootChainPoolIndex; // pool 256
     db_ = db;
     prefix_db_ = std::make_shared<protos::PrefixDb>(db_);
     InitLatestInfo();

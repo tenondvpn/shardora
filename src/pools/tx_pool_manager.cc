@@ -37,9 +37,11 @@ TxPoolManager::TxPoolManager(
     ZJC_INFO("TxPoolManager init success: %d", common::kInvalidPoolIndex);
     InitCrossPools();
     pop_message_thread_ = std::make_shared<std::thread>(&TxPoolManager::PopPoolsMessage, this);
+    // 每 10ms 会共识一次时间块
     tick_.CutOff(
         10000lu,
         std::bind(&TxPoolManager::ConsensusTimerMessage, this, std::placeholders::_1));
+    // 注册 kPoolsMessage 的回调函数
     network::Route::Instance()->RegisterMessage(
         common::kPoolsMessage,
         std::bind(&TxPoolManager::HandleMessage, this, std::placeholders::_1));
@@ -77,14 +79,16 @@ void TxPoolManager::InitCrossPools() {
     }
 
     if (local_is_root) {
-        cross_pools_ = new CrossPool[network::kConsensusWaitingShardOffset];
+        cross_pools_ = new CrossPool[network::kConsensusWaitingShardOffset]; // shard 分片的个数
         for (uint32_t i = network::kConsensusShardBeginNetworkId;
                 i < network::kConsensusShardEndNetworkId; ++i) {
+            // root 对 每个 shard 都有一个 cross pool，pool index == 256
             cross_pools_[i - network::kConsensusShardBeginNetworkId].Init(i, db_, kv_sync_);
         }
 
         max_cross_pools_size_ = network::kConsensusWaitingShardOffset;
     } else {
+        // 非 root 节点，只有一个 cross pool，目标 root net，pool index 256
         cross_pools_ = new CrossPool[1];
         cross_pools_[0].Init(network::kRootCongressNetworkId, db_, kv_sync_);
     }
@@ -1091,6 +1095,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    // 转账交易，验证签名
     if (tx_msg.step() == pools::protobuf::kNormalFrom) {
         if (security_->Verify(
                 msg_ptr->msg_hash,
@@ -1109,6 +1114,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
     }
 
 
+    // 验证账户余额是否足够
     if (msg_ptr->address_info->balance() <
             tx_msg.amount() + tx_msg.contract_prepayment() +
             consensus::kTransferGas * tx_msg.gas_price()) {
@@ -1239,6 +1245,7 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
         return;
     }
 
+    // 交易池增加 msg 中的交易
     tx_pool_[pool_index].AddTx(tx_ptr);
     ZJC_DEBUG("push queue index pool_index: %u, tx size: %d, latest tm: %lu",
         pool_index, tx_pool_[pool_index].tx_size(), tx_pool_[pool_index].oldest_timestamp());
