@@ -1,6 +1,6 @@
 #!/bin/bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/
-ps -ef | grep zjchain | awk -F' ' '{print $2}' | xargs kill -9
+sh ./deploy/stop.sh
 
 # $1 = Debug/Release
 TARGET=Release
@@ -80,29 +80,29 @@ cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/s9/db
 cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/s10/db
 cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/s11/db
 
-clickhouse-client -q "drop table zjc_ck_account_key_value_table"
-clickhouse-client -q "drop table zjc_ck_account_table"
-clickhouse-client -q "drop table zjc_ck_block_table"
-clickhouse-client -q "drop table zjc_ck_statistic_table"
-clickhouse-client -q "drop table zjc_ck_transaction_table"
+# clickhouse-client -q "drop table zjc_ck_account_key_value_table"
+# clickhouse-client -q "drop table zjc_ck_account_table"
+# clickhouse-client -q "drop table zjc_ck_block_table"
+# clickhouse-client -q "drop table zjc_ck_statistic_table"
+# clickhouse-client -q "drop table zjc_ck_transaction_table"
 
-# cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 &
-# sleep 3
+cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 &
+sleep 3
 
-# cd /root/zjnodes/r2/ && nohup ./zjchain -f 0 -g 0 &
-# cd /root/zjnodes/r3/ && nohup ./zjchain -f 0 -g 0 &
+cd /root/zjnodes/r2/ && nohup ./zjchain -f 0 -g 0 &
+cd /root/zjnodes/r3/ && nohup ./zjchain -f 0 -g 0 &
 
-# cd /root/zjnodes/s1/ && nohup ./zjchain -f 0 -g 0 &
-# cd /root/zjnodes/s2/ && nohup ./zjchain -f 0 -g 0 &
-# cd /root/zjnodes/s3/ && nohup ./zjchain -f 0 -g 0 &
-# cd /root/zjnodes/s4/ && nohup ./zjchain -f 0 -g 0 &
-# cd /root/zjnodes/s5/ && nohup ./zjchain -f 0 -g 0 &
-# cd /root/zjnodes/s6/ && nohup ./zjchain -f 0 -g 0 &
-# cd /root/zjnodes/s7/ && nohup ./zjchain -f 0 -g 0 &
-# cd /root/zjnodes/s8/ && nohup ./zjchain -f 0 -g 0 &
-# cd /root/zjnodes/s9/ && nohup ./zjchain -f 0 -g 0 &
-# cd /root/zjnodes/s10/ && nohup ./zjchain -f 0 -g 0 &
-# cd /root/zjnodes/s11/ && nohup ./zjchain -f 0 -g 0 &
+cd /root/zjnodes/s1/ && nohup ./zjchain -f 0 -g 0 &
+cd /root/zjnodes/s2/ && nohup ./zjchain -f 0 -g 0 &
+cd /root/zjnodes/s3/ && nohup ./zjchain -f 0 -g 0 &
+cd /root/zjnodes/s4/ && nohup ./zjchain -f 0 -g 0 &
+cd /root/zjnodes/s5/ && nohup ./zjchain -f 0 -g 0 &
+cd /root/zjnodes/s6/ && nohup ./zjchain -f 0 -g 0 &
+cd /root/zjnodes/s7/ && nohup ./zjchain -f 0 -g 0 &
+cd /root/zjnodes/s8/ && nohup ./zjchain -f 0 -g 0 &
+cd /root/zjnodes/s9/ && nohup ./zjchain -f 0 -g 0 &
+cd /root/zjnodes/s10/ && nohup ./zjchain -f 0 -g 0 &
+cd /root/zjnodes/s11/ && nohup ./zjchain -f 0 -g 0 &
 
 # start nodes with daemon
 cd /root/deploy && sh start.sh
