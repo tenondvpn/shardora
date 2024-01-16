@@ -59,7 +59,8 @@ void DhtProto::CreateRefreshNeighborsRequest(
             kRefreshNeighborsBloomfilterHashCount };
     for (auto iter = dht.begin(); iter != dht.end(); ++iter) {
 //         ZJC_DEBUG("req refresh neighbers filter: %s:%u", common::Encode::HexEncode((*iter)->dht_key).c_str());
-        bloomfilter.Add(common::Hash::Hash64((*iter)->id));
+        // bloomfilter.Add(common::Hash::Hash64((*iter)->id));
+        bloomfilter.Add((*iter)->dht_key_hash);
     }
 
     bloomfilter.Add(local_node->dht_key_hash);
