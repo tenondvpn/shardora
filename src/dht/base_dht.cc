@@ -574,7 +574,7 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
     if (bloomfilter) {
         auto& closest_nodes = dht_;
         for (auto iter = closest_nodes.begin(); iter != closest_nodes.end(); ++iter) {
-            ZJC_DEBUG("---2 port:%u, src_shardid: ,hash: %lu id:%s shard:%u", dht_msg.refresh_neighbors_req().public_port(), header.src_sharding_id(), (*iter)->dht_key_hash, common::Encode::HexSubstr((*iter)->id).c_str(), (*iter)->sharding_id);
+            ZJC_DEBUG("---2 port:%u, src_shard_id:%u, hash:%lu id:%s node_shard:%u", dht_msg.refresh_neighbors_req().public_port(), header.src_sharding_id(), (*iter)->dht_key_hash, common::Encode::HexSubstr((*iter)->id).c_str(), (*iter)->sharding_id);
             if (bloomfilter->Contain((*iter)->dht_key_hash)) {
                 ZJC_DEBUG("res refresh neighbers filter: %s:%u, hash: %lu",
                     common::Encode::HexEncode((*iter)->dht_key).c_str(), msg_ptr->header.hash64());

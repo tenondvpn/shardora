@@ -58,7 +58,7 @@ void DhtProto::CreateRefreshNeighborsRequest(
             kRefreshNeighborsBloomfilterBitCount,
             kRefreshNeighborsBloomfilterHashCount };
     for (auto iter = dht.begin(); iter != dht.end(); ++iter) {
-        ZJC_DEBUG("---1 hash: %lu id:%s shard:%u", (*iter)->dht_key_hash, common::Encode::HexSubstr((*iter)->id).c_str(), (*iter)->sharding_id);
+        ZJC_DEBUG("---1 hash: %lu id:%s shard:%u dht_key_hash:%lu", (*iter)->dht_key_hash, common::Encode::HexSubstr((*iter)->id).c_str(), (*iter)->sharding_id, (*iter)->dht_key_hash);
         // bloomfilter.Add(common::Hash::Hash64((*iter)->id));
         bloomfilter.Add((*iter)->dht_key_hash);
     }
