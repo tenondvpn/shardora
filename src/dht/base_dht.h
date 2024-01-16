@@ -101,7 +101,7 @@ protected:
         const std::string& des_ip,
         uint16_t des_port,
         const std::string& des_pubkey,
-        int32_t src_sharding_id,
+        int32_t des_sharding_id,
         bool response);
     void PrintDht(uint8_t thread_idx);
 
