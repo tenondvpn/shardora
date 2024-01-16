@@ -574,6 +574,7 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
     if (bloomfilter) {
         auto& closest_nodes = dht_;
         for (auto iter = closest_nodes.begin(); iter != closest_nodes.end(); ++iter) {
+            ZJC_DEBUG("--- hash: %lu id:%s", (*iter)->dht_key_hash, common::Encode::HexSubstr((*iter)->id).c_str());
             if (bloomfilter->Contain((*iter)->dht_key_hash)) {
                 ZJC_DEBUG("res refresh neighbers filter: %s:%u, hash: %lu",
                     common::Encode::HexEncode((*iter)->dht_key).c_str(), msg_ptr->header.hash64());
