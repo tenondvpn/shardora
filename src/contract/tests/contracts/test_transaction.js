@@ -265,11 +265,6 @@ function Transfer(to_addr, amount, gas_limit, gas_price, from_node) {
     PostCode(data, from_node);
 }
 
-function JoinNode(from_node) {
-    var data = create_tx('', 0, 100000, 1, 0, 13);
-    PostCode(data, from_node);
-}
-
 
 function GetConstructorParams(account_id, data_id, data) {
     var cons_codes = web3.eth.abi.encodeParameters(['address[]', 'bytes', 'bytes'], [[account_id], '0x' + str_to_hex(data_id), '0x' + str_to_hex(data)]);
@@ -576,18 +571,17 @@ async function main() {
 	// 	await test_transfers();
 	// }
 	var sk_new = "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db999";
-	var from_sk = sk_new;
+	var from_sk = sk1_shard3;
 	init_private_key(from_sk);
 	
 	var to_addr = sk_to_account(sk_new);
 	console.log(to_addr);
 	
-	JoinNode(randomOfArr(net_node[3]))
+	Transfer(to_addr, 100000000, 100000, 1, randomOfArr(net_node[3]));
 	await sleep(10000);
 
 	QueryAccount(to_addr, randomOfArr(net_node[2]), function(res) {
         // 账户已经存在
-        
         if (res == '') {
             console.log("create failed");
         }
