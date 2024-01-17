@@ -628,6 +628,16 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
     }
 
     const auto& res_nodes = dht_msg.refresh_neighbors_res().nodes();
+
+    for (int32_t i = 0; i < res_nodes.size(); ++i) {
+        NodePtr node = std::make_shared<Node>(
+            res_nodes[i].sharding_id(),
+            res_nodes[i].public_ip(),
+            res_nodes[i].public_port(),
+            res_nodes[i].pubkey(),
+            security_->GetAddress(res_nodes[i].pubkey()));
+        waiting_refresh_nodes_.push_back(node);
+    }
     for (int32_t i = 0; i < res_nodes.size(); ++i) {
         ZJC_DEBUG("connect neighbers new node: %s:%u",
             res_nodes[i].public_ip().c_str(), res_nodes[i].public_port());
@@ -740,6 +750,7 @@ void BaseDht::ProcessConnectRequest(const transport::MessagePtr& msg_ptr) {
     msg_ptr->conn->SetPeerPort(dht_msg.connect_req().public_port());
     Join(node);
     if (dht_msg.connect_req().is_response()) {
+        // TODO add nodes from waiting_refresh_nodes_ by pubkey
         DHT_ERROR("process connect response success: %lu", msg_ptr->header.hash64());
         return;
     }
