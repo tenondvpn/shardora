@@ -645,18 +645,32 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
             waiting_refresh_nodes_map_.insert(std::make_pair(res_nodes[i].id(), nodes));
         }
     }
-    
-    for (int32_t i = 0; i < res_nodes.size(); ++i) {
-        ZJC_DEBUG("connect neighbers new node: %s:%u",
-            res_nodes[i].public_ip().c_str(), res_nodes[i].public_port());
-        Connect(
-            msg_ptr->thread_idx,
-            res_nodes[i].public_ip(),
-            res_nodes[i].public_port(),
-            res_nodes[i].pubkey(),
-            header.src_sharding_id(),
-            false);
+
+    for (auto iter = waiting_refresh_nodes_map_.begin(); iter != waiting_refresh_nodes_map_.end(); ++iter) {
+        if (iter->second.size() > 0) {
+            NodePtr node = iter->second[0];
+            ZJC_DEBUG("connect neighbers new node: %s:%u",
+                      node->public_ip.c_str(), node->public_port);
+            Connect(
+                msg_ptr->thread_idx,
+                node->public_ip,
+                node->public_port,
+                node->pubkey_str,
+                header.src_sharding_id(),
+                false);      
+        }
     }
+    // for (int32_t i = 0; i < res_nodes.size(); ++i) {
+    //     ZJC_DEBUG("connect neighbers new node: %s:%u",
+    //         res_nodes[i].public_ip().c_str(), res_nodes[i].public_port());
+    //     Connect(
+    //         msg_ptr->thread_idx,
+    //         res_nodes[i].public_ip(),
+    //         res_nodes[i].public_port(),
+    //         res_nodes[i].pubkey(),
+    //         header.src_sharding_id(),
+    //         false);
+    // }
 }
 
 void BaseDht::Connect(
