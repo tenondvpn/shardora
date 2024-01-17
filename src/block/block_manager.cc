@@ -249,6 +249,7 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             local_net -= network::kConsensusWaitingShardOffset;
         }
 
+        // 过滤掉自己给自己发的消息
         if (header.block().network_id() == local_net) {
             ZJC_DEBUG("network block failed cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
                 header.block().network_id(),
@@ -1360,6 +1361,7 @@ void BlockManager::RootCreateCrossTx(
         common::Encode::HexEncode(gid).c_str());
 }
 
+// Only for root
 void BlockManager::HandleStatisticBlock(
         uint8_t thread_idx,
         const block::protobuf::Block& block,

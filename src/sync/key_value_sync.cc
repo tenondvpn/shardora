@@ -65,8 +65,8 @@ void KeyValueSync::AddSyncHeight(
 
 void KeyValueSync::AddSyncElectBlock(
         uint8_t thread_idx,
-        uint32_t network_id,
-        uint32_t elect_network_id,
+        uint32_t network_id, //
+        uint32_t elect_network_id, // 2
         uint64_t height,
         uint32_t priority) {
     assert(priority <= kSyncHighest);
@@ -567,7 +567,8 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
                         block_item->network_id() + network::kConsensusWaitingShardOffset !=
                         common::GlobalInfo::Instance()->network_id()) {
-                    if (block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item) == block::kBlockVerifyAggSignFailed) {
+                    // TODO 暂时屏蔽创世选举块的验签，后续通过消息体中的 commom pk 验证
+                    if (block_item->electblock_height() != 1 && block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item) == block::kBlockVerifyAggSignFailed) {
                         // 
                     }
                 }

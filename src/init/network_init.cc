@@ -1300,6 +1300,7 @@ void NetworkInit::HandleElectionBlock(
         ZJC_ERROR("elect manager handle elect block failed!");
         return;
     }
+    // TODO log members
 
     auto sharding_id = elect_block->shard_network_id();
     auto elect_height = elect_mgr_->latest_height(sharding_id);
@@ -1409,7 +1410,7 @@ bool NetworkInit::BlockBlsAggSignatureValid(
        kv_sync_->AddSyncElectBlock(
            thread_idx,
            network::kRootCongressNetworkId,
-           block.network_id(),
+           block.network_id(), // 2
            block.electblock_height(),
            sync::kSyncHigh);
         return false;
