@@ -628,6 +628,7 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
     }
 
     const auto& res_nodes = dht_msg.refresh_neighbors_res().nodes();
+    // TODO add res_nodes to waiting_refresh_nodes_map_ pubkey => [NodePtr, NodePtr, ...]
     for (int32_t i = 0; i < res_nodes.size(); ++i) {
         ZJC_DEBUG("connect neighbers new node: %s:%u",
             res_nodes[i].public_ip().c_str(), res_nodes[i].public_port());
@@ -740,9 +741,12 @@ void BaseDht::ProcessConnectRequest(const transport::MessagePtr& msg_ptr) {
     msg_ptr->conn->SetPeerPort(dht_msg.connect_req().public_port());
     Join(node);
     if (dht_msg.connect_req().is_response()) {
+        // if is response
+        // find nodes from waiting_refresh_nodes_map_ mapping by the sender node and join it
         DHT_ERROR("process connect response success: %lu", msg_ptr->header.hash64());
         return;
     }
+    // if not response, just join the sender node
 
     Connect(
         msg_ptr->thread_idx,
