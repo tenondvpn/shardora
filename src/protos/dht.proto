@@ -19,6 +19,7 @@ message NodeInfo {
     optional int32 public_port = 2;
     optional bytes pubkey = 3;
     optional int32 sharding_id = 4;
+    optional string id = 5;
 }
 
 message RefreshNeighborsRequest {
@@ -47,6 +48,7 @@ message ConnectReqeust {
     optional bool is_response = 2;
     optional string public_ip = 3;
     optional int32 public_port = 4;
+    optional string id = 5;
 }
 
 message TimerRequest {

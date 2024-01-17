@@ -629,7 +629,7 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
 
     const auto& res_nodes = dht_msg.refresh_neighbors_res().nodes();
     // TODO add res_nodes to waiting_refresh_nodes_map_ pubkey => [NodePtr, NodePtr, ...]
-    waiting_refresh_nodes_.clear();
+    waiting_refresh_nodes_map_.clear();
     for (int32_t i = 0; i < res_nodes.size(); ++i) {
         NodePtr node = std::make_shared<Node>(
             res_nodes[i].sharding_id(),
@@ -637,7 +637,13 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
             res_nodes[i].public_port(),
             res_nodes[i].pubkey(),
             security_->GetAddress(res_nodes[i].pubkey()));
-        waiting_refresh_nodes_.push_back(node);
+        auto iter = waiting_refresh_nodes_map_.find(res_nodes[i].id());
+        if (iter != waiting_refresh_nodes_map_.end()) {
+            iter->second.push_back(node);
+        } else {
+            std::vector<NodePtr> nodes = {node};
+            waiting_refresh_nodes_map_.insert(std::make_pair(res_nodes[i].id(), nodes));
+        }
     }
     
     for (int32_t i = 0; i < res_nodes.size(); ++i) {
@@ -745,11 +751,12 @@ void BaseDht::ProcessConnectRequest(const transport::MessagePtr& msg_ptr) {
     if (dht_msg.connect_req().is_response()) {
         // if is response
         // find nodes from waiting_refresh_nodes_map_ mapping by the sender node and join it
-        for (uint32_t i = 0; i < waiting_refresh_nodes_.size(); ++i) {
-            NodePtr waiting_node = waiting_refresh_nodes_[i];
-            if (dht_msg.connect_req().public_ip() == waiting_node->public_ip && dht_msg.connect_req().public_port() == waiting_node->public_port) {
-                waiting_node->join_way = kJoinFromConnect;
-                Join(waiting_node);
+        auto iter = waiting_refresh_nodes_map_.find(dht_msg.connect_req().id());
+        if (iter != waiting_refresh_nodes_map_.end()) {
+            auto nodes = iter->second;
+            for (uint32_t i = 0; i < nodes.size(); ++i) {
+                nodes[i]->join_way = kJoinFromConnect;
+                Join(nodes[i]);
             }
         }
         

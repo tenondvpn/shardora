@@ -336,10 +336,12 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::ConnectReqeust, is_response_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::ConnectReqeust, public_ip_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::ConnectReqeust, public_port_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::ConnectReqeust, id_),
   0,
-  2,
-  1,
   3,
+  1,
+  4,
+  2,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::TimerRequest, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::TimerRequest, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -377,9 +379,9 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 54, 60, sizeof(::zjchain::dht::protobuf::RefreshNeighborsResponse)},
   { 61, 67, sizeof(::zjchain::dht::protobuf::HeartbeatRequest)},
   { 68, 74, sizeof(::zjchain::dht::protobuf::HeartbeatResponse)},
-  { 75, 84, sizeof(::zjchain::dht::protobuf::ConnectReqeust)},
-  { 88, 94, sizeof(::zjchain::dht::protobuf::TimerRequest)},
-  { 95, 108, sizeof(::zjchain::dht::protobuf::DhtMessage)},
+  { 75, 85, sizeof(::zjchain::dht::protobuf::ConnectReqeust)},
+  { 90, 96, sizeof(::zjchain::dht::protobuf::TimerRequest)},
+  { 97, 110, sizeof(::zjchain::dht::protobuf::DhtMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -430,27 +432,27 @@ void AddDescriptorsImpl() {
       "ighborsResponse\022-\n\005nodes\030\001 \003(\0132\036.zjchain"
       ".dht.protobuf.NodeInfo\"(\n\020HeartbeatReque"
       "st\022\024\n\014dht_key_hash\030\001 \001(\004\")\n\021HeartbeatRes"
-      "ponse\022\024\n\014dht_key_hash\030\001 \001(\004\"]\n\016ConnectRe"
+      "ponse\022\024\n\014dht_key_hash\030\001 \001(\004\"i\n\016ConnectRe"
       "qeust\022\016\n\006pubkey\030\001 \001(\014\022\023\n\013is_response\030\002 \001"
       "(\010\022\021\n\tpublic_ip\030\003 \001(\t\022\023\n\013public_port\030\004 \001"
-      "(\005\" \n\014TimerRequest\022\020\n\010tm_milli\030\001 \001(\004\"\225\004\n"
-      "\nDhtMessage\022=\n\rbootstrap_req\030\001 \001(\0132&.zjc"
-      "hain.dht.protobuf.BootstrapRequest\022>\n\rbo"
-      "otstrap_res\030\002 \001(\0132\'.zjchain.dht.protobuf"
-      ".BootstrapResponse\022L\n\025refresh_neighbors_"
-      "req\030\003 \001(\0132-.zjchain.dht.protobuf.Refresh"
-      "NeighborsRequest\022M\n\025refresh_neighbors_re"
-      "s\030\004 \001(\0132..zjchain.dht.protobuf.RefreshNe"
-      "ighborsResponse\0229\n\013connect_req\030\005 \001(\0132$.z"
-      "jchain.dht.protobuf.ConnectReqeust\022=\n\rhe"
-      "artbeat_req\030\006 \001(\0132&.zjchain.dht.protobuf"
-      ".HeartbeatRequest\022>\n\rheartbeat_res\030\007 \001(\013"
-      "2\'.zjchain.dht.protobuf.HeartbeatRespons"
-      "e\0221\n\005timer\030\010 \001(\0132\".zjchain.dht.protobuf."
-      "TimerRequest"
+      "(\005\022\n\n\002id\030\005 \001(\t\" \n\014TimerRequest\022\020\n\010tm_mil"
+      "li\030\001 \001(\004\"\225\004\n\nDhtMessage\022=\n\rbootstrap_req"
+      "\030\001 \001(\0132&.zjchain.dht.protobuf.BootstrapR"
+      "equest\022>\n\rbootstrap_res\030\002 \001(\0132\'.zjchain."
+      "dht.protobuf.BootstrapResponse\022L\n\025refres"
+      "h_neighbors_req\030\003 \001(\0132-.zjchain.dht.prot"
+      "obuf.RefreshNeighborsRequest\022M\n\025refresh_"
+      "neighbors_res\030\004 \001(\0132..zjchain.dht.protob"
+      "uf.RefreshNeighborsResponse\0229\n\013connect_r"
+      "eq\030\005 \001(\0132$.zjchain.dht.protobuf.ConnectR"
+      "eqeust\022=\n\rheartbeat_req\030\006 \001(\0132&.zjchain."
+      "dht.protobuf.HeartbeatRequest\022>\n\rheartbe"
+      "at_res\030\007 \001(\0132\'.zjchain.dht.protobuf.Hear"
+      "tbeatResponse\0221\n\005timer\030\010 \001(\0132\".zjchain.d"
+      "ht.protobuf.TimerRequest"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1252);
+      descriptor, 1264);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/dht.proto", &protobuf_RegisterTypes);
 }
@@ -2763,6 +2765,7 @@ const int ConnectReqeust::kPubkeyFieldNumber;
 const int ConnectReqeust::kIsResponseFieldNumber;
 const int ConnectReqeust::kPublicIpFieldNumber;
 const int ConnectReqeust::kPublicPortFieldNumber;
+const int ConnectReqeust::kIdFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ConnectReqeust::ConnectReqeust()
@@ -2785,6 +2788,10 @@ ConnectReqeust::ConnectReqeust(const ConnectReqeust& from)
   if (from.has_public_ip()) {
     public_ip_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.public_ip_);
   }
+  id_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_id()) {
+    id_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.id_);
+  }
   ::memcpy(&is_response_, &from.is_response_,
     static_cast<size_t>(reinterpret_cast<char*>(&public_port_) -
     reinterpret_cast<char*>(&is_response_)) + sizeof(public_port_));
@@ -2794,6 +2801,7 @@ ConnectReqeust::ConnectReqeust(const ConnectReqeust& from)
 void ConnectReqeust::SharedCtor() {
   pubkey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   public_ip_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  id_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&is_response_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&public_port_) -
       reinterpret_cast<char*>(&is_response_)) + sizeof(public_port_));
@@ -2807,6 +2815,7 @@ ConnectReqeust::~ConnectReqeust() {
 void ConnectReqeust::SharedDtor() {
   pubkey_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   public_ip_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  id_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void ConnectReqeust::SetCachedSize(int size) const {
@@ -2830,15 +2839,18 @@ void ConnectReqeust::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 3u) {
+  if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
       pubkey_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000002u) {
       public_ip_.ClearNonDefaultToEmptyNoArena();
     }
+    if (cached_has_bits & 0x00000004u) {
+      id_.ClearNonDefaultToEmptyNoArena();
+    }
   }
-  if (cached_has_bits & 12u) {
+  if (cached_has_bits & 24u) {
     ::memset(&is_response_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&public_port_) -
         reinterpret_cast<char*>(&is_response_)) + sizeof(public_port_));
@@ -2913,6 +2925,22 @@ bool ConnectReqeust::MergePartialFromCodedStream(
         break;
       }
 
+      // optional string id = 5;
+      case 5: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_id()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->id().data(), static_cast<int>(this->id().length()),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "zjchain.dht.protobuf.ConnectReqeust.id");
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -2947,7 +2975,7 @@ void ConnectReqeust::SerializeWithCachedSizes(
   }
 
   // optional bool is_response = 2;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000008u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(2, this->is_response(), output);
   }
 
@@ -2962,8 +2990,18 @@ void ConnectReqeust::SerializeWithCachedSizes(
   }
 
   // optional int32 public_port = 4;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->public_port(), output);
+  }
+
+  // optional string id = 5;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->id().data(), static_cast<int>(this->id().length()),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "zjchain.dht.protobuf.ConnectReqeust.id");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      5, this->id(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2989,7 +3027,7 @@ void ConnectReqeust::SerializeWithCachedSizes(
   }
 
   // optional bool is_response = 2;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000008u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(2, this->is_response(), target);
   }
 
@@ -3005,8 +3043,19 @@ void ConnectReqeust::SerializeWithCachedSizes(
   }
 
   // optional int32 public_port = 4;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(4, this->public_port(), target);
+  }
+
+  // optional string id = 5;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->id().data(), static_cast<int>(this->id().length()),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "zjchain.dht.protobuf.ConnectReqeust.id");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        5, this->id(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3026,7 +3075,7 @@ size_t ConnectReqeust::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 15u) {
+  if (_has_bits_[0 / 32] & 31u) {
     // optional bytes pubkey = 1;
     if (has_pubkey()) {
       total_size += 1 +
@@ -3039,6 +3088,13 @@ size_t ConnectReqeust::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->public_ip());
+    }
+
+    // optional string id = 5;
+    if (has_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->id());
     }
 
     // optional bool is_response = 2;
@@ -3082,7 +3138,7 @@ void ConnectReqeust::MergeFrom(const ConnectReqeust& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 15u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_pubkey();
       pubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.pubkey_);
@@ -3092,9 +3148,13 @@ void ConnectReqeust::MergeFrom(const ConnectReqeust& from) {
       public_ip_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.public_ip_);
     }
     if (cached_has_bits & 0x00000004u) {
-      is_response_ = from.is_response_;
+      set_has_id();
+      id_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.id_);
     }
     if (cached_has_bits & 0x00000008u) {
+      is_response_ = from.is_response_;
+    }
+    if (cached_has_bits & 0x00000010u) {
       public_port_ = from.public_port_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -3128,6 +3188,8 @@ void ConnectReqeust::InternalSwap(ConnectReqeust* other) {
   pubkey_.Swap(&other->pubkey_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   public_ip_.Swap(&other->public_ip_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  id_.Swap(&other->id_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(is_response_, other->is_response_);
   swap(public_port_, other->public_port_);

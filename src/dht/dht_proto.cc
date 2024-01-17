@@ -92,6 +92,7 @@ void DhtProto::CreateRefreshNeighborsResponse(
         proto_node->set_public_port(nodes[i]->public_port);
         proto_node->set_pubkey(nodes[i]->pubkey_str);
         proto_node->set_sharding_id(nodes[i]->sharding_id);
+        proto_node->set_id(nodes[i]->id)
     }
 }
 
@@ -136,6 +137,7 @@ int32_t DhtProto::CreateConnectRequest(
     connect_req->set_pubkey(local_node->pubkey_str);
     connect_req->set_public_ip(common::GlobalInfo::Instance()->config_local_ip());
     connect_req->set_public_port(common::GlobalInfo::Instance()->config_local_port());
+    connect_req->set_id(local_node->id);
     return kDhtSuccess;
 }
 
