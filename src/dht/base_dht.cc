@@ -636,7 +636,7 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
             res_nodes[i].public_ip(),
             res_nodes[i].public_port(),
             res_nodes[i].pubkey(),
-            res_nodes[i].shard_id(),
+            header.src_sharding_id(),
             false);
     }
 }
@@ -646,7 +646,7 @@ void BaseDht::Connect(
         const std::string& des_ip,
         uint16_t des_port,
         const std::string& des_pubkey,
-        int32_t des_sharding_id,
+        int32_t src_sharding_id,
         bool response) {
     if (des_ip == "0.0.0.0" || des_port == 0) {
         ZJC_DEBUG("des_ip == 0.0.0.0 || des_port == 0");
@@ -675,7 +675,7 @@ void BaseDht::Connect(
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     auto& msg = msg_ptr->header;
     auto id = security_->GetAddress(des_pubkey);
-    DhtKeyManager dhtkey(des_sharding_id, id);
+    DhtKeyManager dhtkey(src_sharding_id, id);
     if (DhtProto::CreateConnectRequest(
             response,
             local_node_,
@@ -702,10 +702,10 @@ void BaseDht::Connect(
 }
 
 void BaseDht::ProcessConnectRequest(const transport::MessagePtr& msg_ptr) {
-    // if (!is_universal_) {
-    //     ZJC_DEBUG("not universal");
-    //     return;
-    // }
+    if (!is_universal_) {
+        ZJC_DEBUG("not universal");
+        return;
+    }
 
     auto& header = msg_ptr->header;
     auto& dht_msg = header.dht_proto();

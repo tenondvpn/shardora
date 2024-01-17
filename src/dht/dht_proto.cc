@@ -91,7 +91,6 @@ void DhtProto::CreateRefreshNeighborsResponse(
         proto_node->set_public_ip(nodes[i]->public_ip);
         proto_node->set_public_port(nodes[i]->public_port);
         proto_node->set_pubkey(nodes[i]->pubkey_str);
-        proto_node->set_shard_id(nodes[i]->sharding_id);
     }
 }
 
