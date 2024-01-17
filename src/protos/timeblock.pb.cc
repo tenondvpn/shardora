@@ -5,249 +5,318 @@
 
 #include <algorithm>
 
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/extension_set.h>
-#include <google/protobuf/wire_format_lite.h>
+#include <google/protobuf/wire_format_lite_inl.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/wire_format.h>
+// This is a temporary google only hack
+#ifdef GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
+#include "third_party/protobuf/version.h"
+#endif
 // @@protoc_insertion_point(includes)
-#include <google/protobuf/port_def.inc>
-
-PROTOBUF_PRAGMA_INIT_SEG
-
-namespace _pb = ::PROTOBUF_NAMESPACE_ID;
-namespace _pbi = _pb::internal;
 
 namespace zjchain {
 namespace timeblock {
 namespace protobuf {
-PROTOBUF_CONSTEXPR TimeBlock::TimeBlock(
-    ::_pbi::ConstantInitialized)
-  : height_(uint64_t{0u})
-  , timestamp_(uint64_t{0u})
-  , vss_random_(uint64_t{0u}){}
-struct TimeBlockDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR TimeBlockDefaultTypeInternal()
-      : _instance(::_pbi::ConstantInitialized{}) {}
-  ~TimeBlockDefaultTypeInternal() {}
-  union {
-    TimeBlock _instance;
-  };
-};
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TimeBlockDefaultTypeInternal _TimeBlock_default_instance_;
+class TimeBlockDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<TimeBlock>
+      _instance;
+} _TimeBlock_default_instance_;
 }  // namespace protobuf
 }  // namespace timeblock
 }  // namespace zjchain
-static ::_pb::Metadata file_level_metadata_protos_2ftimeblock_2eproto[1];
-static constexpr ::_pb::EnumDescriptor const** file_level_enum_descriptors_protos_2ftimeblock_2eproto = nullptr;
-static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_protos_2ftimeblock_2eproto = nullptr;
+namespace protobuf_protos_2ftimeblock_2eproto {
+static void InitDefaultsTimeBlock() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-const uint32_t TableStruct_protos_2ftimeblock_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  PROTOBUF_FIELD_OFFSET(::zjchain::timeblock::protobuf::TimeBlock, _has_bits_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::timeblock::protobuf::TimeBlock, _internal_metadata_),
+  {
+    void* ptr = &::zjchain::timeblock::protobuf::_TimeBlock_default_instance_;
+    new (ptr) ::zjchain::timeblock::protobuf::TimeBlock();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::zjchain::timeblock::protobuf::TimeBlock::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_TimeBlock =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsTimeBlock}, {}};
+
+void InitDefaults() {
+  ::google::protobuf::internal::InitSCC(&scc_info_TimeBlock.base);
+}
+
+::google::protobuf::Metadata file_level_metadata[1];
+
+const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::timeblock::protobuf::TimeBlock, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::timeblock::protobuf::TimeBlock, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::zjchain::timeblock::protobuf::TimeBlock, height_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::timeblock::protobuf::TimeBlock, timestamp_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::timeblock::protobuf::TimeBlock, vss_random_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::timeblock::protobuf::TimeBlock, height_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::timeblock::protobuf::TimeBlock, timestamp_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::timeblock::protobuf::TimeBlock, vss_random_),
   0,
   1,
   2,
 };
-static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 9, -1, sizeof(::zjchain::timeblock::protobuf::TimeBlock)},
+static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+  { 0, 8, sizeof(::zjchain::timeblock::protobuf::TimeBlock)},
 };
 
-static const ::_pb::Message* const file_default_instances[] = {
-  &::zjchain::timeblock::protobuf::_TimeBlock_default_instance_._instance,
+static ::google::protobuf::Message const * const file_default_instances[] = {
+  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::timeblock::protobuf::_TimeBlock_default_instance_),
 };
 
-const char descriptor_table_protodef_protos_2ftimeblock_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\026protos/timeblock.proto\022\032zjchain.timebl"
-  "ock.protobuf\"B\n\tTimeBlock\022\016\n\006height\030\001 \001("
-  "\004\022\021\n\ttimestamp\030\002 \001(\004\022\022\n\nvss_random\030\003 \001(\004"
-  ;
-static ::_pbi::once_flag descriptor_table_protos_2ftimeblock_2eproto_once;
-const ::_pbi::DescriptorTable descriptor_table_protos_2ftimeblock_2eproto = {
-    false, false, 120, descriptor_table_protodef_protos_2ftimeblock_2eproto,
-    "protos/timeblock.proto",
-    &descriptor_table_protos_2ftimeblock_2eproto_once, nullptr, 0, 1,
-    schemas, file_default_instances, TableStruct_protos_2ftimeblock_2eproto::offsets,
-    file_level_metadata_protos_2ftimeblock_2eproto, file_level_enum_descriptors_protos_2ftimeblock_2eproto,
-    file_level_service_descriptors_protos_2ftimeblock_2eproto,
-};
-PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_protos_2ftimeblock_2eproto_getter() {
-  return &descriptor_table_protos_2ftimeblock_2eproto;
+void protobuf_AssignDescriptors() {
+  AddDescriptors();
+  AssignDescriptors(
+      "protos/timeblock.proto", schemas, file_default_instances, TableStruct::offsets,
+      file_level_metadata, NULL, NULL);
 }
 
-// Force running AddDescriptors() at dynamic initialization time.
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_protos_2ftimeblock_2eproto(&descriptor_table_protos_2ftimeblock_2eproto);
+void protobuf_AssignDescriptorsOnce() {
+  static ::google::protobuf::internal::once_flag once;
+  ::google::protobuf::internal::call_once(once, protobuf_AssignDescriptors);
+}
+
+void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
+void protobuf_RegisterTypes(const ::std::string&) {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 1);
+}
+
+void AddDescriptorsImpl() {
+  InitDefaults();
+  static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+      "\n\026protos/timeblock.proto\022\032zjchain.timebl"
+      "ock.protobuf\"B\n\tTimeBlock\022\016\n\006height\030\001 \001("
+      "\004\022\021\n\ttimestamp\030\002 \001(\004\022\022\n\nvss_random\030\003 \001(\004"
+  };
+  ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
+      descriptor, 120);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
+    "protos/timeblock.proto", &protobuf_RegisterTypes);
+}
+
+void AddDescriptors() {
+  static ::google::protobuf::internal::once_flag once;
+  ::google::protobuf::internal::call_once(once, AddDescriptorsImpl);
+}
+// Force AddDescriptors() to be called at dynamic initialization time.
+struct StaticDescriptorInitializer {
+  StaticDescriptorInitializer() {
+    AddDescriptors();
+  }
+} static_descriptor_initializer;
+}  // namespace protobuf_protos_2ftimeblock_2eproto
 namespace zjchain {
 namespace timeblock {
 namespace protobuf {
 
 // ===================================================================
 
-class TimeBlock::_Internal {
- public:
-  using HasBits = decltype(std::declval<TimeBlock>()._has_bits_);
-  static void set_has_height(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_timestamp(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_vss_random(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-};
+void TimeBlock::InitAsDefaultInstance() {
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int TimeBlock::kHeightFieldNumber;
+const int TimeBlock::kTimestampFieldNumber;
+const int TimeBlock::kVssRandomFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
-TimeBlock::TimeBlock(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+TimeBlock::TimeBlock()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2ftimeblock_2eproto::scc_info_TimeBlock.base);
   SharedCtor();
-  // @@protoc_insertion_point(arena_constructor:zjchain.timeblock.protobuf.TimeBlock)
+  // @@protoc_insertion_point(constructor:zjchain.timeblock.protobuf.TimeBlock)
 }
 TimeBlock::TimeBlock(const TimeBlock& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message(),
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
       _has_bits_(from._has_bits_) {
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&height_, &from.height_,
     static_cast<size_t>(reinterpret_cast<char*>(&vss_random_) -
     reinterpret_cast<char*>(&height_)) + sizeof(vss_random_));
   // @@protoc_insertion_point(copy_constructor:zjchain.timeblock.protobuf.TimeBlock)
 }
 
-inline void TimeBlock::SharedCtor() {
-::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
-    reinterpret_cast<char*>(&height_) - reinterpret_cast<char*>(this)),
-    0, static_cast<size_t>(reinterpret_cast<char*>(&vss_random_) -
-    reinterpret_cast<char*>(&height_)) + sizeof(vss_random_));
+void TimeBlock::SharedCtor() {
+  ::memset(&height_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&vss_random_) -
+      reinterpret_cast<char*>(&height_)) + sizeof(vss_random_));
 }
 
 TimeBlock::~TimeBlock() {
   // @@protoc_insertion_point(destructor:zjchain.timeblock.protobuf.TimeBlock)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
-  (void)arena;
-    return;
-  }
   SharedDtor();
 }
 
-inline void TimeBlock::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+void TimeBlock::SharedDtor() {
 }
 
 void TimeBlock::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
+const ::google::protobuf::Descriptor* TimeBlock::descriptor() {
+  ::protobuf_protos_2ftimeblock_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2ftimeblock_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const TimeBlock& TimeBlock::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2ftimeblock_2eproto::scc_info_TimeBlock.base);
+  return *internal_default_instance();
+}
+
 
 void TimeBlock::Clear() {
 // @@protoc_insertion_point(message_clear_start:zjchain.timeblock.protobuf.TimeBlock)
-  uint32_t cached_has_bits = 0;
+  ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if (cached_has_bits & 7u) {
     ::memset(&height_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&vss_random_) -
         reinterpret_cast<char*>(&height_)) + sizeof(vss_random_));
   }
   _has_bits_.Clear();
-  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  _internal_metadata_.Clear();
 }
 
-const char* TimeBlock::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  _Internal::HasBits has_bits{};
-  while (!ctx->Done(&ptr)) {
-    uint32_t tag;
-    ptr = ::_pbi::ReadTag(ptr, &tag);
-    switch (tag >> 3) {
+bool TimeBlock::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:zjchain.timeblock.protobuf.TimeBlock)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional uint64 height = 1;
-      case 1:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
-          _Internal::set_has_height(&has_bits);
-          height_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
-          CHK_(ptr);
-        } else
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u /* 8 & 0xFF */)) {
+          set_has_height();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &height_)));
+        } else {
           goto handle_unusual;
-        continue;
+        }
+        break;
+      }
+
       // optional uint64 timestamp = 2;
-      case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
-          _Internal::set_has_timestamp(&has_bits);
-          timestamp_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
-          CHK_(ptr);
-        } else
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
+          set_has_timestamp();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &timestamp_)));
+        } else {
           goto handle_unusual;
-        continue;
+        }
+        break;
+      }
+
       // optional uint64 vss_random = 3;
-      case 3:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
-          _Internal::set_has_vss_random(&has_bits);
-          vss_random_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
-          CHK_(ptr);
-        } else
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
+          set_has_vss_random();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &vss_random_)));
+        } else {
           goto handle_unusual;
-        continue;
-      default:
-        goto handle_unusual;
-    }  // switch
-  handle_unusual:
-    if ((tag == 0) || ((tag & 7) == 4)) {
-      CHK_(ptr);
-      ctx->SetLastTag(tag);
-      goto message_done;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
     }
-    ptr = UnknownFieldParse(
-        tag,
-        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
-        ptr, ctx);
-    CHK_(ptr != nullptr);
-  }  // while
-message_done:
-  _has_bits_.Or(has_bits);
-  return ptr;
+  }
+success:
+  // @@protoc_insertion_point(parse_success:zjchain.timeblock.protobuf.TimeBlock)
+  return true;
 failure:
-  ptr = nullptr;
-  goto message_done;
-#undef CHK_
+  // @@protoc_insertion_point(parse_failure:zjchain.timeblock.protobuf.TimeBlock)
+  return false;
+#undef DO_
 }
 
-uint8_t* TimeBlock::_InternalSerialize(
-    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.timeblock.protobuf.TimeBlock)
-  uint32_t cached_has_bits = 0;
+void TimeBlock::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:zjchain.timeblock.protobuf.TimeBlock)
+  ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
   // optional uint64 height = 1;
   if (cached_has_bits & 0x00000001u) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(1, this->_internal_height(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(1, this->height(), output);
   }
 
   // optional uint64 timestamp = 2;
   if (cached_has_bits & 0x00000002u) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(2, this->_internal_timestamp(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->timestamp(), output);
   }
 
   // optional uint64 vss_random = 3;
   if (cached_has_bits & 0x00000004u) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(3, this->_internal_vss_random(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->vss_random(), output);
   }
 
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:zjchain.timeblock.protobuf.TimeBlock)
+}
+
+::google::protobuf::uint8* TimeBlock::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.timeblock.protobuf.TimeBlock)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional uint64 height = 1;
+  if (cached_has_bits & 0x00000001u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(1, this->height(), target);
+  }
+
+  // optional uint64 timestamp = 2;
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->timestamp(), target);
+  }
+
+  // optional uint64 vss_random = 3;
+  if (cached_has_bits & 0x00000004u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(3, this->vss_random(), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
   }
   // @@protoc_insertion_point(serialize_to_array_end:zjchain.timeblock.protobuf.TimeBlock)
   return target;
@@ -257,52 +326,63 @@ size_t TimeBlock::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:zjchain.timeblock.protobuf.TimeBlock)
   size_t total_size = 0;
 
-  uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  if (_has_bits_[0 / 32] & 7u) {
     // optional uint64 height = 1;
-    if (cached_has_bits & 0x00000001u) {
-      total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_height());
+    if (has_height()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->height());
     }
 
     // optional uint64 timestamp = 2;
-    if (cached_has_bits & 0x00000002u) {
-      total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_timestamp());
+    if (has_timestamp()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->timestamp());
     }
 
     // optional uint64 vss_random = 3;
-    if (cached_has_bits & 0x00000004u) {
-      total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_vss_random());
+    if (has_vss_random()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->vss_random());
     }
 
   }
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
 }
 
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData TimeBlock::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
-    TimeBlock::MergeImpl
-};
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*TimeBlock::GetClassData() const { return &_class_data_; }
-
-void TimeBlock::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<TimeBlock *>(to)->MergeFrom(
-      static_cast<const TimeBlock &>(from));
+void TimeBlock::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.timeblock.protobuf.TimeBlock)
+  GOOGLE_DCHECK_NE(&from, this);
+  const TimeBlock* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const TimeBlock>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.timeblock.protobuf.TimeBlock)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.timeblock.protobuf.TimeBlock)
+    MergeFrom(*source);
+  }
 }
-
 
 void TimeBlock::MergeFrom(const TimeBlock& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:zjchain.timeblock.protobuf.TimeBlock)
   GOOGLE_DCHECK_NE(&from, this);
-  uint32_t cached_has_bits = 0;
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
       height_ = from.height_;
     }
@@ -314,7 +394,13 @@ void TimeBlock::MergeFrom(const TimeBlock& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void TimeBlock::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.timeblock.protobuf.TimeBlock)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
 }
 
 void TimeBlock::CopyFrom(const TimeBlock& from) {
@@ -328,34 +414,35 @@ bool TimeBlock::IsInitialized() const {
   return true;
 }
 
+void TimeBlock::Swap(TimeBlock* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
 void TimeBlock::InternalSwap(TimeBlock* other) {
   using std::swap;
-  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(height_, other->height_);
+  swap(timestamp_, other->timestamp_);
+  swap(vss_random_, other->vss_random_);
   swap(_has_bits_[0], other->_has_bits_[0]);
-  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(TimeBlock, vss_random_)
-      + sizeof(TimeBlock::vss_random_)
-      - PROTOBUF_FIELD_OFFSET(TimeBlock, height_)>(
-          reinterpret_cast<char*>(&height_),
-          reinterpret_cast<char*>(&other->height_));
+  _internal_metadata_.Swap(&other->_internal_metadata_);
 }
 
-::PROTOBUF_NAMESPACE_ID::Metadata TimeBlock::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_protos_2ftimeblock_2eproto_getter, &descriptor_table_protos_2ftimeblock_2eproto_once,
-      file_level_metadata_protos_2ftimeblock_2eproto[0]);
+::google::protobuf::Metadata TimeBlock::GetMetadata() const {
+  protobuf_protos_2ftimeblock_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2ftimeblock_2eproto::file_level_metadata[kIndexInFileMessages];
 }
+
 
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace timeblock
 }  // namespace zjchain
-PROTOBUF_NAMESPACE_OPEN
-template<> PROTOBUF_NOINLINE ::zjchain::timeblock::protobuf::TimeBlock*
-Arena::CreateMaybeMessage< ::zjchain::timeblock::protobuf::TimeBlock >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::zjchain::timeblock::protobuf::TimeBlock >(arena);
+namespace google {
+namespace protobuf {
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::timeblock::protobuf::TimeBlock* Arena::CreateMaybeMessage< ::zjchain::timeblock::protobuf::TimeBlock >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::timeblock::protobuf::TimeBlock >(arena);
 }
-PROTOBUF_NAMESPACE_CLOSE
+}  // namespace protobuf
+}  // namespace google
 
 // @@protoc_insertion_point(global_scope)
-#include <google/protobuf/port_undef.inc>

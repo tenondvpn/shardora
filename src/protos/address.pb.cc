@@ -5,74 +5,75 @@
 
 #include <algorithm>
 
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/extension_set.h>
-#include <google/protobuf/wire_format_lite.h>
+#include <google/protobuf/wire_format_lite_inl.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/wire_format.h>
+// This is a temporary google only hack
+#ifdef GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
+#include "third_party/protobuf/version.h"
+#endif
 // @@protoc_insertion_point(includes)
-#include <google/protobuf/port_def.inc>
 
-PROTOBUF_PRAGMA_INIT_SEG
-
-namespace _pb = ::PROTOBUF_NAMESPACE_ID;
-namespace _pbi = _pb::internal;
-
+namespace protobuf_protos_2fbls_2eproto {
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fbls_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_BlsPublicKey;
+}  // namespace protobuf_protos_2fbls_2eproto
 namespace zjchain {
 namespace address {
 namespace protobuf {
-PROTOBUF_CONSTEXPR AddressInfo::AddressInfo(
-    ::_pbi::ConstantInitialized)
-  : g2s_()
-  , pubkey_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
-  , addr_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
-  , bytes_code_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
-  , balance_(uint64_t{0u})
-  , sharding_id_(0u)
-  , pool_index_(0u)
-  , type_(0)
-
-  , credit_(0)
-  , latest_height_(uint64_t{0u})
-  , destructed_(false)
-  , elect_pos_(4294967295u){}
-struct AddressInfoDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR AddressInfoDefaultTypeInternal()
-      : _instance(::_pbi::ConstantInitialized{}) {}
-  ~AddressInfoDefaultTypeInternal() {}
-  union {
-    AddressInfo _instance;
-  };
-};
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 AddressInfoDefaultTypeInternal _AddressInfo_default_instance_;
+class AddressInfoDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<AddressInfo>
+      _instance;
+} _AddressInfo_default_instance_;
 }  // namespace protobuf
 }  // namespace address
 }  // namespace zjchain
-static ::_pb::Metadata file_level_metadata_protos_2faddress_2eproto[1];
-static const ::_pb::EnumDescriptor* file_level_enum_descriptors_protos_2faddress_2eproto[1];
-static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_protos_2faddress_2eproto = nullptr;
+namespace protobuf_protos_2faddress_2eproto {
+static void InitDefaultsAddressInfo() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-const uint32_t TableStruct_protos_2faddress_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  PROTOBUF_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, _has_bits_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, _internal_metadata_),
+  {
+    void* ptr = &::zjchain::address::protobuf::_AddressInfo_default_instance_;
+    new (ptr) ::zjchain::address::protobuf::AddressInfo();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::zjchain::address::protobuf::AddressInfo::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<1> scc_info_AddressInfo =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 1, InitDefaultsAddressInfo}, {
+      &protobuf_protos_2fbls_2eproto::scc_info_BlsPublicKey.base,}};
+
+void InitDefaults() {
+  ::google::protobuf::internal::InitSCC(&scc_info_AddressInfo.base);
+}
+
+::google::protobuf::Metadata file_level_metadata[1];
+const ::google::protobuf::EnumDescriptor* file_level_enum_descriptors[1];
+
+const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, pubkey_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, balance_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, sharding_id_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, pool_index_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, addr_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, type_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, bytes_code_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, latest_height_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, credit_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, g2s_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, elect_pos_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, destructed_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, pubkey_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, balance_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, sharding_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, pool_index_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, addr_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, type_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, bytes_code_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, latest_height_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, credit_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, g2s_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, elect_pos_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::address::protobuf::AddressInfo, destructed_),
   0,
   3,
   4,
@@ -86,54 +87,74 @@ const uint32_t TableStruct_protos_2faddress_2eproto::offsets[] PROTOBUF_SECTION_
   10,
   9,
 };
-static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 18, -1, sizeof(::zjchain::address::protobuf::AddressInfo)},
+static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+  { 0, 17, sizeof(::zjchain::address::protobuf::AddressInfo)},
 };
 
-static const ::_pb::Message* const file_default_instances[] = {
-  &::zjchain::address::protobuf::_AddressInfo_default_instance_._instance,
+static ::google::protobuf::Message const * const file_default_instances[] = {
+  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::address::protobuf::_AddressInfo_default_instance_),
 };
 
-const char descriptor_table_protodef_protos_2faddress_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\024protos/address.proto\022\030zjchain.address."
-  "protobuf\032\020protos/bls.proto\"\274\002\n\013AddressIn"
-  "fo\022\016\n\006pubkey\030\001 \001(\014\022\017\n\007balance\030\002 \001(\004\022\023\n\013s"
-  "harding_id\030\003 \001(\r\022\022\n\npool_index\030\004 \001(\r\022\014\n\004"
-  "addr\030\005 \001(\014\0223\n\004type\030\006 \001(\0162%.zjchain.addre"
-  "ss.protobuf.AddressType\022\022\n\nbytes_code\030\007 "
-  "\001(\014\022\025\n\rlatest_height\030\010 \001(\004\022\021\n\006credit\030\t \001"
-  "(\005:\0010\022/\n\003g2s\030\n \003(\0132\".zjchain.bls.protobu"
-  "f.BlsPublicKey\022\035\n\telect_pos\030\013 \001(\r:\n42949"
-  "67295\022\022\n\ndestructed\030\014 \001(\010*\225\001\n\013AddressTyp"
-  "e\022\013\n\007kNormal\020\000\022\r\n\tkContract\020\001\022\016\n\nkRootEl"
-  "ect\020\002\022\016\n\nkRootTimer\020\003\022\016\n\nkStatistic\020\004\022\020\n"
-  "\014kToTxAddress\020\005\022\025\n\021kLocalToTxAddress\020\006\022\021"
-  "\n\rkElectAddress\020\007"
-  ;
-static const ::_pbi::DescriptorTable* const descriptor_table_protos_2faddress_2eproto_deps[1] = {
-  &::descriptor_table_protos_2fbls_2eproto,
-};
-static ::_pbi::once_flag descriptor_table_protos_2faddress_2eproto_once;
-const ::_pbi::DescriptorTable descriptor_table_protos_2faddress_2eproto = {
-    false, false, 537, descriptor_table_protodef_protos_2faddress_2eproto,
-    "protos/address.proto",
-    &descriptor_table_protos_2faddress_2eproto_once, descriptor_table_protos_2faddress_2eproto_deps, 1, 1,
-    schemas, file_default_instances, TableStruct_protos_2faddress_2eproto::offsets,
-    file_level_metadata_protos_2faddress_2eproto, file_level_enum_descriptors_protos_2faddress_2eproto,
-    file_level_service_descriptors_protos_2faddress_2eproto,
-};
-PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_protos_2faddress_2eproto_getter() {
-  return &descriptor_table_protos_2faddress_2eproto;
+void protobuf_AssignDescriptors() {
+  AddDescriptors();
+  AssignDescriptors(
+      "protos/address.proto", schemas, file_default_instances, TableStruct::offsets,
+      file_level_metadata, file_level_enum_descriptors, NULL);
 }
 
-// Force running AddDescriptors() at dynamic initialization time.
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_protos_2faddress_2eproto(&descriptor_table_protos_2faddress_2eproto);
+void protobuf_AssignDescriptorsOnce() {
+  static ::google::protobuf::internal::once_flag once;
+  ::google::protobuf::internal::call_once(once, protobuf_AssignDescriptors);
+}
+
+void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
+void protobuf_RegisterTypes(const ::std::string&) {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 1);
+}
+
+void AddDescriptorsImpl() {
+  InitDefaults();
+  static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+      "\n\024protos/address.proto\022\030zjchain.address."
+      "protobuf\032\020protos/bls.proto\"\274\002\n\013AddressIn"
+      "fo\022\016\n\006pubkey\030\001 \001(\014\022\017\n\007balance\030\002 \001(\004\022\023\n\013s"
+      "harding_id\030\003 \001(\r\022\022\n\npool_index\030\004 \001(\r\022\014\n\004"
+      "addr\030\005 \001(\014\0223\n\004type\030\006 \001(\0162%.zjchain.addre"
+      "ss.protobuf.AddressType\022\022\n\nbytes_code\030\007 "
+      "\001(\014\022\025\n\rlatest_height\030\010 \001(\004\022\021\n\006credit\030\t \001"
+      "(\005:\0010\022/\n\003g2s\030\n \003(\0132\".zjchain.bls.protobu"
+      "f.BlsPublicKey\022\035\n\telect_pos\030\013 \001(\r:\n42949"
+      "67295\022\022\n\ndestructed\030\014 \001(\010*\225\001\n\013AddressTyp"
+      "e\022\013\n\007kNormal\020\000\022\r\n\tkContract\020\001\022\016\n\nkRootEl"
+      "ect\020\002\022\016\n\nkRootTimer\020\003\022\016\n\nkStatistic\020\004\022\020\n"
+      "\014kToTxAddress\020\005\022\025\n\021kLocalToTxAddress\020\006\022\021"
+      "\n\rkElectAddress\020\007"
+  };
+  ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
+      descriptor, 537);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
+    "protos/address.proto", &protobuf_RegisterTypes);
+  ::protobuf_protos_2fbls_2eproto::AddDescriptors();
+}
+
+void AddDescriptors() {
+  static ::google::protobuf::internal::once_flag once;
+  ::google::protobuf::internal::call_once(once, AddDescriptorsImpl);
+}
+// Force AddDescriptors() to be called at dynamic initialization time.
+struct StaticDescriptorInitializer {
+  StaticDescriptorInitializer() {
+    AddDescriptors();
+  }
+} static_descriptor_initializer;
+}  // namespace protobuf_protos_2faddress_2eproto
 namespace zjchain {
 namespace address {
 namespace protobuf {
-const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* AddressType_descriptor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_protos_2faddress_2eproto);
-  return file_level_enum_descriptors_protos_2faddress_2eproto[0];
+const ::google::protobuf::EnumDescriptor* AddressType_descriptor() {
+  protobuf_protos_2faddress_2eproto::protobuf_AssignDescriptorsOnce();
+  return protobuf_protos_2faddress_2eproto::file_level_enum_descriptors[0];
 }
 bool AddressType_IsValid(int value) {
   switch (value) {
@@ -154,82 +175,50 @@ bool AddressType_IsValid(int value) {
 
 // ===================================================================
 
-class AddressInfo::_Internal {
- public:
-  using HasBits = decltype(std::declval<AddressInfo>()._has_bits_);
-  static void set_has_pubkey(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_balance(HasBits* has_bits) {
-    (*has_bits)[0] |= 8u;
-  }
-  static void set_has_sharding_id(HasBits* has_bits) {
-    (*has_bits)[0] |= 16u;
-  }
-  static void set_has_pool_index(HasBits* has_bits) {
-    (*has_bits)[0] |= 32u;
-  }
-  static void set_has_addr(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_type(HasBits* has_bits) {
-    (*has_bits)[0] |= 64u;
-  }
-  static void set_has_bytes_code(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-  static void set_has_latest_height(HasBits* has_bits) {
-    (*has_bits)[0] |= 256u;
-  }
-  static void set_has_credit(HasBits* has_bits) {
-    (*has_bits)[0] |= 128u;
-  }
-  static void set_has_elect_pos(HasBits* has_bits) {
-    (*has_bits)[0] |= 1024u;
-  }
-  static void set_has_destructed(HasBits* has_bits) {
-    (*has_bits)[0] |= 512u;
-  }
-};
-
+void AddressInfo::InitAsDefaultInstance() {
+}
 void AddressInfo::clear_g2s() {
   g2s_.Clear();
 }
-AddressInfo::AddressInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned),
-  g2s_(arena) {
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int AddressInfo::kPubkeyFieldNumber;
+const int AddressInfo::kBalanceFieldNumber;
+const int AddressInfo::kShardingIdFieldNumber;
+const int AddressInfo::kPoolIndexFieldNumber;
+const int AddressInfo::kAddrFieldNumber;
+const int AddressInfo::kTypeFieldNumber;
+const int AddressInfo::kBytesCodeFieldNumber;
+const int AddressInfo::kLatestHeightFieldNumber;
+const int AddressInfo::kCreditFieldNumber;
+const int AddressInfo::kG2SFieldNumber;
+const int AddressInfo::kElectPosFieldNumber;
+const int AddressInfo::kDestructedFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+AddressInfo::AddressInfo()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2faddress_2eproto::scc_info_AddressInfo.base);
   SharedCtor();
-  // @@protoc_insertion_point(arena_constructor:zjchain.address.protobuf.AddressInfo)
+  // @@protoc_insertion_point(constructor:zjchain.address.protobuf.AddressInfo)
 }
 AddressInfo::AddressInfo(const AddressInfo& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message(),
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
       _has_bits_(from._has_bits_),
       g2s_(from.g2s_) {
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  pubkey_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    pubkey_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (from._internal_has_pubkey()) {
-    pubkey_.Set(from._internal_pubkey(), 
-      GetArenaForAllocation());
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  pubkey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_pubkey()) {
+    pubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.pubkey_);
   }
-  addr_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    addr_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (from._internal_has_addr()) {
-    addr_.Set(from._internal_addr(), 
-      GetArenaForAllocation());
+  addr_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_addr()) {
+    addr_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.addr_);
   }
-  bytes_code_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    bytes_code_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (from._internal_has_bytes_code()) {
-    bytes_code_.Set(from._internal_bytes_code(), 
-      GetArenaForAllocation());
+  bytes_code_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_bytes_code()) {
+    bytes_code_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.bytes_code_);
   }
   ::memcpy(&balance_, &from.balance_,
     static_cast<size_t>(reinterpret_cast<char*>(&elect_pos_) -
@@ -237,312 +226,434 @@ AddressInfo::AddressInfo(const AddressInfo& from)
   // @@protoc_insertion_point(copy_constructor:zjchain.address.protobuf.AddressInfo)
 }
 
-inline void AddressInfo::SharedCtor() {
-pubkey_.InitDefault();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  pubkey_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-addr_.InitDefault();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  addr_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-bytes_code_.InitDefault();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  bytes_code_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
-    reinterpret_cast<char*>(&balance_) - reinterpret_cast<char*>(this)),
-    0, static_cast<size_t>(reinterpret_cast<char*>(&destructed_) -
-    reinterpret_cast<char*>(&balance_)) + sizeof(destructed_));
-elect_pos_ = 4294967295u;
+void AddressInfo::SharedCtor() {
+  pubkey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  addr_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  bytes_code_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::memset(&balance_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&destructed_) -
+      reinterpret_cast<char*>(&balance_)) + sizeof(destructed_));
+  elect_pos_ = 4294967295u;
 }
 
 AddressInfo::~AddressInfo() {
   // @@protoc_insertion_point(destructor:zjchain.address.protobuf.AddressInfo)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
-  (void)arena;
-    return;
-  }
   SharedDtor();
 }
 
-inline void AddressInfo::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
-  pubkey_.Destroy();
-  addr_.Destroy();
-  bytes_code_.Destroy();
+void AddressInfo::SharedDtor() {
+  pubkey_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  addr_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  bytes_code_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void AddressInfo::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
+const ::google::protobuf::Descriptor* AddressInfo::descriptor() {
+  ::protobuf_protos_2faddress_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2faddress_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const AddressInfo& AddressInfo::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2faddress_2eproto::scc_info_AddressInfo.base);
+  return *internal_default_instance();
+}
+
 
 void AddressInfo::Clear() {
 // @@protoc_insertion_point(message_clear_start:zjchain.address.protobuf.AddressInfo)
-  uint32_t cached_has_bits = 0;
+  ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   g2s_.Clear();
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
-      pubkey_.ClearNonDefaultToEmpty();
+      pubkey_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000002u) {
-      addr_.ClearNonDefaultToEmpty();
+      addr_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000004u) {
-      bytes_code_.ClearNonDefaultToEmpty();
+      bytes_code_.ClearNonDefaultToEmptyNoArena();
     }
   }
-  if (cached_has_bits & 0x000000f8u) {
+  if (cached_has_bits & 248u) {
     ::memset(&balance_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&credit_) -
         reinterpret_cast<char*>(&balance_)) + sizeof(credit_));
   }
-  if (cached_has_bits & 0x00000700u) {
+  if (cached_has_bits & 1792u) {
     ::memset(&latest_height_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&destructed_) -
         reinterpret_cast<char*>(&latest_height_)) + sizeof(destructed_));
     elect_pos_ = 4294967295u;
   }
   _has_bits_.Clear();
-  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  _internal_metadata_.Clear();
 }
 
-const char* AddressInfo::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  _Internal::HasBits has_bits{};
-  while (!ctx->Done(&ptr)) {
-    uint32_t tag;
-    ptr = ::_pbi::ReadTag(ptr, &tag);
-    switch (tag >> 3) {
+bool AddressInfo::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:zjchain.address.protobuf.AddressInfo)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional bytes pubkey = 1;
-      case 1:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 10)) {
-          auto str = _internal_mutable_pubkey();
-          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-        } else
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_pubkey()));
+        } else {
           goto handle_unusual;
-        continue;
+        }
+        break;
+      }
+
       // optional uint64 balance = 2;
-      case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
-          _Internal::set_has_balance(&has_bits);
-          balance_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
-          CHK_(ptr);
-        } else
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
+          set_has_balance();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &balance_)));
+        } else {
           goto handle_unusual;
-        continue;
+        }
+        break;
+      }
+
       // optional uint32 sharding_id = 3;
-      case 3:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
-          _Internal::set_has_sharding_id(&has_bits);
-          sharding_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
-          CHK_(ptr);
-        } else
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u /* 24 & 0xFF */)) {
+          set_has_sharding_id();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &sharding_id_)));
+        } else {
           goto handle_unusual;
-        continue;
+        }
+        break;
+      }
+
       // optional uint32 pool_index = 4;
-      case 4:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 32)) {
-          _Internal::set_has_pool_index(&has_bits);
-          pool_index_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
-          CHK_(ptr);
-        } else
+      case 4: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(32u /* 32 & 0xFF */)) {
+          set_has_pool_index();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &pool_index_)));
+        } else {
           goto handle_unusual;
-        continue;
+        }
+        break;
+      }
+
       // optional bytes addr = 5;
-      case 5:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 42)) {
-          auto str = _internal_mutable_addr();
-          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-        } else
+      case 5: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_addr()));
+        } else {
           goto handle_unusual;
-        continue;
+        }
+        break;
+      }
+
       // optional .zjchain.address.protobuf.AddressType type = 6;
-      case 6:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 48)) {
-          uint64_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
-          CHK_(ptr);
-          if (PROTOBUF_PREDICT_TRUE(::zjchain::address::protobuf::AddressType_IsValid(val))) {
-            _internal_set_type(static_cast<::zjchain::address::protobuf::AddressType>(val));
+      case 6: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(48u /* 48 & 0xFF */)) {
+          int value;
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
+                 input, &value)));
+          if (::zjchain::address::protobuf::AddressType_IsValid(value)) {
+            set_type(static_cast< ::zjchain::address::protobuf::AddressType >(value));
           } else {
-            ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(6, val, mutable_unknown_fields());
+            mutable_unknown_fields()->AddVarint(
+                6, static_cast< ::google::protobuf::uint64>(value));
           }
-        } else
+        } else {
           goto handle_unusual;
-        continue;
+        }
+        break;
+      }
+
       // optional bytes bytes_code = 7;
-      case 7:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 58)) {
-          auto str = _internal_mutable_bytes_code();
-          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-        } else
+      case 7: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(58u /* 58 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_bytes_code()));
+        } else {
           goto handle_unusual;
-        continue;
+        }
+        break;
+      }
+
       // optional uint64 latest_height = 8;
-      case 8:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 64)) {
-          _Internal::set_has_latest_height(&has_bits);
-          latest_height_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
-          CHK_(ptr);
-        } else
+      case 8: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(64u /* 64 & 0xFF */)) {
+          set_has_latest_height();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &latest_height_)));
+        } else {
           goto handle_unusual;
-        continue;
+        }
+        break;
+      }
+
       // optional int32 credit = 9 [default = 0];
-      case 9:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 72)) {
-          _Internal::set_has_credit(&has_bits);
-          credit_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
-          CHK_(ptr);
-        } else
+      case 9: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(72u /* 72 & 0xFF */)) {
+          set_has_credit();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &credit_)));
+        } else {
           goto handle_unusual;
-        continue;
+        }
+        break;
+      }
+
       // repeated .zjchain.bls.protobuf.BlsPublicKey g2s = 10;
-      case 10:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 82)) {
-          ptr -= 1;
-          do {
-            ptr += 1;
-            ptr = ctx->ParseMessage(_internal_add_g2s(), ptr);
-            CHK_(ptr);
-            if (!ctx->DataAvailable(ptr)) break;
-          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<82>(ptr));
-        } else
+      case 10: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(82u /* 82 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+                input, add_g2s()));
+        } else {
           goto handle_unusual;
-        continue;
+        }
+        break;
+      }
+
       // optional uint32 elect_pos = 11 [default = 4294967295];
-      case 11:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 88)) {
-          _Internal::set_has_elect_pos(&has_bits);
-          elect_pos_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
-          CHK_(ptr);
-        } else
+      case 11: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(88u /* 88 & 0xFF */)) {
+          set_has_elect_pos();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &elect_pos_)));
+        } else {
           goto handle_unusual;
-        continue;
+        }
+        break;
+      }
+
       // optional bool destructed = 12;
-      case 12:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 96)) {
-          _Internal::set_has_destructed(&has_bits);
-          destructed_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
-          CHK_(ptr);
-        } else
+      case 12: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(96u /* 96 & 0xFF */)) {
+          set_has_destructed();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &destructed_)));
+        } else {
           goto handle_unusual;
-        continue;
-      default:
-        goto handle_unusual;
-    }  // switch
-  handle_unusual:
-    if ((tag == 0) || ((tag & 7) == 4)) {
-      CHK_(ptr);
-      ctx->SetLastTag(tag);
-      goto message_done;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
     }
-    ptr = UnknownFieldParse(
-        tag,
-        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
-        ptr, ctx);
-    CHK_(ptr != nullptr);
-  }  // while
-message_done:
-  _has_bits_.Or(has_bits);
-  return ptr;
+  }
+success:
+  // @@protoc_insertion_point(parse_success:zjchain.address.protobuf.AddressInfo)
+  return true;
 failure:
-  ptr = nullptr;
-  goto message_done;
-#undef CHK_
+  // @@protoc_insertion_point(parse_failure:zjchain.address.protobuf.AddressInfo)
+  return false;
+#undef DO_
 }
 
-uint8_t* AddressInfo::_InternalSerialize(
-    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.address.protobuf.AddressInfo)
-  uint32_t cached_has_bits = 0;
+void AddressInfo::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:zjchain.address.protobuf.AddressInfo)
+  ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
   // optional bytes pubkey = 1;
   if (cached_has_bits & 0x00000001u) {
-    target = stream->WriteBytesMaybeAliased(
-        1, this->_internal_pubkey(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      1, this->pubkey(), output);
   }
 
   // optional uint64 balance = 2;
   if (cached_has_bits & 0x00000008u) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(2, this->_internal_balance(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->balance(), output);
   }
 
   // optional uint32 sharding_id = 3;
   if (cached_has_bits & 0x00000010u) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(3, this->_internal_sharding_id(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->sharding_id(), output);
   }
 
   // optional uint32 pool_index = 4;
   if (cached_has_bits & 0x00000020u) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(4, this->_internal_pool_index(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->pool_index(), output);
   }
 
   // optional bytes addr = 5;
   if (cached_has_bits & 0x00000002u) {
-    target = stream->WriteBytesMaybeAliased(
-        5, this->_internal_addr(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      5, this->addr(), output);
   }
 
   // optional .zjchain.address.protobuf.AddressType type = 6;
   if (cached_has_bits & 0x00000040u) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteEnumToArray(
-      6, this->_internal_type(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteEnum(
+      6, this->type(), output);
   }
 
   // optional bytes bytes_code = 7;
   if (cached_has_bits & 0x00000004u) {
-    target = stream->WriteBytesMaybeAliased(
-        7, this->_internal_bytes_code(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      7, this->bytes_code(), output);
   }
 
   // optional uint64 latest_height = 8;
   if (cached_has_bits & 0x00000100u) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(8, this->_internal_latest_height(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(8, this->latest_height(), output);
   }
 
   // optional int32 credit = 9 [default = 0];
   if (cached_has_bits & 0x00000080u) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(9, this->_internal_credit(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(9, this->credit(), output);
   }
 
   // repeated .zjchain.bls.protobuf.BlsPublicKey g2s = 10;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_g2s_size()); i < n; i++) {
-    const auto& repfield = this->_internal_g2s(i);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(10, repfield, repfield.GetCachedSize(), target, stream);
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->g2s_size()); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      10,
+      this->g2s(static_cast<int>(i)),
+      output);
   }
 
   // optional uint32 elect_pos = 11 [default = 4294967295];
   if (cached_has_bits & 0x00000400u) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(11, this->_internal_elect_pos(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(11, this->elect_pos(), output);
   }
 
   // optional bool destructed = 12;
   if (cached_has_bits & 0x00000200u) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(12, this->_internal_destructed(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteBool(12, this->destructed(), output);
   }
 
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:zjchain.address.protobuf.AddressInfo)
+}
+
+::google::protobuf::uint8* AddressInfo::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.address.protobuf.AddressInfo)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional bytes pubkey = 1;
+  if (cached_has_bits & 0x00000001u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        1, this->pubkey(), target);
+  }
+
+  // optional uint64 balance = 2;
+  if (cached_has_bits & 0x00000008u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->balance(), target);
+  }
+
+  // optional uint32 sharding_id = 3;
+  if (cached_has_bits & 0x00000010u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->sharding_id(), target);
+  }
+
+  // optional uint32 pool_index = 4;
+  if (cached_has_bits & 0x00000020u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->pool_index(), target);
+  }
+
+  // optional bytes addr = 5;
+  if (cached_has_bits & 0x00000002u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        5, this->addr(), target);
+  }
+
+  // optional .zjchain.address.protobuf.AddressType type = 6;
+  if (cached_has_bits & 0x00000040u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
+      6, this->type(), target);
+  }
+
+  // optional bytes bytes_code = 7;
+  if (cached_has_bits & 0x00000004u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        7, this->bytes_code(), target);
+  }
+
+  // optional uint64 latest_height = 8;
+  if (cached_has_bits & 0x00000100u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(8, this->latest_height(), target);
+  }
+
+  // optional int32 credit = 9 [default = 0];
+  if (cached_has_bits & 0x00000080u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(9, this->credit(), target);
+  }
+
+  // repeated .zjchain.bls.protobuf.BlsPublicKey g2s = 10;
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->g2s_size()); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        10, this->g2s(static_cast<int>(i)), deterministic, target);
+  }
+
+  // optional uint32 elect_pos = 11 [default = 4294967295];
+  if (cached_has_bits & 0x00000400u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(11, this->elect_pos(), target);
+  }
+
+  // optional bool destructed = 12;
+  if (cached_has_bits & 0x00000200u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(12, this->destructed(), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
   }
   // @@protoc_insertion_point(serialize_to_array_end:zjchain.address.protobuf.AddressInfo)
   return target;
@@ -552,117 +663,141 @@ size_t AddressInfo::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:zjchain.address.protobuf.AddressInfo)
   size_t total_size = 0;
 
-  uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  // repeated .zjchain.bls.protobuf.BlsPublicKey g2s = 10;
-  total_size += 1UL * this->_internal_g2s_size();
-  for (const auto& msg : this->g2s_) {
+  if (_internal_metadata_.have_unknown_fields()) {
     total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  // repeated .zjchain.bls.protobuf.BlsPublicKey g2s = 10;
+  {
+    unsigned int count = static_cast<unsigned int>(this->g2s_size());
+    total_size += 1UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
+          this->g2s(static_cast<int>(i)));
+    }
   }
 
-  cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x000000ffu) {
+  if (_has_bits_[0 / 32] & 255u) {
     // optional bytes pubkey = 1;
-    if (cached_has_bits & 0x00000001u) {
+    if (has_pubkey()) {
       total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-          this->_internal_pubkey());
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->pubkey());
     }
 
     // optional bytes addr = 5;
-    if (cached_has_bits & 0x00000002u) {
+    if (has_addr()) {
       total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-          this->_internal_addr());
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->addr());
     }
 
     // optional bytes bytes_code = 7;
-    if (cached_has_bits & 0x00000004u) {
+    if (has_bytes_code()) {
       total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-          this->_internal_bytes_code());
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->bytes_code());
     }
 
     // optional uint64 balance = 2;
-    if (cached_has_bits & 0x00000008u) {
-      total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_balance());
+    if (has_balance()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->balance());
     }
 
     // optional uint32 sharding_id = 3;
-    if (cached_has_bits & 0x00000010u) {
-      total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_sharding_id());
+    if (has_sharding_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->sharding_id());
     }
 
     // optional uint32 pool_index = 4;
-    if (cached_has_bits & 0x00000020u) {
-      total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_pool_index());
+    if (has_pool_index()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->pool_index());
     }
 
     // optional .zjchain.address.protobuf.AddressType type = 6;
-    if (cached_has_bits & 0x00000040u) {
+    if (has_type()) {
       total_size += 1 +
-        ::_pbi::WireFormatLite::EnumSize(this->_internal_type());
+        ::google::protobuf::internal::WireFormatLite::EnumSize(this->type());
     }
 
     // optional int32 credit = 9 [default = 0];
-    if (cached_has_bits & 0x00000080u) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_credit());
+    if (has_credit()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->credit());
     }
 
   }
-  if (cached_has_bits & 0x00000700u) {
+  if (_has_bits_[8 / 32] & 1792u) {
     // optional uint64 latest_height = 8;
-    if (cached_has_bits & 0x00000100u) {
-      total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_latest_height());
+    if (has_latest_height()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->latest_height());
     }
 
     // optional bool destructed = 12;
-    if (cached_has_bits & 0x00000200u) {
+    if (has_destructed()) {
       total_size += 1 + 1;
     }
 
     // optional uint32 elect_pos = 11 [default = 4294967295];
-    if (cached_has_bits & 0x00000400u) {
-      total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_elect_pos());
+    if (has_elect_pos()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt32Size(
+          this->elect_pos());
     }
 
   }
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
 }
 
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData AddressInfo::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
-    AddressInfo::MergeImpl
-};
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*AddressInfo::GetClassData() const { return &_class_data_; }
-
-void AddressInfo::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<AddressInfo *>(to)->MergeFrom(
-      static_cast<const AddressInfo &>(from));
+void AddressInfo::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.address.protobuf.AddressInfo)
+  GOOGLE_DCHECK_NE(&from, this);
+  const AddressInfo* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const AddressInfo>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.address.protobuf.AddressInfo)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.address.protobuf.AddressInfo)
+    MergeFrom(*source);
+  }
 }
-
 
 void AddressInfo::MergeFrom(const AddressInfo& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:zjchain.address.protobuf.AddressInfo)
   GOOGLE_DCHECK_NE(&from, this);
-  uint32_t cached_has_bits = 0;
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   g2s_.MergeFrom(from.g2s_);
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 0x000000ffu) {
+  if (cached_has_bits & 255u) {
     if (cached_has_bits & 0x00000001u) {
-      _internal_set_pubkey(from._internal_pubkey());
+      set_has_pubkey();
+      pubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.pubkey_);
     }
     if (cached_has_bits & 0x00000002u) {
-      _internal_set_addr(from._internal_addr());
+      set_has_addr();
+      addr_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.addr_);
     }
     if (cached_has_bits & 0x00000004u) {
-      _internal_set_bytes_code(from._internal_bytes_code());
+      set_has_bytes_code();
+      bytes_code_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.bytes_code_);
     }
     if (cached_has_bits & 0x00000008u) {
       balance_ = from.balance_;
@@ -681,7 +816,7 @@ void AddressInfo::MergeFrom(const AddressInfo& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-  if (cached_has_bits & 0x00000700u) {
+  if (cached_has_bits & 1792u) {
     if (cached_has_bits & 0x00000100u) {
       latest_height_ = from.latest_height_;
     }
@@ -693,7 +828,13 @@ void AddressInfo::MergeFrom(const AddressInfo& from) {
     }
     _has_bits_[0] |= cached_has_bits;
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void AddressInfo::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.address.protobuf.AddressInfo)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
 }
 
 void AddressInfo::CopyFrom(const AddressInfo& from) {
@@ -707,50 +848,47 @@ bool AddressInfo::IsInitialized() const {
   return true;
 }
 
+void AddressInfo::Swap(AddressInfo* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
 void AddressInfo::InternalSwap(AddressInfo* other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
-  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(_has_bits_[0], other->_has_bits_[0]);
-  g2s_.InternalSwap(&other->g2s_);
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &pubkey_, lhs_arena,
-      &other->pubkey_, rhs_arena
-  );
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &addr_, lhs_arena,
-      &other->addr_, rhs_arena
-  );
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &bytes_code_, lhs_arena,
-      &other->bytes_code_, rhs_arena
-  );
-  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(AddressInfo, destructed_)
-      + sizeof(AddressInfo::destructed_)
-      - PROTOBUF_FIELD_OFFSET(AddressInfo, balance_)>(
-          reinterpret_cast<char*>(&balance_),
-          reinterpret_cast<char*>(&other->balance_));
+  CastToBase(&g2s_)->InternalSwap(CastToBase(&other->g2s_));
+  pubkey_.Swap(&other->pubkey_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  addr_.Swap(&other->addr_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  bytes_code_.Swap(&other->bytes_code_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  swap(balance_, other->balance_);
+  swap(sharding_id_, other->sharding_id_);
+  swap(pool_index_, other->pool_index_);
+  swap(type_, other->type_);
+  swap(credit_, other->credit_);
+  swap(latest_height_, other->latest_height_);
+  swap(destructed_, other->destructed_);
   swap(elect_pos_, other->elect_pos_);
+  swap(_has_bits_[0], other->_has_bits_[0]);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
 }
 
-::PROTOBUF_NAMESPACE_ID::Metadata AddressInfo::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_protos_2faddress_2eproto_getter, &descriptor_table_protos_2faddress_2eproto_once,
-      file_level_metadata_protos_2faddress_2eproto[0]);
+::google::protobuf::Metadata AddressInfo::GetMetadata() const {
+  protobuf_protos_2faddress_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2faddress_2eproto::file_level_metadata[kIndexInFileMessages];
 }
+
 
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace address
 }  // namespace zjchain
-PROTOBUF_NAMESPACE_OPEN
-template<> PROTOBUF_NOINLINE ::zjchain::address::protobuf::AddressInfo*
-Arena::CreateMaybeMessage< ::zjchain::address::protobuf::AddressInfo >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::zjchain::address::protobuf::AddressInfo >(arena);
+namespace google {
+namespace protobuf {
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::address::protobuf::AddressInfo* Arena::CreateMaybeMessage< ::zjchain::address::protobuf::AddressInfo >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::address::protobuf::AddressInfo >(arena);
 }
-PROTOBUF_NAMESPACE_CLOSE
+}  // namespace protobuf
+}  // namespace google
 
 // @@protoc_insertion_point(global_scope)
-#include <google/protobuf/port_undef.inc>

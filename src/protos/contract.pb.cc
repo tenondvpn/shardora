@@ -5,309 +5,378 @@
 
 #include <algorithm>
 
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/extension_set.h>
-#include <google/protobuf/wire_format_lite.h>
+#include <google/protobuf/wire_format_lite_inl.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/wire_format.h>
+// This is a temporary google only hack
+#ifdef GOOGLE_PROTOBUF_ENFORCE_UNIQUENESS
+#include "third_party/protobuf/version.h"
+#endif
 // @@protoc_insertion_point(includes)
-#include <google/protobuf/port_def.inc>
 
-PROTOBUF_PRAGMA_INIT_SEG
-
-namespace _pb = ::PROTOBUF_NAMESPACE_ID;
-namespace _pbi = _pb::internal;
-
+namespace protobuf_protos_2fcontract_2eproto {
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fcontract_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_GetAttrByKeyReq;
+extern PROTOBUF_INTERNAL_EXPORT_protobuf_protos_2fcontract_2eproto ::google::protobuf::internal::SCCInfo<0> scc_info_GetAttrByKeyRes;
+}  // namespace protobuf_protos_2fcontract_2eproto
 namespace zjchain {
 namespace contract {
 namespace protobuf {
-PROTOBUF_CONSTEXPR GetAttrByKeyReq::GetAttrByKeyReq(
-    ::_pbi::ConstantInitialized)
-  : call_addr_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
-  , attr_key_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}){}
-struct GetAttrByKeyReqDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR GetAttrByKeyReqDefaultTypeInternal()
-      : _instance(::_pbi::ConstantInitialized{}) {}
-  ~GetAttrByKeyReqDefaultTypeInternal() {}
-  union {
-    GetAttrByKeyReq _instance;
-  };
-};
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GetAttrByKeyReqDefaultTypeInternal _GetAttrByKeyReq_default_instance_;
-PROTOBUF_CONSTEXPR GetAttrByKeyRes::GetAttrByKeyRes(
-    ::_pbi::ConstantInitialized)
-  : call_addr_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
-  , attr_key_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{})
-  , attr_value_(&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}){}
-struct GetAttrByKeyResDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR GetAttrByKeyResDefaultTypeInternal()
-      : _instance(::_pbi::ConstantInitialized{}) {}
-  ~GetAttrByKeyResDefaultTypeInternal() {}
-  union {
-    GetAttrByKeyRes _instance;
-  };
-};
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GetAttrByKeyResDefaultTypeInternal _GetAttrByKeyRes_default_instance_;
-PROTOBUF_CONSTEXPR ContractMessage::ContractMessage(
-    ::_pbi::ConstantInitialized)
-  : get_attr_req_(nullptr)
-  , get_attr_res_(nullptr){}
-struct ContractMessageDefaultTypeInternal {
-  PROTOBUF_CONSTEXPR ContractMessageDefaultTypeInternal()
-      : _instance(::_pbi::ConstantInitialized{}) {}
-  ~ContractMessageDefaultTypeInternal() {}
-  union {
-    ContractMessage _instance;
-  };
-};
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ContractMessageDefaultTypeInternal _ContractMessage_default_instance_;
+class GetAttrByKeyReqDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<GetAttrByKeyReq>
+      _instance;
+} _GetAttrByKeyReq_default_instance_;
+class GetAttrByKeyResDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<GetAttrByKeyRes>
+      _instance;
+} _GetAttrByKeyRes_default_instance_;
+class ContractMessageDefaultTypeInternal {
+ public:
+  ::google::protobuf::internal::ExplicitlyConstructed<ContractMessage>
+      _instance;
+} _ContractMessage_default_instance_;
 }  // namespace protobuf
 }  // namespace contract
 }  // namespace zjchain
-static ::_pb::Metadata file_level_metadata_protos_2fcontract_2eproto[3];
-static constexpr ::_pb::EnumDescriptor const** file_level_enum_descriptors_protos_2fcontract_2eproto = nullptr;
-static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_protos_2fcontract_2eproto = nullptr;
+namespace protobuf_protos_2fcontract_2eproto {
+static void InitDefaultsGetAttrByKeyReq() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-const uint32_t TableStruct_protos_2fcontract_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  PROTOBUF_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyReq, _has_bits_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyReq, _internal_metadata_),
+  {
+    void* ptr = &::zjchain::contract::protobuf::_GetAttrByKeyReq_default_instance_;
+    new (ptr) ::zjchain::contract::protobuf::GetAttrByKeyReq();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::zjchain::contract::protobuf::GetAttrByKeyReq::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_GetAttrByKeyReq =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsGetAttrByKeyReq}, {}};
+
+static void InitDefaultsGetAttrByKeyRes() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::zjchain::contract::protobuf::_GetAttrByKeyRes_default_instance_;
+    new (ptr) ::zjchain::contract::protobuf::GetAttrByKeyRes();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::zjchain::contract::protobuf::GetAttrByKeyRes::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<0> scc_info_GetAttrByKeyRes =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 0, InitDefaultsGetAttrByKeyRes}, {}};
+
+static void InitDefaultsContractMessage() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::zjchain::contract::protobuf::_ContractMessage_default_instance_;
+    new (ptr) ::zjchain::contract::protobuf::ContractMessage();
+    ::google::protobuf::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::zjchain::contract::protobuf::ContractMessage::InitAsDefaultInstance();
+}
+
+::google::protobuf::internal::SCCInfo<2> scc_info_ContractMessage =
+    {{ATOMIC_VAR_INIT(::google::protobuf::internal::SCCInfoBase::kUninitialized), 2, InitDefaultsContractMessage}, {
+      &protobuf_protos_2fcontract_2eproto::scc_info_GetAttrByKeyReq.base,
+      &protobuf_protos_2fcontract_2eproto::scc_info_GetAttrByKeyRes.base,}};
+
+void InitDefaults() {
+  ::google::protobuf::internal::InitSCC(&scc_info_GetAttrByKeyReq.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_GetAttrByKeyRes.base);
+  ::google::protobuf::internal::InitSCC(&scc_info_ContractMessage.base);
+}
+
+::google::protobuf::Metadata file_level_metadata[3];
+
+const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyReq, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyReq, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyReq, call_addr_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyReq, attr_key_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyReq, call_addr_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyReq, attr_key_),
   0,
   1,
-  PROTOBUF_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyRes, _has_bits_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyRes, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyRes, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyRes, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyRes, call_addr_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyRes, attr_key_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyRes, attr_value_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyRes, call_addr_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyRes, attr_key_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::GetAttrByKeyRes, attr_value_),
   0,
   1,
   2,
-  PROTOBUF_FIELD_OFFSET(::zjchain::contract::protobuf::ContractMessage, _has_bits_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::contract::protobuf::ContractMessage, _internal_metadata_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::ContractMessage, _has_bits_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::ContractMessage, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
-  ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::zjchain::contract::protobuf::ContractMessage, get_attr_req_),
-  PROTOBUF_FIELD_OFFSET(::zjchain::contract::protobuf::ContractMessage, get_attr_res_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::ContractMessage, get_attr_req_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::contract::protobuf::ContractMessage, get_attr_res_),
   0,
   1,
 };
-static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 8, -1, sizeof(::zjchain::contract::protobuf::GetAttrByKeyReq)},
-  { 10, 19, -1, sizeof(::zjchain::contract::protobuf::GetAttrByKeyRes)},
-  { 22, 30, -1, sizeof(::zjchain::contract::protobuf::ContractMessage)},
+static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+  { 0, 7, sizeof(::zjchain::contract::protobuf::GetAttrByKeyReq)},
+  { 9, 17, sizeof(::zjchain::contract::protobuf::GetAttrByKeyRes)},
+  { 20, 27, sizeof(::zjchain::contract::protobuf::ContractMessage)},
 };
 
-static const ::_pb::Message* const file_default_instances[] = {
-  &::zjchain::contract::protobuf::_GetAttrByKeyReq_default_instance_._instance,
-  &::zjchain::contract::protobuf::_GetAttrByKeyRes_default_instance_._instance,
-  &::zjchain::contract::protobuf::_ContractMessage_default_instance_._instance,
+static ::google::protobuf::Message const * const file_default_instances[] = {
+  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::contract::protobuf::_GetAttrByKeyReq_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::contract::protobuf::_GetAttrByKeyRes_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&::zjchain::contract::protobuf::_ContractMessage_default_instance_),
 };
 
-const char descriptor_table_protodef_protos_2fcontract_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\025protos/contract.proto\022\031zjchain.contrac"
-  "t.protobuf\"6\n\017GetAttrByKeyReq\022\021\n\tcall_ad"
-  "dr\030\001 \001(\014\022\020\n\010attr_key\030\002 \001(\014\"J\n\017GetAttrByK"
-  "eyRes\022\021\n\tcall_addr\030\001 \001(\014\022\020\n\010attr_key\030\002 \001"
-  "(\014\022\022\n\nattr_value\030\003 \001(\014\"\225\001\n\017ContractMessa"
-  "ge\022@\n\014get_attr_req\030\001 \001(\0132*.zjchain.contr"
-  "act.protobuf.GetAttrByKeyReq\022@\n\014get_attr"
-  "_res\030\002 \001(\0132*.zjchain.contract.protobuf.G"
-  "etAttrByKeyRes"
-  ;
-static ::_pbi::once_flag descriptor_table_protos_2fcontract_2eproto_once;
-const ::_pbi::DescriptorTable descriptor_table_protos_2fcontract_2eproto = {
-    false, false, 334, descriptor_table_protodef_protos_2fcontract_2eproto,
-    "protos/contract.proto",
-    &descriptor_table_protos_2fcontract_2eproto_once, nullptr, 0, 3,
-    schemas, file_default_instances, TableStruct_protos_2fcontract_2eproto::offsets,
-    file_level_metadata_protos_2fcontract_2eproto, file_level_enum_descriptors_protos_2fcontract_2eproto,
-    file_level_service_descriptors_protos_2fcontract_2eproto,
-};
-PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_protos_2fcontract_2eproto_getter() {
-  return &descriptor_table_protos_2fcontract_2eproto;
+void protobuf_AssignDescriptors() {
+  AddDescriptors();
+  AssignDescriptors(
+      "protos/contract.proto", schemas, file_default_instances, TableStruct::offsets,
+      file_level_metadata, NULL, NULL);
 }
 
-// Force running AddDescriptors() at dynamic initialization time.
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_protos_2fcontract_2eproto(&descriptor_table_protos_2fcontract_2eproto);
+void protobuf_AssignDescriptorsOnce() {
+  static ::google::protobuf::internal::once_flag once;
+  ::google::protobuf::internal::call_once(once, protobuf_AssignDescriptors);
+}
+
+void protobuf_RegisterTypes(const ::std::string&) GOOGLE_PROTOBUF_ATTRIBUTE_COLD;
+void protobuf_RegisterTypes(const ::std::string&) {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 3);
+}
+
+void AddDescriptorsImpl() {
+  InitDefaults();
+  static const char descriptor[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
+      "\n\025protos/contract.proto\022\031zjchain.contrac"
+      "t.protobuf\"6\n\017GetAttrByKeyReq\022\021\n\tcall_ad"
+      "dr\030\001 \001(\014\022\020\n\010attr_key\030\002 \001(\014\"J\n\017GetAttrByK"
+      "eyRes\022\021\n\tcall_addr\030\001 \001(\014\022\020\n\010attr_key\030\002 \001"
+      "(\014\022\022\n\nattr_value\030\003 \001(\014\"\225\001\n\017ContractMessa"
+      "ge\022@\n\014get_attr_req\030\001 \001(\0132*.zjchain.contr"
+      "act.protobuf.GetAttrByKeyReq\022@\n\014get_attr"
+      "_res\030\002 \001(\0132*.zjchain.contract.protobuf.G"
+      "etAttrByKeyRes"
+  };
+  ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
+      descriptor, 334);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
+    "protos/contract.proto", &protobuf_RegisterTypes);
+}
+
+void AddDescriptors() {
+  static ::google::protobuf::internal::once_flag once;
+  ::google::protobuf::internal::call_once(once, AddDescriptorsImpl);
+}
+// Force AddDescriptors() to be called at dynamic initialization time.
+struct StaticDescriptorInitializer {
+  StaticDescriptorInitializer() {
+    AddDescriptors();
+  }
+} static_descriptor_initializer;
+}  // namespace protobuf_protos_2fcontract_2eproto
 namespace zjchain {
 namespace contract {
 namespace protobuf {
 
 // ===================================================================
 
-class GetAttrByKeyReq::_Internal {
- public:
-  using HasBits = decltype(std::declval<GetAttrByKeyReq>()._has_bits_);
-  static void set_has_call_addr(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_attr_key(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-};
+void GetAttrByKeyReq::InitAsDefaultInstance() {
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int GetAttrByKeyReq::kCallAddrFieldNumber;
+const int GetAttrByKeyReq::kAttrKeyFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
-GetAttrByKeyReq::GetAttrByKeyReq(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+GetAttrByKeyReq::GetAttrByKeyReq()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2fcontract_2eproto::scc_info_GetAttrByKeyReq.base);
   SharedCtor();
-  // @@protoc_insertion_point(arena_constructor:zjchain.contract.protobuf.GetAttrByKeyReq)
+  // @@protoc_insertion_point(constructor:zjchain.contract.protobuf.GetAttrByKeyReq)
 }
 GetAttrByKeyReq::GetAttrByKeyReq(const GetAttrByKeyReq& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message(),
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
       _has_bits_(from._has_bits_) {
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  call_addr_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    call_addr_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (from._internal_has_call_addr()) {
-    call_addr_.Set(from._internal_call_addr(), 
-      GetArenaForAllocation());
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  call_addr_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_call_addr()) {
+    call_addr_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.call_addr_);
   }
-  attr_key_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    attr_key_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (from._internal_has_attr_key()) {
-    attr_key_.Set(from._internal_attr_key(), 
-      GetArenaForAllocation());
+  attr_key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_attr_key()) {
+    attr_key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.attr_key_);
   }
   // @@protoc_insertion_point(copy_constructor:zjchain.contract.protobuf.GetAttrByKeyReq)
 }
 
-inline void GetAttrByKeyReq::SharedCtor() {
-call_addr_.InitDefault();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  call_addr_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-attr_key_.InitDefault();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  attr_key_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+void GetAttrByKeyReq::SharedCtor() {
+  call_addr_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  attr_key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 GetAttrByKeyReq::~GetAttrByKeyReq() {
   // @@protoc_insertion_point(destructor:zjchain.contract.protobuf.GetAttrByKeyReq)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
-  (void)arena;
-    return;
-  }
   SharedDtor();
 }
 
-inline void GetAttrByKeyReq::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
-  call_addr_.Destroy();
-  attr_key_.Destroy();
+void GetAttrByKeyReq::SharedDtor() {
+  call_addr_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  attr_key_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void GetAttrByKeyReq::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
+const ::google::protobuf::Descriptor* GetAttrByKeyReq::descriptor() {
+  ::protobuf_protos_2fcontract_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fcontract_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const GetAttrByKeyReq& GetAttrByKeyReq::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fcontract_2eproto::scc_info_GetAttrByKeyReq.base);
+  return *internal_default_instance();
+}
+
 
 void GetAttrByKeyReq::Clear() {
 // @@protoc_insertion_point(message_clear_start:zjchain.contract.protobuf.GetAttrByKeyReq)
-  uint32_t cached_has_bits = 0;
+  ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (cached_has_bits & 3u) {
     if (cached_has_bits & 0x00000001u) {
-      call_addr_.ClearNonDefaultToEmpty();
+      call_addr_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000002u) {
-      attr_key_.ClearNonDefaultToEmpty();
+      attr_key_.ClearNonDefaultToEmptyNoArena();
     }
   }
   _has_bits_.Clear();
-  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  _internal_metadata_.Clear();
 }
 
-const char* GetAttrByKeyReq::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  _Internal::HasBits has_bits{};
-  while (!ctx->Done(&ptr)) {
-    uint32_t tag;
-    ptr = ::_pbi::ReadTag(ptr, &tag);
-    switch (tag >> 3) {
+bool GetAttrByKeyReq::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:zjchain.contract.protobuf.GetAttrByKeyReq)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional bytes call_addr = 1;
-      case 1:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 10)) {
-          auto str = _internal_mutable_call_addr();
-          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-        } else
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_call_addr()));
+        } else {
           goto handle_unusual;
-        continue;
+        }
+        break;
+      }
+
       // optional bytes attr_key = 2;
-      case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
-          auto str = _internal_mutable_attr_key();
-          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-        } else
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_attr_key()));
+        } else {
           goto handle_unusual;
-        continue;
-      default:
-        goto handle_unusual;
-    }  // switch
-  handle_unusual:
-    if ((tag == 0) || ((tag & 7) == 4)) {
-      CHK_(ptr);
-      ctx->SetLastTag(tag);
-      goto message_done;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
     }
-    ptr = UnknownFieldParse(
-        tag,
-        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
-        ptr, ctx);
-    CHK_(ptr != nullptr);
-  }  // while
-message_done:
-  _has_bits_.Or(has_bits);
-  return ptr;
+  }
+success:
+  // @@protoc_insertion_point(parse_success:zjchain.contract.protobuf.GetAttrByKeyReq)
+  return true;
 failure:
-  ptr = nullptr;
-  goto message_done;
-#undef CHK_
+  // @@protoc_insertion_point(parse_failure:zjchain.contract.protobuf.GetAttrByKeyReq)
+  return false;
+#undef DO_
 }
 
-uint8_t* GetAttrByKeyReq::_InternalSerialize(
-    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.contract.protobuf.GetAttrByKeyReq)
-  uint32_t cached_has_bits = 0;
+void GetAttrByKeyReq::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:zjchain.contract.protobuf.GetAttrByKeyReq)
+  ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
   // optional bytes call_addr = 1;
   if (cached_has_bits & 0x00000001u) {
-    target = stream->WriteBytesMaybeAliased(
-        1, this->_internal_call_addr(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      1, this->call_addr(), output);
   }
 
   // optional bytes attr_key = 2;
   if (cached_has_bits & 0x00000002u) {
-    target = stream->WriteBytesMaybeAliased(
-        2, this->_internal_attr_key(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      2, this->attr_key(), output);
   }
 
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:zjchain.contract.protobuf.GetAttrByKeyReq)
+}
+
+::google::protobuf::uint8* GetAttrByKeyReq::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.contract.protobuf.GetAttrByKeyReq)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional bytes call_addr = 1;
+  if (cached_has_bits & 0x00000001u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        1, this->call_addr(), target);
+  }
+
+  // optional bytes attr_key = 2;
+  if (cached_has_bits & 0x00000002u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        2, this->attr_key(), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
   }
   // @@protoc_insertion_point(serialize_to_array_end:zjchain.contract.protobuf.GetAttrByKeyReq)
   return target;
@@ -317,59 +386,72 @@ size_t GetAttrByKeyReq::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:zjchain.contract.protobuf.GetAttrByKeyReq)
   size_t total_size = 0;
 
-  uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  if (_has_bits_[0 / 32] & 3u) {
     // optional bytes call_addr = 1;
-    if (cached_has_bits & 0x00000001u) {
+    if (has_call_addr()) {
       total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-          this->_internal_call_addr());
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->call_addr());
     }
 
     // optional bytes attr_key = 2;
-    if (cached_has_bits & 0x00000002u) {
+    if (has_attr_key()) {
       total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-          this->_internal_attr_key());
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->attr_key());
     }
 
   }
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
 }
 
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData GetAttrByKeyReq::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
-    GetAttrByKeyReq::MergeImpl
-};
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetAttrByKeyReq::GetClassData() const { return &_class_data_; }
-
-void GetAttrByKeyReq::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<GetAttrByKeyReq *>(to)->MergeFrom(
-      static_cast<const GetAttrByKeyReq &>(from));
+void GetAttrByKeyReq::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.contract.protobuf.GetAttrByKeyReq)
+  GOOGLE_DCHECK_NE(&from, this);
+  const GetAttrByKeyReq* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const GetAttrByKeyReq>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.contract.protobuf.GetAttrByKeyReq)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.contract.protobuf.GetAttrByKeyReq)
+    MergeFrom(*source);
+  }
 }
-
 
 void GetAttrByKeyReq::MergeFrom(const GetAttrByKeyReq& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:zjchain.contract.protobuf.GetAttrByKeyReq)
   GOOGLE_DCHECK_NE(&from, this);
-  uint32_t cached_has_bits = 0;
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (cached_has_bits & 3u) {
     if (cached_has_bits & 0x00000001u) {
-      _internal_set_call_addr(from._internal_call_addr());
+      set_has_call_addr();
+      call_addr_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.call_addr_);
     }
     if (cached_has_bits & 0x00000002u) {
-      _internal_set_attr_key(from._internal_attr_key());
+      set_has_attr_key();
+      attr_key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.attr_key_);
     }
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void GetAttrByKeyReq::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.contract.protobuf.GetAttrByKeyReq)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
 }
 
 void GetAttrByKeyReq::CopyFrom(const GetAttrByKeyReq& from) {
@@ -383,224 +465,246 @@ bool GetAttrByKeyReq::IsInitialized() const {
   return true;
 }
 
+void GetAttrByKeyReq::Swap(GetAttrByKeyReq* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
 void GetAttrByKeyReq::InternalSwap(GetAttrByKeyReq* other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
-  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  call_addr_.Swap(&other->call_addr_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  attr_key_.Swap(&other->attr_key_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
   swap(_has_bits_[0], other->_has_bits_[0]);
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &call_addr_, lhs_arena,
-      &other->call_addr_, rhs_arena
-  );
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &attr_key_, lhs_arena,
-      &other->attr_key_, rhs_arena
-  );
+  _internal_metadata_.Swap(&other->_internal_metadata_);
 }
 
-::PROTOBUF_NAMESPACE_ID::Metadata GetAttrByKeyReq::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_protos_2fcontract_2eproto_getter, &descriptor_table_protos_2fcontract_2eproto_once,
-      file_level_metadata_protos_2fcontract_2eproto[0]);
+::google::protobuf::Metadata GetAttrByKeyReq::GetMetadata() const {
+  protobuf_protos_2fcontract_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fcontract_2eproto::file_level_metadata[kIndexInFileMessages];
 }
+
 
 // ===================================================================
 
-class GetAttrByKeyRes::_Internal {
- public:
-  using HasBits = decltype(std::declval<GetAttrByKeyRes>()._has_bits_);
-  static void set_has_call_addr(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static void set_has_attr_key(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-  static void set_has_attr_value(HasBits* has_bits) {
-    (*has_bits)[0] |= 4u;
-  }
-};
+void GetAttrByKeyRes::InitAsDefaultInstance() {
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int GetAttrByKeyRes::kCallAddrFieldNumber;
+const int GetAttrByKeyRes::kAttrKeyFieldNumber;
+const int GetAttrByKeyRes::kAttrValueFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
-GetAttrByKeyRes::GetAttrByKeyRes(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+GetAttrByKeyRes::GetAttrByKeyRes()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2fcontract_2eproto::scc_info_GetAttrByKeyRes.base);
   SharedCtor();
-  // @@protoc_insertion_point(arena_constructor:zjchain.contract.protobuf.GetAttrByKeyRes)
+  // @@protoc_insertion_point(constructor:zjchain.contract.protobuf.GetAttrByKeyRes)
 }
 GetAttrByKeyRes::GetAttrByKeyRes(const GetAttrByKeyRes& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message(),
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
       _has_bits_(from._has_bits_) {
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  call_addr_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    call_addr_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (from._internal_has_call_addr()) {
-    call_addr_.Set(from._internal_call_addr(), 
-      GetArenaForAllocation());
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  call_addr_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_call_addr()) {
+    call_addr_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.call_addr_);
   }
-  attr_key_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    attr_key_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (from._internal_has_attr_key()) {
-    attr_key_.Set(from._internal_attr_key(), 
-      GetArenaForAllocation());
+  attr_key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_attr_key()) {
+    attr_key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.attr_key_);
   }
-  attr_value_.InitDefault();
-  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    attr_value_.Set("", GetArenaForAllocation());
-  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (from._internal_has_attr_value()) {
-    attr_value_.Set(from._internal_attr_value(), 
-      GetArenaForAllocation());
+  attr_value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_attr_value()) {
+    attr_value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.attr_value_);
   }
   // @@protoc_insertion_point(copy_constructor:zjchain.contract.protobuf.GetAttrByKeyRes)
 }
 
-inline void GetAttrByKeyRes::SharedCtor() {
-call_addr_.InitDefault();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  call_addr_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-attr_key_.InitDefault();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  attr_key_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-attr_value_.InitDefault();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  attr_value_.Set("", GetArenaForAllocation());
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+void GetAttrByKeyRes::SharedCtor() {
+  call_addr_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  attr_key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  attr_value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 GetAttrByKeyRes::~GetAttrByKeyRes() {
   // @@protoc_insertion_point(destructor:zjchain.contract.protobuf.GetAttrByKeyRes)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
-  (void)arena;
-    return;
-  }
   SharedDtor();
 }
 
-inline void GetAttrByKeyRes::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
-  call_addr_.Destroy();
-  attr_key_.Destroy();
-  attr_value_.Destroy();
+void GetAttrByKeyRes::SharedDtor() {
+  call_addr_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  attr_key_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  attr_value_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void GetAttrByKeyRes::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
+const ::google::protobuf::Descriptor* GetAttrByKeyRes::descriptor() {
+  ::protobuf_protos_2fcontract_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fcontract_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const GetAttrByKeyRes& GetAttrByKeyRes::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fcontract_2eproto::scc_info_GetAttrByKeyRes.base);
+  return *internal_default_instance();
+}
+
 
 void GetAttrByKeyRes::Clear() {
 // @@protoc_insertion_point(message_clear_start:zjchain.contract.protobuf.GetAttrByKeyRes)
-  uint32_t cached_has_bits = 0;
+  ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
-      call_addr_.ClearNonDefaultToEmpty();
+      call_addr_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000002u) {
-      attr_key_.ClearNonDefaultToEmpty();
+      attr_key_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000004u) {
-      attr_value_.ClearNonDefaultToEmpty();
+      attr_value_.ClearNonDefaultToEmptyNoArena();
     }
   }
   _has_bits_.Clear();
-  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  _internal_metadata_.Clear();
 }
 
-const char* GetAttrByKeyRes::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  _Internal::HasBits has_bits{};
-  while (!ctx->Done(&ptr)) {
-    uint32_t tag;
-    ptr = ::_pbi::ReadTag(ptr, &tag);
-    switch (tag >> 3) {
+bool GetAttrByKeyRes::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:zjchain.contract.protobuf.GetAttrByKeyRes)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional bytes call_addr = 1;
-      case 1:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 10)) {
-          auto str = _internal_mutable_call_addr();
-          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-        } else
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_call_addr()));
+        } else {
           goto handle_unusual;
-        continue;
+        }
+        break;
+      }
+
       // optional bytes attr_key = 2;
-      case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
-          auto str = _internal_mutable_attr_key();
-          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-        } else
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_attr_key()));
+        } else {
           goto handle_unusual;
-        continue;
+        }
+        break;
+      }
+
       // optional bytes attr_value = 3;
-      case 3:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 26)) {
-          auto str = _internal_mutable_attr_value();
-          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-        } else
+      case 3: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(26u /* 26 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
+                input, this->mutable_attr_value()));
+        } else {
           goto handle_unusual;
-        continue;
-      default:
-        goto handle_unusual;
-    }  // switch
-  handle_unusual:
-    if ((tag == 0) || ((tag & 7) == 4)) {
-      CHK_(ptr);
-      ctx->SetLastTag(tag);
-      goto message_done;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
     }
-    ptr = UnknownFieldParse(
-        tag,
-        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
-        ptr, ctx);
-    CHK_(ptr != nullptr);
-  }  // while
-message_done:
-  _has_bits_.Or(has_bits);
-  return ptr;
+  }
+success:
+  // @@protoc_insertion_point(parse_success:zjchain.contract.protobuf.GetAttrByKeyRes)
+  return true;
 failure:
-  ptr = nullptr;
-  goto message_done;
-#undef CHK_
+  // @@protoc_insertion_point(parse_failure:zjchain.contract.protobuf.GetAttrByKeyRes)
+  return false;
+#undef DO_
 }
 
-uint8_t* GetAttrByKeyRes::_InternalSerialize(
-    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.contract.protobuf.GetAttrByKeyRes)
-  uint32_t cached_has_bits = 0;
+void GetAttrByKeyRes::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:zjchain.contract.protobuf.GetAttrByKeyRes)
+  ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
   // optional bytes call_addr = 1;
   if (cached_has_bits & 0x00000001u) {
-    target = stream->WriteBytesMaybeAliased(
-        1, this->_internal_call_addr(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      1, this->call_addr(), output);
   }
 
   // optional bytes attr_key = 2;
   if (cached_has_bits & 0x00000002u) {
-    target = stream->WriteBytesMaybeAliased(
-        2, this->_internal_attr_key(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      2, this->attr_key(), output);
   }
 
   // optional bytes attr_value = 3;
   if (cached_has_bits & 0x00000004u) {
-    target = stream->WriteBytesMaybeAliased(
-        3, this->_internal_attr_value(), target);
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
+      3, this->attr_value(), output);
   }
 
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:zjchain.contract.protobuf.GetAttrByKeyRes)
+}
+
+::google::protobuf::uint8* GetAttrByKeyRes::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.contract.protobuf.GetAttrByKeyRes)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional bytes call_addr = 1;
+  if (cached_has_bits & 0x00000001u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        1, this->call_addr(), target);
+  }
+
+  // optional bytes attr_key = 2;
+  if (cached_has_bits & 0x00000002u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        2, this->attr_key(), target);
+  }
+
+  // optional bytes attr_value = 3;
+  if (cached_has_bits & 0x00000004u) {
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
+        3, this->attr_value(), target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
   }
   // @@protoc_insertion_point(serialize_to_array_end:zjchain.contract.protobuf.GetAttrByKeyRes)
   return target;
@@ -610,69 +714,83 @@ size_t GetAttrByKeyRes::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:zjchain.contract.protobuf.GetAttrByKeyRes)
   size_t total_size = 0;
 
-  uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  if (_has_bits_[0 / 32] & 7u) {
     // optional bytes call_addr = 1;
-    if (cached_has_bits & 0x00000001u) {
+    if (has_call_addr()) {
       total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-          this->_internal_call_addr());
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->call_addr());
     }
 
     // optional bytes attr_key = 2;
-    if (cached_has_bits & 0x00000002u) {
+    if (has_attr_key()) {
       total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-          this->_internal_attr_key());
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->attr_key());
     }
 
     // optional bytes attr_value = 3;
-    if (cached_has_bits & 0x00000004u) {
+    if (has_attr_value()) {
       total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
-          this->_internal_attr_value());
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
+          this->attr_value());
     }
 
   }
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
 }
 
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData GetAttrByKeyRes::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
-    GetAttrByKeyRes::MergeImpl
-};
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetAttrByKeyRes::GetClassData() const { return &_class_data_; }
-
-void GetAttrByKeyRes::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<GetAttrByKeyRes *>(to)->MergeFrom(
-      static_cast<const GetAttrByKeyRes &>(from));
+void GetAttrByKeyRes::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.contract.protobuf.GetAttrByKeyRes)
+  GOOGLE_DCHECK_NE(&from, this);
+  const GetAttrByKeyRes* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const GetAttrByKeyRes>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.contract.protobuf.GetAttrByKeyRes)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.contract.protobuf.GetAttrByKeyRes)
+    MergeFrom(*source);
+  }
 }
-
 
 void GetAttrByKeyRes::MergeFrom(const GetAttrByKeyRes& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:zjchain.contract.protobuf.GetAttrByKeyRes)
   GOOGLE_DCHECK_NE(&from, this);
-  uint32_t cached_has_bits = 0;
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
-      _internal_set_call_addr(from._internal_call_addr());
+      set_has_call_addr();
+      call_addr_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.call_addr_);
     }
     if (cached_has_bits & 0x00000002u) {
-      _internal_set_attr_key(from._internal_attr_key());
+      set_has_attr_key();
+      attr_key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.attr_key_);
     }
     if (cached_has_bits & 0x00000004u) {
-      _internal_set_attr_value(from._internal_attr_value());
+      set_has_attr_value();
+      attr_value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.attr_value_);
     }
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void GetAttrByKeyRes::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.contract.protobuf.GetAttrByKeyRes)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
 }
 
 void GetAttrByKeyRes::CopyFrom(const GetAttrByKeyRes& from) {
@@ -686,96 +804,78 @@ bool GetAttrByKeyRes::IsInitialized() const {
   return true;
 }
 
+void GetAttrByKeyRes::Swap(GetAttrByKeyRes* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
 void GetAttrByKeyRes::InternalSwap(GetAttrByKeyRes* other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
-  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  call_addr_.Swap(&other->call_addr_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  attr_key_.Swap(&other->attr_key_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  attr_value_.Swap(&other->attr_value_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
   swap(_has_bits_[0], other->_has_bits_[0]);
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &call_addr_, lhs_arena,
-      &other->call_addr_, rhs_arena
-  );
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &attr_key_, lhs_arena,
-      &other->attr_key_, rhs_arena
-  );
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &attr_value_, lhs_arena,
-      &other->attr_value_, rhs_arena
-  );
+  _internal_metadata_.Swap(&other->_internal_metadata_);
 }
 
-::PROTOBUF_NAMESPACE_ID::Metadata GetAttrByKeyRes::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_protos_2fcontract_2eproto_getter, &descriptor_table_protos_2fcontract_2eproto_once,
-      file_level_metadata_protos_2fcontract_2eproto[1]);
+::google::protobuf::Metadata GetAttrByKeyRes::GetMetadata() const {
+  protobuf_protos_2fcontract_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fcontract_2eproto::file_level_metadata[kIndexInFileMessages];
 }
+
 
 // ===================================================================
 
-class ContractMessage::_Internal {
- public:
-  using HasBits = decltype(std::declval<ContractMessage>()._has_bits_);
-  static const ::zjchain::contract::protobuf::GetAttrByKeyReq& get_attr_req(const ContractMessage* msg);
-  static void set_has_get_attr_req(HasBits* has_bits) {
-    (*has_bits)[0] |= 1u;
-  }
-  static const ::zjchain::contract::protobuf::GetAttrByKeyRes& get_attr_res(const ContractMessage* msg);
-  static void set_has_get_attr_res(HasBits* has_bits) {
-    (*has_bits)[0] |= 2u;
-  }
-};
+void ContractMessage::InitAsDefaultInstance() {
+  ::zjchain::contract::protobuf::_ContractMessage_default_instance_._instance.get_mutable()->get_attr_req_ = const_cast< ::zjchain::contract::protobuf::GetAttrByKeyReq*>(
+      ::zjchain::contract::protobuf::GetAttrByKeyReq::internal_default_instance());
+  ::zjchain::contract::protobuf::_ContractMessage_default_instance_._instance.get_mutable()->get_attr_res_ = const_cast< ::zjchain::contract::protobuf::GetAttrByKeyRes*>(
+      ::zjchain::contract::protobuf::GetAttrByKeyRes::internal_default_instance());
+}
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int ContractMessage::kGetAttrReqFieldNumber;
+const int ContractMessage::kGetAttrResFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
-const ::zjchain::contract::protobuf::GetAttrByKeyReq&
-ContractMessage::_Internal::get_attr_req(const ContractMessage* msg) {
-  return *msg->get_attr_req_;
-}
-const ::zjchain::contract::protobuf::GetAttrByKeyRes&
-ContractMessage::_Internal::get_attr_res(const ContractMessage* msg) {
-  return *msg->get_attr_res_;
-}
-ContractMessage::ContractMessage(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+ContractMessage::ContractMessage()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  ::google::protobuf::internal::InitSCC(
+      &protobuf_protos_2fcontract_2eproto::scc_info_ContractMessage.base);
   SharedCtor();
-  // @@protoc_insertion_point(arena_constructor:zjchain.contract.protobuf.ContractMessage)
+  // @@protoc_insertion_point(constructor:zjchain.contract.protobuf.ContractMessage)
 }
 ContractMessage::ContractMessage(const ContractMessage& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message(),
+  : ::google::protobuf::Message(),
+      _internal_metadata_(NULL),
       _has_bits_(from._has_bits_) {
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  if (from._internal_has_get_attr_req()) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  if (from.has_get_attr_req()) {
     get_attr_req_ = new ::zjchain::contract::protobuf::GetAttrByKeyReq(*from.get_attr_req_);
   } else {
-    get_attr_req_ = nullptr;
+    get_attr_req_ = NULL;
   }
-  if (from._internal_has_get_attr_res()) {
+  if (from.has_get_attr_res()) {
     get_attr_res_ = new ::zjchain::contract::protobuf::GetAttrByKeyRes(*from.get_attr_res_);
   } else {
-    get_attr_res_ = nullptr;
+    get_attr_res_ = NULL;
   }
   // @@protoc_insertion_point(copy_constructor:zjchain.contract.protobuf.ContractMessage)
 }
 
-inline void ContractMessage::SharedCtor() {
-::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
-    reinterpret_cast<char*>(&get_attr_req_) - reinterpret_cast<char*>(this)),
-    0, static_cast<size_t>(reinterpret_cast<char*>(&get_attr_res_) -
-    reinterpret_cast<char*>(&get_attr_req_)) + sizeof(get_attr_res_));
+void ContractMessage::SharedCtor() {
+  ::memset(&get_attr_req_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&get_attr_res_) -
+      reinterpret_cast<char*>(&get_attr_req_)) + sizeof(get_attr_res_));
 }
 
 ContractMessage::~ContractMessage() {
   // @@protoc_insertion_point(destructor:zjchain.contract.protobuf.ContractMessage)
-  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
-  (void)arena;
-    return;
-  }
   SharedDtor();
 }
 
-inline void ContractMessage::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+void ContractMessage::SharedDtor() {
   if (this != internal_default_instance()) delete get_attr_req_;
   if (this != internal_default_instance()) delete get_attr_res_;
 }
@@ -783,99 +883,143 @@ inline void ContractMessage::SharedDtor() {
 void ContractMessage::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
+const ::google::protobuf::Descriptor* ContractMessage::descriptor() {
+  ::protobuf_protos_2fcontract_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fcontract_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
+}
+
+const ContractMessage& ContractMessage::default_instance() {
+  ::google::protobuf::internal::InitSCC(&protobuf_protos_2fcontract_2eproto::scc_info_ContractMessage.base);
+  return *internal_default_instance();
+}
+
 
 void ContractMessage::Clear() {
 // @@protoc_insertion_point(message_clear_start:zjchain.contract.protobuf.ContractMessage)
-  uint32_t cached_has_bits = 0;
+  ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (cached_has_bits & 3u) {
     if (cached_has_bits & 0x00000001u) {
-      GOOGLE_DCHECK(get_attr_req_ != nullptr);
+      GOOGLE_DCHECK(get_attr_req_ != NULL);
       get_attr_req_->Clear();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_DCHECK(get_attr_res_ != nullptr);
+      GOOGLE_DCHECK(get_attr_res_ != NULL);
       get_attr_res_->Clear();
     }
   }
   _has_bits_.Clear();
-  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  _internal_metadata_.Clear();
 }
 
-const char* ContractMessage::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  _Internal::HasBits has_bits{};
-  while (!ctx->Done(&ptr)) {
-    uint32_t tag;
-    ptr = ::_pbi::ReadTag(ptr, &tag);
-    switch (tag >> 3) {
+bool ContractMessage::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:zjchain.contract.protobuf.ContractMessage)
+  for (;;) {
+    ::std::pair<::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional .zjchain.contract.protobuf.GetAttrByKeyReq get_attr_req = 1;
-      case 1:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 10)) {
-          ptr = ctx->ParseMessage(_internal_mutable_get_attr_req(), ptr);
-          CHK_(ptr);
-        } else
+      case 1: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u /* 10 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_get_attr_req()));
+        } else {
           goto handle_unusual;
-        continue;
+        }
+        break;
+      }
+
       // optional .zjchain.contract.protobuf.GetAttrByKeyRes get_attr_res = 2;
-      case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
-          ptr = ctx->ParseMessage(_internal_mutable_get_attr_res(), ptr);
-          CHK_(ptr);
-        } else
+      case 2: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u /* 18 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessage(
+               input, mutable_get_attr_res()));
+        } else {
           goto handle_unusual;
-        continue;
-      default:
-        goto handle_unusual;
-    }  // switch
-  handle_unusual:
-    if ((tag == 0) || ((tag & 7) == 4)) {
-      CHK_(ptr);
-      ctx->SetLastTag(tag);
-      goto message_done;
+        }
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, _internal_metadata_.mutable_unknown_fields()));
+        break;
+      }
     }
-    ptr = UnknownFieldParse(
-        tag,
-        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
-        ptr, ctx);
-    CHK_(ptr != nullptr);
-  }  // while
-message_done:
-  _has_bits_.Or(has_bits);
-  return ptr;
+  }
+success:
+  // @@protoc_insertion_point(parse_success:zjchain.contract.protobuf.ContractMessage)
+  return true;
 failure:
-  ptr = nullptr;
-  goto message_done;
-#undef CHK_
+  // @@protoc_insertion_point(parse_failure:zjchain.contract.protobuf.ContractMessage)
+  return false;
+#undef DO_
 }
 
-uint8_t* ContractMessage::_InternalSerialize(
-    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:zjchain.contract.protobuf.ContractMessage)
-  uint32_t cached_has_bits = 0;
+void ContractMessage::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:zjchain.contract.protobuf.ContractMessage)
+  ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
   // optional .zjchain.contract.protobuf.GetAttrByKeyReq get_attr_req = 1;
   if (cached_has_bits & 0x00000001u) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(1, _Internal::get_attr_req(this),
-        _Internal::get_attr_req(this).GetCachedSize(), target, stream);
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      1, this->_internal_get_attr_req(), output);
   }
 
   // optional .zjchain.contract.protobuf.GetAttrByKeyRes get_attr_res = 2;
   if (cached_has_bits & 0x00000002u) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(2, _Internal::get_attr_res(this),
-        _Internal::get_attr_res(this).GetCachedSize(), target, stream);
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      2, this->_internal_get_attr_res(), output);
   }
 
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  if (_internal_metadata_.have_unknown_fields()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        _internal_metadata_.unknown_fields(), output);
+  }
+  // @@protoc_insertion_point(serialize_end:zjchain.contract.protobuf.ContractMessage)
+}
+
+::google::protobuf::uint8* ContractMessage::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
+  // @@protoc_insertion_point(serialize_to_array_start:zjchain.contract.protobuf.ContractMessage)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
+  // optional .zjchain.contract.protobuf.GetAttrByKeyReq get_attr_req = 1;
+  if (cached_has_bits & 0x00000001u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        1, this->_internal_get_attr_req(), deterministic, target);
+  }
+
+  // optional .zjchain.contract.protobuf.GetAttrByKeyRes get_attr_res = 2;
+  if (cached_has_bits & 0x00000002u) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageToArray(
+        2, this->_internal_get_attr_res(), deterministic, target);
+  }
+
+  if (_internal_metadata_.have_unknown_fields()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target);
   }
   // @@protoc_insertion_point(serialize_to_array_end:zjchain.contract.protobuf.ContractMessage)
   return target;
@@ -885,59 +1029,70 @@ size_t ContractMessage::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:zjchain.contract.protobuf.ContractMessage)
   size_t total_size = 0;
 
-  uint32_t cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (_internal_metadata_.have_unknown_fields()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        _internal_metadata_.unknown_fields());
+  }
+  if (_has_bits_[0 / 32] & 3u) {
     // optional .zjchain.contract.protobuf.GetAttrByKeyReq get_attr_req = 1;
-    if (cached_has_bits & 0x00000001u) {
+    if (has_get_attr_req()) {
       total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
           *get_attr_req_);
     }
 
     // optional .zjchain.contract.protobuf.GetAttrByKeyRes get_attr_res = 2;
-    if (cached_has_bits & 0x00000002u) {
+    if (has_get_attr_res()) {
       total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        ::google::protobuf::internal::WireFormatLite::MessageSize(
           *get_attr_res_);
     }
 
   }
-  return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
 }
 
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData ContractMessage::_class_data_ = {
-    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
-    ContractMessage::MergeImpl
-};
-const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*ContractMessage::GetClassData() const { return &_class_data_; }
-
-void ContractMessage::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message* to,
-                      const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-  static_cast<ContractMessage *>(to)->MergeFrom(
-      static_cast<const ContractMessage &>(from));
+void ContractMessage::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:zjchain.contract.protobuf.ContractMessage)
+  GOOGLE_DCHECK_NE(&from, this);
+  const ContractMessage* source =
+      ::google::protobuf::internal::DynamicCastToGenerated<const ContractMessage>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:zjchain.contract.protobuf.ContractMessage)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:zjchain.contract.protobuf.ContractMessage)
+    MergeFrom(*source);
+  }
 }
-
 
 void ContractMessage::MergeFrom(const ContractMessage& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:zjchain.contract.protobuf.ContractMessage)
   GOOGLE_DCHECK_NE(&from, this);
-  uint32_t cached_has_bits = 0;
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 0x00000003u) {
+  if (cached_has_bits & 3u) {
     if (cached_has_bits & 0x00000001u) {
-      _internal_mutable_get_attr_req()->::zjchain::contract::protobuf::GetAttrByKeyReq::MergeFrom(from._internal_get_attr_req());
+      mutable_get_attr_req()->::zjchain::contract::protobuf::GetAttrByKeyReq::MergeFrom(from.get_attr_req());
     }
     if (cached_has_bits & 0x00000002u) {
-      _internal_mutable_get_attr_res()->::zjchain::contract::protobuf::GetAttrByKeyRes::MergeFrom(from._internal_get_attr_res());
+      mutable_get_attr_res()->::zjchain::contract::protobuf::GetAttrByKeyRes::MergeFrom(from.get_attr_res());
     }
   }
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void ContractMessage::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:zjchain.contract.protobuf.ContractMessage)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
 }
 
 void ContractMessage::CopyFrom(const ContractMessage& from) {
@@ -951,42 +1106,40 @@ bool ContractMessage::IsInitialized() const {
   return true;
 }
 
+void ContractMessage::Swap(ContractMessage* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
 void ContractMessage::InternalSwap(ContractMessage* other) {
   using std::swap;
-  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(get_attr_req_, other->get_attr_req_);
+  swap(get_attr_res_, other->get_attr_res_);
   swap(_has_bits_[0], other->_has_bits_[0]);
-  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(ContractMessage, get_attr_res_)
-      + sizeof(ContractMessage::get_attr_res_)
-      - PROTOBUF_FIELD_OFFSET(ContractMessage, get_attr_req_)>(
-          reinterpret_cast<char*>(&get_attr_req_),
-          reinterpret_cast<char*>(&other->get_attr_req_));
+  _internal_metadata_.Swap(&other->_internal_metadata_);
 }
 
-::PROTOBUF_NAMESPACE_ID::Metadata ContractMessage::GetMetadata() const {
-  return ::_pbi::AssignDescriptors(
-      &descriptor_table_protos_2fcontract_2eproto_getter, &descriptor_table_protos_2fcontract_2eproto_once,
-      file_level_metadata_protos_2fcontract_2eproto[2]);
+::google::protobuf::Metadata ContractMessage::GetMetadata() const {
+  protobuf_protos_2fcontract_2eproto::protobuf_AssignDescriptorsOnce();
+  return ::protobuf_protos_2fcontract_2eproto::file_level_metadata[kIndexInFileMessages];
 }
+
 
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf
 }  // namespace contract
 }  // namespace zjchain
-PROTOBUF_NAMESPACE_OPEN
-template<> PROTOBUF_NOINLINE ::zjchain::contract::protobuf::GetAttrByKeyReq*
-Arena::CreateMaybeMessage< ::zjchain::contract::protobuf::GetAttrByKeyReq >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::zjchain::contract::protobuf::GetAttrByKeyReq >(arena);
+namespace google {
+namespace protobuf {
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::contract::protobuf::GetAttrByKeyReq* Arena::CreateMaybeMessage< ::zjchain::contract::protobuf::GetAttrByKeyReq >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::contract::protobuf::GetAttrByKeyReq >(arena);
 }
-template<> PROTOBUF_NOINLINE ::zjchain::contract::protobuf::GetAttrByKeyRes*
-Arena::CreateMaybeMessage< ::zjchain::contract::protobuf::GetAttrByKeyRes >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::zjchain::contract::protobuf::GetAttrByKeyRes >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::contract::protobuf::GetAttrByKeyRes* Arena::CreateMaybeMessage< ::zjchain::contract::protobuf::GetAttrByKeyRes >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::contract::protobuf::GetAttrByKeyRes >(arena);
 }
-template<> PROTOBUF_NOINLINE ::zjchain::contract::protobuf::ContractMessage*
-Arena::CreateMaybeMessage< ::zjchain::contract::protobuf::ContractMessage >(Arena* arena) {
-  return Arena::CreateMessageInternal< ::zjchain::contract::protobuf::ContractMessage >(arena);
+template<> GOOGLE_PROTOBUF_ATTRIBUTE_NOINLINE ::zjchain::contract::protobuf::ContractMessage* Arena::CreateMaybeMessage< ::zjchain::contract::protobuf::ContractMessage >(Arena* arena) {
+  return Arena::CreateInternal< ::zjchain::contract::protobuf::ContractMessage >(arena);
 }
-PROTOBUF_NAMESPACE_CLOSE
+}  // namespace protobuf
+}  // namespace google
 
 // @@protoc_insertion_point(global_scope)
-#include <google/protobuf/port_undef.inc>
