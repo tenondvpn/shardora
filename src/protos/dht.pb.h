@@ -532,6 +532,13 @@ class NodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::google::protobuf::int32 public_port() const;
   void set_public_port(::google::protobuf::int32 value);
 
+  // optional int32 sharding_id = 4;
+  bool has_sharding_id() const;
+  void clear_sharding_id();
+  static const int kShardingIdFieldNumber = 4;
+  ::google::protobuf::int32 sharding_id() const;
+  void set_sharding_id(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:zjchain.dht.protobuf.NodeInfo)
  private:
   void set_has_public_ip();
@@ -540,6 +547,8 @@ class NodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
   void clear_has_public_port();
   void set_has_pubkey();
   void clear_has_pubkey();
+  void set_has_sharding_id();
+  void clear_has_sharding_id();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -547,6 +556,7 @@ class NodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::google::protobuf::internal::ArenaStringPtr public_ip_;
   ::google::protobuf::internal::ArenaStringPtr pubkey_;
   ::google::protobuf::int32 public_port_;
+  ::google::protobuf::int32 sharding_id_;
   friend struct ::protobuf_protos_2fdht_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -2073,6 +2083,30 @@ inline void NodeInfo::set_allocated_pubkey(::std::string* pubkey) {
   }
   pubkey_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), pubkey);
   // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.NodeInfo.pubkey)
+}
+
+// optional int32 sharding_id = 4;
+inline bool NodeInfo::has_sharding_id() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void NodeInfo::set_has_sharding_id() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void NodeInfo::clear_has_sharding_id() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void NodeInfo::clear_sharding_id() {
+  sharding_id_ = 0;
+  clear_has_sharding_id();
+}
+inline ::google::protobuf::int32 NodeInfo::sharding_id() const {
+  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.NodeInfo.sharding_id)
+  return sharding_id_;
+}
+inline void NodeInfo::set_sharding_id(::google::protobuf::int32 value) {
+  set_has_sharding_id();
+  sharding_id_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.NodeInfo.sharding_id)
 }
 
 // -------------------------------------------------------------------

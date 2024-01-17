@@ -18,6 +18,7 @@ message NodeInfo {
     optional bytes public_ip = 1;
     optional int32 public_port = 2;
     optional bytes pubkey = 3;
+    optional int32 sharding_id = 4;
 }
 
 message RefreshNeighborsRequest {
