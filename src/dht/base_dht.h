@@ -127,6 +127,7 @@ protected:
     bool is_universal_ = false;
     uint32_t valid_count_ = 0;
     common::Tick tick_;
+    std::vector<NodePtr> waiting_refresh_nodes_;
 
     DISALLOW_COPY_AND_ASSIGN(BaseDht);
 };

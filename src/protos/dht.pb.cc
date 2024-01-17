@@ -283,10 +283,12 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::NodeInfo, public_port_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::NodeInfo, pubkey_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::NodeInfo, sharding_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::NodeInfo, id_),
   0,
-  2,
-  1,
   3,
+  1,
+  4,
+  2,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::RefreshNeighborsRequest, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::RefreshNeighborsRequest, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -370,14 +372,14 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 8, sizeof(::zjchain::dht::protobuf::BootstrapRequest)},
   { 11, 19, sizeof(::zjchain::dht::protobuf::BootstrapResponse)},
-  { 22, 31, sizeof(::zjchain::dht::protobuf::NodeInfo)},
-  { 35, 46, sizeof(::zjchain::dht::protobuf::RefreshNeighborsRequest)},
-  { 52, 58, sizeof(::zjchain::dht::protobuf::RefreshNeighborsResponse)},
-  { 59, 65, sizeof(::zjchain::dht::protobuf::HeartbeatRequest)},
-  { 66, 72, sizeof(::zjchain::dht::protobuf::HeartbeatResponse)},
-  { 73, 82, sizeof(::zjchain::dht::protobuf::ConnectReqeust)},
-  { 86, 92, sizeof(::zjchain::dht::protobuf::TimerRequest)},
-  { 93, 106, sizeof(::zjchain::dht::protobuf::DhtMessage)},
+  { 22, 32, sizeof(::zjchain::dht::protobuf::NodeInfo)},
+  { 37, 48, sizeof(::zjchain::dht::protobuf::RefreshNeighborsRequest)},
+  { 54, 60, sizeof(::zjchain::dht::protobuf::RefreshNeighborsResponse)},
+  { 61, 67, sizeof(::zjchain::dht::protobuf::HeartbeatRequest)},
+  { 68, 74, sizeof(::zjchain::dht::protobuf::HeartbeatResponse)},
+  { 75, 84, sizeof(::zjchain::dht::protobuf::ConnectReqeust)},
+  { 88, 94, sizeof(::zjchain::dht::protobuf::TimerRequest)},
+  { 95, 108, sizeof(::zjchain::dht::protobuf::DhtMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -418,36 +420,37 @@ void AddDescriptorsImpl() {
       "\"J\n\020BootstrapRequest\022\016\n\006pubkey\030\001 \001(\014\022\021\n\t"
       "public_ip\030\002 \001(\t\022\023\n\013public_port\030\003 \001(\005\"K\n\021"
       "BootstrapResponse\022\016\n\006pubkey\030\001 \001(\014\022\021\n\tpub"
-      "lic_ip\030\002 \001(\t\022\023\n\013public_port\030\003 \001(\005\"W\n\010Nod"
+      "lic_ip\030\002 \001(\t\022\023\n\013public_port\030\003 \001(\005\"c\n\010Nod"
       "eInfo\022\021\n\tpublic_ip\030\001 \001(\014\022\023\n\013public_port\030"
       "\002 \001(\005\022\016\n\006pubkey\030\003 \001(\014\022\023\n\013sharding_id\030\004 \001"
-      "(\005\"\202\001\n\027RefreshNeighborsRequest\022\r\n\005count\030"
-      "\001 \001(\r\022\023\n\013bloomfilter\030\002 \003(\004\022\016\n\006pubkey\030\003 \001"
-      "(\014\022\021\n\tpublic_ip\030\004 \001(\t\022\023\n\013public_port\030\005 \001"
-      "(\005\022\013\n\003ids\030\006 \003(\014\"I\n\030RefreshNeighborsRespo"
-      "nse\022-\n\005nodes\030\001 \003(\0132\036.zjchain.dht.protobu"
-      "f.NodeInfo\"(\n\020HeartbeatRequest\022\024\n\014dht_ke"
-      "y_hash\030\001 \001(\004\")\n\021HeartbeatResponse\022\024\n\014dht"
-      "_key_hash\030\001 \001(\004\"]\n\016ConnectReqeust\022\016\n\006pub"
-      "key\030\001 \001(\014\022\023\n\013is_response\030\002 \001(\010\022\021\n\tpublic"
-      "_ip\030\003 \001(\t\022\023\n\013public_port\030\004 \001(\005\" \n\014TimerR"
-      "equest\022\020\n\010tm_milli\030\001 \001(\004\"\225\004\n\nDhtMessage\022"
-      "=\n\rbootstrap_req\030\001 \001(\0132&.zjchain.dht.pro"
-      "tobuf.BootstrapRequest\022>\n\rbootstrap_res\030"
-      "\002 \001(\0132\'.zjchain.dht.protobuf.BootstrapRe"
-      "sponse\022L\n\025refresh_neighbors_req\030\003 \001(\0132-."
-      "zjchain.dht.protobuf.RefreshNeighborsReq"
-      "uest\022M\n\025refresh_neighbors_res\030\004 \001(\0132..zj"
-      "chain.dht.protobuf.RefreshNeighborsRespo"
-      "nse\0229\n\013connect_req\030\005 \001(\0132$.zjchain.dht.p"
-      "rotobuf.ConnectReqeust\022=\n\rheartbeat_req\030"
-      "\006 \001(\0132&.zjchain.dht.protobuf.HeartbeatRe"
-      "quest\022>\n\rheartbeat_res\030\007 \001(\0132\'.zjchain.d"
-      "ht.protobuf.HeartbeatResponse\0221\n\005timer\030\010"
-      " \001(\0132\".zjchain.dht.protobuf.TimerRequest"
+      "(\005\022\n\n\002id\030\005 \001(\t\"\202\001\n\027RefreshNeighborsReque"
+      "st\022\r\n\005count\030\001 \001(\r\022\023\n\013bloomfilter\030\002 \003(\004\022\016"
+      "\n\006pubkey\030\003 \001(\014\022\021\n\tpublic_ip\030\004 \001(\t\022\023\n\013pub"
+      "lic_port\030\005 \001(\005\022\013\n\003ids\030\006 \003(\014\"I\n\030RefreshNe"
+      "ighborsResponse\022-\n\005nodes\030\001 \003(\0132\036.zjchain"
+      ".dht.protobuf.NodeInfo\"(\n\020HeartbeatReque"
+      "st\022\024\n\014dht_key_hash\030\001 \001(\004\")\n\021HeartbeatRes"
+      "ponse\022\024\n\014dht_key_hash\030\001 \001(\004\"]\n\016ConnectRe"
+      "qeust\022\016\n\006pubkey\030\001 \001(\014\022\023\n\013is_response\030\002 \001"
+      "(\010\022\021\n\tpublic_ip\030\003 \001(\t\022\023\n\013public_port\030\004 \001"
+      "(\005\" \n\014TimerRequest\022\020\n\010tm_milli\030\001 \001(\004\"\225\004\n"
+      "\nDhtMessage\022=\n\rbootstrap_req\030\001 \001(\0132&.zjc"
+      "hain.dht.protobuf.BootstrapRequest\022>\n\rbo"
+      "otstrap_res\030\002 \001(\0132\'.zjchain.dht.protobuf"
+      ".BootstrapResponse\022L\n\025refresh_neighbors_"
+      "req\030\003 \001(\0132-.zjchain.dht.protobuf.Refresh"
+      "NeighborsRequest\022M\n\025refresh_neighbors_re"
+      "s\030\004 \001(\0132..zjchain.dht.protobuf.RefreshNe"
+      "ighborsResponse\0229\n\013connect_req\030\005 \001(\0132$.z"
+      "jchain.dht.protobuf.ConnectReqeust\022=\n\rhe"
+      "artbeat_req\030\006 \001(\0132&.zjchain.dht.protobuf"
+      ".HeartbeatRequest\022>\n\rheartbeat_res\030\007 \001(\013"
+      "2\'.zjchain.dht.protobuf.HeartbeatRespons"
+      "e\0221\n\005timer\030\010 \001(\0132\".zjchain.dht.protobuf."
+      "TimerRequest"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1240);
+      descriptor, 1252);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/dht.proto", &protobuf_RegisterTypes);
 }
@@ -1166,6 +1169,7 @@ const int NodeInfo::kPublicIpFieldNumber;
 const int NodeInfo::kPublicPortFieldNumber;
 const int NodeInfo::kPubkeyFieldNumber;
 const int NodeInfo::kShardingIdFieldNumber;
+const int NodeInfo::kIdFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 NodeInfo::NodeInfo()
@@ -1188,6 +1192,10 @@ NodeInfo::NodeInfo(const NodeInfo& from)
   if (from.has_pubkey()) {
     pubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.pubkey_);
   }
+  id_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_id()) {
+    id_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.id_);
+  }
   ::memcpy(&public_port_, &from.public_port_,
     static_cast<size_t>(reinterpret_cast<char*>(&sharding_id_) -
     reinterpret_cast<char*>(&public_port_)) + sizeof(sharding_id_));
@@ -1197,6 +1205,7 @@ NodeInfo::NodeInfo(const NodeInfo& from)
 void NodeInfo::SharedCtor() {
   public_ip_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   pubkey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  id_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&public_port_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&sharding_id_) -
       reinterpret_cast<char*>(&public_port_)) + sizeof(sharding_id_));
@@ -1210,6 +1219,7 @@ NodeInfo::~NodeInfo() {
 void NodeInfo::SharedDtor() {
   public_ip_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   pubkey_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  id_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void NodeInfo::SetCachedSize(int size) const {
@@ -1233,15 +1243,18 @@ void NodeInfo::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 3u) {
+  if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
       public_ip_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000002u) {
       pubkey_.ClearNonDefaultToEmptyNoArena();
     }
+    if (cached_has_bits & 0x00000004u) {
+      id_.ClearNonDefaultToEmptyNoArena();
+    }
   }
-  if (cached_has_bits & 12u) {
+  if (cached_has_bits & 24u) {
     ::memset(&public_port_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&sharding_id_) -
         reinterpret_cast<char*>(&public_port_)) + sizeof(sharding_id_));
@@ -1312,6 +1325,22 @@ bool NodeInfo::MergePartialFromCodedStream(
         break;
       }
 
+      // optional string id = 5;
+      case 5: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_id()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->id().data(), static_cast<int>(this->id().length()),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "zjchain.dht.protobuf.NodeInfo.id");
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -1346,7 +1375,7 @@ void NodeInfo::SerializeWithCachedSizes(
   }
 
   // optional int32 public_port = 2;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000008u) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->public_port(), output);
   }
 
@@ -1357,8 +1386,18 @@ void NodeInfo::SerializeWithCachedSizes(
   }
 
   // optional int32 sharding_id = 4;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->sharding_id(), output);
+  }
+
+  // optional string id = 5;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->id().data(), static_cast<int>(this->id().length()),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "zjchain.dht.protobuf.NodeInfo.id");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      5, this->id(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1384,7 +1423,7 @@ void NodeInfo::SerializeWithCachedSizes(
   }
 
   // optional int32 public_port = 2;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000008u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->public_port(), target);
   }
 
@@ -1396,8 +1435,19 @@ void NodeInfo::SerializeWithCachedSizes(
   }
 
   // optional int32 sharding_id = 4;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(4, this->sharding_id(), target);
+  }
+
+  // optional string id = 5;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->id().data(), static_cast<int>(this->id().length()),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "zjchain.dht.protobuf.NodeInfo.id");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        5, this->id(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1417,7 +1467,7 @@ size_t NodeInfo::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 15u) {
+  if (_has_bits_[0 / 32] & 31u) {
     // optional bytes public_ip = 1;
     if (has_public_ip()) {
       total_size += 1 +
@@ -1430,6 +1480,13 @@ size_t NodeInfo::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::BytesSize(
           this->pubkey());
+    }
+
+    // optional string id = 5;
+    if (has_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->id());
     }
 
     // optional int32 public_port = 2;
@@ -1475,7 +1532,7 @@ void NodeInfo::MergeFrom(const NodeInfo& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 15u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_public_ip();
       public_ip_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.public_ip_);
@@ -1485,9 +1542,13 @@ void NodeInfo::MergeFrom(const NodeInfo& from) {
       pubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.pubkey_);
     }
     if (cached_has_bits & 0x00000004u) {
-      public_port_ = from.public_port_;
+      set_has_id();
+      id_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.id_);
     }
     if (cached_has_bits & 0x00000008u) {
+      public_port_ = from.public_port_;
+    }
+    if (cached_has_bits & 0x00000010u) {
       sharding_id_ = from.sharding_id_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -1521,6 +1582,8 @@ void NodeInfo::InternalSwap(NodeInfo* other) {
   public_ip_.Swap(&other->public_ip_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   pubkey_.Swap(&other->pubkey_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  id_.Swap(&other->id_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(public_port_, other->public_port_);
   swap(sharding_id_, other->sharding_id_);

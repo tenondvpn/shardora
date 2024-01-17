@@ -525,6 +525,21 @@ class NodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::std::string* release_pubkey();
   void set_allocated_pubkey(::std::string* pubkey);
 
+  // optional string id = 5;
+  bool has_id() const;
+  void clear_id();
+  static const int kIdFieldNumber = 5;
+  const ::std::string& id() const;
+  void set_id(const ::std::string& value);
+  #if LANG_CXX11
+  void set_id(::std::string&& value);
+  #endif
+  void set_id(const char* value);
+  void set_id(const char* value, size_t size);
+  ::std::string* mutable_id();
+  ::std::string* release_id();
+  void set_allocated_id(::std::string* id);
+
   // optional int32 public_port = 2;
   bool has_public_port() const;
   void clear_public_port();
@@ -549,12 +564,15 @@ class NodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
   void clear_has_pubkey();
   void set_has_sharding_id();
   void clear_has_sharding_id();
+  void set_has_id();
+  void clear_has_id();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr public_ip_;
   ::google::protobuf::internal::ArenaStringPtr pubkey_;
+  ::google::protobuf::internal::ArenaStringPtr id_;
   ::google::protobuf::int32 public_port_;
   ::google::protobuf::int32 sharding_id_;
   friend struct ::protobuf_protos_2fdht_2eproto::TableStruct;
@@ -1997,13 +2015,13 @@ inline void NodeInfo::set_allocated_public_ip(::std::string* public_ip) {
 
 // optional int32 public_port = 2;
 inline bool NodeInfo::has_public_port() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void NodeInfo::set_has_public_port() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void NodeInfo::clear_has_public_port() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void NodeInfo::clear_public_port() {
   public_port_ = 0;
@@ -2087,13 +2105,13 @@ inline void NodeInfo::set_allocated_pubkey(::std::string* pubkey) {
 
 // optional int32 sharding_id = 4;
 inline bool NodeInfo::has_sharding_id() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void NodeInfo::set_has_sharding_id() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void NodeInfo::clear_has_sharding_id() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void NodeInfo::clear_sharding_id() {
   sharding_id_ = 0;
@@ -2107,6 +2125,72 @@ inline void NodeInfo::set_sharding_id(::google::protobuf::int32 value) {
   set_has_sharding_id();
   sharding_id_ = value;
   // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.NodeInfo.sharding_id)
+}
+
+// optional string id = 5;
+inline bool NodeInfo::has_id() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void NodeInfo::set_has_id() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void NodeInfo::clear_has_id() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void NodeInfo::clear_id() {
+  id_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_id();
+}
+inline const ::std::string& NodeInfo::id() const {
+  // @@protoc_insertion_point(field_get:zjchain.dht.protobuf.NodeInfo.id)
+  return id_.GetNoArena();
+}
+inline void NodeInfo::set_id(const ::std::string& value) {
+  set_has_id();
+  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.NodeInfo.id)
+}
+#if LANG_CXX11
+inline void NodeInfo::set_id(::std::string&& value) {
+  set_has_id();
+  id_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.dht.protobuf.NodeInfo.id)
+}
+#endif
+inline void NodeInfo::set_id(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_id();
+  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.NodeInfo.id)
+}
+inline void NodeInfo::set_id(const char* value, size_t size) {
+  set_has_id();
+  id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:zjchain.dht.protobuf.NodeInfo.id)
+}
+inline ::std::string* NodeInfo::mutable_id() {
+  set_has_id();
+  // @@protoc_insertion_point(field_mutable:zjchain.dht.protobuf.NodeInfo.id)
+  return id_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* NodeInfo::release_id() {
+  // @@protoc_insertion_point(field_release:zjchain.dht.protobuf.NodeInfo.id)
+  if (!has_id()) {
+    return NULL;
+  }
+  clear_has_id();
+  return id_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void NodeInfo::set_allocated_id(::std::string* id) {
+  if (id != NULL) {
+    set_has_id();
+  } else {
+    clear_has_id();
+  }
+  id_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), id);
+  // @@protoc_insertion_point(field_set_allocated:zjchain.dht.protobuf.NodeInfo.id)
 }
 
 // -------------------------------------------------------------------

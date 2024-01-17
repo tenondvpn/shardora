@@ -629,6 +629,17 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
 
     const auto& res_nodes = dht_msg.refresh_neighbors_res().nodes();
     // TODO add res_nodes to waiting_refresh_nodes_map_ pubkey => [NodePtr, NodePtr, ...]
+    waiting_refresh_nodes_.clear();
+    for (int32_t i = 0; i < res_nodes.size(); ++i) {
+        NodePtr node = std::make_shared<Node>(
+            res_nodes[i].sharding_id(),
+            res_nodes[i].public_ip(),
+            res_nodes[i].public_port(),
+            res_nodes[i].pubkey(),
+            security_->GetAddress(res_nodes[i].pubkey()));
+        waiting_refresh_nodes_.push_back(node);
+    }
+    
     for (int32_t i = 0; i < res_nodes.size(); ++i) {
         ZJC_DEBUG("connect neighbers new node: %s:%u",
             res_nodes[i].public_ip().c_str(), res_nodes[i].public_port());
@@ -730,6 +741,22 @@ void BaseDht::ProcessConnectRequest(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    
+    if (dht_msg.connect_req().is_response()) {
+        // if is response
+        // find nodes from waiting_refresh_nodes_map_ mapping by the sender node and join it
+        for (uint32_t i = 0; i < waiting_refresh_nodes_.size(); ++i) {
+            NodePtr waiting_node = waiting_refresh_nodes_[i];
+            if (dht_msg.connect_req().public_ip() == waiting_node->public_ip && dht_msg.connect_req().public_port() == waiting_node->public_port) {
+                waiting_node->join_way = kJoinFromConnect;
+                Join(waiting_node);
+            }
+        }
+        
+        return;
+    }
+
+    // if not response, join the sender node only
     NodePtr node = std::make_shared<Node>(
         header.src_sharding_id(),
         dht_msg.connect_req().public_ip(),
@@ -740,14 +767,7 @@ void BaseDht::ProcessConnectRequest(const transport::MessagePtr& msg_ptr) {
     msg_ptr->conn->SetPeerIp(dht_msg.connect_req().public_ip());
     msg_ptr->conn->SetPeerPort(dht_msg.connect_req().public_port());
     Join(node);
-    if (dht_msg.connect_req().is_response()) {
-        // if is response
-        // find nodes from waiting_refresh_nodes_map_ mapping by the sender node and join it
-        DHT_ERROR("process connect response success: %lu", msg_ptr->header.hash64());
-        return;
-    }
-    // if not response, just join the sender node
-
+    
     Connect(
         msg_ptr->thread_idx,
         dht_msg.connect_req().public_ip(),
