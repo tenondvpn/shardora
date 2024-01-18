@@ -572,13 +572,13 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                         block_item->network_id() + network::kConsensusWaitingShardOffset !=
                         common::GlobalInfo::Instance()->network_id()) {
                     // TODO 暂时屏蔽创世选举块的验签，后续通过消息体中的 commom pk 验证
-                    ZJC_DEBUG("===2 elect height is %u %u", block_item->electblock_height(), block_item->height());
+                    ZJC_DEBUG("===2.1 elect height is %u %u", block_item->electblock_height(), block_item->height());
                     if (block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item) == block::kBlockVerifyAggSignFailed) {
                         // 
                     }
                 } else { // TODO 本网络的就不用同步吗
                     block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item);
-                    ZJC_DEBUG("===2 elect height is %u %u %u %u",
+                    ZJC_DEBUG("===2.2 height is %u %u %u %u",
                               block_item->electblock_height(),
                               block_item->height(),
                               block_item->network_id(),

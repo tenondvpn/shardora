@@ -276,11 +276,25 @@ void BlockManager::HandleAllNewBlock(uint8_t thread_idx) {
         std::shared_ptr<block::protobuf::Block> block_ptr = nullptr;
         if (block_from_network_queue_.pop(&block_ptr)) {
             db::DbWriteBatch db_batch;
+            // TODO 更新 pool info，每次 AddNewBlock 之前需要更新 pool latest info
+            AddBlockItemToCache(block_ptr, db_batch);
+            
             AddNewBlock(thread_idx, block_ptr, db_batch);
         }
     }
 
     HandleAllConsensusBlocks(thread_idx);
+}
+
+void BlockManager::AddBlockItemToCache(
+        std::shared_ptr<block::protobuf::Block>& block,
+        db::DbWriteBatch& db_batch) {
+    pools::protobuf::PoolLatestInfo pool_info;
+    pool_info.set_height(block->height());
+    pool_info.set_hash(block->hash());
+    prefix_db_->SaveLatestPoolInfo(
+        block->network_id(), block->pool_index(), pool_info, db_batch);
+    ZJC_DEBUG("block manager, success add pool latest info: %u, %u, %lu", block->network_id(), block->pool_index(), block->height());
 }
 
 void BlockManager::GenesisNewBlock(

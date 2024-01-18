@@ -111,6 +111,9 @@ public:
 
 private:
     void HandleAllNewBlock(uint8_t thread_idx);
+    void AddBlockItemToCache(
+        std::shared_ptr<block::protobuf::Block>& block,
+        db::DbWriteBatch& db_batch);
     void HandleMessage(const transport::MessagePtr& msg_ptr);
     void ConsensusTimerMessage(uint8_t thread_idx);
     void HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool recreate);
