@@ -355,8 +355,8 @@ int BlockManager::NetworkNewBlock(
             return kBlockError;
         }
 
-        ZJC_DEBUG("===3 elect height is %u", block_item->electblock_height());
-        if (block_agg_valid_func_ != nullptr && !block_agg_valid_func_(thread_idx, *block_item)) {
+        ZJC_DEBUG("===3 elect height is %u %u", block_item->electblock_height(), block_item->height());
+        if (block_item->electblock_height() != 1 && block_agg_valid_func_ != nullptr && !block_agg_valid_func_(thread_idx, *block_item)) {
             ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, net: %u, pool: %u, height: %lu",
                 common::Encode::HexEncode(block_item->hash()).c_str(),
                 common::Encode::HexEncode(block_item->bls_agg_sign_x()).c_str(),

@@ -568,8 +568,8 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                         block_item->network_id() + network::kConsensusWaitingShardOffset !=
                         common::GlobalInfo::Instance()->network_id()) {
                     // TODO 暂时屏蔽创世选举块的验签，后续通过消息体中的 commom pk 验证
-                    ZJC_DEBUG("===2 elect height is %u", block_item->electblock_height());
-                    if (block_item->electblock_height() != 1 && block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item) == block::kBlockVerifyAggSignFailed) {
+                    ZJC_DEBUG("===2 elect height is %u %u", block_item->electblock_height(), block_item->height());
+                    if (block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item) == block::kBlockVerifyAggSignFailed) {
                         // 
                     }
                 }

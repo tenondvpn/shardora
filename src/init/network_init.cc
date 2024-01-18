@@ -1408,7 +1408,7 @@ bool NetworkInit::BlockBlsAggSignatureValid(
             block.network_id(),
             block.electblock_height(),
             (common_pk == libff::alt_bn128_G2::zero()));
-        ZJC_DEBUG("===1, elect height is %u", block.electblock_height());
+        ZJC_DEBUG("===1 elect height is %u %u", block.electblock_height(), block.height());
         kv_sync_->AddSyncElectBlock(
            thread_idx,
            network::kRootCongressNetworkId,
