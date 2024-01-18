@@ -161,7 +161,9 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
                 height_item->set_height(item->height);
                 height_item->set_tag(item->tag);
                 if (item->tag == kElectBlock) {
-                    ZJC_DEBUG("sync get elect block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
+                    ZJC_DEBUG("try to sync elect block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
+                } else {
+                    ZJC_DEBUG("try to sync normal block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
                 }
             } else {
                 sync_req->add_keys(item->key);
@@ -186,6 +188,7 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
             }
 
             ++(item->sync_times);
+            ZJC_DEBUG("sync block req sent, key: %s, %u_%u_%lu", item->key.c_str(), item->network_id, item->pool_idx, item->height);
             synced_map_.insert(std::make_pair(item->key, item));
             item->sync_tm_us = now_tm;
             if (synced_map_.size() > kSyncMaxKeyCount) {
@@ -578,6 +581,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
 
         auto tmp_iter = synced_map_.find(key);
         if (tmp_iter != synced_map_.end()) {
+            ZJC_DEBUG("===4 key response: %s", tmp_iter->second->key.c_str());
             added_key_set_.erase(tmp_iter->second->key);
             synced_map_.erase(tmp_iter);
         } else {
