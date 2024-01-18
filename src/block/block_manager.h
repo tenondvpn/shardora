@@ -46,7 +46,8 @@ public:
         block::BlockAggValidCallback block_agg_valid_func);
     int NetworkNewBlock(
         uint8_t thread_idx,
-        const std::shared_ptr<block::protobuf::Block>& block_item);
+        const std::shared_ptr<block::protobuf::Block>& block_item,
+        const bool need_valid);
     // just for genesis create new block
     void GenesisNewBlock(
         uint8_t thread_idx,
@@ -112,6 +113,7 @@ public:
 private:
     void HandleAllNewBlock(uint8_t thread_idx);
     void AddBlockItemToCache(
+        uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch);
     void HandleMessage(const transport::MessagePtr& msg_ptr);

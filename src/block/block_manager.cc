@@ -277,7 +277,7 @@ void BlockManager::HandleAllNewBlock(uint8_t thread_idx) {
         if (block_from_network_queue_.pop(&block_ptr)) {
             db::DbWriteBatch db_batch;
             // TODO 更新 pool info，每次 AddNewBlock 之前需要更新 pool latest info
-            AddBlockItemToCache(block_ptr, db_batch);
+            AddBlockItemToCache(thread_idx, block_ptr, db_batch);
             
             AddNewBlock(thread_idx, block_ptr, db_batch);
         }
@@ -286,20 +286,65 @@ void BlockManager::HandleAllNewBlock(uint8_t thread_idx) {
     HandleAllConsensusBlocks(thread_idx);
 }
 
+// 更新 pool 最新状态
 void BlockManager::AddBlockItemToCache(
+        uint8_t thread_idx,
         std::shared_ptr<block::protobuf::Block>& block,
         db::DbWriteBatch& db_batch) {
-    pools::protobuf::PoolLatestInfo pool_info;
-    pool_info.set_height(block->height());
-    pool_info.set_hash(block->hash());
-    prefix_db_->SaveLatestPoolInfo(
-        block->network_id(), block->pool_index(), pool_info, db_batch);
-    ZJC_DEBUG("block manager, success add pool latest info: %u, %u, %lu", block->network_id(), block->pool_index(), block->height());
+    if (!block->is_commited_block()) {
+        assert(false);
+        return;
+    }
+
+    if (prefix_db_->BlockExists(block->hash())) {
+        ZJC_DEBUG("failed cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
+                  block->network_id(),
+                  block->pool_index(),
+                  block->height(),
+                  block->tx_list_size(),
+                  common::Encode::HexEncode(block->hash()).c_str());
+        return;
+    }
+
+    if (prefix_db_->BlockExists(block->network_id(), block->pool_index(), block->height())) {
+        ZJC_DEBUG("failed cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
+                  block->network_id(),
+                  block->pool_index(),
+                  block->height(),
+                  block->tx_list_size(),
+                  common::Encode::HexEncode(block->hash()).c_str());
+        return;
+    }
+
+    const auto& tx_list = block->tx_list();
+    if (tx_list.empty()) {
+        assert(false);
+        return;
+    }
+
+    ZJC_DEBUG("block manager cache new block coming sharding id: %u, pool: %d, height: %lu, tx size: %u, hash: %s",
+              block->network_id(),
+              block->pool_index(),
+              block->height(),
+              block->tx_list_size(),
+              common::Encode::HexEncode(block->hash()).c_str());
+    if (block->network_id() == common::GlobalInfo::Instance()->network_id() ||
+        block->network_id() + network::kConsensusWaitingShardOffset ==
+        common::GlobalInfo::Instance()->network_id()) {
+        pools_mgr_->UpdateLatestInfo(
+            thread_idx,
+            block->network_id(),
+            block->pool_index(),
+            block->height(),
+            block->hash(),
+            block->prehash(),
+            db_batch);
+    }
 }
 
 void BlockManager::GenesisNewBlock(
-        uint8_t thread_idx,
-        const std::shared_ptr<block::protobuf::Block>& block_item) {
+    uint8_t thread_idx,
+    const std::shared_ptr<block::protobuf::Block>& block_item) {
     db::DbWriteBatch db_batch;
     AddNewBlock(thread_idx, block_item, db_batch);
 }
@@ -357,7 +402,8 @@ void BlockManager::CheckWaitingBlocks(uint8_t thread_idx, uint32_t shard, uint64
 
 int BlockManager::NetworkNewBlock(
         uint8_t thread_idx,
-        const std::shared_ptr<block::protobuf::Block>& block_item) {
+        const std::shared_ptr<block::protobuf::Block>& block_item,
+        const bool need_valid) {
     if (block_item != nullptr) {
         if (!block_item->is_commited_block()) {
             ZJC_ERROR("not cross block coming: %s, signx: %s, net: %u, pool: %u, height: %lu",
@@ -371,7 +417,8 @@ int BlockManager::NetworkNewBlock(
         }
 
         ZJC_DEBUG("===3 elect height is %u %u", block_item->electblock_height(), block_item->height());
-        if (block_item->electblock_height() != 1 && block_agg_valid_func_ != nullptr && !block_agg_valid_func_(thread_idx, *block_item)) {
+        // TODO 只有 kElectBlock 同步有 1 不需要验签的逻辑
+        if (need_valid && block_agg_valid_func_ != nullptr && !block_agg_valid_func_(thread_idx, *block_item)) {
             ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, net: %u, pool: %u, height: %lu",
                 common::Encode::HexEncode(block_item->hash()).c_str(),
                 common::Encode::HexEncode(block_item->bls_agg_sign_x()).c_str(),
