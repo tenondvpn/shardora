@@ -569,7 +569,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
             auto block_item = std::make_shared<block::protobuf::Block>();
             if (block_item->ParseFromString(iter->value())) {
                 // 对于选举块同步来说，创世选举块不需要验签
-                bool need_valid = (block_item->electblock_height() != 1 && iter->tag() == kElectBlock);
+                bool need_valid = (block_item->electblock_height() != 1 || iter->tag() != kElectBlock);
                 // 针对 root 网络的选举块同步
                 if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
                         block_item->network_id() + network::kConsensusWaitingShardOffset !=
