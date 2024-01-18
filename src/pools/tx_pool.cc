@@ -87,17 +87,17 @@ uint32_t TxPool::SyncMissingBlocks(uint8_t thread_idx, uint64_t now_tm_ms) {
         for (uint32_t i = 0; i < invalid_heights.size(); ++i) {
             if (prefix_db_->BlockExists(net_id, pool_index_, invalid_heights[i])) {
                 height_tree_ptr_->Set(invalid_heights[i]);
-//                 ZJC_DEBUG("pool exists des shard: %u, pool: %u, sync missing blocks latest height: %lu,"
-//                     "invaid heights size: %u, height: %lu",
-//                     net_id, pool_index_, latest_height_,
-//                     invalid_heights.size(), invalid_heights[i]);
+                ZJC_DEBUG("pool exists des shard: %u, pool: %u, sync missing blocks latest height: %lu,"
+                    "invaid heights size: %u, height: %lu",
+                    net_id, pool_index_, latest_height_,
+                    invalid_heights.size(), invalid_heights[i]);
                 continue;
             }
 
-//             ZJC_DEBUG("pool des shard: %u, pool: %u, sync missing blocks latest height: %lu,"
-//                 "invaid heights size: %u, height: %lu",
-//                 net_id, pool_index_, latest_height_,
-//                 invalid_heights.size(), invalid_heights[i]);
+            ZJC_DEBUG("pool des shard: %u, pool: %u, sync missing blocks latest height: %lu,"
+                "invaid heights size: %u, height: %lu",
+                net_id, pool_index_, latest_height_,
+                invalid_heights.size(), invalid_heights[i]);
             kv_sync_->AddSyncHeight(
                 thread_idx,
                 net_id,
