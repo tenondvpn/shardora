@@ -271,6 +271,7 @@ void BlockManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 }
 
 void BlockManager::HandleAllNewBlock(uint8_t thread_idx) {
+    // 同步的 NetworkNewBlock 也会走这个逻辑
     while (block_from_network_queue_.size() > 0) {
         std::shared_ptr<block::protobuf::Block> block_ptr = nullptr;
         if (block_from_network_queue_.pop(&block_ptr)) {

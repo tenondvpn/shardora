@@ -567,6 +567,7 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 std::to_string(iter->height());
             auto block_item = std::make_shared<block::protobuf::Block>();
             if (block_item->ParseFromString(iter->value())) {
+                // 非本网络的同步
                 if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
                         block_item->network_id() + network::kConsensusWaitingShardOffset !=
                         common::GlobalInfo::Instance()->network_id()) {
@@ -575,6 +576,14 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                     if (block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item) == block::kBlockVerifyAggSignFailed) {
                         // 
                     }
+                } else { // TODO 本网络的就不用同步吗
+                    block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item);
+                    ZJC_DEBUG("===2 elect height is %u %u %u %u",
+                              block_item->electblock_height(),
+                              block_item->height(),
+                              block_item->network_id(),
+                              block_item->pool_index());
+                    
                 }
             }
         }
