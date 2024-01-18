@@ -277,7 +277,7 @@ void BlockManager::HandleAllNewBlock(uint8_t thread_idx) {
         if (block_from_network_queue_.pop(&block_ptr)) {
             db::DbWriteBatch db_batch;
             // TODO 更新 pool info，每次 AddNewBlock 之前需要更新 pool latest info
-            // AddBlockItemToCache(thread_idx, block_ptr, db_batch);
+            AddBlockItemToCache(thread_idx, block_ptr, db_batch);
             
             AddNewBlock(thread_idx, block_ptr, db_batch);
         }
