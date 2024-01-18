@@ -13,6 +13,7 @@
 #include "protos/block.pb.h"
 #include "protos/elect.pb.h"
 #include "transport/processor.h"
+#include <common/log.h>
 
 namespace zjchain {
 
@@ -354,6 +355,7 @@ int BlockManager::NetworkNewBlock(
             return kBlockError;
         }
 
+        ZJC_DEBUG("===3 elect height is %u", block_item->electblock_height());
         if (block_agg_valid_func_ != nullptr && !block_agg_valid_func_(thread_idx, *block_item)) {
             ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, net: %u, pool: %u, height: %lu",
                 common::Encode::HexEncode(block_item->hash()).c_str(),
@@ -1003,6 +1005,7 @@ void BlockManager::HandleElectTx(
                 ZJC_DEBUG("success erase elect tx: %u", elect_block.shard_network_id());
             }
 
+            // 将 elect block 中的 common_pk 持久化
             if (elect_block.prev_members().prev_elect_height() > 0) {
                 prefix_db_->SaveElectHeightCommonPk(
                     elect_block.shard_network_id(),

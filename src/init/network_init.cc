@@ -1,4 +1,5 @@
 #include "init/network_init.h"
+#include <common/log.h>
 #include <functional>
 
 #include "block/block_manager.h"
@@ -1407,7 +1408,8 @@ bool NetworkInit::BlockBlsAggSignatureValid(
             block.network_id(),
             block.electblock_height(),
             (common_pk == libff::alt_bn128_G2::zero()));
-       kv_sync_->AddSyncElectBlock(
+        ZJC_DEBUG("===1, elect height is %u", block.electblock_height());
+        kv_sync_->AddSyncElectBlock(
            thread_idx,
            network::kRootCongressNetworkId,
            block.network_id(), // 2
