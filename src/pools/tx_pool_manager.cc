@@ -841,9 +841,13 @@ void TxPoolManager::HandleElectTx(const transport::MessagePtr& msg_ptr) {
         assert(false);
         return;
     }
-
     tx_msg.set_key(protos::kJoinElectVerifyG2);
     tx_msg.set_value(new_hash);
+    
+    ZJC_DEBUG("elect tx msg hash is %s", common::Encode::HexEncode(msg_ptr->msg_hash).c_str());
+    msg_ptr->msg_hash = msg_hash;
+    
+    // TODO msg_ptr->msg_hash 为空
     if (prefix_db_->GidExists(msg_ptr->msg_hash)) {
         // avoid save gid different tx
         ZJC_DEBUG("tx msg hash exists: %s failed!",
@@ -1095,6 +1099,7 @@ void TxPoolManager::HandleNormalFromTx(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    // TODO msg_ptr->msg_hash 是否为空？
     // 转账交易，验证签名
     if (tx_msg.step() == pools::protobuf::kNormalFrom) {
         if (security_->Verify(
