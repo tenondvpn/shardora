@@ -563,13 +563,7 @@ async function test_transfers() {
     }
 }
 
-async function main() {
-	// for (var i = 0; i < 10; ++i) {
-	// 	// 测试合约执行、合约查询
-	// 	await test_contracts();
-	// 	// 测试跨分片转账
-	// 	await test_transfers();
-	// }
+async function create_new_node() {
 	var sk_new = "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db999";
 	var from_sk = sk1_shard3;
 	init_private_key(from_sk);
@@ -590,6 +584,17 @@ async function main() {
 		
         console.log(res);        
     });
+}
+
+async function main() {
+	for (var i = 0; i < 50; ++i) {
+		// 测试合约执行、合约查询
+		await test_contracts();
+		// 测试跨分片转账
+		await test_transfers();
+	}
+
+	await create_new_node();
 }
 
 main();
