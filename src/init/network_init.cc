@@ -641,6 +641,7 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
 
     msg.set_sign(sign);
     msg_ptr->thread_idx = thread_idx;
+    // msg_ptr->msg_hash = tx_hash; // TxPoolmanager::HandleElectTx 接收端计算了，这里不必传输
     network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("success send join elect request transaction: %u, join: %u, gid: %s, "
         "hash64: %lu, tx hash: %s, pk: %s sign: %s",
