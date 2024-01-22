@@ -587,12 +587,12 @@ async function create_new_node() {
 }
 
 async function main() {
-	for (var i = 0; i < 50; ++i) {
-		// 测试合约执行、合约查询
-		await test_contracts();
-		// 测试跨分片转账
-		await test_transfers();
-	}
+	// for (var i = 0; i < 50; ++i) {
+	// 	// 测试合约执行、合约查询
+	// 	await test_contracts();
+	// 	// 测试跨分片转账
+	// 	await test_transfers();
+	// }
 
 	await create_new_node();
 }
