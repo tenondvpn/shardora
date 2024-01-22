@@ -583,8 +583,8 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     // if (common::GlobalInfo::Instance()->for_ck_server()) {
     //     return;
     // }
-
-    if (common::GlobalInfo::Instance()->network_id() < network::kConsensusShardEndNetworkId) {
+    
+    if (common::GlobalInfo::Instance()->network_id() < network::kConsensusShardEndNetworkId && !another_join_elect_msg_needed_) {
         return;
     }
 
@@ -1375,12 +1375,21 @@ void NetworkInit::HandleElectionBlock(
     network::UniversalManager::Instance()->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
     ZJC_DEBUG("1 success called election block. height: %lu, elect height: %lu, used elect height: %lu, net: %u, local net id: %u",
         block->height(), elect_height, block->electblock_height(), elect_block->shard_network_id(), common::GlobalInfo::Instance()->network_id());
+    
+    // 从候选池申请加入共识池
     if (sharding_id + network::kConsensusWaitingShardOffset ==
             common::GlobalInfo::Instance()->network_id()) {
         join_elect_tick_.CutOff(
             uint64_t(rand()) % (common::kTimeBlockCreatePeriodSeconds / 4 * 3 * 1000000lu),
             std::bind(&NetworkInit::SendJoinElectTransaction, this, std::placeholders::_1));
-        ZJC_DEBUG("now send join elect request transaction.");
+        ZJC_DEBUG("now send join elect request transaction. first message.");
+        another_join_elect_msg_needed_ = true;
+    } else if (another_join_elect_msg_needed_ && sharding_id == common::GlobalInfo::Instance()->network_id()) {
+        join_elect_tick_.CutOff(
+            uint64_t(rand()) % (common::kTimeBlockCreatePeriodSeconds / 4 * 3 * 1000000lu),
+            std::bind(&NetworkInit::SendJoinElectTransaction, this, std::placeholders::_1));
+        ZJC_DEBUG("now send join elect request transaction. second message.");
+        another_join_elect_msg_needed_ = false;
     }
 }
 
