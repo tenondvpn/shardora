@@ -584,7 +584,7 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     //     return;
     // }
     
-    if (common::GlobalInfo::Instance()->network_id() < network::kConsensusShardEndNetworkId && !another_join_elect_msg_needed_) {
+    if (common::GlobalInfo::Instance()->network_id() < network::kConsensusShardBeginNetworkId) {
         return;
     }
 
