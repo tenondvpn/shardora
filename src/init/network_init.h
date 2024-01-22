@@ -114,8 +114,7 @@ private:
     uint32_t invalid_pools_[common::kInvalidPoolIndex] = { 0 };
     uint64_t latest_elect_height_ = 0;
     std::shared_ptr<LeaderRotationInfo> rotation_leaders_ = nullptr;
-    // 新节点加入共识池需要发送两次 JoinElect
-    // 由于 N 共识池基于 N-2 共识池选举得到，如果只发送一次，则 N+1, N+3, N+5... 轮次无法参与共识
+    // 是否还需要发送一次 JoinElect
     bool another_join_elect_msg_needed_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(NetworkInit);

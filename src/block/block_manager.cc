@@ -13,7 +13,6 @@
 #include "protos/block.pb.h"
 #include "protos/elect.pb.h"
 #include "transport/processor.h"
-#include <common/log.h>
 
 namespace zjchain {
 

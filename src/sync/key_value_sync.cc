@@ -65,8 +65,8 @@ void KeyValueSync::AddSyncHeight(
 
 void KeyValueSync::AddSyncElectBlock(
         uint8_t thread_idx,
-        uint32_t network_id, //
-        uint32_t elect_network_id, // 2
+        uint32_t network_id,
+        uint32_t elect_network_id,
         uint64_t height,
         uint32_t priority) {
     assert(priority <= kSyncHighest);
@@ -188,7 +188,6 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
             }
 
             ++(item->sync_times);
-            ZJC_DEBUG("sync block req sent, key: %s, %u_%u_%lu", item->key.c_str(), item->network_id, item->pool_idx, item->height);
             synced_map_.insert(std::make_pair(item->key, item));
             item->sync_tm_us = now_tm;
             if (synced_map_.size() > kSyncMaxKeyCount) {
@@ -516,7 +515,7 @@ void KeyValueSync::ResponseElectBlock(
         res->set_pool_idx(block.pool_index());
         res->set_height(block.height());
         res->set_value(block.SerializeAsString());
-        res->set_tag(kElectBlock);
+        res->set_tag(kElectBlock); // no use
         add_size += 16 + res->value().size();
         ZJC_DEBUG("block success network: %u, pool: %lu, height: %lu, add_size: %u, kSyncPacketMaxSize: %u",
             block.network_id(), block.pool_index(), block.height(), add_size, kSyncPacketMaxSize);
@@ -575,11 +574,11 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                         block_item->network_id() + network::kConsensusWaitingShardOffset !=
                         common::GlobalInfo::Instance()->network_id()) {
                     // TODO 暂时屏蔽创世选举块的验签，后续通过消息体中的 commom pk 验证
-                    ZJC_DEBUG("===2.1 elect height is %u %u", block_item->electblock_height(), block_item->height());
+                    ZJC_DEBUG("sync elect block, elect height: %u, height: %u", block_item->electblock_height(), block_item->height());
                     block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item, need_valid);
                 } else { // TODO 本网络的就不用同步吗？
                     block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item, need_valid);
-                    ZJC_DEBUG("===2.2 height is %u %u %u %u",
+                    ZJC_DEBUG("sync normal block, elect height: %u, height: %u, network_id: %u, pool: %u",
                               block_item->electblock_height(),
                               block_item->height(),
                               block_item->network_id(),
@@ -591,7 +590,6 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
 
         auto tmp_iter = synced_map_.find(key);
         if (tmp_iter != synced_map_.end()) {
-            ZJC_DEBUG("===4 key response: %s", tmp_iter->second->key.c_str());
             added_key_set_.erase(tmp_iter->second->key);
             synced_map_.erase(tmp_iter);
         } else {

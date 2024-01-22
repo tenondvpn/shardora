@@ -1383,6 +1383,8 @@ void NetworkInit::HandleElectionBlock(
         block->height(), elect_height, block->electblock_height(), elect_block->shard_network_id(), common::GlobalInfo::Instance()->network_id());
     
     // 从候选池申请加入共识池
+    // 新节点加入共识池需要发送两次 JoinElect
+    // 由于 N 共识池基于 N-2 共识池选举得到，如果只发送一次，则 N+1, N+3, N+5... 轮次无法参与共识
     if (sharding_id + network::kConsensusWaitingShardOffset ==
             common::GlobalInfo::Instance()->network_id()) {
         join_elect_tick_.CutOff(
@@ -1424,11 +1426,10 @@ bool NetworkInit::BlockBlsAggSignatureValid(
             block.network_id(),
             block.electblock_height(),
             (common_pk == libff::alt_bn128_G2::zero()));
-        ZJC_DEBUG("===1 elect height is %u %u", block.electblock_height(), block.height());
         kv_sync_->AddSyncElectBlock(
            thread_idx,
            network::kRootCongressNetworkId,
-           block.network_id(), // 2
+           block.network_id(),
            block.electblock_height(),
            sync::kSyncHigh);
         return false;
