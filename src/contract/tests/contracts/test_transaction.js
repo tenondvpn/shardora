@@ -563,13 +563,12 @@ async function test_transfers() {
     }
 }
 
-async function create_new_node() {
-	var sk_new = "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db999";
+async function create_new_node(sk_new) {
 	var from_sk = sk1_shard3;
 	init_private_key(from_sk);
 	
 	var to_addr = sk_to_account(sk_new);
-	console.log(to_addr);
+	console.log("to addr: " + to_addr);
 	
 	Transfer(to_addr, 100000000, 100000, 1, randomOfArr(net_node[3]));
 	await sleep(10000);
@@ -587,14 +586,21 @@ async function create_new_node() {
 }
 
 async function main() {
-	// for (var i = 0; i < 50; ++i) {
-	// 	// 测试合约执行、合约查询
-	// 	await test_contracts();
-	// 	// 测试跨分片转账
-	// 	await test_transfers();
-	// }
+	const args = process.argv.slice(2)
+	if (args[0] == 0) {
+		for (var i = 0; i < 50; ++i) {
+			// 测试合约执行、合约查询
+			await test_contracts();
+			// 测试跨分片转账
+			await test_transfers();
+		}
+	}
 
-	await create_new_node();
+	if (args[0] == 1) {
+		// var sk_new = "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db999";
+		var sk_new = args[1];
+		await create_new_node(sk_new);	
+	}
 }
 
 main();
