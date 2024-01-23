@@ -35,6 +35,7 @@ message SyncResItem {
 	optional uint32 network_id = 3;
 	optional uint32 pool_idx = 4;
     optional uint64 height = 5;
+    optional uint32 tag = 6;
 }
 
 message SyncValueResponse {

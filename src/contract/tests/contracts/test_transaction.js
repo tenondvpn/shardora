@@ -389,6 +389,7 @@ var sk2_shard4 = "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d0819079
 var sk3_shard4 = "373a3165ec09edea6e7a1c8cff21b06f5fb074386ece283927aef730c6d44596";
 var sk_unknown = "1ef07e73ed6211e7b0a512bc6468419fbdcd9b345b49a3331b4c8f8070172a70";
 
+
 var testcases = [
     { // 同分片执行合约、同分片查询合约
         "sk": sk1_shard3, // 发起者 sk
@@ -562,12 +563,43 @@ async function test_transfers() {
     }
 }
 
+async function create_new_node(sk_new) {
+	var from_sk = sk1_shard3;
+	init_private_key(from_sk);
+	
+	var to_addr = sk_to_account(sk_new);
+	console.log("to addr: " + to_addr);
+	
+	Transfer(to_addr, 100000000, 100000, 1, randomOfArr(net_node[3]));
+	await sleep(10000);
+
+	QueryAccount(to_addr, randomOfArr(net_node[2]), function(res) {
+        // 账户已经存在
+        if (res == '') {
+            console.log("create failed");
+        }
+
+        var shard_id = res['shardingId'];
+		
+        console.log(res);        
+    });
+}
+
 async function main() {
-	for (var i = 0; i < 10; ++i) {
-		// 测试合约执行、合约查询
-		await test_contracts();
-		// 测试跨分片转账
-		await test_transfers();
+	const args = process.argv.slice(2)
+	if (args[0] == 0) {
+		for (var i = 0; i < 50; ++i) {
+			// 测试合约执行、合约查询
+			await test_contracts();
+			// 测试跨分片转账
+			await test_transfers();
+		}
+	}
+
+	if (args[0] == 1) {
+		// var sk_new = "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db999";
+		var sk_new = args[1];
+		await create_new_node(sk_new);	
 	}
 }
 

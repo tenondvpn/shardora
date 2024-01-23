@@ -39,7 +39,7 @@ namespace protobuf_protos_2fc2c_2eproto {
 struct TableStruct {
   static const ::google::protobuf::internal::ParseTableField entries[];
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
-  static const ::google::protobuf::internal::ParseTable schema[8];
+  static const ::google::protobuf::internal::ParseTable schema[7];
   static const ::google::protobuf::internal::FieldMetadata field_metadata[];
   static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static const ::google::protobuf::uint32 offsets[];
@@ -55,12 +55,9 @@ extern BuyerReportDefaultTypeInternal _BuyerReport_default_instance_;
 class C2cMessage;
 class C2cMessageDefaultTypeInternal;
 extern C2cMessageDefaultTypeInternal _C2cMessage_default_instance_;
-class GetOrders;
-class GetOrdersDefaultTypeInternal;
-extern GetOrdersDefaultTypeInternal _GetOrders_default_instance_;
-class GetSells;
-class GetSellsDefaultTypeInternal;
-extern GetSellsDefaultTypeInternal _GetSells_default_instance_;
+class GetSell;
+class GetSellDefaultTypeInternal;
+extern GetSellDefaultTypeInternal _GetSell_default_instance_;
 class NewOrder;
 class NewOrderDefaultTypeInternal;
 extern NewOrderDefaultTypeInternal _NewOrder_default_instance_;
@@ -80,8 +77,7 @@ namespace google {
 namespace protobuf {
 template<> ::zjchain::c2c::protobuf::BuyerReport* Arena::CreateMaybeMessage<::zjchain::c2c::protobuf::BuyerReport>(Arena*);
 template<> ::zjchain::c2c::protobuf::C2cMessage* Arena::CreateMaybeMessage<::zjchain::c2c::protobuf::C2cMessage>(Arena*);
-template<> ::zjchain::c2c::protobuf::GetOrders* Arena::CreateMaybeMessage<::zjchain::c2c::protobuf::GetOrders>(Arena*);
-template<> ::zjchain::c2c::protobuf::GetSells* Arena::CreateMaybeMessage<::zjchain::c2c::protobuf::GetSells>(Arena*);
+template<> ::zjchain::c2c::protobuf::GetSell* Arena::CreateMaybeMessage<::zjchain::c2c::protobuf::GetSell>(Arena*);
 template<> ::zjchain::c2c::protobuf::NewOrder* Arena::CreateMaybeMessage<::zjchain::c2c::protobuf::NewOrder>(Arena*);
 template<> ::zjchain::c2c::protobuf::NewSell* Arena::CreateMaybeMessage<::zjchain::c2c::protobuf::NewSell>(Arena*);
 template<> ::zjchain::c2c::protobuf::OrderInfo* Arena::CreateMaybeMessage<::zjchain::c2c::protobuf::OrderInfo>(Arena*);
@@ -213,10 +209,10 @@ class OrderInfo : public ::google::protobuf::Message /* @@protoc_insertion_point
 
   // accessors -------------------------------------------------------
 
-  // optional bytes buyer = 2;
+  // optional bytes buyer = 1;
   bool has_buyer() const;
   void clear_buyer();
-  static const int kBuyerFieldNumber = 2;
+  static const int kBuyerFieldNumber = 1;
   const ::std::string& buyer() const;
   void set_buyer(const ::std::string& value);
   #if LANG_CXX11
@@ -228,66 +224,33 @@ class OrderInfo : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::std::string* release_buyer();
   void set_allocated_buyer(::std::string* buyer);
 
-  // optional bytes reports_info = 6;
-  bool has_reports_info() const;
-  void clear_reports_info();
-  static const int kReportsInfoFieldNumber = 6;
-  const ::std::string& reports_info() const;
-  void set_reports_info(const ::std::string& value);
-  #if LANG_CXX11
-  void set_reports_info(::std::string&& value);
-  #endif
-  void set_reports_info(const char* value);
-  void set_reports_info(const void* value, size_t size);
-  ::std::string* mutable_reports_info();
-  ::std::string* release_reports_info();
-  void set_allocated_reports_info(::std::string* reports_info);
-
-  // optional .zjchain.c2c.protobuf.SellInfo sell = 1;
-  bool has_sell() const;
-  void clear_sell();
-  static const int kSellFieldNumber = 1;
-  private:
-  const ::zjchain::c2c::protobuf::SellInfo& _internal_sell() const;
-  public:
-  const ::zjchain::c2c::protobuf::SellInfo& sell() const;
-  ::zjchain::c2c::protobuf::SellInfo* release_sell();
-  ::zjchain::c2c::protobuf::SellInfo* mutable_sell();
-  void set_allocated_sell(::zjchain::c2c::protobuf::SellInfo* sell);
-
-  // optional uint64 amount = 5;
+  // optional uint64 amount = 3;
   bool has_amount() const;
   void clear_amount();
-  static const int kAmountFieldNumber = 5;
+  static const int kAmountFieldNumber = 3;
   ::google::protobuf::uint64 amount() const;
   void set_amount(::google::protobuf::uint64 value);
 
-  // optional .zjchain.c2c.protobuf.Status status = 4;
+  // optional .zjchain.c2c.protobuf.Status status = 2;
   bool has_status() const;
   void clear_status();
-  static const int kStatusFieldNumber = 4;
+  static const int kStatusFieldNumber = 2;
   ::zjchain::c2c::protobuf::Status status() const;
   void set_status(::zjchain::c2c::protobuf::Status value);
 
   // @@protoc_insertion_point(class_scope:zjchain.c2c.protobuf.OrderInfo)
  private:
-  void set_has_sell();
-  void clear_has_sell();
   void set_has_buyer();
   void clear_has_buyer();
   void set_has_status();
   void clear_has_status();
   void set_has_amount();
   void clear_has_amount();
-  void set_has_reports_info();
-  void clear_has_reports_info();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr buyer_;
-  ::google::protobuf::internal::ArenaStringPtr reports_info_;
-  ::zjchain::c2c::protobuf::SellInfo* sell_;
   ::google::protobuf::uint64 amount_;
   int status_;
   friend struct ::protobuf_protos_2fc2c_2eproto::TableStruct;
@@ -388,10 +351,32 @@ class SellInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
 
   // accessors -------------------------------------------------------
 
-  // optional bytes protocol_addr = 2;
+  // repeated bytes reports = 10;
+  int reports_size() const;
+  void clear_reports();
+  static const int kReportsFieldNumber = 10;
+  const ::std::string& reports(int index) const;
+  ::std::string* mutable_reports(int index);
+  void set_reports(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_reports(int index, ::std::string&& value);
+  #endif
+  void set_reports(int index, const char* value);
+  void set_reports(int index, const void* value, size_t size);
+  ::std::string* add_reports();
+  void add_reports(const ::std::string& value);
+  #if LANG_CXX11
+  void add_reports(::std::string&& value);
+  #endif
+  void add_reports(const char* value);
+  void add_reports(const void* value, size_t size);
+  const ::google::protobuf::RepeatedPtrField< ::std::string>& reports() const;
+  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_reports();
+
+  // optional bytes protocol_addr = 1;
   bool has_protocol_addr() const;
   void clear_protocol_addr();
-  static const int kProtocolAddrFieldNumber = 2;
+  static const int kProtocolAddrFieldNumber = 1;
   const ::std::string& protocol_addr() const;
   void set_protocol_addr(const ::std::string& value);
   #if LANG_CXX11
@@ -403,10 +388,10 @@ class SellInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::std::string* release_protocol_addr();
   void set_allocated_protocol_addr(::std::string* protocol_addr);
 
-  // optional bytes seller = 3;
+  // optional bytes seller = 2;
   bool has_seller() const;
   void clear_seller();
-  static const int kSellerFieldNumber = 3;
+  static const int kSellerFieldNumber = 2;
   const ::std::string& seller() const;
   void set_seller(const ::std::string& value);
   #if LANG_CXX11
@@ -418,10 +403,10 @@ class SellInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::std::string* release_seller();
   void set_allocated_seller(::std::string* seller);
 
-  // optional bytes receivable = 6;
+  // optional bytes receivable = 5;
   bool has_receivable() const;
   void clear_receivable();
-  static const int kReceivableFieldNumber = 6;
+  static const int kReceivableFieldNumber = 5;
   const ::std::string& receivable() const;
   void set_receivable(const ::std::string& value);
   #if LANG_CXX11
@@ -433,10 +418,10 @@ class SellInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::std::string* release_receivable();
   void set_allocated_receivable(::std::string* receivable);
 
-  // optional .zjchain.c2c.protobuf.OrderInfo order_info = 10;
+  // optional .zjchain.c2c.protobuf.OrderInfo order_info = 9;
   bool has_order_info() const;
   void clear_order_info();
-  static const int kOrderInfoFieldNumber = 10;
+  static const int kOrderInfoFieldNumber = 9;
   private:
   const ::zjchain::c2c::protobuf::OrderInfo& _internal_order_info() const;
   public:
@@ -445,38 +430,38 @@ class SellInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::zjchain::c2c::protobuf::OrderInfo* mutable_order_info();
   void set_allocated_order_info(::zjchain::c2c::protobuf::OrderInfo* order_info);
 
-  // optional uint64 pledge_amount = 4;
+  // optional uint64 pledge_amount = 3;
   bool has_pledge_amount() const;
   void clear_pledge_amount();
-  static const int kPledgeAmountFieldNumber = 4;
+  static const int kPledgeAmountFieldNumber = 3;
   ::google::protobuf::uint64 pledge_amount() const;
   void set_pledge_amount(::google::protobuf::uint64 value);
 
-  // optional uint64 price = 5;
+  // optional uint64 price = 4;
   bool has_price() const;
   void clear_price();
-  static const int kPriceFieldNumber = 5;
+  static const int kPriceFieldNumber = 4;
   ::google::protobuf::uint64 price() const;
   void set_price(::google::protobuf::uint64 value);
 
-  // optional bool manager_released = 7;
+  // optional bool manager_released = 6;
   bool has_manager_released() const;
   void clear_manager_released();
-  static const int kManagerReleasedFieldNumber = 7;
+  static const int kManagerReleasedFieldNumber = 6;
   bool manager_released() const;
   void set_manager_released(bool value);
 
-  // optional bool seller_released = 8;
+  // optional bool seller_released = 7;
   bool has_seller_released() const;
   void clear_seller_released();
-  static const int kSellerReleasedFieldNumber = 8;
+  static const int kSellerReleasedFieldNumber = 7;
   bool seller_released() const;
   void set_seller_released(bool value);
 
-  // optional .zjchain.c2c.protobuf.Status status = 9;
+  // optional .zjchain.c2c.protobuf.Status status = 8;
   bool has_status() const;
   void clear_status();
-  static const int kStatusFieldNumber = 9;
+  static const int kStatusFieldNumber = 8;
   ::zjchain::c2c::protobuf::Status status() const;
   void set_status(::zjchain::c2c::protobuf::Status value);
 
@@ -504,6 +489,7 @@ class SellInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> reports_;
   ::google::protobuf::internal::ArenaStringPtr protocol_addr_;
   ::google::protobuf::internal::ArenaStringPtr seller_;
   ::google::protobuf::internal::ArenaStringPtr receivable_;
@@ -954,25 +940,10 @@ class BuyerReport : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::std::string* release_seller();
   void set_allocated_seller(::std::string* seller);
 
-  // optional bytes buyer = 2;
-  bool has_buyer() const;
-  void clear_buyer();
-  static const int kBuyerFieldNumber = 2;
-  const ::std::string& buyer() const;
-  void set_buyer(const ::std::string& value);
-  #if LANG_CXX11
-  void set_buyer(::std::string&& value);
-  #endif
-  void set_buyer(const char* value);
-  void set_buyer(const void* value, size_t size);
-  ::std::string* mutable_buyer();
-  ::std::string* release_buyer();
-  void set_allocated_buyer(::std::string* buyer);
-
-  // optional bytes reports_info = 3;
+  // optional bytes reports_info = 2;
   bool has_reports_info() const;
   void clear_reports_info();
-  static const int kReportsInfoFieldNumber = 3;
+  static const int kReportsInfoFieldNumber = 2;
   const ::std::string& reports_info() const;
   void set_reports_info(const ::std::string& value);
   #if LANG_CXX11
@@ -988,8 +959,6 @@ class BuyerReport : public ::google::protobuf::Message /* @@protoc_insertion_poi
  private:
   void set_has_seller();
   void clear_has_seller();
-  void set_has_buyer();
-  void clear_has_buyer();
   void set_has_reports_info();
   void clear_has_reports_info();
 
@@ -997,30 +966,29 @@ class BuyerReport : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr seller_;
-  ::google::protobuf::internal::ArenaStringPtr buyer_;
   ::google::protobuf::internal::ArenaStringPtr reports_info_;
   friend struct ::protobuf_protos_2fc2c_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
-class GetSells : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.c2c.protobuf.GetSells) */ {
+class GetSell : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.c2c.protobuf.GetSell) */ {
  public:
-  GetSells();
-  virtual ~GetSells();
+  GetSell();
+  virtual ~GetSell();
 
-  GetSells(const GetSells& from);
+  GetSell(const GetSell& from);
 
-  inline GetSells& operator=(const GetSells& from) {
+  inline GetSell& operator=(const GetSell& from) {
     CopyFrom(from);
     return *this;
   }
   #if LANG_CXX11
-  GetSells(GetSells&& from) noexcept
-    : GetSells() {
+  GetSell(GetSell&& from) noexcept
+    : GetSell() {
     *this = ::std::move(from);
   }
 
-  inline GetSells& operator=(GetSells&& from) noexcept {
+  inline GetSell& operator=(GetSell&& from) noexcept {
     if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
       if (this != &from) InternalSwap(&from);
     } else {
@@ -1037,34 +1005,34 @@ class GetSells : public ::google::protobuf::Message /* @@protoc_insertion_point(
   }
 
   static const ::google::protobuf::Descriptor* descriptor();
-  static const GetSells& default_instance();
+  static const GetSell& default_instance();
 
   static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const GetSells* internal_default_instance() {
-    return reinterpret_cast<const GetSells*>(
-               &_GetSells_default_instance_);
+  static inline const GetSell* internal_default_instance() {
+    return reinterpret_cast<const GetSell*>(
+               &_GetSell_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     5;
 
-  void Swap(GetSells* other);
-  friend void swap(GetSells& a, GetSells& b) {
+  void Swap(GetSell* other);
+  friend void swap(GetSell& a, GetSell& b) {
     a.Swap(&b);
   }
 
   // implements Message ----------------------------------------------
 
-  inline GetSells* New() const final {
-    return CreateMaybeMessage<GetSells>(NULL);
+  inline GetSell* New() const final {
+    return CreateMaybeMessage<GetSell>(NULL);
   }
 
-  GetSells* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<GetSells>(arena);
+  GetSell* New(::google::protobuf::Arena* arena) const final {
+    return CreateMaybeMessage<GetSell>(arena);
   }
   void CopyFrom(const ::google::protobuf::Message& from) final;
   void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const GetSells& from);
-  void MergeFrom(const GetSells& from);
+  void CopyFrom(const GetSell& from);
+  void MergeFrom(const GetSell& from);
   void Clear() final;
   bool IsInitialized() const final;
 
@@ -1081,7 +1049,7 @@ class GetSells : public ::google::protobuf::Message /* @@protoc_insertion_point(
   void SharedCtor();
   void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(GetSells* other);
+  void InternalSwap(GetSell* other);
   private:
   inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
     return NULL;
@@ -1112,139 +1080,7 @@ class GetSells : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::std::string* release_seller();
   void set_allocated_seller(::std::string* seller);
 
-  // optional uint32 cout = 2;
-  bool has_cout() const;
-  void clear_cout();
-  static const int kCoutFieldNumber = 2;
-  ::google::protobuf::uint32 cout() const;
-  void set_cout(::google::protobuf::uint32 value);
-
-  // @@protoc_insertion_point(class_scope:zjchain.c2c.protobuf.GetSells)
- private:
-  void set_has_seller();
-  void clear_has_seller();
-  void set_has_cout();
-  void clear_has_cout();
-
-  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::HasBits<1> _has_bits_;
-  mutable ::google::protobuf::internal::CachedSize _cached_size_;
-  ::google::protobuf::internal::ArenaStringPtr seller_;
-  ::google::protobuf::uint32 cout_;
-  friend struct ::protobuf_protos_2fc2c_2eproto::TableStruct;
-};
-// -------------------------------------------------------------------
-
-class GetOrders : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:zjchain.c2c.protobuf.GetOrders) */ {
- public:
-  GetOrders();
-  virtual ~GetOrders();
-
-  GetOrders(const GetOrders& from);
-
-  inline GetOrders& operator=(const GetOrders& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  #if LANG_CXX11
-  GetOrders(GetOrders&& from) noexcept
-    : GetOrders() {
-    *this = ::std::move(from);
-  }
-
-  inline GetOrders& operator=(GetOrders&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-  #endif
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const GetOrders& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const GetOrders* internal_default_instance() {
-    return reinterpret_cast<const GetOrders*>(
-               &_GetOrders_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    6;
-
-  void Swap(GetOrders* other);
-  friend void swap(GetOrders& a, GetOrders& b) {
-    a.Swap(&b);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline GetOrders* New() const final {
-    return CreateMaybeMessage<GetOrders>(NULL);
-  }
-
-  GetOrders* New(::google::protobuf::Arena* arena) const final {
-    return CreateMaybeMessage<GetOrders>(arena);
-  }
-  void CopyFrom(const ::google::protobuf::Message& from) final;
-  void MergeFrom(const ::google::protobuf::Message& from) final;
-  void CopyFrom(const GetOrders& from);
-  void MergeFrom(const GetOrders& from);
-  void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input) final;
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const final;
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* target) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(GetOrders* other);
-  private:
-  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return NULL;
-  }
-  inline void* MaybeArenaPtr() const {
-    return NULL;
-  }
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional bytes seller = 1;
-  bool has_seller() const;
-  void clear_seller();
-  static const int kSellerFieldNumber = 1;
-  const ::std::string& seller() const;
-  void set_seller(const ::std::string& value);
-  #if LANG_CXX11
-  void set_seller(::std::string&& value);
-  #endif
-  void set_seller(const char* value);
-  void set_seller(const void* value, size_t size);
-  ::std::string* mutable_seller();
-  ::std::string* release_seller();
-  void set_allocated_seller(::std::string* seller);
-
-  // @@protoc_insertion_point(class_scope:zjchain.c2c.protobuf.GetOrders)
+  // @@protoc_insertion_point(class_scope:zjchain.c2c.protobuf.GetSell)
  private:
   void set_has_seller();
   void clear_has_seller();
@@ -1299,7 +1135,7 @@ class C2cMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
                &_C2cMessage_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    6;
 
   void Swap(C2cMessage* other);
   friend void swap(C2cMessage& a, C2cMessage& b) {
@@ -1363,41 +1199,17 @@ class C2cMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
   const ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::SellInfo >&
       sells() const;
 
-  // repeated .zjchain.c2c.protobuf.OrderInfo orders = 5;
-  int orders_size() const;
-  void clear_orders();
-  static const int kOrdersFieldNumber = 5;
-  ::zjchain::c2c::protobuf::OrderInfo* mutable_orders(int index);
-  ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::OrderInfo >*
-      mutable_orders();
-  const ::zjchain::c2c::protobuf::OrderInfo& orders(int index) const;
-  ::zjchain::c2c::protobuf::OrderInfo* add_orders();
-  const ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::OrderInfo >&
-      orders() const;
-
-  // repeated .zjchain.c2c.protobuf.GetSells get_sell = 6;
+  // repeated .zjchain.c2c.protobuf.GetSell get_sell = 5;
   int get_sell_size() const;
   void clear_get_sell();
-  static const int kGetSellFieldNumber = 6;
-  ::zjchain::c2c::protobuf::GetSells* mutable_get_sell(int index);
-  ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::GetSells >*
+  static const int kGetSellFieldNumber = 5;
+  ::zjchain::c2c::protobuf::GetSell* mutable_get_sell(int index);
+  ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::GetSell >*
       mutable_get_sell();
-  const ::zjchain::c2c::protobuf::GetSells& get_sell(int index) const;
-  ::zjchain::c2c::protobuf::GetSells* add_get_sell();
-  const ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::GetSells >&
+  const ::zjchain::c2c::protobuf::GetSell& get_sell(int index) const;
+  ::zjchain::c2c::protobuf::GetSell* add_get_sell();
+  const ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::GetSell >&
       get_sell() const;
-
-  // repeated .zjchain.c2c.protobuf.GetOrders get_order = 7;
-  int get_order_size() const;
-  void clear_get_order();
-  static const int kGetOrderFieldNumber = 7;
-  ::zjchain::c2c::protobuf::GetOrders* mutable_get_order(int index);
-  ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::GetOrders >*
-      mutable_get_order();
-  const ::zjchain::c2c::protobuf::GetOrders& get_order(int index) const;
-  ::zjchain::c2c::protobuf::GetOrders* add_get_order();
-  const ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::GetOrders >&
-      get_order() const;
 
   // optional .zjchain.c2c.protobuf.NewSell sell = 1;
   bool has_sell() const;
@@ -1448,9 +1260,7 @@ class C2cMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable ::google::protobuf::internal::CachedSize _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::SellInfo > sells_;
-  ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::OrderInfo > orders_;
-  ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::GetSells > get_sell_;
-  ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::GetOrders > get_order_;
+  ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::GetSell > get_sell_;
   ::zjchain::c2c::protobuf::NewSell* sell_;
   ::zjchain::c2c::protobuf::NewOrder* order_;
   ::zjchain::c2c::protobuf::BuyerReport* report_;
@@ -1467,65 +1277,7 @@ class C2cMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
 #endif  // __GNUC__
 // OrderInfo
 
-// optional .zjchain.c2c.protobuf.SellInfo sell = 1;
-inline bool OrderInfo::has_sell() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void OrderInfo::set_has_sell() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void OrderInfo::clear_has_sell() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void OrderInfo::clear_sell() {
-  if (sell_ != NULL) sell_->Clear();
-  clear_has_sell();
-}
-inline const ::zjchain::c2c::protobuf::SellInfo& OrderInfo::_internal_sell() const {
-  return *sell_;
-}
-inline const ::zjchain::c2c::protobuf::SellInfo& OrderInfo::sell() const {
-  const ::zjchain::c2c::protobuf::SellInfo* p = sell_;
-  // @@protoc_insertion_point(field_get:zjchain.c2c.protobuf.OrderInfo.sell)
-  return p != NULL ? *p : *reinterpret_cast<const ::zjchain::c2c::protobuf::SellInfo*>(
-      &::zjchain::c2c::protobuf::_SellInfo_default_instance_);
-}
-inline ::zjchain::c2c::protobuf::SellInfo* OrderInfo::release_sell() {
-  // @@protoc_insertion_point(field_release:zjchain.c2c.protobuf.OrderInfo.sell)
-  clear_has_sell();
-  ::zjchain::c2c::protobuf::SellInfo* temp = sell_;
-  sell_ = NULL;
-  return temp;
-}
-inline ::zjchain::c2c::protobuf::SellInfo* OrderInfo::mutable_sell() {
-  set_has_sell();
-  if (sell_ == NULL) {
-    auto* p = CreateMaybeMessage<::zjchain::c2c::protobuf::SellInfo>(GetArenaNoVirtual());
-    sell_ = p;
-  }
-  // @@protoc_insertion_point(field_mutable:zjchain.c2c.protobuf.OrderInfo.sell)
-  return sell_;
-}
-inline void OrderInfo::set_allocated_sell(::zjchain::c2c::protobuf::SellInfo* sell) {
-  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == NULL) {
-    delete sell_;
-  }
-  if (sell) {
-    ::google::protobuf::Arena* submessage_arena = NULL;
-    if (message_arena != submessage_arena) {
-      sell = ::google::protobuf::internal::GetOwnedMessage(
-          message_arena, sell, submessage_arena);
-    }
-    set_has_sell();
-  } else {
-    clear_has_sell();
-  }
-  sell_ = sell;
-  // @@protoc_insertion_point(field_set_allocated:zjchain.c2c.protobuf.OrderInfo.sell)
-}
-
-// optional bytes buyer = 2;
+// optional bytes buyer = 1;
 inline bool OrderInfo::has_buyer() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -1591,15 +1343,15 @@ inline void OrderInfo::set_allocated_buyer(::std::string* buyer) {
   // @@protoc_insertion_point(field_set_allocated:zjchain.c2c.protobuf.OrderInfo.buyer)
 }
 
-// optional .zjchain.c2c.protobuf.Status status = 4;
+// optional .zjchain.c2c.protobuf.Status status = 2;
 inline bool OrderInfo::has_status() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void OrderInfo::set_has_status() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void OrderInfo::clear_has_status() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void OrderInfo::clear_status() {
   status_ = 0;
@@ -1616,15 +1368,15 @@ inline void OrderInfo::set_status(::zjchain::c2c::protobuf::Status value) {
   // @@protoc_insertion_point(field_set:zjchain.c2c.protobuf.OrderInfo.status)
 }
 
-// optional uint64 amount = 5;
+// optional uint64 amount = 3;
 inline bool OrderInfo::has_amount() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void OrderInfo::set_has_amount() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void OrderInfo::clear_has_amount() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void OrderInfo::clear_amount() {
   amount_ = GOOGLE_ULONGLONG(0);
@@ -1640,77 +1392,11 @@ inline void OrderInfo::set_amount(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:zjchain.c2c.protobuf.OrderInfo.amount)
 }
 
-// optional bytes reports_info = 6;
-inline bool OrderInfo::has_reports_info() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void OrderInfo::set_has_reports_info() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void OrderInfo::clear_has_reports_info() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void OrderInfo::clear_reports_info() {
-  reports_info_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_reports_info();
-}
-inline const ::std::string& OrderInfo::reports_info() const {
-  // @@protoc_insertion_point(field_get:zjchain.c2c.protobuf.OrderInfo.reports_info)
-  return reports_info_.GetNoArena();
-}
-inline void OrderInfo::set_reports_info(const ::std::string& value) {
-  set_has_reports_info();
-  reports_info_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.c2c.protobuf.OrderInfo.reports_info)
-}
-#if LANG_CXX11
-inline void OrderInfo::set_reports_info(::std::string&& value) {
-  set_has_reports_info();
-  reports_info_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.c2c.protobuf.OrderInfo.reports_info)
-}
-#endif
-inline void OrderInfo::set_reports_info(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_reports_info();
-  reports_info_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.c2c.protobuf.OrderInfo.reports_info)
-}
-inline void OrderInfo::set_reports_info(const void* value, size_t size) {
-  set_has_reports_info();
-  reports_info_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.c2c.protobuf.OrderInfo.reports_info)
-}
-inline ::std::string* OrderInfo::mutable_reports_info() {
-  set_has_reports_info();
-  // @@protoc_insertion_point(field_mutable:zjchain.c2c.protobuf.OrderInfo.reports_info)
-  return reports_info_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* OrderInfo::release_reports_info() {
-  // @@protoc_insertion_point(field_release:zjchain.c2c.protobuf.OrderInfo.reports_info)
-  if (!has_reports_info()) {
-    return NULL;
-  }
-  clear_has_reports_info();
-  return reports_info_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void OrderInfo::set_allocated_reports_info(::std::string* reports_info) {
-  if (reports_info != NULL) {
-    set_has_reports_info();
-  } else {
-    clear_has_reports_info();
-  }
-  reports_info_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), reports_info);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.c2c.protobuf.OrderInfo.reports_info)
-}
-
 // -------------------------------------------------------------------
 
 // SellInfo
 
-// optional bytes protocol_addr = 2;
+// optional bytes protocol_addr = 1;
 inline bool SellInfo::has_protocol_addr() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -1776,7 +1462,7 @@ inline void SellInfo::set_allocated_protocol_addr(::std::string* protocol_addr) 
   // @@protoc_insertion_point(field_set_allocated:zjchain.c2c.protobuf.SellInfo.protocol_addr)
 }
 
-// optional bytes seller = 3;
+// optional bytes seller = 2;
 inline bool SellInfo::has_seller() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -1842,7 +1528,7 @@ inline void SellInfo::set_allocated_seller(::std::string* seller) {
   // @@protoc_insertion_point(field_set_allocated:zjchain.c2c.protobuf.SellInfo.seller)
 }
 
-// optional uint64 pledge_amount = 4;
+// optional uint64 pledge_amount = 3;
 inline bool SellInfo::has_pledge_amount() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -1866,7 +1552,7 @@ inline void SellInfo::set_pledge_amount(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:zjchain.c2c.protobuf.SellInfo.pledge_amount)
 }
 
-// optional uint64 price = 5;
+// optional uint64 price = 4;
 inline bool SellInfo::has_price() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
@@ -1890,7 +1576,7 @@ inline void SellInfo::set_price(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:zjchain.c2c.protobuf.SellInfo.price)
 }
 
-// optional bytes receivable = 6;
+// optional bytes receivable = 5;
 inline bool SellInfo::has_receivable() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -1956,7 +1642,7 @@ inline void SellInfo::set_allocated_receivable(::std::string* receivable) {
   // @@protoc_insertion_point(field_set_allocated:zjchain.c2c.protobuf.SellInfo.receivable)
 }
 
-// optional bool manager_released = 7;
+// optional bool manager_released = 6;
 inline bool SellInfo::has_manager_released() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
@@ -1980,7 +1666,7 @@ inline void SellInfo::set_manager_released(bool value) {
   // @@protoc_insertion_point(field_set:zjchain.c2c.protobuf.SellInfo.manager_released)
 }
 
-// optional bool seller_released = 8;
+// optional bool seller_released = 7;
 inline bool SellInfo::has_seller_released() const {
   return (_has_bits_[0] & 0x00000080u) != 0;
 }
@@ -2004,7 +1690,7 @@ inline void SellInfo::set_seller_released(bool value) {
   // @@protoc_insertion_point(field_set:zjchain.c2c.protobuf.SellInfo.seller_released)
 }
 
-// optional .zjchain.c2c.protobuf.Status status = 9;
+// optional .zjchain.c2c.protobuf.Status status = 8;
 inline bool SellInfo::has_status() const {
   return (_has_bits_[0] & 0x00000100u) != 0;
 }
@@ -2029,7 +1715,7 @@ inline void SellInfo::set_status(::zjchain::c2c::protobuf::Status value) {
   // @@protoc_insertion_point(field_set:zjchain.c2c.protobuf.SellInfo.status)
 }
 
-// optional .zjchain.c2c.protobuf.OrderInfo order_info = 10;
+// optional .zjchain.c2c.protobuf.OrderInfo order_info = 9;
 inline bool SellInfo::has_order_info() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -2085,6 +1771,75 @@ inline void SellInfo::set_allocated_order_info(::zjchain::c2c::protobuf::OrderIn
   }
   order_info_ = order_info;
   // @@protoc_insertion_point(field_set_allocated:zjchain.c2c.protobuf.SellInfo.order_info)
+}
+
+// repeated bytes reports = 10;
+inline int SellInfo::reports_size() const {
+  return reports_.size();
+}
+inline void SellInfo::clear_reports() {
+  reports_.Clear();
+}
+inline const ::std::string& SellInfo::reports(int index) const {
+  // @@protoc_insertion_point(field_get:zjchain.c2c.protobuf.SellInfo.reports)
+  return reports_.Get(index);
+}
+inline ::std::string* SellInfo::mutable_reports(int index) {
+  // @@protoc_insertion_point(field_mutable:zjchain.c2c.protobuf.SellInfo.reports)
+  return reports_.Mutable(index);
+}
+inline void SellInfo::set_reports(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:zjchain.c2c.protobuf.SellInfo.reports)
+  reports_.Mutable(index)->assign(value);
+}
+#if LANG_CXX11
+inline void SellInfo::set_reports(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:zjchain.c2c.protobuf.SellInfo.reports)
+  reports_.Mutable(index)->assign(std::move(value));
+}
+#endif
+inline void SellInfo::set_reports(int index, const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  reports_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:zjchain.c2c.protobuf.SellInfo.reports)
+}
+inline void SellInfo::set_reports(int index, const void* value, size_t size) {
+  reports_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:zjchain.c2c.protobuf.SellInfo.reports)
+}
+inline ::std::string* SellInfo::add_reports() {
+  // @@protoc_insertion_point(field_add_mutable:zjchain.c2c.protobuf.SellInfo.reports)
+  return reports_.Add();
+}
+inline void SellInfo::add_reports(const ::std::string& value) {
+  reports_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:zjchain.c2c.protobuf.SellInfo.reports)
+}
+#if LANG_CXX11
+inline void SellInfo::add_reports(::std::string&& value) {
+  reports_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:zjchain.c2c.protobuf.SellInfo.reports)
+}
+#endif
+inline void SellInfo::add_reports(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  reports_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:zjchain.c2c.protobuf.SellInfo.reports)
+}
+inline void SellInfo::add_reports(const void* value, size_t size) {
+  reports_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:zjchain.c2c.protobuf.SellInfo.reports)
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+SellInfo::reports() const {
+  // @@protoc_insertion_point(field_list:zjchain.c2c.protobuf.SellInfo.reports)
+  return reports_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+SellInfo::mutable_reports() {
+  // @@protoc_insertion_point(field_mutable_list:zjchain.c2c.protobuf.SellInfo.reports)
+  return &reports_;
 }
 
 // -------------------------------------------------------------------
@@ -2567,81 +2322,15 @@ inline void BuyerReport::set_allocated_seller(::std::string* seller) {
   // @@protoc_insertion_point(field_set_allocated:zjchain.c2c.protobuf.BuyerReport.seller)
 }
 
-// optional bytes buyer = 2;
-inline bool BuyerReport::has_buyer() const {
+// optional bytes reports_info = 2;
+inline bool BuyerReport::has_reports_info() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void BuyerReport::set_has_buyer() {
+inline void BuyerReport::set_has_reports_info() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void BuyerReport::clear_has_buyer() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void BuyerReport::clear_buyer() {
-  buyer_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_buyer();
-}
-inline const ::std::string& BuyerReport::buyer() const {
-  // @@protoc_insertion_point(field_get:zjchain.c2c.protobuf.BuyerReport.buyer)
-  return buyer_.GetNoArena();
-}
-inline void BuyerReport::set_buyer(const ::std::string& value) {
-  set_has_buyer();
-  buyer_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.c2c.protobuf.BuyerReport.buyer)
-}
-#if LANG_CXX11
-inline void BuyerReport::set_buyer(::std::string&& value) {
-  set_has_buyer();
-  buyer_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.c2c.protobuf.BuyerReport.buyer)
-}
-#endif
-inline void BuyerReport::set_buyer(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_buyer();
-  buyer_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.c2c.protobuf.BuyerReport.buyer)
-}
-inline void BuyerReport::set_buyer(const void* value, size_t size) {
-  set_has_buyer();
-  buyer_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.c2c.protobuf.BuyerReport.buyer)
-}
-inline ::std::string* BuyerReport::mutable_buyer() {
-  set_has_buyer();
-  // @@protoc_insertion_point(field_mutable:zjchain.c2c.protobuf.BuyerReport.buyer)
-  return buyer_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* BuyerReport::release_buyer() {
-  // @@protoc_insertion_point(field_release:zjchain.c2c.protobuf.BuyerReport.buyer)
-  if (!has_buyer()) {
-    return NULL;
-  }
-  clear_has_buyer();
-  return buyer_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void BuyerReport::set_allocated_buyer(::std::string* buyer) {
-  if (buyer != NULL) {
-    set_has_buyer();
-  } else {
-    clear_has_buyer();
-  }
-  buyer_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), buyer);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.c2c.protobuf.BuyerReport.buyer)
-}
-
-// optional bytes reports_info = 3;
-inline bool BuyerReport::has_reports_info() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void BuyerReport::set_has_reports_info() {
-  _has_bits_[0] |= 0x00000004u;
-}
 inline void BuyerReport::clear_has_reports_info() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void BuyerReport::clear_reports_info() {
   reports_info_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -2701,166 +2390,72 @@ inline void BuyerReport::set_allocated_reports_info(::std::string* reports_info)
 
 // -------------------------------------------------------------------
 
-// GetSells
+// GetSell
 
 // optional bytes seller = 1;
-inline bool GetSells::has_seller() const {
+inline bool GetSell::has_seller() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void GetSells::set_has_seller() {
+inline void GetSell::set_has_seller() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void GetSells::clear_has_seller() {
+inline void GetSell::clear_has_seller() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void GetSells::clear_seller() {
+inline void GetSell::clear_seller() {
   seller_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   clear_has_seller();
 }
-inline const ::std::string& GetSells::seller() const {
-  // @@protoc_insertion_point(field_get:zjchain.c2c.protobuf.GetSells.seller)
+inline const ::std::string& GetSell::seller() const {
+  // @@protoc_insertion_point(field_get:zjchain.c2c.protobuf.GetSell.seller)
   return seller_.GetNoArena();
 }
-inline void GetSells::set_seller(const ::std::string& value) {
+inline void GetSell::set_seller(const ::std::string& value) {
   set_has_seller();
   seller_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.c2c.protobuf.GetSells.seller)
+  // @@protoc_insertion_point(field_set:zjchain.c2c.protobuf.GetSell.seller)
 }
 #if LANG_CXX11
-inline void GetSells::set_seller(::std::string&& value) {
+inline void GetSell::set_seller(::std::string&& value) {
   set_has_seller();
   seller_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.c2c.protobuf.GetSells.seller)
+  // @@protoc_insertion_point(field_set_rvalue:zjchain.c2c.protobuf.GetSell.seller)
 }
 #endif
-inline void GetSells::set_seller(const char* value) {
+inline void GetSell::set_seller(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   set_has_seller();
   seller_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.c2c.protobuf.GetSells.seller)
+  // @@protoc_insertion_point(field_set_char:zjchain.c2c.protobuf.GetSell.seller)
 }
-inline void GetSells::set_seller(const void* value, size_t size) {
+inline void GetSell::set_seller(const void* value, size_t size) {
   set_has_seller();
   seller_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.c2c.protobuf.GetSells.seller)
+  // @@protoc_insertion_point(field_set_pointer:zjchain.c2c.protobuf.GetSell.seller)
 }
-inline ::std::string* GetSells::mutable_seller() {
+inline ::std::string* GetSell::mutable_seller() {
   set_has_seller();
-  // @@protoc_insertion_point(field_mutable:zjchain.c2c.protobuf.GetSells.seller)
+  // @@protoc_insertion_point(field_mutable:zjchain.c2c.protobuf.GetSell.seller)
   return seller_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* GetSells::release_seller() {
-  // @@protoc_insertion_point(field_release:zjchain.c2c.protobuf.GetSells.seller)
+inline ::std::string* GetSell::release_seller() {
+  // @@protoc_insertion_point(field_release:zjchain.c2c.protobuf.GetSell.seller)
   if (!has_seller()) {
     return NULL;
   }
   clear_has_seller();
   return seller_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void GetSells::set_allocated_seller(::std::string* seller) {
+inline void GetSell::set_allocated_seller(::std::string* seller) {
   if (seller != NULL) {
     set_has_seller();
   } else {
     clear_has_seller();
   }
   seller_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), seller);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.c2c.protobuf.GetSells.seller)
-}
-
-// optional uint32 cout = 2;
-inline bool GetSells::has_cout() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void GetSells::set_has_cout() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void GetSells::clear_has_cout() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void GetSells::clear_cout() {
-  cout_ = 0u;
-  clear_has_cout();
-}
-inline ::google::protobuf::uint32 GetSells::cout() const {
-  // @@protoc_insertion_point(field_get:zjchain.c2c.protobuf.GetSells.cout)
-  return cout_;
-}
-inline void GetSells::set_cout(::google::protobuf::uint32 value) {
-  set_has_cout();
-  cout_ = value;
-  // @@protoc_insertion_point(field_set:zjchain.c2c.protobuf.GetSells.cout)
-}
-
-// -------------------------------------------------------------------
-
-// GetOrders
-
-// optional bytes seller = 1;
-inline bool GetOrders::has_seller() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void GetOrders::set_has_seller() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void GetOrders::clear_has_seller() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void GetOrders::clear_seller() {
-  seller_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_seller();
-}
-inline const ::std::string& GetOrders::seller() const {
-  // @@protoc_insertion_point(field_get:zjchain.c2c.protobuf.GetOrders.seller)
-  return seller_.GetNoArena();
-}
-inline void GetOrders::set_seller(const ::std::string& value) {
-  set_has_seller();
-  seller_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.c2c.protobuf.GetOrders.seller)
-}
-#if LANG_CXX11
-inline void GetOrders::set_seller(::std::string&& value) {
-  set_has_seller();
-  seller_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.c2c.protobuf.GetOrders.seller)
-}
-#endif
-inline void GetOrders::set_seller(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_seller();
-  seller_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.c2c.protobuf.GetOrders.seller)
-}
-inline void GetOrders::set_seller(const void* value, size_t size) {
-  set_has_seller();
-  seller_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.c2c.protobuf.GetOrders.seller)
-}
-inline ::std::string* GetOrders::mutable_seller() {
-  set_has_seller();
-  // @@protoc_insertion_point(field_mutable:zjchain.c2c.protobuf.GetOrders.seller)
-  return seller_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* GetOrders::release_seller() {
-  // @@protoc_insertion_point(field_release:zjchain.c2c.protobuf.GetOrders.seller)
-  if (!has_seller()) {
-    return NULL;
-  }
-  clear_has_seller();
-  return seller_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void GetOrders::set_allocated_seller(::std::string* seller) {
-  if (seller != NULL) {
-    set_has_seller();
-  } else {
-    clear_has_seller();
-  }
-  seller_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), seller);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.c2c.protobuf.GetOrders.seller)
+  // @@protoc_insertion_point(field_set_allocated:zjchain.c2c.protobuf.GetSell.seller)
 }
 
 // -------------------------------------------------------------------
@@ -3071,101 +2666,39 @@ C2cMessage::sells() const {
   return sells_;
 }
 
-// repeated .zjchain.c2c.protobuf.OrderInfo orders = 5;
-inline int C2cMessage::orders_size() const {
-  return orders_.size();
-}
-inline void C2cMessage::clear_orders() {
-  orders_.Clear();
-}
-inline ::zjchain::c2c::protobuf::OrderInfo* C2cMessage::mutable_orders(int index) {
-  // @@protoc_insertion_point(field_mutable:zjchain.c2c.protobuf.C2cMessage.orders)
-  return orders_.Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::OrderInfo >*
-C2cMessage::mutable_orders() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.c2c.protobuf.C2cMessage.orders)
-  return &orders_;
-}
-inline const ::zjchain::c2c::protobuf::OrderInfo& C2cMessage::orders(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.c2c.protobuf.C2cMessage.orders)
-  return orders_.Get(index);
-}
-inline ::zjchain::c2c::protobuf::OrderInfo* C2cMessage::add_orders() {
-  // @@protoc_insertion_point(field_add:zjchain.c2c.protobuf.C2cMessage.orders)
-  return orders_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::OrderInfo >&
-C2cMessage::orders() const {
-  // @@protoc_insertion_point(field_list:zjchain.c2c.protobuf.C2cMessage.orders)
-  return orders_;
-}
-
-// repeated .zjchain.c2c.protobuf.GetSells get_sell = 6;
+// repeated .zjchain.c2c.protobuf.GetSell get_sell = 5;
 inline int C2cMessage::get_sell_size() const {
   return get_sell_.size();
 }
 inline void C2cMessage::clear_get_sell() {
   get_sell_.Clear();
 }
-inline ::zjchain::c2c::protobuf::GetSells* C2cMessage::mutable_get_sell(int index) {
+inline ::zjchain::c2c::protobuf::GetSell* C2cMessage::mutable_get_sell(int index) {
   // @@protoc_insertion_point(field_mutable:zjchain.c2c.protobuf.C2cMessage.get_sell)
   return get_sell_.Mutable(index);
 }
-inline ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::GetSells >*
+inline ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::GetSell >*
 C2cMessage::mutable_get_sell() {
   // @@protoc_insertion_point(field_mutable_list:zjchain.c2c.protobuf.C2cMessage.get_sell)
   return &get_sell_;
 }
-inline const ::zjchain::c2c::protobuf::GetSells& C2cMessage::get_sell(int index) const {
+inline const ::zjchain::c2c::protobuf::GetSell& C2cMessage::get_sell(int index) const {
   // @@protoc_insertion_point(field_get:zjchain.c2c.protobuf.C2cMessage.get_sell)
   return get_sell_.Get(index);
 }
-inline ::zjchain::c2c::protobuf::GetSells* C2cMessage::add_get_sell() {
+inline ::zjchain::c2c::protobuf::GetSell* C2cMessage::add_get_sell() {
   // @@protoc_insertion_point(field_add:zjchain.c2c.protobuf.C2cMessage.get_sell)
   return get_sell_.Add();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::GetSells >&
+inline const ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::GetSell >&
 C2cMessage::get_sell() const {
   // @@protoc_insertion_point(field_list:zjchain.c2c.protobuf.C2cMessage.get_sell)
   return get_sell_;
 }
 
-// repeated .zjchain.c2c.protobuf.GetOrders get_order = 7;
-inline int C2cMessage::get_order_size() const {
-  return get_order_.size();
-}
-inline void C2cMessage::clear_get_order() {
-  get_order_.Clear();
-}
-inline ::zjchain::c2c::protobuf::GetOrders* C2cMessage::mutable_get_order(int index) {
-  // @@protoc_insertion_point(field_mutable:zjchain.c2c.protobuf.C2cMessage.get_order)
-  return get_order_.Mutable(index);
-}
-inline ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::GetOrders >*
-C2cMessage::mutable_get_order() {
-  // @@protoc_insertion_point(field_mutable_list:zjchain.c2c.protobuf.C2cMessage.get_order)
-  return &get_order_;
-}
-inline const ::zjchain::c2c::protobuf::GetOrders& C2cMessage::get_order(int index) const {
-  // @@protoc_insertion_point(field_get:zjchain.c2c.protobuf.C2cMessage.get_order)
-  return get_order_.Get(index);
-}
-inline ::zjchain::c2c::protobuf::GetOrders* C2cMessage::add_get_order() {
-  // @@protoc_insertion_point(field_add:zjchain.c2c.protobuf.C2cMessage.get_order)
-  return get_order_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::zjchain::c2c::protobuf::GetOrders >&
-C2cMessage::get_order() const {
-  // @@protoc_insertion_point(field_list:zjchain.c2c.protobuf.C2cMessage.get_order)
-  return get_order_;
-}
-
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

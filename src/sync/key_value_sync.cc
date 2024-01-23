@@ -161,7 +161,9 @@ void KeyValueSync::CheckSyncItem(uint8_t thread_idx) {
                 height_item->set_height(item->height);
                 height_item->set_tag(item->tag);
                 if (item->tag == kElectBlock) {
-                    ZJC_DEBUG("sync get elect block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
+                    ZJC_DEBUG("try to sync elect block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
+                } else {
+                    ZJC_DEBUG("try to sync normal block: %u_%u_%lu", item->network_id, item->pool_idx, item->height);
                 }
             } else {
                 sync_req->add_keys(item->key);
@@ -513,6 +515,7 @@ void KeyValueSync::ResponseElectBlock(
         res->set_pool_idx(block.pool_index());
         res->set_height(block.height());
         res->set_value(block.SerializeAsString());
+        res->set_tag(kElectBlock); // no use
         add_size += 16 + res->value().size();
         ZJC_DEBUG("block success network: %u, pool: %lu, height: %lu, add_size: %u, kSyncPacketMaxSize: %u",
             block.network_id(), block.pool_index(), block.height(), add_size, kSyncPacketMaxSize);
@@ -564,12 +567,23 @@ void KeyValueSync::ProcessSyncValueResponse(const transport::MessagePtr& msg_ptr
                 std::to_string(iter->height());
             auto block_item = std::make_shared<block::protobuf::Block>();
             if (block_item->ParseFromString(iter->value())) {
+                // 对于选举块同步来说，创世选举块不需要验签
+                bool need_valid = (block_item->electblock_height() != 1);
+                // 针对 root 网络的选举块同步
                 if (block_item->network_id() != common::GlobalInfo::Instance()->network_id() &&
                         block_item->network_id() + network::kConsensusWaitingShardOffset !=
                         common::GlobalInfo::Instance()->network_id()) {
-                    if (block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item) == block::kBlockVerifyAggSignFailed) {
-                        // 
-                    }
+                    // TODO 暂时屏蔽创世选举块的验签，后续通过消息体中的 commom pk 验证
+                    ZJC_DEBUG("sync elect block, elect height: %u, height: %u", block_item->electblock_height(), block_item->height());
+                    block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item, need_valid);
+                } else { // TODO 本网络的就不用同步吗？
+                    block_mgr_->NetworkNewBlock(msg_ptr->thread_idx, block_item, need_valid);
+                    ZJC_DEBUG("sync normal block, elect height: %u, height: %u, network_id: %u, pool: %u",
+                              block_item->electblock_height(),
+                              block_item->height(),
+                              block_item->network_id(),
+                              block_item->pool_index());
+                    
                 }
             }
         }

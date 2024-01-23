@@ -55,11 +55,13 @@ int ElectTxItem::HandleTx(
                 }
             }
 
+            // 根据最新的选举块高度获取相关的 members
             auto members = elect_mgr_->GetNetworkMembersWithHeight(
                 now_elect_height,
                 elect_statistic.sharding_id(),
                 nullptr,
                 nullptr);
+            
             if (members == nullptr) {
                 ZJC_WARN("get members failed, elect height: %lu, net: %u",
                     now_elect_height, elect_statistic.sharding_id());

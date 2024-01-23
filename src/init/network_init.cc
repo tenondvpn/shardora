@@ -1,4 +1,5 @@
 #include "init/network_init.h"
+#include <common/log.h>
 #include <functional>
 
 #include "block/block_manager.h"
@@ -582,8 +583,8 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     // if (common::GlobalInfo::Instance()->for_ck_server()) {
     //     return;
     // }
-
-    if (common::GlobalInfo::Instance()->network_id() < network::kConsensusShardEndNetworkId) {
+    
+    if (common::GlobalInfo::Instance()->network_id() < network::kConsensusShardBeginNetworkId) {
         return;
     }
 
@@ -618,9 +619,15 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
     uint32_t pos = common::kInvalidUint32;
     prefix_db_->GetLocalElectPos(security_->GetAddress(), &pos);
     join_info.set_member_idx(pos);
-    join_info.set_shard_id(
-        common::GlobalInfo::Instance()->network_id() -
-        network::kConsensusWaitingShardOffset);
+    
+    if (common::GlobalInfo::Instance()->network_id() >= network::kConsensusShardEndNetworkId) {
+            join_info.set_shard_id(
+                common::GlobalInfo::Instance()->network_id() -
+                network::kConsensusWaitingShardOffset);
+    } else {
+        join_info.set_shard_id(common::GlobalInfo::Instance()->network_id());
+    }
+    
     if (pos == common::kInvalidUint32) {
         auto* req = join_info.mutable_g2_req();
         auto res = prefix_db_->GetBlsVerifyG2(security_->GetAddress(), req);
@@ -640,6 +647,7 @@ void NetworkInit::SendJoinElectTransaction(uint8_t thread_idx) {
 
     msg.set_sign(sign);
     msg_ptr->thread_idx = thread_idx;
+    // msg_ptr->msg_hash = tx_hash; // TxPoolmanager::HandleElectTx 接收端计算了，这里不必传输
     network::Route::Instance()->Send(msg_ptr);
     ZJC_DEBUG("success send join elect request transaction: %u, join: %u, gid: %s, "
         "hash64: %lu, tx hash: %s, pk: %s sign: %s",
@@ -1300,6 +1308,7 @@ void NetworkInit::HandleElectionBlock(
         ZJC_ERROR("elect manager handle elect block failed!");
         return;
     }
+    // TODO log members
 
     auto sharding_id = elect_block->shard_network_id();
     auto elect_height = elect_mgr_->latest_height(sharding_id);
@@ -1372,12 +1381,23 @@ void NetworkInit::HandleElectionBlock(
     network::UniversalManager::Instance()->OnNewElectBlock(sharding_id, elect_height, members, elect_block);
     ZJC_DEBUG("1 success called election block. height: %lu, elect height: %lu, used elect height: %lu, net: %u, local net id: %u",
         block->height(), elect_height, block->electblock_height(), elect_block->shard_network_id(), common::GlobalInfo::Instance()->network_id());
+    
+    // 从候选池申请加入共识池
+    // 新节点加入共识池需要发送两次 JoinElect
+    // 由于 N 共识池基于 N-2 共识池选举得到，如果只发送一次，则 N+1, N+3, N+5... 轮次无法参与共识
     if (sharding_id + network::kConsensusWaitingShardOffset ==
             common::GlobalInfo::Instance()->network_id()) {
         join_elect_tick_.CutOff(
             uint64_t(rand()) % (common::kTimeBlockCreatePeriodSeconds / 4 * 3 * 1000000lu),
             std::bind(&NetworkInit::SendJoinElectTransaction, this, std::placeholders::_1));
-        ZJC_DEBUG("now send join elect request transaction.");
+        ZJC_DEBUG("now send join elect request transaction. first message.");
+        another_join_elect_msg_needed_ = true;
+    } else if (another_join_elect_msg_needed_ && sharding_id == common::GlobalInfo::Instance()->network_id()) {
+        join_elect_tick_.CutOff(
+            uint64_t(rand()) % (common::kTimeBlockCreatePeriodSeconds / 4 * 3 * 1000000lu),
+            std::bind(&NetworkInit::SendJoinElectTransaction, this, std::placeholders::_1));
+        ZJC_DEBUG("now send join elect request transaction. second message.");
+        another_join_elect_msg_needed_ = false;
     }
 }
 
@@ -1406,7 +1426,7 @@ bool NetworkInit::BlockBlsAggSignatureValid(
             block.network_id(),
             block.electblock_height(),
             (common_pk == libff::alt_bn128_G2::zero()));
-       kv_sync_->AddSyncElectBlock(
+        kv_sync_->AddSyncElectBlock(
            thread_idx,
            network::kRootCongressNetworkId,
            block.network_id(),

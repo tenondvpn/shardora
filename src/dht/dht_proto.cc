@@ -58,8 +58,9 @@ void DhtProto::CreateRefreshNeighborsRequest(
             kRefreshNeighborsBloomfilterBitCount,
             kRefreshNeighborsBloomfilterHashCount };
     for (auto iter = dht.begin(); iter != dht.end(); ++iter) {
-//         ZJC_DEBUG("req refresh neighbers filter: %s:%u", common::Encode::HexEncode((*iter)->dht_key).c_str());
-        bloomfilter.Add(common::Hash::Hash64((*iter)->id));
+        // ZJC_DEBUG("---1 hash: %lu id:%s shard:%u dht_key_hash:%lu", (*iter)->dht_key_hash, common::Encode::HexSubstr((*iter)->id).c_str(), (*iter)->sharding_id, (*iter)->dht_key_hash);
+        // bloomfilter.Add(common::Hash::Hash64((*iter)->id));
+        bloomfilter.Add((*iter)->dht_key_hash);
     }
 
     bloomfilter.Add(local_node->dht_key_hash);
@@ -90,6 +91,8 @@ void DhtProto::CreateRefreshNeighborsResponse(
         proto_node->set_public_ip(nodes[i]->public_ip);
         proto_node->set_public_port(nodes[i]->public_port);
         proto_node->set_pubkey(nodes[i]->pubkey_str);
+        proto_node->set_sharding_id(nodes[i]->sharding_id);
+        proto_node->set_id(nodes[i]->id);
     }
 }
 
@@ -134,6 +137,7 @@ int32_t DhtProto::CreateConnectRequest(
     connect_req->set_pubkey(local_node->pubkey_str);
     connect_req->set_public_ip(common::GlobalInfo::Instance()->config_local_ip());
     connect_req->set_public_port(common::GlobalInfo::Instance()->config_local_port());
+    connect_req->set_id(local_node->id);
     return kDhtSuccess;
 }
 

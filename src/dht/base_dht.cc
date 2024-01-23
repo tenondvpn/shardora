@@ -574,7 +574,8 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
     if (bloomfilter) {
         auto& closest_nodes = dht_;
         for (auto iter = closest_nodes.begin(); iter != closest_nodes.end(); ++iter) {
-            if (bloomfilter->Contain(common::Hash::Hash64((*iter)->id))) {
+            // ZJC_DEBUG("port:%u, src_shard_id:%u, hash:%lu id:%s node_shard:%u", dht_msg.refresh_neighbors_req().public_port(), header.src_sharding_id(), (*iter)->dht_key_hash, common::Encode::HexSubstr((*iter)->id).c_str(), (*iter)->sharding_id);
+            if (bloomfilter->Contain((*iter)->dht_key_hash)) {
                 ZJC_DEBUG("res refresh neighbers filter: %s:%u, hash: %lu",
                     common::Encode::HexEncode((*iter)->dht_key).c_str(), msg_ptr->header.hash64());
                 continue;
@@ -627,16 +628,37 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
     }
 
     const auto& res_nodes = dht_msg.refresh_neighbors_res().nodes();
+    // add res_nodes to waiting_refresh_nodes_map_ pubkey => [NodePtr, NodePtr, ...]
+    waiting_refresh_nodes_map_.clear();
     for (int32_t i = 0; i < res_nodes.size(); ++i) {
-        ZJC_DEBUG("connect neighbers new node: %s:%u",
-            res_nodes[i].public_ip().c_str(), res_nodes[i].public_port());
-        Connect(
-            msg_ptr->thread_idx,
+        NodePtr node = std::make_shared<Node>(
+            res_nodes[i].sharding_id(),
             res_nodes[i].public_ip(),
             res_nodes[i].public_port(),
             res_nodes[i].pubkey(),
-            header.src_sharding_id(),
-            false);
+            security_->GetAddress(res_nodes[i].pubkey()));
+        auto iter = waiting_refresh_nodes_map_.find(res_nodes[i].id());
+        if (iter != waiting_refresh_nodes_map_.end()) {
+            iter->second.push_back(node);
+        } else {
+            std::vector<NodePtr> nodes = {node};
+            waiting_refresh_nodes_map_.insert(std::make_pair(res_nodes[i].id(), nodes));
+        }
+    }
+
+    for (auto iter = waiting_refresh_nodes_map_.begin(); iter != waiting_refresh_nodes_map_.end(); ++iter) {
+        if (iter->second.size() > 0) {
+            NodePtr node = iter->second[0];
+            ZJC_DEBUG("connect neighbers new node: %s:%u",
+                      node->public_ip.c_str(), node->public_port);
+            Connect(
+                msg_ptr->thread_idx,
+                node->public_ip,
+                node->public_port,
+                node->pubkey_str,
+                header.src_sharding_id(),
+                false);      
+        }
     }
 }
 
@@ -728,6 +750,23 @@ void BaseDht::ProcessConnectRequest(const transport::MessagePtr& msg_ptr) {
         return;
     }
 
+    
+    if (dht_msg.connect_req().is_response()) {
+        // if is response
+        // find nodes from waiting_refresh_nodes_map_ mapping by the sender node and join it
+        auto iter = waiting_refresh_nodes_map_.find(dht_msg.connect_req().id());
+        if (iter != waiting_refresh_nodes_map_.end()) {
+            auto nodes = iter->second;
+            for (uint32_t i = 0; i < nodes.size(); ++i) {
+                nodes[i]->join_way = kJoinFromConnect;
+                Join(nodes[i]);
+            }
+        }
+        
+        return;
+    }
+
+    // if not response, join the sender node only
     NodePtr node = std::make_shared<Node>(
         header.src_sharding_id(),
         dht_msg.connect_req().public_ip(),
@@ -738,11 +777,7 @@ void BaseDht::ProcessConnectRequest(const transport::MessagePtr& msg_ptr) {
     msg_ptr->conn->SetPeerIp(dht_msg.connect_req().public_ip());
     msg_ptr->conn->SetPeerPort(dht_msg.connect_req().public_port());
     Join(node);
-    if (dht_msg.connect_req().is_response()) {
-        DHT_ERROR("process connect response success: %lu", msg_ptr->header.hash64());
-        return;
-    }
-
+    
     Connect(
         msg_ptr->thread_idx,
         dht_msg.connect_req().public_ip(),
