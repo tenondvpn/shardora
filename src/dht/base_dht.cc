@@ -574,7 +574,7 @@ void BaseDht::ProcessRefreshNeighborsRequest(const transport::MessagePtr& msg_pt
     if (bloomfilter) {
         auto& closest_nodes = dht_;
         for (auto iter = closest_nodes.begin(); iter != closest_nodes.end(); ++iter) {
-            // ZJC_DEBUG("---2 port:%u, src_shard_id:%u, hash:%lu id:%s node_shard:%u", dht_msg.refresh_neighbors_req().public_port(), header.src_sharding_id(), (*iter)->dht_key_hash, common::Encode::HexSubstr((*iter)->id).c_str(), (*iter)->sharding_id);
+            // ZJC_DEBUG("port:%u, src_shard_id:%u, hash:%lu id:%s node_shard:%u", dht_msg.refresh_neighbors_req().public_port(), header.src_sharding_id(), (*iter)->dht_key_hash, common::Encode::HexSubstr((*iter)->id).c_str(), (*iter)->sharding_id);
             if (bloomfilter->Contain((*iter)->dht_key_hash)) {
                 ZJC_DEBUG("res refresh neighbers filter: %s:%u, hash: %lu",
                     common::Encode::HexEncode((*iter)->dht_key).c_str(), msg_ptr->header.hash64());
@@ -628,7 +628,7 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
     }
 
     const auto& res_nodes = dht_msg.refresh_neighbors_res().nodes();
-    // TODO add res_nodes to waiting_refresh_nodes_map_ pubkey => [NodePtr, NodePtr, ...]
+    // add res_nodes to waiting_refresh_nodes_map_ pubkey => [NodePtr, NodePtr, ...]
     waiting_refresh_nodes_map_.clear();
     for (int32_t i = 0; i < res_nodes.size(); ++i) {
         NodePtr node = std::make_shared<Node>(
@@ -660,17 +660,6 @@ void BaseDht::ProcessRefreshNeighborsResponse(const transport::MessagePtr& msg_p
                 false);      
         }
     }
-    // for (int32_t i = 0; i < res_nodes.size(); ++i) {
-    //     ZJC_DEBUG("connect neighbers new node: %s:%u",
-    //         res_nodes[i].public_ip().c_str(), res_nodes[i].public_port());
-    //     Connect(
-    //         msg_ptr->thread_idx,
-    //         res_nodes[i].public_ip(),
-    //         res_nodes[i].public_port(),
-    //         res_nodes[i].pubkey(),
-    //         header.src_sharding_id(),
-    //         false);
-    // }
 }
 
 void BaseDht::Connect(

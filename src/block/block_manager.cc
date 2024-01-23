@@ -415,8 +415,6 @@ int BlockManager::NetworkNewBlock(
             return kBlockError;
         }
 
-        ZJC_DEBUG("===3 elect height is %u %u", block_item->electblock_height(), block_item->height());
-        // TODO 只有 kElectBlock 同步有 1 不需要验签的逻辑
         if (need_valid && block_agg_valid_func_ != nullptr && !block_agg_valid_func_(thread_idx, *block_item)) {
             ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, net: %u, pool: %u, height: %lu",
                 common::Encode::HexEncode(block_item->hash()).c_str(),
