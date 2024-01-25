@@ -1178,7 +1178,7 @@ void NetworkInit::AddBlockItemToCache(
             account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             break;
         case pools::protobuf::kConsensusLocalTos:
-        case pools::protobuf::kContractCreate:
+        // case pools::protobuf::kContractCreate: // 不再直接处理 contract create，通过 conlocaltos 创建合约账户
         case pools::protobuf::kContractExcute:
             account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             gas_prepayment_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);

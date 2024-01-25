@@ -53,6 +53,7 @@ int RootToTxItem::HandleTx(
     } else {
         uint32_t sharding_id = 0;
         for (int32_t i = 0; i < block_tx.storages_size(); ++i) {
+            // 合约创建，用户指定 sharding
             if (block_tx.storages(i).key() == protos::kCreateContractCallerSharding) {
                 uint32_t* data = (uint32_t*)block_tx.storages(i).val_hash().c_str();
                 des_info[0] = data[0];

@@ -706,7 +706,9 @@ void BlockManager::RootHandleNormalToTx(
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
         auto tx = msg_ptr->header.mutable_tx_proto();
         tx->set_step(pools::protobuf::kRootCreateAddress);
-        if (tos_item.step() == pools::protobuf::kContractCreate) {
+        // 如果 shard 已经制定了 Contract Account 的 shard，直接创建，不需要 root 再分配
+        // 如果没有，则需要 root 继续创建 kRootCreateAddress 交易
+        if (tos_item.step() == pools::protobuf::kContractCreate && tos_item.sharding_id() != common::kInvalidUint32) {
             // that's contract address, just add address
             // spot2
             auto account_info = std::make_shared<address::protobuf::AddressInfo>();
@@ -783,6 +785,7 @@ void BlockManager::HandleLocalNormalToTx(
 
         auto account_info = GetAccountInfo(addr);
         if (account_info == nullptr) {
+            // 只接受 root 发回来的块
             if (step != pools::protobuf::kRootCreateAddressCrossSharding) {
 //                 assert(false);
                 ZJC_WARN("failed add local transfer tx tos heights_hash: %s, id: %s",

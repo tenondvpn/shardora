@@ -150,7 +150,7 @@ void ToTxsPools::HandleJoinElect(
                 0,
                 network::kRootCongressNetworkId,
                 block.pool_index(),
-                tx.storages(i).val_hash());
+                tx.storages(i).val_hash(), "");
         }
     }
 }
@@ -161,6 +161,7 @@ void ToTxsPools::HandleContractExecute(
     for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = -1;
+        // 如果需要 root 创建则此时没有 addr info 
         auto addr_info = GetAddressInfo(tx.contract_txs(i).to());
         if (addr_info != nullptr) {
             sharding_id = addr_info->sharding_id();
@@ -169,6 +170,7 @@ void ToTxsPools::HandleContractExecute(
         ZJC_DEBUG("add contract execute to: %s, %lu",
             common::Encode::HexEncode(tx.contract_txs(i).to()).c_str(),
             tx.contract_txs(i).amount());
+        
         AddTxToMap(
             block,
             tx.contract_txs(i).to(),
@@ -176,7 +178,7 @@ void ToTxsPools::HandleContractExecute(
             tx.contract_txs(i).amount(),
             sharding_id,
             pool_index,
-            "");
+            "", "");
     }
 }
 
@@ -203,7 +205,7 @@ void ToTxsPools::HandleContractGasPrepayment(
             tx.contract_prepayment(),
             sharding_id,
             pool_index,
-            "");
+            "", "");
     }
 }
 
@@ -222,7 +224,7 @@ void ToTxsPools::HandleNormalFrom(
         sharding_id = addr_info->sharding_id();
     }
 
-    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "");
+    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", "");
 }
 
 void ToTxsPools::HandleCreateContractUserCall(
@@ -230,7 +232,16 @@ void ToTxsPools::HandleCreateContractUserCall(
         const block::protobuf::BlockTx& tx) {
     uint32_t sharding_id = network::kRootCongressNetworkId;
     uint32_t pool_index = block.pool_index();
-    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "");
+
+    std::string bytes_code;
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
+            bytes_code = tx.storages(i).val_hash();
+            break;
+        }
+    }
+    
+    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", bytes_code);
     for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = -1;
@@ -246,7 +257,7 @@ void ToTxsPools::HandleCreateContractUserCall(
             tx.contract_txs(i).amount(),
             sharding_id,
             pool_index,
-            "");
+            "", "");
     }
 }
 
@@ -275,7 +286,7 @@ void ToTxsPools::HandleRootCreateAddress(
     }
 
     ZJC_DEBUG("success add root create address: %s sharding: %u, pool: %u", common::Encode::HexEncode(tx.to()).c_str(), sharding_id, pool_index);
-    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "");
+    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", "");
 }
 
 void ToTxsPools::AddTxToMap(
@@ -285,7 +296,8 @@ void ToTxsPools::AddTxToMap(
         uint64_t amount,
         uint32_t sharding_id,
         int32_t pool_index,
-        const std::string& key) {
+        const std::string& key,
+        const std::string& library_bytes) {
     std::string to(in_to.size() + 4, '\0');
     char* tmp_to_data = to.data();
     memcpy(tmp_to_data + 4, in_to.c_str(), in_to.size());
@@ -689,22 +701,27 @@ int ToTxsPools::CreateToTxWithHeights(
         // create contract just in caller sharding
         if (iter->second.type == pools::protobuf::kContractCreate) {
             assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
-            auto account_info = GetAddressInfo(to);
-            if (account_info == nullptr) {
-                to_tx.mutable_tos()->ReleaseLast();
-                continue;
-            }
+            // auto account_info = GetAddressInfo(to);
+            // // 理论上此时kContractCreate出块时已经创建了 account
+            // if (account_info == nullptr) {
+            //     to_tx.mutable_tos()->ReleaseLast();
+            //     continue;
+            // }
 
-            if (memcmp(
-                    account_info->bytes_code().c_str(),
-                    protos::kContractBytesStartCode.c_str(),
-                    protos::kContractBytesStartCode.size()) == 0) {
-                to_item->set_library_bytes(account_info->bytes_code());
-                str_for_hash.append(account_info->bytes_code());
-            }
+            // if (memcmp( // 如果 account_info 的 bytes_code 合法
+            //         account_info->bytes_code().c_str(),
+            //         protos::kContractBytesStartCode.c_str(),
+            //         protos::kContractBytesStartCode.size()) == 0) {
+            //     to_item->set_library_bytes(account_info->bytes_code());
+            //     str_for_hash.append(account_info->bytes_code());
+            // }
+
+            to_item->set_library_bytes(iter->second.library_bytes);
+            str_for_hash.append(iter->second.library_bytes);
 
             // spot1 合约账户的创建默认为from所在 shard，暂不会跨分片创建合约账户
-            auto net_id = common::GlobalInfo::Instance()->network_id();
+            // auto net_id = common::GlobalInfo::Instance()->network_id();
+            auto net_id = common::kInvalidUint32; // ContractCreate 不在直接分配 sharding，由 root 分配
             to_item->set_sharding_id(net_id);
             str_for_hash.append((char*)&net_id, sizeof(net_id));
             ZJC_DEBUG("create contract use caller sharding address: %s, %u",
