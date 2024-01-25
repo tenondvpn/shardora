@@ -563,6 +563,17 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
         txs_ptr = txs_pools_->LeaderGetValidTxs(commited_bft_ptr->pool_index());
     }
 
+
+    if (txs_ptr != nullptr) {
+        for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); iter++) {
+            auto gid = iter->second->gid;
+            ZJC_DEBUG("---------1 gid: %s", common::Encode::HexEncode(gid).c_str());
+        }
+    } else {
+        ZJC_DEBUG("---------2");
+    }
+    
+
     return txs_ptr;
 }
 
