@@ -390,31 +390,38 @@ var sk3_shard4 = "373a3165ec09edea6e7a1c8cff21b06f5fb074386ece283927aef730c6d445
 var sk_unknown = "1ef07e73ed6211e7b0a512bc6468419fbdcd9b345b49a3331b4c8f8070172a70";
 
 
+// 目前合约账户仅会被root创建在from节点所在分片
 var testcases = [
-    { // 同分片执行合约、同分片查询合约
+    { // 创建合约在 shard3, 同分片查询合约成功
         "sk": sk1_shard3, // 发起者 sk
-        "from_shard": 3, // 发起者所在 shard
-        "contract_shard": 3, // 合约目标 shard
+        "contract_shard": 3, // 处理消息的 shard（必须和 sk 所在 shard 一致）
         "query_shard": 3, // 查询者所在 shard
         "query_suc": true, // 是否能查到数据
-    }, { // 跨分片执行合约、同分片查询合约
+    }, { // 创建合约在 shard4, 同分片查询合约成功
+        "sk": sk2_shard4, // 发起者 sk
+        "contract_shard": 4, 
+        "query_shard": 4, 
+        "query_suc": true, // 是否能查到数据
+    }, { // 查询合约 shard 不一致
         "sk": sk1_shard3,
-        "from_shard": 3,
-        "contract_shard": 4,
+        "contract_shard": 3, 
         "query_shard": 4,
         "query_suc": false,
-    }, { // 同分片执行合约、跨分片查询合约
-        "sk": sk1_shard3,
-        "from_shard": 3,
-        "contract_shard": 3,
-        "query_shard": 4,
-        "query_suc": false,
-    }, { // 跨分片执行合约、跨分片查询合约
-        "sk": sk1_shard3,
-        "from_shard": 4,
-        "contract_shard": 3,
+    }, { // 查询合约 shard 不一致
+        "sk": sk2_shard4,
+        "contract_shard": 4, 
         "query_shard": 3,
-        "query_suc": true,
+        "query_suc": false,
+    }, { // 处理消息 shard 与 from 节点 shard 不一致
+        "sk": sk1_shard3,
+        "contract_shard": 4,
+        "query_shard": 3,
+        "query_suc": false,
+    }, { // 处理消息 shard 与 from 节点 shard 不一致
+        "sk": sk2_shard4,
+        "contract_shard": 3,
+        "query_shard": 4,
+        "query_suc": false,
     }
 ];
 
@@ -470,7 +477,7 @@ async function test_contracts() {
     for (var i = 0; i < testcases.length; ++i) { 
         var sk = testcases[i].sk;
         init_private_key(sk);
-        var from_shard = testcases[i].from_shard;
+        var from_shard = 3;
         var query_shard = testcases[i].query_shard;
 
         local_count_shard_id = testcases[i].contract_shard;

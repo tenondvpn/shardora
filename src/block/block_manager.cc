@@ -1543,6 +1543,7 @@ void BlockManager::HandleToTxsMessage(const transport::MessagePtr& msg_ptr, bool
     }
     
     bool all_valid = true;
+    // 聚合不同 to shard 的交易
     if (!to_txs_pool_->StatisticTos(heights)) {
         ZJC_DEBUG("statistic tos failed!");
         return;
