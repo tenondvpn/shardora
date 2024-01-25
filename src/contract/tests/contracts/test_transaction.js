@@ -389,31 +389,39 @@ var sk2_shard4 = "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d0819079
 var sk3_shard4 = "373a3165ec09edea6e7a1c8cff21b06f5fb074386ece283927aef730c6d44596";
 var sk_unknown = "1ef07e73ed6211e7b0a512bc6468419fbdcd9b345b49a3331b4c8f8070172a70";
 
+
+// 目前合约账户仅会被root创建在from节点所在分片
 var testcases = [
-    { // 同分片执行合约、同分片查询合约
+    { // 创建合约在 shard3, 同分片查询合约成功
         "sk": sk1_shard3, // 发起者 sk
-        "from_shard": 3, // 发起者所在 shard
-        "contract_shard": 3, // 合约目标 shard
+        "contract_shard": 3, // 处理消息的 shard（必须和 sk 所在 shard 一致）
         "query_shard": 3, // 查询者所在 shard
         "query_suc": true, // 是否能查到数据
-    }, { // 跨分片执行合约、同分片查询合约
+    }, { // 创建合约在 shard4, 同分片查询合约成功
+        "sk": sk2_shard4, // 发起者 sk
+        "contract_shard": 4, 
+        "query_shard": 4, 
+        "query_suc": true, // 是否能查到数据
+    }, { // 查询合约 shard 不一致
         "sk": sk1_shard3,
-        "from_shard": 3,
-        "contract_shard": 4,
+        "contract_shard": 3, 
         "query_shard": 4,
         "query_suc": false,
-    }, { // 同分片执行合约、跨分片查询合约
-        "sk": sk1_shard3,
-        "from_shard": 3,
-        "contract_shard": 3,
-        "query_shard": 4,
-        "query_suc": false,
-    }, { // 跨分片执行合约、跨分片查询合约
-        "sk": sk1_shard3,
-        "from_shard": 4,
-        "contract_shard": 3,
+    }, { // 查询合约 shard 不一致
+        "sk": sk2_shard4,
+        "contract_shard": 4, 
         "query_shard": 3,
-        "query_suc": true,
+        "query_suc": false,
+    }, { // 处理消息 shard 与 from 节点 shard 不一致
+        "sk": sk1_shard3,
+        "contract_shard": 4,
+        "query_shard": 3,
+        "query_suc": false,
+    }, { // 处理消息 shard 与 from 节点 shard 不一致
+        "sk": sk2_shard4,
+        "contract_shard": 3,
+        "query_shard": 4,
+        "query_suc": false,
     }
 ];
 
@@ -469,7 +477,7 @@ async function test_contracts() {
     for (var i = 0; i < testcases.length; ++i) { 
         var sk = testcases[i].sk;
         init_private_key(sk);
-        var from_shard = testcases[i].from_shard;
+        var from_shard = 3;
         var query_shard = testcases[i].query_shard;
 
         local_count_shard_id = testcases[i].contract_shard;
@@ -562,12 +570,43 @@ async function test_transfers() {
     }
 }
 
+async function create_new_node(sk_new) {
+	var from_sk = sk1_shard3;
+	init_private_key(from_sk);
+	
+	var to_addr = sk_to_account(sk_new);
+	console.log("to addr: " + to_addr);
+	
+	Transfer(to_addr, 100000000, 100000, 1, randomOfArr(net_node[3]));
+	await sleep(10000);
+
+	QueryAccount(to_addr, randomOfArr(net_node[2]), function(res) {
+        // 账户已经存在
+        if (res == '') {
+            console.log("create failed");
+        }
+
+        var shard_id = res['shardingId'];
+		
+        console.log(res);        
+    });
+}
+
 async function main() {
-	for (var i = 0; i < 10; ++i) {
-		// 测试合约执行、合约查询
-		await test_contracts();
-		// 测试跨分片转账
-		await test_transfers();
+	const args = process.argv.slice(2)
+	if (args[0] == 0) {
+		for (var i = 0; i < 50; ++i) {
+			// 测试合约执行、合约查询
+			await test_contracts();
+			// 测试跨分片转账
+			await test_transfers();
+		}
+	}
+
+	if (args[0] == 1) {
+		// var sk_new = "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db999";
+		var sk_new = args[1];
+		await create_new_node(sk_new);	
 	}
 }
 

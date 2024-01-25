@@ -282,9 +282,13 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::NodeInfo, public_ip_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::NodeInfo, public_port_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::NodeInfo, pubkey_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::NodeInfo, sharding_id_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::NodeInfo, id_),
   0,
-  2,
+  3,
   1,
+  4,
+  2,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::RefreshNeighborsRequest, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::RefreshNeighborsRequest, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -332,10 +336,12 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::ConnectReqeust, is_response_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::ConnectReqeust, public_ip_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::ConnectReqeust, public_port_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::ConnectReqeust, id_),
   0,
-  2,
-  1,
   3,
+  1,
+  4,
+  2,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::TimerRequest, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::dht::protobuf::TimerRequest, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -368,14 +374,14 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROTOBUF_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, 8, sizeof(::zjchain::dht::protobuf::BootstrapRequest)},
   { 11, 19, sizeof(::zjchain::dht::protobuf::BootstrapResponse)},
-  { 22, 30, sizeof(::zjchain::dht::protobuf::NodeInfo)},
-  { 33, 44, sizeof(::zjchain::dht::protobuf::RefreshNeighborsRequest)},
-  { 50, 56, sizeof(::zjchain::dht::protobuf::RefreshNeighborsResponse)},
-  { 57, 63, sizeof(::zjchain::dht::protobuf::HeartbeatRequest)},
-  { 64, 70, sizeof(::zjchain::dht::protobuf::HeartbeatResponse)},
-  { 71, 80, sizeof(::zjchain::dht::protobuf::ConnectReqeust)},
-  { 84, 90, sizeof(::zjchain::dht::protobuf::TimerRequest)},
-  { 91, 104, sizeof(::zjchain::dht::protobuf::DhtMessage)},
+  { 22, 32, sizeof(::zjchain::dht::protobuf::NodeInfo)},
+  { 37, 48, sizeof(::zjchain::dht::protobuf::RefreshNeighborsRequest)},
+  { 54, 60, sizeof(::zjchain::dht::protobuf::RefreshNeighborsResponse)},
+  { 61, 67, sizeof(::zjchain::dht::protobuf::HeartbeatRequest)},
+  { 68, 74, sizeof(::zjchain::dht::protobuf::HeartbeatResponse)},
+  { 75, 85, sizeof(::zjchain::dht::protobuf::ConnectReqeust)},
+  { 90, 96, sizeof(::zjchain::dht::protobuf::TimerRequest)},
+  { 97, 110, sizeof(::zjchain::dht::protobuf::DhtMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -416,36 +422,37 @@ void AddDescriptorsImpl() {
       "\"J\n\020BootstrapRequest\022\016\n\006pubkey\030\001 \001(\014\022\021\n\t"
       "public_ip\030\002 \001(\t\022\023\n\013public_port\030\003 \001(\005\"K\n\021"
       "BootstrapResponse\022\016\n\006pubkey\030\001 \001(\014\022\021\n\tpub"
-      "lic_ip\030\002 \001(\t\022\023\n\013public_port\030\003 \001(\005\"B\n\010Nod"
+      "lic_ip\030\002 \001(\t\022\023\n\013public_port\030\003 \001(\005\"c\n\010Nod"
       "eInfo\022\021\n\tpublic_ip\030\001 \001(\014\022\023\n\013public_port\030"
-      "\002 \001(\005\022\016\n\006pubkey\030\003 \001(\014\"\202\001\n\027RefreshNeighbo"
-      "rsRequest\022\r\n\005count\030\001 \001(\r\022\023\n\013bloomfilter\030"
-      "\002 \003(\004\022\016\n\006pubkey\030\003 \001(\014\022\021\n\tpublic_ip\030\004 \001(\t"
-      "\022\023\n\013public_port\030\005 \001(\005\022\013\n\003ids\030\006 \003(\014\"I\n\030Re"
-      "freshNeighborsResponse\022-\n\005nodes\030\001 \003(\0132\036."
-      "zjchain.dht.protobuf.NodeInfo\"(\n\020Heartbe"
-      "atRequest\022\024\n\014dht_key_hash\030\001 \001(\004\")\n\021Heart"
-      "beatResponse\022\024\n\014dht_key_hash\030\001 \001(\004\"]\n\016Co"
-      "nnectReqeust\022\016\n\006pubkey\030\001 \001(\014\022\023\n\013is_respo"
-      "nse\030\002 \001(\010\022\021\n\tpublic_ip\030\003 \001(\t\022\023\n\013public_p"
-      "ort\030\004 \001(\005\" \n\014TimerRequest\022\020\n\010tm_milli\030\001 "
-      "\001(\004\"\225\004\n\nDhtMessage\022=\n\rbootstrap_req\030\001 \001("
-      "\0132&.zjchain.dht.protobuf.BootstrapReques"
-      "t\022>\n\rbootstrap_res\030\002 \001(\0132\'.zjchain.dht.p"
-      "rotobuf.BootstrapResponse\022L\n\025refresh_nei"
-      "ghbors_req\030\003 \001(\0132-.zjchain.dht.protobuf."
-      "RefreshNeighborsRequest\022M\n\025refresh_neigh"
-      "bors_res\030\004 \001(\0132..zjchain.dht.protobuf.Re"
-      "freshNeighborsResponse\0229\n\013connect_req\030\005 "
-      "\001(\0132$.zjchain.dht.protobuf.ConnectReqeus"
-      "t\022=\n\rheartbeat_req\030\006 \001(\0132&.zjchain.dht.p"
-      "rotobuf.HeartbeatRequest\022>\n\rheartbeat_re"
-      "s\030\007 \001(\0132\'.zjchain.dht.protobuf.Heartbeat"
-      "Response\0221\n\005timer\030\010 \001(\0132\".zjchain.dht.pr"
-      "otobuf.TimerRequest"
+      "\002 \001(\005\022\016\n\006pubkey\030\003 \001(\014\022\023\n\013sharding_id\030\004 \001"
+      "(\005\022\n\n\002id\030\005 \001(\t\"\202\001\n\027RefreshNeighborsReque"
+      "st\022\r\n\005count\030\001 \001(\r\022\023\n\013bloomfilter\030\002 \003(\004\022\016"
+      "\n\006pubkey\030\003 \001(\014\022\021\n\tpublic_ip\030\004 \001(\t\022\023\n\013pub"
+      "lic_port\030\005 \001(\005\022\013\n\003ids\030\006 \003(\014\"I\n\030RefreshNe"
+      "ighborsResponse\022-\n\005nodes\030\001 \003(\0132\036.zjchain"
+      ".dht.protobuf.NodeInfo\"(\n\020HeartbeatReque"
+      "st\022\024\n\014dht_key_hash\030\001 \001(\004\")\n\021HeartbeatRes"
+      "ponse\022\024\n\014dht_key_hash\030\001 \001(\004\"i\n\016ConnectRe"
+      "qeust\022\016\n\006pubkey\030\001 \001(\014\022\023\n\013is_response\030\002 \001"
+      "(\010\022\021\n\tpublic_ip\030\003 \001(\t\022\023\n\013public_port\030\004 \001"
+      "(\005\022\n\n\002id\030\005 \001(\t\" \n\014TimerRequest\022\020\n\010tm_mil"
+      "li\030\001 \001(\004\"\225\004\n\nDhtMessage\022=\n\rbootstrap_req"
+      "\030\001 \001(\0132&.zjchain.dht.protobuf.BootstrapR"
+      "equest\022>\n\rbootstrap_res\030\002 \001(\0132\'.zjchain."
+      "dht.protobuf.BootstrapResponse\022L\n\025refres"
+      "h_neighbors_req\030\003 \001(\0132-.zjchain.dht.prot"
+      "obuf.RefreshNeighborsRequest\022M\n\025refresh_"
+      "neighbors_res\030\004 \001(\0132..zjchain.dht.protob"
+      "uf.RefreshNeighborsResponse\0229\n\013connect_r"
+      "eq\030\005 \001(\0132$.zjchain.dht.protobuf.ConnectR"
+      "eqeust\022=\n\rheartbeat_req\030\006 \001(\0132&.zjchain."
+      "dht.protobuf.HeartbeatRequest\022>\n\rheartbe"
+      "at_res\030\007 \001(\0132\'.zjchain.dht.protobuf.Hear"
+      "tbeatResponse\0221\n\005timer\030\010 \001(\0132\".zjchain.d"
+      "ht.protobuf.TimerRequest"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1219);
+      descriptor, 1264);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/dht.proto", &protobuf_RegisterTypes);
 }
@@ -1163,6 +1170,8 @@ void NodeInfo::InitAsDefaultInstance() {
 const int NodeInfo::kPublicIpFieldNumber;
 const int NodeInfo::kPublicPortFieldNumber;
 const int NodeInfo::kPubkeyFieldNumber;
+const int NodeInfo::kShardingIdFieldNumber;
+const int NodeInfo::kIdFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 NodeInfo::NodeInfo()
@@ -1185,14 +1194,23 @@ NodeInfo::NodeInfo(const NodeInfo& from)
   if (from.has_pubkey()) {
     pubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.pubkey_);
   }
-  public_port_ = from.public_port_;
+  id_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_id()) {
+    id_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.id_);
+  }
+  ::memcpy(&public_port_, &from.public_port_,
+    static_cast<size_t>(reinterpret_cast<char*>(&sharding_id_) -
+    reinterpret_cast<char*>(&public_port_)) + sizeof(sharding_id_));
   // @@protoc_insertion_point(copy_constructor:zjchain.dht.protobuf.NodeInfo)
 }
 
 void NodeInfo::SharedCtor() {
   public_ip_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   pubkey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  public_port_ = 0;
+  id_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  ::memset(&public_port_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&sharding_id_) -
+      reinterpret_cast<char*>(&public_port_)) + sizeof(sharding_id_));
 }
 
 NodeInfo::~NodeInfo() {
@@ -1203,6 +1221,7 @@ NodeInfo::~NodeInfo() {
 void NodeInfo::SharedDtor() {
   public_ip_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   pubkey_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  id_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void NodeInfo::SetCachedSize(int size) const {
@@ -1226,15 +1245,22 @@ void NodeInfo::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 3u) {
+  if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
       public_ip_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000002u) {
       pubkey_.ClearNonDefaultToEmptyNoArena();
     }
+    if (cached_has_bits & 0x00000004u) {
+      id_.ClearNonDefaultToEmptyNoArena();
+    }
   }
-  public_port_ = 0;
+  if (cached_has_bits & 24u) {
+    ::memset(&public_port_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&sharding_id_) -
+        reinterpret_cast<char*>(&public_port_)) + sizeof(sharding_id_));
+  }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
 }
@@ -1287,6 +1313,36 @@ bool NodeInfo::MergePartialFromCodedStream(
         break;
       }
 
+      // optional int32 sharding_id = 4;
+      case 4: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(32u /* 32 & 0xFF */)) {
+          set_has_sharding_id();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &sharding_id_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
+      // optional string id = 5;
+      case 5: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_id()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->id().data(), static_cast<int>(this->id().length()),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "zjchain.dht.protobuf.NodeInfo.id");
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -1321,7 +1377,7 @@ void NodeInfo::SerializeWithCachedSizes(
   }
 
   // optional int32 public_port = 2;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000008u) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->public_port(), output);
   }
 
@@ -1329,6 +1385,21 @@ void NodeInfo::SerializeWithCachedSizes(
   if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
       3, this->pubkey(), output);
+  }
+
+  // optional int32 sharding_id = 4;
+  if (cached_has_bits & 0x00000010u) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->sharding_id(), output);
+  }
+
+  // optional string id = 5;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->id().data(), static_cast<int>(this->id().length()),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "zjchain.dht.protobuf.NodeInfo.id");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      5, this->id(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1354,7 +1425,7 @@ void NodeInfo::SerializeWithCachedSizes(
   }
 
   // optional int32 public_port = 2;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000008u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->public_port(), target);
   }
 
@@ -1363,6 +1434,22 @@ void NodeInfo::SerializeWithCachedSizes(
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         3, this->pubkey(), target);
+  }
+
+  // optional int32 sharding_id = 4;
+  if (cached_has_bits & 0x00000010u) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(4, this->sharding_id(), target);
+  }
+
+  // optional string id = 5;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->id().data(), static_cast<int>(this->id().length()),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "zjchain.dht.protobuf.NodeInfo.id");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        5, this->id(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1382,7 +1469,7 @@ size_t NodeInfo::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 7u) {
+  if (_has_bits_[0 / 32] & 31u) {
     // optional bytes public_ip = 1;
     if (has_public_ip()) {
       total_size += 1 +
@@ -1397,11 +1484,25 @@ size_t NodeInfo::ByteSizeLong() const {
           this->pubkey());
     }
 
+    // optional string id = 5;
+    if (has_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->id());
+    }
+
     // optional int32 public_port = 2;
     if (has_public_port()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
           this->public_port());
+    }
+
+    // optional int32 sharding_id = 4;
+    if (has_sharding_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->sharding_id());
     }
 
   }
@@ -1433,7 +1534,7 @@ void NodeInfo::MergeFrom(const NodeInfo& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 7u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_public_ip();
       public_ip_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.public_ip_);
@@ -1443,7 +1544,14 @@ void NodeInfo::MergeFrom(const NodeInfo& from) {
       pubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.pubkey_);
     }
     if (cached_has_bits & 0x00000004u) {
+      set_has_id();
+      id_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.id_);
+    }
+    if (cached_has_bits & 0x00000008u) {
       public_port_ = from.public_port_;
+    }
+    if (cached_has_bits & 0x00000010u) {
+      sharding_id_ = from.sharding_id_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
@@ -1477,7 +1585,10 @@ void NodeInfo::InternalSwap(NodeInfo* other) {
     GetArenaNoVirtual());
   pubkey_.Swap(&other->pubkey_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
+  id_.Swap(&other->id_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
   swap(public_port_, other->public_port_);
+  swap(sharding_id_, other->sharding_id_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
 }
@@ -2654,6 +2765,7 @@ const int ConnectReqeust::kPubkeyFieldNumber;
 const int ConnectReqeust::kIsResponseFieldNumber;
 const int ConnectReqeust::kPublicIpFieldNumber;
 const int ConnectReqeust::kPublicPortFieldNumber;
+const int ConnectReqeust::kIdFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ConnectReqeust::ConnectReqeust()
@@ -2676,6 +2788,10 @@ ConnectReqeust::ConnectReqeust(const ConnectReqeust& from)
   if (from.has_public_ip()) {
     public_ip_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.public_ip_);
   }
+  id_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (from.has_id()) {
+    id_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.id_);
+  }
   ::memcpy(&is_response_, &from.is_response_,
     static_cast<size_t>(reinterpret_cast<char*>(&public_port_) -
     reinterpret_cast<char*>(&is_response_)) + sizeof(public_port_));
@@ -2685,6 +2801,7 @@ ConnectReqeust::ConnectReqeust(const ConnectReqeust& from)
 void ConnectReqeust::SharedCtor() {
   pubkey_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   public_ip_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  id_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&is_response_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&public_port_) -
       reinterpret_cast<char*>(&is_response_)) + sizeof(public_port_));
@@ -2698,6 +2815,7 @@ ConnectReqeust::~ConnectReqeust() {
 void ConnectReqeust::SharedDtor() {
   pubkey_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   public_ip_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  id_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void ConnectReqeust::SetCachedSize(int size) const {
@@ -2721,15 +2839,18 @@ void ConnectReqeust::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 3u) {
+  if (cached_has_bits & 7u) {
     if (cached_has_bits & 0x00000001u) {
       pubkey_.ClearNonDefaultToEmptyNoArena();
     }
     if (cached_has_bits & 0x00000002u) {
       public_ip_.ClearNonDefaultToEmptyNoArena();
     }
+    if (cached_has_bits & 0x00000004u) {
+      id_.ClearNonDefaultToEmptyNoArena();
+    }
   }
-  if (cached_has_bits & 12u) {
+  if (cached_has_bits & 24u) {
     ::memset(&is_response_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&public_port_) -
         reinterpret_cast<char*>(&is_response_)) + sizeof(public_port_));
@@ -2804,6 +2925,22 @@ bool ConnectReqeust::MergePartialFromCodedStream(
         break;
       }
 
+      // optional string id = 5;
+      case 5: {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_id()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->id().data(), static_cast<int>(this->id().length()),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "zjchain.dht.protobuf.ConnectReqeust.id");
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -2838,7 +2975,7 @@ void ConnectReqeust::SerializeWithCachedSizes(
   }
 
   // optional bool is_response = 2;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000008u) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(2, this->is_response(), output);
   }
 
@@ -2853,8 +2990,18 @@ void ConnectReqeust::SerializeWithCachedSizes(
   }
 
   // optional int32 public_port = 4;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->public_port(), output);
+  }
+
+  // optional string id = 5;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->id().data(), static_cast<int>(this->id().length()),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "zjchain.dht.protobuf.ConnectReqeust.id");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      5, this->id(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2880,7 +3027,7 @@ void ConnectReqeust::SerializeWithCachedSizes(
   }
 
   // optional bool is_response = 2;
-  if (cached_has_bits & 0x00000004u) {
+  if (cached_has_bits & 0x00000008u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(2, this->is_response(), target);
   }
 
@@ -2896,8 +3043,19 @@ void ConnectReqeust::SerializeWithCachedSizes(
   }
 
   // optional int32 public_port = 4;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(4, this->public_port(), target);
+  }
+
+  // optional string id = 5;
+  if (cached_has_bits & 0x00000004u) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->id().data(), static_cast<int>(this->id().length()),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "zjchain.dht.protobuf.ConnectReqeust.id");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        5, this->id(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2917,7 +3075,7 @@ size_t ConnectReqeust::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         _internal_metadata_.unknown_fields());
   }
-  if (_has_bits_[0 / 32] & 15u) {
+  if (_has_bits_[0 / 32] & 31u) {
     // optional bytes pubkey = 1;
     if (has_pubkey()) {
       total_size += 1 +
@@ -2930,6 +3088,13 @@ size_t ConnectReqeust::ByteSizeLong() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->public_ip());
+    }
+
+    // optional string id = 5;
+    if (has_id()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->id());
     }
 
     // optional bool is_response = 2;
@@ -2973,7 +3138,7 @@ void ConnectReqeust::MergeFrom(const ConnectReqeust& from) {
   (void) cached_has_bits;
 
   cached_has_bits = from._has_bits_[0];
-  if (cached_has_bits & 15u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
       set_has_pubkey();
       pubkey_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.pubkey_);
@@ -2983,9 +3148,13 @@ void ConnectReqeust::MergeFrom(const ConnectReqeust& from) {
       public_ip_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.public_ip_);
     }
     if (cached_has_bits & 0x00000004u) {
-      is_response_ = from.is_response_;
+      set_has_id();
+      id_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.id_);
     }
     if (cached_has_bits & 0x00000008u) {
+      is_response_ = from.is_response_;
+    }
+    if (cached_has_bits & 0x00000010u) {
       public_port_ = from.public_port_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -3019,6 +3188,8 @@ void ConnectReqeust::InternalSwap(ConnectReqeust* other) {
   pubkey_.Swap(&other->pubkey_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   public_ip_.Swap(&other->public_ip_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+    GetArenaNoVirtual());
+  id_.Swap(&other->id_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(is_response_, other->is_response_);
   swap(public_port_, other->public_port_);

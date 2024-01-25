@@ -13,71 +13,47 @@ sudo cp -rf ./zjnodes /root
 sudo cp -rf ./deploy /root
 
 rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db*
+
+root=("r1" "r2" "r3")
+shard3=("s1" "s2" "s3")
+shard4=("s4" "s5" "s6" "s7" "s8" "s9" "s10" "s11")
+
+nodes=("${root[@]}" "${shard3[@]}" "${shard4[@]}")
+
+# 遍历数组并创建每个目录
+for node in "${nodes[@]}"; do
+    mkdir -p "/root/zjnodes/${node}/log"
+	cp -rf ./zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/${node}/conf
+done
 mkdir -p /root/zjnodes/zjchain/log
-mkdir -p /root/zjnodes/s1/log
-mkdir -p /root/zjnodes/s2/log
-mkdir -p /root/zjnodes/s3/log
-mkdir -p /root/zjnodes/s4/log
-mkdir -p /root/zjnodes/s5/log
-mkdir -p /root/zjnodes/s6/log
-mkdir -p /root/zjnodes/s7/log
-mkdir -p /root/zjnodes/s8/log
-mkdir -p /root/zjnodes/s9/log
-mkdir -p /root/zjnodes/s10/log
-mkdir -p /root/zjnodes/s11/log
-mkdir -p /root/zjnodes/s12/log
-mkdir -p /root/zjnodes/s13/log
-mkdir -p /root/zjnodes/s14/log
-mkdir -p /root/zjnodes/s15/log
-mkdir -p /root/zjnodes/s16/log
-mkdir -p /root/zjnodes/s17/log
-mkdir -p /root/zjnodes/s18/log
-mkdir -p /root/zjnodes/r1/log
-mkdir -p /root/zjnodes/r2/log
-mkdir -p /root/zjnodes/r3/log
-mkdir -p /root/zjnodes/r4/log
-mkdir -p /root/zjnodes/r5/log
-mkdir -p /root/zjnodes/r6/log
-mkdir -p /root/zjnodes/r7/log
+
 
 sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
 sudo cp -f ./conf/genesis.yml /root/zjnodes/zjchain/genesis.yml
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s1
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s2
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s3
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s4
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s5
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s6
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s7
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s8
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s9
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s10
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/s11
 
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r1
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r2
-sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/r3
+for node in "${nodes[@]}"; do
+	sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/${node}
+done
+sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
 
 
 cd /root/zjnodes/zjchain && ./zjchain -U
 cd /root/zjnodes/zjchain && ./zjchain -S 3
 cd /root/zjnodes/zjchain && ./zjchain -S 4
 
-cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/r1/db
-cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/r2/db
-cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/r3/db
+for node in "${root[@]}"; do
+	cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/${node}/db
+done
 
-cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/s1/db
-cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/s2/db
-cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/s3/db
-cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/s4/db
-cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/s5/db
-cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/s6/db
-cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/s7/db
-cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/s8/db
-cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/s9/db
-cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/s10/db
-cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/s11/db
+for node in "${shard3[@]}"; do
+	cp -rf /root/zjnodes/zjchain/shard_db_3 /root/zjnodes/${node}/db
+done
+
+for node in "${shard4[@]}"; do
+	cp -rf /root/zjnodes/zjchain/shard_db_4 /root/zjnodes/${node}/db
+done
+
+
 
 clickhouse-client -q "drop table zjc_ck_account_key_value_table"
 clickhouse-client -q "drop table zjc_ck_account_table"

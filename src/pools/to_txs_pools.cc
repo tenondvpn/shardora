@@ -619,7 +619,7 @@ int ToTxsPools::CreateToTxWithHeights(
                         if (sharding_id != network::kRootCongressNetworkId) {
                             continue;
                         }
-
+                        // 找不到账户，则将聚合 Tos 交易发送给 root
                         des_sharding_id = network::kRootCongressNetworkId;
                     } else {
                         to_iter->second.sharding_id = account_info->sharding_id();
@@ -703,6 +703,7 @@ int ToTxsPools::CreateToTxWithHeights(
                 str_for_hash.append(account_info->bytes_code());
             }
 
+            // spot1 合约账户的创建默认为from所在 shard，暂不会跨分片创建合约账户
             auto net_id = common::GlobalInfo::Instance()->network_id();
             to_item->set_sharding_id(net_id);
             str_for_hash.append((char*)&net_id, sizeof(net_id));
