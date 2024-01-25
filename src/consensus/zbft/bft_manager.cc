@@ -389,7 +389,7 @@ ZbftPtr BftManager::Start(
         return nullptr;
     }
 #endif
-
+    ZJC_DEBUG("===1");
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (elect_item_ptr == nullptr) {
         ZJC_DEBUG("thread idx error 1: %d", thread_index);
@@ -415,7 +415,7 @@ ZbftPtr BftManager::Start(
             elect_item_ptr->time_valid, now_tm_ms);
         elect_item_ptr = item_ptr;
     }
-
+    ZJC_DEBUG("===2");
     if (commited_bft_ptr != nullptr &&
             commited_bft_ptr->elect_item_ptr().get() != elect_item_ptr.get()) {
         ZJC_DEBUG("leader changed.");
@@ -432,6 +432,7 @@ ZbftPtr BftManager::Start(
 
     // 获取交易池中的待处理交易
     std::shared_ptr<WaitingTxsItem> txs_ptr = get_txs_ptr(thread_item, commited_bft_ptr);
+    ZJC_DEBUG("===3");
     if (txs_ptr == nullptr) {
 //         ZJC_DEBUG("thread idx error 5: %d", thread_index);
         return nullptr;
@@ -445,8 +446,10 @@ ZbftPtr BftManager::Start(
         }
     }
 
+    ZJC_DEBUG("===4");
     txs_ptr->thread_index = thread_index;
     auto zbft_ptr = StartBft(elect_item_ptr, txs_ptr, commited_bft_ptr);
+    ZJC_DEBUG("===5");
     if (zbft_ptr == nullptr) {
         for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
             iter->second->in_consensus = false;
