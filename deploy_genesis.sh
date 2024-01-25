@@ -14,7 +14,7 @@ sh ./genesis.sh $mode
 
 # 替换
 cp -f fetch.sh /root
-cd /root && sh -x fetch.sh 127.0.0.1 "${localip}" r1 r2 r3 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11
+cd /root && sh -x fetch.sh 127.0.0.1 "${localip}" r1 r2 r3 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 node
 
 # cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 &
 # sleep 3
