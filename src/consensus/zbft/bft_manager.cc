@@ -389,7 +389,6 @@ ZbftPtr BftManager::Start(
         return nullptr;
     }
 #endif
-    ZJC_DEBUG("===1");
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (elect_item_ptr == nullptr) {
         ZJC_DEBUG("thread idx error 1: %d", thread_index);
@@ -415,7 +414,7 @@ ZbftPtr BftManager::Start(
             elect_item_ptr->time_valid, now_tm_ms);
         elect_item_ptr = item_ptr;
     }
-    ZJC_DEBUG("===2");
+    
     if (commited_bft_ptr != nullptr &&
             commited_bft_ptr->elect_item_ptr().get() != elect_item_ptr.get()) {
         ZJC_DEBUG("leader changed.");

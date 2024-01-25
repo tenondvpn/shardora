@@ -1,6 +1,7 @@
 #include "consensus/zbft/waiting_txs_pools.h"
 
 #include "consensus/zbft/zbft.h"
+#include <_types/_uint32_t.h>
 
 namespace zjchain {
 
@@ -31,6 +32,11 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool
 
     if (txs_item != nullptr) {
         txs_item->pool_index = pool_index;
+    }
+
+    for (auto iter = txs_item->txs.begin(); iter != txs_item->txs.end(); iter++) {
+        auto msg_ptr = iter->second->msg_ptr;
+        ZJC_DEBUG("---4 to: %s", common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
     }
 
     return txs_item;
