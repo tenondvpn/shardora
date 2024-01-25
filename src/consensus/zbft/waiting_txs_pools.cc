@@ -1,7 +1,6 @@
 #include "consensus/zbft/waiting_txs_pools.h"
 
 #include "consensus/zbft/zbft.h"
-#include <_types/_uint32_t.h>
 
 namespace zjchain {
 
