@@ -6,6 +6,16 @@ fromip="$1"
 newip="$2"
 services=("${@:3}")
 
+if [[ -z $1 ]]; then
+    echo "Error: SrcIp is required."
+    exit 1
+fi
+
+if [[ -z $2 ]]; then
+    echo "Error: LocalIp is required."
+    exit 1
+fi
+
 if [[ "${fromip}" == "127.0.0.1" ]]; then
 	for service in "${services[@]}"; do
 		# 除了 bootstrap 那一行其余都执行替换
