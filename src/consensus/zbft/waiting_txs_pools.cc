@@ -34,8 +34,8 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool
     }
 
     for (auto iter = txs_item->txs.begin(); iter != txs_item->txs.end(); iter++) {
-        auto msg_ptr = iter->second->msg_ptr;
-        ZJC_DEBUG("---4 to: %s", common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
+        auto gid = iter->second->gid;
+        ZJC_DEBUG("---4 gid: %s", common::Encode::HexEncode(gid).c_str());
     }
 
     return txs_item;
