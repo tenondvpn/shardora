@@ -10,6 +10,12 @@ grep "new from add new to sharding" ./log/zjchain.log | grep "pool: 0" | awk -F'
 
 ## Genesis Nodes Deployment
 
+### Deploy on One Server
+
+```shell
+sh deploy_genesis.sh Release 10.101.20.35
+```
+
 ### Deploy on Multiple Servers
 
 #### 1. Create Genesis Data
@@ -111,9 +117,16 @@ cd /root/deploy && sh stop.sh r1 r2 r3
 
 If starting the first node, wait at least 3 seconds before launching others.
 
+
 ## Start A New Node
 
 Follow these steps to start a new node and join the chain:
+
+#### 0. Fetch exec files from genesis server.
+
+```shell
+sh fetch.sh 10.101.20.35 10.101.20.36 zjchain
+```
 
 #### 1. Prepare `zjchain.conf` for the Node
 
@@ -129,7 +142,7 @@ bootstrap=031d29587f946b7e57533725856e3b2fc840ac8395311fea149642334629cd5757:10.
 country=NL
 first_node=0
 http_port=8792
-local_ip=127.0.0.1
+local_ip=10.101.20.36
 local_port=32001
 prikey=0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db999
 show_cmd=0
