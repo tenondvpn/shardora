@@ -708,6 +708,7 @@ void BlockManager::RootHandleNormalToTx(
         tx->set_step(pools::protobuf::kRootCreateAddress);
         if (tos_item.step() == pools::protobuf::kContractCreate) {
             // that's contract address, just add address
+            // spot2
             auto account_info = std::make_shared<address::protobuf::AddressInfo>();
             account_info->set_pool_index(tos_item.pool_index());
             account_info->set_addr(tos_item.des());

@@ -703,7 +703,7 @@ int ToTxsPools::CreateToTxWithHeights(
                 str_for_hash.append(account_info->bytes_code());
             }
 
-            // 合约账户的创建默认为from所在 shard，暂不会跨分片创建合约账户
+            // spot1 合约账户的创建默认为from所在 shard，暂不会跨分片创建合约账户
             auto net_id = common::GlobalInfo::Instance()->network_id();
             to_item->set_sharding_id(net_id);
             str_for_hash.append((char*)&net_id, sizeof(net_id));
