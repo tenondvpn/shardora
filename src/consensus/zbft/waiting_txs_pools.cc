@@ -32,12 +32,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool
     if (txs_item != nullptr) {
         txs_item->pool_index = pool_index;
     }
-
-    for (auto iter = txs_item->txs.begin(); iter != txs_item->txs.end(); iter++) {
-        auto gid = iter->second->gid;
-        ZJC_DEBUG("---4 gid: %s", common::Encode::HexEncode(gid).c_str());
-    }
-
+    
     return txs_item;
 }
 
