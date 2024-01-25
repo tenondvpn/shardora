@@ -32,7 +32,7 @@ std::shared_ptr<WaitingTxsItem> WaitingTxsPools::LeaderGetValidTxs(uint32_t pool
     if (txs_item != nullptr) {
         txs_item->pool_index = pool_index;
     }
-    
+
     return txs_item;
 }
 
