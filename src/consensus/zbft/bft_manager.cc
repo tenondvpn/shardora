@@ -436,6 +436,13 @@ ZbftPtr BftManager::Start(
         return nullptr;
     }
 
+    if (txs_ptr != nullptr) {
+        for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); iter++) {
+            auto gid = iter->second->gid;
+            ZJC_DEBUG("=========2 gid: %s", common::Encode::HexEncode(gid).c_str());
+        }
+    }
+
     if (txs_ptr->tx_type == pools::protobuf::kNormalFrom) {
         if (block_mgr_->ShouldStopConsensus()) {
             ZJC_DEBUG("should stop consensus.");
