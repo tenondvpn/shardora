@@ -610,7 +610,7 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             if (msg_ptr->conn != nullptr) {
                 return;
             }
-
+            
             auto pool_index = common::GetAddressPoolIndex(tx_msg.to()) % common::kImmutablePoolSize;
             msg_queues_[pool_index].push(msg_ptr);
 //             ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());
@@ -1228,7 +1228,7 @@ void TxPoolManager::PopTxs(uint32_t pool_index) {
 //         }
 
         DispatchTx(pool_index, msg_ptr);
-//         ZJC_DEBUG("success pop tx: %s, %lu", common::Encode::HexEncode(tx_msg.gid()).c_str(), msg_ptr->header.hash64());
+        ZJC_DEBUG("success pop tx: %s, %lu", common::Encode::HexEncode(msg_ptr->header.tx_proto().gid()).c_str(), msg_ptr->header.hash64());
     }
 }
 
@@ -1254,12 +1254,12 @@ void TxPoolManager::DispatchTx(uint32_t pool_index, transport::MessagePtr& msg_p
     tx_pool_[pool_index].AddTx(tx_ptr);
     ZJC_DEBUG("push queue index pool_index: %u, tx size: %d, latest tm: %lu",
         pool_index, tx_pool_[pool_index].tx_size(), tx_pool_[pool_index].oldest_timestamp());
-//     ZJC_DEBUG("success add local transfer to tx %u, %s, gid: %s, from pk: %s, to: %s",
-//         pool_index,
-//         common::Encode::HexEncode(tx_ptr->tx_hash).c_str(),
-//         common::Encode::HexEncode(tx_ptr->gid).c_str(),
-//         common::Encode::HexEncode(msg_ptr->header.tx_proto().pubkey()).c_str(),
-//         common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
+    ZJC_DEBUG("success add local transfer to tx %u, %s, gid: %s, from pk: %s, to: %s",
+        pool_index,
+        common::Encode::HexEncode(tx_ptr->tx_hash).c_str(),
+        common::Encode::HexEncode(tx_ptr->gid).c_str(),
+        common::Encode::HexEncode(msg_ptr->header.tx_proto().pubkey()).c_str(),
+        common::Encode::HexEncode(msg_ptr->header.tx_proto().to()).c_str());
 }
 
 void TxPoolManager::GetTx(
