@@ -63,7 +63,8 @@ private:
         uint32_t sharding_id,
         int32_t pool_index,
         const std::string& key,
-        const std::string& library_bytes);
+        const std::string& library_bytes,
+        const std::string& from);
     void HandleElectJoinVerifyVec(
         const std::string& verify_hash,
         std::vector<bls::protobuf::JoinElectInfo>& verify_reqs);
@@ -83,7 +84,9 @@ private:
         int32_t src_step;
         std::string elect_join_g2_key;
         std::vector<bls::protobuf::JoinElectInfo> verify_reqs;
-        std::string library_bytes; // for kContractCreate
+         // for kContractCreate
+        std::string library_bytes;
+        std::string from;
     };
 
     // destination shard -> pool -> height -> items

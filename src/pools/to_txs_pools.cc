@@ -150,7 +150,7 @@ void ToTxsPools::HandleJoinElect(
                 0,
                 network::kRootCongressNetworkId,
                 block.pool_index(),
-                tx.storages(i).val_hash(), "");
+                tx.storages(i).val_hash(), "", "");
         }
     }
 }
@@ -178,7 +178,7 @@ void ToTxsPools::HandleContractExecute(
             tx.contract_txs(i).amount(),
             sharding_id,
             pool_index,
-            "", "");
+            "", "", "");
     }
 }
 
@@ -205,7 +205,7 @@ void ToTxsPools::HandleContractGasPrepayment(
             tx.contract_prepayment(),
             sharding_id,
             pool_index,
-            "", "");
+            "", "", "");
     }
 }
 
@@ -224,7 +224,7 @@ void ToTxsPools::HandleNormalFrom(
         sharding_id = addr_info->sharding_id();
     }
 
-    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", "");
+    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", "", "");
 }
 
 void ToTxsPools::HandleCreateContractUserCall(
@@ -241,7 +241,7 @@ void ToTxsPools::HandleCreateContractUserCall(
         }
     }
     
-    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", bytes_code);
+    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", bytes_code, "");
     for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = -1;
@@ -257,7 +257,7 @@ void ToTxsPools::HandleCreateContractUserCall(
             tx.contract_txs(i).amount(),
             sharding_id,
             pool_index,
-            "", "");
+            "", "", "");
     }
 }
 
@@ -287,7 +287,7 @@ void ToTxsPools::HandleRootCreateAddress(
     }
 
     ZJC_DEBUG("success add root create address: %s sharding: %u, pool: %u", common::Encode::HexEncode(tx.to()).c_str(), sharding_id, pool_index);
-    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", "");
+    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", "", "");
 }
 
 void ToTxsPools::AddTxToMap(
@@ -298,7 +298,8 @@ void ToTxsPools::AddTxToMap(
         uint32_t sharding_id,
         int32_t pool_index,
         const std::string& key,
-        const std::string& library_bytes) {
+        const std::string& library_bytes,
+        const std::string& from) {
     std::string to(in_to.size() + 4, '\0');
     char* tmp_to_data = to.data();
     memcpy(tmp_to_data + 4, in_to.c_str(), in_to.size());
@@ -326,7 +327,13 @@ void ToTxsPools::AddTxToMap(
         item.type = type;
         item.sharding_id = sharding_id;
         item.elect_join_g2_key = key;
-        item.library_bytes = library_bytes;
+
+        // for ContractCreate Tx
+        if (library_bytes != "") {
+            item.library_bytes = library_bytes;
+            item.from = from;    
+        }
+        
         height_iter->second[to] = item;
         ZJC_DEBUG("add to %s step: %u", common::Encode::HexEncode(to).c_str(), type);
     }
