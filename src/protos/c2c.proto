@@ -1,0 +1,64 @@
+syntax = "proto2";
+
+package zjchain.c2c.protobuf;
+
+enum Status {
+    kDefault = 0;
+    kConfirmed = 1;
+    kReported = 2;
+    kSellWaiting = 3;
+    kSellValid = 4;
+    kSellInvalid = 5;
+    kSellReleased = 6;
+    kSellExists = 7;
+}
+
+message OrderInfo {
+	optional bytes buyer = 1;
+	optional Status status = 2;
+	optional uint64 amount = 3;
+}
+
+message SellInfo {
+	optional bytes protocol_addr = 1;
+	optional bytes seller = 2;
+	optional uint64 pledge_amount = 3;
+	optional uint64 price = 4;
+	optional bytes receivable = 5;
+    optional bool manager_released = 6;
+    optional bool seller_released = 7;
+	optional Status status = 8;
+    optional OrderInfo order_info = 9;
+	repeated bytes reports = 10;
+}
+
+message NewOrder {
+	optional bytes seller = 1;
+	optional uint64 amount = 2;
+	optional bytes buyer = 3;
+}
+
+message NewSell {
+	optional bytes protocol_addr = 1;
+	optional bytes seller = 2;
+	optional uint64 amount = 3;
+	optional uint64 price = 4;
+	optional bytes receivable = 5;
+}
+
+message BuyerReport {
+	optional bytes seller = 1;
+	optional bytes reports_info = 2;
+}
+
+message GetSell {
+	optional bytes seller = 1;
+}
+
+message C2cMessage {
+	optional NewSell sell = 1;
+	optional NewOrder order = 2;
+	optional BuyerReport report = 3;
+	repeated SellInfo sells = 4;
+	repeated GetSell get_sell = 5;
+}

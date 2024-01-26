@@ -1,0 +1,12 @@
+syntax = "proto2";
+
+package zjchain.vss.protobuf;
+
+message VssMessage {
+	optional uint64 random_hash = 1;
+	optional uint64 random = 2;
+	optional uint32 member_index = 3;
+	optional uint64 tm_height = 4;
+	optional uint64 elect_height = 5;
+	optional int32 type = 6;
+}

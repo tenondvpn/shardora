@@ -1,0 +1,224 @@
+syntax = "proto2";
+
+package zjchain.block.protobuf;
+import "protos/pools.proto";
+
+message StorageItem {
+    optional bytes key = 1;
+    optional bytes val_hash = 2;
+    optional uint32 val_size = 3 [default=0];
+}
+
+message TransferItem {
+    optional bytes from = 1;
+    optional bytes to = 2;
+    optional uint64 amount = 3;
+}
+
+message TxLog {
+    optional bytes data = 1;
+    repeated bytes topics = 2;
+}
+
+message BlockTx {
+    optional bytes gid = 1;
+    optional bytes from = 2;
+    optional bytes to = 3;
+    optional uint64 amount = 4;
+    optional uint64 gas_limit = 5;
+    optional uint64 gas_used = 6;
+    optional uint64 gas_price = 7;
+    optional uint64 balance = 8;  // if step = kNormalTo, then it is first TransferItem's to's balance 
+    optional pools.protobuf.StepType step = 9;
+    optional uint32 status = 10;
+    repeated StorageItem storages = 11;
+    repeated TransferItem contract_txs = 12;
+    optional uint64 contract_prepayment = 13;
+    optional bytes contract_code = 14;
+    optional bytes contract_input = 15;
+    repeated TxLog events = 16;
+}
+
+message Block {
+    optional uint32 network_id = 1;
+    optional uint32 pool_index = 2;
+    optional bytes prehash = 3;
+    optional bytes hash = 4;
+    optional uint32 version = 5;
+    optional uint64 height = 6;
+    optional uint64 consistency_random = 7;
+    optional uint64 electblock_height = 8;
+    optional uint64 timeblock_height = 9;
+    repeated BlockTx tx_list = 10;
+    optional uint64 timestamp = 11;
+    optional bytes bls_agg_sign_x = 12;
+    optional bytes bls_agg_sign_y = 13;
+    optional uint64 leader_index = 14;
+    repeated bytes change_leader_invalid_hashs = 15;
+    optional bool is_commited_block = 16 [default=false];  // not pipelined commit
+}
+
+message ConsensusToTxsItem {
+    optional bytes to = 1;
+    optional uint64 balance = 2;
+}
+
+message ConsensusToTxs {
+    repeated ConsensusToTxsItem tos = 1;
+}
+
+message GetTxBlockRequest {
+    optional bytes tx_gid = 1;
+    optional bytes block_hash = 2;
+    optional bool from = 3;
+    optional uint64 height = 4;
+    optional bytes account_address = 5;
+}
+
+message GetTxBlockResponse {
+    optional bytes block = 1;
+}
+
+message AccountHeightRequest {
+    optional bytes account_addr = 1;
+    optional int64 index = 2;
+    optional int32 count = 3;
+}
+
+message AccountHeightResponse {
+    repeated uint64 heights = 1;
+    optional bytes account_addr = 2;
+    optional bytes type = 3;
+}
+
+message AccountAttrRequest {
+    optional bytes account = 1;
+    optional bytes attr_key = 2;
+    optional uint64 height = 3;
+}
+
+message AccountAttrResponse {
+    optional bytes account = 1;
+    optional bytes attr_key = 2;
+    optional uint64 height = 3;
+    optional bytes block = 4;
+}
+
+message UpdateVpnCountRequest {
+    optional uint64 account_hash = 1;
+    optional bytes ip = 2;
+    optional bytes old_ip = 3;
+    optional bytes uid = 4;
+    optional bool just_set = 5;
+}
+
+message VpnCountItem {
+    optional bytes ip = 1;
+    optional uint32 count = 2;
+}
+
+message UpdateVpnCountResponse {
+    repeated VpnCountItem vpn_nodes = 1;
+}
+
+message GetAccountInitInfoRequest {
+    optional bytes id = 1;
+    optional uint32 count = 2;
+    optional uint64 height = 3;
+    optional uint64 net_id = 4;
+    optional uint64 index = 5;
+}
+
+message GetAccountInitInfoResponse {
+    optional uint64 balance = 1;
+    repeated Block block_list = 2;
+    optional bytes id = 3;
+    optional uint64 max_index = 4;
+}
+
+message UpdateVpnActiveRequest {
+    optional bytes id = 1;
+    optional bytes ip = 2;
+}
+
+message AdRewardRequest {
+    optional bytes id = 1;
+    optional bytes reward_key = 2;
+    optional bytes gid = 3;
+}
+
+message ElectStatisticInfo {
+    optional uint64 elect_height = 1;
+    repeated uint32 succ_tx_count = 2;
+    repeated uint32 lof_leaders = 3;
+}
+
+message StatisticInfo {
+    optional uint64 timeblock_height = 1;
+    optional uint32 all_tx_count = 2;
+    repeated ElectStatisticInfo elect_statistic = 3;
+}
+
+message RefreshPoolHeightRequest {
+    repeated uint64 heights = 1;
+}
+
+message RefreshPoolHeightResponse {
+    repeated uint64 heights = 1;
+}
+
+message GetAccountShardRequest {
+    optional bytes id = 1;
+}
+
+message GetAccountShardReponse {
+    optional bytes id = 1;
+    optional uint32 shard_id = 2;
+}
+
+message CrossShardingTosMessage {
+    optional Block block = 1;
+}
+
+message CrossShardingStatisticMessage {
+    optional Block block = 1;
+}
+
+message ElectBlockMessage {
+    optional Block block = 1;
+}
+
+message ShardToTxMessage {
+    repeated pools.protobuf.ShardToTxItem to_txs = 1;
+    optional uint32 leader_idx = 2;
+    optional uint64 elect_height = 3;
+    optional int32 leader_to_idx = 4;
+}
+
+message StatisticTxMessage {
+    optional pools.protobuf.StatisticTxItem statistic = 1;
+    optional uint32 leader_idx = 2;
+    optional uint64 elect_height = 3;
+    optional int32 leader_to_idx = 4;
+}
+
+message BlockMessage {
+    optional GetTxBlockRequest block_req = 1;
+    optional GetTxBlockResponse block_res = 2;
+    optional AccountHeightRequest height_req = 3;
+    optional AccountHeightResponse height_res = 4;
+    optional AccountAttrRequest acc_attr_req = 5;
+    optional AccountAttrResponse acc_attr_res = 6;
+    optional UpdateVpnCountRequest up_vpn_req = 7;
+    optional UpdateVpnCountResponse up_vpn_res = 8;
+    optional GetAccountInitInfoRequest account_init_req = 9;
+    optional GetAccountInitInfoResponse account_init_res = 10;
+    optional UpdateVpnActiveRequest vpn_active_req = 11;
+    optional AdRewardRequest ad_reward_req = 12;
+    optional RefreshPoolHeightRequest ref_heights_req = 13;
+    optional RefreshPoolHeightResponse ref_heights_res = 14;
+    optional GetAccountShardRequest acc_shard_req = 15;
+    optional GetAccountShardReponse acc_shard_res = 16;
+    optional ShardToTxMessage shard_to = 17;
+    optional StatisticTxMessage statistic_tx = 18;
+}

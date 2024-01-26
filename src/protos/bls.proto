@@ -1,0 +1,103 @@
+syntax = "proto2";
+
+package zjchain.bls.protobuf;
+
+message VerifyVecItem {
+    optional bytes x_c0 = 1;
+    optional bytes x_c1 = 2;
+    optional bytes y_c0 = 3;
+    optional bytes y_c1 = 4;
+    optional bytes z_c0 = 5;
+    optional bytes z_c1 = 6;
+}
+
+message BlsPublicKey {
+    optional bytes x_c0 = 1;
+    optional bytes x_c1 = 2;
+    optional bytes y_c0 = 3;
+    optional bytes y_c1 = 4;
+}
+
+message VerifyVecBrdReq {
+    repeated VerifyVecItem verify_vec = 1;
+    optional uint32 change_idx = 2;
+}
+
+message JoinElectBlsInfo {
+    optional VerifyVecItem verified_g2 = 1;
+}
+
+message JoinElectInfo {
+    optional uint32 shard_id = 1;
+    optional uint32 member_idx = 2;
+    optional uint32 change_idx = 3;
+    optional VerifyVecBrdReq g2_req = 4;
+}
+
+message LocalPolynomial {
+    repeated bytes polynomial = 1;
+    optional uint32 change_idx = 2 [default=0];
+}
+
+message LocalBlsItem {
+    repeated bytes polynomial = 1;
+    repeated VerifyVecItem verify_vec = 2;
+    optional uint32 valid_t = 3;
+    optional uint32 valid_n = 4;
+}
+
+message BlsVerifyValue {
+    repeated VerifyVecItem verify_vec = 1;
+}
+
+message VerifyVecBrdRes {
+    optional bytes public_ip = 1;
+    optional uint32 public_port = 2;
+}
+
+message SwapSecKeyItem {
+    optional bytes sec_key = 1;
+    optional uint32 sec_key_len = 2;
+    optional BlsPublicKey old_g2 = 3;
+}
+
+message SwapSecKeyReq {
+    repeated SwapSecKeyItem keys = 1;
+}
+
+message SwapSecKeyRes {
+    optional uint32 index = 1;
+    optional bytes sec_key = 2;
+    optional uint32 sec_key_len = 3;
+}
+
+message AgainstParticipant {
+    optional uint32 against_index = 1;
+}
+
+message FinishBroadcast {
+    repeated uint64 bitmap = 1;
+    optional BlsPublicKey pubkey = 2;
+    optional BlsPublicKey common_pubkey = 3;
+    optional uint32 network_id = 4;
+    optional bytes bls_sign_x = 5;
+    optional bytes bls_sign_y = 6;
+}
+
+message CheckVerfiyReq {
+    optional uint32 index = 1;
+}
+
+message CheckSwapKeyReq {
+    optional uint32 index = 1;
+}
+
+message BlsMessage {
+    optional VerifyVecBrdReq verify_brd = 1;
+    optional SwapSecKeyReq swap_req = 2;
+    optional FinishBroadcast finish_req = 3;
+    optional CheckVerfiyReq check_verify_req = 4;
+    optional CheckSwapKeyReq check_swapkey_req = 5;
+    optional uint32 index = 6;
+    optional uint64 elect_height = 7;
+}

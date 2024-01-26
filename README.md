@@ -1,92 +1,179 @@
 # zjchain
 
+## For Testing
 
+Use the following command to filter and sort specific log entries from `zjchain.log`:
 
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin http://gitlab-tic.zhejianglab.com/blockchain/zjchain.git
-git branch -M main
-git push -uf origin main
+```bash
+grep "new from add new to sharding" ./log/zjchain.log | grep "pool: 0" | awk -F' ' '{ printf("%03d", $19); print " " $15}' | sort > 0
 ```
 
-## Integrate with your tools
+## Genesis Nodes Deployment
 
-- [ ] [Set up project integrations](http://gitlab-tic.zhejianglab.com/blockchain/zjchain/-/settings/integrations)
+### Deploy on One Server
 
-## Collaborate with your team
+```shell
+sh deploy_genesis.sh Release 10.101.20.35
+```
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+### Deploy on Multiple Servers
 
-## Test and Deploy
+#### 1. Create Genesis Data
 
-Use the built-in continuous integration in GitLab.
+Execute the script below to generate genesis data in the db folders:
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+```bash
+sh ./genesis.sh Release
+```
 
-***
+The shard distribution is specified in the `genesis.sh` file. Edit this file if you need to modify the node-to-shard mapping.
 
-# Editing this README
+#### 2. Configure `zjchain.conf` for Node Deployment
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+Here is a sample configuration:
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+```ini
+[db]
+path=./db
+[log]
+path=log/zjchain.log
+[zjchain]
+bootstrap=031d29587f946b7e57533725856e3b2fc840ac8395311fea149642334629cd5757:10.101.20.35:11001,03a6f3b7a4a3b546d515bfa643fc4153b86464543a13ab5dd05ce6f095efb98d87:10.101.20.35:12001,031e886027cdf3e7c58b9e47e8aac3fe67c393a155d79a96a0572dd2163b4186f0:10.101.20.35:13001
+ck_ip=10.101.20.35
+ck_passworkd=""
+ck_user=""
+country=NL
+data_service_node_for_net_id=-1
+first_node=0
+http_port=8781
+id=c513ba24d79f6adc5060caebc9267663457f74c2
+local_ip=10.101.20.35
+local_port=21001
+net_id=4
+prikey=e154d5e5fc28b7f715c01ca64058be7466141dc6744c89cbcc5284e228c01269
+show_cmd=0
+statistic_ck=true
+tcp_spec=0.0.0.0:21002
+local_member_idx=0
+[tx_block]
+network_id=4
+```
 
-## Name
-Choose a self-explaining name for your project.
+Key fields to note:
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+- `bootstrap`: Nodes to connect to for network establishment.
+- `local_ip`: IP address of the node.
+- `local_port`: Port number of the node.
+- `prikey`: Private key of the node account.
+- `http_port`: If non-zero, a HTTP server starts.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+Replace `127.0.0.1` with the actual IP in `zjchain.conf`. Use the provided tool for this:
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+```bash
+sh -x fetch.sh 127.0.0.1 10.101.20.35 r1 r2 r3 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11
+```
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+Arguments:
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+- `arg1`: Source IP to be replaced.
+- `arg2`: New IP address.
+- `arg3..`: Node config files to update.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Manual editing is also an option.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+#### 3. Copy Genesis Data to Other Servers and Edit `zjchain.conf`
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+Use `fetch.sh` to transfer genesis data and update IP addresses:
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+```bash
+sh -x fetch.sh 10.101.20.35 10.101.20.36 r1 r2 r3 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11
+```
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+This script:
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+1. Copies genesis data from the source server.
+2. Updates IPs in `zjchain.conf`.
 
-## License
-For open source projects, say how it is licensed.
+Alternatively, manually upload genesis data and edit config files.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+#### 4. Start or Stop Nodes
+
+Execute the start commands as follows:
+
+```bash
+# server1
+cd /root/deploy && sh start.sh r1
+sleep 3
+
+# server2
+cd /root/deploy && sh start.sh r2 r3
+```
+
+To stop nodes:
+
+```shell
+cd /root/deploy && sh stop.sh r1 r2 r3
+```
+
+If starting the first node, wait at least 3 seconds before launching others.
+
+
+## Start A New Node
+
+Follow these steps to start a new node and join the chain:
+
+#### 0. Fetch exec files from genesis server.
+
+```shell
+sh fetch.sh 10.101.20.35 10.101.20.36 zjchain
+```
+
+#### 1. Prepare `zjchain.conf` for the Node
+
+Example configuration:
+
+```ini
+[db]
+path=./db
+[log]
+path=log/zjchain.log
+[zjchain]
+bootstrap=031d29587f946b7e57533725856e3b2fc840ac8395311fea149642334629cd5757:10.101.20.35:11001,03a6f3b7a4a3b546d515bfa643fc4153b86464543a13ab5dd05ce6f095efb98d87:10.101.20.35:12001,031e886027cdf3e7c58b9e47e8aac3fe67c393a155d79a96a0572dd2163b4186f0:10.101.20.35:13001
+country=NL
+first_node=0
+http_port=8792
+local_ip=10.101.20.36
+local_port=32001
+prikey=0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db999
+show_cmd=0
+for_ck=false
+local_member_idx=2
+```
+
+#### 2. Send a Transaction to the Node Account
+
+Send a transaction to allocate a shard for the node. A Node.js script is provided for this:
+
+```bash
+cd ./src/contract/tests/contracts
+
+node test_transaction.js 1 {node private key}
+
+shell > 
+{
+  balance: '0',
+  shardingId: 3, // the node is created in shard3 by root 
+  poolIndex: 146,
+  addr: 'NIDjSIlmODPBAs7mULVnd+EK0/s=',
+  type: 'kNormal',
+  latestHeight: '1'
+}
+```
+
+#### 3. Run the Node
+
+Start the node with:
+
+```bash
+sh /root/deploy/start.sh
+```

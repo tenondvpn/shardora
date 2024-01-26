@@ -1,0 +1,49 @@
+syntax = "proto2";
+
+package zjchain.sync.protobuf;
+
+message SyncItem {
+    optional bytes key = 1;
+    optional bytes value = 2;
+}
+
+message SyncInfo {
+    repeated SyncItem items = 1;
+}
+
+message SyncHeightItem {
+   	optional uint32 pool_idx = 1;
+    optional uint64 height = 2;
+    optional uint32 tag = 3;
+}
+
+message FlushDbItem {
+    optional uint64 max_vec_index = 1;
+    optional uint64 max_height = 2;
+    repeated uint64 heights = 3;
+}
+
+message SyncValueRequest {
+	optional uint32 network_id = 1;
+	repeated bytes keys = 2;
+	repeated SyncHeightItem heights = 3;
+}
+
+message SyncResItem {
+    optional bytes key = 1;
+    optional bytes value = 2;
+	optional uint32 network_id = 3;
+	optional uint32 pool_idx = 4;
+    optional uint64 height = 5;
+    optional uint32 tag = 6;
+}
+
+message SyncValueResponse {
+	optional uint32 network_id = 1;
+	repeated SyncResItem res = 2;
+}
+
+message SyncMessage {
+	optional SyncValueRequest sync_value_req = 1;
+	optional SyncValueResponse sync_value_res = 2;
+}

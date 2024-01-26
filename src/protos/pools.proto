@@ -1,0 +1,140 @@
+syntax = "proto2";
+
+import "protos/bls.proto";
+package zjchain.pools.protobuf;
+
+enum StepType {
+    kNormalFrom = 0;
+    kNormalTo = 1;
+    kConsensusRootElectShard = 2;  // shard consensus network election
+    kConsensusRootTimeBlock = 3;  // create time block
+    kConsensusCreateGenesisAcount = 4;
+    kConsensusLocalTos = 5;
+    kContractCreate = 6;
+    kContractGasPrepayment = 7;
+    kContractExcute = 8;
+    kRootCreateAddress = 9;
+    kRootCreateAddressCrossSharding = 11;
+    kStatistic = 12;
+    kJoinElect = 13;
+    kCreateLibrary = 14;
+    kCross = 15;
+    kRootCross = 16;
+}
+
+message ToTxHeights {
+    optional uint32 sharding_id = 1;
+    repeated uint64 heights = 2;
+    optional uint64 block_height = 3;
+    optional bytes tos_hash = 4;
+    optional bytes leader_id = 5;
+    optional uint64 elelct_height = 6;
+    optional uint32 tx_count = 7;
+}
+
+message ToTxMessageItem {
+    optional bytes des = 1;
+    optional uint64 amount = 2;
+    optional uint32 sharding_id = 3;  // for root to diplacement shard and pool
+    optional uint32 pool_index = 4;
+    optional int32 step = 5;
+    optional bytes library_bytes = 6;
+    repeated bls.protobuf.JoinElectInfo join_infos = 7;
+}
+
+message ShardToTxItem {
+    optional uint32 sharding_id = 1;
+    repeated uint64 heights = 2;
+    optional uint64 block_height = 3;
+}
+
+message StatisticTxItem {
+    optional uint32 sharding_id = 1;
+    repeated uint64 heights = 2;
+    optional uint64 block_height = 3;
+}
+
+message ToTxMessage {
+    optional bytes heights_hash = 1;
+    repeated ToTxMessageItem tos = 2;
+    optional ShardToTxItem to_heights = 3;
+    optional uint64 elect_height = 4;
+}
+
+message PoolLatestInfo {
+    optional uint64 height = 1;
+    optional bytes hash = 2;
+    optional uint64 synced_height = 3;
+}
+
+message AreaInfo {
+    optional int32 x = 1;
+    optional int32 y = 2;
+}
+
+message PoolStatisticItem {
+    repeated uint32 tx_count = 1;
+    repeated uint64 stokes = 2;
+    optional uint64 elect_height = 3;
+    repeated AreaInfo area_point = 4;
+}
+
+message JoinElectNode {
+    optional bytes pubkey = 1;
+    optional uint64 stoke = 2;
+    optional uint32 shard = 3;
+    optional int32 elect_pos = 4;
+}
+
+message CrossShardStatisticItem {
+    optional uint32 src_shard = 1;
+    optional uint32 src_pool = 2;
+    optional uint64 height = 3;
+    optional uint32 des_shard = 4;
+}
+
+message CrossShardStatistic {
+    repeated CrossShardStatisticItem crosses = 1;
+    optional uint64 elect_height = 2;
+}
+
+message ElectStatistic {
+    repeated PoolStatisticItem statistics = 1;
+    optional StatisticTxItem heights = 2;
+    repeated JoinElectNode join_elect_nodes = 3;
+    optional uint32 sharding_id = 4;
+    optional uint64 gas_amount = 5;
+    repeated uint32 lof_leaders = 6;
+    optional CrossShardStatistic cross = 7;
+    optional uint64 elect_height = 8;
+}
+
+message SyncPoolsMaxHeight {
+    optional bool req = 1 [default=false];
+    repeated uint64 heights = 2;
+    repeated uint64 cross_heights = 3;
+}
+
+message InvalidBftMessage {
+    optional uint32 pool_index = 1;
+    optional bytes gid = 2;
+    optional bytes hash = 3;
+    optional bool precommit = 4;
+    optional uint64 height = 5;
+}
+
+message TxMessage {
+    optional uint32 version = 1;
+    optional bytes gid = 2;
+    optional bytes pubkey = 3;
+    optional uint64 gas_limit = 4;
+    optional uint64 gas_price = 5;
+    optional bytes key = 6;
+    optional bytes value = 7;
+    optional bytes to = 8;
+    optional uint64 amount = 9;
+    optional StepType step = 10 [default=kNormalFrom];
+    optional uint64 contract_prepayment = 11;
+    optional bytes contract_code = 12;
+    optional bytes contract_input = 13;
+}

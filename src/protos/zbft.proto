@@ -1,0 +1,38 @@
+syntax = "proto2";
+
+package zjchain.zbft.protobuf;
+import "protos/block.proto";
+import "protos/pools.proto";
+
+message TxBft {
+    optional block.protobuf.Block block = 1;
+    optional bytes prepare_final_hash = 2;
+    optional uint64 height = 3;
+    repeated bytes tx_hash_list = 4;
+    optional pools.protobuf.StepType tx_type = 5 [default=kNormalFrom];
+}
+
+message ZbftMessage {
+    optional bytes prepare_gid = 1;
+    optional bytes precommit_gid = 2;
+    optional bytes commit_gid = 3;
+    optional int32 leader_idx = 4 [default=-1];
+    optional uint32 net_id = 5;
+    optional bool agree_precommit = 6 [default=false];
+    optional bool agree_commit = 7 [default=false];
+    optional uint32 pool_index = 8 [default=4294967295];
+    optional int32 error = 9;
+    optional TxBft tx_bft = 10;
+    optional uint32 member_index = 11;
+    optional bytes backup_enc_data = 12;
+    optional uint64 elect_height = 13;
+    optional bytes bls_sign_x = 14;
+    optional bytes bls_sign_y = 15;
+    optional uint64 prepare_height = 16;
+    optional bytes prepare_hash = 17;
+    optional block.protobuf.Block block = 18;
+    optional bool sync_block = 19;
+    repeated uint32 ips = 20;
+    optional bytes oppose_prepare_gid = 21;
+    repeated uint32 invaid_txs = 22;
+}

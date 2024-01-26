@@ -1,0 +1,1112 @@
+[
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/zjchain.dir/src/main/main.cc.o -c /Users/sofly/projects/c/zjchain/src/main/main.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/main/main.cc",
+  "output": "CMakeFiles/zjchain.dir/src/main/main.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/https.dir/src/main/http_svr.cc.o -c /Users/sofly/projects/c/zjchain/src/main/http_svr.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/main/http_svr.cc",
+  "output": "CMakeFiles/https.dir/src/main/http_svr.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/httpc.dir/src/main/http_cli.cc.o -c /Users/sofly/projects/c/zjchain/src/main/http_cli.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/main/http_cli.cc",
+  "output": "CMakeFiles/httpc.dir/src/main/http_cli.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/wss.dir/src/main/ws_svr.cc.o -c /Users/sofly/projects/c/zjchain/src/main/ws_svr.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/main/ws_svr.cc",
+  "output": "CMakeFiles/wss.dir/src/main/ws_svr.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/wsc.dir/src/main/ws_cli.cc.o -c /Users/sofly/projects/c/zjchain/src/main/ws_cli.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/main/ws_cli.cc",
+  "output": "CMakeFiles/wsc.dir/src/main/ws_cli.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/tnets.dir/src/main/tnet_svr.cc.o -c /Users/sofly/projects/c/zjchain/src/main/tnet_svr.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/main/tnet_svr.cc",
+  "output": "CMakeFiles/tnets.dir/src/main/tnet_svr.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/tnetc.dir/src/main/tnet_cli.cc.o -c /Users/sofly/projects/c/zjchain/src/main/tnet_cli.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/main/tnet_cli.cc",
+  "output": "CMakeFiles/tnetc.dir/src/main/tnet_cli.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/txcli.dir/src/main/tx_cli.cc.o -c /Users/sofly/projects/c/zjchain/src/main/tx_cli.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/main/tx_cli.cc",
+  "output": "CMakeFiles/txcli.dir/src/main/tx_cli.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/bitmap.cc.o -c /Users/sofly/projects/c/zjchain/src/common/bitmap.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/bitmap.cc",
+  "output": "common/CMakeFiles/common.dir/bitmap.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/bloom_filter.cc.o -c /Users/sofly/projects/c/zjchain/src/common/bloom_filter.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/bloom_filter.cc",
+  "output": "common/CMakeFiles/common.dir/bloom_filter.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/config.cc.o -c /Users/sofly/projects/c/zjchain/src/common/config.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/config.cc",
+  "output": "common/CMakeFiles/common.dir/config.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/encode.cc.o -c /Users/sofly/projects/c/zjchain/src/common/encode.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/encode.cc",
+  "output": "common/CMakeFiles/common.dir/encode.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/fts_tree.cc.o -c /Users/sofly/projects/c/zjchain/src/common/fts_tree.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/fts_tree.cc",
+  "output": "common/CMakeFiles/common.dir/fts_tree.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/global_info.cc.o -c /Users/sofly/projects/c/zjchain/src/common/global_info.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/global_info.cc",
+  "output": "common/CMakeFiles/common.dir/global_info.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/hash.cc.o -c /Users/sofly/projects/c/zjchain/src/common/hash.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/hash.cc",
+  "output": "common/CMakeFiles/common.dir/hash.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/ip.cc.o -c /Users/sofly/projects/c/zjchain/src/common/ip.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/ip.cc",
+  "output": "common/CMakeFiles/common.dir/ip.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/limit_heap.cc.o -c /Users/sofly/projects/c/zjchain/src/common/limit_heap.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/limit_heap.cc",
+  "output": "common/CMakeFiles/common.dir/limit_heap.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/lof.cc.o -c /Users/sofly/projects/c/zjchain/src/common/lof.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/lof.cc",
+  "output": "common/CMakeFiles/common.dir/lof.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/parse_args.cc.o -c /Users/sofly/projects/c/zjchain/src/common/parse_args.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/parse_args.cc",
+  "output": "common/CMakeFiles/common.dir/parse_args.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/random.cc.o -c /Users/sofly/projects/c/zjchain/src/common/random.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/random.cc",
+  "output": "common/CMakeFiles/common.dir/random.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/string_utils.cc.o -c /Users/sofly/projects/c/zjchain/src/common/string_utils.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/string_utils.cc",
+  "output": "common/CMakeFiles/common.dir/string_utils.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/tcping.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tcping.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tcping.cc",
+  "output": "common/CMakeFiles/common.dir/tcping.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/u16_bit_count.cc.o -c /Users/sofly/projects/c/zjchain/src/common/u16_bit_count.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/u16_bit_count.cc",
+  "output": "common/CMakeFiles/common.dir/u16_bit_count.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/utils.cc.o -c /Users/sofly/projects/c/zjchain/src/common/utils.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/utils.cc",
+  "output": "common/CMakeFiles/common.dir/utils.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/tick/thread_pool.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tick/thread_pool.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tick/thread_pool.cc",
+  "output": "common/CMakeFiles/common.dir/tick/thread_pool.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/common.dir/tick/tick.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tick/tick.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tick/tick.cc",
+  "output": "common/CMakeFiles/common.dir/tick/tick.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/http",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/http.dir/http_client.cc.o -c /Users/sofly/projects/c/zjchain/src/http/http_client.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/http/http_client.cc",
+  "output": "http/CMakeFiles/http.dir/http_client.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/http",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/http.dir/http_server.cc.o -c /Users/sofly/projects/c/zjchain/src/http/http_server.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/http/http_server.cc",
+  "output": "http/CMakeFiles/http.dir/http_server.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/transport",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/transport.dir/msg_decoder.cc.o -c /Users/sofly/projects/c/zjchain/src/transport/msg_decoder.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/transport/msg_decoder.cc",
+  "output": "transport/CMakeFiles/transport.dir/msg_decoder.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/transport",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/transport.dir/multi_thread.cc.o -c /Users/sofly/projects/c/zjchain/src/transport/multi_thread.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/transport/multi_thread.cc",
+  "output": "transport/CMakeFiles/transport.dir/multi_thread.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/transport",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/transport.dir/processor.cc.o -c /Users/sofly/projects/c/zjchain/src/transport/processor.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/transport/processor.cc",
+  "output": "transport/CMakeFiles/transport.dir/processor.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/transport",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/transport.dir/tcp_transport.cc.o -c /Users/sofly/projects/c/zjchain/src/transport/tcp_transport.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/transport/tcp_transport.cc",
+  "output": "transport/CMakeFiles/transport.dir/tcp_transport.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/websocket",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/websocket.dir/websocket_client.cc.o -c /Users/sofly/projects/c/zjchain/src/websocket/websocket_client.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/websocket/websocket_client.cc",
+  "output": "websocket/CMakeFiles/websocket.dir/websocket_client.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/websocket",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/websocket.dir/websocket_server.cc.o -c /Users/sofly/projects/c/zjchain/src/websocket/websocket_server.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/websocket/websocket_server.cc",
+  "output": "websocket/CMakeFiles/websocket.dir/websocket_server.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/dht",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/dht.dir/base_dht.cc.o -c /Users/sofly/projects/c/zjchain/src/dht/base_dht.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/dht/base_dht.cc",
+  "output": "dht/CMakeFiles/dht.dir/base_dht.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/dht",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/dht.dir/dht_function.cc.o -c /Users/sofly/projects/c/zjchain/src/dht/dht_function.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/dht/dht_function.cc",
+  "output": "dht/CMakeFiles/dht.dir/dht_function.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/dht",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/dht.dir/dht_proto.cc.o -c /Users/sofly/projects/c/zjchain/src/dht/dht_proto.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/dht/dht_proto.cc",
+  "output": "dht/CMakeFiles/dht.dir/dht_proto.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/dht",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/dht.dir/dht_utils.cc.o -c /Users/sofly/projects/c/zjchain/src/dht/dht_utils.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/dht/dht_utils.cc",
+  "output": "dht/CMakeFiles/dht.dir/dht_utils.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/broadcast",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/broadcast.dir/broadcast.cc.o -c /Users/sofly/projects/c/zjchain/src/broadcast/broadcast.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/broadcast/broadcast.cc",
+  "output": "broadcast/CMakeFiles/broadcast.dir/broadcast.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/broadcast",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/broadcast.dir/filter_broadcast.cc.o -c /Users/sofly/projects/c/zjchain/src/broadcast/filter_broadcast.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/broadcast/filter_broadcast.cc",
+  "output": "broadcast/CMakeFiles/broadcast.dir/filter_broadcast.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/network",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/network.dir/bootstrap.cc.o -c /Users/sofly/projects/c/zjchain/src/network/bootstrap.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/network/bootstrap.cc",
+  "output": "network/CMakeFiles/network.dir/bootstrap.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/network",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/network.dir/dht_manager.cc.o -c /Users/sofly/projects/c/zjchain/src/network/dht_manager.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/network/dht_manager.cc",
+  "output": "network/CMakeFiles/network.dir/dht_manager.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/network",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/network.dir/network_proto.cc.o -c /Users/sofly/projects/c/zjchain/src/network/network_proto.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/network/network_proto.cc",
+  "output": "network/CMakeFiles/network.dir/network_proto.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/network",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/network.dir/route.cc.o -c /Users/sofly/projects/c/zjchain/src/network/route.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/network/route.cc",
+  "output": "network/CMakeFiles/network.dir/route.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/network",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/network.dir/universal.cc.o -c /Users/sofly/projects/c/zjchain/src/network/universal.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/network/universal.cc",
+  "output": "network/CMakeFiles/network.dir/universal.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/network",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/network.dir/universal_manager.cc.o -c /Users/sofly/projects/c/zjchain/src/network/universal_manager.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/network/universal_manager.cc",
+  "output": "network/CMakeFiles/network.dir/universal_manager.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/init",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/init.dir/command.cc.o -c /Users/sofly/projects/c/zjchain/src/init/command.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/init/command.cc",
+  "output": "init/CMakeFiles/init.dir/command.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/init",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/init.dir/genesis_block_init.cc.o -c /Users/sofly/projects/c/zjchain/src/init/genesis_block_init.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/init/genesis_block_init.cc",
+  "output": "init/CMakeFiles/init.dir/genesis_block_init.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/init",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/init.dir/http_handler.cc.o -c /Users/sofly/projects/c/zjchain/src/init/http_handler.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/init/http_handler.cc",
+  "output": "init/CMakeFiles/init.dir/http_handler.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/init",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/init.dir/network_init.cc.o -c /Users/sofly/projects/c/zjchain/src/init/network_init.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/init/network_init.cc",
+  "output": "init/CMakeFiles/init.dir/network_init.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/security",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/security.dir/ecdsa/aes.cc.o -c /Users/sofly/projects/c/zjchain/src/security/ecdsa/aes.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/security/ecdsa/aes.cc",
+  "output": "security/CMakeFiles/security.dir/ecdsa/aes.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/security",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/security.dir/ecdsa/crypto.cc.o -c /Users/sofly/projects/c/zjchain/src/security/ecdsa/crypto.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/security/ecdsa/crypto.cc",
+  "output": "security/CMakeFiles/security.dir/ecdsa/crypto.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/security",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/security.dir/ecdsa/ecdh_create_key.cc.o -c /Users/sofly/projects/c/zjchain/src/security/ecdsa/ecdh_create_key.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/security/ecdsa/ecdh_create_key.cc",
+  "output": "security/CMakeFiles/security.dir/ecdsa/ecdh_create_key.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/security",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/security.dir/ecdsa/ecdsa.cc.o -c /Users/sofly/projects/c/zjchain/src/security/ecdsa/ecdsa.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/security/ecdsa/ecdsa.cc",
+  "output": "security/CMakeFiles/security.dir/ecdsa/ecdsa.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/security",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/security.dir/ecdsa/private_key.cc.o -c /Users/sofly/projects/c/zjchain/src/security/ecdsa/private_key.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/security/ecdsa/private_key.cc",
+  "output": "security/CMakeFiles/security.dir/ecdsa/private_key.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/security",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/security.dir/ecdsa/public_key.cc.o -c /Users/sofly/projects/c/zjchain/src/security/ecdsa/public_key.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/security/ecdsa/public_key.cc",
+  "output": "security/CMakeFiles/security.dir/ecdsa/public_key.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/security",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/security.dir/ecdsa/secp256k1.cc.o -c /Users/sofly/projects/c/zjchain/src/security/ecdsa/secp256k1.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/security/ecdsa/secp256k1.cc",
+  "output": "security/CMakeFiles/security.dir/ecdsa/secp256k1.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/security",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/security.dir/ecdsa/security_string_trans.cc.o -c /Users/sofly/projects/c/zjchain/src/security/ecdsa/security_string_trans.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/security/ecdsa/security_string_trans.cc",
+  "output": "security/CMakeFiles/security.dir/ecdsa/security_string_trans.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/protos",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/protos.dir/address.pb.cc.o -c /Users/sofly/projects/c/zjchain/src/protos/address.pb.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/protos/address.pb.cc",
+  "output": "protos/CMakeFiles/protos.dir/address.pb.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/protos",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/protos.dir/block.pb.cc.o -c /Users/sofly/projects/c/zjchain/src/protos/block.pb.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/protos/block.pb.cc",
+  "output": "protos/CMakeFiles/protos.dir/block.pb.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/protos",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/protos.dir/bls.pb.cc.o -c /Users/sofly/projects/c/zjchain/src/protos/bls.pb.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/protos/bls.pb.cc",
+  "output": "protos/CMakeFiles/protos.dir/bls.pb.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/protos",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/protos.dir/c2c.pb.cc.o -c /Users/sofly/projects/c/zjchain/src/protos/c2c.pb.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/protos/c2c.pb.cc",
+  "output": "protos/CMakeFiles/protos.dir/c2c.pb.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/protos",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/protos.dir/contract.pb.cc.o -c /Users/sofly/projects/c/zjchain/src/protos/contract.pb.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/protos/contract.pb.cc",
+  "output": "protos/CMakeFiles/protos.dir/contract.pb.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/protos",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/protos.dir/dht.pb.cc.o -c /Users/sofly/projects/c/zjchain/src/protos/dht.pb.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/protos/dht.pb.cc",
+  "output": "protos/CMakeFiles/protos.dir/dht.pb.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/protos",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/protos.dir/elect.pb.cc.o -c /Users/sofly/projects/c/zjchain/src/protos/elect.pb.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/protos/elect.pb.cc",
+  "output": "protos/CMakeFiles/protos.dir/elect.pb.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/protos",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/protos.dir/get_proto_hash.cc.o -c /Users/sofly/projects/c/zjchain/src/protos/get_proto_hash.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/protos/get_proto_hash.cc",
+  "output": "protos/CMakeFiles/protos.dir/get_proto_hash.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/protos",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/protos.dir/init.pb.cc.o -c /Users/sofly/projects/c/zjchain/src/protos/init.pb.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/protos/init.pb.cc",
+  "output": "protos/CMakeFiles/protos.dir/init.pb.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/protos",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/protos.dir/network.pb.cc.o -c /Users/sofly/projects/c/zjchain/src/protos/network.pb.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/protos/network.pb.cc",
+  "output": "protos/CMakeFiles/protos.dir/network.pb.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/protos",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/protos.dir/pools.pb.cc.o -c /Users/sofly/projects/c/zjchain/src/protos/pools.pb.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/protos/pools.pb.cc",
+  "output": "protos/CMakeFiles/protos.dir/pools.pb.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/protos",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/protos.dir/sync.pb.cc.o -c /Users/sofly/projects/c/zjchain/src/protos/sync.pb.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/protos/sync.pb.cc",
+  "output": "protos/CMakeFiles/protos.dir/sync.pb.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/protos",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/protos.dir/timeblock.pb.cc.o -c /Users/sofly/projects/c/zjchain/src/protos/timeblock.pb.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/protos/timeblock.pb.cc",
+  "output": "protos/CMakeFiles/protos.dir/timeblock.pb.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/protos",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/protos.dir/transport.pb.cc.o -c /Users/sofly/projects/c/zjchain/src/protos/transport.pb.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/protos/transport.pb.cc",
+  "output": "protos/CMakeFiles/protos.dir/transport.pb.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/protos",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/protos.dir/vss.pb.cc.o -c /Users/sofly/projects/c/zjchain/src/protos/vss.pb.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/protos/vss.pb.cc",
+  "output": "protos/CMakeFiles/protos.dir/vss.pb.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/protos",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/protos.dir/zbft.pb.cc.o -c /Users/sofly/projects/c/zjchain/src/protos/zbft.pb.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/protos/zbft.pb.cc",
+  "output": "protos/CMakeFiles/protos.dir/zbft.pb.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/tnet",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/tnet.dir/tcp_acceptor.cc.o -c /Users/sofly/projects/c/zjchain/src/tnet/tcp_acceptor.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/tnet/tcp_acceptor.cc",
+  "output": "tnet/CMakeFiles/tnet.dir/tcp_acceptor.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/tnet",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/tnet.dir/tcp_connection.cc.o -c /Users/sofly/projects/c/zjchain/src/tnet/tcp_connection.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/tnet/tcp_connection.cc",
+  "output": "tnet/CMakeFiles/tnet.dir/tcp_connection.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/tnet",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/tnet.dir/tnet_transport.cc.o -c /Users/sofly/projects/c/zjchain/src/tnet/tnet_transport.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/tnet/tnet_transport.cc",
+  "output": "tnet/CMakeFiles/tnet.dir/tnet_transport.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/tnet",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/tnet.dir/event/epoll_manager.cc.o -c /Users/sofly/projects/c/zjchain/src/tnet/event/epoll_manager.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/tnet/event/epoll_manager.cc",
+  "output": "tnet/CMakeFiles/tnet.dir/event/epoll_manager.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/tnet",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/tnet.dir/event/event_loop.cc.o -c /Users/sofly/projects/c/zjchain/src/tnet/event/event_loop.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/tnet/event/event_loop.cc",
+  "output": "tnet/CMakeFiles/tnet.dir/event/event_loop.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/tnet",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/tnet.dir/socket/listen_socket.cc.o -c /Users/sofly/projects/c/zjchain/src/tnet/socket/listen_socket.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/tnet/socket/listen_socket.cc",
+  "output": "tnet/CMakeFiles/tnet.dir/socket/listen_socket.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/tnet",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/tnet.dir/socket/socket.cc.o -c /Users/sofly/projects/c/zjchain/src/tnet/socket/socket.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/tnet/socket/socket.cc",
+  "output": "tnet/CMakeFiles/tnet.dir/socket/socket.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/tnet",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/tnet.dir/utils/cmd_packet.cc.o -c /Users/sofly/projects/c/zjchain/src/tnet/utils/cmd_packet.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/tnet/utils/cmd_packet.cc",
+  "output": "tnet/CMakeFiles/tnet.dir/utils/cmd_packet.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/bls",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/bls.dir/bls_dkg.cc.o -c /Users/sofly/projects/c/zjchain/src/bls/bls_dkg.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/bls/bls_dkg.cc",
+  "output": "bls/CMakeFiles/bls.dir/bls_dkg.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/bls",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/bls.dir/bls_manager.cc.o -c /Users/sofly/projects/c/zjchain/src/bls/bls_manager.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/bls/bls_manager.cc",
+  "output": "bls/CMakeFiles/bls.dir/bls_manager.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/bls",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/bls.dir/bls_sign.cc.o -c /Users/sofly/projects/c/zjchain/src/bls/bls_sign.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/bls/bls_sign.cc",
+  "output": "bls/CMakeFiles/bls.dir/bls_sign.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/db",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/db.dir/db.cc.o -c /Users/sofly/projects/c/zjchain/src/db/db.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/db/db.cc",
+  "output": "db/CMakeFiles/db.dir/db.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/pools",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/pools.dir/cross_pool.cc.o -c /Users/sofly/projects/c/zjchain/src/pools/cross_pool.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/pools/cross_pool.cc",
+  "output": "pools/CMakeFiles/pools.dir/cross_pool.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/pools",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/pools.dir/height_tree_level.cc.o -c /Users/sofly/projects/c/zjchain/src/pools/height_tree_level.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/pools/height_tree_level.cc",
+  "output": "pools/CMakeFiles/pools.dir/height_tree_level.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/pools",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/pools.dir/leaf_height_tree.cc.o -c /Users/sofly/projects/c/zjchain/src/pools/leaf_height_tree.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/pools/leaf_height_tree.cc",
+  "output": "pools/CMakeFiles/pools.dir/leaf_height_tree.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/pools",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/pools.dir/shard_statistic.cc.o -c /Users/sofly/projects/c/zjchain/src/pools/shard_statistic.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/pools/shard_statistic.cc",
+  "output": "pools/CMakeFiles/pools.dir/shard_statistic.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/pools",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/pools.dir/to_txs_pools.cc.o -c /Users/sofly/projects/c/zjchain/src/pools/to_txs_pools.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/pools/to_txs_pools.cc",
+  "output": "pools/CMakeFiles/pools.dir/to_txs_pools.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/pools",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/pools.dir/tx_pool.cc.o -c /Users/sofly/projects/c/zjchain/src/pools/tx_pool.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/pools/tx_pool.cc",
+  "output": "pools/CMakeFiles/pools.dir/tx_pool.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/pools",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/pools.dir/tx_pool_manager.cc.o -c /Users/sofly/projects/c/zjchain/src/pools/tx_pool_manager.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/pools/tx_pool_manager.cc",
+  "output": "pools/CMakeFiles/pools.dir/tx_pool_manager.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/zjcvm",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/zjcvm.dir/execution.cc.o -c /Users/sofly/projects/c/zjchain/src/zjcvm/execution.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/zjcvm/execution.cc",
+  "output": "zjcvm/CMakeFiles/zjcvm.dir/execution.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/zjcvm",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/zjcvm.dir/zjc_host.cc.o -c /Users/sofly/projects/c/zjchain/src/zjcvm/zjc_host.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/zjcvm/zjc_host.cc",
+  "output": "zjcvm/CMakeFiles/zjcvm.dir/zjc_host.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/big_num",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/big_num.dir/libsnark.cc.o -c /Users/sofly/projects/c/zjchain/src/big_num/libsnark.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/big_num/libsnark.cc",
+  "output": "big_num/CMakeFiles/big_num.dir/libsnark.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/big_num",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/big_num.dir/snark.cc.o -c /Users/sofly/projects/c/zjchain/src/big_num/snark.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/big_num/snark.cc",
+  "output": "big_num/CMakeFiles/big_num.dir/snark.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/contract",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/contract.dir/contract_alt_bn128_G1_add.cc.o -c /Users/sofly/projects/c/zjchain/src/contract/contract_alt_bn128_G1_add.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/contract/contract_alt_bn128_G1_add.cc",
+  "output": "contract/CMakeFiles/contract.dir/contract_alt_bn128_G1_add.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/contract",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/contract.dir/contract_alt_bn128_G1_mul.cc.o -c /Users/sofly/projects/c/zjchain/src/contract/contract_alt_bn128_G1_mul.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/contract/contract_alt_bn128_G1_mul.cc",
+  "output": "contract/CMakeFiles/contract.dir/contract_alt_bn128_G1_mul.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/contract",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/contract.dir/contract_alt_bn128_pairing_product.cc.o -c /Users/sofly/projects/c/zjchain/src/contract/contract_alt_bn128_pairing_product.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/contract/contract_alt_bn128_pairing_product.cc",
+  "output": "contract/CMakeFiles/contract.dir/contract_alt_bn128_pairing_product.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/contract",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/contract.dir/contract_blake2_compression.cc.o -c /Users/sofly/projects/c/zjchain/src/contract/contract_blake2_compression.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/contract/contract_blake2_compression.cc",
+  "output": "contract/CMakeFiles/contract.dir/contract_blake2_compression.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/contract",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/contract.dir/contract_ecrecover.cc.o -c /Users/sofly/projects/c/zjchain/src/contract/contract_ecrecover.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/contract/contract_ecrecover.cc",
+  "output": "contract/CMakeFiles/contract.dir/contract_ecrecover.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/contract",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/contract.dir/contract_identity.cc.o -c /Users/sofly/projects/c/zjchain/src/contract/contract_identity.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/contract/contract_identity.cc",
+  "output": "contract/CMakeFiles/contract.dir/contract_identity.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/contract",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/contract.dir/contract_manager.cc.o -c /Users/sofly/projects/c/zjchain/src/contract/contract_manager.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/contract/contract_manager.cc",
+  "output": "contract/CMakeFiles/contract.dir/contract_manager.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/contract",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/contract.dir/contract_modexp.cc.o -c /Users/sofly/projects/c/zjchain/src/contract/contract_modexp.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/contract/contract_modexp.cc",
+  "output": "contract/CMakeFiles/contract.dir/contract_modexp.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/contract",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/contract.dir/contract_pairing.cc.o -c /Users/sofly/projects/c/zjchain/src/contract/contract_pairing.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/contract/contract_pairing.cc",
+  "output": "contract/CMakeFiles/contract.dir/contract_pairing.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/contract",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/contract.dir/contract_ripemd160.cc.o -c /Users/sofly/projects/c/zjchain/src/contract/contract_ripemd160.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/contract/contract_ripemd160.cc",
+  "output": "contract/CMakeFiles/contract.dir/contract_ripemd160.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/contract",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/contract.dir/contract_sha256.cc.o -c /Users/sofly/projects/c/zjchain/src/contract/contract_sha256.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/contract/contract_sha256.cc",
+  "output": "contract/CMakeFiles/contract.dir/contract_sha256.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/contract",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/contract.dir/contract_utils.cc.o -c /Users/sofly/projects/c/zjchain/src/contract/contract_utils.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/contract/contract_utils.cc",
+  "output": "contract/CMakeFiles/contract.dir/contract_utils.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/elect",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/elect.dir/elect_manager.cc.o -c /Users/sofly/projects/c/zjchain/src/elect/elect_manager.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/elect/elect_manager.cc",
+  "output": "elect/CMakeFiles/elect.dir/elect_manager.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/elect",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/elect.dir/elect_proto.cc.o -c /Users/sofly/projects/c/zjchain/src/elect/elect_proto.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/elect/elect_proto.cc",
+  "output": "elect/CMakeFiles/elect.dir/elect_proto.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/elect",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/elect.dir/elect_utils.cc.o -c /Users/sofly/projects/c/zjchain/src/elect/elect_utils.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/elect/elect_utils.cc",
+  "output": "elect/CMakeFiles/elect.dir/elect_utils.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/consensus.dir/zbft/bft_manager.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/zbft/bft_manager.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/zbft/bft_manager.cc",
+  "output": "consensus/CMakeFiles/consensus.dir/zbft/bft_manager.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/consensus.dir/zbft/contract_call.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/zbft/contract_call.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/zbft/contract_call.cc",
+  "output": "consensus/CMakeFiles/consensus.dir/zbft/contract_call.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/consensus.dir/zbft/contract_user_call.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/zbft/contract_user_call.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/zbft/contract_user_call.cc",
+  "output": "consensus/CMakeFiles/consensus.dir/zbft/contract_user_call.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/consensus.dir/zbft/contract_user_create_call.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/zbft/contract_user_create_call.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/zbft/contract_user_create_call.cc",
+  "output": "consensus/CMakeFiles/consensus.dir/zbft/contract_user_create_call.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/consensus.dir/zbft/elect_tx_item.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/zbft/elect_tx_item.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/zbft/elect_tx_item.cc",
+  "output": "consensus/CMakeFiles/consensus.dir/zbft/elect_tx_item.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/consensus.dir/zbft/from_tx_item.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/zbft/from_tx_item.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/zbft/from_tx_item.cc",
+  "output": "consensus/CMakeFiles/consensus.dir/zbft/from_tx_item.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/consensus.dir/zbft/join_elect_tx_item.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/zbft/join_elect_tx_item.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/zbft/join_elect_tx_item.cc",
+  "output": "consensus/CMakeFiles/consensus.dir/zbft/join_elect_tx_item.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/consensus.dir/zbft/root_to_tx_item.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/zbft/root_to_tx_item.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/zbft/root_to_tx_item.cc",
+  "output": "consensus/CMakeFiles/consensus.dir/zbft/root_to_tx_item.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/consensus.dir/zbft/root_zbft.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/zbft/root_zbft.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/zbft/root_zbft.cc",
+  "output": "consensus/CMakeFiles/consensus.dir/zbft/root_zbft.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/consensus.dir/zbft/to_tx_local_item.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/zbft/to_tx_local_item.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/zbft/to_tx_local_item.cc",
+  "output": "consensus/CMakeFiles/consensus.dir/zbft/to_tx_local_item.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/consensus.dir/zbft/waiting_txs_pools.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/zbft/waiting_txs_pools.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/zbft/waiting_txs_pools.cc",
+  "output": "consensus/CMakeFiles/consensus.dir/zbft/waiting_txs_pools.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/consensus.dir/zbft/zbft.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/zbft/zbft.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/zbft/zbft.cc",
+  "output": "consensus/CMakeFiles/consensus.dir/zbft/zbft.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/consensus.dir/zbft/zbft_utils.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/zbft/zbft_utils.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/zbft/zbft_utils.cc",
+  "output": "consensus/CMakeFiles/consensus.dir/zbft/zbft_utils.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/block",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/block.dir/account_manager.cc.o -c /Users/sofly/projects/c/zjchain/src/block/account_manager.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/block/account_manager.cc",
+  "output": "block/CMakeFiles/block.dir/account_manager.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/block",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/block.dir/block_manager.cc.o -c /Users/sofly/projects/c/zjchain/src/block/block_manager.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/block/block_manager.cc",
+  "output": "block/CMakeFiles/block.dir/block_manager.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/block",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/block.dir/block_utils.cc.o -c /Users/sofly/projects/c/zjchain/src/block/block_utils.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/block/block_utils.cc",
+  "output": "block/CMakeFiles/block.dir/block_utils.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/timeblock",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/timeblock.dir/time_block_manager.cc.o -c /Users/sofly/projects/c/zjchain/src/timeblock/time_block_manager.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/timeblock/time_block_manager.cc",
+  "output": "timeblock/CMakeFiles/timeblock.dir/time_block_manager.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/ck",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/ck.dir/ck_client.cc.o -c /Users/sofly/projects/c/zjchain/src/ck/ck_client.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/ck/ck_client.cc",
+  "output": "ck/CMakeFiles/ck.dir/ck_client.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/vss",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/vss.dir/vss_manager.cc.o -c /Users/sofly/projects/c/zjchain/src/vss/vss_manager.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/vss/vss_manager.cc",
+  "output": "vss/CMakeFiles/vss.dir/vss_manager.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/sync",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/sync.dir/key_value_sync.cc.o -c /Users/sofly/projects/c/zjchain/src/sync/key_value_sync.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/sync/key_value_sync.cc",
+  "output": "sync/CMakeFiles/sync.dir/key_value_sync.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_bitmap.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_bitmap.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_bitmap.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_bitmap.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_bloom_filter.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_bloom_filter.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_bloom_filter.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_bloom_filter.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_config.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_config.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_config.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_config.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_encode.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_encode.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_encode.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_encode.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_fixed_queue.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_fixed_queue.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_fixed_queue.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_fixed_queue.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_fts_tree.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_fts_tree.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_fts_tree.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_fts_tree.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_hash.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_hash.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_hash.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_hash.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_ip.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_ip.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_ip.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_ip.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_limit_heap.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_limit_heap.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_limit_heap.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_limit_heap.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_main.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_main.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_main.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_main.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_parse_args.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_parse_args.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_parse_args.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_parse_args.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_random.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_random.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_random.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_random.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_spin_mutex.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_spin_mutex.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_spin_mutex.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_spin_mutex.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_split.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_split.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_split.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_split.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_string_utils.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_string_utils.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_string_utils.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_string_utils.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_thread_safe_queue.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_thread_safe_queue.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_thread_safe_queue.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_thread_safe_queue.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_tick.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_tick.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_tick.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_tick.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_unique_map.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_unique_map.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_unique_map.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_unique_map.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_unique_set.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_unique_set.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_unique_set.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_unique_set.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/common_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/common_test.dir/test_utils.cc.o -c /Users/sofly/projects/c/zjchain/src/common/tests/test_utils.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/common/tests/test_utils.cc",
+  "output": "common_test/CMakeFiles/common_test.dir/test_utils.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/http_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/http_test.dir/test_http_server.cc.o -c /Users/sofly/projects/c/zjchain/src/http/tests/test_http_server.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/http/tests/test_http_server.cc",
+  "output": "http_test/CMakeFiles/http_test.dir/test_http_server.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/websocket_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/websocket_test.dir/test_ws_server.cc.o -c /Users/sofly/projects/c/zjchain/src/websocket/tests/test_ws_server.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/websocket/tests/test_ws_server.cc",
+  "output": "websocket_test/CMakeFiles/websocket_test.dir/test_ws_server.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/broadcast_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/broadcast_test.dir/test_filter_broadcast.cc.o -c /Users/sofly/projects/c/zjchain/src/broadcast/tests/test_filter_broadcast.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/broadcast/tests/test_filter_broadcast.cc",
+  "output": "broadcast_test/CMakeFiles/broadcast_test.dir/test_filter_broadcast.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/broadcast_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/broadcast_test.dir/test_main.cc.o -c /Users/sofly/projects/c/zjchain/src/broadcast/tests/test_main.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/broadcast/tests/test_main.cc",
+  "output": "broadcast_test/CMakeFiles/broadcast_test.dir/test_main.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/security_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/security_test.dir/test_ecdsa.cc.o -c /Users/sofly/projects/c/zjchain/src/security/tests/test_ecdsa.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/security/tests/test_ecdsa.cc",
+  "output": "security_test/CMakeFiles/security_test.dir/test_ecdsa.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/security_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/security_test.dir/test_main.cc.o -c /Users/sofly/projects/c/zjchain/src/security/tests/test_main.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/security/tests/test_main.cc",
+  "output": "security_test/CMakeFiles/security_test.dir/test_main.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/transport_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/transport_test.dir/test_tcp_transport.cc.o -c /Users/sofly/projects/c/zjchain/src/transport/tests/test_tcp_transport.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/transport/tests/test_tcp_transport.cc",
+  "output": "transport_test/CMakeFiles/transport_test.dir/test_tcp_transport.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/bls_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/bls_test.dir/test_bls.cc.o -c /Users/sofly/projects/c/zjchain/src/bls/tests/test_bls.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/bls/tests/test_bls.cc",
+  "output": "bls_test/CMakeFiles/bls_test.dir/test_bls.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/bls_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/bls_test.dir/test_main.cc.o -c /Users/sofly/projects/c/zjchain/src/bls/tests/test_main.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/bls/tests/test_main.cc",
+  "output": "bls_test/CMakeFiles/bls_test.dir/test_main.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/db_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/db_test.dir/test_db.cc.o -c /Users/sofly/projects/c/zjchain/src/db/tests/test_db.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/db/tests/test_db.cc",
+  "output": "db_test/CMakeFiles/db_test.dir/test_db.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/db_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/db_test.dir/test_db_direct.cc.o -c /Users/sofly/projects/c/zjchain/src/db/tests/test_db_direct.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/db/tests/test_db_direct.cc",
+  "output": "db_test/CMakeFiles/db_test.dir/test_db_direct.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/db_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/db_test.dir/test_main.cc.o -c /Users/sofly/projects/c/zjchain/src/db/tests/test_main.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/db/tests/test_main.cc",
+  "output": "db_test/CMakeFiles/db_test.dir/test_main.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/pools_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/pools_test.dir/test_grubbs.cc.o -c /Users/sofly/projects/c/zjchain/src/pools/tests/test_grubbs.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/pools/tests/test_grubbs.cc",
+  "output": "pools_test/CMakeFiles/pools_test.dir/test_grubbs.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/pools_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/pools_test.dir/test_height_tree_level.cc.o -c /Users/sofly/projects/c/zjchain/src/pools/tests/test_height_tree_level.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/pools/tests/test_height_tree_level.cc",
+  "output": "pools_test/CMakeFiles/pools_test.dir/test_height_tree_level.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/pools_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/pools_test.dir/test_leaf_height_tree.cc.o -c /Users/sofly/projects/c/zjchain/src/pools/tests/test_leaf_height_tree.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/pools/tests/test_leaf_height_tree.cc",
+  "output": "pools_test/CMakeFiles/pools_test.dir/test_leaf_height_tree.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/pools_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/pools_test.dir/test_to_txs_pools.cc.o -c /Users/sofly/projects/c/zjchain/src/pools/tests/test_to_txs_pools.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/pools/tests/test_to_txs_pools.cc",
+  "output": "pools_test/CMakeFiles/pools_test.dir/test_to_txs_pools.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/pools_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/pools_test.dir/test_tx_pool_manager.cc.o -c /Users/sofly/projects/c/zjchain/src/pools/tests/test_tx_pool_manager.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/pools/tests/test_tx_pool_manager.cc",
+  "output": "pools_test/CMakeFiles/pools_test.dir/test_tx_pool_manager.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/zjcvm_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/zjcvm_test.dir/test_execution.cc.o -c /Users/sofly/projects/c/zjchain/src/zjcvm/tests/test_execution.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/zjcvm/tests/test_execution.cc",
+  "output": "zjcvm_test/CMakeFiles/zjcvm_test.dir/test_execution.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/bignum_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/bignum_test.dir/test_main.cc.o -c /Users/sofly/projects/c/zjchain/src/big_num/tests/test_main.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/big_num/tests/test_main.cc",
+  "output": "bignum_test/CMakeFiles/bignum_test.dir/test_main.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/bignum_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/bignum_test.dir/test_snark.cc.o -c /Users/sofly/projects/c/zjchain/src/big_num/tests/test_snark.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/big_num/tests/test_snark.cc",
+  "output": "bignum_test/CMakeFiles/bignum_test.dir/test_snark.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/contract_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/contract_test.dir/test_contract_manager.cc.o -c /Users/sofly/projects/c/zjchain/src/contract/tests/test_contract_manager.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/contract/tests/test_contract_manager.cc",
+  "output": "contract_test/CMakeFiles/contract_test.dir/test_contract_manager.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/contract_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/contract_test.dir/test_main.cc.o -c /Users/sofly/projects/c/zjchain/src/contract/tests/test_main.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/contract/tests/test_main.cc",
+  "output": "contract_test/CMakeFiles/contract_test.dir/test_main.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/elect_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/elect_test.dir/test_elect_pool_manager.cc.o -c /Users/sofly/projects/c/zjchain/src/elect/tests/test_elect_pool_manager.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/elect/tests/test_elect_pool_manager.cc",
+  "output": "elect_test/CMakeFiles/elect_test.dir/test_elect_pool_manager.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/elect_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/elect_test.dir/test_main.cc.o -c /Users/sofly/projects/c/zjchain/src/elect/tests/test_main.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/elect/tests/test_main.cc",
+  "output": "elect_test/CMakeFiles/elect_test.dir/test_main.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/consensus_test.dir/test_main.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/tests/test_main.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/tests/test_main.cc",
+  "output": "consensus_test/CMakeFiles/consensus_test.dir/test_main.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/consensus_test.dir/test_timeblock.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/tests/test_timeblock.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/tests/test_timeblock.cc",
+  "output": "consensus_test/CMakeFiles/consensus_test.dir/test_timeblock.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/consensus_test.dir/test_tx.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/tests/test_tx.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/tests/test_tx.cc",
+  "output": "consensus_test/CMakeFiles/consensus_test.dir/test_tx.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/consensus_test.dir/test_waiting_txs.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/tests/test_waiting_txs.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/tests/test_waiting_txs.cc",
+  "output": "consensus_test/CMakeFiles/consensus_test.dir/test_waiting_txs.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/consensus_test.dir/test_waiting_txs_pools.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/tests/test_waiting_txs_pools.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/tests/test_waiting_txs_pools.cc",
+  "output": "consensus_test/CMakeFiles/consensus_test.dir/test_waiting_txs_pools.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/ck_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/ck_test.dir/test_ck_client.cc.o -c /Users/sofly/projects/c/zjchain/src/ck/tests/test_ck_client.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/ck/tests/test_ck_client.cc",
+  "output": "ck_test/CMakeFiles/ck_test.dir/test_ck_client.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/vss_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/vss_test.dir/test_main.cc.o -c /Users/sofly/projects/c/zjchain/src/vss/tests/test_main.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/vss/tests/test_main.cc",
+  "output": "vss_test/CMakeFiles/vss_test.dir/test_main.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/vss_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/vss_test.dir/test_vss_manager.cc.o -c /Users/sofly/projects/c/zjchain/src/vss/tests/test_vss_manager.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/vss/tests/test_vss_manager.cc",
+  "output": "vss_test/CMakeFiles/vss_test.dir/test_vss_manager.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/sync_test",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -Wno-unused-parameter -o CMakeFiles/sync_test.dir/test_key_value_sync.cc.o -c /Users/sofly/projects/c/zjchain/src/sync/tests/test_key_value_sync.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/sync/tests/test_key_value_sync.cc",
+  "output": "sync_test/CMakeFiles/sync_test.dir/test_key_value_sync.cc.o"
+}
+]
