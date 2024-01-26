@@ -742,6 +742,9 @@ void BlockManager::RootHandleNormalToTx(
             continue;
         }
 
+        ZJC_DEBUG("=========01 %s, to: %s", tos_item.library_bytes().c_str(), common::Encode::HexEncode(tos_item.des()).c_str());
+        tx->set_contract_code(tos_item.library_bytes());
+        ZJC_DEBUG("=========02 %s, to: %s", tos_item.library_bytes().c_str(), common::Encode::HexEncode(tos_item.des()).c_str());
         tx->set_pubkey("");
         tx->set_to(tos_item.des());
         auto gid = common::Hash::keccak256(
