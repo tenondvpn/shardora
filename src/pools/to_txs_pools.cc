@@ -325,6 +325,7 @@ void ToTxsPools::AddTxToMap(
         item.type = type;
         item.sharding_id = sharding_id;
         item.elect_join_g2_key = key;
+        item.library_bytes = library_bytes;
         height_iter->second[to] = item;
         ZJC_DEBUG("add to %s step: %u", common::Encode::HexEncode(to).c_str(), type);
     }
