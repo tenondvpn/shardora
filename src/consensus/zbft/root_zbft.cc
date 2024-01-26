@@ -58,8 +58,6 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
         iter->second->TxToBlockTx(src_tx, db_batch_, &tx);
         // create address must to and have transfer amount
         // spot3 合约账户创建 amount 不必须
-
-        ZJC_DEBUG("=========6 gid: %s step: %u, contract_code: %d", common::Encode::HexEncode(tx.gid()).c_str(), tx.step(), tx.has_contract_code());
         if (tx.step() == pools::protobuf::kRootCreateAddress) {
             if (!tx.has_contract_code() && tx.amount() <= 0) {
                 ZJC_DEBUG("tx invalid step: %d, amount: %lu, src: %d, %lu",
@@ -69,7 +67,6 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
                 continue;    
             }
         }
-        ZJC_DEBUG("=========7 gid: %s", common::Encode::HexEncode(tx.gid()).c_str());
 
         int do_tx_res = iter->second->HandleTx(
             txs_ptr_->thread_index,
@@ -79,7 +76,6 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
             acc_balance_map,
             tx);
 
-        ZJC_DEBUG("=========8 gid: %s, res: %d", common::Encode::HexEncode(tx.gid()).c_str(), do_tx_res);
         if (do_tx_res != kConsensusSuccess) {
             tx_list->RemoveLast();
             assert(false);

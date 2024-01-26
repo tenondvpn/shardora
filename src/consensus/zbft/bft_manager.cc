@@ -435,14 +435,7 @@ ZbftPtr BftManager::Start(
 //         ZJC_DEBUG("thread idx error 5: %d", thread_index);
         return nullptr;
     }
-
-    if (txs_ptr != nullptr) {
-        for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); iter++) {
-            auto gid = iter->second->gid;
-            ZJC_DEBUG("=========2 gid: %s", common::Encode::HexEncode(gid).c_str());
-        }
-    }
-
+    
     if (txs_ptr->tx_type == pools::protobuf::kNormalFrom) {
         if (block_mgr_->ShouldStopConsensus()) {
             ZJC_DEBUG("should stop consensus.");
@@ -570,15 +563,6 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
         txs_ptr = txs_pools_->LeaderGetValidTxs(commited_bft_ptr->pool_index());
     }
 
-
-    if (txs_ptr != nullptr) {
-        for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); iter++) {
-            auto gid = iter->second->gid;
-            ZJC_DEBUG("=========1 gid: %s", common::Encode::HexEncode(gid).c_str());
-        }
-    }
-    
-
     return txs_ptr;
 }
 
@@ -658,14 +642,7 @@ int BftManager::InitZbftPtr(int32_t leader_idx, const ElectItem& elect_item, Zbf
 ZbftPtr BftManager::StartBft(
         const std::shared_ptr<ElectItem>& elect_item_ptr,
         std::shared_ptr<WaitingTxsItem>& txs_ptr,
-        ZbftPtr commited_bft_ptr) {
-    if (txs_ptr != nullptr) {
-        for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); iter++) {
-            auto gid = iter->second->gid;
-            ZJC_DEBUG("=========3 gid: %s", common::Encode::HexEncode(gid).c_str());
-        }
-    }
-    
+        ZbftPtr commited_bft_ptr) {    
     ZbftPtr bft_ptr = nullptr;
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         bft_ptr = std::make_shared<RootZbft>(
@@ -695,13 +672,6 @@ ZbftPtr BftManager::StartBft(
         return nullptr;
     }
 
-    if (txs_ptr != nullptr) {
-        for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); iter++) {
-            auto gid = iter->second->gid;
-            ZJC_DEBUG("=========4 gid: %s", common::Encode::HexEncode(gid).c_str());
-        }
-    }
-
     auto& gid = bft_gids_[txs_ptr->thread_index];
     uint64_t* tmp_gid = (uint64_t*)gid.data();
     tmp_gid[0] = bft_gids_index_[txs_ptr->thread_index]++;
@@ -710,12 +680,6 @@ ZbftPtr BftManager::StartBft(
     bft_ptr->set_member_count(elect_item.member_size);
     // LeaderPrepare 中会调用到 DoTransaction，本地执行块内交易
     int leader_pre = LeaderPrepare(elect_item, bft_ptr, commited_bft_ptr);
-    if (txs_ptr != nullptr) {
-        for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); iter++) {
-            auto gid = iter->second->gid;
-            ZJC_DEBUG("=========5 gid: %s res: %u", common::Encode::HexEncode(gid).c_str(), leader_pre);
-        }
-    }
     if (leader_pre != kConsensusSuccess) {
         ZJC_ERROR("leader prepare failed!");
         return nullptr;
