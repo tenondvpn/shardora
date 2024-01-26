@@ -264,7 +264,8 @@ void ToTxsPools::HandleCreateContractUserCall(
 void ToTxsPools::HandleRootCreateAddress(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx) {
-    if (tx.amount() <= 0) {
+    // 普通 EOA 账户要求有 amount
+    if (tx.amount() <= 0 && !tx.has_contract_code()) {
         ZJC_DEBUG("from transfer amount invalid!");
         return;
     }
