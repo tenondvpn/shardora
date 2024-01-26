@@ -659,6 +659,13 @@ ZbftPtr BftManager::StartBft(
         const std::shared_ptr<ElectItem>& elect_item_ptr,
         std::shared_ptr<WaitingTxsItem>& txs_ptr,
         ZbftPtr commited_bft_ptr) {
+    if (txs_ptr != nullptr) {
+        for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); iter++) {
+            auto gid = iter->second->gid;
+            ZJC_DEBUG("=========3 gid: %s", common::Encode::HexEncode(gid).c_str());
+        }
+    }
+    
     ZbftPtr bft_ptr = nullptr;
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         bft_ptr = std::make_shared<RootZbft>(
@@ -688,6 +695,13 @@ ZbftPtr BftManager::StartBft(
         return nullptr;
     }
 
+    if (txs_ptr != nullptr) {
+        for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); iter++) {
+            auto gid = iter->second->gid;
+            ZJC_DEBUG("=========4 gid: %s", common::Encode::HexEncode(gid).c_str());
+        }
+    }
+
     auto& gid = bft_gids_[txs_ptr->thread_index];
     uint64_t* tmp_gid = (uint64_t*)gid.data();
     tmp_gid[0] = bft_gids_index_[txs_ptr->thread_index]++;
@@ -696,6 +710,12 @@ ZbftPtr BftManager::StartBft(
     bft_ptr->set_member_count(elect_item.member_size);
     // LeaderPrepare 中会调用到 DoTransaction，本地执行块内交易
     int leader_pre = LeaderPrepare(elect_item, bft_ptr, commited_bft_ptr);
+    if (txs_ptr != nullptr) {
+        for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); iter++) {
+            auto gid = iter->second->gid;
+            ZJC_DEBUG("=========5 gid: %s res: %u", common::Encode::HexEncode(gid).c_str(), leader_pre);
+        }
+    }
     if (leader_pre != kConsensusSuccess) {
         ZJC_ERROR("leader prepare failed!");
         return nullptr;
