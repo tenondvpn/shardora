@@ -701,6 +701,7 @@ void BlockManager::RootHandleNormalToTx(
         uint64_t height,
         pools::protobuf::ToTxMessage& to_txs,
         db::DbWriteBatch& db_batch) {
+    // 将 NormalTo 中的多个 tx 拆分成多个 kRootCreateAddress tx
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         auto tos_item = to_txs.tos(i);
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
@@ -845,6 +846,7 @@ void BlockManager::HandleLocalNormalToTx(
             to_iter = to_tx_map.find(iter->second.second);
         }
 
+        // 每个 kConsensusLocalTos 只有一个 to item
         auto to_item = to_iter->second.add_tos();
         to_item->set_pool_index(iter->second.second);
         to_item->set_des(iter->first);

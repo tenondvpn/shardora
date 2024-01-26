@@ -225,7 +225,6 @@ function create_tx(to, amount, gas_limit, gas_price, prepay, tx_type) {
 function new_contract(data_id, account_id, contract_bytes, from_node) {
     var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
     var contract_address = get_contract_address(data_id, account_id);
-	console.log(contract_address);
     var data = param_contract(
         6,
         gid,
@@ -237,6 +236,7 @@ function new_contract(data_id, account_id, contract_bytes, from_node) {
         "",
         1000000000);
     PostCode(data, from_node);
+	return contract_address
 }
 
 function get_contract_address(data_id, account_id) {
@@ -296,6 +296,7 @@ function QueryPostCode(path, data, from_node, callback) {
     var post_req = http.request(post_options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
+			console.log(chunk);
             try {
                 var json_res = JSON.parse(chunk);
                 callback(json_res);
@@ -350,7 +351,7 @@ function CreateDataAuth(account_id, data_id, data, from_node) {
     }
 
 	var contract_bytes = CONTRACT_CODE;
-    new_contract(data_id, account_id, contract_bytes + cons_cods, from_node);
+    return new_contract(data_id, account_id, contract_bytes + cons_cods, from_node);
 }
 
 function AddDataAuth(account_id, data_id, data, from_node) {
@@ -486,17 +487,37 @@ async function test_contracts() {
         var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)))
         var data_id = i.toString() + gid;
 
-        CreateDataAuth(self_account_id, data_id, "1", randomOfArr(net_node[from_shard]));
-        await sleep(5000);
-        // AddDataAuth(self_account_id, data_id, "2", randomOfArr(net_node[from_shard]));
-        // await sleep(5000);
-        // GetAuthData(self_account_id, data_id, randomOfArr(net_node[query_shard]), function(res) {
-        //     if (testcases[i].query_suc) {   
-        //         assert.ok(res["data"].length == 2, i.toString() + ": " + "fail: " + res["data"])
-        //     } else {
-        //         assert.ok(res == '', i.toString() + ": " + "fail: res is not empty, " + res);
-        //     }
-        // });
+        contract_addr = CreateDataAuth(self_account_id, data_id, "1", randomOfArr(net_node[from_shard]));
+		console.log(contract_addr);
+        await sleep(20000); // 时间好长
+		QueryAccount(contract_addr, randomOfArr(net_node[2]), function(res) {
+			console.log(res);
+			if (res == '') {
+				assert.ok(false, "contract address create failed in root.");
+			} else {
+				var shard_id = res['shardingId'];
+				QueryAccount(contract_addr, randomOfArr(net_node[shard_id]), function(res2) {
+					console.log(res2, shard_id);
+					if (res2 == '') {
+						assert.ok(false, "contract address create failed in shard.");
+					} else {
+						AddDataAuth(self_account_id, data_id, "2", randomOfArr(net_node[shard_id]));
+						sleep(5000);
+						GetAuthData(self_account_id, data_id, randomOfArr(net_node[shard_id]), function(res3) {
+							console.log(res3);
+							if (testcases[i].query_suc) {   
+								assert.ok(res3["data"].length == 2, i.toString() + ": " + "fail: " + res3["data"])
+							} else {
+								assert.ok(res3 == '', i.toString() + ": " + "fail: res is not empty, " + res3);
+							}
+						});						
+					}
+				})
+			}
+			
+				
+		})
+
         console.log(i.toString() + ": " + "success")
         await sleep(3000);
     }

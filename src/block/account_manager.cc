@@ -254,7 +254,14 @@ void AccountManager::HandleLocalToTx(
             account_info = std::make_shared<address::protobuf::AddressInfo>();
             account_info->set_pool_index(block.pool_index());
             account_info->set_addr(to_txs.tos(i).to());
-            account_info->set_type(address::protobuf::kNormal);
+
+            if (tx.has_contract_code()) {
+                account_info->set_type(address::protobuf::kContract);
+                account_info->set_bytes_code(tx.storages(i).val_hash());
+            } else {
+                account_info->set_type(address::protobuf::kNormal);    
+            }
+            
             account_info->set_sharding_id(block.network_id());
             account_info->set_latest_height(block.height());
             account_info->set_balance(to_txs.tos(i).balance());
@@ -281,6 +288,7 @@ void AccountManager::HandleCreateContract(
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch) {
     // handle from
+    // 只处理 from 账户，合约账户需要 root 分配 shard，在该 shard 中执行 ConsensusLocalTos 交易来创建
     {
         auto account_info = GetAccountInfo(thread_idx, tx.from());
         if (account_info == nullptr) {
@@ -306,40 +314,40 @@ void AccountManager::HandleCreateContract(
         }
     }
 
-    if (tx.status() == consensus::kConsensusSuccess) {
-        auto account_info = GetAccountInfo(thread_idx, tx.to());
-        if (account_info != nullptr) {
-            assert(false);
-            return;
-        }
+    // if (tx.status() == consensus::kConsensusSuccess) {
+    //     auto account_info = GetAccountInfo(thread_idx, tx.to());
+    //     if (account_info != nullptr) {
+    //         assert(false);
+    //         return;
+    //     }
 
-        for (int32_t i = 0; i < tx.storages_size(); ++i) {
-            if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
-                account_info = std::make_shared<address::protobuf::AddressInfo>();
-                auto& bytes_code = tx.storages(i).val_hash();
-                account_info->set_type(address::protobuf::kContract);
-                account_info->set_pool_index(block.pool_index());
-                account_info->set_addr(tx.to());
-                account_info->set_sharding_id(block.network_id());
-                account_info->set_latest_height(block.height());
-                account_info->set_balance(tx.amount());
-                account_info->set_bytes_code(bytes_code);
-                address_map_[thread_idx].add(tx.to(), account_info);
-                prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
-                ZJC_INFO("1 get address info failed create new address to this id: %s,"
-                    "shard: %u, local shard: %u",
-                    common::Encode::HexEncode(tx.to()).c_str(), block.network_id(),
-                    common::GlobalInfo::Instance()->network_id());
+    //     for (int32_t i = 0; i < tx.storages_size(); ++i) {
+    //         if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
+    //             account_info = std::make_shared<address::protobuf::AddressInfo>();
+    //             auto& bytes_code = tx.storages(i).val_hash();
+    //             account_info->set_type(address::protobuf::kContract);
+    //             account_info->set_pool_index(block.pool_index());
+    //             account_info->set_addr(tx.to());
+    //             account_info->set_sharding_id(block.network_id());
+    //             account_info->set_latest_height(block.height());
+    //             account_info->set_balance(tx.amount());
+    //             account_info->set_bytes_code(bytes_code);
+    //             address_map_[thread_idx].add(tx.to(), account_info);
+    //             prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
+    //             ZJC_INFO("1 get address info failed create new address to this id: %s,"
+    //                 "shard: %u, local shard: %u",
+    //                 common::Encode::HexEncode(tx.to()).c_str(), block.network_id(),
+    //                 common::GlobalInfo::Instance()->network_id());
 
-                ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
-                    common::Encode::HexEncode(tx.to()).c_str(),
-                    tx.amount(),
-                    block.network_id(),
-                    block.pool_index());
-                break;
-            }
-        }
-    }
+    //             ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u",
+    //                 common::Encode::HexEncode(tx.to()).c_str(),
+    //                 tx.amount(),
+    //                 block.network_id(),
+    //                 block.pool_index());
+    //             break;
+    //         }
+    //     }
+    // }
 }
 
 void AccountManager::HandleContractExecuteTx(
@@ -405,7 +413,12 @@ void AccountManager::HandleRootCreateAddressTx(
     account_info = std::make_shared<address::protobuf::AddressInfo>();
     account_info->set_pool_index(pool_index);
     account_info->set_addr(tx.to());
-    account_info->set_type(address::protobuf::kNormal);
+    if (tx.has_contract_code()) {
+        account_info->set_type(address::protobuf::kContract);
+    } else {
+        account_info->set_type(address::protobuf::kNormal);
+    }
+    
     account_info->set_sharding_id(sharding_id);
     account_info->set_latest_height(block.height());
     account_info->set_balance(0);  // root address balance invalid

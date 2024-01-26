@@ -1176,11 +1176,13 @@ void NetworkInit::AddBlockItemToCache(
         case pools::protobuf::kJoinElect:
         case pools::protobuf::kContractGasPrepayment:
             account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
+            // 对于 kRootCreateAddress 的合约账户创建不需要增加 prepayment，root 只记录路由
             break;
+        case pools::protobuf::kContractCreate: // 只处理 from 不处理合约账户
         case pools::protobuf::kConsensusLocalTos:
-        // case pools::protobuf::kContractCreate: // 不再直接处理 contract create，通过 conlocaltos 创建合约账户
         case pools::protobuf::kContractExcute:
             account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
+            // TODO spot4 针对合约账户的 gas prepayment 进行处理
             gas_prepayment_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             zjcvm::Execution::Instance()->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             break;

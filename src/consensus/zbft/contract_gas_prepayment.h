@@ -67,7 +67,7 @@ public:
             }
 
             prefix_db_->SaveContractUserPrepayment(
-                to_txs.tos(i).to(),
+                to_txs.tos(i).to(), // 对于 kContractGasPrepayment 交易来说，to 当中已经包含了 from
                 "",
                 block.height(),
                 to_txs.tos(i).balance(),
@@ -84,10 +84,10 @@ public:
     }
 
     void HandleUserCreate(
-            uint8_t thread_idx,
-            const block::protobuf::Block& block,
-            const block::protobuf::BlockTx& tx,
-            db::DbWriteBatch& db_batch) {
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch) {
         if (tx.contract_prepayment() <= 0) {
             return;
         }
@@ -144,7 +144,7 @@ public:
             const std::shared_ptr<block::protobuf::Block>& block_item,
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
-        if (tx.step() == pools::protobuf::kConsensusLocalTos) {
+        if (tx.step() == pools::protobuf::kConsensusLocalTos) { // 增加 prepayment 的交易
             HandleLocalToTx(thread_idx, *block_item, tx, db_batch);
             return;
         }
