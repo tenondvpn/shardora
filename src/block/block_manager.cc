@@ -745,6 +745,7 @@ void BlockManager::RootHandleNormalToTx(
 
         // for ContractCreate tx
         tx->set_contract_code(tos_item.library_bytes());
+        tx->set_contract_from(tos_item.contract_from());
         
         tx->set_pubkey("");
         tx->set_to(tos_item.des());
@@ -777,7 +778,20 @@ void BlockManager::HandleLocalNormalToTx(
         const pools::protobuf::ToTxMessage& to_txs,
         uint32_t step,
         const std::string& heights_hash) {
-    std::unordered_map<std::string, std::pair<uint64_t, uint32_t>> addr_amount_map;
+    struct localToTxInfo {
+        uint64_t amount;
+        uint32_t pool_index;
+        // for ContractCreate
+        std::string library_bytes;
+        std::string contract_from;
+        localToTxInfo(uint64_t amount, uint32_t pool_index, const std::string& library_bytes, const std::string& contract_from) :
+                amount(amount),
+                pool_index(pool_index),
+                library_bytes(library_bytes),
+                contract_from(contract_from) {}
+    };
+    
+    std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map;
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         // dispatch to txs to tx pool
         uint32_t sharding_id = common::kInvalidUint32;
@@ -786,6 +800,7 @@ void BlockManager::HandleLocalNormalToTx(
         if (to_txs.tos(i).des().size() == security::kUnicastAddressLength * 2) {
             addr = to_txs.tos(i).des().substr(0, security::kUnicastAddressLength);
         }
+        std::string contract_from = to_txs.tos(i).contract_from();
 
         auto account_info = GetAccountInfo(addr);
         if (account_info == nullptr) {
@@ -829,30 +844,39 @@ void BlockManager::HandleLocalNormalToTx(
 
         auto iter = addr_amount_map.find(to_txs.tos(i).des());
         if (iter == addr_amount_map.end()) {
-            addr_amount_map[to_txs.tos(i).des()] = std::make_pair(
-                to_txs.tos(i).amount(),
-                pool_index);
+            // addr_amount_map[to_txs.tos(i).des()] = std::make_pair(
+            //     to_txs.tos(i).amount(),
+            //     pool_index);
+            addr_amount_map[to_txs.tos(i).des()] = std::make_shared<localToTxInfo>(
+                to_txs.tos(i).amount(), pool_index, to_txs.tos(i).library_bytes(), to_txs.tos(i).contract_from());
         } else {
-            iter->second.first += to_txs.tos(i).amount();
+            iter->second->amount += to_txs.tos(i).amount();
         }
     }
 
     std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_tx_map;
     for (auto iter = addr_amount_map.begin(); iter != addr_amount_map.end(); ++iter) {
-        auto to_iter = to_tx_map.find(iter->second.second);
+        auto to_iter = to_tx_map.find(iter->second->pool_index);
         if (to_iter == to_tx_map.end()) {
             pools::protobuf::ToTxMessage to_tx;
-            to_tx_map[iter->second.second] = to_tx;
-            to_iter = to_tx_map.find(iter->second.second);
+            to_tx_map[iter->second->pool_index] = to_tx;
+            to_iter = to_tx_map.find(iter->second->pool_index);
         }
 
         // 每个 kConsensusLocalTos 只有一个 to item
         auto to_item = to_iter->second.add_tos();
-        to_item->set_pool_index(iter->second.second);
+        to_item->set_pool_index(iter->second->pool_index);
         to_item->set_des(iter->first);
-        to_item->set_amount(iter->second.first);
-        ZJC_DEBUG("success add local transfer to %s, %lu",
-            common::Encode::HexEncode(iter->first).c_str(), iter->second.first);
+        to_item->set_amount(iter->second->amount);
+
+        // for ContractCreate
+        to_item->set_library_bytes(iter->second->library_bytes);
+        to_item->set_contract_from(iter->second->contract_from);
+
+        ZJC_DEBUG("success add local transfer to %s, %lu, contract_from %s",
+                  common::Encode::HexEncode(iter->first).c_str(),
+                  iter->second->amount,
+                  common::Encode::HexEncode(iter->second->contract_from).c_str());
     }
 
     for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {

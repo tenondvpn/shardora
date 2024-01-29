@@ -73,6 +73,10 @@ protected:
             block_tx->set_contract_input(tx_info.contract_input());
         }
 
+        if (tx_info.has_contract_from()) {
+            block_tx->set_contract_from(tx_info.contract_from());
+        }
+
         block_tx->set_amount(tx_info.amount());
         block_tx->set_status(kConsensusSuccess);
     }

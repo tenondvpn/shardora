@@ -727,6 +727,9 @@ int ToTxsPools::CreateToTxWithHeights(
 
             to_item->set_library_bytes(iter->second.library_bytes);
             str_for_hash.append(iter->second.library_bytes);
+            // ContractCreate 需要 from 地址，用于 prepayment 创建
+            to_item->set_contract_from(iter->second.from);
+            str_for_hash.append(iter->second.from);
 
             // spot1 合约账户的创建默认为from所在 shard，暂不会跨分片创建合约账户
             // auto net_id = common::GlobalInfo::Instance()->network_id();
