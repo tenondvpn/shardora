@@ -150,7 +150,7 @@ public:
         }
 
         if (tx.step() == pools::protobuf::kContractCreate) {
-            // HandleUserCreate(thread_idx, *block_item, tx, db_batch);
+            HandleUserCreate(thread_idx, *block_item, tx, db_batch);
             return;
         }
 

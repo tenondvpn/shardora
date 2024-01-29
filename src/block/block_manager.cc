@@ -13,6 +13,8 @@
 #include "protos/block.pb.h"
 #include "protos/elect.pb.h"
 #include "transport/processor.h"
+#include <protos/pools.pb.h>
+#include <protos/tx_storage_key.h>
 
 namespace zjchain {
 
@@ -773,22 +775,27 @@ std::shared_ptr<address::protobuf::AddressInfo> BlockManager::GetAccountInfo(
     return prefix_db_->GetAddressInfo(addr);
 }
 
+// TODO refactor needed!
 void BlockManager::HandleLocalNormalToTx(
         uint8_t thread_idx,
         const pools::protobuf::ToTxMessage& to_txs,
         uint32_t step,
         const std::string& heights_hash) {
     struct localToTxInfo {
+        std::string des;
         uint64_t amount;
         uint32_t pool_index;
         // for ContractCreate
         std::string library_bytes;
         std::string contract_from;
-        localToTxInfo(uint64_t amount, uint32_t pool_index, const std::string& library_bytes, const std::string& contract_from) :
+        uint64_t contract_prepayment; // prepayment 交易的 prepayment 是通过 amount 传递的吧
+        localToTxInfo(const std::string& des, uint64_t amount, uint32_t pool_index, const std::string& library_bytes, const std::string& contract_from, uint64_t prepayment) :
+                des(des),
                 amount(amount),
                 pool_index(pool_index),
                 library_bytes(library_bytes),
-                contract_from(contract_from) {}
+                contract_from(contract_from),
+                contract_prepayment(prepayment) {}
     };
 
     // 根据 to 聚合转账类 localtotx
@@ -851,20 +858,20 @@ void BlockManager::HandleLocalNormalToTx(
         }
 
         // 转账类型交易根据 to 地址聚合到一个 map 中
-        if (to_tx.contract_from() == "") {
+        if (to_tx.library_bytes() == "") {
             auto iter = addr_amount_map.find(to_tx.des());
             if (iter == addr_amount_map.end()) {
                 // addr_amount_map[to_txs.tos(i).des()] = std::make_pair(
                 //     to_txs.tos(i).amount(),
                 //     pool_index);
-                addr_amount_map[to_txs.tos(i).des()] = std::make_shared<localToTxInfo>(
-                    to_tx.amount(), pool_index, "", "");
+                addr_amount_map[to_tx.des()] = std::make_shared<localToTxInfo>(
+                    to_tx.des(), to_tx.amount(), pool_index, "", "", 0);
             } else {
                 iter->second->amount += to_tx.amount();
             }
         } else { // 合约创建交易统计到一个 vector
             contract_create_tx_infos.push_back(std::make_shared<localToTxInfo>(
-                to_tx.amount(), pool_index, to_tx.library_bytes(), to_tx.contract_from()));
+                to_tx.des(), to_tx.amount(), pool_index, "", "", 0)); // TODO prepayment 也需要传输过来
         }        
     }
 
@@ -885,10 +892,6 @@ void BlockManager::HandleLocalNormalToTx(
         to_item->set_des(iter->first);
         to_item->set_amount(iter->second->amount);
 
-        // for ContractCreate
-        to_item->set_library_bytes(iter->second->library_bytes);
-        to_item->set_contract_from(iter->second->contract_from);
-
         ZJC_DEBUG("success add local transfer to %s, %lu, contract_from %s",
                   common::Encode::HexEncode(iter->first).c_str(),
                   iter->second->amount,
@@ -898,7 +901,8 @@ void BlockManager::HandleLocalNormalToTx(
     // 一个 pool 生成一个 Consensuslocaltos
     for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
         std::string str_for_hash;
-        str_for_hash.reserve(iter->second.tos_size() * 48);
+        // 48 ? des = type(4) + to(20) + from(20)  = 44, 44 + pool(4) + amount(8) = 56
+        str_for_hash.reserve(iter->second.tos_size() * 48); 
         for (int32_t i = 0; i < iter->second.tos_size(); ++i) {
             str_for_hash.append(iter->second.tos(i).des());
             uint32_t pool_idx = iter->second.tos(i).pool_index();
@@ -910,6 +914,7 @@ void BlockManager::HandleLocalNormalToTx(
                 common::Encode::HexEncode(iter->second.tos(i).des()).c_str(), amount);
         }
 
+        // 由于 tos 可能很多，因此持久化 kv，而不是直接传递
         auto val = iter->second.SerializeAsString();
         auto tos_hash = common::Hash::keccak256(str_for_hash);
         prefix_db_->SaveTemporaryKv(tos_hash, val);
@@ -936,7 +941,36 @@ void BlockManager::HandleLocalNormalToTx(
 
     // 2. 生成 ConsensusLocalContractCreate 交易
     for (int i = 0; i < contract_create_tx_infos.size(); i++) {
+        auto contract_create_tx = contract_create_tx_infos[i];
+        std::string str_for_hash;
+        str_for_hash.reserve(sizeof(contract_create_tx->des) + sizeof(contract_create_tx->pool_index) + sizeof(contract_create_tx->library_bytes));
+        str_for_hash.append(contract_create_tx->des);
+        uint32_t pool_idx = contract_create_tx->pool_index;
+        str_for_hash.append((char*)&pool_idx, sizeof(pool_idx));
+        std::string contract_code = contract_create_tx->library_bytes;
+        str_for_hash.append((char*)&contract_code, sizeof(contract_code));
+        auto tx_hash = common::Hash::keccak256(str_for_hash);
         
+        // 与 consensuslocaltos 不同，每个交易只有一个 contractcreate，不必持久化
+        auto msg_ptr = std::make_shared<transport::TransportMessage>();
+        msg_ptr->address_info = account_mgr_->pools_address_info(contract_create_tx->pool_index);
+        auto tx = msg_ptr->header.mutable_tx_proto();
+        tx->set_pubkey("");
+        tx->set_to(msg_ptr->address_info->addr());
+        tx->set_step(pools::protobuf::kConsensusLocalContractCreate);
+        auto gid = common::Hash::keccak256(tx_hash + heights_hash);
+        tx->set_gas_limit(0);
+        tx->set_amount(0);
+        tx->set_gas_price(common::kBuildinTransactionGasPrice);
+        tx->set_gid(gid);
+
+        tx->set_contract_code(contract_create_tx->library_bytes);
+        tx->set_contract_from(contract_create_tx->contract_from);
+        tx->set_contract_input("");
+        tx->set_contract_prepayment(0);
+        
+        msg_ptr->thread_idx = thread_idx;
+        pools_mgr_->HandleMessage(msg_ptr);        
     }
     
 }

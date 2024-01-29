@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <common/utils.h>
+#include <protos/pools.pb.h>
 
 #include "contract/contract_manager.h"
 #include "common/encode.h"
@@ -142,6 +143,7 @@ const std::string& AccountManager::GetTxValidAddress(const block::protobuf::Bloc
     case pools::protobuf::kNormalTo:
     case pools::protobuf::kRootCreateAddress:
     case pools::protobuf::kRootCreateAddressCrossSharding:
+    case pools::protobuf::kConsensusLocalContractCreate:
     case pools::protobuf::kConsensusLocalTos:
     case pools::protobuf::kConsensusRootElectShard:
     case pools::protobuf::kConsensusRootTimeBlock:
@@ -525,6 +527,9 @@ void AccountManager::NewBlockWithTx(
         break;
     case pools::protobuf::kContractGasPrepayment:
         HandleContractPrepayment(thread_idx, *block_item, tx, db_batch);
+        break;        
+    case pools::protobuf::kConsensusLocalContractCreate:
+        // TODO
         break;
     default:
         break;

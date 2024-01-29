@@ -12,6 +12,7 @@
 #include "security/ecdsa/secp256k1.h"
 #include "transport/processor.h"
 #include "transport/tcp_transport.h"
+#include <protos/pools.pb.h>
 
 namespace zjchain {
 
@@ -619,6 +620,7 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
         case pools::protobuf::kContractExcute:
             HandleContractExcute(msg_ptr);
             break;
+        case pools::protobuf::kConsensusLocalContractCreate: 
         case pools::protobuf::kConsensusLocalTos: {
             auto pool_index = common::GetAddressPoolIndex(tx_msg.to());
             msg_queues_[pool_index].push(msg_ptr);

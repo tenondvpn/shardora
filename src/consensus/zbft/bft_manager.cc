@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include <libbls/tools/utils.h>
+#include <protos/pools.pb.h>
 
 #include "consensus/zbft/root_zbft.h"
 #include "consensus/zbft/zbft.h"
@@ -102,6 +103,9 @@ void BftManager::RegisterCreateTxCallbacks() {
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kConsensusLocalTos,
         std::bind(&BftManager::CreateToTxLocal, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kConsensusLocalContractCreate,
+        std::bind(&BftManager::CreateContractUserCreateCallTx, this, std::placeholders::_1));
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kRootCreateAddress,
         std::bind(&BftManager::CreateRootToTxItem, this, std::placeholders::_1));

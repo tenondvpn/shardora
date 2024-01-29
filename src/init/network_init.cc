@@ -1,6 +1,7 @@
 #include "init/network_init.h"
 #include <common/log.h>
 #include <functional>
+#include <protos/pools.pb.h>
 
 #include "block/block_manager.h"
 #include "common/global_info.h"
@@ -1180,6 +1181,7 @@ void NetworkInit::AddBlockItemToCache(
             break;
         case pools::protobuf::kContractCreate: // 只处理 from 不处理合约账户
         case pools::protobuf::kConsensusLocalTos:
+        case pools::protobuf::kConsensusLocalContractCreate:
         case pools::protobuf::kContractExcute:
             account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             // TODO spot4 针对合约账户的 gas prepayment 进行处理
