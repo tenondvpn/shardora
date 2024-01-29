@@ -790,17 +790,25 @@ void BlockManager::HandleLocalNormalToTx(
                 library_bytes(library_bytes),
                 contract_from(contract_from) {}
     };
-    
+
+    // 根据 to 聚合转账类 localtotx
     std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map;
+    // 摘出 contract_create 类 localtotx
+    std::vector<std::shared_ptr<localToTxInfo>> contract_create_tx_infos;
+    // 分两类统计
+    // 1. 单纯的转账交易（包括 prepayment），这种类型的交易聚合 amount 最终一起执行，聚合成 ConsensusLocalTos 交易即可
+    // 2. 合约账户创建交易，涉及到 evm，需要按照 ContractCreate 交易执行
+    // 根据有无 contract_from 字段区分
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         // dispatch to txs to tx pool
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = common::kInvalidPoolIndex;
-        auto addr = to_txs.tos(i).des();
-        if (to_txs.tos(i).des().size() == security::kUnicastAddressLength * 2) {
-            addr = to_txs.tos(i).des().substr(0, security::kUnicastAddressLength);
+        auto to_tx = to_txs.tos(i);
+        auto addr = to_tx.des();
+        if (to_tx.des().size() == security::kUnicastAddressLength * 2) {
+            addr = to_tx.des().substr(0, security::kUnicastAddressLength);
         }
-        std::string contract_from = to_txs.tos(i).contract_from();
+        std::string contract_from = to_tx.contract_from();
 
         auto account_info = GetAccountInfo(addr);
         if (account_info == nullptr) {
@@ -813,23 +821,23 @@ void BlockManager::HandleLocalNormalToTx(
                 continue;
             }
 
-            if (!to_txs.tos(i).has_sharding_id() || !to_txs.tos(i).has_pool_index()) {
+            if (!to_tx.has_sharding_id() || !to_tx.has_pool_index()) {
                 assert(false);
                 continue;
             }
 
-            if (to_txs.tos(i).sharding_id() != common::GlobalInfo::Instance()->network_id()) {
+            if (to_tx.sharding_id() != common::GlobalInfo::Instance()->network_id()) {
                 assert(false);
                 continue;
             }
 
-            if (to_txs.tos(i).pool_index() >= common::kImmutablePoolSize) {
+            if (to_tx.pool_index() >= common::kImmutablePoolSize) {
                 assert(false);
                 continue;
             }
 
-            sharding_id = to_txs.tos(i).sharding_id();
-            pool_index = to_txs.tos(i).pool_index();
+            sharding_id = to_tx.sharding_id();
+            pool_index = to_tx.pool_index();
             ZJC_DEBUG("root create address coming %s, shard: %u, pool: %u",
                 common::Encode::HexEncode(addr).c_str(), sharding_id, pool_index);
         } else {
@@ -842,18 +850,26 @@ void BlockManager::HandleLocalNormalToTx(
             continue;
         }
 
-        auto iter = addr_amount_map.find(to_txs.tos(i).des());
-        if (iter == addr_amount_map.end()) {
-            // addr_amount_map[to_txs.tos(i).des()] = std::make_pair(
-            //     to_txs.tos(i).amount(),
-            //     pool_index);
-            addr_amount_map[to_txs.tos(i).des()] = std::make_shared<localToTxInfo>(
-                to_txs.tos(i).amount(), pool_index, to_txs.tos(i).library_bytes(), to_txs.tos(i).contract_from());
-        } else {
-            iter->second->amount += to_txs.tos(i).amount();
-        }
+        // 转账类型交易根据 to 地址聚合到一个 map 中
+        if (to_tx.contract_from() == "") {
+            auto iter = addr_amount_map.find(to_tx.des());
+            if (iter == addr_amount_map.end()) {
+                // addr_amount_map[to_txs.tos(i).des()] = std::make_pair(
+                //     to_txs.tos(i).amount(),
+                //     pool_index);
+                addr_amount_map[to_txs.tos(i).des()] = std::make_shared<localToTxInfo>(
+                    to_tx.amount(), pool_index, "", "");
+            } else {
+                iter->second->amount += to_tx.amount();
+            }
+        } else { // 合约创建交易统计到一个 vector
+            contract_create_tx_infos.push_back(std::make_shared<localToTxInfo>(
+                to_tx.amount(), pool_index, to_tx.library_bytes(), to_tx.contract_from()));
+        }        
     }
 
+    // 1. 处理转账类交易
+    // 根据 pool_index 将 addr_amount_map 中的转账交易分类，一个 pool 生成一个 Consensuslocaltos，其中可能包含给多个地址的转账交易
     std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_tx_map;
     for (auto iter = addr_amount_map.begin(); iter != addr_amount_map.end(); ++iter) {
         auto to_iter = to_tx_map.find(iter->second->pool_index);
@@ -879,6 +895,7 @@ void BlockManager::HandleLocalNormalToTx(
                   common::Encode::HexEncode(iter->second->contract_from).c_str());
     }
 
+    // 一个 pool 生成一个 Consensuslocaltos
     for (auto iter = to_tx_map.begin(); iter != to_tx_map.end(); ++iter) {
         std::string str_for_hash;
         str_for_hash.reserve(iter->second.tos_size() * 48);
@@ -916,6 +933,12 @@ void BlockManager::HandleLocalNormalToTx(
             common::Encode::HexEncode(heights_hash).c_str(),
             common::Encode::HexEncode(gid).c_str());
     }
+
+    // 2. 生成 ConsensusLocalContractCreate 交易
+    for (int i = 0; i < contract_create_tx_infos.size(); i++) {
+        
+    }
+    
 }
 
 void BlockManager::AddNewBlock(

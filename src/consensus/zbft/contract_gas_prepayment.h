@@ -65,7 +65,7 @@ public:
             if (to_txs.tos(i).to().size() != security::kUnicastAddressLength * 2) {
                 continue;
             }
-
+            
             prefix_db_->SaveContractUserPrepayment(
                 to_txs.tos(i).to(), // 对于 kContractGasPrepayment 交易来说，to 当中已经包含了 from
                 "",
@@ -150,7 +150,7 @@ public:
         }
 
         if (tx.step() == pools::protobuf::kContractCreate) {
-            HandleUserCreate(thread_idx, *block_item, tx, db_batch);
+            // HandleUserCreate(thread_idx, *block_item, tx, db_batch);
             return;
         }
 

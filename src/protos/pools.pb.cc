@@ -689,7 +689,7 @@ void AddDescriptorsImpl() {
       "protobuf.StepType:\013kNormalFrom\022\033\n\023contra"
       "ct_prepayment\030\013 \001(\004\022\025\n\rcontract_code\030\014 \001"
       "(\014\022\026\n\016contract_input\030\r \001(\014\022\025\n\rcontract_f"
-      "rom\030\016 \001(\014*\363\002\n\010StepType\022\017\n\013kNormalFrom\020\000\022"
+      "rom\030\016 \001(\014*\226\003\n\010StepType\022\017\n\013kNormalFrom\020\000\022"
       "\r\n\tkNormalTo\020\001\022\034\n\030kConsensusRootElectSha"
       "rd\020\002\022\033\n\027kConsensusRootTimeBlock\020\003\022!\n\035kCo"
       "nsensusCreateGenesisAcount\020\004\022\026\n\022kConsens"
@@ -698,10 +698,11 @@ void AddDescriptorsImpl() {
       "\020\010\022\026\n\022kRootCreateAddress\020\t\022#\n\037kRootCreat"
       "eAddressCrossSharding\020\013\022\016\n\nkStatistic\020\014\022"
       "\016\n\nkJoinElect\020\r\022\022\n\016kCreateLibrary\020\016\022\n\n\006k"
-      "Cross\020\017\022\016\n\nkRootCross\020\020"
+      "Cross\020\017\022\016\n\nkRootCross\020\020\022!\n\035kConsensusLoc"
+      "alContractCreate\020\021"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 2503);
+      descriptor, 2538);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/pools.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fbls_2eproto::AddDescriptors();
@@ -743,6 +744,7 @@ bool StepType_IsValid(int value) {
     case 14:
     case 15:
     case 16:
+    case 17:
       return true;
     default:
       return false;

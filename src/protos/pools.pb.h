@@ -137,11 +137,12 @@ enum StepType {
   kJoinElect = 13,
   kCreateLibrary = 14,
   kCross = 15,
-  kRootCross = 16
+  kRootCross = 16,
+  kConsensusLocalContractCreate = 17
 };
 bool StepType_IsValid(int value);
 const StepType StepType_MIN = kNormalFrom;
-const StepType StepType_MAX = kRootCross;
+const StepType StepType_MAX = kConsensusLocalContractCreate;
 const int StepType_ARRAYSIZE = StepType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* StepType_descriptor();
