@@ -925,9 +925,8 @@ void BlockManager::HandleLocalNormalToTx(
                 common::Encode::HexEncode(iter->second.tos(i).des()).c_str(), amount);
         }
 
-        // 由于 tos 可能很多，因此持久化 kv，而不是直接传递
-		// tx 只有一个 to field，所以放一个 pool addr 进去，真正的 tos 的 addrs 存入 kv
-		// 另外 pool index 是指定好的，而不是 shard 分配的，所以需要将 to 设置为 pool addr
+        // 由于是异步的，因此需要持久化 kv 来传递数据，但是 to 需要填充以分配交易池
+		// pool index 是指定好的，而不是 shard 分配的，所以需要将 to 设置为 pool addr
         auto val = iter->second.SerializeAsString();
         auto tos_hash = common::Hash::keccak256(str_for_hash);
         prefix_db_->SaveTemporaryKv(tos_hash, val);

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <common/utils.h>
+#include <consensus/consensus_utils.h>
 #include <protos/pools.pb.h>
 
 #include "contract/contract_manager.h"
@@ -209,6 +210,7 @@ void AccountManager::HandleContractPrepayment(
         common::Encode::HexEncode(account_id).c_str(), tx.balance(),
         block.height(), block.pool_index());
 }
+
 void AccountManager::HandleLocalToTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
@@ -283,6 +285,39 @@ void AccountManager::HandleLocalToTx(
         ZJC_INFO("transfer to address new balance %s: %lu",
             common::Encode::HexEncode(to_txs.tos(i).to()).c_str(), to_txs.tos(i).balance());
     }
+}
+
+void AccountManager::HandleLocalContractCreate(
+		uint8_t thread_idx,
+		const block::protobuf::Block& block,
+		const block::protobuf::BlockTx& tx,
+		db::DbWriteBatch& db_batch) {
+	if (tx.status() != consensus::kConsensusSuccess) {
+		return;
+	}
+
+	auto account_info = GetAccountInfo(thread_idx, tx.to());
+	if (account_info != nullptr) {
+		return;
+	}
+
+	account_info = std::make_shared<address::protobuf::AddressInfo>();
+	account_info->set_type(address::protobuf::kContract);
+	account_info->set_pool_index(block.pool_index());
+	account_info->set_addr(tx.to());
+	account_info->set_sharding_id(block.network_id());
+	account_info->set_latest_height(block.height());
+	account_info->set_balance(tx.amount());
+	account_info->set_bytes_code(tx.contract_code());
+	address_map_[thread_idx].add(tx.to(), account_info);
+	prefix_db_->AddAddressInfo(tx.to(), *account_info, db_batch);
+	
+	ZJC_DEBUG("create add contract direct: %s, amount: %lu, sharding: %u, pool index: %u, contract_code: %s",
+		common::Encode::HexEncode(tx.to()).c_str(),
+		tx.amount(),
+		block.network_id(),
+		block.pool_index(),
+		tx.contract_code().c_str());
 }
 
 void AccountManager::HandleCreateContract(
@@ -536,7 +571,7 @@ void AccountManager::NewBlockWithTx(
         HandleContractPrepayment(thread_idx, *block_item, tx, db_batch);
         break;        
     case pools::protobuf::kConsensusLocalContractCreate:
-        // TODO
+		HandleLocalContractCreate(thread_idx, *block_item, tx, db_batch);
         break;
     default:
         break;

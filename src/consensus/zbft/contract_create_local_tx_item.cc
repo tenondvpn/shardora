@@ -23,6 +23,36 @@ int ContractCreateLocalTxItem::HandleTx(
 		zjcvm::ZjchainHost& zjc_host,
 		std::unordered_map<std::string, int64_t>& acc_balance_map,
 		block::protobuf::BlockTx& block_tx) {
+	if (block_tx.storages_size() != 1) {
+        block_tx.set_status(kConsensusError);
+        return consensus::kConsensusSuccess;
+    }
+
+	std::string cc_tx_str;
+    if (!prefix_db_->GetTemporaryKv(block_tx.storages(0).val_hash(), &cc_tx_str)) {
+        block_tx.set_status(kConsensusError);
+        ZJC_WARN("local get cc to txs info failed: %s",
+            common::Encode::HexEncode(block_tx.storages(0).val_hash()).c_str());
+        return consensus::kConsensusSuccess;
+    }
+
+	pools::protobuf::ToTxMessage cc_to_tx;
+	if (!cc_to_tx.ParseFromString(cc_tx_str)) {
+        block_tx.set_status(kConsensusError);
+        ZJC_WARN("local get cc to txs info failed: %s",
+            common::Encode::HexEncode(block_tx.storages(0).val_hash()).c_str());
+        return consensus::kConsensusSuccess;
+    }
+
+	if (cc_to_tx.tos_size() <= 0) {
+		return consensus::kConsensusSuccess;
+	}
+	auto cc_item = cc_to_tx.tos(0);
+	block_tx.set_to(cc_item.des());
+	block_tx.set_amount(cc_item.amount());
+	block_tx.set_contract_prepayment(cc_item.prepayment());
+	block_tx.set_from(cc_item.contract_from());
+	
 	// TODO 从 kv 中读取 cc tx info
 	auto contract_info = account_mgr_->GetAccountInfo(thread_idx, block_tx.to());
 	if (contract_info != nullptr) {
@@ -56,13 +86,13 @@ int ContractCreateLocalTxItem::HandleTx(
 	if (call_res != kConsensusSuccess || res.status_code != EVMC_SUCCESS) {
 		block_tx.set_status(EvmcStatusToZbftStatus(res.status_code));
 		ZJC_DEBUG("create contract local: %s failed, call_res: %d, "
-				"evmc res: %d, gas_used: %lu, gas price: %lu, from_prepayment: %lu",
-				common::Encode::HexEncode(block_tx.to()).c_str(),
-				call_res,
-				res.status_code,
-				gas_used,
-				block_tx.gas_price(),
-				from_prepayment);
+			"evmc res: %d, gas_used: %lu, gas price: %lu, from_prepayment: %lu",
+			common::Encode::HexEncode(block_tx.to()).c_str(),
+			call_res,
+			res.status_code,
+			gas_used,
+			block_tx.gas_price(),
+			from_prepayment);
 	}
 	// ???
 	if (res.gas_left > (int64_t)block_tx.gas_limit()) {
