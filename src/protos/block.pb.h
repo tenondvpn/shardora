@@ -840,21 +840,6 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::std::string* release_contract_input();
   void set_allocated_contract_input(::std::string* contract_input);
 
-  // optional bytes contract_from = 17;
-  bool has_contract_from() const;
-  void clear_contract_from();
-  static const int kContractFromFieldNumber = 17;
-  const ::std::string& contract_from() const;
-  void set_contract_from(const ::std::string& value);
-  #if LANG_CXX11
-  void set_contract_from(::std::string&& value);
-  #endif
-  void set_contract_from(const char* value);
-  void set_contract_from(const void* value, size_t size);
-  ::std::string* mutable_contract_from();
-  ::std::string* release_contract_from();
-  void set_allocated_contract_from(::std::string* contract_from);
-
   // optional uint64 amount = 4;
   bool has_amount() const;
   void clear_amount();
@@ -939,8 +924,6 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   void clear_has_contract_code();
   void set_has_contract_input();
   void clear_has_contract_input();
-  void set_has_contract_from();
-  void clear_has_contract_from();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -953,7 +936,6 @@ class BlockTx : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::internal::ArenaStringPtr to_;
   ::google::protobuf::internal::ArenaStringPtr contract_code_;
   ::google::protobuf::internal::ArenaStringPtr contract_input_;
-  ::google::protobuf::internal::ArenaStringPtr contract_from_;
   ::google::protobuf::uint64 amount_;
   ::google::protobuf::uint64 gas_limit_;
   ::google::protobuf::uint64 gas_used_;
@@ -5960,13 +5942,13 @@ inline void BlockTx::set_allocated_to(::std::string* to) {
 
 // optional uint64 amount = 4;
 inline bool BlockTx::has_amount() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void BlockTx::set_has_amount() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void BlockTx::clear_has_amount() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void BlockTx::clear_amount() {
   amount_ = GOOGLE_ULONGLONG(0);
@@ -5984,13 +5966,13 @@ inline void BlockTx::set_amount(::google::protobuf::uint64 value) {
 
 // optional uint64 gas_limit = 5;
 inline bool BlockTx::has_gas_limit() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void BlockTx::set_has_gas_limit() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void BlockTx::clear_has_gas_limit() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void BlockTx::clear_gas_limit() {
   gas_limit_ = GOOGLE_ULONGLONG(0);
@@ -6008,13 +5990,13 @@ inline void BlockTx::set_gas_limit(::google::protobuf::uint64 value) {
 
 // optional uint64 gas_used = 6;
 inline bool BlockTx::has_gas_used() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void BlockTx::set_has_gas_used() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void BlockTx::clear_has_gas_used() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void BlockTx::clear_gas_used() {
   gas_used_ = GOOGLE_ULONGLONG(0);
@@ -6032,13 +6014,13 @@ inline void BlockTx::set_gas_used(::google::protobuf::uint64 value) {
 
 // optional uint64 gas_price = 7;
 inline bool BlockTx::has_gas_price() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void BlockTx::set_has_gas_price() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void BlockTx::clear_has_gas_price() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void BlockTx::clear_gas_price() {
   gas_price_ = GOOGLE_ULONGLONG(0);
@@ -6056,13 +6038,13 @@ inline void BlockTx::set_gas_price(::google::protobuf::uint64 value) {
 
 // optional uint64 balance = 8;
 inline bool BlockTx::has_balance() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
 inline void BlockTx::set_has_balance() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00000200u;
 }
 inline void BlockTx::clear_has_balance() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00000200u;
 }
 inline void BlockTx::clear_balance() {
   balance_ = GOOGLE_ULONGLONG(0);
@@ -6080,13 +6062,13 @@ inline void BlockTx::set_balance(::google::protobuf::uint64 value) {
 
 // optional .zjchain.pools.protobuf.StepType step = 9;
 inline bool BlockTx::has_step() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void BlockTx::set_has_step() {
-  _has_bits_[0] |= 0x00000800u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void BlockTx::clear_has_step() {
-  _has_bits_[0] &= ~0x00000800u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void BlockTx::clear_step() {
   step_ = 0;
@@ -6105,13 +6087,13 @@ inline void BlockTx::set_step(::zjchain::pools::protobuf::StepType value) {
 
 // optional uint32 status = 10;
 inline bool BlockTx::has_status() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 inline void BlockTx::set_has_status() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00000800u;
 }
 inline void BlockTx::clear_has_status() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 inline void BlockTx::clear_status() {
   status_ = 0u;
@@ -6189,13 +6171,13 @@ BlockTx::contract_txs() const {
 
 // optional uint64 contract_prepayment = 13;
 inline bool BlockTx::has_contract_prepayment() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void BlockTx::set_has_contract_prepayment() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void BlockTx::clear_has_contract_prepayment() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void BlockTx::clear_contract_prepayment() {
   contract_prepayment_ = GOOGLE_ULONGLONG(0);
@@ -6371,72 +6353,6 @@ inline const ::google::protobuf::RepeatedPtrField< ::zjchain::block::protobuf::T
 BlockTx::events() const {
   // @@protoc_insertion_point(field_list:zjchain.block.protobuf.BlockTx.events)
   return events_;
-}
-
-// optional bytes contract_from = 17;
-inline bool BlockTx::has_contract_from() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
-}
-inline void BlockTx::set_has_contract_from() {
-  _has_bits_[0] |= 0x00000020u;
-}
-inline void BlockTx::clear_has_contract_from() {
-  _has_bits_[0] &= ~0x00000020u;
-}
-inline void BlockTx::clear_contract_from() {
-  contract_from_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_contract_from();
-}
-inline const ::std::string& BlockTx::contract_from() const {
-  // @@protoc_insertion_point(field_get:zjchain.block.protobuf.BlockTx.contract_from)
-  return contract_from_.GetNoArena();
-}
-inline void BlockTx::set_contract_from(const ::std::string& value) {
-  set_has_contract_from();
-  contract_from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:zjchain.block.protobuf.BlockTx.contract_from)
-}
-#if LANG_CXX11
-inline void BlockTx::set_contract_from(::std::string&& value) {
-  set_has_contract_from();
-  contract_from_.SetNoArena(
-    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:zjchain.block.protobuf.BlockTx.contract_from)
-}
-#endif
-inline void BlockTx::set_contract_from(const char* value) {
-  GOOGLE_DCHECK(value != NULL);
-  set_has_contract_from();
-  contract_from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:zjchain.block.protobuf.BlockTx.contract_from)
-}
-inline void BlockTx::set_contract_from(const void* value, size_t size) {
-  set_has_contract_from();
-  contract_from_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:zjchain.block.protobuf.BlockTx.contract_from)
-}
-inline ::std::string* BlockTx::mutable_contract_from() {
-  set_has_contract_from();
-  // @@protoc_insertion_point(field_mutable:zjchain.block.protobuf.BlockTx.contract_from)
-  return contract_from_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline ::std::string* BlockTx::release_contract_from() {
-  // @@protoc_insertion_point(field_release:zjchain.block.protobuf.BlockTx.contract_from)
-  if (!has_contract_from()) {
-    return NULL;
-  }
-  clear_has_contract_from();
-  return contract_from_.ReleaseNonDefaultNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-}
-inline void BlockTx::set_allocated_contract_from(::std::string* contract_from) {
-  if (contract_from != NULL) {
-    set_has_contract_from();
-  } else {
-    clear_has_contract_from();
-  }
-  contract_from_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), contract_from);
-  // @@protoc_insertion_point(field_set_allocated:zjchain.block.protobuf.BlockTx.contract_from)
 }
 
 // -------------------------------------------------------------------

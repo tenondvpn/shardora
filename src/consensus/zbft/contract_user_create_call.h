@@ -38,18 +38,6 @@ public:
         block::protobuf::BlockTx& block_tx);
 
 private:
-    int CreateContractCallExcute(
-        zjcvm::ZjchainHost& zjc_host,
-        block::protobuf::BlockTx& tx,
-        evmc::Result* out_res);
-    int SaveContractCreateInfo(
-        zjcvm::ZjchainHost& zjc_host,
-        block::protobuf::BlockTx& tx,
-        std::shared_ptr<db::DbWriteBatch>& db_batch,
-        int64_t& contract_balance_add,
-        int64_t& caller_balance_add,
-        int64_t& gas_more);
-
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
     DISALLOW_COPY_AND_ASSIGN(ContractUserCreateCall);

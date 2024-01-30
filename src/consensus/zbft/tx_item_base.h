@@ -3,6 +3,7 @@
 #include "block/account_manager.h"
 #include "pools/tx_pool.h"
 #include "security/security.h"
+#include <protos/pools.pb.h>
 
 namespace zjchain {
 
@@ -59,7 +60,8 @@ protected:
         block_tx->set_to(tx_info.to());
         block_tx->set_amount(tx_info.amount());
         if (tx_info.step() == pools::protobuf::kContractCreate ||
-                tx_info.step() == pools::protobuf::kContractGasPrepayment) {
+            tx_info.step() == pools::protobuf::kContractGasPrepayment ||
+            tx_info.step() == pools::protobuf::kConsensusLocalContractCreate) {
             if (tx_info.has_contract_prepayment()) {
                 block_tx->set_contract_prepayment(tx_info.contract_prepayment());
             }
@@ -74,7 +76,7 @@ protected:
         }
 
         if (tx_info.has_contract_from()) {
-            block_tx->set_contract_from(tx_info.contract_from());
+            block_tx->set_from(tx_info.contract_from());
         }
 
         block_tx->set_amount(tx_info.amount());

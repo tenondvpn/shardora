@@ -522,6 +522,13 @@ class ToTxMessageItem : public ::google::protobuf::Message /* @@protoc_insertion
   ::google::protobuf::uint32 pool_index() const;
   void set_pool_index(::google::protobuf::uint32 value);
 
+  // optional uint64 prepayment = 9;
+  bool has_prepayment() const;
+  void clear_prepayment();
+  static const int kPrepaymentFieldNumber = 9;
+  ::google::protobuf::uint64 prepayment() const;
+  void set_prepayment(::google::protobuf::uint64 value);
+
   // optional int32 step = 5;
   bool has_step() const;
   void clear_step();
@@ -545,6 +552,8 @@ class ToTxMessageItem : public ::google::protobuf::Message /* @@protoc_insertion
   void clear_has_library_bytes();
   void set_has_contract_from();
   void clear_has_contract_from();
+  void set_has_prepayment();
+  void clear_has_prepayment();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -556,6 +565,7 @@ class ToTxMessageItem : public ::google::protobuf::Message /* @@protoc_insertion
   ::google::protobuf::uint64 amount_;
   ::google::protobuf::uint32 sharding_id_;
   ::google::protobuf::uint32 pool_index_;
+  ::google::protobuf::uint64 prepayment_;
   ::google::protobuf::int32 step_;
   friend struct ::protobuf_protos_2fpools_2eproto::TableStruct;
 };
@@ -3069,13 +3079,13 @@ inline void ToTxMessageItem::set_pool_index(::google::protobuf::uint32 value) {
 
 // optional int32 step = 5;
 inline bool ToTxMessageItem::has_step() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void ToTxMessageItem::set_has_step() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void ToTxMessageItem::clear_has_step() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void ToTxMessageItem::clear_step() {
   step_ = 0;
@@ -3248,6 +3258,30 @@ inline void ToTxMessageItem::set_allocated_contract_from(::std::string* contract
   }
   contract_from_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), contract_from);
   // @@protoc_insertion_point(field_set_allocated:zjchain.pools.protobuf.ToTxMessageItem.contract_from)
+}
+
+// optional uint64 prepayment = 9;
+inline bool ToTxMessageItem::has_prepayment() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void ToTxMessageItem::set_has_prepayment() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void ToTxMessageItem::clear_has_prepayment() {
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline void ToTxMessageItem::clear_prepayment() {
+  prepayment_ = GOOGLE_ULONGLONG(0);
+  clear_has_prepayment();
+}
+inline ::google::protobuf::uint64 ToTxMessageItem::prepayment() const {
+  // @@protoc_insertion_point(field_get:zjchain.pools.protobuf.ToTxMessageItem.prepayment)
+  return prepayment_;
+}
+inline void ToTxMessageItem::set_prepayment(::google::protobuf::uint64 value) {
+  set_has_prepayment();
+  prepayment_ = value;
+  // @@protoc_insertion_point(field_set:zjchain.pools.protobuf.ToTxMessageItem.prepayment)
 }
 
 // -------------------------------------------------------------------

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <consensus/zbft/contract_create_local_tx_item.h>
 #include <unordered_map>
 
 #include "block/account_manager.h"
@@ -264,6 +265,11 @@ private:
 
     pools::TxItemPtr CreateContractUserCreateCallTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ContractUserCreateCall>(
+            contract_mgr_, db_, msg_ptr, account_mgr_, security_ptr_);
+    }
+
+	pools::TxItemPtr CreateContractCreateLocalTx(const transport::MessagePtr& msg_ptr) {
+        return std::make_shared<ContractCreateLocalTxItem>(
             contract_mgr_, db_, msg_ptr, account_mgr_, security_ptr_);
     }
 

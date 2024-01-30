@@ -755,6 +755,7 @@ void Zbft::DoTransactionAndCreateTxBlock(block::protobuf::Block& zjc_block) {
     auto tx_list = zjc_block.mutable_tx_list();
     auto& tx_map = txs_ptr_->txs;
     tx_list->Reserve(tx_map.size());
+	// acc_balance_map 没有用到？
     std::unordered_map<std::string, int64_t> acc_balance_map;
     zjc_host.tx_context_.tx_origin = evmc::address{};
     zjc_host.tx_context_.block_coinbase = evmc::address{};

@@ -64,7 +64,8 @@ private:
         int32_t pool_index,
         const std::string& key,
         const std::string& library_bytes,
-        const std::string& from);
+        const std::string& from,
+		uint64_t prepayment);
     void HandleElectJoinVerifyVec(
         const std::string& verify_hash,
         std::vector<bls::protobuf::JoinElectInfo>& verify_reqs);
@@ -87,6 +88,7 @@ private:
          // for kContractCreate
         std::string library_bytes;
         std::string from;
+		uint64_t prepayment;
     };
 
     // destination shard -> pool -> height -> items

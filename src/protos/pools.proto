@@ -42,6 +42,7 @@ message ToTxMessageItem {
     optional bytes library_bytes = 6;
     repeated bls.protobuf.JoinElectInfo join_infos = 7;
     optional bytes contract_from = 8;
+    optional uint64 prepayment = 9; // for contract create prepayment
 }
 
 message ShardToTxItem {

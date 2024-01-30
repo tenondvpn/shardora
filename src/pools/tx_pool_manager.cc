@@ -622,6 +622,7 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             break;
         case pools::protobuf::kConsensusLocalContractCreate: 
         case pools::protobuf::kConsensusLocalTos: {
+			// 如果要指定 pool index, tx_msg.to() 必须是 pool addr，否则就随机分配 pool index 了
             auto pool_index = common::GetAddressPoolIndex(tx_msg.to());
             msg_queues_[pool_index].push(msg_ptr);
 //             ZJC_DEBUG("queue index pool_index: %u, msg_queues_: %d", pool_index, msg_queues_[pool_index].size());

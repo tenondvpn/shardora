@@ -787,24 +787,22 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_PROTOBUF_ATTRIBUT
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::BlockTx, contract_code_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::BlockTx, contract_input_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::BlockTx, events_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::BlockTx, contract_from_),
   0,
   1,
   2,
+  5,
   6,
   7,
   8,
   9,
   10,
   11,
+  ~0u,
+  ~0u,
   12,
-  ~0u,
-  ~0u,
-  13,
   3,
   4,
   ~0u,
-  5,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::Block, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(::zjchain::block::protobuf::Block, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -1152,35 +1150,35 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_PROT
   { 0, 8, sizeof(::zjchain::block::protobuf::StorageItem)},
   { 11, 19, sizeof(::zjchain::block::protobuf::TransferItem)},
   { 22, 29, sizeof(::zjchain::block::protobuf::TxLog)},
-  { 31, 53, sizeof(::zjchain::block::protobuf::BlockTx)},
-  { 70, 91, sizeof(::zjchain::block::protobuf::Block)},
-  { 107, 115, sizeof(::zjchain::block::protobuf::ConsensusToTxsItem)},
-  { 118, 124, sizeof(::zjchain::block::protobuf::ConsensusToTxs)},
-  { 125, 135, sizeof(::zjchain::block::protobuf::GetTxBlockRequest)},
-  { 140, 146, sizeof(::zjchain::block::protobuf::GetTxBlockResponse)},
-  { 147, 155, sizeof(::zjchain::block::protobuf::AccountHeightRequest)},
-  { 158, 166, sizeof(::zjchain::block::protobuf::AccountHeightResponse)},
-  { 169, 177, sizeof(::zjchain::block::protobuf::AccountAttrRequest)},
-  { 180, 189, sizeof(::zjchain::block::protobuf::AccountAttrResponse)},
-  { 193, 203, sizeof(::zjchain::block::protobuf::UpdateVpnCountRequest)},
-  { 208, 215, sizeof(::zjchain::block::protobuf::VpnCountItem)},
-  { 217, 223, sizeof(::zjchain::block::protobuf::UpdateVpnCountResponse)},
-  { 224, 234, sizeof(::zjchain::block::protobuf::GetAccountInitInfoRequest)},
-  { 239, 248, sizeof(::zjchain::block::protobuf::GetAccountInitInfoResponse)},
-  { 252, 259, sizeof(::zjchain::block::protobuf::UpdateVpnActiveRequest)},
-  { 261, 269, sizeof(::zjchain::block::protobuf::AdRewardRequest)},
-  { 272, 280, sizeof(::zjchain::block::protobuf::ElectStatisticInfo)},
-  { 283, 291, sizeof(::zjchain::block::protobuf::StatisticInfo)},
-  { 294, 300, sizeof(::zjchain::block::protobuf::RefreshPoolHeightRequest)},
-  { 301, 307, sizeof(::zjchain::block::protobuf::RefreshPoolHeightResponse)},
-  { 308, 314, sizeof(::zjchain::block::protobuf::GetAccountShardRequest)},
-  { 315, 322, sizeof(::zjchain::block::protobuf::GetAccountShardReponse)},
-  { 324, 330, sizeof(::zjchain::block::protobuf::CrossShardingTosMessage)},
-  { 331, 337, sizeof(::zjchain::block::protobuf::CrossShardingStatisticMessage)},
-  { 338, 344, sizeof(::zjchain::block::protobuf::ElectBlockMessage)},
-  { 345, 354, sizeof(::zjchain::block::protobuf::ShardToTxMessage)},
-  { 358, 367, sizeof(::zjchain::block::protobuf::StatisticTxMessage)},
-  { 371, 394, sizeof(::zjchain::block::protobuf::BlockMessage)},
+  { 31, 52, sizeof(::zjchain::block::protobuf::BlockTx)},
+  { 68, 89, sizeof(::zjchain::block::protobuf::Block)},
+  { 105, 113, sizeof(::zjchain::block::protobuf::ConsensusToTxsItem)},
+  { 116, 122, sizeof(::zjchain::block::protobuf::ConsensusToTxs)},
+  { 123, 133, sizeof(::zjchain::block::protobuf::GetTxBlockRequest)},
+  { 138, 144, sizeof(::zjchain::block::protobuf::GetTxBlockResponse)},
+  { 145, 153, sizeof(::zjchain::block::protobuf::AccountHeightRequest)},
+  { 156, 164, sizeof(::zjchain::block::protobuf::AccountHeightResponse)},
+  { 167, 175, sizeof(::zjchain::block::protobuf::AccountAttrRequest)},
+  { 178, 187, sizeof(::zjchain::block::protobuf::AccountAttrResponse)},
+  { 191, 201, sizeof(::zjchain::block::protobuf::UpdateVpnCountRequest)},
+  { 206, 213, sizeof(::zjchain::block::protobuf::VpnCountItem)},
+  { 215, 221, sizeof(::zjchain::block::protobuf::UpdateVpnCountResponse)},
+  { 222, 232, sizeof(::zjchain::block::protobuf::GetAccountInitInfoRequest)},
+  { 237, 246, sizeof(::zjchain::block::protobuf::GetAccountInitInfoResponse)},
+  { 250, 257, sizeof(::zjchain::block::protobuf::UpdateVpnActiveRequest)},
+  { 259, 267, sizeof(::zjchain::block::protobuf::AdRewardRequest)},
+  { 270, 278, sizeof(::zjchain::block::protobuf::ElectStatisticInfo)},
+  { 281, 289, sizeof(::zjchain::block::protobuf::StatisticInfo)},
+  { 292, 298, sizeof(::zjchain::block::protobuf::RefreshPoolHeightRequest)},
+  { 299, 305, sizeof(::zjchain::block::protobuf::RefreshPoolHeightResponse)},
+  { 306, 312, sizeof(::zjchain::block::protobuf::GetAccountShardRequest)},
+  { 313, 320, sizeof(::zjchain::block::protobuf::GetAccountShardReponse)},
+  { 322, 328, sizeof(::zjchain::block::protobuf::CrossShardingTosMessage)},
+  { 329, 335, sizeof(::zjchain::block::protobuf::CrossShardingStatisticMessage)},
+  { 336, 342, sizeof(::zjchain::block::protobuf::ElectBlockMessage)},
+  { 343, 352, sizeof(::zjchain::block::protobuf::ShardToTxMessage)},
+  { 356, 365, sizeof(::zjchain::block::protobuf::StatisticTxMessage)},
+  { 369, 392, sizeof(::zjchain::block::protobuf::BlockMessage)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -1244,7 +1242,7 @@ void AddDescriptorsImpl() {
       "\013\n\003key\030\001 \001(\014\022\020\n\010val_hash\030\002 \001(\014\022\023\n\010val_si"
       "ze\030\003 \001(\r:\0010\"8\n\014TransferItem\022\014\n\004from\030\001 \001("
       "\014\022\n\n\002to\030\002 \001(\014\022\016\n\006amount\030\003 \001(\004\"%\n\005TxLog\022\014"
-      "\n\004data\030\001 \001(\014\022\016\n\006topics\030\002 \003(\014\"\316\003\n\007BlockTx"
+      "\n\004data\030\001 \001(\014\022\016\n\006topics\030\002 \003(\014\"\267\003\n\007BlockTx"
       "\022\013\n\003gid\030\001 \001(\014\022\014\n\004from\030\002 \001(\014\022\n\n\002to\030\003 \001(\014\022"
       "\016\n\006amount\030\004 \001(\004\022\021\n\tgas_limit\030\005 \001(\004\022\020\n\010ga"
       "s_used\030\006 \001(\004\022\021\n\tgas_price\030\007 \001(\004\022\017\n\007balan"
@@ -1255,105 +1253,104 @@ void AddDescriptorsImpl() {
       "block.protobuf.TransferItem\022\033\n\023contract_"
       "prepayment\030\r \001(\004\022\025\n\rcontract_code\030\016 \001(\014\022"
       "\026\n\016contract_input\030\017 \001(\014\022-\n\006events\030\020 \003(\0132"
-      "\035.zjchain.block.protobuf.TxLog\022\025\n\rcontra"
-      "ct_from\030\021 \001(\014\"\222\003\n\005Block\022\022\n\nnetwork_id\030\001 "
-      "\001(\r\022\022\n\npool_index\030\002 \001(\r\022\017\n\007prehash\030\003 \001(\014"
-      "\022\014\n\004hash\030\004 \001(\014\022\017\n\007version\030\005 \001(\r\022\016\n\006heigh"
-      "t\030\006 \001(\004\022\032\n\022consistency_random\030\007 \001(\004\022\031\n\021e"
-      "lectblock_height\030\010 \001(\004\022\030\n\020timeblock_heig"
-      "ht\030\t \001(\004\0220\n\007tx_list\030\n \003(\0132\037.zjchain.bloc"
-      "k.protobuf.BlockTx\022\021\n\ttimestamp\030\013 \001(\004\022\026\n"
-      "\016bls_agg_sign_x\030\014 \001(\014\022\026\n\016bls_agg_sign_y\030"
-      "\r \001(\014\022\024\n\014leader_index\030\016 \001(\004\022#\n\033change_le"
-      "ader_invalid_hashs\030\017 \003(\014\022 \n\021is_commited_"
-      "block\030\020 \001(\010:\005false\"H\n\022ConsensusToTxsItem"
-      "\022\n\n\002to\030\001 \001(\014\022\017\n\007balance\030\002 \001(\004\022\025\n\rcontrac"
-      "t_from\030\003 \001(\014\"I\n\016ConsensusToTxs\0227\n\003tos\030\001 "
-      "\003(\0132*.zjchain.block.protobuf.ConsensusTo"
-      "TxsItem\"n\n\021GetTxBlockRequest\022\016\n\006tx_gid\030\001"
-      " \001(\014\022\022\n\nblock_hash\030\002 \001(\014\022\014\n\004from\030\003 \001(\010\022\016"
-      "\n\006height\030\004 \001(\004\022\027\n\017account_address\030\005 \001(\014\""
-      "#\n\022GetTxBlockResponse\022\r\n\005block\030\001 \001(\014\"J\n\024"
-      "AccountHeightRequest\022\024\n\014account_addr\030\001 \001"
-      "(\014\022\r\n\005index\030\002 \001(\003\022\r\n\005count\030\003 \001(\005\"L\n\025Acco"
-      "untHeightResponse\022\017\n\007heights\030\001 \003(\004\022\024\n\014ac"
-      "count_addr\030\002 \001(\014\022\014\n\004type\030\003 \001(\014\"G\n\022Accoun"
-      "tAttrRequest\022\017\n\007account\030\001 \001(\014\022\020\n\010attr_ke"
-      "y\030\002 \001(\014\022\016\n\006height\030\003 \001(\004\"W\n\023AccountAttrRe"
-      "sponse\022\017\n\007account\030\001 \001(\014\022\020\n\010attr_key\030\002 \001("
-      "\014\022\016\n\006height\030\003 \001(\004\022\r\n\005block\030\004 \001(\014\"h\n\025Upda"
-      "teVpnCountRequest\022\024\n\014account_hash\030\001 \001(\004\022"
-      "\n\n\002ip\030\002 \001(\014\022\016\n\006old_ip\030\003 \001(\014\022\013\n\003uid\030\004 \001(\014"
-      "\022\020\n\010just_set\030\005 \001(\010\")\n\014VpnCountItem\022\n\n\002ip"
-      "\030\001 \001(\014\022\r\n\005count\030\002 \001(\r\"Q\n\026UpdateVpnCountR"
-      "esponse\0227\n\tvpn_nodes\030\001 \003(\0132$.zjchain.blo"
-      "ck.protobuf.VpnCountItem\"e\n\031GetAccountIn"
-      "itInfoRequest\022\n\n\002id\030\001 \001(\014\022\r\n\005count\030\002 \001(\r"
-      "\022\016\n\006height\030\003 \001(\004\022\016\n\006net_id\030\004 \001(\004\022\r\n\005inde"
-      "x\030\005 \001(\004\"\177\n\032GetAccountInitInfoResponse\022\017\n"
-      "\007balance\030\001 \001(\004\0221\n\nblock_list\030\002 \003(\0132\035.zjc"
-      "hain.block.protobuf.Block\022\n\n\002id\030\003 \001(\014\022\021\n"
-      "\tmax_index\030\004 \001(\004\"0\n\026UpdateVpnActiveReque"
-      "st\022\n\n\002id\030\001 \001(\014\022\n\n\002ip\030\002 \001(\014\">\n\017AdRewardRe"
-      "quest\022\n\n\002id\030\001 \001(\014\022\022\n\nreward_key\030\002 \001(\014\022\013\n"
-      "\003gid\030\003 \001(\014\"V\n\022ElectStatisticInfo\022\024\n\014elec"
-      "t_height\030\001 \001(\004\022\025\n\rsucc_tx_count\030\002 \003(\r\022\023\n"
-      "\013lof_leaders\030\003 \003(\r\"\204\001\n\rStatisticInfo\022\030\n\020"
-      "timeblock_height\030\001 \001(\004\022\024\n\014all_tx_count\030\002"
-      " \001(\r\022C\n\017elect_statistic\030\003 \003(\0132*.zjchain."
-      "block.protobuf.ElectStatisticInfo\"+\n\030Ref"
-      "reshPoolHeightRequest\022\017\n\007heights\030\001 \003(\004\","
-      "\n\031RefreshPoolHeightResponse\022\017\n\007heights\030\001"
-      " \003(\004\"$\n\026GetAccountShardRequest\022\n\n\002id\030\001 \001"
-      "(\014\"6\n\026GetAccountShardReponse\022\n\n\002id\030\001 \001(\014"
-      "\022\020\n\010shard_id\030\002 \001(\r\"G\n\027CrossShardingTosMe"
-      "ssage\022,\n\005block\030\001 \001(\0132\035.zjchain.block.pro"
-      "tobuf.Block\"M\n\035CrossShardingStatisticMes"
-      "sage\022,\n\005block\030\001 \001(\0132\035.zjchain.block.prot"
-      "obuf.Block\"A\n\021ElectBlockMessage\022,\n\005block"
-      "\030\001 \001(\0132\035.zjchain.block.protobuf.Block\"\212\001"
-      "\n\020ShardToTxMessage\0225\n\006to_txs\030\001 \003(\0132%.zjc"
-      "hain.pools.protobuf.ShardToTxItem\022\022\n\nlea"
-      "der_idx\030\002 \001(\r\022\024\n\014elect_height\030\003 \001(\004\022\025\n\rl"
-      "eader_to_idx\030\004 \001(\005\"\221\001\n\022StatisticTxMessag"
-      "e\022:\n\tstatistic\030\001 \001(\0132\'.zjchain.pools.pro"
-      "tobuf.StatisticTxItem\022\022\n\nleader_idx\030\002 \001("
-      "\r\022\024\n\014elect_height\030\003 \001(\004\022\025\n\rleader_to_idx"
-      "\030\004 \001(\005\"\342\t\n\014BlockMessage\022<\n\tblock_req\030\001 \001"
-      "(\0132).zjchain.block.protobuf.GetTxBlockRe"
-      "quest\022=\n\tblock_res\030\002 \001(\0132*.zjchain.block"
-      ".protobuf.GetTxBlockResponse\022@\n\nheight_r"
-      "eq\030\003 \001(\0132,.zjchain.block.protobuf.Accoun"
-      "tHeightRequest\022A\n\nheight_res\030\004 \001(\0132-.zjc"
-      "hain.block.protobuf.AccountHeightRespons"
-      "e\022@\n\014acc_attr_req\030\005 \001(\0132*.zjchain.block."
-      "protobuf.AccountAttrRequest\022A\n\014acc_attr_"
-      "res\030\006 \001(\0132+.zjchain.block.protobuf.Accou"
-      "ntAttrResponse\022A\n\nup_vpn_req\030\007 \001(\0132-.zjc"
-      "hain.block.protobuf.UpdateVpnCountReques"
-      "t\022B\n\nup_vpn_res\030\010 \001(\0132..zjchain.block.pr"
-      "otobuf.UpdateVpnCountResponse\022K\n\020account"
-      "_init_req\030\t \001(\01321.zjchain.block.protobuf"
-      ".GetAccountInitInfoRequest\022L\n\020account_in"
-      "it_res\030\n \001(\01322.zjchain.block.protobuf.Ge"
-      "tAccountInitInfoResponse\022F\n\016vpn_active_r"
-      "eq\030\013 \001(\0132..zjchain.block.protobuf.Update"
-      "VpnActiveRequest\022>\n\rad_reward_req\030\014 \001(\0132"
-      "\'.zjchain.block.protobuf.AdRewardRequest"
-      "\022I\n\017ref_heights_req\030\r \001(\01320.zjchain.bloc"
-      "k.protobuf.RefreshPoolHeightRequest\022J\n\017r"
-      "ef_heights_res\030\016 \001(\01321.zjchain.block.pro"
-      "tobuf.RefreshPoolHeightResponse\022E\n\racc_s"
-      "hard_req\030\017 \001(\0132..zjchain.block.protobuf."
-      "GetAccountShardRequest\022E\n\racc_shard_res\030"
-      "\020 \001(\0132..zjchain.block.protobuf.GetAccoun"
-      "tShardReponse\022:\n\010shard_to\030\021 \001(\0132(.zjchai"
-      "n.block.protobuf.ShardToTxMessage\022@\n\014sta"
-      "tistic_tx\030\022 \001(\0132*.zjchain.block.protobuf"
-      ".StatisticTxMessage"
+      "\035.zjchain.block.protobuf.TxLog\"\222\003\n\005Block"
+      "\022\022\n\nnetwork_id\030\001 \001(\r\022\022\n\npool_index\030\002 \001(\r"
+      "\022\017\n\007prehash\030\003 \001(\014\022\014\n\004hash\030\004 \001(\014\022\017\n\007versi"
+      "on\030\005 \001(\r\022\016\n\006height\030\006 \001(\004\022\032\n\022consistency_"
+      "random\030\007 \001(\004\022\031\n\021electblock_height\030\010 \001(\004\022"
+      "\030\n\020timeblock_height\030\t \001(\004\0220\n\007tx_list\030\n \003"
+      "(\0132\037.zjchain.block.protobuf.BlockTx\022\021\n\tt"
+      "imestamp\030\013 \001(\004\022\026\n\016bls_agg_sign_x\030\014 \001(\014\022\026"
+      "\n\016bls_agg_sign_y\030\r \001(\014\022\024\n\014leader_index\030\016"
+      " \001(\004\022#\n\033change_leader_invalid_hashs\030\017 \003("
+      "\014\022 \n\021is_commited_block\030\020 \001(\010:\005false\"H\n\022C"
+      "onsensusToTxsItem\022\n\n\002to\030\001 \001(\014\022\017\n\007balance"
+      "\030\002 \001(\004\022\025\n\rcontract_from\030\003 \001(\014\"I\n\016Consens"
+      "usToTxs\0227\n\003tos\030\001 \003(\0132*.zjchain.block.pro"
+      "tobuf.ConsensusToTxsItem\"n\n\021GetTxBlockRe"
+      "quest\022\016\n\006tx_gid\030\001 \001(\014\022\022\n\nblock_hash\030\002 \001("
+      "\014\022\014\n\004from\030\003 \001(\010\022\016\n\006height\030\004 \001(\004\022\027\n\017accou"
+      "nt_address\030\005 \001(\014\"#\n\022GetTxBlockResponse\022\r"
+      "\n\005block\030\001 \001(\014\"J\n\024AccountHeightRequest\022\024\n"
+      "\014account_addr\030\001 \001(\014\022\r\n\005index\030\002 \001(\003\022\r\n\005co"
+      "unt\030\003 \001(\005\"L\n\025AccountHeightResponse\022\017\n\007he"
+      "ights\030\001 \003(\004\022\024\n\014account_addr\030\002 \001(\014\022\014\n\004typ"
+      "e\030\003 \001(\014\"G\n\022AccountAttrRequest\022\017\n\007account"
+      "\030\001 \001(\014\022\020\n\010attr_key\030\002 \001(\014\022\016\n\006height\030\003 \001(\004"
+      "\"W\n\023AccountAttrResponse\022\017\n\007account\030\001 \001(\014"
+      "\022\020\n\010attr_key\030\002 \001(\014\022\016\n\006height\030\003 \001(\004\022\r\n\005bl"
+      "ock\030\004 \001(\014\"h\n\025UpdateVpnCountRequest\022\024\n\014ac"
+      "count_hash\030\001 \001(\004\022\n\n\002ip\030\002 \001(\014\022\016\n\006old_ip\030\003"
+      " \001(\014\022\013\n\003uid\030\004 \001(\014\022\020\n\010just_set\030\005 \001(\010\")\n\014V"
+      "pnCountItem\022\n\n\002ip\030\001 \001(\014\022\r\n\005count\030\002 \001(\r\"Q"
+      "\n\026UpdateVpnCountResponse\0227\n\tvpn_nodes\030\001 "
+      "\003(\0132$.zjchain.block.protobuf.VpnCountIte"
+      "m\"e\n\031GetAccountInitInfoRequest\022\n\n\002id\030\001 \001"
+      "(\014\022\r\n\005count\030\002 \001(\r\022\016\n\006height\030\003 \001(\004\022\016\n\006net"
+      "_id\030\004 \001(\004\022\r\n\005index\030\005 \001(\004\"\177\n\032GetAccountIn"
+      "itInfoResponse\022\017\n\007balance\030\001 \001(\004\0221\n\nblock"
+      "_list\030\002 \003(\0132\035.zjchain.block.protobuf.Blo"
+      "ck\022\n\n\002id\030\003 \001(\014\022\021\n\tmax_index\030\004 \001(\004\"0\n\026Upd"
+      "ateVpnActiveRequest\022\n\n\002id\030\001 \001(\014\022\n\n\002ip\030\002 "
+      "\001(\014\">\n\017AdRewardRequest\022\n\n\002id\030\001 \001(\014\022\022\n\nre"
+      "ward_key\030\002 \001(\014\022\013\n\003gid\030\003 \001(\014\"V\n\022ElectStat"
+      "isticInfo\022\024\n\014elect_height\030\001 \001(\004\022\025\n\rsucc_"
+      "tx_count\030\002 \003(\r\022\023\n\013lof_leaders\030\003 \003(\r\"\204\001\n\r"
+      "StatisticInfo\022\030\n\020timeblock_height\030\001 \001(\004\022"
+      "\024\n\014all_tx_count\030\002 \001(\r\022C\n\017elect_statistic"
+      "\030\003 \003(\0132*.zjchain.block.protobuf.ElectSta"
+      "tisticInfo\"+\n\030RefreshPoolHeightRequest\022\017"
+      "\n\007heights\030\001 \003(\004\",\n\031RefreshPoolHeightResp"
+      "onse\022\017\n\007heights\030\001 \003(\004\"$\n\026GetAccountShard"
+      "Request\022\n\n\002id\030\001 \001(\014\"6\n\026GetAccountShardRe"
+      "ponse\022\n\n\002id\030\001 \001(\014\022\020\n\010shard_id\030\002 \001(\r\"G\n\027C"
+      "rossShardingTosMessage\022,\n\005block\030\001 \001(\0132\035."
+      "zjchain.block.protobuf.Block\"M\n\035CrossSha"
+      "rdingStatisticMessage\022,\n\005block\030\001 \001(\0132\035.z"
+      "jchain.block.protobuf.Block\"A\n\021ElectBloc"
+      "kMessage\022,\n\005block\030\001 \001(\0132\035.zjchain.block."
+      "protobuf.Block\"\212\001\n\020ShardToTxMessage\0225\n\006t"
+      "o_txs\030\001 \003(\0132%.zjchain.pools.protobuf.Sha"
+      "rdToTxItem\022\022\n\nleader_idx\030\002 \001(\r\022\024\n\014elect_"
+      "height\030\003 \001(\004\022\025\n\rleader_to_idx\030\004 \001(\005\"\221\001\n\022"
+      "StatisticTxMessage\022:\n\tstatistic\030\001 \001(\0132\'."
+      "zjchain.pools.protobuf.StatisticTxItem\022\022"
+      "\n\nleader_idx\030\002 \001(\r\022\024\n\014elect_height\030\003 \001(\004"
+      "\022\025\n\rleader_to_idx\030\004 \001(\005\"\342\t\n\014BlockMessage"
+      "\022<\n\tblock_req\030\001 \001(\0132).zjchain.block.prot"
+      "obuf.GetTxBlockRequest\022=\n\tblock_res\030\002 \001("
+      "\0132*.zjchain.block.protobuf.GetTxBlockRes"
+      "ponse\022@\n\nheight_req\030\003 \001(\0132,.zjchain.bloc"
+      "k.protobuf.AccountHeightRequest\022A\n\nheigh"
+      "t_res\030\004 \001(\0132-.zjchain.block.protobuf.Acc"
+      "ountHeightResponse\022@\n\014acc_attr_req\030\005 \001(\013"
+      "2*.zjchain.block.protobuf.AccountAttrReq"
+      "uest\022A\n\014acc_attr_res\030\006 \001(\0132+.zjchain.blo"
+      "ck.protobuf.AccountAttrResponse\022A\n\nup_vp"
+      "n_req\030\007 \001(\0132-.zjchain.block.protobuf.Upd"
+      "ateVpnCountRequest\022B\n\nup_vpn_res\030\010 \001(\0132."
+      ".zjchain.block.protobuf.UpdateVpnCountRe"
+      "sponse\022K\n\020account_init_req\030\t \001(\01321.zjcha"
+      "in.block.protobuf.GetAccountInitInfoRequ"
+      "est\022L\n\020account_init_res\030\n \001(\01322.zjchain."
+      "block.protobuf.GetAccountInitInfoRespons"
+      "e\022F\n\016vpn_active_req\030\013 \001(\0132..zjchain.bloc"
+      "k.protobuf.UpdateVpnActiveRequest\022>\n\rad_"
+      "reward_req\030\014 \001(\0132\'.zjchain.block.protobu"
+      "f.AdRewardRequest\022I\n\017ref_heights_req\030\r \001"
+      "(\01320.zjchain.block.protobuf.RefreshPoolH"
+      "eightRequest\022J\n\017ref_heights_res\030\016 \001(\01321."
+      "zjchain.block.protobuf.RefreshPoolHeight"
+      "Response\022E\n\racc_shard_req\030\017 \001(\0132..zjchai"
+      "n.block.protobuf.GetAccountShardRequest\022"
+      "E\n\racc_shard_res\030\020 \001(\0132..zjchain.block.p"
+      "rotobuf.GetAccountShardReponse\022:\n\010shard_"
+      "to\030\021 \001(\0132(.zjchain.block.protobuf.ShardT"
+      "oTxMessage\022@\n\014statistic_tx\030\022 \001(\0132*.zjcha"
+      "in.block.protobuf.StatisticTxMessage"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 4459);
+      descriptor, 4436);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "protos/block.proto", &protobuf_RegisterTypes);
   ::protobuf_protos_2fpools_2eproto::AddDescriptors();
@@ -2336,7 +2333,6 @@ const int BlockTx::kContractPrepaymentFieldNumber;
 const int BlockTx::kContractCodeFieldNumber;
 const int BlockTx::kContractInputFieldNumber;
 const int BlockTx::kEventsFieldNumber;
-const int BlockTx::kContractFromFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 BlockTx::BlockTx()
@@ -2374,10 +2370,6 @@ BlockTx::BlockTx(const BlockTx& from)
   if (from.has_contract_input()) {
     contract_input_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.contract_input_);
   }
-  contract_from_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (from.has_contract_from()) {
-    contract_from_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.contract_from_);
-  }
   ::memcpy(&amount_, &from.amount_,
     static_cast<size_t>(reinterpret_cast<char*>(&contract_prepayment_) -
     reinterpret_cast<char*>(&amount_)) + sizeof(contract_prepayment_));
@@ -2390,7 +2382,6 @@ void BlockTx::SharedCtor() {
   to_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   contract_code_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   contract_input_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  contract_from_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   ::memset(&amount_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&contract_prepayment_) -
       reinterpret_cast<char*>(&amount_)) + sizeof(contract_prepayment_));
@@ -2407,7 +2398,6 @@ void BlockTx::SharedDtor() {
   to_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   contract_code_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   contract_input_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  contract_from_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 void BlockTx::SetCachedSize(int size) const {
@@ -2434,7 +2424,7 @@ void BlockTx::Clear() {
   contract_txs_.Clear();
   events_.Clear();
   cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 63u) {
+  if (cached_has_bits & 31u) {
     if (cached_has_bits & 0x00000001u) {
       gid_.ClearNonDefaultToEmptyNoArena();
     }
@@ -2450,19 +2440,16 @@ void BlockTx::Clear() {
     if (cached_has_bits & 0x00000010u) {
       contract_input_.ClearNonDefaultToEmptyNoArena();
     }
-    if (cached_has_bits & 0x00000020u) {
-      contract_from_.ClearNonDefaultToEmptyNoArena();
-    }
   }
-  if (cached_has_bits & 192u) {
+  if (cached_has_bits & 224u) {
     ::memset(&amount_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&gas_limit_) -
-        reinterpret_cast<char*>(&amount_)) + sizeof(gas_limit_));
+        reinterpret_cast<char*>(&gas_used_) -
+        reinterpret_cast<char*>(&amount_)) + sizeof(gas_used_));
   }
-  if (cached_has_bits & 16128u) {
-    ::memset(&gas_used_, 0, static_cast<size_t>(
+  if (cached_has_bits & 7936u) {
+    ::memset(&gas_price_, 0, static_cast<size_t>(
         reinterpret_cast<char*>(&contract_prepayment_) -
-        reinterpret_cast<char*>(&gas_used_)) + sizeof(contract_prepayment_));
+        reinterpret_cast<char*>(&gas_price_)) + sizeof(contract_prepayment_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -2692,18 +2679,6 @@ bool BlockTx::MergePartialFromCodedStream(
         break;
       }
 
-      // optional bytes contract_from = 17;
-      case 17: {
-        if (static_cast< ::google::protobuf::uint8>(tag) ==
-            static_cast< ::google::protobuf::uint8>(138u /* 138 & 0xFF */)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->mutable_contract_from()));
-        } else {
-          goto handle_unusual;
-        }
-        break;
-      }
-
       default: {
       handle_unusual:
         if (tag == 0) {
@@ -2750,38 +2725,38 @@ void BlockTx::SerializeWithCachedSizes(
   }
 
   // optional uint64 amount = 4;
-  if (cached_has_bits & 0x00000040u) {
+  if (cached_has_bits & 0x00000020u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(4, this->amount(), output);
   }
 
   // optional uint64 gas_limit = 5;
-  if (cached_has_bits & 0x00000080u) {
+  if (cached_has_bits & 0x00000040u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(5, this->gas_limit(), output);
   }
 
   // optional uint64 gas_used = 6;
-  if (cached_has_bits & 0x00000100u) {
+  if (cached_has_bits & 0x00000080u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(6, this->gas_used(), output);
   }
 
   // optional uint64 gas_price = 7;
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000100u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(7, this->gas_price(), output);
   }
 
   // optional uint64 balance = 8;
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000200u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(8, this->balance(), output);
   }
 
   // optional .zjchain.pools.protobuf.StepType step = 9;
-  if (cached_has_bits & 0x00000800u) {
+  if (cached_has_bits & 0x00000400u) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
       9, this->step(), output);
   }
 
   // optional uint32 status = 10;
-  if (cached_has_bits & 0x00001000u) {
+  if (cached_has_bits & 0x00000800u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(10, this->status(), output);
   }
 
@@ -2804,7 +2779,7 @@ void BlockTx::SerializeWithCachedSizes(
   }
 
   // optional uint64 contract_prepayment = 13;
-  if (cached_has_bits & 0x00002000u) {
+  if (cached_has_bits & 0x00001000u) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(13, this->contract_prepayment(), output);
   }
 
@@ -2827,12 +2802,6 @@ void BlockTx::SerializeWithCachedSizes(
       16,
       this->events(static_cast<int>(i)),
       output);
-  }
-
-  // optional bytes contract_from = 17;
-  if (cached_has_bits & 0x00000020u) {
-    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
-      17, this->contract_from(), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2872,38 +2841,38 @@ void BlockTx::SerializeWithCachedSizes(
   }
 
   // optional uint64 amount = 4;
-  if (cached_has_bits & 0x00000040u) {
+  if (cached_has_bits & 0x00000020u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(4, this->amount(), target);
   }
 
   // optional uint64 gas_limit = 5;
-  if (cached_has_bits & 0x00000080u) {
+  if (cached_has_bits & 0x00000040u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(5, this->gas_limit(), target);
   }
 
   // optional uint64 gas_used = 6;
-  if (cached_has_bits & 0x00000100u) {
+  if (cached_has_bits & 0x00000080u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(6, this->gas_used(), target);
   }
 
   // optional uint64 gas_price = 7;
-  if (cached_has_bits & 0x00000200u) {
+  if (cached_has_bits & 0x00000100u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(7, this->gas_price(), target);
   }
 
   // optional uint64 balance = 8;
-  if (cached_has_bits & 0x00000400u) {
+  if (cached_has_bits & 0x00000200u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(8, this->balance(), target);
   }
 
   // optional .zjchain.pools.protobuf.StepType step = 9;
-  if (cached_has_bits & 0x00000800u) {
+  if (cached_has_bits & 0x00000400u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       9, this->step(), target);
   }
 
   // optional uint32 status = 10;
-  if (cached_has_bits & 0x00001000u) {
+  if (cached_has_bits & 0x00000800u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(10, this->status(), target);
   }
 
@@ -2924,7 +2893,7 @@ void BlockTx::SerializeWithCachedSizes(
   }
 
   // optional uint64 contract_prepayment = 13;
-  if (cached_has_bits & 0x00002000u) {
+  if (cached_has_bits & 0x00001000u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(13, this->contract_prepayment(), target);
   }
 
@@ -2948,13 +2917,6 @@ void BlockTx::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageToArray(
         16, this->events(static_cast<int>(i)), deterministic, target);
-  }
-
-  // optional bytes contract_from = 17;
-  if (cached_has_bits & 0x00000020u) {
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        17, this->contract_from(), target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -3043,13 +3005,6 @@ size_t BlockTx::ByteSizeLong() const {
           this->contract_input());
     }
 
-    // optional bytes contract_from = 17;
-    if (has_contract_from()) {
-      total_size += 2 +
-        ::google::protobuf::internal::WireFormatLite::BytesSize(
-          this->contract_from());
-    }
-
     // optional uint64 amount = 4;
     if (has_amount()) {
       total_size += 1 +
@@ -3064,8 +3019,6 @@ size_t BlockTx::ByteSizeLong() const {
           this->gas_limit());
     }
 
-  }
-  if (_has_bits_[8 / 32] & 16128u) {
     // optional uint64 gas_used = 6;
     if (has_gas_used()) {
       total_size += 1 +
@@ -3073,6 +3026,8 @@ size_t BlockTx::ByteSizeLong() const {
           this->gas_used());
     }
 
+  }
+  if (_has_bits_[8 / 32] & 7936u) {
     // optional uint64 gas_price = 7;
     if (has_gas_price()) {
       total_size += 1 +
@@ -3161,34 +3116,30 @@ void BlockTx::MergeFrom(const BlockTx& from) {
       contract_input_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.contract_input_);
     }
     if (cached_has_bits & 0x00000020u) {
-      set_has_contract_from();
-      contract_from_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.contract_from_);
-    }
-    if (cached_has_bits & 0x00000040u) {
       amount_ = from.amount_;
     }
-    if (cached_has_bits & 0x00000080u) {
+    if (cached_has_bits & 0x00000040u) {
       gas_limit_ = from.gas_limit_;
+    }
+    if (cached_has_bits & 0x00000080u) {
+      gas_used_ = from.gas_used_;
     }
     _has_bits_[0] |= cached_has_bits;
   }
-  if (cached_has_bits & 16128u) {
+  if (cached_has_bits & 7936u) {
     if (cached_has_bits & 0x00000100u) {
-      gas_used_ = from.gas_used_;
-    }
-    if (cached_has_bits & 0x00000200u) {
       gas_price_ = from.gas_price_;
     }
-    if (cached_has_bits & 0x00000400u) {
+    if (cached_has_bits & 0x00000200u) {
       balance_ = from.balance_;
     }
-    if (cached_has_bits & 0x00000800u) {
+    if (cached_has_bits & 0x00000400u) {
       step_ = from.step_;
     }
-    if (cached_has_bits & 0x00001000u) {
+    if (cached_has_bits & 0x00000800u) {
       status_ = from.status_;
     }
-    if (cached_has_bits & 0x00002000u) {
+    if (cached_has_bits & 0x00001000u) {
       contract_prepayment_ = from.contract_prepayment_;
     }
     _has_bits_[0] |= cached_has_bits;
@@ -3231,8 +3182,6 @@ void BlockTx::InternalSwap(BlockTx* other) {
   contract_code_.Swap(&other->contract_code_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   contract_input_.Swap(&other->contract_input_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
-    GetArenaNoVirtual());
-  contract_from_.Swap(&other->contract_from_, &::google::protobuf::internal::GetEmptyStringAlreadyInited(),
     GetArenaNoVirtual());
   swap(amount_, other->amount_);
   swap(gas_limit_, other->gas_limit_);
