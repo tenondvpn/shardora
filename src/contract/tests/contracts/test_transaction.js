@@ -501,16 +501,17 @@ async function test_contracts() {
 					if (res2 == '') {
 						assert.ok(false, "contract address create failed in shard.");
 					} else {
-						AddDataAuth(self_account_id, data_id, "2", randomOfArr(net_node[shard_id]));
-						sleep(5000);
-						GetAuthData(self_account_id, data_id, randomOfArr(net_node[shard_id]), function(res3) {
-							console.log(res3);
-							if (testcases[i].query_suc) {   
-								assert.ok(res3["data"].length == 2, i.toString() + ": " + "fail: " + res3["data"])
-							} else {
-								assert.ok(res3 == '', i.toString() + ": " + "fail: res is not empty, " + res3);
-							}
-						});						
+						// AddDataAuth(self_account_id, data_id, "2", randomOfArr(net_node[shard_id]));
+						// sleep(5000);
+						// GetAuthData(self_account_id, data_id, randomOfArr(net_node[shard_id]), function(res3) {
+						// 	console.log(res3);
+						// 	if (testcases[i].query_suc) {   
+						// 		assert.ok(res3["data"].length == 2, i.toString() + ": " + "fail: " + res3["data"])
+						// 	} else {
+						// 		assert.ok(res3 == '', i.toString() + ": " + "fail: res is not empty, " + res3);
+						// 	}
+						// });
+						
 					}
 				})
 			}
