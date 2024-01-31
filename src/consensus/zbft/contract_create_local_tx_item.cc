@@ -102,7 +102,7 @@ int ContractCreateLocalTxItem::HandleTx(
 	if (from_prepayment > gas_used * block_tx.gas_price()) {
 		from_prepayment -= gas_used * block_tx.gas_price();
 		gas_used = 0;
-		for (uint32_t i = 0; i < block_tx.storages_size(); i++) {
+		for (int i = 0; i < block_tx.storages_size(); i++) {
 			gas_used += (block_tx.storages(i).key().size() + msg_ptr->header.tx_proto().value().size()) * consensus::kKeyValueStorageEachBytes;
 		}
 
@@ -157,7 +157,7 @@ int ContractCreateLocalTxItem::HandleTx(
                 break;
             }
 
-            if (from_prepayment < int64_t(gas_used * block_tx.gas_price())) {
+            if (from_prepayment < gas_used * block_tx.gas_price()) {
                 block_tx.set_status(consensus::kConsensusAccountBalanceError);
                 ZJC_ERROR("balance error: %llu, %llu", from_prepayment, gas_more * block_tx.gas_price());
                 break;
