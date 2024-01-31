@@ -182,7 +182,6 @@ int ContractCreateLocalTxItem::HandleTx(
             // just dec caller_balance_add
             int64_t dec_amount = static_cast<int64_t>(block_tx.amount()) -
                 caller_balance_add +
-                static_cast<int64_t>(block_tx.contract_prepayment()) +
                 static_cast<int64_t>(gas_used * block_tx.gas_price());
             if ((int64_t)from_prepayment < dec_amount) {
                 block_tx.set_status(consensus::kConsensusAccountBalanceError);
