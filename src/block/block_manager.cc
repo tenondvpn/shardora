@@ -752,7 +752,7 @@ void BlockManager::RootHandleNormalToTx(
         }
 
         // for ContractCreate tx
-		if (tos_item.library_bytes() != "") {
+		if (tos_item.has_library_bytes()) {
 			tx->set_contract_code(tos_item.library_bytes());
 			tx->set_contract_from(tos_item.contract_from());
 			tx->set_contract_prepayment(tos_item.prepayment());	
@@ -770,7 +770,11 @@ void BlockManager::RootHandleNormalToTx(
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
 		
-		ZJC_DEBUG("====3.0 gid: %s, contract_code: %s, prepayment: %d", common::Encode::HexEncode(gid).c_str(), tos_item.library_bytes().c_str(), tos_item.prepayment());
+		ZJC_DEBUG("====3.0 gid: %s, contract_code: %s, prepayment: %d, contract_from: %s",
+			common::Encode::HexEncode(gid).c_str(),
+			tos_item.library_bytes().c_str(),
+			tos_item.prepayment(),
+			common::Encode::HexEncode(tos_item.contract_from()).c_str());
 		
         auto pool_index = common::Hash::Hash32(tos_item.des()) % common::kImmutablePoolSize;
         msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);

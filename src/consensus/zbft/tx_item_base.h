@@ -68,7 +68,11 @@ protected:
             }
         }
 
-		ZJC_DEBUG("====3.1 gid: %s, contract_code: %d, amount: %d", common::Encode::HexEncode(tx_info.gid()).c_str(), tx_info.has_contract_code(), tx_info.amount());
+		ZJC_DEBUG("====3.1 gid: %s, contract_code: %d, amount: %d, contract_from: %s",
+			common::Encode::HexEncode(tx_info.gid()).c_str(),
+			tx_info.has_contract_code(), tx_info.amount(),
+			common::Encode::HexEncode(tx_info.contract_from()).c_str());
+		
         if (tx_info.has_contract_code()) {
             block_tx->set_contract_code(tx_info.contract_code());
         }
