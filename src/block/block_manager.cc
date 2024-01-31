@@ -1007,24 +1007,18 @@ void BlockManager::HandleLocalNormalToTx(
 
 		auto to_msg = iter->second.tos(0); 
         std::string str_for_hash;
-        str_for_hash.reserve(sizeof(to_msg.des()) + \
-			sizeof(to_msg.pool_index()) + \
-			sizeof(to_msg.amount()) + \
-			sizeof(to_msg.library_bytes()) + \
-			sizeof(to_msg.contract_from()));
-
 		str_for_hash.append(to_msg.des());
 		uint32_t pool_idx = to_msg.pool_index();
-		str_for_hash.append((char*)&pool_idx, sizeof(pool_idx));
+		str_for_hash.append(reinterpret_cast<char*>(&pool_idx), sizeof(pool_idx));
 		uint64_t amount = to_msg.amount();
-		str_for_hash.append((char*)&amount, sizeof(amount));
+		str_for_hash.append(reinterpret_cast<char*>(&amount), sizeof(amount));
 		std::string contract_code = to_msg.library_bytes();
-		str_for_hash.append((char*)&contract_code, sizeof(contract_code));
+		str_for_hash.append(contract_code);
 		std::string contract_from = to_msg.contract_from();
-		str_for_hash.append((char*)&contract_from, sizeof(contract_from));
-
-		auto val = iter->second.SerializeAsString();
+		str_for_hash.append(contract_from);
         auto cc_hash = common::Hash::keccak256(str_for_hash);
+		
+		auto val = iter->second.SerializeAsString();
         prefix_db_->SaveTemporaryKv(cc_hash, val);
         // 与 consensuslocaltos 不同，每个交易只有一个 contractcreate，不必持久化
         auto msg_ptr = std::make_shared<transport::TransportMessage>();
