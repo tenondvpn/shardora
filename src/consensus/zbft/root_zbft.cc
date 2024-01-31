@@ -58,6 +58,7 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
         iter->second->TxToBlockTx(src_tx, db_batch_, &tx);
         // create address must to and have transfer amount
         // spot3 合约账户创建 amount 不必须
+		ZJC_DEBUG("====3.2 gid: %s, contract_code: %d, amount: %d", common::Encode::HexEncode(tx.gid()).c_str(), tx.has_contract_code(), tx.amount());
         if (tx.step() == pools::protobuf::kRootCreateAddress) {
             if (!tx.has_contract_code() && tx.amount() <= 0) {
                 ZJC_DEBUG("tx invalid step: %d, amount: %lu, src: %d, %lu",

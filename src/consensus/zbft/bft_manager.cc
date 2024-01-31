@@ -693,14 +693,15 @@ ZbftPtr BftManager::StartBft(
 	
 
     auto& gid = bft_gids_[txs_ptr->thread_index];
+	
+    uint64_t* tmp_gid = (uint64_t*)gid.data();
+    tmp_gid[0] = bft_gids_index_[txs_ptr->thread_index]++;
+    bft_ptr->set_gid(gid);
 
 	for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); iter++) {
 		ZJC_DEBUG("====1.2, gid: %s new gid: %s", common::Encode::HexEncode(iter->second->gid).c_str(), common::Encode::HexEncode(gid).c_str());
 	}
 	
-    uint64_t* tmp_gid = (uint64_t*)gid.data();
-    tmp_gid[0] = bft_gids_index_[txs_ptr->thread_index]++;
-    bft_ptr->set_gid(gid);
     bft_ptr->set_network_id(common::GlobalInfo::Instance()->network_id());
     bft_ptr->set_member_count(elect_item.member_size);
     // LeaderPrepare 中会调用到 DoTransaction，本地执行块内交易

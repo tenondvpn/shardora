@@ -61,12 +61,14 @@ protected:
         block_tx->set_amount(tx_info.amount());
         if (tx_info.step() == pools::protobuf::kContractCreate ||
             tx_info.step() == pools::protobuf::kContractGasPrepayment ||
-            tx_info.step() == pools::protobuf::kConsensusLocalContractCreate) {
+            tx_info.step() == pools::protobuf::kConsensusLocalContractCreate ||
+			tx_info.step() == pools::protobuf::kRootCreateAddress) {
             if (tx_info.has_contract_prepayment()) {
                 block_tx->set_contract_prepayment(tx_info.contract_prepayment());
             }
         }
 
+		ZJC_DEBUG("====3.1 gid: %s, contract_code: %d, amount: %d", common::Encode::HexEncode(tx_info.gid()).c_str(), tx_info.has_contract_code(), tx_info.amount());
         if (tx_info.has_contract_code()) {
             block_tx->set_contract_code(tx_info.contract_code());
         }
