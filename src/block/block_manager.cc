@@ -1037,16 +1037,15 @@ void BlockManager::HandleLocalNormalToTx(
         tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kConsensusLocalContractCreate);
         auto gid = common::Hash::keccak256(cc_hash + heights_hash);
-        tx->set_gas_limit(10000000);
-        tx->set_gas_price(common::kBuildinTransactionGasPrice);
+        tx->set_gas_limit(100);
+        tx->set_gas_price(1);
         tx->set_gid(gid);
 
-		// 具体信息都在 kv 中
-		tx->set_amount(0);
-        tx->set_contract_code("");
-        tx->set_contract_from("");
-        tx->set_contract_input("");
-        tx->set_contract_prepayment(0);
+		// 真正的 des 存在 kv 中
+		tx->set_amount(to_msg.amount());
+        tx->set_contract_code(to_msg.library_bytes());
+        tx->set_contract_from(to_msg.contract_from());
+        tx->set_contract_prepayment(to_msg.prepayment());
         
         msg_ptr->thread_idx = thread_idx;
         pools_mgr_->HandleMessage(msg_ptr);        

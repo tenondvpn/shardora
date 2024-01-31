@@ -53,13 +53,18 @@ int ContractCreateLocalTxItem::HandleTx(
 	block_tx.set_contract_prepayment(cc_item.prepayment());
 	block_tx.set_from(cc_item.contract_from());
 	block_tx.set_contract_code(cc_item.library_bytes());
-	ZJC_DEBUG("==== 7.1 create contract info, contract_code: %s, from: %s",
-		common::Encode::HexEncode(block_tx.contract_code()).c_str(),
-		common::Encode::HexEncode(block_tx.from()).c_str());
+	ZJC_DEBUG("==== 7.1 create contract info, contract_code: %s, from: %s, gas_limit: %lu, gas_price: %lu, prepayment: %lu, to: %s",
+		block_tx.contract_code().c_str(),
+		common::Encode::HexEncode(block_tx.from()).c_str(),
+		block_tx.gas_limit(),
+		block_tx.gas_price(),
+		block_tx.contract_prepayment(),
+		common::Encode::HexEncode(block_tx.to()).c_str());
 	
 	// TODO 从 kv 中读取 cc tx info
 	auto contract_info = account_mgr_->GetAccountInfo(thread_idx, block_tx.to());
 	if (contract_info != nullptr) {
+		ZJC_ERROR("contract addr already exsit, to: %s", common::Encode::HexEncode(block_tx.to()).c_str());
 		block_tx.set_status(kConsensusAccountExists);
 		return kConsensusSuccess;
 	}
@@ -68,6 +73,12 @@ int ContractCreateLocalTxItem::HandleTx(
 	uint64_t from_prepayment = block_tx.contract_prepayment();
 
 	if (block_tx.gas_price() * block_tx.gas_limit() + block_tx.amount() > from_prepayment) {
+		ZJC_ERROR("out of prepayment, to: %s, prepayment: %lu, gas_price: %lu, gas_limit: %lu, amount: %lu",
+			common::Encode::HexEncode(block_tx.to()).c_str(),
+			from_prepayment,
+			block_tx.gas_price(),
+			block_tx.gas_limit(),
+			block_tx.amount());
 		block_tx.set_status(kConsensusOutOfPrepayment);
 		return kConsensusSuccess;
 	}
