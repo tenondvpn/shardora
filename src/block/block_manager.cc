@@ -1048,11 +1048,12 @@ void BlockManager::HandleLocalNormalToTx(
         tx->set_contract_prepayment(to_msg.prepayment());
         
         msg_ptr->thread_idx = thread_idx;
-		ZJC_DEBUG("==== 8 create contract local tx add to pool, to: %s, gid: %s, cc_hash: %s, height_hash: %s",
+		ZJC_DEBUG("==== 8 create contract local tx add to pool, to: %s, gid: %s, cc_hash: %s, height_hash: %s, pool_idx: %lu, amount: %lu",
 			common::Encode::HexEncode(to_msg.des()).c_str(),
 			common::Encode::HexEncode(gid).c_str(),
 			common::Encode::HexEncode(cc_hash).c_str(),
-			common::Encode::HexEncode(heights_hash).c_str());
+			common::Encode::HexEncode(heights_hash).c_str(),
+			pool_idx, amount);
         pools_mgr_->HandleMessage(msg_ptr);        
     }    
 }
