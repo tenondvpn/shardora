@@ -725,7 +725,7 @@ int ToTxsPools::CreateToTxWithHeights(
             // }
 
 			ZJC_DEBUG("==== 0.2 library bytes: %s, to: %s", common::Encode::HexEncode(iter->second.library_bytes).c_str(), common::Encode::HexEncode(to).c_str());
-            if (memcmp(common::Encode::HexEncode(iter->second.library_bytes).c_str(),
+            if (memcmp(iter->second.library_bytes.c_str(),
 					protos::kContractBytesStartCode.c_str(),
 					protos::kContractBytesStartCode.size()) == 0) {
 				ZJC_DEBUG("==== 0.3 library bytes: %s", common::Encode::HexEncode(iter->second.library_bytes).c_str());
