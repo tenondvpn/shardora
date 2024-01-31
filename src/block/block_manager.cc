@@ -875,7 +875,7 @@ void BlockManager::HandleLocalNormalToTx(
         }
 
         // 转账类型交易根据 to 地址聚合到一个 map 中
-        if (to_tx.library_bytes() == "") {
+        if (!to_tx.has_library_bytes()) {
             auto iter = addr_amount_map.find(to_tx.des());
             if (iter == addr_amount_map.end()) {
                 // addr_amount_map[to_txs.tos(i).des()] = std::make_pair(
@@ -893,6 +893,9 @@ void BlockManager::HandleLocalNormalToTx(
 				to_tx.library_bytes(),
 				to_tx.contract_from(),
 				to_tx.prepayment());
+			ZJC_DEBUG("====7.2 contract_code: %s, from: %s",
+				common::Encode::HexEncode(to_tx.library_bytes()).c_str(),
+				common::Encode::HexEncode(to_tx.contract_from()).c_str());
             contract_create_tx_infos.push_back(info); // TODO prepayment 也需要传输过来
         }
     }
@@ -982,10 +985,12 @@ void BlockManager::HandleLocalNormalToTx(
 		to_item->set_contract_from(contract_create_tx->contract_from);
 		to_item->set_prepayment(contract_create_tx->contract_prepayment);
 		
-		ZJC_DEBUG("success add local contract create to %s, %lu, contract_from %s",
+		ZJC_DEBUG("success add local contract create to %s, %lu, contract_from %s, contract_code: %s, prepayment: %lu",
 			common::Encode::HexEncode(contract_create_tx->des).c_str(),
 			contract_create_tx->amount,
-			common::Encode::HexEncode(contract_create_tx->contract_from).c_str());
+			common::Encode::HexEncode(contract_create_tx->contract_from).c_str(),
+			common::Encode::HexEncode(contract_create_tx->library_bytes).c_str(),
+			contract_create_tx->contract_prepayment);
 	}
 	
     for (auto iter = to_cc_tx_map.begin(); iter != to_cc_tx_map.end(); iter++) {

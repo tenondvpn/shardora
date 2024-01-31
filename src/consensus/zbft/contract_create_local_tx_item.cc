@@ -52,6 +52,8 @@ int ContractCreateLocalTxItem::HandleTx(
 	block_tx.set_amount(cc_item.amount());
 	block_tx.set_contract_prepayment(cc_item.prepayment());
 	block_tx.set_from(cc_item.contract_from());
+	block_tx.set_contract_code(cc_item.library_bytes());
+	ZJC_DEBUG("==== 7.1 create contract info, contract_code: %s, from: %s", common::Encode::HexEncode(block_tx.contract_code()).c_str(), common::Encode::HexEncode(block_tx.from()).c_str());
 	
 	// TODO 从 kv 中读取 cc tx info
 	auto contract_info = account_mgr_->GetAccountInfo(thread_idx, block_tx.to());

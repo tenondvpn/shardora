@@ -748,7 +748,8 @@ int ToTxsPools::CreateToTxWithHeights(
                 common::GlobalInfo::Instance()->network_id());
         } else if (iter->second.type == pools::protobuf::kRootCreateAddress) {
             assert(sharding_id != network::kRootCongressNetworkId);
-			
+
+			ZJC_DEBUG("==== 0.2 library bytes: %s, to: %s", common::Encode::HexEncode(iter->second.library_bytes).c_str(), common::Encode::HexEncode(to).c_str());
 			// for contract create tx
 			if (memcmp(iter->second.library_bytes.c_str(),
 					protos::kContractBytesStartCode.c_str(),
