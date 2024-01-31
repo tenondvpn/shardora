@@ -652,7 +652,10 @@ void BlockManager::HandleNormalToTx(
 
 		for (int j = 0; j < to_txs.tos_size(); ++j) {
 			auto tos_item = to_txs.tos(j);
-			ZJC_DEBUG("====2.9 contract_code: %d, prepayment: %u, to_txs_str: %s", tos_item.has_library_bytes(), tos_item.prepayment(), common::Encode::HexEncode(to_txs_str).c_str());
+			ZJC_DEBUG("====2.9 contract_code: %d, prepayment: %u, to_txs_str: %s",
+				tos_item.has_library_bytes(),
+				tos_item.prepayment(),
+				common::Encode::HexEncode(to_txs_str).c_str());
 		}
 		
 

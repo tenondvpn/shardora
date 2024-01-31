@@ -240,8 +240,7 @@ void ToTxsPools::HandleCreateContractUserCall(
             break;
         }
     }
-    ZJC_DEBUG("==== 0.1 library bytes: %s, to: %s", bytes_code.c_str(), common::Encode::HexEncode(tx.to()).c_str());
-    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", bytes_code, "", tx.contract_prepayment());
+    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", bytes_code, tx.from(), tx.contract_prepayment());
     // for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
     //     uint32_t sharding_id = common::kInvalidUint32;
     //     uint32_t pool_index = -1;
@@ -724,11 +723,13 @@ int ToTxsPools::CreateToTxWithHeights(
             //     continue;
             // }
 
-			ZJC_DEBUG("==== 0.2 library bytes: %s, to: %s", common::Encode::HexEncode(iter->second.library_bytes).c_str(), common::Encode::HexEncode(to).c_str());
+			ZJC_DEBUG("==== 0.2 library bytes: %s, to: %s, from: %s",
+				common::Encode::HexEncode(iter->second.library_bytes).c_str(),
+				common::Encode::HexEncode(to).c_str(),
+				common::Encode::HexEncode(iter->second.from).c_str());
             if (memcmp(iter->second.library_bytes.c_str(),
 					protos::kContractBytesStartCode.c_str(),
 					protos::kContractBytesStartCode.size()) == 0) {
-				ZJC_DEBUG("==== 0.3 library bytes: %s", common::Encode::HexEncode(iter->second.library_bytes).c_str());
 				to_item->set_library_bytes(iter->second.library_bytes);
 				str_for_hash.append(iter->second.library_bytes);
 				// ContractCreate 需要 from 地址，用于 prepayment 创建
