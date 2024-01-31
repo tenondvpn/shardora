@@ -292,6 +292,13 @@ void AccountManager::HandleLocalContractCreate(
 		const block::protobuf::Block& block,
 		const block::protobuf::BlockTx& tx,
 		db::DbWriteBatch& db_batch) {
+	ZJC_DEBUG("==== 9 create add contract direct: %s, status: %d, sharding: %u, pool index: %u, contract_code: %s",
+		common::Encode::HexEncode(tx.to()).c_str(),
+		tx.status(),
+		block.network_id(),
+		block.pool_index(),
+		tx.contract_code().c_str());
+	
 	if (tx.status() != consensus::kConsensusSuccess) {
 		return;
 	}
