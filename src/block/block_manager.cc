@@ -650,10 +650,10 @@ void BlockManager::HandleNormalToTx(
             continue;
         }
 
-		for (int j = 0; i < to_txs.tos_size(); ++j) {
-			auto tos_item = to_txs.tos(j);
-			ZJC_DEBUG("====2.9 contract_code: %d, prepayment: %d, to_txs_str: %s", tos_item.has_library_bytes(), tos_item.prepayment(), common::Encode::HexEncode(to_txs_str).c_str());
-		}
+		// for (int j = 0; i < to_txs.tos_size(); ++j) {
+		// 	auto tos_item = to_txs.tos(j);
+		// 	ZJC_DEBUG("====2.9 contract_code: %d, prepayment: %u, to_txs_str: %s", tos_item.has_library_bytes(), tos_item.prepayment(), common::Encode::HexEncode(to_txs_str).c_str());
+		// }
 		
 
         auto iter = leader_to_txs_.find(to_txs.elect_height());
