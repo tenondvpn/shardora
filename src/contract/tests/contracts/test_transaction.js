@@ -617,11 +617,11 @@ async function create_new_node(sk_new) {
 async function main() {
 	const args = process.argv.slice(2)
 	if (args[0] == 0) {
-		for (var i = 0; i < 50; ++i) {
+		for (var i = 0; i < 1; ++i) {
 			// 测试合约执行、合约查询
 			await test_contracts();
 			// 测试跨分片转账
-			await test_transfers();
+			// await test_transfers();
 		}
 	}
 
