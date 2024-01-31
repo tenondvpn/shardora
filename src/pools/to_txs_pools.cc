@@ -724,9 +724,11 @@ int ToTxsPools::CreateToTxWithHeights(
             //     continue;
             // }
 
-            if (memcmp(iter->second.library_bytes.c_str(),
+			ZJC_DEBUG("==== 0.1 library bytes: %s", common::Encode::HexDecode(iter->second.library_bytes).c_str());
+            if (memcmp(common::Encode::HexDecode(iter->second.library_bytes).c_str(),
 					protos::kContractBytesStartCode.c_str(),
 					protos::kContractBytesStartCode.size()) == 0) {
+				ZJC_DEBUG("==== 0.2 library bytes: %s", common::Encode::HexDecode(iter->second.library_bytes).c_str());
 				to_item->set_library_bytes(iter->second.library_bytes);
 				str_for_hash.append(iter->second.library_bytes);
 				// ContractCreate 需要 from 地址，用于 prepayment 创建
