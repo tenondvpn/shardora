@@ -1037,8 +1037,7 @@ void BlockManager::HandleLocalNormalToTx(
         tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kConsensusLocalContractCreate);
         auto gid = common::Hash::keccak256(cc_hash + heights_hash);
-        tx->set_gas_limit(0);
-        
+        tx->set_gas_limit(10000000);
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
 
