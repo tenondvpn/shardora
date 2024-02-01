@@ -139,7 +139,7 @@ enum StepType {
   kCross = 15,
   kRootCross = 16,
   kConsensusLocalContractCreate = 17,
-  kContractCreateByRootFrom = 18,
+  kContractCreateByRootFrom = 18
 };
 bool StepType_IsValid(int value);
 const StepType StepType_MIN = kNormalFrom;
