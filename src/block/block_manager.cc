@@ -1012,7 +1012,7 @@ void BlockManager::createContractCreateByRootToTxs(
         tx->set_contract_prepayment(to_msg.prepayment());
         
         msg_ptr->thread_idx = thread_idx;
-        ZJC_DEBUG("==== 8 create contract local tx add to pool, to: %s, gid: %s, cc_hash: %s, height_hash: %s, pool_idx: %lu, amount: %lu, contract_from: %s",
+        ZJC_DEBUG("create contract to tx add to pool, to: %s, gid: %s, cc_hash: %s, height_hash: %s, pool_idx: %lu, amount: %lu, contract_from: %s",
             common::Encode::HexEncode(to_msg.des()).c_str(),
             common::Encode::HexEncode(gid).c_str(),
             common::Encode::HexEncode(cc_hash).c_str(),
