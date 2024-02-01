@@ -357,10 +357,8 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         zjcvm::kJustCall,
         zjc_host,
         &result);
-	ZJC_INFO("====4.0 query contract exec res: %d. status: %d", exec_res, result.status_code);
     if (exec_res != zjcvm::kZjcvmSuccess || result.status_code != EVMC_SUCCESS) {
         std::string res = "query contract failed: " + std::to_string(result.status_code);
-		ZJC_INFO("====4.1 query contract exec str: %s", res.c_str());
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
         evhtp_send_reply(req, EVHTP_RES_BADREQ);
         ZJC_INFO("query contract error: %s.", res.c_str());
@@ -369,11 +367,9 @@ static void QueryContract(evhtp_request_t* req, void* data) {
 	
     std::string qdata((char*)result.output_data, result.output_size);
     evmc_bytes32 len_bytes;
-	ZJC_INFO("====4.2 query contract data: %s", qdata.c_str());
     memcpy(len_bytes.bytes, qdata.c_str() + 32, 32);
     uint64_t len = zjcvm::EvmcBytes32ToUint64(len_bytes);
     std::string http_res(qdata.c_str() + 64, len);
-	ZJC_INFO("====4.3 query contract data: %s", http_res.c_str());
     evbuffer_add(req->buffer_out, http_res.c_str(), http_res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
     ZJC_INFO("query contract success");
