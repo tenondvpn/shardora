@@ -1180,7 +1180,7 @@ void NetworkInit::AddBlockItemToCache(
             account_mgr_->NewBlockWithTx(thread_idx, block, tx_list[i], db_batch);
             // 对于 kRootCreateAddress 的合约账户创建不需要增加 prepayment，root 只记录路由
             break;
-		case pools::protobuf::kContractCreate:
+        case pools::protobuf::kContractCreate:
         case pools::protobuf::kConsensusLocalTos:
         case pools::protobuf::kConsensusLocalContractCreate:
         case pools::protobuf::kContractExcute:
