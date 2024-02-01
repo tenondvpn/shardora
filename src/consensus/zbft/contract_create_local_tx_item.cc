@@ -241,53 +241,74 @@ int ContractCreateLocalTxItem::CreateContractCallExcute(
 }
 
 int ContractCreateLocalTxItem::SaveContractCreateInfo(
-		zjcvm::ZjchainHost& zjc_host,
-		block::protobuf::BlockTx& block_tx,
-		std::shared_ptr<db::DbWriteBatch>& db_batch,
-		int64_t& contract_balance_add,
-		int64_t& caller_balance_add,
-		int64_t& gas_more) {
-	auto storage = block_tx.add_storages();
-	storage->set_key(protos::kCreateContractBytesCode);
-	storage->set_val_hash(zjc_host.create_bytes_code_);
-
-	for (auto account_iter = zjc_host.accounts_.begin(); account_iter != zjc_host.accounts_.end(); account_iter++) {
-		for (auto storage_iter = account_iter->second.storage.begin(); storage_iter != account_iter->second.storage.end(); storage_iter++) {
-			auto kv = block_tx.add_storages();
-			auto str_key = std::string((char*)storage_iter->first.bytes, sizeof(storage_iter->first.bytes)) + std::string((char*)storage_iter->first.bytes, sizeof(storage_iter->first.bytes));
-			kv->set_key(str_key);
-			kv->set_val_hash(std::string((char*)storage_iter->second.value.bytes, sizeof(storage_iter->second.value.bytes)));
-			gas_more += (sizeof(account_iter->first.bytes) +
-					sizeof(storage_iter->first.bytes) +
-					sizeof(storage_iter->second.value.bytes)) *
+        zjcvm::ZjchainHost& zjc_host,
+        block::protobuf::BlockTx& block_tx,
+        std::shared_ptr<db::DbWriteBatch>& db_batch,
+        int64_t& contract_balance_add,
+        int64_t& caller_balance_add,
+        int64_t& gas_more) {
+    auto storage = block_tx.add_storages();
+    storage->set_key(protos::kCreateContractBytesCode);
+    storage->set_val_hash(zjc_host.create_bytes_code_);
+    for (auto account_iter = zjc_host.accounts_.begin();
+            account_iter != zjc_host.accounts_.end(); ++account_iter) {
+        for (auto storage_iter = account_iter->second.storage.begin();
+            storage_iter != account_iter->second.storage.end(); ++storage_iter) {
+//             prefix_db_->SaveAddressStorage(
+//                 account_iter->first,
+//                 storage_iter->first,
+//                 storage_iter->second.value,
+//                 *db_batch);
+            auto kv = block_tx.add_storages();
+            auto str_key = std::string((char*)account_iter->first.bytes, sizeof(account_iter->first.bytes)) +
+                std::string((char*)storage_iter->first.bytes, sizeof(storage_iter->first.bytes));
+            kv->set_key(str_key);
+            kv->set_val_hash(std::string(
+                (char*)storage_iter->second.value.bytes,
+                sizeof(storage_iter->second.value.bytes)));
+            gas_more += (sizeof(account_iter->first.bytes) +
+                sizeof(storage_iter->first.bytes) +
+                sizeof(storage_iter->second.value.bytes)) *
                 consensus::kKeyValueStorageEachBytes;
-		}
+        }
 
-		for (auto storage_iter = account_iter->second.str_storage.begin(); storage_iter != account_iter->second.str_storage.end(); storage_iter++) {
-			auto kv = block_tx.add_storages();
-			auto str_key = std::string((char*)account_iter->first.bytes, sizeof(account_iter->first.bytes)) + storage_iter->first;
-			kv->set_key(str_key);
+        for (auto storage_iter = account_iter->second.str_storage.begin();
+                storage_iter != account_iter->second.str_storage.end(); ++storage_iter) {
+//             prefix_db_->SaveAddressStringStorage(
+//                 account_iter->first,
+//                 storage_iter->first,
+//                 storage_iter->second.str_val,
+//                 *db_batch);
+            auto kv = block_tx.add_storages();
+            auto str_key = std::string(
+                (char*)account_iter->first.bytes,
+                sizeof(account_iter->first.bytes)) + storage_iter->first;
+            kv->set_key(str_key);
+            if (storage_iter->second.str_val.size() > 32) {
+                kv->set_val_hash(common::Hash::keccak256(storage_iter->second.str_val));
+                kv->set_val_size(storage_iter->second.str_val.size());
+                prefix_db_->SaveTemporaryKv(kv->val_hash(), storage_iter->second.str_val);
+            } else {
+                kv->set_val_hash(storage_iter->second.str_val);
+            }
 
-			if (storage_iter->second.str_val.size() > 32) {
-				kv->set_val_hash(common::Hash::keccak256(storage_iter->second.str_val));
-				kv->set_val_size(storage_iter->second.str_val.size());
-				prefix_db_->SaveTemporaryKv(kv->val_hash(), storage_iter->second.str_val);
-			} else {
-				kv->set_val_hash(storage_iter->second.str_val);
-			}
+            gas_more += (sizeof(account_iter->first.bytes) +
+                storage_iter->first.size() +
+                storage_iter->second.str_val.size()) *
+                consensus::kKeyValueStorageEachBytes;
+        }
+    }
 
-			gas_more += (sizeof(account_iter->first.bytes) + storage_iter->first.size() + storage_iter->second.str_val.size()) * consensus::kKeyValueStorageEachBytes;
-		}
-	}
+    int64_t other_add = 0;
+    for (auto transfer_iter = zjc_host.to_account_value_.begin();
+            transfer_iter != zjc_host.to_account_value_.end(); ++transfer_iter) {
+        // transfer from must caller or contract address, other not allowed.
+        if (transfer_iter->first != block_tx.from() && transfer_iter->first != block_tx.to()) {
+            return kConsensusError;
+        }
 
-	int64_t other_add = 0;
-	for (auto transfer_iter = zjc_host.to_account_value_.begin(); transfer_iter != zjc_host.to_account_value_.end(); transfer_iter++) {
-		if (transfer_iter->first != block_tx.from() && transfer_iter->first != block_tx.to()) {
-			return kConsensusError;
-		}
-
-		for (auto to_iter = transfer_iter->second.begin();
-			 to_iter != transfer_iter->second.end(); ++to_iter) {
+        for (auto to_iter = transfer_iter->second.begin();
+                to_iter != transfer_iter->second.end(); ++to_iter) {
             if (transfer_iter->first == to_iter->first) {
                 return kConsensusError;
             }
@@ -308,7 +329,6 @@ int ContractCreateLocalTxItem::SaveContractCreateInfo(
                 caller_balance_add += to_iter->second;
             }
 
-			// 从 from 向 to 转账？直接转就好了，contract_txs 是用于跨分片的
             if (to_iter->first != block_tx.to() && to_iter->first != block_tx.from()) {
                 // from and contract itself transfers direct
                 // transfer to other address by cross sharding transfer
@@ -319,9 +339,9 @@ int ContractCreateLocalTxItem::SaveContractCreateInfo(
                 other_add += to_iter->second;
             }
         }
-	}
+    }
 
-	if (caller_balance_add > 0 && contract_balance_add > 0) {
+    if (caller_balance_add > 0 && contract_balance_add > 0) {
         return kConsensusError;
     }
 
@@ -348,7 +368,6 @@ int ContractCreateLocalTxItem::SaveContractCreateInfo(
     ZJC_DEBUG("user success call create contract.");
     return kConsensusSuccess;
 }
-
 
 }; // namespace consensus
 
