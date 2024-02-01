@@ -346,7 +346,7 @@ void ToTxsPools::AddTxToMap(
         if (library_bytes != "") {
             item.library_bytes = library_bytes;
             item.from = from;
-			item.prepayment = prepayment;
+            item.prepayment = prepayment;
         }
         
         height_iter->second[to] = item;
@@ -731,10 +731,9 @@ int ToTxsPools::CreateToTxWithHeights(
                 continue;
             }
 
-            if (memcmp(
-                        account_info->bytes_code().c_str(),
-                        protos::kContractBytesStartCode.c_str(),
-                        protos::kContractBytesStartCode.size()) == 0) {
+            if (memcmp(account_info->bytes_code().c_str(),
+                    protos::kContractBytesStartCode.c_str(),
+                    protos::kContractBytesStartCode.size()) == 0) {
                 to_item->set_library_bytes(account_info->bytes_code());
                 str_for_hash.append(account_info->bytes_code());
             }

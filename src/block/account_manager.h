@@ -77,12 +77,12 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
-	void HandleCreateContractByRootFrom(
+    void HandleCreateContractByRootFrom(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
-	void HandleLocalContractCreate(
+    void HandleLocalContractCreate(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,

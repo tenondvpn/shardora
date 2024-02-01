@@ -346,11 +346,11 @@ bool ShardStatistic::HandleStatistic(const block::protobuf::Block& block) {
     for (int32_t i = 0; i < block.tx_list_size(); ++i) {
         HandleCrossShard(is_root, block, block.tx_list(i));
         if (block.tx_list(i).step() == pools::protobuf::kNormalFrom ||
-			block.tx_list(i).step() == pools::protobuf::kContractCreate ||
-			block.tx_list(i).step() == pools::protobuf::kContractCreateByRootFrom ||
-			block.tx_list(i).step() == pools::protobuf::kContractExcute ||
-			block.tx_list(i).step() == pools::protobuf::kJoinElect ||
-			block.tx_list(i).step() == pools::protobuf::kContractGasPrepayment) {
+            block.tx_list(i).step() == pools::protobuf::kContractCreate ||
+            block.tx_list(i).step() == pools::protobuf::kContractCreateByRootFrom ||
+            block.tx_list(i).step() == pools::protobuf::kContractExcute ||
+            block.tx_list(i).step() == pools::protobuf::kJoinElect ||
+            block.tx_list(i).step() == pools::protobuf::kContractGasPrepayment) {
             statistic_info_ptr->all_gas_amount += block.tx_list(i).gas_price() * block.tx_list(i).gas_used();
         }
 

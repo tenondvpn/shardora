@@ -752,14 +752,13 @@ void BlockManager::RootHandleNormalToTx(
             }
             continue;
         }
-
+        
         // for ContractCreateByRootFrom tx
-		if (tos_item.has_library_bytes()) {
-			tx->set_contract_code(tos_item.library_bytes());
-			tx->set_contract_from(tos_item.contract_from());
-			tx->set_contract_prepayment(tos_item.prepayment());	
-		}
-		
+        if (tos_item.has_library_bytes()) {
+            tx->set_contract_code(tos_item.library_bytes());
+            tx->set_contract_from(tos_item.contract_from());
+            tx->set_contract_prepayment(tos_item.prepayment());
+        }
         
         tx->set_pubkey("");
         tx->set_to(tos_item.des());

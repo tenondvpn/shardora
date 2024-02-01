@@ -154,7 +154,7 @@ const std::string& AccountManager::GetTxValidAddress(const block::protobuf::Bloc
         return tx_info.to();
     case pools::protobuf::kJoinElect:
     case pools::protobuf::kNormalFrom:
-	case pools::protobuf::kContractCreateByRootFrom:
+    case pools::protobuf::kContractCreateByRootFrom:
     case pools::protobuf::kContractGasPrepayment:
         return tx_info.from();
     default:
@@ -259,6 +259,7 @@ void AccountManager::HandleLocalToTx(
             account_info = std::make_shared<address::protobuf::AddressInfo>();
             account_info->set_pool_index(block.pool_index());
             account_info->set_addr(to_txs.tos(i).to());
+            account_info->set_type(address::protobuf::kNormal);
             account_info->set_sharding_id(block.network_id());
             account_info->set_latest_height(block.height());
             account_info->set_balance(to_txs.tos(i).balance());
@@ -606,7 +607,7 @@ void AccountManager::NewBlockWithTx(
     case pools::protobuf::kContractGasPrepayment:
         HandleContractPrepayment(thread_idx, *block_item, tx, db_batch);
         break;
-	case pools::protobuf::kContractCreateByRootFrom:
+    case pools::protobuf::kContractCreateByRootFrom:
         HandleCreateContractByRootFrom(thread_idx, *block_item, tx, db_batch);
         break;
     case pools::protobuf::kConsensusLocalContractCreate:
