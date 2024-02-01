@@ -43,6 +43,9 @@ private:
     void HandleCreateContractUserCall(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
+	void HandleCreateContractByRootFrom(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx);
     void HandleContractGasPrepayment(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);

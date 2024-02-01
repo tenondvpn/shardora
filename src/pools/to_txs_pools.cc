@@ -6,6 +6,7 @@
 #include "network/route.h"
 #include "pools/tx_pool_manager.h"
 #include "protos/get_proto_hash.h"
+#include <protos/pools.pb.h>
 
 namespace zjchain {
 
@@ -111,6 +112,9 @@ bool ToTxsPools::PreStatisticTos(uint32_t pool_idx, uint64_t min_height, uint64_
                 break;
             case pools::protobuf::kContractCreate:
                 HandleCreateContractUserCall(block, tx_list[i]);
+                break;
+			case pools::protobuf::kContractCreateByRootFrom:
+                HandleCreateContractByRootFrom(block, tx_list[i]);
                 break;
             case pools::protobuf::kContractGasPrepayment:
                 HandleContractGasPrepayment(block, tx_list[i]);
@@ -241,26 +245,42 @@ void ToTxsPools::HandleCreateContractUserCall(
         }
     }
     AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", bytes_code, tx.from(), tx.contract_prepayment());
-    // for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
-    //     uint32_t sharding_id = common::kInvalidUint32;
-    //     uint32_t pool_index = -1;
-    //     auto addr_info = GetAddressInfo(tx.contract_txs(i).to());
-    //     if (addr_info != nullptr) {
-    //         sharding_id = addr_info->sharding_id();
-    //     }
+    for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
+        uint32_t sharding_id = common::kInvalidUint32;
+        uint32_t pool_index = -1;
+        auto addr_info = GetAddressInfo(tx.contract_txs(i).to());
+        if (addr_info != nullptr) {
+            sharding_id = addr_info->sharding_id();
+        }
 
-	// 	// 用于 from 到 to 转账的部分
-	// 	// 由于 contract_address 是在本 shard 创建的，比聚合转账要快，所以不会有问题
-	// 	// TODO 但如果要改为 root 创建账号，就要把转账和账号创建 root 合并，不能拆成两个搞了
-    //     AddTxToMap(
-    //         block,
-    //         tx.contract_txs(i).to(),
-    //         pools::protobuf::kNormalFrom,
-    //         tx.contract_txs(i).amount(),
-    //         sharding_id,
-    //         pool_index,
-    //         "", "", "", 0);
-    // }
+		// 用于 from 到 to 转账的部分
+		// 由于 contract_address 是在本 shard 创建的，比聚合转账要快，所以不会有问题
+		// TODO 但如果要改为 root 创建账号，就要把转账和账号创建 root 合并，不能拆成两个搞了
+        AddTxToMap(
+            block,
+            tx.contract_txs(i).to(),
+            pools::protobuf::kNormalFrom,
+            tx.contract_txs(i).amount(),
+            sharding_id,
+            pool_index,
+            "", "", "", 0);
+    }
+}
+
+void ToTxsPools::HandleCreateContractByRootFrom(
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx) {
+    uint32_t sharding_id = network::kRootCongressNetworkId;
+    uint32_t pool_index = block.pool_index();
+
+    std::string bytes_code;
+    for (int32_t i = 0; i < tx.storages_size(); ++i) {
+        if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
+            bytes_code = tx.storages(i).val_hash();
+            break;
+        }
+    }
+    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", bytes_code, tx.from(), tx.contract_prepayment());
 }
 
 // Only for Root
@@ -715,13 +735,9 @@ int ToTxsPools::CreateToTxWithHeights(
         to_item->set_step(iter->second.type);
         // create contract just in caller sharding
         if (iter->second.type == pools::protobuf::kContractCreate) {
-            assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
-            // auto account_info = GetAddressInfo(to);
-            // // 理论上此时kContractCreate出块时已经创建了 account
-            // if (account_info == nullptr) {
-            //     to_tx.mutable_tos()->ReleaseLast();
-            //     continue;
-            // }
+            
+        } else if (iter->second.type == pools::protobuf::kContractCreateByRootFrom) {
+			assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
 
 			ZJC_DEBUG("==== 0.2 library bytes: %s, to: %s, from: %s",
 				common::Encode::HexEncode(iter->second.library_bytes).c_str(),
@@ -747,7 +763,7 @@ int ToTxsPools::CreateToTxWithHeights(
             ZJC_DEBUG("create contract use caller sharding address: %s, %u",
                 common::Encode::HexEncode(to).c_str(),
                 common::GlobalInfo::Instance()->network_id());
-        } else if (iter->second.type == pools::protobuf::kRootCreateAddress) {
+		} else if (iter->second.type == pools::protobuf::kRootCreateAddress) {
             assert(sharding_id != network::kRootCongressNetworkId);
 
 			ZJC_DEBUG("==== 0.2 library bytes: %s, to: %s, from: %s",
