@@ -92,7 +92,6 @@ static int CreateTransactionWithAttr(
     auto new_tx = msg.mutable_tx_proto();
     new_tx->set_gid(gid);
     new_tx->set_pubkey(from_pk);
-    ZJC_DEBUG("====1.0");
     const char* step = evhtp_kv_find(evhtp_kvs, "type");
     if (step == nullptr) {
         return kHttpError;
@@ -103,9 +102,7 @@ static int CreateTransactionWithAttr(
         return kHttpError;
     }
 
-    ZJC_DEBUG("====1.1, %d, %s", step_val, step);
     new_tx->set_step(static_cast<pools::protobuf::StepType>(step_val));
-    ZJC_DEBUG("====1.2, %d", new_tx->step());
     new_tx->set_to(to);
     new_tx->set_amount(amount);
     new_tx->set_gas_limit(gas_limit);
@@ -120,19 +117,16 @@ static int CreateTransactionWithAttr(
         }
     }
 
-    ZJC_DEBUG("====1.3, %d", new_tx->step());
     const char* contract_bytes = evhtp_kv_find(evhtp_kvs, "bytes_code");
     if (contract_bytes != nullptr) {
         new_tx->set_contract_code(common::Encode::HexDecode(contract_bytes));
     }
 
-    ZJC_DEBUG("====1.4, %d", new_tx->step());
     const char* input = evhtp_kv_find(evhtp_kvs, "input");
     if (input != nullptr) {
         new_tx->set_contract_input(common::Encode::HexDecode(input));
     }
 
-    ZJC_DEBUG("====1.5, %d", new_tx->step());
     const char* pepay = evhtp_kv_find(evhtp_kvs, "pepay");
     if (pepay != nullptr) {
         uint64_t pepay_val = 0;
@@ -142,9 +136,7 @@ static int CreateTransactionWithAttr(
 
         new_tx->set_contract_prepayment(pepay_val);
     }
-    ZJC_DEBUG("====1.6, %d", new_tx->step());
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
-    ZJC_DEBUG("====1.7, %s", tx_hash.c_str());
     std::string sign = sign_r + sign_s + "0";// http_handler->security_ptr()->GetSign(sign_r, sign_s, sign_v);
     sign[64] = char(sign_v);
     if (http_handler->security_ptr()->Verify(
@@ -255,7 +247,6 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
 
     auto msg_ptr = std::make_shared<transport::TransportMessage>();
     transport::protobuf::Header& msg = msg_ptr->header;
-    ZJC_INFO("======1");
     int status = CreateTransactionWithAttr(
         common::Encode::HexDecode(gid),
         common::Encode::HexDecode(frompk),
@@ -269,7 +260,6 @@ static void HttpTransaction(evhtp_request_t* req, void* data) {
         shard_id_val,
         req->uri->query,
         msg);
-    ZJC_INFO("======2, %d", status);
     if (status != http::kHttpSuccess) {
         std::string res = std::string("transaction invalid: ") + GetStatus(status);
         evbuffer_add(req->buffer_out, res.c_str(), res.size());
