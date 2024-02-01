@@ -735,7 +735,27 @@ int ToTxsPools::CreateToTxWithHeights(
         to_item->set_step(iter->second.type);
         // create contract just in caller sharding
         if (iter->second.type == pools::protobuf::kContractCreate) {
-            
+			assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
+            auto account_info = GetAddressInfo(to);
+            if (account_info == nullptr) {
+                to_tx.mutable_tos()->ReleaseLast();
+                continue;
+            }
+
+            if (memcmp(
+						account_info->bytes_code().c_str(),
+						protos::kContractBytesStartCode.c_str(),
+						protos::kContractBytesStartCode.size()) == 0) {
+                to_item->set_library_bytes(account_info->bytes_code());
+                str_for_hash.append(account_info->bytes_code());
+            }
+
+            auto net_id = common::GlobalInfo::Instance()->network_id();
+            to_item->set_sharding_id(net_id);
+            str_for_hash.append((char*)&net_id, sizeof(net_id));
+            ZJC_DEBUG("create contract use caller sharding address: %s, %u",
+                common::Encode::HexEncode(to).c_str(),
+                common::GlobalInfo::Instance()->network_id());        
         } else if (iter->second.type == pools::protobuf::kContractCreateByRootFrom) {
 			assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
 
@@ -755,8 +775,6 @@ int ToTxsPools::CreateToTxWithHeights(
 				str_for_hash.append((char*)&iter->second.prepayment, sizeof(iter->second.prepayment));	
             }            
 
-            // spot1 合约账户的创建默认为from所在 shard，暂不会跨分片创建合约账户
-            // auto net_id = common::GlobalInfo::Instance()->network_id();
             auto net_id = common::kInvalidUint32; // ContractCreate 不在直接分配 sharding，由 root 分配
             to_item->set_sharding_id(net_id);
             str_for_hash.append((char*)&net_id, sizeof(net_id));
