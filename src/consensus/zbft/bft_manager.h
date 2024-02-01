@@ -1,7 +1,7 @@
 #pragma once
 
 #include <consensus/zbft/contract_create_by_root_from_tx_item.h>
-#include <consensus/zbft/contract_create_local_tx_item.h>
+#include <consensus/zbft/contract_create_by_root_to_tx_item.h>
 #include <unordered_map>
 
 #include "block/account_manager.h"

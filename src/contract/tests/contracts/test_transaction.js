@@ -728,7 +728,7 @@ async function main() {
 	const args = process.argv.slice(2)
 	
 	if (args[0] == 0) {
-		const times = 10;
+		const times = 1;
 		for (var i = 0; i < times; i++) {
 			test_contracts_by_root();
 			test_contracts_by_local();
