@@ -1,4 +1,4 @@
-#include "consensus/zbft/contract_create_local_tx_item.h"
+#include "consensus/zbft/contract_create_by_root_to_tx_item.h"
 
 #include "contract/contract_manager.h"
 #include "zjcvm/execution.h"
@@ -16,7 +16,7 @@ namespace consensus {
 
 // 处理 ContractCreate 交易的 Local 部分（to 部分，已经过 root 分配 shard）
 // from 部分已经在 ContractUserCreateCall::HandleTx 处理完成
-int ContractCreateLocalTxItem::HandleTx(
+int ContractCreateByRootToTxItem::HandleTx(
 		uint8_t thread_idx,
 		const block::protobuf::Block& block,
 		std::shared_ptr<db::DbWriteBatch>& db_batch,
@@ -211,7 +211,7 @@ int ContractCreateLocalTxItem::HandleTx(
 	return kConsensusSuccess;
 }
 
-int ContractCreateLocalTxItem::CreateContractCallExcute(
+int ContractCreateByRootToTxItem::CreateContractCallExcute(
 		zjcvm::ZjchainHost& zjc_host,
 		block::protobuf::BlockTx& tx,
 		evmc::Result* out_res) {
@@ -240,7 +240,7 @@ int ContractCreateLocalTxItem::CreateContractCallExcute(
     return kConsensusSuccess;
 }
 
-int ContractCreateLocalTxItem::SaveContractCreateInfo(
+int ContractCreateByRootToTxItem::SaveContractCreateInfo(
         zjcvm::ZjchainHost& zjc_host,
         block::protobuf::BlockTx& block_tx,
         std::shared_ptr<db::DbWriteBatch>& db_batch,

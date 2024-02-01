@@ -159,7 +159,7 @@ public:
             return;
         }
 
-        if (tx.step() == pools::protobuf::kConsensusLocalContractCreate) {
+        if (tx.step() == pools::protobuf::kContractCreateByRootTo) {
             HandleUserCreate(thread_idx, *block_item, tx, db_batch);
             return;
 		}

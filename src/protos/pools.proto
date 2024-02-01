@@ -20,7 +20,7 @@ enum StepType {
     kCreateLibrary = 14;
     kCross = 15;
     kRootCross = 16;
-    kConsensusLocalContractCreate = 17; // ContractCreate 交易的 Local 部分
+    kContractCreateByRootTo = 17; // ContractCreate 交易的 Local 部分
     kContractCreateByRootFrom = 18;
 }
 

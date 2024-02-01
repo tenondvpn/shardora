@@ -144,7 +144,7 @@ const std::string& AccountManager::GetTxValidAddress(const block::protobuf::Bloc
     case pools::protobuf::kNormalTo:
     case pools::protobuf::kRootCreateAddress:
     case pools::protobuf::kRootCreateAddressCrossSharding:
-    case pools::protobuf::kConsensusLocalContractCreate:
+    case pools::protobuf::kContractCreateByRootTo:
     case pools::protobuf::kConsensusLocalTos:
     case pools::protobuf::kConsensusRootElectShard:
     case pools::protobuf::kConsensusRootTimeBlock:
@@ -610,7 +610,7 @@ void AccountManager::NewBlockWithTx(
     case pools::protobuf::kContractCreateByRootFrom:
         HandleCreateContractByRootFrom(thread_idx, *block_item, tx, db_batch);
         break;
-    case pools::protobuf::kConsensusLocalContractCreate:
+    case pools::protobuf::kContractCreateByRootTo:
         HandleLocalContractCreate(thread_idx, *block_item, tx, db_batch);
         break;
     default:

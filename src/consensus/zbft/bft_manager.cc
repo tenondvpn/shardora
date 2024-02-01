@@ -104,8 +104,8 @@ void BftManager::RegisterCreateTxCallbacks() {
         pools::protobuf::kConsensusLocalTos,
         std::bind(&BftManager::CreateToTxLocal, this, std::placeholders::_1));
     pools_mgr_->RegisterCreateTxFunction(
-        pools::protobuf::kConsensusLocalContractCreate,
-        std::bind(&BftManager::CreateContractCreateLocalTx, this, std::placeholders::_1));
+        pools::protobuf::kContractCreateByRootTo,
+        std::bind(&BftManager::CreateContractByRootToTx, this, std::placeholders::_1));
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kRootCreateAddress,
         std::bind(&BftManager::CreateRootToTxItem, this, std::placeholders::_1));
@@ -3208,7 +3208,7 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
 
 bool BftManager::IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info) {
     if (tx_info.step() != pools::protobuf::kContractCreate &&
-        tx_info.step() != pools::protobuf::kConsensusLocalContractCreate) {
+        tx_info.step() != pools::protobuf::kContractCreateByRootTo) {
         return false;
     }
 

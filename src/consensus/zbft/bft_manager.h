@@ -274,8 +274,8 @@ private:
             contract_mgr_, db_, msg_ptr, account_mgr_, security_ptr_);
     }
 
-	pools::TxItemPtr CreateContractCreateLocalTx(const transport::MessagePtr& msg_ptr) {
-        return std::make_shared<ContractCreateLocalTxItem>(
+	pools::TxItemPtr CreateContractByRootToTx(const transport::MessagePtr& msg_ptr) {
+        return std::make_shared<ContractCreateByRootToTxItem>(
             contract_mgr_, db_, msg_ptr, account_mgr_, security_ptr_);
     }
 

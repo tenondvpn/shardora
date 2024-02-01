@@ -8,10 +8,10 @@ namespace zjchain {
 
 namespace consensus {
 
-// For kConsensusLocalContractCreate Tx
-class ContractCreateLocalTxItem : public TxItemBase {
+// For kContractCreateByRootTo Tx
+class ContractCreateByRootToTxItem : public TxItemBase {
 public:
-	ContractCreateLocalTxItem(std::shared_ptr<contract::ContractManager>& contract_mgr,
+	ContractCreateByRootToTxItem(std::shared_ptr<contract::ContractManager>& contract_mgr,
             std::shared_ptr<db::Db>& db,
             const transport::MessagePtr& msg,
             std::shared_ptr<block::AccountManager>& account_mgr,
@@ -21,7 +21,7 @@ public:
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
 	}
 
-	virtual ~ContractCreateLocalTxItem() {}
+	virtual ~ContractCreateByRootToTxItem() {}
 	virtual int HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
@@ -44,7 +44,7 @@ private:
         int64_t& gas_more);
 	std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    DISALLOW_COPY_AND_ASSIGN(ContractCreateLocalTxItem);
+    DISALLOW_COPY_AND_ASSIGN(ContractCreateByRootToTxItem);
 };
 
 }; // namespace consensus
