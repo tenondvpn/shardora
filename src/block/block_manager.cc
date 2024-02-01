@@ -650,15 +650,6 @@ void BlockManager::HandleNormalToTx(
             continue;
         }
 
-		for (int j = 0; j < to_txs.tos_size(); ++j) {
-			auto tos_item = to_txs.tos(j);
-			ZJC_DEBUG("====2.9 contract_code: %d, prepayment: %u, to_txs_str: %s",
-				tos_item.has_library_bytes(),
-				tos_item.prepayment(),
-				common::Encode::HexEncode(to_txs_str).c_str());
-		}
-		
-
         auto iter = leader_to_txs_.find(to_txs.elect_height());
         if (iter != leader_to_txs_.end()) {
             if (iter->second.get() == latest_to_tx_.get()) {
@@ -754,7 +745,7 @@ void BlockManager::RootHandleNormalToTx(
         }
         
         // for ContractCreateByRootFrom tx
-        if (tos_item.has_library_bytes()) {
+        if (isContractCreateToTxMessageItem(tos_item)) {
             tx->set_contract_code(tos_item.library_bytes());
             tx->set_contract_from(tos_item.contract_from());
             tx->set_contract_prepayment(tos_item.prepayment());
@@ -771,20 +762,16 @@ void BlockManager::RootHandleNormalToTx(
         tx->set_gas_price(common::kBuildinTransactionGasPrice);
         tx->set_gid(gid);
 		
-		ZJC_DEBUG("====3.0 gid: %s, contract_code: %s, prepayment: %d, contract_from: %s",
-			common::Encode::HexEncode(gid).c_str(),
-			tos_item.library_bytes().c_str(),
-			tos_item.prepayment(),
-			common::Encode::HexEncode(tos_item.contract_from()).c_str());
-		
         auto pool_index = common::Hash::Hash32(tos_item.des()) % common::kImmutablePoolSize;
         msg_ptr->address_info = account_mgr_->pools_address_info(pool_index);
         msg_ptr->thread_idx = thread_idx;
         pools_mgr_->HandleMessage(msg_ptr);
-        ZJC_INFO("create new address %s, amount: %lu, gid: %s",
+        ZJC_INFO("create new address %s, amount: %lu, prepayment: %lu, gid: %s, contract_from: %s",
             common::Encode::HexEncode(tos_item.des()).c_str(),
             tos_item.amount(),
-            common::Encode::HexEncode(gid).c_str());
+            tos_item.prepayment(),
+            common::Encode::HexEncode(gid).c_str(),
+            common::Encode::HexEncode(tos_item.contract_from()).c_str());
     }
 }
 

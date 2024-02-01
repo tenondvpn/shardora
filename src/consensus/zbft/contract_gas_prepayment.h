@@ -162,7 +162,7 @@ public:
         if (tx.step() == pools::protobuf::kContractCreateByRootTo) {
             HandleUserCreate(thread_idx, *block_item, tx, db_batch);
             return;
-		}
+        }
     }
   
     uint64_t GetAddressPrepayment(

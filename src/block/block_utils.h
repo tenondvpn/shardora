@@ -3,6 +3,7 @@
 #include <memory>
 #include <atomic>
 #include <mutex>
+#include <protos/pools.pb.h>
 #include <queue>
 #include <unordered_map>
 #include <unordered_set>
@@ -122,6 +123,10 @@ struct localToTxInfo {
         contract_from(contract_from),
         contract_prepayment(prepayment) {}
 };
+
+inline bool isContractCreateToTxMessageItem(const pools::protobuf::ToTxMessageItem& tos_item) {
+    return tos_item.has_library_bytes();
+}
 
 typedef std::shared_ptr<BlockToDbItem> BlockToDbItemPtr;
 

@@ -83,7 +83,6 @@ int ContractCreateByRootFromTxItem::HandleTx(
 		storage->set_key(protos::kCreateContractBytesCode);
 		storage->set_val_hash(block_tx.contract_code());
 	}
-	ZJC_DEBUG("==== 0.0 library bytes: %s, to: %s", common::Encode::HexEncode(block_tx.contract_code()).c_str(), common::Encode::HexEncode(block_tx.to()).c_str());
 
     acc_balance_map[from] = from_balance;
     block_tx.set_balance(from_balance);
