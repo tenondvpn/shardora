@@ -610,7 +610,7 @@ void AccountManager::NewBlockWithTx(
         HandleCreateContractByRootFrom(thread_idx, *block_item, tx, db_batch);
         break;
     case pools::protobuf::kConsensusLocalContractCreate:
-		HandleLocalContractCreate(thread_idx, *block_item, tx, db_batch);
+        HandleLocalContractCreate(thread_idx, *block_item, tx, db_batch);
         break;
     default:
         break;

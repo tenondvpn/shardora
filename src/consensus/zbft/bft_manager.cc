@@ -729,7 +729,7 @@ ZbftPtr BftManager::StartBft(
         bft_ptr->prepare_block() == nullptr ? "" : common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
         txs_ptr->txs.size(),
         elect_item.elect_height,
-		common::Encode::HexEncode(gid).c_str());
+        common::Encode::HexEncode(gid).c_str());
     return bft_ptr;
 }
 
