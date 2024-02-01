@@ -150,6 +150,14 @@ private:
         const pools::protobuf::ToTxMessage& to_txs,
         uint32_t step,
         const std::string& heights_hash);
+    void createConsensusLocalToTxs(
+        uint8_t thread_idx,
+        std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map,
+        const std::string& heights_hash);
+    void createContractCreateByRootToTxs(
+        uint8_t thread_idx,
+        std::vector<std::shared_ptr<localToTxInfo>> contract_create_tx_infos,
+        const std::string& heights_hash);
     void HandleJoinElectTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,

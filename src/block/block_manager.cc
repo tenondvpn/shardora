@@ -799,28 +799,6 @@ void BlockManager::HandleLocalNormalToTx(
         const pools::protobuf::ToTxMessage& to_txs,
         uint32_t step,
         const std::string& heights_hash) {
-    struct localToTxInfo {
-        std::string des;
-        uint64_t amount;
-        uint32_t pool_index;
-        // for ContractCreate
-        std::string library_bytes;
-        std::string contract_from;
-        uint64_t contract_prepayment; // prepayment 交易的 prepayment 是通过 amount 传递的吧
-        localToTxInfo(const std::string& des,
-			uint64_t amount,
-			uint32_t pool_index,
-			const std::string& library_bytes,
-			const std::string& contract_from,
-			uint64_t prepayment) :
-                des(des),
-                amount(amount),
-                pool_index(pool_index),
-                library_bytes(library_bytes),
-                contract_from(contract_from),
-                contract_prepayment(prepayment) {}
-    };
-
     // 根据 to 聚合转账类 localtotx
     std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map;
     // 摘出 contract_create 类 localtotx
@@ -843,7 +821,6 @@ void BlockManager::HandleLocalNormalToTx(
         if (account_info == nullptr) {
             // 只接受 root 发回来的块
             if (step != pools::protobuf::kRootCreateAddressCrossSharding) {
-//                 assert(false);
                 ZJC_WARN("failed add local transfer tx tos heights_hash: %s, id: %s",
                     common::Encode::HexEncode(heights_hash).c_str(),
                     common::Encode::HexEncode(addr).c_str());
@@ -883,9 +860,6 @@ void BlockManager::HandleLocalNormalToTx(
         if (!to_tx.has_library_bytes()) {
             auto iter = addr_amount_map.find(to_tx.des());
             if (iter == addr_amount_map.end()) {
-                // addr_amount_map[to_txs.tos(i).des()] = std::make_pair(
-                //     to_txs.tos(i).amount(),
-                //     pool_index);
                 addr_amount_map[to_tx.des()] = std::make_shared<localToTxInfo>(to_tx.des(),
 					to_tx.amount(), pool_index, "", "", 0);
             } else {
@@ -898,14 +872,20 @@ void BlockManager::HandleLocalNormalToTx(
 				to_tx.library_bytes(),
 				to_tx.contract_from(),
 				to_tx.prepayment());
-			ZJC_DEBUG("====7.2 contract_code: %s, from: %s",
-				common::Encode::HexEncode(to_tx.library_bytes()).c_str(),
-				common::Encode::HexEncode(to_tx.contract_from()).c_str());
             contract_create_tx_infos.push_back(info); // TODO prepayment 也需要传输过来
         }
     }
 
     // 1. 处理转账类交易
+    createConsensusLocalToTxs(thread_idx, addr_amount_map, heights_hash);
+    // 2. 生成 ContractCreateByRootTo 交易
+    createContractCreateByRootToTxs(thread_idx, contract_create_tx_infos, heights_hash);
+}
+
+void BlockManager::createConsensusLocalToTxs(
+        uint8_t thread_idx,
+        std::unordered_map<std::string, std::shared_ptr<localToTxInfo>> addr_amount_map,
+        const std::string& heights_hash) {
     // 根据 pool_index 将 addr_amount_map 中的转账交易分类，一个 pool 生成一个 Consensuslocaltos，其中可能包含给多个地址的转账交易
     std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_tx_map;
     for (auto iter = addr_amount_map.begin(); iter != addr_amount_map.end(); ++iter) {
@@ -969,8 +949,12 @@ void BlockManager::HandleLocalNormalToTx(
             common::Encode::HexEncode(heights_hash).c_str(),
             common::Encode::HexEncode(gid).c_str());
     }
+}
 
-    // 2. 生成 ConsensusLocalContractCreate 交易
+void BlockManager::createContractCreateByRootToTxs(
+        uint8_t thread_idx,
+        std::vector<std::shared_ptr<localToTxInfo>> contract_create_tx_infos,
+        const std::string& heights_hash) {
     std::unordered_map<uint32_t, pools::protobuf::ToTxMessage> to_cc_tx_map;
 	for (uint32_t i = 0; i < contract_create_tx_infos.size(); i++) {
 		auto contract_create_tx = contract_create_tx_infos[i];
@@ -1029,6 +1013,7 @@ void BlockManager::HandleLocalNormalToTx(
         tx->set_to(msg_ptr->address_info->addr());
         tx->set_step(pools::protobuf::kContractCreateByRootTo);
         auto gid = common::Hash::keccak256(cc_hash + heights_hash);
+        // TODO 暂时写死用于调试，实际需要 ContractCreateByRootFrom 交易传
         tx->set_gas_limit(1000000);
         tx->set_gas_price(1);
         tx->set_gid(gid);
@@ -1047,7 +1032,7 @@ void BlockManager::HandleLocalNormalToTx(
 			common::Encode::HexEncode(heights_hash).c_str(),
 			pool_idx, amount, common::Encode::HexEncode(contract_from).c_str());
         pools_mgr_->HandleMessage(msg_ptr);        
-    }    
+    }
 }
 
 void BlockManager::AddNewBlock(

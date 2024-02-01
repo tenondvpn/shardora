@@ -100,6 +100,29 @@ struct LeaderWithStatisticTxItem {
     int32_t leader_to_index;
 };
 
+struct localToTxInfo {
+    std::string des;
+    uint64_t amount;
+    uint32_t pool_index;
+    // for ContractCreate
+    std::string library_bytes;
+    std::string contract_from;
+    uint64_t contract_prepayment; // prepayment 交易的 prepayment 是通过 amount 传递的吧
+    
+    localToTxInfo(const std::string& des,
+        uint64_t amount,
+        uint32_t pool_index,
+        const std::string& library_bytes,
+        const std::string& contract_from,
+        uint64_t prepayment) :
+        des(des),
+        amount(amount),
+        pool_index(pool_index),
+        library_bytes(library_bytes),
+        contract_from(contract_from),
+        contract_prepayment(prepayment) {}
+};
+
 typedef std::shared_ptr<BlockToDbItem> BlockToDbItemPtr;
 
 typedef std::function<bool(
