@@ -615,11 +615,10 @@ async function test_contracts_by_root() {
 					let sk = sks[des_shard_id];
 					let keypair2 = init_private_key(sk);
 					AddDataAuth(keypair2["account_id"], data_id, "2", randomOfArr(net_node[des_shard_id]), des_shard_id, keypair2);
-					await sleep(10000);
+					await sleep(15000);
 					GetAuthData(keypair2["account_id"], data_id, randomOfArr(net_node[des_shard_id]), function(res_data) {
 						if (res_data["data"].length != 2) {
 							lerror(i.toString() + ": " + "fail: " + res["data"]);
-							return;
 						}
 					});
 				})
@@ -733,7 +732,7 @@ async function main() {
 		for (var i = 0; i < times; i++) {
 			test_contracts_by_root();
 			test_contracts_by_local();
-			test_transfers();	
+			await test_transfers();
 		}
 		
 	}
