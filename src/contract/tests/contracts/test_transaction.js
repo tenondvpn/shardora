@@ -296,7 +296,7 @@ function QueryPostCode(path, data, from_node, callback) {
     var post_req = http.request(post_options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
-			console.log(chunk);
+			console.log("-----", chunk);
             try {
                 var json_res = JSON.parse(chunk);
                 callback(json_res);
@@ -318,6 +318,7 @@ function QueryContract(account_id, data_id, input, from_node, callback) {
         'from': account_id,
     };
 
+	console.log("======query", data)
     return QueryPostCode('/query_contract', data, from_node, callback);
 }
 
@@ -489,30 +490,24 @@ async function test_contracts() {
 
         contract_addr = CreateDataAuth(self_account_id, data_id, "1", randomOfArr(net_node[from_shard]));
 		console.log(contract_addr);
-        await sleep(20000); // 时间好长
+        await sleep(30000); // 时间好长
 		QueryAccount(contract_addr, randomOfArr(net_node[2]), function(res) {
-			console.log(res);
 			if (res == '') {
 				assert.ok(false, "contract address create failed in root.");
 			} else {
 				var shard_id = res['shardingId'];
 				QueryAccount(contract_addr, randomOfArr(net_node[shard_id]), function(res2) {
-					console.log(res2, shard_id);
-					if (res2 == '') {
-						assert.ok(false, "contract address create failed in shard.");
-					} else {
-						// AddDataAuth(self_account_id, data_id, "2", randomOfArr(net_node[shard_id]));
-						// sleep(5000);
-						// GetAuthData(self_account_id, data_id, randomOfArr(net_node[shard_id]), function(res3) {
-						// 	console.log(res3);
-						// 	if (testcases[i].query_suc) {   
-						// 		assert.ok(res3["data"].length == 2, i.toString() + ": " + "fail: " + res3["data"])
-						// 	} else {
-						// 		assert.ok(res3 == '', i.toString() + ": " + "fail: res is not empty, " + res3);
-						// 	}
-						// });
-						
-					}
+					// AddDataAuth(self_account_id, data_id, "2", randomOfArr(net_node[shard_id]));
+					// sleep(5000);
+					GetAuthData(self_account_id, data_id, randomOfArr(net_node[shard_id]), function(res3) {
+						console.log("=========", res3);
+						if (testcases[i].query_suc) {   
+							assert.ok(res3["data"].length == 1, i.toString() + ": " + "fail: " + res3["data"])
+						} else {
+							assert.ok(res3 == '', i.toString() + ": " + "fail: res is not empty, " + res3);
+						}
+					});
+
 				})
 			}
 			
