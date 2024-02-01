@@ -259,14 +259,6 @@ void AccountManager::HandleLocalToTx(
             account_info = std::make_shared<address::protobuf::AddressInfo>();
             account_info->set_pool_index(block.pool_index());
             account_info->set_addr(to_txs.tos(i).to());
-
-            if (tx.has_contract_code()) {
-                account_info->set_type(address::protobuf::kContract);
-                account_info->set_bytes_code(tx.storages(i).val_hash());
-            } else {
-                account_info->set_type(address::protobuf::kNormal);    
-            }
-            
             account_info->set_sharding_id(block.network_id());
             account_info->set_latest_height(block.height());
             account_info->set_balance(to_txs.tos(i).balance());

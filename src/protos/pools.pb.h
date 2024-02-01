@@ -143,7 +143,7 @@ enum StepType {
 };
 bool StepType_IsValid(int value);
 const StepType StepType_MIN = kNormalFrom;
-const StepType StepType_MAX = kConsensusLocalContractCreate;
+const StepType StepType_MAX = kContractCreateByRootFrom;
 const int StepType_ARRAYSIZE = StepType_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* StepType_descriptor();
