@@ -296,7 +296,6 @@ function QueryPostCode(path, data, from_node, callback) {
     var post_req = http.request(post_options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
-			console.log("-----", chunk);
             try {
                 var json_res = JSON.parse(chunk);
                 callback(json_res);
@@ -400,32 +399,32 @@ var testcases = [
         "contract_shard": 3, // 处理消息的 shard（必须和 sk 所在 shard 一致）
         "query_shard": 3, // 查询者所在 shard
         "query_suc": true, // 是否能查到数据
-    }// , { // 创建合约在 shard4, 同分片查询合约成功
-    //     "sk": sk2_shard4, // 发起者 sk
-    //     "contract_shard": 4, 
-    //     "query_shard": 4, 
-    //     "query_suc": true, // 是否能查到数据
-    // }, { // 查询合约 shard 不一致
-    //     "sk": sk1_shard3,
-    //     "contract_shard": 3, 
-    //     "query_shard": 4,
-    //     "query_suc": false,
-    // }, { // 查询合约 shard 不一致
-    //     "sk": sk2_shard4,
-    //     "contract_shard": 4, 
-    //     "query_shard": 3,
-    //     "query_suc": false,
-    // }, { // 处理消息 shard 与 from 节点 shard 不一致
-    //     "sk": sk1_shard3,
-    //     "contract_shard": 4,
-    //     "query_shard": 3,
-    //     "query_suc": false,
-    // }, { // 处理消息 shard 与 from 节点 shard 不一致
-    //     "sk": sk2_shard4,
-    //     "contract_shard": 3,
-    //     "query_shard": 4,
-    //     "query_suc": false,
-    // }
+    }, { // 创建合约在 shard4, 同分片查询合约成功
+        "sk": sk2_shard4, // 发起者 sk
+        "contract_shard": 4, 
+        "query_shard": 4, 
+        "query_suc": true, // 是否能查到数据
+    }, { // 查询合约 shard 不一致
+        "sk": sk1_shard3,
+        "contract_shard": 3, 
+        "query_shard": 4,
+        "query_suc": false,
+    }, { // 查询合约 shard 不一致
+        "sk": sk2_shard4,
+        "contract_shard": 4, 
+        "query_shard": 3,
+        "query_suc": false,
+    }, { // 处理消息 shard 与 from 节点 shard 不一致
+        "sk": sk1_shard3,
+        "contract_shard": 4,
+        "query_shard": 3,
+        "query_suc": false,
+    }, { // 处理消息 shard 与 from 节点 shard 不一致
+        "sk": sk2_shard4,
+        "contract_shard": 3,
+        "query_shard": 4,
+        "query_suc": false,
+    }
 ];
 
 var testcases_transfer = [
@@ -490,28 +489,25 @@ async function test_contracts() {
 
         contract_addr = CreateDataAuth(self_account_id, data_id, "1", randomOfArr(net_node[from_shard]));
 		console.log(contract_addr);
-        await sleep(30000); // 时间好长
-		QueryAccount(contract_addr, randomOfArr(net_node[2]), function(res) {
+        await sleep(20000);
+		await QueryAccount(contract_addr, randomOfArr(net_node[2]), async function(res) {
 			if (res == '') {
 				assert.ok(false, "contract address create failed in root.");
 			} else {
 				var shard_id = res['shardingId'];
-				QueryAccount(contract_addr, randomOfArr(net_node[shard_id]), function(res2) {
-					// AddDataAuth(self_account_id, data_id, "2", randomOfArr(net_node[shard_id]));
-					// sleep(5000);
-					GetAuthData(self_account_id, data_id, randomOfArr(net_node[shard_id]), function(res3) {
-						console.log("=========", res3);
+				await QueryAccount(contract_addr, randomOfArr(net_node[shard_id]), async function(res2) {
+					AddDataAuth(self_account_id, data_id, "2", randomOfArr(net_node[shard_id]));
+					await sleep(10000);
+					GetAuthData(self_account_id, data_id, randomOfArr(net_node[shard_id]), async function(res3) {
 						if (testcases[i].query_suc) {   
-							assert.ok(res3["data"].length == 1, i.toString() + ": " + "fail: " + res3["data"])
+							assert.ok(res3["data"].length == 2, i.toString() + ": " + "fail: " + res3["data"])
 						} else {
 							assert.ok(res3 == '', i.toString() + ": " + "fail: res is not empty, " + res3);
 						}
 					});
 
 				})
-			}
-			
-				
+			}	
 		})
 
         console.log(i.toString() + ": " + "success")

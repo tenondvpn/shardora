@@ -76,9 +76,10 @@ int NetworkInit::Init(int argc, char** argv) {
         return kInitError;
     }
 
-    int genesis_check = GenesisCmd(parser_arg);
+    std::string net_name;
+    int genesis_check = GenesisCmd(parser_arg, net_name);
     if (genesis_check != -1) {
-        std::cout << "genesis cmd over, exit." << std::endl;
+        std::cout << net_name << " genesis cmd over, exit." << std::endl;
         return genesis_check;
     }
 
@@ -970,7 +971,7 @@ int NetworkInit::ParseParams(int argc, char** argv, common::ParserArgs& parser_a
     return kInitSuccess;
 }
 
-int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
+int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg, std::string& net_name) {
     if (!parser_arg.Has("U") && !parser_arg.Has("S")) {
         return -1;
     }
@@ -980,6 +981,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
     YAML::Node genesis_config = YAML::LoadFile("./genesis.yml");
 
     if (parser_arg.Has("U")) {
+        net_name = "root2";
         valid_net_ids_set.clear();
         valid_net_ids_set.insert(network::kRootCongressNetworkId);
         for (uint32_t net_i = 0; net_i < genesis_config["shards"].size(); net_i++) {
@@ -1023,6 +1025,7 @@ int NetworkInit::GenesisCmd(common::ParserArgs& parser_arg) {
             return kInitError;
         }
 
+        net_name = "shard" + net_id_str;
         uint32_t net_id = static_cast<uint32_t>(std::stoul(net_id_str));
         // shard3 创世时需要 root 节点参与
         if (net_id == network::kConsensusShardBeginNetworkId) {
