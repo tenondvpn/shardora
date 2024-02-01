@@ -30,6 +30,25 @@ function hexToBytes(hex) {
     return bytes;
 }
 
+function getFunctionName() {
+    const err = new Error();
+    const stack = err.stack.split('\n');
+    // 根据堆栈格式调整索引
+    const caller = stack[3].trim(); // 通常情况下第 3 行是调用者信息
+    const functionName = caller.split(' ')[1]; // 获取函数名
+    return functionName;
+}
+
+function llog(...args) {
+    const functionName = getFunctionName();
+    console.log(`[${functionName}]`, ...args);
+}
+
+function lerror(...args) {
+    const functionName = getFunctionName();
+    console.error(`[${functionName}]`, ...args);
+}
+
 function init_private_key(sk) {
     const privateKeyBuf = Secp256k1.uint256(sk, 16);
     var self_private_key = Secp256k1.uint256(privateKeyBuf, 16);
@@ -72,9 +91,9 @@ function PostCode(data, from_node) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
             if (chunk != "ok") {
-                // console.log('Response: ' + chunk + ", " + data);
+                // llog('Response: ' + chunk + ", " + data);
             } else {
-                // console.log('Response: ' + chunk + ", " + data);
+                // llog('Response: ' + chunk + ", " + data);
             }
         })
     });
@@ -142,7 +161,7 @@ function param_contract(tx_type, gid, to, amount, gas_limit, gas_price, contract
     const isValidSig = Secp256k1.ecverify(pubX, pubY, sigR, sigS, digest)
 
     if (!isValidSig) {
-        console.log('signature transaction failed.')
+        llog('signature transaction failed.')
         return;
     }
 
@@ -332,7 +351,7 @@ function QueryPostCode(path, data, from_node, callback) {
     });
 
 	post_req.on('error', function(e) {
-        console.error(`Problem with request: ${e.message}`);
+        lerror(`Problem with request: ${e.message}`);
     });
 
     post_req.write(post_data);
@@ -347,7 +366,7 @@ function QueryContract(account_id, data_id, input, from_node, callback) {
         'from': account_id,
     };
 
-	// console.log("query contract", data);
+	// llog("query contract", data);
 
     return QueryPostCode('/query_contract', data, from_node, callback);
 }
@@ -377,7 +396,7 @@ function parseFromNode(from_node) {
 function CreateDataAuth(account_id, data_id, data, from_node, des_shard_id, keypair) {
     var cons_cods = GetConstructorParams(account_id, data_id, data);
     if (cons_cods == null) {
-        console.log("创建数据身份失败，输入的初始管理员错误: " + process.argv);
+        llog("创建数据身份失败，输入的初始管理员错误: " + process.argv);
         return;
     }
 
@@ -388,7 +407,7 @@ function CreateDataAuth(account_id, data_id, data, from_node, des_shard_id, keyp
 function CreateDataAuthByRoot(account_id, data_id, data, from_node, des_shard_id, keypair) {
     var cons_cods = GetConstructorParams(account_id, data_id, data);
     if (cons_cods == null) {
-        console.log("创建数据身份失败，输入的初始管理员错误: " + process.argv);
+        llog("创建数据身份失败，输入的初始管理员错误: " + process.argv);
         return;
     }
 
@@ -399,7 +418,7 @@ function CreateDataAuthByRoot(account_id, data_id, data, from_node, des_shard_id
 function AddDataAuth(account_id, data_id, data, from_node, des_shard_id, keypair) {
     var auth_cods = GetAuthorizationParams(data);
     if (auth_cods == null) {
-        console.log("确权失败，输入的确权参数错误: " + process.argv);
+        llog("确权失败，输入的确权参数错误: " + process.argv);
         return;
     }
     
@@ -409,7 +428,7 @@ function AddDataAuth(account_id, data_id, data, from_node, des_shard_id, keypair
 function GetAuthData(account_id, data_id, from_node, callback) {
     var func = web3.eth.abi.encodeFunctionSignature('GetAuthJson(uint32,uint32)');
     var funcParam = web3.eth.abi.encodeParameters(['uint32', 'uint32'], [0, 10]);
-    // console.log("GetAuthJson func: " + func.substring(2));
+    // llog("GetAuthJson func: " + func.substring(2));
     return QueryContract(account_id, data_id, func.substring(2)+funcParam.substring(2), from_node, callback);
 }
 
@@ -531,19 +550,19 @@ var net_node = {
 
 
 // 测试本分片创建合约
-async function test_contracts() {
-    console.log("test contracts by local...");
+async function test_contracts_by_local() {
+    llog("test contracts by local...");
     for (var i = 0; i < testcases.length; ++i) { 
-        var sk = testcases[i].sk;
+        let sk = testcases[i].sk;
         keypair = init_private_key(sk);
-		var account_id = keypair["account_id"];
-        var from_shard = 3;
-        var query_shard = testcases[i].query_shard;
-        des_shard_id = testcases[i].contract_shard;
+		let account_id = keypair["account_id"];
+        let from_shard = 3;
+        let query_shard = testcases[i].query_shard;
+        let des_shard_id = testcases[i].contract_shard;
 		
 
-        var gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)))
-        var data_id = i.toString() + gid;
+        let gid = GetValidHexString(Secp256k1.uint256(randomBytes(32)))
+        let data_id = i.toString() + gid;
 
         CreateDataAuth(account_id, data_id, "1", randomOfArr(net_node[from_shard]), des_shard_id, keypair);
         await sleep(5000);
@@ -551,23 +570,23 @@ async function test_contracts() {
         await sleep(5000);
         GetAuthData(account_id, data_id, randomOfArr(net_node[query_shard]), function(res) {
             if (testcases[i].query_suc) {
-				if (res["data"] != 2) {
-					console.error(i.toString() + ": " + "fail: " + res["data"]);
+				if (res["data"].length != 2) {
+					lerror(i.toString() + ": " + "fail: " + res["data"]);
 				}
             } else {
 				if (res != '') {
-					console.error(i.toString() + ": " + "fail: res is not empty, " + res);
+					lerror(i.toString() + ": " + "fail: res is not empty, " + res);
 				}
             }
         });
-        console.log(i.toString() + ": " + "success")
+        llog(i.toString() + ": " + "success")
         await sleep(3000);
     }
 }
 
 // 测试 root 创建合约地址
 async function test_contracts_by_root() {
-    console.log("test contracts by root...");
+    llog("test contracts by root...");
     for (var i = 0; i < testcase_contracts_by_root.length; ++i) {
 		let from_shard = 3;
         let des_shard_id = testcase_contracts_by_root[i].shard_id;
@@ -579,18 +598,18 @@ async function test_contracts_by_root() {
         let data_id = i.toString() + gid;
 
         let contract_addr = CreateDataAuthByRoot(sk_to_account(sk), data_id, "1", randomOfArr(net_node[from_shard]), des_shard_id, keypair);
-		console.log("contract_addr: " + contract_addr);
+		// llog("contract_addr: " + contract_addr);
         await sleep(25000);
 
 		QueryAccount(contract_addr, randomOfArr(net_node[2]), function(res_root) {
 			if (res_root == '') {
-				console.error(i.toString() + ": " + "failed: contract addr create failed in root");
+				lerror(i.toString() + ": " + "failed: contract addr create failed in root");
 			} else {
 				let shard_id = res_root['shardingId'];
 				let des_shard_id = shard_id;
 				QueryAccount(contract_addr, randomOfArr(net_node[shard_id]), async function(res_shard) {
 					if (res_shard == '') {
-						console.error(i.toString() + ": " + "failed: contract addr create failed in shard");
+						lerror(i.toString() + ": " + "failed: contract addr create failed in shard");
 					}
 
 					let sk = sks[des_shard_id];
@@ -599,7 +618,7 @@ async function test_contracts_by_root() {
 					await sleep(10000);
 					GetAuthData(keypair2["account_id"], data_id, randomOfArr(net_node[des_shard_id]), function(res_data) {
 						if (res_data["data"].length != 2) {
-							console.error(i.toString() + ": " + "fail: " + res["data"]);
+							lerror(i.toString() + ": " + "fail: " + res["data"]);
 							return;
 						}
 					});
@@ -607,14 +626,14 @@ async function test_contracts_by_root() {
 			}
 		})
 
-        console.log(i.toString() + ": " + "success")
+        llog(i.toString() + ": " + "success")
         await sleep(3000);
     }
 }
 
 
 async function test_transfers() {
-    console.log("test transfers...");
+    llog("test transfers...");
 
     for (var i = 0; i < testcases_transfer.length; ++i) {
         let from_sk = testcases_transfer[i].from_sk;
@@ -625,9 +644,9 @@ async function test_transfers() {
             to_sk = GetValidHexString(Secp256k1.uint256(randomBytes(32)));
         }
         let to_addr = sk_to_account(to_sk);
-        // console.log("to_addr: " + to_addr);
+        // llog("to_addr: " + to_addr);
         let from_shard = testcases_transfer[i].from_shard;
-        let need_create = testcases_transfer[i].need_create;
+        var need_create = testcases_transfer[i].need_create;
         let create_ok = testcases_transfer[i].create_ok;
         let to_balance = 0;
 
@@ -636,7 +655,7 @@ async function test_transfers() {
             // 账户已经存在
             if (res != '') {
 				if (need_create) {
-					console.error(i.toString() + ": " + "fail: addr already exists");
+					lerror(i.toString() + ": " + "fail: addr already exists");
 				}
                 
                 var shard_id = res['shardingId'];
@@ -647,9 +666,7 @@ async function test_transfers() {
                 })
             } else {
                 // 账户不存在，创建账户
-				if (!need_create) {
-					console.error(i.toString() + ": " + "fail: addr need create");
-				}
+                assert.ok(need_create, i.toString() + ": " + "fail: addr need create");
             }
         });
 
@@ -682,7 +699,7 @@ async function test_transfers() {
             
         });
 
-        console.log(i.toString() + ": " + "success");
+        llog(i.toString() + ": " + "success");
     }
 }
 
@@ -691,7 +708,7 @@ async function create_new_node(sk_new) {
 	var keypair = init_private_key(from_sk);
 	
 	var to_addr = sk_to_account(sk_new);
-	console.log("to addr: " + to_addr);
+	llog("to addr: " + to_addr);
 	
 	Transfer(to_addr, 100000000, 100000, 1, randomOfArr(net_node[3]), 3, keypair);
 	await sleep(10000);
@@ -699,27 +716,28 @@ async function create_new_node(sk_new) {
 	QueryAccount(to_addr, randomOfArr(net_node[2]), function(res) {
         // 账户已经存在
         if (res == '') {
-            console.log("create failed");
+            llog("create failed");
         }
 
         var shard_id = res['shardingId'];
 		
-        console.log(res);        
+        llog(res);        
     });
 }
 
 async function main() {
 	const args = process.argv.slice(2)
+	
 	if (args[0] == 0) {
-
-		for (var i = 0; i < 1; i++) {
-			// await test_contracts_by_root();
-			await test_contracts();
-			await test_transfers();	
+		const times = 10;
+		for (var i = 0; i < times; i++) {
+			test_contracts_by_root();
+			test_contracts_by_local();
+			test_transfers();	
 		}
 		
 	}
-
+	
 	if (args[0] == 1) {
 		// var sk_new = "0cbc2bc8f999aa16392d3f8c1c271c522d3a92a4b7074520b37d37a4b38db999";
 		var sk_new = args[1];
