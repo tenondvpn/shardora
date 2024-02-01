@@ -236,15 +236,7 @@ void ToTxsPools::HandleCreateContractUserCall(
         const block::protobuf::BlockTx& tx) {
     uint32_t sharding_id = network::kRootCongressNetworkId;
     uint32_t pool_index = block.pool_index();
-
-    std::string bytes_code;
-    for (int32_t i = 0; i < tx.storages_size(); ++i) {
-        if (tx.storages(i).key() == protos::kCreateContractBytesCode) {
-            bytes_code = tx.storages(i).val_hash();
-            break;
-        }
-    }
-    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", bytes_code, tx.from(), tx.contract_prepayment());
+    AddTxToMap(block, tx.to(), tx.step(), tx.amount(), sharding_id, pool_index, "", "", "", 0);
     for (int32_t i = 0; i < tx.contract_txs_size(); ++i) {
         uint32_t sharding_id = common::kInvalidUint32;
         uint32_t pool_index = -1;
@@ -253,9 +245,6 @@ void ToTxsPools::HandleCreateContractUserCall(
             sharding_id = addr_info->sharding_id();
         }
 
-		// 用于 from 到 to 转账的部分
-		// 由于 contract_address 是在本 shard 创建的，比聚合转账要快，所以不会有问题
-		// TODO 但如果要改为 root 创建账号，就要把转账和账号创建 root 合并，不能拆成两个搞了
         AddTxToMap(
             block,
             tx.contract_txs(i).to(),
@@ -324,7 +313,7 @@ void ToTxsPools::AddTxToMap(
         const std::string& key,
         const std::string& library_bytes,
         const std::string& from,
-		uint64_t prepayment) {
+        uint64_t prepayment) {
     std::string to(in_to.size() + 4, '\0');
     char* tmp_to_data = to.data();
     memcpy(tmp_to_data + 4, in_to.c_str(), in_to.size());
@@ -735,7 +724,7 @@ int ToTxsPools::CreateToTxWithHeights(
         to_item->set_step(iter->second.type);
         // create contract just in caller sharding
         if (iter->second.type == pools::protobuf::kContractCreate) {
-			assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
+            assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
             auto account_info = GetAddressInfo(to);
             if (account_info == nullptr) {
                 to_tx.mutable_tos()->ReleaseLast();
@@ -743,9 +732,9 @@ int ToTxsPools::CreateToTxWithHeights(
             }
 
             if (memcmp(
-						account_info->bytes_code().c_str(),
-						protos::kContractBytesStartCode.c_str(),
-						protos::kContractBytesStartCode.size()) == 0) {
+                        account_info->bytes_code().c_str(),
+                        protos::kContractBytesStartCode.c_str(),
+                        protos::kContractBytesStartCode.size()) == 0) {
                 to_item->set_library_bytes(account_info->bytes_code());
                 str_for_hash.append(account_info->bytes_code());
             }
@@ -757,24 +746,22 @@ int ToTxsPools::CreateToTxWithHeights(
                 common::Encode::HexEncode(to).c_str(),
                 common::GlobalInfo::Instance()->network_id());        
         } else if (iter->second.type == pools::protobuf::kContractCreateByRootFrom) {
-			assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
-
-			ZJC_DEBUG("==== 0.2 library bytes: %s, to: %s, from: %s",
-				common::Encode::HexEncode(iter->second.library_bytes).c_str(),
-				common::Encode::HexEncode(to).c_str(),
-				common::Encode::HexEncode(iter->second.from).c_str());
+            assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
+            ZJC_DEBUG("==== 0.2 library bytes: %s, to: %s, from: %s",
+                common::Encode::HexEncode(iter->second.library_bytes).c_str(),
+                common::Encode::HexEncode(to).c_str(),
+                common::Encode::HexEncode(iter->second.from).c_str());
             if (memcmp(iter->second.library_bytes.c_str(),
-					protos::kContractBytesStartCode.c_str(),
-					protos::kContractBytesStartCode.size()) == 0) {
-				to_item->set_library_bytes(iter->second.library_bytes);
-				str_for_hash.append(iter->second.library_bytes);
-				// ContractCreate 需要 from 地址，用于 prepayment 创建
-				to_item->set_contract_from(iter->second.from);
-				str_for_hash.append(iter->second.from);
-				to_item->set_prepayment(iter->second.prepayment);
-				str_for_hash.append((char*)&iter->second.prepayment, sizeof(iter->second.prepayment));	
-            }            
-
+                    protos::kContractBytesStartCode.c_str(),
+                    protos::kContractBytesStartCode.size()) == 0) {
+                to_item->set_library_bytes(iter->second.library_bytes);
+                str_for_hash.append(iter->second.library_bytes);
+                // ContractCreate 需要 from 地址，用于 prepayment 创建
+                to_item->set_contract_from(iter->second.from);
+                str_for_hash.append(iter->second.from);
+                to_item->set_prepayment(iter->second.prepayment);
+                str_for_hash.append((char*)&iter->second.prepayment, sizeof(iter->second.prepayment));	
+            }
             auto net_id = common::kInvalidUint32; // ContractCreate 不在直接分配 sharding，由 root 分配
             to_item->set_sharding_id(net_id);
             str_for_hash.append((char*)&net_id, sizeof(net_id));
@@ -783,26 +770,24 @@ int ToTxsPools::CreateToTxWithHeights(
                 common::GlobalInfo::Instance()->network_id());
 		} else if (iter->second.type == pools::protobuf::kRootCreateAddress) {
             assert(sharding_id != network::kRootCongressNetworkId);
-
-			ZJC_DEBUG("==== 0.2 library bytes: %s, to: %s, from: %s",
-				common::Encode::HexEncode(iter->second.library_bytes).c_str(),
-				common::Encode::HexEncode(to).c_str(),
-				common::Encode::HexEncode(iter->second.from).c_str());
-			// for contract create tx
+            ZJC_DEBUG(
+                "==== 0.2 library bytes: %s, to: %s, from: %s",
+                common::Encode::HexEncode(iter->second.library_bytes).c_str(),
+                common::Encode::HexEncode(to).c_str(),
+                common::Encode::HexEncode(iter->second.from).c_str());
+            // for contract create tx
 			if (memcmp(iter->second.library_bytes.c_str(),
-					protos::kContractBytesStartCode.c_str(),
-					protos::kContractBytesStartCode.size()) == 0) {
-				to_item->set_library_bytes(iter->second.library_bytes);
-				str_for_hash.append(iter->second.library_bytes);
-				to_item->set_contract_from(iter->second.from);
-				str_for_hash.append(iter->second.from);
-				to_item->set_prepayment(iter->second.prepayment);
-				str_for_hash.append((char*)&iter->second.prepayment, sizeof(iter->second.prepayment));	
-			}
-
-			to_item->set_sharding_id(sharding_id);
+                    protos::kContractBytesStartCode.c_str(),
+                    protos::kContractBytesStartCode.size()) == 0) {
+                to_item->set_library_bytes(iter->second.library_bytes);
+                str_for_hash.append(iter->second.library_bytes);
+                to_item->set_contract_from(iter->second.from);
+                str_for_hash.append(iter->second.from);
+                to_item->set_prepayment(iter->second.prepayment);
+                str_for_hash.append((char*)&iter->second.prepayment, sizeof(iter->second.prepayment));
+            }
+            to_item->set_sharding_id(sharding_id);
             str_for_hash.append((char*)&sharding_id, sizeof(sharding_id));
-			
             ZJC_DEBUG("root create sharding address: %s, %u, pool: %u",
                 common::Encode::HexEncode(to).c_str(),
                 sharding_id,

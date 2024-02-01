@@ -91,8 +91,8 @@ public:
             const block::protobuf::BlockTx& tx,
             db::DbWriteBatch& db_batch) {
         if (tx.step() != pools::protobuf::kContractCreate &&
-			tx.step() != pools::protobuf::kContractExcute &&
-			tx.step() != pools::protobuf::kConsensusLocalContractCreate) {
+            tx.step() != pools::protobuf::kContractExcute &&
+            tx.step() != pools::protobuf::kConsensusLocalContractCreate) {
             return;
         }
 

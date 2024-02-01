@@ -43,7 +43,7 @@ private:
     void HandleCreateContractUserCall(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
-	void HandleCreateContractByRootFrom(
+    void HandleCreateContractByRootFrom(
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx);
     void HandleContractGasPrepayment(
@@ -68,7 +68,7 @@ private:
         const std::string& key,
         const std::string& library_bytes,
         const std::string& from,
-		uint64_t prepayment);
+        uint64_t prepayment);
     void HandleElectJoinVerifyVec(
         const std::string& verify_hash,
         std::vector<bls::protobuf::JoinElectInfo>& verify_reqs);

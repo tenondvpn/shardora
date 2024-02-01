@@ -597,7 +597,7 @@ void TxPoolManager::HandlePoolsMessage(const transport::MessagePtr& msg_ptr) {
             break;
         case pools::protobuf::kCreateLibrary:
         case pools::protobuf::kContractCreate:
-		case pools::protobuf::kContractCreateByRootFrom:
+        case pools::protobuf::kContractCreateByRootFrom:
             HandleCreateContractTx(msg_ptr);
             break;
         case pools::protobuf::kContractGasPrepayment:
