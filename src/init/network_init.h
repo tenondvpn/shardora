@@ -46,7 +46,7 @@ private:
     int InitHttpServer();
     int InitSecurity();
     int CheckJoinWaitingPool();
-    int GenesisCmd(common::ParserArgs& parser_arg);
+    int GenesisCmd(common::ParserArgs& parser_arg, std::string& net_name);
     void GetNetworkNodesFromConf(const YAML::Node&, std::vector<GenisisNodeInfoPtr>&, std::vector<GenisisNodeInfoPtrVector>&);
     void AddBlockItemToCache(
         uint8_t thread_idx,

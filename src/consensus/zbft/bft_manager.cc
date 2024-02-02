@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include <libbls/tools/utils.h>
+#include <protos/pools.pb.h>
 
 #include "consensus/zbft/root_zbft.h"
 #include "consensus/zbft/zbft.h"
@@ -103,11 +104,17 @@ void BftManager::RegisterCreateTxCallbacks() {
         pools::protobuf::kConsensusLocalTos,
         std::bind(&BftManager::CreateToTxLocal, this, std::placeholders::_1));
     pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kContractCreateByRootTo,
+        std::bind(&BftManager::CreateContractByRootToTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kRootCreateAddress,
         std::bind(&BftManager::CreateRootToTxItem, this, std::placeholders::_1));
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kContractCreate,
         std::bind(&BftManager::CreateContractUserCreateCallTx, this, std::placeholders::_1));
+    pools_mgr_->RegisterCreateTxFunction(
+        pools::protobuf::kContractCreateByRootFrom,
+        std::bind(&BftManager::CreateContractByRootFromTx, this, std::placeholders::_1));
     pools_mgr_->RegisterCreateTxFunction(
         pools::protobuf::kContractGasPrepayment,
         std::bind(&BftManager::CreateContractUserCallTx, this, std::placeholders::_1));
@@ -389,7 +396,6 @@ ZbftPtr BftManager::Start(
         return nullptr;
     }
 #endif
-
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (elect_item_ptr == nullptr) {
         ZJC_DEBUG("thread idx error 1: %d", thread_index);
@@ -415,7 +421,7 @@ ZbftPtr BftManager::Start(
             elect_item_ptr->time_valid, now_tm_ms);
         elect_item_ptr = item_ptr;
     }
-
+    
     if (commited_bft_ptr != nullptr &&
             commited_bft_ptr->elect_item_ptr().get() != elect_item_ptr.get()) {
         ZJC_DEBUG("leader changed.");
@@ -436,7 +442,7 @@ ZbftPtr BftManager::Start(
 //         ZJC_DEBUG("thread idx error 5: %d", thread_index);
         return nullptr;
     }
-
+    
     if (txs_ptr->tx_type == pools::protobuf::kNormalFrom) {
         if (block_mgr_->ShouldStopConsensus()) {
             ZJC_DEBUG("should stop consensus.");
@@ -447,6 +453,7 @@ ZbftPtr BftManager::Start(
 
     txs_ptr->thread_index = thread_index;
     auto zbft_ptr = StartBft(elect_item_ptr, txs_ptr, commited_bft_ptr);
+	
     if (zbft_ptr == nullptr) {
         for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
             iter->second->in_consensus = false;
@@ -643,7 +650,7 @@ int BftManager::InitZbftPtr(int32_t leader_idx, const ElectItem& elect_item, Zbf
 ZbftPtr BftManager::StartBft(
         const std::shared_ptr<ElectItem>& elect_item_ptr,
         std::shared_ptr<WaitingTxsItem>& txs_ptr,
-        ZbftPtr commited_bft_ptr) {
+        ZbftPtr commited_bft_ptr) {    
     ZbftPtr bft_ptr = nullptr;
     if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
         bft_ptr = std::make_shared<RootZbft>(
@@ -665,6 +672,7 @@ ZbftPtr BftManager::StartBft(
 
     auto& elect_item = *elect_item_ptr;
     bft_ptr->set_elect_item_ptr(elect_item_ptr);
+	
     if (InitZbftPtr(
             elect_item.local_node_member_index,
             elect_item,
@@ -673,7 +681,10 @@ ZbftPtr BftManager::StartBft(
         return nullptr;
     }
 
+	
+
     auto& gid = bft_gids_[txs_ptr->thread_index];
+	
     uint64_t* tmp_gid = (uint64_t*)gid.data();
     tmp_gid[0] = bft_gids_index_[txs_ptr->thread_index]++;
     bft_ptr->set_gid(gid);
@@ -681,6 +692,7 @@ ZbftPtr BftManager::StartBft(
     bft_ptr->set_member_count(elect_item.member_size);
     // LeaderPrepare 中会调用到 DoTransaction，本地执行块内交易
     int leader_pre = LeaderPrepare(elect_item, bft_ptr, commited_bft_ptr);
+	
     if (leader_pre != kConsensusSuccess) {
         ZJC_ERROR("leader prepare failed!");
         return nullptr;
@@ -688,14 +700,15 @@ ZbftPtr BftManager::StartBft(
 
     ZJC_DEBUG("this node is leader and start bft: %s,"
         "pool index: %d, thread index: %d, prepare hash: %s, pre hash: %s, "
-        "tx size: %d, elect height: %lu",
+        "tx size: %d, elect height: %lu, gid: %s",
         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
         bft_ptr->pool_index(),
         bft_ptr->thread_index(),
         common::Encode::HexEncode(bft_ptr->local_prepare_hash()).c_str(),
         bft_ptr->prepare_block() == nullptr ? "" : common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
         txs_ptr->txs.size(),
-        elect_item.elect_height);
+        elect_item.elect_height,
+        common::Encode::HexEncode(gid).c_str());
     return bft_ptr;
 }
 
@@ -3173,7 +3186,8 @@ int BftManager::BackupCommit(ZbftPtr& bft_ptr, const transport::MessagePtr& msg_
 }
 
 bool BftManager::IsCreateContractLibraray(const block::protobuf::BlockTx& tx_info) {
-    if (tx_info.step() != pools::protobuf::kContractCreate) {
+    if (tx_info.step() != pools::protobuf::kContractCreate &&
+        tx_info.step() != pools::protobuf::kContractCreateByRootTo) {
         return false;
     }
 

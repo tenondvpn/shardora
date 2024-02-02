@@ -1,5 +1,7 @@
 #pragma once
 
+#include <consensus/zbft/contract_create_by_root_from_tx_item.h>
+#include <consensus/zbft/contract_create_by_root_to_tx_item.h>
 #include <unordered_map>
 
 #include "block/account_manager.h"
@@ -264,6 +266,16 @@ private:
 
     pools::TxItemPtr CreateContractUserCreateCallTx(const transport::MessagePtr& msg_ptr) {
         return std::make_shared<ContractUserCreateCall>(
+            contract_mgr_, db_, msg_ptr, account_mgr_, security_ptr_);
+    }
+
+	pools::TxItemPtr CreateContractByRootFromTx(const transport::MessagePtr& msg_ptr) {
+        return std::make_shared<ContractCreateByRootFromTxItem>(
+            contract_mgr_, db_, msg_ptr, account_mgr_, security_ptr_);
+    }
+
+	pools::TxItemPtr CreateContractByRootToTx(const transport::MessagePtr& msg_ptr) {
+        return std::make_shared<ContractCreateByRootToTxItem>(
             contract_mgr_, db_, msg_ptr, account_mgr_, security_ptr_);
     }
 

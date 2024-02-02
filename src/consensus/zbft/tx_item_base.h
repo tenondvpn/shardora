@@ -3,6 +3,7 @@
 #include "block/account_manager.h"
 #include "pools/tx_pool.h"
 #include "security/security.h"
+#include <protos/pools.pb.h>
 
 namespace zjchain {
 
@@ -59,18 +60,30 @@ protected:
         block_tx->set_to(tx_info.to());
         block_tx->set_amount(tx_info.amount());
         if (tx_info.step() == pools::protobuf::kContractCreate ||
-                tx_info.step() == pools::protobuf::kContractGasPrepayment) {
+            tx_info.step() == pools::protobuf::kContractGasPrepayment ||
+            tx_info.step() == pools::protobuf::kContractCreateByRootFrom ||
+            tx_info.step() == pools::protobuf::kContractCreateByRootTo ||
+            tx_info.step() == pools::protobuf::kRootCreateAddress) {
             if (tx_info.has_contract_prepayment()) {
                 block_tx->set_contract_prepayment(tx_info.contract_prepayment());
             }
         }
 
+        ZJC_DEBUG("gid: %s, contract_code: %d, amount: %d, contract_from: %s",
+            common::Encode::HexEncode(tx_info.gid()).c_str(),
+            tx_info.has_contract_code(), tx_info.amount(),
+            common::Encode::HexEncode(tx_info.contract_from()).c_str());
+		
         if (tx_info.has_contract_code()) {
             block_tx->set_contract_code(tx_info.contract_code());
         }
 
         if (tx_info.has_contract_input()) {
             block_tx->set_contract_input(tx_info.contract_input());
+        }
+
+        if (tx_info.has_contract_from()) {
+            block_tx->set_from(tx_info.contract_from());
         }
 
         block_tx->set_amount(tx_info.amount());

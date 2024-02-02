@@ -239,6 +239,7 @@ evmc::Result ZjchainHost::call(const evmc_message& msg) noexcept {
         }
     }
 
+	// 交易转账缓存
     if (params.value > 0) {
         uint64_t from_balance = EvmcBytes32ToUint64(get_balance(msg.sender));
         if (from_balance < params.value) {

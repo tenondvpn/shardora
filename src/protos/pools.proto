@@ -20,6 +20,8 @@ enum StepType {
     kCreateLibrary = 14;
     kCross = 15;
     kRootCross = 16;
+    kContractCreateByRootTo = 17; // ContractCreate 交易的 Local 部分
+    kContractCreateByRootFrom = 18;
 }
 
 message ToTxHeights {
@@ -40,6 +42,8 @@ message ToTxMessageItem {
     optional int32 step = 5;
     optional bytes library_bytes = 6;
     repeated bls.protobuf.JoinElectInfo join_infos = 7;
+    optional bytes contract_from = 8;
+    optional uint64 prepayment = 9; // for contract create prepayment
 }
 
 message ShardToTxItem {
@@ -137,4 +141,5 @@ message TxMessage {
     optional uint64 contract_prepayment = 11;
     optional bytes contract_code = 12;
     optional bytes contract_input = 13;
+    optional bytes contract_from = 14;
 }

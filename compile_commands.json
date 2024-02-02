@@ -685,6 +685,12 @@
 },
 {
   "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/consensus.dir/zbft/contract_create_by_root_to_tx_item.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/zbft/contract_create_by_root_to_tx_item.cc",
+  "file": "/Users/sofly/projects/c/zjchain/src/consensus/zbft/contract_create_by_root_to_tx_item.cc",
+  "output": "consensus/CMakeFiles/consensus.dir/zbft/contract_create_by_root_to_tx_item.cc.o"
+},
+{
+  "directory": "/Users/sofly/projects/c/zjchain/cbuild_Debug/consensus",
   "command": "/Library/Developer/CommandLineTools/usr/bin/c++ -DGUID_CFUUID -DLEVELDB -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2r -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/libbls -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/geoip -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/uv -isystem /Users/sofly/projects/c/zjchain/third_party/depends/include/sslib -isystem /Users/sofly/projects/c/zjchain/src -std=c++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.1.sdk -mmacosx-version-min=12.6 -Wno-c++11-narrowing -fPIC -Wall -pthread -Wno-unused-variable -std=c++17 -o CMakeFiles/consensus.dir/zbft/contract_user_call.cc.o -c /Users/sofly/projects/c/zjchain/src/consensus/zbft/contract_user_call.cc",
   "file": "/Users/sofly/projects/c/zjchain/src/consensus/zbft/contract_user_call.cc",
   "output": "consensus/CMakeFiles/consensus.dir/zbft/contract_user_call.cc.o"

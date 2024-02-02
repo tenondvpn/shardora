@@ -41,7 +41,7 @@ int ToTxLocalItem::HandleTx(
     for (int32_t i = 0; i < to_txs.tos_size(); ++i) {
         // dispatch to txs to tx pool
         uint64_t to_balance = 0;
-        if (to_txs.tos(i).des().size() == security::kUnicastAddressLength) {
+        if (to_txs.tos(i).des().size() == security::kUnicastAddressLength) { // only to, for normal to tx
             int balance_status = GetTempAccountBalance(
                 thread_idx, to_txs.tos(i).des(), acc_balance_map, &to_balance);
             if (balance_status != kConsensusSuccess) {
@@ -50,7 +50,7 @@ int ToTxLocalItem::HandleTx(
                     to_txs.tos(i).amount());
                 to_balance = 0;
             }
-        } else if (to_txs.tos(i).des().size() == security::kUnicastAddressLength * 2) {
+        } else if (to_txs.tos(i).des().size() == security::kUnicastAddressLength * 2) { // to + from, for gas prepayment tx
             to_balance = gas_prepayment_->GetAddressPrepayment(
                 thread_idx,
                 block.pool_index(),

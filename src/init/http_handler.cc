@@ -136,7 +136,6 @@ static int CreateTransactionWithAttr(
 
         new_tx->set_contract_prepayment(pepay_val);
     }
-
     auto tx_hash = pools::GetTxMessageHash(*new_tx);
     std::string sign = sign_r + sign_s + "0";// http_handler->security_ptr()->GetSign(sign_r, sign_s, sign_v);
     sign[64] = char(sign_v);
@@ -365,7 +364,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
         ZJC_INFO("query contract error: %s.", res.c_str());
         return;
     }
-
+	
     std::string qdata((char*)result.output_data, result.output_size);
     evmc_bytes32 len_bytes;
     memcpy(len_bytes.bytes, qdata.c_str() + 32, 32);
@@ -373,7 +372,7 @@ static void QueryContract(evhtp_request_t* req, void* data) {
     std::string http_res(qdata.c_str() + 64, len);
     evbuffer_add(req->buffer_out, http_res.c_str(), http_res.size());
     evhtp_send_reply(req, EVHTP_RES_OK);
-    ZJC_INFO("query contract success %s, %s, len: %lu", contract_addr, input, len);
+    ZJC_INFO("query contract success");
 }
 
 static void QueryAccount(evhtp_request_t* req, void* data) {

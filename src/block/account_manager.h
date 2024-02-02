@@ -77,6 +77,16 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
+    void HandleCreateContractByRootFrom(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
+    void HandleContractCreateByRootTo(
+        uint8_t thread_idx,
+        const block::protobuf::Block& block,
+        const block::protobuf::BlockTx& tx,
+        db::DbWriteBatch& db_batch);
     void HandleLocalToTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
@@ -98,6 +108,11 @@ private:
         const block::protobuf::Block& block,
         const block::protobuf::BlockTx& tx,
         db::DbWriteBatch& db_batch);
+
+    inline bool isContractCreateTx(const block::protobuf::BlockTx& tx) {
+        return tx.has_contract_code();
+    } 
+
     static const uint64_t kCheckMissingHeightPeriod = 3000000llu;
     static const uint64_t kFushTreeToDbPeriod = 6000000llu;
     static const uint64_t kRefreshPoolMaxHeightPeriod = 4000000llu;

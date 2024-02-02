@@ -57,12 +57,14 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
         auto& src_tx = iter->second->msg_ptr->header.tx_proto();
         iter->second->TxToBlockTx(src_tx, db_batch_, &tx);
         // create address must to and have transfer amount
-        if (tx.step() == pools::protobuf::kRootCreateAddress && tx.amount() <= 0) {
-            ZJC_DEBUG("tx invalid step: %d, amount: %lu, src: %d, %lu",
-                tx.step(), tx.amount(), src_tx.step(), src_tx.amount());
-            tx_list->RemoveLast();
-            assert(false);
-            continue;
+        if (tx.step() == pools::protobuf::kRootCreateAddress) {
+            if (!tx.has_contract_code() && tx.amount() <= 0) {
+                ZJC_DEBUG("tx invalid step: %d, amount: %lu, src: %d, %lu",
+                    tx.step(), tx.amount(), src_tx.step(), src_tx.amount());
+                tx_list->RemoveLast();
+                assert(false);
+                continue;    
+            }
         }
 
         int do_tx_res = iter->second->HandleTx(
@@ -72,6 +74,7 @@ void RootZbft::RootCreateAccountAddressBlock(block::protobuf::Block& zjc_block) 
             zjc_host,
             acc_balance_map,
             tx);
+
         if (do_tx_res != kConsensusSuccess) {
             tx_list->RemoveLast();
             assert(false);

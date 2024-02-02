@@ -3,6 +3,7 @@
 #include <memory>
 #include <atomic>
 #include <mutex>
+#include <protos/pools.pb.h>
 #include <queue>
 #include <unordered_map>
 #include <unordered_set>
@@ -99,6 +100,33 @@ struct LeaderWithStatisticTxItem {
     transport::MessagePtr statistic_msg;
     int32_t leader_to_index;
 };
+
+struct localToTxInfo {
+    std::string des;
+    uint64_t amount;
+    uint32_t pool_index;
+    // for ContractCreate
+    std::string library_bytes;
+    std::string contract_from;
+    uint64_t contract_prepayment; // prepayment 交易的 prepayment 是通过 amount 传递的吧
+    
+    localToTxInfo(const std::string& des,
+        uint64_t amount,
+        uint32_t pool_index,
+        const std::string& library_bytes,
+        const std::string& contract_from,
+        uint64_t prepayment) :
+        des(des),
+        amount(amount),
+        pool_index(pool_index),
+        library_bytes(library_bytes),
+        contract_from(contract_from),
+        contract_prepayment(prepayment) {}
+};
+
+inline bool isContractCreateToTxMessageItem(const pools::protobuf::ToTxMessageItem& tos_item) {
+    return tos_item.has_library_bytes();
+}
 
 typedef std::shared_ptr<BlockToDbItem> BlockToDbItemPtr;
 

@@ -8,16 +8,11 @@
 #include "zjcvm/zjcvm_utils.h"
 
 namespace zjchain {
-
-namespace contract {
-    class ContractManager;
-};
-
 namespace consensus {
 
-class ContractUserCreateCall : public TxItemBase {
+class ContractCreateByRootFromTxItem : public TxItemBase {
 public:
-    ContractUserCreateCall(
+    ContractCreateByRootFromTxItem(
             std::shared_ptr<contract::ContractManager>& contract_mgr,
             std::shared_ptr<db::Db>& db,
             const transport::MessagePtr& msg,
@@ -28,7 +23,7 @@ public:
         prefix_db_ = std::make_shared<protos::PrefixDb>(db);
     }
 
-    virtual ~ContractUserCreateCall() {}
+    virtual ~ContractCreateByRootFromTxItem() {}
     virtual int HandleTx(
         uint8_t thread_idx,
         const block::protobuf::Block& block,
@@ -38,21 +33,9 @@ public:
         block::protobuf::BlockTx& block_tx);
 
 private:
-    int CreateContractCallExcute(
-        zjcvm::ZjchainHost& zjc_host,
-        block::protobuf::BlockTx& tx,
-        evmc::Result* out_res);
-    int SaveContractCreateInfo(
-        zjcvm::ZjchainHost& zjc_host,
-        block::protobuf::BlockTx& tx,
-        std::shared_ptr<db::DbWriteBatch>& db_batch,
-        int64_t& contract_balance_add,
-        int64_t& caller_balance_add,
-        int64_t& gas_more);
-    
     std::shared_ptr<contract::ContractManager> contract_mgr_ = nullptr;
     std::shared_ptr<protos::PrefixDb> prefix_db_ = nullptr;
-    DISALLOW_COPY_AND_ASSIGN(ContractUserCreateCall);
+    DISALLOW_COPY_AND_ASSIGN(ContractCreateByRootFromTxItem);
 };
 
 };  // namespace consensus
