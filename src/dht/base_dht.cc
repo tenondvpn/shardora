@@ -391,31 +391,31 @@ void BaseDht::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
 void BaseDht::DhtDispatchMessage(const transport::MessagePtr& msg_ptr) {
     if (msg_ptr->header.dht_proto().has_bootstrap_req()) {
-//         ZJC_DEBUG("has_bootstrap_req");
+        ZJC_DEBUG("has_bootstrap_req");
         ProcessBootstrapRequest(msg_ptr);
         return;
     }
 
     if (msg_ptr->header.dht_proto().has_bootstrap_res()) {
-//         ZJC_DEBUG("has_bootstrap_res");
+        ZJC_DEBUG("has_bootstrap_res");
         ProcessBootstrapResponse(msg_ptr);
         return;
     }
 
     if (msg_ptr->header.dht_proto().has_refresh_neighbors_req()) {
-//         ZJC_DEBUG("has_refresh_neighbors_req");
+        ZJC_DEBUG("has_refresh_neighbors_req");
         ProcessRefreshNeighborsRequest(msg_ptr);
         return;
     }
 
     if (msg_ptr->header.dht_proto().has_refresh_neighbors_res()) {
-//         ZJC_DEBUG("has_refresh_neighbors_res");
+        ZJC_DEBUG("has_refresh_neighbors_res");
         ProcessRefreshNeighborsResponse(msg_ptr);
         return;
     }
 
     if (msg_ptr->header.dht_proto().has_connect_req()) {
-//         ZJC_DEBUG("has_connect_req");
+        ZJC_DEBUG("has_connect_req");
         ProcessConnectRequest(msg_ptr);
         return;
     }
