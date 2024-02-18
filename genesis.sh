@@ -17,8 +17,9 @@ rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root
 root=("r1" "r2" "r3")
 shard3=("s1" "s2" "s3" "s4" "s5")
 shard4=("s6" "s7" "s8" "s9" "s10" "s11")
+unknown=("node")
 
-nodes=("${root[@]}" "${shard3[@]}" "${shard4[@]}")
+nodes=("${root[@]}" "${shard3[@]}" "${shard4[@]}" "${unknown[@]}")
 
 # 遍历数组并创建每个目录
 for node in "${nodes[@]}"; do
