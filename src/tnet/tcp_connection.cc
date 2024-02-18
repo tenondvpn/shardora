@@ -266,18 +266,22 @@ bool TcpConnection::OnRead() {
     ZJC_DEBUG("====0.1 type:%d userBreak:%d", type, userBreak);
     
     if (userBreak) {
+        ZJC_DEBUG("====0.1.1 type:%d userBreak:%d", type, userBreak);
         assert(type == CmdPacket::CT_NONE);
+        ZJC_DEBUG("====0.1.2 type:%d userBreak:%d", type, userBreak);
         CloseWithoutLock();
     }
 
     ZJC_DEBUG("====0.2 type:%d userBreak:%d", type, userBreak);
     spin_mutex_.unlock();
     if (type != CmdPacket::CT_NONE) {
+        ZJC_DEBUG("====0.3 type:%d userBreak:%d", type, userBreak);
         NotifyCmdPacketAndClose(type);
+        ZJC_DEBUG("====0.4 type:%d userBreak:%d", type, userBreak);
         return false;
     }
 
-    ZJC_DEBUG("====0.3 type:%d userBreak:%d", type, userBreak);
+    ZJC_DEBUG("====0.5 type:%d userBreak:%d", type, userBreak);
     return !userBreak;
 }
 

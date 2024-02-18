@@ -1244,7 +1244,7 @@ class ConnectReqeust : public ::google::protobuf::Message /* @@protoc_insertion_
   ::std::string* release_public_ip();
   void set_allocated_public_ip(::std::string* public_ip);
 
-  // optional string id = 5;
+  // optional bytes id = 5;
   bool has_id() const;
   void clear_id();
   static const int kIdFieldNumber = 5;
@@ -1254,7 +1254,7 @@ class ConnectReqeust : public ::google::protobuf::Message /* @@protoc_insertion_
   void set_id(::std::string&& value);
   #endif
   void set_id(const char* value);
-  void set_id(const char* value, size_t size);
+  void set_id(const void* value, size_t size);
   ::std::string* mutable_id();
   ::std::string* release_id();
   void set_allocated_id(::std::string* id);
@@ -2768,7 +2768,7 @@ inline void ConnectReqeust::set_public_port(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:zjchain.dht.protobuf.ConnectReqeust.public_port)
 }
 
-// optional string id = 5;
+// optional bytes id = 5;
 inline bool ConnectReqeust::has_id() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -2805,7 +2805,7 @@ inline void ConnectReqeust::set_id(const char* value) {
   id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:zjchain.dht.protobuf.ConnectReqeust.id)
 }
-inline void ConnectReqeust::set_id(const char* value, size_t size) {
+inline void ConnectReqeust::set_id(const void* value, size_t size) {
   set_has_id();
   id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));

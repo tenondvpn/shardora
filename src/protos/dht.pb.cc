@@ -435,7 +435,7 @@ void AddDescriptorsImpl() {
       "ponse\022\024\n\014dht_key_hash\030\001 \001(\004\"i\n\016ConnectRe"
       "qeust\022\016\n\006pubkey\030\001 \001(\014\022\023\n\013is_response\030\002 \001"
       "(\010\022\021\n\tpublic_ip\030\003 \001(\t\022\023\n\013public_port\030\004 \001"
-      "(\005\022\n\n\002id\030\005 \001(\t\" \n\014TimerRequest\022\020\n\010tm_mil"
+      "(\005\022\n\n\002id\030\005 \001(\014\" \n\014TimerRequest\022\020\n\010tm_mil"
       "li\030\001 \001(\004\"\225\004\n\nDhtMessage\022=\n\rbootstrap_req"
       "\030\001 \001(\0132&.zjchain.dht.protobuf.BootstrapR"
       "equest\022>\n\rbootstrap_res\030\002 \001(\0132\'.zjchain."
@@ -2913,16 +2913,12 @@ bool ConnectReqeust::MergePartialFromCodedStream(
         break;
       }
 
-      // optional string id = 5;
+      // optional bytes id = 5;
       case 5: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
                 input, this->mutable_id()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-            this->id().data(), static_cast<int>(this->id().length()),
-            ::google::protobuf::internal::WireFormat::PARSE,
-            "zjchain.dht.protobuf.ConnectReqeust.id");
         } else {
           goto handle_unusual;
         }
@@ -2982,13 +2978,9 @@ void ConnectReqeust::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->public_port(), output);
   }
 
-  // optional string id = 5;
+  // optional bytes id = 5;
   if (cached_has_bits & 0x00000004u) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->id().data(), static_cast<int>(this->id().length()),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "zjchain.dht.protobuf.ConnectReqeust.id");
-    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+    ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
       5, this->id(), output);
   }
 
@@ -3035,14 +3027,10 @@ void ConnectReqeust::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(4, this->public_port(), target);
   }
 
-  // optional string id = 5;
+  // optional bytes id = 5;
   if (cached_has_bits & 0x00000004u) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->id().data(), static_cast<int>(this->id().length()),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
-      "zjchain.dht.protobuf.ConnectReqeust.id");
     target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
         5, this->id(), target);
   }
 
@@ -3078,10 +3066,10 @@ size_t ConnectReqeust::ByteSizeLong() const {
           this->public_ip());
     }
 
-    // optional string id = 5;
+    // optional bytes id = 5;
     if (has_id()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::StringSize(
+        ::google::protobuf::internal::WireFormatLite::BytesSize(
           this->id());
     }
 
