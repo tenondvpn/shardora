@@ -3,6 +3,7 @@
 #include "common/time_utils.h"
 #include "tnet/utils/cmd_packet.h"
 #include "tnet/socket/client_socket.h"
+#include <common/log.h>
 
 namespace zjchain {
 
@@ -245,6 +246,7 @@ bool TcpConnection::OnRead() {
             spin_mutex_.unlock();
             create_timestamp_ms_ = common::TimeUtils::TimestampMs();
             if (!packet_handler_(this, *packet)) {
+                ZJC_DEBUG("====0.0 type:%d userBreak:%d", type, userBreak);
                 userBreak = true;
             }
 
@@ -261,17 +263,21 @@ bool TcpConnection::OnRead() {
         }
     }
 
+    ZJC_DEBUG("====0.1 type:%d userBreak:%d", type, userBreak);
+    
     if (userBreak) {
         assert(type == CmdPacket::CT_NONE);
         CloseWithoutLock();
     }
 
+    ZJC_DEBUG("====0.2 type:%d userBreak:%d", type, userBreak);
     spin_mutex_.unlock();
     if (type != CmdPacket::CT_NONE) {
         NotifyCmdPacketAndClose(type);
         return false;
     }
 
+    ZJC_DEBUG("====0.3 type:%d userBreak:%d", type, userBreak);
     return !userBreak;
 }
 
