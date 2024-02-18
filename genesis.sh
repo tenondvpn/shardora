@@ -15,8 +15,8 @@ sudo cp -rf ./deploy /root
 rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db*
 
 root=("r1" "r2" "r3")
-shard3=("s1" "s2" "s3")
-shard4=("s4" "s5" "s6" "s7" "s8" "s9" "s10" "s11")
+shard3=("s1" "s2" "s3" "s4" "s5")
+shard4=("s6" "s7" "s8" "s9" "s10" "s11")
 
 nodes=("${root[@]}" "${shard3[@]}" "${shard4[@]}")
 
