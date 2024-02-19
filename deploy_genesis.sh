@@ -1,5 +1,6 @@
 #!/bin/bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/
+ps -ef | grep zjchain | awk -F' ' '{print $2}' | xargs kill -9
 
 mode=$1
 localip=$2
