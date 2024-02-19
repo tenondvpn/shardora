@@ -7,11 +7,11 @@ server0=10.101.20.35
 server1=10.101.20.33
 pass='!@#$%^'
 
-# echo "[$server0]"
-# sshpass -p $pass ssh root@$server0 <<EOF
-# cd /root/xufei/zjchain && sh deploy_genesis.sh Debug ${server0}
-# cd /root && sh -x fetch.sh 127.0.0.1 ${server0} r1 r2 r3 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 node
-# EOF
+echo "[$server0]"
+sshpass -p $pass ssh root@$server0 <<EOF
+cd /root/xufei/zjchain && sh deploy_genesis.sh Debug ${server0}
+cd /root && sh -x fetch.sh 127.0.0.1 ${server0} r1 r2 r3 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 node
+EOF
 
 
 echo "[$server1]"
@@ -33,21 +33,21 @@ ps -ef | grep zjchain | awk -F' ' '{print $2}' | xargs kill -9
 EOF
 
 # 启动进程
-sshpass -p $pass ssh -f root@$server0 "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 > /dev/null 2>&1"
+sshpass -p $pass ssh -f root@$server0 "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 > /dev/null 2>&1 &"
 
 sleep 3
 
 sshpass -p $pass ssh -f root@$server0 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
 for node in r2 s1 s2 s3 s6 s7 s8; do \
-    cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node > /dev/null 2>&1 \
+    cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node > /dev/null 2>&1 &\
 done \
 '"
 
 sshpass -p $pass ssh -f root@$server1 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
 for node in r3 s4 s5 s9 s10 s11; do \
-    cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node > /dev/null 2>&1 \
+    cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node > /dev/null 2>&1 &\
 done \
 '"
 
