@@ -24,8 +24,8 @@ if [[ "${fromip}" == "127.0.0.1" ]]; then
 else
 	rm -rf /root/zjnodes
 	rm -rf /root/deploy
-	scp -r root@"${fromip}":/root/zjnodes /root/zjnodes
-	scp -r root@"${fromip}":/root/deploy /root/deploy
+	sshpass -p '!@#$%^' scp -r root@"${fromip}":/root/zjnodes /root/zjnodes
+	sshpass -p '!@#$%^' scp -r root@"${fromip}":/root/deploy /root/deploy
 	
 	for service in "${services[@]}"; do
 		# 除了 bootstrap 那一行其余都执行替换
