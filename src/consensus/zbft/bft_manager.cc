@@ -2929,11 +2929,15 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
         }
     }
 
-    ZJC_DEBUG("new block: %s, gid: %s. is leader: %d, thread idx: %d",
+    ZJC_INFO("new block: %s, gid: %s. is leader: %d, thread idx: %d, key: %u_%u_%u_%u",
         common::Encode::HexEncode(zjc_block->hash()).c_str(),
         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
         bft_ptr->this_node_is_leader(),
-        msg_ptr->thread_idx);
+        msg_ptr->thread_idx,
+        zjc_block->network_id(),
+        zjc_block->pool_index(),
+        zjc_block->height(),
+        zjc_block->electblock_height());
 }
 
 void BftManager::LeaderBroadcastBlock(
