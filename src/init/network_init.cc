@@ -701,7 +701,8 @@ int NetworkInit::InitSecurity() {
         INIT_ERROR("get private key from config failed!");
         return kInitError;
     }
-    ZJC_DEBUG("prikey: %s", common::Encode::HexEncode(prikey).c_str());
+    ZJC_DEBUG("prikey1: %s", prikey.c_str());
+    ZJC_DEBUG("prikey2: %s", common::Encode::HexEncode(common::Encode::HexDecode(prikey)).c_str());
 
     security_ = std::make_shared<security::Ecdsa>();
     if (security_->SetPrivateKey(
