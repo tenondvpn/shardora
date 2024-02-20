@@ -104,7 +104,10 @@ def _get_bootstrap_str(node_name, server_conf: dict) -> str:
             comp_pk_str = get_compressed_pk_str(gen_node_sk(node_name))
             return f'{comp_pk_str}:{node["server"]}:{node["tcp_port"]}'
 
-def gen_zjnodes(server_conf: dict, file_path):
+def gen_zjnodes(server_conf: dict, zjnodes_folder):
+    if zjnodes_folder.endswith('/'):
+        zjnodes_folder = zjnodes_folder[:-1]
+    
     root_boostrap_strs = [_get_bootstrap_str(node['name'], server_conf) for node in server_conf['nodes'] if node['net'] == 2]
     root_boostrap_str = ','.join(root_boostrap_strs)
 
@@ -121,7 +124,7 @@ def gen_zjnodes(server_conf: dict, file_path):
                 'bootstrap': root_boostrap_str,
                 'ck_ip': '127.0.0.1',
                 'ck_passworkd': '',
-                'ck_user': '',
+                'ck_user': 'default',
                 'country': 'NL',
                 'first_node': 1 if node['name'] == 'r1' else 0,
                 'http_port': node['http_port'],
@@ -137,7 +140,7 @@ def gen_zjnodes(server_conf: dict, file_path):
             }
         }
 
-        sub_folder = f'{file_path}/{node["name"]}'
+        sub_folder = f'{zjnodes_folder}/{node["name"]}'
         sub_conf_folder = f'{sub_folder}/conf'
         if not os.path.exists(sub_folder):
             os.makedirs(sub_folder)
@@ -147,6 +150,9 @@ def gen_zjnodes(server_conf: dict, file_path):
         with open(f'{sub_conf_folder}/zjchain.conf', 'w') as f:
             toml.dump(zjchain_conf, f)
 
+def gen_run_nodes_sh_file(server_conf: dict, file_path):
+    pass
+
 
 
 def main():
@@ -154,4 +160,4 @@ def main():
     server_conf = parse_server_yml_file(file_path)
     gen_zjnodes(server_conf, "./zjnodes")
     gen_genesis_yaml_file(server_conf, "./conf/genesis3.yml")
-    # gen_run_nodes_sh_file(server_conf, "./run_nodes.sh")
+    gen_run_nodes_sh_file(server_conf, "./run_nodes.sh")
