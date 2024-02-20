@@ -13,7 +13,6 @@ namespace security {
 int Ecdsa::SetPrivateKey(const std::string& prikey) {
     str_prikey_ = prikey;
     prikey_ = std::make_shared<PrivateKey>(prikey);
-    ZJC_DEBUG("prikey: %s", common::Encode::HexEncode(prikey).c_str());
     if (pubkey_.FromPrivateKey(curve_, *prikey_.get()) != kSecuritySuccess) {
         return kSecurityError;
     }
