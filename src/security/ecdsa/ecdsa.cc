@@ -4,6 +4,7 @@
 #include "security/ecdsa/crypto.h"
 #include "security/ecdsa/secp256k1.h"
 #include "security/ecdsa/security_string_trans.h"
+#include <common/log.h>
 
 namespace zjchain {
 
@@ -12,6 +13,7 @@ namespace security {
 int Ecdsa::SetPrivateKey(const std::string& prikey) {
     str_prikey_ = prikey;
     prikey_ = std::make_shared<PrivateKey>(prikey);
+    ZJC_DEBUG("prikey: %s", prikey.c_str());
     if (pubkey_.FromPrivateKey(curve_, *prikey_.get()) != kSecuritySuccess) {
         return kSecurityError;
     }
