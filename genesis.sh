@@ -25,6 +25,7 @@ nodes=("${root[@]}" "${shard3[@]}" "${shard4[@]}" "${unknown[@]}")
 for node in "${nodes[@]}"; do
     mkdir -p "/root/zjnodes/${node}/log"
 	cp -rf ./zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/${node}/conf
+	cp -rf ./zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/${node}/conf
 done
 mkdir -p /root/zjnodes/zjchain/log
 

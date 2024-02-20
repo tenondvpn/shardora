@@ -1,0 +1,78 @@
+nodes:
+  - name: r1
+    net: 2
+    server: 10.101.20.35
+    http_port: 8001
+    tcp_port: 10001
+  - name: r2
+    net: 2
+    server: 10.101.20.35
+    http_port: 8002
+    tcp_port: 10002
+  - name: r3
+    net: 2
+    server: 10.101.20.33
+    http_port: 8003
+    tcp_port: 10003
+  - name: s1
+    net: 3
+    server: 10.101.20.35
+    http_port: 8004
+    tcp_port: 10004
+  - name: s2
+    net: 3
+    server: 10.101.20.35
+    http_port: 8005
+    tcp_port: 10005
+  - name: s3
+    net: 3
+    server: 10.101.20.35
+    port: 8103
+    http_port: 8006
+    tcp_port: 10006
+  - name: s4
+    net: 3
+    server: 10.101.20.33
+    http_port: 8007
+    tcp_port: 10007
+  - name: s5
+    net: 3
+    server: 10.101.20.33
+    http_port: 8008
+    tcp_port: 10008
+  - name: s6
+    net: 4
+    server: 10.101.20.35
+    http_port: 8009
+    tcp_port: 10009
+  - name: s7
+    net: 4
+    server: 10.101.20.35
+    http_port: 8010
+    tcp_port: 10010
+  - name: s8
+    net: 4
+    server: 10.101.20.35
+    http_port: 8011
+    tcp_port: 10011
+  - name: s9
+    net: 4
+    server: 10.101.20.33
+    http_port: 8012
+    tcp_port: 10012
+  - name: s10
+    net: 4
+    server: 10.101.20.33
+    http_port: 8013
+    tcp_port: 10013
+  - name: s11
+    net: 4
+    server: 10.101.20.33
+    http_port: 8014
+    tcp_port: 10014
+account_sks:
+  3:
+    - b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708
+  4:
+    - fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971
+    - 373a3165ec09edea6e7a1c8cff21b06f5fb074386ece283927aef730c6d44596
