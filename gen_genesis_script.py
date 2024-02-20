@@ -5,13 +5,17 @@ from eth_utils import decode_hex, encode_hex
 from ecdsa import SigningKey, SECP256k1
 
 import os
-import binascii
-import hashlib
 import yaml
 import toml
 
+node_sk_map = {}
+
 def input2sk(input: str) -> str:
-    return hashlib.sha256(input.encode('utf-8')).hexdigest()
+    sk_str = node_sk_map.get(input)
+    if sk_str is None:
+        sk_str = random_sk()
+        node_sk_map[input] = sk_str
+    return sk_str
 
 def gen_node_sk(node_name: str) -> str:
     return input2sk(node_name)
@@ -52,12 +56,9 @@ def keccak256(s: str) -> str:
 
 def random_sk():
     # 生成 32 字节的随机数作为私钥
-    private_key_bytes = os.urandom(20)
-    
-    # 将随机数转换为十六进制字符串
-    private_key_hex = binascii.hexlify(private_key_bytes).decode('utf-8')
-    
-    return private_key_hex
+    sk = SigningKey.generate(curve=SECP256k1)
+        
+    return sk.to_string().hex()
 
 def parse_server_yml_file(file_path: str):
     with open(file_path) as f:
