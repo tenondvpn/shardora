@@ -477,7 +477,7 @@ bool Config::HandleKeyValue(const std::string& filed, const std::string& key_val
             return false;
         }
 
-        if (key_value[i] == ' ' || key_value[i] == '"') {
+        if (key_value[i] == ' ' || key_value[i] == '\"' || key_value[i] == '\'') {
             continue;
         }
 
