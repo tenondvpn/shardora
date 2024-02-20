@@ -159,5 +159,8 @@ def main():
     file_path = "./servers.yml"
     server_conf = parse_server_yml_file(file_path)
     gen_zjnodes(server_conf, "./zjnodes")
-    gen_genesis_yaml_file(server_conf, "./conf/genesis3.yml")
+    gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
     gen_run_nodes_sh_file(server_conf, "./run_nodes.sh")
+
+if __name__ == '__main__':
+    main()
