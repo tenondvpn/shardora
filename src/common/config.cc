@@ -463,7 +463,6 @@ bool Config::HandleKeyValue(const std::string& filed, const std::string& key_val
 
     int value_start_pos = eq_pos + 1;
     std::string value("");
-    bool in_quotes = false;
     for (size_t i = eq_pos + 1; i < key_value.size(); ++i) {
         if (key_value[i] == '#') {
             if (i > static_cast<size_t>(value_start_pos)) {
@@ -480,17 +479,6 @@ bool Config::HandleKeyValue(const std::string& filed, const std::string& key_val
 
         if (key_value[i] == ' ') {
             continue;
-        }
-
-        if (key_value[i] == '\'' || key_value[i] == '"') {
-            if (value_start_pos == static_cast<int>(i)) {
-                in_quotes = true;
-                value_start_pos++; // 跳过引号
-                continue;
-            } else if (in_quotes) {
-                value = std::string(key_value.begin() + value_start_pos, key_value.begin() + i);
-                break;
-            }
         }
 
         if (key_value[i] == '\n') {
@@ -531,7 +519,15 @@ bool Config::HandleKeyValue(const std::string& filed, const std::string& key_val
 #endif
     }
     StringUtil::Trim(value);
-    return AddKey(filed, key, value);
+
+    std::string result;
+    for (char ch : value) {
+        if (ch != '"' && ch != '\'') {
+            result += ch;
+        }
+    }
+    
+    return AddKey(filed, key, result);
 }
 
 bool Config::HandleFiled(const std::string& field, std::string& field_val) {
