@@ -47,12 +47,12 @@ done
 
 
 for node in "${shard3[@]}"; do
-	cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/${node}/db
+	cp -rf /root/zjnodes/zjchain/shard_3_db /root/zjnodes/${node}/db
 done
 
 
 for node in "${shard4[@]}"; do
-	cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/${node}/db
+	cp -rf /root/zjnodes/zjchain/shard_4_db /root/zjnodes/${node}/db
 done
 
 
