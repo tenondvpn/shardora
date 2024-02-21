@@ -102,3 +102,6 @@ account_sks:
     - fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971
   5:
     - 373a3165ec09edea6e7a1c8cff21b06f5fb074386ece283927aef730c6d44596
+passwords:
+  10.101.20.35: '!@#$%^'
+  10.101.20.33: '!@#$%^'

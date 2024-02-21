@@ -274,12 +274,13 @@ echo "==== STEP1: START DEPLOY ===="
     for server_name, server_ip in server_name_map.items():
         code_str += f"{server_name}={server_ip}\n"
 
-    code_str += f"target=$1\npass=$2\n"
+    code_str += f"target=$1\n"
 
     server0_node_names_str = ' '.join(server_node_map[server0])
+    server0_pass = server_conf['passwords'].get(server0, '')
     code_str += f"""
 echo "[$server0]"
-sshpass -p $pass ssh root@$server0 <<EOF
+sshpass -p {server0_pass} ssh root@$server0 <<EOF
 cd /root/xufei/zjchain && sh deploy_genesis.sh $target ${{server0}}
 cd /root && sh -x fetch.sh 127.0.0.1 ${{server0}} $pass {server0_node_names_str}
 EOF
@@ -290,11 +291,12 @@ EOF
         if server_name == 'server0':
             continue
         server_node_names_str = ' '.join(server_node_map[server_ip])
+        server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
 echo "[${server_name}]"
-sshpass -p $pass ssh root@${server_name} <<EOF
-sshpass -p $pass scp root@"${{server0}}":/root/fetch.sh /root/
-cd /root && sh -x fetch.sh ${{server0}} ${{{server_name}}} $pass {server_node_names_str}
+sshpass -p {server_pass} ssh root@${server_name} <<EOF
+sshpass -p {server0_pass} scp root@"${{server0}}":/root/fetch.sh /root/
+cd /root && sh -x fetch.sh ${{server0}} ${{{server_name}}} {server0_pass} {server_node_names_str}
 EOF
 
 """
@@ -307,9 +309,10 @@ echo "==== STEP2: CLEAR OLDS ===="
 """
 
     for server_name, server_ip in server_name_map.items():
+        server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
 echo "[${server_name}]"
-sshpass -p $pass ssh root@${server_name} <<"EOF"
+sshpass -p {server_pass} ssh root@${server_name} <<"EOF"
 ps -ef | grep zjchain | awk -F' ' '{{print $2}}' | xargs kill -9
 EOF
 """
@@ -322,7 +325,7 @@ echo "==== STEP3: EXECUTE ===="
 
     code_str += f"""
 echo "[$server0]"
-sshpass -p $pass ssh -f root@$server0 "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 > /dev/null 2>&1 &"
+sshpass -p {server0_pass} ssh -f root@$server0 "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 > /dev/null 2>&1 &"
 
 sleep 3
 """
@@ -335,8 +338,9 @@ sleep 3
         else:
             server_nodes_str = ' '.join(server_node_map[server_ip])
         
+        server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
-sshpass -p $pass ssh -f root@${server_name} bash -c "'\\
+sshpass -p {server_pass} ssh -f root@${server_name} bash -c "'\\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \\
 for node in {server_nodes_str}; do \\
     cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node > /dev/null 2>&1 &\\
