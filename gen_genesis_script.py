@@ -359,7 +359,7 @@ echo "==== STEP3: DONE ===="
 
 
 def main():
-    file_path = "./servers.yml"
+    file_path = "./nodes_conf.yml"
     server_conf = parse_server_yml_file(file_path)
     gen_zjnodes(server_conf, "./zjnodes")
     gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
