@@ -4,7 +4,8 @@
 
 fromip="$1"
 newip="$2"
-services=("${@:3}")
+pass="$3"
+services=("${@:4}")
 
 if [[ -z $1 ]]; then
     echo "Error: SrcIp is required."
@@ -24,8 +25,8 @@ if [[ "${fromip}" == "127.0.0.1" ]]; then
 else
 	rm -rf /root/zjnodes
 	rm -rf /root/deploy
-	sshpass -p '!@#$%^' scp -r root@"${fromip}":/root/zjnodes /root/zjnodes
-	sshpass -p '!@#$%^' scp -r root@"${fromip}":/root/deploy /root/deploy
+	sshpass -p $pass scp -r root@"${fromip}":/root/zjnodes /root/zjnodes
+	sshpass -p $pass scp -r root@"${fromip}":/root/deploy /root/deploy
 	
 	for service in "${services[@]}"; do
 		# 除了 bootstrap 那一行其余都执行替换

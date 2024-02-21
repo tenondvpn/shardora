@@ -282,7 +282,7 @@ echo "==== STEP1: START DEPLOY ===="
 echo "[$server0]"
 sshpass -p $pass ssh root@$server0 <<EOF
 cd /root/xufei/zjchain && sh deploy_genesis.sh Debug ${{server0}}
-cd /root && sh -x fetch.sh 127.0.0.1 ${{server0}} {server0_node_names_str}
+cd /root && sh -x fetch.sh 127.0.0.1 ${{server0}} $pass {server0_node_names_str}
 EOF
 
 """
@@ -295,7 +295,7 @@ EOF
 echo "[${server_name}]"
 sshpass -p $pass ssh root@${server_name} <<EOF
 sshpass -p $pass scp root@"${{server0}}":/root/fetch.sh /root/
-cd /root && sh -x fetch.sh ${{server0}} ${{{server_name}}} {server_node_names_str}
+cd /root && sh -x fetch.sh ${{server0}} ${{{server_name}}} $pass {server_node_names_str}
 EOF
 
 """

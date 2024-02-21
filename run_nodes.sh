@@ -10,14 +10,14 @@ pass=!@#$%^
 echo "[$server0]"
 sshpass -p $pass ssh root@$server0 <<EOF
 cd /root/xufei/zjchain && sh deploy_genesis.sh Debug ${server0}
-cd /root && sh -x fetch.sh 127.0.0.1 ${server0} r1 r2 s1 s2 s3 s6 s7 s8
+cd /root && sh -x fetch.sh 127.0.0.1 ${server0} $pass r1 r2 s1 s2 s3 s6 s7 s8
 EOF
 
 
 echo "[$server1]"
 sshpass -p $pass ssh root@$server1 <<EOF
 sshpass -p $pass scp root@"${server0}":/root/fetch.sh /root/
-cd /root && sh -x fetch.sh ${server0} ${server1} r3 s4 s5 s9 s10 s11
+cd /root && sh -x fetch.sh ${server0} ${server1} $pass r3 s4 s5 s9 s10 s11
 EOF
 
 
