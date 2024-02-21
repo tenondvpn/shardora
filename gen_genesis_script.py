@@ -223,7 +223,7 @@ sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
 
     for net_id in net_ids:
         net_key = 'root' if net_id == 2 else 'shard' + str(net_id)
-        db_str = 'root_db' if net_id == 2 else 'shard_' + str(net_id) + '_db'
+        db_str = 'root_db' if net_id == 2 else 'shard_db_' + str(net_id)
         code_str += f"""
 for node in "${{{net_key}[@]}}"; do
 	cp -rf /root/zjnodes/zjchain/{db_str} /root/zjnodes/${{node}}/db
