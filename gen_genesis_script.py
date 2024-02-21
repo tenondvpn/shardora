@@ -9,7 +9,6 @@ import yaml
 import toml
 
 node_sk_map = {}
-password = '!@#$%^'
 
 def input2sk(input: str) -> str:
     sk_str = node_sk_map.get(input)
@@ -275,7 +274,7 @@ echo "==== STEP1: START DEPLOY ===="
     for server_name, server_ip in server_name_map.items():
         code_str += f"{server_name}={server_ip}\n"
 
-    code_str += f"pass={password}\ntarget=$1\n"
+    code_str += f"target=$1\npass=$2\n"
 
     server0_node_names_str = ' '.join(server_node_map[server0])
     code_str += f"""

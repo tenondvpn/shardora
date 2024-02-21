@@ -5,8 +5,8 @@
 echo "==== STEP1: START DEPLOY ===="
 server0=10.101.20.35
 server1=10.101.20.33
-pass=!@#$%^
 target=$1
+pass=$2
 
 echo "[$server0]"
 sshpass -p $pass ssh root@$server0 <<EOF

@@ -449,7 +449,7 @@ function randomOfArr(arr) {
 
 var sk1_shard3 = "b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708";
 var sk2_shard4 = "fa04ebee157c6c10bd9d250fc2c938780bf68cbe30e9f0d7c048e4d081907971";
-var sk3_shard4 = "373a3165ec09edea6e7a1c8cff21b06f5fb074386ece283927aef730c6d44596";
+var sk3_shard5 = "373a3165ec09edea6e7a1c8cff21b06f5fb074386ece283927aef730c6d44596";
 var sk_unknown = "1ef07e73ed6211e7b0a512bc6468419fbdcd9b345b49a3331b4c8f8070172a70";
 
 var sks = {
@@ -469,6 +469,11 @@ var testcases = [
         "sk": sk2_shard4, // 发起者 sk
         "contract_shard": 4, 
         "query_shard": 4, 
+        "query_suc": true, // 是否能查到数据
+    }, { // 创建合约在 shard5, 同分片查询合约成功
+        "sk": sk3_shard5, // 发起者 sk
+        "contract_shard": 5, 
+        "query_shard": 5, 
         "query_suc": true, // 是否能查到数据
     }, { // 查询合约 shard 不一致
         "sk": sk1_shard3,
@@ -500,6 +505,9 @@ var testcase_contracts_by_root = [
 	{ // shard4 账户创建合约
 		"shard_id": 4,
     },
+	{
+		"shard_id": 5,
+	}
 ];
 
 var testcases_transfer = [
@@ -524,9 +532,20 @@ var testcases_transfer = [
         "from_shard": 4,
         "amount": 1000,
         "create_ok": true,
+    }, {
+        "from_sk": sk1_shard3,
+        "to_sk": sk3_shard5,
+        "need_create": false,
+        "from_shard": 5,
+        "amount": 1000,
+        "create_ok": true,
     }
 ]
-
+var shard5_nodes = [
+	"10.101.20.35:8501",
+	"10.101.20.35:8502",
+	"10.101.20.35:8503",
+];
 var shard4_nodes = [
 	"10.101.20.35:8401",
 	"10.101.20.35:8402",
@@ -553,7 +572,8 @@ var root_nodes = [
 var net_node = {
     2: root_nodes,
     3: shard3_nodes,
-    4: shard4_nodes,  
+    4: shard4_nodes,
+	5: shard5_nodes,
 }
 
 
