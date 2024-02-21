@@ -180,6 +180,7 @@ then
 fi
 
 sh build.sh a $TARGET
+sudo rm -rf /root/zjnodes
 sudo cp -rf ./zjnodes /root
 sudo cp -rf ./deploy /root
 
