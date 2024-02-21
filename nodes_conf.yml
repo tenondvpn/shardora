@@ -42,7 +42,7 @@ nodes:
     tcp_port: 13005
   - name: s3_6
     net: 3
-    server: 10.101.20.33
+    server: 10.101.20.32
     http_port: 8306
     tcp_port: 13006
   - name: s4_1
@@ -77,7 +77,7 @@ nodes:
     tcp_port: 14006
   - name: s4_7
     net: 4
-    server: 10.101.20.33
+    server: 10.101.20.32
     http_port: 8407
     tcp_port: 14007
   - name: s5_1
@@ -92,7 +92,7 @@ nodes:
     tcp_port: 15002
   - name: s5_3
     net: 5
-    server: 10.101.20.35
+    server: 10.101.20.32
     http_port: 8503
     tcp_port: 15003
 account_sks:
@@ -105,3 +105,4 @@ account_sks:
 passwords:
   10.101.20.35: '!@#$%^'
   10.101.20.33: '!@#$%^'
+  10.101.20.32: '!@#$%^'
