@@ -151,9 +151,93 @@ def gen_zjnodes(server_conf: dict, zjnodes_folder):
         with open(f'{sub_conf_folder}/zjchain.conf', 'w') as f:
             toml.dump(zjchain_conf, f)
 
-def gen_run_nodes_sh_file(server_conf: dict, file_path):
-    pass
+def gen_genesis_sh_file(server_conf: dict, file_path):
+    net_names_map = {}
+    all_names = []
+    for node in server_conf['nodes']:
+        all_names.append('"' + node['name'] + '"')
+        if net_names_map.get(node['net']) is None:
+            net_names_map[node['net']] = []
+        net_names_map[node['net']].append('"' + node['name'] + '"')
 
+    all_names_str = ' '.join(all_names)
+    net_names_str_map = {}
+    for k, v in net_names_map.items():
+        net_names_str = ' '.join(v)
+        net_names_str_map[k] = net_names_str
+
+    net_ids = sorted(list(set([node['net'] for node in server_conf['nodes']])))
+
+    code_str = """
+#!/bin/bash
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/
+
+# $1 = Debug/Release
+TARGET=Release
+if test $1 = "Debug"
+then
+    TARGET=Debug
+fi
+
+sh build.sh a $TARGET
+sudo cp -rf ./zjnodes /root
+sudo cp -rf ./deploy /root
+
+rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db*
+
+"""
+
+    net_keys = []
+    for net_id in net_ids:
+        key = 'root' if net_id == 2 else 'shard' + str(net_id)
+        net_keys.append(key)
+        value = net_names_str_map[net_id]
+        code_str += f"{key}=({value})\n"
+    code_str += f"nodes=({all_names_str})\n"
+
+    code_str += """
+for node in "${nodes[@]}"; do
+    mkdir -p "/root/zjnodes/${node}/log"
+    cp -rf ./zjnodes/zjchain/GeoLite2-City.mmdb /root/zjnodes/${node}/conf
+    cp -rf ./zjnodes/zjchain/conf/log4cpp.properties /root/zjnodes/${node}/conf
+done
+mkdir -p /root/zjnodes/zjchain/log
+
+
+sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
+sudo cp -f ./conf/genesis.yml /root/zjnodes/zjchain/genesis.yml
+
+for node in "${nodes[@]}"; do
+    sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/${node}
+done
+sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
+
+"""
+
+    for net_id in net_ids:
+        arg_str = '-U' if net_id == 2 else '-S ' + str(net_id)
+        code_str += f"cd /root/zjnodes/zjchain && ./zjchain {arg_str}\n"
+
+    code_str += "\n"
+
+    for net_key in net_keys:
+        code_str += f"""
+for node in "${{{net_key}[@]}}"; do
+	cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/${{node}}/db
+done
+
+"""
+
+    code_str += """
+clickhouse-client -q "drop table zjc_ck_account_key_value_table"
+clickhouse-client -q "drop table zjc_ck_account_table"
+clickhouse-client -q "drop table zjc_ck_block_table"
+clickhouse-client -q "drop table zjc_ck_statistic_table"
+clickhouse-client -q "drop table zjc_ck_transaction_table"
+"""
+
+    with open(file_path, 'w') as f:
+        f.write(code_str)
 
 
 def main():
@@ -161,7 +245,7 @@ def main():
     server_conf = parse_server_yml_file(file_path)
     gen_zjnodes(server_conf, "./zjnodes")
     gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
-    gen_run_nodes_sh_file(server_conf, "./run_nodes.sh")
+    gen_genesis_sh_file(server_conf, "./genesis.sh")
 
 if __name__ == '__main__':
     main()
