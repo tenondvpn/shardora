@@ -11,14 +11,14 @@ target=$1
 echo "[$server0]"
 sshpass -p $pass ssh root@$server0 <<EOF
 cd /root/xufei/zjchain && sh deploy_genesis.sh $target ${server0}
-cd /root && sh -x fetch.sh 127.0.0.1 ${server0} $pass r1 r2 s1 s2 s3 s6 s7 s8
+cd /root && sh -x fetch.sh 127.0.0.1 ${server0} $pass r1 r2 s3_1 s3_2 s3_3 s4_1 s4_2 s4_3 s4_4
 EOF
 
 
 echo "[$server1]"
 sshpass -p $pass ssh root@$server1 <<EOF
 sshpass -p $pass scp root@"${server0}":/root/fetch.sh /root/
-cd /root && sh -x fetch.sh ${server0} ${server1} $pass r3 s4 s5 s9 s10 s11
+cd /root && sh -x fetch.sh ${server0} ${server1} $pass r3 s3_4 s3_5 s3_6 s4_5 s4_6 s4_7
 EOF
 
 
@@ -48,7 +48,7 @@ sleep 3
 
 sshpass -p $pass ssh -f root@$server0 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in r2 s1 s2 s3 s6 s7 s8; do \
+for node in r2 s3_1 s3_2 s3_3 s4_1 s4_2 s4_3 s4_4; do \
     cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node > /dev/null 2>&1 &\
 done \
 '"
@@ -56,7 +56,7 @@ done \
 
 sshpass -p $pass ssh -f root@$server1 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in r3 s4 s5 s9 s10 s11; do \
+for node in r3 s3_4 s3_5 s3_6 s4_5 s4_6 s4_7; do \
     cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node > /dev/null 2>&1 &\
 done \
 '"

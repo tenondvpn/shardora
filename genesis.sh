@@ -17,9 +17,9 @@ sudo cp -rf ./deploy /root
 rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db*
 
 root=("r1" "r2" "r3")
-shard3=("s1" "s2" "s3" "s4" "s5")
-shard4=("s6" "s7" "s8" "s9" "s10" "s11")
-nodes=("r1" "r2" "r3" "s1" "s2" "s3" "s4" "s5" "s6" "s7" "s8" "s9" "s10" "s11")
+shard3=("s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_6")
+shard4=("s4_1" "s4_2" "s4_3" "s4_4" "s4_5" "s4_6" "s4_7")
+nodes=("r1" "r2" "r3" "s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_6" "s4_1" "s4_2" "s4_3" "s4_4" "s4_5" "s4_6" "s4_7")
 
 for node in "${nodes[@]}"; do
     mkdir -p "/root/zjnodes/${node}/log"

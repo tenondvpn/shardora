@@ -2,74 +2,84 @@ nodes:
   - name: r1
     net: 2
     server: 10.101.20.35
-    http_port: 8001
-    tcp_port: 10001
+    http_port: 8201
+    tcp_port: 12001
   - name: r2
     net: 2
     server: 10.101.20.35
-    http_port: 8002
-    tcp_port: 10002
+    http_port: 8202
+    tcp_port: 12002
   - name: r3
     net: 2
     server: 10.101.20.33
-    http_port: 8003
-    tcp_port: 10003
-  - name: s1
+    http_port: 8203
+    tcp_port: 12003
+  - name: s3_1
     net: 3
     server: 10.101.20.35
-    http_port: 8004
-    tcp_port: 10004
-  - name: s2
+    http_port: 8301
+    tcp_port: 13001
+  - name: s3_2
     net: 3
     server: 10.101.20.35
-    http_port: 8005
-    tcp_port: 10005
-  - name: s3
+    http_port: 8302
+    tcp_port: 13002
+  - name: s3_3
     net: 3
     server: 10.101.20.35
     port: 8103
-    http_port: 8006
-    tcp_port: 10006
-  - name: s4
+    http_port: 8303
+    tcp_port: 13003
+  - name: s3_4
     net: 3
     server: 10.101.20.33
-    http_port: 8007
-    tcp_port: 10007
-  - name: s5
+    http_port: 8304
+    tcp_port: 13004
+  - name: s3_5
     net: 3
     server: 10.101.20.33
-    http_port: 8008
-    tcp_port: 10008
-  - name: s6
+    http_port: 8305
+    tcp_port: 13005
+  - name: s3_6
+    net: 3
+    server: 10.101.20.33
+    http_port: 8306
+    tcp_port: 13006
+  - name: s4_1
     net: 4
     server: 10.101.20.35
-    http_port: 8009
-    tcp_port: 10009
-  - name: s7
+    http_port: 8401
+    tcp_port: 14001
+  - name: s4_2
     net: 4
     server: 10.101.20.35
-    http_port: 8010
-    tcp_port: 10010
-  - name: s8
+    http_port: 8402
+    tcp_port: 14002
+  - name: s4_3
     net: 4
     server: 10.101.20.35
-    http_port: 8011
-    tcp_port: 10011
-  - name: s9
+    http_port: 8403
+    tcp_port: 14003
+  - name: s4_4
+    net: 4
+    server: 10.101.20.35
+    http_port: 8404
+    tcp_port: 14004
+  - name: s4_5
     net: 4
     server: 10.101.20.33
-    http_port: 8012
-    tcp_port: 10012
-  - name: s10
+    http_port: 8405
+    tcp_port: 14005
+  - name: s4_6
     net: 4
     server: 10.101.20.33
-    http_port: 8013
-    tcp_port: 10013
-  - name: s11
+    http_port: 8406
+    tcp_port: 14006
+  - name: s4_7
     net: 4
     server: 10.101.20.33
-    http_port: 8014
-    tcp_port: 10014
+    http_port: 8407
+    tcp_port: 14007
 account_sks:
   3:
     - b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708
