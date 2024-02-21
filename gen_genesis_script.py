@@ -9,6 +9,7 @@ import yaml
 import toml
 
 node_sk_map = {}
+password = '!@#$%^'
 
 def input2sk(input: str) -> str:
     sk_str = node_sk_map.get(input)
@@ -243,12 +244,124 @@ clickhouse-client -q "drop table zjc_ck_transaction_table"
         f.write(code_str)
 
 
+def gen_run_nodes_sh_file(server_conf: dict, file_path):
+    code_str = """
+#!/bin/bash
+# 修改配置文件
+# 确保服务器安装了 sshpass
+echo "==== STEP1: START DEPLOY ===="
+"""
+
+    server_node_map = {}
+    server0 = ''
+    secondary_servers = set()
+    for node in server_conf['nodes']:
+        if node['name'] == 'r1':
+            server0 = node['server']
+        
+        secondary_servers.add(node['server'])
+        
+        if server_node_map.get(node['server']) is None:
+            server_node_map[node['server']] = []
+        server_node_map[node['server']].append(node['name'])
+
+    secondary_servers.remove(server0)
+    server_name_map = {
+        'server0': server0,
+    }
+    for i, server in enumerate(secondary_servers):
+        server_name_map[f"server{i+1}"] = server
+    
+    for server_name, server_ip in server_name_map.items():
+        code_str += f"{server_name}={server_ip}\n"
+
+    code_str += f"pass={password}\n"
+
+    server0_node_names_str = ' '.join(server_node_map[server0])
+    code_str += f"""
+echo "[$server0]"
+sshpass -p $pass ssh root@$server0 <<EOF
+cd /root/xufei/zjchain && sh deploy_genesis.sh Debug ${{server0}}
+cd /root && sh -x fetch.sh 127.0.0.1 ${{server0}} {server0_node_names_str}
+EOF
+
+"""
+    
+    for server_name, server_ip in server_name_map.items():
+        if server_name == 'server0':
+            continue
+        server_node_names_str = ' '.join(server_node_map[server_ip])
+        code_str += f"""
+echo "[${server_name}]"
+sshpass -p $pass ssh root@${server_name} <<EOF
+sshpass -p $pass scp root@"${{server0}}":/root/fetch.sh /root/
+cd /root && sh -x fetch.sh ${{server0}} ${{{server_name}}} {server_node_names_str}
+EOF
+
+"""
+        
+    code_str += """
+echo "==== STEP1: DONE ===="
+
+echo "==== STEP2: CLEAR OLDS ===="
+
+"""
+
+    for server_name, server_ip in server_name_map.items():
+        code_str += f"""
+echo "[${server_name}]"
+sshpass -p $pass ssh root@${server_name} <<"EOF"
+ps -ef | grep zjchain | awk -F' ' '{{print $2}}' | xargs kill -9
+EOF
+"""
+        
+    code_str += """
+echo "==== STEP2: DONE ===="
+
+echo "==== STEP3: EXECUTE ===="
+"""
+
+    code_str += f"""
+echo "[$server0]"
+sshpass -p $pass ssh -f root@$server0 "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 > /dev/null 2>&1 &"
+
+sleep 3
+"""
+    
+    for server_name, server_ip in server_name_map.items():
+        if server_name == 'server0':
+            server0_nodes = server_node_map[server_ip]
+            server0_nodes.remove('r1')
+            server_nodes_str = ' '.join(server0_nodes)
+        else:
+            server_nodes_str = ' '.join(server_node_map[server_ip])
+        
+        code_str += f"""
+sshpass -p $pass ssh -f root@${server_name} bash -c "'\\
+export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \\
+for node in {server_nodes_str}; do \\
+    cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node > /dev/null 2>&1 &\\
+done \\
+'"
+
+"""
+
+    code_str += """
+echo "==== STEP3: DONE ===="
+"""
+
+    with open(file_path, 'w') as f:
+        f.write(code_str)
+
+
+
 def main():
     file_path = "./servers.yml"
     server_conf = parse_server_yml_file(file_path)
     gen_zjnodes(server_conf, "./zjnodes")
     gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
     gen_genesis_sh_file(server_conf, "./genesis.sh")
+    gen_run_nodes_sh_file(server_conf, "./run_nodes.sh")
 
 if __name__ == '__main__':
     main()
