@@ -41,7 +41,7 @@ int Ecdsa::Sign(const std::string &hash, std::string *sign) {
     // CRYPTO_DEBUG("signed hash: %s, sign: %s",
     //     common::Encode::HexEncode(hash).c_str(),
     //     common::Encode::HexEncode(*sign).c_str());
-    CRYPTO_INFO("sign duration ms: %d", (end_us - start_us)/1000);
+    CRYPTO_INFO("sign duration us: %lu", (end_us - start_us));
     return kSecuritySuccess;
 #endif
 }
@@ -60,7 +60,7 @@ int Ecdsa::Verify(const std::string& hash, const std::string& str_pk, const std:
     }
 
     auto end_us = common::TimeUtils::TimestampUs();
-    CRYPTO_INFO("verify duration ms: %d", (end_us - start_us)/1000);
+    CRYPTO_INFO("verify duration us: %lu", (end_us - start_us));
     return kSecuritySuccess;
 #endif
 }
