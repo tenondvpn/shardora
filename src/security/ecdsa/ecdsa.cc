@@ -7,8 +7,6 @@
 #include <common/log.h>
 #include "common/time_utils.h"
 
-#define MOCK_SIGN 0
-
 namespace zjchain {
 
 namespace security {
@@ -29,7 +27,7 @@ int Ecdsa::SetPrivateKey(const std::string& prikey) {
 }
 
 int Ecdsa::Sign(const std::string &hash, std::string *sign) {
-#if MOCK_SIGH 
+#if MOCK_SIGN 
     *sign = "c05978e58801362bb985a7b868f60e530f5bc6a309613738bf14b92b80635de508f27f3665db5f31a782fe2d1f27e9fd703dc7bf4e73afffab1ec8bae129e62f01";
 #else
     auto start_us = common::TimeUtils::TimestampUs();
@@ -47,7 +45,7 @@ int Ecdsa::Sign(const std::string &hash, std::string *sign) {
 }
 
 int Ecdsa::Verify(const std::string& hash, const std::string& str_pk, const std::string& sign) {
-#if MOCK_SIGH
+#if MOCK_VERIFY
     return kSecuritySuccess;
 #else
     auto start_us = common::TimeUtils::TimestampUs();
