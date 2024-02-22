@@ -8,8 +8,6 @@
 #include "security/ecdsa/curve.h"
 #include "security/security.h"
 
-#define MOCK_SIGN 1
-
 namespace zjchain {
 
 namespace security {
