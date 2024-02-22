@@ -32,16 +32,13 @@ int Ecdsa::Sign(const std::string &hash, std::string *sign) {
     std::this_thread::sleep_for(std::chrono::nanoseconds(50 * 1000ull));
     return kSecuritySuccess;
 #else
-    auto start_us = common::TimeUtils::TimestampUs();
     if (!Secp256k1::Instance()->Secp256k1Sign(hash, *prikey_.get(), sign)) {
         return kSecurityError;
     }
     
-    auto end_us = common::TimeUtils::TimestampUs();
     // CRYPTO_DEBUG("signed hash: %s, sign: %s",
     //     common::Encode::HexEncode(hash).c_str(),
     //     common::Encode::HexEncode(*sign).c_str());
-    CRYPTO_INFO("sign duration us: %lu", (end_us - start_us));
     return kSecuritySuccess;
 #endif
 }
@@ -51,7 +48,6 @@ int Ecdsa::Verify(const std::string& hash, const std::string& str_pk, const std:
     std::this_thread::sleep_for(std::chrono::nanoseconds(50 * 1000ull));
     return kSecuritySuccess;
 #else
-    auto start_us = common::TimeUtils::TimestampUs();
     if (!Secp256k1::Instance()->Secp256k1Verify(hash, str_pk, sign)) {
         CRYPTO_ERROR("verify sig failed! hash: %s, pk: %s, sign: %s",
             common::Encode::HexEncode(hash).c_str(),
@@ -59,9 +55,6 @@ int Ecdsa::Verify(const std::string& hash, const std::string& str_pk, const std:
             common::Encode::HexEncode(sign).c_str());
         return kSecurityError;
     }
-
-    auto end_us = common::TimeUtils::TimestampUs();
-    CRYPTO_INFO("verify duration us: %lu", (end_us - start_us));
     return kSecuritySuccess;
 #endif
 }

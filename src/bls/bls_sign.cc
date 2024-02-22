@@ -66,7 +66,6 @@ int BlsSign::Verify(
     *verify_hash = "6276838476baeed30495988102d9261b5b8caf82b6d8f39870075f33cb14c2e6";
     return kBlsSuccess;
 #else
-    auto start_us = common::TimeUtils::TimestampUs();
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
     libff::alt_bn128_GT res;
     if (!bls_instance.Verification(g1_hash, sign, pkey, &res)) {
@@ -75,8 +74,6 @@ int BlsSign::Verify(
     }
     
     *verify_hash = GetVerifyHash(res);
-    auto end_us = common::TimeUtils::TimestampUs();
-    BLS_INFO("bls verify duration us: %lu", (end_us - start_us));
     return kBlsSuccess;
 #endif
 } catch (std::exception& e) {
@@ -95,7 +92,6 @@ int BlsSign::GetVerifyHash(
     std::this_thread::sleep_for(std::chrono::nanoseconds(3000 * 1000ull));
     return kBlsSuccess;
 #else
-    auto start_us = common::TimeUtils::TimestampUs();
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
     libff::alt_bn128_GT res;
     if (!bls_instance.GetVerifyHash(g1_hash, pkey, &res)) {
@@ -105,8 +101,6 @@ int BlsSign::GetVerifyHash(
 
     *verify_hash = GetVerifyHash(res);
     auto end_us = common::TimeUtils::TimestampUs();
-    BLS_INFO("bls get verify hash duration us: %lu", (end_us - start_us));
-    return kBlsSuccess;
 #endif
 } catch (std::exception& e) {
     BLS_ERROR("sign message failed: %s", e.what());
@@ -123,7 +117,6 @@ int BlsSign::GetVerifyHash(
     std::this_thread::sleep_for(std::chrono::nanoseconds(3000 * 1000ull));
     return kBlsSuccess;
 #else
-    auto start_us = common::TimeUtils::TimestampUs();
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
     libff::alt_bn128_GT res;
     if (!bls_instance.GetVerifyHash(sign, &res)) {
@@ -132,8 +125,6 @@ int BlsSign::GetVerifyHash(
     }
 
     *verify_hash = GetVerifyHash(res);
-    auto end_us = common::TimeUtils::TimestampUs();
-    BLS_INFO("bls get verify hash duration us: %lu", (end_us - start_us));
     return kBlsSuccess;
 #endif
 } catch (std::exception& e) {
