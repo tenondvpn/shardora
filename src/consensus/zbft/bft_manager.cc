@@ -2883,16 +2883,23 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
             common::Encode::HexEncode(block.bls_agg_sign_x()).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(common_pk.X.c0).c_str());
         try {
+#if MOCK_SIGN
+            bool check_res = true;
+#else            
             bool check_res = libBLS::Bls::Verification(g1_hash, sign, common_pk);
+#endif                        
             if (!check_res) {
                 assert(check_res);
                 return;
             }
+
         } catch (std::exception& e) {
+            ZJC_ERROR("verification agg sign failed");
             assert(false);
             return;
         }
     }
+
 
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     auto queue_item_ptr = std::make_shared<block::BlockToDbItem>(zjc_block, bft_ptr->db_batch());

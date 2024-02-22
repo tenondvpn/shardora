@@ -1449,7 +1449,11 @@ bool NetworkInit::BlockBlsAggSignatureValid(
     sign.Y = libff::alt_bn128_Fq(common::Encode::HexEncode(block.bls_agg_sign_y()).c_str());
     sign.Z = libff::alt_bn128_Fq::one();
     auto g1_hash = libBLS::Bls::Hashing(block_hash);
+#if MOCK_SIGN
+    bool check_res = true;
+#else            
     bool check_res = libBLS::Bls::Verification(g1_hash, sign, common_pk);
+#endif
     if (!check_res) {
         ZJC_ERROR("verification agg sign failed hash: %s, signx: %s, common pk x: %s",
             common::Encode::HexEncode(block_hash).c_str(),
