@@ -1215,7 +1215,7 @@ bool GenesisBlockInit::BlsAggSignBlock(
         idx_vec.push_back(i + 1);
     }
 #if MOCK_SIGN
-    auto agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
+    auto agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::random_element());
 #else
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
     std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);

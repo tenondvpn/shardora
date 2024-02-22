@@ -267,7 +267,7 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
 
     try {
 #if MOCK_SIGN        
-        bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
+        bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::random_element());
 #else
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
         std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
@@ -476,7 +476,7 @@ int Zbft::LeaderCreateCommitAggSign() {
 
     try {
 #if MOCK_SIGN
-        bls_commit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one()); 
+        bls_commit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::random_element()); 
 #else
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
         std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
