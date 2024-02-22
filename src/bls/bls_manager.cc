@@ -18,6 +18,7 @@
 #include "protos/prefix_db.h"
 #include "init/init_utils.h"
 #include "transport/processor.h"
+#include "common/encode.h"
 
 namespace zjchain {
 

@@ -100,7 +100,7 @@ int BlsSign::GetVerifyHash(
     }
 
     *verify_hash = GetVerifyHash(res);
-    auto end_us = common::TimeUtils::TimestampUs();
+    return kBlsSuccess;
 #endif
 } catch (std::exception& e) {
     BLS_ERROR("sign message failed: %s", e.what());
