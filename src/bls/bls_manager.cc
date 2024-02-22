@@ -270,8 +270,8 @@ int BlsManager::Verify(
 int BlsManager::GetVerifyHash(
             uint32_t t,
             uint32_t n,
-        const libff::alt_bn128_G1& g1_hash,
-        const libff::alt_bn128_G2& pkey,
+            const libff::alt_bn128_G1& g1_hash,
+            const libff::alt_bn128_G2& pkey,
             std::string* verify_hash) try {
     if (pkey == libff::alt_bn128_G2::zero()) {
         return kBlsError;
