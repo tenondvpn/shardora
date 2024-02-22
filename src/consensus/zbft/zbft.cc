@@ -475,12 +475,16 @@ int Zbft::LeaderCreateCommitAggSign() {
     }
 
     try {
+#if MOCK_SIGN
+        bls_commit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one()); 
+#else
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
         std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
         libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
         bls_commit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(bls_instance.SignatureRecover(
             all_signs,
             lagrange_coeffs));
+#endif
 //         ZJC_INFO("commit verify start,");
         std::string sign_commit_hash;
         if (bls_mgr_->GetVerifyHash(

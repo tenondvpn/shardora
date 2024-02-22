@@ -211,7 +211,6 @@ int BlsManager::Sign(
         std::string* sign_x,
         std::string* sign_y) try {
 //     std::lock_guard<std::mutex> guard(sign_mutex_);
-    auto start_us = common::TimeUtils::TimestampUs();
     libff::alt_bn128_G1 bn_sign;
     BlsSign::Sign(t, n, local_sec_key, g1_hash, &bn_sign);
     bn_sign.to_affine_coordinates();
@@ -229,8 +228,6 @@ int BlsManager::Sign(
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
     std::string verify_hash;
     assert(Verify(t, n, *pkey.getPublicKey(), bn_sign, g1_hash, &verify_hash) == kBlsSuccess);
-    auto end_us = common::TimeUtils::TimestampUs();
-    BLS_INFO("bls sign duration us: %lu", (end_us - start_us));
     return kBlsSuccess;
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
@@ -679,7 +676,7 @@ bool BlsManager::CheckAndVerifyAll(
                     tmp_all_signs,
                     tmp_idx_vec)) {
                 finish_item->all_common_public_keys[member_idx] = libff::alt_bn128_G2::zero();
-                finish_item->all_public_keys[member_idx] == libff::alt_bn128_G2::zero();
+                finish_item->all_public_keys[member_idx] = libff::alt_bn128_G2::zero();
             }
         }
 
@@ -712,12 +709,16 @@ bool BlsManager::VerifyAggSignValid(
     }
 
     try {
+#if MOCK_SIGN
+        auto bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one()); 
+#else
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
         std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
         libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
         auto bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(bls_instance.SignatureRecover(
             all_signs,
             lagrange_coeffs));
+#endif
         std::string verify_hash;
         libff::alt_bn128_G1 g1_hash;
         GetLibffHash(finish_item->max_finish_hash, &g1_hash);
@@ -748,6 +749,8 @@ bool BlsManager::VerifyAggSignValid(
             sign_x.c_str(), sign_y.c_str(), debug_idx.c_str());
         return true;
     } catch (...) {
+        ZJC_ERROR("verify agg sign failed");
+        return false;
     }
 
     return false;
