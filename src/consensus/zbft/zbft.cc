@@ -266,12 +266,12 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
     }
 
     try {
-        libBLS::Bls bls_instance = libBLS::Bls(t, n);
-        std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
-        libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
-#if MOCK_SIGN
+#if MOCK_SIGN        
         bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
 #else
+        libBLS::Bls bls_instance = libBLS::Bls(t, n);
+        std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
+        libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);        
         bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(
             bls_instance.SignatureRecover(
             all_signs,

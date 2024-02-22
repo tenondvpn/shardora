@@ -1214,7 +1214,9 @@ bool GenesisBlockInit::BlsAggSignBlock(
         all_signs.push_back(sign);
         idx_vec.push_back(i + 1);
     }
-
+#if MOCK_SIGN
+    auto agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one());
+#else
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
     std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
     libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
@@ -1226,7 +1228,7 @@ bool GenesisBlockInit::BlsAggSignBlock(
         ZJC_FATAL("agg sign failed shard: %u", block->network_id());
         return false;
     }
-
+#endif
     agg_sign->to_affine_coordinates();
     block->set_bls_agg_sign_x(
         common::Encode::HexDecode(
