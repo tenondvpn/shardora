@@ -3,7 +3,7 @@
 #include <string>
 
 #define MOCK_SIGN 0
-#define MOCK_VERIFY 1
+#define MOCK_VERIFY 0
 
 #if MOCK_SIGN
 #define MOCK_VERIFY 1
