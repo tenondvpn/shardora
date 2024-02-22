@@ -183,6 +183,11 @@ int BlsManager::Sign(
         const libff::alt_bn128_Fr& local_sec_key,
         const libff::alt_bn128_G1& g1_hash,
         libff::alt_bn128_G1* bn_sign) {
+#if MOCK_SIGN
+    *sign_x = "a8f89a4e346c06b18576f2328dec85c4216c16e1c899447e372cb8ac55fc8e8e";
+    *sign_y = "eb1d9d3f34e507781a3c46d41c928172f3f8f9cb9bc225c9f7def4741fd8efa";
+    return kBlsSuccess;
+#else    
     BlsSign::Sign(t, n, local_sec_key, g1_hash, bn_sign);
     bn_sign->to_affine_coordinates();
     std::string sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign->X);
@@ -200,6 +205,7 @@ int BlsManager::Sign(
     std::string verify_hash;
     assert(Verify(t, n, *pkey.getPublicKey(), *bn_sign, g1_hash, &verify_hash) == kBlsSuccess);
     return kBlsSuccess;
+#endif
 }
 
 int BlsManager::Sign(
@@ -210,6 +216,12 @@ int BlsManager::Sign(
         std::string* sign_x,
         std::string* sign_y) try {
 //     std::lock_guard<std::mutex> guard(sign_mutex_);
+#if MOCK_SIGN
+    *sign_x = "a8f89a4e346c06b18576f2328dec85c4216c16e1c899447e372cb8ac55fc8e8e";
+    *sign_y = "eb1d9d3f34e507781a3c46d41c928172f3f8f9cb9bc225c9f7def4741fd8efa";
+    return kBlsSuccess;
+#else
+    auto start_us = common::TimeUtils::TimestampUs();
     libff::alt_bn128_G1 bn_sign;
     BlsSign::Sign(t, n, local_sec_key, g1_hash, &bn_sign);
     bn_sign.to_affine_coordinates();
@@ -227,7 +239,10 @@ int BlsManager::Sign(
         libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
     std::string verify_hash;
     assert(Verify(t, n, *pkey.getPublicKey(), bn_sign, g1_hash, &verify_hash) == kBlsSuccess);
+    auto end_us = common::TimeUtils::TimestampUs();
+    BLS_INFO("bls sign duration us: %lu", (end_us - start_us));
     return kBlsSuccess;
+#endif
 } catch (std::exception& e) {
     BLS_ERROR("catch error: %s", e.what());
     return kBlsError;

@@ -18,12 +18,7 @@ void BlsSign::Sign(
         const libff::alt_bn128_Fr& secret_key,
         const libff::alt_bn128_G1& g1_hash,
         libff::alt_bn128_G1* sign) {
-#if MOCK_SIGN
-    *sign = libff::alt_bn128_G1::random_element();
-    std::this_thread::sleep_for(std::chrono::nanoseconds(200 * 1000ull));
-#else
     try {
-        auto start_us = common::TimeUtils::TimestampUs();
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
         *sign = bls_instance.Signing(g1_hash, secret_key);
         ZJC_DEBUG("sign message success sec: %s, hash: %s, %s, %s",
@@ -31,13 +26,10 @@ void BlsSign::Sign(
             libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
-        auto end_us = common::TimeUtils::TimestampUs();
-        BLS_INFO("bls sign duration us: %lu", (end_us - start_us));
     } catch (std::exception& e) {
         BLS_ERROR("sign message failed: %s", e.what());
         *sign = libff::alt_bn128_G1::zero();
     }
-#endif
 }
 
 std::string BlsSign::GetVerifyHash(const libff::alt_bn128_GT& res) {
