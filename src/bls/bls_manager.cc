@@ -6,6 +6,7 @@
 #include <libbls/bls/BLSPublicKey.h>
 #include <libbls/bls/BLSPublicKeyShare.h>
 #include <libbls/tools/utils.h>
+#include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
 #include <libff/common/profiling.hpp>
 
 #include "bls/bls_sign.h"
@@ -184,8 +185,7 @@ int BlsManager::Sign(
         const libff::alt_bn128_G1& g1_hash,
         libff::alt_bn128_G1* bn_sign) {
 #if MOCK_SIGN
-    *sign_x = "a8f89a4e346c06b18576f2328dec85c4216c16e1c899447e372cb8ac55fc8e8e";
-    *sign_y = "eb1d9d3f34e507781a3c46d41c928172f3f8f9cb9bc225c9f7def4741fd8efa";
+    *bn_sign = libff::alt_bn128_G1::one();
     return kBlsSuccess;
 #else    
     BlsSign::Sign(t, n, local_sec_key, g1_hash, bn_sign);
