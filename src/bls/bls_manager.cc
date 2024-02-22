@@ -676,7 +676,7 @@ bool BlsManager::CheckAndVerifyAll(
                     tmp_all_signs,
                     tmp_idx_vec)) {
                 finish_item->all_common_public_keys[member_idx] = libff::alt_bn128_G2::zero();
-                finish_item->all_public_keys[member_idx] = libff::alt_bn128_G2::zero();
+                finish_item->all_public_keys[member_idx] == libff::alt_bn128_G2::zero();
             }
         }
 
@@ -750,7 +750,6 @@ bool BlsManager::VerifyAggSignValid(
         return true;
     } catch (...) {
         ZJC_ERROR("verify agg sign failed");
-        return false;
     }
 
     return false;
