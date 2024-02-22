@@ -29,6 +29,8 @@ int Ecdsa::SetPrivateKey(const std::string& prikey) {
 int Ecdsa::Sign(const std::string &hash, std::string *sign) {
 #if MOCK_SIGN 
     *sign = "c05978e58801362bb985a7b868f60e530f5bc6a309613738bf14b92b80635de508f27f3665db5f31a782fe2d1f27e9fd703dc7bf4e73afffab1ec8bae129e62f01";
+    std::this_thread::sleep_for(std::chrono::nanoseconds(50 * 1000ull));
+    return kSecuritySuccess;
 #else
     auto start_us = common::TimeUtils::TimestampUs();
     if (!Secp256k1::Instance()->Secp256k1Sign(hash, *prikey_.get(), sign)) {

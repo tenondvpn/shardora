@@ -19,7 +19,8 @@ void BlsSign::Sign(
         const libff::alt_bn128_G1& g1_hash,
         libff::alt_bn128_G1* sign) {
 #if MOCK_SIGN
-    *sign = libff::alt_bn128_G1::random_element(); 
+    *sign = libff::alt_bn128_G1::random_element();
+    std::this_thread::sleep_for(std::chrono::nanoseconds(200 * 1000ull));
 #else
     try {
         auto start_us = common::TimeUtils::TimestampUs();
@@ -96,6 +97,7 @@ int BlsSign::GetVerifyHash(
     *verify_hash = "6276838476baeed30495988102d9261b5b8caf82b6d8f39870075f33cb14c2e6";
     return kBlsSuccess;
 #else
+    auto start_us = common::TimeUtils::TimestampUs();
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
     libff::alt_bn128_GT res;
     if (!bls_instance.GetVerifyHash(g1_hash, pkey, &res)) {
@@ -104,6 +106,8 @@ int BlsSign::GetVerifyHash(
     }
 
     *verify_hash = GetVerifyHash(res);
+    auto end_us = common::TimeUtils::TimestampUs();
+    BLS_INFO("bls get verify hash duration us: %lu", (end_us - start_us));
     return kBlsSuccess;
 #endif
 } catch (std::exception& e) {
@@ -120,6 +124,7 @@ int BlsSign::GetVerifyHash(
     *verify_hash = "6276838476baeed30495988102d9261b5b8caf82b6d8f39870075f33cb14c2e6";
     return kBlsSuccess;
 #else
+    auto start_us = common::TimeUtils::TimestampUs();
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
     libff::alt_bn128_GT res;
     if (!bls_instance.GetVerifyHash(sign, &res)) {
@@ -128,6 +133,8 @@ int BlsSign::GetVerifyHash(
     }
 
     *verify_hash = GetVerifyHash(res);
+    auto end_us = common::TimeUtils::TimestampUs();
+    BLS_INFO("bls get verify hash duration us: %lu", (end_us - start_us));
     return kBlsSuccess;
 #endif
 } catch (std::exception& e) {
