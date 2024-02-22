@@ -95,6 +95,7 @@ int BlsSign::GetVerifyHash(
         std::string* verify_hash) try {
 #if MOCK_VERIFY
     *verify_hash = "6276838476baeed30495988102d9261b5b8caf82b6d8f39870075f33cb14c2e6";
+    std::this_thread::sleep_for(std::chrono::nanoseconds(3000 * 1000ull));
     return kBlsSuccess;
 #else
     auto start_us = common::TimeUtils::TimestampUs();
@@ -122,6 +123,7 @@ int BlsSign::GetVerifyHash(
         std::string* verify_hash) try {
 #if MOCK_VERIFY
     *verify_hash = "6276838476baeed30495988102d9261b5b8caf82b6d8f39870075f33cb14c2e6";
+    std::this_thread::sleep_for(std::chrono::nanoseconds(3000 * 1000ull));
     return kBlsSuccess;
 #else
     auto start_us = common::TimeUtils::TimestampUs();

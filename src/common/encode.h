@@ -2,8 +2,8 @@
 
 #include <string>
 
-#define MOCK_SIGN 0
-#define MOCK_VERIFY 0
+#define MOCK_SIGN 1
+#define MOCK_VERIFY 1
 
 #if MOCK_SIGN
 #define MOCK_VERIFY 1
