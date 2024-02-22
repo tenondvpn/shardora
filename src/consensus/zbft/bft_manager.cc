@@ -16,6 +16,7 @@
 #include "common/global_info.h"
 #include "common/random.h"
 #include "common/time_utils.h"
+#include "common/encode.h"
 #include "db/db.h"
 #include "dht/base_dht.h"
 #include "elect/elect_manager.h"

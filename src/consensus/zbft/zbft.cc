@@ -6,6 +6,7 @@
 #include "contract/contract_utils.h"
 #include "elect/elect_manager.h"
 #include "timeblock/time_block_manager.h"
+#include "common/encode.h"
 
 namespace zjchain {
 
