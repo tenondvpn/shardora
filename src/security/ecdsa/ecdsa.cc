@@ -25,7 +25,10 @@ int Ecdsa::SetPrivateKey(const std::string& prikey) {
     return kSecuritySuccess;
 }
 
-int Ecdsa::Sign(const std::string& hash, std::string* sign) {
+int Ecdsa::Sign(const std::string &hash, std::string *sign) {
+#if MOCK_SIGH 
+    *sign = "c05978e58801362bb985a7b868f60e530f5bc6a309613738bf14b92b80635de508f27f3665db5f31a782fe2d1f27e9fd703dc7bf4e73afffab1ec8bae129e62f01";
+#else
     if (!Secp256k1::Instance()->Secp256k1Sign(hash, *prikey_.get(), sign)) {
         return kSecurityError;
     }
@@ -34,9 +37,13 @@ int Ecdsa::Sign(const std::string& hash, std::string* sign) {
     //     common::Encode::HexEncode(hash).c_str(),
     //     common::Encode::HexEncode(*sign).c_str());
     return kSecuritySuccess;
+#endif
 }
 
 int Ecdsa::Verify(const std::string& hash, const std::string& str_pk, const std::string& sign) {
+#if MOCK_SIGH
+    return kSecuritySuccess
+#else
     if (!Secp256k1::Instance()->Secp256k1Verify(hash, str_pk, sign)) {
         CRYPTO_ERROR("verify sig failed! hash: %s, pk: %s, sign: %s",
             common::Encode::HexEncode(hash).c_str(),
@@ -46,6 +53,7 @@ int Ecdsa::Verify(const std::string& hash, const std::string& str_pk, const std:
     }
 
     return kSecuritySuccess;
+#endif
 }
 
 std::string Ecdsa::GetSign(const std::string& r, const std::string& s, uint8_t v) {
