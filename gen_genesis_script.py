@@ -1,3 +1,4 @@
+import argparse
 from eth_keys import keys, datatypes
 import sha3
 from secp256k1 import PrivateKey, PublicKey
@@ -359,7 +360,13 @@ echo "==== STEP3: DONE ===="
 
 
 def main():
-    file_path = "./nodes_conf.yml"
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', help='nodes_conf.yml 文件位置', default='')
+    args = parser.parse_args()
+    if args.config == '':
+        args.config = './nodes_conf.yml'
+
+    file_path = args.config
     server_conf = parse_server_yml_file(file_path)
     gen_zjnodes(server_conf, "./zjnodes")
     gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
