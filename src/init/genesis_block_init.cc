@@ -815,7 +815,6 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
     uint32_t block_count = 0;
     db::DbWriteBatch db_batch;
     while (fgets(data, 204800, root_gens_init_block_file) != nullptr) {
-    {
         // root_gens_init_block_file 中保存的是 root pool 账户 block，和时间快 block，同步过来
         auto tenon_block = std::make_shared<block::protobuf::Block>();
         std::string tmp_data(data, strlen(data) - 1);
