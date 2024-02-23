@@ -1,5 +1,6 @@
 #include "pools/tx_pool.h"
 #include <cassert>
+#include <common/log.h>
 
 #include "common/encode.h"
 #include "common/time_utils.h"
@@ -129,6 +130,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     gid_map_[tx_ptr->gid] = tx_ptr;
+    gid_start_time_map_[tx_ptr->gid] = common::TimeUtils::TimestampUs(); 
     timeout_txs_.push(tx_ptr->gid);
     oldest_timestamp_ = prio_map_.begin()->second->time_valid;
     return kPoolsSuccess;
@@ -242,6 +244,10 @@ void TxPool::RemoveTx(const std::string& gid) {
 //         common::Encode::HexEncode(giter->second->gid).c_str(),
 //         common::Encode::HexEncode(giter->second->tx_hash).c_str());
     gid_map_.erase(giter);
+
+    
+    
+    
     if (!prio_map_.empty()) {
         oldest_timestamp_ = prio_map_.begin()->second->time_valid;
     } else {
@@ -251,7 +257,17 @@ void TxPool::RemoveTx(const std::string& gid) {
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
     for (int32_t i = 0; i < tx_list.size(); ++i) {
-        RemoveTx(tx_list[i].gid());
+        auto gid = tx_list[i].gid(); 
+        RemoveTx(gid);
+
+        // 统计交易确认延迟
+        auto now_tm = common::TimeUtils::TimestampUs();
+        auto start_tm_iter = gid_start_time_map_.find(gid);
+        if (start_tm_iter != gid_start_time_map_.end()) {
+            ZJC_INFO("tx latency gid: %s, us: %llu",
+                common::Encode::HexEncode(gid).c_str(), now_tm - start_tm_iter->second);
+            gid_start_time_map_.erase(gid);
+        }
     }
 
     finish_tx_count_ += tx_list.size();

@@ -346,6 +346,7 @@ private:
     static const uint64_t kSyncBlockPeriodMs = 3000lu;
 
     std::unordered_map<std::string, TxItemPtr> gid_map_;
+    std::unordered_map<std::string, uint64_t> gid_start_time_map_;
     std::queue<std::string> timeout_txs_;
     std::queue<std::string> timeout_remove_txs_;
     common::LimitHashSet<std::string> removed_gid_{ 10240 };
