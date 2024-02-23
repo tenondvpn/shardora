@@ -802,23 +802,23 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
         return kInitError;
     }
 
-    char buffer[10240];
-    std::string file_content;
-    size_t bytes_read = 0;
+    // char buffer[10240];
+    // std::string file_content;
+    // size_t bytes_read = 0;
     
-    while ((bytes_read = fread(buffer, sizeof(char), sizeof(buffer), root_gens_init_block_file)) > 0) {
-        file_content.append(buffer, bytes_read);
-    }
+    // while ((bytes_read = fread(buffer, sizeof(char), sizeof(buffer), root_gens_init_block_file)) > 0) {
+    //     file_content.append(buffer, bytes_read);
+    // }
 
 
-    // char data[20480];
+    char data[204800];
     uint32_t block_count = 0;
     db::DbWriteBatch db_batch;
-    // while (fgets(data, 20480, root_gens_init_block_file) != nullptr) {
+    while (fgets(data, 204800, root_gens_init_block_file) != nullptr) {
     {
         // root_gens_init_block_file 中保存的是 root pool 账户 block，和时间快 block，同步过来
         auto tenon_block = std::make_shared<block::protobuf::Block>();
-        std::string tmp_data = file_content;
+        std::string tmp_data(data, strlen(data) - 1);
         common::Split<> tmp_split(tmp_data.c_str(), '-', tmp_data.size());
         std::string block_str = tmp_data;
         std::string ec_block_str;
@@ -870,6 +870,7 @@ int GenesisBlockInit::GenerateShardSingleBlock(uint32_t sharding_id) {
             }
         }
     }
+    fclose(root_gens_init_block_file);
     // flush 磁盘
     db_->Put(db_batch);
     {
