@@ -8,6 +8,7 @@ from ecdsa import SigningKey, SECP256k1
 import os
 import yaml
 import toml
+import re
 
 node_sk_map = {}
 
@@ -357,6 +358,19 @@ echo "==== STEP3: DONE ===="
     with open(file_path, 'w') as f:
         f.write(code_str)
 
+def modify_shard_num_in_src_code(server_conf, file_path='./src/network/network_utils.h'):
+    shards_set = set()
+    for node in server_conf['nodes']:
+        shards_set.add(int(node['net']))
+    shards_set.remove(2)
+
+    with open(file_path, 'r') as f:
+        content = f.read()
+    
+    new_content = re.sub(r'static const uint32_t kConsensusShardEndNetworkId = \d+u;', f"static const uint32_t kConsensusShardEndNetworkId = {3+len(shards_set)}u;", content)
+    with open(file_path, 'w') as f:
+        f.write(new_content)
+
 
 
 def main():
@@ -372,6 +386,7 @@ def main():
     gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
     gen_genesis_sh_file(server_conf, "./genesis.sh")
     gen_run_nodes_sh_file(server_conf, "./run_nodes.sh")
+    modify_shard_num_in_src_code(server_conf)
 
 if __name__ == '__main__':
     main()

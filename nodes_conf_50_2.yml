@@ -129,6 +129,56 @@ nodes:
     server: 10.101.20.35
     http_port: 8320
     tcp_port: 1320
+  - name: s3_21
+    net: 3
+    server: 10.101.20.35
+    http_port: 8321
+    tcp_port: 1321
+  - name: s3_22
+    net: 3
+    server: 10.101.20.35
+    http_port: 8322
+    tcp_port: 1322
+  - name: s3_23
+    net: 3
+    server: 10.101.20.35
+    http_port: 8323
+    tcp_port: 1323
+  - name: s3_24
+    net: 3
+    server: 10.101.20.35
+    http_port: 8324
+    tcp_port: 1324
+  - name: s3_25
+    net: 3
+    server: 10.101.20.35
+    http_port: 8325
+    tcp_port: 1325
+  - name: s3_26
+    net: 3
+    server: 10.101.20.33
+    http_port: 8326
+    tcp_port: 1326
+  - name: s3_27
+    net: 3
+    server: 10.101.20.33
+    http_port: 8327
+    tcp_port: 1327
+  - name: s3_28
+    net: 3
+    server: 10.101.20.33
+    http_port: 8328
+    tcp_port: 1328
+  - name: s3_29
+    net: 3
+    server: 10.101.20.33
+    http_port: 8329
+    tcp_port: 1329
+  - name: s3_30
+    net: 3
+    server: 10.101.20.33
+    http_port: 8330
+    tcp_port: 1330
   - name: s3_31
     net: 3
     server: 10.101.20.33
@@ -329,6 +379,56 @@ nodes:
     server: 10.101.20.35
     http_port: 8420
     tcp_port: 1420
+  - name: s4_21
+    net: 4
+    server: 10.101.20.35
+    http_port: 8421
+    tcp_port: 1421
+  - name: s4_22
+    net: 4
+    server: 10.101.20.35
+    http_port: 8422
+    tcp_port: 1422
+  - name: s4_23
+    net: 4
+    server: 10.101.20.35
+    http_port: 8423
+    tcp_port: 1423
+  - name: s4_24
+    net: 4
+    server: 10.101.20.35
+    http_port: 8424
+    tcp_port: 1424
+  - name: s4_25
+    net: 4
+    server: 10.101.20.35
+    http_port: 8425
+    tcp_port: 1425
+  - name: s4_26
+    net: 4
+    server: 10.101.20.33
+    http_port: 8426
+    tcp_port: 1426
+  - name: s4_27
+    net: 4
+    server: 10.101.20.33
+    http_port: 8427
+    tcp_port: 1427
+  - name: s4_28
+    net: 4
+    server: 10.101.20.33
+    http_port: 8428
+    tcp_port: 1428
+  - name: s4_29
+    net: 4
+    server: 10.101.20.33
+    http_port: 8429
+    tcp_port: 1429
+  - name: s4_30
+    net: 4
+    server: 10.101.20.33
+    http_port: 8430
+    tcp_port: 1430
   - name: s4_31
     net: 4
     server: 10.101.20.33
