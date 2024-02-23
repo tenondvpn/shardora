@@ -346,7 +346,7 @@ inline static uint32_t GetSignerCount(uint32_t n) {
 template <class KeyType> uint32_t Hash32(const KeyType &t) { return 0; }
 
 
-inline uint64_t GetNthElement(const std::vector<uint64_t> v, float ratio) {
+inline uint64_t GetNthElement(std::vector<uint64_t> v, float ratio) {
     size_t n = v.size() * ratio - 1;
     std::nth_element(v.begin(), v.begin() + n, v.end());
     return v[n];
