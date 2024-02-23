@@ -10,6 +10,7 @@
 
 #include "common/encode.h"
 #include "common/log.h"
+#include <algorithm>
 
 #ifndef DISALLOW_COPY_AND_ASSIGN
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \

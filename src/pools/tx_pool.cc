@@ -9,7 +9,6 @@
 #include "db/db.h"
 #include "network/network_utils.h"
 #include "pools/tx_utils.h"
-#include <algorithm>
 
 namespace zjchain {
 
