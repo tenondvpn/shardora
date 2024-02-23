@@ -257,7 +257,6 @@ void TxPool::RemoveTx(const std::string& gid) {
 }
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
-    std::vector<uint64_t> latencys_us;
     for (int32_t i = 0; i < tx_list.size(); ++i) {
         auto gid = tx_list[i].gid(); 
         RemoveTx(gid);
@@ -266,16 +265,17 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
         auto now_tm = common::TimeUtils::TimestampUs();
         auto start_tm_iter = gid_start_time_map_.find(gid);
         if (start_tm_iter != gid_start_time_map_.end()) {
-            latencys_us.push_back(now_tm - start_tm_iter->second);
+            latencys_us_.push_back(now_tm - start_tm_iter->second);
             // ZJC_INFO("tx latency gid: %s, us: %llu",
             //     common::Encode::HexEncode(gid).c_str(), now_tm - start_tm_iter->second);
             gid_start_time_map_.erase(gid);
         }
 
-        if (latencys_us.size() > 0) {
-            uint64_t p90 = common::GetNthElement(latencys_us, 0.90);
-            uint64_t p95 = common::GetNthElement(latencys_us, 0.95);
-            uint64_t p100 = common::GetNthElement(latencys_us, 1);
+        if (latencys_us_.size() > 1000) {
+            uint64_t p90 = common::GetNthElement(latencys_us_, 0.90);
+            uint64_t p95 = common::GetNthElement(latencys_us_, 0.95);
+            uint64_t p100 = common::GetNthElement(latencys_us_, 1);
+            latencys_us_.clear();
         
             ZJC_INFO("tx latency p90: %llu, p95: %llu, max: %llu", p90, p95, p100);
         }

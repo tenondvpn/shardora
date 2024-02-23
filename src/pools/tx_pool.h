@@ -347,6 +347,7 @@ private:
 
     std::unordered_map<std::string, TxItemPtr> gid_map_;
     std::unordered_map<std::string, uint64_t> gid_start_time_map_;
+    std::vector<uint64_t> latencys_us_;
     std::queue<std::string> timeout_txs_;
     std::queue<std::string> timeout_remove_txs_;
     common::LimitHashSet<std::string> removed_gid_{ 10240 };
