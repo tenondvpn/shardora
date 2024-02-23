@@ -11,9 +11,24 @@ nodes:
     tcp_port: 12002
   - name: r3
     net: 2
-    server: 10.101.20.33
+    server: 10.101.20.35
     http_port: 8203
     tcp_port: 12003
+  - name: r4
+    net: 2
+    server: 10.101.20.33
+    http_port: 8204
+    tcp_port: 12004
+  - name: r5
+    net: 2
+    server: 10.101.20.33
+    http_port: 8205
+    tcp_port: 12005
+  - name: r6
+    net: 2
+    server: 10.101.20.33
+    http_port: 8206
+    tcp_port: 12006
   - name: s3_1
     net: 3
     server: 10.101.20.35
