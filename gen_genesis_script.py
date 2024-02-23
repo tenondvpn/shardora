@@ -328,7 +328,7 @@ echo "==== STEP3: EXECUTE ===="
 echo "[$server0]"
 sshpass -p {server0_pass} ssh -f root@$server0 "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 > /dev/null 2>&1 &"
 
-sleep 3
+sleep 6
 """
     
     for server_name, server_ip in server_name_map.items():
