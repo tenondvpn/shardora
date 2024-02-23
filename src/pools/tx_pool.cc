@@ -271,11 +271,14 @@ void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::Bl
             //     common::Encode::HexEncode(gid).c_str(), now_tm - start_tm_iter->second);
             gid_start_time_map_.erase(gid);
         }
-        uint64_t p90 = common::GetNthElement(latencys_us, 0.90);
-        uint64_t p95 = common::GetNthElement(latencys_us, 0.95);
-        uint64_t p100 = common::GetNthElement(latencys_us, 1);
+
+        if (latencys_us.size() > 0) {
+            uint64_t p90 = common::GetNthElement(latencys_us, 0.90);
+            uint64_t p95 = common::GetNthElement(latencys_us, 0.95);
+            uint64_t p100 = common::GetNthElement(latencys_us, 1);
         
-        ZJC_INFO("tx latency p90: %llu, p95: %llu, max: %llu", p90, p95, p100);
+            ZJC_INFO("tx latency p90: %llu, p95: %llu, max: %llu", p90, p95, p100);
+        }
     }
 
     finish_tx_count_ += tx_list.size();
