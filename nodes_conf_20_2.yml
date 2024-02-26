@@ -23,207 +23,207 @@ nodes:
     net: 3
     server: 10.101.20.35
     http_port: 8302
-    tcp_port: 1302
+    tcp_port: 13002
   - name: s3_3
     net: 3
     server: 10.101.20.35
     http_port: 8303
-    tcp_port: 1303
+    tcp_port: 13003
   - name: s3_4
     net: 3
     server: 10.101.20.35
     http_port: 8304
-    tcp_port: 1304
+    tcp_port: 13004
   - name: s3_5
     net: 3
     server: 10.101.20.35
     http_port: 8305
-    tcp_port: 1305
+    tcp_port: 13005
   - name: s3_6
     net: 3
     server: 10.101.20.35
     http_port: 8306
-    tcp_port: 1306
+    tcp_port: 13006
   - name: s3_7
     net: 3
     server: 10.101.20.35
     http_port: 8307
-    tcp_port: 1307
+    tcp_port: 13007
   - name: s3_8
     net: 3
     server: 10.101.20.35
     http_port: 8308
-    tcp_port: 1308
+    tcp_port: 13008
   - name: s3_9
     net: 3
     server: 10.101.20.35
     http_port: 8309
-    tcp_port: 1309
+    tcp_port: 13009
   - name: s3_10
     net: 3
     server: 10.101.20.35
     http_port: 8310
-    tcp_port: 1310
+    tcp_port: 13010
   - name: s3_26
     net: 3
     server: 10.101.20.33
     http_port: 8326
-    tcp_port: 1326
+    tcp_port: 13026
   - name: s3_27
     net: 3
     server: 10.101.20.33
     http_port: 8327
-    tcp_port: 1327
+    tcp_port: 13027
   - name: s3_28
     net: 3
     server: 10.101.20.33
     http_port: 8328
-    tcp_port: 1328
+    tcp_port: 13028
   - name: s3_29
     net: 3
     server: 10.101.20.33
     http_port: 8329
-    tcp_port: 1329
+    tcp_port: 13029
   - name: s3_30
     net: 3
     server: 10.101.20.33
     http_port: 8330
-    tcp_port: 1330
+    tcp_port: 13030
   - name: s3_31
     net: 3
     server: 10.101.20.33
     http_port: 8331
-    tcp_port: 1331
+    tcp_port: 13031
   - name: s3_32
     net: 3
     server: 10.101.20.33
     http_port: 8332
-    tcp_port: 1332
+    tcp_port: 13032
   - name: s3_33
     net: 3
     server: 10.101.20.33
     http_port: 8333
-    tcp_port: 1333
+    tcp_port: 13033
   - name: s3_34
     net: 3
     server: 10.101.20.33
     http_port: 8334
-    tcp_port: 1334
+    tcp_port: 13034
   - name: s3_35
     net: 3
     server: 10.101.20.33
     http_port: 8335
-    tcp_port: 1335
+    tcp_port: 13035
   - name: s3_36
     net: 3
     server: 10.101.20.33
     http_port: 8336
-    tcp_port: 1336
+    tcp_port: 13036
   - name: s4_1
     net: 4
     server: 10.101.20.35
     http_port: 8401
-    tcp_port: 1401
+    tcp_port: 14001
   - name: s4_2
     net: 4
     server: 10.101.20.35
     http_port: 8402
-    tcp_port: 1402
+    tcp_port: 14002
   - name: s4_3
     net: 4
     server: 10.101.20.35
-    http_port: 8403
-    tcp_port: 1403
+    http_port: 84003
+    tcp_port: 14003
   - name: s4_4
     net: 4
     server: 10.101.20.35
     http_port: 8404
-    tcp_port: 1404
+    tcp_port: 14004
   - name: s4_5
     net: 4
     server: 10.101.20.35
     http_port: 8405
-    tcp_port: 1405
+    tcp_port: 14005
   - name: s4_6
     net: 4
     server: 10.101.20.35
     http_port: 8406
-    tcp_port: 1406
+    tcp_port: 14006
   - name: s4_7
     net: 4
     server: 10.101.20.35
     http_port: 8407
-    tcp_port: 1407
+    tcp_port: 14007
   - name: s4_8
     net: 4
     server: 10.101.20.35
     http_port: 8408
-    tcp_port: 1408
+    tcp_port: 14008
   - name: s4_9
     net: 4
     server: 10.101.20.35
     http_port: 8409
-    tcp_port: 1409
+    tcp_port: 14009
   - name: s4_10
     net: 4
     server: 10.101.20.35
     http_port: 8410
-    tcp_port: 1410
+    tcp_port: 14010
   - name: s4_26
     net: 4
     server: 10.101.20.33
     http_port: 8426
-    tcp_port: 1426
+    tcp_port: 14026
   - name: s4_27
     net: 4
     server: 10.101.20.33
     http_port: 8427
-    tcp_port: 1427
+    tcp_port: 14027
   - name: s4_28
     net: 4
     server: 10.101.20.33
     http_port: 8428
-    tcp_port: 1428
+    tcp_port: 14028
   - name: s4_29
     net: 4
     server: 10.101.20.33
     http_port: 8429
-    tcp_port: 1429
+    tcp_port: 14029
   - name: s4_30
     net: 4
     server: 10.101.20.33
     http_port: 8430
-    tcp_port: 1430
+    tcp_port: 14030
   - name: s4_31
     net: 4
     server: 10.101.20.33
     http_port: 8431
-    tcp_port: 1431
+    tcp_port: 14031
   - name: s4_32
     net: 4
     server: 10.101.20.33
     http_port: 8432
-    tcp_port: 1432
+    tcp_port: 14032
   - name: s4_33
     net: 4
     server: 10.101.20.33
     http_port: 8433
-    tcp_port: 1433
+    tcp_port: 14033
   - name: s4_34
     net: 4
     server: 10.101.20.33
     http_port: 8434
-    tcp_port: 1434
+    tcp_port: 14034
   - name: s4_35
     net: 4
     server: 10.101.20.33
     http_port: 8435
-    tcp_port: 1435
+    tcp_port: 14035
   - name: s4_36
     net: 4
     server: 10.101.20.33
     http_port: 8436
-    tcp_port: 1436
+    tcp_port: 14036
 account_sks:
   3:
     - b5039128131f96f6164a33bc7fbc48c2f5cf425e8476b1c4d0f4d186fbd0d708

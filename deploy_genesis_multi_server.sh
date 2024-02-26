@@ -45,12 +45,6 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd /root/
 
 sleep 3
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64;
-for node in r2 s3_1 s3_2 s3_3 s3_4 s3_5 s3_6 s3_7 s3_8 s3_9 s3_10 s4_1 s4_2 s4_3 s4_4 s4_5 s4_6 s4_7 s4_8 s4_9 s4_10; do
-    cd /root/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node default> /dev/null 2>&1 &
-done
-
-
 echo "[$server1]"
 sshpass -p '!@#$%^' ssh -f -o StrictHostKeyChecking=no root@$server1 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
@@ -60,4 +54,11 @@ done \
 '"
 
     
+echo "[$server0]"
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64
+for node in r2 s3_1 s3_2 s3_3 s3_4 s3_5 s3_6 s3_7 s3_8 s3_9 s3_10 s4_1 s4_2 s4_3 s4_4 s4_5 s4_6 s4_7 s4_8 s4_9 s4_10; do
+cd /root/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node default> /dev/null 2>&1 &
+done
+
+
 echo "==== STEP3: DONE ===="

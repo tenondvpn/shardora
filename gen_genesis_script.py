@@ -340,19 +340,10 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd /root/
 sleep 3
 """
     
+    server0_nodes = []
     for server_name, server_ip in server_name_map.items():
         if server_name == 'server0':
             server0_nodes = server_node_map[server_ip]
-            server0_nodes.remove('r1')
-            server_nodes_str = ' '.join(server0_nodes)
-            server_pass = server_conf['passwords'].get(server_ip, '')
-            code_str += f"""
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64;
-for node in {server_nodes_str}; do
-    cd /root/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node {tag}> /dev/null 2>&1 &
-done
-
-"""      
         else:
             server_nodes_str = ' '.join(server_node_map[server_ip])
         
@@ -367,6 +358,18 @@ done \\
 '"
 
     """      
+            
+    server0_nodes.remove('r1')
+    server_nodes_str = ' '.join(server0_nodes)
+    server_pass = server_conf['passwords'].get(server_ip, '')
+    code_str += f"""
+echo "[$server0]"
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64
+for node in {server_nodes_str}; do
+cd /root/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node {tag}> /dev/null 2>&1 &
+done
+
+"""  
             
 
     code_str += """
