@@ -347,7 +347,7 @@ sleep 3
             server_nodes_str = ' '.join(server0_nodes)
             server_pass = server_conf['passwords'].get(server_ip, '')
             code_str += f"""
-export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64;
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64;
 for node in {server_nodes_str}; do
     cd /root/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node {tag}> /dev/null 2>&1 &
 done
@@ -367,6 +367,7 @@ done \\
 '"
 
     """      
+            
 
     code_str += """
 echo "==== STEP3: DONE ===="
