@@ -318,7 +318,7 @@ echo "==== STEP2: CLEAR OLDS ===="
         code_str += f"""
 echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh root@${server_name} <<"EOF" &
-ps -ef | grep zjchain | awk -F' ' '{{print $2}}' | xargs kill -9
+ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
 EOF
 """
     code_str += "wait\n"
