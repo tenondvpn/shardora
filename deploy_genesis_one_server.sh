@@ -11,7 +11,7 @@ if [[ -z $2 ]]; then
 fi
 
 # 生成创世块数据
-sh ./genesis.sh $mode
+sh ./build_genesis.sh $mode
 
 # 替换
 cp -f fetch.sh /root

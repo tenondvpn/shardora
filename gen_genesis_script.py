@@ -245,7 +245,7 @@ clickhouse-client -q "drop table zjc_ck_transaction_table"
         f.write(code_str)
 
 
-def gen_run_nodes_sh_file(server_conf: dict, file_path, tag):
+def gen_run_nodes_sh_file(server_conf: dict, file_path, build_genesis_path, tag):
     code_str = """
 #!/bin/bash
 # 修改配置文件
@@ -283,7 +283,7 @@ echo "==== STEP1: START DEPLOY ===="
     code_str += f"""
 echo "[$server0]"
 # sshpass -p {server0_pass} ssh root@$server0 <<EOF
-cd /root/xufei/zjchain && sh genesis.sh $target
+cd /root/xufei/zjchain && sh {build_genesis_path} $target
 cd /root && sh -x fetch.sh 127.0.0.1 ${{server0}} $pass {server0_node_names_str}
 # EOF
 
@@ -295,18 +295,16 @@ cd /root && sh -x fetch.sh 127.0.0.1 ${{server0}} $pass {server0_node_names_str}
         server_node_names_str = ' '.join(server_node_map[server_ip])
         server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
-(
 echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh root@${server_name} <<EOF
 rm -rf /root/zjnodes
 sshpass -p '{server0_pass}' scp root@"${{server0}}":/root/fetch.sh /root/
 cd /root && sh -x fetch.sh ${{server0}} ${{{server_name}}} '{server0_pass}' {server_node_names_str}
 EOF
-) &
 
 """
         
-    code_str += "wait\n"
+    # code_str += "wait\n"
         
     code_str += """
 echo "==== STEP1: DONE ===="
@@ -400,10 +398,11 @@ def main():
 
     file_path = args.config
     server_conf = parse_server_yml_file(file_path)
+    build_genesis_path = './build_genesis.sh'
     gen_zjnodes(server_conf, "./zjnodes")
     gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
-    gen_genesis_sh_file(server_conf, "./genesis.sh")
-    gen_run_nodes_sh_file(server_conf, "./deploy_genesis_multi_server.sh", tag=args.tag)
+    gen_genesis_sh_file(server_conf, build_genesis_path)
+    gen_run_nodes_sh_file(server_conf, "./deploy_genesis_multi_server.sh", build_genesis_path, tag=args.tag)
     modify_shard_num_in_src_code(server_conf)
 
 if __name__ == '__main__':
