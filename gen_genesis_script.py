@@ -284,6 +284,7 @@ echo "==== STEP1: START DEPLOY ===="
 echo "[$server0]"
 sshpass -p {server0_pass} ssh root@$server0 <<EOF
 cd /root/xufei/zjchain && sh deploy_genesis.sh $target ${{server0}}
+rm -rf /root/zjnodes
 cd /root && sh -x fetch.sh 127.0.0.1 ${{server0}} $pass {server0_node_names_str}
 EOF
 
@@ -296,12 +297,14 @@ EOF
         server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
 echo "[${server_name}]"
-sshpass -p '{server_pass}' ssh root@${server_name} <<EOF
+sshpass -p '{server_pass}' ssh root@${server_name} <<EOF &
 sshpass -p '{server0_pass}' scp root@"${{server0}}":/root/fetch.sh /root/
 cd /root && sh -x fetch.sh ${{server0}} ${{{server_name}}} {server0_pass} {server_node_names_str}
 EOF
 
 """
+        
+    code_str += "wait\n"
         
     code_str += """
 echo "==== STEP1: DONE ===="
@@ -314,10 +317,11 @@ echo "==== STEP2: CLEAR OLDS ===="
         server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
 echo "[${server_name}]"
-sshpass -p '{server_pass}' ssh root@${server_name} <<"EOF"
+sshpass -p '{server_pass}' ssh root@${server_name} <<"EOF" &
 ps -ef | grep zjchain | awk -F' ' '{{print $2}}' | xargs kill -9
 EOF
 """
+    code_str += "wait\n"
         
     code_str += """
 echo "==== STEP2: DONE ===="
@@ -347,9 +351,11 @@ export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \\
 for node in {server_nodes_str}; do \\
     cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node > /dev/null 2>&1 &\\
 done \\
-'"
+'" &
 
 """
+        
+    code_str += "wait\n"
 
     code_str += """
 echo "==== STEP3: DONE ===="
