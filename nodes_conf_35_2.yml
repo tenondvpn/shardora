@@ -39,11 +39,6 @@ nodes:
   net: 3
   server: 10.101.20.31
   tcp_port: 13005
-- http_port: 8306
-  name: s3_6
-  net: 3
-  server: 10.101.20.30
-  tcp_port: 13006
 - http_port: 8307
   name: s3_7
   net: 3
@@ -74,11 +69,6 @@ nodes:
   net: 3
   server: 10.101.20.31
   tcp_port: 13012
-- http_port: 8313
-  name: s3_13
-  net: 3
-  server: 10.101.20.30
-  tcp_port: 13013
 - http_port: 8314
   name: s3_14
   net: 3
@@ -109,11 +99,6 @@ nodes:
   net: 3
   server: 10.101.20.31
   tcp_port: 13019
-- http_port: 8320
-  name: s3_20
-  net: 3
-  server: 10.101.20.30
-  tcp_port: 13020
 - http_port: 8321
   name: s3_21
   net: 3
@@ -144,11 +129,6 @@ nodes:
   net: 3
   server: 10.101.20.31
   tcp_port: 13026
-- http_port: 8327
-  name: s3_27
-  net: 3
-  server: 10.101.20.30
-  tcp_port: 13027
 - http_port: 8328
   name: s3_28
   net: 3
@@ -179,11 +159,6 @@ nodes:
   net: 3
   server: 10.101.20.31
   tcp_port: 13033
-- http_port: 8334
-  name: s3_34
-  net: 3
-  server: 10.101.20.30
-  tcp_port: 13034
 - http_port: 8335
   name: s3_35
   net: 3
@@ -214,11 +189,6 @@ nodes:
   net: 4
   server: 10.101.20.31
   tcp_port: 14005
-- http_port: 8406
-  name: s4_6
-  net: 4
-  server: 10.101.20.30
-  tcp_port: 14006
 - http_port: 8407
   name: s4_7
   net: 4
@@ -249,11 +219,6 @@ nodes:
   net: 4
   server: 10.101.20.31
   tcp_port: 14012
-- http_port: 8413
-  name: s4_13
-  net: 4
-  server: 10.101.20.30
-  tcp_port: 14013
 - http_port: 8414
   name: s4_14
   net: 4
@@ -284,11 +249,6 @@ nodes:
   net: 4
   server: 10.101.20.31
   tcp_port: 14019
-- http_port: 8420
-  name: s4_20
-  net: 4
-  server: 10.101.20.30
-  tcp_port: 14020
 - http_port: 8421
   name: s4_21
   net: 4
@@ -319,11 +279,6 @@ nodes:
   net: 4
   server: 10.101.20.31
   tcp_port: 14026
-- http_port: 8427
-  name: s4_27
-  net: 4
-  server: 10.101.20.30
-  tcp_port: 14027
 - http_port: 8428
   name: s4_28
   net: 4
@@ -354,11 +309,6 @@ nodes:
   net: 4
   server: 10.101.20.31
   tcp_port: 14033
-- http_port: 8434
-  name: s4_34
-  net: 4
-  server: 10.101.20.30
-  tcp_port: 14034
 - http_port: 8435
   name: s4_35
   net: 4
@@ -375,6 +325,5 @@ passwords:
   10.101.20.33: '!@#$%^'
   10.101.20.32: '!@#$%^'
   10.101.20.31: '!@#$%^'
-  10.101.20.30: '!@#$%^'
   10.101.20.29: '!@#$%^'
   10.101.20.36: '!@#$%^'  
