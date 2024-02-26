@@ -295,12 +295,14 @@ cd /root && sh -x fetch.sh 127.0.0.1 ${{server0}} $pass {server0_node_names_str}
         server_node_names_str = ' '.join(server_node_map[server_ip])
         server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
+(
 echo "[${server_name}]"
-sshpass -p '{server_pass}' ssh root@${server_name} <<EOF &
+sshpass -p '{server_pass}' ssh root@${server_name} <<EOF
 rm -rf /root/zjnodes
 sshpass -p '{server0_pass}' scp root@"${{server0}}":/root/fetch.sh /root/
 cd /root && sh -x fetch.sh ${{server0}} ${{{server_name}}} '{server0_pass}' {server_node_names_str}
 EOF
+) &
 
 """
         
