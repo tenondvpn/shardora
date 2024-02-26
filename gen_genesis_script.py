@@ -299,7 +299,7 @@ echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh root@${server_name} <<EOF &
 rm -rf /root/zjnodes
 sshpass -p '{server0_pass}' scp root@"${{server0}}":/root/fetch.sh /root/
-cd /root && sh -x fetch.sh ${{server0}} ${{{server_name}}} {server0_pass} {server_node_names_str}
+cd /root && sh -x fetch.sh ${{server0}} ${{{server_name}}} '{server0_pass}' {server_node_names_str}
 EOF
 
 """
