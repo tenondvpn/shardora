@@ -296,8 +296,8 @@ EOF
         server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
 echo "[${server_name}]"
-sshpass -p {server_pass} ssh root@${server_name} <<EOF
-sshpass -p {server0_pass} scp root@"${{server0}}":/root/fetch.sh /root/
+sshpass -p '{server_pass}' ssh root@${server_name} <<EOF
+sshpass -p '{server0_pass}' scp root@"${{server0}}":/root/fetch.sh /root/
 cd /root && sh -x fetch.sh ${{server0}} ${{{server_name}}} {server0_pass} {server_node_names_str}
 EOF
 
@@ -314,7 +314,7 @@ echo "==== STEP2: CLEAR OLDS ===="
         server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
 echo "[${server_name}]"
-sshpass -p {server_pass} ssh root@${server_name} <<"EOF"
+sshpass -p '{server_pass}' ssh root@${server_name} <<"EOF"
 ps -ef | grep zjchain | awk -F' ' '{{print $2}}' | xargs kill -9
 EOF
 """
@@ -327,7 +327,7 @@ echo "==== STEP3: EXECUTE ===="
 
     code_str += f"""
 echo "[$server0]"
-sshpass -p {server0_pass} ssh -f root@$server0 "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 > /dev/null 2>&1 &"
+sshpass -p '{server0_pass}' ssh -f root@$server0 "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 > /dev/null 2>&1 &"
 
 sleep 3
 """
@@ -342,7 +342,7 @@ sleep 3
         
         server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
-sshpass -p {server_pass} ssh -f root@${server_name} bash -c "'\\
+sshpass -p '{server_pass}' ssh -f root@${server_name} bash -c "'\\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \\
 for node in {server_nodes_str}; do \\
     cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node > /dev/null 2>&1 &\\
