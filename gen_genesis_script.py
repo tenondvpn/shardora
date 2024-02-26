@@ -359,7 +359,7 @@ done
             server_pass = server_conf['passwords'].get(server_ip, '')
             code_str += f"""
 echo "[${server_name}]"
-sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no -f root@${server_name} bash -c "'\\
+sshpass -p '{server_pass}' ssh -f -o StrictHostKeyChecking=no root@${server_name} bash -c "'\\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \\
 for node in {server_nodes_str}; do \\
     cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node {tag}> /dev/null 2>&1 &\\

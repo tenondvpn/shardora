@@ -52,7 +52,7 @@ done
 
 
 echo "[$server1]"
-sshpass -p '!@#$%^' ssh -o StrictHostKeyChecking=no -f root@$server1 bash -c "'\
+sshpass -p '!@#$%^' ssh -f -o StrictHostKeyChecking=no root@$server1 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
 for node in r3 s3_26 s3_27 s3_28 s3_29 s3_30 s3_31 s3_32 s3_33 s3_34 s3_35 s3_36 s4_26 s4_27 s4_28 s4_29 s4_30 s4_31 s4_32 s4_33 s4_34 s4_35 s4_36; do \
     cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node default> /dev/null 2>&1 &\
