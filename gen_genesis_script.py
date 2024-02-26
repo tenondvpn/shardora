@@ -308,7 +308,7 @@ EOF
         
     code_str += "wait\n"
         
-    code_str += """
+    code_str += f"""
 echo "==== STEP1: DONE ===="
 
 echo "==== STEP2: CLEAR OLDS ===="
@@ -394,7 +394,7 @@ def modify_shard_num_in_src_code(server_conf, file_path='./src/network/network_u
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', help='nodes_conf.yml 文件位置', default='')
-    parser.add_argument('--tag', help='tag', default='')
+    parser.add_argument('--tag', help='tag', default='default')
     args = parser.parse_args()
     if args.config == '':
         args.config = './nodes_conf.yml'
