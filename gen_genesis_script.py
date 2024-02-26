@@ -322,11 +322,10 @@ ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
         server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
 echo "[${server_name}]"
-sshpass -p '{server_pass}' ssh root@${server_name} <<"EOF" &
+sshpass -p '{server_pass}' ssh root@${server_name} <<"EOF"
 ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
 EOF
 """
-    code_str += "wait\n"
         
     code_str += """
 echo "==== STEP2: DONE ===="

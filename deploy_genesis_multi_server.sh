@@ -4,11 +4,11 @@
 # 确保服务器安装了 sshpass
 echo "==== STEP1: START DEPLOY ===="
 server0=10.101.20.35
-server1=10.101.20.36
+server1=10.101.20.31
 server2=10.101.20.32
 server3=10.101.20.29
-server4=10.101.20.33
-server5=10.101.20.31
+server4=10.101.20.36
+server5=10.101.20.33
 target=$1
 
 echo "[$server0]"
@@ -23,7 +23,7 @@ echo "[$server1]"
 sshpass -p '!@#$%^' ssh root@$server1 <<EOF
 rm -rf /root/zjnodes
 sshpass -p '!@#$%^' scp root@"${server0}":/root/fetch.sh /root/
-cd /root && sh -x fetch.sh ${server0} ${server1} '!@#$%^' s3_1 s3_8 s3_15 s3_22 s3_29 s4_1 s4_8 s4_15 s4_22 s4_29
+cd /root && sh -x fetch.sh ${server0} ${server1} '!@#$%^' s3_5 s3_12 s3_19 s3_26 s3_33 s4_5 s4_12 s4_19 s4_26 s4_33
 EOF
 ) &
 
@@ -53,7 +53,7 @@ echo "[$server4]"
 sshpass -p '!@#$%^' ssh root@$server4 <<EOF
 rm -rf /root/zjnodes
 sshpass -p '!@#$%^' scp root@"${server0}":/root/fetch.sh /root/
-cd /root && sh -x fetch.sh ${server0} ${server4} '!@#$%^' r2 s3_3 s3_10 s3_17 s3_24 s3_31 s4_3 s4_10 s4_17 s4_24 s4_31
+cd /root && sh -x fetch.sh ${server0} ${server4} '!@#$%^' s3_1 s3_8 s3_15 s3_22 s3_29 s4_1 s4_8 s4_15 s4_22 s4_29
 EOF
 ) &
 
@@ -63,7 +63,7 @@ echo "[$server5]"
 sshpass -p '!@#$%^' ssh root@$server5 <<EOF
 rm -rf /root/zjnodes
 sshpass -p '!@#$%^' scp root@"${server0}":/root/fetch.sh /root/
-cd /root && sh -x fetch.sh ${server0} ${server5} '!@#$%^' s3_5 s3_12 s3_19 s3_26 s3_33 s4_5 s4_12 s4_19 s4_26 s4_33
+cd /root && sh -x fetch.sh ${server0} ${server5} '!@#$%^' r2 s3_3 s3_10 s3_17 s3_24 s3_31 s4_3 s4_10 s4_17 s4_24 s4_31
 EOF
 ) &
 
@@ -76,30 +76,29 @@ echo "==== STEP2: CLEAR OLDS ===="
 ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
 
 echo "[$server1]"
-sshpass -p '!@#$%^' ssh root@$server1 <<"EOF" &
+sshpass -p '!@#$%^' ssh root@$server1 <<"EOF"
 ps -ef | grep zjchain | grep fei | awk -F' ' '{print $2}' | xargs kill -9
 EOF
 
 echo "[$server2]"
-sshpass -p '!@#$%^' ssh root@$server2 <<"EOF" &
+sshpass -p '!@#$%^' ssh root@$server2 <<"EOF"
 ps -ef | grep zjchain | grep fei | awk -F' ' '{print $2}' | xargs kill -9
 EOF
 
 echo "[$server3]"
-sshpass -p '!@#$%^' ssh root@$server3 <<"EOF" &
+sshpass -p '!@#$%^' ssh root@$server3 <<"EOF"
 ps -ef | grep zjchain | grep fei | awk -F' ' '{print $2}' | xargs kill -9
 EOF
 
 echo "[$server4]"
-sshpass -p '!@#$%^' ssh root@$server4 <<"EOF" &
+sshpass -p '!@#$%^' ssh root@$server4 <<"EOF"
 ps -ef | grep zjchain | grep fei | awk -F' ' '{print $2}' | xargs kill -9
 EOF
 
 echo "[$server5]"
-sshpass -p '!@#$%^' ssh root@$server5 <<"EOF" &
+sshpass -p '!@#$%^' ssh root@$server5 <<"EOF"
 ps -ef | grep zjchain | grep fei | awk -F' ' '{print $2}' | xargs kill -9
 EOF
-wait
 
 echo "==== STEP2: DONE ===="
 
@@ -119,7 +118,7 @@ done
 echo "[$server1]"
 sshpass -p '!@#$%^' ssh -f root@$server1 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s3_1 s3_8 s3_15 s3_22 s3_29 s4_1 s4_8 s4_15 s4_22 s4_29; do \
+for node in s3_5 s3_12 s3_19 s3_26 s3_33 s4_5 s4_12 s4_19 s4_26 s4_33; do \
     cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node fei> /dev/null 2>&1 &\
 done \
 '"
@@ -146,7 +145,7 @@ done \
 echo "[$server4]"
 sshpass -p '!@#$%^' ssh -f root@$server4 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in r2 s3_3 s3_10 s3_17 s3_24 s3_31 s4_3 s4_10 s4_17 s4_24 s4_31; do \
+for node in s3_1 s3_8 s3_15 s3_22 s3_29 s4_1 s4_8 s4_15 s4_22 s4_29; do \
     cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node fei> /dev/null 2>&1 &\
 done \
 '"
@@ -155,7 +154,7 @@ done \
 echo "[$server5]"
 sshpass -p '!@#$%^' ssh -f root@$server5 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s3_5 s3_12 s3_19 s3_26 s3_33 s4_5 s4_12 s4_19 s4_26 s4_33; do \
+for node in r2 s3_3 s3_10 s3_17 s3_24 s3_31 s4_3 s4_10 s4_17 s4_24 s4_31; do \
     cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node fei> /dev/null 2>&1 &\
 done \
 '"
