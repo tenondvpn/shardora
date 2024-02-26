@@ -282,7 +282,7 @@ echo "==== STEP1: START DEPLOY ===="
     server0_pass = server_conf['passwords'].get(server0, '')
     code_str += f"""
 echo "[$server0]"
-# sshpass -p {server0_pass} ssh root@$server0 <<EOF
+# sshpass -p {server0_pass} ssh -o StrictHostKeyChecking=no root@$server0 <<EOF
 cd /root/xufei/zjchain && sh {build_genesis_path} $target
 cd /root && sh -x fetch.sh 127.0.0.1 ${{server0}} $pass {server0_node_names_str}
 # EOF
@@ -296,9 +296,9 @@ cd /root && sh -x fetch.sh 127.0.0.1 ${{server0}} $pass {server0_node_names_str}
         server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
 echo "[${server_name}]"
-sshpass -p '{server_pass}' ssh root@${server_name} <<EOF
-rm -rf /root/zjnodes
-sshpass -p '{server0_pass}' scp root@"${{server0}}":/root/fetch.sh /root/
+sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<EOF
+rm -rf /root/zjnodes;
+sshpass -p '{server0_pass}' scp -o StrictHostKeyChecking=no root@"${{server0}}":/root/fetch.sh /root/
 cd /root && sh -x fetch.sh ${{server0}} ${{{server_name}}} '{server0_pass}' {server_node_names_str}
 EOF
 
@@ -320,7 +320,7 @@ ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
         server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
 echo "[${server_name}]"
-sshpass -p '{server_pass}' ssh root@${server_name} <<"EOF"
+sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<"EOF"
 ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
 EOF
 """
@@ -357,7 +357,7 @@ done
             server_pass = server_conf['passwords'].get(server_ip, '')
             code_str += f"""
 echo "[${server_name}]"
-sshpass -p '{server_pass}' ssh -f root@${server_name} bash -c "'\\
+sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no -f root@${server_name} bash -c "'\\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \\
 for node in {server_nodes_str}; do \\
     cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node {tag}> /dev/null 2>&1 &\\
