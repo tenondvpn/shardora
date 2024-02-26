@@ -245,7 +245,7 @@ clickhouse-client -q "drop table zjc_ck_transaction_table"
         f.write(code_str)
 
 
-def gen_run_nodes_sh_file(server_conf: dict, file_path):
+def gen_run_nodes_sh_file(server_conf: dict, file_path, tag):
     code_str = """
 #!/bin/bash
 # 修改配置文件
@@ -331,7 +331,7 @@ echo "==== STEP3: EXECUTE ===="
 
     code_str += f"""
 echo "[$server0]"
-sshpass -p '{server0_pass}' ssh -f root@$server0 "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 > /dev/null 2>&1 &"
+sshpass -p '{server0_pass}' ssh -f root@$server0 "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 {tag}> /dev/null 2>&1 &"
 
 sleep 3
 """
@@ -349,7 +349,7 @@ sleep 3
 sshpass -p '{server_pass}' ssh -f root@${server_name} bash -c "'\\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \\
 for node in {server_nodes_str}; do \\
-    cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node > /dev/null 2>&1 &\\
+    cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node {tag}> /dev/null 2>&1 &\\
 done \\
 '" &
 
@@ -382,6 +382,7 @@ def modify_shard_num_in_src_code(server_conf, file_path='./src/network/network_u
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', help='nodes_conf.yml 文件位置', default='')
+    parser.add_argument('--tag', help='tag', default='')
     args = parser.parse_args()
     if args.config == '':
         args.config = './nodes_conf.yml'
@@ -391,7 +392,7 @@ def main():
     gen_zjnodes(server_conf, "./zjnodes")
     gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
     gen_genesis_sh_file(server_conf, "./genesis.sh")
-    gen_run_nodes_sh_file(server_conf, "./run_nodes.sh")
+    gen_run_nodes_sh_file(server_conf, "./run_nodes.sh", tag=args.tag)
     modify_shard_num_in_src_code(server_conf)
 
 if __name__ == '__main__':
