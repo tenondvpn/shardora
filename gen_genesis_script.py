@@ -217,11 +217,14 @@ sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
 
 """
 
+    code_str += f"cd /root/zjnodes/zjchain && ./zjchain -U\n"
     for net_id in net_ids:
-        arg_str = '-U' if net_id == 2 else '-S ' + str(net_id)
-        code_str += f"cd /root/zjnodes/zjchain && ./zjchain {arg_str}\n"
+        if net_id == 2:
+            continue
+        arg_str = '-S ' + str(net_id)
+        code_str += f"cd /root/zjnodes/zjchain && ./zjchain {arg_str} &\n"
 
-    code_str += "\n"
+    code_str += "wait\n"
 
     for net_id in net_ids:
         net_key = 'root' if net_id == 2 else 'shard' + str(net_id)

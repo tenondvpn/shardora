@@ -38,9 +38,9 @@ done
 sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
 
 cd /root/zjnodes/zjchain && ./zjchain -U
-cd /root/zjnodes/zjchain && ./zjchain -S 3
-cd /root/zjnodes/zjchain && ./zjchain -S 4
-
+cd /root/zjnodes/zjchain && ./zjchain -S 3 &
+cd /root/zjnodes/zjchain && ./zjchain -S 4 &
+wait
 
 for node in "${root[@]}"; do
 	cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/${node}/db
