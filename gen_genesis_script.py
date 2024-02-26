@@ -283,7 +283,7 @@ echo "==== STEP1: START DEPLOY ===="
     code_str += f"""
 echo "[$server0]"
 # sshpass -p {server0_pass} ssh root@$server0 <<EOF
-cd /root/xufei/zjchain && sh deploy_genesis.sh $target ${{server0}}
+cd /root/xufei/zjchain && sh genesis.sh $target
 cd /root && sh -x fetch.sh 127.0.0.1 ${{server0}} $pass {server0_node_names_str}
 # EOF
 
@@ -402,7 +402,7 @@ def main():
     gen_zjnodes(server_conf, "./zjnodes")
     gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
     gen_genesis_sh_file(server_conf, "./genesis.sh")
-    gen_run_nodes_sh_file(server_conf, "./run_nodes.sh", tag=args.tag)
+    gen_run_nodes_sh_file(server_conf, "./deploy_genesis_multi_server.sh", tag=args.tag)
     modify_shard_num_in_src_code(server_conf)
 
 if __name__ == '__main__':
