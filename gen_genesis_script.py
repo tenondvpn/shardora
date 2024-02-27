@@ -182,9 +182,9 @@ then
 fi
 
 NO_BUILD=0
-if test $2 = "nobuild"
+if [ -n "\$2" ] && [ "\$2" = "nobuild" ]
 then
-	NO_BUILD="nobuild"
+    NO_BUILD="nobuild"
 fi
 
 if test $NO_BUILD = 0
