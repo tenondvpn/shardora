@@ -487,7 +487,6 @@ ZbftPtr BftManager::Start(
 std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
         std::shared_ptr<PoolTxIndexItem>& thread_item,
         ZbftPtr& commited_bft_ptr) {
-    ZJC_INFO("====1.8");
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (commited_bft_ptr == nullptr) {
@@ -508,10 +507,9 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
                 }
             }
         }
-        ZJC_INFO("====1.9");
+        ZJC_INFO("====1.9, res:%d", txs_ptr == nullptr);
         auto begin_index = thread_item->prev_index;
         if (txs_ptr == nullptr) {
-            ZJC_INFO("====1.10");
             // now leader create zbft ptr and start consensus
             for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
                 auto pool_idx = thread_item->pools[thread_item->prev_index];
@@ -533,6 +531,7 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
                 }
 
                 txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
+                ZJC_INFO("====1.11, res:%d, pool_idx: %d", txs_ptr == nullptr, pool_idx);
                 if (txs_ptr != nullptr) {
                     // now leader create zbft ptr and start consensus
                     break;
@@ -541,7 +540,6 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
         }
 
         if (txs_ptr == nullptr) {
-            ZJC_INFO("====1.11");
             for (thread_item->prev_index = 0;
                     thread_item->prev_index < begin_index; ++thread_item->prev_index) {
                 auto pool_idx = thread_item->pools[thread_item->prev_index];
@@ -563,7 +561,7 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
                 }
 
                 txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
-                ZJC_INFO("====1.12, res:%d", txs_ptr == nullptr);
+                ZJC_INFO("====1.12, res:%d, pool_idx: %d", txs_ptr == nullptr, pool_idx);
                 if (txs_ptr != nullptr) {
                     // now leader create zbft ptr and start consensus
                     break;
