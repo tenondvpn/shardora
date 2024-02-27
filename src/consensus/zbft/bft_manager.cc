@@ -455,6 +455,7 @@ ZbftPtr BftManager::Start(
 
     txs_ptr->thread_index = thread_index;
     auto zbft_ptr = StartBft(elect_item_ptr, txs_ptr, commited_bft_ptr);
+    ZJC_INFO("====1.3 leader start bft, ok: %d", zbft_ptr != nullptr);
 	
     if (zbft_ptr == nullptr) {
         for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
@@ -694,6 +695,7 @@ ZbftPtr BftManager::StartBft(
     bft_ptr->set_member_count(elect_item.member_size);
     // LeaderPrepare 中会调用到 DoTransaction，本地执行块内交易
     int leader_pre = LeaderPrepare(elect_item, bft_ptr, commited_bft_ptr);
+    ZJC_INFO("====1.4 leader send prepare, res: %d", leader_pre);
 	
     if (leader_pre != kConsensusSuccess) {
         ZJC_ERROR("leader prepare failed!");
