@@ -9,23 +9,29 @@ then
     TARGET=Debug
 fi
 
-NO_BUILD=0
-if test $2 = "1"
+NO_BUILD=""
+if test $2 = "nobuild"
 then
-	NO_BUILD=1
+	NO_BUILD="nobuild"
 fi
 
-if test $NO_BUILD = 0
+if test $NO_BUILD = ""
 then
-	sh build.sh a $TARGET
+	sh build.sh a $TARGET	
+else
+	sudo mv /root/zjnodes/zjchain /tmp
 fi
 
 sudo rm -rf /root/zjnodes
 sudo cp -rf ./zjnodes /root
 sudo cp -rf ./deploy /root
-
 rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db*
 
+if test $NO_BUILD = "nobuild"
+then
+	sudo rm -rf /root/zjnodes/zjchain
+	sudo mv /tmp/zjchain /root/zjnodes/
+fi
 root=("r1" "r2" "r3")
 shard3=("s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_7" "s3_8" "s3_9" "s3_10" "s3_11" "s3_12" "s3_14" "s3_15" "s3_16" "s3_17" "s3_18" "s3_19" "s3_21" "s3_22" "s3_23" "s3_24" "s3_25" "s3_26" "s3_28" "s3_29" "s3_30" "s3_31" "s3_32" "s3_33" "s3_35")
 shard4=("s4_1" "s4_2" "s4_3" "s4_4" "s4_5" "s4_7" "s4_8" "s4_9" "s4_10" "s4_11" "s4_12" "s4_14" "s4_15" "s4_16" "s4_17" "s4_18" "s4_19" "s4_21" "s4_22" "s4_23" "s4_24" "s4_25" "s4_26" "s4_28" "s4_29" "s4_30" "s4_31" "s4_32" "s4_33" "s4_35")
@@ -48,7 +54,7 @@ done
 sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
 
 
-if test $NO_BUILD = 0
+if test $NO_BUILD = ""
 then
     cd /root/zjnodes/zjchain && ./zjchain -U
     cd /root/zjnodes/zjchain && ./zjchain -S 3 &

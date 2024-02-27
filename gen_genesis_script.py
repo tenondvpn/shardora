@@ -181,23 +181,29 @@ then
     TARGET=Debug
 fi
 
-NO_BUILD=0
-if test $2 = "1"
+NO_BUILD=""
+if test $2 = "nobuild"
 then
-	NO_BUILD=1
+	NO_BUILD="nobuild"
 fi
 
-if test $NO_BUILD = 0
+if test $NO_BUILD = ""
 then
-	sh build.sh a $TARGET
+	sh build.sh a $TARGET	
+else
+	sudo mv /root/zjnodes/zjchain /tmp
 fi
 
 sudo rm -rf /root/zjnodes
 sudo cp -rf ./zjnodes /root
 sudo cp -rf ./deploy /root
-
 rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db*
 
+if test $NO_BUILD = "nobuild"
+then
+	sudo rm -rf /root/zjnodes/zjchain
+	sudo mv /tmp/zjchain /root/zjnodes/
+fi
 """
 
     net_keys = []
@@ -227,7 +233,7 @@ sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
 
 """
     code_str += """
-if test $NO_BUILD = 0
+if test $NO_BUILD = ""
 then
 """
     code_str += f"    cd /root/zjnodes/zjchain && ./zjchain -U\n"
