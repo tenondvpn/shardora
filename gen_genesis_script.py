@@ -181,7 +181,17 @@ then
     TARGET=Debug
 fi
 
-sh build.sh a $TARGET
+NO_BUILD=0
+if test $2 = "1"
+then
+	NO_BUILD=1
+fi
+
+if test $NO_BUILD = 0
+then
+	sh build.sh a $TARGET
+fi
+
 sudo rm -rf /root/zjnodes
 sudo cp -rf ./zjnodes /root
 sudo cp -rf ./deploy /root
@@ -216,15 +226,18 @@ done
 sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
 
 """
-
-    code_str += f"cd /root/zjnodes/zjchain && ./zjchain -U\n"
+    code_str += """
+if test $NO_BUILD = 0
+then
+"""
+    code_str += f"    cd /root/zjnodes/zjchain && ./zjchain -U\n"
     for net_id in net_ids:
         if net_id == 2:
             continue
         arg_str = '-S ' + str(net_id)
-        code_str += f"cd /root/zjnodes/zjchain && ./zjchain {arg_str} &\n"
+        code_str += f"    cd /root/zjnodes/zjchain && ./zjchain {arg_str} &\n"
 
-    code_str += "wait\n"
+    code_str += "    wait\nfi\n"
 
     for net_id in net_ids:
         net_key = 'root' if net_id == 2 else 'shard' + str(net_id)

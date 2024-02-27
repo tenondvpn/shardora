@@ -9,7 +9,17 @@ then
     TARGET=Debug
 fi
 
-sh build.sh a $TARGET
+NO_BUILD=0
+if test $2 = "1"
+then
+	NO_BUILD=1
+fi
+
+if test $NO_BUILD = 0
+then
+	sh build.sh a $TARGET
+fi
+
 sudo rm -rf /root/zjnodes
 sudo cp -rf ./zjnodes /root
 sudo cp -rf ./deploy /root
@@ -37,10 +47,14 @@ for node in "${nodes[@]}"; do
 done
 sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
 
-cd /root/zjnodes/zjchain && ./zjchain -U
-cd /root/zjnodes/zjchain && ./zjchain -S 3 &
-cd /root/zjnodes/zjchain && ./zjchain -S 4 &
-wait
+
+if test $NO_BUILD = 0
+then
+    cd /root/zjnodes/zjchain && ./zjchain -U
+    cd /root/zjnodes/zjchain && ./zjchain -S 3 &
+    cd /root/zjnodes/zjchain && ./zjchain -S 4 &
+    wait
+fi
 
 for node in "${root[@]}"; do
 	cp -rf /root/zjnodes/zjchain/root_db /root/zjnodes/${node}/db
