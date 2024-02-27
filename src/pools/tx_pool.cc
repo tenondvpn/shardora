@@ -131,6 +131,7 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     gid_map_[tx_ptr->gid] = tx_ptr;
+    ZJC_INFO("====1.0 pool %d tx_count: %llu", pool_index_, gid_map_.size());
     gid_start_time_map_[tx_ptr->gid] = common::TimeUtils::TimestampUs(); 
     timeout_txs_.push(tx_ptr->gid);
     oldest_timestamp_ = prio_map_.begin()->second->time_valid;
