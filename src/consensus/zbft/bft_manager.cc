@@ -398,7 +398,6 @@ ZbftPtr BftManager::Start(
         return nullptr;
     }
 #endif
-    ZJC_INFO("====1.6 leader start");
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (elect_item_ptr == nullptr) {
         ZJC_DEBUG("thread idx error 1: %d", thread_index);
@@ -440,6 +439,7 @@ ZbftPtr BftManager::Start(
     }
 
     // 获取交易池中的待处理交易
+    ZJC_INFO("====1.7 leader get txs");
     std::shared_ptr<WaitingTxsItem> txs_ptr = get_txs_ptr(thread_item, commited_bft_ptr);
     if (txs_ptr == nullptr) {
 //         ZJC_DEBUG("thread idx error 5: %d", thread_index);
@@ -455,6 +455,7 @@ ZbftPtr BftManager::Start(
     }
 
     txs_ptr->thread_index = thread_index;
+    ZJC_INFO("====1.6 leader start");
     auto zbft_ptr = StartBft(elect_item_ptr, txs_ptr, commited_bft_ptr);
     ZJC_INFO("====1.3 leader start bft, ok: %d", zbft_ptr != nullptr);
 	
