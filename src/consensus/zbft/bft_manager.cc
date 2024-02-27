@@ -441,17 +441,13 @@ ZbftPtr BftManager::Start(
     // 获取交易池中的待处理交易
     
     std::shared_ptr<WaitingTxsItem> txs_ptr = get_txs_ptr(thread_item, commited_bft_ptr);
-    ZJC_INFO("====1.7 leader get txs, res: %d", txs_ptr == nullptr);
     if (txs_ptr == nullptr) {
 //         ZJC_DEBUG("thread idx error 5: %d", thread_index);
         return nullptr;
     }
-
-    ZJC_INFO("====1.8");
+    
     if (txs_ptr->tx_type == pools::protobuf::kNormalFrom) {
-        ZJC_INFO("====1.9");
         if (block_mgr_->ShouldStopConsensus()) {
-            ZJC_INFO("====1.10");
             ZJC_DEBUG("should stop consensus.");
             ZJC_DEBUG("thread idx error 6: %d", thread_index);
             return nullptr;
@@ -459,9 +455,7 @@ ZbftPtr BftManager::Start(
     }
 
     txs_ptr->thread_index = thread_index;
-    ZJC_INFO("====1.6 leader start");
     auto zbft_ptr = StartBft(elect_item_ptr, txs_ptr, commited_bft_ptr);
-    ZJC_INFO("====1.3 leader start bft, ok: %d", zbft_ptr != nullptr);
 	
     if (zbft_ptr == nullptr) {
         for (auto iter = txs_ptr->txs.begin(); iter != txs_ptr->txs.end(); ++iter) {
@@ -493,6 +487,7 @@ ZbftPtr BftManager::Start(
 std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
         std::shared_ptr<PoolTxIndexItem>& thread_item,
         ZbftPtr& commited_bft_ptr) {
+    ZJC_INFO("====1.8");
     std::shared_ptr<WaitingTxsItem> txs_ptr = nullptr;
     auto now_tm_ms = common::TimeUtils::TimestampMs();
     if (commited_bft_ptr == nullptr) {
@@ -513,9 +508,10 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
                 }
             }
         }
-
+        ZJC_INFO("====1.9");
         auto begin_index = thread_item->prev_index;
         if (txs_ptr == nullptr) {
+            ZJC_INFO("====1.10");
             // now leader create zbft ptr and start consensus
             for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
                 auto pool_idx = thread_item->pools[thread_item->prev_index];
@@ -545,6 +541,7 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
         }
 
         if (txs_ptr == nullptr) {
+            ZJC_INFO("====1.11");
             for (thread_item->prev_index = 0;
                     thread_item->prev_index < begin_index; ++thread_item->prev_index) {
                 auto pool_idx = thread_item->pools[thread_item->prev_index];
@@ -566,12 +563,15 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
                 }
 
                 txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
+                ZJC_INFO("====1.12, res:%d", txs_ptr == nullptr);
                 if (txs_ptr != nullptr) {
                     // now leader create zbft ptr and start consensus
                     break;
                 }
             }
         }
+
+        ZJC_INFO("====1.13, res:%d", txs_ptr == nullptr);
 
         if (thread_item->pools.size() > 0) {
             thread_item->prev_index = ++thread_item->prev_index % thread_item->pools.size();
