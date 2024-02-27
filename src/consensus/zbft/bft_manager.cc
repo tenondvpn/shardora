@@ -529,7 +529,7 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
 
                     LeaderRemoveTimeoutPrepareBft(bft_ptr);
                 }
-
+                ZJC_INFO("====1.10, res:%d, pool_idx: %d", txs_ptr == nullptr, pool_idx);
                 txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
                 ZJC_INFO("====1.11, res:%d, pool_idx: %d", txs_ptr == nullptr, pool_idx);
                 if (txs_ptr != nullptr) {
