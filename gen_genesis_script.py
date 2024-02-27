@@ -335,7 +335,7 @@ echo "==== STEP1: DONE ===="
 
 echo "==== STEP2: CLEAR OLDS ===="
 
-ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+ps -ef | grep zjchain | awk -F' ' '{{print $2}}' | xargs kill -9
 """
 
     for server_name, server_ip in server_name_map.items():
@@ -345,7 +345,7 @@ ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
         code_str += f"""
 echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<"EOF"
-ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
+ps -ef | grep zjchain | awk -F' ' '{{print $2}}' | xargs kill -9
 EOF
 """
         
@@ -357,7 +357,7 @@ echo "==== STEP3: EXECUTE ===="
 
     code_str += f"""
 echo "[$server0]"
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 {tag}> /dev/null 2>&1 &
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1> /dev/null 2>&1 &
 
 sleep 3
 """
@@ -375,7 +375,7 @@ echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh -f -o StrictHostKeyChecking=no root@${server_name} bash -c "'\\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \\
 for node in {server_nodes_str}; do \\
-    cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node {tag}> /dev/null 2>&1 &\\
+    cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node> /dev/null 2>&1 &\\
 done \\
 '"
 
@@ -388,7 +388,7 @@ done \\
 echo "[$server0]"
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64
 for node in {server_nodes_str}; do
-cd /root/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node {tag}> /dev/null 2>&1 &
+cd /root/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node> /dev/null 2>&1 &
 done
 
 """  
