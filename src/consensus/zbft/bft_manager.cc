@@ -507,15 +507,17 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
                 }
             }
         }
-        ZJC_INFO("====1.9, res:%d", txs_ptr == nullptr);
+        
         auto begin_index = thread_item->prev_index;
         if (txs_ptr == nullptr) {
             // now leader create zbft ptr and start consensus
             for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
                 auto pool_idx = thread_item->pools[thread_item->prev_index];
+                ZJC_INFO("====1.9, %d", pool_idx);
                 if (pools_prev_bft_timeout_[pool_idx] >= now_tm_ms) {
                     continue;
                 }
+                ZJC_INFO("====1.9.1, %d", pool_idx);
 
                 if (pools_with_zbfts_[pool_idx] != nullptr) {
                     auto bft_ptr = pools_with_zbfts_[pool_idx];
@@ -529,7 +531,7 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
 
                     LeaderRemoveTimeoutPrepareBft(bft_ptr);
                 }
-                ZJC_INFO("====1.10, res:%d, pool_idx: %d", txs_ptr == nullptr, pool_idx);
+                ZJC_INFO("====1.10, %d", txs_ptr == nullptr, pool_idx);
                 txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
                 ZJC_INFO("====1.11, res:%d, pool_idx: %d", txs_ptr == nullptr, pool_idx);
                 if (txs_ptr != nullptr) {
