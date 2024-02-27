@@ -292,14 +292,14 @@ echo "==== STEP1: START DEPLOY ===="
     for server_name, server_ip in server_name_map.items():
         code_str += f"{server_name}={server_ip}\n"
 
-    code_str += f"target=$1\n"
+    code_str += f"target=$1\nno_build=$2\n"
 
     server0_node_names_str = ' '.join(server_node_map[server0])
     server0_pass = server_conf['passwords'].get(server0, '')
     code_str += f"""
 echo "[$server0]"
 # sshpass -p {server0_pass} ssh -o StrictHostKeyChecking=no root@$server0 <<EOF
-cd /root/xufei/zjchain && sh {build_genesis_path} $target
+cd /root/xufei/zjchain && sh {build_genesis_path} $target $no_build
 cd /root && sh -x fetch.sh 127.0.0.1 ${{server0}} ${server0_pass} {server0_node_names_str}
 # EOF
 
