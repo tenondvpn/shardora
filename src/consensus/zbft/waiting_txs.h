@@ -4,6 +4,7 @@
 #include "consensus/consensus_utils.h"
 #include "network/network_utils.h"
 #include "pools/tx_pool_manager.h"
+#include <common/log.h>
 
 namespace zjchain {
 
@@ -41,7 +42,9 @@ private:
         if (common::GlobalInfo::Instance()->network_id() == network::kRootCongressNetworkId) {
             pools_mgr_->GetTx(pool_index_, 1, tx_vec);
         } else {
+            ZJC_INFO("====1.21, %d", pool_index_);
             pools_mgr_->GetTx(pool_index_, kMaxTxCount, tx_vec);
+            ZJC_INFO("====1.22, %d, %lu", pool_index_, tx_vec.size());
         }
 
         if (txs_items_->txs.empty()) {
