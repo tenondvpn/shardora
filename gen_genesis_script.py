@@ -181,13 +181,13 @@ then
     TARGET=Debug
 fi
 
-NO_BUILD=""
+NO_BUILD=0
 if test $2 = "nobuild"
 then
 	NO_BUILD="nobuild"
 fi
 
-if test $NO_BUILD = ""
+if test $NO_BUILD = 0
 then
 	sh build.sh a $TARGET	
 else
@@ -233,7 +233,7 @@ sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
 
 """
     code_str += """
-if test $NO_BUILD = ""
+if test $NO_BUILD = 0
 then
 """
     code_str += f"    cd /root/zjnodes/zjchain && ./zjchain -U\n"
