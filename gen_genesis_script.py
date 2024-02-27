@@ -181,13 +181,29 @@ then
     TARGET=Debug
 fi
 
-sh build.sh a $TARGET
+NO_BUILD=0
+if test $2 = "nobuild"
+then
+	NO_BUILD="nobuild"
+fi
+
+if test $NO_BUILD = 0
+then
+	sh build.sh a $TARGET	
+else
+	sudo mv /root/zjnodes/zjchain /tmp
+fi
+
 sudo rm -rf /root/zjnodes
 sudo cp -rf ./zjnodes /root
 sudo cp -rf ./deploy /root
-
 rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root/zjnodes/*/*db*
 
+if test $NO_BUILD = "nobuild"
+then
+	sudo rm -rf /root/zjnodes/zjchain
+	sudo mv /tmp/zjchain /root/zjnodes/
+fi
 """
 
     net_keys = []
@@ -216,12 +232,18 @@ done
 sudo cp -rf ./cbuild_$TARGET/zjchain /root/zjnodes/zjchain
 
 """
-
+    code_str += """
+if test $NO_BUILD = 0
+then
+"""
+    code_str += f"    cd /root/zjnodes/zjchain && ./zjchain -U\n"
     for net_id in net_ids:
-        arg_str = '-U' if net_id == 2 else '-S ' + str(net_id)
-        code_str += f"cd /root/zjnodes/zjchain && ./zjchain {arg_str}\n"
+        if net_id == 2:
+            continue
+        arg_str = '-S ' + str(net_id)
+        code_str += f"    cd /root/zjnodes/zjchain && ./zjchain {arg_str} &\n"
 
-    code_str += "\n"
+    code_str += "    wait\nfi\n"
 
     for net_id in net_ids:
         net_key = 'root' if net_id == 2 else 'shard' + str(net_id)
@@ -245,7 +267,7 @@ clickhouse-client -q "drop table zjc_ck_transaction_table"
         f.write(code_str)
 
 
-def gen_run_nodes_sh_file(server_conf: dict, file_path):
+def gen_run_nodes_sh_file(server_conf: dict, file_path, build_genesis_path, tag):
     code_str = """
 #!/bin/bash
 # 修改配置文件
@@ -276,16 +298,16 @@ echo "==== STEP1: START DEPLOY ===="
     for server_name, server_ip in server_name_map.items():
         code_str += f"{server_name}={server_ip}\n"
 
-    code_str += f"target=$1\n"
+    code_str += f"target=$1\nno_build=$2\n"
 
     server0_node_names_str = ' '.join(server_node_map[server0])
     server0_pass = server_conf['passwords'].get(server0, '')
     code_str += f"""
 echo "[$server0]"
-sshpass -p {server0_pass} ssh root@$server0 <<EOF
-cd /root/xufei/zjchain && sh deploy_genesis.sh $target ${{server0}}
-cd /root && sh -x fetch.sh 127.0.0.1 ${{server0}} $pass {server0_node_names_str}
-EOF
+# sshpass -p {server0_pass} ssh -o StrictHostKeyChecking=no root@$server0 <<EOF
+cd /root/xufei/zjchain && sh {build_genesis_path} $target $no_build
+cd /root && sh -x fetch.sh 127.0.0.1 ${{server0}} ${server0_pass} {server0_node_names_str}
+# EOF
 
 """
     
@@ -295,27 +317,35 @@ EOF
         server_node_names_str = ' '.join(server_node_map[server_ip])
         server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
+(
 echo "[${server_name}]"
-sshpass -p {server_pass} ssh root@${server_name} <<EOF
-sshpass -p {server0_pass} scp root@"${{server0}}":/root/fetch.sh /root/
-cd /root && sh -x fetch.sh ${{server0}} ${{{server_name}}} {server0_pass} {server_node_names_str}
+sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<EOF
+rm -rf /root/zjnodes;
+sshpass -p '{server0_pass}' scp -o StrictHostKeyChecking=no root@"${{server0}}":/root/fetch.sh /root/
+cd /root && sh -x fetch.sh ${{server0}} ${{{server_name}}} '{server0_pass}' {server_node_names_str}
 EOF
+) &
 
 """
         
-    code_str += """
+    code_str += "wait\n"
+        
+    code_str += f"""
 echo "==== STEP1: DONE ===="
 
 echo "==== STEP2: CLEAR OLDS ===="
 
+ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
 """
 
     for server_name, server_ip in server_name_map.items():
+        if server_name == 'server0':
+            continue
         server_pass = server_conf['passwords'].get(server_ip, '')
         code_str += f"""
 echo "[${server_name}]"
-sshpass -p {server_pass} ssh root@${server_name} <<"EOF"
-ps -ef | grep zjchain | awk -F' ' '{{print $2}}' | xargs kill -9
+sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<"EOF"
+ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
 EOF
 """
         
@@ -327,29 +357,42 @@ echo "==== STEP3: EXECUTE ===="
 
     code_str += f"""
 echo "[$server0]"
-sshpass -p {server0_pass} ssh -f root@$server0 "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 > /dev/null 2>&1 &"
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd /root/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 {tag}> /dev/null 2>&1 &
 
 sleep 3
 """
     
+    server0_nodes = []
     for server_name, server_ip in server_name_map.items():
         if server_name == 'server0':
             server0_nodes = server_node_map[server_ip]
-            server0_nodes.remove('r1')
-            server_nodes_str = ' '.join(server0_nodes)
         else:
             server_nodes_str = ' '.join(server_node_map[server_ip])
         
-        server_pass = server_conf['passwords'].get(server_ip, '')
-        code_str += f"""
-sshpass -p {server_pass} ssh -f root@${server_name} bash -c "'\\
+            server_pass = server_conf['passwords'].get(server_ip, '')
+            code_str += f"""
+echo "[${server_name}]"
+sshpass -p '{server_pass}' ssh -f -o StrictHostKeyChecking=no root@${server_name} bash -c "'\\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \\
 for node in {server_nodes_str}; do \\
-    cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node > /dev/null 2>&1 &\\
+    cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node {tag}> /dev/null 2>&1 &\\
 done \\
 '"
 
-"""
+    """      
+            
+    server0_nodes.remove('r1')
+    server_nodes_str = ' '.join(server0_nodes)
+    server_pass = server_conf['passwords'].get(server_ip, '')
+    code_str += f"""
+echo "[$server0]"
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64
+for node in {server_nodes_str}; do
+cd /root/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node {tag}> /dev/null 2>&1 &
+done
+
+"""  
+            
 
     code_str += """
 echo "==== STEP3: DONE ===="
@@ -376,16 +419,18 @@ def modify_shard_num_in_src_code(server_conf, file_path='./src/network/network_u
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', help='nodes_conf.yml 文件位置', default='')
+    parser.add_argument('--tag', help='tag', default='default')
     args = parser.parse_args()
     if args.config == '':
         args.config = './nodes_conf.yml'
 
     file_path = args.config
     server_conf = parse_server_yml_file(file_path)
+    build_genesis_path = './build_genesis.sh'
     gen_zjnodes(server_conf, "./zjnodes")
     gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
-    gen_genesis_sh_file(server_conf, "./genesis.sh")
-    gen_run_nodes_sh_file(server_conf, "./run_nodes.sh")
+    gen_genesis_sh_file(server_conf, build_genesis_path)
+    gen_run_nodes_sh_file(server_conf, "./deploy_genesis_multi_server.sh", build_genesis_path, tag=args.tag)
     modify_shard_num_in_src_code(server_conf)
 
 if __name__ == '__main__':

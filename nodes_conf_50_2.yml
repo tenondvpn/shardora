@@ -111,47 +111,47 @@ nodes:
     tcp_port: 1316
   - name: s3_17
     net: 3
-    server: 10.101.20.35
+    server: 10.101.20.32
     http_port: 8317
     tcp_port: 1317
   - name: s3_18
     net: 3
-    server: 10.101.20.35
+    server: 10.101.20.32
     http_port: 8318
     tcp_port: 1318
   - name: s3_19
     net: 3
-    server: 10.101.20.35
+    server: 10.101.20.32
     http_port: 8319
     tcp_port: 1319
   - name: s3_20
     net: 3
-    server: 10.101.20.35
+    server: 10.101.20.32
     http_port: 8320
     tcp_port: 1320
   - name: s3_21
     net: 3
-    server: 10.101.20.35
+    server: 10.101.20.32
     http_port: 8321
     tcp_port: 1321
   - name: s3_22
     net: 3
-    server: 10.101.20.35
+    server: 10.101.20.32
     http_port: 8322
     tcp_port: 1322
   - name: s3_23
     net: 3
-    server: 10.101.20.35
+    server: 10.101.20.32
     http_port: 8323
     tcp_port: 1323
   - name: s3_24
     net: 3
-    server: 10.101.20.35
+    server: 10.101.20.32
     http_port: 8324
     tcp_port: 1324
   - name: s3_25
     net: 3
-    server: 10.101.20.35
+    server: 10.101.20.32
     http_port: 8325
     tcp_port: 1325
   - name: s3_26
@@ -486,47 +486,47 @@ nodes:
     tcp_port: 1441
   - name: s4_42
     net: 4
-    server: 10.101.20.33
+    server: 10.101.20.32
     http_port: 8442
     tcp_port: 1442
   - name: s4_43
     net: 4
-    server: 10.101.20.33
+    server: 10.101.20.32
     http_port: 8443
     tcp_port: 1443
   - name: s4_44
     net: 4
-    server: 10.101.20.33
+    server: 10.101.20.32
     http_port: 8444
     tcp_port: 1444
   - name: s4_45
     net: 4
-    server: 10.101.20.33
+    server: 10.101.20.32
     http_port: 8445
     tcp_port: 1445
   - name: s4_46
     net: 4
-    server: 10.101.20.33
+    server: 10.101.20.32
     http_port: 8446
     tcp_port: 1446
   - name: s4_47
     net: 4
-    server: 10.101.20.33
+    server: 10.101.20.32
     http_port: 8447
     tcp_port: 1447
   - name: s4_48
     net: 4
-    server: 10.101.20.33
+    server: 10.101.20.32
     http_port: 8448
     tcp_port: 1448
   - name: s4_49
     net: 4
-    server: 10.101.20.33
+    server: 10.101.20.32
     http_port: 8449
     tcp_port: 1449
   - name: s4_50
     net: 4
-    server: 10.101.20.33
+    server: 10.101.20.32
     http_port: 8450
     tcp_port: 1450
 account_sks:
@@ -538,3 +538,7 @@ passwords:
   10.101.20.35: '!@#$%^'
   10.101.20.33: '!@#$%^'
   10.101.20.32: '!@#$%^'
+  10.101.20.31: '!@#$%^'
+  10.101.20.30: '!@#$%^'
+  10.101.20.29: '!@#$%^'
+  10.101.20.36: '!@#$%^'
