@@ -398,6 +398,7 @@ ZbftPtr BftManager::Start(
         return nullptr;
     }
 #endif
+    ZJC_INFO("====1.6 leader start");
     auto elect_item_ptr = elect_items_[elect_item_idx_];
     if (elect_item_ptr == nullptr) {
         ZJC_DEBUG("thread idx error 1: %d", thread_index);
@@ -1971,6 +1972,7 @@ int BftManager::LeaderPrepare(
     ZJC_DEBUG("now leader call prepare: %s",
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
     int res = bft_ptr->Prepare(true);
+    ZJC_INFO("====1.5 leader prepare, res: %d", res);
     if (res != kConsensusSuccess) {
         assert(false);
         return kConsensusError;
