@@ -14,7 +14,7 @@ no_build=$2
 
 echo "[$server0]"
 # sshpass -p !@#$%^ ssh -o StrictHostKeyChecking=no root@$server0 <<EOF
-cd /root/xufei/zjchain && sh ./build_genesis.sh $target $no_build
+cd /root/xufei/zjchain && sh -x ./build_genesis.sh $target $no_build
 cd /root && sh -x fetch.sh 127.0.0.1 ${server0} $!@#$%^ r1 s3_2 s3_9 s3_16 s3_23 s3_30 s4_2 s4_9 s4_16 s4_23 s4_30
 # EOF
 

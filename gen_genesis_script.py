@@ -191,7 +191,7 @@ if test $NO_BUILD = 0
 then
 	sh build.sh a $TARGET	
 else
-	sudo mv /root/zjnodes/zjchain /tmp
+	sudo mv -f /root/zjnodes/zjchain /tmp/
 fi
 
 sudo rm -rf /root/zjnodes
@@ -202,7 +202,7 @@ rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root
 if test $NO_BUILD = "nobuild"
 then
 	sudo rm -rf /root/zjnodes/zjchain
-	sudo mv /tmp/zjchain /root/zjnodes/
+	sudo mv -f /tmp/zjchain /root/zjnodes/
 fi
 """
 
