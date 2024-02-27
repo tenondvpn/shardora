@@ -439,15 +439,19 @@ ZbftPtr BftManager::Start(
     }
 
     // 获取交易池中的待处理交易
-    ZJC_INFO("====1.7 leader get txs");
+    
     std::shared_ptr<WaitingTxsItem> txs_ptr = get_txs_ptr(thread_item, commited_bft_ptr);
+    ZJC_INFO("====1.7 leader get txs, res: %d", txs_ptr == nullptr);
     if (txs_ptr == nullptr) {
 //         ZJC_DEBUG("thread idx error 5: %d", thread_index);
         return nullptr;
     }
-    
+
+    ZJC_INFO("====1.8");
     if (txs_ptr->tx_type == pools::protobuf::kNormalFrom) {
+        ZJC_INFO("====1.9");
         if (block_mgr_->ShouldStopConsensus()) {
+            ZJC_INFO("====1.10");
             ZJC_DEBUG("should stop consensus.");
             ZJC_DEBUG("thread idx error 6: %d", thread_index);
             return nullptr;
