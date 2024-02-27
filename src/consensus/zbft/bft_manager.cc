@@ -2,6 +2,7 @@
 
 #include <cassert>
 
+#include <common/log.h>
 #include <libbls/tools/utils.h>
 #include <protos/pools.pb.h>
 
@@ -814,6 +815,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             bft_msgs->msgs[0] = msg_ptr;
+            ZJC_INFO("====1.1 leader receive prepare msg: %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
             if (msg_ptr->header.zbft().tx_bft().height() != pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
                 if (msg_ptr->header.zbft().tx_bft().height() > pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
                     kv_sync_->AddSyncHeight(
@@ -846,6 +848,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             bft_msgs->msgs[1] = msg_ptr;
+            ZJC_INFO("====1.2 leader receive precommit msg: %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
             if (bft_msgs->msgs[0] != nullptr &&
                     bft_msgs->msgs[0]->header.zbft().tx_bft().height() != pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
                 return;
