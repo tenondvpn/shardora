@@ -513,11 +513,9 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
             // now leader create zbft ptr and start consensus
             for (; thread_item->prev_index < thread_item->pools.size(); ++thread_item->prev_index) {
                 auto pool_idx = thread_item->pools[thread_item->prev_index];
-                ZJC_INFO("====1.9, %d", pool_idx);
                 if (pools_prev_bft_timeout_[pool_idx] >= now_tm_ms) {
                     continue;
                 }
-                ZJC_INFO("====1.9.1, %d", pool_idx);
 
                 if (pools_with_zbfts_[pool_idx] != nullptr) {
                     auto bft_ptr = pools_with_zbfts_[pool_idx];
@@ -531,9 +529,7 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
 
                     LeaderRemoveTimeoutPrepareBft(bft_ptr);
                 }
-                ZJC_INFO("====1.10, %d", txs_ptr == nullptr, pool_idx);
                 txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
-                ZJC_INFO("====1.11, res:%d, pool_idx: %d", txs_ptr == nullptr, pool_idx);
                 if (txs_ptr != nullptr) {
                     // now leader create zbft ptr and start consensus
                     break;
@@ -563,15 +559,12 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
                 }
 
                 txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
-                ZJC_INFO("====1.12, res:%d, pool_idx: %d", txs_ptr == nullptr, pool_idx);
                 if (txs_ptr != nullptr) {
                     // now leader create zbft ptr and start consensus
                     break;
                 }
             }
         }
-
-        ZJC_INFO("====1.13, res:%d", txs_ptr == nullptr);
 
         if (thread_item->pools.size() > 0) {
             thread_item->prev_index = ++thread_item->prev_index % thread_item->pools.size();
@@ -701,7 +694,6 @@ ZbftPtr BftManager::StartBft(
     bft_ptr->set_member_count(elect_item.member_size);
     // LeaderPrepare 中会调用到 DoTransaction，本地执行块内交易
     int leader_pre = LeaderPrepare(elect_item, bft_ptr, commited_bft_ptr);
-    ZJC_INFO("====1.4 leader send prepare, res: %d", leader_pre);
 	
     if (leader_pre != kConsensusSuccess) {
         ZJC_ERROR("leader prepare failed!");
@@ -1977,7 +1969,6 @@ int BftManager::LeaderPrepare(
     ZJC_DEBUG("now leader call prepare: %s",
         common::Encode::HexEncode(bft_ptr->gid()).c_str());
     int res = bft_ptr->Prepare(true);
-    ZJC_INFO("====1.5 leader prepare, res: %d", res);
     if (res != kConsensusSuccess) {
         assert(false);
         return kConsensusError;
@@ -2008,6 +1999,7 @@ int BftManager::LeaderPrepare(
 
     bft_msg.set_leader_idx(elect_item.local_node_member_index);
     bft_msg.set_prepare_gid(bft_ptr->gid());
+    ZJC_INFO("====0.1 leader send prepare msg: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_elect_height(bft_ptr->elect_height());
     bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
