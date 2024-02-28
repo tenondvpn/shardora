@@ -767,6 +767,10 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                             common::Encode::HexEncode(header.zbft().commit_gid()).c_str());
                         assert(false);
                     }
+
+                    // if (header.zbft().pool_index() == 102) {
+                    //     ZJC_INFO("====3.0", );
+                    // }
                     // 收到 commit 消息后，无论 commit 后续成功与否，都清空该交易池的 bft_msgs 对象
                     bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
                     if (bft_msgs != nullptr && bft_msgs->gid == header.zbft().commit_gid()) {
