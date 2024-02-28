@@ -762,17 +762,19 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                     header.zbft().commit_gid());
             } else {
                 if (commit_bft_ptr->consensus_status() == kConsensusPreCommit) {
+                    pool_commit_msg_is_pending_[header.zbft().pool_index()] = true; 
                     if (BackupCommit(commit_bft_ptr, msg_ptr) != kConsensusSuccess) {
                         ZJC_ERROR("backup commit bft failed: %s",
                             common::Encode::HexEncode(header.zbft().commit_gid()).c_str());
                         assert(false);
                     }
+                    pool_commit_msg_is_pending_[header.zbft().pool_index()] = false;
 
-                    // 收到 commit 消息后，无论 commit 后续成功与否，都清空该交易池的 bft_msgs 对象
-                    bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
-                    if (bft_msgs != nullptr && bft_msgs->gid == header.zbft().commit_gid()) {
-                        gid_with_msg_map_[header.zbft().pool_index()] = nullptr;
-                    }
+                    // // 收到 commit 消息后，无论 commit 后续成功与否，都清空该交易池的 bft_msgs 对象
+                    // bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
+                    // if (bft_msgs != nullptr && bft_msgs->gid == header.zbft().commit_gid()) {
+                    //     gid_with_msg_map_[header.zbft().pool_index()] = nullptr;
+                    // }
 
                     auto& zjc_block = commit_bft_ptr->prepare_block();
                     if (zjc_block != nullptr) {
@@ -811,14 +813,24 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 if (msg_ptr->header.zbft().tx_bft().height() >= old_height) {
                     // 如果之前的 bft_msgs 还没清空，说明没有处理完成，自旋一定时间
                     auto start_ms = common::TimeUtils::TimestampMs();                
-                    while(bft_msgs != nullptr) {
+                    // while(bft_msgs != nullptr) {
+                    //     std::this_thread::sleep_for(std::chrono::microseconds(10));
+                    //     bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
+                
+                    //     if (common::TimeUtils::TimestampMs() - start_ms > COMMIT_MSG_TIMEOUT_MS) {
+                    //         break;
+                    //     }
+                    // }
+
+                    while (pool_commit_msg_is_pending_[header.zbft().pool_index()]) {
                         std::this_thread::sleep_for(std::chrono::microseconds(10));
-                        bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
                 
                         if (common::TimeUtils::TimestampMs() - start_ms > COMMIT_MSG_TIMEOUT_MS) {
+                            pool_commit_msg_is_pending_[header.zbft().pool_index()] = false;
                             break;
                         }
                     }
+                    
                     
                     bft_msgs = std::make_shared<BftMessageInfo>(header.zbft().prepare_gid());
                     // TODO 在高并发情况下，有没有可能下一条消息的 prepare 比上一条消息的 commit 先到达，会导致覆盖
@@ -833,9 +845,8 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             bft_msgs->msgs[0] = msg_ptr;
-            ZJC_INFO("====1.1 backup receive prepare msg: %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
-            // TODO 判断 bft_msgs->msgs[2] 有没有处理完成，若没有，自旋等待一定时间（1s）
             
+            // TODO 判断 bft_msgs->msgs[2] 有没有处理完成，若没有，自旋等待一定时间（1s）
             if (msg_ptr->header.zbft().tx_bft().height() != pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
                 if (msg_ptr->header.zbft().tx_bft().height() > pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
                     ZJC_INFO("====1.1.1 %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
