@@ -861,7 +861,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 // TODO 不仅是这里，理论上收到消息就应该回复，避免 leader 等待
                 return;
             }
-            ZJC_INFO("====1.1.3 %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
+            ZJC_INFO("====1.1.3 %s leader: %d, pool: %d", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(), header.zbft().leader_idx(), header.zbft().pool_index());
         }
 
         if (!header.zbft().precommit_gid().empty()) {
