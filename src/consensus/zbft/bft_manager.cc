@@ -818,6 +818,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             ZJC_INFO("====1.1 backup receive prepare msg: %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
             if (msg_ptr->header.zbft().tx_bft().height() != pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
                 if (msg_ptr->header.zbft().tx_bft().height() > pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
+                    ZJC_INFO("====1.1.1 %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
                     kv_sync_->AddSyncHeight(
                         msg_ptr->thread_idx,
                         common::GlobalInfo::Instance()->network_id(),
@@ -826,6 +827,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                         sync::kSyncHighest);
                 }
 
+                ZJC_INFO("====1.1.2 %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
                 ZJC_DEBUG("pool height error %lu, %lu, message coming msg hash: %lu, thread idx: %u, prepare: %s, "
                     "precommit: %s, commit: %s, pool index: %u, sync_block: %d",
                     msg_ptr->header.zbft().tx_bft().height(),
@@ -838,6 +840,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                     msg_ptr->header.zbft().sync_block());
                 return;
             }
+            ZJC_INFO("====1.1.3 %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
         }
 
         if (!header.zbft().precommit_gid().empty()) {
@@ -1392,6 +1395,7 @@ void BftManager::BackupHandleZbftMessage(
     }
 
     if (!bft_msg.prepare_gid().empty()) {
+        ZJC_INFO("====1.1.4 %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
         std::vector<uint8_t> invalid_txs;
         int res = BackupPrepare(elect_item, msg_ptr, &invalid_txs);
         if (res == kConsensusOppose) {
