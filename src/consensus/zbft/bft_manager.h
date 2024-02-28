@@ -50,7 +50,7 @@ namespace contract {
 
 namespace consensus {
 
-static const uint64_t COMMIT_MSG_TIMEOUT_MS = 200; // commit msg 处理超时时间
+static const uint64_t COMMIT_MSG_TIMEOUT_MS = 500; // commit msg 处理超时时间
 enum class BackupBftStage {
     WAITING_PREPARE,
     PREPARE_RECEIVED,
