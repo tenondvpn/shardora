@@ -51,6 +51,11 @@ namespace contract {
 namespace consensus {
 
 static const uint64_t COMMIT_MSG_TIMEOUT_MS = 500; // commit msg 处理超时时间
+enum class COMMIT_STATUS {
+    NONE,
+    COMMITTING,
+    COMMITTED,
+};
 
 class WaitingTxsPools;
 class BftManager : public Consensus {
@@ -338,6 +343,7 @@ private:
     uint64_t prev_broadcast_invalid_gid_tm_[common::kMaxThreadCount] = { 0 };
     std::unordered_set<std::string> broadcasted_gids_[common::kMaxThreadCount];
     std::shared_ptr<BftMessageInfo> gid_with_msg_map_[common::kInvalidPoolIndex];
+    COMMIT_STATUS commit_status_[common::kInvalidPoolIndex];
     uint64_t pools_prev_bft_timeout_[common::kInvalidPoolIndex] = { 0 };
 
 #ifdef ZJC_UNITTEST
