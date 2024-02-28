@@ -763,12 +763,14 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             } else {
                 if (commit_bft_ptr->consensus_status() == kConsensusPreCommit) {
                     commit_status_[header.zbft().pool_index()] = COMMIT_STATUS::COMMITTING;
+                    ZJC_INFO("====3.1 %d, %d", header.zbft().pool_index(), commit_status_[header.zbft().pool_index()]);
                     if (BackupCommit(commit_bft_ptr, msg_ptr) != kConsensusSuccess) {
                         ZJC_ERROR("backup commit bft failed: %s",
                             common::Encode::HexEncode(header.zbft().commit_gid()).c_str());
                         assert(false);
                     }
                     commit_status_[header.zbft().pool_index()] = COMMIT_STATUS::COMMITTED;
+                    ZJC_INFO("====3.2 %d, %d", header.zbft().pool_index(), commit_status_[header.zbft().pool_index()]);
                     // 收到 commit 消息后，无论 commit 后续成功与否，都清空该交易池的 bft_msgs 对象
                     // bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
                     // if (bft_msgs != nullptr && bft_msgs->gid == header.zbft().commit_gid()) {
@@ -819,7 +821,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                     //         break;
                     //     }
                     // }
-
+                    ZJC_INFO("====3.3 %d, %d", header.zbft().pool_index(), commit_status_[header.zbft().pool_index()]);
                     while(commit_status_[header.zbft().pool_index()] == COMMIT_STATUS::COMMITTING) {
                         std::this_thread::sleep_for(std::chrono::microseconds(10));
                 
@@ -828,6 +830,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                             break;
                         }
                     }
+                    ZJC_INFO("====3.4 %d, %d", header.zbft().pool_index(), commit_status_[header.zbft().pool_index()]);
                     
                     bft_msgs = std::make_shared<BftMessageInfo>(header.zbft().prepare_gid());
                     // TODO 在高并发情况下，有没有可能下一条消息的 prepare 比上一条消息的 commit 先到达，会导致覆盖
