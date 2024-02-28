@@ -762,17 +762,18 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                     header.zbft().commit_gid());
             } else {
                 if (commit_bft_ptr->consensus_status() == kConsensusPreCommit) {
+                    commit_status_[header.zbft().pool_index()] = COMMIT_STATUS::COMMITTING;
                     if (BackupCommit(commit_bft_ptr, msg_ptr) != kConsensusSuccess) {
                         ZJC_ERROR("backup commit bft failed: %s",
                             common::Encode::HexEncode(header.zbft().commit_gid()).c_str());
                         assert(false);
                     }
-
+                    commit_status_[header.zbft().pool_index()] = COMMIT_STATUS::COMMITTED;
                     // 收到 commit 消息后，无论 commit 后续成功与否，都清空该交易池的 bft_msgs 对象
-                    bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
-                    if (bft_msgs != nullptr && bft_msgs->gid == header.zbft().commit_gid()) {
-                        gid_with_msg_map_[header.zbft().pool_index()] = nullptr;
-                    }
+                    // bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
+                    // if (bft_msgs != nullptr && bft_msgs->gid == header.zbft().commit_gid()) {
+                    //     gid_with_msg_map_[header.zbft().pool_index()] = nullptr;
+                    // }
 
                     auto& zjc_block = commit_bft_ptr->prepare_block();
                     if (zjc_block != nullptr) {
@@ -811,10 +812,19 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 if (msg_ptr->header.zbft().tx_bft().height() >= old_height) {
                     // 如果之前的 bft_msgs 还没清空，说明没有处理完成，自旋一定时间
                     auto start_ms = common::TimeUtils::TimestampMs();                
-                    while(gid_with_msg_map_[header.zbft().pool_index()] != nullptr) {
+                    // while(gid_with_msg_map_[header.zbft().pool_index()] != nullptr) {
+                    //     std::this_thread::sleep_for(std::chrono::microseconds(10));
+                
+                    //     if (common::TimeUtils::TimestampMs() - start_ms > COMMIT_MSG_TIMEOUT_MS) {
+                    //         break;
+                    //     }
+                    // }
+
+                    while(commit_status_[header.zbft().pool_index()] == COMMIT_STATUS::COMMITTING) {
                         std::this_thread::sleep_for(std::chrono::microseconds(10));
                 
                         if (common::TimeUtils::TimestampMs() - start_ms > COMMIT_MSG_TIMEOUT_MS) {
+                            commit_status_[header.zbft().pool_index()] = COMMIT_STATUS::NONE;
                             break;
                         }
                     }
