@@ -51,10 +51,11 @@ namespace contract {
 namespace consensus {
 
 static const uint64_t COMMIT_MSG_TIMEOUT_MS = 500; // commit msg 处理超时时间
-enum class COMMIT_STATUS {
-    NONE,
-    COMMITTING,
-    COMMITTED,
+enum class BackupBftStage {
+    WAITING_PREPARE,
+    PREPARE_RECEIVED,
+    PRECOMMIT_RECEIVED,
+    COMMIT_RECEIVED,
 };
 
 class WaitingTxsPools;
@@ -344,6 +345,20 @@ private:
     std::unordered_set<std::string> broadcasted_gids_[common::kMaxThreadCount];
     std::shared_ptr<BftMessageInfo> gid_with_msg_map_[common::kInvalidPoolIndex];
     uint64_t pools_prev_bft_timeout_[common::kInvalidPoolIndex] = { 0 };
+
+    inline BackupBftStage GetBackupBftStage(std::shared_ptr<BftMessageInfo> bft_msgs) {
+        if (bft_msgs == nullptr || bft_msgs->msgs[0] == nullptr) {
+            return BackupBftStage::WAITING_PREPARE;
+        }
+
+        if (bft_msgs->msgs[2] != nullptr) {
+            return BackupBftStage::COMMIT_RECEIVED;
+        }
+        if (bft_msgs->msgs[1] != nullptr) {
+            return BackupBftStage::PRECOMMIT_RECEIVED;
+        }
+        return BackupBftStage::PREPARE_RECEIVED;
+    }
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {

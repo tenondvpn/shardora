@@ -808,12 +808,13 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 }
                 
                 if (msg_ptr->header.zbft().tx_bft().height() >= old_height) {
-                    // 如果之前的 bft_msgs 还没清空，说明没有处理完成，自旋一定时间
+                    // 如果 backup 在收到 commit 消息之前，或者是在 commit 消息但在成功出块之前收到了下一消息的 prepare，则自旋等待一定时间
                     auto start_ms = common::TimeUtils::TimestampMs();
-                    bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
-                    while(bft_msgs != nullptr && bft_msgs->msgs[1] != nullptr && bft_msgs->msgs[0] != nullptr) {
-                        std::this_thread::sleep_for(std::chrono::microseconds(10));
-                        bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
+                    auto backup_stage = GetBackupBftStage(gid_with_msg_map_[header.zbft().pool_index()]); 
+                    while(backup_stage == BackupBftStage::PRECOMMIT_RECEIVED ||
+                        backup_stage == BackupBftStage::COMMIT_RECEIVED) {
+                        std::this_thread::sleep_for(std::chrono::microseconds(COMMIT_MSG_TIMEOUT_MS/10));
+                        backup_stage = GetBackupBftStage(gid_with_msg_map_[header.zbft().pool_index()]);
                         if (common::TimeUtils::TimestampMs() - start_ms > COMMIT_MSG_TIMEOUT_MS) {
                             break;
                         }
@@ -832,9 +833,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             bft_msgs->msgs[0] = msg_ptr;
-            ZJC_INFO("====1.1 backup receive prepare msg: %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
-            // TODO 判断 bft_msgs->msgs[2] 有没有处理完成，若没有，自旋等待一定时间（1s）
-            
+            ZJC_INFO("====1.1 backup receive prepare msg: %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());            
             if (msg_ptr->header.zbft().tx_bft().height() != pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
                 if (msg_ptr->header.zbft().tx_bft().height() > pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
                     ZJC_INFO("====1.1.1 %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
