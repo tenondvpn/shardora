@@ -833,10 +833,8 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             bft_msgs->msgs[0] = msg_ptr;
-            ZJC_INFO("====1.1 backup receive prepare msg: %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());            
             if (msg_ptr->header.zbft().tx_bft().height() != pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
                 if (msg_ptr->header.zbft().tx_bft().height() > pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
-                    ZJC_INFO("====1.1.1 %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
                     kv_sync_->AddSyncHeight(
                         msg_ptr->thread_idx,
                         common::GlobalInfo::Instance()->network_id(),
@@ -845,7 +843,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                         sync::kSyncHighest);
                 }
 
-                ZJC_INFO("====1.1.2 %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
                 ZJC_DEBUG("pool height error %lu, %lu, message coming msg hash: %lu, thread idx: %u, prepare: %s, "
                     "precommit: %s, commit: %s, pool index: %u, sync_block: %d",
                     msg_ptr->header.zbft().tx_bft().height(),
@@ -861,7 +858,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 // TODO 不仅是这里，理论上收到消息就应该回复，避免 leader 等待
                 return;
             }
-            ZJC_INFO("====1.1.3 %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
         }
 
         if (!header.zbft().precommit_gid().empty()) {
@@ -872,7 +868,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             bft_msgs->msgs[1] = msg_ptr;
-            ZJC_INFO("====1.2 backup receive precommit msg: %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
             if (bft_msgs->msgs[0] != nullptr &&
                     bft_msgs->msgs[0]->header.zbft().tx_bft().height() != pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
                 return;
@@ -1416,7 +1411,6 @@ void BftManager::BackupHandleZbftMessage(
     }
 
     if (!bft_msg.prepare_gid().empty()) {
-        ZJC_INFO("====1.1.4 %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
         std::vector<uint8_t> invalid_txs;
         int res = BackupPrepare(elect_item, msg_ptr, &invalid_txs);
         if (res == kConsensusOppose) {
@@ -2024,7 +2018,6 @@ int BftManager::LeaderPrepare(
 
     bft_msg.set_leader_idx(elect_item.local_node_member_index);
     bft_msg.set_prepare_gid(bft_ptr->gid());
-    ZJC_INFO("====0.1 leader send prepare msg: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_elect_height(bft_ptr->elect_height());
     bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
@@ -2523,7 +2516,6 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
     auto& bft_msg = msg_ptr->header.zbft();
     if (!bft_msg.prepare_gid().empty()) {
         int res = LeaderHandlePrepare(msg_ptr);
-        ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), res);
         if (res == kConsensusAgree) {
             LeaderSendPrecommitMessage(msg_ptr, true);
         } else if (res == kConsensusOppose) {
@@ -2539,7 +2531,6 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
         ZJC_DEBUG("has precommit now leader handle gid: %s",
             common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
         auto bft_ptr = LeaderGetZbft(msg_ptr, bft_msg.precommit_gid());
-        ZJC_INFO("====1.2 leader receive precommit msg: %s, has res: %d", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(), bft_ptr != nullptr);
         if (bft_ptr == nullptr) {
 //             ZJC_ERROR("precommit get bft failed: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
             return;
