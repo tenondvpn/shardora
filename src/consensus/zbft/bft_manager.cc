@@ -779,6 +779,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
                     RemoveBft(commit_bft_ptr->pool_index(), commit_bft_ptr->gid());
                 } else {
+                    // 对于之前投 precommit 反对票的 backup，对于 commit 消息没有任何处理，只能等待后续同步
                     bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
                     if (bft_msgs == nullptr || bft_msgs->gid != header.zbft().commit_gid()) {
                         return;
@@ -787,10 +788,26 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                     bft_msgs->msgs[2] = msg_ptr;
                 }
             }
+            // 收到 commit 消息后，无论 commit 后续成功与否，都清空该交易池的 bft_msgs 对象
+            bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
+            if (bft_msgs != nullptr && bft_msgs->gid == header.zbft().commit_gid()) {
+                gid_with_msg_map_[header.zbft().pool_index()] = nullptr;
+            }
         }
 
         if (!header.zbft().prepare_gid().empty()) {
             bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
+            // 如果之前的 bft_msgs 还没清空，说明没有处理完成，自旋一定时间
+            auto start_ms = common::TimeUtils::TimestampMs();                
+            while(bft_msgs != nullptr) {
+                std::this_thread::sleep_for(std::chrono::microseconds(10));
+                bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
+                
+                if (common::TimeUtils::TimestampMs() - start_ms > COMMIT_MSG_TIMEOUT_MS) {
+                    break;
+                }
+            }
+            
             if (bft_msgs == nullptr || header.zbft().prepare_gid() != bft_msgs->gid) {
                 uint64_t old_height = 0;
                 if (bft_msgs != nullptr) {
@@ -804,6 +821,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 
                 if (msg_ptr->header.zbft().tx_bft().height() >= old_height) {
                     bft_msgs = std::make_shared<BftMessageInfo>(header.zbft().prepare_gid());
+                    // TODO 在高并发情况下，有没有可能下一条消息的 prepare 比上一条消息的 commit 先到达，会导致覆盖
                     gid_with_msg_map_[header.zbft().pool_index()] = bft_msgs;
                 } else {
                     ZJC_DEBUG("gid oldest for old: %s, %lu, %lu",
@@ -816,6 +834,8 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
             bft_msgs->msgs[0] = msg_ptr;
             ZJC_INFO("====1.1 backup receive prepare msg: %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
+            // TODO 判断 bft_msgs->msgs[2] 有没有处理完成，若没有，自旋等待一定时间（1s）
+            
             if (msg_ptr->header.zbft().tx_bft().height() != pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
                 if (msg_ptr->header.zbft().tx_bft().height() > pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
                     ZJC_INFO("====1.1.1 %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
@@ -2918,6 +2938,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
         msg_ptr->thread_idx,
         queue_item_ptr->block_ptr,
         *queue_item_ptr->db_batch);
+    
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
@@ -2925,7 +2946,6 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
     if (bft_ptr->this_node_is_leader()) {
         LeaderBroadcastBlock(msg_ptr->thread_idx, zjc_block);
     }
-
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     pools_mgr_->TxOver(
         zjc_block->pool_index(),

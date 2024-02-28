@@ -50,6 +50,8 @@ namespace contract {
 
 namespace consensus {
 
+static const uint64_t COMMIT_MSG_TIMEOUT_MS = 500; // commit msg 处理超时时间
+
 class WaitingTxsPools;
 class BftManager : public Consensus {
 public:
