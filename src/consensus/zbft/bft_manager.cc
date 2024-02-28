@@ -813,7 +813,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                     bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
                     while(bft_msgs != nullptr && bft_msgs->msgs[1] != nullptr && bft_msgs->msgs[0] != nullptr) {
                         std::this_thread::sleep_for(std::chrono::microseconds(10));
-                
+                        bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
                         if (common::TimeUtils::TimestampMs() - start_ms > COMMIT_MSG_TIMEOUT_MS) {
                             break;
                         }
