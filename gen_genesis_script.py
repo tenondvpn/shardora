@@ -182,7 +182,7 @@ then
 fi
 
 NO_BUILD=0
-if [ -n "\$2" ] && [ "\$2" = "nobuild" ]
+if [ -n $2 ] && [ $2 = "nobuild" ]
 then
     NO_BUILD="nobuild"
 fi
