@@ -813,7 +813,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                     }
                 }
                 
-                if (msg_ptr->header.zbft().tx_bft().height() >= old_height) {
+                if (msg_ptr->header.zbft().tx_bft().height() > old_height) {
                     // 如果 backup 在收到 commit 消息之前，或者是在 commit 消息但在成功出块之前收到了下一消息的 prepare，则自旋等待一定时间
                     auto start_ms = common::TimeUtils::TimestampMs();
                     auto backup_stage = GetBackupBftStage(gid_with_msg_map_[header.zbft().pool_index()]); 
@@ -895,12 +895,18 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
                 header.zbft().pool_index(),
                 msg_ptr->header.zbft().sync_block());
+                        
+            if (!header.zbft().precommit_gid().empty()) {
+                ZJC_INFO("====1.2.1.0 %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
+            }
+            
             return;
         }
 
         for (int32_t i = 0; i < 3; ++i) {
             auto& tmp_msg_ptr = bft_msgs->msgs[i];
             if (tmp_msg_ptr == nullptr) {
+                ZJC_INFO("====1.2.1.1.1 %s, %d", common::Encode::HexEncode(bft_msgs->gid).c_str(), i);
                 break;
             }
 
