@@ -801,6 +801,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         if (!header.zbft().prepare_gid().empty()) {
+            // bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
             if (bft_msgs == nullptr || header.zbft().prepare_gid() != bft_msgs->gid) {
                 uint64_t old_height = 0;
                 if (bft_msgs != nullptr) {
@@ -901,6 +902,10 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             auto& tmp_msg_ptr = bft_msgs->msgs[i];
             if (tmp_msg_ptr == nullptr) {
                 break;
+            }
+
+            if (i == 1) {
+                ZJC_INFO("====1.2.1.1 %s", common::Encode::HexEncode(bft_msgs->gid).c_str());
             }
 
             if (tmp_msg_ptr->handled) {
@@ -1348,12 +1353,13 @@ void BftManager::BackupHandleZbftMessage(
     auto& header = msg_ptr->header;
     auto& bft_msg = msg_ptr->header.zbft();
     if (!bft_msg.precommit_gid().empty()) {
+        ZJC_INFO("====1.2.2 %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
         auto precommit_bft_ptr = pools_with_zbfts_[bft_msg.pool_index()];
         if (precommit_bft_ptr == nullptr) {
             ZJC_DEBUG("get precommit gid failed: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
             return;
         }
-        ZJC_INFO("====1.2.2 %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
+        ZJC_INFO("====1.2.2.1 %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
         elect_item_ptr = precommit_bft_ptr->elect_item_ptr();
     } else {
         if (elect_item_ptr->elect_height != msg_ptr->header.zbft().elect_height()) {
