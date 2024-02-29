@@ -806,7 +806,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         if (isPrepare(zbft)) {
              // TODO if not new prepare, return directly
             if (!isCurrentBft(zbft)) {
-                if (isANewBft(zbft)) {
+                if (isNewerBft(zbft)) {
                     // 如果 backup 在收到 commit 消息之前，或者是在 commit 消息但在成功出块之前收到了下一消息的 prepare
                     // 则自旋等待一定时间
                     WaitForLastCommitIfNeeded(zbft.pool_index(), COMMIT_MSG_TIMEOUT_MS);
@@ -848,7 +848,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
         if (isPrecommit(zbft)) {
             if (!isCurrentBft(zbft)) {
-                if (!isANewBft(zbft)) {
+                if (!isNewerBft(zbft)) {
                     return;
                 }
                 bft_msgs = std::make_shared<BftMessageInfo>(header.zbft().precommit_gid());
@@ -857,7 +857,8 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
             bft_msgs->msgs[1] = msg_ptr;
             ZJC_INFO("====1.2 backup receive precommit msg: %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
-            if (new_height != latest_commit_height + 1) {
+            if (bft_msgs->msgs[0] != nullptr &&
+                bft_msgs->msgs[0]->header.zbft().tx_bft().height() != latest_commit_height + 1) {
                 return;
             }
             ZJC_INFO("====1.2.1 %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
