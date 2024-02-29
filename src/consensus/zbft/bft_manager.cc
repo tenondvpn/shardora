@@ -724,6 +724,16 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
         header.zbft().pool_index(),
         msg_ptr->header.zbft().sync_block());
+
+    if (header.has_zbft()) {
+        ZJC_INFO("====0.0 handle msg, gid: %s, %s, %s, member_idx: %d",
+            common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(),
+            common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(),
+            common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
+            header.zbft().member_index());
+    }
+    
+    
     if (header.has_zbft() && header.zbft().leader_idx() < 0 && !msg_ptr->header.zbft().sync_block()) {
         dht::DhtKeyManager dht_key(
             msg_ptr->header.src_sharding_id(),
@@ -2527,7 +2537,7 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
     auto& bft_msg = msg_ptr->header.zbft();
     if (!bft_msg.prepare_gid().empty()) {
         int res = LeaderHandlePrepare(msg_ptr);
-        ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), res);
+        ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d, leader: %d, member: %d", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), res, bft_msg.leader_idx(), bft_msg.member_index());
         if (res == kConsensusAgree) {
             LeaderSendPrecommitMessage(msg_ptr, true);
         } else if (res == kConsensusOppose) {
@@ -2543,7 +2553,7 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
         ZJC_DEBUG("has precommit now leader handle gid: %s",
             common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
         auto bft_ptr = LeaderGetZbft(msg_ptr, bft_msg.precommit_gid());
-        ZJC_INFO("====1.2 leader receive precommit msg: %s, has res: %d", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(), bft_ptr != nullptr);
+        ZJC_INFO("====1.2 leader receive precommit msg: %s, has res: %d, leader: %d, member: %d", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(), bft_ptr != nullptr, bft_msg.leader_idx(), bft_msg.member_index());
         if (bft_ptr == nullptr) {
 //             ZJC_ERROR("precommit get bft failed: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
             return;
