@@ -1,7 +1,7 @@
 import yaml
 import argparse
 
-def gen_nodes_conf_file(node_num_per_shard, shard_num, servers, root_node_num):
+def gen_nodes_conf_file(node_num_per_shard, shard_num, servers, root_node_num, server0):
     shard_start_idx = 3
     shard_end_idx = shard_start_idx + shard_num - 1
     nodes = []
@@ -30,6 +30,9 @@ def gen_nodes_conf_file(node_num_per_shard, shard_num, servers, root_node_num):
             })
 
     for idx, node in enumerate(nodes):
+        if node["name"] == 'r1':
+            node["server"] = server0
+            continue
         server = servers[idx % len(servers)]
         node["server"] = server
 
@@ -56,7 +59,8 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--shard_num', help='shard_num', default=2, type=int)
     parser.add_argument('-m', '--machines', help='machines', default="127.0.0.1", type=str)
     parser.add_argument('-r', '--root_node_num', help='root node num', default=3, type=int)
+    parser.add_argument('-m0', '--machine0', help='source machine', default='', type=str)
     args = parser.parse_args()
 
     servers = args.machines.split(",")
-    gen_nodes_conf_file(args.node_num_per_shard, args.shard_num, servers, args.root_node_num)
+    gen_nodes_conf_file(args.node_num_per_shard, args.shard_num, servers, args.root_node_num, args.machine0)
