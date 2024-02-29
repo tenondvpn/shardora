@@ -101,8 +101,8 @@ bool TcpConnection::SendPacketWithoutLock(Packet& packet) {
     }
 
     if (tcp_state_ != kTcpConnected || !out_buffer_list_.empty()) {
-        if (out_buffer_list_.size() >= 1024) {
-            ZJC_ERROR("out_buffer_list_ out of size 1024");
+        if (out_buffer_list_.size() >= OUT_BUFFER_LIST_SIZE) {
+            ZJC_ERROR("out_buffer_list_ out of size %d", OUT_BUFFER_LIST_SIZE);
             return false;
         }
 

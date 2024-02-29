@@ -156,6 +156,7 @@ private:
     void ReleaseByIOThread();
 
     static const uint64_t kConnectTimeoutMs = 60000lu;
+    static const int OUT_BUFFER_LIST_SIZE = 10240;
 
     common::SpinMutex spin_mutex_;
     BufferList out_buffer_list_;
