@@ -746,7 +746,7 @@ int ToTxsPools::CreateToTxWithHeights(
                 common::GlobalInfo::Instance()->network_id());        
         } else if (iter->second.type == pools::protobuf::kContractCreateByRootFrom) {
             assert(common::GlobalInfo::Instance()->network_id() > network::kRootCongressNetworkId);
-            ZJC_DEBUG("==== 0.2 library bytes: %s, to: %s, from: %s",
+            ZJC_DEBUG("library bytes: %s, to: %s, from: %s",
                 common::Encode::HexEncode(iter->second.library_bytes).c_str(),
                 common::Encode::HexEncode(to).c_str(),
                 common::Encode::HexEncode(iter->second.from).c_str());

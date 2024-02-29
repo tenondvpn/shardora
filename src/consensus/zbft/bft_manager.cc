@@ -2,6 +2,7 @@
 
 #include <cassert>
 
+#include <common/log.h>
 #include <libbls/tools/utils.h>
 #include <protos/pools.pb.h>
 
@@ -438,6 +439,7 @@ ZbftPtr BftManager::Start(
     }
 
     // 获取交易池中的待处理交易
+    
     std::shared_ptr<WaitingTxsItem> txs_ptr = get_txs_ptr(thread_item, commited_bft_ptr);
     if (txs_ptr == nullptr) {
 //         ZJC_DEBUG("thread idx error 5: %d", thread_index);
@@ -505,7 +507,7 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
                 }
             }
         }
-
+        
         auto begin_index = thread_item->prev_index;
         if (txs_ptr == nullptr) {
             // now leader create zbft ptr and start consensus
@@ -527,7 +529,6 @@ std::shared_ptr<WaitingTxsItem> BftManager::get_txs_ptr(
 
                     LeaderRemoveTimeoutPrepareBft(bft_ptr);
                 }
-
                 txs_ptr = txs_pools_->LeaderGetValidTxs(pool_idx);
                 if (txs_ptr != nullptr) {
                     // now leader create zbft ptr and start consensus
@@ -723,6 +724,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
         header.zbft().pool_index(),
         msg_ptr->header.zbft().sync_block());
+    
     if (header.has_zbft() && header.zbft().leader_idx() < 0 && !msg_ptr->header.zbft().sync_block()) {
         dht::DhtKeyManager dht_key(
             msg_ptr->header.src_sharding_id(),
@@ -767,6 +769,15 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                         assert(false);
                     }
 
+                    // if (header.zbft().pool_index() == 102) {
+                    //     ZJC_INFO("====3.0", );
+                    // }
+                    // 收到 commit 消息后，无论 commit 后续成功与否，都清空该交易池的 bft_msgs 对象
+                    bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
+                    if (bft_msgs != nullptr && bft_msgs->gid == header.zbft().commit_gid()) {
+                        gid_with_msg_map_[header.zbft().pool_index()] = nullptr;
+                    }
+
                     auto& zjc_block = commit_bft_ptr->prepare_block();
                     if (zjc_block != nullptr) {
                         ZJC_DEBUG("now remove gid with height: %s, %u, %lu",
@@ -778,6 +789,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
                     RemoveBft(commit_bft_ptr->pool_index(), commit_bft_ptr->gid());
                 } else {
+                    // 对于之前投 precommit 反对票的 backup，对于 commit 消息没有任何处理，只能等待后续同步
                     bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
                     if (bft_msgs == nullptr || bft_msgs->gid != header.zbft().commit_gid()) {
                         return;
@@ -801,8 +813,21 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                     }
                 }
                 
-                if (msg_ptr->header.zbft().tx_bft().height() >= old_height) {
+                if (msg_ptr->header.zbft().tx_bft().height() > old_height) {
+                    // 如果 backup 在收到 commit 消息之前，或者是在 commit 消息但在成功出块之前收到了下一消息的 prepare，则自旋等待一定时间
+                    auto start_ms = common::TimeUtils::TimestampMs();
+                    auto backup_stage = GetBackupBftStage(gid_with_msg_map_[header.zbft().pool_index()]); 
+                    while(backup_stage == BackupBftStage::PRECOMMIT_RECEIVED ||
+                        backup_stage == BackupBftStage::COMMIT_RECEIVED) {
+                        std::this_thread::sleep_for(std::chrono::microseconds(COMMIT_MSG_TIMEOUT_MS/10));
+                        backup_stage = GetBackupBftStage(gid_with_msg_map_[header.zbft().pool_index()]);
+                        if (common::TimeUtils::TimestampMs() - start_ms > COMMIT_MSG_TIMEOUT_MS) {
+                            break;
+                        }
+                    }
+                    
                     bft_msgs = std::make_shared<BftMessageInfo>(header.zbft().prepare_gid());
+                    // TODO 在高并发情况下，有没有可能下一条消息的 prepare 比上一条消息的 commit 先到达，会导致覆盖
                     gid_with_msg_map_[header.zbft().pool_index()] = bft_msgs;
                 } else {
                     ZJC_DEBUG("gid oldest for old: %s, %lu, %lu",
@@ -814,8 +839,10 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             bft_msgs->msgs[0] = msg_ptr;
+            ZJC_INFO("====1.1 backup receive prepare msg: %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());            
             if (msg_ptr->header.zbft().tx_bft().height() != pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
                 if (msg_ptr->header.zbft().tx_bft().height() > pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
+                    ZJC_INFO("====1.1.1 %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
                     kv_sync_->AddSyncHeight(
                         msg_ptr->thread_idx,
                         common::GlobalInfo::Instance()->network_id(),
@@ -824,6 +851,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                         sync::kSyncHighest);
                 }
 
+                ZJC_INFO("====1.1.2 %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
                 ZJC_DEBUG("pool height error %lu, %lu, message coming msg hash: %lu, thread idx: %u, prepare: %s, "
                     "precommit: %s, commit: %s, pool index: %u, sync_block: %d",
                     msg_ptr->header.zbft().tx_bft().height(),
@@ -834,22 +862,42 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                     common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
                     header.zbft().pool_index(),
                     msg_ptr->header.zbft().sync_block());
+
+                // TODO 此处应该回复消息给 leader，避免 leader 等待 bft 的 10s 超时，造成待共识队列阻塞
+                // TODO 不仅是这里，理论上收到消息就应该回复，避免 leader 等待
                 return;
             }
+            ZJC_INFO("====1.1.3 %s leader: %d, pool: %d", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str(), header.zbft().leader_idx(), header.zbft().pool_index());
         }
 
         if (!header.zbft().precommit_gid().empty()) {
             bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
             if (bft_msgs == nullptr || header.zbft().precommit_gid() != bft_msgs->gid) {
-                bft_msgs = std::make_shared<BftMessageInfo>(header.zbft().precommit_gid());
-                gid_with_msg_map_[header.zbft().pool_index()] = bft_msgs;
+                uint64_t old_height = 0;
+                if (bft_msgs != nullptr) {
+                    for (int32_t i = 0; i < 3; ++i) {
+                        if (bft_msgs->msgs[i] != nullptr) {
+                            old_height = bft_msgs->msgs[i]->header.zbft().tx_bft().height();
+                            break;
+                        }
+                    }
+                }
+
+                if (msg_ptr->header.zbft().tx_bft().height() > old_height) {
+                    bft_msgs = std::make_shared<BftMessageInfo>(header.zbft().precommit_gid());
+                    gid_with_msg_map_[header.zbft().pool_index()] = bft_msgs;
+                } else {
+                    return;
+                }
             }
 
             bft_msgs->msgs[1] = msg_ptr;
+            ZJC_INFO("====1.2 backup receive precommit msg: %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
             if (bft_msgs->msgs[0] != nullptr &&
                     bft_msgs->msgs[0]->header.zbft().tx_bft().height() != pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
                 return;
             }
+            ZJC_INFO("====1.2.1 %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
         }
 
         if (bft_msgs == nullptr) {
@@ -861,13 +909,23 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                 common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
                 header.zbft().pool_index(),
                 msg_ptr->header.zbft().sync_block());
+                        
+            if (!header.zbft().precommit_gid().empty()) {
+                ZJC_INFO("====1.2.1.0 %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
+            }
+            
             return;
         }
 
         for (int32_t i = 0; i < 3; ++i) {
             auto& tmp_msg_ptr = bft_msgs->msgs[i];
             if (tmp_msg_ptr == nullptr) {
+                ZJC_INFO("====1.2.1.1.1 %s, %d", common::Encode::HexEncode(bft_msgs->gid).c_str(), i);
                 break;
+            }
+
+            if (i == 1) {
+                ZJC_INFO("====1.2.1.1 %s", common::Encode::HexEncode(bft_msgs->gid).c_str());
             }
 
             if (tmp_msg_ptr->handled) {
@@ -1315,12 +1373,13 @@ void BftManager::BackupHandleZbftMessage(
     auto& header = msg_ptr->header;
     auto& bft_msg = msg_ptr->header.zbft();
     if (!bft_msg.precommit_gid().empty()) {
+        ZJC_INFO("====1.2.2 %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
         auto precommit_bft_ptr = pools_with_zbfts_[bft_msg.pool_index()];
         if (precommit_bft_ptr == nullptr) {
             ZJC_DEBUG("get precommit gid failed: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
             return;
         }
-
+        ZJC_INFO("====1.2.2.1 %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
         elect_item_ptr = precommit_bft_ptr->elect_item_ptr();
     } else {
         if (elect_item_ptr->elect_height != msg_ptr->header.zbft().elect_height()) {
@@ -1389,6 +1448,7 @@ void BftManager::BackupHandleZbftMessage(
     }
 
     if (!bft_msg.prepare_gid().empty()) {
+        ZJC_INFO("====1.1.4 %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
         std::vector<uint8_t> invalid_txs;
         int res = BackupPrepare(elect_item, msg_ptr, &invalid_txs);
         if (res == kConsensusOppose) {
@@ -1423,6 +1483,7 @@ void BftManager::BackupHandleZbftMessage(
     }
 
     if (!bft_msg.precommit_gid().empty()) {
+        ZJC_INFO("====1.2.3 %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
         ZJC_DEBUG("handle precommit gid: %s, pool: %u",
             common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(),
             bft_msg.pool_index());
@@ -1434,6 +1495,7 @@ void BftManager::BackupHandleZbftMessage(
         }
 
         int res = BackupPrecommit(precommit_bft_ptr, msg_ptr);
+        ZJC_INFO("====1.2.4 %s, res: %d", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str(), res);
         if (res == kConsensusOppose) {
             BackupSendPrecommitMessage(elect_item, msg_ptr, false);
         } else if (res == kConsensusAgree) {
@@ -1996,6 +2058,7 @@ int BftManager::LeaderPrepare(
 
     bft_msg.set_leader_idx(elect_item.local_node_member_index);
     bft_msg.set_prepare_gid(bft_ptr->gid());
+    ZJC_INFO("====0.1 leader send prepare msg: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_elect_height(bft_ptr->elect_height());
     bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
@@ -2186,6 +2249,7 @@ void BftManager::BackupSendPrecommitMessage(
     bft_msg.set_leader_idx(-1);
     bft_msg.set_member_index(elect_item.local_node_member_index);
     bft_msg.set_precommit_gid(gid);
+    ZJC_INFO("====1.2.5 %s, agree: %d, member idx: %d", common::Encode::HexEncode(gid).c_str(), agree, bft_msg.member_index());
     if (agree) {
         auto& bft_ptr = pools_with_zbfts_[pool_index];
         assert(bft_ptr != nullptr);
@@ -2234,13 +2298,14 @@ void BftManager::BackupSendPrecommitMessage(
             }
         }
     }
-            
+    ZJC_INFO("====1.2.6 %s, agree: %d, member idx: %d", common::Encode::HexEncode(gid).c_str(), agree, bft_msg.member_index());
     transport::TcpTransport::Instance()->SetMessageHash(header, leader_msg_ptr->header.zbft().leader_idx());
     if (!SetBackupEcdhData(msg_ptr, leader_member)) {
         assert(false);
         return;
     }
 
+    ZJC_INFO("====1.2.7 %s, agree: %d, member idx: %d", common::Encode::HexEncode(gid).c_str(), agree, bft_msg.member_index());
     if (leader_member->public_ip == 0 || leader_member->public_port == 0) {
         network::Route::Instance()->Send(msg_ptr);
         ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d",
@@ -2494,6 +2559,7 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
     auto& bft_msg = msg_ptr->header.zbft();
     if (!bft_msg.prepare_gid().empty()) {
         int res = LeaderHandlePrepare(msg_ptr);
+        ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d, leader: %d, member: %d", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), res, bft_msg.leader_idx(), bft_msg.member_index());
         if (res == kConsensusAgree) {
             LeaderSendPrecommitMessage(msg_ptr, true);
         } else if (res == kConsensusOppose) {
@@ -2509,6 +2575,7 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
         ZJC_DEBUG("has precommit now leader handle gid: %s",
             common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
         auto bft_ptr = LeaderGetZbft(msg_ptr, bft_msg.precommit_gid());
+        ZJC_INFO("====1.2 leader receive precommit msg: %s, has res: %d, leader: %d, member: %d", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(), bft_ptr != nullptr, bft_msg.leader_idx(), bft_msg.member_index());
         if (bft_ptr == nullptr) {
 //             ZJC_ERROR("precommit get bft failed: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
             return;
@@ -2908,6 +2975,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
         msg_ptr->thread_idx,
         queue_item_ptr->block_ptr,
         *queue_item_ptr->db_batch);
+    
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     block_mgr_->ConsensusAddBlock(msg_ptr->thread_idx, queue_item_ptr);
@@ -2915,7 +2983,6 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
     if (bft_ptr->this_node_is_leader()) {
         LeaderBroadcastBlock(msg_ptr->thread_idx, zjc_block);
     }
-
     msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
     pools_mgr_->TxOver(
         zjc_block->pool_index(),

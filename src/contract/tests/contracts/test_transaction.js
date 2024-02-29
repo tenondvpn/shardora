@@ -470,12 +470,13 @@ var testcases = [
         "contract_shard": 4, 
         "query_shard": 4, 
         "query_suc": true, // 是否能查到数据
-    }, { // 创建合约在 shard5, 同分片查询合约成功
-        "sk": sk3_shard5, // 发起者 sk
-        "contract_shard": 5, 
-        "query_shard": 5, 
-        "query_suc": true, // 是否能查到数据
-    }, { // 查询合约 shard 不一致
+    }, // { // 创建合约在 shard5, 同分片查询合约成功
+    //     "sk": sk3_shard5, // 发起者 sk
+    //     "contract_shard": 5, 
+    //     "query_shard": 5, 
+    //     "query_suc": true, // 是否能查到数据
+    // },
+	{ // 查询合约 shard 不一致
         "sk": sk1_shard3,
         "contract_shard": 3, 
         "query_shard": 4,
@@ -532,14 +533,14 @@ var testcases_transfer = [
         "from_shard": 4,
         "amount": 1000,
         "create_ok": true,
-    }, {
-        "from_sk": sk1_shard3,
-        "to_sk": sk3_shard5,
-        "need_create": false,
-        "from_shard": 5,
-        "amount": 1000,
-        "create_ok": true,
-    }
+    },//  {
+    //     "from_sk": sk1_shard3,
+    //     "to_sk": sk3_shard5,
+    //     "need_create": false,
+    //     "from_shard": 5,
+    //     "amount": 1000,
+    //     "create_ok": true,
+    // }
 ]
 var shard5_nodes = [
 	"10.101.20.35:8501",

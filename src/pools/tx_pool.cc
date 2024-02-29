@@ -131,6 +131,17 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     gid_map_[tx_ptr->gid] = tx_ptr;
+
+    auto now_tm_us = common::TimeUtils::TimestampUs();
+    if (prev_tx_count_tm_us_ == 0) {
+        prev_tx_count_tm_us_ = now_tm_us;
+    }
+    if (now_tm_us > prev_tx_count_tm_us_ + 3000000lu) {
+        ZJC_INFO("waiting_tx_count pool: %d: tx: %llu", pool_index_, gid_map_.size());
+        prev_tx_count_tm_us_ = now_tm_us;
+    }
+
+    
     gid_start_time_map_[tx_ptr->gid] = common::TimeUtils::TimestampUs(); 
     timeout_txs_.push(tx_ptr->gid);
     oldest_timestamp_ = prio_map_.begin()->second->time_valid;

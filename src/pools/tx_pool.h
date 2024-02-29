@@ -371,6 +371,7 @@ private:
     volatile uint32_t finish_tx_count_ = 0;
     std::map<uint64_t, std::string> checked_height_with_prehash_;
     volatile uint64_t oldest_timestamp_ = 0;
+    uint64_t prev_tx_count_tm_us_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPool);
 };

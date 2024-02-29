@@ -10,16 +10,16 @@ then
 fi
 
 NO_BUILD=0
-if test $2 = "nobuild"
+if [ -n $2 ] && [ $2 = "nobuild" ]
 then
-	NO_BUILD="nobuild"
+    NO_BUILD="nobuild"
 fi
 
 if test $NO_BUILD = 0
 then
 	sh build.sh a $TARGET	
 else
-	sudo mv /root/zjnodes/zjchain /tmp
+	sudo mv -f /root/zjnodes/zjchain /tmp/
 fi
 
 sudo rm -rf /root/zjnodes
@@ -30,7 +30,7 @@ rm -rf /root/zjnodes/*/zjchain /root/zjnodes/*/core* /root/zjnodes/*/log/* /root
 if test $NO_BUILD = "nobuild"
 then
 	sudo rm -rf /root/zjnodes/zjchain
-	sudo mv /tmp/zjchain /root/zjnodes/
+	sudo mv -f /tmp/zjchain /root/zjnodes/
 fi
 root=("r1" "r2" "r3")
 shard3=("s3_1" "s3_2" "s3_3" "s3_4" "s3_5" "s3_7" "s3_8" "s3_9" "s3_10" "s3_11" "s3_12" "s3_14" "s3_15" "s3_16" "s3_17" "s3_18" "s3_19" "s3_21" "s3_22" "s3_23" "s3_24" "s3_25" "s3_26" "s3_28" "s3_29" "s3_30" "s3_31" "s3_32" "s3_33" "s3_35")
