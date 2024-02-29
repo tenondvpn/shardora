@@ -6,6 +6,8 @@
 #include "contract/contract_utils.h"
 #include "elect/elect_manager.h"
 #include "timeblock/time_block_manager.h"
+#include "common/encode.h"
+#include <common/log.h>
 
 namespace zjchain {
 
@@ -266,14 +268,18 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
     }
 
     try {
+#if MOCK_SIGN        
+        bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::random_element());
+#else
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
         std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
-        libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
+        libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);        
         bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(
             bls_instance.SignatureRecover(
             all_signs,
             lagrange_coeffs));
         bls_precommit_agg_sign_->to_affine_coordinates();
+#endif
         std::string sign_precommit_hash;
         if (bls_mgr_->GetVerifyHash(
                 t,
@@ -292,6 +298,10 @@ int Zbft::LeaderPrecommitAggSign(const std::string& prpare_hash) {
             //assert(false);
             return kConsensusError;
         }
+
+#if MOCK_VERIFY
+        sign_precommit_hash = precommit_bls_agg_verify_hash_;
+#endif        
 
         if (sign_precommit_hash != precommit_bls_agg_verify_hash_) {
             common_pk_.to_affine_coordinates();
@@ -467,12 +477,16 @@ int Zbft::LeaderCreateCommitAggSign() {
     }
 
     try {
+#if MOCK_SIGN
+        bls_commit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::random_element()); 
+#else
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
         std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
         libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
         bls_commit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(bls_instance.SignatureRecover(
             all_signs,
             lagrange_coeffs));
+#endif
 //         ZJC_INFO("commit verify start,");
         std::string sign_commit_hash;
         if (bls_mgr_->GetVerifyHash(
@@ -483,6 +497,10 @@ int Zbft::LeaderCreateCommitAggSign() {
             ZJC_ERROR("verify leader precommit agg sign failed!");
             return kConsensusError;
         }
+
+#if MOCK_VERIFY
+        sign_commit_hash = commit_bls_agg_verify_hash_;
+#endif
 
         if (prepare_block_->is_commited_block()) {
             if (sign_commit_hash != commit_bls_agg_verify_hash_) {
@@ -563,6 +581,10 @@ bool Zbft::set_bls_precommit_agg_sign(
         return false;
     }
 
+#if MOCK_VERIFY
+    sign_commit_hash = sign_hash;
+#endif    
+
     bls_precommit_agg_sign_ = std::make_shared<libff::alt_bn128_G1>(agg_sign);
     if (sign_commit_hash != sign_hash) {
         ZJC_ERROR("backup verify leader precommit agg sign failed! %s: %s",
@@ -605,6 +627,10 @@ bool Zbft::verify_bls_precommit_agg_sign(
         return false;
     }
 
+#if MOCK_VERIFY
+    sign_commit_hash = sign_hash;
+#endif
+
     if (sign_commit_hash != sign_hash) {
         ZJC_DEBUG("backup verify leader precommit agg sign failed! %s: %s, "
             "prepare hash: %s, gid: %s",
@@ -637,6 +663,10 @@ bool Zbft::set_bls_commit_agg_sign(const libff::alt_bn128_G1& agg_sign) {
         ZJC_ERROR("verify leader commit agg sign failed!");
         return false;
     }
+
+#if MOCK_VERIFY
+    sign_commit_hash = commit_bls_agg_verify_hash_;
+#endif    
 
     if (prepare_block_->is_commited_block()) {
         if (sign_commit_hash != commit_bls_agg_verify_hash_) {

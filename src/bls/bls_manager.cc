@@ -6,6 +6,7 @@
 #include <libbls/bls/BLSPublicKey.h>
 #include <libbls/bls/BLSPublicKeyShare.h>
 #include <libbls/tools/utils.h>
+#include <libff/algebra/curves/alt_bn128/alt_bn128_g1.hpp>
 #include <libff/common/profiling.hpp>
 
 #include "bls/bls_sign.h"
@@ -17,6 +18,7 @@
 #include "protos/prefix_db.h"
 #include "init/init_utils.h"
 #include "transport/processor.h"
+#include "common/encode.h"
 
 namespace zjchain {
 
@@ -182,7 +184,7 @@ int BlsManager::Sign(
         uint32_t n,
         const libff::alt_bn128_Fr& local_sec_key,
         const libff::alt_bn128_G1& g1_hash,
-        libff::alt_bn128_G1* bn_sign) {
+        libff::alt_bn128_G1* bn_sign) {    
     BlsSign::Sign(t, n, local_sec_key, g1_hash, bn_sign);
     bn_sign->to_affine_coordinates();
     std::string sign_x = libBLS::ThresholdUtils::fieldElementToString(bn_sign->X);
@@ -270,8 +272,8 @@ int BlsManager::Verify(
 int BlsManager::GetVerifyHash(
             uint32_t t,
             uint32_t n,
-        const libff::alt_bn128_G1& g1_hash,
-        const libff::alt_bn128_G2& pkey,
+            const libff::alt_bn128_G1& g1_hash,
+            const libff::alt_bn128_G2& pkey,
             std::string* verify_hash) try {
     if (pkey == libff::alt_bn128_G2::zero()) {
         return kBlsError;
@@ -708,12 +710,16 @@ bool BlsManager::VerifyAggSignValid(
     }
 
     try {
+#if MOCK_SIGN
+        auto bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(libff::alt_bn128_G1::one()); 
+#else
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
         std::vector<libff::alt_bn128_Fr> lagrange_coeffs(t);
         libBLS::ThresholdUtils::LagrangeCoeffs(idx_vec, t, lagrange_coeffs);
         auto bls_agg_sign = std::make_shared<libff::alt_bn128_G1>(bls_instance.SignatureRecover(
             all_signs,
             lagrange_coeffs));
+#endif
         std::string verify_hash;
         libff::alt_bn128_G1 g1_hash;
         GetLibffHash(finish_item->max_finish_hash, &g1_hash);
@@ -744,6 +750,7 @@ bool BlsManager::VerifyAggSignValid(
             sign_x.c_str(), sign_y.c_str(), debug_idx.c_str());
         return true;
     } catch (...) {
+        ZJC_ERROR("verify agg sign failed");
     }
 
     return false;

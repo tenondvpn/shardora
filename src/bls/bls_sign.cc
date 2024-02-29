@@ -2,6 +2,7 @@
 
 #include "common/encode.h"
 #include "libff/common/profiling.hpp"
+#include "common/time_utils.h"
 
 namespace zjchain {
 
@@ -18,6 +19,10 @@ void BlsSign::Sign(
         const libff::alt_bn128_G1& g1_hash,
         libff::alt_bn128_G1* sign) {
     try {
+#if MOCK_SIGN
+        *sign = libff::alt_bn128_G1::one();
+        std::this_thread::sleep_for(std::chrono::nanoseconds(200 * 1000ull));
+#else
         libBLS::Bls bls_instance = libBLS::Bls(t, n);
         *sign = bls_instance.Signing(g1_hash, secret_key);
         ZJC_DEBUG("sign message success sec: %s, hash: %s, %s, %s",
@@ -25,6 +30,7 @@ void BlsSign::Sign(
             libBLS::ThresholdUtils::fieldElementToString(g1_hash.X).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(g1_hash.Y).c_str(),
             libBLS::ThresholdUtils::fieldElementToString(g1_hash.Z).c_str());
+#endif        
     } catch (std::exception& e) {
         BLS_ERROR("sign message failed: %s", e.what());
         *sign = libff::alt_bn128_G1::zero();
@@ -56,6 +62,10 @@ int BlsSign::Verify(
         const libff::alt_bn128_G1& g1_hash,
         const libff::alt_bn128_G2& pkey,
         std::string* verify_hash) try {
+#if MOCK_VERIFY
+    *verify_hash = "6276838476baeed30495988102d9261b5b8caf82b6d8f39870075f33cb14c2e6";
+    return kBlsSuccess;
+#else
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
     libff::alt_bn128_GT res;
     if (!bls_instance.Verification(g1_hash, sign, pkey, &res)) {
@@ -65,6 +75,7 @@ int BlsSign::Verify(
     
     *verify_hash = GetVerifyHash(res);
     return kBlsSuccess;
+#endif
 } catch (std::exception& e) {
     BLS_ERROR("sign message failed: %s", e.what());
     return kBlsError;
@@ -76,6 +87,11 @@ int BlsSign::GetVerifyHash(
         const libff::alt_bn128_G1& g1_hash,
         const libff::alt_bn128_G2& pkey,
         std::string* verify_hash) try {
+#if MOCK_VERIFY
+    *verify_hash = "6276838476baeed30495988102d9261b5b8caf82b6d8f39870075f33cb14c2e6";
+    std::this_thread::sleep_for(std::chrono::nanoseconds(3000 * 1000ull));
+    return kBlsSuccess;
+#else
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
     libff::alt_bn128_GT res;
     if (!bls_instance.GetVerifyHash(g1_hash, pkey, &res)) {
@@ -85,6 +101,7 @@ int BlsSign::GetVerifyHash(
 
     *verify_hash = GetVerifyHash(res);
     return kBlsSuccess;
+#endif
 } catch (std::exception& e) {
     BLS_ERROR("sign message failed: %s", e.what());
     return kBlsError;
@@ -95,6 +112,11 @@ int BlsSign::GetVerifyHash(
         uint32_t n,
         const libff::alt_bn128_G1& sign,
         std::string* verify_hash) try {
+#if MOCK_VERIFY
+    *verify_hash = "6276838476baeed30495988102d9261b5b8caf82b6d8f39870075f33cb14c2e6";
+    std::this_thread::sleep_for(std::chrono::nanoseconds(3000 * 1000ull));
+    return kBlsSuccess;
+#else
     libBLS::Bls bls_instance = libBLS::Bls(t, n);
     libff::alt_bn128_GT res;
     if (!bls_instance.GetVerifyHash(sign, &res)) {
@@ -104,6 +126,7 @@ int BlsSign::GetVerifyHash(
 
     *verify_hash = GetVerifyHash(res);
     return kBlsSuccess;
+#endif
 } catch (std::exception& e) {
     BLS_ERROR("verify message failed: %s", e.what());
     return kBlsError;

@@ -519,7 +519,15 @@ bool Config::HandleKeyValue(const std::string& filed, const std::string& key_val
 #endif
     }
     StringUtil::Trim(value);
-    return AddKey(filed, key, value);
+
+    std::string result;
+    for (char ch : value) {
+        if (ch != '"' && ch != '\'') {
+            result += ch;
+        }
+    }
+    
+    return AddKey(filed, key, result);
 }
 
 bool Config::HandleFiled(const std::string& field, std::string& field_val) {

@@ -10,6 +10,7 @@
 
 #include "common/encode.h"
 #include "common/log.h"
+#include <algorithm>
 
 #ifndef DISALLOW_COPY_AND_ASSIGN
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
@@ -134,8 +135,8 @@ static const uint32_t kInvalidPoolIndex = kImmutablePoolSize + 1;
 static const uint32_t kTestForNetworkId = 4u;
 static const uint16_t kDefaultVpnPort = 9033u;
 static const uint16_t kDefaultRoutePort = 9034u;
-static const int64_t kRotationPeriod = 600ll * 1000ll * 1000ll; // epoch time
-// static const int64_t kRotationPeriod = 300ll * 1000ll * 1000ll; // for quicker debugging
+// static const int64_t kRotationPeriod = 600ll * 1000ll * 1000ll; // epoch time
+static const int64_t kRotationPeriod = 1200ll * 1000ll * 1000ll; // for quicker debugging
 static const uint32_t kMaxRotationCount = 4u;
 static const uint16_t kNodePortRangeMin = 1000u;
 static const uint16_t kNodePortRangeMax = 10000u;
@@ -342,9 +343,13 @@ inline static uint32_t GetSignerCount(uint32_t n) {
     return t;
 }
 
-template<class KeyType>
-uint32_t Hash32(const KeyType& t) {
-    return 0;
+template <class KeyType> uint32_t Hash32(const KeyType &t) { return 0; }
+
+
+inline uint64_t GetNthElement(std::vector<uint64_t> v, float ratio) {
+    size_t n = v.size() * ratio - 1;
+    std::nth_element(v.begin(), v.begin() + n, v.end());
+    return v[n];
 }
 
 }  // namespace common

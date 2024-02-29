@@ -3,6 +3,7 @@
 #include "common/time_utils.h"
 #include "tnet/utils/cmd_packet.h"
 #include "tnet/socket/client_socket.h"
+#include <common/log.h>
 
 namespace zjchain {
 

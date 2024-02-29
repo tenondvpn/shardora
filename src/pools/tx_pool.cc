@@ -1,7 +1,9 @@
 #include "pools/tx_pool.h"
 #include <cassert>
+#include <common/log.h>
 
 #include "common/encode.h"
+#include "common/utils.h"
 #include "common/time_utils.h"
 #include "common/global_info.h"
 #include "db/db.h"
@@ -129,6 +131,18 @@ int TxPool::AddTx(TxItemPtr& tx_ptr) {
     }
 
     gid_map_[tx_ptr->gid] = tx_ptr;
+
+    auto now_tm_us = common::TimeUtils::TimestampUs();
+    if (prev_tx_count_tm_us_ == 0) {
+        prev_tx_count_tm_us_ = now_tm_us;
+    }
+    if (now_tm_us > prev_tx_count_tm_us_ + 3000000lu) {
+        ZJC_INFO("waiting_tx_count pool: %d: tx: %llu", pool_index_, gid_map_.size());
+        prev_tx_count_tm_us_ = now_tm_us;
+    }
+
+    
+    gid_start_time_map_[tx_ptr->gid] = common::TimeUtils::TimestampUs(); 
     timeout_txs_.push(tx_ptr->gid);
     oldest_timestamp_ = prio_map_.begin()->second->time_valid;
     return kPoolsSuccess;
@@ -242,6 +256,10 @@ void TxPool::RemoveTx(const std::string& gid) {
 //         common::Encode::HexEncode(giter->second->gid).c_str(),
 //         common::Encode::HexEncode(giter->second->tx_hash).c_str());
     gid_map_.erase(giter);
+
+    
+    
+    
     if (!prio_map_.empty()) {
         oldest_timestamp_ = prio_map_.begin()->second->time_valid;
     } else {
@@ -251,7 +269,27 @@ void TxPool::RemoveTx(const std::string& gid) {
 
 void TxPool::TxOver(const google::protobuf::RepeatedPtrField<block::protobuf::BlockTx>& tx_list) {
     for (int32_t i = 0; i < tx_list.size(); ++i) {
-        RemoveTx(tx_list[i].gid());
+        auto gid = tx_list[i].gid(); 
+        RemoveTx(gid);
+
+        // 统计交易确认延迟
+        auto now_tm = common::TimeUtils::TimestampUs();
+        auto start_tm_iter = gid_start_time_map_.find(gid);
+        if (start_tm_iter != gid_start_time_map_.end()) {
+            latencys_us_.push_back(now_tm - start_tm_iter->second);
+            // ZJC_INFO("tx latency gid: %s, us: %llu",
+            //     common::Encode::HexEncode(gid).c_str(), now_tm - start_tm_iter->second);
+            gid_start_time_map_.erase(gid);
+        }
+
+        if (latencys_us_.size() > 1000) {
+            uint64_t p90 = common::GetNthElement(latencys_us_, 0.90);
+            uint64_t p95 = common::GetNthElement(latencys_us_, 0.95);
+            uint64_t p100 = common::GetNthElement(latencys_us_, 1);
+            latencys_us_.clear();
+        
+            ZJC_INFO("tx latency p90: %llu, p95: %llu, max: %llu", p90, p95, p100);
+        }
     }
 
     finish_tx_count_ += tx_list.size();

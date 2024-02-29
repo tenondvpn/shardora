@@ -50,6 +50,14 @@ namespace contract {
 
 namespace consensus {
 
+static const uint64_t COMMIT_MSG_TIMEOUT_MS = 500; // commit msg 处理超时时间
+enum class BackupBftStage {
+    WAITING_PREPARE,
+    PREPARE_RECEIVED,
+    PRECOMMIT_RECEIVED,
+    COMMIT_RECEIVED,
+};
+
 class WaitingTxsPools;
 class BftManager : public Consensus {
 public:
@@ -337,6 +345,86 @@ private:
     std::unordered_set<std::string> broadcasted_gids_[common::kMaxThreadCount];
     std::shared_ptr<BftMessageInfo> gid_with_msg_map_[common::kInvalidPoolIndex];
     uint64_t pools_prev_bft_timeout_[common::kInvalidPoolIndex] = { 0 };
+
+    inline BackupBftStage GetBackupBftStage(std::shared_ptr<BftMessageInfo> bft_msgs) {
+        if (bft_msgs == nullptr || bft_msgs->msgs[0] == nullptr) {
+            return BackupBftStage::WAITING_PREPARE;
+        }
+
+        if (bft_msgs->msgs[2] != nullptr) {
+            return BackupBftStage::COMMIT_RECEIVED;
+        }
+        if (bft_msgs->msgs[1] != nullptr) {
+            return BackupBftStage::PRECOMMIT_RECEIVED;
+        }
+        return BackupBftStage::PREPARE_RECEIVED;
+    }
+
+    inline bool isFromLeader(const zbft::protobuf::ZbftMessage& zbft) {
+        return zbft.leader_idx() >= 0;
+    }
+
+    inline bool isPrepare(const zbft::protobuf::ZbftMessage& zbft) {
+        return !zbft.prepare_gid().empty();
+    }
+
+    inline bool isPrecommit(const zbft::protobuf::ZbftMessage& zbft) {
+        return !zbft.precommit_gid().empty();
+    }
+
+    inline bool isCommit(const zbft::protobuf::ZbftMessage& zbft) {
+        return !zbft.commit_gid().empty();
+    }
+    
+    inline bool isCurrentBft(const zbft::protobuf::ZbftMessage& zbft) {
+        auto bft_msgs = gid_with_msg_map_[zbft.pool_index()];
+        if (isPrepare(zbft)) {
+            return (bft_msgs != nullptr && bft_msgs->gid == zbft.prepare_gid());
+        }
+        if (isPrecommit(zbft)) {
+            return (bft_msgs != nullptr && bft_msgs->gid == zbft.precommit_gid());
+        }
+        if (isCommit(zbft)) {
+            return (bft_msgs != nullptr && bft_msgs->gid == zbft.commit_gid());
+        }
+        return false;
+    }
+
+    inline bool isNewerBft(const zbft::protobuf::ZbftMessage& zbft) {
+        return (zbft.tx_bft().height() > getCurrentBftHeight(zbft.pool_index())); 
+    }
+
+    inline uint64_t getCurrentBftHeight(uint32_t pool_index) {
+        auto bft_msgs = gid_with_msg_map_[pool_index];
+        uint64_t old_height = 0;
+        if (bft_msgs != nullptr) {
+            for (int32_t i = 0; i < 3; ++i) {
+                if (bft_msgs->msgs[i] != nullptr) {
+                    old_height = bft_msgs->msgs[i]->header.zbft().tx_bft().height();
+                    break;
+                }
+            }
+        }
+        return old_height;
+    }
+
+    inline uint64_t latest_commit_height(uint32_t pool_index) {
+        return pools_mgr_->latest_height(pool_index);
+    } 
+
+    void WaitForLastCommitIfNeeded(uint32_t pool_index, uint64_t timeout_ms) {
+        auto start_ms = common::TimeUtils::TimestampMs();
+        auto backup_stage = GetBackupBftStage(gid_with_msg_map_[pool_index]); 
+        while(backup_stage == BackupBftStage::PRECOMMIT_RECEIVED ||
+            backup_stage == BackupBftStage::COMMIT_RECEIVED) {
+            std::this_thread::sleep_for(std::chrono::microseconds(timeout_ms/10));
+            backup_stage = GetBackupBftStage(gid_with_msg_map_[pool_index]);
+            if (common::TimeUtils::TimestampMs() - start_ms > timeout_ms) {
+                break;
+            }
+        }
+        return;
+    }
 
 #ifdef ZJC_UNITTEST
     void ResetTest() {

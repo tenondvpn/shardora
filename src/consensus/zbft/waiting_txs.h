@@ -4,6 +4,7 @@
 #include "consensus/consensus_utils.h"
 #include "network/network_utils.h"
 #include "pools/tx_pool_manager.h"
+#include <common/log.h>
 
 namespace zjchain {
 
