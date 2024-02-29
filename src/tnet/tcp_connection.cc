@@ -90,7 +90,7 @@ bool TcpConnection::SendPacket(Packet& packet) {
 
 bool TcpConnection::SendPacketWithoutLock(Packet& packet) {
     if (tcp_state_ == kTcpNone || tcp_state_ == kTcpClosed) {
-        //ZJC_ERROR("bad state");
+        ZJC_ERROR("bad state, %d", tcp_state_);
         return false;
     }
 
@@ -102,7 +102,7 @@ bool TcpConnection::SendPacketWithoutLock(Packet& packet) {
 
     if (tcp_state_ != kTcpConnected || !out_buffer_list_.empty()) {
         if (out_buffer_list_.size() >= 1024) {
-            ZJC_DEBUG("out_buffer_list_ out of size 1024");
+            ZJC_ERROR("out_buffer_list_ out of size 1024");
             return false;
         }
 
