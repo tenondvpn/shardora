@@ -93,7 +93,7 @@ enum BftRole {
     kConsensusShard = 1,
 };
 
-static const uint32_t kMaxTxCount = 256u;
+static const uint32_t kMaxTxCount = 1024u;
 static const uint32_t kBitcountWithItemCount = 20u;  // m/n, k = 8, error ratio = 0.000009
 static const uint32_t kHashCount = 6u;  // k
 static const uint32_t kDirectTxCount = kBitcountWithItemCount * 8 / 32;
