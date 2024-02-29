@@ -111,7 +111,7 @@ struct ClientConnection {
 };
 
 static const uint32_t kMaxHops = 20u;
-static const uint32_t kMaxMessageReserveCount = 20480;
+static const uint32_t kMaxMessageReserveCount = 10240;
 static const uint32_t kBroadcastMaxRelayTimes = 2u;
 static const uint32_t kBroadcastMaxMessageCount = 1024u * 1024u;
 static const uint32_t kUniqueMaxMessageCount = 10u * 1024u;
