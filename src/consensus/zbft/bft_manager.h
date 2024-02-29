@@ -408,6 +408,10 @@ private:
         return old_height;
     }
 
+    inline uint64_t latest_commit_height(uint32_t pool_index) {
+        return pools_mgr_->latest_height(pool_index);
+    } 
+
     void WaitForLastCommitIfNeeded(uint32_t pool_index, uint64_t timeout_ms) {
         auto start_ms = common::TimeUtils::TimestampMs();
         auto backup_stage = GetBackupBftStage(gid_with_msg_map_[pool_index]); 

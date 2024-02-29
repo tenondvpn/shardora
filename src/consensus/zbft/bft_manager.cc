@@ -825,10 +825,10 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             ZJC_INFO("====1.1 backup receive prepare msg: %s", common::Encode::HexEncode(zbft.prepare_gid()).c_str());
             
             // TODO 此处应该回复消息给 leader，避免 leader 等待 bft 的 10s 超时，造成待共识队列阻塞
-            if (new_height < pools_mgr_->latest_height(zbft.pool_index()) + 1) {
+            if (new_height < latest_commit_height(zbft.pool_index()) + 1) {
                 return;
             }
-            if (new_height > pools_mgr_->latest_height(zbft.pool_index()) + 1) {
+            if (new_height > latest_commit_height(zbft.pool_index()) + 1) {
                 ZJC_INFO("====1.1.1 %s", common::Encode::HexEncode(zbft.prepare_gid()).c_str());
                 kv_sync_->AddSyncHeight(
                         msg_ptr->thread_idx,
@@ -858,7 +858,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             ZJC_INFO("====1.2 backup receive precommit msg: %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
 
             if (bft_msgs->msgs[0] != nullptr &&
-                bft_msgs->msgs[0]->header.zbft().tx_bft().height() != pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
+                bft_msgs->msgs[0]->header.zbft().tx_bft().height() != latest_commit_height(zbft.pool_index()) + 1) {
                 
                 return;
             }
