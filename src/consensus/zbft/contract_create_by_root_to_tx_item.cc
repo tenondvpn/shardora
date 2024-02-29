@@ -53,7 +53,7 @@ int ContractCreateByRootToTxItem::HandleTx(
 	block_tx.set_contract_prepayment(cc_item.prepayment());
 	block_tx.set_from(cc_item.contract_from());
 	block_tx.set_contract_code(cc_item.library_bytes());
-	ZJC_DEBUG("==== 7.1 create contract info, contract_code: %s, from: %s, gas_limit: %lu, gas_price: %lu, prepayment: %lu, to: %s",
+	ZJC_DEBUG("create contract info, contract_code: %s, from: %s, gas_limit: %lu, gas_price: %lu, prepayment: %lu, to: %s",
 		block_tx.contract_code().c_str(),
 		common::Encode::HexEncode(block_tx.from()).c_str(),
 		block_tx.gas_limit(),

@@ -822,14 +822,13 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             bft_msgs->msgs[0] = msg_ptr;
-            ZJC_INFO("====1.1 backup receive prepare msg: %s", common::Encode::HexEncode(zbft.prepare_gid()).c_str());
+            // ZJC_INFO("====1.1 backup receive prepare msg: %s", common::Encode::HexEncode(zbft.prepare_gid()).c_str());
             
             // TODO 此处应该回复消息给 leader，避免 leader 等待 bft 的 10s 超时，造成待共识队列阻塞
             if (new_height < latest_commit_height(zbft.pool_index()) + 1) {
                 return;
             }
             if (new_height > latest_commit_height(zbft.pool_index()) + 1) {
-                ZJC_INFO("====1.1.1 %s", common::Encode::HexEncode(zbft.prepare_gid()).c_str());
                 kv_sync_->AddSyncHeight(
                         msg_ptr->thread_idx,
                         common::GlobalInfo::Instance()->network_id(),
@@ -838,11 +837,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
                         sync::kSyncHighest);
                 return;
             }
-
-            ZJC_INFO("====1.1.3 %s leader: %d, pool: %d",
-                common::Encode::HexEncode(zbft.prepare_gid()).c_str(),
-                zbft.leader_idx(),
-                zbft.pool_index());
         }
 
         if (isPrecommit(zbft)) {
@@ -855,14 +849,13 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             bft_msgs->msgs[1] = msg_ptr;
-            ZJC_INFO("====1.2 backup receive precommit msg: %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
+            // ZJC_INFO("====1.2 backup receive precommit msg: %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
 
             if (bft_msgs->msgs[0] != nullptr &&
                 bft_msgs->msgs[0]->header.zbft().tx_bft().height() != latest_commit_height(zbft.pool_index()) + 1) {
                 
                 return;
             }
-            ZJC_INFO("====1.2.1 %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
         }
 
         if (bft_msgs == nullptr) {
@@ -1328,13 +1321,11 @@ void BftManager::BackupHandleZbftMessage(
     auto& header = msg_ptr->header;
     auto& zbft = msg_ptr->header.zbft();
     if (isPrecommit(zbft)) {
-        ZJC_INFO("====1.2.2 %s", common::Encode::HexEncode(zbft.precommit_gid()).c_str());
         auto precommit_bft_ptr = pools_with_zbfts_[zbft.pool_index()];
         if (precommit_bft_ptr == nullptr) {
             ZJC_DEBUG("get precommit gid failed: %s", common::Encode::HexEncode(zbft.precommit_gid()).c_str());
             return;
         }
-        ZJC_INFO("====1.2.2.1 %s", common::Encode::HexEncode(zbft.precommit_gid()).c_str());
         elect_item_ptr = precommit_bft_ptr->elect_item_ptr();
     } else {
         if (elect_item_ptr->elect_height != zbft.elect_height()) {
@@ -1402,7 +1393,6 @@ void BftManager::BackupHandleZbftMessage(
     }
 
     if (isPrepare(zbft)) {
-        ZJC_INFO("====1.1.4 %s", common::Encode::HexEncode(zbft.prepare_gid()).c_str());
         std::vector<uint8_t> invalid_txs;
         int res = BackupPrepare(elect_item, msg_ptr, &invalid_txs);
         if (res == kConsensusOppose) {
@@ -1435,7 +1425,6 @@ void BftManager::BackupHandleZbftMessage(
     }
 
     if (isPrecommit(zbft)) {
-        ZJC_INFO("====1.2.3 %s", common::Encode::HexEncode(zbft.precommit_gid()).c_str());
         ZJC_DEBUG("handle precommit gid: %s, pool: %u",
             common::Encode::HexEncode(zbft.precommit_gid()).c_str(),
             zbft.pool_index());
@@ -1447,7 +1436,6 @@ void BftManager::BackupHandleZbftMessage(
         }
 
         int res = BackupPrecommit(precommit_bft_ptr, msg_ptr);
-        ZJC_INFO("====1.2.4 %s, res: %d", common::Encode::HexEncode(zbft.precommit_gid()).c_str(), res);
         if (res == kConsensusOppose) {
             BackupSendPrecommitMessage(elect_item, msg_ptr, false);
         } else if (res == kConsensusAgree) {
@@ -2010,7 +1998,7 @@ int BftManager::LeaderPrepare(
 
     bft_msg.set_leader_idx(elect_item.local_node_member_index);
     bft_msg.set_prepare_gid(bft_ptr->gid());
-    ZJC_INFO("====0.1 leader send prepare msg: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
+    // ZJC_INFO("====0.1 leader send prepare msg: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
     bft_msg.set_pool_index(bft_ptr->pool_index());
     bft_msg.set_elect_height(bft_ptr->elect_height());
     bft_msg.mutable_tx_bft()->set_tx_type(bft_ptr->txs_ptr()->tx_type);
@@ -2201,7 +2189,6 @@ void BftManager::BackupSendPrecommitMessage(
     bft_msg.set_leader_idx(-1);
     bft_msg.set_member_index(elect_item.local_node_member_index);
     bft_msg.set_precommit_gid(gid);
-    ZJC_INFO("====1.2.5 %s, agree: %d, member idx: %d", common::Encode::HexEncode(gid).c_str(), agree, bft_msg.member_index());
     if (agree) {
         auto& bft_ptr = pools_with_zbfts_[pool_index];
         assert(bft_ptr != nullptr);
@@ -2250,14 +2237,12 @@ void BftManager::BackupSendPrecommitMessage(
             }
         }
     }
-    ZJC_INFO("====1.2.6 %s, agree: %d, member idx: %d", common::Encode::HexEncode(gid).c_str(), agree, bft_msg.member_index());
     transport::TcpTransport::Instance()->SetMessageHash(header, leader_msg_ptr->header.zbft().leader_idx());
     if (!SetBackupEcdhData(msg_ptr, leader_member)) {
         assert(false);
         return;
     }
 
-    ZJC_INFO("====1.2.7 %s, agree: %d, member idx: %d", common::Encode::HexEncode(gid).c_str(), agree, bft_msg.member_index());
     if (leader_member->public_ip == 0 || leader_member->public_port == 0) {
         network::Route::Instance()->Send(msg_ptr);
         ZJC_DEBUG("backup direct send bft message prepare gid: %s, hash64: %lu, src hash64: %lu, res: %d, try_times: %d",
@@ -2511,7 +2496,7 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
     auto& zbft = msg_ptr->header.zbft();
     if (isPrepare(zbft)) {
         int res = LeaderHandlePrepare(msg_ptr);
-        ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d, leader: %d, member: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), res, zbft.leader_idx(), zbft.member_index());
+        // ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d, leader: %d, member: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), res, zbft.leader_idx(), zbft.member_index());
         if (res == kConsensusAgree) {
             LeaderSendPrecommitMessage(msg_ptr, true);
         } else if (res == kConsensusOppose) {
@@ -2525,7 +2510,7 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
         ZJC_DEBUG("has precommit now leader handle gid: %s",
             common::Encode::HexEncode(zbft.precommit_gid()).c_str());
         auto bft_ptr = LeaderGetZbft(msg_ptr, zbft.precommit_gid());
-        ZJC_INFO("====1.2 leader receive precommit msg: %s, has res: %d, leader: %d, member: %d", common::Encode::HexEncode(zbft.precommit_gid()).c_str(), bft_ptr != nullptr, zbft.leader_idx(), zbft.member_index());
+        // ZJC_INFO("====1.2 leader receive precommit msg: %s, has res: %d, leader: %d, member: %d", common::Encode::HexEncode(zbft.precommit_gid()).c_str(), bft_ptr != nullptr, zbft.leader_idx(), zbft.member_index());
         if (bft_ptr == nullptr) {
 //             ZJC_ERROR("precommit get bft failed: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
             return;
@@ -2954,7 +2939,7 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
         }
     }
 
-    ZJC_INFO("[NEW BLOCK] hash: %s, gid: %s, is leader: %d, leader idx: %d, thread idx: %d, key: %u_%u_%u_%u",
+    ZJC_INFO("[NEW BLOCK] hash: %s, gid: %s, is leader: %d, leader idx: %d, thread idx: %d, key: %u_%u_%u_%u, txs: %lu",
         common::Encode::HexEncode(zjc_block->hash()).c_str(),
         common::Encode::HexEncode(bft_ptr->gid()).c_str(),
         bft_ptr->this_node_is_leader(),
@@ -2963,7 +2948,8 @@ void BftManager::HandleLocalCommitBlock(const transport::MessagePtr& msg_ptr, Zb
         zjc_block->network_id(),
         zjc_block->pool_index(),
         zjc_block->height(),
-        zjc_block->electblock_height());
+        zjc_block->electblock_height(),
+        zjc_block->tx_list_size());
 }
 
 void BftManager::LeaderBroadcastBlock(
