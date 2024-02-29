@@ -2,12 +2,12 @@ nodes:
 - http_port: 8201
   name: r1
   net: 2
-  server: 10.101.20.36
+  server: 10.101.20.35
   tcp_port: 12001
 - http_port: 8202
   name: r2
   net: 2
-  server: 10.101.20.35
+  server: 10.101.20.36
   tcp_port: 12002
 - http_port: 8203
   name: r3
