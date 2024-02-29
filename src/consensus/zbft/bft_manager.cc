@@ -752,7 +752,6 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
     auto zbft = header.zbft();
     auto new_height = zbft.tx_bft().height();
-    auto latest_commit_height = pools_mgr_->latest_height(zbft.pool_index());
     
     if (isFromLeader(zbft)) {
         std::shared_ptr<BftMessageInfo> bft_msgs = gid_with_msg_map_[zbft.pool_index()];
@@ -826,10 +825,10 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             ZJC_INFO("====1.1 backup receive prepare msg: %s", common::Encode::HexEncode(zbft.prepare_gid()).c_str());
             
             // TODO 此处应该回复消息给 leader，避免 leader 等待 bft 的 10s 超时，造成待共识队列阻塞
-            if (new_height < latest_commit_height + 1) {
+            if (new_height < pools_mgr_->latest_height(zbft.pool_index()) + 1) {
                 return;
             }
-            if (new_height > latest_commit_height + 1) {
+            if (new_height > pools_mgr_->latest_height(zbft.pool_index()) + 1) {
                 ZJC_INFO("====1.1.1 %s", common::Encode::HexEncode(zbft.prepare_gid()).c_str());
                 kv_sync_->AddSyncHeight(
                         msg_ptr->thread_idx,
@@ -857,8 +856,10 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
             bft_msgs->msgs[1] = msg_ptr;
             ZJC_INFO("====1.2 backup receive precommit msg: %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
+
             if (bft_msgs->msgs[0] != nullptr &&
-                bft_msgs->msgs[0]->header.zbft().tx_bft().height() != latest_commit_height + 1) {
+                bft_msgs->msgs[0]->header.zbft().tx_bft().height() != pools_mgr_->latest_height(header.zbft().pool_index()) + 1) {
+                
                 return;
             }
             ZJC_INFO("====1.2.1 %s", common::Encode::HexEncode(header.zbft().precommit_gid()).c_str());
@@ -2507,33 +2508,31 @@ void BftManager::LeaderSendCommitMessage(const transport::MessagePtr& leader_msg
 }
 
 void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
-    auto& bft_msg = msg_ptr->header.zbft();
-    if (!bft_msg.prepare_gid().empty()) {
+    auto& zbft = msg_ptr->header.zbft();
+    if (isPrepare(zbft)) {
         int res = LeaderHandlePrepare(msg_ptr);
-        ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d, leader: %d, member: %d", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), res, bft_msg.leader_idx(), bft_msg.member_index());
+        ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d, leader: %d, member: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), res, zbft.leader_idx(), zbft.member_index());
         if (res == kConsensusAgree) {
             LeaderSendPrecommitMessage(msg_ptr, true);
         } else if (res == kConsensusOppose) {
-            RemoveBft(bft_msg.pool_index(), bft_msg.prepare_gid());
-//             assert(false);
-//             LeaderSendPrecommitMessage(elect_item, msg_ptr, false);
+            RemoveBft(zbft.pool_index(), zbft.prepare_gid());
         } else {
             // waiting
         }
     }
 
-    if (!bft_msg.precommit_gid().empty()) {
+    if (isPrecommit(zbft)) {
         ZJC_DEBUG("has precommit now leader handle gid: %s",
-            common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
-        auto bft_ptr = LeaderGetZbft(msg_ptr, bft_msg.precommit_gid());
-        ZJC_INFO("====1.2 leader receive precommit msg: %s, has res: %d, leader: %d, member: %d", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str(), bft_ptr != nullptr, bft_msg.leader_idx(), bft_msg.member_index());
+            common::Encode::HexEncode(zbft.precommit_gid()).c_str());
+        auto bft_ptr = LeaderGetZbft(msg_ptr, zbft.precommit_gid());
+        ZJC_INFO("====1.2 leader receive precommit msg: %s, has res: %d, leader: %d, member: %d", common::Encode::HexEncode(zbft.precommit_gid()).c_str(), bft_ptr != nullptr, zbft.leader_idx(), zbft.member_index());
         if (bft_ptr == nullptr) {
 //             ZJC_ERROR("precommit get bft failed: %s", common::Encode::HexEncode(bft_msg.precommit_gid()).c_str());
             return;
         }
 
-        auto& member_ptr = (*bft_ptr->members_ptr())[bft_msg.member_index()];
-        if (bft_msg.agree_commit()) {
+        auto& member_ptr = (*bft_ptr->members_ptr())[zbft.member_index()];
+        if (zbft.agree_commit()) {
             if (LeaderCommit(bft_ptr, msg_ptr) == kConsensusAgree) {
                 auto next_ptr = Start(msg_ptr->thread_idx, bft_ptr);
                 if (next_ptr == nullptr) {
