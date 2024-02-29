@@ -801,7 +801,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         }
 
         if (!header.zbft().prepare_gid().empty()) {
-            // bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
+            bft_msgs = gid_with_msg_map_[header.zbft().pool_index()];
             if (bft_msgs == nullptr || header.zbft().prepare_gid() != bft_msgs->gid) {
                 uint64_t old_height = 0;
                 if (bft_msgs != nullptr) {
