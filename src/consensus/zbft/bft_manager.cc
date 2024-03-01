@@ -2553,6 +2553,7 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("has prepare  now leader handle gid: %s",
         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
     auto bft_ptr = LeaderGetZbft(msg_ptr, bft_msg.prepare_gid());
+    ZJC_INFO("====1.2.1 %s, no_bft: %d", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), bft_ptr == nullptr);
     if (bft_ptr == nullptr) {
         ZJC_DEBUG("prepare get bft failed: %s",
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
