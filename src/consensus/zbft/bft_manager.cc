@@ -1542,7 +1542,7 @@ ZbftPtr BftManager::CreateBftPtr(
                     if (txs_ptr != nullptr) {
                         break;
                     }
-                    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 }
                 
                 if (txs_ptr == nullptr) {
