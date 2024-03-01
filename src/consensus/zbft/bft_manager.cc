@@ -811,11 +811,9 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
         if (isPrepare(zbft)) {
              // TODO if not new prepare, return directly
-            ZJC_INFO("====0.0.1 backup receive prepare msg: %s, height: %d, latest: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), new_height, getCurrentBftHeight(zbft.pool_index()));
             if (!isCurrentBft(zbft)) {
-                ZJC_INFO("====0.0.2 backup receive prepare msg: %s, height: %d, latest: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), new_height, getCurrentBftHeight(zbft.pool_index()));
+                // 新的 prepare 消息（旧的 zbft 已经 commit）和同 height 不同 gid 的消息(旧的 zbft 被 opposed 时)会覆盖之前的 prepare
                 if (!isOlderBft(zbft)) {
-                    ZJC_INFO("====0.0.3 backup receive prepare msg: %s, height: %d, latest: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), new_height, latest_commit_height(zbft.pool_index()));
                     // 如果 backup 在收到 commit 消息之前，或者是在 commit 消息但在成功出块之前收到了下一消息的 prepare
                     // 则自旋等待一定时间
                     WaitForLastCommitIfNeeded(zbft.pool_index(), COMMIT_MSG_TIMEOUT_MS);
@@ -1539,7 +1537,7 @@ ZbftPtr BftManager::CreateBftPtr(
                 nullptr);
             if (txs_ptr == nullptr) {
                 // TODO 重试 3 次，在 tps 较高情况下有可能还未同步过来
-                int retry = 3;
+                int retry = 4;
                 for (int i = 0; i < retry; i++) {
                     PopAllPoolTxs(msg_ptr->thread_idx);
                     txs_ptr = txs_pools_->FollowerGetTxs(
@@ -1550,7 +1548,7 @@ ZbftPtr BftManager::CreateBftPtr(
                     if (txs_ptr != nullptr) {
                         break;
                     }
-                    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 }
                 
                 if (txs_ptr == nullptr) {
