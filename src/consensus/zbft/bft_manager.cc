@@ -2498,7 +2498,7 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
     auto& zbft = msg_ptr->header.zbft();
     if (isPrepare(zbft)) {
         int res = LeaderHandlePrepare(msg_ptr);
-        ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d, leader: %d, member: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), res, zbft.leader_idx(), zbft.member_index());
+        ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d, leader: %d, member: %d, agree: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), res, zbft.leader_idx(), zbft.member_index(), zbft.agree_precommit());
         if (res == kConsensusAgree) {
             LeaderSendPrecommitMessage(msg_ptr, true);
         } else if (res == kConsensusOppose) {
