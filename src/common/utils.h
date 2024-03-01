@@ -175,7 +175,7 @@ static const uint32_t kInvalidInt32 = (std::numeric_limits<int32_t>::max)();
 static const uint32_t kInvalidFloat = (std::numeric_limits<float>::max)();
 static const uint8_t kMaxThreadCount = 16;
 
-static const uint32_t kSingleBlockMaxTransactions = 256u;
+static const uint32_t kSingleBlockMaxTransactions = 4096u; // 1M 大约 4000+ 交易
 static const uint32_t kSingleBlockMaxMBytes = 1u;
 
 static const uint32_t kVpnShareStakingPrice = 1u;
@@ -350,6 +350,18 @@ inline uint64_t GetNthElement(std::vector<uint64_t> v, float ratio) {
     size_t n = v.size() * ratio - 1;
     std::nth_element(v.begin(), v.begin() + n, v.end());
     return v[n];
+}
+
+
+template <typename Func, typename... Args>
+bool Retry(Func func, int maxAttempts, std::chrono::milliseconds delay, Args... args) {
+    for(int i = 0; i < maxAttempts; ++i) {
+        if(func(std::forward<Args>(args)...)) {
+            return true;
+        }
+        std::this_thread::sleep_for(delay);
+    }
+    return false;
 }
 
 }  // namespace common

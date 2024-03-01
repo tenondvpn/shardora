@@ -52,11 +52,12 @@ namespace consensus {
 
 static const uint64_t COMMIT_MSG_TIMEOUT_MS = 500; // commit msg 处理超时时间
 enum class BackupBftStage {
-    WAITING_PREPARE,
-    PREPARE_RECEIVED,
-    PRECOMMIT_RECEIVED,
-    COMMIT_RECEIVED,
+  WAITING_PREPARE,
+  PREPARE_RECEIVED,
+  PRECOMMIT_RECEIVED,
+  COMMIT_RECEIVED,
 };
+static const int GET_TXS_RETRY_TIMES = 2;
 
 class WaitingTxsPools;
 class BftManager : public Consensus {
@@ -390,8 +391,8 @@ private:
         return false;
     }
 
-    inline bool isNewerBft(const zbft::protobuf::ZbftMessage& zbft) {
-        return (zbft.tx_bft().height() > getCurrentBftHeight(zbft.pool_index())); 
+    inline bool isOlderBft(const zbft::protobuf::ZbftMessage& zbft) {
+        return (zbft.tx_bft().height() < getCurrentBftHeight(zbft.pool_index())); 
     }
 
     inline uint64_t getCurrentBftHeight(uint32_t pool_index) {

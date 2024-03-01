@@ -257,7 +257,7 @@ void MultiThreadHandler::HandleMessage(MessagePtr& msg_ptr) {
 
     if (queue_idx == consensus_thread_count_ &&
             threads_message_queues_[queue_idx][priority].size() >= kMaxMessageReserveCount) {
-        ZJC_WARN("message extend max: %u", kMaxMessageReserveCount);
+        ZJC_WARN("message extend max: %u, cur: %u", kMaxMessageReserveCount, threads_message_queues_[queue_idx][priority].size());
         return;
     }
 

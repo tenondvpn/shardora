@@ -2,7 +2,9 @@
 
 #include <cassert>
 
+#include <chrono>
 #include <common/log.h>
+#include <common/utils.h>
 #include <libbls/tools/utils.h>
 #include <protos/pools.pb.h>
 
@@ -691,6 +693,7 @@ ZbftPtr BftManager::StartBft(
     tmp_gid[0] = bft_gids_index_[txs_ptr->thread_index]++;
     bft_ptr->set_gid(gid);
     bft_ptr->set_network_id(common::GlobalInfo::Instance()->network_id());
+    
     bft_ptr->set_member_count(elect_item.member_size);
     // LeaderPrepare 中会调用到 DoTransaction，本地执行块内交易
     int leader_pre = LeaderPrepare(elect_item, bft_ptr, commited_bft_ptr);
@@ -805,7 +808,8 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         if (isPrepare(zbft)) {
              // TODO if not new prepare, return directly
             if (!isCurrentBft(zbft)) {
-                if (isNewerBft(zbft)) {
+                // 新的 prepare 消息（旧的 zbft 已经 commit）和同 height 不同 gid 的消息(旧的 zbft 被 opposed 时)会覆盖之前的 prepare
+                if (!isOlderBft(zbft)) {
                     // 如果 backup 在收到 commit 消息之前，或者是在 commit 消息但在成功出块之前收到了下一消息的 prepare
                     // 则自旋等待一定时间
                     WaitForLastCommitIfNeeded(zbft.pool_index(), COMMIT_MSG_TIMEOUT_MS);
@@ -822,7 +826,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             bft_msgs->msgs[0] = msg_ptr;
-            // ZJC_INFO("====1.1 backup receive prepare msg: %s", common::Encode::HexEncode(zbft.prepare_gid()).c_str());
+            // ZJC_INFO("====1.1 backup receive prepare msg: %s, height: %d, latest: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), new_height, latest_commit_height(zbft.pool_index()));
             
             // TODO 此处应该回复消息给 leader，避免 leader 等待 bft 的 10s 超时，造成待共识队列阻塞
             if (new_height < latest_commit_height(zbft.pool_index()) + 1) {
@@ -841,7 +845,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
         if (isPrecommit(zbft)) {
             if (!isCurrentBft(zbft)) {
-                if (!isNewerBft(zbft)) {
+                if (isOlderBft(zbft)) {
                     return;
                 }
                 bft_msgs = std::make_shared<BftMessageInfo>(header.zbft().precommit_gid());
@@ -1519,21 +1523,33 @@ ZbftPtr BftManager::CreateBftPtr(
         } else {
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
+
+            
             txs_ptr = txs_pools_->FollowerGetTxs(
                 bft_msg.pool_index(),
                 bft_msg.tx_bft().tx_hash_list(),
                 msg_ptr->thread_idx,
                 nullptr);
             if (txs_ptr == nullptr) {
-                PopAllPoolTxs(msg_ptr->thread_idx);
-                txs_ptr = txs_pools_->FollowerGetTxs(
-                    bft_msg.pool_index(),
-                    bft_msg.tx_bft().tx_hash_list(),
-                    msg_ptr->thread_idx,
-                    invalid_txs);
+                // 重试，在 tps 较高情况下有可能还未同步过来
+                for (int i = 0; i < GET_TXS_RETRY_TIMES; i++) {
+                    PopAllPoolTxs(msg_ptr->thread_idx);
+                    txs_ptr = txs_pools_->FollowerGetTxs(
+                            bft_msg.pool_index(),
+                            bft_msg.tx_bft().tx_hash_list(),
+                            msg_ptr->thread_idx,
+                            invalid_txs);
+                    if (txs_ptr != nullptr) {
+                        break;
+                    }
+                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                }
+                
                 if (txs_ptr == nullptr) {
                     ZJC_ERROR("invalid consensus kNormal, txs not equal to leader. pool_index: %d, gid: %s, tx size: %u",
-                        bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), bft_msg.tx_bft().tx_hash_list_size());
+                        bft_msg.pool_index(),
+                        common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+                        bft_msg.tx_bft().tx_hash_list_size());
                 }
             }
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
@@ -2301,7 +2317,6 @@ int BftManager::BackupPrepare(
             elect_item.elect_height);
         return kConsensusOppose;
     }
-
     auto bft_ptr = CreateBftPtr(elect_item, msg_ptr, invalid_txs);
     if (bft_ptr == nullptr ||
             bft_ptr->txs_ptr() == nullptr ||
@@ -2496,10 +2511,11 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
     auto& zbft = msg_ptr->header.zbft();
     if (isPrepare(zbft)) {
         int res = LeaderHandlePrepare(msg_ptr);
-        // ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d, leader: %d, member: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), res, zbft.leader_idx(), zbft.member_index());
+        // ZJC_INFO("====1.1 leader receive prepare msg: %s, res: %d, leader: %d, member: %d, agree: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), res, zbft.leader_idx(), zbft.member_index(), zbft.agree_precommit());
         if (res == kConsensusAgree) {
             LeaderSendPrecommitMessage(msg_ptr, true);
         } else if (res == kConsensusOppose) {
+            ZJC_INFO("bft prepare opposed, gid: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str());
             RemoveBft(zbft.pool_index(), zbft.prepare_gid());
         } else {
             // waiting
@@ -2573,13 +2589,13 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
             ZJC_ERROR("get invalid bls sign.");
             return kConsensusError;
         }
-
         auto& tx_bft = bft_msg.tx_bft();
         int res = bft_ptr->LeaderPrecommitOk(
             bft_msg.prepare_hash(),
             bft_msg.member_index(),
             sign,
             member_ptr->id);
+        
         ZJC_DEBUG("LeaderHandleZbftMessage res: %d, mem: %d, precommit gid: %s",
             res,
             bft_msg.member_index(),

@@ -90,7 +90,7 @@ bool TcpConnection::SendPacket(Packet& packet) {
 
 bool TcpConnection::SendPacketWithoutLock(Packet& packet) {
     if (tcp_state_ == kTcpNone || tcp_state_ == kTcpClosed) {
-        //ZJC_ERROR("bad state");
+        ZJC_ERROR("bad state, %d", tcp_state_);
         return false;
     }
 
@@ -101,8 +101,8 @@ bool TcpConnection::SendPacketWithoutLock(Packet& packet) {
     }
 
     if (tcp_state_ != kTcpConnected || !out_buffer_list_.empty()) {
-        if (out_buffer_list_.size() >= 1024) {
-            ZJC_DEBUG("out_buffer_list_ out of size 1024");
+        if (out_buffer_list_.size() >= OUT_BUFFER_LIST_SIZE) {
+            ZJC_ERROR("out_buffer_list_ out of size %d, %d", OUT_BUFFER_LIST_SIZE, out_buffer_list_.size());
             return false;
         }
 
@@ -314,6 +314,7 @@ void TcpConnection::OnWrite() {
                                  strerror(errno));
                     ioError = true;
                 } else {
+                    ZJC_ERROR("writeAble false, [%d] [%s], n: %d", socket_->GetFd(), strerror(errno), n);
                     writeAble = false;
                 }
 

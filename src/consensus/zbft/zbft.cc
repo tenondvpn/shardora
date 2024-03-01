@@ -162,6 +162,7 @@ int Zbft::LeaderPrecommitOk(
         index,
         prepare_hash,
         backup_sign);
+
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
     if ((uint32_t)valid_count >= min_aggree_member_count_) {
@@ -176,7 +177,7 @@ int Zbft::LeaderPrecommitOk(
         } else {
             set_consensus_status(kConsensusPreCommit);
         }
-
+        
         if (LeaderPrecommitAggSign(prepare_hash) != kConsensusSuccess) {
             ZJC_ERROR("create bls precommit agg sign failed!");
             return kConsensusOppose;

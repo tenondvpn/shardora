@@ -5,10 +5,10 @@
 echo "==== STEP1: START DEPLOY ===="
 server0=10.101.20.35
 server1=10.101.20.29
-server2=10.101.20.36
-server3=10.101.20.32
-server4=10.101.20.33
-server5=10.101.20.31
+server2=10.101.20.33
+server3=10.101.20.31
+server4=10.101.20.36
+server5=10.101.20.32
 target=$1
 no_build=$2
 
@@ -34,7 +34,7 @@ echo "[$server2]"
 sshpass -p '!@#$%^' ssh -o StrictHostKeyChecking=no root@$server2 <<EOF
 rm -rf /root/zjnodes;
 sshpass -p '!@#$%^' scp -o StrictHostKeyChecking=no root@"${server0}":/root/fetch.sh /root/
-cd /root && sh -x fetch.sh ${server0} ${server2} '!@#$%^' s3_1 s3_8 s3_15 s3_22 s3_29 s4_1 s4_8 s4_15 s4_22 s4_29
+cd /root && sh -x fetch.sh ${server0} ${server2} '!@#$%^' r2 s3_3 s3_10 s3_17 s3_24 s3_31 s4_3 s4_10 s4_17 s4_24 s4_31
 EOF
 ) &
 
@@ -44,7 +44,7 @@ echo "[$server3]"
 sshpass -p '!@#$%^' ssh -o StrictHostKeyChecking=no root@$server3 <<EOF
 rm -rf /root/zjnodes;
 sshpass -p '!@#$%^' scp -o StrictHostKeyChecking=no root@"${server0}":/root/fetch.sh /root/
-cd /root && sh -x fetch.sh ${server0} ${server3} '!@#$%^' r3 s3_4 s3_11 s3_18 s3_25 s3_32 s4_4 s4_11 s4_18 s4_25 s4_32
+cd /root && sh -x fetch.sh ${server0} ${server3} '!@#$%^' s3_5 s3_12 s3_19 s3_26 s3_33 s4_5 s4_12 s4_19 s4_26 s4_33
 EOF
 ) &
 
@@ -54,7 +54,7 @@ echo "[$server4]"
 sshpass -p '!@#$%^' ssh -o StrictHostKeyChecking=no root@$server4 <<EOF
 rm -rf /root/zjnodes;
 sshpass -p '!@#$%^' scp -o StrictHostKeyChecking=no root@"${server0}":/root/fetch.sh /root/
-cd /root && sh -x fetch.sh ${server0} ${server4} '!@#$%^' r2 s3_3 s3_10 s3_17 s3_24 s3_31 s4_3 s4_10 s4_17 s4_24 s4_31
+cd /root && sh -x fetch.sh ${server0} ${server4} '!@#$%^' s3_1 s3_8 s3_15 s3_22 s3_29 s4_1 s4_8 s4_15 s4_22 s4_29
 EOF
 ) &
 
@@ -64,7 +64,7 @@ echo "[$server5]"
 sshpass -p '!@#$%^' ssh -o StrictHostKeyChecking=no root@$server5 <<EOF
 rm -rf /root/zjnodes;
 sshpass -p '!@#$%^' scp -o StrictHostKeyChecking=no root@"${server0}":/root/fetch.sh /root/
-cd /root && sh -x fetch.sh ${server0} ${server5} '!@#$%^' s3_5 s3_12 s3_19 s3_26 s3_33 s4_5 s4_12 s4_19 s4_26 s4_33
+cd /root && sh -x fetch.sh ${server0} ${server5} '!@#$%^' r3 s3_4 s3_11 s3_18 s3_25 s3_32 s4_4 s4_11 s4_18 s4_25 s4_32
 EOF
 ) &
 
@@ -122,7 +122,7 @@ done \
 echo "[$server2]"
 sshpass -p '!@#$%^' ssh -f -o StrictHostKeyChecking=no root@$server2 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s3_1 s3_8 s3_15 s3_22 s3_29 s4_1 s4_8 s4_15 s4_22 s4_29; do \
+for node in r2 s3_3 s3_10 s3_17 s3_24 s3_31 s4_3 s4_10 s4_17 s4_24 s4_31; do \
     cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node> /dev/null 2>&1 &\
 done \
 '"
@@ -131,7 +131,7 @@ done \
 echo "[$server3]"
 sshpass -p '!@#$%^' ssh -f -o StrictHostKeyChecking=no root@$server3 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in r3 s3_4 s3_11 s3_18 s3_25 s3_32 s4_4 s4_11 s4_18 s4_25 s4_32; do \
+for node in s3_5 s3_12 s3_19 s3_26 s3_33 s4_5 s4_12 s4_19 s4_26 s4_33; do \
     cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node> /dev/null 2>&1 &\
 done \
 '"
@@ -140,7 +140,7 @@ done \
 echo "[$server4]"
 sshpass -p '!@#$%^' ssh -f -o StrictHostKeyChecking=no root@$server4 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in r2 s3_3 s3_10 s3_17 s3_24 s3_31 s4_3 s4_10 s4_17 s4_24 s4_31; do \
+for node in s3_1 s3_8 s3_15 s3_22 s3_29 s4_1 s4_8 s4_15 s4_22 s4_29; do \
     cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node> /dev/null 2>&1 &\
 done \
 '"
@@ -149,7 +149,7 @@ done \
 echo "[$server5]"
 sshpass -p '!@#$%^' ssh -f -o StrictHostKeyChecking=no root@$server5 bash -c "'\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \
-for node in s3_5 s3_12 s3_19 s3_26 s3_33 s4_5 s4_12 s4_19 s4_26 s4_33; do \
+for node in r3 s3_4 s3_11 s3_18 s3_25 s3_32 s4_4 s4_11 s4_18 s4_25 s4_32; do \
     cd /root/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node> /dev/null 2>&1 &\
 done \
 '"
