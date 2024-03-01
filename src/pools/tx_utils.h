@@ -18,7 +18,7 @@ namespace zjchain {
 
 namespace pools {
 
-static const uint64_t kBftStartDeltaTime = 1000000lu;
+static const uint64_t kBftStartDeltaTime = 3000000lu;
 static const uint32_t kTxPoolTimeoutUs = 10u * 1000u * 1000u;
 static const uint32_t kTxStorageKeyMaxSize = 12u;
 static const uint32_t kMaxToTxsCount = 10000u;
