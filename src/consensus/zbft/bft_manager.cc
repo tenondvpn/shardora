@@ -2573,9 +2573,9 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
             ZJC_ERROR("get invalid bls sign.");
             return kConsensusError;
         }
-        ZJC_INFO("====1.3 %s member id: %s, member: %s",
+        ZJC_INFO("====1.3 %s prepare id: %s, member: %s",
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-            common::Encode::HexEncode(member_ptr->id).c_str());
+            member_ptr->id.c_str());
         auto& tx_bft = bft_msg.tx_bft();
         int res = bft_ptr->LeaderPrecommitOk(
             bft_msg.prepare_hash(),
@@ -2584,7 +2584,7 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
             member_ptr->id);
         ZJC_INFO("====1.3.1 %s member id: %s, member: %s, res: %d",
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
-            common::Encode::HexEncode(member_ptr->id).c_str(), res);
+            member_ptr->id.c_str(), res);
         ZJC_DEBUG("LeaderHandleZbftMessage res: %d, mem: %d, precommit gid: %s",
             res,
             bft_msg.member_index(),

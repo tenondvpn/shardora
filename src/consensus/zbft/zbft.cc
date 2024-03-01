@@ -193,7 +193,6 @@ int Zbft::LeaderPrecommitOk(
 
     ZJC_INFO("====1.4.3 %s valid_count: %d, member id: %s", common::Encode::HexEncode(gid()).c_str(), valid_count, common::Encode::HexEncode(id).c_str());
     if (PrepareHashNotConsensus()) {
-        ZJC_INFO("====1.4.4 %s valid_count: %d, member id: %s", common::Encode::HexEncode(gid()).c_str(), valid_count, common::Encode::HexEncode(id).c_str());
         ZJC_ERROR("prepare hash not consensus failed: %s", common::Encode::HexEncode(gid()).c_str());
 //         assert(false);
         return kConsensusOppose;
