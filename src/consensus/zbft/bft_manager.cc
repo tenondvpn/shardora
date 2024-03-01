@@ -691,7 +691,9 @@ ZbftPtr BftManager::StartBft(
     tmp_gid[0] = bft_gids_index_[txs_ptr->thread_index]++;
     bft_ptr->set_gid(gid);
     bft_ptr->set_network_id(common::GlobalInfo::Instance()->network_id());
+    
     bft_ptr->set_member_count(elect_item.member_size);
+    ZJC_INFO("====2.1 set member count: %d", elect_item.member_size);
     // LeaderPrepare 中会调用到 DoTransaction，本地执行块内交易
     int leader_pre = LeaderPrepare(elect_item, bft_ptr, commited_bft_ptr);
 	

@@ -163,7 +163,7 @@ int Zbft::LeaderPrecommitOk(
         prepare_hash,
         backup_sign);
 
-    ZJC_INFO("====1.4 %s valid_count: %d", common::Encode::HexEncode(gid()).c_str(), valid_count);
+    ZJC_INFO("====1.4 %s valid_count: %d, min: %d", common::Encode::HexEncode(gid()).c_str(), valid_count, min_aggree_member_count_);
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
     if ((uint32_t)valid_count >= min_aggree_member_count_) {
