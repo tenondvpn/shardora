@@ -1531,9 +1531,8 @@ ZbftPtr BftManager::CreateBftPtr(
                 msg_ptr->thread_idx,
                 nullptr);
             if (txs_ptr == nullptr) {
-                // TODO 重试 3 次，在 tps 较高情况下有可能还未同步过来
-                int retry = 4;
-                for (int i = 0; i < retry; i++) {
+                // 重试，在 tps 较高情况下有可能还未同步过来
+                for (int i = 0; i < GET_TXS_RETRY_TIMES; i++) {
                     PopAllPoolTxs(msg_ptr->thread_idx);
                     txs_ptr = txs_pools_->FollowerGetTxs(
                             bft_msg.pool_index(),

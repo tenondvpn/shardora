@@ -52,11 +52,12 @@ namespace consensus {
 
 static const uint64_t COMMIT_MSG_TIMEOUT_MS = 500; // commit msg 处理超时时间
 enum class BackupBftStage {
-    WAITING_PREPARE,
-    PREPARE_RECEIVED,
-    PRECOMMIT_RECEIVED,
-    COMMIT_RECEIVED,
+  WAITING_PREPARE,
+  PREPARE_RECEIVED,
+  PRECOMMIT_RECEIVED,
+  COMMIT_RECEIVED,
 };
+static const int GET_TXS_RETRY_TIMES = 4;
 
 class WaitingTxsPools;
 class BftManager : public Consensus {
