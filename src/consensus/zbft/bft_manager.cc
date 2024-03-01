@@ -2516,7 +2516,6 @@ void BftManager::LeaderHandleZbftMessage(const transport::MessagePtr& msg_ptr) {
             LeaderSendPrecommitMessage(msg_ptr, true);
         } else if (res == kConsensusOppose) {
             ZJC_INFO("bft prepare opposed, gid: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str());
-            pools_prev_bft_timeout_[zbft.pool_index()] = 0;
             RemoveBft(zbft.pool_index(), zbft.prepare_gid());
         } else {
             // waiting
