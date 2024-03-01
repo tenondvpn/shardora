@@ -162,11 +162,14 @@ int Zbft::LeaderPrecommitOk(
         index,
         prepare_hash,
         backup_sign);
+
+    ZJC_INFO("====1.4 %s valid_count: %d, member id: %s", common::Encode::HexEncode(gid()).c_str(), valid_count, common::Encode::HexEncode(id).c_str());
     // times_[times_index_++] = common::TimeUtils::TimestampUs();
     //assert(times_[times_index_ - 1] - times_[times_index_ - 2] <= 10000);
     if ((uint32_t)valid_count >= min_aggree_member_count_) {
         int32_t res = kConsensusAgree;
         if (prepare_block_->hash() != prepare_hash) {
+            ZJC_INFO("====1.4.1 %s valid_count: %d, member id: %s", common::Encode::HexEncode(gid()).c_str(), valid_count, common::Encode::HexEncode(id).c_str());
             prepare_block_ = nullptr;
             leader_waiting_prepare_hash_ = prepare_hash;
             set_prepare_hash(leader_waiting_prepare_hash_);
@@ -174,9 +177,10 @@ int Zbft::LeaderPrecommitOk(
             res =  kConsensusLeaderWaitingBlock;
             set_consensus_status(kConsensusLeaderWaitingBlock);
         } else {
+            ZJC_INFO("====1.4.2 %s valid_count: %d, member id: %s", common::Encode::HexEncode(gid()).c_str(), valid_count, common::Encode::HexEncode(id).c_str());
             set_consensus_status(kConsensusPreCommit);
         }
-
+        
         if (LeaderPrecommitAggSign(prepare_hash) != kConsensusSuccess) {
             ZJC_ERROR("create bls precommit agg sign failed!");
             return kConsensusOppose;
@@ -187,7 +191,9 @@ int Zbft::LeaderPrecommitOk(
         return res;
     }
 
+    ZJC_INFO("====1.4.3 %s valid_count: %d, member id: %s", common::Encode::HexEncode(gid()).c_str(), valid_count, common::Encode::HexEncode(id).c_str());
     if (PrepareHashNotConsensus()) {
+        ZJC_INFO("====1.4.4 %s valid_count: %d, member id: %s", common::Encode::HexEncode(gid()).c_str(), valid_count, common::Encode::HexEncode(id).c_str());
         ZJC_ERROR("prepare hash not consensus failed: %s", common::Encode::HexEncode(gid()).c_str());
 //         assert(false);
         return kConsensusOppose;
