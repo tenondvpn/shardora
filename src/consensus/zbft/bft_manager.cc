@@ -695,7 +695,6 @@ ZbftPtr BftManager::StartBft(
     bft_ptr->set_network_id(common::GlobalInfo::Instance()->network_id());
     
     bft_ptr->set_member_count(elect_item.member_size);
-    ZJC_INFO("====2.1 set member count: %d", elect_item.member_size);
     // LeaderPrepare 中会调用到 DoTransaction，本地执行块内交易
     int leader_pre = LeaderPrepare(elect_item, bft_ptr, commited_bft_ptr);
 	
@@ -728,6 +727,10 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
         common::Encode::HexEncode(header.zbft().commit_gid()).c_str(),
         header.zbft().pool_index(),
         msg_ptr->header.zbft().sync_block());
+    if (isPrepare(header.zbft())) {
+        ZJC_INFO("====0.0 receive msg: %s", common::Encode::HexEncode(header.zbft().prepare_gid()).c_str());
+    }
+    
     
     if (header.has_zbft() && header.zbft().leader_idx() < 0 && !msg_ptr->header.zbft().sync_block()) {
         dht::DhtKeyManager dht_key(
@@ -2055,6 +2058,7 @@ int BftManager::LeaderPrepare(
         bft_ptr->prepare_block() == nullptr ? "" : common::Encode::HexEncode(bft_ptr->prepare_block()->prehash()).c_str(),
         elect_item.elect_height,
         msg_ptr->header.hash64());
+    ZJC_INFO("====0.1.1 leader send prepare msg: %s", common::Encode::HexEncode(bft_ptr->gid()).c_str());
     network::Route::Instance()->Send(msg_ptr);
 #endif
 
