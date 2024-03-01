@@ -292,7 +292,7 @@ public:
         }
 
         precommit_oppose_set_.insert(id);
-        if (precommit_oppose_set_.size() >= min_aggree_member_count_) {
+        if (precommit_oppose_set_.size() >= min_oppose_member_count_) {
             leader_handled_precommit_ = true;
             return kConsensusOppose;
         }

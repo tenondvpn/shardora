@@ -1521,6 +1521,8 @@ ZbftPtr BftManager::CreateBftPtr(
         } else {
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
+
+            // TODO 重试 3 次，在 tps 较高情况下有可能还未同步过来
             txs_ptr = txs_pools_->FollowerGetTxs(
                 bft_msg.pool_index(),
                 bft_msg.tx_bft().tx_hash_list(),
@@ -2553,7 +2555,6 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
     ZJC_DEBUG("has prepare  now leader handle gid: %s",
         common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
     auto bft_ptr = LeaderGetZbft(msg_ptr, bft_msg.prepare_gid());
-    ZJC_INFO("====1.2.1 %s, no_bft: %d", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), bft_ptr == nullptr);
     if (bft_ptr == nullptr) {
         ZJC_DEBUG("prepare get bft failed: %s",
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
