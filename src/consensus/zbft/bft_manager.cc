@@ -2573,14 +2573,14 @@ int BftManager::LeaderHandlePrepare(const transport::MessagePtr& msg_ptr) {
             ZJC_ERROR("get invalid bls sign.");
             return kConsensusError;
         }
-        ZJC_INFO("====1.3 %s prepare id: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
+        ZJC_INFO("====1.3 %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
         auto& tx_bft = bft_msg.tx_bft();
         int res = bft_ptr->LeaderPrecommitOk(
             bft_msg.prepare_hash(),
             bft_msg.member_index(),
             sign,
             member_ptr->id);
-        ZJC_INFO("====1.3.1 %s prepare id: %s, res: %d",
+        ZJC_INFO("====1.3.1 %s, res: %d",
             common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), res);
         ZJC_DEBUG("LeaderHandleZbftMessage res: %d, mem: %d, precommit gid: %s",
             res,
