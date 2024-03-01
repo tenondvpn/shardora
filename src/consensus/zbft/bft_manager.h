@@ -390,8 +390,8 @@ private:
         return false;
     }
 
-    inline bool isNewerBft(const zbft::protobuf::ZbftMessage& zbft) {
-        return (zbft.tx_bft().height() > getCurrentBftHeight(zbft.pool_index())); 
+    inline bool isOlderBft(const zbft::protobuf::ZbftMessage& zbft) {
+        return (zbft.tx_bft().height() < getCurrentBftHeight(zbft.pool_index())); 
     }
 
     inline uint64_t getCurrentBftHeight(uint32_t pool_index) {

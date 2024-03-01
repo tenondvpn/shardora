@@ -814,7 +814,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             ZJC_INFO("====0.0.1 backup receive prepare msg: %s, height: %d, latest: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), new_height, getCurrentBftHeight(zbft.pool_index()));
             if (!isCurrentBft(zbft)) {
                 ZJC_INFO("====0.0.2 backup receive prepare msg: %s, height: %d, latest: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), new_height, getCurrentBftHeight(zbft.pool_index()));
-                if (isNewerBft(zbft)) {
+                if (!isOlderBft(zbft)) {
                     ZJC_INFO("====0.0.3 backup receive prepare msg: %s, height: %d, latest: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), new_height, latest_commit_height(zbft.pool_index()));
                     // 如果 backup 在收到 commit 消息之前，或者是在 commit 消息但在成功出块之前收到了下一消息的 prepare
                     // 则自旋等待一定时间
@@ -851,7 +851,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
 
         if (isPrecommit(zbft)) {
             if (!isCurrentBft(zbft)) {
-                if (!isNewerBft(zbft)) {
+                if (isOlderBft(zbft)) {
                     return;
                 }
                 bft_msgs = std::make_shared<BftMessageInfo>(header.zbft().precommit_gid());
