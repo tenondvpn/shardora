@@ -2,7 +2,9 @@
 
 #include <cassert>
 
+#include <chrono>
 #include <common/log.h>
+#include <common/utils.h>
 #include <libbls/tools/utils.h>
 #include <protos/pools.pb.h>
 
@@ -1522,22 +1524,33 @@ ZbftPtr BftManager::CreateBftPtr(
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();
             //assert(msg_ptr->times[msg_ptr->times_idx - 1] - msg_ptr->times[msg_ptr->times_idx - 2] < 10000);
 
-            // TODO 重试 3 次，在 tps 较高情况下有可能还未同步过来
+            
             txs_ptr = txs_pools_->FollowerGetTxs(
                 bft_msg.pool_index(),
                 bft_msg.tx_bft().tx_hash_list(),
                 msg_ptr->thread_idx,
                 nullptr);
             if (txs_ptr == nullptr) {
-                PopAllPoolTxs(msg_ptr->thread_idx);
-                txs_ptr = txs_pools_->FollowerGetTxs(
-                    bft_msg.pool_index(),
-                    bft_msg.tx_bft().tx_hash_list(),
-                    msg_ptr->thread_idx,
-                    invalid_txs);
+                // TODO 重试 3 次，在 tps 较高情况下有可能还未同步过来
+                int retry = 3;
+                for (int i = 0; i < retry; i++) {
+                    PopAllPoolTxs(msg_ptr->thread_idx);
+                    txs_ptr = txs_pools_->FollowerGetTxs(
+                            bft_msg.pool_index(),
+                            bft_msg.tx_bft().tx_hash_list(),
+                            msg_ptr->thread_idx,
+                            invalid_txs);
+                    if (txs_ptr != nullptr) {
+                        break;
+                    }
+                    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                }
+                
                 if (txs_ptr == nullptr) {
                     ZJC_ERROR("invalid consensus kNormal, txs not equal to leader. pool_index: %d, gid: %s, tx size: %u",
-                        bft_msg.pool_index(), common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(), bft_msg.tx_bft().tx_hash_list_size());
+                        bft_msg.pool_index(),
+                        common::Encode::HexEncode(bft_msg.prepare_gid()).c_str(),
+                        bft_msg.tx_bft().tx_hash_list_size());
                 }
             }
             //msg_ptr->times[msg_ptr->times_idx++] = common::TimeUtils::TimestampUs();

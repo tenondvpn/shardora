@@ -352,6 +352,18 @@ inline uint64_t GetNthElement(std::vector<uint64_t> v, float ratio) {
     return v[n];
 }
 
+
+template <typename Func, typename... Args>
+bool Retry(Func func, int maxAttempts, std::chrono::milliseconds delay, Args... args) {
+    for(int i = 0; i < maxAttempts; ++i) {
+        if(func(std::forward<Args>(args)...)) {
+            return true;
+        }
+        std::this_thread::sleep_for(delay);
+    }
+    return false;
+}
+
 }  // namespace common
 
 }  // namespace zjchain
