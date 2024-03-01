@@ -826,7 +826,7 @@ void BftManager::HandleMessage(const transport::MessagePtr& msg_ptr) {
             }
 
             bft_msgs->msgs[0] = msg_ptr;
-            ZJC_INFO("====1.1 backup receive prepare msg: %s", common::Encode::HexEncode(zbft.prepare_gid()).c_str());
+            ZJC_INFO("====1.1 backup receive prepare msg: %s, height: %d, latest: %d", common::Encode::HexEncode(zbft.prepare_gid()).c_str(), new_height, latest_commit_height(zbft.pool_index()));
             
             // TODO 此处应该回复消息给 leader，避免 leader 等待 bft 的 10s 超时，造成待共识队列阻塞
             if (new_height < latest_commit_height(zbft.pool_index()) + 1) {
@@ -1397,6 +1397,7 @@ void BftManager::BackupHandleZbftMessage(
     }
 
     if (isPrepare(zbft)) {
+        ZJC_INFO("====1.1.0 backup receive prepare msg: %s", common::Encode::HexEncode(zbft.prepare_gid()).c_str());
         std::vector<uint8_t> invalid_txs;
         int res = BackupPrepare(elect_item, msg_ptr, &invalid_txs);
         if (res == kConsensusOppose) {
@@ -2318,7 +2319,7 @@ int BftManager::BackupPrepare(
             elect_item.elect_height);
         return kConsensusOppose;
     }
-
+    ZJC_INFO("====1.1.1 backup prepare msg: %s", common::Encode::HexEncode(bft_msg.prepare_gid()).c_str());
     auto bft_ptr = CreateBftPtr(elect_item, msg_ptr, invalid_txs);
     if (bft_ptr == nullptr ||
             bft_ptr->txs_ptr() == nullptr ||
