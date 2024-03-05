@@ -197,6 +197,7 @@ fi
 sudo rm -rf {datadir}/zjnodes
 sudo cp -rf ./zjnodes {datadir}
 sudo cp -rf ./deploy {datadir}
+sudo cp ./fetch.sh {datadir}
 rm -rf {datadir}/zjnodes/*/zjchain {datadir}/zjnodes/*/core* {datadir}/zjnodes/*/log/* {datadir}/zjnodes/*/*db*
 
 if test $NO_BUILD = "nobuild"
@@ -336,7 +337,7 @@ echo "==== STEP1: DONE ===="
 
 echo "==== STEP2: CLEAR OLDS ===="
 
-ps -ef | grep zjchain | awk -F' ' '{{print $2}}' | xargs kill -9
+ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
 """
 
     for server_name, server_ip in server_name_map.items():
@@ -346,7 +347,7 @@ ps -ef | grep zjchain | awk -F' ' '{{print $2}}' | xargs kill -9
         code_str += f"""
 echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh -o StrictHostKeyChecking=no root@${server_name} <<"EOF"
-ps -ef | grep zjchain | awk -F' ' '{{print $2}}' | xargs kill -9
+ps -ef | grep zjchain | grep {tag} | awk -F' ' '{{print $2}}' | xargs kill -9
 EOF
 """
         
@@ -358,7 +359,7 @@ echo "==== STEP3: EXECUTE ===="
 
     code_str += f"""
 echo "[$server0]"
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd {datadir}/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1> /dev/null 2>&1 &
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64/ && cd {datadir}/zjnodes/r1/ && nohup ./zjchain -f 1 -g 0 r1 {tag}> /dev/null 2>&1 &
 
 sleep 3
 """
@@ -376,7 +377,7 @@ echo "[${server_name}]"
 sshpass -p '{server_pass}' ssh -f -o StrictHostKeyChecking=no root@${server_name} bash -c "'\\
 export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64; \\
 for node in {server_nodes_str}; do \\
-    cd {datadir}/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node> /dev/null 2>&1 &\\
+    cd {datadir}/zjnodes/\$node/ && nohup ./zjchain -f 0 -g 0 \$node {tag}> /dev/null 2>&1 &\\
 done \\
 '"
 
@@ -389,7 +390,7 @@ done \\
 echo "[$server0]"
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gcc-8.3.0/lib64
 for node in {server_nodes_str}; do
-cd {datadir}/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node> /dev/null 2>&1 &
+cd {datadir}/zjnodes/$node/ && nohup ./zjchain -f 0 -g 0 $node {tag}> /dev/null 2>&1 &
 done
 
 """  
@@ -429,13 +430,15 @@ def main():
     if args.datadir.endswith('/'):
         args.datadir = args.datadir[:-1]
 
+    tag = args.datadir.split('/')[-1]
+
     file_path = args.config
     server_conf = parse_server_yml_file(file_path)
     build_genesis_path = './build_genesis.sh'
     gen_zjnodes(server_conf, "./zjnodes")
     gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
     gen_genesis_sh_file(server_conf, build_genesis_path, datadir=args.datadir)
-    gen_run_nodes_sh_file(server_conf, "./deploy_genesis_multi_server.sh", build_genesis_path, tag=args.tag, datadir=args.datadir)
+    gen_run_nodes_sh_file(server_conf, "./deploy_genesis.sh", build_genesis_path, tag=args.tag, datadir=args.datadir)
     modify_shard_num_in_src_code(server_conf)
 
 if __name__ == '__main__':

@@ -25,6 +25,7 @@ fi
 sudo rm -rf /root/xf/zjnodes
 sudo cp -rf ./zjnodes /root/xf
 sudo cp -rf ./deploy /root/xf
+sudo cp ./fetch.sh /root/xf
 rm -rf /root/xf/zjnodes/*/zjchain /root/xf/zjnodes/*/core* /root/xf/zjnodes/*/log/* /root/xf/zjnodes/*/*db*
 
 if test $NO_BUILD = "nobuild"
