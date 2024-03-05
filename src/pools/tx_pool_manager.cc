@@ -1239,7 +1239,7 @@ void TxPoolManager::BftCheckInvalidGids(
 
 void TxPoolManager::PopTxs(uint32_t pool_index) {
     uint32_t count = 0;
-    while (msg_queues_[pool_index].size() > 0 && ++count < kPopMessageCountEachTime) {
+    while (msg_queues_[pool_index].size() > 0 ) {
         transport::MessagePtr msg_ptr = nullptr;
         msg_queues_[pool_index].pop(&msg_ptr);
 //         auto& tx_msg = msg_ptr->header.tx_proto();

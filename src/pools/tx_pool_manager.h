@@ -273,6 +273,7 @@ private:
     uint64_t min_timestamp_ = common::kInvalidUint64;
     uint64_t prev_get_valid_tm_ms_ = 0;
     uint64_t prev_show_tm_ms_ = 0;
+    uint64_t prev_msgs_show_tm_ms_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(TxPoolManager);
 };
