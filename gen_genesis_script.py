@@ -422,7 +422,6 @@ def modify_shard_num_in_src_code(server_conf, file_path='./src/network/network_u
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', help='nodes_conf.yml 文件位置', default='')
-    parser.add_argument('--tag', help='tag', default='default')
     parser.add_argument('--datadir', help='datadir', default='/root')
     args = parser.parse_args()
     if args.config == '':
@@ -439,7 +438,7 @@ def main():
     gen_zjnodes(server_conf, "./zjnodes")
     gen_genesis_yaml_file(server_conf, "./conf/genesis.yml")
     gen_genesis_sh_file(server_conf, build_genesis_path, datadir=args.datadir)
-    gen_run_nodes_sh_file(server_conf, "./deploy_genesis.sh", build_genesis_path, tag=args.tag, datadir=args.datadir)
+    gen_run_nodes_sh_file(server_conf, "./deploy_genesis.sh", build_genesis_path, tag=tag, datadir=args.datadir)
     modify_shard_num_in_src_code(server_conf)
 
 if __name__ == '__main__':
