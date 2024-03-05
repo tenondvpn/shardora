@@ -9,7 +9,6 @@
 #include "common/time_utils.h"
 #include "dht/dht_utils.h"
 #include "db/db_utils.h"
-#include "elect/elect_proto.h"
 #include "network/route.h"
 #include "network/shard_network.h"
 #include "vss/vss_manager.h"
