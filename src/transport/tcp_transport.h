@@ -54,12 +54,19 @@ public:
     std::string GetHeaderHashForSign(const transport::protobuf::Header& message);
     void SetMessageHash(const transport::protobuf::Header& message, uint8_t thread_idx);
 
+    // remove later
+    void SetMessageHash(const transport::protobuf::OldHeader& message, uint8_t thread_idx);
+    int Send(
+        uint8_t thread_idx,
+        const std::string& ip,
+        uint16_t port,
+        const transport::protobuf::OldHeader& message);
+
 private:
     TcpTransport();
     ~TcpTransport();
     bool OnClientPacket(tnet::TcpConnection* conn, tnet::Packet& packet);
     void EraseConn(uint64_t now_tm_ms);
-    void CreateDropNodeMessage(const std::string& ip, uint16_t port);
     void Output();
     tnet::TcpConnection* GetConnection(
         const std::string& ip,
@@ -70,7 +77,7 @@ private:
 
     std::shared_ptr<tnet::TnetTransport> transport_{ nullptr };
     tnet::TcpAcceptor* acceptor_{ nullptr };
-    EncoderFactory encoder_factory_;
+    std::shared_ptr<EncoderFactory> encoder_factory_ = nullptr;
     tnet::ListenSocket* socket_{ nullptr };
     std::unordered_map<std::string, tnet::TcpConnection*> conn_map_;
     std::deque<tnet::TcpConnection*> erase_conns_;
@@ -90,6 +97,7 @@ private:
     std::mutex output_mutex_;
     std::mutex send_output_mutex_;
     uint64_t prev_erase_timestamp_ms_ = 0;
+    common::LimitHashSet<uint64_t> sent_msgs_ = 1024 * 1024;
 };
 
 }  // namespace transport
